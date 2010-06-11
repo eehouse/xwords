@@ -19,17 +19,17 @@
     <string name="menu_insert">Afegeix una partida</string>
     <string name="button_new_game">Afegeix una partida</string>
 
-    <!-- <string name="list_item_open">Obre</string> -->
-    <string name="list_item_view">Configura</string>
+    <string name="list_item_config">Configura</string>
     <string name="list_item_hide">Amaga</string>
     <string name="list_item_delete">Suprimeix</string>
-	<string name="list_item_copy">Copia</string>
-	<string name="list_item_reset">Reinicialitza</string>
-	<string name="list_item_new_from">Nova des de</string>
-	<string name="list_item_move_up">Mou amunt</string>
-	<string name="list_item_move_down">Mou avall</string>
-	<string name="list_item_move_to_top">Mou amunt de tot</string>
-	<string name="list_item_move_to_bottom">Mou avall de tot</string>
+    <string name="list_item_copy">Copia</string>
+    <string name="list_item_reset">Reinicialitza</string>
+    
+    <string name="list_item_new_from">Nova des de</string>
+    <string name="list_item_move_up">Mou amunt</string>
+    <string name="list_item_move_down">Mou avall</string>
+    <string name="list_item_move_to_top">Mou amunt de tot</string>
+    <string name="list_item_move_to_bottom">Mou avall de tot</string>
 
     <string name="resolve_edit">Edita la nota</string>
     <string name="resolve_title">Edita el títol</string>  
@@ -38,18 +38,22 @@
 
     <string name="title_create">Crea una partida</string>
     <string name="title_edit">Edita la partida</string>
-	<string name="title_games_list">Crosswords</string>   
-	<string name="title_game">Partida</string>  
-	
-	<string name="app_name">Crosswords</string> 
-	<string name="title_dicts_list">Diccionaris del Crosswords</string> 
-	
-	<string name="button_ok">D\'acord</string>  
-	<string name="button_cancel">Cancel·la</string>  
-	<string name="button_yes">Sí</string>  
-	<string name="button_no">No</string>  
-	<string name="button_save">Desa</string>  
-	<string name="button_discard">Descarta</string> 
+    <string name="title_games_list">Crosswords</string>   
+    <string name="title_game">Partida</string>
+    <string name="title_dicts_list">Diccionaris del Crosswords</string>   
+    <string name="title_game">Partida</string>  
+    <string name="title_game_configf">Configura el %s</string>  
+    <string name="title_prefs">Configuració del Crosswords</string> 
+
+    <string name="app_name">Crosswords</string> 
+
+    <string name="button_ok">D\'acord</string>  
+    <string name="button_cancel">Cancel·la</string>  
+    <string name="button_yes">Sí</string>  
+    <string name="button_no">No</string>  
+    <string name="button_save">Desa</string>  
+    <string name="button_discard">Descarta</string>
+    <string name="button_retry">Reintenta</string>
 
     <string name="player_label">Nom:</string>
     <string name="game_config_open">Obre</string>
@@ -121,64 +125,81 @@
     <string name="strd_turn_score">Puntuació del torn: %d\n</string>
 
     <!-- error messages -->
-	<string name="str_tiles_not_in_line">Heu de jugar les fitxes en una mateixa línia.</string>
-	<string name="str_no_empties_in_turn">No podeu deixar caselles buides entre les fitxes jugades.</string>
-	<string name="str_two_tiles_first_move">Heu de jugar dues o més fitxes en la primera jugada.</string>
-	<string name="str_tiles_must_contact">Les fitxes noves han de tocar alguna de les que ja estan jugades al tauler (o la casella central en la primera jugada).</string>
-	<string name="str_not_your_turn">No podeu fer això, no és el vostre torn!</string>
-	<string name="str_no_peek_robot_tiles">No podeu mirar les fitxes del robot!</string>
-	<string name="str_cant_trade_mid_move">Recolliu les fitxes posades al tauler abans de canviar fitxer.</string>
-	<string name="str_too_few_tiles_left_to_trade">Hi ha poques fitxes al saquet i ja no podeu canviar-les.</string>
-	<string name="str_cant_undo_tileassign">L\'assignació de fitxers no es pot desfer.</string>
-	<string name="str_cant_hint_while_disabled">Les pistes es troben inhabilitades per a aquesta partida. Habiliteu-les per a una partida nova al menú Preferències.</string>
-	<string name="str_no_peek_remote_tiles">No podeu mirar a les fitxes dels jugadors remots!</string>
-	<string name="str_reg_unexpected_user">S\'ha refusat l\'intent de registre d\'usuaris inesperats.</string>
-	<string name="str_server_dict_wins">Hi ha un conflicte entre els diccionaris de l\'amfitrió i dels visitants; L\'amfitrió guanya.</string>
-	<string name="str_reg_server_sans_remote">Com a mínim un jugador ha de ser visitant per a una partida iniciada cm a amfitrió.</string>
+    <string name="str_tiles_not_in_line">Heu de jugar les fitxes en una mateixa línia.</string>
+    <string name="str_no_empties_in_turn">No podeu deixar caselles buides entre les fitxes jugades.</string>
+    <string name="str_two_tiles_first_move">Heu de jugar dues o més fitxes en la primera jugada.</string>
+    <string name="str_tiles_must_contact">Les fitxes noves han de tocar alguna de les que ja estan jugades al tauler (o la casella central en la primera jugada).</string>
+    <string name="str_not_your_turn">No podeu fer això, no és el vostre torn!</string>
+    <string name="str_no_peek_robot_tiles">No podeu mirar les fitxes del robot!</string>
+    <string name="str_cant_trade_mid_move">Recolliu les fitxes posades al tauler abans de canviar fitxer.</string>
+    <string name="str_too_few_tiles_left_to_trade">Hi ha poques fitxes al saquet i ja no podeu canviar-les.</string>
+    <string name="str_cant_undo_tileassign">L\'assignació de fitxers no es pot desfer.</string>
+    <string name="str_cant_hint_while_disabled">Les pistes es troben inhabilitades per a aquesta partida. Habiliteu-les per a una partida nova al menú Preferències.</string>
+    <string name="str_no_peek_remote_tiles">No podeu mirar a les fitxes dels jugadors remots!</string>
+    <string name="str_reg_unexpected_user">S\'ha refusat l\'intent de registre d\'usuaris inesperats.</string>
+    <string name="str_server_dict_wins">Hi ha un conflicte entre els diccionaris de l\'amfitrió i dels visitants; l\'amfitrió guanya.</string>
+    <string name="str_reg_server_sans_remote">Com a mínim un jugador ha de ser visitant per a una partida iniciada com a amfitrió.</string>
 
     <string name="remote_label">Jugador remot (s\'ignora)</string>
     <string name="robot_label">Jugador robot</string>
     <string name="password_label">Contrasenya (s\'ignora)</string>
+    <string name="robot_name">(robot)</string>
+    <string name="guest_name">(jugador visitant)</string>
+    <string name="password_label">Contrasenya</string>
     <string name="player_edit_title">Jugador</string>
 
     <string name="players_label_standalone">Jugadors</string>
     <string name="players_label_host">Jugadors</string>
     <string name="players_label_guest">Jugadors</string>
     <string name="button_add_player">Afegeix un jugador</string>
+    <string name="button_juggle_players">Remena els jugadors</string>
 
     <string name="game_config_juggle">Remena les posicions de joc</string>
 
     <string name="list_item_up">Amunt</string>
     <string name="list_item_down">Avall</string>
+    <string name="dicts_item_select">Estableix coma predeterminat</string>
     <string name="dicts_item_delete">Suprimeix el diccionari</string>
     <string name="dicts_item_details">Detalls</string>
 
     <string name="dict_label">Diccionari</string>
     <string name="role_label">Rol</string>
-
+    <string name="connection_label">Connexió</string>
+    
     <string name="configure_role">Configura la connexió</string>
     <string name="configure_rolef">Configura la connexió %s</string>
+    <string name="settings_label">Paràmetres de la partida</string>
     <string name="minutes_label">Minuts a la partida</string>
+    
+    <string name="smart_robot">Robot intel·ligent</string>
 
     <string name="download_dicts">Baixa\'n més...</string>
 
     <string name="confirm_save_title">Confirmeu els canvis</string>
     <string name="confirm_save">Aquesta partida es troba en joc. Si deseu els canvis haureu de tornar a començar. Voleu desar o descartar els canvis?</string>
-
-
+    <string name="confirm_delete_all">Esteu segur de voler suprimir totes les partides?  Aquesta acció no es pot desfer.</string>
+    
     <string name="hints_allowed">Permet pistes</string>
     <string name="use_timer">Habilita el temps</string>
     <string name="color_tiles">Fitxes de colors</string>
-    <string name="smart_robot">Robot intel·ligent</string>
+    <string name="color_tiles_summary">Les fitxes es mostren amb el color del jugador que les juga</string>
     <string name="show_arrow">Mostra la fletxa al tauler</string>
+    <string name="show_arrow_summary">Si es troba visible, en clicar les fitxes del faristol, aquestes es col·locaran sobre la fletxa</string>
     <string name="explain_robot">Explica les jugades del robot</string>
+    <string name="explain_robot_summary">Mostra el resum de la puntuació després de cada torn fet per jugadors robots</string>
     <string name="skip_confirm_turn">Omet la confirmació de la jugada</string>
+    <string name="skip_confirm_turn_summary">No mostra el resum de la puntuació després de cada torn fet per jugadors humans</string>
     <string name="ringer_zoom">Zoom amb els botons de volum</string>
-
-
+    <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum, en comptes dels botons a la pantalla</string>
+ 
     <string name="role_standalone">Solitari</string>
     <string name="role_host">Amfitrió</string>
     <string name="role_guest">Visitant</string>
+    <string name="role_prompt">Solitari si tots els jugador faran servir aquest dispositiu; altrament sigueu l\'amfitrió d\'una partida o un visitant.</string>
+
+    <string name="room_edit_hint_host">Com a amfitrió, poseu nom a la sala que fareu servir els jugadors. Heu de connectar-vos abans que els visitants per establir establis la sala al servidor repetidor.</string>
+    <string name="room_edit_hint_guest">Com a visitant. entreu a la sala amb el nom que ha triat l\'amfitrió.  Heu d\'esperar a connectar fins que l\'amfitrió ho hagi fet.</string>
+    <string name="room_edit_hint_connect">(La connexió s\'estableix automàticament quan obriu una partida que configurada per usar el repetidor.)</string>
 
     <string name="phonies_ignore">Ignora-les</string>
     <string name="phonies_warn">Avisa\'m</string>
@@ -187,13 +208,22 @@
     <string name="gamel_menu_dicts">Diccionaris</string>
 
     <string name="room_label">Sala</string>
-    <!-- <string name="hostname_label">Nom del servidor</string> -->
     <string name="phone_label">Número de telèfon de l\'amfitrió</string>
     <string name="bluetooth_label">Aviat es podrà usar el Bluetooth....</string>
-    <!-- <string name="port_label">Port</string> -->
     <string name="role_edit_title">Connexió</string>
+    <string name="connect_prompt">How will Host and Guest devices communicate?</string>
+
+    <string name="prefs_defaults">New game defaults</string>
+    <string name="prefs_defaults_summary">Paràmetres predeterminats per a noves partides</string>
+    <string name="default_dict">Diccionari de la partida</string>
+    <string name="default_phonies">Handle phonies</string>
+    <string name="board_size">Mida del tauler</string>
+    <string name="default_timerenabled">Usa el rellotge</string>
+
+    <string name="manage_dicts">Choose</string>
 
     <string name="prefs_colors">Colors</string>
+    <string name="prefs_colors_summary">Canvieu els colors emprats al tauler</string>
     <string name="player0">Primer jugador</string>
     <string name="player1">Segon jugador</string>
     <string name="player2">Tercer jugador</string>
@@ -204,8 +234,10 @@
     <string name="bonus_w3x">Triple de paraula</string>
     <string name="trading_text">Canvi de fitxes. Pitgeu\n\'Fet\' quan hagueu acabat.</string>
     <string name="tile_back">Fons de la fitxa</string>
+    <string name="empty">Cel·la buida/fons</string>
     <string name="focus">Color del focus</string>
     <string name="advanced">Avançat</string>
+    <string name="advanced_summary">No hauríeu de necessitar canviar això...</string>
     <string name="relay_host">Adreça del repetidor</string>
     <string name="dict_host">URL de baixada de diccionaris</string>
     <string name="relay_port">Port del repetidor</string>
@@ -214,11 +246,13 @@
     <string name="sms_phone_label">sms_phone_label</string>
     <string name="sms_port_label">sms_port_label</string>
     <string name="bt_label">bt_label</string>
+    <string name="list_item_view">list_item_view</string>
     <string name="key_player">key_player</string>
     <string name="tab_relay">Internet/Repetidor</string>
     <string name="tab_sms">SMS (en desenvolupament)</string>
     <string name="tab_bluetooth">Bluetooth (en desenvolupament)</string>
-<string name="msg_relay_waiting">Esteu connectat al repetidor. S\'està esperant a %d jugador/s.</string>
+    
+    <string name="msg_relay_waiting">Esteu connectat al repetidor. S\'està esperant a %d jugador/s.</string>
     <string name="msg_relay_all_here">Ja hi són tots els jugadors.</string>
     <string name="title_relay_status">Estat de la connexió.</string>
 
@@ -240,6 +274,11 @@
 
     <string name="vs">vs.</string>
     <string name="dictionary">Diccionari:</string>
+    <string name="summary_fmt_listening">%s està escoltant</string>
+    <string name="summary_fmt_relay">%s via repetidor, sala \"%s\"</string>
+    <string name="summary_fmt_sms">%s via SMS, s\'està marcant %s</string>
+    <string name="gameOver">Final de partida</string>
+    <string name="movesf">%d torns jugats</string>
 
     <!-- about dialog stuff -->
     <string name="about_versf">Crosswords per a l\'Android, Versió %s,
@@ -248,7 +287,7 @@
     House. Aquest programari es troba sota la Llicència Pública General GNU.</string>
 
     <string name="about_web">Per a l\'ajuda o el codi font visiteu:
-    http://xwords.sf.net.  Per informar d'errors, suggerir noves funcionalitats, oferir ajuda, etc., envieu un correu a: eehouse@eehouse.org.</string>
+    http://xwords.sf.net.  Per informar d\'errors, suggerir noves funcionalitats, oferir ajuda, etc., envieu un correu a: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
     <string name="xlator">Joan Montané</string>
 
@@ -257,10 +296,16 @@
     <string name="button_download">Baixa</string>
     <string name="no_dictf">No s\'ha pogut obrir la partida perquè no s\'ha trobat el diccionari %s.</string>
 
-	<string name="msg_ask_password">Contrasenya per \"%s\":</string>
+    <string name="msg_ask_password">Contrasenya per \"%s\":</string>
 
-	<string name="red">Roig</string>
-	<string name="green">Verd</string>
-	<string name="blue">Blau</string>
+    <string name="red">Roig</string>
+    <string name="green">Verd</string>
+    <string name="blue">Blau</string>
+    
+    <string name="gamef">Partida %d</string>
+    <string name="playerf">Jugador %d</string>
+    <string name="initial_game_minutes">Minuts de partida</string>
+
+    <string name="git_rev_title">Id. versió codi font </string>
 
 </resources>
