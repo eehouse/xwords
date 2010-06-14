@@ -62,7 +62,7 @@
 	<string name="info_title">FYI...</string>
 	<string name="error_message">Error loading game</string>
 	<string name="query_title">A question...</string>
-	<string name="query_trade">Are you sure you want to trade the selected tiles?</string>
+	<string name="query_trade">Are you sure you want to exchange the selected tiles?</string>
 
 
     <string name="title_tile_picker">Letter for blank</string>
@@ -73,9 +73,9 @@
 
     <!-- system menu for main board view -->
 	<string name="board_menu_done">Turn done</string>
-	<string name="board_menu_juggle">Juggle</string>
+	<string name="board_menu_juggle">Shuffle</string>
 	<string name="board_menu_flip">Flip</string>
-	<string name="board_menu_trade">Trade</string>
+	<string name="board_menu_trade">Exchange</string>
 	<string name="board_menu_tray">Hide/Show</string>
 	<string name="board_submenu_undo">Undo</string>
 	<string name="board_menu_undo_current">Undo current</string>
@@ -98,7 +98,7 @@
 	<!-- <string name="gamel_menu_view_hidden">Hidden games</string> -->
 
     <!-- returned by util_getUserString -->
-    <string name="strd_robot_traded">Robot traded tiles %d this turn.</string>
+    <string name="strd_robot_traded">Robot exchanged tiles %d this turn.</string>
     <string name="str_robot_moved">The robot made this move:</string>
     <string name="strs_values_header">%s counts/values:\n</string>
     <string name="strd_remaining_tiles_add">+ %d [all remaining tiles]</string>
@@ -109,7 +109,7 @@
     <string name="strs_move_across">move (from %s across)</string>
     <string name="strs_move_down">move (from %s down)</string>
     <string name="strs_tray_at_start">Tray at start: %s</string>
-    <string name="strss_traded_for">Traded %s for %s.</string>
+    <string name="strss_traded_for">Exchanged %s for %s.</string>
     <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
     <string name="strd_cumulative_score">Cumulative score: %d</string>
     <string name="strs_new_tiles">New tiles: %s</string>
@@ -130,8 +130,8 @@
 	<string name="str_tiles_must_contact">New pieces must contact others already in place (or the middle square on the first move)</string>
 	<string name="str_not_your_turn">You can\'t do that; it\'s not your turn!</string>
 	<string name="str_no_peek_robot_tiles">No peeking at the robot\'s tiles!</string>
-	<string name="str_cant_trade_mid_move">Remove played tiles before trading.</string>
-	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to trade.</string>
+	<string name="str_cant_trade_mid_move">Remove played tiles before exchanging.</string>
+	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to exchange.</string>
 	<string name="str_cant_undo_tileassign">Tile assignment can't be undone.</string>
 	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Settings dialog.</string>
 	<string name="str_no_peek_remote_tiles">No peeking at remote players' tiles!</string>
@@ -150,9 +150,7 @@
     <string name="players_label_host">Players -- local and expected</string>
     <string name="players_label_guest">Players -- local only</string>
     <string name="button_add_player">Add player</string>
-    <string name="button_juggle_players">Juggle players</string>
-
-    <string name="game_config_juggle">Juggle players</string>
+    <string name="button_juggle_players">Shuffle players</string>
 
     <string name="list_item_up">Up one</string>
     <string name="list_item_down">Down one</string>
@@ -253,7 +251,7 @@
     <string name="bonus_l3x">Triple letter</string>
     <string name="bonus_w2x">Double word</string>
     <string name="bonus_w3x">Triple word</string>
-    <string name="trading_text">Trading tiles. Select\n\'Turn done\' when ready.</string>
+    <string name="trading_text">Exchanging tiles. Select\n\'Turn done\' when ready.</string>
     <string name="tile_back">Tile background</string>
     <string name="empty">Empty cell/background</string>
     <string name="focus">Focus color</string>
