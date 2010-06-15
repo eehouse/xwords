@@ -156,7 +156,7 @@
 
     <string name="list_item_up">Amunt</string>
     <string name="list_item_down">Avall</string>
-    <string name="dicts_item_select">Estableix coma predeterminat</string>
+    <string name="dicts_item_select">Estableix com a predeterminat</string>
     <string name="dicts_item_delete">Suprimeix el diccionari</string>
     <string name="dicts_item_details">Detalls</string>
 
@@ -182,13 +182,13 @@
     <string name="color_tiles">Fitxes de colors</string>
     <string name="color_tiles_summary">Les fitxes es mostren amb el color del jugador que les juga</string>
     <string name="show_arrow">Mostra la fletxa al tauler</string>
-    <string name="show_arrow_summary">Si es troba visible, en clicar les fitxes del faristol, aquestes es col·locaran sobre la fletxa</string>
+    <string name="show_arrow_summary">Les fitxes del faristol es col·locaran sobre la fletxa</string>
     <string name="explain_robot">Explica les jugades del robot</string>
-    <string name="explain_robot_summary">Mostra el resum de la puntuació després de cada torn fet per jugadors robots</string>
+    <string name="explain_robot_summary">Mostra el resum de la jugada dels jugadors robot</string>
     <string name="skip_confirm_turn">Omet la confirmació de la jugada</string>
-    <string name="skip_confirm_turn_summary">No mostra el resum de la puntuació després de cada torn fet per jugadors humans</string>
+    <string name="skip_confirm_turn_summary">No mostra el resum de la jugada dels jugadors humans</string>
     <string name="ringer_zoom">Zoom amb els botons de volum</string>
-    <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum, en comptes dels botons a la pantalla</string>
+    <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum.</string>
  
     <string name="role_standalone">Solitari</string>
     <string name="role_host">Amfitrió</string>
@@ -204,6 +204,10 @@
     <string name="phonies_disallow">No es poden jugar</string>
     <string name="menu_prefs">Preferències</string>
     <string name="gamel_menu_dicts">Diccionaris</string>
+    <string name="menu_revert_all">Reestableix-ho tot</string>
+    <string name="menu_revert_colors">Reestableix els colors</string>
+    <string name="confirm_revert_colors">Esteu segur de voler reestablir tots tots els paràmetres de colors als seus valors predeterminats?</string>
+    <string name="confirm_revert_all">Esteu segur de voler reestablir totes les preferències als seus valors predeterminats?</string>
 
     <string name="room_label">Sala</string>
     <string name="phone_label">Número de telèfon de l\'amfitrió</string>
@@ -211,14 +215,14 @@
     <string name="role_edit_title">Connexió</string>
     <string name="connect_prompt">How will Host and Guest devices communicate?</string>
 
-    <string name="prefs_defaults">New game defaults</string>
-    <string name="prefs_defaults_summary">Paràmetres predeterminats per a noves partides</string>
+    <string name="prefs_defaults">Valors predeterminats per a partides noves</string>
+    <string name="prefs_defaults_summary">Paràmetres predeterminats per a partides noves</string>
     <string name="default_dict">Diccionari de la partida</string>
-    <string name="default_phonies">Handle phonies</string>
+    <string name="default_phonies">Paraules fora del dicc.</string>
     <string name="board_size">Mida del tauler</string>
     <string name="default_timerenabled">Usa el rellotge</string>
 
-    <string name="manage_dicts">Choose</string>
+    <string name="manage_dicts">Seleccioneu</string>
 
     <string name="prefs_colors">Colors</string>
     <string name="prefs_colors_summary">Canvieu els colors emprats al tauler</string>
@@ -235,7 +239,7 @@
     <string name="empty">Cel·la buida/fons</string>
     <string name="focus">Color del focus</string>
     <string name="advanced">Avançat</string>
-    <string name="advanced_summary">No hauríeu de necessitar canviar això...</string>
+    <string name="advanced_summary">No hauríeu de necessitar canviar això</string>
     <string name="relay_host">Adreça del repetidor</string>
     <string name="dict_host">URL de baixada de diccionaris</string>
     <string name="relay_port">Port del repetidor</string>
@@ -287,7 +291,7 @@
     <string name="about_web">Per a l\'ajuda o el codi font visiteu:
     http://xwords.sf.net.  Per informar d\'errors, suggerir noves funcionalitats, oferir ajuda, etc., envieu un correu a: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
-    <string name="xlator">Joan Montané</string>
+    <string name="xlator">Traducció: Joan Montané --- Softcatalà</string>
 
     <string name="downloading_dictf">S\'està baixant el diccionari %s per al Crosswords...</string>
     <string name="no_dict_title">No s\'ha trobat el diccionari</string>
