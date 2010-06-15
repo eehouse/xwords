@@ -33,15 +33,15 @@ import org.eehouse.android.xw4.jni.*;
 
 public class DBUtils {
 
-    private static SQLiteOpenHelper m_dbHelper = null;
+    private static SQLiteOpenHelper s_dbHelper = null;
 
     public static GameSummary getSummary( Context context, String file )
     {
         initDB( context );
         GameSummary summary = new GameSummary();
 
-        synchronized( m_dbHelper ) {
-            SQLiteDatabase db = m_dbHelper.getReadableDatabase();
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER,
                                  DBHelper.CONTYPE, DBHelper.ROOMNAME,
                                  DBHelper.SMSPHONE, DBHelper.SCORES
@@ -91,8 +91,8 @@ public class DBUtils {
 
     public static void saveSummary( String path, GameSummary summary )
     {
-        synchronized( m_dbHelper ) {
-            SQLiteDatabase db = m_dbHelper.getWritableDatabase();
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
             if ( null == summary ) {
                 String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
@@ -131,8 +131,8 @@ public class DBUtils {
 
     private static void initDB( Context context )
     {
-        if ( null == m_dbHelper ) {
-            m_dbHelper = new DBHelper( context );
+        if ( null == s_dbHelper ) {
+            s_dbHelper = new DBHelper( context );
         }
     }
 
