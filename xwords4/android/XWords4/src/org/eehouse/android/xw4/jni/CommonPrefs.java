@@ -165,9 +165,9 @@ public class CommonPrefs {
         } 
     }
 
-    public static int getDefaultGameMinutes( Context context )
+    public static int getDefaultPlayerMinutes( Context context )
     {
-        String value = getString( context, R.string.key_initial_game_minutes );
+        String value = getString( context, R.string.key_initial_player_minutes );
         try {
             return Integer.parseInt( value );
         } catch ( Exception ex ) {

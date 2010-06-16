@@ -306,7 +306,7 @@
     
     <string name="gamef">Partida %d</string>
     <string name="playerf">Jugador %d</string>
-    <string name="initial_game_minutes">Minuts de partida</string>
+    <string name="initial_player_minutes">Minuts de partida</string>
 
     <string name="git_rev_title">Id. versió codi font </string>
 
