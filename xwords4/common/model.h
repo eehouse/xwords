@@ -126,7 +126,7 @@ void model_listPlacedBlanks( ModelCtxt* model, XP_U16 turn,
 XP_U16 model_getCellOwner( ModelCtxt* model, XP_U16 col, XP_U16 row );
 
 void model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
-                              TrayTileSet* tiles );
+                              const TrayTileSet* tiles );
 Tile model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 
 Tile model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
@@ -139,6 +139,7 @@ void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
    player.  Don't even think about modifying the array!!!! */
 const TrayTileSet* model_getPlayerTiles( ModelCtxt* model, XP_S16 turn );
 
+void model_sortTiles( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn );
 void model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, 

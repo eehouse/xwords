@@ -293,7 +293,7 @@ stack_addTrade( StackCtxt* stack, XP_U16 turn,
 } /* stack_addTrade */
 
 void
-stack_addAssign( StackCtxt* stack, XP_U16 turn, TrayTileSet* tiles )
+stack_addAssign( StackCtxt* stack, XP_U16 turn, const TrayTileSet* tiles )
 {
     StackEntry move;
 

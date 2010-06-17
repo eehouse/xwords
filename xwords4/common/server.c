@@ -1116,6 +1116,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
             /* remove what the server's assigned so we won't conflict
                later. */
             pool_removeTiles( pool, &tiles );
+
+            model_sortTiles( model, i );
         }
 
         SETSTATE( server, XWSTATE_INTURN );
@@ -1580,6 +1582,7 @@ assignTilesToAll( ServerCtxt* server )
         TrayTileSet newTiles;
         fetchTiles( server, i, numAssigned, NULL, &newTiles );
         model_assignPlayerTiles( model, i, &newTiles );
+        model_sortTiles( model, i );
     }
 
 } /* assignTilesToAll */
@@ -2028,6 +2031,7 @@ server_commitMove( ServerCtxt* server )
 #endif
 
     model_commitTurn( model, turn, &newTiles );
+    model_sortTiles( model, turn );
 
     if ( !isLegalMove && !isClient ) {
         badWordMoveUndoAndTellUser( server, &server->illegalWordInfo );

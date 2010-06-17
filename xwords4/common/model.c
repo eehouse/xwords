@@ -58,7 +58,7 @@ static CellTile getModelTileRaw( const ModelCtxt* model, XP_U16 col,
 static void setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, 
                              CellTile tile );
 static void assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
-                               TrayTileSet* tiles );
+                               const TrayTileSet* tiles );
 static void makeTileTrade( ModelCtxt* model, XP_S16 player, 
                            TrayTileSet* oldTiles, TrayTileSet* newTiles );
 static XP_S16 commitTurn( ModelCtxt* model, XP_S16 turn, 
@@ -1349,22 +1349,52 @@ model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
 } /* model_moveTileOnTray */
 
 static void
-assignPlayerTiles( ModelCtxt* model, XP_S16 turn, TrayTileSet* tiles )
+assignPlayerTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
 {
-    Tile* tilep = tiles->tiles;
+    const Tile* tilep = tiles->tiles;
     XP_U16 nTiles = tiles->nTiles;
     while ( nTiles-- ) {
         model_addPlayerTile( model, turn, -1, *tilep++ );
     }
-} /* model_addPlayerTiles */
+} /* assignPlayerTiles */
 
 void
-model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, TrayTileSet* tiles )
+model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
+                         const TrayTileSet* tiles )
 {
     stack_addAssign( model->vol.stack, turn, tiles );
 
     assignPlayerTiles( model, turn, tiles );
-} /* model_addPlayerTiles */
+} /* model_assignPlayerTiles */
+
+void
+model_sortTiles( ModelCtxt* model, XP_S16 turn )
+{
+    PlayerCtxt* player = &model->players[turn];
+    XP_S16 ii;
+
+    TrayTileSet tiles = { .nTiles = 0 };
+    XP_S16 nTiles;
+
+    XP_ASSERT( turn >= 0 );
+
+    for ( nTiles = model_getNumTilesInTray( model, turn ) - 1;
+          nTiles >= 0; --nTiles ) {
+        Tile min = 0xFF;
+        XP_U16 minIndex = 0;
+        for ( ii = 0; ii <= nTiles; ++ii ) {
+            Tile tile = player->trayTiles.tiles[ii];
+            if ( tile < min ) {
+                min = tile;
+                minIndex = ii;
+            }
+        }
+        tiles.tiles[tiles.nTiles++] = 
+            removePlayerTile( model, turn, minIndex );
+    }
+
+    assignPlayerTiles( model, turn, &tiles );
+} /* model_sortTiles */
 
 XP_U16
 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn )
@@ -1373,7 +1403,7 @@ model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn )
     XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
     return player->trayTiles.nTiles;
-} /* model_getNumPlayerTiles */
+} /* model_getNumTilesInTray */
 
 XP_U16
 model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn )
