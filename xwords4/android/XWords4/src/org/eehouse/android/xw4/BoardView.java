@@ -51,6 +51,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Paint m_fillPaint;
     private Paint m_strokePaint;
     private int m_defaultFontHt;
+    private int m_mediumFontHt;
     private Paint m_tileStrokePaint;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
@@ -172,6 +173,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         final float scale = getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
+        m_mediumFontHt = m_defaultFontHt * 3 / 2;
 
         m_drawPaint = new Paint();
         m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
@@ -267,6 +269,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         result.trayTop = result.scoreHt + result.boardHt;
         result.height = result.scoreHt + result.boardHt + result.trayHt;
         result.cellSize = cellSize;
+
+        if ( gi.timerEnabled ) {
+            Paint paint = new Paint();
+            paint.setTextSize( m_mediumFontHt );
+            paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
+            result.timerWidth = m_boundsScratch.width();
+        }
+
         return result;
     } // figureBoardDims
 
@@ -380,16 +390,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( nTilesLeft > 0 ) {
             // should cache a formatter
             m_remText = String.format( "%d", nTilesLeft );
-            m_fillPaint.setTextSize( r.bottom - r.top - 2 );
+            m_fillPaint.setTextSize( m_mediumFontHt );
             m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(), 
                                        m_boundsScratch );
 
-            int minWidth = m_boundsScratch.right;
+            int minWidth = m_boundsScratch.width();
             if ( minWidth < 20 ) {
                 minWidth = 20; // it's a button; make it bigger
             }
             width[0] = minWidth;
-            height[0] = m_boundsScratch.bottom;
+            height[0] = m_boundsScratch.height();
         } else {
             width[0] = height[0] = 0;
         }
@@ -403,7 +413,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         fillRect( rOuter, m_otherColors[indx] );
 
         m_fillPaint.setColor( BLACK );
-        drawCentered( m_remText, rOuter, null );
+        drawCentered( m_remText, rInner, null );
     }
 
     public void measureScoreText( Rect r, DrawScoreInfo dsi, 
@@ -476,9 +486,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                          secondsLeft%60 );
 
             clearToBack( rect );
-
             m_fillPaint.setColor( m_playerColors[player] );
-            drawCentered( time, rect, null );
+
+            Rect shorter = new Rect( rect );
+            shorter.inset( 0, shorter.height() / 5 );
+            drawCentered( time, shorter, null );
 
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
         }
