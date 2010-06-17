@@ -17,13 +17,14 @@
       <item name="android:textColor">#FFFFFFFF</item>
     </style>
 
-    <style name="color_seek_text">
+    <style name="color_seek_bar">
       <item name="android:layout_width">wrap_content</item>
       <item name="android:layout_height">wrap_content</item>
       <item name="android:layout_gravity">left|center_vertical</item>
       <item name="android:max">255</item>
       <item name="android:layout_weight">1</item>
-      <item name="android:paddingRight">4dp</item>
+      <item name="android:paddingRight">8dp</item>
+      <item name="android:paddingLeft">8dp</item>
     </style>
 
     <style name="color_edit_text">
