@@ -76,7 +76,7 @@
 	<string name="board_menu_juggle">Shuffle</string>
 	<string name="board_menu_flip">Flip</string>
 	<string name="board_menu_trade">Exchange</string>
-	<string name="board_menu_tray">Hide/Show</string>
+	<string name="board_menu_tray">Hide tray</string>
 	<string name="board_submenu_undo">Undo</string>
 	<string name="board_menu_undo_current">Undo current</string>
 	<string name="board_menu_undo_last">Undo last</string>
