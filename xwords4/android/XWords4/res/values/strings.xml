@@ -76,7 +76,7 @@
 	<string name="board_menu_juggle">Shuffle</string>
 	<string name="board_menu_flip">Flip</string>
 	<string name="board_menu_trade">Exchange</string>
-	<string name="board_menu_tray">Hide/Show</string>
+	<string name="board_menu_tray">Hide tray</string>
 	<string name="board_submenu_undo">Undo</string>
 	<string name="board_menu_undo_current">Undo current</string>
 	<string name="board_menu_undo_last">Undo last</string>
@@ -165,7 +165,7 @@
     <string name="configure_role">Configure connection</string>
     <string name="configure_rolef">Configure %s connection</string>
     <string name="settings_label">Game settings</string>
-    <string name="minutes_label">Minutes in game</string>
+    <string name="minutes_label">Minutes per player</string>
 
     <string name="smart_robot">Smart robot</string>
 
@@ -328,7 +328,7 @@
 
 	<string name="gamef">Game %d</string>
 	<string name="playerf">Player %d</string>
-	<string name="initial_game_minutes">Game time (minutes)</string>
+	<string name="initial_player_minutes">Timer minutes per player</string>
 
 	<string name="git_rev_title">Source version id</string>
 

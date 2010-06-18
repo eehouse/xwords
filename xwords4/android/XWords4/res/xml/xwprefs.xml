@@ -24,8 +24,8 @@
                           android:defaultValue="false"
                           />
 
-      <EditTextPreference android:key="@string/key_initial_game_minutes"
-                          android:title="@string/initial_game_minutes"
+      <EditTextPreference android:key="@string/key_initial_player_minutes"
+                          android:title="@string/initial_player_minutes"
                           android:defaultValue="25"
                           android:numeric="decimal"
                           />

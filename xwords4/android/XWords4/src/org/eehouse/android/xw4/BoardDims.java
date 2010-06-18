@@ -29,4 +29,5 @@ public class BoardDims {
     public int boardHt;
     public int trayTop, trayHt;
     public int cellSize, maxCellSize;
+    public int timerWidth;
 }

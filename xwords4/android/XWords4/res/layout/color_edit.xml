@@ -31,7 +31,7 @@
                   android:layout_height="wrap_content"
                   >
       <SeekBar android:id="@+id/seek_red" 
-               style="@style/color_seek_text"
+               style="@style/color_seek_bar"
                />
       <EditText android:id="@+id/edit_red" 
                 style="@style/color_edit_text"
@@ -48,7 +48,7 @@
                   android:layout_height="wrap_content"
                   >
       <SeekBar android:id="@+id/seek_green" 
-               style="@style/color_seek_text"
+               style="@style/color_seek_bar"
                />
       <EditText android:id="@+id/edit_green" 
                 style="@style/color_edit_text"
@@ -65,7 +65,7 @@
                   android:layout_height="wrap_content"
                   >
       <SeekBar android:id="@+id/seek_blue"
-               style="@style/color_seek_text"
+               style="@style/color_seek_bar"
                />
 
       <EditText android:id="@+id/edit_blue" 

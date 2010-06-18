@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_revert_colors"
+          android:title="@string/menu_revert_colors"
+          />
+    <item android:id="@+id/menu_revert_all"
+          android:title="@string/menu_revert_all"
+          />
+</menu>

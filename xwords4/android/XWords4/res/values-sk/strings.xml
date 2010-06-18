@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -304,5 +304,5 @@
 
 	<string name="gamef">Hra %d</string>
 	<string name="playerf">Hráč %d</string>
-	<string name="initial_game_minutes">Trvanie hry v minutách</string>
+	<string name="initial_player_minutes">Trvanie hry v minutách</string>
 </resources>

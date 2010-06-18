@@ -430,7 +430,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
         m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
         Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
-        Utils.setInt( this, R.id.timer_minutes_edit, m_gi.gameSeconds/60 );
+        Utils.setInt( this, R.id.timer_minutes_edit, 
+                      m_gi.gameSeconds/60/m_gi.nPlayers );
 
         CheckBox check = (CheckBox)findViewById( R.id.use_timer );
         CompoundButton.OnCheckedChangeListener lstnr =
@@ -773,7 +774,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
     {
         m_gi.hintsNotAllowed = !Utils.getChecked( this, R.id.hints_allowed );
         m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
-        m_gi.gameSeconds = 60 * Utils.getInt(  this, R.id.timer_minutes_edit );
+        m_gi.gameSeconds = 60 * m_gi.nPlayers *
+            Utils.getInt(  this, R.id.timer_minutes_edit );
         m_gi.robotSmartness
             = Utils.getChecked( this, R.id.smart_robot ) ? 1 : 0;
 

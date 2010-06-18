@@ -169,14 +169,9 @@ public class JNIThread extends Thread {
         }
 
         if ( m_gi.timerEnabled ) {
-            Paint paint = new Paint();
-            paint.setTextSize( dims.scoreHt );
-            Rect rect = new Rect();
-            paint.getTextBounds( "-00:00", 0, 6, rect );
-            int timerWidth = rect.right;
-            scoreWidth -= timerWidth;
-            XwJNI.board_setTimerLoc( m_jniGamePtr, scoreWidth, 0, timerWidth, 
-                                     dims.scoreHt );
+            scoreWidth -= dims.timerWidth;
+            XwJNI.board_setTimerLoc( m_jniGamePtr, scoreWidth, 0, 
+                                     dims.timerWidth, dims.scoreHt );
         } 
         XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
                                       dims.scoreHt, true );
