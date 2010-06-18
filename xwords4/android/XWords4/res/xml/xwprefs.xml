@@ -60,6 +60,11 @@
                       android:summary="@string/skip_confirm_turn_summary"
                       android:defaultValue="false"
                       />
+  <CheckBoxPreference android:key="@string/key_sort_tiles"
+                      android:title="@string/title_sort_tiles"
+                      android:summary="@string/summary_sort_tiles"
+                      android:defaultValue="true"
+                      />
   <CheckBoxPreference android:key="@string/key_ringer_zoom"
                       android:title="@string/ringer_zoom"
                       android:summary="@string/ringer_zoom_summary"

@@ -192,6 +192,9 @@
     <string name="skip_confirm_turn">Skip confirming turn</string>
     <string name="skip_confirm_turn_summary">Do NOT display score
     summary after every human turn</string>
+    <string name="title_sort_tiles">Sort new tiles</string>
+    <string name="summary_sort_tiles">Sort trays whenever new tiles
+    are added</string>
     <string name="ringer_zoom">Volume keys zoom</string>
     <string name="ringer_zoom_summary">Zoom board using volume keys
     rather than an on-screen widget</string>

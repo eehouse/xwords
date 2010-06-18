@@ -44,6 +44,7 @@ public class CommonPrefs {
     public boolean hideTileValues; 
     public boolean skipCommitConfirm;
     public boolean showColors;
+    public boolean sortNewTiles;
 
     public int[] playerColors;
     public int[] bonusColors;
@@ -67,20 +68,16 @@ public class CommonPrefs {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
 
-        key = context.getString( R.string.key_show_arrow );
-        showBoardArrow = sp.getBoolean( key, true );
-
-        key = context.getString( R.string.key_explain_robot );
-        showRobotScores = sp.getBoolean( key, false );
-
-        key = context.getString( R.string.key_hide_values );
-        hideTileValues = sp.getBoolean( key, false );
-
-        key = context.getString( R.string.key_skip_confirm );
-        skipCommitConfirm = sp.getBoolean( key, false );
-
-        key = context.getString( R.string.key_color_tiles );
-        showColors = sp.getBoolean( key, true );
+        showBoardArrow = getBoolean( context, sp, R.string.key_show_arrow, 
+                                     true );
+        showRobotScores = getBoolean( context, sp, R.string.key_explain_robot, 
+                                      false );
+        hideTileValues = getBoolean( context, sp, R.string.key_hide_values, 
+                                     false );
+        skipCommitConfirm = getBoolean( context, sp, 
+                                        R.string.key_skip_confirm, false );
+        showColors = getBoolean( context, sp, R.string.key_color_tiles, true );
+        sortNewTiles = getBoolean( context, sp, R.string.key_sort_tiles, true );
 
         int ids[] = { R.string.key_player0,
                       R.string.key_player1,
@@ -110,6 +107,13 @@ public class CommonPrefs {
         }
 
         return this;
+    }
+
+    private boolean getBoolean( Context context, SharedPreferences sp, 
+                                int id, boolean dflt )
+    {
+        String key = context.getString( id );
+        return sp.getBoolean( key, dflt );
     }
 
     private int prefToColor( Context context, SharedPreferences sp, int id )
