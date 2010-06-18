@@ -209,6 +209,7 @@ usage( char* appName, char* msg )
 	     "\t [-S]             # slow robot down \n"
 	     "\t [-i]             # print game history when game over\n"
 	     "\t [-U]             # call 'Undo' after game ends\n"
+	     "\t [-O]             # sort the tray each time tiles are added\n"
 #ifdef XWFEATURE_RELAY
 	     "\t [-H]             # Don't send heartbeats to relay\n"
 #endif
@@ -809,7 +810,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "0b:cod:e:Ff:iKkLlmNn:Pr:Ssq:t:Uw:v"
+                      "0b:cod:e:Ff:iKkLlmNn:OPr:Ssq:t:Uw:v"
 #ifdef XWFEATURE_SLOW_ROBOT
                       "z:"
 #endif
@@ -922,6 +923,9 @@ main( int argc, char** argv )
             mainParams.gi.players[index].isLocal = XP_TRUE;
             mainParams.gi.players[index].name = 
                 copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
+            break;
+        case 'O':
+            mainParams.sortNewTiles = XP_TRUE;
             break;
         case 's':
             isServer = XP_TRUE;

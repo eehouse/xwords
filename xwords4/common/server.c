@@ -91,6 +91,7 @@ typedef struct ServerNonvolatiles {
     XP_S8 currentTurn; /* invalid when game is over */
     XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
+    XP_Bool sortNewTiles;
 
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16 robotThinkMin, robotThinkMax;   /* not saved (yet) */
@@ -438,6 +439,7 @@ void
 server_prefsChanged( ServerCtxt* server, CommonPrefs* cp )
 {
     server->nv.showRobotScores = cp->showRobotScores;
+    server->nv.sortNewTiles = cp->sortNewTiles;
 #ifdef XWFEATURE_SLOW_ROBOT
     server->nv.robotThinkMin = cp->robotThinkMin;
     server->nv.robotThinkMax = cp->robotThinkMax;
@@ -1019,6 +1021,15 @@ clearLocalRobots( ServerCtxt* server )
 } /* clearLocalRobots */
 #endif
 
+static void
+sortTilesIf( ServerCtxt* server, XP_S16 turn )
+{
+    ModelCtxt* model = server->vol.model;
+    if ( server->nv.sortNewTiles ) {
+        model_sortTiles( model, turn );
+    }
+}
+
 /* Called in response to message from server listing all the names of
  * players in the game (in server-assigned order) and their initial
  * tray contents.
@@ -1117,7 +1128,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
                later. */
             pool_removeTiles( pool, &tiles );
 
-            model_sortTiles( model, i );
+            sortTilesIf( server, i );
         }
 
         SETSTATE( server, XWSTATE_INTURN );
@@ -1582,7 +1593,7 @@ assignTilesToAll( ServerCtxt* server )
         TrayTileSet newTiles;
         fetchTiles( server, i, numAssigned, NULL, &newTiles );
         model_assignPlayerTiles( model, i, &newTiles );
-        model_sortTiles( model, i );
+        sortTilesIf( server, i );
     }
 
 } /* assignTilesToAll */
@@ -2031,7 +2042,7 @@ server_commitMove( ServerCtxt* server )
 #endif
 
     model_commitTurn( model, turn, &newTiles );
-    model_sortTiles( model, turn );
+    sortTilesIf( server, turn );
 
     if ( !isLegalMove && !isClient ) {
         badWordMoveUndoAndTellUser( server, &server->illegalWordInfo );
