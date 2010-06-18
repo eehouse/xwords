@@ -144,8 +144,6 @@ public class XwJNI {
     public static native boolean board_beginTrade( int gamePtr );
 
     public static native String board_formatRemainingTiles( int gamePtr );
-    public static native boolean board_prefsChanged( int gamePtr, 
-                                                     CommonPrefs cp );
     public static native int board_getFocusOwner( int gamePtr );
     public static native boolean board_focusChanged( int gamePtr, int typ );
 
@@ -186,6 +184,10 @@ public class XwJNI {
     public static native String server_writeFinalScores( int gamePtr );
     public static native void server_initClientConnection( int gamePtr );
     public static native void server_endGame( int gamePtr );
+
+    // hybrid to save work
+    public static native boolean board_server_prefsChanged( int gamePtr, 
+                                                            CommonPrefs cp );
 
     // Comms
     public static native void comms_start( int gamePtr );

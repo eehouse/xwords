@@ -159,6 +159,7 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
     cp->hideTileValues = getBool( env, j_cp, "hideTileValues" );
     cp->skipCommitConfirm = getBool( env, j_cp, "skipCommitConfirm" );
     cp->showColors = getBool( env, j_cp, "showColors" );
+    cp->sortNewTiles = getBool( env, j_cp, "sortNewTiles" );
 }
 
 static XWStreamCtxt*
@@ -983,7 +984,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
 }
 
 JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1prefsChanged
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1server_1prefsChanged
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jcp )
 {
     jboolean result;
@@ -993,6 +994,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1prefsChanged
     loadCommonPrefs( env, &cp, jcp );
 
     result = board_prefsChanged( state->game.board, &cp );
+    server_prefsChanged( state->game.server, &cp );
 
     XWJNI_END();
     return result;
