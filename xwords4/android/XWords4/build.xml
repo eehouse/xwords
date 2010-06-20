@@ -4,6 +4,7 @@
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked in in Version
          Control Systems. -->
+    <exec dir=".." executable="./scripts/setup_local_props.sh" output="ant_out.txt" />
     <property file="local.properties" />
 
     <!-- The build.properties file can be created by you and is never touched
@@ -49,8 +50,6 @@
         classpathref="android.antlibs" />
 
     <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt" />
-
-
 
     <!-- Execute the Android Setup task that will setup some properties specific to the target,
          and import the build rules files.

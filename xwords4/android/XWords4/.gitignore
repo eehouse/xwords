@@ -1,5 +1,6 @@
-XWords4.apk
+*.apk
 ant_out.txt
+local.properties
 bin
 gen
 libs
