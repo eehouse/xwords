@@ -1,7 +1,5 @@
 #!/bin/sh
 
-echo "i am here"
-
 cd $(dirname $0)
 cd ../XWords4
 
