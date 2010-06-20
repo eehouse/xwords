@@ -1232,7 +1232,8 @@ curses_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc),
 } /* curses_util_askPassword */
 
 static void
-curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 maxOffset,
+curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), 
+                           XP_U16 XP_UNUSED_DBG(maxOffset),
                            XP_U16 oldOffset, XP_U16 newOffset )
 {
     if ( oldOffset != newOffset ) {

@@ -132,7 +132,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case QUERY_REQUEST_BLK:
         case QUERY_INFORM_BLK:
             ab = new AlertDialog.Builder( this )
-                .setTitle( R.string.query_title )
+                .setTitle( m_dlgTitle )
                 .setMessage( m_dlgBytes );
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dialog, 
@@ -895,6 +895,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case UtilCtxt.QUERY_ROBOT_MOVE:
         case UtilCtxt.QUERY_ROBOT_TRADE:
             m_dlgBytes = query;
+            m_dlgTitle = R.string.info_title;
             waitBlockingDialog( QUERY_INFORM_BLK, 0 );
             result = true;
             break;
@@ -907,6 +908,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             } else {
                 m_dlgBytes = query;
             }
+            m_dlgTitle = R.string.query_title;
             result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
             break;
         default:

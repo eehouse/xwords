@@ -2053,6 +2053,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.hideTileValues = params->hideValues;
     globals.cp.skipCommitConfirm = params->skipCommitConfirm;
+    globals.cp.sortNewTiles = params->sortNewTiles;
     globals.cp.showColors = params->showColors;
     globals.cp.showRobotScores = params->showRobotScores;
 #ifdef XWFEATURE_SLOW_ROBOT

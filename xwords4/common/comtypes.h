@@ -130,6 +130,7 @@ typedef struct CommonPrefs {
     XP_Bool         showRobotScores; /* applies to all games */
     XP_Bool         hideTileValues; 
     XP_Bool         skipCommitConfirm; /* applies to all games */
+    XP_Bool         sortNewTiles;    /* applies to all games */
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16          robotThinkMin, robotThinkMax;
 #endif

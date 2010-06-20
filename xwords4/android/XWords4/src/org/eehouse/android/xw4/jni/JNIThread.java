@@ -323,8 +323,8 @@ public class JNIThread extends Thread {
                 // e.g. colors, aren't known by common code so
                 // board_prefsChanged's return value isn't enough.
                 XwJNI.board_invalAll( m_jniGamePtr );
-                XwJNI.board_prefsChanged( m_jniGamePtr, 
-                                          CommonPrefs.get(m_context) );
+                XwJNI.board_server_prefsChanged( m_jniGamePtr, 
+                                                 CommonPrefs.get( m_context ) );
                 draw = true;
                 break;
 
