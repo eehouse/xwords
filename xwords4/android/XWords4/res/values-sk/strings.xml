@@ -150,8 +150,6 @@
     <string name="button_add_player">Pridať hráča</string>
     <string name="button_juggle_players">Prehodiť hráča</string>
 
-    <string name="game_config_juggle">Prehodiť hráča</string>
-
     <string name="list_item_up">O jeden vyššie</string>
     <string name="list_item_down">O jeden nižšie</string>
     <string name="dicts_item_select">Nastaviť ako východzí</string>

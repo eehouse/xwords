@@ -151,8 +151,6 @@
     <string name="button_add_player">Přidat hráče</string>
     <string name="button_juggle_players">Přehodit hráče</string>
 
-    <string name="game_config_juggle">Přehodit hráče</string>
-
     <string name="list_item_up">O jeden výš</string>
     <string name="list_item_down">O jeden níž</string>
     <string name="dicts_item_select">Nastavit jako výchozí</string>

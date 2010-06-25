@@ -152,8 +152,6 @@
     <string name="button_add_player">Afegeix un jugador</string>
     <string name="button_juggle_players">Remena els jugadors</string>
 
-    <string name="game_config_juggle">Remena les posicions de joc</string>
-
     <string name="list_item_up">Amunt</string>
     <string name="list_item_down">Avall</string>
     <string name="dicts_item_select">Estableix com a predeterminat</string>
