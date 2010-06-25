@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.database.DataSetObserver;
 import java.io.FileInputStream;
+import java.util.HashMap;
 import android.view.LayoutInflater;
 import junit.framework.Assert;
 
@@ -34,9 +35,10 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameListAdapter extends XWListAdapter {
-    Context m_context;
-    LayoutInflater m_factory;
-    int m_layoutId;
+    private Context m_context;
+    private LayoutInflater m_factory;
+    private int m_layoutId;
+    private HashMap<String,View> m_viewsCache;
 
     public GameListAdapter( Context context ) {
         super( context, GameUtils.gamesList(context).length );
@@ -50,6 +52,8 @@ public class GameListAdapter extends XWListAdapter {
 
         m_layoutId = sdk_int >= android.os.Build.VERSION_CODES.DONUT
             ? R.layout.game_list_item : R.layout.game_list_item_onefive;
+
+        m_viewsCache = new HashMap<String,View>();
     }
     
     public int getCount() {
@@ -58,34 +62,39 @@ public class GameListAdapter extends XWListAdapter {
     
     public Object getItem( int position ) 
     {
-        final View layout = m_factory.inflate( m_layoutId, null );
-
         String path = GameUtils.gamesList(m_context)[position];
-        byte[] stream = open( path );
-        if ( null != stream ) {
-            CurGameInfo gi = new CurGameInfo( m_context );
-            XwJNI.gi_from_stream( gi, stream );
+        View layout = m_viewsCache.get( path );
 
-            GameSummary summary = DBUtils.getSummary( m_context, path );
+        if ( null == layout ) {
+            Utils.logf( "creating new list elem for %s", path );
+            layout = m_factory.inflate( m_layoutId, null );
+            byte[] stream = open( path );
+            if ( null != stream ) {
+                CurGameInfo gi = new CurGameInfo( m_context );
+                XwJNI.gi_from_stream( gi, stream );
 
-            TextView view = (TextView)layout.findViewById( R.id.players );
-            String gameName = GameUtils.gameName( m_context, path );
-            view.setText( String.format( "%s: %s", gameName,
-                                         gi.summarizePlayers( m_context, 
-                                                              summary ) ) );
+                GameSummary summary = DBUtils.getSummary( m_context, path );
 
-            view = (TextView)layout.findViewById( R.id.state );
-            view.setText( gi.summarizeState( m_context, summary ) );
-            view = (TextView)layout.findViewById( R.id.dict );
-            view.setText( gi.summarizeDict( m_context ) );
+                TextView view = (TextView)layout.findViewById( R.id.players );
+                String gameName = GameUtils.gameName( m_context, path );
+                view.setText( String.format( "%s: %s", gameName,
+                                             gi.summarizePlayers( m_context, 
+                                                                  summary ) ) );
 
-            view = (TextView)layout.findViewById( R.id.role );
-            String roleSummary = gi.summarizeRole( m_context, summary );
-            if ( null != roleSummary ) {
-                view.setText( roleSummary );
-            } else {
-                view.setVisibility( View.GONE );
+                view = (TextView)layout.findViewById( R.id.state );
+                view.setText( gi.summarizeState( m_context, summary ) );
+                view = (TextView)layout.findViewById( R.id.dict );
+                view.setText( gi.summarizeDict( m_context ) );
+
+                view = (TextView)layout.findViewById( R.id.role );
+                String roleSummary = gi.summarizeRole( m_context, summary );
+                if ( null != roleSummary ) {
+                    view.setText( roleSummary );
+                } else {
+                    view.setVisibility( View.GONE );
+                }
             }
+            m_viewsCache.put( path, layout );
         }
         return layout;
     }
@@ -109,5 +118,11 @@ public class GameListAdapter extends XWListAdapter {
             Utils.logf( "got IOException: " + ex.toString() );
         }
         return stream;
+    }
+
+
+    public void inval( String key ) 
+    {
+        m_viewsCache.remove( key );
     }
 }

@@ -43,10 +43,11 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends ListActivity implements View.OnClickListener {
-    private GameListAdapter m_adapter;
-
     private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
     private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
+
+    private GameListAdapter m_adapter;
+    private String m_invalPath = null;
     private String m_missingDict;
 
     @Override
@@ -126,7 +127,9 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     public void onWindowFocusChanged( boolean hasFocus )
     {
         super.onWindowFocusChanged( hasFocus );
-        if ( hasFocus ) {
+        if ( hasFocus && null != m_invalPath ) {
+            m_adapter.inval( m_invalPath );
+            m_invalPath = null;
             onContentChanged();
         }
     }
@@ -144,6 +147,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     {
         boolean handled = true;
         byte[] stream;
+        String invalPath = null;
 
         AdapterView.AdapterContextMenuInfo info;
         try {
@@ -158,6 +162,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
         if ( R.id.list_item_delete == id ) {
             GameUtils.deleteGame( this, path );
+            invalPath = path;
         } else {
             String[] missingName = new String[1];
             boolean hasDict = GameUtils.gameDictHere( this, path, missingName );
@@ -168,16 +173,16 @@ public class GamesList extends ListActivity implements View.OnClickListener {
                 switch ( id ) {
                 case R.id.list_item_config:
                     doConfig( path );
-                    break;
-                case R.id.list_item_delete:
-                    GameUtils.deleteGame( this, path );
+                    invalPath = path;
                     break;
 
                 case R.id.list_item_reset:
                     GameUtils.resetGame( this, path, path );
+                    invalPath = path;
                     break;
                 case R.id.list_item_new_from:
                     String newName = GameUtils.resetGame( this, path );  
+                    invalPath = newName;
                     break;
 
                 case R.id.list_item_copy:
@@ -200,6 +205,10 @@ public class GamesList extends ListActivity implements View.OnClickListener {
                     break;
                 }
             }
+        }
+
+        if ( null != invalPath ) {
+            m_adapter.inval( invalPath );
         }
 
         if ( handled ) {
@@ -272,6 +281,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             Intent intent = new Intent( Intent.ACTION_EDIT, uri,
                                         this, BoardActivity.class );
             startActivity( intent );
+            m_invalPath = path;
         }
     }
 
