@@ -18,4 +18,21 @@
      android:longClickable="true"
      android:drawSelectorOnTop="false"/>
 
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent" 
+                android:layout_height="wrap_content"
+                >
+
+    <Button style="@style/toolbar_button"
+            android:text="1"
+            />
+    <Button style="@style/toolbar_button"
+            android:text="2"
+            />
+    <Button style="@style/toolbar_button"
+            android:text="3"
+            />
+
+  </LinearLayout>
+
 </LinearLayout>

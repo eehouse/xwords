@@ -10,7 +10,7 @@ local_C_INCLUDES+= \
 
 local_LDLIBS += -llog
 
-# local_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING
+local_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING
 local_DEFINES += \
 	$(local_DEBUG) \
 	-DXWFEATURE_RELAY \
