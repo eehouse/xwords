@@ -66,6 +66,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private TimerRunnable[] m_timers;
     private String m_path;
     private int m_currentOrient;
+    private Toolbar m_toolbar;
 
     private String m_dlgBytes = null;
     private EditText m_passwdEdit = null;
@@ -346,6 +347,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
     public void onConfigurationChanged( Configuration newConfig )
     {
         m_currentOrient = newConfig.orientation;
+        if ( null != m_toolbar ) {
+            boolean landscape = 
+                m_currentOrient == Configuration.ORIENTATION_LANDSCAPE;
+            m_toolbar.orientChanged( landscape );
+        }
         super.onConfigurationChanged( newConfig );
     }
 
@@ -694,6 +700,15 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 m_jniThread.handle( JNICmd.CMD_START );
 
                 setTitle( GameUtils.gameName( this, m_path ) );
+                m_toolbar = 
+                    new Toolbar( m_jniThread, 
+                                 findViewById( R.id.toolbar_horizontal ),
+                                 findViewById( R.id.toolbar_vertical ) );
+
+                boolean isLandscape = 
+                    getResources().getConfiguration().orientation
+                    == Configuration.ORIENTATION_LANDSCAPE;
+                m_toolbar.orientChanged( isLandscape );
             }
         }
     } // loadGame
