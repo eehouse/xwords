@@ -72,8 +72,6 @@
 # define MAX_BOARD_ZOOM 4
 #endif
 
-#define BOARD_ZOOMBY 2
-
 #ifdef CPLUS
 extern "C" {
 #endif
@@ -549,19 +547,12 @@ canZoomIn( const BoardCtxt* board, XP_S16 newCount )
 }
 
 XP_Bool
-board_zoom( BoardCtxt* board, XP_S16 zoomDir, XP_Bool* canInOut )
+board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut )
 {
-    XP_S16 zoomBy = 0;
     XP_Bool changed;
     XP_S16 zoomCount = board->zoomCount;
     ScrollData* hsd = &board->sd[SCROLL_H];
     ScrollData* vsd = &board->sd[SCROLL_V];
-
-    if ( zoomDir > 0 ) {
-        zoomBy = BOARD_ZOOMBY;
-    } else if ( zoomDir < 0 ) {
-        zoomBy = -BOARD_ZOOMBY;
-    }
 
     XP_U16 maxCount = model_numCols( board->model ) - MAX_BOARD_ZOOM;
     if ( board->boardBounds.width > board->boardBounds.height ) {
@@ -580,8 +571,11 @@ board_zoom( BoardCtxt* board, XP_S16 zoomDir, XP_Bool* canInOut )
 
     /* If we're zooming in, make sure we'll stay inside the limit */
     if ( changed && zoomBy > 0 ) {
-        changed = canZoomIn( board, zoomCount );
+        while ( zoomCount > 0 && !canZoomIn( board, zoomCount ) ) {
+            --zoomCount;
+        }
     }
+    changed = zoomCount != board->zoomCount;
 
     if ( changed ) {
         /* Try to distribute the zoom */
@@ -1686,8 +1680,8 @@ figureHScale( BoardCtxt* board )
     ScrollData* hsd;
 
     while ( !canZoomIn( board, board->zoomCount ) ) {
-        XP_ASSERT( board->zoomCount >= BOARD_ZOOMBY );
-        board->zoomCount -= BOARD_ZOOMBY;
+        XP_ASSERT( board->zoomCount >= 1 );
+        --board->zoomCount;
     }
 
     nCols = model_numCols( board->model );
