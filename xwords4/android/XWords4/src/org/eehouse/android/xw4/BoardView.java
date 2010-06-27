@@ -35,7 +35,6 @@ import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
 import android.widget.ZoomButtonsController;
 import android.os.Handler;
-import java.util.HashMap;
 import java.nio.IntBuffer;
 
 import junit.framework.Assert;
