@@ -370,7 +370,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 case KeyEvent.KEYCODE_VOLUME_UP:
                     if ( m_volKeysZoom ) {
                         int zoomBy = KeyEvent.KEYCODE_VOLUME_DOWN == keyCode
-                            ? -1 : 1;
+                            ? -2 : 2;
                         handled = doZoom( zoomBy );
                     }
                     break;
@@ -757,6 +757,17 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 }
             };
         m_toolbar.addButton( this, "<V>",  listener );
+
+        listener = new View.OnClickListener() {
+                private boolean m_goIn = true;
+                @Override
+                public void onClick( View view ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
+                                        m_goIn? 8 : -8 );
+                    m_goIn = !m_goIn;
+                }
+            };
+        m_toolbar.addButton( this, "<Z>",  listener );
     }
 
     private DialogInterface.OnDismissListener makeODLforBlocking()
