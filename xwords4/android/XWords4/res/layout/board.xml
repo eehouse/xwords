@@ -26,15 +26,6 @@
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   >
-      <Button style="@style/toolbar_button"
-              android:text="1"
-              />
-      <Button style="@style/toolbar_button"
-              android:text="2"
-              />
-      <Button style="@style/toolbar_button"
-              android:text="3"
-              />
     </LinearLayout>
   </LinearLayout>
 
@@ -43,15 +34,6 @@
                 android:layout_width="wrap_content" 
                 android:layout_height="fill_parent"
                 >
-    <Button style="@style/toolbar_button"
-            android:text="4"
-            />
-    <Button style="@style/toolbar_button"
-            android:text="5"
-            />
-    <Button style="@style/toolbar_button"
-            android:text="6"
-            />
   </LinearLayout>
 
 </LinearLayout>

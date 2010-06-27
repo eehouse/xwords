@@ -21,15 +21,22 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Context;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.Button;
+import android.view.LayoutInflater;
+import java.util.HashMap;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
 public class Toolbar {
 
-    private View m_horLayout;
-    private View m_vertLayout;
+    private LinearLayout m_horLayout;
+    private LinearLayout m_vertLayout;
     private JNIThread m_jniThread;
+    private HashMap<String,Button> m_buttons;
 
     private enum ORIENTATION { ORIENT_UNKNOWN,
             ORIENT_PORTRAIT,
@@ -41,8 +48,10 @@ public class Toolbar {
                     View vertLayout )
     {
         m_jniThread = jniThread;
-        m_horLayout = horLayout;
-        m_vertLayout = vertLayout;
+        m_horLayout = (LinearLayout)horLayout;
+        m_vertLayout = (LinearLayout)vertLayout;
+
+        m_buttons = new HashMap<String,Button>();
     }
 
     public void orientChanged( boolean landscape )
@@ -52,15 +61,48 @@ public class Toolbar {
         } else if ( !landscape && m_curOrient == ORIENTATION.ORIENT_PORTRAIT ) {
             // do nothing
         } else {
+            LinearLayout prevLayout, nextLayout;
             if ( landscape ) {
                 m_curOrient = ORIENTATION.ORIENT_LANDSCAPE;
-                m_horLayout.setVisibility( View.GONE );
-                m_vertLayout.setVisibility( View.VISIBLE );
+                prevLayout = m_horLayout;
+                nextLayout = m_vertLayout;
             } else {
                 m_curOrient = ORIENTATION.ORIENT_PORTRAIT;
-                m_horLayout.setVisibility( View.VISIBLE );
-                m_vertLayout.setVisibility( View.GONE );
+                prevLayout = m_vertLayout;
+                nextLayout = m_horLayout;
             }
+
+            prevLayout.setVisibility( View.GONE );
+            
+            int nChildren = prevLayout.getChildCount();
+            for ( int ii = 0; ii < nChildren; ++ii ) {
+                Button button = (Button)prevLayout.getChildAt(0);
+                prevLayout.removeView( button );
+                nextLayout.addView( button, ii );
+            }
+
+            nextLayout.setVisibility( View.VISIBLE );
+        }
+    }
+
+    public void addButton( Context context, String label, 
+                           View.OnClickListener listener )
+    {
+        Button button = m_buttons.get( label );
+        if ( null == button ) {
+            LayoutInflater factory = LayoutInflater.from( context );
+            button = (Button)factory.inflate( R.layout.toolbar_button, null );
+            button.setOnClickListener( listener );
+            button.setText( label );
+
+            m_buttons.put( label, button );
+        }
+
+        Assert.assertTrue( ORIENTATION.ORIENT_UNKNOWN != m_curOrient );
+        LinearLayout layout = ORIENTATION.ORIENT_PORTRAIT == m_curOrient
+            ? m_horLayout : m_vertLayout;
+        if ( -1 == layout.indexOfChild( button ) ) {
+            layout.addView( button );
         }
     }
 

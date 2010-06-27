@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
@@ -709,6 +710,15 @@ public class BoardActivity extends Activity implements UtilCtxt {
                     getResources().getConfiguration().orientation
                     == Configuration.ORIENTATION_LANDSCAPE;
                 m_toolbar.orientChanged( isLandscape );
+
+                View.OnClickListener listener = 
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick( View view ) {
+                            m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
+                        }
+                    };
+                m_toolbar.addButton( this, "?",  listener );
             }
         }
     } // loadGame
