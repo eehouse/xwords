@@ -408,9 +408,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case R.id.board_menu_done:
             cmd = JNIThread.JNICmd.CMD_COMMIT;
             break;
-        case R.id.board_menu_juggle:
-            cmd = JNIThread.JNICmd.CMD_JUGGLE;
-            break;
+        // case R.id.board_menu_juggle:
+        //     cmd = JNIThread.JNICmd.CMD_JUGGLE;
+        //     break;
         case R.id.board_menu_flip:
             cmd = JNIThread.JNICmd.CMD_FLIP;
             break;
@@ -432,9 +432,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case R.id.board_menu_hint_next:
             cmd = JNIThread.JNICmd.CMD_NEXT_HINT;
             break;
-        case R.id.board_menu_values:
-            cmd = JNIThread.JNICmd.CMD_VALUES;
-            break;
+        // case R.id.board_menu_values:
+        //     cmd = JNIThread.JNICmd.CMD_VALUES;
+        //     break;
 
         case R.id.board_menu_game_counts:
             m_jniThread.handle( JNIThread.JNICmd.CMD_COUNTS_VALUES,
@@ -710,18 +710,54 @@ public class BoardActivity extends Activity implements UtilCtxt {
                     getResources().getConfiguration().orientation
                     == Configuration.ORIENTATION_LANDSCAPE;
                 m_toolbar.orientChanged( isLandscape );
-
-                View.OnClickListener listener = 
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick( View view ) {
-                            m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
-                        }
-                    };
-                m_toolbar.addButton( this, "?",  listener );
+                populateToolbar();
             }
         }
     } // loadGame
+
+    private void populateToolbar()
+    {
+        View.OnClickListener listener = 
+            new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
+                }
+            };
+        m_toolbar.addButton( this, "<?>",  listener );
+
+        listener = new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_JUGGLE );
+                }
+            };
+        m_toolbar.addButton( this, "<S>",  listener );
+
+        listener = new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_COMMIT );
+                }
+            };
+        m_toolbar.addButton( this, "<D>",  listener );
+
+        listener = new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_FLIP );
+                }
+            };
+        m_toolbar.addButton( this, "<F>",  listener );
+
+        listener = new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_VALUES );
+                }
+            };
+        m_toolbar.addButton( this, "<V>",  listener );
+    }
 
     private DialogInterface.OnDismissListener makeODLforBlocking()
     {
