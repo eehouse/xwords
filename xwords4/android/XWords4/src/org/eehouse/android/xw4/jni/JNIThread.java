@@ -391,7 +391,6 @@ public class JNIThread extends Thread {
                 draw = XwJNI.board_zoom( m_jniGamePtr, 
                                          ((Integer)args[0]).intValue(),
                                          barr );
-                m_drawer.zoomChanged( barr );
                 break;
 
             case CMD_VALUES:

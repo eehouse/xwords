@@ -309,11 +309,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    // Get rid of this if not wanted for disabling zoom toolbar button
-    public void zoomChanged( final boolean[] canZoom )
-    {
-    }
-
     // DrawCtxt interface implementation
     public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
                                int remCount, int dfs )
