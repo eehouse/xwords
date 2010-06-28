@@ -4,6 +4,9 @@
               android:orientation="horizontal"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
+              android:paddingLeft="3dp"
+              android:paddingRight="3dp"
+              android:paddingTop="3dp"
               >
  
   <LinearLayout android:orientation="vertical"
