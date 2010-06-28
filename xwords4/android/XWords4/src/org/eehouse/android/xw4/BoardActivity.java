@@ -251,7 +251,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
         m_view = (BoardView)findViewById( R.id.board_view );
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
-        m_view.setUseZoomControl( !m_volKeysZoom );
 
         Intent intent = getIntent();
         Uri uri = intent.getData();
@@ -341,7 +340,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
                 }
             }
-            m_view.setUseZoomControl( !m_volKeysZoom );
         }
     }
 
