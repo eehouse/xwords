@@ -26,14 +26,38 @@
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   >
+   	  <ImageButton android:id="@+id/hint_button_horizontal"
+                   style="@style/toolbar_button"
+    	           android:src="@android:drawable/sym_action_chat"
+                   />
+   	  <ImageButton android:id="@+id/shuffle_button_horizontal"
+                   style="@style/toolbar_button"
+    	           android:src="@android:drawable/sym_action_email"
+                   />
+   	<ImageButton android:id="@+id/flip_button_horizontal"
+                 style="@style/toolbar_button"
+    	         android:src="@drawable/flip"
+                 />
     </LinearLayout>
   </LinearLayout>
 
   <LinearLayout android:id="@+id/toolbar_vertical"
                 android:orientation="vertical"
-                android:layout_width="wrap_content" 
+                android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 >
+   	<ImageButton android:id="@+id/hint_button_vertical"
+                 style="@style/toolbar_button"
+    	         android:src="@android:drawable/sym_action_chat"
+                 />
+   	<ImageButton android:id="@+id/shuffle_button_vertical"
+                 style="@style/toolbar_button"
+    	         android:src="@android:drawable/sym_action_email"
+                 />
+   	<ImageButton android:id="@+id/flip_button_vertical"
+                 style="@style/toolbar_button"
+    	         android:src="@drawable/flip"
+                 />
   </LinearLayout>
 
 </LinearLayout>
