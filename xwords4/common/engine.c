@@ -31,7 +31,9 @@ extern "C" {
 
 typedef XP_U8 Engine_rack[MAX_UNIQUE_TILES+1];
 
-#define NUM_SAVED_MOVES 10
+#ifndef NUM_SAVED_ENGINE_MOVES
+# define NUM_SAVED_ENGINE_MOVES 10
+#endif
 
 typedef struct BlankTuple {
     short col;
@@ -49,7 +51,7 @@ typedef struct PossibleMove {
 } PossibleMove;
 
 typedef struct MoveIterationData {
-    PossibleMove savedMoves[NUM_SAVED_MOVES];
+    PossibleMove savedMoves[NUM_SAVED_ENGINE_MOVES];
     XP_U16 lowestSavedScore;
     PossibleMove lastSeenMove;
     XP_U16 leftInMoveCache;
@@ -276,7 +278,7 @@ cmpMoves( PossibleMove* m1, PossibleMove* m2 )
 static XP_Bool
 chooseMove( EngineCtxt* engine, PossibleMove** move ) 
 {
-    XP_U16 i;
+    XP_U16 ii;
     PossibleMove* chosen;
 
     /* First, sort 'em.  Put the higher-scoring moves at the top where they'll
@@ -288,27 +290,27 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
     } else {
         while ( engine->miData.leftInMoveCache == 0 ) {
             XP_Bool done = XP_TRUE;
-            for ( i = 0; i < NUM_SAVED_MOVES-1; ++i ) {
-                if ( CMPMOVES( &engine->miData.savedMoves[i],
-                               &engine->miData.savedMoves[i+1]) > 0 ) {
+            for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES-1; ++ii ) {
+                if ( CMPMOVES( &engine->miData.savedMoves[ii],
+                               &engine->miData.savedMoves[ii+1]) > 0 ) {
                     PossibleMove tmp;
-                    XP_MEMCPY( &tmp, &engine->miData.savedMoves[i],
+                    XP_MEMCPY( &tmp, &engine->miData.savedMoves[ii],
                                sizeof(tmp) );
-                    XP_MEMCPY( &engine->miData.savedMoves[i],
-                               &engine->miData.savedMoves[i+1],
-                               sizeof(engine->miData.savedMoves[i]) );
-                    XP_MEMCPY( &engine->miData.savedMoves[i+1], &tmp,
-                               sizeof(engine->miData.savedMoves[i+1]) );
+                    XP_MEMCPY( &engine->miData.savedMoves[ii],
+                               &engine->miData.savedMoves[ii+1],
+                               sizeof(engine->miData.savedMoves[ii]) );
+                    XP_MEMCPY( &engine->miData.savedMoves[ii+1], &tmp,
+                               sizeof(engine->miData.savedMoves[ii+1]) );
                     done = XP_FALSE;
                 }
             }
             if ( done ) {
-                engine->miData.leftInMoveCache = NUM_SAVED_MOVES;
+                engine->miData.leftInMoveCache = NUM_SAVED_ENGINE_MOVES;
             }
 #if 0
             XP_DEBUGF( "sorted moves; scores are: " );
-            for ( i = 0; i < NUM_SAVED_MOVES; ++i ) {
-                XP_DEBUGF( "%d; ", engine->miData.savedMoves[i].score );
+            for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES; ++ii ) {
+                XP_DEBUGF( "%d; ", engine->miData.savedMoves[ii].score );
             }
             XP_DEBUGF( "\n" );
 #endif
@@ -1106,9 +1108,10 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
         if ( CMPMOVES( posmove, &engine->miData.lastSeenMove ) >= 0 ) {
             lowest = -1;
         } else {
-            XP_S16 i;
+            XP_S16 ii;
             /* terminate i at 1 because lowest starts at 0 */
-            for ( lowest = NUM_SAVED_MOVES-1, i = lowest - 1; i >= 0; --i ) { 
+            for ( lowest = NUM_SAVED_ENGINE_MOVES-1, ii = lowest - 1; 
+                  ii >= 0; --ii ) { 
                 /* Find the lowest value move and overwrite it.  Note that
                    there might not be one, as all may have the same or higher
                    scores and those that have the same score may compare
@@ -1125,8 +1128,8 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
                 /*        <= posmove->score) ); */
 
                 if ( CMPMOVES( &engine->miData.savedMoves[lowest], 
-                               &engine->miData.savedMoves[i] ) > 0 ) {
-                    lowest = i;
+                               &engine->miData.savedMoves[ii] ) > 0 ) {
+                    lowest = ii;
                 }
             }
         }
@@ -1157,14 +1160,15 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
          || (score < engine->miData.lowestSavedScore) ) {
         /* do nothing */
     } else {
-        XP_S16 i;
+        XP_S16 ii;
         /* Look at each saved score, and return true as soon as one's found
            with a lower or equal score to this.  <eeh> As an optimization,
            consider remembering what the lowest score is *once there are
-           NUM_SAVED_MOVES moves in here* and doing a quick test on that. Or
-           better, keeping the list in sorted order. */
-        for ( i = engine->isRobot? 0: NUM_SAVED_MOVES-1; i >= 0; --i ) {
-            if ( score >= engine->miData.savedMoves[i].score ) {
+           NUM_SAVED_ENGINE_MOVES moves in here* and doing a quick test on
+           that. Or better, keeping the list in sorted order. */
+        for ( ii = engine->isRobot? 0: NUM_SAVED_ENGINE_MOVES - 1;
+              ii >= 0; --ii ) {
+            if ( score >= engine->miData.savedMoves[ii].score ) {
                 qualifies = XP_TRUE;
                 break;
             }
