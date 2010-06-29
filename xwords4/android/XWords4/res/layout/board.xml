@@ -31,15 +31,19 @@
                   >
    	  <ImageButton android:id="@+id/hint_button_horizontal"
                    style="@style/toolbar_button"
-    	           android:src="@android:drawable/sym_action_chat"
+    	           android:src="@drawable/next_hint"
                    />
    	  <ImageButton android:id="@+id/shuffle_button_horizontal"
                    style="@style/toolbar_button"
-    	           android:src="@android:drawable/sym_action_email"
+    	           android:src="@drawable/shuffle"
                    />
    	<ImageButton android:id="@+id/flip_button_horizontal"
                  style="@style/toolbar_button"
     	         android:src="@drawable/flip"
+                 />
+   	<ImageButton android:id="@+id/zoom_button_horizontal"
+                 style="@style/toolbar_button"
+    	         android:src="@drawable/zoom"
                  />
     </LinearLayout>
   </LinearLayout>
@@ -51,15 +55,19 @@
                 >
    	<ImageButton android:id="@+id/hint_button_vertical"
                  style="@style/toolbar_button"
-    	         android:src="@android:drawable/sym_action_chat"
+    	         android:src="@drawable/next_hint"
                  />
    	<ImageButton android:id="@+id/shuffle_button_vertical"
                  style="@style/toolbar_button"
-    	         android:src="@android:drawable/sym_action_email"
+    	         android:src="@drawable/shuffle"
                  />
    	<ImageButton android:id="@+id/flip_button_vertical"
                  style="@style/toolbar_button"
     	         android:src="@drawable/flip"
+                 />
+   	<ImageButton android:id="@+id/zoom_button_vertical"
+                 style="@style/toolbar_button"
+    	         android:src="@drawable/zoom"
                  />
   </LinearLayout>
 
