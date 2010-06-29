@@ -29,7 +29,11 @@
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   >
-   	  <ImageButton android:id="@+id/hint_button_horizontal"
+   	  <ImageButton android:id="@+id/prevhint_button_horizontal"
+                   style="@style/toolbar_button"
+    	           android:src="@drawable/prev_hint"
+                   />
+   	  <ImageButton android:id="@+id/nexthint_button_horizontal"
                    style="@style/toolbar_button"
     	           android:src="@drawable/next_hint"
                    />
@@ -53,7 +57,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 >
-   	<ImageButton android:id="@+id/hint_button_vertical"
+   	<ImageButton android:id="@+id/prevhint_button_vertical"
+                 style="@style/toolbar_button"
+    	         android:src="@drawable/prev_hint"
+                 />
+   	<ImageButton android:id="@+id/nexthint_button_vertical"
                  style="@style/toolbar_button"
     	         android:src="@drawable/next_hint"
                  />

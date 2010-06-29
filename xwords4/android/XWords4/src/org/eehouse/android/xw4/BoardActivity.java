@@ -28,6 +28,7 @@ import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Window;
 import android.os.Handler;
 import android.os.Message;
 import android.content.Intent;
@@ -241,6 +242,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         Utils.logf( "BoardActivity::onCreate()" );
         super.onCreate( savedInstanceState );
+
+        requestWindowFeature( Window.FEATURE_NO_TITLE );
 
         m_jniu = JNIUtilsImpl.get();
         setContentView( R.layout.board );
@@ -699,7 +702,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 }
                 m_jniThread.handle( JNICmd.CMD_START );
 
-                setTitle( GameUtils.gameName( this, m_path ) );
+                // setTitle( GameUtils.gameName( this, m_path ) );
                 m_toolbar = 
                     new Toolbar( findViewById( R.id.toolbar_horizontal ),
                                  findViewById( R.id.toolbar_vertical ) );
@@ -736,12 +739,25 @@ public class BoardActivity extends Activity implements UtilCtxt {
             listener = new View.OnClickListener() {
                     @Override
                     public void onClick( View view ) {
+                        Utils.notImpl( BoardActivity.this );
+                    }
+                };
+        }
+        bindButtons( listener, R.id.prevhint_button_horizontal, 
+                     R.id.prevhint_button_vertical );
+
+        if ( m_gi.hintsNotAllowed ) {
+            listener = null;
+        } else {
+            listener = new View.OnClickListener() {
+                    @Override
+                    public void onClick( View view ) {
                         m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
                     }
                 };
         }
-        bindButtons( listener, R.id.hint_button_horizontal, 
-                     R.id.hint_button_vertical );
+        bindButtons( listener, R.id.nexthint_button_horizontal, 
+                     R.id.nexthint_button_vertical );
 
         listener = new View.OnClickListener() {
                 @Override
