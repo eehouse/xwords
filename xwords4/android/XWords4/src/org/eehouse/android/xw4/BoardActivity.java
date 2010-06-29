@@ -410,9 +410,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
         // case R.id.board_menu_juggle:
         //     cmd = JNIThread.JNICmd.CMD_JUGGLE;
         //     break;
-        case R.id.board_menu_flip:
-            cmd = JNIThread.JNICmd.CMD_FLIP;
-            break;
+        // case R.id.board_menu_flip:
+        //     cmd = JNIThread.JNICmd.CMD_FLIP;
+        //     break;
         case R.id.board_menu_trade:
             cmd = JNIThread.JNICmd.CMD_TOGGLE_TRADE;
             break;
@@ -713,25 +713,34 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
     } // loadGame
 
-    private void bindButtons( View.OnClickListener listener,
-                              int horID, int vertID )
+    private void bindButtons( View.OnClickListener listener, int... ids )
     {
-        ImageButton button = (ImageButton)findViewById( horID );
-        button.setOnClickListener( listener );
-        button = (ImageButton)findViewById( vertID );
-        button.setOnClickListener( listener );
+        for ( int id : ids ) {
+            ImageButton button = (ImageButton)findViewById( id );
+            if ( null == listener ) {
+                button.setVisibility( View.GONE );
+            } else {
+                button.setVisibility( View.VISIBLE );
+                button.setOnClickListener( listener );
+            }
+        }
     }
 
     private void populateToolbar()
     {
-        View.OnClickListener listener = 
-            new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
-                }
-            };
-        bindButtons( listener, R.id.hint_button_horizontal,
+        View.OnClickListener listener;
+
+        if ( m_gi.hintsNotAllowed ) {
+            listener = null;
+        } else {
+            listener = new View.OnClickListener() {
+                    @Override
+                    public void onClick( View view ) {
+                        m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
+                    }
+                };
+        }
+        bindButtons( listener, R.id.hint_button_horizontal, 
                      R.id.hint_button_vertical );
 
         listener = new View.OnClickListener() {
@@ -752,32 +761,17 @@ public class BoardActivity extends Activity implements UtilCtxt {
         bindButtons( listener, R.id.flip_button_horizontal,
                      R.id.flip_button_vertical );
 
-        // listener = new View.OnClickListener() {
-        //         @Override
-        //         public void onClick( View view ) {
-        //             m_jniThread.handle( JNIThread.JNICmd.CMD_FLIP );
-        //         }
-        //     };
-        // m_toolbar.addButton( this, "<F>",  listener );
-
-        // listener = new View.OnClickListener() {
-        //         @Override
-        //         public void onClick( View view ) {
-        //             m_jniThread.handle( JNIThread.JNICmd.CMD_VALUES );
-        //         }
-        //     };
-        // m_toolbar.addButton( this, "<V>",  listener );
-
-        // listener = new View.OnClickListener() {
-        //         private boolean m_goIn = true;
-        //         @Override
-        //         public void onClick( View view ) {
-        //             m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
-        //                                 m_goIn? 8 : -8 );
-        //             m_goIn = !m_goIn;
-        //         }
-        //     };
-        // m_toolbar.addButton( this, "<Z>",  listener );
+        listener = new View.OnClickListener() {
+                private boolean m_goIn = true;
+                @Override
+                public void onClick( View view ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
+                                        m_goIn? 8 : -8 );
+                    m_goIn = !m_goIn;
+                }
+            };
+        bindButtons( listener, R.id.zoom_button_horizontal,
+                     R.id.zoom_button_vertical );
     }
 
     private DialogInterface.OnDismissListener makeODLforBlocking()
