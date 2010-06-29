@@ -538,7 +538,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         if ( (CELL_ISBLANK & flags) != 0 ) {
-            markBlank( new Rect(rect) );
+            markBlank( rect, pending );
         }
         m_canvas.drawRect( rect, m_strokePaint );
         
@@ -888,9 +888,17 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     } // figureFontDims
 
-    private void markBlank( Rect rect )
+    private void markBlank( final Rect rect, boolean whiteOnBlack )
     {
         RectF oval = new RectF( rect.left, rect.top, rect.right, rect.bottom );
+        int curColor = 0;
+        if ( whiteOnBlack ) {
+            curColor = m_strokePaint.getColor();
+            m_strokePaint.setColor( WHITE );
+        }
         m_canvas.drawArc( oval, 0, 360, false, m_strokePaint );
+        if ( whiteOnBlack ) {
+            m_strokePaint.setColor( curColor );
+        }
     }
 }
