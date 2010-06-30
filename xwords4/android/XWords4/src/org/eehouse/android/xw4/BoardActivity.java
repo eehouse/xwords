@@ -1010,6 +1010,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                message + getString(R.string.badwords_lost) );
         } else {
             m_dlgBytes = message + getString( R.string.badwords_accept );
+            m_dlgTitle = R.string.query_title;
             accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
         }
 
