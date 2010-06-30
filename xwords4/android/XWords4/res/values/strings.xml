@@ -197,11 +197,11 @@
     are added</string>
     <string name="ringer_zoom">Volume keys zoom</string>
     <string name="ringer_zoom_summary">Zoom board using volume keys
-    rather than an on-screen widget</string>
+    rather than on-screen buttons</string>
 
     <string name="hide_title">Hide titlebar</string>
-    <string name="hide_title_summary">Increase board size by hiding 
-    the window title that shows the game name</string>
+    <string name="hide_title_summary">Hiding the game name lets the
+      board be slightly larger</string>
 
     <string name="role_standalone">Standalone</string>
     <string name="role_host">Host</string>
