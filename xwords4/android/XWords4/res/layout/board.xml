@@ -4,8 +4,9 @@
               android:orientation="vertical"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
-              android:paddingLeft="8dp"
-              android:paddingRight="8dp"
+              android:paddingLeft="3dp"
+              android:paddingRight="3dp"
+              android:paddingTop="3dp"
               >
  
   <org.eehouse.android.xw4.BoardView

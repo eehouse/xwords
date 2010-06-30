@@ -27,6 +27,7 @@ import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Window;
 import android.os.Handler;
 import android.os.Message;
 import android.content.Intent;
@@ -238,6 +239,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         Utils.logf( "BoardActivity::onCreate()" );
         super.onCreate( savedInstanceState );
+
+        if ( CommonPrefs.getHideTitleBar( this ) ) {
+            requestWindowFeature( Window.FEATURE_NO_TITLE );
+        }
 
         m_jniu = JNIUtilsImpl.get();
         setContentView( R.layout.board );

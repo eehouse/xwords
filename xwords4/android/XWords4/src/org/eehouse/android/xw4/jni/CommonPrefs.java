@@ -212,6 +212,11 @@ public class CommonPrefs {
         return getBoolean( context, R.string.key_default_timerenabled, false );
     }
 
+    public static boolean getHideTitleBar( Context context )
+    {
+        return getBoolean( context, R.string.key_hide_title, true );
+    }
+
     private static boolean getBoolean( Context context, int keyID,
                                        boolean defaultValue )
     {
