@@ -16,7 +16,7 @@
                       android:title="@string/default_phonies"
                       android:entries="@array/phony_names"
                       android:entryValues="@array/phony_names"
-                      android:defaultValue="@string/phonies_ignore"
+                      android:defaultValue="@string/phonies_warn"
                       />
 
       <CheckBoxPreference android:key="@string/key_default_timerenabled"
