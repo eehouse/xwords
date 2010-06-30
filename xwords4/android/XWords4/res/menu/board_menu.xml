@@ -5,30 +5,34 @@
     <!--       android:title="@string/board_menu_juggle"  -->
     <!--       android:alphabeticShortcut="J" -->
     <!--       /> -->
+
+    <item android:id="@+id/board_menu_done"
+          android:title="@string/board_menu_done"
+          android:alphabeticShortcut="D"
+          />
+
     <item android:id="@+id/board_menu_trade"
           android:title="@string/board_menu_trade"
           android:alphabeticShortcut="T"
           />
-    <item android:title="@string/board_submenu_undo">
-      <menu>
-        <item android:id="@+id/board_menu_undo_current"
-              android:title="@string/board_menu_undo_current"
-              />
-        <item android:id="@+id/board_menu_undo_last"
-              android:title="@string/board_menu_undo_last"
-              android:alphabeticShortcut="U"
-              />
-      </menu>
-    </item>
+    <item android:id="@+id/board_menu_undo_last"
+          android:title="@string/board_menu_undo_last"
+          android:alphabeticShortcut="U"
+          />
+
     <item android:id="@+id/board_menu_tray"
           android:title="@string/board_menu_tray" 
           android:alphabeticShortcut="H"
           />
-
     <!-- <item android:id="@+id/board_menu_flip" -->
     <!--       android:title="@string/board_menu_flip" -->
     <!--       android:alphabeticShortcut="F" -->
     <!--       /> -->
+
+    <item android:id="@+id/board_menu_values"
+          android:title="@string/board_menu_values"
+          android:alphabeticShortcut="V"
+          />
 
     <item android:title="@string/board_submenu_game">
       <menu>
@@ -54,17 +58,8 @@
               android:title="@string/board_menu_hint_next" 
               android:alphabeticShortcut="H"
               />
-        <item android:id="@+id/board_menu_values"
-              android:title="@string/board_menu_values"
-              android:alphabeticShortcut="V"
-              />
       </menu>
     </item>
-
-    <item android:id="@+id/board_menu_done"
-          android:title="@string/board_menu_done"
-          android:alphabeticShortcut="D"
-          />
 
     <item android:id="@+id/board_menu_file_prefs"
           android:title="@string/menu_prefs"

@@ -422,9 +422,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case R.id.board_menu_tray:
             cmd = JNIThread.JNICmd.CMD_TOGGLE_TRAY;
             break;
-        case R.id.board_menu_undo_current:
-            cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
-            break;
+        // case R.id.board_menu_undo_current:
+        //     cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
+        //     break;
         case R.id.board_menu_undo_last:
             cmd = JNIThread.JNICmd.CMD_UNDO_LAST;
             break;
@@ -434,9 +434,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case R.id.board_menu_hint_next:
             cmd = JNIThread.JNICmd.CMD_NEXT_HINT;
             break;
-        // case R.id.board_menu_values:
-        //     cmd = JNIThread.JNICmd.CMD_VALUES;
-        //     break;
+        case R.id.board_menu_values:
+            cmd = JNIThread.JNICmd.CMD_VALUES;
+            break;
 
         case R.id.board_menu_game_counts:
             m_jniThread.handle( JNIThread.JNICmd.CMD_COUNTS_VALUES,
@@ -788,7 +788,16 @@ public class BoardActivity extends Activity implements UtilCtxt {
             };
         bindButtons( listener, R.id.zoom_button_horizontal,
                      R.id.zoom_button_vertical );
-    }
+
+        listener = new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_CUR );
+                }
+            };
+        bindButtons( listener, R.id.undo_button_horizontal,
+                     R.id.undo_button_vertical );
+    } // populateToolbar
 
     private DialogInterface.OnDismissListener makeODLforBlocking()
     {
