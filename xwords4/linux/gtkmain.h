@@ -87,6 +87,7 @@ typedef struct GtkAppGlobals {
 /*     GdkPixmap* pixmap; */
     GtkWidget* drawing_area;
 
+    GtkWidget* flip_button;
     GtkWidget* zoomin_button;
     GtkWidget* zoomout_button;
 

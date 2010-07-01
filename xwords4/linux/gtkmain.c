@@ -68,6 +68,7 @@ static void setCtrlsForTray( GtkAppGlobals* globals );
 static void new_game( GtkWidget* widget, GtkAppGlobals* globals );
 static void new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg );
 static void setZoomButtons( GtkAppGlobals* globals, XP_Bool* inOut );
+static void disenable_buttons( GtkAppGlobals* globals );
 
 
 #define GTK_TRAY_HT_ROWS 3
@@ -128,6 +129,7 @@ button_press_event( GtkWidget* XP_UNUSED(widget), GdkEventButton *event,
                                       event->x, event->y, &handled );
         if ( redraw ) {
             board_draw( globals->cGlobals.game.board );
+            disenable_buttons( globals );
         }
     }
     return 1;
@@ -146,6 +148,7 @@ motion_notify_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                                        event->y );
         if ( handled ) {
             board_draw( globals->cGlobals.game.board );
+            disenable_buttons( globals );
         }
     } else {
         handled = XP_FALSE;
@@ -168,6 +171,7 @@ button_release_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                                     event->y );
         if ( redraw ) {
             board_draw( globals->cGlobals.game.board );
+            disenable_buttons( globals );
         }
         globals->mouseDown = XP_FALSE;
     }
@@ -988,6 +992,13 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
     return menubar;
 } /* makeMenus */
 
+static void
+disenable_buttons( GtkAppGlobals* globals )
+{
+    XP_Bool canFlip = board_canFlip( globals->cGlobals.game.board );
+    gtk_widget_set_sensitive( globals->flip_button, canFlip );
+}
+
 static gboolean
 handle_flip_button( GtkWidget* XP_UNUSED(widget), gpointer _globals )
 {
@@ -1018,6 +1029,7 @@ handle_hint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 #endif
                             &redo ) ) {
         board_draw( globals->cGlobals.game.board );
+        disenable_buttons( globals );
     }
 } /* handle_hint_button */
 
@@ -1667,6 +1679,7 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     button = makeShowButtonFromBitmap( globals, "../flip.xpm", "f", 
                                        G_CALLBACK(handle_flip_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    globals->flip_button = button;
 
     button = makeShowButtonFromBitmap( globals, "../value.xpm", "v",
                                        G_CALLBACK(handle_value_button) );
