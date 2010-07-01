@@ -16,7 +16,7 @@
                       android:title="@string/default_phonies"
                       android:entries="@array/phony_names"
                       android:entryValues="@array/phony_names"
-                      android:defaultValue="@string/phonies_ignore"
+                      android:defaultValue="@string/phonies_warn"
                       />
 
       <CheckBoxPreference android:key="@string/key_default_timerenabled"
@@ -69,6 +69,11 @@
                       android:title="@string/ringer_zoom"
                       android:summary="@string/ringer_zoom_summary"
                       android:defaultValue="false"
+                      />
+  <CheckBoxPreference android:key="@string/key_hide_title"
+                      android:title="@string/hide_title"
+                      android:summary="@string/hide_title_summary"
+                      android:defaultValue="true"
                       />
 
     <PreferenceScreen android:title="@string/prefs_colors"

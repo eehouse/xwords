@@ -19,7 +19,7 @@
     <string name="menu_insert">Add game</string>
     <string name="button_new_game">Add game</string>
 
-    <string name="list_item_config">Configure</string>
+    <string name="list_item_config">Game settings</string>
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
 	<string name="list_item_copy">Copy</string>
@@ -41,7 +41,7 @@
 	<string name="title_games_list">Crosswords</string>   
 	<string name="title_dicts_list">Crosswords dictionaries</string>   
 	<string name="title_game">Game</string>  
-	<string name="title_game_configf">Configure %s</string>  
+	<string name="title_game_configf">%s settings</string>  
 	<string name="title_prefs">Crosswords settings</string>  
 	
 	<string name="app_name">Crosswords</string>  
@@ -197,7 +197,9 @@
     are added</string>
     <string name="ringer_zoom">Volume keys zoom</string>
     <string name="ringer_zoom_summary">Zoom board using volume keys</string>
-
+    <string name="hide_title">Hide titlebar</string>
+    <string name="hide_title_summary">Hiding the game name lets the
+      board be slightly larger</string>
     <string name="role_standalone">Standalone</string>
     <string name="role_host">Host</string>
     <string name="role_guest">Guest</string>

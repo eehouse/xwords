@@ -243,7 +243,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
         Utils.logf( "BoardActivity::onCreate()" );
         super.onCreate( savedInstanceState );
 
-        requestWindowFeature( Window.FEATURE_NO_TITLE );
+        if ( CommonPrefs.getHideTitleBar( this ) ) {
+            requestWindowFeature( Window.FEATURE_NO_TITLE );
+        }
 
         m_jniu = JNIUtilsImpl.get();
         setContentView( R.layout.board );
@@ -1106,6 +1108,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                message + getString(R.string.badwords_lost) );
         } else {
             m_dlgBytes = message + getString( R.string.badwords_accept );
+            m_dlgTitle = R.string.query_title;
             accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
         }
 
