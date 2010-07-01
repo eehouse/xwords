@@ -53,6 +53,7 @@ typedef struct ModelVolatiles {
     void* trayListenerData;
     DictListener dictListenerFunc;
     void* dictListenerData;
+    XP_U16 nTilesOnBoard;
     MPSLOT
 } ModelVolatiles;
 

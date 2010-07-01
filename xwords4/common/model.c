@@ -480,13 +480,14 @@ undoFromMoveInfo( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveInfo* mi )
 
         setModelTileRaw( model, col, row, EMPTY_TILE );
         notifyBoardListeners( model, turn, col, row, XP_FALSE );
+        --model->vol.nTilesOnBoard;
 
         if ( IS_BLANK(tile) ) {
             tile = blankTile;
         }
         model_addPlayerTile( model, turn, -1, tile );
     }
-
+    XP_LOGF( "%s: %d tiles on board", __func__, model->vol.nTilesOnBoard );
     adjustScoreForUndone( model, mi, turn );
 } /* undoFromMoveInfo */
 
@@ -842,9 +843,9 @@ model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile )
 } /* model_trayContains */
 
 XP_U16
-model_getCurrentMoveCount( ModelCtxt* model, XP_S16 turn )
+model_getCurrentMoveCount( const ModelCtxt* model, XP_S16 turn )
 {
-    PlayerCtxt* player;
+    const PlayerCtxt* player;
     XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
     return player->nPending;
@@ -1104,6 +1105,14 @@ model_getNMoves( const ModelCtxt* model )
     return result;
 }
 
+XP_Bool
+model_canFlip( const ModelCtxt* model, XP_U16 turn, XP_Bool trayVisible )
+{
+    XP_Bool canFlip = 0 < model->vol.nTilesOnBoard
+        || (trayVisible && (0 < model_getCurrentMoveCount( model, turn )));
+    return canFlip;
+}
+
 static void
 incrPendingTileCountAt( ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
@@ -1229,6 +1238,8 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
         setModelTileRaw( model, col, row, tile );
 
         notifyBoardListeners( model, turn, col, row, XP_FALSE );
+
+        ++model->vol.nTilesOnBoard;
     }
 
     (void)getCurrentMoveScoreIfLegal( model, turn, stream, &score );
@@ -1247,6 +1258,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
         model_addPlayerTile( model, turn, -1, *newTilesP++ );
     }
 
+    XP_LOGF( "%s: %d tiles on board", __func__, model->vol.nTilesOnBoard );
     return score;
 } /* commitTurn */
 

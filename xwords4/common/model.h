@@ -160,7 +160,7 @@ XP_U16 model_numCols( const ModelCtxt* model );
 void model_addToCurrentMove( ModelCtxt* model, XP_S16 turn, 
                              XP_U16 col, XP_U16 row, 
                              Tile tile, XP_Bool isBlank );
-XP_U16 model_getCurrentMoveCount( ModelCtxt* model, XP_S16 turn );
+XP_U16 model_getCurrentMoveCount( const ModelCtxt* model, XP_S16 turn );
 
 void model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
                                Tile* tile, XP_U16* col, XP_U16* row, 
@@ -189,6 +189,10 @@ void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
 
 void model_resetCurrentTurn( ModelCtxt* model, XP_S16 turn );
 XP_S16 model_getNMoves( const ModelCtxt* model );
+
+/* Are there two or more tiles visible */
+XP_Bool model_canFlip( const ModelCtxt* model, XP_U16 turn, 
+                       XP_Bool trayVisible );
 
 /********************* notification ********************/
 typedef void (*BoardListener)(void* data, XP_U16 turn, XP_U16 col, 

@@ -523,6 +523,13 @@ board_getYOffset( const BoardCtxt* board )
     return vsd->offset;
 } /* board_getYOffset */
 
+XP_Bool
+board_canFlip( const BoardCtxt* board )
+{
+    return model_canFlip( board->model, board->selPlayer, 
+                          TRAY_REVEALED == board->trayVisState );
+}
+
 static XP_U16
 adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
 {
