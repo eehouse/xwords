@@ -1023,6 +1023,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1focusChanged
 }
 
 JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1canFlip
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_canFlip( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handleKey
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jkey, jboolean jup, 
   jbooleanArray jhandled )
