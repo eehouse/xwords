@@ -137,7 +137,7 @@ void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
 
 /* As an optimization, return a pointer to the model's array of tiles for a
    player.  Don't even think about modifying the array!!!! */
-const TrayTileSet* model_getPlayerTiles( ModelCtxt* model, XP_S16 turn );
+const TrayTileSet* model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn );
 
 void model_sortTiles( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn );
@@ -193,6 +193,8 @@ XP_S16 model_getNMoves( const ModelCtxt* model );
 /* Are there two or more tiles visible */
 XP_Bool model_canFlip( const ModelCtxt* model, XP_U16 turn, 
                        XP_Bool trayVisible );
+XP_Bool model_canShuffle( const ModelCtxt* model, XP_U16 turn, 
+                          XP_Bool trayVisible );
 
 /********************* notification ********************/
 typedef void (*BoardListener)(void* data, XP_U16 turn, XP_U16 col, 

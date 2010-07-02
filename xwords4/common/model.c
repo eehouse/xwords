@@ -1113,6 +1113,13 @@ model_canFlip( const ModelCtxt* model, XP_U16 turn, XP_Bool trayVisible )
     return canFlip;
 }
 
+XP_Bool
+model_canShuffle( const ModelCtxt* model, XP_U16 turn, XP_Bool trayVisible )
+{
+    return trayVisible
+        && model_getPlayerTiles( model, turn )->nTiles > 1;
+}
+
 static void
 incrPendingTileCountAt( ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
@@ -1315,9 +1322,9 @@ model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 } /* model_getPlayerTile */
 
 const TrayTileSet*
-model_getPlayerTiles( ModelCtxt* model, XP_S16 turn )
+model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn )
 {
-    PlayerCtxt* player = &model->players[turn];
+    const PlayerCtxt* player = &model->players[turn];
 
     return (const TrayTileSet*)&player->trayTiles;
 } /* model_getPlayerTile */

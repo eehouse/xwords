@@ -530,6 +530,13 @@ board_canFlip( const BoardCtxt* board )
                           TRAY_REVEALED == board->trayVisState );
 }
 
+XP_Bool
+board_canShuffle( const BoardCtxt* board )
+{
+    return model_canShuffle( board->model, board->selPlayer, 
+                             TRAY_REVEALED == board->trayVisState );
+}
+
 static XP_U16
 adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
 {
