@@ -39,42 +39,50 @@
 
     </PreferenceScreen>
 
-  <CheckBoxPreference  android:key="@string/key_color_tiles"
-                      android:title="@string/color_tiles"
-                      android:summary="@string/color_tiles_summary"
-                      android:defaultValue="true"
-                      />
+    <PreferenceScreen android:title="@string/prefs_appearance"
+                      android:summary="@string/prefs_appearance_summary"
+                      >
+      <CheckBoxPreference  android:key="@string/key_color_tiles"
+                           android:title="@string/color_tiles"
+                           android:summary="@string/color_tiles_summary"
+                           android:defaultValue="true"
+                           />
+      <CheckBoxPreference android:key="@string/key_show_arrow"
+                          android:title="@string/show_arrow"
+                          android:summary="@string/show_arrow_summary"
+                          android:defaultValue="true"
+                          />
+      <CheckBoxPreference android:key="@string/key_hide_title"
+                          android:title="@string/hide_title"
+                          android:summary="@string/hide_title_summary"
+                          android:defaultValue="true"
+                          />
+    </PreferenceScreen>
 
-  <CheckBoxPreference android:key="@string/key_show_arrow"
-                      android:title="@string/show_arrow"
-                      android:summary="@string/show_arrow_summary"
-                      android:defaultValue="true"
-                      />
-  <CheckBoxPreference android:key="@string/key_explain_robot"
-                      android:title="@string/explain_robot"
-                      android:summary="@string/explain_robot_summary"
-                      android:defaultValue="false"
-                      />
-  <CheckBoxPreference android:key="@string/key_skip_confirm"
-                      android:title="@string/skip_confirm_turn"
-                      android:summary="@string/skip_confirm_turn_summary"
-                      android:defaultValue="false"
-                      />
-  <CheckBoxPreference android:key="@string/key_sort_tiles"
-                      android:title="@string/title_sort_tiles"
-                      android:summary="@string/summary_sort_tiles"
-                      android:defaultValue="true"
-                      />
-  <CheckBoxPreference android:key="@string/key_ringer_zoom"
-                      android:title="@string/ringer_zoom"
-                      android:summary="@string/ringer_zoom_summary"
-                      android:defaultValue="false"
-                      />
-  <CheckBoxPreference android:key="@string/key_hide_title"
-                      android:title="@string/hide_title"
-                      android:summary="@string/hide_title_summary"
-                      android:defaultValue="true"
-                      />
+    <PreferenceScreen android:title="@string/prefs_behavior"
+                      android:summary="@string/prefs_behavior_summary"
+                      >
+      <CheckBoxPreference android:key="@string/key_explain_robot"
+                          android:title="@string/explain_robot"
+                          android:summary="@string/explain_robot_summary"
+                          android:defaultValue="false"
+                          />
+      <CheckBoxPreference android:key="@string/key_skip_confirm"
+                          android:title="@string/skip_confirm_turn"
+                          android:summary="@string/skip_confirm_turn_summary"
+                          android:defaultValue="false"
+                          />
+      <CheckBoxPreference android:key="@string/key_sort_tiles"
+                          android:title="@string/title_sort_tiles"
+                          android:summary="@string/summary_sort_tiles"
+                          android:defaultValue="true"
+                          />
+      <CheckBoxPreference android:key="@string/key_ringer_zoom"
+                          android:title="@string/ringer_zoom"
+                          android:summary="@string/ringer_zoom_summary"
+                          android:defaultValue="false"
+                          />
+    </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/prefs_colors"
                       android:summary="@string/prefs_colors_summary"

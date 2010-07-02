@@ -242,6 +242,12 @@
     <string name="prefs_defaults">New game defaults</string>
     <string name="prefs_defaults_summary">Default settings for new
     games</string>
+    <string name="prefs_appearance">Appearance</string>
+    <string name="prefs_appearance_summary">Settings controlling
+    appearance</string>
+    <string name="prefs_behavior">Behavior</string>
+    <string name="prefs_behavior_summary">Settings controlling app behavior</string>
+
     <string name="default_dict">Game dictionary</string>
     <string name="default_phonies">Handle phonies</string>
     <string name="board_size">Board size</string>
