@@ -177,6 +177,15 @@ public class GamesList extends ListActivity {
                 showDialog( WARN_NODICT );
             } else {
                 switch ( id ) {
+                case R.id.list_item_play:
+                    File file = new File( path );
+                    Uri uri = Uri.fromFile( file );
+                    Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                                this, BoardActivity.class );
+                    startActivity( intent );
+                    m_invalPath = path;
+                    break;
+
                 case R.id.list_item_config:
                     doConfig( path );
                     invalPath = path;
@@ -269,21 +278,13 @@ public class GamesList extends ListActivity {
     }
 
     @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) 
+    protected void onListItemClick( ListView l, View v, int position, long id )
     {
-        String[] missingDict = new String[1];
-        if ( ! GameUtils.gameDictHere( this, position, missingDict ) ) {
-            m_missingDict = missingDict[0];
-            showDialog( WARN_NODICT );
-        } else {
-            String path = GameUtils.gamesList(this)[position];
-            File file = new File( path );
-            Uri uri = Uri.fromFile( file );
-            Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                        this, BoardActivity.class );
-            startActivity( intent );
-            m_invalPath = path;
-        }
+        // Might want a preference that, when set, just opens game
+        // instead of bringing up the list.  But that shouldn't be the
+        // default: new users don't know about long-taps.
+        super.onListItemClick( l, v, position, id );
+        v.showContextMenu();
     }
 
     private void doConfig( String path )

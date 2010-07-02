@@ -19,6 +19,7 @@
     <string name="menu_insert">Add game</string>
     <string name="button_new_game">Add game</string>
 
+    <string name="list_item_play">Play game</string>
     <string name="list_item_config">Game settings</string>
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
