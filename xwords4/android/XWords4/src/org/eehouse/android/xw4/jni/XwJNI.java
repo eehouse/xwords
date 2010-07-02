@@ -147,6 +147,7 @@ public class XwJNI {
     public static native int board_getFocusOwner( int gamePtr );
     public static native boolean board_focusChanged( int gamePtr, int typ );
     public static native boolean board_canFlip( int gamePtr );
+    public static native boolean board_canShuffle( int gamePtr );
 
     public enum XP_Key {
         XP_KEY_NONE,
