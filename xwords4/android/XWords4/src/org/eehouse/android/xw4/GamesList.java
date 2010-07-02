@@ -42,7 +42,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
-public class GamesList extends ListActivity implements View.OnClickListener {
+public class GamesList extends ListActivity {
     private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
     private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
 
@@ -117,7 +117,13 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         registerForContextMenu( getListView() );
 
         Button newGameB = (Button)findViewById(R.id.new_game);
-        newGameB.setOnClickListener( this );
+        newGameB.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick( View v ) {
+                    saveNew( new CurGameInfo( GamesList.this ) );
+                    onContentChanged();
+                }
+            } );
 
         m_adapter = new GameListAdapter( this );
         setListAdapter( m_adapter );
@@ -260,11 +266,6 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         }
 
         return handled;
-    }
-
-    public void onClick( View v ) {
-        saveNew( new CurGameInfo( this ) );
-        onContentChanged();
     }
 
     @Override
