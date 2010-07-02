@@ -720,87 +720,58 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
     } // loadGame
 
-    private void bindButtons( View.OnClickListener listener, int... ids )
-    {
-        for ( int id : ids ) {
-            ImageButton button = (ImageButton)findViewById( id );
-            if ( null == listener ) {
-                button.setVisibility( View.GONE );
-            } else {
-                button.setVisibility( View.VISIBLE );
-                button.setOnClickListener( listener );
-            }
-        }
-    }
-
     private void populateToolbar()
     {
-        View.OnClickListener listener;
-
-        if ( m_gi.hintsNotAllowed ) {
-            listener = null;
-        } else {
-            listener = new View.OnClickListener() {
-                    @Override
-                    public void onClick( View view ) {
-                        Utils.notImpl( BoardActivity.this );
-                    }
-                };
-        }
-        bindButtons( listener, R.id.prevhint_button_horizontal, 
-                     R.id.prevhint_button_vertical );
-
-        if ( m_gi.hintsNotAllowed ) {
-            listener = null;
-        } else {
-            listener = new View.OnClickListener() {
-                    @Override
-                    public void onClick( View view ) {
-                        m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
-                    }
-                };
-        }
-        bindButtons( listener, R.id.nexthint_button_horizontal, 
-                     R.id.nexthint_button_vertical );
-
-        listener = new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_JUGGLE );
-                }
-            };
-        bindButtons( listener, R.id.shuffle_button_horizontal,
-                     R.id.shuffle_button_vertical );
-
-        listener = new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_FLIP );
-                }
-            };
-        bindButtons( listener, R.id.flip_button_horizontal,
-                     R.id.flip_button_vertical );
-
-        listener = new View.OnClickListener() {
-                private boolean m_goIn = true;
-                @Override
-                public void onClick( View view ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
-                                        m_goIn? 8 : -8 );
-                    m_goIn = !m_goIn;
-                }
-            };
-        bindButtons( listener, R.id.zoom_button_horizontal,
-                     R.id.zoom_button_vertical );
-
-        listener = new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_CUR );
-                }
-            };
-        bindButtons( listener, R.id.undo_button_horizontal,
-                     R.id.undo_button_vertical );
+        m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
+                               new View.OnClickListener() {
+                                   @Override
+                                       public void onClick( View view ) {
+                                       Utils.notImpl( BoardActivity.this );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_NEXT_HINT );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_JUGGLE );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_FLIP,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_FLIP );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
+                               new View.OnClickListener() {
+                                   private boolean m_goIn = true;
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_ZOOM, 
+                                                           m_goIn? 8 : -8 );
+                                       m_goIn = !m_goIn;
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_UNDO,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_UNDO_CUR );
+                                   }
+                               }) ;
     } // populateToolbar
 
     private DialogInterface.OnDismissListener makeODLforBlocking()

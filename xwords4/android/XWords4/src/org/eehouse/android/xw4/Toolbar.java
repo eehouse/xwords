@@ -36,16 +36,17 @@ public class Toolbar {
 
     private static class TBButtonInfo {
         public TBButtonInfo( int horID, int vertID ) {
-            m_horID = horID;
-            m_vertID = vertID;
+            m_ids = new int[] { horID, vertID };
         }
-        public int m_horID;
-        public int m_vertID;
+        public int m_ids[];
     }
 
     public static final int BUTTON_HINT_PREV = 0;
     public static final int BUTTON_HINT_NEXT = 1;
     public static final int BUTTON_FLIP = 2;
+    public static final int BUTTON_JUGGLE = 3;
+    public static final int BUTTON_ZOOM = 4;
+    public static final int BUTTON_UNDO = 5;
 
     private static TBButtonInfo[] s_buttonInfo = {
         // BUTTON_HINT_PREV
@@ -57,6 +58,15 @@ public class Toolbar {
         // BUTTON_FLIP
         new TBButtonInfo(R.id.flip_button_horizontal,
                          R.id.flip_button_vertical),
+        // BUTTON_JUGGLE
+        new TBButtonInfo( R.id.shuffle_button_horizontal,
+                          R.id.shuffle_button_vertical ),
+        // BUTTON_ZOOM
+        new TBButtonInfo( R.id.zoom_button_horizontal,
+                          R.id.zoom_button_vertical ),
+        // BUTTON_UNDO
+        new TBButtonInfo( R.id.undo_button_horizontal,
+                          R.id.undo_button_vertical ),
     };
 
     private Activity m_activity;
@@ -74,6 +84,15 @@ public class Toolbar {
         m_activity = activity;
         m_horLayout = (LinearLayout)horLayout;
         m_vertLayout = (LinearLayout)vertLayout;
+    }
+
+    public void setListener( int index, View.OnClickListener listener )
+    {
+        TBButtonInfo info = s_buttonInfo[index];
+        for ( int id : info.m_ids ) {
+            ImageButton button = (ImageButton)m_activity.findViewById( id );
+            button.setOnClickListener( listener );
+        }
     }
 
     public void orientChanged( boolean landscape )
@@ -106,10 +125,10 @@ public class Toolbar {
         int vis = enable != 0 ? View.VISIBLE : View.GONE;
 
         ImageButton button;
-        button = (ImageButton)m_activity.findViewById( info.m_horID );
-        button.setVisibility( vis );
-        button = (ImageButton)m_activity.findViewById( info.m_vertID );
-        button.setVisibility( vis );
+        for ( int id : info.m_ids ) {
+            button = (ImageButton)m_activity.findViewById( id );
+            button.setVisibility( vis );
+        }
     }
 
 }
