@@ -34,6 +34,7 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.BoardDims;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.Toolbar;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class JNIThread extends Thread {
@@ -79,6 +80,7 @@ public class JNIThread extends Thread {
     public static final int DRAW = 2;
     public static final int DIALOG = 3;
     public static final int QUERY_ENDGAME = 4;
+    public static final int TOOLBAR_STATES = 5;
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
@@ -245,6 +247,13 @@ public class JNIThread extends Thread {
             }
         }
         return draw;
+    } // processKeyEvent
+
+    private void checkButtons()
+    {
+        int canFlip = XwJNI.board_canFlip( m_jniGamePtr ) ? 1 : 0;
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_FLIP,
+                        canFlip ).sendToTarget();
     }
 
     public void run() 
@@ -481,6 +490,8 @@ public class JNIThread extends Thread {
                 // main UI thread has to invalidate view as it created
                 // it.
                 Message.obtain( m_handler, DRAW ).sendToTarget();
+
+                checkButtons();
             }
         }
         Utils.logf( "run exiting" );
@@ -492,4 +503,5 @@ public class JNIThread extends Thread {
         // Utils.logf( "adding: " + cmd.toString() );
         m_queue.add( elem );
     }
+
 }

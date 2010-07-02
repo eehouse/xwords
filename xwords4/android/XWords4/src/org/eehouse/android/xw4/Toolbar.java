@@ -21,18 +21,45 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.Button;
-import android.view.LayoutInflater;
-import java.util.HashMap;
-import junit.framework.Assert;
+import android.widget.ImageButton;
+//import android.view.LayoutInflater;
+//import java.util.HashMap;
+//import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
 public class Toolbar {
 
+    private static class TBButtonInfo {
+        public TBButtonInfo( int horID, int vertID ) {
+            m_horID = horID;
+            m_vertID = vertID;
+        }
+        public int m_horID;
+        public int m_vertID;
+    }
+
+    public static final int BUTTON_HINT_PREV = 0;
+    public static final int BUTTON_HINT_NEXT = 1;
+    public static final int BUTTON_FLIP = 2;
+
+    private static TBButtonInfo[] s_buttonInfo = {
+        // BUTTON_HINT_PREV
+        new TBButtonInfo(R.id.prevhint_button_horizontal, 
+                         R.id.prevhint_button_vertical),
+        // BUTTON_HINT_NEXT
+        new TBButtonInfo(R.id.nexthint_button_horizontal, 
+                         R.id.nexthint_button_vertical),
+        // BUTTON_FLIP
+        new TBButtonInfo(R.id.flip_button_horizontal,
+                         R.id.flip_button_vertical),
+    };
+
+    private Activity m_activity;
     private LinearLayout m_horLayout;
     private LinearLayout m_vertLayout;
 
@@ -42,8 +69,9 @@ public class Toolbar {
             };
     private ORIENTATION m_curOrient = ORIENTATION.ORIENT_UNKNOWN;
 
-    public Toolbar( View horLayout, View vertLayout )
+    public Toolbar( Activity activity, View horLayout, View vertLayout )
     {
+        m_activity = activity;
         m_horLayout = (LinearLayout)horLayout;
         m_vertLayout = (LinearLayout)vertLayout;
     }
@@ -70,4 +98,18 @@ public class Toolbar {
             nextLayout.setVisibility( View.VISIBLE );
         }
     }
+
+    public void update( int index, int enable )
+    {
+        boolean show = enable!=0;
+        TBButtonInfo info = s_buttonInfo[index];
+        int vis = enable != 0 ? View.VISIBLE : View.GONE;
+
+        ImageButton button;
+        button = (ImageButton)m_activity.findViewById( info.m_horID );
+        button.setVisibility( vis );
+        button = (ImageButton)m_activity.findViewById( info.m_vertID );
+        button.setVisibility( vis );
+    }
+
 }

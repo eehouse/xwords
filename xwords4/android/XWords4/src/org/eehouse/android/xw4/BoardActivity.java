@@ -693,6 +693,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                        case JNIThread.QUERY_ENDGAME:
                                            showDialog( QUERY_ENDGAME );
                                            break;
+                                       case JNIThread.TOOLBAR_STATES:
+                                           m_toolbar.update( msg.arg1, msg.arg2 );
                                        }
                                    }
                                } );
@@ -706,7 +708,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
                 // setTitle( GameUtils.gameName( this, m_path ) );
                 m_toolbar = 
-                    new Toolbar( findViewById( R.id.toolbar_horizontal ),
+                    new Toolbar( this, findViewById( R.id.toolbar_horizontal ),
                                  findViewById( R.id.toolbar_vertical ) );
 
                 boolean isLandscape = 
