@@ -35,8 +35,8 @@ import org.eehouse.android.xw4.jni.*;
 public class Toolbar {
 
     private static class TBButtonInfo {
-        public TBButtonInfo( int horID, int vertID ) {
-            m_ids = new int[] { horID, vertID };
+        public TBButtonInfo( int... ids ) {
+            m_ids = ids;
         }
         public int m_ids[];
     }
