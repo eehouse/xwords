@@ -90,6 +90,8 @@ typedef struct GtkAppGlobals {
     GtkWidget* flip_button;
     GtkWidget* zoomin_button;
     GtkWidget* zoomout_button;
+    GtkWidget* toggle_undo_button;
+    XP_Bool didReplace;
 
     EngineCtxt* engine;
 

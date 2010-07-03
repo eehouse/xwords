@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -1081,6 +1081,24 @@ handle_redo_button( GtkWidget* XP_UNUSED(widget),
 } /* handle_redo_button */
 
 static void
+handle_toggle_undo( GtkWidget* XP_UNUSED(widget), 
+                    GtkAppGlobals* globals )
+{
+    BoardCtxt* board = globals->cGlobals.game.board;
+    XP_Bool draw = XP_FALSE;
+    
+    if ( globals->didReplace ) {
+        draw = board_redoReplacedTiles( board );
+    } else {
+        draw = board_replaceTiles( board );
+    }
+    globals->didReplace = !globals->didReplace;
+    if ( draw ) {
+        board_draw( board );
+    }
+}
+
+static void
 handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     if ( board_beginTrade( globals->cGlobals.game.board ) ) {
@@ -1698,11 +1716,16 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     /* undo and redo buttons */
-    button = makeShowButtonFromBitmap( globals, "../undo.xpm", "u",
+    button = makeShowButtonFromBitmap( globals, "../undo.xpm", "U",
                                        G_CALLBACK(handle_undo_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    button = makeShowButtonFromBitmap( globals, "../redo.xpm", "r",
+    button = makeShowButtonFromBitmap( globals, "../redo.xpm", "R",
                                        G_CALLBACK(handle_redo_button) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+
+    button = makeShowButtonFromBitmap( globals, "", "u/r",
+                                       G_CALLBACK(handle_toggle_undo) );
+    globals->toggle_undo_button = button;
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     /* the four buttons that on palm are beside the tray */
