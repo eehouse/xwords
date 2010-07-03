@@ -82,6 +82,11 @@
                           android:summary="@string/ringer_zoom_summary"
                           android:defaultValue="false"
                           />
+      <CheckBoxPreference android:key="@string/key_click_launches"
+                          android:title="@string/click_launches"
+                          android:summary="@string/click_launches_summary"
+                          android:defaultValue="false"
+                          />
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/prefs_colors"

@@ -199,6 +199,9 @@
     <string name="ringer_zoom">Volume keys zoom</string>
     <string name="ringer_zoom_summary">Zoom board using volume keys
     rather than on-screen buttons</string>
+    <string name="click_launches">Tap to play</string>
+    <string name="click_launches_summary">Tapping on game in games
+    list opens it rather than dropping a menu</string>
 
     <string name="hide_title">Hide titlebar</string>
     <string name="hide_title_summary">Hiding the game name lets the
