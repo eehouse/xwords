@@ -1014,15 +1014,22 @@ model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
     changed = nUndone > 0;
     if ( changed ) {
         PendingTile pendingTiles[nUndone];
-        XP_U16 ii;
+        PendingTile* pt = pendingTiles;
+
         XP_MEMCPY( pendingTiles, &player->pendingTiles[player->nPending],
                    nUndone * sizeof(pendingTiles[0]) );
 
         /* Now we have info about each tile, but don't know where in the
            tray they are.  So find 'em. */
-        for ( ii = 0; ii < nUndone; ++ii ) {
-            PendingTile* pt = &pendingTiles[ii];
-            XP_S16 foundAt = model_trayContains( model, turn, pt->tile );
+        for ( pt = pendingTiles; nUndone-- > 0; ++pt ) {
+            Tile tile = pt->tile;
+            XP_Bool isBlank = 0 != (tile & TILE_BLANK_BIT);
+            XP_S16 foundAt;
+
+            if ( isBlank ) {
+                tile = dict_getBlankTile( model->vol.dict );
+            }
+            foundAt = model_trayContains( model, turn, tile );
             XP_ASSERT( foundAt >= 0 );
             model_moveTrayToBoard( model, turn, pt->col, pt->row,
                                    foundAt, pt->tile & ~TILE_BLANK_BIT );
