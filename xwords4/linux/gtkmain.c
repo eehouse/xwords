@@ -997,6 +997,9 @@ disenable_buttons( GtkAppGlobals* globals )
 {
     XP_Bool canFlip = board_canFlip( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->flip_button, canFlip );
+
+    XP_Bool canToggle = board_canTogglePending( globals->cGlobals.game.board );
+    gtk_widget_set_sensitive( globals->toggle_undo_button, canToggle );
 }
 
 static gboolean
@@ -1085,15 +1088,7 @@ handle_toggle_undo( GtkWidget* XP_UNUSED(widget),
                     GtkAppGlobals* globals )
 {
     BoardCtxt* board = globals->cGlobals.game.board;
-    XP_Bool draw = XP_FALSE;
-    
-    if ( globals->didReplace ) {
-        draw = board_redoReplacedTiles( board );
-    } else {
-        draw = board_replaceTiles( board );
-    }
-    globals->didReplace = !globals->didReplace;
-    if ( draw ) {
+    if ( board_redoReplacedTiles( board ) || board_replaceTiles( board ) ) {
         board_draw( board );
     }
 }
