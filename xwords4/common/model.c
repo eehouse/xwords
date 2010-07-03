@@ -70,7 +70,8 @@ static void buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
                                  MovePrintFuncPost mpfpo,
                                  void* closure );
 static void setPendingCounts( ModelCtxt* model, XP_S16 turn );
-static void loadPlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc );
+static void loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version, 
+                            PlayerCtxt* pc );
 static void writePlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
 
@@ -136,7 +137,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
                          (MovePrintFuncPost)NULL, NULL );
 
     for ( i = 0; i < model->nPlayers; ++i ) {
-        loadPlayerCtxt( stream, &model->players[i] );
+        loadPlayerCtxt( stream, version, &model->players[i] );
         setPendingCounts( model, i );
         invalidateScore( model, i );
     }
@@ -1884,24 +1885,29 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
 } /* model_getPlayersLastScore */
 
 static void
-loadPlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc )
+loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version, PlayerCtxt* pc )
 {
-    XP_U16 i;
+    PendingTile* pt;
+    XP_U16 nTiles;
 
     pc->curMoveValid = stream_getBits( stream, 1 );
 
     traySetFromStream( stream, &pc->trayTiles );
     
     pc->nPending = (XP_U8)stream_getBits( stream, NTILES_NBITS );
-    // nUndone needs to be handled here
+    if ( STREAM_VERS_NUNDONE <= version ) {
+        pc->nUndone = (XP_U8)stream_getBits( stream, NTILES_NBITS );
+    } else {
+        XP_ASSERT( 0 == pc->nUndone );
+    }
 
-    for ( i = 0; i < pc->nPending; ++i ) {
-        PendingTile* pt = &pc->pendingTiles[i];
+    nTiles = pc->nPending + pc->nUndone;
+    for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
         XP_U16 nBits;
         pt->col = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
         pt->row = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
 
-        nBits = (stream_getVersion( stream ) <= STREAM_VERS_RELAY) ? 6 : 7;
+        nBits = (version <= STREAM_VERS_RELAY) ? 6 : 7;
         pt->tile = (Tile)stream_getBits( stream, nBits );
     }
 
@@ -1910,22 +1916,22 @@ loadPlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc )
 static void
 writePlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc )
 {
-    XP_U16 i;
+    XP_U16 nTiles;
+    PendingTile* pt;
 
     stream_putBits( stream, 1, pc->curMoveValid );
 
     traySetToStream( stream, &pc->trayTiles );
     
     stream_putBits( stream, NTILES_NBITS, pc->nPending );
-    // nUndone needs to be handled here
+    stream_putBits( stream, NTILES_NBITS, pc->nUndone );
 
-    for ( i = 0; i < pc->nPending; ++i ) {
-        PendingTile* pt = &pc->pendingTiles[i];
+    nTiles = pc->nPending + pc->nUndone;
+    for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
         stream_putBits( stream, NUMCOLS_NBITS, pt->col );
         stream_putBits( stream, NUMCOLS_NBITS, pt->row );
         stream_putBits( stream, 7, pt->tile );
     }
-    
 } /* writePlayerCtxt */
 
 #ifdef CPLUS
