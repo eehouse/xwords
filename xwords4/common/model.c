@@ -990,6 +990,7 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
         invalLastMove( model );
     }
 
+    player->nUndone = 0;
     pt = &player->pendingTiles[player->nPending++];
     XP_ASSERT( player->nPending <= MAX_TRAY_TILES );
 
@@ -1002,6 +1003,33 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
 
     notifyBoardListeners( model, turn, col, row, XP_TRUE );
 } /* model_moveTrayToBoard */
+
+XP_Bool
+model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
+{
+    XP_Bool changed = XP_FALSE;
+
+    PlayerCtxt* player = &model->players[turn];
+    XP_U16 nUndone = player->nUndone;
+    changed = nUndone > 0;
+    if ( changed ) {
+        PendingTile pendingTiles[nUndone];
+        XP_U16 ii;
+        XP_MEMCPY( pendingTiles, &player->pendingTiles[player->nPending],
+                   nUndone * sizeof(pendingTiles[0]) );
+
+        /* Now we have info about each tile, but don't know where in the
+           tray they are.  So find 'em. */
+        for ( ii = 0; ii < nUndone; ++ii ) {
+            PendingTile* pt = &pendingTiles[ii];
+            XP_S16 foundAt = model_trayContains( model, turn, pt->tile );
+            XP_ASSERT( foundAt >= 0 );
+            model_moveTrayToBoard( model, turn, pt->col, pt->row,
+                                   foundAt, pt->tile & ~TILE_BLANK_BIT );
+        }
+    }
+    return changed;
+}
 
 void
 model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, 
@@ -1025,6 +1053,7 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
     /* if we're called from putBackOtherPlayersTiles there may be nothing
        here */
     if ( index < player->nPending ) {
+        PendingTile tmpPending;
         decrPendingTileCountAt( model, col, row );
         notifyBoardListeners( model, turn, col, row, XP_FALSE );
 
@@ -1036,9 +1065,14 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
         model_addPlayerTile( model, turn, trayOffset, tile );
 
         --player->nPending;
+        tmpPending = player->pendingTiles[index];
         for ( i = index; i < player->nPending; ++i ) {
             player->pendingTiles[i] = player->pendingTiles[i+1];
         }
+        player->pendingTiles[player->nPending] = tmpPending;
+
+        ++player->nUndone;
+        XP_LOGF( "%s: nUndone(%d): %d", __func__, turn, player->nUndone );
 
         if ( player->nPending == 0 ) {
             invalLastMove( model );
@@ -1259,6 +1293,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
     }
 
     player->nPending = 0;
+    player->nUndone = 0;
 
     newTilesP = newTiles->tiles;
     while ( nTiles-- ) {
@@ -1851,6 +1886,7 @@ loadPlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc )
     traySetFromStream( stream, &pc->trayTiles );
     
     pc->nPending = (XP_U8)stream_getBits( stream, NTILES_NBITS );
+    // nUndone needs to be handled here
 
     for ( i = 0; i < pc->nPending; ++i ) {
         PendingTile* pt = &pc->pendingTiles[i];
@@ -1874,6 +1910,7 @@ writePlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc )
     traySetToStream( stream, &pc->trayTiles );
     
     stream_putBits( stream, NTILES_NBITS, pc->nPending );
+    // nUndone needs to be handled here
 
     for ( i = 0; i < pc->nPending; ++i ) {
         PendingTile* pt = &pc->pendingTiles[i];

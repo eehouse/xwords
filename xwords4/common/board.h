@@ -101,6 +101,7 @@ XP_Bool board_flip( BoardCtxt* board );
 XP_Bool board_get_showValues( const BoardCtxt* board );
 XP_Bool board_toggle_showValues( BoardCtxt* board );
 XP_Bool board_replaceTiles( BoardCtxt* board );
+XP_Bool board_redoReplacedTiles( BoardCtxt* board );
 
 XP_Bool board_requestHint( BoardCtxt* board, 
 #ifdef XWFEATURE_SEARCHLIMIT

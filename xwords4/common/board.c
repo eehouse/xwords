@@ -1541,6 +1541,12 @@ board_replaceTiles( BoardCtxt* board )
     return result;
 } /* board_replaceTiles */
 
+XP_Bool
+board_redoReplacedTiles( BoardCtxt* board )
+{
+    return model_redoPendingTiles( board->model, board->selPlayer );
+}
+
 /* There are a few conditions that must be true for any of several actions
    to be allowed.  Check them here.  */
 static XP_Bool

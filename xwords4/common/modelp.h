@@ -39,6 +39,7 @@ typedef struct PlayerCtxt {
     XP_Bool curMoveValid;
     TrayTileSet trayTiles;
     XP_U8 nPending;      /* still in tray but "on board" */
+    XP_U8 nUndone;       /* tiles above nPending we can reuse */
     PendingTile pendingTiles[MAX_TRAY_TILES];
 } PlayerCtxt;
 
