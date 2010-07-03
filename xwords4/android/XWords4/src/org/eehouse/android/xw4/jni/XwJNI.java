@@ -137,6 +137,7 @@ public class XwJNI {
     public static native boolean board_commitTurn( int gamePtr );
     public static native boolean board_flip( int gamePtr );
     public static native boolean board_replaceTiles( int gamePtr );
+    public static native boolean board_redoReplacedTiles( int gamePtr );
     public static native void board_resetEngine( int gamePtr );
     public static native boolean board_requestHint( int gamePtr, 
                                                     boolean useTileLimits,
@@ -148,6 +149,7 @@ public class XwJNI {
     public static native boolean board_focusChanged( int gamePtr, int typ );
     public static native boolean board_canFlip( int gamePtr );
     public static native boolean board_canShuffle( int gamePtr );
+    public static native boolean board_canTogglePending( int gamePtr );
 
     public enum XP_Key {
         XP_KEY_NONE,

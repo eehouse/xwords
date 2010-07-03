@@ -254,9 +254,14 @@ public class JNIThread extends Thread {
         int canFlip = XwJNI.board_canFlip( m_jniGamePtr ) ? 1 : 0;
         Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_FLIP,
                         canFlip ).sendToTarget();
+
         int canShuffle = XwJNI.board_canShuffle( m_jniGamePtr ) ? 1 : 0;
         Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_JUGGLE,
                         canShuffle ).sendToTarget();
+
+        int canRedo = XwJNI.board_canTogglePending( m_jniGamePtr ) ? 1 : 0;
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_UNDO,
+                        canRedo ).sendToTarget();
     }
 
     public void run() 
@@ -382,7 +387,8 @@ public class JNIThread extends Thread {
                 draw = XwJNI.board_beginTrade( m_jniGamePtr );
                 break;
             case CMD_UNDO_CUR:
-                draw = XwJNI.board_replaceTiles( m_jniGamePtr );
+                draw = XwJNI.board_replaceTiles( m_jniGamePtr )
+                    || XwJNI.board_redoReplacedTiles( m_jniGamePtr );
                 break;
             case CMD_UNDO_LAST:
                 XwJNI.server_handleUndo( m_jniGamePtr );

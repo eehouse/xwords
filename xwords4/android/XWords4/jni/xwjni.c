@@ -694,6 +694,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1replaceTiles
     return result;
 }
 
+JNIEXPORT jboolean JNICALL 
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1redoReplacedTiles
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_redoReplacedTiles( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1handleUndo
 (JNIEnv* env, jclass C, jint gamePtr)
@@ -1040,6 +1051,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1canShuffle
     jboolean result;
     XWJNI_START();
     result = board_canShuffle( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1canTogglePending
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_canTogglePending( state->game.board );
     XWJNI_END();
     return result;
 }
