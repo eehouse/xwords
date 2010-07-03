@@ -537,6 +537,12 @@ board_canShuffle( const BoardCtxt* board )
                              TRAY_REVEALED == board->trayVisState );
 }
 
+XP_Bool board_canTogglePending( const BoardCtxt* board )
+{
+    return TRAY_REVEALED == board->trayVisState
+        && model_canTogglePending( board->model, board->selPlayer );
+}
+
 static XP_U16
 adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
 {

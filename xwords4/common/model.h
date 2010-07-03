@@ -197,6 +197,7 @@ XP_Bool model_canFlip( const ModelCtxt* model, XP_U16 turn,
                        XP_Bool trayVisible );
 XP_Bool model_canShuffle( const ModelCtxt* model, XP_U16 turn, 
                           XP_Bool trayVisible );
+XP_Bool model_canTogglePending( const ModelCtxt* model, XP_U16 turn );
 
 /********************* notification ********************/
 typedef void (*BoardListener)(void* data, XP_U16 turn, XP_U16 col, 

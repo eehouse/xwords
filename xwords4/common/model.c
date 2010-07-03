@@ -1162,6 +1162,13 @@ model_canShuffle( const ModelCtxt* model, XP_U16 turn, XP_Bool trayVisible )
         && model_getPlayerTiles( model, turn )->nTiles > 1;
 }
 
+XP_Bool
+model_canTogglePending( const ModelCtxt* model, XP_U16 turn )
+{
+    const PlayerCtxt* player = &model->players[turn];
+    return 0 < player->nPending || 0 < player->nUndone;
+}
+
 static void
 incrPendingTileCountAt( ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
