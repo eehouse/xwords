@@ -19,6 +19,7 @@
     <string name="menu_insert">Add game</string>
     <string name="button_new_game">Add game</string>
 
+    <string name="list_item_play">Play game</string>
     <string name="list_item_config">Game settings</string>
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
@@ -197,6 +198,9 @@
     are added</string>
     <string name="ringer_zoom">Volume keys zoom</string>
     <string name="ringer_zoom_summary">Zoom board using volume keys</string>
+    <string name="click_launches">Tap to play</string>
+    <string name="click_launches_summary">Tapping on game in games
+    list opens it rather than dropping a menu</string>
     <string name="hide_title">Hide titlebar</string>
     <string name="hide_title_summary">Hiding the game name lets the
       board be slightly larger</string>
@@ -238,6 +242,12 @@
     <string name="prefs_defaults">New game defaults</string>
     <string name="prefs_defaults_summary">Default settings for new
     games</string>
+    <string name="prefs_appearance">Appearance</string>
+    <string name="prefs_appearance_summary">Settings controlling
+    appearance</string>
+    <string name="prefs_behavior">Behavior</string>
+    <string name="prefs_behavior_summary">Settings controlling app behavior</string>
+
     <string name="default_dict">Game dictionary</string>
     <string name="default_phonies">Handle phonies</string>
     <string name="board_size">Board size</string>
