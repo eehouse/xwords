@@ -151,10 +151,6 @@ public class GamesList extends ListActivity {
     @Override
     public boolean onContextItemSelected( MenuItem item ) 
     {
-        boolean handled = true;
-        byte[] stream;
-        String invalPath = null;
-
         AdapterView.AdapterContextMenuInfo info;
         try {
             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
@@ -163,74 +159,7 @@ public class GamesList extends ListActivity {
             return false;
         }
 
-        String path = GameUtils.gamesList( this )[info.position];
-        int id = item.getItemId();
-
-        if ( R.id.list_item_delete == id ) {
-            GameUtils.deleteGame( this, path );
-            invalPath = path;
-        } else {
-            String[] missingName = new String[1];
-            boolean hasDict = GameUtils.gameDictHere( this, path, missingName );
-            if ( !hasDict ) {
-                m_missingDict = missingName[0];
-                showDialog( WARN_NODICT );
-            } else {
-                switch ( id ) {
-                case R.id.list_item_play:
-                    File file = new File( path );
-                    Uri uri = Uri.fromFile( file );
-                    Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                                this, BoardActivity.class );
-                    startActivity( intent );
-                    m_invalPath = path;
-                    break;
-
-                case R.id.list_item_config:
-                    doConfig( path );
-                    invalPath = path;
-                    break;
-
-                case R.id.list_item_reset:
-                    GameUtils.resetGame( this, path, path );
-                    invalPath = path;
-                    break;
-                case R.id.list_item_new_from:
-                    String newName = GameUtils.resetGame( this, path );  
-                    invalPath = newName;
-                    break;
-
-                case R.id.list_item_copy:
-                    stream = GameUtils.savedGame( this, path );
-                    newName = GameUtils.saveGame( this, stream );
-                    DBUtils.saveSummary( newName, DBUtils.getSummary( this, path ) );
-                    break;
-
-                    // These require some notion of predictable sort order.
-                    // Maybe put off until I'm using a db?
-                    // case R.id.list_item_hide:
-                    // case R.id.list_item_move_up:
-                    // case R.id.list_item_move_down:
-                    // case R.id.list_item_move_to_top:
-                    // case R.id.list_item_move_to_bottom:
-                    // Utils.notImpl( this );
-                    // break;
-                default:
-                    handled = false;
-                    break;
-                }
-            }
-        }
-
-        if ( null != invalPath ) {
-            m_adapter.inval( invalPath );
-        }
-
-        if ( handled ) {
-            onContentChanged();
-        }
-
-        return handled;
+        return handleMenuItem( item.getItemId(), info.position );
     } // onContextItemSelected
 
     public boolean onCreateOptionsMenu( Menu menu )
@@ -280,12 +209,90 @@ public class GamesList extends ListActivity {
     @Override
     protected void onListItemClick( ListView l, View v, int position, long id )
     {
-        // Might want a preference that, when set, just opens game
-        // instead of bringing up the list.  But that shouldn't be the
-        // default: new users don't know about long-taps.
         super.onListItemClick( l, v, position, id );
-        v.showContextMenu();
+
+        if ( CommonPrefs.getClickLaunches( this ) ) {
+            handleMenuItem( R.id.list_item_play, position );
+        } else {
+            v.showContextMenu();
+        }
     }
+
+    private boolean handleMenuItem( int menuID, int position ) 
+    {
+        boolean handled = true;
+        byte[] stream;
+        String invalPath = null;
+
+        String path = GameUtils.gamesList( this )[position];
+    
+        if ( R.id.list_item_delete == menuID ) {
+            GameUtils.deleteGame( this, path );
+            invalPath = path;
+        } else {
+            String[] missingName = new String[1];
+            boolean hasDict = GameUtils.gameDictHere( this, path, missingName );
+            if ( !hasDict ) {
+                m_missingDict = missingName[0];
+                showDialog( WARN_NODICT );
+            } else {
+                switch ( menuID ) {
+                case R.id.list_item_play:
+                    File file = new File( path );
+                    Uri uri = Uri.fromFile( file );
+                    Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                                this, BoardActivity.class );
+                    startActivity( intent );
+                    m_invalPath = path;
+                    break;
+
+                case R.id.list_item_config:
+                    doConfig( path );
+                    invalPath = path;
+                    break;
+
+                case R.id.list_item_reset:
+                    GameUtils.resetGame( this, path, path );
+                    invalPath = path;
+                    break;
+                case R.id.list_item_new_from:
+                    String newName = GameUtils.resetGame( this, path );  
+                    invalPath = newName;
+                    break;
+
+                case R.id.list_item_copy:
+                    stream = GameUtils.savedGame( this, path );
+                    newName = GameUtils.saveGame( this, stream );
+                    DBUtils.saveSummary( newName, 
+                                         DBUtils.getSummary( this, path ) );
+                    break;
+
+                    // These require some notion of predictable sort order.
+                    // Maybe put off until I'm using a db?
+                    // case R.id.list_item_hide:
+                    // case R.id.list_item_move_up:
+                    // case R.id.list_item_move_down:
+                    // case R.id.list_item_move_to_top:
+                    // case R.id.list_item_move_to_bottom:
+                    // Utils.notImpl( this );
+                    // break;
+                default:
+                    handled = false;
+                    break;
+                }
+            }
+        }
+
+        if ( null != invalPath ) {
+            m_adapter.inval( invalPath );
+        }
+
+        if ( handled ) {
+            onContentChanged();
+        }
+
+        return handled;
+    } // handleMenuItem
 
     private void doConfig( String path )
     {

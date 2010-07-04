@@ -217,6 +217,11 @@ public class CommonPrefs {
         return getBoolean( context, R.string.key_hide_title, true );
     }
 
+    public static boolean getClickLaunches( Context context )
+    {
+        return getBoolean( context, R.string.key_click_launches, false );
+    }
+
     private static boolean getBoolean( Context context, int keyID,
                                        boolean defaultValue )
     {
