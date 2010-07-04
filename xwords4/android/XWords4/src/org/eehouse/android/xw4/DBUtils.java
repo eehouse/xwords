@@ -60,14 +60,16 @@ public class DBUtils {
 
                 String scoresStr = 
                     cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
-                StringTokenizer st = new StringTokenizer( scoresStr );
-                int[] scores = new int[st.countTokens()];
-                for ( int ii = 0; ii < scores.length; ++ii ) {
-                    Assert.assertTrue( st.hasMoreTokens() );
-                    String token = st.nextToken();
-                    scores[ii] = Integer.parseInt( token );
+                if ( null != scoresStr ) {
+                    StringTokenizer st = new StringTokenizer( scoresStr );
+                    int[] scores = new int[st.countTokens()];
+                    for ( int ii = 0; ii < scores.length; ++ii ) {
+                        Assert.assertTrue( st.hasMoreTokens() );
+                        String token = st.nextToken();
+                        scores[ii] = Integer.parseInt( token );
+                    }
+                    summary.scores = scores;
                 }
-                summary.scores = scores;
 
                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
                 if ( col >= 0 ) {
@@ -103,11 +105,13 @@ public class DBUtils {
                 values.put( DBHelper.NUM_MOVES, summary.nMoves );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
 
-                StringBuffer sb = new StringBuffer();
-                for ( int score : summary.scores ) {
-                    sb.append( String.format( "%d ", score ) );
+                if ( null != summary.scores ) {
+                    StringBuffer sb = new StringBuffer();
+                    for ( int score : summary.scores ) {
+                        sb.append( String.format( "%d ", score ) );
+                    }
+                    values.put( DBHelper.SCORES, sb.toString() );
                 }
-                values.put( DBHelper.SCORES, sb.toString() );
 
                 if ( null != summary.conType ) {
                     values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
