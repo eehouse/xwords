@@ -3,177 +3,177 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   >
 
-    <PreferenceScreen android:title="@string/prefs_defaults"
-                      android:summary="@string/prefs_defaults_summary"
-                      >
+  <PreferenceScreen android:title="@string/prefs_defaults"
+                    android:summary="@string/prefs_defaults_summary"
+                    >
 
-      <org.eehouse.android.xw4.DictListPreference 
-         android:key="@string/key_default_dict"
-         android:title="@string/default_dict"
-         />
+    <org.eehouse.android.xw4.DictListPreference 
+       android:key="@string/key_default_dict"
+       android:title="@string/default_dict"
+       />
 
-      <ListPreference android:key="@string/key_default_phonies"
-                      android:title="@string/default_phonies"
-                      android:entries="@array/phony_names"
-                      android:entryValues="@array/phony_names"
-                      android:defaultValue="@string/phonies_warn"
-                      />
+    <ListPreference android:key="@string/key_default_phonies"
+                    android:title="@string/default_phonies"
+                    android:entries="@array/phony_names"
+                    android:entryValues="@array/phony_names"
+                    android:defaultValue="@string/phonies_warn"
+                    />
 
-      <CheckBoxPreference android:key="@string/key_default_timerenabled"
-                          android:title="@string/use_timer"
-                          android:defaultValue="false"
-                          />
+    <CheckBoxPreference android:key="@string/key_default_timerenabled"
+                        android:title="@string/use_timer"
+                        android:defaultValue="false"
+                        />
 
-      <EditTextPreference android:key="@string/key_initial_player_minutes"
-                          android:title="@string/initial_player_minutes"
-                          android:defaultValue="25"
-                          android:numeric="decimal"
-                          />
+    <EditTextPreference android:key="@string/key_initial_player_minutes"
+                        android:title="@string/initial_player_minutes"
+                        android:defaultValue="25"
+                        android:numeric="decimal"
+                        />
 
-      <ListPreference android:key="@string/key_board_size"
-                      android:title="@string/board_size"
-                      android:entries="@array/board_sizes"
-                      android:entryValues="@array/board_sizes"
-                      android:defaultValue="15x15"
-                      />
+    <ListPreference android:key="@string/key_board_size"
+                    android:title="@string/board_size"
+                    android:entries="@array/board_sizes"
+                    android:entryValues="@array/board_sizes"
+                    android:defaultValue="15x15"
+                    />
 
-    </PreferenceScreen>
+  </PreferenceScreen>
 
-    <PreferenceScreen android:title="@string/prefs_appearance"
-                      android:summary="@string/prefs_appearance_summary"
-                      >
-      <CheckBoxPreference  android:key="@string/key_color_tiles"
-                           android:title="@string/color_tiles"
-                           android:summary="@string/color_tiles_summary"
-                           android:defaultValue="true"
-                           />
-      <CheckBoxPreference android:key="@string/key_show_arrow"
-                          android:title="@string/show_arrow"
-                          android:summary="@string/show_arrow_summary"
-                          android:defaultValue="true"
-                          />
-      <CheckBoxPreference android:key="@string/key_hide_title"
-                          android:title="@string/hide_title"
-                          android:summary="@string/hide_title_summary"
-                          android:defaultValue="true"
-                          />
-    </PreferenceScreen>
+  <PreferenceScreen android:title="@string/prefs_appearance"
+                    android:summary="@string/prefs_appearance_summary"
+                    >
+    <CheckBoxPreference  android:key="@string/key_color_tiles"
+                         android:title="@string/color_tiles"
+                         android:summary="@string/color_tiles_summary"
+                         android:defaultValue="true"
+                         />
+    <CheckBoxPreference android:key="@string/key_show_arrow"
+                        android:title="@string/show_arrow"
+                        android:summary="@string/show_arrow_summary"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_hide_title"
+                        android:title="@string/hide_title"
+                        android:summary="@string/hide_title_summary"
+                        android:defaultValue="true"
+                        />
+  </PreferenceScreen>
 
-    <PreferenceScreen android:title="@string/prefs_behavior"
-                      android:summary="@string/prefs_behavior_summary"
-                      >
-      <CheckBoxPreference android:key="@string/key_explain_robot"
-                          android:title="@string/explain_robot"
-                          android:summary="@string/explain_robot_summary"
-                          android:defaultValue="false"
-                          />
-      <CheckBoxPreference android:key="@string/key_skip_confirm"
-                          android:title="@string/skip_confirm_turn"
-                          android:summary="@string/skip_confirm_turn_summary"
-                          android:defaultValue="false"
-                          />
-      <CheckBoxPreference android:key="@string/key_sort_tiles"
-                          android:title="@string/title_sort_tiles"
-                          android:summary="@string/summary_sort_tiles"
-                          android:defaultValue="true"
-                          />
-      <CheckBoxPreference android:key="@string/key_ringer_zoom"
-                          android:title="@string/ringer_zoom"
-                          android:summary="@string/ringer_zoom_summary"
-                          android:defaultValue="false"
-                          />
-      <CheckBoxPreference android:key="@string/key_click_launches"
-                          android:title="@string/click_launches"
-                          android:summary="@string/click_launches_summary"
-                          android:defaultValue="false"
-                          />
-    </PreferenceScreen>
+  <PreferenceScreen android:title="@string/prefs_behavior"
+                    android:summary="@string/prefs_behavior_summary"
+                    >
+    <CheckBoxPreference android:key="@string/key_explain_robot"
+                        android:title="@string/explain_robot"
+                        android:summary="@string/explain_robot_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_skip_confirm"
+                        android:title="@string/skip_confirm_turn"
+                        android:summary="@string/skip_confirm_turn_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_sort_tiles"
+                        android:title="@string/title_sort_tiles"
+                        android:summary="@string/summary_sort_tiles"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_ringer_zoom"
+                        android:title="@string/ringer_zoom"
+                        android:summary="@string/ringer_zoom_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_click_launches"
+                        android:title="@string/click_launches"
+                        android:summary="@string/click_launches_summary"
+                        android:defaultValue="false"
+                        />
+  </PreferenceScreen>
 
-    <PreferenceScreen android:title="@string/prefs_colors"
-                      android:summary="@string/prefs_colors_summary"
-                      >
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_player0"
-         android:title="@string/player0"
-         android:defaultValue="0x000000"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_player1"
-         android:title="@string/player1"
-         android:defaultValue="0xFF0000"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_player2"
-         android:title="@string/player2"
-         android:defaultValue="0x0000FF"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_player3"
-         android:title="@string/player3"
-         android:defaultValue="0x008F00"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_bonus_l2x"
-         android:title="@string/bonus_l2x"
-         android:defaultValue="0xAFAF00"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_bonus_l3x"
-         android:title="@string/bonus_l3x"
-         android:defaultValue="0x00AFAF"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_bonus_w2x"
-         android:title="@string/bonus_w2x"
-         android:defaultValue="0xAF00AF"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_bonus_w3x"
-         android:title="@string/bonus_w3x"
-         android:defaultValue="0xAFAFAF"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_tile_back"
-         android:title="@string/tile_back"
-         android:defaultValue="0xFFFF99"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_focus"
-         android:title="@string/focus"
-         android:defaultValue="0x7070FF"
-         />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_empty"
-         android:title="@string/empty"
-         android:defaultValue="0xFFFFFF"
-         />
-    </PreferenceScreen>
+  <PreferenceScreen android:title="@string/prefs_colors"
+                    android:summary="@string/prefs_colors_summary"
+                    >
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_player0"
+       android:title="@string/player0"
+       android:defaultValue="0x000000"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_player1"
+       android:title="@string/player1"
+       android:defaultValue="0xFF0000"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_player2"
+       android:title="@string/player2"
+       android:defaultValue="0x0000FF"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_player3"
+       android:title="@string/player3"
+       android:defaultValue="0x008F00"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_bonus_l2x"
+       android:title="@string/bonus_l2x"
+       android:defaultValue="0xAFAF00"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_bonus_l3x"
+       android:title="@string/bonus_l3x"
+       android:defaultValue="0x00AFAF"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_bonus_w2x"
+       android:title="@string/bonus_w2x"
+       android:defaultValue="0xAF00AF"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_bonus_w3x"
+       android:title="@string/bonus_w3x"
+       android:defaultValue="0xAFAFAF"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_tile_back"
+       android:title="@string/tile_back"
+       android:defaultValue="0xFFFF99"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_focus"
+       android:title="@string/focus"
+       android:defaultValue="0x7070FF"
+       />
+    <org.eehouse.android.xw4.EditColorPreference
+       android:key="@string/key_empty"
+       android:title="@string/empty"
+       android:defaultValue="0xFFFFFF"
+       />
+  </PreferenceScreen>
 
-    <PreferenceScreen android:title="@string/advanced"
-                      android:summary="@string/advanced_summary"
-                      >
-      <EditTextPreference android:key="@string/key_relay_host"
-                          android:title="@string/relay_host"
-                          android:defaultValue="@string/default_host"
-                          />
-      <EditTextPreference android:key="@string/key_relay_port"
-                          android:title="@string/relay_port"
-                          android:defaultValue="10999"
-                          android:numeric="decimal"
-                          />
-      <!-- <EditTextPreference android:key="@string/key_sms_port" -->
-      <!--                     android:title="@string/sms_port" -->
-      <!--                     android:defaultValue="5432" -->
-      <!--                     android:numeric="decimal" -->
-      <!--                     /> -->
-      <EditTextPreference android:key="@string/key_dict_host"
-                          android:title="@string/dict_host"
-                          android:defaultValue="@string/dict_url"
-                          />
+  <PreferenceScreen android:title="@string/advanced"
+                    android:summary="@string/advanced_summary"
+                    >
+    <EditTextPreference android:key="@string/key_relay_host"
+                        android:title="@string/relay_host"
+                        android:defaultValue="@string/default_host"
+                        />
+    <EditTextPreference android:key="@string/key_relay_port"
+                        android:title="@string/relay_port"
+                        android:defaultValue="10999"
+                        android:numeric="decimal"
+                        />
+    <!-- <EditTextPreference android:key="@string/key_sms_port" -->
+         <!--                     android:title="@string/sms_port" -->
+         <!--                     android:defaultValue="5432" -->
+         <!--                     android:numeric="decimal" -->
+         <!--                     /> -->
+         <EditTextPreference android:key="@string/key_dict_host"
+                             android:title="@string/dict_host"
+                             android:defaultValue="@string/dict_url"
+                             />
 
-      <EditTextPreference android:title="@string/git_rev_title"
-                          android:summary="@string/git_rev_gen"
-                          android:enabled="false"
-                          />
-    </PreferenceScreen>
+         <EditTextPreference android:title="@string/git_rev_title"
+                             android:summary="@string/git_rev_gen"
+                             android:enabled="false"
+                             />
+  </PreferenceScreen>
 </PreferenceScreen>
