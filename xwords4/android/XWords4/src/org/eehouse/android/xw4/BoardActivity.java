@@ -772,6 +772,12 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                                            .CMD_UNDO_CUR );
                                    }
                                }) ;
+
+        // Stuff we can disable now
+        if ( m_gi.hintsNotAllowed ) {
+            m_toolbar.update( Toolbar.BUTTON_HINT_PREV, 0 );
+            m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, 0 );
+        }
     } // populateToolbar
 
     private DialogInterface.OnDismissListener makeODLforBlocking()
