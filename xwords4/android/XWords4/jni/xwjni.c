@@ -737,7 +737,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1resetEngine
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
 ( JNIEnv* env, jclass C, jint gamePtr, jboolean useLimits, 
-  jbooleanArray workRemains )
+  jboolean goBack, jbooleanArray workRemains )
 {
     jboolean result;
     XWJNI_START();
@@ -746,7 +746,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
 #ifdef XWFEATURE_SEARCHLIMIT
                                 useLimits, 
 #endif
-                                &tmpbool );
+                                goBack, &tmpbool );
     /* If passed need to do workRemains[0] = tmpbool */
     if ( workRemains ) {
         jboolean jbool = tmpbool;
