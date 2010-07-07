@@ -64,6 +64,7 @@ public class JNIThread extends Thread {
             CMD_UNDO_LAST,
             CMD_HINT,
             CMD_ZOOM,
+            CMD_PREV_HINT,
             CMD_NEXT_HINT,
             CMD_VALUES,
             CMD_COUNTS_VALUES,
@@ -397,11 +398,20 @@ public class JNIThread extends Thread {
 
             case CMD_HINT:
                 XwJNI.board_resetEngine( m_jniGamePtr );
-                // fallthru
+                handle( JNICmd.CMD_NEXT_HINT );
+                break;
+
             case CMD_NEXT_HINT:
-                draw = XwJNI.board_requestHint( m_jniGamePtr, false, barr );
+            case CMD_PREV_HINT:
+                if ( nextSame( elem.m_cmd ) ) {
+                    continue;
+                }
+                draw = XwJNI.board_requestHint( m_jniGamePtr, false, 
+                                                JNICmd.CMD_PREV_HINT==elem.m_cmd,
+                                                barr );
                 if ( barr[0] ) {
-                    handle( JNICmd.CMD_NEXT_HINT );
+                    handle( elem.m_cmd );
+                    draw = false;
                 }
                 break;
 

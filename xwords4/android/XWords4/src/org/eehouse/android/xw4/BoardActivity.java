@@ -726,7 +726,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                new View.OnClickListener() {
                                    @Override
                                        public void onClick( View view ) {
-                                       Utils.notImpl( BoardActivity.this );
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_PREV_HINT );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
