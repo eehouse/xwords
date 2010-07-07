@@ -1144,11 +1144,11 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
         /* we're not interested if we've seen this */
         cmpVal = CMPMOVES( posmove, &engine->miData.lastSeenMove );
         if ( !usePrev && cmpVal >= 0 ) {
-            XP_LOGF( "%s: dropping %d: higher than %d", __func__,
-                     posmove->score, engine->miData.lastSeenMove.score );
+            /* XP_LOGF( "%s: dropping %d: higher than %d", __func__, */
+            /*          posmove->score, engine->miData.lastSeenMove.score ); */
         } else if ( usePrev && cmpVal <= 0 ) {
-            XP_LOGF( "%s: dropping %d: lower than %d", __func__,
-                     posmove->score, engine->miData.lastSeenMove.score );
+            /* XP_LOGF( "%s: dropping %d: lower than %d", __func__, */
+            /*          posmove->score, engine->miData.lastSeenMove.score ); */
         } else {
             XP_S16 ii;
             /* terminate i at 1 because mostest starts at 0 */
@@ -1204,9 +1204,9 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
                 break;
             }
         }
-        XP_LOGF( "saving move with score %d at %d (replacing %d)\n",
-                 posmove->score, mostest, 
-                 engine->miData.savedMoves[mostest].score );
+        /* XP_LOGF( "saving move with score %d at %d (replacing %d)\n", */
+        /*          posmove->score, mostest,  */
+        /*          engine->miData.savedMoves[mostest].score ); */
         XP_MEMCPY( &engine->miData.savedMoves[mostest], posmove,
                    sizeof(engine->miData.savedMoves[mostest]) );
         break;

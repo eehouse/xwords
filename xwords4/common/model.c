@@ -1080,7 +1080,7 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
         player->pendingTiles[player->nPending] = tmpPending;
 
         ++player->nUndone;
-        XP_LOGF( "%s: nUndone(%d): %d", __func__, turn, player->nUndone );
+        //XP_LOGF( "%s: nUndone(%d): %d", __func__, turn, player->nUndone );
 
         if ( player->nPending == 0 ) {
             invalLastMove( model );
