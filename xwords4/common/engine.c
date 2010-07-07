@@ -50,11 +50,30 @@ typedef struct PossibleMove {
                                  blanks */
 } PossibleMove;
 
+/* MoveIterationData is a cache of moves so that next and prev searches don't
+ * always trigger an actual search.  Instead we save up to
+ * NUM_SAVED_ENGINE_MOVES moves that sort together; then iteration is just
+ * returning the next or previous in the cache.  The cache, savedMoves[], is
+ * sorted in increasing order, with any unused entries at the low end (since
+ * they sort as if score == 0).  nInMoveCache is the actual number of entries.
+ * curCacheIndex is the index of the move most recently returned, or outside
+ * the range if nothing's been returned yet from the current cache.
+ *
+ * The cache is empty if nInMoveCache == 0, or if curCacheIndex is in a
+ * position that, given engine->usePrev, indicates it's been walked through
+ * the cache already rather than being poised to enter it.
+ */
+
 typedef struct MoveIterationData {
+    /* savedMoves: if any entries are unused (because result set doesn't fill,
+       they're at the low end (where sort'll put 'em) */
     PossibleMove savedMoves[NUM_SAVED_ENGINE_MOVES];
-    XP_U16 lowestSavedScore;
+    //XP_U16 lowestSavedScore;
     PossibleMove lastSeenMove;
-    XP_U16 leftInMoveCache;
+    XP_U16 nInMoveCache; /* num entries, 
+                            0 <= nInMoveCache < NUM_SAVED_ENGINE_MOVES */
+    XP_U16 bottom;   /* lowest non-0 entry */
+    XP_S16 curCacheIndex;       /* what we last returned */
 } MoveIterationData;
 
 /* one bit per tile that's possible here *\/ */
@@ -68,6 +87,7 @@ struct EngineCtxt {
 
     Engine_rack rack;
     Tile blankTile;
+    XP_Bool usePrev;
     XP_Bool searchInProgress;
     XP_Bool searchHorizontal;
     XP_Bool isRobot;
@@ -132,7 +152,10 @@ static void considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
                                         BlankTuple* usedBlanks,
                                         XP_U16 usedBlanksCount );
 static void saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove );
-
+static XP_Bool move_cache_empty( const EngineCtxt* engine );
+static void init_move_cache( EngineCtxt* engine );
+static PossibleMove* next_from_cache( EngineCtxt* engine );
+static void set_search_limits( EngineCtxt* engine );
 
 
 #if defined __LITTLE_ENDIAN
@@ -223,8 +246,9 @@ engine_makeFromStream( MPFORMAL XWStreamCtxt* XP_UNUSED_DBG(stream),
 void
 engine_reset( EngineCtxt* engine )
 {
-    XP_MEMSET( &engine->miData, 0, sizeof(engine->miData) );   
-    engine->miData.lastSeenMove.score = 0xffff; /* max possible */
+    XP_MEMSET( &engine->miData, 0, sizeof(engine->miData) );
+    /* set last score to max possible */
+    engine->miData.lastSeenMove.score = engine->usePrev? 0 : 0xffff;
     engine->searchInProgress = XP_FALSE;
 #ifdef XWFEATURE_SEARCHLIMIT
     engine->tileLimitsKnown = XP_FALSE;      /* indicates not set */
@@ -275,11 +299,33 @@ cmpMoves( PossibleMove* m1, PossibleMove* m2 )
 } /* cmpMoves */
 #endif
 
+#ifdef DEBUG
+static void
+print_savedMoves( const EngineCtxt* engine, const char* label )
+{
+    int ii;
+    int pos = 0;
+    char buf[(NUM_SAVED_ENGINE_MOVES*10) + 3] = {0};
+    for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES; ++ii ) {
+        if ( 0 < engine->miData.savedMoves[ii].score ) {
+            pos += XP_SNPRINTF( &buf[pos], VSIZE(buf)-pos, "[%d]: %d; ", 
+                                ii, engine->miData.savedMoves[ii].score );
+        }
+    }
+    XP_LOGF( "%s: %s", label, buf );
+}
+#else
+# define print_savedMoves( engine, label )
+#endif
+
 static XP_Bool
 chooseMove( EngineCtxt* engine, PossibleMove** move ) 
 {
     XP_U16 ii;
     PossibleMove* chosen;
+    XP_Bool result;
+
+    print_savedMoves( engine, "unsorted moves" );
 
     /* First, sort 'em.  Put the higher-scoring moves at the top where they'll
        get picked up first.  Don't sort if we're working for a robot; we've
@@ -288,53 +334,40 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
     if ( engine->isRobot ) {
         chosen = &engine->miData.savedMoves[0];
     } else {
-        while ( engine->miData.leftInMoveCache == 0 ) {
-            XP_Bool done = XP_TRUE;
+        XP_Bool done = !move_cache_empty( engine );
+        while ( !done ) { /* while so can break */
+            done = XP_TRUE;
+            PossibleMove* cur = engine->miData.savedMoves;
             for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES-1; ++ii ) {
-                if ( CMPMOVES( &engine->miData.savedMoves[ii],
-                               &engine->miData.savedMoves[ii+1]) > 0 ) {
+                PossibleMove* next = cur + 1;
+                if ( CMPMOVES( cur, next ) > 0 ) {
                     PossibleMove tmp;
-                    XP_MEMCPY( &tmp, &engine->miData.savedMoves[ii],
-                               sizeof(tmp) );
-                    XP_MEMCPY( &engine->miData.savedMoves[ii],
-                               &engine->miData.savedMoves[ii+1],
-                               sizeof(engine->miData.savedMoves[ii]) );
-                    XP_MEMCPY( &engine->miData.savedMoves[ii+1], &tmp,
-                               sizeof(engine->miData.savedMoves[ii+1]) );
+                    XP_MEMCPY( &tmp, cur, sizeof(tmp) );
+                    XP_MEMCPY( cur, next, sizeof(*cur) );
+                    XP_MEMCPY( next, &tmp, sizeof(*next) );
                     done = XP_FALSE;
                 }
+                cur = next;
             }
             if ( done ) {
-                engine->miData.leftInMoveCache = NUM_SAVED_ENGINE_MOVES;
+                init_move_cache( engine );
+                print_savedMoves( engine, "sorted moves" );
             }
-#if 0
-            XP_DEBUGF( "sorted moves; scores are: " );
-            for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES; ++ii ) {
-                XP_DEBUGF( "%d; ", engine->miData.savedMoves[ii].score );
-            }
-            XP_DEBUGF( "\n" );
-#endif
         }
+
         /* now pick the one we're supposed to return */
-        chosen = &engine->miData.savedMoves[--engine->miData.leftInMoveCache];
+        chosen = next_from_cache( engine );
     }
 
     *move = chosen; /* set either way */
 
-    if ( chosen->score > 0 ) {
+    result = chosen->score > 0;
 
-        if ( engine->miData.leftInMoveCache == 0 ) {
-            XP_MEMCPY( &engine->miData.lastSeenMove, 
-                       &engine->miData.savedMoves[0], 
-                       sizeof(engine->miData.lastSeenMove) );
-            engine->miData.lowestSavedScore = 0;
-        }
-
-        return XP_TRUE;
-    } else {
+    if ( !result ) {
         engine_reset( engine ); 
-        return XP_FALSE;
     }
+    LOG_RETURNF( "%d", result );
+    return result;
 } /* chooseMove */
 
 /* Return of XP_TRUE means that we ran to completion.  XP_FALSE means we were
@@ -344,7 +377,7 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
 XP_Bool
 engine_findMove( EngineCtxt* engine, const ModelCtxt* model, 
                  const DictionaryCtxt* dict, const Tile* tiles,
-                 XP_U16 nTiles, 
+                 XP_U16 nTiles, XP_Bool usePrev,
 #ifdef XWFEATURE_SEARCHLIMIT
                  const BdHintLimits* searchLimits,
                  XP_Bool useTileLimits,
@@ -386,6 +419,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
 
     engine->model = model;
     engine->dict = dict;
+    engine->usePrev = usePrev;
     engine->blankTile = dict_getBlankTile( dict );
     engine->returnNOW = XP_FALSE;
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -410,7 +444,8 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
 
         engine->targetScore = targetScore;
 
-        if ( engine->miData.leftInMoveCache == 0 ) {
+        if ( move_cache_empty( engine ) ) {
+            set_search_limits( engine );
 
             XP_MEMSET( engine->miData.savedMoves, 0,
                        sizeof(engine->miData.savedMoves) );
@@ -478,12 +513,10 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
             result = XP_FALSE;
         } else {
             PossibleMove* move;
-
-            result = XP_TRUE;
-
-            (void)chooseMove( engine, &move );
-            XP_ASSERT( !!newMove );
-            XP_MEMCPY( newMove, &move->moveInfo, sizeof(*newMove) );
+            if ( chooseMove( engine, &move ) ) {
+                XP_ASSERT( !!newMove );
+                XP_MEMCPY( newMove, &move->moveInfo, sizeof(*newMove) );
+            }
         }
 
         util_engineStopping( engine->util );
@@ -1045,7 +1078,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
                             XP_U16 lastRow, BlankTuple* usedBlanks,
                             XP_U16 usedBlanksCount )
 {
-    XP_U16 i;
+    XP_U16 ii;
 
     if ( blanksLeft == 0 ) {
         XP_U16 score;
@@ -1061,11 +1094,11 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
         if ( scoreQualifies( engine, score ) ) {
             posmove->score = score;
             XP_MEMSET( &posmove->blankVals, 0, sizeof(posmove->blankVals) );
-            for ( i = 0; i < usedBlanksCount; ++i ) {
-                short col = usedBlanks[i].col;
-                posmove->blankVals[col] = usedBlanks[i].tile;
+            for ( ii = 0; ii < usedBlanksCount; ++ii ) {
+                short col = usedBlanks[ii].col;
+                posmove->blankVals[col] = usedBlanks[ii].tile;
             }
-            XP_ASSERT( posmove->moveInfo.isHorizontal==
+            XP_ASSERT( posmove->moveInfo.isHorizontal ==
                        engine->searchHorizontal );
             posmove->moveInfo.commonCoord = (XP_U8)lastRow;
             saveMoveIfQualifies( engine, posmove );
@@ -1080,18 +1113,18 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
         bt = &usedBlanks[usedBlanksCount++];
 
         /* for each letter for which the blank might be standing in... */
-        for ( i = 0; i < posmove->moveInfo.nTiles; ++i ) {
-            CellTile tile = posmove->moveInfo.tiles[i].tile;
+        for ( ii = 0; ii < posmove->moveInfo.nTiles; ++ii ) {
+            CellTile tile = posmove->moveInfo.tiles[ii].tile;
             if ( (tile & TILE_VALUE_MASK) == bTile && !IS_BLANK(tile) ) {
-                posmove->moveInfo.tiles[i].tile |= TILE_BLANK_BIT;
-                bt->col = i;
+                posmove->moveInfo.tiles[ii].tile |= TILE_BLANK_BIT;
+                bt->col = ii;
                 bt->tile = bTile;
                 considerScoreWordHasBlanks( engine, blanksLeft,
                                             posmove, lastRow,
                                             usedBlanks,
                                             usedBlanksCount );
                 /* now put things back */
-                posmove->moveInfo.tiles[i].tile &= ~TILE_BLANK_BIT;
+                posmove->moveInfo.tiles[ii].tile &= ~TILE_BLANK_BIT;
             }
         }
     }
@@ -1100,25 +1133,30 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
 static void
 saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
 {
-    XP_S16 lowest = 0;
+    XP_S16 mostest = 0;
+    XP_S16 cmpVal;
+    XP_Bool usePrev = engine->usePrev;
+    XP_Bool foundEmpty = XP_FALSE;
 
     if ( !engine->isRobot ) { /* robot doesn't ask for next hint.... */
-
+        mostest = -1;
         /* we're not interested if we've seen this */
-        if ( CMPMOVES( posmove, &engine->miData.lastSeenMove ) >= 0 ) {
-            lowest = -1;
+        cmpVal = CMPMOVES( posmove, &engine->miData.lastSeenMove );
+        if ( !usePrev && cmpVal >= 0 ) {
+            XP_LOGF( "%s: dropping: too high", __func__ );
+        } else if ( usePrev && cmpVal <= 0 ) {
+            XP_LOGF( "%s: dropping: too low", __func__ );
         } else {
             XP_S16 ii;
-            /* terminate i at 1 because lowest starts at 0 */
-            for ( lowest = NUM_SAVED_ENGINE_MOVES-1, ii = lowest - 1; 
-                  ii >= 0; --ii ) { 
-                /* Find the lowest value move and overwrite it.  Note that
+            /* terminate i at 1 because mostest starts at 0 */
+            for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES; ++ii ) {
+                /* Find the mostest value move and overwrite it.  Note that
                    there might not be one, as all may have the same or higher
                    scores and those that have the same score may compare
                    higher.
 
                    <eeh> can't have this asssertion until I start noting the
-                   lowest saved score (setting miData.lowestSavedScore)
+                   mostest saved score (setting miData.mostestSavedScore)
                    below. */
                 /* 1/20/2001  I don't see that this assertion is valid.  I
                    simply don't understand why it isn't tripped all the time
@@ -1127,53 +1165,165 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
                 /*    || (engine->miData.savedMoves[i].score */
                 /*        <= posmove->score) ); */
 
-                if ( CMPMOVES( &engine->miData.savedMoves[lowest], 
-                               &engine->miData.savedMoves[ii] ) > 0 ) {
-                    lowest = ii;
+                if ( 0 == engine->miData.savedMoves[ii].score ) {
+                    foundEmpty = XP_TRUE;
+                    mostest = ii;
+                    break;
+                } else if ( -1 == mostest ) {
+                    mostest = ii;
+                } else {
+                    cmpVal = CMPMOVES( &engine->miData.savedMoves[mostest], 
+                                       &engine->miData.savedMoves[ii] );
+                    if ( !usePrev && cmpVal > 0 ) {
+                        mostest = ii;
+                    } else if ( usePrev && cmpVal < 0 ) {
+                        mostest = ii;
+                    }
                 }
             }
         }
     }
-    if ( lowest >= 0) {
+
+    while ( mostest >= 0 ) {     /* while: so we can break */
         /* record the score we're dumping.  No point in considering any scores
            lower than this for the rest of this round. */
-        engine->miData.lowestSavedScore = 
-            engine->miData.savedMoves[lowest].score;
+        /* engine->miData.lowestSavedScore =  */
+        /*     engine->miData.savedMoves[lowest].score; */
         /* XP_DEBUGF( "lowestSavedScore now %d\n",  */
         /* engine->miData.lowestSavedScore ); */
-        if ( CMPMOVES( posmove, &engine->miData.savedMoves[lowest]) > 0 ) {
-            XP_MEMCPY( &engine->miData.savedMoves[lowest], posmove,
-                       sizeof(engine->miData.savedMoves[lowest]) );
-            /*     XP_DEBUGF( "just saved move with score %d\n",  */
-            /*      engine->miData.savedMoves[lowest].score ); */
+        if ( foundEmpty ) {
+            /* we're good */
+        } else {
+            cmpVal = CMPMOVES( posmove, &engine->miData.savedMoves[mostest]);
+            if ( !usePrev && cmpVal <= 0 ) {
+                break;
+            } else if ( usePrev && cmpVal >= 0 ) {
+                break;
+            }
         }
+        XP_LOGF( "saving move with score %d at %d (replacing %d)\n",
+                 posmove->score, mostest, 
+                 engine->miData.savedMoves[mostest].score );
+        XP_MEMCPY( &engine->miData.savedMoves[mostest], posmove,
+                   sizeof(engine->miData.savedMoves[mostest]) );
+        break;
     }
 } /* saveMoveIfQualifies */
+
+static void
+set_search_limits( EngineCtxt* engine )
+{
+    /* If we're going to be searching backwards we want our highest cached
+       move as the limit; otherwise the lowest */
+    if ( 0 < engine->miData.nInMoveCache ) {
+        XP_U16 srcIndx = engine->usePrev? NUM_SAVED_ENGINE_MOVES-1 : 0;
+        XP_MEMCPY( &engine->miData.lastSeenMove, 
+                   &engine->miData.savedMoves[srcIndx],
+                   sizeof(engine->miData.lastSeenMove) );
+        //engine->miData.lowestSavedScore = 0;
+    } else {
+        /* we're doing this for first time */
+        engine_reset( engine );
+    }
+}
+
+static void
+init_move_cache( EngineCtxt* engine )
+{
+    XP_U16 nInMoveCache = NUM_SAVED_ENGINE_MOVES;
+    XP_U16 ii;
+
+    for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES; ++ii ) {
+        if ( 0 == engine->miData.savedMoves[ii].score ) {
+            --nInMoveCache;
+        } else {
+            break;
+        }
+    }
+    engine->miData.nInMoveCache = nInMoveCache;
+    engine->miData.bottom = NUM_SAVED_ENGINE_MOVES - nInMoveCache;
+
+    if ( engine->usePrev ) {
+        engine->miData.curCacheIndex = 
+            NUM_SAVED_ENGINE_MOVES - nInMoveCache - 1;
+    } else {
+        engine->miData.curCacheIndex = NUM_SAVED_ENGINE_MOVES;
+    }
+    XP_LOGF( "%s: set curCacheIndex to %d", __func__, 
+             engine->miData.curCacheIndex );
+}
+
+static PossibleMove*
+next_from_cache( EngineCtxt* engine )
+{
+    if ( engine->usePrev ) {
+        ++engine->miData.curCacheIndex;
+    } else {
+        --engine->miData.curCacheIndex;
+    }
+    XP_LOGF( "%s: curCacheIndex now %d", __func__, 
+             engine->miData.curCacheIndex );
+    return &engine->miData.savedMoves[engine->miData.curCacheIndex];
+}
+
+static XP_Bool
+move_cache_empty( const EngineCtxt* engine )
+{
+    XP_Bool empty;
+    const MoveIterationData* miData = &engine->miData;
+    XP_LOGF( "%s: usePrev: %d; curCacheIndex: %d; nInMoveCache: %d",
+             __func__, engine->usePrev, miData->curCacheIndex,
+             miData->nInMoveCache );
+
+    if ( 0 == miData->nInMoveCache ) {
+        empty = XP_TRUE;
+    } else if ( engine->usePrev ) {
+        empty = miData->curCacheIndex >= NUM_SAVED_ENGINE_MOVES - 1;
+    } else {
+        empty = miData->curCacheIndex <= miData->bottom;
+    }
+    LOG_RETURNF( "%d", empty );
+    return empty;
+}
 
 static XP_Bool
 scoreQualifies( EngineCtxt* engine, XP_U16 score )
 {
     XP_Bool qualifies = XP_FALSE;
+    XP_Bool usePrev = engine->usePrev;
 
-    if ( (score > engine->miData.lastSeenMove.score) 
-         || (score > engine->targetScore)
-         || (score < engine->miData.lowestSavedScore) ) {
-        /* do nothing */
+    if ( score > engine->targetScore ) {
+        /* drop it */
+    } else if ( usePrev && score < engine->miData.lastSeenMove.score ) {
+        /* drop it */
+    } else if ( !usePrev && score > engine->miData.lastSeenMove.score
+         /* || (score < engine->miData.lowestSavedScore) */ ) {
+        /* drop it */
     } else {
         XP_S16 ii;
+        PossibleMove* savedMoves = engine->miData.savedMoves;
         /* Look at each saved score, and return true as soon as one's found
            with a lower or equal score to this.  <eeh> As an optimization,
            consider remembering what the lowest score is *once there are
            NUM_SAVED_ENGINE_MOVES moves in here* and doing a quick test on
            that. Or better, keeping the list in sorted order. */
-        for ( ii = engine->isRobot? 0: NUM_SAVED_ENGINE_MOVES - 1;
-              ii >= 0; --ii ) {
-            if ( score >= engine->miData.savedMoves[ii].score ) {
+        for ( ii = 0, savedMoves = engine->miData.savedMoves;
+              ii < NUM_SAVED_ENGINE_MOVES; ++ii, ++savedMoves ) {
+            if ( savedMoves->score == 0 ) { /* empty slot */
                 qualifies = XP_TRUE;
+            } else if ( usePrev && score <= savedMoves->score ) {
+                qualifies = XP_TRUE;
+                break;
+            } else if ( !usePrev && score >= savedMoves->score ) {
+                qualifies = XP_TRUE;
+                break;
+            }
+            if ( engine->isRobot ) { /* we look at only one for robot */
                 break;
             }
         }
     }
+    XP_LOGF( "%s(%d)->%d", __func__, score, qualifies );
     return qualifies;
 } /* scoreQualifies */
 

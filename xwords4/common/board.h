@@ -108,7 +108,7 @@ XP_Bool board_requestHint( BoardCtxt* board,
 #ifdef XWFEATURE_SEARCHLIMIT
                            XP_Bool useTileLimits,
 #endif
-                           XP_Bool* workRemainsP );
+                           XP_Bool usePrev, XP_Bool* workRemainsP );
 
 XP_Bool board_prefsChanged( BoardCtxt* board, CommonPrefs* cp );
 
