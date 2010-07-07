@@ -1023,18 +1023,30 @@ handle_value_button( GtkWidget* XP_UNUSED(widget), gpointer closure )
 } /* handle_value_button */
 
 static void
-handle_hint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+handle_hint_button( GtkAppGlobals* globals, XP_Bool prev )
 {
     XP_Bool redo;
     if ( board_requestHint( globals->cGlobals.game.board, 
 #ifdef XWFEATURE_SEARCHLIMIT
                             XP_FALSE,
 #endif
-                            &redo ) ) {
+                            prev, &redo ) ) {
         board_draw( globals->cGlobals.game.board );
         disenable_buttons( globals );
     }
 } /* handle_hint_button */
+
+static void
+handle_prevhint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    handle_hint_button( globals, XP_TRUE );
+} /* handle_prevhint_button */
+
+static void
+handle_nexthint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    handle_hint_button( globals, XP_FALSE );
+} /* handle_nexthint_button */
 
 static void
 handle_nhint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
@@ -1046,7 +1058,7 @@ handle_nhint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 #ifdef XWFEATURE_SEARCHLIMIT
                             XP_TRUE, 
 #endif
-                            &redo ) ) {
+                            XP_FALSE, &redo ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_nhint_button */
@@ -1698,8 +1710,11 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
                                        G_CALLBACK(handle_value_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?",
-                                       G_CALLBACK(handle_hint_button) );
+    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?-",
+                                       G_CALLBACK(handle_prevhint_button) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?+",
+                                       G_CALLBACK(handle_nexthint_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     button = makeShowButtonFromBitmap( globals, "../hintNum.xpm", "n",

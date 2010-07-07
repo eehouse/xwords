@@ -536,7 +536,7 @@ handleHint( CursesAppGlobals* globals )
 #ifdef XWFEATURE_SEARCHLIMIT
                                          XP_FALSE,
 #endif
-                                         &redo );
+                                         XP_FALSE, &redo );
     return XP_TRUE;
 } /* handleHint */
 
