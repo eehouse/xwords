@@ -361,7 +361,7 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
 
     *move = chosen; /* set either way */
 
-    result = chosen->score > 0;
+    result = (NULL != chosen) && (chosen->score > 0);
 
     if ( !result ) {
         engine_reset( engine ); 
@@ -1143,9 +1143,11 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
         /* we're not interested if we've seen this */
         cmpVal = CMPMOVES( posmove, &engine->miData.lastSeenMove );
         if ( !usePrev && cmpVal >= 0 ) {
-            XP_LOGF( "%s: dropping: too high", __func__ );
+            XP_LOGF( "%s: dropping %d: higher than %d", __func__,
+                     posmove->score, engine->miData.lastSeenMove.score );
         } else if ( usePrev && cmpVal <= 0 ) {
-            XP_LOGF( "%s: dropping: too low", __func__ );
+            XP_LOGF( "%s: dropping %d: lower than %d", __func__,
+                     posmove->score, engine->miData.lastSeenMove.score );
         } else {
             XP_S16 ii;
             /* terminate i at 1 because mostest starts at 0 */
@@ -1216,10 +1218,13 @@ set_search_limits( EngineCtxt* engine )
     /* If we're going to be searching backwards we want our highest cached
        move as the limit; otherwise the lowest */
     if ( 0 < engine->miData.nInMoveCache ) {
-        XP_U16 srcIndx = engine->usePrev? NUM_SAVED_ENGINE_MOVES-1 : 0;
+        XP_U16 srcIndx = engine->usePrev
+            ? NUM_SAVED_ENGINE_MOVES-1 : engine->miData.bottom;
         XP_MEMCPY( &engine->miData.lastSeenMove, 
                    &engine->miData.savedMoves[srcIndx],
                    sizeof(engine->miData.lastSeenMove) );
+        XP_LOGF( "%s: saved limit move with score: %d", __func__, 
+                 engine->miData.lastSeenMove.score );
         //engine->miData.lowestSavedScore = 0;
     } else {
         /* we're doing this for first time */
@@ -1256,14 +1261,20 @@ init_move_cache( EngineCtxt* engine )
 static PossibleMove*
 next_from_cache( EngineCtxt* engine )
 {
-    if ( engine->usePrev ) {
-        ++engine->miData.curCacheIndex;
+    PossibleMove* move;
+    if ( move_cache_empty( engine ) ) {
+        move = NULL;
     } else {
-        --engine->miData.curCacheIndex;
+        if ( engine->usePrev ) {
+            ++engine->miData.curCacheIndex;
+        } else {
+            --engine->miData.curCacheIndex;
+        }
+        move = &engine->miData.savedMoves[engine->miData.curCacheIndex];
+        XP_LOGF( "%s: curCacheIndex now %d", __func__, 
+                 engine->miData.curCacheIndex );
     }
-    XP_LOGF( "%s: curCacheIndex now %d", __func__, 
-             engine->miData.curCacheIndex );
-    return &engine->miData.savedMoves[engine->miData.curCacheIndex];
+    return move;
 }
 
 static XP_Bool
@@ -1323,7 +1334,7 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
             }
         }
     }
-    XP_LOGF( "%s(%d)->%d", __func__, score, qualifies );
+    //XP_LOGF( "%s(%d)->%d", __func__, score, qualifies );
     return qualifies;
 } /* scoreQualifies */
 
