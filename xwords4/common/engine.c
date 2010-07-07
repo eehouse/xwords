@@ -513,7 +513,8 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
             result = XP_FALSE;
         } else {
             PossibleMove* move;
-            if ( chooseMove( engine, &move ) ) {
+            result = chooseMove( engine, &move );
+            if ( result ) {
                 XP_ASSERT( !!newMove );
                 XP_MEMCPY( newMove, &move->moveInfo, sizeof(*newMove) );
             }
