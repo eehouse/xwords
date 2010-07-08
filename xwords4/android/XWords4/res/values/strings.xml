@@ -135,7 +135,7 @@
 	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to exchange.</string>
 	<string name="str_cant_undo_tileassign">Tile assignment can't be undone.</string>
 	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Settings dialog.</string>
-	<string name="str_no_peek_remote_tiles">No peeking at remote players' tiles!</string>
+	<string name="str_no_peek_remote_tiles">No peeking at remote players\' tiles!</string>
 	<string name="str_reg_unexpected_user">Refused attempt to register unexpected user[s]</string>
 	<string name="str_server_dict_wins">Conflict between Host and Guest dictionaries; Host wins.</string>
 	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
