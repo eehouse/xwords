@@ -1045,6 +1045,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1canFlip
 }
 
 JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1canHint
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_canHint( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1canShuffle
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
