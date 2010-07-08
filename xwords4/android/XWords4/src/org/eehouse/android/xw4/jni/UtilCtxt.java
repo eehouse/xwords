@@ -34,6 +34,8 @@ public interface UtilCtxt {
     String askPassword( String name );
 
     boolean engineProgressCallback();
+    void engineStarting( int nBlanks );
+    void engineStopping();
 
     // Values for why; should be enums
     public static final int TIMER_PENDOWN = 1;

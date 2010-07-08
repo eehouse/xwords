@@ -378,13 +378,17 @@ and_util_getTraySearchLimits(XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
 static void
 and_util_engineStarting( XW_UtilCtxt* uc, XP_U16 nBlanks )
 {
-    LOG_FUNC();
+    UTIL_CBK_HEADER("engineStarting", "(I)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, nBlanks );
+    UTIL_CBK_TAIL();
 }
 
 static void
 and_util_engineStopping( XW_UtilCtxt* uc )
 {
-    LOG_FUNC();
+    UTIL_CBK_HEADER("engineStopping", "()V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
 }
 #endif
 

@@ -879,6 +879,19 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return ! m_jniThread.busy();
     }
 
+    public void engineStarting( int nBlanks )
+    {
+        Utils.logf( "engineStarting(%d)", nBlanks );
+        // Looks like I'll need my own transparent/floating window to
+        // show progress other than in the title bar (which I ain't
+        // always got).
+    }
+
+    public void engineStopping()
+    {
+        Utils.logf( "engineStopping" );
+    }
+
     public String getUserString( int stringCode )
     {
         int id = 0;
