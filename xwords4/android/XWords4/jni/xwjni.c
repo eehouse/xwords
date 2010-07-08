@@ -1033,13 +1033,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1focusChanged
     return result;
 }
 
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1canFlip
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1visTileCount
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
-    jboolean result;
+    jint result;
     XWJNI_START();
-    result = board_canFlip( state->game.board );
+    result = board_visTileCount( state->game.board );
     XWJNI_END();
     return result;
 }

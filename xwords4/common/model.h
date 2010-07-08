@@ -193,8 +193,8 @@ void model_resetCurrentTurn( ModelCtxt* model, XP_S16 turn );
 XP_S16 model_getNMoves( const ModelCtxt* model );
 
 /* Are there two or more tiles visible */
-XP_Bool model_canFlip( const ModelCtxt* model, XP_U16 turn, 
-                       XP_Bool trayVisible );
+XP_U16 model_visTileCount( const ModelCtxt* model, XP_U16 turn, 
+                           XP_Bool trayVisible );
 XP_Bool model_canShuffle( const ModelCtxt* model, XP_U16 turn, 
                           XP_Bool trayVisible );
 XP_Bool model_canTogglePending( const ModelCtxt* model, XP_U16 turn );

@@ -1147,12 +1147,14 @@ model_getNMoves( const ModelCtxt* model )
     return result;
 }
 
-XP_Bool
-model_canFlip( const ModelCtxt* model, XP_U16 turn, XP_Bool trayVisible )
+XP_U16
+model_visTileCount( const ModelCtxt* model, XP_U16 turn, XP_Bool trayVisible )
 {
-    XP_Bool canFlip = 0 < model->vol.nTilesOnBoard
-        || (trayVisible && (0 < model_getCurrentMoveCount( model, turn )));
-    return canFlip;
+    XP_U16 count = model->vol.nTilesOnBoard;
+    if ( trayVisible ) {
+        count += model_getCurrentMoveCount( model, turn );
+    }
+    return count;
 }
 
 XP_Bool

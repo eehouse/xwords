@@ -523,11 +523,11 @@ board_getYOffset( const BoardCtxt* board )
     return vsd->offset;
 } /* board_getYOffset */
 
-XP_Bool
-board_canFlip( const BoardCtxt* board )
+XP_U16
+board_visTileCount( const BoardCtxt* board )
 {
-    return model_canFlip( board->model, board->selPlayer, 
-                          TRAY_REVEALED == board->trayVisState );
+    return model_visTileCount( board->model, board->selPlayer, 
+                               TRAY_REVEALED == board->trayVisState );
 }
 
 XP_Bool
