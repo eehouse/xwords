@@ -537,10 +537,22 @@ board_canShuffle( const BoardCtxt* board )
                              TRAY_REVEALED == board->trayVisState );
 }
 
-XP_Bool board_canTogglePending( const BoardCtxt* board )
+XP_Bool
+board_canTogglePending( const BoardCtxt* board )
 {
     return TRAY_REVEALED == board->trayVisState
         && model_canTogglePending( board->model, board->selPlayer );
+}
+
+XP_Bool
+board_canHint( const BoardCtxt* board )
+{
+    XP_Bool canHint = !board->gi->hintsNotAllowed;
+    if ( canHint ) {
+        LocalPlayer* lp = &board->gi->players[board->selPlayer];
+        canHint = lp->isLocal && !lp->isRobot;
+    }
+    return canHint;
 }
 
 static XP_U16

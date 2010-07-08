@@ -81,6 +81,7 @@ XP_U16 board_getYOffset( const BoardCtxt* board );
 XP_Bool board_canFlip( const BoardCtxt* board );
 XP_Bool board_canShuffle( const BoardCtxt* board );
 XP_Bool board_canTogglePending( const BoardCtxt* board );
+XP_Bool board_canHint( const BoardCtxt* board );
 
 /* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut );
