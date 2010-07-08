@@ -248,7 +248,7 @@ public class GamesList extends ListActivity {
 
                 case R.id.list_item_config:
                     doConfig( path );
-                    invalPath = path;
+                    m_invalPath = path;
                     break;
 
                 case R.id.list_item_reset:
