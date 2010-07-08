@@ -522,7 +522,7 @@ cmd_lock( int socket, const char** args )
 static bool
 cmd_help( int socket, const char** args )
 {
-    if ( 0 == strcmp( "help", args[1] ) ) {
+    if ( NULL != args[1] && 0 == strcmp( "help", args[1] ) ) {
         print_to_sock( socket, true, "* %s  -- prints this", args[0] );
     } else {
 

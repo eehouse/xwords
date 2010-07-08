@@ -32,7 +32,7 @@ SRC = xwrelay.cpp \
 
 # STATIC ?= -static
 GITINFO = gitversion.txt
-HASH=$(shell ../scripts/gitversion.sh)
+HASH=$(shell git describe)
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
