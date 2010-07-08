@@ -263,6 +263,12 @@ public class JNIThread extends Thread {
         int canRedo = XwJNI.board_canTogglePending( m_jniGamePtr ) ? 1 : 0;
         Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_UNDO,
                         canRedo ).sendToTarget();
+
+        int canHint = XwJNI.board_canHint( m_jniGamePtr ) ? 1 : 0;
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_HINT_PREV,
+                        canHint ).sendToTarget();
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_HINT_NEXT,
+                        canHint ).sendToTarget();
     }
 
     public void run() 
