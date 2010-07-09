@@ -180,6 +180,7 @@
     delete all games?  This action cannot be undone.</string>
     
     <string name="hints_allowed">Allow hints</string>
+    <string name="progress_title">Searching for moves</string>
     <string name="use_timer">Enable game timer</string>
     <string name="color_tiles">Color tiles</string>
     <string name="color_tiles_summary">Draw tiles using color of

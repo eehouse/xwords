@@ -36,6 +36,7 @@ import java.util.concurrent.Semaphore;
 import android.net.Uri;
 import android.app.Dialog;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -86,6 +87,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     private Thread m_blockingThread;
     private JNIThread m_jniThread;
+
+    private ProgressDialog m_progress;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -882,14 +885,28 @@ public class BoardActivity extends Activity implements UtilCtxt {
     public void engineStarting( int nBlanks )
     {
         Utils.logf( "engineStarting(%d)", nBlanks );
-        // Looks like I'll need my own transparent/floating window to
-        // show progress other than in the title bar (which I ain't
-        // always got).
+        if ( nBlanks > 0 ) {
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        String title = getString( R.string.progress_title );
+                        m_progress = ProgressDialog.show( BoardActivity.this,
+                                                          title, null, true );
+                    }
+                } );
+        }
     }
 
     public void engineStopping()
     {
         Utils.logf( "engineStopping" );
+        m_handler.post( new Runnable() {
+                public void run() {
+                    if ( null != m_progress ) {
+                        m_progress.cancel();
+                        m_progress = null;
+                    }
+                }
+            } );
     }
 
     public String getUserString( int stringCode )
