@@ -890,7 +890,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
                     public void run() {
                         String title = getString( R.string.progress_title );
                         m_progress = ProgressDialog.show( BoardActivity.this,
-                                                          title, null, true );
+                                                          title, null, true, 
+                                                          true );
                     }
                 } );
         }
