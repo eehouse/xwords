@@ -285,9 +285,12 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
     }
 
 /*     XP_ASSERT( globals->keyDown ); */
+#ifdef KEYBOARD_NAV
     globals->keyDown = XP_FALSE;
+#endif
 
-    return handled? 1 : 0;        /* gtk will do something with the key if 0 returned  */
+    return handled? 1 : 0;        /* gtk will do something with the key if 0
+                                     returned  */
 } /* key_release_event */
 #endif
 
@@ -995,7 +998,7 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
 static void
 disenable_buttons( GtkAppGlobals* globals )
 {
-    XP_Bool canFlip = board_canFlip( globals->cGlobals.game.board );
+    XP_Bool canFlip = 1 < board_visTileCount( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->flip_button, canFlip );
 
     XP_Bool canToggle = board_canTogglePending( globals->cGlobals.game.board );
