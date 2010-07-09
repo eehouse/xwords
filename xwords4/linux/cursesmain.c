@@ -96,14 +96,15 @@ typedef struct MenuList {
 
 static XP_Bool handleQuit( CursesAppGlobals* globals );
 static XP_Bool handleResend( CursesAppGlobals* globals );
-static XP_Bool handleRight( CursesAppGlobals* globals );
 static XP_Bool handleSpace( CursesAppGlobals* globals );
 static XP_Bool handleRet( CursesAppGlobals* globals );
 static XP_Bool handleHint( CursesAppGlobals* globals );
+#ifdef KEYBOARD_NAV
 static XP_Bool handleLeft( CursesAppGlobals* globals );
 static XP_Bool handleRight( CursesAppGlobals* globals );
 static XP_Bool handleUp( CursesAppGlobals* globals );
 static XP_Bool handleDown( CursesAppGlobals* globals );
+#endif
 static XP_Bool handleCommit( CursesAppGlobals* globals );
 static XP_Bool handleFlip( CursesAppGlobals* globals );
 static XP_Bool handleToggleValues( CursesAppGlobals* globals );
@@ -125,7 +126,6 @@ static XP_Bool handleRootKeyHide( CursesAppGlobals* globals );
 const MenuList g_sharedMenuList[] = {
     { handleQuit, "Quit", "Q", 'Q' },
     { handleResend, "Resend", "R", 'R' },
-    { handleRight, "Tab right", "<tab>", '\t' },
     { handleSpace, "Raise focus", "<spc>", ' ' },
     { handleRet, "Click/tap", "<ret>", '\r' },
     { handleHint, "Hint", "?", '?' },
@@ -186,6 +186,7 @@ const MenuList g_rootMenuListHide[] = {
 
 static CursesAppGlobals g_globals;	/* must be global b/c of SIGWINCH_handler */
 
+#ifdef KEYBOARD_NAV
 static void changeMenuForFocus( CursesAppGlobals* globals, 
                                 BoardObjectType obj );
 static XP_Bool handleLeft( CursesAppGlobals* globals );
@@ -193,6 +194,9 @@ static XP_Bool handleRight( CursesAppGlobals* globals );
 static XP_Bool handleUp( CursesAppGlobals* globals );
 static XP_Bool handleDown( CursesAppGlobals* globals );
 static XP_Bool handleFocusKey( CursesAppGlobals* globals, XP_Key key );
+#else 
+# define handleFocusKey( g, k ) XP_FALSE
+#endif
 static void countMenuLines( const MenuList** menuLists, int maxX, int padding,
                             int* nLinesP, int* nColsP );
 static void drawMenuFromList( WINDOW* win, const MenuList** menuLists,
@@ -500,6 +504,7 @@ handleResend( CursesAppGlobals* globals )
     return XP_TRUE;
 }
 
+#ifdef KEYBOARD_NAV
 static void
 checkAssignFocus( BoardCtxt* board )
 {
@@ -507,6 +512,9 @@ checkAssignFocus( BoardCtxt* board )
         board_focusChanged( board, OBJ_BOARD, XP_TRUE );
     }
 }
+#else
+# define checkAssignFocus(b)
+#endif
 
 static XP_Bool
 handleSpace( CursesAppGlobals* globals )
@@ -634,25 +642,25 @@ handleRootKeyHide( CursesAppGlobals* globals )
 #endif
 
 static XP_Bool
-handleAltLeft( CursesAppGlobals* globals )
+handleAltLeft( CursesAppGlobals* XP_UNUSED_KEYBOARD_NAV(globals) )
 {
     return handleFocusKey( globals, XP_CURSOR_KEY_ALTLEFT );
 }
 
 static XP_Bool
-handleAltRight( CursesAppGlobals* globals )
+handleAltRight( CursesAppGlobals* XP_UNUSED_KEYBOARD_NAV(globals) )
 {
     return handleFocusKey( globals, XP_CURSOR_KEY_ALTRIGHT );
 }
 
 static XP_Bool
-handleAltUp( CursesAppGlobals* globals )
+handleAltUp( CursesAppGlobals* XP_UNUSED_KEYBOARD_NAV(globals) )
 {
     return handleFocusKey( globals, XP_CURSOR_KEY_ALTUP );
 }
 
 static XP_Bool
-handleAltDown( CursesAppGlobals* globals )
+handleAltDown( CursesAppGlobals* XP_UNUSED_KEYBOARD_NAV(globals) )
 {
     return handleFocusKey( globals, XP_CURSOR_KEY_ALTDOWN );
 }
@@ -715,7 +723,7 @@ handleFocusKey( CursesAppGlobals* globals, XP_Key key )
 
     globals->doDraw = draw || globals->doDraw;
     return XP_TRUE;
-}
+} /* handleFocusKey */
 
 static XP_Bool
 handleLeft( CursesAppGlobals* globals )
@@ -1180,10 +1188,10 @@ drawMenuLargeOrSmall( CursesAppGlobals* globals, const MenuList* menuList )
     wrefresh( globals->menuWin );
 }
 
+#ifdef KEYBOARD_NAV
 static void
 changeMenuForFocus( CursesAppGlobals* globals, BoardObjectType focussed )
 {
-#ifdef KEYBOARD_NAV
     if ( focussed == OBJ_TRAY ) {
         globals->menuList = g_trayMenuList;
     } else if ( focussed == OBJ_BOARD ) {
@@ -1194,8 +1202,8 @@ changeMenuForFocus( CursesAppGlobals* globals, BoardObjectType focussed )
         XP_ASSERT(0);
     }
     drawMenuLargeOrSmall( globals, globals->menuList );
-#endif
 } /* changeMenuForFocus */
+#endif
 
 #if 0
 static void

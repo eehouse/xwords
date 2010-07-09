@@ -73,7 +73,9 @@ static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row,
                          XP_Bool skipBlanks );
 static void drawBoard( BoardCtxt* board );
 static void scrollIfCan( BoardCtxt* board );
+#ifdef KEYBOARD_NAV
 static XP_Bool cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row );
+#endif
 static void drawTradeWindowIf( BoardCtxt* board );
 
 
@@ -540,7 +542,7 @@ scrollIfCan( BoardCtxt* board )
         XP_Bool scrolled;
         XP_S16 dist;
 
-#ifdef PERIMETER_FOCUS
+#if defined KEYBOARD_NAV && defined PERIMETER_FOCUS
         if ( (board->focussed == OBJ_BOARD)
              && !board->focusHasDived 
              && !board->hideFocus ) {
