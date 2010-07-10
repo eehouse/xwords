@@ -217,14 +217,18 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     board->gameOver = (XP_Bool)stream_getBits( stream, 1 );
     board->showColors = (XP_Bool)stream_getBits( stream, 1 );
     board->showCellValues = (XP_Bool)stream_getBits( stream, 1 );
-#ifdef KEYBOARD_NAV
+
     if ( version >= STREAM_VERS_KEYNAV ) {
         board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
+#ifdef KEYBOARD_NAV
         board->focusHasDived = (BoardObjectType)stream_getBits( stream, 1 );
         board->scoreCursorLoc = (XP_U8)
             stream_getBits( stream, (version < STREAM_VERS_MODEL_NO_DICT? 2:3));
-    }
+#else
+        (void)stream_getBits( stream, 
+                              version < STREAM_VERS_MODEL_NO_DICT? 3:4 );
 #endif
+    }
 
     XP_ASSERT( !!server );
 
@@ -240,13 +244,16 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         pti->traySelBits = (TileBit)stream_getBits( stream, 
                                                     MAX_TRAY_TILES );
         pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
-#ifdef KEYBOARD_NAV 
+
         if ( version >= STREAM_VERS_KEYNAV ) {
+#ifdef KEYBOARD_NAV
             pti->bdCursor.col = stream_getBits( stream, 4 );
             pti->bdCursor.row = stream_getBits( stream, 4 );
             pti->trayCursorLoc = stream_getBits( stream, 3 );
-        }
+#else
+            (void)stream_getBits( stream, 4+4+3 );
 #endif
+        }
 
 #ifdef XWFEATURE_SEARCHLIMIT
         if ( version >= STREAM_VERS_41B4 ) {
@@ -284,10 +291,12 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
     stream_putBits( stream, 1, board->gameOver );
     stream_putBits( stream, 1, board->showColors );
     stream_putBits( stream, 1, board->showCellValues );
-#ifdef KEYBOARD_NAV
     stream_putBits( stream, 2, board->focussed );
+#ifdef KEYBOARD_NAV
     stream_putBits( stream, 1, board->focusHasDived );
     stream_putBits( stream, 3, board->scoreCursorLoc );
+#else
+    stream_putBits( stream, 4, 0 );
 #endif
 
     XP_ASSERT( !!board->server );
@@ -304,10 +313,13 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
         stream_putBits( stream, NTILES_NBITS, pti->dividerLoc );
         stream_putBits( stream, MAX_TRAY_TILES, pti->traySelBits );
         stream_putBits( stream, 1, pti->tradeInProgress );
-#ifdef KEYBOARD_NAV 
+
+#ifdef KEYBOARD_NAV
         stream_putBits( stream, 4, pti->bdCursor.col );
         stream_putBits( stream, 4, pti->bdCursor.row );
         stream_putBits( stream, 3, pti->trayCursorLoc );
+#else
+        stream_putBits( stream, 4+4+3, 0 );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
