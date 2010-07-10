@@ -269,8 +269,8 @@
     <string name="bonus_w2x">Double word</string>
     <string name="bonus_w3x">Triple word</string>
     <string name="bonus_l2x_summary">2L</string>
-    <string name="bonus_l3x_summary">3L</string>
     <string name="bonus_w2x_summary">2W</string>
+    <string name="bonus_l3x_summary">3L</string>
     <string name="bonus_w3x_summary">3W</string>
     <string name="trading_text">Exchanging tiles. Select\n\'Turn done\' when ready.</string>
     <string name="tile_back">Tile background</string>
