@@ -32,6 +32,7 @@ public interface UtilCtxt {
                      int playerNum, String[] texts );
 
     String askPassword( String name );
+    void turnChanged();
 
     boolean engineProgressCallback();
     void engineStarting( int nBlanks );

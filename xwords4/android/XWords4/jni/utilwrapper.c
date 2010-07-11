@@ -197,10 +197,12 @@ and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 maxOffset,
 static void
 and_util_turnChanged(XW_UtilCtxt* uc)
 {
-    /* don't log; this is getting called a lot */
+    UTIL_CBK_HEADER( "turnChanged", "()V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
 }
-
 #endif
+
 static void
 and_util_notifyGameOver( XW_UtilCtxt* uc )
 {
