@@ -64,6 +64,7 @@ public class JNIThread extends Thread {
             CMD_UNDO_LAST,
             CMD_HINT,
             CMD_ZOOM,
+            CMD_TOGGLEZOOM,
             CMD_PREV_HINT,
             CMD_NEXT_HINT,
             CMD_VALUES,
@@ -376,6 +377,16 @@ public class JNIThread extends Thread {
                 }
                 break;
 
+            case CMD_TOGGLEZOOM:
+                XwJNI.board_zoom( m_jniGamePtr, 0 , barr );
+                int zoomBy = 0;
+                if ( barr[1] ) { // always go out if possible
+                    zoomBy = -8;
+                } else if ( barr[0] ) {
+                    zoomBy = 8;
+                }
+                draw = XwJNI.board_zoom( m_jniGamePtr, zoomBy, barr );
+                break;
             case CMD_ZOOM:
                 draw = XwJNI.board_zoom( m_jniGamePtr, 
                                          ((Integer)args[0]).intValue(),

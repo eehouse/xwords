@@ -759,13 +759,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
                                new View.OnClickListener() {
-                                   private boolean m_goIn = true;
                                    @Override
                                    public void onClick( View view ) {
                                        m_jniThread.handle( JNIThread.JNICmd
-                                                           .CMD_ZOOM, 
-                                                           m_goIn? 8 : -8 );
-                                       m_goIn = !m_goIn;
+                                                           .CMD_TOGGLEZOOM );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_UNDO,
@@ -875,6 +872,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
             result = m_passwdEdit.getText().toString();
         }
         return result;
+    }
+
+    public void turnChanged()
+    {
+        m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, -8 );
     }
 
     public boolean engineProgressCallback()
