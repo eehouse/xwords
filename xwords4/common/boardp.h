@@ -65,6 +65,10 @@ typedef struct _DragState {
     DragObjInfo cur;
 
     XP_U16 yyAdd;
+    struct {
+        XP_S16 col; 
+        XP_S16 row;
+    } crosshairs;
 } DragState;
 
 typedef struct _BoardArrow { /* gets flipped along with board */
@@ -257,6 +261,11 @@ void invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB,
                       XP_U16 rowB );
 void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
 void invalDragObj( BoardCtxt* board, const DragObjInfo* di );
+#ifdef XWFEATURE_CROSSHAIRS
+void invalCol( BoardCtxt* board, XP_U16 col );
+void invalRow( BoardCtxt* board, XP_U16 row );
+#endif
+
 void invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex );
 void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
                             XP_U16 tileIndex2 );

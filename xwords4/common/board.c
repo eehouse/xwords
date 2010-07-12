@@ -1283,6 +1283,28 @@ invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect )
     }
 } /* invalCellsUnderRect */
 
+#ifdef XWFEATURE_CROSSHAIRS
+void
+invalCol( BoardCtxt* board, XP_U16 col )
+{
+    XP_U16 row;
+    XP_U16 nCols = model_numCols(board->model);
+    for ( row = 0; row < nCols; ++row ) {
+        invalCell( board, col, row );
+    }
+}
+
+void
+invalRow( BoardCtxt* board, XP_U16 row )
+{
+    XP_U16 col;
+    XP_U16 nCols = model_numCols(board->model);
+    for ( col = 0; col < nCols; ++col ) {
+        invalCell( board, col, row );
+    }
+}
+#endif
+
 void
 board_invalRect( BoardCtxt* board, XP_Rect* rect )
 {

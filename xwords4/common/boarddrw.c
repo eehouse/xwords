@@ -308,11 +308,17 @@ drawBoard( BoardCtxt* board )
                 CellFlags flags = CELL_NONE;
                 bonus = util_getSquareBonus( board->util, model, col, row );
                 hintAtts = figureHintAtts( board, col, row );
+                if ( 0 ) {
 #ifdef KEYBOARD_NAV
-                if ( cellFocused( board, col, row ) ) {
+                } else if ( cellFocused( board, col, row ) ) {
                     flags |= CELL_ISCURSOR;
-                }
 #endif
+#ifdef XWFEATURE_CROSSHAIRS
+                } else if ( dragDropInCrosshairs( board, col, row ) ) {
+                    flags |= CELL_ISCURSOR;
+#endif
+                }
+
                 draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
                                      arrow->vert, hintAtts, flags );
             }
@@ -421,6 +427,11 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             }
 #ifdef KEYBOARD_NAV
             if ( cellFocused( board, col, row ) ) {
+                flags |= CELL_ISCURSOR;
+            }
+#endif
+#ifdef XWFEATURE_CROSSHAIRS
+            if ( dragDropInCrosshairs( board, col, row ) ) {
                 flags |= CELL_ISCURSOR;
             }
 #endif

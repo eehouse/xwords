@@ -54,8 +54,10 @@ XP_Bool dragDropIsDividerDrag( const BoardCtxt* board );
 XP_Bool dragDropGetHintLimits( const BoardCtxt* board, BdHintLimits* limits );
 #endif
 
-
 void dragDropTileInfo( const BoardCtxt* board, Tile* tile, XP_Bool* isBlank );
+#ifdef XWFEATURE_CROSSHAIRS
+XP_Bool dragDropInCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row );
+#endif
 
 #ifdef CPLUS
 }

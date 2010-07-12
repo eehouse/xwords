@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -40,6 +40,16 @@ static void invalHintRectDiffs( BoardCtxt* board, const DragObjInfo* cur,
 static void setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits );
 #endif
 
+#ifdef XWFEATURE_CROSSHAIRS
+static void crosshairs_init( BoardCtxt* board );
+static XP_Bool crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row );
+static void crosshairs_clear( BoardCtxt* board );
+#else
+# define crosshairs_init( board )
+# define crosshairs_set( board, col, row ) XP_FALSE;
+# define crosshairs_clear( board )
+#endif
+
 static void startScrollTimerIf( BoardCtxt* board );
 
 XP_Bool
@@ -66,6 +76,8 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 
     found = coordToCell( board, xx, yy, &col, &row );
     XP_ASSERT( found );
+    crosshairs_init( board );
+    (void)crosshairs_set( board, col, row );
 
     trayVisible = board->trayVisState == TRAY_REVEALED;
     if ( trayVisible && holdsPendingTile( board, col, row ) ) {
@@ -281,6 +293,8 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
         invalDragObj( board, &ds->cur );
         invalDragObj( board, &ds->start );
     }
+
+    crosshairs_clear( board );
     ds->dtype = DT_NONE;
 
     return XP_TRUE;
@@ -438,6 +452,7 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     XP_Bool moving = XP_FALSE;
     DragObjInfo newInfo;
     DragState* ds = &board->dragState;
+    XP_Bool draw = XP_FALSE;
 
     yy -= ds->yyAdd;
 
@@ -449,6 +464,8 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     if ( newInfo.obj == OBJ_BOARD ) {
         (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
                            &newInfo.u.board.row );
+        draw = crosshairs_set( board, newInfo.u.board.col, 
+                               newInfo.u.board.row );
     }
 
     if ( ds->dtype == DT_DIVIDER ) {
@@ -519,6 +536,7 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     }
 
     if ( moving ) {
+        draw = XP_TRUE;
         if ( !ds->didMove ) {
             /* This is the first time we've moved!!!  Kill any future timers,
                and if there's a window up kill it.*/
@@ -530,7 +548,7 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
         }
     }
 
-    return moving;
+    return draw;
 } /* dragDropContinueImpl */
 
 static void
@@ -618,6 +636,61 @@ startScrollTimerIf( BoardCtxt* board )
         }
     }
 } /* startScrollTimerIf */
+
+#ifdef XWFEATURE_CROSSHAIRS
+XP_Bool
+dragDropInCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row )
+{
+    XP_Bool result = dragDropInProgress( board );
+    if ( result ) {
+        const DragState* ds = &board->dragState;
+        result = ds->crosshairs.col == col
+            || ds->crosshairs.row == row;
+    }
+    return result;
+} /* dragDropInCrosshairs */
+
+static void
+crosshairs_init( BoardCtxt* board )
+{
+    DragState* ds = &board->dragState;
+    ds->crosshairs.col = ds->crosshairs.col = -1;
+}
+
+static XP_Bool
+crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row )
+{
+    XP_Bool changed = XP_FALSE;
+    DragState* ds = &board->dragState;
+    if ( ds->crosshairs.col != col ) {
+        if ( ds->crosshairs.col >= 0 ) {
+            invalCol( board, ds->crosshairs.col );
+        }
+        if ( col >= 0 ) {
+            invalCol( board, col );
+        }
+        ds->crosshairs.col = col;
+        changed = XP_TRUE;
+    }
+    if ( ds->crosshairs.row != row ) {
+        if ( ds->crosshairs.row >= 0 ) {
+            invalRow( board, ds->crosshairs.row );
+        }
+        if ( row >= 0 ) {
+            invalRow( board, row );
+        }
+        ds->crosshairs.row = row;
+        changed = XP_TRUE;
+    }
+    return changed;
+}
+
+static void
+crosshairs_clear( BoardCtxt* board )
+{
+    crosshairs_set( board, -1, -1 );
+}
+#endif
 
 #ifdef CPLUS
 }
