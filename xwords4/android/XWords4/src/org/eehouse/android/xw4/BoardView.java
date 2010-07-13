@@ -204,14 +204,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_otherColors = prefs.otherColors;
 
         m_bonusSummaries = new String[5];
-        m_bonusSummaries[1] = 
-            getResources().getString( R.string.bonus_l2x_summary );
-        m_bonusSummaries[2] = 
-            getResources().getString( R.string.bonus_w2x_summary );
-        m_bonusSummaries[3] = 
-            getResources().getString( R.string.bonus_l3x_summary );
-        m_bonusSummaries[4] = 
-            getResources().getString( R.string.bonus_w3x_summary );
+        int[] ids = { R.string.bonus_l2x_summary,
+                      R.string.bonus_w2x_summary ,
+                      R.string.bonus_l3x_summary,
+                      R.string.bonus_w3x_summary };
+        for ( int ii = 0; ii < ids.length; ++ii ) {
+            m_bonusSummaries[ ii+1 ] = getResources().getString( ids[ii] );
+        }
 
         m_viewHandler = new Handler();
         m_zoomButtons = new ZoomButtonsController( this );
