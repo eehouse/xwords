@@ -548,7 +548,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             } else if ( null != bonusStr ) {
                 m_fillPaint.setColor( GREY );
                 drawCentered( bonusStr, rect, m_fontDims );
-	    }
+            }
         } else {
             m_fillPaint.setColor( foreColor );
             drawCentered( text, rect, m_fontDims );
@@ -557,7 +557,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( (CELL_ISBLANK & flags) != 0 ) {
             markBlank( rect, pending );
         }
-	// frame the cell
+        // frame the cell
         m_canvas.drawRect( rect, m_strokePaint );
         
         return true;
