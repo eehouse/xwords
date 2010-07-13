@@ -908,8 +908,11 @@ timerFiredForPen( BoardCtxt* board )
             XP_U16 col, row;
             coordToCell( board, board->penDownX, board->penDownY, &col, &row );
 
-            if ( dragDropIsBeingDragged( board, col, row, NULL ) ) {
+            if ( 0 ) {
+#ifdef XWFEATURE_RAISETILE
+            } else if ( dragDropIsBeingDragged( board, col, row, NULL ) ) {
                 draw = dragDropSetAdd( board );
+#endif
             } else {
                 XWBonusType bonus;
                 bonus = util_getSquareBonus( board->util, board->model, 
@@ -1011,6 +1014,7 @@ p_board_timerFired( void* closure, XWTimerReason why )
     return draw;
 } /* board_timerFired */
 
+#ifdef XWFEATURE_RAISETILE
 static XP_Bool
 p_tray_timerFired( void* closure, XWTimerReason why )
 {
@@ -1021,6 +1025,7 @@ p_tray_timerFired( void* closure, XWTimerReason why )
     }
     return draw;
 }
+#endif
 
 void
 board_pushTimerSave( BoardCtxt* board )
@@ -2179,10 +2184,10 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
     case OBJ_TRAY:
       if ( (board->trayVisState == TRAY_REVEALED)
            && !board->selInfo->tradeInProgress ) {
-
+#ifdef XWFEATURE_RAISETILE
           util_setTimer( board->util, TIMER_PENDOWN, 0, 
                          p_tray_timerFired, board );
-
+#endif
           result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
         }
         break;

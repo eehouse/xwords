@@ -63,12 +63,15 @@ typedef struct _DragState {
     Tile tile;                  /* cache rather than lookup in model */
     DragObjInfo start;
     DragObjInfo cur;
-
+#ifdef XWFEATURE_RAISETILE
     XP_U16 yyAdd;
+#endif
+#ifdef XWFEATURE_CROSSHAIRS
     struct {
         XP_S16 col; 
         XP_S16 row;
     } crosshairs;
+#endif
 } DragState;
 
 typedef struct _BoardArrow { /* gets flipped along with board */

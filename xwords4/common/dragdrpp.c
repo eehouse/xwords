@@ -300,6 +300,7 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
     return XP_TRUE;
 } /* dragDropEnd */
 
+#ifdef XWFEATURE_RAISETILE
 XP_Bool
 dragDropSetAdd( BoardCtxt* board )
 {
@@ -317,6 +318,7 @@ dragDropSetAdd( BoardCtxt* board )
     }
     return draw;
 }
+#endif
 
 XP_Bool
 dragDropGetBoardTile( const BoardCtxt* board, XP_U16* col, XP_U16* row )
@@ -454,7 +456,9 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     DragState* ds = &board->dragState;
     XP_Bool draw = XP_FALSE;
 
+#ifdef XWFEATURE_RAISETILE
     yy -= ds->yyAdd;
+#endif
 
     (void)pointOnSomething( board, xx, yy, &newInfo.obj );
     if ( !!onWhichP ) {
