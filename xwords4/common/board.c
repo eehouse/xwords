@@ -908,9 +908,11 @@ timerFiredForPen( BoardCtxt* board )
             XP_U16 col, row;
             coordToCell( board, board->penDownX, board->penDownY, &col, &row );
 
-            if ( 0 ) {
+            if ( dragDropIsBeingDragged( board, col, row, NULL ) ) {
+                /* even if we aren't calling dragDropSetAdd we want to avoid
+                   putting up a sqare bonus if we're on a sqare with
+                   something that can be dragged */
 #ifdef XWFEATURE_RAISETILE
-            } else if ( dragDropIsBeingDragged( board, col, row, NULL ) ) {
                 draw = dragDropSetAdd( board );
 #endif
             } else {
