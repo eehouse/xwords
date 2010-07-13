@@ -111,9 +111,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
+    private static final int GREY = 0xFF7F7F7F;
     private int[] m_bonusColors;
     private int[] m_playerColors;
     private int[] m_otherColors;
+    private String[] m_bonusSummaries;
     private ZoomButtonsController m_zoomButtons;
     private boolean m_useZoomControl;
     private boolean m_canZoom;
@@ -200,6 +202,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_playerColors = prefs.playerColors;
         m_bonusColors = prefs.bonusColors;
         m_otherColors = prefs.otherColors;
+
+	m_bonusSummaries = new String[5];
+	m_bonusSummaries[1] = 
+	    getResources().getString( R.string.bonus_l2x_summary );
+	m_bonusSummaries[2] = 
+	    getResources().getString( R.string.bonus_l3x_summary );
+	m_bonusSummaries[3] = 
+	    getResources().getString( R.string.bonus_w2x_summary );
+	m_bonusSummaries[4] = 
+	    getResources().getString( R.string.bonus_w3x_summary );
 
         m_viewHandler = new Handler();
         m_zoomButtons = new ZoomButtonsController( this );
@@ -502,6 +514,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         int backColor;
         boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
         boolean pending = 0 != (flags & CELL_HIGHLIGHT);
+	String bonusStr = null;
 
         figureFontDims();
 
@@ -517,6 +530,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 backColor = m_otherColors[CommonPrefs.COLOR_BKGND];
             } else {
                 backColor = m_bonusColors[bonus];
+		bonusStr = m_bonusSummaries[bonus];
             }
         } else if ( pending ) {
             backColor = BLACK;
@@ -531,7 +545,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             if ( (CELL_ISSTAR & flags) != 0 ) {
                 m_origin.setBounds( rect );
                 m_origin.draw( m_canvas );
-            }
+            } else if ( null != bonusStr ) {
+		m_fillPaint.setColor( GREY );
+		drawCentered( bonusStr, rect, m_fontDims );
+	    }
         } else {
             m_fillPaint.setColor( foreColor );
             drawCentered( text, rect, m_fontDims );
@@ -540,6 +557,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( (CELL_ISBLANK & flags) != 0 ) {
             markBlank( rect, pending );
         }
+	// frame the cell
         m_canvas.drawRect( rect, m_strokePaint );
         
         return true;
