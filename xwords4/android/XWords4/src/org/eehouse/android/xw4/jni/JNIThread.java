@@ -88,7 +88,6 @@ public class JNIThread extends Thread {
     private Handler m_handler;
     private SyncedDraw m_drawer;
     private static final int kMinDivWidth = 10;
-    private boolean m_keyDown = false;
     private Rect m_connsIconRect;
     private int m_connsIconID = 0;
     private boolean m_inBack = false;
@@ -196,54 +195,6 @@ public class JNIThread extends Thread {
                                      boolean[] barr )
     {
         boolean draw = false;
-        boolean handled = false;
-        boolean goingUp = JNICmd.CMD_KEYUP == cmd;
-
-        if ( m_keyDown && !goingUp ) {
-            // ignore duplicate downs for now
-        } else {
-            // sometimes ups come without prior downs.  Fake a down in
-            // that case.
-            if ( goingUp && !m_keyDown ) {
-                draw = XwJNI.board_handleKey( m_jniGamePtr, xpKey, false, barr );
-                handled = barr[0];
-            }
-
-            if ( XwJNI.board_handleKey( m_jniGamePtr, xpKey, goingUp, barr ) ) {
-                handled = barr[0] || handled;
-                draw = true;
-            }
-            m_keyDown = !goingUp;
-
-            if ( goingUp && !handled ) {
-                int[] order = { DrawCtx.OBJ_SCORE, 
-                                DrawCtx.OBJ_BOARD, 
-                                DrawCtx.OBJ_TRAY };
-                int curType = XwJNI.board_getFocusOwner( m_jniGamePtr );
-                int cur = 0;
-                if ( DrawCtx.OBJ_NONE != curType ) {
-                    for ( cur = 0; cur < order.length; ++cur ) {
-                        if ( order[cur] == curType ) {
-                            break;
-                        }
-                    }
-                }
-                cur += order.length;
-                switch( xpKey ) {
-                case XP_CURSOR_KEY_DOWN:
-                case XP_CURSOR_KEY_RIGHT:
-                    ++cur;
-                    break;
-                case XP_CURSOR_KEY_UP:
-                case XP_CURSOR_KEY_LEFT:
-                    --cur;
-                    break;
-                }
-                cur %= order.length;
-                draw = XwJNI.board_focusChanged( m_jniGamePtr, order[cur] )
-                    || draw;
-            }
-        }
         return draw;
     }
 

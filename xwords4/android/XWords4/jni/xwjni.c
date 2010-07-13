@@ -1000,6 +1000,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1server_1prefsChanged
     return result;
 }
 
+#ifdef KEYBOARD_NAV
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1getFocusOwner
 ( JNIEnv* env, jclass C, jint gamePtr )
@@ -1021,6 +1022,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1focusChanged
     XWJNI_END();
     return result;
 }
+#endif
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handleKey

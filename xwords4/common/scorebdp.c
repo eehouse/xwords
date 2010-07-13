@@ -76,13 +76,13 @@ drawScoreBoard( BoardCtxt* board )
             DrawScoreData datum[MAX_NUM_PLAYERS];
             ScoresArray scores;
             XP_Bool isVertical = !board->scoreSplitHor;
+            XP_Bool skipCurTurn; /* skip the guy whose turn it is this pass? */
+            XP_Bool remFocussed = XP_FALSE;
+            XP_Bool focusAll = XP_FALSE;
 #ifdef KEYBOARD_NAV
             XP_Rect cursorRect;
             XP_Rect* cursorRectP = NULL;
-            XP_Bool focusAll = XP_FALSE;
-            XP_Bool remFocussed = XP_FALSE;
             XP_S16 cursorIndex = -1;
-            XP_Bool skipCurTurn; /* skip the guy whose turn it is this pass? */
 
             if ( (board->focussed == OBJ_SCORE) && !board->hideFocus ) {
                 focusAll = !board->focusHasDived;
@@ -203,9 +203,9 @@ drawScoreBoard( BoardCtxt* board )
                     centerIn( &innerRect, &scoreRect, remWidth, remHeight );
                     draw_drawRemText( board->draw, &innerRect, &scoreRect, 
                                       nTilesInPool, focusAll || remFocussed );
-                    board->remRect = scoreRect;
                     *adjustPt += remDim;
 #ifdef KEYBOARD_NAV
+                    board->remRect = scoreRect;
                     /* Hack: don't let the cursor disappear if Rem: goes
                        away */
                 } else if ( board->scoreCursorLoc == CURSOR_LOC_REM ) {

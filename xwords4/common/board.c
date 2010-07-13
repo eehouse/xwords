@@ -126,7 +126,7 @@ static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey,
                                  XP_Bool preflightOnly, XP_Bool* up );
 static XP_Bool invalFocusOwner( BoardCtxt* board );
 #else
-# define invalFocusOwner(board)
+# define invalFocusOwner(board) 0
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static void clearCurHintRect( BoardCtxt* board );
@@ -1392,7 +1392,10 @@ trayOnTop( const BoardCtxt* board )
        it has non-dived focus. */
     return (board->trayVisState != TRAY_HIDDEN)
         || ( (board->focussed == OBJ_TRAY)
-             && (board->focusHasDived == XP_FALSE));
+#ifdef KEYBOARD_NAV
+             && (board->focusHasDived == XP_FALSE)
+#endif
+             );
 } /* trayOnTop */
 
 XW_TrayVisState
@@ -2572,7 +2575,9 @@ unhideFocus( BoardCtxt* board )
 
 #ifdef KEY_SUPPORT
 XP_Bool
-board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
+board_handleKeyDown( BoardCtxt* XP_UNUSED_KEYBOARD_NAV(board), 
+                     XP_Key XP_UNUSED_KEYBOARD_NAV(key),
+                     XP_Bool* XP_UNUSED_KEYBOARD_NAV(pHandled) )
 {
     XP_Bool draw = XP_FALSE;
 #ifdef KEYBOARD_NAV
@@ -2818,19 +2823,6 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
 
     return draw;
 } /* board_focusChanged */
-
-XP_Bool
-board_toggle_arrowDir( BoardCtxt* board )
-{
-    BoardArrow* arrow = &board->selInfo->boardArrow;
-    if ( arrow->visible ) {
-        arrow->vert = !arrow->vert;
-        invalArrowCell( board );
-        return XP_TRUE;
-    } else {
-        return XP_FALSE;
-    }
-} /* board_toggle_cursorDir */
 
 #endif /* KEYBOARD_NAV */
 

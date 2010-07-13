@@ -281,9 +281,12 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
     }
 
 /*     XP_ASSERT( globals->keyDown ); */
+#ifdef KEYBOARD_NAV
     globals->keyDown = XP_FALSE;
+#endif
 
-    return handled? 1 : 0;        /* gtk will do something with the key if 0 returned  */
+    return handled? 1 : 0;        /* gtk will do something with the key if 0
+                                     returned  */
 } /* key_release_event */
 #endif
 

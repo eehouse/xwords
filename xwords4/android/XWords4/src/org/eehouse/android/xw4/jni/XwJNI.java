@@ -144,8 +144,6 @@ public class XwJNI {
     public static native boolean board_beginTrade( int gamePtr );
 
     public static native String board_formatRemainingTiles( int gamePtr );
-    public static native int board_getFocusOwner( int gamePtr );
-    public static native boolean board_focusChanged( int gamePtr, int typ );
 
     public enum XP_Key {
         XP_KEY_NONE,
