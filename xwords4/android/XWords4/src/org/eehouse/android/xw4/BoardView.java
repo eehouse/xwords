@@ -687,7 +687,17 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         m_canvas.drawRect( rect, m_strokePaint );
-        m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+
+        // Unlike other draw methods, this one is usually called from
+        // outside board_draw and so doesn't benefit from the canvas
+        // getting moved to the board.  Set that up manually.  Sending
+        // DRAW cmd as I used to do draws *everything* and may well
+        // overwrite the miniwindow.
+        m_viewHandler.post( new Runnable() {
+                public void run() {
+                    BoardView.this.invalidate();
+                }
+            } );
     }
 
     public void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs )
