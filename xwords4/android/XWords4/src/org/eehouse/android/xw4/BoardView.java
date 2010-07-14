@@ -618,8 +618,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         fillRect( rect, (0 == (flags & CELL_ISCURSOR)) 
                   ? WHITE : m_otherColors[CommonPrefs.COLOR_FOCUS] );
         m_fillPaint.setColor( m_playerColors[playerNum] );
-        rect.inset( 0, rect.height() / 4 );
+
+        rect.bottom -= rect.height() / 2;
         drawCentered( text, rect, null );
+
+        rect.offset( 0, rect.height() );
+        drawCentered( getResources().getString( R.string.pts ), rect, null );
     }
 
     public String getMiniWText ( int textHint )
