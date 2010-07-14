@@ -207,6 +207,10 @@
     <string name="hide_title_summary">Hiding the game name lets the
       board be slightly larger</string>
 
+    <string name="show_bonussum">Show bonus values</string>
+    <string name="show_bonussum_summary">Include text like "2W" on
+    empty bonus squares</string>
+
     <string name="role_standalone">Standalone</string>
     <string name="role_host">Host</string>
     <string name="role_guest">Guest</string>

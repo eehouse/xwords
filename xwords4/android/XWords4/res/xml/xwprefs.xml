@@ -57,6 +57,11 @@
                         android:summary="@string/hide_title_summary"
                         android:defaultValue="true"
                         />
+    <CheckBoxPreference android:key="@string/key_show_bonussum"
+                        android:title="@string/show_bonussum"
+                        android:summary="@string/show_bonussum_summary"
+                        android:defaultValue="true"
+                        />
     <PreferenceScreen android:title="@string/prefs_colors"
                       android:summary="@string/prefs_colors_summary"
                       >

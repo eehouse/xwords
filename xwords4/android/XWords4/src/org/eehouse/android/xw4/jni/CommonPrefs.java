@@ -222,6 +222,11 @@ public class CommonPrefs {
         return getBoolean( context, R.string.key_click_launches, false );
     }
 
+    public static boolean getShowBonusSumms( Context context )
+    {
+        return getBoolean( context, R.string.key_show_bonussum, false );
+    }
+
     private static boolean getBoolean( Context context, int keyID,
                                        boolean defaultValue )
     {

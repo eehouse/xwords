@@ -47,6 +47,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static final int k_miniPaddingV = 2;
     private static final float MIN_FONT_DIPS = 14.0f;
 
+    private Context m_context;
     private Paint m_drawPaint;
     private Paint m_fillPaint;
     private Paint m_strokePaint;
@@ -173,6 +174,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void init( Context context )
     {
+        m_context = context;
         final float scale = getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
@@ -529,7 +531,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 backColor = m_otherColors[CommonPrefs.COLOR_BKGND];
             } else {
                 backColor = m_bonusColors[bonus];
-                bonusStr = m_bonusSummaries[bonus];
+                if ( CommonPrefs.getShowBonusSumms(m_context) ) {
+                    bonusStr = m_bonusSummaries[bonus];
+                }
             }
         } else if ( pending ) {
             backColor = BLACK;
@@ -562,8 +566,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;
     } // drawCell
 
-    public void drawBoardArrow ( Rect rect, int bonus, boolean vert, 
-                                 int hintAtts, int flags )
+    public void drawBoardArrow( Rect rect, int bonus, boolean vert, 
+                                int hintAtts, int flags )
     {
         rect.inset( 2, 2 );
         Drawable arrow = vert? m_downArrow : m_rightArrow;
