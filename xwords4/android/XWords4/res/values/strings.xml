@@ -280,7 +280,7 @@
     <string name="trading_text">Exchanging tiles. Select\n\'Turn done\' when ready.</string>
     <string name="tile_back">Tile background</string>
     <string name="empty">Empty cell/background</string>
-    <string name="focus">Focus color</string>
+    <string name="clr_crosshairs">Crosshairs color</string>
     <string name="advanced">Advanced</string>
     <string name="advanced_summary">You may never need these...</string>
     <string name="relay_host">Relay address</string>

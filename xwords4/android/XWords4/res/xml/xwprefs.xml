@@ -111,8 +111,8 @@
          android:defaultValue="0xFFFF99"
          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_focus"
-         android:title="@string/focus"
+         android:key="@string/key_clr_crosshairs"
+         android:title="@string/clr_crosshairs"
          android:defaultValue="0x7070FF"
          />
       <org.eehouse.android.xw4.EditColorPreference

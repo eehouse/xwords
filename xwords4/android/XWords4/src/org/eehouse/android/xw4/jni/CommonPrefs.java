@@ -100,7 +100,7 @@ public class CommonPrefs {
 
         int idsOther[] = { R.string.key_tile_back,
                            R.string.key_empty,
-                           R.string.key_focus,
+                           R.string.key_clr_crosshairs,
         };
         for ( int ii = 0; ii < idsOther.length; ++ii ) {
             otherColors[ii] = prefToColor( context, sp, idsOther[ii] );
