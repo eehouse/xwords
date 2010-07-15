@@ -148,11 +148,6 @@ getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
         ++stp;
     }
 
-    if ( !found ) {
-        logf( XW_LOGERROR, "==> ERROR :: unable to find transition from %s "
-              "on event %s",
-              stateString(curState), eventString(curEvent) );
-    }
     return found;
 } /* getFromTable */
 
