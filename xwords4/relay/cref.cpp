@@ -328,7 +328,8 @@ CookieRef::removeSocket( int socket )
                 }
             }
         } else {
-            logf( XW_LOGERROR, "%s: no socket %d to remove", __func__, socket );
+            logf( XW_LOGERROR, "%s: no socket %d to remove", __func__, 
+                  socket );
         }
     }
 
@@ -555,7 +556,6 @@ CookieRef::handleEvents()
 
             case XWA_SEND_NO_ROOM:
                 send_denied( &evt, XWRELAY_ERROR_NO_ROOM );
-                removeSocket( evt.u.rmsock.socket );
                 break;
             case XWA_SEND_DUP_ROOM:
                 send_denied( &evt, XWRELAY_ERROR_DUP_ROOM );
