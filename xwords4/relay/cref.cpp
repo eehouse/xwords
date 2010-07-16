@@ -328,7 +328,8 @@ CookieRef::removeSocket( int socket )
                 }
             }
         } else {
-            logf( XW_LOGERROR, "%s: no socket %d to remove", __func__, socket );
+            logf( XW_LOGERROR, "%s: no socket %d to remove", __func__, 
+                  socket );
         }
     }
 
@@ -555,7 +556,6 @@ CookieRef::handleEvents()
 
             case XWA_SEND_NO_ROOM:
                 send_denied( &evt, XWRELAY_ERROR_NO_ROOM );
-                removeSocket( evt.u.rmsock.socket );
                 break;
             case XWA_SEND_DUP_ROOM:
                 send_denied( &evt, XWRELAY_ERROR_DUP_ROOM );
@@ -647,6 +647,10 @@ CookieRef::handleEvents()
             }
 
             m_curState = nextState;
+        } else {
+            logf( XW_LOGERROR, "unable to find transition "
+                  "from %s on event %s", stateString(m_curState),
+                  eventString(evt.type) );
         }
     }
     m_in_handleEvents = false;
@@ -731,7 +735,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
     HostID hid = evt->u.con.srcID;
     int seed = evt->u.con.seed;
     CRefEvent newevt;
-    bool addHost = true;
+    bool addHost = false;
 
     assert( hid <= 4 );
 
@@ -754,28 +758,43 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
 
     if ( reconn ) {
         if ( nPlayersS > 0 ) {
-            assert( 0 == m_nPlayersSought );
+            if ( 0 != m_nPlayersSought ) {
+                logf( XW_LOGERROR, 
+                      "already have m_nPlayersSought: %d but new value %d",
+                      m_nPlayersSought, nPlayersS );
+                goto drop;
+            }
             m_nPlayersSought = nPlayersS;
         }
+        if ( 0 != m_nPlayersSought && 
+             m_nPlayersHere + nPlayersH > m_nPlayersSought ) {
+            logf( XW_LOGERROR, "too many new players provided: %d > %d",
+                  m_nPlayersHere + nPlayersH, m_nPlayersSought );
+            goto drop;
+        }
+
         m_nPlayersHere += nPlayersH;
-        assert( 0 == m_nPlayersSought || m_nPlayersHere <= m_nPlayersSought );
         if ( m_nPlayersHere == m_nPlayersSought ) {
             newevt.type = XWE_ALLHERE;
         } else {
             newevt.type = XWE_SOMEMISSING;
         }
+        addHost = true;
     } else if ( nPlayersS > 0 ) {      /* a host; init values */
-        assert( m_nPlayersSought == 0 );
-        assert( m_nPlayersHere == 0 );
+        if ( m_nPlayersSought != 0  || m_nPlayersHere != 0 ) {
+            logf( XW_LOGERROR, "cref in bad state: m_nPlayersSought: %d; "
+                  "m_nPlayersHere: %d", m_nPlayersSought, m_nPlayersHere );
+            goto drop;
+        }
         m_nPlayersHere = nPlayersH;
         m_nPlayersSought = nPlayersS;
+        addHost = true;
     } else {                    /* a guest */
         assert( reconn || m_nPlayersSought != 0 ); /* host better be here */
 
         if ( m_nPlayersSought < m_nPlayersHere + nPlayersH ) { /* too many;
                                                                   reject */
             newevt.type = XWE_TOO_MANY;
-            addHost = false;
         } else {
             m_nPlayersHere += nPlayersH;
             if ( m_nPlayersHere == m_nPlayersSought ) { /* complete! */
@@ -784,6 +803,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
             } else {
                 newevt.type = XWE_SOMEMISSING;
             }
+            addHost = true;
         }
     }
 
@@ -803,6 +823,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
         logf( XW_LOGVERBOSE1, "%s: here=%d; total=%d", __func__,
               m_nPlayersHere, m_nPlayersSought );
     }
+ drop:
     return addHost;
 } /* increasePlayerCounts */
 

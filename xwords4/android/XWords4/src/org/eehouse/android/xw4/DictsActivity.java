@@ -39,7 +39,8 @@ import android.content.SharedPreferences;
 import junit.framework.Assert;
 
 public class DictsActivity extends ListActivity 
-    implements View.OnClickListener {
+    implements View.OnClickListener,
+               XWListItem.DeleteCallback {
     String[] m_dicts;
 
     private class DictListAdapter extends XWListAdapter {
@@ -58,6 +59,12 @@ public class DictsActivity extends ListActivity
                 = (XWListItem)factory.inflate( R.layout.list_item, null );
             view.setPosition( position );
             view.setText( m_dicts[position] );
+
+            if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
+                                           m_dicts[position] ) ) {
+                view.setDeleteCallback( DictsActivity.this );
+            }
+
             return view;
         }
     }
@@ -88,8 +95,8 @@ public class DictsActivity extends ListActivity
 
     @Override
     public void onCreateContextMenu( ContextMenu menu, View view, 
-                                     ContextMenuInfo menuInfo ) {
-
+                                     ContextMenuInfo menuInfo ) 
+    {
         super.onCreateContextMenu( menu, view, menuInfo );
 
         MenuInflater inflater = getMenuInflater();
@@ -97,12 +104,6 @@ public class DictsActivity extends ListActivity
 
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
-
-        String dict = m_dicts[info.position];
-        if ( GameUtils.dictIsBuiltin( this, dict ) ) {
-            MenuItem item = menu.findItem( R.id.dicts_item_delete );
-            item.setVisible( false );
-        }
     }
    
     @Override
@@ -127,17 +128,19 @@ public class DictsActivity extends ListActivity
             editor.putString( key, m_dicts[info.position] );
             editor.commit();
             break;
-        case R.id.dicts_item_delete:
-            GameUtils.deleteDict( this, m_dicts[info.position] );
-            mkListAdapter();
-            handled = true;
-            break;
         case R.id.dicts_item_details:
             Utils.notImpl( this );
             break;
         }
 
         return handled;
+    }
+
+    // DeleteCallback interface
+    public void deleteCalled( int myPosition )
+    {
+        GameUtils.deleteDict( this, m_dicts[myPosition] );
+        mkListAdapter();
     }
 
     private void mkListAdapter()

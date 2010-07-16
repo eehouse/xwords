@@ -363,6 +363,9 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
              && getNetShort( &bufp, end, &gameSeed )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
+            static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
+            MutexLock ml( &s_newCookieLock );
+
             SafeCref scr( cookie[0]? cookie : NULL, 
                           connName[0]? connName : NULL, 
                           srcID, socket, nPlayersH, 
@@ -903,8 +906,9 @@ main( int argc, char** argv )
                     int newSock = accept( listener, (sockaddr*)&newaddr,
                                           &siz );
 
-                    logf( XW_LOGINFO, "accepting connection from %s", 
-                          inet_ntoa(newaddr.sin_addr) );
+                    logf( XW_LOGINFO, 
+                          "accepting connection from %s on socket %d", 
+                          inet_ntoa(newaddr.sin_addr), newSock );
 
                     tPool->AddSocket( newSock );
                     --retval;

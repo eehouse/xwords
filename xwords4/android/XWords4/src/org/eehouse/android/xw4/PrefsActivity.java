@@ -64,7 +64,7 @@ public class PrefsActivity extends PreferenceActivity
                             R.string.key_bonus_w2x,
                             R.string.key_bonus_w3x,
                             R.string.key_tile_back,
-                            R.string.key_focus,
+                            R.string.key_clr_crosshairs,
                             R.string.key_empty,
                         };
                         for ( int colorKey : colorKeys ) {

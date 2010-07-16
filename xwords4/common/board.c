@@ -935,7 +935,12 @@ timerFiredForPen( BoardCtxt* board )
             coordToCell( board, board->penDownX, board->penDownY, &col, &row );
 
             if ( dragDropIsBeingDragged( board, col, row, NULL ) ) {
+                /* even if we aren't calling dragDropSetAdd we want to avoid
+                   putting up a sqare bonus if we're on a sqare with
+                   something that can be dragged */
+#ifdef XWFEATURE_RAISETILE
                 draw = dragDropSetAdd( board );
+#endif
             } else {
                 XWBonusType bonus;
                 bonus = util_getSquareBonus( board->util, board->model, 
@@ -1037,6 +1042,7 @@ p_board_timerFired( void* closure, XWTimerReason why )
     return draw;
 } /* board_timerFired */
 
+#ifdef XWFEATURE_RAISETILE
 static XP_Bool
 p_tray_timerFired( void* closure, XWTimerReason why )
 {
@@ -1047,6 +1053,7 @@ p_tray_timerFired( void* closure, XWTimerReason why )
     }
     return draw;
 }
+#endif
 
 void
 board_pushTimerSave( BoardCtxt* board )
@@ -1320,6 +1327,28 @@ invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect )
         }
     }
 } /* invalCellsUnderRect */
+
+#ifdef XWFEATURE_CROSSHAIRS
+void
+invalCol( BoardCtxt* board, XP_U16 col )
+{
+    XP_U16 row;
+    XP_U16 nCols = model_numCols(board->model);
+    for ( row = 0; row < nCols; ++row ) {
+        invalCell( board, col, row );
+    }
+}
+
+void
+invalRow( BoardCtxt* board, XP_U16 row )
+{
+    XP_U16 col;
+    XP_U16 nCols = model_numCols(board->model);
+    for ( col = 0; col < nCols; ++col ) {
+        invalCell( board, col, row );
+    }
+}
+#endif
 
 void
 board_invalRect( BoardCtxt* board, XP_Rect* rect )
@@ -2189,10 +2218,10 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
     case OBJ_TRAY:
       if ( (board->trayVisState == TRAY_REVEALED)
            && !board->selInfo->tradeInProgress ) {
-
+#ifdef XWFEATURE_RAISETILE
           util_setTimer( board->util, TIMER_PENDOWN, 0, 
                          p_tray_timerFired, board );
-
+#endif
           result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
         }
         break;

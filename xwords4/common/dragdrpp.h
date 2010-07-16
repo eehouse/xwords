@@ -36,7 +36,9 @@ XP_Bool dragDropStart( BoardCtxt* board, BoardObjectType obj,
 XP_Bool dragDropContinue( BoardCtxt* board, XP_U16 xx, XP_U16 yy );
 XP_Bool dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged );
 
+#ifdef XWFEATURE_RAISETILE
 XP_Bool dragDropSetAdd( BoardCtxt* board );
+#endif
 
 XP_Bool dragDropGetBoardTile( const BoardCtxt* board, XP_U16* col, XP_U16* row );
 XP_Bool dragDropIsBeingDragged( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
@@ -54,8 +56,10 @@ XP_Bool dragDropIsDividerDrag( const BoardCtxt* board );
 XP_Bool dragDropGetHintLimits( const BoardCtxt* board, BdHintLimits* limits );
 #endif
 
-
 void dragDropTileInfo( const BoardCtxt* board, Tile* tile, XP_Bool* isBlank );
+#ifdef XWFEATURE_CROSSHAIRS
+XP_Bool dragDropInCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row );
+#endif
 
 #ifdef CPLUS
 }

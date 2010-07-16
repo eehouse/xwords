@@ -45,6 +45,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static final int k_miniPaddingV = 2;
     private static final float MIN_FONT_DIPS = 14.0f;
 
+    private Context m_context;
     private Paint m_drawPaint;
     private Paint m_fillPaint;
     private Paint m_strokePaint;
@@ -159,6 +160,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void init( Context context )
     {
+        m_context = context;
         final float scale = getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
@@ -190,14 +192,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_otherColors = prefs.otherColors;
 
         m_bonusSummaries = new String[5];
-        m_bonusSummaries[1] = 
-            getResources().getString( R.string.bonus_l2x_summary );
-        m_bonusSummaries[2] = 
-            getResources().getString( R.string.bonus_w2x_summary );
-        m_bonusSummaries[3] = 
-            getResources().getString( R.string.bonus_l3x_summary );
-        m_bonusSummaries[4] = 
-            getResources().getString( R.string.bonus_w3x_summary );
+        int[] ids = { R.string.bonus_l2x_summary,
+                      R.string.bonus_w2x_summary ,
+                      R.string.bonus_l3x_summary,
+                      R.string.bonus_w3x_summary };
+        for ( int ii = 0; ii < ids.length; ++ii ) {
+            m_bonusSummaries[ ii+1 ] = getResources().getString( ids[ii] );
+        }
 
         m_viewHandler = new Handler();
     }
@@ -466,7 +467,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 backColor = m_otherColors[CommonPrefs.COLOR_BKGND];
             } else {
                 backColor = m_bonusColors[bonus];
-                bonusStr = m_bonusSummaries[bonus];
+                if ( CommonPrefs.getShowBonusSumms(m_context) ) {
+                    bonusStr = m_bonusSummaries[bonus];
+                }
             }
         } else if ( pending ) {
             backColor = BLACK;
@@ -484,7 +487,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             } else if ( null != bonusStr ) {
                 m_fillPaint.setColor( GREY );
                 drawCentered( bonusStr, rect, m_fontDims );
-	    }
+            }
         } else {
             m_fillPaint.setColor( foreColor );
             drawCentered( text, rect, m_fontDims );
@@ -493,14 +496,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( (CELL_ISBLANK & flags) != 0 ) {
             markBlank( rect, pending );
         }
-	// frame the cell
+        // frame the cell
         m_canvas.drawRect( rect, m_strokePaint );
         
         return true;
     } // drawCell
 
-    public void drawBoardArrow ( Rect rect, int bonus, boolean vert, 
-                                 int hintAtts, int flags )
+    public void drawBoardArrow( Rect rect, int bonus, boolean vert, 
+                                int hintAtts, int flags )
     {
         rect.inset( 2, 2 );
         Drawable arrow = vert? m_downArrow : m_rightArrow;
@@ -555,8 +558,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         fillRect( rect, (0 == (flags & CELL_ISCURSOR)) 
                   ? WHITE : m_otherColors[CommonPrefs.COLOR_FOCUS] );
         m_fillPaint.setColor( m_playerColors[playerNum] );
-        rect.inset( 0, rect.height() / 4 );
+
+        rect.bottom -= rect.height() / 2;
         drawCentered( text, rect, null );
+
+        rect.offset( 0, rect.height() );
+        drawCentered( getResources().getString( R.string.pts ), rect, null );
     }
 
     public String getMiniWText ( int textHint )
@@ -624,7 +631,17 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         m_canvas.drawRect( rect, m_strokePaint );
-        m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+
+        // Unlike other draw methods, this one is usually called from
+        // outside board_draw and so doesn't benefit from the canvas
+        // getting moved to the board.  Set that up manually.  Sending
+        // DRAW cmd as I used to do draws *everything* and may well
+        // overwrite the miniwindow.
+        m_viewHandler.post( new Runnable() {
+                public void run() {
+                    BoardView.this.invalidate();
+                }
+            } );
     }
 
     public void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs )

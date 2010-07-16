@@ -20,18 +20,48 @@
 
 package org.eehouse.android.xw4;
 
+import android.widget.LinearLayout;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.ImageButton;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.graphics.Rect;
 
-public class XWListItem extends TextView {
+public class XWListItem extends LinearLayout {
     private int m_position;
+    private ImageButton m_button;
+    private Context m_context;
+    DeleteCallback m_cb;
+
+    public interface DeleteCallback {
+        void deleteCalled( int myPosition );
+    }
 
     public XWListItem( Context cx, AttributeSet as ) {
         super( cx, as );
+        m_context = cx;
     }
 
     public int getPosition() { return m_position; }
     public void setPosition( int indx ) { m_position = indx; }
+
+    public void setText( String text )
+    {
+        TextView view = (TextView)getChildAt( 0 );
+        view.setText( text );
+    }
+
+    public void setDeleteCallback( DeleteCallback cb ) 
+    {
+        m_cb = cb;
+        ImageButton button = (ImageButton)getChildAt( 1 );
+        button.setOnClickListener( new View.OnClickListener() {
+                @Override
+                    public void onClick( View view ) {
+                    m_cb.deleteCalled( m_position );
+                }
+            } );
+        button.setVisibility( View.VISIBLE );
+    }
 }

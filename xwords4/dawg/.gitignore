@@ -1,0 +1,5 @@
+*.bin
+*.xwd
+*.stamp
+*.dict.gz
+dict2dawg

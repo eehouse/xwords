@@ -57,6 +57,11 @@
                         android:summary="@string/hide_title_summary"
                         android:defaultValue="true"
                         />
+    <CheckBoxPreference android:key="@string/key_show_bonussum"
+                        android:title="@string/show_bonussum"
+                        android:summary="@string/show_bonussum_summary"
+                        android:defaultValue="true"
+                        />
     <PreferenceScreen android:title="@string/prefs_colors"
                       android:summary="@string/prefs_colors_summary"
                       >
@@ -106,8 +111,8 @@
          android:defaultValue="0xFFFF99"
          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_focus"
-         android:title="@string/focus"
+         android:key="@string/key_clr_crosshairs"
+         android:title="@string/clr_crosshairs"
          android:defaultValue="0x7070FF"
          />
       <org.eehouse.android.xw4.EditColorPreference

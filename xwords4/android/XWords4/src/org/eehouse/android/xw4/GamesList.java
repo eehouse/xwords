@@ -146,6 +146,9 @@ public class GamesList extends ListActivity {
     {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.games_list_item_menu, menu );
+        if ( CommonPrefs.getClickLaunches( this ) ) {
+            menu.removeItem( R.id.list_item_play );
+        }
     }
         
     @Override

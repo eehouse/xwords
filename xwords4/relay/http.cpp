@@ -137,8 +137,8 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     fprintf( fil, "</tr>\n" );
 
     time_t curTime = uptime();
-    unsigned int ii;
-    for ( ii = 0; ii < info->m_crefInfo.size(); ++ii ) {
+    int ii;
+    for ( ii = info->m_crefInfo.size() - 1; ii >= 0; --ii ) {
         const CrefInfo* crefInfo = &info->m_crefInfo[ii];
 
         char conntime[32];
