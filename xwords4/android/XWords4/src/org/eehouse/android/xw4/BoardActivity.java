@@ -794,6 +794,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return result;
     }
 
+    public void turnChanged()
+    {
+        m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, -8 );
+    }
+
     public boolean engineProgressCallback()
     {
         return ! m_jniThread.busy();
