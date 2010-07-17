@@ -200,7 +200,7 @@ usage( char* appName, char* msg )
 	     "\t [-k]             # ask for parameters via \"new games\" dlg\n"
 	     "\t [-h numRowsHidden] \n"
 # ifdef XWFEATURE_SEARCHLIMIT
-	     "\t [-I]             # don't support hint rect dragging\n"
+	     "\t [-I]             # support hint rect dragging\n"
 # endif
 #endif
 	     "\t [-f file]        # use this file to save/load game\n"
@@ -788,7 +788,7 @@ main( int argc, char** argv )
     mainParams.nHidden = 0;
     mainParams.needsNewGame = XP_FALSE;
 #ifdef XWFEATURE_SEARCHLIMIT
-    mainParams.allowHintRect = XP_TRUE;
+    mainParams.allowHintRect = XP_FALSE;
 #endif
     mainParams.skipCommitConfirm = XP_TRUE;
     mainParams.showColors = XP_TRUE;
@@ -869,7 +869,7 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_SEARCHLIMIT
         case 'I':
-            mainParams.allowHintRect = XP_FALSE;
+            mainParams.allowHintRect = XP_TRUE;
             break;
 #endif
         case 'K':
