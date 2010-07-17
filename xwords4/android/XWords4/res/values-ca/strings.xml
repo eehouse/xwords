@@ -19,13 +19,14 @@
     <string name="menu_insert">Afegeix una partida</string>
     <string name="button_new_game">Afegeix una partida</string>
 
+    <string name="list_item_play">Vés a la partida</string>
     <string name="list_item_config">Configura</string>
     <string name="list_item_hide">Amaga</string>
     <string name="list_item_delete">Suprimeix</string>
     <string name="list_item_copy">Copia</string>
     <string name="list_item_reset">Reinicialitza</string>
     
-    <string name="list_item_new_from">Nova des de</string>
+    <string name="list_item_new_from">Nova</string>
     <string name="list_item_move_up">Mou amunt</string>
     <string name="list_item_move_down">Mou avall</string>
     <string name="list_item_move_to_top">Mou amunt de tot</string>
@@ -185,8 +186,18 @@
     <string name="explain_robot_summary">Mostra el resum de la jugada dels jugadors robot</string>
     <string name="skip_confirm_turn">Omet la confirmació de la jugada</string>
     <string name="skip_confirm_turn_summary">No mostra el resum de la jugada dels jugadors humans</string>
+    <string name="title_sort_tiles">Ordena les fitxes noves</string>
+    <string name="summary_sort_tiles">Ordena el faristol en agafar noves fitxes</string>
     <string name="ringer_zoom">Zoom amb els botons de volum</string>
     <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum.</string>
+    <string name="click_launches">Clic per a jugar</string>
+    <string name="click_launches_summary">obre la partida en fer-hi clic al llistat de partides, en compte d\'obrir un menú d\'opcions</string>
+
+    <string name="hide_title">Amaga la capçalera</string>
+    <string name="hide_title_summary">Permet que el tauler sigui una mica més gran</string>
+
+    <string name="show_bonussum">Mostra les bonificacions</string>
+    <string name="show_bonussum_summary">Mostra el text com "2P" a les caselles bonificadores lliures</string>
  
     <string name="role_standalone">Solitari</string>
     <string name="role_host">Amfitrió</string>
@@ -215,7 +226,13 @@
 
     <string name="prefs_defaults">Valors predeterminats per a partides noves</string>
     <string name="prefs_defaults_summary">Paràmetres predeterminats per a partides noves</string>
-    <string name="default_dict">Diccionari de la partida</string>
+
+    <string name="prefs_appearance">Aspecte</string>
+    <string name="prefs_appearance_summary">Paràmetres que controlen l\'aspecte</string>
+    <string name="prefs_behavior">Comportament</string>
+    <string name="prefs_behavior_summary">Paràmetres que controlen el comportament de l\'aplicació</string>
+
+    <string name="default_dict">Diccionari arbitral</string>
     <string name="default_phonies">Paraules fora del dicc.</string>
     <string name="board_size">Mida del tauler</string>
     <string name="default_timerenabled">Usa el rellotge</string>
@@ -232,9 +249,15 @@
     <string name="bonus_l3x">Triple de lletra</string>
     <string name="bonus_w2x">Doble de paraula</string>
     <string name="bonus_w3x">Triple de paraula</string>
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="bonus_w2x_summary">2P</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w3x_summary">3P</string>
+    <string name="pts">pts</string>
     <string name="trading_text">Canvi de fitxes. Pitgeu\n\'Fet\' quan hagueu acabat.</string>
     <string name="tile_back">Fons de la fitxa</string>
     <string name="empty">Cel·la buida/fons</string>
+    <string name="clr_crosshairs">Creu d\'ubicació</string>
     <string name="focus">Color del focus</string>
     <string name="advanced">Avançat</string>
     <string name="advanced_summary">No hauríeu de necessitar canviar això</string>
