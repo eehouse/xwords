@@ -486,7 +486,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 m_origin.draw( m_canvas );
             } else if ( null != bonusStr ) {
                 m_fillPaint.setColor( GREY );
-                drawCentered( bonusStr, rect, m_fontDims );
+                Rect brect = new Rect( rect );
+                brect.inset( 0, (brect.height() - m_defaultFontHt)/2 );
+                drawCentered( bonusStr, brect, m_fontDims );
             }
         } else {
             m_fillPaint.setColor( foreColor );
