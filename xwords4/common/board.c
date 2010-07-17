@@ -818,13 +818,14 @@ static void
 selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
                   XP_Bool canPeek )
 {
-    if ( !board->gameOver && server_getCurrentTurn(board->server) < 0 ) {
+    XP_S16 curTurn = server_getCurrentTurn(board->server);
+    if ( !board->gameOver && curTurn < 0 ) {
         /* game not started yet; do nothing */
     } else if ( board->selPlayer == newPlayer ) {
         if ( reveal ) {
             checkRevealTray( board );
         }
-    } else if ( canPeek ) {
+    } else if ( canPeek || newPlayer == curTurn ) {
         PerTurnInfo* newInfo = &board->pti[newPlayer];
         XP_U16 oldPlayer = board->selPlayer;
         model_foreachPendingCell( board->model, newPlayer,
