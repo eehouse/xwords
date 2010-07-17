@@ -381,9 +381,9 @@ public class JNIThread extends Thread {
                 XwJNI.board_zoom( m_jniGamePtr, 0 , barr );
                 int zoomBy = 0;
                 if ( barr[1] ) { // always go out if possible
-                    zoomBy = -8;
+                    zoomBy = -4;
                 } else if ( barr[0] ) {
-                    zoomBy = 8;
+                    zoomBy = 4;
                 }
                 draw = XwJNI.board_zoom( m_jniGamePtr, zoomBy, barr );
                 break;
