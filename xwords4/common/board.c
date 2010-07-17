@@ -421,7 +421,6 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     board->disableArrow = !cp->showBoardArrow;
     board->hideValsInTray = cp->hideTileValues;
     board->skipCommitConfirm = cp->skipCommitConfirm;
-    board->allowPeek = cp->allowPeek;
     board->showColors = cp->showColors;
     board->allowPeek = cp->allowPeek;
 
