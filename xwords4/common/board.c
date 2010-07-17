@@ -421,7 +421,9 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     board->disableArrow = !cp->showBoardArrow;
     board->hideValsInTray = cp->hideTileValues;
     board->skipCommitConfirm = cp->skipCommitConfirm;
+    board->allowPeek = cp->allowPeek;
     board->showColors = cp->showColors;
+    board->allowPeek = cp->allowPeek;
 
     if ( showArrowChanged ) {
         showArrowChanged = setArrowVisible( board, XP_FALSE );
@@ -814,7 +816,8 @@ board_commitTurn( BoardCtxt* board )
  * singletons that may have to be hidden or shown.
  */
 static void
-selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
+selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
+                  XP_Bool canPeek )
 {
     if ( !board->gameOver && server_getCurrentTurn(board->server) < 0 ) {
         /* game not started yet; do nothing */
@@ -822,7 +825,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
         if ( reveal ) {
             checkRevealTray( board );
         }
-    } else {
+    } else if ( canPeek ) {
         PerTurnInfo* newInfo = &board->pti[newPlayer];
         XP_U16 oldPlayer = board->selPlayer;
         model_foreachPendingCell( board->model, newPlayer,
@@ -872,9 +875,9 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
 } /* selectPlayerImpl */
 
 void
-board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer )
+board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer, XP_Bool canSwitch )
 {
-    selectPlayerImpl( board, newPlayer, XP_TRUE );
+    selectPlayerImpl( board, newPlayer, XP_TRUE, canSwitch );
 } /* board_selectPlayer */
 
 void
@@ -3308,7 +3311,7 @@ boardTurnChanged( void* p_board )
     nextPlayer = chooseBestSelPlayer( board );
     if ( nextPlayer >= 0 ) {
         XP_U16 nHumans = gi_countLocalHumans( board->gi );
-        selectPlayerImpl( board, nextPlayer, nHumans <= 1 );
+        selectPlayerImpl( board, nextPlayer, nHumans <= 1, XP_TRUE );
     }
 
     setTimerIf( board );

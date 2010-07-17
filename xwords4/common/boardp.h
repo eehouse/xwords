@@ -173,6 +173,7 @@ struct BoardCtxt {
     XP_Bool disableArrow;
     XP_Bool hideValsInTray;
     XP_Bool skipCommitConfirm;
+    XP_Bool allowPeek;          /* Can look at non-turn player's rack */
 
     XP_Bool eraseTray;
     XP_Bool boardObscuresTray;
@@ -246,7 +247,7 @@ void figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect );
 XP_Bool rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 );
 XP_S16 pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, 
                          XP_Bool* onDividerP );
-void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer );
+void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer, XP_Bool canPeek );
 void flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
              XP_U16* fCol, XP_U16* fRow );
 XP_Bool pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, 
