@@ -59,6 +59,7 @@ typedef struct LaunchParams {
     XP_Bool verticalScore;
     XP_Bool hideValues;
     XP_Bool showColors;
+    XP_Bool allowPeek;
     XP_Bool sortNewTiles;
     XP_Bool skipCommitConfirm;
     XP_Bool needsNewGame;

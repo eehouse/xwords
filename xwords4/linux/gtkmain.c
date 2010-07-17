@@ -2104,6 +2104,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cp.skipCommitConfirm = params->skipCommitConfirm;
     globals.cp.sortNewTiles = params->sortNewTiles;
     globals.cp.showColors = params->showColors;
+    globals.cp.allowPeek = params->allowPeek;
     globals.cp.showRobotScores = params->showRobotScores;
 #ifdef XWFEATURE_SLOW_ROBOT
     globals.cp.robotThinkMin = params->robotThinkMin;

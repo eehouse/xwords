@@ -792,6 +792,7 @@ main( int argc, char** argv )
 #endif
     mainParams.skipCommitConfirm = XP_TRUE;
     mainParams.showColors = XP_TRUE;
+    mainParams.allowPeek = XP_TRUE;
     
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
