@@ -63,7 +63,16 @@ dragDropInProgress( const BoardCtxt* board )
 XP_Bool
 dragDropHasMoved( const BoardCtxt* board )
 {
-    return dragDropInProgress(board) && board->dragState.didMove;
+    XP_Bool moved = dragDropInProgress( board );
+    if ( moved ) {
+        if ( board->dragState.didMove ) {
+            /* something was dragged; do nothing */
+        } else {
+            const DragState* ds = &board->dragState;
+            moved = ds->cellChanged; /* did non-drag movement happen? */
+        }
+    }
+    return moved;
 } /* dragDropHasMoved */
 
 static XP_Bool
@@ -490,14 +499,20 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     } else if ( ds->dtype == DT_BOARD ) {
         if ( newInfo.obj == OBJ_BOARD ) {
             XP_S16 diff = newInfo.u.board.col - ds->cur.u.board.col;
+            if ( !ds->cellChanged && 0 != diff ) {
+                ds->cellChanged = XP_TRUE;
+            }
             diff /= SCROLL_DRAG_THRESHHOLD;
             moving = adjustXOffset( board, diff );
 
             diff = newInfo.u.board.row - ds->cur.u.board.row;
+            if ( !ds->cellChanged && 0 != diff ) {
+                ds->cellChanged = XP_TRUE;
+            }
             diff /= SCROLL_DRAG_THRESHHOLD;
             moving = adjustYOffset( board, diff ) || moving;
         }
-    } else {
+    } else if ( ds->dtype == DT_TILE ) {
         if ( newInfo.obj == OBJ_BOARD ) {
                  moving = (newInfo.u.board.col != ds->cur.u.board.col)
                 || (newInfo.u.board.row != ds->cur.u.board.row)
@@ -537,6 +552,8 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
             XP_MEMCPY( &ds->cur, &newInfo, sizeof(ds->cur) );
             startScrollTimerIf( board );
         }
+    } else {
+        XP_ASSERT( 0 );
     }
 
     if ( moving ) {

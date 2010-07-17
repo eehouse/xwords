@@ -58,11 +58,12 @@ typedef struct _DragState {
     DragType dtype;
     XP_Bool didMove;            /* there was change during the drag; not a
                                    tap */
+    XP_Bool cellChanged;        /* nothing dragged but movement happened */
     XP_Bool scrollTimerSet;
     XP_Bool isBlank;            /* cache rather than lookup in model */
     Tile tile;                  /* cache rather than lookup in model */
     DragObjInfo start;
-    DragObjInfo cur;
+    DragObjInfo cur;            /* where dragged object (not pen) is */
 #ifdef XWFEATURE_RAISETILE
     XP_U16 yyAdd;
 #endif
