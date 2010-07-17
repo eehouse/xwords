@@ -548,6 +548,13 @@ public class GameConfig extends Activity implements View.OnClickListener,
             m_playerLayout.addView( divider );
         }
 
+        m_addPlayerButton
+            .setVisibility( names.length >= CurGameInfo.MAX_NUM_PLAYERS?
+                            View.GONE : View.VISIBLE );
+        m_jugglePlayersButton
+            .setVisibility( names.length <= 1 ?
+                            View.GONE : View.VISIBLE );
+
         if ( DeviceRole.SERVER_ISSERVER == m_gi.serverRole
              && 0 == m_gi.remoteCount() ) {
             showDialog( FORCE_REMOTE );
