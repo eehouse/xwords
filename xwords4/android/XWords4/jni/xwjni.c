@@ -160,6 +160,7 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
     cp->skipCommitConfirm = getBool( env, j_cp, "skipCommitConfirm" );
     cp->showColors = getBool( env, j_cp, "showColors" );
     cp->sortNewTiles = getBool( env, j_cp, "sortNewTiles" );
+    cp->allowPeek = getBool( env, j_cp, "allowPeek" );
 }
 
 static XWStreamCtxt*
