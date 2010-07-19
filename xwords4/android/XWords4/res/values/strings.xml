@@ -340,6 +340,9 @@
     <!-- fill this in other than in English -->
     <string name="xlator"></string>
 
+    <string name="about_credits">Toolbar icons by Sarah Chu; other
+    credits pending permission.</string>
+
     <string name="downloading_dictf">Downloading Crosswords
     dictionary %s...</string>
     <string name="no_dict_title">Dictionary not found</string>

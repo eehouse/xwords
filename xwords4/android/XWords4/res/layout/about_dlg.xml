@@ -6,38 +6,24 @@
               >
 
    <TextView android:id="@+id/version_string"
-		     android:layout_marginLeft="5sp"
-	         android:layout_width="fill_parent" 
-	         android:layout_height="wrap_content"
-             android:textColor="#FFFFFFFF"
+             style="@style/about_items"
              />
 
-   <TextView android:layout_marginLeft="5sp"
-   		     android:layout_marginTop="5sp"
-   		     android:layout_marginBottom="5sp"
-	         android:layout_width="fill_parent" 
-	         android:layout_height="wrap_content"
+   <TextView style="@style/about_items"
     	     android:text="@string/about_copyright"
-             android:textColor="#FFFFFFFF"
              />
 
-   <TextView android:layout_marginLeft="5sp"
-   		     android:layout_marginTop="5sp"
-   		     android:layout_marginBottom="5sp"
-	         android:layout_width="fill_parent" 
-	         android:layout_height="wrap_content"
-    	     android:text="@string/about_web"
-             android:textColor="#FFFFFFFF"
+   <TextView style="@style/about_items"
+             android:text="@string/about_web"
     	     android:autoLink="all" 
              />
 
    <TextView android:id="@+id/about_xlator"
-             android:layout_marginLeft="5sp"
-   		     android:layout_marginTop="5sp"
-   		     android:layout_marginBottom="5sp"
-	         android:layout_width="fill_parent" 
-	         android:layout_height="wrap_content"
-             android:textColor="#FFFFFFFF"
+             style="@style/about_items"
+             />
+
+   <TextView style="@style/about_items"
+             android:text="@string/about_credits"
              />
 
 </LinearLayout>
