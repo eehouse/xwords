@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_NUNDONE 0x0C /* save undone tile in model */
 #define STREAM_VERS_GAMESECONDS 0x0B /* save gameSeconds whether or not
                                         timer's enabled */
 #define STREAM_VERS_4YOFFSET 0x0A /* 4 bits for yOffset on board */
@@ -46,7 +47,7 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_GAMESECONDS
+#define CUR_STREAM_VERS STREAM_VERS_NUNDONE
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;

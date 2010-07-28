@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
@@ -35,7 +36,9 @@ import java.util.concurrent.Semaphore;
 import android.net.Uri;
 import android.app.Dialog;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -67,6 +70,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private TimerRunnable[] m_timers;
     private String m_path;
     private int m_currentOrient;
+    private Toolbar m_toolbar;
 
     private String m_dlgBytes = null;
     private EditText m_passwdEdit = null;
@@ -83,6 +87,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     private Thread m_blockingThread;
     private JNIThread m_jniThread;
+
+    private ProgressDialog m_progress;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -253,7 +259,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
         m_view = (BoardView)findViewById( R.id.board_view );
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
-        m_view.setUseZoomControl( !m_volKeysZoom );
 
         Intent intent = getIntent();
         Uri uri = intent.getData();
@@ -343,7 +348,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
                 }
             }
-            m_view.setUseZoomControl( !m_volKeysZoom );
         }
     }
 
@@ -351,6 +355,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
     public void onConfigurationChanged( Configuration newConfig )
     {
         m_currentOrient = newConfig.orientation;
+        if ( null != m_toolbar ) {
+            boolean landscape = 
+                m_currentOrient == Configuration.ORIENTATION_LANDSCAPE;
+            m_toolbar.orientChanged( landscape );
+        }
         super.onConfigurationChanged( newConfig );
     }
 
@@ -368,7 +377,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 case KeyEvent.KEYCODE_VOLUME_UP:
                     if ( m_volKeysZoom ) {
                         int zoomBy = KeyEvent.KEYCODE_VOLUME_DOWN == keyCode
-                            ? -1 : 1;
+                            ? -2 : 2;
                         handled = doZoom( zoomBy );
                     }
                     break;
@@ -406,21 +415,21 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case R.id.board_menu_done:
             cmd = JNIThread.JNICmd.CMD_COMMIT;
             break;
-        case R.id.board_menu_juggle:
-            cmd = JNIThread.JNICmd.CMD_JUGGLE;
-            break;
-        case R.id.board_menu_flip:
-            cmd = JNIThread.JNICmd.CMD_FLIP;
-            break;
+        // case R.id.board_menu_juggle:
+        //     cmd = JNIThread.JNICmd.CMD_JUGGLE;
+        //     break;
+        // case R.id.board_menu_flip:
+        //     cmd = JNIThread.JNICmd.CMD_FLIP;
+        //     break;
         case R.id.board_menu_trade:
             cmd = JNIThread.JNICmd.CMD_TOGGLE_TRADE;
             break;
         case R.id.board_menu_tray:
             cmd = JNIThread.JNICmd.CMD_TOGGLE_TRAY;
             break;
-        case R.id.board_menu_undo_current:
-            cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
-            break;
+        // case R.id.board_menu_undo_current:
+        //     cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
+        //     break;
         case R.id.board_menu_undo_last:
             cmd = JNIThread.JNICmd.CMD_UNDO_LAST;
             break;
@@ -687,6 +696,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                        case JNIThread.QUERY_ENDGAME:
                                            showDialog( QUERY_ENDGAME );
                                            break;
+                                       case JNIThread.TOOLBAR_STATES:
+                                           m_toolbar.update( msg.arg1, msg.arg2 );
                                        }
                                    }
                                } );
@@ -698,10 +709,79 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 }
                 m_jniThread.handle( JNICmd.CMD_START );
 
-                setTitle( GameUtils.gameName( this, m_path ) );
+                // setTitle( GameUtils.gameName( this, m_path ) );
+                m_toolbar = 
+                    new Toolbar( this, findViewById( R.id.toolbar_horizontal ),
+                                 findViewById( R.id.toolbar_vertical ) );
+
+                boolean isLandscape = 
+                    getResources().getConfiguration().orientation
+                    == Configuration.ORIENTATION_LANDSCAPE;
+                m_toolbar.orientChanged( isLandscape );
+                populateToolbar();
             }
         }
     } // loadGame
+
+    private void populateToolbar()
+    {
+        m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
+                               new View.OnClickListener() {
+                                   @Override
+                                       public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_PREV_HINT );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_NEXT_HINT );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_JUGGLE );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_FLIP,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_FLIP );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_TOGGLEZOOM );
+                                   }
+                               } );
+        m_toolbar.setListener( Toolbar.BUTTON_UNDO,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_UNDO_CUR );
+                                   }
+                               }) ;
+        m_toolbar.setListener( Toolbar.BUTTON_VALUES,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       m_jniThread.handle( JNIThread.JNICmd
+                                                           .CMD_VALUES );
+                                   }
+                               }) ;
+    } // populateToolbar
 
     private DialogInterface.OnDismissListener makeODLforBlocking()
     {
@@ -794,9 +874,42 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return result;
     }
 
+    public void turnChanged()
+    {
+        m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, -8 );
+    }
+
     public boolean engineProgressCallback()
     {
         return ! m_jniThread.busy();
+    }
+
+    public void engineStarting( int nBlanks )
+    {
+        Utils.logf( "engineStarting(%d)", nBlanks );
+        if ( nBlanks > 0 ) {
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        String title = getString( R.string.progress_title );
+                        m_progress = ProgressDialog.show( BoardActivity.this,
+                                                          title, null, true, 
+                                                          true );
+                    }
+                } );
+        }
+    }
+
+    public void engineStopping()
+    {
+        Utils.logf( "engineStopping" );
+        m_handler.post( new Runnable() {
+                public void run() {
+                    if ( null != m_progress ) {
+                        m_progress.cancel();
+                        m_progress = null;
+                    }
+                }
+            } );
     }
 
     public String getUserString( int stringCode )

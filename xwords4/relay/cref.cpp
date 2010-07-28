@@ -762,14 +762,21 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
     if ( reconn ) {
         if ( nPlayersS > 0 ) {
             if ( 0 != m_nPlayersSought ) {
+                logf( XW_LOGERROR, 
+                      "already have m_nPlayersSought: %d but new value %d",
+                      m_nPlayersSought, nPlayersS );
                 goto drop;
             }
             m_nPlayersSought = nPlayersS;
         }
-        m_nPlayersHere += nPlayersH;
-        if ( 0 != m_nPlayersSought && m_nPlayersHere > m_nPlayersSought ) {
+        if ( 0 != m_nPlayersSought && 
+             m_nPlayersHere + nPlayersH > m_nPlayersSought ) {
+            logf( XW_LOGERROR, "too many new players provided: %d > %d",
+                  m_nPlayersHere + nPlayersH, m_nPlayersSought );
             goto drop;
         }
+
+        m_nPlayersHere += nPlayersH;
         if ( m_nPlayersHere == m_nPlayersSought ) {
             newevt.type = XWE_ALLHERE;
         } else {
@@ -777,8 +784,11 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
         }
         addHost = true;
     } else if ( nPlayersS > 0 ) {      /* a host; init values */
-        assert( m_nPlayersSought == 0 );
-        assert( m_nPlayersHere == 0 );
+        if ( m_nPlayersSought != 0  || m_nPlayersHere != 0 ) {
+            logf( XW_LOGERROR, "cref in bad state: m_nPlayersSought: %d; "
+                  "m_nPlayersHere: %d", m_nPlayersSought, m_nPlayersHere );
+            goto drop;
+        }
         m_nPlayersHere = nPlayersH;
         m_nPlayersSought = nPlayersS;
         addHost = true;

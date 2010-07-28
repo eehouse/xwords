@@ -78,6 +78,11 @@ void board_reset( BoardCtxt* board );
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
 XP_U16 board_getYOffset( const BoardCtxt* board );
 
+XP_U16 board_visTileCount( const BoardCtxt* board );
+XP_Bool board_canShuffle( const BoardCtxt* board );
+XP_Bool board_canTogglePending( const BoardCtxt* board );
+XP_Bool board_canHint( const BoardCtxt* board );
+
 /* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut );
 
@@ -98,12 +103,13 @@ XP_Bool board_flip( BoardCtxt* board );
 XP_Bool board_get_showValues( const BoardCtxt* board );
 XP_Bool board_toggle_showValues( BoardCtxt* board );
 XP_Bool board_replaceTiles( BoardCtxt* board );
+XP_Bool board_redoReplacedTiles( BoardCtxt* board );
 
 XP_Bool board_requestHint( BoardCtxt* board, 
 #ifdef XWFEATURE_SEARCHLIMIT
                            XP_Bool useTileLimits,
 #endif
-                           XP_Bool* workRemainsP );
+                           XP_Bool usePrev, XP_Bool* workRemainsP );
 
 XP_Bool board_prefsChanged( BoardCtxt* board, CommonPrefs* cp );
 

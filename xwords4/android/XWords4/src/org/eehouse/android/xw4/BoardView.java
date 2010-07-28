@@ -33,9 +33,7 @@ import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
 import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
-import android.widget.ZoomButtonsController;
 import android.os.Handler;
-import java.util.HashMap;
 import java.nio.IntBuffer;
 
 import junit.framework.Assert;
@@ -117,9 +115,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int[] m_playerColors;
     private int[] m_otherColors;
     private String[] m_bonusSummaries;
-    private ZoomButtonsController m_zoomButtons;
-    private boolean m_useZoomControl;
-    private boolean m_canZoom;
 
     // called when inflating xml
     public BoardView( Context context, AttributeSet attrs ) 
@@ -132,15 +127,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         int action = event.getAction();
         int xx = (int)event.getX() - m_left;
-        int yy = (int)event.getY() - getCurTop();
+        int yy = (int)event.getY() - m_top;
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
-            enableZoomControlsIf();
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
             break;
         case MotionEvent.ACTION_MOVE:
-            enableZoomControlsIf();
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
             break;
         case MotionEvent.ACTION_UP:
@@ -160,16 +153,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
-                canvas.drawBitmap( m_bitmap, m_left, getCurTop(), m_drawPaint );
+                canvas.drawBitmap( m_bitmap, m_left, m_top, m_drawPaint );
             }
         }
-    }
-
-    @Override
-    protected void onDetachedFromWindow() 
-    {
-        m_zoomButtons.setVisible( false );
-        super.onDetachedFromWindow();
     }
 
     private void init( Context context )
@@ -215,33 +201,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         m_viewHandler = new Handler();
-        m_zoomButtons = new ZoomButtonsController( this );
-        ZoomButtonsController.OnZoomListener lstnr =
-            new ZoomButtonsController.OnZoomListener(){
-                public void onVisibilityChanged( boolean visible ){}
-                public void onZoom( boolean zoomIn )
-                {
-                    if ( null != m_jniThread ) {
-                        int zoomBy = zoomIn ? 1 : -1;
-                        m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, zoomBy );
-                    }
-                }
-            };
-        m_zoomButtons.setOnZoomListener( lstnr );
-        m_zoomButtons.setZoomSpeed( 100 ); // milliseconds
-    }
-
-    protected void setUseZoomControl( boolean useZoomControl )
-    {
-        m_useZoomControl = useZoomControl;
-        if ( !useZoomControl ) {
-            m_zoomButtons.setVisible( false );
-        }
-    }
-
-    private int getCurTop() 
-    {
-        return m_useZoomControl ? 0 : m_top;
     }
 
     private BoardDims figureBoardDims( int width, int height,
@@ -309,9 +268,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_letterRect = null;
             m_valRect = null;
 
-            // We hide zoom on change in orientation
-            m_zoomButtons.setVisible( false );
-
             BoardDims dims = figureBoardDims( width, height, m_gi );
             m_left = dims.left;
             m_top = dims.top;
@@ -328,15 +284,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         return layoutDone;
     } // layoutBoardOnce
-
-    private void enableZoomControlsIf()
-    {
-        if ( m_useZoomControl && m_canZoom ) {
-            if ( m_layoutWidth <= m_layoutHeight ) {
-                m_zoomButtons.setVisible( true );
-            }
-        }
-    }
 
     // BoardHandler interface implementation
     public void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi ) 
@@ -373,17 +320,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 }
             }
         }
-    }
-
-    public void zoomChanged( final boolean[] canZoom )
-    {
-        m_viewHandler.post( new Runnable() {
-                public void run() {
-                    m_zoomButtons.setZoomInEnabled( canZoom[0] );
-                    m_zoomButtons.setZoomOutEnabled( canZoom[1] );
-                    m_canZoom = canZoom[0] || canZoom[1];
-                }
-            } );
     }
 
     // DrawCtxt interface implementation
@@ -550,7 +486,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 m_origin.draw( m_canvas );
             } else if ( null != bonusStr ) {
                 m_fillPaint.setColor( GREY );
-                drawCentered( bonusStr, rect, m_fontDims );
+                Rect brect = new Rect( rect );
+                brect.inset( 0, (brect.height() - m_defaultFontHt)/2 );
+                drawCentered( bonusStr, brect, m_fontDims );
             }
         } else {
             m_fillPaint.setColor( foreColor );

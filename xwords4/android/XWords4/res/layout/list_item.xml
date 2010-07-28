@@ -11,4 +11,20 @@
    android:textAppearance="?android:attr/textAppearanceLarge"
    android:longClickable="true"
    android:background="@android:drawable/list_selector_background"
-   />
+   >
+  <TextView android:id="@+id/text_item"
+	        android:layout_width="wrap_content" 
+	        android:layout_height="wrap_content"
+            android:layout_weight="1"
+   	        android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+
+
+  <ImageButton android:id="@+id/hint_button_horizontal"
+	           android:layout_width="32dp" 
+	           android:layout_height="32dp"
+               android:src="@android:drawable/ic_delete"
+               android:visibility="gone"
+               />
+
+  </org.eehouse.android.xw4.XWListItem>

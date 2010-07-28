@@ -152,6 +152,11 @@
                         android:summary="@string/click_launches_summary"
                         android:defaultValue="false"
                         />
+    <CheckBoxPreference android:key="@string/key_peek_other"
+                        android:title="@string/peek_other"
+                        android:summary="@string/peek_other_summary"
+                        android:defaultValue="false"
+                        />
   </PreferenceScreen>
 
   <PreferenceScreen android:title="@string/advanced"

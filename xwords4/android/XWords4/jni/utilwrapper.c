@@ -197,10 +197,12 @@ and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 maxOffset,
 static void
 and_util_turnChanged(XW_UtilCtxt* uc)
 {
-    /* don't log; this is getting called a lot */
+    UTIL_CBK_HEADER( "turnChanged", "()V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
 }
-
 #endif
+
 static void
 and_util_notifyGameOver( XW_UtilCtxt* uc )
 {
@@ -378,13 +380,17 @@ and_util_getTraySearchLimits(XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
 static void
 and_util_engineStarting( XW_UtilCtxt* uc, XP_U16 nBlanks )
 {
-    LOG_FUNC();
+    UTIL_CBK_HEADER("engineStarting", "(I)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, nBlanks );
+    UTIL_CBK_TAIL();
 }
 
 static void
 and_util_engineStopping( XW_UtilCtxt* uc )
 {
-    LOG_FUNC();
+    UTIL_CBK_HEADER("engineStopping", "()V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
 }
 #endif
 

@@ -72,8 +72,6 @@
 # define MAX_BOARD_ZOOM 4
 #endif
 
-#define BOARD_ZOOMBY 2
-
 #ifdef CPLUS
 extern "C" {
 #endif
@@ -424,6 +422,7 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     board->hideValsInTray = cp->hideTileValues;
     board->skipCommitConfirm = cp->skipCommitConfirm;
     board->showColors = cp->showColors;
+    board->allowPeek = cp->allowPeek;
 
     if ( showArrowChanged ) {
         showArrowChanged = setArrowVisible( board, XP_FALSE );
@@ -537,6 +536,38 @@ board_getYOffset( const BoardCtxt* board )
     return vsd->offset;
 } /* board_getYOffset */
 
+XP_U16
+board_visTileCount( const BoardCtxt* board )
+{
+    return model_visTileCount( board->model, board->selPlayer, 
+                               TRAY_REVEALED == board->trayVisState );
+}
+
+XP_Bool
+board_canShuffle( const BoardCtxt* board )
+{
+    return model_canShuffle( board->model, board->selPlayer, 
+                             TRAY_REVEALED == board->trayVisState );
+}
+
+XP_Bool
+board_canTogglePending( const BoardCtxt* board )
+{
+    return TRAY_REVEALED == board->trayVisState
+        && model_canTogglePending( board->model, board->selPlayer );
+}
+
+XP_Bool
+board_canHint( const BoardCtxt* board )
+{
+    XP_Bool canHint = !board->gi->hintsNotAllowed;
+    if ( canHint ) {
+        LocalPlayer* lp = &board->gi->players[board->selPlayer];
+        canHint = lp->isLocal && !lp->isRobot;
+    }
+    return canHint;
+}
+
 static XP_U16
 adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
 {
@@ -561,19 +592,12 @@ canZoomIn( const BoardCtxt* board, XP_S16 newCount )
 }
 
 XP_Bool
-board_zoom( BoardCtxt* board, XP_S16 zoomDir, XP_Bool* canInOut )
+board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut )
 {
-    XP_S16 zoomBy = 0;
     XP_Bool changed;
     XP_S16 zoomCount = board->zoomCount;
     ScrollData* hsd = &board->sd[SCROLL_H];
     ScrollData* vsd = &board->sd[SCROLL_V];
-
-    if ( zoomDir > 0 ) {
-        zoomBy = BOARD_ZOOMBY;
-    } else if ( zoomDir < 0 ) {
-        zoomBy = -BOARD_ZOOMBY;
-    }
 
     XP_U16 maxCount = model_numCols( board->model ) - MAX_BOARD_ZOOM;
     if ( board->boardBounds.width > board->boardBounds.height ) {
@@ -592,8 +616,11 @@ board_zoom( BoardCtxt* board, XP_S16 zoomDir, XP_Bool* canInOut )
 
     /* If we're zooming in, make sure we'll stay inside the limit */
     if ( changed && zoomBy > 0 ) {
-        changed = canZoomIn( board, zoomCount );
+        while ( zoomCount > 0 && !canZoomIn( board, zoomCount ) ) {
+            --zoomCount;
+        }
     }
+    changed = zoomCount != board->zoomCount;
 
     if ( changed ) {
         /* Try to distribute the zoom */
@@ -788,15 +815,17 @@ board_commitTurn( BoardCtxt* board )
  * singletons that may have to be hidden or shown.
  */
 static void
-selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
+selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
+                  XP_Bool canPeek )
 {
-    if ( !board->gameOver && server_getCurrentTurn(board->server) < 0 ) {
+    XP_S16 curTurn = server_getCurrentTurn(board->server);
+    if ( !board->gameOver && curTurn < 0 ) {
         /* game not started yet; do nothing */
     } else if ( board->selPlayer == newPlayer ) {
         if ( reveal ) {
             checkRevealTray( board );
         }
-    } else {
+    } else if ( canPeek || newPlayer == curTurn ) {
         PerTurnInfo* newInfo = &board->pti[newPlayer];
         XP_U16 oldPlayer = board->selPlayer;
         model_foreachPendingCell( board->model, newPlayer,
@@ -846,9 +875,9 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
 } /* selectPlayerImpl */
 
 void
-board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer )
+board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer, XP_Bool canSwitch )
 {
-    selectPlayerImpl( board, newPlayer, XP_TRUE );
+    selectPlayerImpl( board, newPlayer, XP_TRUE, canSwitch );
 } /* board_selectPlayer */
 
 void
@@ -1577,6 +1606,12 @@ board_replaceTiles( BoardCtxt* board )
     return result;
 } /* board_replaceTiles */
 
+XP_Bool
+board_redoReplacedTiles( BoardCtxt* board )
+{
+    return model_redoPendingTiles( board->model, board->selPlayer );
+}
+
 /* There are a few conditions that must be true for any of several actions
    to be allowed.  Check them here.  */
 static XP_Bool
@@ -1597,7 +1632,7 @@ board_requestHint( BoardCtxt* board,
 #ifdef XWFEATURE_SEARCHLIMIT
                    XP_Bool useTileLimits,
 #endif
-                   XP_Bool* workRemainsP )
+                   XP_Bool usePrev, XP_Bool* workRemainsP )
 {
     XP_Bool result = XP_FALSE;
     XP_Bool redraw = XP_FALSE;
@@ -1669,7 +1704,7 @@ board_requestHint( BoardCtxt* board,
 #endif
             searchComplete = engine_findMove(engine, model, 
                                              model_getDictionary(model),
-                                             tiles, nTiles,
+                                             tiles, nTiles, usePrev,
 #ifdef XWFEATURE_SEARCHLIMIT
                                              lp, useTileLimits,
 #endif
@@ -1730,8 +1765,8 @@ figureHScale( BoardCtxt* board )
     ScrollData* hsd;
 
     while ( !canZoomIn( board, board->zoomCount ) ) {
-        XP_ASSERT( board->zoomCount >= BOARD_ZOOMBY );
-        board->zoomCount -= BOARD_ZOOMBY;
+        XP_ASSERT( board->zoomCount >= 1 );
+        --board->zoomCount;
     }
 
     nCols = model_numCols( board->model );
@@ -3276,7 +3311,7 @@ boardTurnChanged( void* p_board )
     nextPlayer = chooseBestSelPlayer( board );
     if ( nextPlayer >= 0 ) {
         XP_U16 nHumans = gi_countLocalHumans( board->gi );
-        selectPlayerImpl( board, nextPlayer, nHumans <= 1 );
+        selectPlayerImpl( board, nextPlayer, nHumans <= 1, XP_TRUE );
     }
 
     setTimerIf( board );

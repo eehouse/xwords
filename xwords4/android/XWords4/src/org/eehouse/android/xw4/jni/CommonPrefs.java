@@ -45,6 +45,7 @@ public class CommonPrefs {
     public boolean skipCommitConfirm;
     public boolean showColors;
     public boolean sortNewTiles;
+    public boolean allowPeek;
 
     public int[] playerColors;
     public int[] bonusColors;
@@ -78,6 +79,7 @@ public class CommonPrefs {
                                         R.string.key_skip_confirm, false );
         showColors = getBoolean( context, sp, R.string.key_color_tiles, true );
         sortNewTiles = getBoolean( context, sp, R.string.key_sort_tiles, true );
+        allowPeek = getBoolean( context, sp, R.string.key_peek_other, false );
 
         int ids[] = { R.string.key_player0,
                       R.string.key_player1,
