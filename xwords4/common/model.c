@@ -1317,7 +1317,6 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
         model_addPlayerTile( model, turn, -1, *newTilesP++ );
     }
 
-    XP_LOGF( "%s: %d tiles on board", __func__, model->vol.nTilesOnBoard );
     return score;
 } /* commitTurn */
 
