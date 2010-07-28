@@ -377,7 +377,6 @@ CookieRef::_HandleHeartbeat( HostID id, int socket )
 void
 CookieRef::_CheckHeartbeats( time_t now )
 {
-    logf( XW_LOGINFO, "%s", __func__ );
     ASSERT_LOCKED();
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
@@ -648,6 +647,10 @@ CookieRef::handleEvents()
 
             m_curState = nextState;
         } else {
+            /* CRefEvent evt; */
+            /* evt.type = XWE_SHUTDOWN; */
+            /* m_eventQueue.push_back( evt ); */
+
             logf( XW_LOGERROR, "unable to find transition "
                   "from %s on event %s", stateString(m_curState),
                   eventString(evt.type) );
@@ -799,6 +802,8 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
 
     if ( newevt.type != XWE_NONE ) {
         m_eventQueue.push_back( newevt );
+    } else {
+        logf( XW_LOGERROR, "%s: not pushing an event", __func__ );
     }
 
     if ( addHost ) {
@@ -820,7 +825,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
 void
 CookieRef::reducePlayerCounts( int socket )
 {
-    logf( XW_LOGVERBOSE1, "reducePlayerCounts on socket %d", socket );
+    logf( XW_LOGVERBOSE1, "%s(socket=%d)", __func__, socket );
     ASSERT_LOCKED();
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
@@ -832,8 +837,9 @@ CookieRef::reducePlayerCounts( int socket )
             }
             m_nPlayersHere -= iter->m_nPlayersH;
 
-            logf( XW_LOGVERBOSE1, "reducePlayerCounts: m_nPlayersHere=%d; m_nPlayersSought=%d", 
-                  m_nPlayersHere, m_nPlayersSought );
+            logf( XW_LOGVERBOSE1, 
+                  "%s: m_nPlayersHere=%d; m_nPlayersSought=%d", 
+                  __func__, m_nPlayersHere, m_nPlayersSought );
 
             break;
         }
