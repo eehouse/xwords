@@ -122,7 +122,10 @@ class CookieRef {
 
     void logf( XW_LogLevel level, const char* format, ... );
 
-    typedef struct CRefEvent {
+    class CRefEvent {
+    public :
+        CRefEvent() { type = XWE_NONE; }
+        CRefEvent( XW_RELAY_EVENT typ ) { type = typ; }
         XW_RELAY_EVENT type;
         union {
             struct {
@@ -157,7 +160,7 @@ class CookieRef {
                 XWREASON why;
             } disnote;
         } u;
-    } CRefEvent;
+    };
 
     bool send_with_length( int socket, unsigned char* buf, int bufLen,
                            bool cascade );
