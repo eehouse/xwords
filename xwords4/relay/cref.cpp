@@ -188,7 +188,9 @@ CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                      int seed )
 {
     bool connected = false;
-    if ( CRefMgr::Get()->Associate( socket, this ) ) {
+    if ( hostAlreadyHere( seed, socket ) ) {
+        connected = true;       /* but drop the packet */
+    } else if ( CRefMgr::Get()->Associate( socket, this ) ) {
         if ( hid == HOST_ID_NONE ) {
             logf( XW_LOGINFO, "%s: Waiting to assign host id", __func__ );
         } else {
@@ -207,9 +209,11 @@ void
 CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                        int seed )
 {
-    (void)CRefMgr::Get()->Associate( socket, this );
-    pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
-    handleEvents();
+    if ( !hostAlreadyHere( seed, socket ) ) {
+        (void)CRefMgr::Get()->Associate( socket, this );
+        pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
+        handleEvents();
+    }
 }
 
 void
@@ -218,8 +222,7 @@ CookieRef::_Disconnect( int socket, HostID hostID )
     logf( XW_LOGINFO, "%s(socket=%d, hostID=%d)", __func__, socket, hostID );
     CRefMgr::Get()->Disassociate( socket, this );
 
-    CRefEvent evt;
-    evt.type = XWE_DISCONN;
+    CRefEvent evt( XWE_DISCONN );
     evt.u.discon.socket = socket;
     evt.u.discon.srcID = hostID;
     m_eventQueue.push_back( evt );
@@ -230,8 +233,7 @@ CookieRef::_Disconnect( int socket, HostID hostID )
 void
 CookieRef::_Shutdown()
 {
-    CRefEvent evt;
-    evt.type = XWE_SHUTDOWN;
+    CRefEvent evt( XWE_SHUTDOWN );
     m_eventQueue.push_back( evt );
 
     handleEvents();
@@ -423,8 +425,7 @@ void
 CookieRef::pushReconnectEvent( int socket, HostID srcID, int nPlayersH,
                                int nPlayersS, int seed )
 {
-    CRefEvent evt;
-    evt.type = XWE_RECONNECT;
+    CRefEvent evt( XWE_RECONNECT );
     evt.u.con.socket = socket;
     evt.u.con.srcID = srcID;
     evt.u.con.nPlayersH = nPlayersH;
@@ -437,8 +438,7 @@ CookieRef::pushReconnectEvent( int socket, HostID srcID, int nPlayersH,
 void
 CookieRef::pushHeartbeatEvent( HostID id, int socket )
 {
-    CRefEvent evt;
-    evt.type = XWE_HEARTRCVD;
+    CRefEvent evt( XWE_HEARTRCVD );
     evt.u.heart.id = id;
     evt.u.heart.socket = socket;
     m_eventQueue.push_back( evt );
@@ -448,8 +448,7 @@ void
 CookieRef::pushHeartFailedEvent( int socket )
 {
     logf( XW_LOGINFO, "%s", __func__ );
-    CRefEvent evt;
-    evt.type = XWE_HEARTFAILED;
+    CRefEvent evt( XWE_HEARTFAILED );
     evt.u.heart.socket = socket;
     m_eventQueue.push_back( evt );
 }
@@ -460,8 +459,7 @@ CookieRef::pushForwardEvent( HostID src, HostID dest,
                              unsigned char* buf, int buflen )
 {
     logf( XW_LOGVERBOSE1, "pushForwardEvent: %d -> %d", src, dest );
-    CRefEvent evt;
-    evt.type = XWE_FORWARDMSG;
+    CRefEvent evt( XWE_FORWARDMSG );
     evt.u.fwd.src = src;
     evt.u.fwd.dest = dest;
     evt.u.fwd.buf = buf;
@@ -472,8 +470,7 @@ CookieRef::pushForwardEvent( HostID src, HostID dest,
 void
 CookieRef::pushRemoveSocketEvent( int socket )
 {
-    CRefEvent evt;
-    evt.type = XWE_REMOVESOCKET;
+    CRefEvent evt( XWE_REMOVESOCKET );
     evt.u.rmsock.socket = socket;
     m_eventQueue.push_back( evt );
 }
@@ -481,8 +478,7 @@ CookieRef::pushRemoveSocketEvent( int socket )
 void
 CookieRef::pushNotifyDisconEvent( int socket, XWREASON why )
 {
-    CRefEvent evt;
-    evt.type = XWE_NOTIFYDISCON;
+    CRefEvent evt( XWE_NOTIFYDISCON );
     evt.u.disnote.socket = socket;
     evt.u.disnote.why = why;
     m_eventQueue.push_back( evt );
@@ -491,8 +487,7 @@ CookieRef::pushNotifyDisconEvent( int socket, XWREASON why )
 void
 CookieRef::pushLastSocketGoneEvent()
 {
-    CRefEvent evt;
-    evt.type = XWE_NOMORESOCKETS;
+    CRefEvent evt( XWE_NOMORESOCKETS );
     m_eventQueue.push_back( evt );
 }
 
@@ -630,8 +625,7 @@ CookieRef::handleEvents()
             case XWA_NOTE_EMPTY:
                 cancelAllConnectedTimer();
                 if ( 0 == count_msgs_stored() ) {
-                    CRefEvent evt;
-                    evt.type = XWE_NOMOREMSGS;
+                    CRefEvent evt( XWE_NOMOREMSGS );
                     m_eventQueue.push_back( evt );
                 }
                 break;
@@ -737,13 +731,11 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
     int socket = evt->u.con.socket;
     HostID hid = evt->u.con.srcID;
     int seed = evt->u.con.seed;
-    CRefEvent newevt;
     bool addHost = false;
+    XW_RELAY_EVENT newEvt = XWE_NONE;
 
     assert( hid <= 4 );
 
-    newevt.type = XWE_NONE;
- 
     logf( XW_LOGINFO, "%s: hid=%d, nPlayersH=%d, "
           "nPlayersS=%d", __func__, hid, nPlayersH, nPlayersS );
 
@@ -778,9 +770,9 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
 
         m_nPlayersHere += nPlayersH;
         if ( m_nPlayersHere == m_nPlayersSought ) {
-            newevt.type = XWE_ALLHERE;
+            newEvt = XWE_ALLHERE;
         } else {
-            newevt.type = XWE_SOMEMISSING;
+            newEvt = XWE_SOMEMISSING;
         }
         addHost = true;
     } else if ( nPlayersS > 0 ) {      /* a host; init values */
@@ -797,21 +789,22 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
 
         if ( m_nPlayersSought < m_nPlayersHere + nPlayersH ) { /* too many;
                                                                   reject */
-            newevt.type = XWE_TOO_MANY;
+            newEvt = XWE_TOO_MANY;
         } else {
             m_nPlayersHere += nPlayersH;
             if ( m_nPlayersHere == m_nPlayersSought ) { /* complete! */
-                newevt.type = XWE_ALLHERE;
+                newEvt = XWE_ALLHERE;
                 m_gameFull = true;
             } else {
-                newevt.type = XWE_SOMEMISSING;
+                newEvt = XWE_SOMEMISSING;
             }
             addHost = true;
         }
     }
 
-    if ( newevt.type != XWE_NONE ) {
-        m_eventQueue.push_back( newevt );
+    if ( newEvt != XWE_NONE ) {
+        CRefEvent evt( newEvt );
+        m_eventQueue.push_back( evt );
     } else {
         logf( XW_LOGERROR, "%s: not pushing an event", __func__ );
     }
@@ -831,6 +824,21 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
  drop:
     return addHost;
 } /* increasePlayerCounts */
+
+bool
+CookieRef::hostAlreadyHere( int seed, int socket )
+{
+    ASSERT_LOCKED();
+    bool found = false;
+    vector<HostRec>::const_iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        if ( iter->m_seed == seed && iter->m_socket == socket ) {
+            found = true;
+            break;
+        }
+    }
+    return found;
+}
 
 void
 CookieRef::reducePlayerCounts( int socket )
@@ -1183,8 +1191,7 @@ CookieRef::_CheckAllConnected()
 {
     logf( XW_LOGVERBOSE0, "%s", __func__ );
 /*     MutexLock ml( &m_EventsMutex ); */
-    CRefEvent newEvt;
-    newEvt.type = XWE_CONNTIMER;
+    CRefEvent newEvt( XWE_CONNTIMER );
     m_eventQueue.push_back( newEvt );
     handleEvents();
 }
