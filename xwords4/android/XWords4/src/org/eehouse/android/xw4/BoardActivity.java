@@ -89,6 +89,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private JNIThread m_jniThread;
 
     private ProgressDialog m_progress;
+    private boolean m_isVisible;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -291,6 +292,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         if ( null != m_jniThread ) {
             m_jniThread.setInBackground( true );
         }
+        m_isVisible = false;
         super.onPause();
     }
 
@@ -301,6 +303,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         if ( null != m_jniThread ) {
             m_jniThread.setInBackground( false );
         }
+        m_isVisible = true;
         super.onResume();
     }
 
@@ -889,11 +892,14 @@ public class BoardActivity extends Activity implements UtilCtxt {
         Utils.logf( "engineStarting(%d)", nBlanks );
         if ( nBlanks > 0 ) {
             m_handler.post( new Runnable() {
+                    // Need to keep this from running after activity dies!!
                     public void run() {
-                        String title = getString( R.string.progress_title );
-                        m_progress = ProgressDialog.show( BoardActivity.this,
-                                                          title, null, true, 
-                                                          true );
+                        if ( m_isVisible ) {
+                            String title = getString( R.string.progress_title );
+                            m_progress = ProgressDialog.show( BoardActivity.this,
+                                                              title, null, true, 
+                                                              true );
+                        }
                     }
                 } );
         }
@@ -904,7 +910,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         Utils.logf( "engineStopping" );
         m_handler.post( new Runnable() {
                 public void run() {
-                    if ( null != m_progress ) {
+                    if ( m_isVisible && null != m_progress ) {
                         m_progress.cancel();
                         m_progress = null;
                     }
