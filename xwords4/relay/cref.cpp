@@ -188,7 +188,9 @@ CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                      int seed )
 {
     bool connected = false;
-    if ( CRefMgr::Get()->Associate( socket, this ) ) {
+    if ( hostAlreadyHere( seed, socket ) ) {
+        connected = true;       /* but drop the packet */
+    } else if ( CRefMgr::Get()->Associate( socket, this ) ) {
         if ( hid == HOST_ID_NONE ) {
             logf( XW_LOGINFO, "%s: Waiting to assign host id", __func__ );
         } else {
@@ -207,9 +209,11 @@ void
 CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                        int seed )
 {
-    (void)CRefMgr::Get()->Associate( socket, this );
-    pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
-    handleEvents();
+    if ( !hostAlreadyHere( seed, socket ) ) {
+        (void)CRefMgr::Get()->Associate( socket, this );
+        pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
+        handleEvents();
+    }
 }
 
 void
@@ -820,6 +824,21 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
  drop:
     return addHost;
 } /* increasePlayerCounts */
+
+bool
+CookieRef::hostAlreadyHere( int seed, int socket )
+{
+    ASSERT_LOCKED();
+    bool found = false;
+    vector<HostRec>::const_iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        if ( iter->m_seed == seed && iter->m_socket == socket ) {
+            found = true;
+            break;
+        }
+    }
+    return found;
+}
 
 void
 CookieRef::reducePlayerCounts( int socket )

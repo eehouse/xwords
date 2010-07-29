@@ -193,6 +193,8 @@ class CookieRef {
     void sendResponse( const CRefEvent* evt, bool initial );
     void sendAnyStored( const CRefEvent* evt );
     bool increasePlayerCounts( const CRefEvent* evt, bool reconn );
+    bool hostAlreadyHere( int seed, int socket );
+
     void reducePlayerCounts( int socket );
 
     void setAllConnectedTimer();
