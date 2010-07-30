@@ -641,11 +641,10 @@ CookieRef::handleEvents()
 
             m_curState = nextState;
         } else {
-            /* CRefEvent evt; */
-            /* evt.type = XWE_SHUTDOWN; */
-            /* m_eventQueue.push_back( evt ); */
+            CRefEvent shutevt( XWE_SHUTDOWN );
+            m_eventQueue.push_back( shutevt );
 
-            logf( XW_LOGERROR, "unable to find transition "
+            logf( XW_LOGERROR, "Killing cref b/c unable to find transition "
                   "from %s on event %s", stateString(m_curState),
                   eventString(evt.type) );
         }
