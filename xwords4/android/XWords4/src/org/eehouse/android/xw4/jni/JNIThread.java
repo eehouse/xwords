@@ -25,6 +25,7 @@ import org.eehouse.android.xw4.Utils;
 import android.content.Context;
 import java.lang.InterruptedException;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Iterator;
 import android.os.Handler;
 import android.os.Message;
 import android.graphics.Paint;
@@ -99,10 +100,11 @@ public class JNIThread extends Thread {
     LinkedBlockingQueue<QueueElem> m_queue;
 
     private class QueueElem {
-        protected QueueElem( JNICmd cmd, Object[] args )
+        protected QueueElem( JNICmd cmd, boolean isUI, Object[] args )
         {
-            m_cmd = cmd; m_args = args;
+            m_cmd = cmd; m_isUIEvent = isUI; m_args = args;
         }
+        boolean m_isUIEvent;
         JNICmd m_cmd;
         Object[] m_args;
     }
@@ -132,8 +134,15 @@ public class JNIThread extends Thread {
 
     public boolean busy()
     {                           // synchronize this!!!
-        int siz = m_queue.size();
-        return siz > 0;
+        boolean result = false;
+        Iterator<QueueElem> iter = m_queue.iterator();
+        while ( iter.hasNext() ) {
+            if ( iter.next().m_isUIEvent ) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     public void setInBackground( boolean inBack )
@@ -488,11 +497,16 @@ public class JNIThread extends Thread {
         Utils.logf( "run exiting" );
     } // run
 
-    public void handle( JNICmd cmd, Object... args )
+    public void handle( JNICmd cmd, boolean isUI, Object... args )
     {
-        QueueElem elem = new QueueElem( cmd, args );
+        QueueElem elem = new QueueElem( cmd, isUI, args );
         // Utils.logf( "adding: " + cmd.toString() );
         m_queue.add( elem );
+    }
+
+    public void handle( JNICmd cmd, Object... args )
+    {
+        handle( cmd, true, args );
     }
 
 }
