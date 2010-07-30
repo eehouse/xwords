@@ -61,7 +61,7 @@ typedef struct StateTable {
      bound on the number of players.
  */
 
-StateTable g_stateTable[] = {
+static StateTable g_stateTable[] = {
 
 { XWS_INITED,         XWE_HOSTCONNECT,   XWA_SEND_HOST_RSP,  XWS_WAITGUESTS },
 { XWS_INITED,         XWE_GUESTCONNECT,  XWA_SEND_NO_ROOM,   XWS_DEAD },
