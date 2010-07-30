@@ -444,3 +444,13 @@ and_empty_stream( MPFORMAL AndGlobals* globals )
     return stream;
 }
 
+/* #ifdef DEBUG */
+/* XP_U32 */
+/* andy_rand( const char* caller ) */
+/* { */
+/*     XP_U32 result = rand(); */
+/*     XP_LOGF( "%s: returning 0x%lx to %s", __func__, result, caller ); */
+/*     LOG_RETURNF( "%lx", result ); */
+/*     return result; */
+/* } */
+/* #endif */

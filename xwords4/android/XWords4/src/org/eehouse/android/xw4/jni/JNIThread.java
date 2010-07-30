@@ -34,6 +34,7 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.BoardDims;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.Toolbar;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class JNIThread extends Thread {
@@ -63,6 +64,8 @@ public class JNIThread extends Thread {
             CMD_UNDO_LAST,
             CMD_HINT,
             CMD_ZOOM,
+            CMD_TOGGLEZOOM,
+            CMD_PREV_HINT,
             CMD_NEXT_HINT,
             CMD_VALUES,
             CMD_COUNTS_VALUES,
@@ -79,6 +82,7 @@ public class JNIThread extends Thread {
     public static final int DRAW = 2;
     public static final int DIALOG = 3;
     public static final int QUERY_ENDGAME = 4;
+    public static final int TOOLBAR_STATES = 5;
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
@@ -196,6 +200,31 @@ public class JNIThread extends Thread {
     {
         boolean draw = false;
         return draw;
+    } // processKeyEvent
+
+    private void checkButtons()
+    {
+        int visTileCount = XwJNI.board_visTileCount( m_jniGamePtr );
+        int canFlip = visTileCount > 1 ? 1 : 0;
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_FLIP,
+                        canFlip ).sendToTarget();
+        int canValues = visTileCount > 0 ? 1 : 0;
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_VALUES,
+                        canValues ).sendToTarget();
+
+        int canShuffle = XwJNI.board_canShuffle( m_jniGamePtr ) ? 1 : 0;
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_JUGGLE,
+                        canShuffle ).sendToTarget();
+
+        int canRedo = XwJNI.board_canTogglePending( m_jniGamePtr ) ? 1 : 0;
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_UNDO,
+                        canRedo ).sendToTarget();
+
+        int canHint = XwJNI.board_canHint( m_jniGamePtr ) ? 1 : 0;
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_HINT_PREV,
+                        canHint ).sendToTarget();
+        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_HINT_NEXT,
+                        canHint ).sendToTarget();
     }
 
     public void run() 
@@ -321,7 +350,8 @@ public class JNIThread extends Thread {
                 draw = XwJNI.board_beginTrade( m_jniGamePtr );
                 break;
             case CMD_UNDO_CUR:
-                draw = XwJNI.board_replaceTiles( m_jniGamePtr );
+                draw = XwJNI.board_replaceTiles( m_jniGamePtr )
+                    || XwJNI.board_redoReplacedTiles( m_jniGamePtr );
                 break;
             case CMD_UNDO_LAST:
                 XwJNI.server_handleUndo( m_jniGamePtr );
@@ -330,19 +360,37 @@ public class JNIThread extends Thread {
 
             case CMD_HINT:
                 XwJNI.board_resetEngine( m_jniGamePtr );
-                // fallthru
+                handle( JNICmd.CMD_NEXT_HINT );
+                break;
+
             case CMD_NEXT_HINT:
-                draw = XwJNI.board_requestHint( m_jniGamePtr, false, barr );
+            case CMD_PREV_HINT:
+                if ( nextSame( elem.m_cmd ) ) {
+                    continue;
+                }
+                draw = XwJNI.board_requestHint( m_jniGamePtr, false, 
+                                                JNICmd.CMD_PREV_HINT==elem.m_cmd,
+                                                barr );
                 if ( barr[0] ) {
-                    handle( JNICmd.CMD_NEXT_HINT );
+                    handle( elem.m_cmd );
+                    draw = false;
                 }
                 break;
 
+            case CMD_TOGGLEZOOM:
+                XwJNI.board_zoom( m_jniGamePtr, 0 , barr );
+                int zoomBy = 0;
+                if ( barr[1] ) { // always go out if possible
+                    zoomBy = -4;
+                } else if ( barr[0] ) {
+                    zoomBy = 4;
+                }
+                draw = XwJNI.board_zoom( m_jniGamePtr, zoomBy, barr );
+                break;
             case CMD_ZOOM:
                 draw = XwJNI.board_zoom( m_jniGamePtr, 
                                          ((Integer)args[0]).intValue(),
                                          barr );
-                m_drawer.zoomChanged( barr );
                 break;
 
             case CMD_VALUES:
@@ -433,6 +481,8 @@ public class JNIThread extends Thread {
                 // main UI thread has to invalidate view as it created
                 // it.
                 Message.obtain( m_handler, DRAW ).sendToTarget();
+
+                checkButtons();
             }
         }
         Utils.logf( "run exiting" );
@@ -444,4 +494,5 @@ public class JNIThread extends Thread {
         // Utils.logf( "adding: " + cmd.toString() );
         m_queue.add( elem );
     }
+
 }

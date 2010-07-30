@@ -160,6 +160,7 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
     cp->skipCommitConfirm = getBool( env, j_cp, "skipCommitConfirm" );
     cp->showColors = getBool( env, j_cp, "showColors" );
     cp->sortNewTiles = getBool( env, j_cp, "sortNewTiles" );
+    cp->allowPeek = getBool( env, j_cp, "allowPeek" );
 }
 
 static XWStreamCtxt*
@@ -335,6 +336,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
     globals->state = (struct JNIState*)state;
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
+
+    XP_U32 secs = and_util_getCurSeconds( NULL );
+    XP_LOGF( "initing srand with %ld", secs );
+    srandom( secs );
 
     return (jint) state;
 }
@@ -694,6 +699,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1replaceTiles
     return result;
 }
 
+JNIEXPORT jboolean JNICALL 
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1redoReplacedTiles
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_redoReplacedTiles( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1handleUndo
 (JNIEnv* env, jclass C, jint gamePtr)
@@ -726,7 +742,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1resetEngine
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
 ( JNIEnv* env, jclass C, jint gamePtr, jboolean useLimits, 
-  jbooleanArray workRemains )
+  jboolean goBack, jbooleanArray workRemains )
 {
     jboolean result;
     XWJNI_START();
@@ -735,7 +751,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
 #ifdef XWFEATURE_SEARCHLIMIT
                                 useLimits, 
 #endif
-                                &tmpbool );
+                                goBack, &tmpbool );
     /* If passed need to do workRemains[0] = tmpbool */
     if ( workRemains ) {
         jboolean jbool = tmpbool;
@@ -1024,6 +1040,51 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1focusChanged
 }
 #endif
 
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1visTileCount
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jint result;
+    XWJNI_START();
+    result = board_visTileCount( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1canHint
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_canHint( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1canShuffle
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_canShuffle( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1canTogglePending
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_canTogglePending( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+#ifdef KEYBOARD_NAV
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handleKey
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jkey, jboolean jup, 
@@ -1044,6 +1105,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1handleKey
     XWJNI_END();
     return result;
 }
+#endif
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1hasComms

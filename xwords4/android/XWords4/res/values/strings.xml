@@ -83,7 +83,7 @@
 	<string name="board_menu_undo_last">Undo last</string>
 	<string name="board_submenu_hint">Hint</string>
 	<string name="board_menu_hint_next">Next hint</string>
-	<string name="board_menu_hint">Hint</string>
+	<string name="board_menu_hint">First hint</string>
 	<string name="board_menu_values">Show values</string>
 	<string name="board_submenu_game">Game</string>
 	<string name="board_menu_game_counts">Counts and values</string>
@@ -135,7 +135,7 @@
 	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to exchange.</string>
 	<string name="str_cant_undo_tileassign">Tile assignment can't be undone.</string>
 	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Settings dialog.</string>
-	<string name="str_no_peek_remote_tiles">No peeking at remote players' tiles!</string>
+	<string name="str_no_peek_remote_tiles">No peeking at remote players\' tiles!</string>
 	<string name="str_reg_unexpected_user">Refused attempt to register unexpected user[s]</string>
 	<string name="str_server_dict_wins">Conflict between Host and Guest dictionaries; Host wins.</string>
 	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
@@ -180,6 +180,7 @@
     delete all games?  This action cannot be undone.</string>
     
     <string name="hints_allowed">Allow hints</string>
+    <string name="progress_title">Searching for moves</string>
     <string name="use_timer">Enable game timer</string>
     <string name="color_tiles">Color tiles</string>
     <string name="color_tiles_summary">Draw tiles using color of
@@ -197,16 +198,16 @@
     <string name="summary_sort_tiles">Sort trays whenever new tiles
     are added</string>
     <string name="ringer_zoom">Volume keys zoom</string>
-    <string name="ringer_zoom_summary">Zoom board using volume keys
-    rather than on-screen buttons</string>
+    <string name="ringer_zoom_summary">Zoom board using volume keys</string>
     <string name="click_launches">Tap to play</string>
     <string name="click_launches_summary">Tapping on game in games
     list opens it rather than dropping a menu</string>
-
     <string name="hide_title">Hide titlebar</string>
     <string name="hide_title_summary">Hiding the game name lets the
       board be slightly larger</string>
-
+    <string name="peek_other">View tiles out-of-turn</string>
+    <string name="peek_other_summary">Tapping on scoreboard name shows
+    that player\'s tiles</string>
     <string name="show_bonussum">Show bonus values</string>
     <string name="show_bonussum_summary">Include text like "2W" on
     empty bonus squares</string>
@@ -338,6 +339,9 @@
     help, etc., please email: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
     <string name="xlator"></string>
+
+    <string name="about_credits">Toolbar icons by Sarah Chu; other
+    credits pending permission.</string>
 
     <string name="downloading_dictf">Downloading Crosswords
     dictionary %s...</string>

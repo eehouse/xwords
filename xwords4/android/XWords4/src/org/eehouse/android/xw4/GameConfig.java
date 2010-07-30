@@ -41,8 +41,6 @@ import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
 import android.view.KeyEvent;
 import android.widget.Spinner;
@@ -56,7 +54,8 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
-public class GameConfig extends Activity implements View.OnClickListener {
+public class GameConfig extends Activity implements View.OnClickListener,
+                                                    XWListItem.DeleteCallback {
 
     private static final int PLAYER_EDIT = 1;
     private static final int ROLE_EDIT_RELAY = 2;
@@ -453,42 +452,12 @@ public class GameConfig extends Activity implements View.OnClickListener {
         setTitle( String.format( fmt, GameUtils.gameName( this, m_path ) ) );
     } // onCreate
 
-    @Override
-    public void onCreateContextMenu( ContextMenu menu, View view, 
-                                     ContextMenuInfo menuInfo ) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.players_list_item_menu, menu );
-        m_whichPlayer = ((XWListItem)view).getPosition();
-    }
-
-    @Override
-    public boolean onContextItemSelected( MenuItem item ) 
+    // DeleteCallback interface
+    public void deleteCalled( int myPosition )
     {
-        boolean handled = true;
-        boolean changed = false;
-
-        switch (item.getItemId()) {
-            // case R.id.player_list_item_edit:
-            //     showDialog( PLAYER_EDIT );
-            //     break;
-            case R.id.player_list_item_delete:
-                changed = m_gi.delete( m_whichPlayer );
-                break;
-            case R.id.player_list_item_up:
-                changed = m_gi.moveUp( m_whichPlayer );
-                break;
-            case R.id.player_list_item_down:
-                changed = m_gi.moveDown( m_whichPlayer );
-                break;
-        default:
-            handled = false;
-        }
-
-        if ( changed ) {
+        if ( m_gi.delete( myPosition ) ) {
             loadPlayers();
         }
-
-        return handled;
     }
 
     public void onClick( View view ) 
@@ -560,8 +529,11 @@ public class GameConfig extends Activity implements View.OnClickListener {
             view.setPosition( ii );
             view.setText( names[ii] );
             view.setGravity( Gravity.CENTER );
+            // only enable delete if one will remain
+            if ( 1 < names.length ) {
+                view.setDeleteCallback( this );
+            }
 
-            registerForContextMenu( view );
             view.setOnClickListener( new View.OnClickListener() {
                     @Override
                     public void onClick( View view ) {
@@ -575,6 +547,13 @@ public class GameConfig extends Activity implements View.OnClickListener {
             divider.setVisibility( View.VISIBLE );
             m_playerLayout.addView( divider );
         }
+
+        m_addPlayerButton
+            .setVisibility( names.length >= CurGameInfo.MAX_NUM_PLAYERS?
+                            View.GONE : View.VISIBLE );
+        m_jugglePlayersButton
+            .setVisibility( names.length <= 1 ?
+                            View.GONE : View.VISIBLE );
 
         if ( DeviceRole.SERVER_ISSERVER == m_gi.serverRole
              && 0 == m_gi.remoteCount() ) {

@@ -287,8 +287,8 @@ run_http_thread( HttpState* state )
     if ( 0 == result ) {
         pthread_detach( thread );
     } else {
-        logf( XW_LOGERROR, "%s: pthread_create failed: %s", __func__,
-              strerror(errno) );
+        /* logf( XW_LOGERROR, "%s: pthread_create failed: %s", __func__, */
+        /*       strerror(errno) ); */
     }
 } /* run_http_thread */
 

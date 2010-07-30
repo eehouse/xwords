@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -68,6 +68,7 @@ static void setCtrlsForTray( GtkAppGlobals* globals );
 static void new_game( GtkWidget* widget, GtkAppGlobals* globals );
 static void new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg );
 static void setZoomButtons( GtkAppGlobals* globals, XP_Bool* inOut );
+static void disenable_buttons( GtkAppGlobals* globals );
 
 
 #define GTK_TRAY_HT_ROWS 3
@@ -128,6 +129,7 @@ button_press_event( GtkWidget* XP_UNUSED(widget), GdkEventButton *event,
                                       event->x, event->y, &handled );
         if ( redraw ) {
             board_draw( globals->cGlobals.game.board );
+            disenable_buttons( globals );
         }
     }
     return 1;
@@ -146,6 +148,7 @@ motion_notify_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                                        event->y );
         if ( handled ) {
             board_draw( globals->cGlobals.game.board );
+            disenable_buttons( globals );
         }
     } else {
         handled = XP_FALSE;
@@ -168,6 +171,7 @@ button_release_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                                     event->y );
         if ( redraw ) {
             board_draw( globals->cGlobals.game.board );
+            disenable_buttons( globals );
         }
         globals->mouseDown = XP_FALSE;
     }
@@ -991,6 +995,16 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
     return menubar;
 } /* makeMenus */
 
+static void
+disenable_buttons( GtkAppGlobals* globals )
+{
+    XP_Bool canFlip = 1 < board_visTileCount( globals->cGlobals.game.board );
+    gtk_widget_set_sensitive( globals->flip_button, canFlip );
+
+    XP_Bool canToggle = board_canTogglePending( globals->cGlobals.game.board );
+    gtk_widget_set_sensitive( globals->toggle_undo_button, canToggle );
+}
+
 static gboolean
 handle_flip_button( GtkWidget* XP_UNUSED(widget), gpointer _globals )
 {
@@ -1012,17 +1026,30 @@ handle_value_button( GtkWidget* XP_UNUSED(widget), gpointer closure )
 } /* handle_value_button */
 
 static void
-handle_hint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+handle_hint_button( GtkAppGlobals* globals, XP_Bool prev )
 {
     XP_Bool redo;
     if ( board_requestHint( globals->cGlobals.game.board, 
 #ifdef XWFEATURE_SEARCHLIMIT
                             XP_FALSE,
 #endif
-                            &redo ) ) {
+                            prev, &redo ) ) {
         board_draw( globals->cGlobals.game.board );
+        disenable_buttons( globals );
     }
 } /* handle_hint_button */
+
+static void
+handle_prevhint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    handle_hint_button( globals, XP_TRUE );
+} /* handle_prevhint_button */
+
+static void
+handle_nexthint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    handle_hint_button( globals, XP_FALSE );
+} /* handle_nexthint_button */
 
 static void
 handle_nhint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
@@ -1034,7 +1061,7 @@ handle_nhint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 #ifdef XWFEATURE_SEARCHLIMIT
                             XP_TRUE, 
 #endif
-                            &redo ) ) {
+                            XP_FALSE, &redo ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_nhint_button */
@@ -1070,6 +1097,16 @@ handle_redo_button( GtkWidget* XP_UNUSED(widget),
                     GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* handle_redo_button */
+
+static void
+handle_toggle_undo( GtkWidget* XP_UNUSED(widget), 
+                    GtkAppGlobals* globals )
+{
+    BoardCtxt* board = globals->cGlobals.game.board;
+    if ( board_redoReplacedTiles( board ) || board_replaceTiles( board ) ) {
+        board_draw( board );
+    }
+}
 
 static void
 handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
@@ -1670,13 +1707,17 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     button = makeShowButtonFromBitmap( globals, "../flip.xpm", "f", 
                                        G_CALLBACK(handle_flip_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    globals->flip_button = button;
 
     button = makeShowButtonFromBitmap( globals, "../value.xpm", "v",
                                        G_CALLBACK(handle_value_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?",
-                                       G_CALLBACK(handle_hint_button) );
+    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?-",
+                                       G_CALLBACK(handle_prevhint_button) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?+",
+                                       G_CALLBACK(handle_nexthint_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     button = makeShowButtonFromBitmap( globals, "../hintNum.xpm", "n",
@@ -1688,11 +1729,16 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     /* undo and redo buttons */
-    button = makeShowButtonFromBitmap( globals, "../undo.xpm", "u",
+    button = makeShowButtonFromBitmap( globals, "../undo.xpm", "U",
                                        G_CALLBACK(handle_undo_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    button = makeShowButtonFromBitmap( globals, "../redo.xpm", "r",
+    button = makeShowButtonFromBitmap( globals, "../redo.xpm", "R",
                                        G_CALLBACK(handle_redo_button) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+
+    button = makeShowButtonFromBitmap( globals, "", "u/r",
+                                       G_CALLBACK(handle_toggle_undo) );
+    globals->toggle_undo_button = button;
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     /* the four buttons that on palm are beside the tray */
@@ -2058,6 +2104,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cp.skipCommitConfirm = params->skipCommitConfirm;
     globals.cp.sortNewTiles = params->sortNewTiles;
     globals.cp.showColors = params->showColors;
+    globals.cp.allowPeek = params->allowPeek;
     globals.cp.showRobotScores = params->showRobotScores;
 #ifdef XWFEATURE_SLOW_ROBOT
     globals.cp.robotThinkMin = params->robotThinkMin;

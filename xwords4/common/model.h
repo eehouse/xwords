@@ -137,7 +137,7 @@ void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
 
 /* As an optimization, return a pointer to the model's array of tiles for a
    player.  Don't even think about modifying the array!!!! */
-const TrayTileSet* model_getPlayerTiles( ModelCtxt* model, XP_S16 turn );
+const TrayTileSet* model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn );
 
 void model_sortTiles( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn );
@@ -148,6 +148,8 @@ void model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col,
                             XP_U16 row, XP_S16 tileIndex, Tile blankFace );
 XP_Bool model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur, 
                                XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew );
+XP_Bool model_redoPendingTiles( ModelCtxt* model, XP_S16 turn );
+
  
 XP_S16 model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile );
 
@@ -160,7 +162,7 @@ XP_U16 model_numCols( const ModelCtxt* model );
 void model_addToCurrentMove( ModelCtxt* model, XP_S16 turn, 
                              XP_U16 col, XP_U16 row, 
                              Tile tile, XP_Bool isBlank );
-XP_U16 model_getCurrentMoveCount( ModelCtxt* model, XP_S16 turn );
+XP_U16 model_getCurrentMoveCount( const ModelCtxt* model, XP_S16 turn );
 
 void model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
                                Tile* tile, XP_U16* col, XP_U16* row, 
@@ -189,6 +191,13 @@ void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
 
 void model_resetCurrentTurn( ModelCtxt* model, XP_S16 turn );
 XP_S16 model_getNMoves( const ModelCtxt* model );
+
+/* Are there two or more tiles visible */
+XP_U16 model_visTileCount( const ModelCtxt* model, XP_U16 turn, 
+                           XP_Bool trayVisible );
+XP_Bool model_canShuffle( const ModelCtxt* model, XP_U16 turn, 
+                          XP_Bool trayVisible );
+XP_Bool model_canTogglePending( const ModelCtxt* model, XP_U16 turn );
 
 /********************* notification ********************/
 typedef void (*BoardListener)(void* data, XP_U16 turn, XP_U16 col, 
