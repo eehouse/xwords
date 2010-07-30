@@ -910,7 +910,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         Utils.logf( "engineStopping" );
         m_handler.post( new Runnable() {
                 public void run() {
-                    if ( m_isVisible && null != m_progress ) {
+                    if ( null != m_progress ) {
                         m_progress.cancel();
                         m_progress = null;
                     }
