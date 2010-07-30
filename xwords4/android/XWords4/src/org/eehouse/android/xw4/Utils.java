@@ -54,7 +54,7 @@ public class Utils {
     public static void logf( String msg ) 
     {
         s_time.setToNow();
-        String time = s_time.format("%H:%M:%S");
+        String time = s_time.format("[%H:%M:%S]");
         long id = Thread.currentThread().getId();
         Log.d( TAG, time + "-" + id + "-" + msg );
     } // logf
