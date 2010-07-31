@@ -62,13 +62,13 @@ public class GameListAdapter extends XWListAdapter {
     
     public Object getItem( int position ) 
     {
-        String path = GameUtils.gamesList(m_context)[position];
+        final String path = GameUtils.gamesList(m_context)[position];
         View layout = m_viewsCache.get( path );
 
         if ( null == layout ) {
             Utils.logf( "creating new list elem for %s", path );
             layout = m_factory.inflate( m_layoutId, null );
-            byte[] stream = open( path );
+            byte[] stream = GameUtils.savedGame( m_context, path );
             if ( null != stream ) {
                 CurGameInfo gi = new CurGameInfo( m_context );
                 XwJNI.gi_from_stream( gi, stream );
@@ -102,24 +102,6 @@ public class GameListAdapter extends XWListAdapter {
     public View getView( int position, View convertView, ViewGroup parent ) {
         return (View)getItem( position );
     }
-
-    private byte[] open( String file )
-    {
-        byte[] stream = null;
-        try {
-            FileInputStream in = m_context.openFileInput( file );
-            int len = in.available();
-            stream = new byte[len];
-            in.read( stream, 0, len );
-            in.close();
-        } catch ( java.io.FileNotFoundException ex ) {
-            Utils.logf( "got FileNotFoundException: " + ex.toString() );
-        } catch ( java.io.IOException ex ) {
-            Utils.logf( "got IOException: " + ex.toString() );
-        }
-        return stream;
-    }
-
 
     public void inval( String key ) 
     {

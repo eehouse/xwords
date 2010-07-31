@@ -31,15 +31,19 @@ import org.eehouse.android.xw4.jni.*;
 
 public class GameUtils {
 
+    private static Object s_syncObj = new Object();
+
     public static byte[] savedGame( Context context, String path )
     {
         byte[] stream = null;
         try {
-            FileInputStream in = context.openFileInput( path );
-            int len = in.available();
-            stream = new byte[len];
-            in.read( stream, 0, len );
-            in.close();
+            synchronized( s_syncObj ) {
+                FileInputStream in = context.openFileInput( path );
+                int len = in.available();
+                stream = new byte[len];
+                in.read( stream, 0, len );
+                in.close();
+            }
         } catch ( java.io.FileNotFoundException fnf ) {
             Utils.logf( fnf.toString() );
             stream = null;
@@ -109,6 +113,7 @@ public class GameUtils {
 
     public static void deleteGame( Context context, String path )
     {
+        // does this need to be synchronized?
         context.deleteFile( path );
         DBUtils.saveSummary( path, null );
     }
@@ -147,10 +152,12 @@ public class GameUtils {
     public static void saveGame( Context context, byte[] bytes, String path )
     {
         try {
-            FileOutputStream out = context.openFileOutput( path, 
-                                                           Context.MODE_PRIVATE );
-            out.write( bytes );
-            out.close();
+            synchronized( s_syncObj ) {
+                FileOutputStream out =
+                    context.openFileOutput( path, Context.MODE_PRIVATE );
+                out.write( bytes );
+                out.close();
+            }
         } catch ( java.io.IOException ex ) {
             Utils.logf( "got IOException: " + ex.toString() );
         }
