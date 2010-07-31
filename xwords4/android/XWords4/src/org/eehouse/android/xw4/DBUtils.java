@@ -115,7 +115,6 @@ public class DBUtils {
 
                 if ( null != summary.conType ) {
                     values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
-                    Utils.logf( "wrote CONTYPE" );
                     values.put( DBHelper.ROOMNAME, summary.roomName );
                     values.put( DBHelper.SMSPHONE, summary.smsPhone );
                 }
