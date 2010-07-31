@@ -1070,13 +1070,17 @@ relayCmdToStr( XWRELAY_Cmd cmd )
         CASESTR( XWRELAY_CONNECT_RESP );
         CASESTR( XWRELAY_RECONNECT_RESP );
         CASESTR( XWRELAY_ALLHERE );
+        CASESTR( XWRELAY_ALLBACK );
         CASESTR( XWRELAY_DISCONNECT_YOU );
         CASESTR( XWRELAY_DISCONNECT_OTHER );
         CASESTR( XWRELAY_CONNECTDENIED );
         CASESTR( XWRELAY_HEARTBEAT );
         CASESTR( XWRELAY_MSG_FROMRELAY );
         CASESTR( XWRELAY_MSG_TORELAY );
-    default: return "<unknown>";
+    default: 
+        XP_LOGF( "%s: unknown cmd: %d", __func__, cmd );
+        XP_ASSERT( 0 );
+        return "<unknown>";
     }
 }
 # endif 
