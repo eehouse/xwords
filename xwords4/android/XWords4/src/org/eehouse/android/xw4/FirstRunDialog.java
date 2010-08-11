@@ -39,25 +39,32 @@ public class FirstRunDialog {
 	private static final String HIDDEN_PREFS = "xwprefs_hidden";
     private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
 
-    static void show( Context context )
+    static void show( Context context, boolean skipCheck )
     {
         int thisVersion = 0;
-        try {
-            thisVersion = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), 0)
-                .versionCode;
-            Utils.logf( "versionCode: %d", thisVersion );
-        } catch ( Exception e ) {
+        int shownVersion = 0;
+
+        if ( !skipCheck ) {
+            try {
+                thisVersion = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0)
+                    .versionCode;
+                Utils.logf( "versionCode: %d", thisVersion );
+            } catch ( Exception e ) {
+            }
         }
 
+        SharedPreferences prefs = null;
         if ( thisVersion > 0 ) {
-            SharedPreferences prefs = 
-                context.getSharedPreferences( HIDDEN_PREFS, 
-                                              Context.MODE_PRIVATE );
-            int shownVersion = prefs.getInt( SHOWN_VERSION_KEY, 0 );
-            if ( shownVersion < thisVersion ) {
-                showDialog( context );
+            prefs = context.getSharedPreferences( HIDDEN_PREFS, 
+                                                  Context.MODE_PRIVATE );
+            shownVersion = prefs.getInt( SHOWN_VERSION_KEY, 0 );
+        }
 
+        if ( skipCheck || shownVersion < thisVersion ) {
+            showDialog( context );
+        
+            if ( !skipCheck ) {
                 Editor editor = prefs.edit();
                 editor.putInt( SHOWN_VERSION_KEY, thisVersion );
                 editor.commit();

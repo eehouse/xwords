@@ -128,7 +128,7 @@ public class GamesList extends ListActivity {
         m_adapter = new GameListAdapter( this );
         setListAdapter( m_adapter );
 
-        FirstRunDialog.show( this );
+        FirstRunDialog.show( this, false );
     }
 
     @Override
