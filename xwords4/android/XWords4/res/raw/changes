@@ -1,0 +1,32 @@
+<html>
+<head>
+<style type="text/css">
+	body {font-size: smaller;}
+</style>
+</head>
+<body>
+
+<b>Crosswords 4.4 beta 14 release</b>
+
+<ul>New features:
+  <li>This spiffy per-release dialog</li>
+</ul>
+
+<ul>Bugs fixed:
+<li>bug 1</li>
+<li>bug 2</li>
+</ul>
+
+<ul>Coming soon
+  <li>builtin online help</li>
+  <li>rewrite of gameplay via relay to make connecting easier etc.</li>
+</ul>
+
+<p>Please remember that this is beta software.  Letting me know (at 
+eehouse@eehouse.org) what's broken and what features you'd most like 
+to see is the best way to help get this to release quality 
+quickly.</p>
+
+<p>Thanks!<br>--Eric</p>
+
+</body>
