@@ -1,29 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
-              >
 
-   <TextView android:id="@+id/version_string"
-             style="@style/about_items"
-             />
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            >
 
-   <TextView style="@style/about_items"
-    	     android:text="@string/about_copyright"
-             />
+  <LinearLayout android:orientation="vertical"
+                android:layout_width="fill_parent" 
+                android:layout_height="fill_parent"
+                >
 
-   <TextView style="@style/about_items"
-             android:text="@string/about_web"
-    	     android:autoLink="all" 
-             />
+    <TextView android:id="@+id/version_string"
+              style="@style/about_items"
+              />
 
-   <TextView android:id="@+id/about_xlator"
-             style="@style/about_items"
-             />
+    <TextView style="@style/about_items"
+    	      android:text="@string/about_copyright"
+              />
 
-   <TextView style="@style/about_items"
-             android:text="@string/about_credits"
-             />
+    <TextView style="@style/about_items"
+              android:text="@string/about_web"
+    	      android:autoLink="all" 
+              />
 
-</LinearLayout>
+    <TextView android:id="@+id/about_xlator"
+              style="@style/about_items"
+              />
+
+    <TextView style="@style/about_items"
+              android:text="@string/about_credits"
+              />
+
+  </LinearLayout>
+</ScrollView>
