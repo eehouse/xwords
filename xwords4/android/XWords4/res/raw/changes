@@ -13,13 +13,14 @@
 </ul>
 
 <ul>Bugs fixed:
-<li>bug 1</li>
-<li>bug 2</li>
+<li>Crash exiting board view</li>
+<li>Hang searching for robot move</li>
+<li>Crash putting up progress dialog after board hidden</li>
 </ul>
 
-<ul>Coming soon
-  <li>builtin online help</li>
-  <li>rewrite of gameplay via relay to make connecting easier etc.</li>
+<ul>Coming soon:
+  <li>builtin hints and help</li>
+  <li>rewrite of gameplay via relay to make connecting easier and allow closed game to receive moves.</li>
 </ul>
 
 <p>Please remember that this is beta software.  Letting me know (at 
