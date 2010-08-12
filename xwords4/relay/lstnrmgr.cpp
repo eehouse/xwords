@@ -195,7 +195,7 @@ ListenerMgr::portInUse( int port )
 int 
 ListenersIter::next()
 {
-    return this->next( NULL );
+    return next( NULL );
 }
 
 int 
