@@ -445,8 +445,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    public boolean drawCell( Rect rect, String text, int tile, int owner, 
-                             int bonus, int hintAtts, int flags ) 
+    public boolean drawCell( final Rect rect, String text, int tile, int owner, 
+                             int bonus, int hintAtts, final int flags ) 
     {
         int backColor;
         boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
@@ -500,6 +500,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         // frame the cell
         m_canvas.drawRect( rect, m_strokePaint );
+
+        drawCrosshairs( rect, flags );
         
         return true;
     } // drawCell
@@ -776,6 +778,21 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_fillPaint.setTextAlign( Paint.Align.RIGHT );
             m_canvas.drawText( text, m_valRect.right, m_valRect.bottom, 
                                m_fillPaint );
+        }
+    }
+
+    private void drawCrosshairs( final Rect rect, final int flags )
+    {
+        int color = m_otherColors[CommonPrefs.COLOR_FOCUS];
+        if ( 0 != (flags & CELL_CROSSHOR) ) {
+            Rect hairRect = new Rect( rect );
+            hairRect.inset( 0, hairRect.height() / 3 );
+            fillRect( hairRect, color );
+        }
+        if ( 0 != (flags & CELL_CROSSVERT) ) {
+            Rect hairRect = new Rect( rect );
+            hairRect.inset( hairRect.width() / 3, 0 );
+            fillRect( hairRect, color );
         }
     }
 
