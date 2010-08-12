@@ -31,7 +31,9 @@ public interface DrawCtx {
     static final int CELL_VALHIDDEN = 0x20;     /* show letter only, not value */
     static final int CELL_DRAGSRC = 0x40;       /* where drag originated */
     static final int CELL_DRAGCUR = 0x80;       /* where drag is now */
-    static final int CELL_ALL = 0xFF;
+    static final int CELL_CROSSVERT = 0x100;
+    static final int CELL_CROSSHOR = 0x200;
+    static final int CELL_ALL = 0x3FF;
 
     /* BoardObjectType */
     static final int OBJ_NONE = 0;

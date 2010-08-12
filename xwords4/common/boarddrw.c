@@ -231,6 +231,23 @@ makeMiniWindowForTrade( BoardCtxt* board )
     makeMiniWindowForText( board, text, MINIWINDOW_TRADING );
 } /* makeMiniWindowForTrade */
 
+#ifdef XWFEATURE_CROSSHAIRS
+static CellFlags
+flagsForCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row )
+{
+    CellFlags flags = 0;
+    XP_Bool inHor, inVert;
+    dragDropInCrosshairs( board, col, row, &inHor, &inVert );
+    if ( inHor ) {
+        flags |= CELL_CROSSHOR;
+    }
+    if ( inVert ) {
+        flags |= CELL_CROSSVERT;
+    }
+    return flags;
+}
+#endif
+
 static void
 drawBoard( BoardCtxt* board )
 {
@@ -310,16 +327,14 @@ drawBoard( BoardCtxt* board )
                 CellFlags flags = CELL_NONE;
                 bonus = util_getSquareBonus( board->util, model, col, row );
                 hintAtts = figureHintAtts( board, col, row );
-                if ( 0 ) {
 #ifdef KEYBOARD_NAV
-                } else if ( cellFocused( board, col, row ) ) {
+                if ( cellFocused( board, col, row ) ) {
                     flags |= CELL_ISCURSOR;
+                }
 #endif
 #ifdef XWFEATURE_CROSSHAIRS
-                } else if ( dragDropInCrosshairs( board, col, row ) ) {
-                    flags |= CELL_ISCURSOR;
+                flags |= flagsForCrosshairs( board, col, row );
 #endif
-                }
 
                 draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
                                      arrow->vert, hintAtts, flags );
@@ -433,9 +448,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             }
 #endif
 #ifdef XWFEATURE_CROSSHAIRS
-            if ( dragDropInCrosshairs( board, col, row ) ) {
-                flags |= CELL_ISCURSOR;
-            }
+            flags |= flagsForCrosshairs( board, col, row );
 #endif
 
             success = draw_drawCell( board->draw, &cellRect, textP, bptr,

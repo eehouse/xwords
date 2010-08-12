@@ -659,16 +659,18 @@ startScrollTimerIf( BoardCtxt* board )
 } /* startScrollTimerIf */
 
 #ifdef XWFEATURE_CROSSHAIRS
-XP_Bool
-dragDropInCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row )
+void
+dragDropInCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row,
+                      XP_Bool* inHor, XP_Bool* inVert )
 {
-    XP_Bool result = dragDropInProgress( board );
-    if ( result ) {
+    
+    if ( dragDropInProgress( board ) ) {
         const DragState* ds = &board->dragState;
-        result = ds->crosshairs.col == col
-            || ds->crosshairs.row == row;
+        *inHor = ds->crosshairs.row == row;
+        *inVert = ds->crosshairs.col == col;
+    } else {
+        *inHor = *inVert = XP_FALSE;
     }
-    return result;
 } /* dragDropInCrosshairs */
 
 static void

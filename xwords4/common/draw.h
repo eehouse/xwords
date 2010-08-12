@@ -41,7 +41,9 @@ typedef enum {
     , CELL_VALHIDDEN = 0x20     /* show letter only, not value */
     , CELL_DRAGSRC = 0x40       /* where drag originated */
     , CELL_DRAGCUR = 0x80       /* where drag is now */
-    , CELL_ALL = 0xFF
+    , CELL_CROSSVERT = 0x100    /* vertical component of crosshair */
+    , CELL_CROSSHOR = 0x200     /* horizontal component of crosshair */
+    , CELL_ALL = 0x3FF
 } CellFlags;
 
 typedef struct DrawScoreInfo {
