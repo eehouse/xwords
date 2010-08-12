@@ -34,7 +34,7 @@ class ListenerMgr {
  public:
     void RemoveAll();
 /*     void RemoveListener( int listener ); */
-    bool AddListener( int port );
+    bool AddListener( int port, bool perGame );
     void SetAll( const vector<int>* iv ); /* replace current set with this new one */
     void AddToFDSet( fd_set* rfds );
     int GetHighest();
@@ -43,10 +43,10 @@ class ListenerMgr {
  private:
     void removeSocket( int sock );
     void removePort( int port );
-    bool addOne( int listener );
+    bool addOne( int listener, bool perGame );
     bool portInUse( int port );
 
-    map<int,int> m_socks_to_ports;
+    map< int,pair<int,bool> > m_socks_to_ports;
     pthread_mutex_t m_mutex;
     friend class ListenersIter;
 };
@@ -65,10 +65,11 @@ class ListenersIter {
     }
 
     int next();
+    int next( bool* perGame );
 
  private:
     bool m_fds;
-    map<int,int>::const_iterator m_iter;
+    map< int,pair<int,bool> >::const_iterator m_iter;
     ListenerMgr* m_lm;
 };
 

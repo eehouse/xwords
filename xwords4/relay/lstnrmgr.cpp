@@ -29,11 +29,11 @@
 #include "mlock.h"
 
 bool
-ListenerMgr::AddListener( int port )
+ListenerMgr::AddListener( int port, bool perGame )
 {
     logf( XW_LOGINFO, "%s(%d)", __func__, port );
     MutexLock ml( &m_mutex );
-    return addOne( port );
+    return addOne( port, perGame );
 }
 
 void 
@@ -43,9 +43,9 @@ ListenerMgr::SetAll( const vector<int>* ivp )
     MutexLock ml( &m_mutex );
 
     vector<int> have;
-    map<int,int>::iterator iter2 = m_socks_to_ports.begin();
+    map<int,pair<int,bool> >::iterator iter2 = m_socks_to_ports.begin();
     while ( iter2 != m_socks_to_ports.end() ) {
-        have.push_back(iter2->second);
+        have.push_back(iter2->second.first);
         ++iter2;
     }
     std::sort(have.begin(), have.end());
@@ -61,7 +61,7 @@ ListenerMgr::SetAll( const vector<int>* ivp )
         assert( iHave <= have.size() && iWant <= want.size() );
         while( (iWant < want.size()) 
                && ((iHave == have.size() || want[iWant] < have[iHave])) ) {
-            addOne( want[iWant] );
+            addOne( want[iWant], true );
             ++iWant;
         }
         while ( (iHave < have.size()) 
@@ -90,7 +90,7 @@ ListenerMgr::RemoveAll()
 {
     MutexLock ml( &m_mutex );
     for ( ; ; ) {
-        map<int,int>::const_iterator iter = m_socks_to_ports.begin();
+        map<int,pair<int,bool> >::const_iterator iter = m_socks_to_ports.begin();
         if ( iter == m_socks_to_ports.end() ) {
             break;
         }
@@ -102,7 +102,7 @@ void
 ListenerMgr::AddToFDSet( fd_set* rfds )
 {
     MutexLock ml( &m_mutex );
-    map<int,int>::const_iterator iter = m_socks_to_ports.begin();
+    map<int,pair<int,bool> >::const_iterator iter = m_socks_to_ports.begin();
     while ( iter != m_socks_to_ports.end() ) {
         FD_SET( iter->first, rfds );
         ++iter;
@@ -114,7 +114,7 @@ ListenerMgr::GetHighest()
 {
     int highest = 0;
     MutexLock ml( &m_mutex );
-    map<int,int>::const_iterator iter = m_socks_to_ports.begin();
+    map<int,pair<int,bool> >::const_iterator iter = m_socks_to_ports.begin();
     while ( iter != m_socks_to_ports.end() ) {
         if ( iter->first > highest ) {
             highest = iter->first;
@@ -136,7 +136,7 @@ ListenerMgr::removeSocket( int sock )
 {
     /* Assumption: we have the mutex! */
     logf( XW_LOGINFO, "%s(%d)", __func__, sock );
-    map<int,int>::iterator iter = m_socks_to_ports.find( sock );
+    map<int,pair<int,bool> >::iterator iter = m_socks_to_ports.find( sock );
     assert( iter != m_socks_to_ports.end() );
     m_socks_to_ports.erase(iter);
     close(sock);
@@ -147,9 +147,9 @@ ListenerMgr::removePort( int port )
 {
     /* Assumption: we have the mutex! */
     logf( XW_LOGINFO, "%s(%d)", __func__, port );
-    map<int,int>::iterator iter = m_socks_to_ports.begin();
+    map<int,pair<int,bool> >::iterator iter = m_socks_to_ports.begin();
     while ( iter != m_socks_to_ports.end() ) {
-        if ( iter->second == port ) {
+        if ( iter->second.first == port ) {
             int sock = iter->first;
             close(sock);
             m_socks_to_ports.erase(iter);
@@ -161,7 +161,7 @@ ListenerMgr::removePort( int port )
 }
 
 bool
-ListenerMgr::addOne( int port )
+ListenerMgr::addOne( int port, bool perGame )
 {
     logf( XW_LOGINFO, "%s(%d)", __func__, port );
     /* Assumption: we have the mutex! */
@@ -170,7 +170,8 @@ ListenerMgr::addOne( int port )
     int sock = make_socket( INADDR_ANY, port );
     success = sock != -1;
     if ( success ) {
-        m_socks_to_ports.insert( pair<int,int>(sock, port) );
+        pair<int,bool>entry(port, perGame);
+        m_socks_to_ports.insert( pair<int,pair<int,bool> >(sock, entry ) );
     }
     return success;
 }
@@ -180,9 +181,9 @@ ListenerMgr::portInUse( int port )
 {
     /* Assumption: we have the mutex! */
     bool found = false;
-    map<int,int>::const_iterator iter = m_socks_to_ports.begin();
+    map<int,pair<int,bool> >::const_iterator iter = m_socks_to_ports.begin();
     while ( iter != m_socks_to_ports.end() ) {
-        if ( iter->second == port ) {
+        if ( iter->second.first == port ) {
             found = true;
             break;
         }
@@ -194,9 +195,18 @@ ListenerMgr::portInUse( int port )
 int 
 ListenersIter::next()
 {
+    return this->next( NULL );
+}
+
+int 
+ListenersIter::next( bool* perGame )
+{
     int result = -1;
     if ( m_iter != m_lm->m_socks_to_ports.end() ) {
-        result = m_fds? m_iter->first : m_iter->second;
+        result = m_fds? m_iter->first : m_iter->second.first;
+        if ( NULL != perGame ) {
+            *perGame = m_iter->second.second;
+        }
         ++m_iter;
     }
 /*     logf( XW_LOGINFO, "%s=>%d", __func__, result ); */

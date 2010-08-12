@@ -15,9 +15,11 @@ HEARTBEAT=60
 # How many worker threads in the thread pool?  Default is five.
 NTHREADS=3
 
-# What ports do we listen on for incoming connections?
-PORTS=10999
+# What ports do we listen on for per-game incoming connections?
+GAME_PORTS=10999
 #PORTS=10997,10998,10999
+# What ports do we listen on for per-device incoming connections?
+DEVICE_PORTS=10998
 
 # And the control port is?
 CTLPORT=11000

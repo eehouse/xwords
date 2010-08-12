@@ -814,22 +814,39 @@ main( int argc, char** argv )
     (void)sigaction( SIGPIPE, &sact, NULL );
 
     if ( port != 0 ) {
-        g_listeners.AddListener( port );
+        g_listeners.AddListener( port, true );
     }
-    vector<int> ints;
-    if ( !cfg->GetValueFor( "PORTS", ints ) ) {
+    vector<int> ints_game;
+    if ( !cfg->GetValueFor( "GAME_PORTS", ints_game ) ) {
         exit( 1 );
     }
 
-    vector<int>::const_iterator iter;
-    for ( iter = ints.begin(); iter != ints.end(); ++iter ) {
-        int port = *iter;
+    vector<int>::const_iterator iter_game;
+    for ( iter_game = ints_game.begin(); iter_game != ints_game.end(); 
+          ++iter_game ) {
+        int port = *iter_game;
         if ( !g_listeners.PortInUse( port ) ) {
-            if ( !g_listeners.AddListener( port ) ) {
+            if ( !g_listeners.AddListener( port, true ) ) {
                 exit( 1 );
             }
         } else {
             logf( XW_LOGERROR, "port %d was in use", port );
+        }
+    }
+
+    vector<int> ints_device;
+    if ( cfg->GetValueFor( "DEVICE_PORTS", ints_device ) ) {
+
+        vector<int>::const_iterator iter;
+        for ( iter = ints_device.begin(); iter != ints_device.end(); ++iter ) {
+            int port = *iter;
+            if ( !g_listeners.PortInUse( port ) ) {
+                if ( !g_listeners.AddListener( port, false ) ) {
+                    exit( 1 );
+                }
+            } else {
+                logf( XW_LOGERROR, "port %d was in use", port );
+            }
         }
     }
 
@@ -895,7 +912,8 @@ main( int argc, char** argv )
         } else {
             ListenersIter iter(&g_listeners, true);
             while ( retval > 0 ) {
-                int listener = iter.next();
+                bool perGame;
+                int listener = iter.next( &perGame );
                 if ( listener < 0 ) {
                     break;
                 }
@@ -906,11 +924,16 @@ main( int argc, char** argv )
                     int newSock = accept( listener, (sockaddr*)&newaddr,
                                           &siz );
 
-                    logf( XW_LOGINFO, 
-                          "accepting connection from %s on socket %d", 
-                          inet_ntoa(newaddr.sin_addr), newSock );
+                    if ( perGame ) {
+                        logf( XW_LOGINFO, 
+                              "accepting connection from %s on socket %d", 
+                              inet_ntoa(newaddr.sin_addr), newSock );
 
-                    tPool->AddSocket( newSock );
+                        tPool->AddSocket( newSock );
+                    } else {
+                        logf( XW_LOGERROR, "can't handle device socket yet" );
+                    }
+
                     --retval;
                 }
             }

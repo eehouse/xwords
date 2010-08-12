@@ -240,7 +240,7 @@ CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
     if ( 0 == m_ports.length() ) {
         RelayConfigs* cfg = RelayConfigs::GetConfigs();
         vector<int> ints;
-        if ( cfg->GetValueFor( "PORTS", ints ) ) {
+        if ( cfg->GetValueFor( "GAME_PORTS", ints ) ) {
             vector<int>::const_iterator iter;
             for ( iter = ints.begin(); ; ) {
                 char buf[8];
