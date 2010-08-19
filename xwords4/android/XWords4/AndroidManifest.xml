@@ -94,5 +94,7 @@
       </intent-filter> 
     </activity>
 
+    <service android:name=".RelayService" />
+
   </application>
 </manifest>

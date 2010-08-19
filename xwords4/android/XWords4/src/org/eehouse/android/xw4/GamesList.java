@@ -129,6 +129,9 @@ public class GamesList extends ListActivity {
         setListAdapter( m_adapter );
 
         FirstRunDialog.show( this, false );
+
+        Intent service = new Intent(this, RelayService.class );
+        startService( service );
     }
 
     @Override
