@@ -23,6 +23,9 @@ package org.eehouse.android.xw4;
 import android.app.ListActivity;
 import android.app.Dialog;
 import android.app.AlertDialog;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.DialogInterface;
 import android.net.Uri;
@@ -45,6 +48,7 @@ import org.eehouse.android.xw4.jni.*;
 public class GamesList extends ListActivity {
     private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
     private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
+    private static final long CHECK_INTERVAL_SECONDS = 5;
 
     private GameListAdapter m_adapter;
     private String m_invalPath = null;
@@ -105,7 +109,8 @@ public class GamesList extends ListActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) 
+    {
         super.onCreate(savedInstanceState);
 
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, false );
@@ -130,8 +135,16 @@ public class GamesList extends ListActivity {
 
         FirstRunDialog.show( this, false );
 
-        Intent service = new Intent(this, RelayService.class );
-        startService( service );
+        // Intent service = new Intent(this, RelayService.class );
+        // startService( service );
+
+        AlarmManager am = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        PendingIntent intent = 
+            PendingIntent.getActivity( this, 0, 
+                                       new Intent(this, RelayActivity.class), 0);
+        am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+                                0, // first firing
+                                CHECK_INTERVAL_SECONDS*1000, intent );
     }
 
     @Override

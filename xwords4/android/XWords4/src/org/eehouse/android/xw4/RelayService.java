@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.app.Notification;
@@ -28,6 +29,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 
 public class RelayService extends Service {
+
     private NotificationManager m_nm;
 
     @Override
@@ -36,9 +38,8 @@ public class RelayService extends Service {
         super.onCreate();
         Utils.logf( "RelayService::onCreate() called" );
 
-        // setupNotification();
 
-        Thread thread = new Thread(null, m_task, getClass().getName() );
+        Thread thread = new Thread( null, m_task, getClass().getName() );
         thread.start();
     }
 
@@ -66,32 +67,29 @@ public class RelayService extends Service {
     //     return 0;
     // }
 
-    private void setupNotification()
-    {
-        m_nm = (NotificationManager)getSystemService( NOTIFICATION_SERVICE );
+    // private void setupNotification()
+    // {
+    //     m_nm = (NotificationManager)getSystemService( NOTIFICATION_SERVICE );
 
-        Notification notification = 
-            new Notification( R.drawable.icon48x48, "foo",
-                              System.currentTimeMillis());
+    //     Notification notification = 
+    //         new Notification( R.drawable.icon48x48, "foo",
+    //                           System.currentTimeMillis());
 
-        PendingIntent intent = PendingIntent
-            .getActivity( this, 0, new Intent(this, BoardActivity.class), 0);
+    //     PendingIntent intent = PendingIntent
+    //         .getActivity( this, 0, new Intent(this, BoardActivity.class), 0);
 
-        notification.setLatestEventInfo( this, "bazz", "bar", intent );
+    //     notification.setLatestEventInfo( this, "bazz", "bar", intent );
         
-        m_nm.notify( R.string.running_notification, notification );
-    }
+    //     m_nm.notify( R.string.running_notification, notification );
+    // }
 
     // Thread that does the actual work of pinging the relay
     private Runnable m_task = new Runnable() {
             public void run() {
 
-                // Set an alarm to try again in n minutes, then quit.
-
                 RelayService.this.stopSelf();
             }
         };
-    
 
 }
 
