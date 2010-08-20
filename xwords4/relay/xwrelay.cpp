@@ -931,7 +931,12 @@ main( int argc, char** argv )
 
                         tPool->AddSocket( newSock );
                     } else {
-                        logf( XW_LOGERROR, "can't handle device socket yet" );
+                        unsigned char one;
+                        read( newSock, &one, 1 );
+                        logf( XW_LOGERROR, "new socket connected; read %d", one );
+                        one = 1;
+                        write( newSock, &one, 1 );
+                        close( newSock );
                     }
 
                     --retval;

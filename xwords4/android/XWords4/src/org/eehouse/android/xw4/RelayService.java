@@ -27,9 +27,17 @@ import android.os.IBinder;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import javax.net.SocketFactory;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class RelayService extends Service {
 
+    private static final String proxy_addr = "10.0.2.2";
+    private static final int proxy_port = 10998;
+    
     private NotificationManager m_nm;
 
     @Override
@@ -38,8 +46,29 @@ public class RelayService extends Service {
         super.onCreate();
         Utils.logf( "RelayService::onCreate() called" );
 
+        Thread thread = new Thread( null, new Runnable() {
+                public void run() {
+                    try {
+                        SocketFactory factory = SocketFactory.getDefault();
+                        InetAddress addr = InetAddress.getByName( proxy_addr );
+                        Socket socket = factory.createSocket( addr, proxy_port );
+                        socket.setSoTimeout( 3000 );
+                        Utils.logf( "writing to proxy socket" );
+                        OutputStream outStream = socket.getOutputStream();
+                        outStream.write( 0 );
+                        InputStream inStream = socket.getInputStream();
+                        int result = inStream.read();
+                        socket.close();
+                        Utils.logf( "read %d and closed proxy socket", result );
+                    } catch( java.net.UnknownHostException uhe ) {
+                        Utils.logf( uhe.toString() );
+                    } catch( java.io.IOException ioe ) {
+                        Utils.logf( ioe.toString() );
+                    }
 
-        Thread thread = new Thread( null, m_task, getClass().getName() );
+                    RelayService.this.stopSelf();
+                }
+            }, getClass().getName() );
         thread.start();
     }
 
@@ -82,14 +111,6 @@ public class RelayService extends Service {
         
     //     m_nm.notify( R.string.running_notification, notification );
     // }
-
-    // Thread that does the actual work of pinging the relay
-    private Runnable m_task = new Runnable() {
-            public void run() {
-
-                RelayService.this.stopSelf();
-            }
-        };
 
 }
 
