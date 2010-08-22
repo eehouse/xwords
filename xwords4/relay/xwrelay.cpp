@@ -76,6 +76,8 @@
 #include "lstnrmgr.h"
 
 static int s_nSpawns = 0;
+#define MAX_PROXY_LEN 64
+#define MAX_PROXY_COUNT 48
 
 void
 logf( XW_LogLevel level, const char* format, ... )
@@ -931,14 +933,53 @@ main( int argc, char** argv )
 
                         tPool->AddSocket( newSock );
                     } else {
-                        unsigned char one;
-                        read( newSock, &one, 1 );
-                        logf( XW_LOGERROR, "new socket connected; read %d", one );
-                        one = 1;
-                        write( newSock, &one, 1 );
+                        unsigned char protocol;
+                        ssize_t nread;
+
+                        nread = recv( newSock, &protocol, sizeof(protocol), 
+                                      MSG_WAITALL );
+                        if ( nread == sizeof(protocol) && (0 == protocol) ) {
+                            logf( XW_LOGERROR, "proxy socket connected; "
+                                  "protocol=%d", protocol );
+                            unsigned short count;
+                            nread = recv( newSock, &count, sizeof(count), 
+                                          MSG_WAITALL );
+                            if ( nread == sizeof( count ) ) {
+                                count = ntohs( count );
+                                logf( XW_LOGERROR, "count=%d", count );
+                                if ( count < MAX_PROXY_COUNT ) {
+                                    for ( int ii = 0; ii < count; ++ii ) {
+                                        unsigned short len;
+                                        nread = recv( newSock, &len, sizeof(len), 
+                                                      MSG_WAITALL );
+                                        if ( nread != sizeof(len) ) {
+                                            break;
+                                        }
+                                        len = ntohs( len );
+                                        if ( len > MAX_PROXY_LEN ) {
+                                            break;
+                                        }
+                                        logf( XW_LOGERROR, "len=%d", len );
+                                        unsigned char buf[MAX_PROXY_LEN+1];
+                                        nread = recv( newSock, buf, len, 
+                                                      MSG_WAITALL );
+                                        if ( nread == len ) {
+                                            buf[len] = '\0';
+                                            logf( XW_LOGINFO, "read %s", buf );
+                                        }
+
+                                        /* fake, random result */
+                                        unsigned char result = ii % 2 == 0? 1 : 0;
+                                        write( newSock, &result, sizeof(result) );
+                                    }
+                                }
+                            } else {
+                                logf( XW_LOGERROR, "Read %d bytes instead of %d", 
+                                      nread, sizeof(count) );
+                            }
+                        }
                         close( newSock );
                     }
-
                     --retval;
                 }
             }

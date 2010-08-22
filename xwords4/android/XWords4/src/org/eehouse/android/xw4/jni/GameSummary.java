@@ -29,6 +29,8 @@ public class GameSummary {
     public int[] scores;
     public boolean gameOver;
     public CommsAddrRec.CommsConnType conType;
-    public String roomName;
     public String smsPhone;
+    // relay-related fields
+    public String roomName;
+    public byte[] relayID;
 }

@@ -31,12 +31,18 @@ import javax.net.SocketFactory;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.io.InputStream;
+import java.io.DataInputStream;
 import java.io.OutputStream;
+import java.io.DataOutputStream;
+import java.util.ArrayList;
+
+import org.eehouse.android.xw4.jni.GameSummary;
 
 public class RelayService extends Service {
 
     private static final String proxy_addr = "10.0.2.2";
     private static final int proxy_port = 10998;
+    private static final byte PROTOCOL_VERSION = 0;
     
     private NotificationManager m_nm;
 
@@ -48,24 +54,42 @@ public class RelayService extends Service {
 
         Thread thread = new Thread( null, new Runnable() {
                 public void run() {
-                    try {
-                        SocketFactory factory = SocketFactory.getDefault();
-                        InetAddress addr = InetAddress.getByName( proxy_addr );
-                        Socket socket = factory.createSocket( addr, proxy_port );
-                        socket.setSoTimeout( 3000 );
-                        Utils.logf( "writing to proxy socket" );
-                        OutputStream outStream = socket.getOutputStream();
-                        outStream.write( 0 );
-                        InputStream inStream = socket.getInputStream();
-                        int result = inStream.read();
-                        socket.close();
-                        Utils.logf( "read %d and closed proxy socket", result );
-                    } catch( java.net.UnknownHostException uhe ) {
-                        Utils.logf( uhe.toString() );
-                    } catch( java.io.IOException ioe ) {
-                        Utils.logf( ioe.toString() );
-                    }
 
+                    ArrayList<byte[]>ids = collectIDs();
+                    if ( null != ids ) {
+                        try {
+                            SocketFactory factory = SocketFactory.getDefault();
+                            InetAddress addr = InetAddress.getByName( proxy_addr );
+                            Socket socket = factory.createSocket( addr, 
+                                                                  proxy_port );
+                            socket.setSoTimeout( 3000 );
+                            DataOutputStream outStream = 
+                                new DataOutputStream( socket.getOutputStream() );
+                            outStream.writeByte( PROTOCOL_VERSION );
+
+                            outStream.writeShort( ids.size() );
+                            Utils.logf( "wrote count %d to proxy socket",
+                                        ids.size() );
+                            for ( byte[] id : ids ) {
+                                outStream.writeShort( id.length );
+                                Utils.logf( "wrote length %d to proxy socket",
+                                            id.length );
+                                outStream.write( id, 0, id.length );
+                            }
+                            outStream.flush();
+
+                            DataInputStream dis = 
+                                new DataInputStream(socket.getInputStream());
+                            Utils.logf( "reading from proxy socket" );
+                            short result = dis.readShort();
+                            socket.close();
+                            Utils.logf( "read %d and closed proxy socket", result );
+                        } catch( java.net.UnknownHostException uhe ) {
+                            Utils.logf( uhe.toString() );
+                        } catch( java.io.IOException ioe ) {
+                            Utils.logf( ioe.toString() );
+                        }
+                    }
                     RelayService.this.stopSelf();
                 }
             }, getClass().getName() );
@@ -111,6 +135,22 @@ public class RelayService extends Service {
         
     //     m_nm.notify( R.string.running_notification, notification );
     // }
+
+    private ArrayList<byte[]> collectIDs()
+    {
+        ArrayList<byte[]> ids = new ArrayList<byte[]>();
+        String[] games = GameUtils.gamesList( this );
+        for ( String path : games ) {
+            Utils.logf( "looking at %s", path );
+            GameSummary summary = DBUtils.getSummary( this, path );
+            if ( null != summary.relayID ) {
+                ids.add( summary.relayID );
+                Utils.logf( "adding id with length %d", summary.relayID.length );
+            }
+        }
+
+        return ids;
+    }
 
 }
 

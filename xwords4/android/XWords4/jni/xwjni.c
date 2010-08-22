@@ -972,6 +972,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                          "org/eehouse/android/xw4/jni/"
                          "CommsAddrRec$CommsConnType" );
         if ( COMMS_CONN_RELAY == addr.conType ) {
+            XP_U8 buf[128];
+            XP_U16 len = VSIZE(buf);
+            if ( comms_getRelayID( state->game.comms, buf, &len ) ) {
+                jbyteArray barr = makeByteArray( env, len, (jbyte*)buf );
+                setObject( env, jsummary, "relayID", "[B", barr );
+                (*env)->DeleteLocalRef( env, barr );
+            }
             setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
         } else if ( COMMS_CONN_SMS == addr.conType ) {
             setString( env, jsummary, "smsPhone", addr.u.sms.phone );

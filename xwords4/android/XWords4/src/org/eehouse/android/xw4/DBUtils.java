@@ -44,7 +44,8 @@ public class DBUtils {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER,
                                  DBHelper.CONTYPE, DBHelper.ROOMNAME,
-                                 DBHelper.SMSPHONE, DBHelper.SCORES
+                                 DBHelper.RELAYID, DBHelper.SMSPHONE, 
+                                 DBHelper.SCORES
             };
             String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
 
@@ -78,6 +79,10 @@ public class DBUtils {
                     col = cursor.getColumnIndex( DBHelper.ROOMNAME );
                     if ( col >= 0 ) {
                         summary.roomName = cursor.getString( col );
+                    }
+                    col = cursor.getColumnIndex( DBHelper.RELAYID );
+                    if ( col >= 0 ) {
+                        summary.relayID = cursor.getBlob( col );
                     }
                     col = cursor.getColumnIndex( DBHelper.SMSPHONE );
                     if ( col >= 0 ) {
@@ -116,6 +121,7 @@ public class DBUtils {
                 if ( null != summary.conType ) {
                     values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
                     values.put( DBHelper.ROOMNAME, summary.roomName );
+                    values.put( DBHelper.RELAYID, summary.relayID );
                     values.put( DBHelper.SMSPHONE, summary.smsPhone );
                 }
 

@@ -726,6 +726,29 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 
 } /* comms_setAddr */
 
+#ifdef XWFEATURE_RELAY
+XP_Bool
+comms_getRelayID( const CommsCtxt* comms, XP_U8* buf, XP_U16* lenp )
+{
+    XP_Bool success = comms->r.connName[0] != 0;
+    if ( success ) {
+        XP_U16 len = sizeof( comms->r.connName ) + 16;
+        XP_UCHAR local[len];
+        XP_SNPRINTF( local, sizeof(local), "%s/%d", 
+                     comms->r.connName, comms->r.myHostID );
+        XP_U16 strln = XP_STRLEN(local);
+        success = *lenp >= strln;
+        if ( success ) {
+            *lenp = strln;
+            XP_MEMCPY( buf, local, strln );
+            XP_LOGF( "%s: keysize=%d", __func__, strln );
+        }
+    }
+    LOG_RETURNF( "%d", success );
+    return success;
+}
+#endif
+
 void
 comms_getInitialAddr( CommsAddrRec* addr
 #ifdef XWFEATURE_RELAY

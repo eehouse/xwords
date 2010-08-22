@@ -41,6 +41,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String SNAPSHOT = "SNAPSHOT";
     public static final String CONTYPE = "CONTYPE";
     public static final String ROOMNAME = "ROOMNAME";
+    public static final String RELAYID = "RELAYID";
     public static final String SMSPHONE = "SMSPHONE";
     // not used yet
     public static final String CREATE_TIME = "CREATE_TIME";
@@ -63,6 +64,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
                     + CONTYPE    + " INTEGER,"
                     + ROOMNAME   + " TEXT,"
+                    + RELAYID    + " BLOB,"
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"
                     + GAMEID     + " INTEGER,"
