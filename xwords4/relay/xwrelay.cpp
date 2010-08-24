@@ -626,6 +626,70 @@ handlePipe( int sig )
     logf( XW_LOGINFO, "%s", __func__ );
 }
 
+
+static void*
+handle_proxy_tproc( void* closure )
+{
+    int sock = (int)closure;
+    unsigned char protocol;
+    ssize_t nread;
+
+    nread = recv( sock, &protocol, sizeof(protocol), 
+                  MSG_WAITALL );
+    if ( nread == sizeof(protocol) && (0 == protocol) ) {
+        logf( XW_LOGERROR, "proxy socket connected; "
+              "protocol=%d", protocol );
+        unsigned short count;
+        nread = recv( sock, &count, sizeof(count), 
+                      MSG_WAITALL );
+        if ( nread == sizeof( count ) ) {
+            count = ntohs( count );
+            logf( XW_LOGERROR, "count=%d", count );
+            if ( count < MAX_PROXY_COUNT ) {
+                for ( int ii = 0; ii < count; ++ii ) {
+                    unsigned short len;
+                    nread = recv( sock, &len, sizeof(len), 
+                                  MSG_WAITALL );
+                    if ( nread != sizeof(len) ) {
+                        break;
+                    }
+                    len = ntohs( len );
+                    if ( len > MAX_PROXY_LEN ) {
+                        break;
+                    }
+                    logf( XW_LOGERROR, "len=%d", len );
+                    unsigned char buf[MAX_PROXY_LEN+1];
+                    nread = recv( sock, buf, len, 
+                                  MSG_WAITALL );
+                    if ( nread == len ) {
+                        buf[len] = '\0';
+                        logf( XW_LOGINFO, "read %s", buf );
+                    }
+
+                    /* fake, random result */
+                    unsigned char result = ii % 2 == 0? 1 : 0;
+                    write( sock, &result, sizeof(result) );
+                }
+            }
+        } else {
+            logf( XW_LOGERROR, "Read %d bytes instead of %d", 
+                  nread, sizeof(count) );
+        }
+    }
+    close( sock );
+    return NULL;
+} /* handle_proxy_tproc */
+
+static void
+handle_proxy_connect( int sock )
+{
+    pthread_t thread;
+    if ( 0 == pthread_create( &thread, NULL, handle_proxy_tproc, 
+                              (void*)sock ) ) {
+        pthread_detach( thread );
+    }
+} /* handle_proxy_connect */
+
 int
 main( int argc, char** argv )
 {
@@ -933,52 +997,7 @@ main( int argc, char** argv )
 
                         tPool->AddSocket( newSock );
                     } else {
-                        unsigned char protocol;
-                        ssize_t nread;
-
-                        nread = recv( newSock, &protocol, sizeof(protocol), 
-                                      MSG_WAITALL );
-                        if ( nread == sizeof(protocol) && (0 == protocol) ) {
-                            logf( XW_LOGERROR, "proxy socket connected; "
-                                  "protocol=%d", protocol );
-                            unsigned short count;
-                            nread = recv( newSock, &count, sizeof(count), 
-                                          MSG_WAITALL );
-                            if ( nread == sizeof( count ) ) {
-                                count = ntohs( count );
-                                logf( XW_LOGERROR, "count=%d", count );
-                                if ( count < MAX_PROXY_COUNT ) {
-                                    for ( int ii = 0; ii < count; ++ii ) {
-                                        unsigned short len;
-                                        nread = recv( newSock, &len, sizeof(len), 
-                                                      MSG_WAITALL );
-                                        if ( nread != sizeof(len) ) {
-                                            break;
-                                        }
-                                        len = ntohs( len );
-                                        if ( len > MAX_PROXY_LEN ) {
-                                            break;
-                                        }
-                                        logf( XW_LOGERROR, "len=%d", len );
-                                        unsigned char buf[MAX_PROXY_LEN+1];
-                                        nread = recv( newSock, buf, len, 
-                                                      MSG_WAITALL );
-                                        if ( nread == len ) {
-                                            buf[len] = '\0';
-                                            logf( XW_LOGINFO, "read %s", buf );
-                                        }
-
-                                        /* fake, random result */
-                                        unsigned char result = ii % 2 == 0? 1 : 0;
-                                        write( newSock, &result, sizeof(result) );
-                                    }
-                                }
-                            } else {
-                                logf( XW_LOGERROR, "Read %d bytes instead of %d", 
-                                      nread, sizeof(count) );
-                            }
-                        }
-                        close( newSock );
+                        handle_proxy_connect( newSock );
                     }
                     --retval;
                 }
