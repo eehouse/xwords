@@ -118,6 +118,7 @@ public class PrefsActivity extends PreferenceActivity
                              R.string.key_initial_player_minutes,
                              R.string.key_default_dict,
                              R.string.key_default_phonies,
+                             R.string.key_connect_frequency,
         };
 
         SharedPreferences sp
@@ -190,6 +191,10 @@ public class PrefsActivity extends PreferenceActivity
         Preference pref = getPreferenceScreen().findPreference( key );
         String value = sp.getString( key, "" );
         if ( ! value.equals("") ) {
+            if ( pref instanceof android.preference.ListPreference ) {
+                Utils.logf( "%s: want to do lookup of user string here",
+                            key );
+            }
             pref.setSummary( value );
         }
     }

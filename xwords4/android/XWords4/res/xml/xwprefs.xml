@@ -159,6 +159,17 @@
                         />
   </PreferenceScreen>
 
+  <PreferenceScreen android:title="@string/relay_behavior"
+                    android:summary="@string/relay_behavior_summary"
+                    >
+    <ListPreference android:key="@string/key_connect_frequency"
+                    android:title="@string/connect_frequency"
+                    android:entries="@array/connect_frequencies"
+                    android:entryValues="@array/connect_frequencies_values"
+                    android:defaultValue="60"
+                    />
+  </PreferenceScreen>
+
   <PreferenceScreen android:title="@string/advanced"
                     android:summary="@string/advanced_summary"
                     >

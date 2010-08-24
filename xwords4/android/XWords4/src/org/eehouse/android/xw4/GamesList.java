@@ -48,7 +48,6 @@ import org.eehouse.android.xw4.jni.*;
 public class GamesList extends ListActivity {
     private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
     private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
-    private static final long CHECK_INTERVAL_SECONDS = 5;
 
     private GameListAdapter m_adapter;
     private String m_invalPath = null;
@@ -142,9 +141,15 @@ public class GamesList extends ListActivity {
         PendingIntent intent = 
             PendingIntent.getActivity( this, 0, 
                                        new Intent(this, RelayActivity.class), 0);
-        am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
-                                0, // first firing
-                                CHECK_INTERVAL_SECONDS*1000, intent );
+        long interval_millis = 1000 *
+            CommonPrefs.getProxyInterval( this );
+        if ( interval_millis > 0 ) {
+            am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+                                    0, // first firing
+                                    interval_millis, intent );
+        } else {
+            am.cancel( intent );
+        }
     }
 
     @Override

@@ -181,6 +181,16 @@ public class CommonPrefs {
         }
     }
 
+    public static long getProxyInterval( Context context )
+    {
+        String value = getString( context, R.string.key_connect_frequency );
+        try {
+            return Long.parseLong( value );
+        } catch ( Exception ex ) {
+            return 25L;
+        }
+    }
+
     public static String getDefaultDict( Context context )
     {
         String value = getString( context, R.string.key_default_dict );

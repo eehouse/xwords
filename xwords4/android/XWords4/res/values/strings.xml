@@ -364,4 +364,16 @@
     <string name="changes_title">Recent changes</string>
     <string name="changes_button">Recent changes</string>
 
+    <string name="relay_behavior">relay behavior</string>
+    <string name="relay_behavior_summary">relay behavior summary</string>
+    <string name="connect_frequency">connect_frequency</string>
+	<string name="connect_ten_seconds">10 seconds</string>
+	<string name="connect_fifteen_mins">15 minutes</string>
+	<string name="connect_thirty_mins">30 minutes</string>
+	<string name="connect_one_hour">Hourly</string>
+	<string name="connect_six_hours">Every six hours</string>
+	<string name="connect_daily">Once every day</string>
+	<string name="connect_never">Never connect</string>
+
+
 </resources>

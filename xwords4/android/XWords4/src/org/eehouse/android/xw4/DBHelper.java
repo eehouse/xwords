@@ -28,7 +28,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_NAME = "summaries";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
