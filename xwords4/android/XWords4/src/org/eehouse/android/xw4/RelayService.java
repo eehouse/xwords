@@ -56,7 +56,7 @@ public class RelayService extends Service {
                 public void run() {
 
                     ArrayList<byte[]>ids = collectIDs();
-                    if ( null != ids ) {
+                    if ( null != ids && 0 < ids.size() ) {
                         try {
                             SocketFactory factory = SocketFactory.getDefault();
                             InetAddress addr = InetAddress.getByName( proxy_addr );
