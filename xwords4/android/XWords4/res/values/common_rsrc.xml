@@ -80,4 +80,27 @@
     <item>-1</item>
   </string-array>
 
+  <string-array name="language_names">
+    <item>Unknown</item>
+    <item>English</item>
+    <item>French</item>
+    <item>German</item>
+    <item>4</item>
+    <item>5</item>
+    <item>Spanish</item>
+    <item>Swedish</item>
+    <item>Polish</item>
+    <item>Danish</item>
+    <item>Italian</item>
+    <item>Dutch</item>
+    <item>Catalan</item>
+    <item>Portuguese</item>
+    <item>E</item>
+    <item>Russian</item>
+    <item>10</item>
+    <item>Czech</item>
+    <item>Greek</item>
+    <item>Slovak</item>
+  </string-array>
+
 </resources>
