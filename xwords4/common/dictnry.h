@@ -79,9 +79,7 @@ struct DictionaryCtxt {
     SpecialBitmaps* bitmaps;
     XP_UCHAR** chars;
 
-#ifdef TALL_FONTS
     XP_LangCode langCode;
-#endif
 
     XP_U8 nFaces;
 #ifdef NODE_CAN_4
@@ -150,9 +148,7 @@ XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
 void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, 
                           XP_Bitmaps* bmps );
 
-#ifdef TALL_FONTS
 XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );
-#endif
 
 void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
 void dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream );

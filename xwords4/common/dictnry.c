@@ -431,13 +431,11 @@ dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, XP_Bitmaps* bmps )
     bmps->bmps[1] = bitmaps->largeBM;
 } /* dict_getFaceBitmaps */
 
-#ifdef TALL_FONTS
 XP_LangCode
 dict_getLangCode( const DictionaryCtxt* dict )
 {
     return dict->langCode;
 }
-#endif
 
 #ifdef STUBBED_DICT
 
