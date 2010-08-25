@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.content.Context;
+import android.content.res.Resources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu;
@@ -35,8 +36,10 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.preference.PreferenceManager;
 import android.content.SharedPreferences;
-
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 
 public class DictsActivity extends ListActivity 
     implements View.OnClickListener,
@@ -44,11 +47,14 @@ public class DictsActivity extends ListActivity
     String[] m_dicts;
 
     private class DictListAdapter extends XWListAdapter {
-        Context m_context;
+        private Context m_context;
+        private String[] m_langNames;
 
         public DictListAdapter( Context context ) {
             super( context, m_dicts.length );
             m_context = context;
+            Resources res = m_context.getResources();
+            m_langNames = res.getStringArray( R.array.language_names );
         }
 
         public Object getItem( int position) { return m_dicts[position]; }
@@ -58,7 +64,12 @@ public class DictsActivity extends ListActivity
             final XWListItem view
                 = (XWListItem)factory.inflate( R.layout.list_item, null );
             view.setPosition( position );
-            view.setText( m_dicts[position] );
+
+            // append language code
+            byte[] dict = GameUtils.openDict( DictsActivity.this,
+                                              m_dicts[position] );
+            int code = XwJNI.dict_getLanguageCode( dict, JNIUtilsImpl.get() );
+            view.setText( m_dicts[position] + " (" + m_langNames[code] + ")" );
 
             if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
                                            m_dicts[position] ) ) {
