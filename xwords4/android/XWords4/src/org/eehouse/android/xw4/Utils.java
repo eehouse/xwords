@@ -25,6 +25,7 @@ import java.lang.Thread;
 import android.widget.Toast;
 import android.content.Context;
 import android.content.Intent;
+import android.content.DialogInterface;
 import android.widget.CheckBox;
 import android.app.Activity;
 import android.app.Dialog;
@@ -54,7 +55,7 @@ public class Utils {
     public static void logf( String msg ) 
     {
         s_time.setToNow();
-        String time = s_time.format("%H:%M:%S");
+        String time = s_time.format("[%H:%M:%S]");
         long id = Thread.currentThread().getId();
         Log.d( TAG, time + "-" + id + "-" + msg );
     } // logf
@@ -71,7 +72,7 @@ public class Utils {
         Toast.makeText( context, text, Toast.LENGTH_SHORT).show();
     }
 
-    static Dialog onCreateDialog( Context context, int id )
+    static Dialog onCreateDialog( final Context context, int id )
     {
         Assert.assertTrue( DIALOG_ABOUT == id );
         LayoutInflater factory = LayoutInflater.from( context );
@@ -93,6 +94,15 @@ public class Utils {
             .setIcon( R.drawable.icon48x48 )
             .setTitle( R.string.app_name )
             .setView( view )
+            .setPositiveButton( R.string.changes_button,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick( DialogInterface dlg, 
+                                                         int which )
+                                    {
+                                        FirstRunDialog.show( context, true );
+                                    }
+                                } )
             .create();
     }
 

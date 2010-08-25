@@ -420,6 +420,28 @@ drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
     }
 }
 
+#ifdef XWFEATURE_CROSSHAIRS
+static void
+drawCrosshairs( GtkDrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
+{
+    XP_Rect hairRect;
+    if ( 0 != (flags & CELL_CROSSHOR) ) {
+        hairRect = *rect;
+        hairRect.height /= 3;
+        hairRect.top += hairRect.height;
+        gtkFillRect( dctx, &hairRect,  &dctx->cursor );
+    }
+    if ( 0 != (flags & CELL_CROSSVERT) ) {
+        hairRect = *rect;
+        hairRect.width /= 3;
+        hairRect.left += hairRect.width;
+        gtkFillRect( dctx, &hairRect,  &dctx->cursor );
+    }
+}
+#else
+# define drawCrosshairs( a, b, c )
+#endif
+
 static XP_Bool
 gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                    const XP_Bitmaps* bitmaps, Tile XP_UNUSED(tile), 
@@ -504,6 +526,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
     }
 
     drawHintBorders( dctx, rect, hintAtts );
+    drawCrosshairs( dctx, rect, flags );
 
     return XP_TRUE;
 } /* gtk_draw_drawCell */

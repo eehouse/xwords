@@ -642,7 +642,7 @@ static XP_Bool
 makeRobotMove( ServerCtxt* server )
 {
     XP_Bool result = XP_FALSE;
-    XP_Bool finished;
+    XP_Bool searchComplete;
     XP_S16 turn;
     const TrayTileSet* tileSet;
     MoveInfo newMove;
@@ -674,14 +674,14 @@ makeRobotMove( ServerCtxt* server )
     }
 
     XP_ASSERT( !!server_getEngineFor( server, turn ) );
-    finished = engine_findMove( server_getEngineFor( server, turn ),
-                                model, model_getDictionary( model ), 
-                                tileSet->tiles, tileSet->nTiles, XP_FALSE,
+    searchComplete = engine_findMove( server_getEngineFor( server, turn ),
+                                      model, model_getDictionary( model ), 
+                                      tileSet->tiles, tileSet->nTiles, XP_FALSE,
 #ifdef XWFEATURE_SEARCHLIMIT
-                                NULL, XP_FALSE,
+                                      NULL, XP_FALSE,
 #endif
-                                targetScore, &canMove, &newMove );
-    if ( finished ) {
+                                      targetScore, &canMove, &newMove );
+    if ( searchComplete ) {
         const XP_UCHAR* str;
         XWStreamCtxt* stream = NULL;
 
