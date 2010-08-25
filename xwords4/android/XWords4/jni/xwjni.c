@@ -258,6 +258,25 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
     setJAddrRec( env, jaddr, &addr );
 }
 
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getLanguageCode
+(JNIEnv* env, jclass C, jbyteArray jDictBytes, jobject jniu )
+{
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = mpool_make();
+#endif
+    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil,
+                                     jDictBytes, NULL );
+    jint code = dict_getLangCode( dict );
+    dict_destroy( dict );
+    destroyJNIUtil( &jniutil );
+#ifdef MEM_DEBUG
+    mpool_destroy( mpool );
+#endif
+    return code;
+}
+
 /* Dictionary methods: don't use gamePtr */
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesAreSame

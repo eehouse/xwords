@@ -301,6 +301,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
         ctxt->super.countsAndValues = 
             (XP_U8*)XP_MALLOC(ctxt->super.mpool, nFaces*2);
 
+        ctxt->super.langCode = ptr[0] & 0x7F;
         ptr += 2;		/* skip xloc header */
         for ( i = 0; i < nFaces*2; i += 2 ) {
             ctxt->super.countsAndValues[i] = *ptr++;
@@ -377,7 +378,9 @@ and_dictionary_destroy( DictionaryCtxt* dict )
     XP_FREE( ctxt->super.mpool, ctxt->super.faces );
     XP_FREE( ctxt->super.mpool, ctxt->super.facePtrs );
     XP_FREE( ctxt->super.mpool, ctxt->super.countsAndValues );
-    XP_FREE( ctxt->super.mpool, ctxt->super.name );
+    if ( NULL != ctxt->super.name ) {
+        XP_FREE( ctxt->super.mpool, ctxt->super.name );
+    }
 
     XP_FREE( ctxt->super.mpool, ctxt->bytes );
     XP_FREE( ctxt->super.mpool, ctxt );
@@ -432,11 +435,13 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
     setBlankTile( &anddict->super );
 
     /* copy the name */
-    len = 1 + (*env)->GetStringUTFLength( env, jname );
-    const char* chars = (*env)->GetStringUTFChars( env, jname, NULL );
-    anddict->super.name = XP_MALLOC( mpool, len );
-    XP_MEMCPY( anddict->super.name, chars, len );
-    (*env)->ReleaseStringUTFChars( env, jname, chars );
+    if ( NULL != jname ) {
+        len = 1 + (*env)->GetStringUTFLength( env, jname );
+        const char* chars = (*env)->GetStringUTFChars( env, jname, NULL );
+        anddict->super.name = XP_MALLOC( mpool, len );
+        XP_MEMCPY( anddict->super.name, chars, len );
+        (*env)->ReleaseStringUTFChars( env, jname, chars );
+    }
     
     return (DictionaryCtxt*)anddict;
 }
