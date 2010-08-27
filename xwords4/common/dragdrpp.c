@@ -677,7 +677,7 @@ static void
 crosshairs_init( BoardCtxt* board )
 {
     DragState* ds = &board->dragState;
-    ds->crosshairs.col = ds->crosshairs.col = -1;
+    ds->crosshairs.col = ds->crosshairs.row = -1;
 }
 
 static XP_Bool
