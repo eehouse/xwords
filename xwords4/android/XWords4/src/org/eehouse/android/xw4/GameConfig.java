@@ -76,6 +76,7 @@ public class GameConfig extends Activity implements View.OnClickListener,
     private Spinner m_connectSpinner;
     private Spinner m_phoniesSpinner;
     private Spinner m_dictSpinner;
+    private String[] m_dictItems;
     private String[] m_dicts;
     private int m_browsePosition;
     private LinearLayout m_playerLayout;
@@ -568,12 +569,14 @@ public class GameConfig extends Activity implements View.OnClickListener,
         String[] list = GameUtils.dictList( this );
 
         m_browsePosition = list.length;
-        m_dicts = new String[m_browsePosition+1];
-        m_dicts[m_browsePosition] = getString( R.string.download_dicts );
+        m_dictItems = new String[m_browsePosition+1];
+        m_dictItems[m_browsePosition] = getString( R.string.download_dicts );
+        m_dicts = new String[m_browsePosition];
         
         for ( int ii = 0; ii < m_browsePosition; ++ii ) {
             String dict = list[ii];
             m_dicts[ii] = dict;
+            m_dictItems[ii] = DictLangCache.annotatedDictName( this, dict );
             if ( dict.equals( curDict ) ) {
                 curSel = ii;
             }
@@ -589,7 +592,7 @@ public class GameConfig extends Activity implements View.OnClickListener,
         ArrayAdapter<String> adapter = 
             new ArrayAdapter<String>( this,
                                       android.R.layout.simple_spinner_item,
-                                      m_dicts );
+                                      m_dictItems );
         int resID = android.R.layout.simple_spinner_dropdown_item;
         adapter.setDropDownViewResource( resID );
         m_dictSpinner.setAdapter( adapter );
