@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.content.res.Resources;
 import java.util.HashMap;
 
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
@@ -28,6 +29,17 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 public class DictLangCache {
     private static HashMap<String,Integer> s_nameToLang;
+    private static String[] s_langNames;
+
+    public static String getLangName( Context context, String name )
+    {
+        int code = getLangCode( context, name );
+        if ( null == s_langNames ) {
+            Resources res = context.getResources();
+            s_langNames = res.getStringArray( R.array.language_names );
+        }
+        return s_langNames[code];
+    }
 
     public static int getLangCode( Context context, String name )
     {

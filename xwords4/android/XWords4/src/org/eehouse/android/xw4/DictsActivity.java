@@ -26,7 +26,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.content.Context;
-import android.content.res.Resources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu;
@@ -48,13 +47,10 @@ public class DictsActivity extends ListActivity
 
     private class DictListAdapter extends XWListAdapter {
         private Context m_context;
-        private String[] m_langNames;
 
         public DictListAdapter( Context context ) {
             super( context, m_dicts.length );
             m_context = context;
-            Resources res = m_context.getResources();
-            m_langNames = res.getStringArray( R.array.language_names );
         }
 
         public Object getItem( int position) { return m_dicts[position]; }
@@ -65,10 +61,11 @@ public class DictsActivity extends ListActivity
                 = (XWListItem)factory.inflate( R.layout.list_item, null );
             view.setPosition( position );
 
-            // append language code
-            int code = DictLangCache.getLangCode( DictsActivity.this, 
-                                                  m_dicts[position] );
-            view.setText( m_dicts[position] + " (" + m_langNames[code] + ")" );
+            // append language name
+            view.setText( m_dicts[position] + " (" + 
+                          DictLangCache.getLangName( DictsActivity.this, 
+                                                     m_dicts[position] )
+                          + ")" );
 
             if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
                                            m_dicts[position] ) ) {
