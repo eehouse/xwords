@@ -66,9 +66,8 @@ public class DictsActivity extends ListActivity
             view.setPosition( position );
 
             // append language code
-            byte[] dict = GameUtils.openDict( DictsActivity.this,
-                                              m_dicts[position] );
-            int code = XwJNI.dict_getLanguageCode( dict, JNIUtilsImpl.get() );
+            int code = DictLangCache.getLangCode( DictsActivity.this, 
+                                                  m_dicts[position] );
             view.setText( m_dicts[position] + " (" + m_langNames[code] + ")" );
 
             if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
