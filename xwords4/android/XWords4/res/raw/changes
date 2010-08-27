@@ -6,19 +6,16 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 14 release</b>
+<b>Crosswords 4.4 beta 15 release</b>
 
-<ul>New features:
-  <li>This spiffy per-release dialog</li>
-</ul>
+<p>This is a quick bug-fix release while I continue work on the new relay connection code.</p>
 
 <ul>Bugs fixed:
-<li>Crash exiting board view</li>
-<li>Hang searching for robot move</li>
-<li>Crash putting up progress dialog after board hidden</li>
+  <li>Robot wouldn't give up turn when unable to find a move. (Thanks S.A.)</li>
+  <li>"Crosshairs" was drawn only three columns wide when started on top row</li>
 </ul>
 
-<ul>Coming soon:
+<ul>(Still) coming soon
   <li>builtin hints and help</li>
   <li>rewrite of gameplay via relay to make connecting easier and allow closed game to receive moves.</li>
 </ul>
