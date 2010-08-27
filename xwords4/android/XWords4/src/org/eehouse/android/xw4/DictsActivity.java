@@ -62,11 +62,9 @@ public class DictsActivity extends ListActivity
             view.setPosition( position );
 
             // append language name
-            view.setText( m_dicts[position] + " (" + 
-                          DictLangCache.getLangName( DictsActivity.this, 
-                                                     m_dicts[position] )
-                          + ")" );
-
+            view.setText( DictLangCache.
+                          annotatedDictName( DictsActivity.this, 
+                                             m_dicts[position] ) );
             if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
                                            m_dicts[position] ) ) {
                 view.setDeleteCallback( DictsActivity.this );

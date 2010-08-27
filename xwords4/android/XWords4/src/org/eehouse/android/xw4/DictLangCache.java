@@ -28,10 +28,17 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class DictLangCache {
-    private static HashMap<String,Integer> s_nameToLang;
+    private static final HashMap<String,Integer> s_nameToLang = 
+        new HashMap<String,Integer>();
     private static String[] s_langNames;
 
-    public static String getLangName( Context context, String name )
+    public static String annotatedDictName( Context context,
+                                            String name )
+    {
+        return name + " (" + getLangName( context, name ) + ")";
+    }
+
+    private static String getLangName( Context context, String name )
     {
         int code = getLangCode( context, name );
         if ( null == s_langNames ) {
@@ -43,10 +50,6 @@ public class DictLangCache {
 
     public static int getLangCode( Context context, String name )
     {
-        if ( null == s_nameToLang ) {
-            s_nameToLang = new HashMap<String,Integer>();
-        }
-        
         int code;
         if ( s_nameToLang.containsKey( name ) ) {
             code = s_nameToLang.get( name );
