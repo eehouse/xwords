@@ -174,16 +174,6 @@ public class GameConfig extends Activity implements View.OnClickListener,
                                             loadPlayers();
                                         }
                                     })
-                .setNegativeButton( R.string.button_cancel, 
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int whichButton ) {
-                                            m_notNetworkedGameCheckbx
-                                                .setChecked( true );
-                                            m_notNetworkedGame = true;
-                                            loadPlayers();
-                                        }
-                                    })
                 .create();
             dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
                     @Override
@@ -254,6 +244,8 @@ public class GameConfig extends Activity implements View.OnClickListener,
         Utils.setText( m_curDialog, R.id.player_name_edit, lp.name );
         Utils.setText( m_curDialog, R.id.password_edit, lp.password );
 
+        final View localSet = m_curDialog.findViewById( R.id.local_player_set );
+
         CheckBox check = (CheckBox)
             m_curDialog.findViewById( R.id.remote_check );
         if ( isServer ) {
@@ -261,15 +253,15 @@ public class GameConfig extends Activity implements View.OnClickListener,
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                   boolean checked ) {
-                        View view
-                            = m_curDialog.findViewById( R.id.local_player_set );
-                        view.setVisibility( checked ? View.GONE : View.VISIBLE );
+                        localSet.setVisibility( checked ? 
+                                                View.GONE : View.VISIBLE );
                     }
                 };
             check.setOnCheckedChangeListener( lstnr );
             check.setVisibility( View.VISIBLE );
         } else {
             check.setVisibility( View.GONE );
+            localSet.setVisibility( View.VISIBLE );
         }
 
         check = (CheckBox)m_curDialog.findViewById( R.id.robot_check );
