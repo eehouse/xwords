@@ -51,8 +51,8 @@ public class CurGameInfo {
     public XWPhoniesChoice phoniesAction;
     public boolean confirmBTConnect;   /* only used for BT */
 
-    private int[] m_visiblePlayers;
-    private int m_nVisiblePlayers;
+    // private int[] m_visiblePlayers;
+    // private int m_nVisiblePlayers;
     private boolean m_inProgress;
 
     public CurGameInfo( Context context ) {
@@ -77,8 +77,6 @@ public class CurGameInfo {
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
             players[ii] = new LocalPlayer( context, ii );
         }
-
-        figureVisible();
     }
 
     public CurGameInfo( CurGameInfo src )
@@ -102,25 +100,21 @@ public class CurGameInfo {
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
             players[ii] = new LocalPlayer( src.players[ii] );
         }
-
-        figureVisible();
     }
 
     public void setServerRole( DeviceRole newRole )
     {
         serverRole = newRole;
-        figureVisible();
-        if ( m_nVisiblePlayers == 0 ) { // must always be one visible player
+        Assert.assertTrue( nPlayers > 0 );
+        if ( nPlayers == 0 ) { // must always be one visible player
             Assert.assertFalse( players[0].isLocal );
             players[0].isLocal = true;
-            figureVisible();
         }
     }
 
     public void setInProgress( boolean inProgress )
     {
         m_inProgress = inProgress;
-        figureVisible();
     }
 
     /** return true if any of the changes made would invalide a game
@@ -156,14 +150,29 @@ public class CurGameInfo {
 
     public int remoteCount()
     {
-        figureVisible();
         int count = 0;
-        for ( int ii = 0; ii < m_nVisiblePlayers; ++ii ) {
-            if ( !players[m_visiblePlayers[ii]].isLocal ) {
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            if ( !players[ii].isLocal ) {
                 ++count;
             }
         }
+        Utils.logf( "remoteCount()=>%d", count );
         return count;
+    }
+
+    public boolean forceRemoteConsistent()
+    {
+        boolean consistent = serverRole == DeviceRole.SERVER_STANDALONE;
+        if ( !consistent ) {
+            if ( remoteCount() == 0 ) {
+                players[0].isLocal = false;
+            } else if ( remoteCount() == nPlayers ) {
+                players[0].isLocal = true;
+            } else {
+                consistent = true; // nothing changed
+            }
+        }
+        return !consistent;
     }
 
     /**
@@ -173,34 +182,34 @@ public class CurGameInfo {
      */
     public void fixup()
     {
-        if ( m_nVisiblePlayers < nPlayers ) {
-            Assert.assertTrue( serverRole == DeviceRole.SERVER_ISCLIENT );
+        // if ( m_nVisiblePlayers < nPlayers ) {
+        //     Assert.assertTrue( serverRole == DeviceRole.SERVER_ISCLIENT );
             
-            for ( int ii = 0; ii < m_nVisiblePlayers; ++ii ) {
-                Assert.assertTrue( m_visiblePlayers[ii] >= ii );
-                if ( m_visiblePlayers[ii] != ii ) {
-                    LocalPlayer tmp = players[ii];
-                    players[ii] = players[m_visiblePlayers[ii]];
-                    players[m_visiblePlayers[ii]] = tmp;
-                    m_visiblePlayers[ii] = ii;
-                }
-            }
+        //     for ( int ii = 0; ii < nPlayers; ++ii ) {
+        //         // Assert.assertTrue( m_visiblePlayers[ii] >= ii );
+        //         if ( m_visiblePlayers[ii] != ii ) {
+        //             LocalPlayer tmp = players[ii];
+        //             players[ii] = players[m_visiblePlayers[ii]];
+        //             players[m_visiblePlayers[ii]] = tmp;
+        //             m_visiblePlayers[ii] = ii;
+        //         }
+        //     }
 
-            nPlayers = m_nVisiblePlayers;
-        }
+        //     nPlayers = m_nVisiblePlayers;
+        // }
 
-        if ( !m_inProgress && serverRole != DeviceRole.SERVER_ISSERVER ) {
-            for ( int ii = 0; ii < nPlayers; ++ii ) {
-                players[ii].isLocal = true;
-            }
-        }
+        // if ( !m_inProgress && serverRole != DeviceRole.SERVER_ISSERVER ) {
+        //     for ( int ii = 0; ii < nPlayers; ++ii ) {
+        //         players[ii].isLocal = true;
+        //     }
+        // }
     }
 
     public String[] visibleNames( Context context )
     {
-        String[] names = new String[m_nVisiblePlayers];
-        for ( int ii = 0; ii < m_nVisiblePlayers; ++ii ) {
-            LocalPlayer lp = players[m_visiblePlayers[ii]];
+        String[] names = new String[nPlayers];
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            LocalPlayer lp = players[ii];
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 names[ii] = lp.name;
                 if ( lp.isRobot ) {
@@ -237,41 +246,13 @@ public class CurGameInfo {
     public String summarizeRole( Context context, GameSummary summary )
     {
         String result = null;
-        if ( null != summary ) {
-            DeviceRole role = serverRole;
-            if ( role != DeviceRole.SERVER_STANDALONE ) {
-                if ( null != summary.conType ) {
-                    boolean isHost = role == DeviceRole.SERVER_ISSERVER;
-                    boolean justListening = false;
-                    int roleID = isHost ? R.string.role_host : R.string.role_guest;
-                    String via;
-                    int summaryID;
-                    switch ( summary.conType ) {
-                    case COMMS_CONN_RELAY:
-                        via = summary.roomName;
-                        summaryID = R.string.summary_fmt_relay;
-                        break;
-                    case COMMS_CONN_SMS:
-                        via = summary.smsPhone;
-                        summaryID = R.string.summary_fmt_sms;
-                        justListening = isHost;
-                        break;
-                    default:
-                        summaryID = 0;
-                        via = null;
-                        Assert.fail();
-                    }
-                    String fmt = context.getString( justListening?
-                                                    R.string.summary_fmt_listening
-                                                    : summaryID );
-                    String roleStr = context.getString( roleID );
-                    if ( justListening ) {
-                        result = String.format( fmt, roleStr );
-                    } else {
-                        result = String.format( fmt, roleStr, via );
-                    }
-                }
-            }
+        if ( null != summary
+             && null != summary.conType 
+             && serverRole != DeviceRole.SERVER_STANDALONE ) {
+            Assert.assertTrue( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
+                               == summary.conType );
+            String fmt = context.getString( R.string.summary_fmt_relay );
+            result = String.format( fmt, summary.roomName );
         }
         return result;
     }
@@ -296,23 +277,11 @@ public class CurGameInfo {
 
     public boolean addPlayer() 
     {
-        boolean added = false;
+        boolean added = nPlayers < MAX_NUM_PLAYERS;
         // We can add either by adding a player, if nPlayers <
         // MAX_NUM_PLAYERS, or by making an unusable player usable.
-        if ( nPlayers < MAX_NUM_PLAYERS ) {
-            ++nPlayers;
-            added = true;
-        } else if ( serverRole == DeviceRole.SERVER_ISCLIENT ) {
-            for ( int ii = 0; ii < players.length; ++ii ) {
-                if ( !players[ii].isLocal ) {
-                    players[ii].isLocal = true;
-                    added = true;
-                    break;
-                }
-            }
-        }
         if ( added ) {
-            figureVisible();
+            ++nPlayers;
         }
         return added;
     }
@@ -335,56 +304,37 @@ public class CurGameInfo {
 
     public boolean delete( int which )
     {
-        boolean canDelete = m_nVisiblePlayers > 1;
+        boolean canDelete = nPlayers > 0;
         if ( canDelete ) {
-            which = m_visiblePlayers[which]; // translate
             LocalPlayer tmp = players[which];
             for ( int ii = which; ii < nPlayers - 1; ++ii ) {
                 moveDown( ii );
             }
             --nPlayers;
             players[nPlayers] = tmp;
-            figureVisible();
         }
         return canDelete;
     }
 
     public boolean juggle()
     {
-        boolean canJuggle = m_nVisiblePlayers > 1;
+        boolean canJuggle = nPlayers > 1;
         if ( canJuggle ) {
             // for each element, exchange with randomly chocsen from
             // range <= to self.
             Random rgen = new Random();
 
-            for ( int ii = m_nVisiblePlayers - 1; ii > 0; --ii ) {
+            for ( int ii = nPlayers - 1; ii > 0; --ii ) {
                 // Contrary to docs, nextInt() comes back negative!
                 int rand = Math.abs(rgen.nextInt()); 
                 int indx = rand % (ii+1);
                 if ( indx != ii ) {
-                    LocalPlayer tmp = players[m_visiblePlayers[ii]];
-                    players[m_visiblePlayers[ii]] 
-                        = players[m_visiblePlayers[indx]];
-                    players[m_visiblePlayers[indx]] = tmp;
+                    LocalPlayer tmp = players[ii];
+                    players[ii] = players[indx];
+                    players[indx] = tmp;
                 }
             }
         }
         return canJuggle;
-    }
-
-    private void figureVisible()
-    {
-        if ( null == m_visiblePlayers ) {
-            m_visiblePlayers = new int[MAX_NUM_PLAYERS];
-        }
-
-        m_nVisiblePlayers = 0;
-        for ( int ii = 0; ii < nPlayers; ++ii ) {
-            if ( m_inProgress
-                 || serverRole != DeviceRole.SERVER_ISCLIENT
-                 || players[ii].isLocal ) {
-                m_visiblePlayers[m_nVisiblePlayers++] = ii;
-            }
-        }
     }
 }
