@@ -213,7 +213,7 @@ public class CurGameInfo {
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 names[ii] = lp.name;
                 if ( lp.isRobot ) {
-                    names[ii] += context.getString( R.string.robot_name );
+                    names[ii] += " " + context.getString( R.string.robot_name );
                 }
             } else {
                 names[ii] = context.getString( R.string.guest_name );
