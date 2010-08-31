@@ -145,7 +145,7 @@
     <string name="robot_name">(robot)</string>
     <string name="guest_name">(Off-device player)</string>
     <string name="password_label">Password</string>
-    <string name="player_edit_title">Player</string>
+    <string name="player_edit_title">Edit player</string>
 
     <string name="players_label_standalone">Players</string>
     <string name="players_label_host">Players (%d local, %d off-device)</string>
@@ -317,7 +317,7 @@
     check off-device players.</string>
     <string name="added_player">Player added to meet two-player
     minimum for multi-device games.</string>
-    <string name="forced_consistent">Adjusted off-device player count.</string>
+    <string name="forced_consistent">Modified first player.</string>
 
     <string name="vs">vs.</string>
     <string name="dictionary">Dictionary:</string>
