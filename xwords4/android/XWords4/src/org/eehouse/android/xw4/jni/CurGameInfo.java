@@ -37,6 +37,7 @@ public class CurGameInfo {
 
     public String dictName;
     public LocalPlayer[] players;
+    public int dictLang;
     public int gameID;
     public int gameSeconds;
     public int nPlayers;
@@ -64,6 +65,7 @@ public class CurGameInfo {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = DeviceRole.SERVER_STANDALONE;
         dictName = CommonPrefs.getDefaultDict( context );
+        dictLang = -1;          // error we can check for.
         hintsNotAllowed = false;
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
@@ -89,6 +91,7 @@ public class CurGameInfo {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = src.serverRole;
         dictName = src.dictName;
+        dictLang = src.dictLang;
         hintsNotAllowed = src.hintsNotAllowed;
         phoniesAction = src.phoniesAction;
         timerEnabled = src.timerEnabled;

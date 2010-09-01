@@ -315,9 +315,11 @@ public class GameConfig extends Activity implements View.OnClickListener,
         GameUtils.loadMakeGame( this, gamePtr, m_giOrig, m_path );
         m_nMoves = XwJNI.model_getNMoves( gamePtr );
         m_giOrig.setInProgress( 0 < m_nMoves );
+        int curSel = listAvailableDicts( m_giOrig.dictName );
+        m_giOrig.dictLang = 
+            DictLangCache.getLangCode( this, 
+                                       GameUtils.dictList( this )[curSel] );
         m_gi = new CurGameInfo( m_giOrig );
-
-        int curSel = listAvailableDicts( m_gi.dictName );
 
         m_carOrig = new CommsAddrRec( this );
         if ( XwJNI.game_hasComms( gamePtr ) ) {
@@ -575,6 +577,8 @@ public class GameConfig extends Activity implements View.OnClickListener,
                 } else {
                     m_gi.dictName = m_dicts[position];
                     Utils.logf( "assigned dictName: " + m_gi.dictName );
+                    m_gi.dictLang = DictLangCache.getLangCode( GameConfig.this, 
+                                                               m_gi.dictName );
                 }
             }
 
