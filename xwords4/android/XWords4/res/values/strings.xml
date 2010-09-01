@@ -162,6 +162,8 @@
     <string name="dict_label">Dictionary</string>
     <string name="role_label">Device role</string>
     <string name="connection_label">Connection</string>
+    <string name="connect_label">Connection (via internet)</string>
+    <string name="room_public">Room is advertised (public)</string>
 
     <string name="configure_role">Configure connection</string>
     <string name="configure_rolef">Configure %s connection</string>
