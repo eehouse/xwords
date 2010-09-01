@@ -46,6 +46,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     gi->gameSeconds = getInt( env, j_gi, "gameSeconds");
     gi->boardSize = getInt( env, j_gi, "boardSize" );
     gi->gameID = getInt( env, j_gi, "gameID" );
+    gi->dictLang = getInt( env, j_gi, "dictLang" );
     gi->robotSmartness = getInt( env, j_gi, "robotSmartness" );
     gi->hintsNotAllowed = getBool( env, j_gi, "hintsNotAllowed" );
     gi->timerEnabled =  getBool( env, j_gi, "timerEnabled" );
@@ -103,6 +104,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     setInt( env, jgi, "gameSeconds", gi->gameSeconds );
     setInt( env, jgi, "boardSize", gi->boardSize );
     setInt( env, jgi, "gameID", gi->gameID );
+    setInt( env, jgi, "dictLang", gi->dictLang );
     setInt( env, jgi, "robotSmartness", gi->robotSmartness );
     setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed );
     setBool( env, jgi, "timerEnabled", gi->timerEnabled );
