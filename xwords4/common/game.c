@@ -361,6 +361,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     replaceStringIfDifferent( mpool, &destGI->dictName, 
                               srcGI->dictName );
 
+    destGI->dictLang = srcGI->dictLang;
     destGI->gameID = srcGI->gameID;
     destGI->gameSeconds = srcGI->gameSeconds;
     destGI->nPlayers = (XP_U8)srcGI->nPlayers;
@@ -438,6 +439,9 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     }
 
     gi->gameID = stream_getU16( stream );
+    if ( strVersion >= STREAM_VERS_DICTLANG ) {
+        gi->dictLang = stream_getU8( stream );
+    }
     if ( gi->timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {
         gi->gameSeconds = stream_getU16( stream );
     }
@@ -481,6 +485,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->confirmBTConnect );
 
     stream_putU16( stream, gi->gameID );
+    stream_putU8( stream, gi->dictLang );
     stream_putU16( stream, gi->gameSeconds );
     
     for ( pl = gi->players, i = 0; i < gi->nPlayers; ++pl, ++i ) {

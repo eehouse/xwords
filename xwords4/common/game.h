@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_DICTLANG 0x0D /* save dict lang code in CurGameInfo */
 #define STREAM_VERS_NUNDONE 0x0C /* save undone tile in model */
 #define STREAM_VERS_GAMESECONDS 0x0B /* save gameSeconds whether or not
                                         timer's enabled */
@@ -47,7 +48,7 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_NUNDONE
+#define CUR_STREAM_VERS STREAM_VERS_DICTLANG
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
@@ -65,6 +66,7 @@ typedef struct CurGameInfo {
     LocalPlayer players[MAX_NUM_PLAYERS];
     XP_U16 gameID;      /* uniquely identifies game */
     XP_U16 gameSeconds; /* for timer */
+    XP_LangCode dictLang;
     XP_U8 nPlayers;
     XP_U8 boardSize;
     DeviceRole serverRole;
