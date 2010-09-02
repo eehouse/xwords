@@ -66,9 +66,16 @@ public class GameConfig extends Activity implements View.OnClickListener,
     private static final int CONFIRM_CHANGE = 6;
 
     private CheckBox m_notNetworkedGameCheckbx;
+    private CheckBox m_joinRoomCheck;
+    private EditText m_roomEdit;
+    private LinearLayout m_publicRoomsSet;
+    private LinearLayout m_privateRoomsSet;
+
     private boolean m_notNetworkedGame;
     private Button m_addPlayerButton;
     private Button m_jugglePlayersButton;
+    private View m_connectSet;  // really a LinearLayout
+    private Spinner m_roomChoose;
     // private Button m_configureButton;
     private String m_path;
     private CurGameInfo m_gi;
@@ -341,12 +348,29 @@ public class GameConfig extends Activity implements View.OnClickListener,
         // m_notNetworkedGameCheckbx.setChecked( true );
         // m_notNetworkedGame = true;
 
+        m_joinRoomCheck = (CheckBox)findViewById(R.id.join_room_check);
+        m_joinRoomCheck.setOnClickListener( this );
+        m_roomEdit = (EditText)findViewById(R.id.room_edit);
+        m_publicRoomsSet = (LinearLayout)findViewById(R.id.public_rooms_set );
+        m_privateRoomsSet = (LinearLayout)findViewById(R.id.private_rooms_set );
+        adjustConnectStuff();
+
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
         m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
         m_jugglePlayersButton.setOnClickListener( this );
+
+        m_connectSet = findViewById(R.id.connect_set);
         // m_configureButton = (Button)findViewById(R.id.configure_role);
         // m_configureButton.setOnClickListener( this );
+
+        m_roomChoose = (Spinner)findViewById(R.id.room_spinner);
+        String[] rooms = { "Room 1", "NSA 1200+", "Some other room" };
+        ArrayAdapter<String> adapter = 
+            new ArrayAdapter<String>( this,
+                                      android.R.layout.simple_spinner_item,
+                                      rooms );
+        m_roomChoose.setAdapter( adapter );
 
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
         m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
@@ -434,7 +458,8 @@ public class GameConfig extends Activity implements View.OnClickListener,
                                 : DeviceRole.SERVER_ISSERVER );
 
             loadPlayers();
-
+        } else if ( m_joinRoomCheck == view ) {
+            adjustConnectStuff();
         // } else if ( m_configureButton == view ) {
         //     int position = m_connectSpinner.getSelectedItemPosition();
         //     switch ( m_types[ position ] ) {
@@ -520,6 +545,8 @@ public class GameConfig extends Activity implements View.OnClickListener,
         m_jugglePlayersButton
             .setVisibility( names.length <= 1 ?
                             View.GONE : View.VISIBLE );
+        m_connectSet.setVisibility( m_notNetworkedGame?
+                                    View.GONE : View.VISIBLE );
 
         if ( ! m_notNetworkedGame
              && ((0 == m_gi.remoteCount() )
@@ -635,6 +662,17 @@ public class GameConfig extends Activity implements View.OnClickListener,
                                    remoteCount );
         }
         ((TextView)findViewById( R.id.players_label )).setText( label );
+    }
+
+    private void adjustConnectStuff()
+    {
+        if ( m_joinRoomCheck.isChecked() ) {
+            m_privateRoomsSet.setVisibility( View.GONE );
+            m_publicRoomsSet.setVisibility( View.VISIBLE );
+        } else {
+            m_privateRoomsSet.setVisibility( View.VISIBLE );
+            m_publicRoomsSet.setVisibility( View.GONE );
+        }
     }
     
     private int connTypeToPos( CommsAddrRec.CommsConnType typ )
