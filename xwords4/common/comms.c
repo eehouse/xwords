@@ -721,8 +721,6 @@ comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr )
 void
 comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
-    XP_LOGF( "%s: seeksPublicRoom: %d", __func__, 
-             addr->u.ip_relay.seeksPublicRoom );
     XP_ASSERT( comms != NULL );
     util_addrChange( comms->util, &comms->addr, addr );
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
@@ -1879,7 +1877,6 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             } else {
                 const CurGameInfo* gameInfo = comms->util->gameInfo;
                 stream_putU8( tmpStream, gameInfo->dictLang );
-                XP_LOGF( "%s: langCode=%d", __func__, gameInfo->dictLang );
             }
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
