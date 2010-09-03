@@ -179,7 +179,6 @@ setObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
     (*env)->DeleteLocalRef( env, cls );
 }
 
-/* return false on failure, e.g. exception raised */
 bool
 getBool( JNIEnv* env, jobject obj, const char* name )
 {
@@ -313,6 +312,10 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
         setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
         setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
         setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
+        setBool( env, jaddr, "ip_relay_seeksPublicRoom",
+                 addr->u.ip_relay.seeksPublicRoom );
+        setBool( env, jaddr, "ip_relay_advertiseRoom",
+                 addr->u.ip_relay.advertiseRoom );
         break;
     case COMMS_CONN_SMS:
         setString( env, jaddr, "sms_phone", addr->u.sms.phone );
@@ -341,6 +344,11 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
                    VSIZE(addr->u.ip_relay.hostName) );
         getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
                    VSIZE(addr->u.ip_relay.invite) );
+        addr->u.ip_relay.seeksPublicRoom =
+            getBool( env, jaddr, "ip_relay_seeksPublicRoom" );
+        addr->u.ip_relay.advertiseRoom =
+            getBool( env, jaddr, "ip_relay_advertiseRoom" );
+
         break;
     case COMMS_CONN_SMS:
         getString( env, jaddr, "sms_phone", addr->u.sms.phone,

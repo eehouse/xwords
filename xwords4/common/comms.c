@@ -431,6 +431,10 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
                               sizeof(addr.u.ip_relay.hostName) );
         addr.u.ip_relay.ipAddr = stream_getU32( stream );
         addr.u.ip_relay.port = stream_getU16( stream );
+        if ( stream_getVersion( stream ) >= STREAM_VERS_DICTLANG ) {
+            addr.u.ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
+            addr.u.ip_relay.advertiseRoom = stream_getBits( stream, 1 );
+        }
         break;
     case COMMS_CONN_SMS:
         stringFromStreamHere( stream, addr.u.sms.phone, 
@@ -605,8 +609,8 @@ static void
 addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 {
     CommsAddrRec addr;
-    XP_MEMCPY( &addr, addrP, sizeof(addr) );
-
+    XP_MEMCPY( &addr, addrP, sizeof(addr) ); /* does this really speed things
+                                                or reduce code size? */
     stream_putU8( stream, addr.conType );
 
     switch( addr.conType ) {
@@ -632,6 +636,8 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
         stringToStream( stream, addr.u.ip_relay.hostName );
         stream_putU32( stream, addr.u.ip_relay.ipAddr );
         stream_putU16( stream, addr.u.ip_relay.port );
+        stream_putBits( stream, 1, addr.u.ip_relay.seeksPublicRoom );
+        stream_putBits( stream, 1, addr.u.ip_relay.advertiseRoom );
         break;
     case COMMS_CONN_SMS:
         stringToStream( stream, addr.u.sms.phone );
@@ -715,6 +721,8 @@ comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr )
 void
 comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
+    XP_LOGF( "%s: seeksPublicRoom: %d", __func__, 
+             addr->u.ip_relay.seeksPublicRoom );
     XP_ASSERT( comms != NULL );
     util_addrChange( comms->util, &comms->addr, addr );
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
@@ -1857,6 +1865,8 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         case XWRELAY_GAME_RECONNECT:
             stream_putU8( tmpStream, XWRELAY_PROTO_VERSION );
             stringToStream( tmpStream, addr.u.ip_relay.invite );
+            stream_putU8( tmpStream, addr.u.ip_relay.seeksPublicRoom );
+            stream_putU8( tmpStream, addr.u.ip_relay.advertiseRoom );
             stream_putU8( tmpStream, comms->r.myHostID );
             XP_ASSERT( cmd == XWRELAY_GAME_RECONNECT
                        || comms->r.myHostID == HOST_ID_NONE
@@ -1866,6 +1876,10 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU16( tmpStream, getChannelSeed(comms) );
             if ( XWRELAY_GAME_RECONNECT == cmd ) {
                 stringToStream( tmpStream, comms->r.connName );
+            } else {
+                const CurGameInfo* gameInfo = comms->util->gameInfo;
+                stream_putU8( tmpStream, gameInfo->dictLang );
+                XP_LOGF( "%s: langCode=%d", __func__, gameInfo->dictLang );
             }
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;

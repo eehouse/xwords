@@ -91,6 +91,8 @@ typedef struct CommsAddrRec {
             XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
             XP_U32 ipAddr;      /* looked up from above */
             XP_U16 port;
+            XP_Bool seeksPublicRoom;
+            XP_Bool advertiseRoom;
         } ip_relay;
         struct {
             /* nothing? */
