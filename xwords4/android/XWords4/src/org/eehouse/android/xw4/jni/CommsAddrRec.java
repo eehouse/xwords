@@ -45,6 +45,8 @@ public class CommsAddrRec {
     public String ip_relay_hostName;
     public InetAddress ip_relay_ipAddr;    // a cache, maybe unused in java
     public int ip_relay_port;
+    public boolean ip_relay_seeksPublicRoom;
+    public boolean ip_relay_advertiseRoom;
 
     // sms case
     public String sms_phone;
@@ -52,9 +54,7 @@ public class CommsAddrRec {
 
     public CommsAddrRec( Context context ) 
     {
-        Utils.logf( "CommsAddrRec() called " );
         conType = CommsConnType.COMMS_CONN_RELAY;
-        ip_relay_invite = "Room 1";
         ip_relay_hostName = CommonPrefs.getDefaultRelayHost( context );
         ip_relay_port = CommonPrefs.getDefaultRelayPort( context );
     }
@@ -81,5 +81,7 @@ public class CommsAddrRec {
         ip_relay_invite = src.ip_relay_invite;
         ip_relay_hostName = src.ip_relay_hostName;
         ip_relay_port = src.ip_relay_port;
+        ip_relay_seeksPublicRoom = src.ip_relay_seeksPublicRoom;
+        ip_relay_advertiseRoom = src.ip_relay_advertiseRoom;
     }
 }

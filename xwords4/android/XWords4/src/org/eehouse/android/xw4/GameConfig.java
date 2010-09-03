@@ -48,6 +48,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ListAdapter;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 import android.database.DataSetObserver;
 import junit.framework.Assert;
@@ -66,8 +67,7 @@ public class GameConfig extends Activity implements View.OnClickListener,
     private static final int CONFIRM_CHANGE = 6;
 
     private CheckBox m_notNetworkedGameCheckbx;
-    private CheckBox m_joinRoomCheck;
-    private EditText m_roomEdit;
+    private CheckBox m_joinPublicCheck;
     private LinearLayout m_publicRoomsSet;
     private LinearLayout m_privateRoomsSet;
 
@@ -348,12 +348,14 @@ public class GameConfig extends Activity implements View.OnClickListener,
         // m_notNetworkedGameCheckbx.setChecked( true );
         // m_notNetworkedGame = true;
 
-        m_joinRoomCheck = (CheckBox)findViewById(R.id.join_room_check);
-        m_joinRoomCheck.setOnClickListener( this );
-        m_roomEdit = (EditText)findViewById(R.id.room_edit);
+        m_joinPublicCheck = (CheckBox)findViewById(R.id.join_public_room_check);
+        m_joinPublicCheck.setOnClickListener( this );
+        m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
+        Utils.setChecked( this, R.id.advertise_new_room_check, 
+                          m_car.ip_relay_advertiseRoom );
         m_publicRoomsSet = (LinearLayout)findViewById(R.id.public_rooms_set );
         m_privateRoomsSet = (LinearLayout)findViewById(R.id.private_rooms_set );
-        adjustConnectStuff();
+        Utils.setText( this, R.id.room_edit, m_car.ip_relay_invite );
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
@@ -371,6 +373,8 @@ public class GameConfig extends Activity implements View.OnClickListener,
                                       android.R.layout.simple_spinner_item,
                                       rooms );
         m_roomChoose.setAdapter( adapter );
+
+        adjustConnectStuff();
 
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
         m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
@@ -458,7 +462,7 @@ public class GameConfig extends Activity implements View.OnClickListener,
                                 : DeviceRole.SERVER_ISSERVER );
 
             loadPlayers();
-        } else if ( m_joinRoomCheck == view ) {
+        } else if ( m_joinPublicCheck == view ) {
             adjustConnectStuff();
         // } else if ( m_configureButton == view ) {
         //     int position = m_connectSpinner.getSelectedItemPosition();
@@ -666,9 +670,21 @@ public class GameConfig extends Activity implements View.OnClickListener,
 
     private void adjustConnectStuff()
     {
-        if ( m_joinRoomCheck.isChecked() ) {
+        if ( m_joinPublicCheck.isChecked() ) {
             m_privateRoomsSet.setVisibility( View.GONE );
             m_publicRoomsSet.setVisibility( View.VISIBLE );
+
+            // make the room spinner match the saved value if present
+            String invite = m_car.ip_relay_invite;
+            ArrayAdapter<String> adapter = 
+                (ArrayAdapter<String>)m_roomChoose.getAdapter();
+            for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
+                if ( adapter.getItem(ii).equals( invite ) ) {
+                    m_roomChoose.setSelection( ii );
+                    break;
+                }
+            }
+
         } else {
             m_privateRoomsSet.setVisibility( View.VISIBLE );
             m_publicRoomsSet.setVisibility( View.GONE );
@@ -750,6 +766,22 @@ public class GameConfig extends Activity implements View.OnClickListener,
 
         int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];
+
+        if ( !m_notNetworkedGame ) {
+            m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
+            Utils.logf( "ip_relay_seeksPublicRoom: %s", 
+                        m_car.ip_relay_seeksPublicRoom?"true":"false" );
+            m_car.ip_relay_advertiseRoom = 
+                Utils.getChecked( this, R.id.advertise_new_room_check );
+            if ( m_car.ip_relay_seeksPublicRoom ) {
+                ArrayAdapter<String> adapter = 
+                    (ArrayAdapter<String>)m_roomChoose.getAdapter();
+                m_car.ip_relay_invite = 
+                    adapter.getItem(m_roomChoose.getSelectedItemPosition());
+            } else {
+                m_car.ip_relay_invite = Utils.getText( this, R.id.room_edit );
+            }
+        }
 
         m_gi.fixup();
 

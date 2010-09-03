@@ -166,6 +166,7 @@
     <string name="room_public">Make new room public</string>
     <string name="join_room">Join public room</string>
     <string name="new_room_hint">New room name</string>
+    <string name="room_public_prompt">Pick room to play in</string>
 
     <string name="configure_role">Configure connection</string>
     <string name="configure_rolef">Configure %s connection</string>

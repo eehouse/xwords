@@ -74,7 +74,7 @@
       <!-- We'll use either the spinner or simple edit text
            depending on whether user is naming room or picking from
            a set one. -->
-      <CheckBox android:id="@+id/join_room_check"
+      <CheckBox android:id="@+id/join_public_room_check"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/join_room"
@@ -93,7 +93,7 @@
                   android:capitalize="none"
                   android:hint="@string/new_room_hint"
                   />
-        <CheckBox android:id="@+id/room_public_check"
+        <CheckBox android:id="@+id/advertise_new_room_check"
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   android:text="@string/room_public"
@@ -111,6 +111,7 @@
                  android:drawSelectorOnTop="true"
                  android:gravity="left"
                  android:layout_weight="1"
+                 android:prompt="@string/room_public_prompt"
                  />
         <ImageButton android:id="@+id/refresh_button"
                      android:layout_width="wrap_content" 
