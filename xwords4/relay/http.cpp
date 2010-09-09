@@ -197,14 +197,22 @@ printStats( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     fprintf( fil, "</table>" );
 }
 
+class HttpInstance {
+ public:
+    HttpInstance( int sock, HttpState* state ) {
+        m_sock = sock;
+        m_state = state;
+    }
+    int m_sock;
+    HttpState* m_state;
+};
+
 static void*
 http_thread_main( void* arg )
 {
-    HttpState* state = (HttpState*)arg;
-
-    sockaddr newaddr;
-    socklen_t siz = sizeof(newaddr);
-    int sock = accept( state->ctrl_sock, &newaddr, &siz );
+    HttpInstance* inst = (HttpInstance*)arg;
+    HttpState* state = inst->m_state;
+    int sock = inst->m_sock;
 
     char buf[512];
     ssize_t totalRead = 0;
@@ -275,6 +283,8 @@ http_thread_main( void* arg )
     }
     close( sock );
 
+    delete inst;
+
     return NULL;
 } /* http_thread_main */
 
@@ -282,13 +292,18 @@ void
 run_http_thread( HttpState* state )
 {
     pthread_t thread;
-    int result = pthread_create( &thread, NULL, 
-                                 http_thread_main, (void*)state );
+    sockaddr newaddr;
+    socklen_t siz = sizeof(newaddr);
+    int sock = accept( state->ctrl_sock, &newaddr, &siz );
+
+    HttpInstance* inst = new HttpInstance( sock, state );
+    int result = pthread_create( &thread, NULL, http_thread_main, 
+                                 (void*)inst );
     if ( 0 == result ) {
         pthread_detach( thread );
     } else {
-        /* logf( XW_LOGERROR, "%s: pthread_create failed: %s", __func__, */
-        /*       strerror(errno) ); */
+        logf( XW_LOGERROR, "%s: pthread_create failed: %s", __func__,
+              strerror(errno) );
     }
 } /* run_http_thread */
 
