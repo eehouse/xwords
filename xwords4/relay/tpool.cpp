@@ -238,7 +238,9 @@ XWThreadPool::real_tpool_main()
 void
 XWThreadPool::interrupt_poll()
 {
+#ifdef LOG_POLL
     logf( XW_LOGINFO, __func__ );
+#endif
     unsigned char byt = 0;
     int nSent = write( m_pipeWrite, &byt, 1 );
     if ( nSent != 1 ) {
@@ -304,7 +306,9 @@ XWThreadPool::real_listener()
         logf( XW_LOGINFO, "polling %s nmillis=%d", log, nMillis );
 #endif
         int nEvents = poll( fds, nSockets, nMillis );
+#ifdef LOG_POLL
         logf( XW_LOGINFO, "back from poll: %d", nEvents );
+#endif
         if ( m_timeToDie ) {
             break;
         }
@@ -317,7 +321,9 @@ XWThreadPool::real_listener()
         } 
 
         if ( fds[0].revents != 0 ) {
+#ifdef LOG_POLL
             logf( XW_LOGINFO, "poll interrupted" );
+#endif
             assert( fds[0].revents == POLLIN );
             unsigned char byt;
             read( fds[0].fd, &byt, 1 );
