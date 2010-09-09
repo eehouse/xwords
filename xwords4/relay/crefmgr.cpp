@@ -513,10 +513,10 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
     logf( XW_LOGINFO, "making new cref: %d", id );
     
     if ( !!ref ) {
-        logf( XW_LOGINFO, "using from free list" );
+        logf( XW_LOGVERBOSE1, "using from free list" );
         ref->ReInit( cookie, connName, id );
     } else {
-        logf( XW_LOGINFO, "calling constructor" );
+        logf( XW_LOGVERBOSE1, "calling constructor" );
         ref = new CookieRef( cookie, connName, id );
     }
 
