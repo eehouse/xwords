@@ -117,7 +117,7 @@ DEFINES += -DXWFEATURE_SLOW_ROBOT
 # should work on any comms transport (even IR, but user experience
 # will be very bad!).  Is particularly useful with BT.  Is not used
 # for relay.
-DEFINES += -DCOMMS_HEARTBEAT
+# DEFINES += -DCOMMS_HEARTBEAT
 endif
 DEFINES += $(STANDALONE)
 

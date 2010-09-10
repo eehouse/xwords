@@ -37,7 +37,7 @@ HASH=$(shell git describe)
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
 LDFLAGS += -pthread -g $(STATIC)
-CPPFLAGS += -DSPAWN_SELF -DRELAY_HEARTBEAT -DDO_HTTP -g -Wall \
+CPPFLAGS += -DSPAWN_SELF -DDO_HTTP -g -Wall \
 	-DSVN_REV=\"$(shell cat $(GITINFO) 2>/dev/null || echo -n $(HASH) )\"
 
 # turn on semaphore debugging
