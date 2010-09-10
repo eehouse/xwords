@@ -145,6 +145,13 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
           ++iter ) {
         CookieRef* cref = iter->second;
 
+        /* Reject immediately if language code or proposed game size don't
+           match. */
+        if ( (cref->GetLangCode() != langCode)
+             || (cref->GetPlayersSought() != nPlayersT) ) {
+            continue;
+        }
+
         if ( !!connName && 0 == strcmp( cref->ConnName(), connName ) ) {
             found = cref;
             /* if ( cref->Lock() ) { */
