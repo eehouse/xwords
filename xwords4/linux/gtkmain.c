@@ -62,7 +62,7 @@
 
 /* static guint gtkSetupClientSocket( GtkAppGlobals* globals, int sock ); */
 #ifndef XWFEATURE_STANDALONE_ONLY
-static void sendOnClose( XWStreamCtxt* stream, void* closure );
+static void sendOnCloseGTK( XWStreamCtxt* stream, void* closure );
 #endif
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void new_game( GtkWidget* widget, GtkAppGlobals* globals );
@@ -311,7 +311,7 @@ relay_status_gtk( void* closure, CommsRelayState state )
 }
 
 static void
-relay_connd_gtk( void* closure, XP_Bool allHere, XP_U16 nMissing )
+relay_connd_gtk( void* XP_UNUSED(closure), XP_Bool allHere, XP_U16 nMissing )
 {
     XP_Bool skip = XP_FALSE;
     char buf[256];
@@ -319,14 +319,9 @@ relay_connd_gtk( void* closure, XP_Bool allHere, XP_U16 nMissing )
     if ( allHere ) {
         snprintf( buf, sizeof(buf), "All expected players have joined.  Play!" );
     } else {
-        GtkAppGlobals* globals = (GtkAppGlobals*)closure;
-        DeviceRole role = globals->cGlobals.params->serverRole;
-        if ( role == SERVER_ISSERVER ) {
-            snprintf( buf, sizeof(buf), "Connected to relay as host; waiting "
+        if ( nMissing > 0 ) {
+            snprintf( buf, sizeof(buf), "Connected to relay; waiting "
                       "for %d player[s].", nMissing );
-        } else if ( nMissing > 0 ) {
-            snprintf( buf, sizeof(buf), "Connected to relay as guest.  Still "
-                      "waiting for %d player[s].", nMissing );
         } else {
             /* an allHere message should be coming immediately, so no
                notification now. */
@@ -368,6 +363,7 @@ relay_error_gtk( void* closure, XWREASON relayErr )
         proc = invoke_new_game_conns;
         break;
     case XWRELAY_ERROR_TOO_MANY:
+    case XWRELAY_ERROR_BADPROTO:
         proc = invoke_new_game;
         break;
     default:
@@ -488,7 +484,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
         } else if ( !isServer ) {
             XWStreamCtxt* stream = 
                 mem_stream_make( MEMPOOL params->vtMgr, globals, CHANNEL_NONE,
-                                 sendOnClose );
+                                 sendOnCloseGTK );
             server_initClientConnection( globals->cGlobals.game.server, 
                                          stream );
 #endif
@@ -785,7 +781,7 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
                                  globals->cGlobals.params->vtMgr,
                                  globals, 
                                  CHANNEL_NONE, 
-                                 sendOnClose );
+                                 sendOnCloseGTK );
             server_initClientConnection( globals->cGlobals.game.server, 
                                          stream );
         }
@@ -1600,7 +1596,7 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
     XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
                                             globals->cGlobals.params->vtMgr,
                                             uc->closure, channelNo, 
-                                            sendOnClose );
+                                            sendOnCloseGTK );
     return stream;
 } /* gtk_util_makeStreamFromAddr */
 #endif
@@ -2042,7 +2038,7 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
 } /* gtk_socket_acceptor */
 
 static void
-sendOnClose( XWStreamCtxt* stream, void* closure )
+sendOnCloseGTK( XWStreamCtxt* stream, void* closure )
 {
     GtkAppGlobals* globals = closure;
 
