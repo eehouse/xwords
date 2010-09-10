@@ -1915,7 +1915,8 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );
             stream_putU16( tmpStream, getChannelSeed(comms) );
-            stringToStream( tmpStream, comms->r.connName );
+            const CurGameInfo* gameInfo = comms->util->gameInfo;
+            stream_putU8( tmpStream, gameInfo->dictLang );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
 
@@ -1934,8 +1935,6 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );
             stream_putU16( tmpStream, getChannelSeed(comms) );
-            const CurGameInfo* gameInfo = comms->util->gameInfo;
-            stream_putU8( tmpStream, gameInfo->dictLang );
             stringToStream( tmpStream, comms->r.connName );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
