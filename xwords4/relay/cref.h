@@ -41,14 +41,16 @@ class CookieMapIterator;        /* forward */
 struct HostRec {
  public:
    HostRec(HostID hostID, int socket, int nPlayersH, int nPlayersS,
-        int seed ) 
+           int seed ) 
         : m_hostID(hostID) 
         , m_socket(socket)
         , m_nPlayersH(nPlayersH) 
         , m_nPlayersS(nPlayersS) 
         , m_seed(seed) 
         , m_lastHeartbeat(uptime()) 
-        {}
+        {
+            ::logf( XW_LOGINFO, "created HostRec with id %d", m_hostID);
+        }
     HostID m_hostID;
     int m_socket;
     int m_nPlayersH;
@@ -92,7 +94,8 @@ class CookieRef {
     int SocketForHost( HostID dest );
 
     bool NeverFullyConnected();
-    bool GameOpen( const char* cookie, bool isNew, bool* alreadyHere );
+    bool AlreadyHere( unsigned short seed, int socket );
+    bool GameOpen( const char* cookie );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -105,8 +108,7 @@ class CookieRef {
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
-    bool _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
-                   int seed );
+    bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed );
     void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                      int seed );
     void _Disconnect(int socket, HostID hostID );
@@ -171,8 +173,7 @@ class CookieRef {
         m_totalSent += nBytes;
     }
 
-    void pushConnectEvent( int socket, HostID srcID,
-                           int nPlayersH, int nPlayersS,
+    void pushConnectEvent( int socket, int nPlayersH, int nPlayersS,
                            int seed );
     void pushReconnectEvent( int socket, HostID srcID,
                              int nPlayersH, int nPlayersS,
@@ -192,7 +193,9 @@ class CookieRef {
 
     void sendResponse( const CRefEvent* evt, bool initial );
     void sendAnyStored( const CRefEvent* evt );
+    void initPlayerCounts( const CRefEvent* evt );
     bool increasePlayerCounts( const CRefEvent* evt, bool reconn );
+    void postCheckAllHere();
     bool hostAlreadyHere( int seed, int socket );
 
     void reducePlayerCounts( int socket );
@@ -211,13 +214,15 @@ class CookieRef {
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
     void sendAllHere( bool initial );
+    void checkSomeMissing( void );
+
     void moveSockets( void );
     bool SeedBelongs( int gameSeed );
     bool SeedsBelong( const char* connName );
     void assignConnName( void );
     void assignHostIds( void );
     
-    HostID nextHostID() { return ++m_nextHostID; }
+    HostID nextHostID() { return m_nextHostID++; }
 
     time_t GetStarttime( void ) { return m_starttime; }
 
@@ -263,6 +268,7 @@ class CookieRef {
     bool m_in_handleEvents;     /* for debugging only */
 
     int m_delayMicros;
+    vector<unsigned short> m_seeds;
 }; /* CookieRef */
 
 #endif

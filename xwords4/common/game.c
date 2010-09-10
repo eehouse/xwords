@@ -50,7 +50,7 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
     if ( !!gi ) {
         XP_U16 ii, remoteCount = 0;
 
-        if ( SERVER_ISSERVER == gi->serverRole ) {
+        if ( SERVER_STANDALONE != gi->serverRole ) {
             for ( ii = 0; ii < gi->nPlayers; ++ii ) {
                 if ( !gi->players[ii].isLocal ) {
                     ++remoteCount;
@@ -65,11 +65,7 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
         }
 
         *nPlayersHere = gi->nPlayers - remoteCount;
-        if ( SERVER_ISCLIENT == gi->serverRole ) {
-            *nPlayersTotal = 0;
-        } else {
-            *nPlayersTotal = gi->nPlayers;
-        }
+        *nPlayersTotal = gi->nPlayers;
     }
 } /* checkServerRole */
 
@@ -388,19 +384,23 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 } /* gi_copy */
 
 XP_U16
-gi_countLocalHumans( const CurGameInfo* gi )
+gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly )
 {
     XP_U16 count = 0;
     XP_U16 nPlayers = gi->nPlayers;
     const LocalPlayer* lp = gi->players;
     while ( nPlayers-- ) {
-        if ( lp->isLocal && !lp->isRobot ) {
-            ++count;
+        if ( lp->isLocal ) {
+            if ( humanOnly && lp->isRobot ) {
+                // skip
+            } else {
+                ++count;
+            }
         }
         ++lp;
     }
     return count;
-} /* gi_countLocalHumans */
+} /* gi_countLocalPlayers */
 
 void
 gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )

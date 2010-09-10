@@ -46,12 +46,9 @@ enum {
                                    incoming connection is why the object was
                                    created.  */
 
-    ,XWS_WAITGUESTS           /* At least one device has connected, but no
+    ,XWS_WAITMORE             /* At least one device has connected, but no
                                    packets have yet arrived to be
                                    forwarded. */
-
-    ,XWS_CHECKING_CONN        /* While we're still not fully connected a
-                                   message comes in */
 
     ,XWS_ALLCONND             /* All devices are connected and ready for the
                                    relay to do its work.  This is the state
@@ -61,11 +58,10 @@ enum {
                                    somebody.  Once [s]he's back we can be
                                    fully connected again. */
 
-    ,XWS_MSGONLY              /* We have no connections but still messages to
-                                 send */
-
     ,XWS_ROOMCHK              /* do we have room for as many players as are
                                  being provided */
+
+    ,XWS_INITINGGAME
 
     ,XWS_DEAD                 /* About to kill the object */
 } XW_RELAY_STATE;
@@ -80,9 +76,8 @@ typedef enum {
     ,XWE_HAVE_ROOM
     ,XWE_TOO_MANY
 
-
-    ,XWE_GUESTCONNECT      /* A device is connecting using the cookie for */
-    ,XWE_HOSTCONNECT       /* this object, as host or guest */
+    ,XWE_DEVCONNECT        /* A device is connecting using the cookie for */
+    /*,XWE_HOSTCONNECT*/   /* this object, as host or guest */
 
     ,XWE_RECONNECT         /* A device is re-connecting using the connID for
                                this object */
@@ -107,6 +102,8 @@ typedef enum {
                               hosts */
     ,XWE_SHUTDOWN          /* shutdown this game */
 
+    ,XWE_INITTEDGAME
+
     ,XWE_ANY               /* wildcard; matches all */
 } XW_RELAY_EVENT;
 
@@ -120,8 +117,8 @@ typedef enum {
     ,XWA_SEND_DUP_ROOM          /* host comes in while game open */
     ,XWA_SEND_NO_ROOM           /* guest comes in when no game open */
     ,XWA_SEND_TOO_MANY
-    ,XWA_SEND_GUEST_RSP
-    ,XWA_SEND_HOST_RSP
+    ,XWA_SEND_INITRSP           /* response to first to connect */
+    ,XWA_SEND_CONNRSP           /* response to rest that connect */
 
     ,XWA_SEND_RERSP
 
@@ -148,6 +145,8 @@ typedef enum {
     ,XWA_HEARTDISCONN
 
     ,XWA_SHUTDOWN
+
+    ,XWA_INITGAME
 
 } XW_RELAY_ACTION;
 

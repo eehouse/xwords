@@ -784,7 +784,7 @@ board_commitTurn( BoardCtxt* board )
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around
                    passwords and peek at tiles. */
-                if ( gi_countLocalHumans( board->gi ) > 1 ) {
+                if ( gi_countLocalPlayers( board->gi, XP_TRUE ) > 1 ) {
                     result = board_hideTray( board );
                 }
 
@@ -3310,7 +3310,7 @@ boardTurnChanged( void* p_board )
 
     nextPlayer = chooseBestSelPlayer( board );
     if ( nextPlayer >= 0 ) {
-        XP_U16 nHumans = gi_countLocalHumans( board->gi );
+        XP_U16 nHumans = gi_countLocalPlayers( board->gi, XP_TRUE );
         selectPlayerImpl( board, nextPlayer, nHumans <= 1, XP_TRUE );
     }
 

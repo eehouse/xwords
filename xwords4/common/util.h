@@ -160,6 +160,7 @@ typedef struct UtilVtable {
 #ifndef XWFEATURE_STANDALONE_ONLY
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
+    void (*m_util_setIsServer)(XW_UtilCtxt* uc, XP_Bool isServer );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -255,6 +256,8 @@ struct XW_UtilCtxt {
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define util_addrChange( uc, addro, addrn ) \
          (uc)->vtable->m_util_addrChange((uc), (addro), (addrn))
+# define util_setIsServer( uc, is ) \
+         (uc)->vtable->m_util_setIsServer((uc), (is))
 # else
 # define util_addrChange( uc, addro, addrn )
 #endif

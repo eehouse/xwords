@@ -197,6 +197,25 @@ logNewState( XW_State old, XW_State newst )
 /*****************************************************************************
  *
  ****************************************************************************/
+#ifndef XWFEATURE_STANDALONE_ONLY
+static void
+syncPlayers( ServerCtxt* server )
+{
+    XP_U16 ii;
+    CurGameInfo* gi = server->vol.gi;
+    LocalPlayer* lp = gi->players;
+    ServerPlayer* player = server->players;
+    for ( ii = 0; ii < gi->nPlayers; ++ii, ++lp, ++player ) {
+        if ( !lp->isLocal/*  && !lp->name */ ) {
+            ++server->nv.pendingRegistrations;
+        }
+        player->deviceIndex = lp->isLocal? SERVER_DEVICE : UNKNOWN_DEVICE;
+    }
+}
+#else
+# define syncPlayers( server )
+#endif
+
 static void
 initServer( ServerCtxt* server )
 {
@@ -211,20 +230,7 @@ initServer( ServerCtxt* server )
         SETSTATE( server, XWSTATE_BEGIN );
     }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-    {
-        XP_U16 ii;
-        CurGameInfo* gi = server->vol.gi;
-        LocalPlayer* lp = gi->players;
-        ServerPlayer* player = server->players;
-        for ( ii = 0; ii < gi->nPlayers; ++ii, ++lp, ++player ) {
-            if ( !lp->isLocal/*  && !lp->name */ ) {
-                ++server->nv.pendingRegistrations;
-            }
-            player->deviceIndex = lp->isLocal? SERVER_DEVICE : UNKNOWN_DEVICE;
-        }
-    }
-#endif
+    syncPlayers( server );
 
     server->nv.nDevices = 1; /* local device (0) is always there */
 } /* initServer */
@@ -467,11 +473,12 @@ server_countTilesInPool( ServerCtxt* server )
 void
 server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    LOG_FUNC();
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers;
     LocalPlayer* lp;
 #ifdef DEBUG
-    XP_U16 i = 0;
+    XP_U16 ii = 0;
 #endif
 
     XP_ASSERT( gi->serverRole == SERVER_ISCLIENT );
@@ -483,13 +490,17 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
         nPlayers = gi->nPlayers;
         XP_ASSERT( nPlayers > 0 );
-        stream_putBits( stream, NPLAYERS_NBITS, nPlayers );
+        stream_putBits( stream, NPLAYERS_NBITS, 
+                        gi_countLocalPlayers( gi, XP_FALSE) );
 
         for ( lp = gi->players; nPlayers-- > 0; ++lp ) {
             XP_UCHAR* name;
             XP_U8 len;
 
-            XP_ASSERT( i++ < MAX_NUM_PLAYERS );
+            XP_ASSERT( ii++ < MAX_NUM_PLAYERS );
+            if ( !lp->isLocal ) {
+                continue;
+            }
 
             stream_putBits( stream, 1, lp->isRobot ); /* better not to send this */
 
@@ -1030,11 +1041,11 @@ sortTilesIf( ServerCtxt* server, XP_S16 turn )
     }
 }
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 /* Called in response to message from server listing all the names of
  * players in the game (in server-assigned order) and their initial
  * tray contents.
  */
-#ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool
 client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 {
@@ -1130,6 +1141,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
             sortTilesIf( server, i );
         }
+
+        syncPlayers( server );
 
         SETSTATE( server, XWSTATE_INTURN );
 

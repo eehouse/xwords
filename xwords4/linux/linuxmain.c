@@ -639,6 +639,16 @@ linux_util_addrChange( XW_UtilCtxt* uc,
 #endif
     }
 }
+
+static void
+linux_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
+{
+    XP_LOGF( "%s(%d)", __func__, isServer );
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    DeviceRole newRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
+    cGlobals->params->serverRole = newRole;
+    cGlobals->params->gi.serverRole = newRole;
+}
 #endif
 
 static unsigned int
@@ -1045,11 +1055,16 @@ main( int argc, char** argv )
         mainParams.needsNewGame = XP_TRUE;
     }
 
-    if ( !isServer ) {
-        if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) {
-            mainParams.needsNewGame = XP_TRUE;
-        }	    
+    if ( 0 < mainParams.info.serverInfo.nRemotePlayers
+         && SERVER_STANDALONE == mainParams.gi.serverRole ) {
+        mainParams.needsNewGame = XP_TRUE;
     }
+
+    /* if ( !isServer ) { */
+    /*     if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) { */
+    /*         mainParams.needsNewGame = XP_TRUE; */
+    /*     }	     */
+    /* } */
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
@@ -1118,6 +1133,7 @@ main( int argc, char** argv )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     mainParams.util->vtable->m_util_addrChange = linux_util_addrChange;
+    mainParams.util->vtable->m_util_setIsServer = linux_util_setIsServer;
 #endif
 
     srandom( seed );	/* init linux random number generator */

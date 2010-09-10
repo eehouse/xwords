@@ -136,67 +136,57 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
           socket, nPlayersH, nPlayersT );
     CookieRef* found = NULL;
 
-    if ( !!cookie || !!connName ) { /* drop if both are null */
+    assert( !!cookie || !!connName );
+    RWReadLock rwl( &m_cookieMapRWLock );
 
-        RWReadLock rwl( &m_cookieMapRWLock );
+    CookieMap::iterator iter;
+    for ( iter = m_cookieMap.begin();
+          NULL == found && iter != m_cookieMap.end();
+          ++iter ) {
+        CookieRef* cref = iter->second;
 
-        CookieMap::iterator iter;
-        for ( iter = m_cookieMap.begin();
-              NULL == found && iter != m_cookieMap.end();
-              ++iter ) {
-            CookieRef* cref = iter->second;
+        if ( !!connName && 0 == strcmp( cref->ConnName(), connName ) ) {
+            found = cref;
+            /* if ( cref->Lock() ) { */
+                    
+            /*     assert( !cookie ||  */
+            /*             0 == strcasecmp( cookie, cref->Cookie() ) ); */
+            /*     if ( cref->SeedBelongs( gameSeed ) ) { */
+            /*         logf( XW_LOGINFO, "%s: SeedBelongs: dup packet?", */
+            /*               __func__ ); */
+            /*         *alreadyHere = true; */
+            /*         found = cref; */
+            /*     } else if ( cref->GameOpen( cookie, false,  */
+            /*                                 alreadyHere ) ) { */
+            /*         found = cref; */
+            /*     } else { */
+            /*         /\* drop if we match on connName and it's not */
+            /*            wanted; must be dup. *\/ */
+            /*         *alreadyHere = true; */
+            /*     } */
+            /*     cref->Unlock(); */
+            /* } */
+        } 
 
-            if ( !!connName ) {
-                if ( 0 == strcmp( cref->ConnName(), connName ) ) {
-                    if ( cref->Lock() ) {
-                        assert( !cookie || 
-                                0 == strcasecmp( cookie, cref->Cookie() ) );
-                        if ( cref->SeedBelongs( gameSeed ) ) {
-                            logf( XW_LOGINFO, "%s: SeedBelongs: dup packet?",
-                                  __func__ );
-                            *alreadyHere = true;
-                            found = cref;
-                        } else if ( cref->GameOpen( cookie, false, 
-                                                    alreadyHere ) ) {
-                            found = cref;
-                        } else {
-                            /* drop if we match on connName and it's not
-                               wanted; must be dup. */
-                            *alreadyHere = true;
-                        }
-                        cref->Unlock();
+        if ( !found && !!cookie ) {
+            if ( 0 == strcasecmp( cref->Cookie(), cookie ) ) {
+                if ( cref->Lock() ) {
+                    assert( cref->ConnName()[0] );
+                    if ( cref->AlreadyHere( gameSeed, -1 ) ) {
+                        found = cref;
+                        *alreadyHere = true;
+                    } else if ( cref->GameOpen( cookie ) ) {
+                        found = cref;
+                    } else if ( cref->HasSocket_locked(socket) ) {
+                        assert( 0 ); /* should have dumped the socket */
+                        logf( XW_LOGINFO, "%s: HasSocket case", __func__);
+                        found = cref;
                     }
-                }
-            } 
-
-            if ( !found && !!cookie ) {
-                if ( 0 == strcasecmp( cref->Cookie(), cookie ) ) {
-                    if ( cref->Lock() ) {
-                        if ( cref->ConnName()[0] ) {
-                            /* if has a connName, we can tell if belongs */
-                            if ( cref->SeedBelongs( gameSeed ) ) {
-                                found = cref;
-                            }
-                        } else if ( !!connName ) {
-                            /* Or, if we have a connName and it doesn't,
-                               perhaps we have its name.  Does our name
-                               contain its other members? */
-                            if ( cref->SeedsBelong( connName ) ) {
-                                found = cref;
-                            }
-                        } else if ( cref->GameOpen( cookie, true, 
-                                                    alreadyHere ) ) {
-                            found = cref;
-                        } else if ( cref->HasSocket_locked(socket) ) {
-                            logf( XW_LOGINFO, "%s: HasSocket case", __func__);
-                            found = cref;
-                        }
-                        cref->Unlock();
-                    }
+                    cref->Unlock();
                 }
             }
         }
-    }
+    } /* for */
 
     logf( XW_LOGINFO, "%s=>%p", __func__, found );
     return found;
@@ -520,6 +510,8 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
         ref = new CookieRef( cookie, connName, id );
     }
 
+    ref->assignConnName();
+
     m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
     logf( XW_LOGINFO, "%s: paired cookie %s/connName %s with cid %d", __func__, 
           (cookie?cookie:"NULL"), connName, ref->GetCookieID() );
@@ -665,8 +657,28 @@ CookieMapIterator::Next()
 // SafeCref
 //////////////////////////////////////////////////////////////////////////////
 
-SafeCref::SafeCref( const char* cookie, const char* connName, HostID hid, 
-                    int socket, int nPlayersH, int nPlayersT, 
+/* connect case */
+SafeCref::SafeCref( const char* cookie, int socket, int nPlayersH, int nPlayersS, 
+                    unsigned short gameSeed, int langCode, bool wantsPublic, 
+                    bool makePublic )
+    : m_cref( NULL )
+    , m_mgr( CRefMgr::Get() )
+    , m_isValid( false )
+{
+    CookieRef* cref;
+
+    cref = m_mgr->getMakeCookieRef_locked( cookie, NULL, 0, socket,
+                                           nPlayersH, nPlayersS, gameSeed );
+    if ( cref != NULL ) {
+        m_locked = cref->Lock();
+        m_cref = cref;
+        m_isValid = true;
+    }
+}
+
+/* REconnect case */
+SafeCref::SafeCref( const char* connName, HostID hid, 
+                    int socket, int nPlayersH, int nPlayersS, 
                     unsigned short gameSeed )
     : m_cref( NULL )
     , m_mgr( CRefMgr::Get() )
@@ -674,8 +686,8 @@ SafeCref::SafeCref( const char* cookie, const char* connName, HostID hid,
 {
     CookieRef* cref;
 
-    cref = m_mgr->getMakeCookieRef_locked( cookie, connName, hid, socket,
-                                           nPlayersH, nPlayersT, gameSeed );
+    cref = m_mgr->getMakeCookieRef_locked( NULL, connName, hid, socket, nPlayersH, 
+                                           nPlayersS, gameSeed );
     if ( cref != NULL ) {
         m_locked = cref->Lock();
         m_cref = cref;

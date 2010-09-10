@@ -177,7 +177,12 @@ class SafeCref {
        CookieRef instance at a time. */
 
  public:
-    SafeCref( const char* cookie, const char* connName, HostID hid, 
+    /* for connect */
+    SafeCref( const char* cookie, int socket, int nPlayersH, int nPlayersS, 
+              unsigned short gameSeed, int langCode, bool wantsPublic, 
+              bool makePublic );
+    /* for reconnect */
+    SafeCref( const char* connName, HostID hid, 
               int socket, int nPlayersH, int nPlayersS, 
               unsigned short gameSeed );
     SafeCref( CookieID cid, bool failOk = false );
@@ -193,10 +198,9 @@ class SafeCref {
             return false;
         }
     }
-    bool Connect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
-                  int seed ) {
+    bool Connect( int socket, int nPlayersH, int nPlayersS, int seed ) {
         if ( IsValid() ) {
-            return m_cref->_Connect( socket, srcID, nPlayersH, nPlayersS, seed );
+            return m_cref->_Connect( socket, nPlayersH, nPlayersS, seed );
         } else {
             return false;
         }

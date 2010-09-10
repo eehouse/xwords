@@ -305,27 +305,32 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
     unsigned char flags = *bufp++;
     XWREASON err = flagsOK( flags );
     if ( err == XWRELAY_ERROR_NONE ) {
-        HostID srcID;
+        /* HostID srcID; */
         unsigned char nPlayersH;
         unsigned char nPlayersT;
         unsigned short gameSeed;
+        unsigned char langCode;
+        unsigned char makePublic, wantsPublic;
         if ( readStr( &bufp, end, cookie, sizeof(cookie) ) 
-             && getNetByte( &bufp, end, &srcID )
+             && getNetByte( &bufp, end, &wantsPublic )
+             && getNetByte( &bufp, end, &makePublic )
+             /* && getNetByte( &bufp, end, &srcID ) */
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT )
-             && getNetShort( &bufp, end, &gameSeed ) ) {
+             && getNetShort( &bufp, end, &gameSeed )
+             && getNetByte( &bufp, end, &langCode ) ) {
+            logf( XW_LOGINFO, "%s(): langCode=%d", __func__, langCode );
 
             /* Make sure second thread can't create new cref for same cookie
                this one just handled.*/
             static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
             MutexLock ml( &s_newCookieLock );
 
-            SafeCref scr( cookie, NULL, srcID, socket, nPlayersH, nPlayersT, 
-                          gameSeed );
+            SafeCref scr( cookie, socket, nPlayersH, nPlayersT, 
+                          gameSeed, langCode, wantsPublic, makePublic );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
-            success = scr.Connect( socket, srcID, nPlayersH, nPlayersT, 
-                                   gameSeed );
+            success = scr.Connect( socket, nPlayersH, nPlayersT, gameSeed );
         } else {
             err = XWRELAY_ERROR_BADPROTO;
         }
@@ -351,25 +356,28 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
         denyConnection( socket, err );
     } else {
         char cookie[MAX_INVITE_LEN+1];
-        char connName[MAX_CONNNAME_LEN+1];
+        char connName[MAX_CONNNAME_LEN+1] = {0};
         HostID srcID;
         unsigned char nPlayersH;
         unsigned char nPlayersT;
         unsigned short gameSeed;
+        unsigned char makePublic, wantsPublic;
+        unsigned char langCode;
 
-        connName[0] = '\0';
         if ( readStr( &bufp, end, cookie, sizeof(cookie) )
+             && getNetByte( &bufp, end, &wantsPublic )
+             && getNetByte( &bufp, end, &makePublic )
              && getNetByte( &bufp, end, &srcID )
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT )
              && getNetShort( &bufp, end, &gameSeed )
+             && getNetByte( &bufp, end, &langCode )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
             static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
             MutexLock ml( &s_newCookieLock );
 
-            SafeCref scr( cookie[0]? cookie : NULL, 
-                          connName[0]? connName : NULL, 
+            SafeCref scr( connName[0]? connName : NULL, 
                           srcID, socket, nPlayersH, 
                           nPlayersT, gameSeed );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
@@ -473,9 +481,11 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     case XWRELAY_GAME_DISCONNECT:
         success = processDisconnect( buf+1, bufLen-1, socket );
         break;
+#ifdef RELAY_HEARTBEAT
     case XWRELAY_HEARTBEAT:
         success = processHeartbeat( buf + 1, bufLen - 1, socket );
         break;
+#endif
     case XWRELAY_MSG_TORELAY:
         success = forwardMessage( buf, bufLen, socket );
         break;
@@ -486,7 +496,7 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     }
 
     if ( !success ) {
-        killSocket( socket, "couldn't forward message" );
+        killSocket( socket, "failure" );
     }
 
     return success;        /* caller defines non-0 as failure */
@@ -1008,6 +1018,7 @@ main( int argc, char** argv )
             }
 #ifdef DO_HTTP
             if ( FD_ISSET( g_http, &rfds ) ) {
+                FD_CLR( g_http, &rfds );
                 run_http_thread( &http_state );
                 --retval;
             }
