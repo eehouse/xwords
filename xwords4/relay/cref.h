@@ -68,8 +68,10 @@ class CookieRef {
     friend class SafeCref;
     friend class CookieMapIterator;
 
-    CookieRef( const char* cookie, const char* connName, CookieID id );
-    void ReInit( const char* cookie, const char* connName, CookieID id );
+    CookieRef( const char* cookie, const char* connName, CookieID id,
+               int langCode );
+    void ReInit( const char* cookie, const char* connName, CookieID id,
+                 int langCode );
     ~CookieRef();
 
     void Clear(void);                /* make clear it's unused */
@@ -225,6 +227,7 @@ class CookieRef {
     HostID nextHostID() { return m_nextHostID++; }
 
     time_t GetStarttime( void ) { return m_starttime; }
+    int GetLangCode( void ) { return m_langCode; }
 
     bool notInUse(void) { return m_cookieID == 0; }
 
@@ -259,6 +262,7 @@ class CookieRef {
     HostID m_nextHostID;
     int m_nPlayersSought;
     int m_nPlayersHere;
+    int m_langCode;
 
     time_t m_starttime;
 

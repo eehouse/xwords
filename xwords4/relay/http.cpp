@@ -121,6 +121,7 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     fprintf( fil, "<table><tr>" );
     fprintf( fil,
              "<th>Room</th>"
+             "<th>Lang</th>"
              "<th>ConnName</th>"
              "<th>ID</th>"
              "<th>For</th>"
@@ -147,6 +148,7 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
 
         fprintf( fil, "<tr>"
                  "<td>%s</td>"  /* name */
+                 "<td>%d</td>"  /* lang */
                  "<td>%s</td>"  /* conn name */
                  "<td>%d</td>"  /* cookie id */
                  "<td>%s</td>"  /* conntime */
@@ -158,6 +160,7 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
                  "<td>%s</td>"  /* Seeds */
                  ,
                  crefInfo->m_cookie.c_str(),
+                 crefInfo->m_langCode,
                  crefInfo->m_connName.c_str(),
                  crefInfo->m_cookieID,
                  conntime,

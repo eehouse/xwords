@@ -80,7 +80,8 @@ SocketsIterator::Next()
     assert( m_locking_thread == pthread_self() )
 
 void
-CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
+CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
+                   int langCode )
 {
     m_cookie = cookie==NULL?"":cookie;
     m_connName = connName==NULL?"":connName;
@@ -95,6 +96,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_gameFull = false;
     m_nHostMsgs = 0;
     m_in_handleEvents = false;
+    m_langCode = langCode;
 
     if ( RelayConfigs::GetConfigs()->GetValueFor( "SEND_DELAY_MILLIS", 
                                                    &m_delayMicros ) ) {
@@ -108,10 +110,11 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
 }
 
 
-CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
+CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id,
+                      int langCode )
 {
     pthread_mutex_init( &m_mutex, NULL );
-    ReInit( cookie, connName, id );
+    ReInit( cookie, connName, id, langCode );
 }
 
 CookieRef::~CookieRef()

@@ -55,6 +55,7 @@ class CrefInfo {
     XW_RELAY_STATE m_curState;
     time_t m_startTime;
     int m_nHosts;
+    int m_langCode;
     string m_hostsIds;
     string m_hostSeeds;
     string m_hostIps;
@@ -102,7 +103,6 @@ class CRefMgr {
     void Disassociate( int socket, CookieRef* cref );
     void Disassociate_locked( int socket, CookieRef* cref );
     void MoveSockets( vector<int> sockets, CookieRef* cref );
-    CookieRef* Clone( const CookieRef* parent );
     pthread_mutex_t* GetWriteMutexForSocket( int socket );
     void RemoveSocketRefs( int socket );
     void PrintSocketInfo( int socket, string& out );
@@ -135,15 +135,16 @@ class CRefMgr {
     CookieRef* getMakeCookieRef_locked( const char* cookie, 
                                         const char* connName,
                                         HostID hid, int socket, int nPlayersH,
-                                        int nPlayersS, int seed );
+                                        int nPlayersS, int langCode, int seed );
     CookieRef* getCookieRef( CookieID cookieID );
     CookieRef* getCookieRef( int socket );
     bool checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
-    CookieRef* AddNew( const char* cookie, const char* connName, CookieID id );
+    CookieRef* AddNew( const char* cookie, const char* connName, CookieID id,
+                       int langCode );
     CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
                                 HostID hid, int socket, int nPlayersH, 
-                                int nPlayersS, int gameSeed, 
+                                int nPlayersS, int gameSeed, int langCode, 
                                 bool* alreadyHere );
 
     CookieID cookieIDForConnName( const char* connName );
