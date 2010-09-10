@@ -794,6 +794,7 @@ main( int argc, char** argv )
     mainParams.undoWhenDone = XP_FALSE;
     mainParams.gi.timerEnabled = XP_FALSE;
     mainParams.gi.robotSmartness = SMART_ROBOT;
+    mainParams.gi.dictLang = -1;
     mainParams.noHeartbeat = XP_FALSE;
     mainParams.nHidden = 0;
     mainParams.needsNewGame = XP_FALSE;
@@ -1043,11 +1044,13 @@ main( int argc, char** argv )
         mainParams.dict = linux_dictionary_make( 
             MPPARM(mainParams.util->mpool) mainParams.gi.dictName );
         XP_ASSERT( !!mainParams.dict );
+        mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
     } else if ( isServer ) {
 #ifdef STUBBED_DICT
         mainParams.dict = make_stubbed_dict( 
             MPPARM_NOCOMMA(mainParams.util->mpool) );
         XP_WARNF( "no dictionary provided: using English stub dict\n" );
+        mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
 #else
         mainParams.needsNewGame = XP_TRUE;
 #endif

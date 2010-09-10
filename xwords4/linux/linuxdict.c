@@ -285,6 +285,8 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             goto closeAndExit;
         }
     }
+    
+    dctx->super.langCode = xloc & 0x7F;
 
     if ( formatOk ) {
         skipBitmaps( dctx, dictF );
