@@ -1117,7 +1117,9 @@ relayCmdToStr( XWRELAY_Cmd cmd )
         CASESTR( XWRELAY_DISCONNECT_YOU );
         CASESTR( XWRELAY_DISCONNECT_OTHER );
         CASESTR( XWRELAY_CONNECTDENIED );
+#ifdef RELAY_HEARTBEAT
         CASESTR( XWRELAY_HEARTBEAT );
+#endif
         CASESTR( XWRELAY_MSG_FROMRELAY );
         CASESTR( XWRELAY_MSG_TORELAY );
     default: 
@@ -1679,7 +1681,7 @@ p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
     LOG_FUNC();
     comms->hbTimerPending = XP_FALSE;
     if (0 ) {
-#ifdef XWFEATURE_RELAY
+#if defined XWFEATURE_RELAY && defined RELAY_HEARTBEAT
     } else  if ( (comms->addr.conType == COMMS_CONN_RELAY ) 
          && (comms->r.heartbeat != HEARTBEAT_NONE) ) {
         send_via_relay( comms, XWRELAY_HEARTBEAT, HOST_ID_NONE, NULL, 0 );
@@ -1915,8 +1917,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );
             stream_putU16( tmpStream, getChannelSeed(comms) );
-            const CurGameInfo* gameInfo = comms->util->gameInfo;
-            stream_putU8( tmpStream, gameInfo->dictLang );
+            stream_putU8( tmpStream, comms->util->gameInfo->dictLang );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
 
@@ -1935,6 +1936,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );
             stream_putU16( tmpStream, getChannelSeed(comms) );
+            stream_putU8( tmpStream, comms->util->gameInfo->dictLang );
             stringToStream( tmpStream, comms->r.connName );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
@@ -1944,7 +1946,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, comms->r.myHostID );
             break;
 
-#ifdef XWFEATURE_RELAY
+#if defined XWFEATURE_RELAY && defined RELAY_HEARTBEAT
         case XWRELAY_HEARTBEAT:
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
