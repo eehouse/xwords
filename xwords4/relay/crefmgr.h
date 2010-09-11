@@ -185,7 +185,7 @@ class SafeCref {
     /* for reconnect */
     SafeCref( const char* connName, HostID hid, 
               int socket, int nPlayersH, int nPlayersS, 
-              unsigned short gameSeed );
+              unsigned short gameSeed, int langCode );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );

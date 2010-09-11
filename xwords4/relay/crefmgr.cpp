@@ -681,7 +681,7 @@ SafeCref::SafeCref( const char* cookie, int socket, int nPlayersH, int nPlayersS
 /* REconnect case */
 SafeCref::SafeCref( const char* connName, HostID hid, 
                     int socket, int nPlayersH, int nPlayersS, 
-                    unsigned short gameSeed )
+                    unsigned short gameSeed, int langCode )
     : m_cref( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
@@ -689,7 +689,7 @@ SafeCref::SafeCref( const char* connName, HostID hid,
     CookieRef* cref;
 
     cref = m_mgr->getMakeCookieRef_locked( NULL, connName, hid, socket, nPlayersH, 
-                                           nPlayersS, -1, gameSeed );
+                                           nPlayersS, langCode, gameSeed );
     if ( cref != NULL ) {
         m_locked = cref->Lock();
         m_cref = cref;

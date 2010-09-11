@@ -164,7 +164,9 @@ cmdToStr( XWRELAY_Cmd cmd )
         CASESTR(XWRELAY_DISCONNECT_YOU);
         CASESTR(XWRELAY_DISCONNECT_OTHER);
         CASESTR(XWRELAY_CONNECTDENIED);
+#ifdef RELAY_HEARTBEAT
         CASESTR(XWRELAY_HEARTBEAT);
+#endif
         CASESTR(XWRELAY_MSG_FROMRELAY);
         CASESTR(XWRELAY_MSG_TORELAY);
     default:
@@ -379,7 +381,7 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
 
             SafeCref scr( connName[0]? connName : NULL, 
                           srcID, socket, nPlayersH, 
-                          nPlayersT, gameSeed );
+                          nPlayersT, gameSeed, langCode );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
                                      gameSeed );
         }
