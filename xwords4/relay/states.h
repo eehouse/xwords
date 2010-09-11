@@ -58,6 +58,9 @@ enum {
                                    somebody.  Once [s]he's back we can be
                                    fully connected again. */
 
+    ,XWS_MSGONLY              /* We have no connections but still messages to
+                                 send */
+
     ,XWS_ROOMCHK              /* do we have room for as many players as are
                                  being provided */
 
