@@ -1,3 +1,5 @@
+(This file is out-of-date and the instructions it contains don't work.)
+
 This directory contains the desktop Linux port of Crosswords.
 
 To build, run a shell in this directory and type
