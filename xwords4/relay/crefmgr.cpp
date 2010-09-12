@@ -64,11 +64,14 @@ CRefMgr::CRefMgr()
     pthread_mutex_init( &m_roomsFilledMutex, NULL );
     pthread_mutex_init( &m_freeList_mutex, NULL );
     pthread_rwlock_init( &m_cookieMapRWLock, NULL );
+    m_db = new DBMgr();
 }
 
 CRefMgr::~CRefMgr()
 {
     assert( this == s_instance );
+
+    delete m_db;
 
     pthread_mutex_destroy( &m_freeList_mutex );
     pthread_rwlock_destroy( &m_cookieMapRWLock );
@@ -339,7 +342,9 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
     cref = FindOpenGameFor( cookie, connName, hid, socket, nPlayersH, nPlayersT,
                             gameSeed, langCode, &alreadyHere );
     if ( cref == NULL && !alreadyHere ) {
-        cref = AddNew( cookie, connName, nextCID( NULL ), langCode );
+        CookieID cid = nextCID( NULL );
+        cref = AddNew( cookie, connName, cid, langCode );
+        m_db->AddNew( cookie, connName, cid, langCode, nPlayersT, nPlayersH );
     }
 
     return cref;

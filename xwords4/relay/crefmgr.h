@@ -25,6 +25,7 @@
 #include <list>
 
 #include "cref.h"
+#include "dbmgr.h"
 #include "mlock.h"
 
 typedef map<CookieID,CookieRef*> CookieMap;
@@ -167,6 +168,8 @@ class CRefMgr {
 
     time_t m_startTime;
     string m_ports;
+
+    DBMgr* m_db;
 
     friend class CookieMapIterator;
 }; /* CRefMgr */
