@@ -1628,7 +1628,6 @@ getPlayerTime( ServerCtxt* server, XWStreamCtxt* stream, XP_U16 turn )
 static void
 nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 {
-    ServerPlayer* player;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
     XP_U16 playerTilesLeft;
     XP_S16 currentTurn = server->nv.currentTurn;
@@ -1649,7 +1648,6 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 
     if ( (playerTilesLeft > 0) && tileCountsOk(server) && NPASSES_OK(server) ){
 
-        player = &server->players[nxtTurn];
         setTurn( server, nxtTurn );
 
     } else {
