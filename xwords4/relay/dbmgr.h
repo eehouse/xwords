@@ -34,6 +34,7 @@ class DBMgr {
 
  private:
     PGconn* m_pgconn;
+    int m_nextCID;
 }; /* DBMgr */
 
 

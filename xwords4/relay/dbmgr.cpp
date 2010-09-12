@@ -19,6 +19,7 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include "dbmgr.h"
 #include "xwrelay_priv.h"
@@ -33,6 +34,18 @@ DBMgr::DBMgr()
 
     ConnStatusType status = PQstatus( m_pgconn );
     assert( status == CONNECTION_OK );
+
+    /* Now figure out what the largest cid currently is.  There must be a way
+       to get postgres to do this for me.... */
+    const char* query = "SELECT cid FROM games ORDER BY - cid LIMIT 1";
+    PGresult* result = PQexec( m_pgconn, query );
+    if ( 0 == PQntuples( result ) ) {
+        m_nextCID = 1;
+    } else {
+        char* value = PQgetvalue( result, 0, 0 );
+        m_nextCID = 1 + atoi( value );
+    }
+    logf( XW_LOGINFO, "%s: m_nextCID=%d", __func__, m_nextCID );
 }
  
 DBMgr::~DBMgr()
@@ -50,10 +63,12 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !cookie ) cookie = "";
     if ( !connName ) connName = "";
 
-    const char* fmt = "INSERT INTO games (cookie, connName, nTotal, nHere, lang) "
-        "VALUES( '%s', '%s', %d, %d, %d )";
+    const char* fmt = "INSERT INTO games "
+        "(cid, cookie, connName, nTotal, nHere, lang) "
+        "VALUES( %d, '%s', '%s', %d, %d, %d )";
     char buf[256];
-    snprintf( buf, sizeof(buf), fmt, cookie, connName, nPlayersT, nPlayersH, langCode );
+    snprintf( buf, sizeof(buf), fmt, m_nextCID++, cookie, connName, 
+              nPlayersT, nPlayersH, langCode );
     logf( XW_LOGINFO, "passing %s", buf );
     PGresult* result = PQexec( m_pgconn, buf );
 #else
@@ -79,3 +94,20 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 #endif
     logf( XW_LOGINFO, "PQexecParams=>%d", result );
 }
+
+
+/*
+  Schema:
+  CREATE TABLE games ( 
+  cid integer PRIMARY KEY,
+  cookie VARCHAR(32),
+  connName VARCHAR(64) UNIQUE,
+  nTotal INTEGER,
+  nHere INTEGER, 
+  lang INTEGER,
+  ctime TIMESTAMP,
+  mtime TIMESTAMP
+);
+ */
+
+

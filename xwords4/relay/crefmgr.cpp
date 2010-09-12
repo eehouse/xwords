@@ -344,7 +344,8 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
     if ( cref == NULL && !alreadyHere ) {
         CookieID cid = nextCID( NULL );
         cref = AddNew( cookie, connName, cid, langCode );
-        m_db->AddNew( cookie, connName, cid, langCode, nPlayersT, nPlayersH );
+        m_db->AddNew( cookie, cref->ConnName(), cid, langCode, 
+                      nPlayersT, nPlayersH );
     }
 
     return cref;
