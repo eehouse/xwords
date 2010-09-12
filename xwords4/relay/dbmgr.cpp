@@ -64,6 +64,9 @@ DBMgr::~DBMgr()
 {
     logf( XW_LOGINFO, "%s called", __func__ );
     PQfinish( m_pgconn );
+
+    assert( s_instance == this );
+    s_instance = NULL;
 }
 
 void
@@ -76,8 +79,8 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !connName ) connName = "";
 
     const char* fmt = "INSERT INTO games "
-        "(cid, cookie, connName, nTotal, nHere, lang) "
-        "VALUES( %d, '%s', '%s', %d, %d, %d )";
+        "(cid, cookie, connName, nTotal, nHere, lang, ctime) "
+        "VALUES( %d, '%s', '%s', %d, %d, %d, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
               nPlayersT, nPlayersH, langCode );
