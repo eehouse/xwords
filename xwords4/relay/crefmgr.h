@@ -78,10 +78,12 @@ class CRefMgr {
        it.
      */
 
+ private:
+    CRefMgr();
+
  public:
     static CRefMgr* Get();
 
-    CRefMgr();
     ~CRefMgr();
 
     void CloseAll();

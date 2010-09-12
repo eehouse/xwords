@@ -26,15 +26,22 @@
 
 class DBMgr {
  public:
-    DBMgr();
+    static DBMgr* Get();
+
     ~DBMgr();
 
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
                  int langCode, int nPlayersT, int nPlayersH );
 
+    CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
+                       int nPlayersH );
+
+    void AddPlayers( const char* connName, int nToAdd );
+
  private:
+    DBMgr();
     PGconn* m_pgconn;
-    int m_nextCID;
+    //int m_nextCID;
 }; /* DBMgr */
 
 

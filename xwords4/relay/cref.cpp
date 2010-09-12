@@ -833,6 +833,8 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
         assert( m_nPlayersHere <= m_nPlayersSought );
         addHost = true;
 
+        DBMgr::Get()->AddPlayers( ConnName(), nPlayersH );
+
         /* if ( m_nPlayersHere == m_nPlayersSought ) { /\* complete! *\/ */
         /*     newEvt = XWE_ALLHERE; */
         /* } else { */

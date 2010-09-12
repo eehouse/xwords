@@ -64,7 +64,7 @@ CRefMgr::CRefMgr()
     pthread_mutex_init( &m_roomsFilledMutex, NULL );
     pthread_mutex_init( &m_freeList_mutex, NULL );
     pthread_rwlock_init( &m_cookieMapRWLock, NULL );
-    m_db = new DBMgr();
+    m_db = DBMgr::Get();
 }
 
 CRefMgr::~CRefMgr()
@@ -134,6 +134,14 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                           HostID hid, int socket, int nPlayersH, int nPlayersT,
                           int gameSeed, int langCode, bool* alreadyHere )
 {
+#if 1
+    CookieRef* found = NULL;
+    CookieID cid = m_db->FindOpen( cookie, langCode, nPlayersT, nPlayersH );
+    if ( cid > 0 ) {
+        found = getCookieRef_impl( cid );
+    }
+    return found;
+#else
     logf( XW_LOGINFO, "%s(cookie=%s,connName=%s,hid=%d,seed=%x,socket=%d,"
           "here=%d,total=%d)", __func__, cookie, connName, hid, gameSeed, 
           socket, nPlayersH, nPlayersT );
@@ -200,6 +208,7 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
 
     logf( XW_LOGINFO, "%s=>%p", __func__, found );
     return found;
+#endif
 } /* FindOpenGameFor */
 
 CookieID
