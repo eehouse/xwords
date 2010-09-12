@@ -18,17 +18,19 @@
 
 CXX = g++
 CC=$(CXX)
-SRC = xwrelay.cpp \
+SRC = \
+	configs.cpp \
 	cref.cpp \
+	crefmgr.cpp \
 	ctrl.cpp \
+	dbmgr.cpp \
 	http.cpp \
-	tpool.cpp \
+	lstnrmgr.cpp \
+	permid.cpp \
 	states.cpp \
 	timermgr.cpp \
-	configs.cpp \
-	crefmgr.cpp \
-	permid.cpp \
-	lstnrmgr.cpp \
+	tpool.cpp \
+	xwrelay.cpp \
 
 # STATIC ?= -static
 GITINFO = gitversion.txt
@@ -36,8 +38,11 @@ HASH=$(shell git describe)
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
-LDFLAGS += -pthread -g $(STATIC)
+LDFLAGS += -pthread -g $(STATIC) \
+	-L$(shell pg_config --libdir) -lpq
+
 CPPFLAGS += -DSPAWN_SELF -DDO_HTTP -g -Wall \
+	-I $(shell pg_config --includedir) \
 	-DSVN_REV=\"$(shell cat $(GITINFO) 2>/dev/null || echo -n $(HASH) )\"
 
 # turn on semaphore debugging
