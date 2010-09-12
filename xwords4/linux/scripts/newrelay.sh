@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DICT=./dict.xwd
+DICT=${DICT:-./dict.xwd}
 COOKIE=${COOKIE:-foo}
 NGAMES=${NGAMES:-1}
 NPLAYERS=${NPLAYERS:-2}
@@ -8,7 +8,7 @@ NPLAYERS=${NPLAYERS:-2}
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in COOKIE NGAMES NPLAYERS; do
+    for VAR in COOKIE DICT NGAMES NPLAYERS; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 0
