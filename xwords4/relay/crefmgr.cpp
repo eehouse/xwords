@@ -352,9 +352,8 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
                             gameSeed, langCode, &alreadyHere );
     if ( cref == NULL && !alreadyHere ) {
         CookieID cid = nextCID( NULL );
-        cref = AddNew( cookie, connName, cid, langCode );
-        m_db->AddNew( cookie, cref->ConnName(), cid, langCode, 
-                      nPlayersT, nPlayersH );
+        cref = AddNew( cookie, connName, cid, langCode, nPlayersT );
+        m_db->AddNew( cookie, cref->ConnName(), cid, langCode, nPlayersT );
     }
 
     return cref;
@@ -507,7 +506,7 @@ CRefMgr::heartbeatProc( void* closure )
 
 CookieRef*
 CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id,
-                 int langCode )
+                 int langCode, int nPlayers )
 {
     /* PENDING: should this return a locked cref? */
     logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, cid=%d)", __func__,
@@ -520,10 +519,10 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id,
     
     if ( !!ref ) {
         logf( XW_LOGVERBOSE1, "using from free list" );
-        ref->ReInit( cookie, connName, id, langCode );
+        ref->ReInit( cookie, connName, id, langCode, nPlayers );
     } else {
         logf( XW_LOGVERBOSE1, "calling constructor" );
-        ref = new CookieRef( cookie, connName, id, langCode );
+        ref = new CookieRef( cookie, connName, id, langCode, nPlayers );
     }
 
     ref->assignConnName();

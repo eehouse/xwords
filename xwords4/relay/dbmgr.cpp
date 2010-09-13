@@ -71,7 +71,7 @@ DBMgr::~DBMgr()
 
 void
 DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid, 
-               int langCode, int nPlayersT, int nPlayersH )
+               int langCode, int nPlayersT )
 {         
 
 #if 1
@@ -83,14 +83,13 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
         "VALUES( %d, '%s', '%s', %d, %d, %d, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
-              nPlayersT, nPlayersH, langCode );
+              nPlayersT, 0, langCode );
     logf( XW_LOGINFO, "passing %s", buf );
     PGresult* result = PQexec( m_pgconn, buf );
     PQclear( result );
 #else
     const char* command = "INSERT INTO games (cookie, connName, ntotal, nhere, lang) "
         "VALUES( $1, $2, $3, $4, $5 )";
-    char nPlayersHBuf[4];
     char nPlayersTBuf[4];
     char langBuf[4];
 
@@ -161,5 +160,10 @@ DBMgr::AddPlayers( const char* connName, int nToAdd )
   ctime TIMESTAMP,
   mtime TIMESTAMP
 );
+
+  May also want
+  seeds INTEGER ARRAY,
+  ipAddresses INTEGER ARRAY,
+
         
  */

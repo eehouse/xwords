@@ -31,7 +31,7 @@ class DBMgr {
     ~DBMgr();
 
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
-                 int langCode, int nPlayersT, int nPlayersH );
+                 int langCode, int nPlayersT );
 
     CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
                        int nPlayersH );

@@ -64,8 +64,6 @@ enum {
     ,XWS_ROOMCHK              /* do we have room for as many players as are
                                  being provided */
 
-    ,XWS_INITINGGAME
-
     ,XWS_DEAD                 /* About to kill the object */
 } XW_RELAY_STATE;
 
@@ -104,8 +102,6 @@ typedef enum {
     ,XWE_NOMOREMSGS        /* No messages are stored here for disconnected
                               hosts */
     ,XWE_SHUTDOWN          /* shutdown this game */
-
-    ,XWE_INITTEDGAME
 
     ,XWE_ANY               /* wildcard; matches all */
 } XW_RELAY_EVENT;
@@ -148,8 +144,6 @@ typedef enum {
     ,XWA_HEARTDISCONN
 
     ,XWA_SHUTDOWN
-
-    ,XWA_INITGAME
 
 } XW_RELAY_ACTION;
 

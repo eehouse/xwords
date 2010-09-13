@@ -81,7 +81,7 @@ SocketsIterator::Next()
 
 void
 CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
-                   int langCode )
+                   int langCode, int nPlayers )
 {
     m_cookie = cookie==NULL?"":cookie;
     m_connName = connName==NULL?"":connName;
@@ -89,7 +89,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     m_totalSent = 0;
     m_curState = XWS_INITED;
     m_nextHostID = HOST_ID_SERVER;
-    m_nPlayersSought = 0;
+    m_nPlayersSought = nPlayers;
     m_nPlayersHere = 0;
     m_locking_thread = 0;
     m_starttime = uptime();
@@ -111,10 +111,10 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
 
 
 CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id,
-                      int langCode )
+                      int langCode, int nPlayers )
 {
     pthread_mutex_init( &m_mutex, NULL );
-    ReInit( cookie, connName, id, langCode );
+    ReInit( cookie, connName, id, langCode, nPlayers );
 }
 
 CookieRef::~CookieRef()
@@ -553,11 +553,6 @@ CookieRef::handleEvents()
                 checkHaveRoom( &evt );
                 break;
 
-            case XWA_SEND_INITRSP:
-                setAllConnectedTimer();
-                sendResponse( &evt, true );
-                break;
-
             case XWA_SEND_CONNRSP:
                 if ( increasePlayerCounts( &evt, false ) ) {
                     setAllConnectedTimer();
@@ -659,14 +654,6 @@ CookieRef::handleEvents()
                 }
                 break;
 
-            case XWA_INITGAME: {
-                initPlayerCounts( &evt );
-                CRefEvent initedevt( XWE_INITTEDGAME );
-                initedevt.u.con = evt.u.con;
-                m_eventQueue.push_back( initedevt );
-            }
-                break;
-
             case XWA_NONE: 
                 /* nothing to do for these */
                 break;
@@ -759,37 +746,19 @@ CookieRef::send_stored_messages( HostID dest, int socket )
     }
 } /* send_stored_messages */
 
-void
-CookieRef::initPlayerCounts( const CRefEvent* evt )
-{
-    assert( evt->type == XWE_DEVCONNECT );
-    assert( m_nPlayersSought == 0 && m_nPlayersHere == 0 );
-    m_nPlayersSought = evt->u.con.nPlayersS;
-    m_nPlayersHere = evt->u.con.nPlayersH;
-
-    HostRec hr( evt->u.con.srcID, evt->u.con.socket, evt->u.con.nPlayersH, 
-                evt->u.con.nPlayersS, evt->u.con.seed );
-    m_sockets.push_back( hr );
-
-    assert( !AlreadyHere( evt->u.con.seed, -1 ) );
-    m_seeds.push_back( evt->u.con.seed );
-}
-
 bool
 CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
 {
     int nPlayersH = evt->u.con.nPlayersH;
-    int nPlayersS = evt->u.con.nPlayersS;
-    assert( nPlayersS > 0 );    /* catch earlier; assert here */
     int socket = evt->u.con.socket;
     int seed = evt->u.con.seed;
     bool addHost = false;
     /* XW_RELAY_EVENT newEvt = XWE_NONE; */
 
     assert( m_nPlayersSought > 0 );
+    assert( m_nPlayersSought == evt->u.con.nPlayersS );
 
-    logf( XW_LOGINFO, "%s: nPlayersH=%d, "
-          "nPlayersS=%d", __func__, nPlayersH, nPlayersS );
+    logf( XW_LOGINFO, "%s: nPlayersH=%d", __func__, nPlayersH );
 
     ASSERT_LOCKED();
 
@@ -804,15 +773,6 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
        mucking with me. */
 
     if ( reconn ) {
-        if ( nPlayersS > 0 ) {
-            if ( 0 != m_nPlayersSought ) {
-                logf( XW_LOGERROR, 
-                      "already have m_nPlayersSought: %d but new value %d",
-                      m_nPlayersSought, nPlayersS );
-                goto drop;
-            }
-            m_nPlayersSought = nPlayersS;
-        }
         if ( 0 != m_nPlayersSought && 
              m_nPlayersHere + nPlayersH > m_nPlayersSought ) {
             logf( XW_LOGERROR, "too many new players provided: %d > %d",
@@ -828,7 +788,6 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
         /* } */
         addHost = true;
     } else {      /* a host; init values */
-        assert( m_nPlayersSought == nPlayersS );
         m_nPlayersHere += nPlayersH;
         assert( m_nPlayersHere <= m_nPlayersSought );
         addHost = true;
@@ -872,7 +831,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
               "socket=%d (size=%d)", 
               __func__, hostid, socket, m_sockets.size());
 
-        HostRec hr( hostid, socket, nPlayersH, nPlayersS, seed );
+        HostRec hr( hostid, socket, nPlayersH, seed );
         m_sockets.push_back( hr );
 
         assert( !AlreadyHere( evt->u.con.seed, -1 ) );
@@ -1122,23 +1081,19 @@ CookieRef::checkSomeMissing( void )
 {
     logf( XW_LOGINFO, "%s", __func__ );
     int count = 0;
-    int nPlayersS;
 
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         count += iter->m_nPlayersH;
-        if ( iter != m_sockets.begin() ) {
-            assert( iter->m_nPlayersS == nPlayersS );
-        } else {
-            nPlayersS = iter->m_nPlayersS;
-        }
     }
+    /* Don't really need the iterator above.... */
+    assert( count == m_nPlayersHere );
 
     logf( XW_LOGINFO, "%s; count=%d; nPlayersS=%d", __func__,
-          count, nPlayersS );
+          count, m_nPlayersSought );
 
-    assert( count <= nPlayersS );
-    if ( count < nPlayersS ) {
+    assert( count <= m_nPlayersSought );
+    if ( count < m_nPlayersSought ) {
         CRefEvent evt( XWE_SOMEMISSING );
         m_eventQueue.push_back( evt );
     }

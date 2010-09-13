@@ -144,7 +144,7 @@ class CRefMgr {
     bool checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID id,
-                       int langCode );
+                       int langCode, int nPlayers );
     CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
                                 HostID hid, int socket, int nPlayersH, 
                                 int nPlayersS, int gameSeed, int langCode, 

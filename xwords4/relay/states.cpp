@@ -62,10 +62,9 @@ typedef struct StateTable {
 
 static StateTable g_stateTable[] = {
 
-{ XWS_INITED,         XWE_DEVCONNECT,   XWA_INITGAME,       XWS_INITINGGAME },
-{ XWS_INITINGGAME,    XWE_INITTEDGAME,  XWA_SEND_INITRSP,   XWS_WAITMORE },
-
+{ XWS_INITED,         XWE_DEVCONNECT,   XWA_SEND_CONNRSP,   XWS_CHK_ALLHERE },
 { XWS_WAITMORE,       XWE_DEVCONNECT,   XWA_SEND_CONNRSP,   XWS_CHK_ALLHERE },
+
 { XWS_WAITMORE,       XWE_RECONNECT,    XWA_SEND_RERSP,     XWS_WAITMORE },
 
 { XWS_ALLCONND,       XWE_RECONNECT,    XWA_SEND_RERSP,     XWS_ALLCONND },
@@ -182,7 +181,6 @@ stateString( XW_RELAY_STATE state )
         CASESTR(XWS_CHK_ALLHERE_2);
         CASESTR(XWS_CHKCOUNTS_INIT);
         CASESTR(XWS_ROOMCHK);
-        CASESTR(XWS_INITINGGAME);
     default:
         assert(0);
     }
@@ -217,7 +215,6 @@ eventString( XW_RELAY_EVENT evt )
         CASESTR(XWE_SOMEMISSING);
         CASESTR(XWE_TOO_MANY);
         CASESTR(XWE_HAVE_ROOM);
-        CASESTR(XWE_INITTEDGAME);
 
         CASESTR(XWE_SHUTDOWN);
     default:
@@ -251,7 +248,6 @@ actString( XW_RELAY_ACTION act )
         CASESTR(XWA_SHUTDOWN);
         CASESTR(XWA_CHECK_HAVE_ROOM);
         CASESTR(XWA_NOTE_EMPTY);
-        CASESTR(XWA_INITGAME);
     default:
         assert(0);
     }
