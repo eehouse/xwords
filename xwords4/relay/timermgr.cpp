@@ -57,6 +57,7 @@ TimerMgr::SetTimer( time_t inMillis, TimerProc proc, void* closure,
     MutexLock ml( &m_timersMutex );
 
     if ( getTimer( proc, closure ) ) {
+        logf( XW_LOGINFO, "%s: clearing old timer", __func__ );
         clearTimerImpl( proc, closure );
     }
 

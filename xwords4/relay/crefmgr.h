@@ -225,6 +225,14 @@ class SafeCref {
             m_cref->_Disconnect( socket, hostID );
         }
     }
+    bool HandleAck(HostID hostID ) {
+        if ( IsValid() ) {
+            m_cref->_HandleAck( hostID );
+            return true;
+        } else {
+            return false;
+        }
+    }
     void Shutdown() {
         if ( IsValid() ) {
             m_cref->_Shutdown();
@@ -260,6 +268,11 @@ class SafeCref {
     void CheckAllConnected() {
         if ( IsValid() ) {
             m_cref->_CheckAllConnected();
+        }
+    }
+    void CheckNotAcked() {
+        if ( IsValid() ) {
+            m_cref->_CheckNotAcked();
         }
     }
     const char* Cookie() { 

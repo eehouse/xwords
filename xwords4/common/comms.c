@@ -1079,6 +1079,12 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     return result;
 } /* sendMsg */
 
+static void
+send_ack( CommsCtxt* comms )
+{
+    send_via_relay( comms, XWRELAY_ACK, comms->r.myHostID, NULL, 0 );
+}
+
 XP_S16
 comms_resendAll( CommsCtxt* comms )
 {
@@ -1190,6 +1196,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 
     case XWRELAY_CONNECT_RESP:
         got_connect_cmd( comms, stream, XP_FALSE );
+        send_ack( comms );
         break;
     case XWRELAY_RECONNECT_RESP:
         got_connect_cmd( comms, stream, XP_TRUE );
@@ -1939,6 +1946,10 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, comms->util->gameInfo->dictLang );
             stringToStream( tmpStream, comms->r.connName );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
+            break;
+
+        case XWRELAY_ACK:
+            stream_putU8( tmpStream, destID );
             break;
 
         case XWRELAY_GAME_DISCONNECT:

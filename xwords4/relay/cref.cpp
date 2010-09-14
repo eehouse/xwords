@@ -97,6 +97,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     m_nHostMsgs = 0;
     m_in_handleEvents = false;
     m_langCode = langCode;
+    m_nPendingAcks = 0;
 
     if ( RelayConfigs::GetConfigs()->GetValueFor( "SEND_DELAY_MILLIS", 
                                                    &m_delayMicros ) ) {
@@ -213,6 +214,17 @@ CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
         pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
         handleEvents();
     }
+}
+
+void
+CookieRef::_HandleAck( HostID hostID )
+{
+    assert( m_nPendingAcks > 0 && m_nPendingAcks <= 4 );
+    XW_RELAY_EVENT newEvt = m_nPendingAcks == 1? XWE_GOTLASTACK : XWE_GOTONEACK;
+    CRefEvent evt( newEvt );
+    evt.u.ack.srcID = hostID;
+    m_eventQueue.push_back( evt );
+    handleEvents();
 }
 
 void
@@ -557,9 +569,21 @@ CookieRef::handleEvents()
                 if ( increasePlayerCounts( &evt, false ) ) {
                     setAllConnectedTimer();
                     sendResponse( &evt, takeAction != XWA_SEND_1ST_RERSP );
-                    postCheckAllHere();
+                    setAckTimer();
                 }
                 break;
+
+            case XWA_NOTEACKCHECK:
+                postCheckAllHere();
+                /* FALLTHRU */
+            case XWA_NOTEACK:
+                modPending( &evt, true );
+                break;
+
+            case XWA_DROPDEVICE:
+                modPending( &evt, false );
+                break;
+
             /* case XWA_SEND_1ST_RERSP: */
             /*     if ( increasePlayerCounts( &evt, false ) ) { */
             /*         setAllConnectedTimer(); */
@@ -753,6 +777,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
     int socket = evt->u.con.socket;
     int seed = evt->u.con.seed;
     bool addHost = false;
+    bool addAck = false;
     /* XW_RELAY_EVENT newEvt = XWE_NONE; */
 
     assert( m_nPlayersSought > 0 );
@@ -790,8 +815,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
     } else {      /* a host; init values */
         m_nPlayersHere += nPlayersH;
         assert( m_nPlayersHere <= m_nPlayersSought );
-        addHost = true;
-
+        addAck = true;
         DBMgr::Get()->AddPlayers( ConnName(), nPlayersH );
 
         /* if ( m_nPlayersHere == m_nPlayersSought ) { /\* complete! *\/ */
@@ -824,14 +848,14 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
     /*     logf( XW_LOGERROR, "%s: not pushing an event", __func__ ); */
     /* } */
 
-    if ( addHost ) {
+    if ( addHost || addAck ) {
         HostID hostid = evt->u.con.srcID;
         /* first add the rec here, whether it'll stay for not */
         logf( XW_LOGINFO, "%s: remembering pair: hostid=%x, "
               "socket=%d (size=%d)", 
               __func__, hostid, socket, m_sockets.size());
 
-        HostRec hr( hostid, socket, nPlayersH, seed );
+        HostRec hr( hostid, socket, nPlayersH, seed, addAck );
         m_sockets.push_back( hr );
 
         assert( !AlreadyHere( evt->u.con.seed, -1 ) );
@@ -843,8 +867,27 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
         assert( 0 );
     }
  drop:
-    return addHost;
+    return addHost || addAck;
 } /* increasePlayerCounts */
+
+void
+CookieRef::modPending( const CRefEvent* evt, bool keep )
+{
+    HostID hostID = evt->u.ack.srcID;
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        if ( iter->m_ackPending && iter->m_hostID == hostID ) {
+            --m_nPendingAcks;
+
+            if ( keep ) {
+                iter->m_ackPending = false;
+            } else {
+                m_sockets.erase( iter );
+            }
+            break;
+        }
+    }
+}
 
 void
 CookieRef::postCheckAllHere()
@@ -903,6 +946,26 @@ CookieRef::setAllConnectedTimer()
         TimerMgr::GetTimerMgr()->SetTimer( inHowLong,
                                            s_checkAllConnected, this, 0 );
     }
+}
+
+void
+CookieRef::setAckTimer( void )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    time_t inHowLong;
+    if ( RelayConfigs::GetConfigs()->GetValueFor( "DEVACK", &inHowLong ) ) {
+        TimerMgr::GetTimerMgr()->SetTimer( inHowLong,
+                                           s_checkAck, this, 0 );
+        ++m_nPendingAcks;
+    } else {
+        logf( XW_LOGINFO, "not setting timer" );
+    }
+}
+
+void
+CookieRef::cancelAckTimer( void )
+{
+    TimerMgr::GetTimerMgr()->ClearTimer( s_checkAck, this );
 }
 
 void
@@ -1224,6 +1287,14 @@ CookieRef::s_checkAllConnected( void* closure )
     scr.CheckAllConnected();
 }
 
+/* static */ void
+CookieRef::s_checkAck( void* closure )
+{
+    CookieRef* self = (CookieRef*)closure;
+    SafeCref scr(self);
+    scr.CheckNotAcked();
+}
+
 void
 CookieRef::_CheckAllConnected()
 {
@@ -1234,6 +1305,17 @@ CookieRef::_CheckAllConnected()
     handleEvents();
 }
 
+void
+CookieRef::_CheckNotAcked()
+{
+    logf( XW_LOGINFO, "%s", __func__ );
+    if ( m_nPendingAcks > 0 ) {
+        assert( m_curState == XWS_WAITING_ACKS );
+        CRefEvent newEvt( XWE_ACKTIMEOUT );
+        m_eventQueue.push_back( newEvt );
+        handleEvents();
+    }
+}
 
 void
 CookieRef::logf( XW_LogLevel level, const char* format, ... )

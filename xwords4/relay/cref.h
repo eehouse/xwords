@@ -39,13 +39,14 @@ using namespace std;
 class CookieMapIterator;        /* forward */
 
 struct HostRec {
- public:
-   HostRec(HostID hostID, int socket, int nPlayersH, int seed ) 
+public:
+HostRec(HostID hostID, int socket, int nPlayersH, int seed, bool ackPending ) 
         : m_hostID(hostID) 
         , m_socket(socket)
         , m_nPlayersH(nPlayersH) 
         , m_seed(seed) 
         , m_lastHeartbeat(uptime()) 
+        , m_ackPending(ackPending)
         {
             ::logf( XW_LOGINFO, "created HostRec with id %d", m_hostID);
         }
@@ -54,6 +55,7 @@ struct HostRec {
     int m_nPlayersH;
     int m_seed;
     time_t m_lastHeartbeat;
+    bool m_ackPending;
 };
 
 class CookieRef {
@@ -110,6 +112,7 @@ class CookieRef {
     bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed );
     void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                      int seed );
+    void _HandleAck( HostID hostID );
     void _Disconnect(int socket, HostID hostID );
     void _Shutdown();
     void _HandleHeartbeat( HostID id, int socket );
@@ -117,6 +120,7 @@ class CookieRef {
     void _Forward( HostID src, HostID dest, unsigned char* buf, int buflen );
     void _Remove( int socket );
     void _CheckAllConnected();
+    void _CheckNotAcked();
 
     bool ShouldDie() { return m_curState == XWS_DEAD; }
     XW_RELAY_STATE CurState() { return m_curState; }
@@ -142,6 +146,9 @@ class CookieRef {
                 int seed;
                 HostID srcID;
             } con;
+            struct {
+                HostID srcID;
+            } ack;
             struct {
                 int socket;
                 HostID srcID;
@@ -194,6 +201,8 @@ class CookieRef {
     void sendAnyStored( const CRefEvent* evt );
     void initPlayerCounts( const CRefEvent* evt );
     bool increasePlayerCounts( const CRefEvent* evt, bool reconn );
+    void modPending( const CRefEvent* evt, bool keep );
+
     void postCheckAllHere();
     bool hostAlreadyHere( int seed, int socket );
 
@@ -201,6 +210,8 @@ class CookieRef {
 
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
+    void setAckTimer();
+    void cancelAckTimer();
 
     void forward_or_store( const CRefEvent* evt );
     void send_denied( const CRefEvent* evt, XWREASON why );
@@ -235,7 +246,8 @@ class CookieRef {
 
     /* timer callback */
     static void s_checkAllConnected( void* closure );
-
+    static void s_checkAck( void* closure );
+    
     unsigned int m_nHostMsgs;
     MsgBufQueue m_hostMsgQueues[4];
     vector<HostRec> m_sockets;
@@ -262,12 +274,12 @@ class CookieRef {
     int m_langCode;
 
     time_t m_starttime;
+    int m_nPendingAcks;
 
     pthread_mutex_t m_mutex;
 
     pthread_t m_locking_thread; /* for debugging only */
     bool m_in_handleEvents;     /* for debugging only */
-
     int m_delayMicros;
     vector<unsigned short> m_seeds;
 }; /* CookieRef */

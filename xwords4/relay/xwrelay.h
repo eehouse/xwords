@@ -44,6 +44,8 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           cookieLen: 1; cookie: <cookieLen>; hostID: 1; nPlayers: 1;
           nPlayersTotal: 1; connNameLen: 1; connName<connNameLen>*/
 
+       , XWRELAY_ACK
+
        , XWRELAY_GAME_DISCONNECT
        /* Tell the relay that we're gone for this game.  After this message is
           sent, the host can reconnect on the same socket for a new game.

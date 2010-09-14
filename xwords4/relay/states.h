@@ -32,7 +32,7 @@ enum {
                                    are here.  Success should be an error,
                                    actually: 1-device game.  */
 
-    ,XWS_CHKCOUNTS_MISS       /* from the missing state */
+    ,XWS_WAITING_ACKS
 
     ,XWS_CHK_ALLHERE          /* Need to see if all expected devices/players
                                    are on board. */
@@ -83,6 +83,10 @@ typedef enum {
     ,XWE_RECONNECT         /* A device is re-connecting using the connID for
                                this object */
 
+    ,XWE_GOTONEACK
+    ,XWE_GOTLASTACK
+    ,XWE_ACKTIMEOUT
+
     ,XWE_DISCONN           /* disconnect socket from this game/cref */
 
     ,XWE_FORWARDMSG        /* A message needs forwarding */
@@ -116,10 +120,17 @@ typedef enum {
     ,XWA_SEND_DUP_ROOM          /* host comes in while game open */
     ,XWA_SEND_NO_ROOM           /* guest comes in when no game open */
     ,XWA_SEND_TOO_MANY
+
+    // ,XWA_ADDDEVICE              /* got ack, so device is in for sure */
+    ,XWA_NOTEACK
+    ,XWA_NOTEACKCHECK
+    ,XWA_DROPDEVICE             /* no ack; remove all traces of device */
+
     ,XWA_SEND_INITRSP           /* response to first to connect */
     ,XWA_SEND_CONNRSP           /* response to rest that connect */
 
     ,XWA_SEND_RERSP
+    ,XWA_GOTALLACKS
 
     ,XWA_CHECK_HAVE_ROOM        /* check for number of players still sought */
 

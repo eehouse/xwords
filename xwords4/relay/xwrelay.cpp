@@ -157,6 +157,7 @@ cmdToStr( XWRELAY_Cmd cmd )
         CASESTR(XWRELAY_NONE);
         CASESTR(XWRELAY_GAME_CONNECT);
         CASESTR(XWRELAY_GAME_RECONNECT);
+        CASESTR(XWRELAY_ACK);
         CASESTR(XWRELAY_GAME_DISCONNECT);
         CASESTR(XWRELAY_CONNECT_RESP);
         CASESTR(XWRELAY_RECONNECT_RESP);
@@ -394,6 +395,19 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
 } /* processReconnect */
 
 static bool
+processAck( unsigned char* bufp, int bufLen, int socket )
+{
+    bool success = false;
+    unsigned char* end = bufp + bufLen;
+    HostID srcID;
+    if ( getNetByte( &bufp, end, &srcID ) ) {
+        SafeCref scr( socket );
+        success = scr.HandleAck( srcID );
+    }
+    return success;
+}
+
+static bool
 processDisconnect( unsigned char* bufp, int bufLen, int socket )
 {
     unsigned char* end = bufp + bufLen;
@@ -479,6 +493,9 @@ processMessage( unsigned char* buf, int bufLen, int socket )
         break;
     case XWRELAY_GAME_RECONNECT: 
         success = processReconnect( buf+1, bufLen-1, socket );
+        break;
+    case XWRELAY_ACK:
+        success = processAck( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_DISCONNECT:
         success = processDisconnect( buf+1, bufLen-1, socket );
