@@ -219,6 +219,7 @@ XWThreadPool::real_tpool_main()
         }
 
         if ( m_timeToDie ) {
+            pthread_mutex_unlock( &m_queueMutex );
             break;
         }
 
