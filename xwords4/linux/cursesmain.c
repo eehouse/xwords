@@ -1539,7 +1539,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( g_globals.cGlobals.game.comms ) {
-        CommsAddrRec addr;
+        CommsAddrRec addr = {0};
 
         if ( 0 ) {
 # ifdef XWFEATURE_RELAY
@@ -1547,6 +1547,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             addr.conType = COMMS_CONN_RELAY;
             addr.u.ip_relay.ipAddr = 0;       /* ??? */
             addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+            addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
+            addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
             XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
                         sizeof(addr.u.ip_relay.hostName) - 1 );
             XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,

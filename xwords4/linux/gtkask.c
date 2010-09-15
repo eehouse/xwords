@@ -23,15 +23,40 @@
 
 #include "gtkask.h"
 
+static gint
+timer_func( gpointer data )
+{
+    GtkWidget* dlg = (GtkWidget*)data;
+    gtk_widget_destroy( dlg );
+    return 0;
+}
+
 XP_Bool
 gtkask( const gchar *message, GtkButtonsType buttons )
 {
+    return gtkask_timeout( message, buttons, 0 );
+}
+
+XP_Bool
+gtkask_timeout( const gchar *message, GtkButtonsType buttons, XP_U16 timeout )
+{
+    guint src = 0;
     GtkWidget* dlg = gtk_message_dialog_new( NULL, /* parent */
                                              GTK_MESSAGE_QUESTION,
                                              GTK_DIALOG_MODAL,
                                              buttons, "%s", message );
+
+    if ( timeout > 0 ) {
+        src = g_timeout_add( 1000 * timeout, timer_func, dlg );
+    }
+
     gint response = gtk_dialog_run( GTK_DIALOG(dlg) );
     gtk_widget_destroy( dlg );
+
+    if ( 0 != src ) {
+        g_source_remove( src );
+    }
+
     return response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES;
 } /* gtkask */
 

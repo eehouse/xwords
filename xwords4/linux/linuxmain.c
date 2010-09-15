@@ -212,6 +212,8 @@ usage( char* appName, char* msg )
 	     "\t [-O]             # sort the tray each time tiles are added\n"
 #ifdef XWFEATURE_RELAY
 	     "\t [-H]             # Don't send heartbeats to relay\n"
+         "\t [-A]             # advertise room as public\n"
+         "\t [-R]             # connect to a public room\n"
 #endif
 #ifdef XWFEATURE_SMS
 	     "\t [-M phone]       # Server phone number for SMS\n"
@@ -830,7 +832,7 @@ main( int argc, char** argv )
                       "M:"
 #endif
 #ifdef XWFEATURE_RELAY
-                      "a:p:C:H"
+                      "a:p:C:HAR"
 #endif
 #if defined XWFEATURE_RELAY || defined XWFEATURE_IP_DIRECT
                       "p:"
@@ -963,6 +965,14 @@ main( int argc, char** argv )
             conType = COMMS_CONN_RELAY;
             hostName = optarg;
             break;
+#ifdef XWFEATURE_RELAY
+        case 'A':
+            mainParams.connInfo.relay.advertiseRoom = true;
+            break;
+        case 'R':
+            mainParams.connInfo.relay.seeksPublicRoom = true;
+            break;
+#endif
         case '0':
             closeStdin = XP_TRUE;
             break;
