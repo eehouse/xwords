@@ -45,7 +45,10 @@ DBMgr::DBMgr()
     logf( XW_LOGINFO, "%s:, m_pgconn: %p", __func__, m_pgconn );        
 
     ConnStatusType status = PQstatus( m_pgconn );
-    assert( status == CONNECTION_OK );
+    if ( CONNECTION_OK != status ) {
+        fprintf( stderr, "%s: unable to open db; does it exist?\n", __func__ );
+        exit( 1 );
+    }
 
     /* Now figure out what the largest cid currently is.  There must be a way
        to get postgres to do this for me.... */
@@ -72,18 +75,18 @@ DBMgr::~DBMgr()
 
 void
 DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid, 
-               int langCode, int nPlayersT )
+               int langCode, int nPlayersT, bool isPublic )
 {         
 #if 1
     if ( !cookie ) cookie = "";
     if ( !connName ) connName = "";
 
-    const char* fmt = "INSERT INTO " DB_NAME
-        " (cid, cookie, connName, nTotal, nHere, lang, ctime) "
+    const char* fmt = "INSERT INTO " TABLE_NAME
+        "(cid, cookie, connName, nTotal, nHere, lang, ispublic, ctime) "
         "VALUES( %d, '%s', '%s', %d, %d, %d, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
-              nPlayersT, 0, langCode );
+              nPlayersT, 0, langCode, isPublic?"TRUE":"FALSE" );
     logf( XW_LOGINFO, "passing %s", buf );
     execSql( buf );
 #else
@@ -110,18 +113,19 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 }
 
 CookieID
-DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH )
+DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH, bool wantsPublic )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid from " DB_NAME " where cookie = '%s' "
+    const char* fmt = "SELECT cid from " TABLE_NAME " where cookie = '%s' "
         "AND lang = %d "
         "AND nTotal = %d "
         "AND %d <= nTotal-nHere "
+        "AND %s = ispublic "
         "LIMIT 1";
     char query[256];
     snprintf( query, sizeof(query), fmt,
-              cookie, lang, nPlayersT, nPlayersH );
+              cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
     logf( XW_LOGINFO, "query: %s", query );
 
     PGresult* result = PQexec( m_pgconn, query );
@@ -137,7 +141,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH )
 void
 DBMgr::AddPlayers( const char* connName, int nToAdd )
 {
-    const char* fmt = "UPDATE " DB_NAME " SET nHere = nHere+%d "
+    const char* fmt = "UPDATE " TABLE_NAME " SET nHere = nHere+%d "
         "WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, nToAdd, connName );

@@ -15,6 +15,9 @@ HEARTBEAT=60
 # How many worker threads in the thread pool?  Default is five.
 NTHREADS=3
 
+# How many seconds to wait for device to ack new connName
+DEVACK=3
+
 # What ports do we listen on for per-game incoming connections?
 GAME_PORTS=10999
 #PORTS=10997,10998,10999

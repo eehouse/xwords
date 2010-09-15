@@ -33,10 +33,10 @@ class DBMgr {
     void ClearCIDs( void );
 
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
-                 int langCode, int nPlayersT );
+                 int langCode, int nPlayersT, bool isPublic );
 
     CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
-                       int nPlayersH );
+                       int nPlayersH, bool wantsPublic );
 
     void AddPlayers( const char* connName, int nToAdd );
 
