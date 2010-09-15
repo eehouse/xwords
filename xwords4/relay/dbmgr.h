@@ -35,10 +35,14 @@ class DBMgr {
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
                  int langCode, int nPlayersT, bool isPublic );
 
+    CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
+                       int* langP, int* nPlayersTP );
     CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
-                       int nPlayersH, bool wantsPublic );
+                       int nPlayersH, bool wantsPublic, 
+                       char* connNameBuf, int bufLen );
 
-    void AddPlayers( const char* connName, int nToAdd );
+    void AddPlayers( const char* const connName, int nToAdd );
+    void AddCID( const char* connName, CookieID cid );
 
  private:
     DBMgr();

@@ -135,11 +135,17 @@ class CRefMgr {
     void addToFreeList( CookieRef* cref );
     CookieRef* getFromFreeList( void );
 
+    /* connect case */
     CookieRef* getMakeCookieRef_locked( const char* cookie, 
-                                        const char* connName,
                                         HostID hid, int socket, int nPlayersH,
                                         int nPlayersS, int langCode, int seed,
                                         bool wantsPublic, bool makePublic );
+
+    /* reconnect case; just the stuff we don't have in db */
+    CookieRef* getMakeCookieRef_locked( const char* connName,
+                                        HostID hid, int socket, int nPlayersH,
+                                        int seed );
+
     CookieRef* getCookieRef( CookieID cookieID );
     CookieRef* getCookieRef( int socket );
     bool checkCookieRef_locked( CookieRef* cref );

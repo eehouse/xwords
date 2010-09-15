@@ -82,7 +82,7 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !connName ) connName = "";
 
     const char* fmt = "INSERT INTO " TABLE_NAME
-        "(cid, cookie, connName, nTotal, nHere, lang, ispublic, ctime) "
+        "(cid, cookie, connName, nTotal, nJoined, lang, ispublic, ctime) "
         "VALUES( %d, '%s', '%s', %d, %d, %d, %s, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
@@ -113,14 +113,41 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 }
 
 CookieID
-DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH, bool wantsPublic )
+DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
+                 int* langP, int* nPlayersTP )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid from " TABLE_NAME " where cookie = '%s' "
+    const char* fmt = "SELECT cid, cookie, lang, nTotal from " TABLE_NAME " where connName = '%s' "
+        "LIMIT 1";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName );
+    logf( XW_LOGINFO, "query: %s", query );
+
+    PGresult* result = PQexec( m_pgconn, query );
+    if ( 1 == PQntuples( result ) ) {
+        cid = atoi( PQgetvalue( result, 0, 0 ) );
+        snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
+        *langP = atoi( PQgetvalue( result, 0, 2 ) );
+        *nPlayersTP = atoi( PQgetvalue( result, 0, 3 ) );
+    }
+    PQclear( result );
+
+    logf( XW_LOGINFO, "%s(%s)=>%d", __func__, connName, cid );
+    return cid;
+}
+
+CookieID
+DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
+                 bool wantsPublic, char* connNameBuf, int bufLen )
+{
+    CookieID cid = 0;
+
+    const char* fmt = "SELECT cid, connName FROM " TABLE_NAME " "
+        "WHERE cookie = '%s' "
         "AND lang = %d "
         "AND nTotal = %d "
-        "AND %d <= nTotal-nHere "
+        "AND %d <= nTotal-nJoined "
         "AND %s = ispublic "
         "LIMIT 1";
     char query[256];
@@ -131,17 +158,18 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH, boo
     PGresult* result = PQexec( m_pgconn, query );
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
-        assert( cid > 0 );
+        snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
+        /* cid may be 0, but should use game anyway  */
     }
     PQclear( result );
     logf( XW_LOGINFO, "%s=>%d", __func__, cid );
     return cid;
-}
+} /* FindOpen */
 
 void
 DBMgr::AddPlayers( const char* connName, int nToAdd )
 {
-    const char* fmt = "UPDATE " TABLE_NAME " SET nHere = nHere+%d "
+    const char* fmt = "UPDATE " TABLE_NAME " SET nJoined = nJoined+%d "
         "WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, nToAdd, connName );
@@ -151,15 +179,31 @@ DBMgr::AddPlayers( const char* connName, int nToAdd )
 }
 
 void
+DBMgr::AddCID( const char* const connName, CookieID cid )
+{
+    const char* fmt = "UPDATE " TABLE_NAME " SET cid = %d "
+        "WHERE connName = '%s'";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, cid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    execSql( query );
+}
+
+void
 DBMgr::ClearCIDs( void )
 {
-    execSql( "UPDATE " TABLE_NAME " set cid = 0" );
+    execSql( "UPDATE " TABLE_NAME " set cid = null" );
 }
 
 void
 DBMgr::execSql( const char* query )
 {
     PGresult* result = PQexec( m_pgconn, query );
+    if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
+        logf( XW_LOGERROR, "PQEXEC=>%s", PQresultErrorMessage(result) );
+        assert( 0 );
+    }
     PQclear( result );
     logf( XW_LOGINFO, "PQexecParams=>%d", result );
 }
@@ -171,7 +215,7 @@ DBMgr::execSql( const char* query )
   cookie VARCHAR(32),
   connName VARCHAR(64) UNIQUE PRIMARY KEY,
   nTotal INTEGER,
-  nHere INTEGER, 
+  nJoined INTEGER, 
   lang INTEGER,
   ctime TIMESTAMP,
   mtime TIMESTAMP
