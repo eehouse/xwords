@@ -12,6 +12,27 @@ LOGFILE=/tmp/xwrelay_log.txt
 
 date > $LOGFILE
 
+usage() {
+    echo "usage: $0 start | stop | restart | mkdb"
+}
+
+make_db() {
+    createdb xwgames
+    cat | psql xwgames --file - <<EOF
+CREATE TABLE games ( 
+cid integer,
+cookie VARCHAR(32),
+connName VARCHAR(64) UNIQUE PRIMARY KEY,
+nTotal INTEGER,
+nHere INTEGER, 
+lang INTEGER,
+isPublic BOOLEAN,
+ctime TIMESTAMP,
+mtime TIMESTAMP
+);
+EOF
+}
+
 do_start() {
     if [ -f $PIDFILE ] && [ -f /proc/$(cat $PIDFILE)/exe ]; then
         echo "already running: pid=$(cat $PIDFILE)" | tee -a $LOGFILE
@@ -58,8 +79,14 @@ case $1 in
         shift
         do_start $@
         ;;
+
+    mkdb)
+        make_db
+        ;;
+
     *)
-        do_start $@
+        usage
+        exit 0
         ;;
 
 esac
