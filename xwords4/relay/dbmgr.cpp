@@ -83,7 +83,7 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 
     const char* fmt = "INSERT INTO " TABLE_NAME
         "(cid, cookie, connName, nTotal, nHere, lang, ispublic, ctime) "
-        "VALUES( %d, '%s', '%s', %d, %d, %d, 'now' )";
+        "VALUES( %d, '%s', '%s', %d, %d, %d, %s, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
               nPlayersT, 0, langCode, isPublic?"TRUE":"FALSE" );
