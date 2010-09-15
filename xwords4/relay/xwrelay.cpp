@@ -916,6 +916,8 @@ main( int argc, char** argv )
         exit( 1 );
     }
 
+    DBMgr::Get()->ClearCIDs();  /* get prev boot's state in db */
+
     vector<int>::const_iterator iter_game;
     for ( iter_game = ints_game.begin(); iter_game != ints_game.end(); 
           ++iter_game ) {

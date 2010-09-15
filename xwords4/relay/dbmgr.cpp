@@ -25,6 +25,7 @@
 #include "xwrelay_priv.h"
 
 #define DB_NAME "xwgames"
+#define TABLE_NAME "games"
 
 static DBMgr* s_instance = NULL;
 
@@ -73,20 +74,18 @@ void
 DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid, 
                int langCode, int nPlayersT )
 {         
-
 #if 1
     if ( !cookie ) cookie = "";
     if ( !connName ) connName = "";
 
-    const char* fmt = "INSERT INTO games "
-        "(cid, cookie, connName, nTotal, nHere, lang, ctime) "
+    const char* fmt = "INSERT INTO " DB_NAME
+        " (cid, cookie, connName, nTotal, nHere, lang, ctime) "
         "VALUES( %d, '%s', '%s', %d, %d, %d, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
               nPlayersT, 0, langCode );
     logf( XW_LOGINFO, "passing %s", buf );
-    PGresult* result = PQexec( m_pgconn, buf );
-    PQclear( result );
+    execSql( buf );
 #else
     const char* command = "INSERT INTO games (cookie, connName, ntotal, nhere, lang) "
         "VALUES( $1, $2, $3, $4, $5 )";
@@ -106,8 +105,8 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
                                      NULL, /*const int *paramLengths,*/
                                      NULL, /*const int *paramFormats,*/
                                      0 /*int resultFormat*/ );
-#endif
     logf( XW_LOGINFO, "PQexecParams=>%d", result );
+#endif
 }
 
 CookieID
@@ -115,7 +114,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid from games where cookie = '%s' "
+    const char* fmt = "SELECT cid from " DB_NAME " where cookie = '%s' "
         "AND lang = %d "
         "AND nTotal = %d "
         "AND %d <= nTotal-nHere "
@@ -138,14 +137,27 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH )
 void
 DBMgr::AddPlayers( const char* connName, int nToAdd )
 {
-    const char* fmt = "UPDATE games SET nHere = nHere+%d "
+    const char* fmt = "UPDATE " DB_NAME " SET nHere = nHere+%d "
         "WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, nToAdd, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
+    execSql( query );
+}
+
+void
+DBMgr::ClearCIDs( void )
+{
+    execSql( "UPDATE " TABLE_NAME " set cid = 0" );
+}
+
+void
+DBMgr::execSql( const char* query )
+{
     PGresult* result = PQexec( m_pgconn, query );
     PQclear( result );
+    logf( XW_LOGINFO, "PQexecParams=>%d", result );
 }
 
 /*

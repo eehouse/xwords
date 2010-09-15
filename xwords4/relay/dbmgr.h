@@ -30,6 +30,8 @@ class DBMgr {
 
     ~DBMgr();
 
+    void ClearCIDs( void );
+
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
                  int langCode, int nPlayersT );
 
@@ -40,6 +42,7 @@ class DBMgr {
 
  private:
     DBMgr();
+    void execSql( const char* query ); /* no-results query */
     PGconn* m_pgconn;
     //int m_nextCID;
 }; /* DBMgr */
