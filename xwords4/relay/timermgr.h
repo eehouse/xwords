@@ -55,7 +55,6 @@ class TimerMgr {
   
 
     TimerMgr();
-    static void sighandler( int signal );
 
     /* run once we have the mutex */
     void clearTimerImpl( TimerProc proc, void* closure );
