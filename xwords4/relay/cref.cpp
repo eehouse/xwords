@@ -222,8 +222,7 @@ void
 CookieRef::_HandleAck( HostID hostID )
 {
     assert( m_nPendingAcks > 0 && m_nPendingAcks <= 4 );
-    XW_RELAY_EVENT newEvt = m_nPendingAcks == 1? XWE_GOTLASTACK : XWE_GOTONEACK;
-    CRefEvent evt( newEvt );
+    CRefEvent evt( XWE_GOTONEACK );
     evt.u.ack.srcID = hostID;
     m_eventQueue.push_back( evt );
     handleEvents();
@@ -572,10 +571,9 @@ CookieRef::handleEvents()
                 break;
 
             case XWA_NOTEACKCHECK:
-                postCheckAllHere();
-                /* FALLTHRU */
             case XWA_NOTEACK:
                 modPending( &evt, true );
+                postCheckAllHere();
                 break;
 
             case XWA_DROPDEVICE:
@@ -838,16 +836,12 @@ CookieRef::modPending( const CRefEvent* evt, bool keep )
 void
 CookieRef::postCheckAllHere()
 {
-    XW_RELAY_EVENT newEvt;
-    if ( m_nPlayersHere == m_nPlayersSought ) { /* complete! */
+    if ( m_nPendingAcks == 0
+         && m_nPlayersHere == m_nPlayersSought ) { /* complete! */
         m_gameFull = true;
-        newEvt = XWE_ALLHERE;
-    } else {
-        newEvt = XWE_SOMEMISSING;
+        CRefEvent evt( XWE_ALLHERE );
+        m_eventQueue.push_back( evt );
     }
-
-    CRefEvent evt( newEvt );
-    m_eventQueue.push_back( evt );
 }
 
 void
