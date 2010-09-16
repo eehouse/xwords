@@ -281,7 +281,6 @@ class CookieRef {
     pthread_t m_locking_thread; /* for debugging only */
     bool m_in_handleEvents;     /* for debugging only */
     int m_delayMicros;
-    vector<unsigned short> m_seeds;
 }; /* CookieRef */
 
 #endif

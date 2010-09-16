@@ -264,6 +264,7 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, HostID hid, int socket,
     return cref;
 } /* getMakeCookieRef_locked */
 
+/* reconnect case */
 CookieRef* 
 CRefMgr::getMakeCookieRef_locked( const char* connName, HostID hid, int socket, 
                                   int nPlayersH, int seed )

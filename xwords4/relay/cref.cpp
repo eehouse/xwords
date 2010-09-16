@@ -209,7 +209,9 @@ void
 CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                        int seed )
 {
-    if ( !AlreadyHere( seed, socket ) ) {
+    if ( AlreadyHere( seed, socket ) ) {
+        logf( XW_LOGINFO, "dropping [re]connection because already here" );
+    } else {
         (void)CRefMgr::Get()->Associate( socket, this );
         pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
         handleEvents();
@@ -311,12 +313,8 @@ bool
 CookieRef::AlreadyHere( unsigned short seed, int socket )
 {
     bool here = false;
-    vector<unsigned short>::iterator iter;
-    for ( iter = m_seeds.begin(); !here && iter != m_seeds.end(); ++iter ) {
-        here = *iter == seed;
-    }
 
-    if ( !here && socket != -1 ) {
+    if ( socket != -1 ) {
         vector<HostRec>::const_iterator iter;
         for ( iter = m_sockets.begin(); !here && iter != m_sockets.end(); 
               ++iter ) {
@@ -811,7 +809,6 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
     m_sockets.push_back( hr );
 
     assert( !AlreadyHere( evt->u.con.seed, -1 ) );
-    m_seeds.push_back( evt->u.con.seed );
 
     logf( XW_LOGVERBOSE1, "%s: here=%d; total=%d", __func__,
           m_nPlayersHere, m_nPlayersSought );
@@ -852,40 +849,6 @@ CookieRef::postCheckAllHere()
     CRefEvent evt( newEvt );
     m_eventQueue.push_back( evt );
 }
-
-/* bool */
-/* CookieRef::socketAlreadyHere( int socket ) */
-/* { */
-/*     ASSERT_LOCKED(); */
-/*     bool found = false; */
-/*     vector<HostRec>::const_iterator iter; */
-/*     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) { */
-/*         if ( iter->m_seed == seed && iter->m_socket == socket ) { */
-/*             found = true; */
-/*             break; */
-/*         } */
-/*     } */
-/*     return found; */
-/* } */
-
-void
-CookieRef::reducePlayerCounts( int socket )
-{
-    logf( XW_LOGVERBOSE1, "%s(socket=%d)", __func__, socket );
-    ASSERT_LOCKED();
-    vector<HostRec>::iterator iter;
-    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
-        if ( iter->m_socket == socket ) {
-            m_nPlayersHere -= iter->m_nPlayersH;
-
-            logf( XW_LOGVERBOSE1, 
-                  "%s: m_nPlayersHere=%d; m_nPlayersSought=%d", 
-                  __func__, m_nPlayersHere, m_nPlayersSought );
-
-            break;
-        }
-    }
-} /* reducePlayerCounts */
 
 void
 CookieRef::setAllConnectedTimer()
