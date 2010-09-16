@@ -330,7 +330,7 @@ relay_connd_gtk( void* XP_UNUSED(closure), XP_Bool allHere, XP_U16 nMissing )
     }
 
     if ( !skip ) {
-        (void)gtkask_timeout( buf, GTK_BUTTONS_OK, 3 );
+        (void)gtkask_timeout( buf, GTK_BUTTONS_OK, 1 );
     }
 }
 
