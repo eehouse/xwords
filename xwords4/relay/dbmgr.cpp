@@ -82,7 +82,7 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !connName ) connName = "";
 
     const char* fmt = "INSERT INTO " TABLE_NAME
-        "(cid, cookie, connName, nTotal, nJoined, lang, ispublic, ctime) "
+        "(cid, room, connName, nTotal, nJoined, lang, ispublic, ctime) "
         "VALUES( %d, '%s', '%s', %d, %d, %d, %s, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
@@ -118,7 +118,8 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, cookie, lang, nTotal from " TABLE_NAME " where connName = '%s' "
+    const char* fmt = "SELECT cid, room, lang, nTotal from " TABLE_NAME
+        " where connName = '%s' "
         "LIMIT 1";
     char query[256];
     snprintf( query, sizeof(query), fmt, connName );
@@ -144,7 +145,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     CookieID cid = 0;
 
     const char* fmt = "SELECT cid, connName FROM " TABLE_NAME " "
-        "WHERE cookie = '%s' "
+        "WHERE room = '%s' "
         "AND lang = %d "
         "AND nTotal = %d "
         "AND %d <= nTotal-nJoined "
@@ -212,7 +213,7 @@ DBMgr::execSql( const char* query )
   Schema:
   CREATE TABLE games ( 
   cid integer,
-  cookie VARCHAR(32),
+  room VARCHAR(32),
   connName VARCHAR(64) UNIQUE PRIMARY KEY,
   nTotal INTEGER,
   nJoined INTEGER, 

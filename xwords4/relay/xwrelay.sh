@@ -21,12 +21,12 @@ make_db() {
     cat | psql xwgames --file - <<EOF
 CREATE TABLE games ( 
 cid integer,
-cookie VARCHAR(32),
+room VARCHAR(32),
+lang INTEGER,
+isPublic BOOLEAN,
 connName VARCHAR(64) UNIQUE PRIMARY KEY,
 nTotal INTEGER,
 nJoined INTEGER, 
-lang INTEGER,
-isPublic BOOLEAN,
 ctime TIMESTAMP,
 mtime TIMESTAMP
 );
