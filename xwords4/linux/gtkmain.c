@@ -1309,7 +1309,7 @@ gtkShowFinalScores( const CommonGlobals* cGlobals )
 
     text = strFromStream( stream );
 
-    (void)gtkask( text, GTK_BUTTONS_OK );
+    (void)gtkask_timeout( text, GTK_BUTTONS_OK, 1 );
 
     free( text );
 } /* gtkShowFinalScores */
