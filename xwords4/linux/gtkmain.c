@@ -330,7 +330,7 @@ relay_connd_gtk( void* XP_UNUSED(closure), XP_Bool allHere, XP_U16 nMissing )
     }
 
     if ( !skip ) {
-        (void)gtkask_timeout( buf, GTK_BUTTONS_OK, 1 );
+        (void)gtkask_timeout( buf, GTK_BUTTONS_OK, 500 );
     }
 }
 
@@ -1309,7 +1309,7 @@ gtkShowFinalScores( const CommonGlobals* cGlobals )
 
     text = strFromStream( stream );
 
-    (void)gtkask_timeout( text, GTK_BUTTONS_OK, 1 );
+    (void)gtkask_timeout( text, GTK_BUTTONS_OK, 500 );
 
     free( text );
 } /* gtkShowFinalScores */

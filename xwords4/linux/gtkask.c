@@ -47,7 +47,7 @@ gtkask_timeout( const gchar *message, GtkButtonsType buttons, XP_U16 timeout )
                                              buttons, "%s", message );
 
     if ( timeout > 0 ) {
-        src = g_timeout_add( 1000 * timeout, timer_func, dlg );
+        src = g_timeout_add( timeout, timer_func, dlg );
     }
 
     gint response = gtk_dialog_run( GTK_DIALOG(dlg) );
