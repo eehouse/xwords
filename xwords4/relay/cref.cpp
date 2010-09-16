@@ -591,7 +591,7 @@ CookieRef::handleEvents()
                 sendResponse( &evt, false );
                 sendAnyStored( &evt );
                 increasePlayerCounts( &evt, true );
-                // postCheckAllHere();
+                postCheckAllHere();
                 break;
 
             case XWA_SEND_NO_ROOM:
@@ -1216,7 +1216,6 @@ CookieRef::_CheckNotAcked()
 {
     logf( XW_LOGINFO, "%s", __func__ );
     if ( m_nPendingAcks > 0 ) {
-        assert( m_curState == XWS_WAITING_ACKS );
         CRefEvent newEvt( XWE_ACKTIMEOUT );
         m_eventQueue.push_back( newEvt );
         handleEvents();
