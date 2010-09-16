@@ -180,6 +180,12 @@ DBMgr::AddPlayers( const char* connName, int nToAdd )
 }
 
 void
+DBMgr::RmPlayers( const char* connName, int nToAdd )
+{
+    AddPlayers( connName, 0 - nToAdd );
+}
+
+void
 DBMgr::AddCID( const char* const connName, CookieID cid )
 {
     const char* fmt = "UPDATE " TABLE_NAME " SET cid = %d "

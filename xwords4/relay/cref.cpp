@@ -826,6 +826,7 @@ CookieRef::modPending( const CRefEvent* evt, bool keep )
             if ( keep ) {
                 iter->m_ackPending = false;
             } else {
+                DBMgr::Get()->RmPlayers( ConnName(), iter->m_nPlayersH );
                 m_sockets.erase( iter );
             }
             break;
