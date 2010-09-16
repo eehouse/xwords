@@ -52,7 +52,7 @@ DBMgr::DBMgr()
 
     /* Now figure out what the largest cid currently is.  There must be a way
        to get postgres to do this for me.... */
-    /* const char* query = "SELECT cid FROM games ORDER BY - cid LIMIT 1"; */
+    /* const char* query = "SELECT cid FROM games ORDER BY cid DESC LIMIT 1"; */
     /* PGresult* result = PQexec( m_pgconn, query ); */
     /* if ( 0 == PQntuples( result ) ) { */
     /*     m_nextCID = 1; */
@@ -186,6 +186,18 @@ DBMgr::AddCID( const char* const connName, CookieID cid )
         "WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, cid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    execSql( query );
+}
+
+void
+DBMgr::ClearCID( const char* connName )
+{
+    const char* fmt = "UPDATE " TABLE_NAME " SET cid = null "
+        "WHERE connName = '%s'";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );

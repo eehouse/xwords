@@ -482,6 +482,7 @@ CRefMgr::Recycle_locked( CookieRef* cref )
 {
     logf( XW_LOGINFO, "%s(cref=%p,cookie=%s)", __func__, cref, cref->Cookie() );
     CookieID id = cref->GetCookieID();
+    DBMgr::Get()->ClearCID( cref->ConnName() );
     cref->Clear();
     addToFreeList( cref );
 
@@ -501,7 +502,7 @@ CRefMgr::Recycle_locked( CookieRef* cref )
         }
         ++iter;
     }
-
+    assert( iter != m_cookieMap.end() ); /* we found something */
 
 #ifdef RELAY_HEARTBEAT
     if ( m_cookieMap.size() == 0 ) {

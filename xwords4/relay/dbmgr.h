@@ -43,6 +43,7 @@ class DBMgr {
 
     void AddPlayers( const char* const connName, int nToAdd );
     void AddCID( const char* connName, CookieID cid );
+    void ClearCID( const char* connName );
 
  private:
     DBMgr();
