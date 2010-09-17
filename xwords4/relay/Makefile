@@ -48,9 +48,11 @@ CPPFLAGS += -DSPAWN_SELF -DDO_HTTP -g -Wall \
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS
 
-memdebug all: xwrelay
+memdebug all: xwrelay rq
 
 xwrelay: $(OBJ)
+
+rq: rq.c
 
 clean:
 	rm -f xwrelay $(OBJ)

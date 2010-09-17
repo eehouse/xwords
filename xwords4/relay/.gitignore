@@ -1,4 +1,5 @@
 *.o
+rq
 core
 core.*
 xwrelay.log*
