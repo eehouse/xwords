@@ -28,16 +28,16 @@ enum {
     XWS_NONE
     ,XWS_ANY                  /* wildcard */
 
-    ,XWS_CHKCOUNTS_INIT       /* from initial state, check if all players
+    /* ,XWS_CHKCOUNTS_INIT */       /* from initial state, check if all players
                                    are here.  Success should be an error,
                                    actually: 1-device game.  */
 
     ,XWS_WAITING_ACKS
 
-    ,XWS_CHK_ALLHERE          /* Need to see if all expected devices/players
+    /* ,XWS_CHK_ALLHERE */          /* Need to see if all expected devices/players
                                    are on board. */
 
-    ,XWS_CHK_ALLHERE_2        /* same as above, but triggered by a reconnect
+    /* ,XWS_CHK_ALLHERE_2 */        /* same as above, but triggered by a reconnect
                                    rather than a connect request */
 
     ,XWS_INITED               /* Relay's running and the object's been
@@ -54,14 +54,14 @@ enum {
                                    relay to do its work.  This is the state
                                    we're in most of the time.  */
 
-    ,XWS_MISSING              /* We've been fully connected before but lost
+    /* ,XWS_MISSING */              /* We've been fully connected before but lost
                                    somebody.  Once [s]he's back we can be
                                    fully connected again. */
 
     ,XWS_MSGONLY              /* We have no connections but still messages to
                                  send */
 
-    ,XWS_ROOMCHK              /* do we have room for as many players as are
+    /* ,XWS_ROOMCHK */              /* do we have room for as many players as are
                                  being provided */
 
     ,XWS_DEAD                 /* About to kill the object */
@@ -73,9 +73,10 @@ typedef enum {
     XWE_NONE
 
     ,XWE_ALLHERE           /* notify that all expected players are arrived */
-    ,XWE_SOMEMISSING       /* notify that some expected players are still missing */
-    ,XWE_HAVE_ROOM
-    ,XWE_TOO_MANY
+    /* ,XWE_SOMEMISSING */       /* notify that some expected players are still missing */
+    ,XWE_ALLGONE
+    /* ,XWE_HAVE_ROOM */
+    /* ,XWE_TOO_MANY */
 
     ,XWE_DEVCONNECT        /* A device is connecting using the cookie for */
     /*,XWE_HOSTCONNECT*/   /* this object, as host or guest */

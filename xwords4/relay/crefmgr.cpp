@@ -245,14 +245,17 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, HostID hid, int socket,
     */
 
     char connNameBuf[MAX_CONNNAME_LEN+1] = {0};
+    int alreadyHere = 0;
     CookieID cid = m_db->FindOpen( cookie, langCode, nPlayersT, nPlayersH,
                                    wantsPublic, 
-                                   connNameBuf, sizeof(connNameBuf) );
+                                   connNameBuf, sizeof(connNameBuf), 
+                                   &alreadyHere );
     if ( cid > 0 ) {
         cref = getCookieRef_impl( cid ); 
     } else {
         cid = nextCID( NULL );
-        cref = AddNew( cookie, connNameBuf, cid, langCode, nPlayersT );
+        cref = AddNew( cookie, connNameBuf, cid, langCode, 
+                       nPlayersT, alreadyHere );
         if ( !connNameBuf[0] ) { /* didn't exist in DB */
             m_db->AddNew( cookie, cref->ConnName(), cid, langCode, nPlayersT, 
                           wantsPublic || makePublic );
@@ -274,15 +277,16 @@ CRefMgr::getMakeCookieRef_locked( const char* connName, HostID hid, int socket,
     /* fetch these from DB */
     char cookie[MAX_INVITE_LEN+1];
     int langCode;
-    int nPlayersT;
+    int nPlayersT = 0;
+    int nAlreadyHere = 0;
 
     CookieID cid = m_db->FindGame( connName, cookie, sizeof(cookie),
-                                   &langCode, &nPlayersT );
+                                   &langCode, &nPlayersT, &nAlreadyHere );
     if ( 0 != cid ) {           /* already open */
         cref = getCookieRef_impl( cid );
     } else {
         CookieID cid = nextCID( NULL );
-        cref = AddNew( cookie, connName, cid, langCode, nPlayersT );
+        cref = AddNew( cookie, connName, cid, langCode, nPlayersT, nAlreadyHere );
         m_db->AddCID( connName, cid );
     }
     return cref;
@@ -435,7 +439,7 @@ CRefMgr::heartbeatProc( void* closure )
 
 CookieRef*
 CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id,
-                 int langCode, int nPlayers )
+                 int langCode, int nPlayers, int nAlreadyHere )
 {
     if ( 0 == connName[0] ) {
         connName = NULL;
@@ -451,10 +455,11 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id,
     
     if ( !!ref ) {
         logf( XW_LOGVERBOSE1, "using from free list" );
-        ref->ReInit( cookie, connName, id, langCode, nPlayers );
+        ref->ReInit( cookie, connName, id, langCode, nPlayers, nAlreadyHere );
     } else {
         logf( XW_LOGVERBOSE1, "calling constructor" );
-        ref = new CookieRef( cookie, connName, id, langCode, nPlayers );
+        ref = new CookieRef( cookie, connName, id, langCode, nPlayers, 
+                             nAlreadyHere );
     }
 
     ref->assignConnName();

@@ -81,7 +81,7 @@ SocketsIterator::Next()
 
 void
 CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
-                   int langCode, int nPlayers )
+                   int langCode, int nPlayers, int nAlreadyHere )
 {
     m_cookie = cookie==NULL?"":cookie;
     m_connName = connName==NULL?"":connName;
@@ -90,7 +90,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     m_curState = XWS_INITED;
     m_nextHostID = HOST_ID_SERVER;
     m_nPlayersSought = nPlayers;
-    m_nPlayersHere = 0;
+    m_nPlayersHere = nAlreadyHere;
     m_locking_thread = 0;
     m_starttime = uptime();
     m_gameFull = false;
@@ -112,10 +112,10 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
 
 
 CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id,
-                      int langCode, int nPlayers )
+                      int langCode, int nPlayersT, int nAlreadyHere )
 {
     pthread_mutex_init( &m_mutex, NULL );
-    ReInit( cookie, connName, id, langCode, nPlayers );
+    ReInit( cookie, connName, id, langCode, nPlayersT, nAlreadyHere );
 }
 
 CookieRef::~CookieRef()
@@ -267,18 +267,6 @@ CookieRef::SocketForHost( HostID dest )
 
     logf( XW_LOGVERBOSE0, "returning socket=%d for hostid=%x", socket, dest );
     return socket;
-}
-
-/* The idea here is: have we never seen the XW_ST_ALLCONNECTED state.  This
-   needs to include any states reachable from XW_ST_ALLCONNECTED from which
-   recovery back to XW_ST_ALLCONNECTED is possible.  This is used to decide
-   whether to admit a connection based on its cookie -- whether that coookie
-   should join an existing cref or get a new one? */
-bool
-CookieRef::NeverFullyConnected()
-{
-    return m_curState != XWS_ALLCONND
-        && m_curState != XWS_MISSING;
 }
 
 bool
@@ -522,22 +510,6 @@ CookieRef::pushLastSocketGoneEvent()
 }
 
 void
-CookieRef::checkHaveRoom( const CRefEvent* evt )
-{
-    CRefEvent newEvt;
-
-    assert ( m_nPlayersSought > 0 );
-    if ( m_nPlayersSought < m_nPlayersHere + evt->u.con.nPlayersH ) {
-        newEvt.type = XWE_TOO_MANY;
-        newEvt.u.rmsock.socket = evt->u.con.socket;
-    } else {
-        newEvt = *evt;
-        newEvt.type = XWE_HAVE_ROOM;
-    }
-    m_eventQueue.push_back( newEvt );
-}
-
-void
 CookieRef::handleEvents()
 {
     assert( !m_in_handleEvents );
@@ -557,10 +529,6 @@ CookieRef::handleEvents()
                   eventString(evt.type), actString(takeAction) );
 
             switch( takeAction ) {
-
-            case XWA_CHECK_HAVE_ROOM:
-                checkHaveRoom( &evt );
-                break;
 
             case XWA_SEND_CONNRSP:
                 if ( increasePlayerCounts( &evt, false ) ) {
@@ -660,7 +628,7 @@ CookieRef::handleEvents()
                 CRefMgr::Get()->IncrementFullCount();
                 cancelAllConnectedTimer();
                 sendAllHere( true );
-                checkSomeMissing();
+                /* checkSomeMissing(); */
                 break;
 
             case XWA_SNDALLHERE_2:
@@ -1045,29 +1013,6 @@ CookieRef::sendAllHere( bool initial )
         ++iter;
     }
 } /* sendAllHere */
-
-void
-CookieRef::checkSomeMissing( void )
-{
-    logf( XW_LOGINFO, "%s", __func__ );
-    /* int count = 0; */
-
-    /* vector<HostRec>::iterator iter; */
-    /* for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) { */
-    /*     count += iter->m_nPlayersH; */
-    /* } */
-    /* /\* Don't really need the iterator above.... *\/ */
-    /* assert( count == m_nPlayersHere ); */
-
-    logf( XW_LOGINFO, "%s; count=%d; nPlayersS=%d", __func__,
-          m_nPlayersHere, m_nPlayersSought );
-
-    assert( m_nPlayersHere <= m_nPlayersSought );
-    if ( m_nPlayersHere < m_nPlayersSought ) {
-        CRefEvent evt( XWE_SOMEMISSING );
-        m_eventQueue.push_back( evt );
-    }
-}
 
 #define CONNNAME_DELIM ' '      /* ' ' so will wrap in browser */
 /* Does my seed belong as part of existing connName */

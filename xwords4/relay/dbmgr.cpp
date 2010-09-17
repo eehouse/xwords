@@ -90,8 +90,8 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     logf( XW_LOGINFO, "passing %s", buf );
     execSql( buf );
 #else
-    const char* command = "INSERT INTO games (cookie, connName, ntotal, nhere, lang) "
-        "VALUES( $1, $2, $3, $4, $5 )";
+    const char* command = "INSERT INTO games (cookie, connName, ntotal, "
+        "nJoined, lang) VALUES( $1, $2, $3, $4, $5 )";
     char nPlayersTBuf[4];
     char langBuf[4];
 
@@ -114,11 +114,11 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 
 CookieID
 DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
-                 int* langP, int* nPlayersTP )
+                 int* langP, int* nPlayersTP, int* nPlayersHP )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, room, lang, nTotal from " TABLE_NAME
+    const char* fmt = "SELECT cid, room, lang, nTotal, nJoined FROM " TABLE_NAME
         " where connName = '%s' "
         "LIMIT 1";
     char query[256];
@@ -131,6 +131,7 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
         snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
         *langP = atoi( PQgetvalue( result, 0, 2 ) );
         *nPlayersTP = atoi( PQgetvalue( result, 0, 3 ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, 4 ) );
     }
     PQclear( result );
 
@@ -140,11 +141,12 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
 
 CookieID
 DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
-                 bool wantsPublic, char* connNameBuf, int bufLen )
+                 bool wantsPublic, char* connNameBuf, int bufLen,
+                 int* nPlayersHP )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, connName FROM " TABLE_NAME " "
+    const char* fmt = "SELECT cid, connName, nJoined FROM " TABLE_NAME " "
         "WHERE room = '%s' "
         "AND lang = %d "
         "AND nTotal = %d "
@@ -160,6 +162,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, 2 ) );
         /* cid may be 0, but should use game anyway  */
     }
     PQclear( result );
