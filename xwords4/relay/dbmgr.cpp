@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "dbmgr.h"
+#include "mlock.h"
 #include "xwrelay_priv.h"
 
 #define DB_NAME "xwgames"
@@ -49,6 +50,8 @@ DBMgr::DBMgr()
         fprintf( stderr, "%s: unable to open db; does it exist?\n", __func__ );
         exit( 1 );
     }
+
+    pthread_mutex_init( &m_dbMutex, NULL );
 
     /* Now figure out what the largest cid currently is.  There must be a way
        to get postgres to do this for me.... */
@@ -125,6 +128,8 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
     snprintf( query, sizeof(query), fmt, connName );
     logf( XW_LOGINFO, "query: %s", query );
 
+    MutexLock ml( &m_dbMutex );
+
     PGresult* result = PQexec( m_pgconn, query );
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
@@ -157,6 +162,8 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     snprintf( query, sizeof(query), fmt,
               cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
     logf( XW_LOGINFO, "query: %s", query );
+
+    MutexLock ml( &m_dbMutex );
 
     PGresult* result = PQexec( m_pgconn, query );
     if ( 1 == PQntuples( result ) ) {
@@ -221,13 +228,13 @@ DBMgr::ClearCIDs( void )
 void
 DBMgr::execSql( const char* query )
 {
+    MutexLock ml( &m_dbMutex );
     PGresult* result = PQexec( m_pgconn, query );
     if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
-        logf( XW_LOGERROR, "PQEXEC=>%s", PQresultErrorMessage(result) );
-        assert( 0 );
+        logf( XW_LOGERROR, "PQexec=>%s", PQresStatus(PQresultStatus(result) ));
+        logf( XW_LOGERROR, "PQexec=>%s", PQresultErrorMessage(result) );
     }
     PQclear( result );
-    logf( XW_LOGINFO, "PQexecParams=>%d", result );
 }
 
 /*

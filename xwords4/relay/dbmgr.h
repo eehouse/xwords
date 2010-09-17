@@ -50,7 +50,7 @@ class DBMgr {
     DBMgr();
     void execSql( const char* query ); /* no-results query */
     PGconn* m_pgconn;
-    //int m_nextCID;
+    pthread_mutex_t m_dbMutex;
 }; /* DBMgr */
 
 
