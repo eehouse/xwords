@@ -1,6 +1,7 @@
 #!/bin/bash
 
 NGAMES=${NGAMES:-1}
+NROOMS=${NROOMS:-1}
 
 USE_GTK=${USE_GTK:-FALSE}
 
@@ -13,7 +14,7 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES; do
+    for VAR in NGAMES NROOMS USE_GTK; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 0
@@ -24,6 +25,7 @@ do_device() {
     DEV=$2
     NDEVS=$3
     LOG=$4
+    ROOM=ROOM_$((GAME%NROOMS))
 
     FILE="GAME_${GAME}_${DEV}.xwg"
     rm -f $FILE
@@ -33,7 +35,7 @@ do_device() {
 
     while :; do
         sleep $((RANDOM%5))
-        ./obj_linux_memdbg/xwords -C foo -r edd $OTHERS \
+        ./obj_linux_memdbg/xwords -C $ROOM -r edd $OTHERS \
             -d dict.xwd -f $FILE $PLAT_PARMS >/dev/null 2>>$LOG &
         PID=$!
         sleep $((RANDOM%10+10))
