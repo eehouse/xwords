@@ -36,12 +36,13 @@ class DBMgr {
                  int langCode, int nPlayersT, bool isPublic );
 
     CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
-                       int* langP, int* nPlayersTP );
+                       int* langP, int* nPlayersTP, int* nPlayersHP );
     CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
                        int nPlayersH, bool wantsPublic, 
-                       char* connNameBuf, int bufLen );
+                       char* connNameBuf, int bufLen, int* nPlayersHP );
 
     void AddPlayers( const char* const connName, int nToAdd );
+    void RmPlayers( const char* const connName, int nToAdd );
     void AddCID( const char* connName, CookieID cid );
     void ClearCID( const char* connName );
 
@@ -49,7 +50,7 @@ class DBMgr {
     DBMgr();
     void execSql( const char* query ); /* no-results query */
     PGconn* m_pgconn;
-    //int m_nextCID;
+    pthread_mutex_t m_dbMutex;
 }; /* DBMgr */
 
 

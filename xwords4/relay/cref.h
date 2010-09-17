@@ -68,9 +68,9 @@ class CookieRef {
     friend class CookieMapIterator;
 
     CookieRef( const char* cookie, const char* connName, CookieID id,
-               int langCode, int nPlayersH );
+               int langCode, int nPlayersT, int nPlayersH );
     void ReInit( const char* cookie, const char* connName, CookieID id,
-                 int langCode, int nPlayers );
+                 int langCode, int nPlayers, int nAlreadyHere );
     ~CookieRef();
 
     void Clear(void);                /* make clear it's unused */
@@ -94,7 +94,6 @@ class CookieRef {
     int GetHeartbeat() { return m_heatbeat; }
     int SocketForHost( HostID dest );
 
-    bool NeverFullyConnected();
     bool AlreadyHere( unsigned short seed, int socket );
     bool GameOpen( const char* cookie );
 

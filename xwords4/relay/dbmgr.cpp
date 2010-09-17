@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "dbmgr.h"
+#include "mlock.h"
 #include "xwrelay_priv.h"
 
 #define DB_NAME "xwgames"
@@ -49,6 +50,8 @@ DBMgr::DBMgr()
         fprintf( stderr, "%s: unable to open db; does it exist?\n", __func__ );
         exit( 1 );
     }
+
+    pthread_mutex_init( &m_dbMutex, NULL );
 
     /* Now figure out what the largest cid currently is.  There must be a way
        to get postgres to do this for me.... */
@@ -90,8 +93,8 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     logf( XW_LOGINFO, "passing %s", buf );
     execSql( buf );
 #else
-    const char* command = "INSERT INTO games (cookie, connName, ntotal, nhere, lang) "
-        "VALUES( $1, $2, $3, $4, $5 )";
+    const char* command = "INSERT INTO games (cookie, connName, ntotal, "
+        "nJoined, lang) VALUES( $1, $2, $3, $4, $5 )";
     char nPlayersTBuf[4];
     char langBuf[4];
 
@@ -114,16 +117,18 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 
 CookieID
 DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
-                 int* langP, int* nPlayersTP )
+                 int* langP, int* nPlayersTP, int* nPlayersHP )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, room, lang, nTotal from " TABLE_NAME
+    const char* fmt = "SELECT cid, room, lang, nTotal, nJoined FROM " TABLE_NAME
         " where connName = '%s' "
         "LIMIT 1";
     char query[256];
     snprintf( query, sizeof(query), fmt, connName );
     logf( XW_LOGINFO, "query: %s", query );
+
+    MutexLock ml( &m_dbMutex );
 
     PGresult* result = PQexec( m_pgconn, query );
     if ( 1 == PQntuples( result ) ) {
@@ -131,6 +136,7 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
         snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
         *langP = atoi( PQgetvalue( result, 0, 2 ) );
         *nPlayersTP = atoi( PQgetvalue( result, 0, 3 ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, 4 ) );
     }
     PQclear( result );
 
@@ -140,11 +146,12 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
 
 CookieID
 DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
-                 bool wantsPublic, char* connNameBuf, int bufLen )
+                 bool wantsPublic, char* connNameBuf, int bufLen,
+                 int* nPlayersHP )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, connName FROM " TABLE_NAME " "
+    const char* fmt = "SELECT cid, connName, nJoined FROM " TABLE_NAME " "
         "WHERE room = '%s' "
         "AND lang = %d "
         "AND nTotal = %d "
@@ -156,10 +163,13 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
               cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
     logf( XW_LOGINFO, "query: %s", query );
 
+    MutexLock ml( &m_dbMutex );
+
     PGresult* result = PQexec( m_pgconn, query );
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, 2 ) );
         /* cid may be 0, but should use game anyway  */
     }
     PQclear( result );
@@ -177,6 +187,12 @@ DBMgr::AddPlayers( const char* connName, int nToAdd )
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );
+}
+
+void
+DBMgr::RmPlayers( const char* connName, int nToAdd )
+{
+    AddPlayers( connName, 0 - nToAdd );
 }
 
 void
@@ -212,13 +228,13 @@ DBMgr::ClearCIDs( void )
 void
 DBMgr::execSql( const char* query )
 {
+    MutexLock ml( &m_dbMutex );
     PGresult* result = PQexec( m_pgconn, query );
     if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
-        logf( XW_LOGERROR, "PQEXEC=>%s", PQresultErrorMessage(result) );
-        assert( 0 );
+        logf( XW_LOGERROR, "PQexec=>%s", PQresStatus(PQresultStatus(result) ));
+        logf( XW_LOGERROR, "PQexec=>%s", PQresultErrorMessage(result) );
     }
     PQclear( result );
-    logf( XW_LOGINFO, "PQexecParams=>%d", result );
 }
 
 /*
