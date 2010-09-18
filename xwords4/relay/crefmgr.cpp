@@ -212,7 +212,6 @@ void
 CRefMgr::addToFreeList( CookieRef* cref )
 {
     MutexLock ml( &m_freeList_mutex );
-    logf( XW_LOGINFO, "%s(%p)", __func__, cref );
     m_freeList.push_back( cref );
 }
 
@@ -225,7 +224,6 @@ CRefMgr::getFromFreeList( void )
         cref = m_freeList.front();
         m_freeList.pop_front();
     }
-    logf( XW_LOGINFO, "%s()=>%p", __func__, cref );
     return cref;
 }
 
