@@ -377,9 +377,6 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
              && getNetByte( &bufp, end, &langCode )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
-            static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
-            MutexLock ml( &s_newCookieLock );
-
             SafeCref scr( connName[0]? connName : NULL, 
                           srcID, socket, nPlayersH, 
                           nPlayersT, gameSeed, langCode );
