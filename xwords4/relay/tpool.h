@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <deque>
+#include <set>
 
 using namespace std;
 
@@ -48,13 +49,19 @@ class XWThreadPool {
     /* remove from tpool altogether, and close */
     void CloseSocket( int socket );
 
-    void Poll();
+    void EnqueueKill( int socket );
 
  private:
+    typedef enum { Q_READ, Q_KILL } QAction;
+    typedef pair<QAction, int> QueuePr;
+
     /* Remove from set being listened on */
     bool RemoveSocket( int socket );
 
     void enqueue( int socket );
+    void release_socket_locked( int socket );
+    bool grab_elem_locked( int curSock, QueuePr* qpp );
+
     bool get_process_packet( int socket );
     void interrupt_poll();
 
@@ -69,7 +76,8 @@ class XWThreadPool {
     pthread_rwlock_t m_activeSocketsRWLock;
 
     /* Sockets waiting for a thread to read 'em */
-    deque<int> m_queue;
+    deque<QueuePr> m_queue;
+    set<int> m_sockets_in_use;
     pthread_mutex_t m_queueMutex;
     pthread_cond_t m_queueCondVar;
 
