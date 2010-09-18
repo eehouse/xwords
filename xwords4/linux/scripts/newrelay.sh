@@ -8,6 +8,9 @@ USE_GTK=${USE_GTK:-FALSE}
 
 [ $USE_GTK = FALSE ] && CURSES_PARM="-u -0"
 
+LOGDIR=$(basename $0)_logs
+mkdir -p $LOGDIR
+
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
@@ -32,7 +35,7 @@ for II in $(seq $NGAMES); do
     done
     for JJ in $(seq $NPLAYERS); do
         ./obj_linux_memdbg/xwords $CURSES_PARM -d $DICT -r Eric $REMOTES \
-            -C $COOKIE -q 2 2>log_${II}_${JJ}.txt >/dev/null &
+            -C $COOKIE -q 2 2>${LOGDIR}/log_${II}_${JJ}.txt >/dev/null &
     done
 done
 
