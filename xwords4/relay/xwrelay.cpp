@@ -218,9 +218,6 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
             SafeCref scr( socket );
             success = scr.HandleHeartbeat( hostID, socket );
         }
-        if ( !success ) {
-            killSocket( socket, "no cref for socket" );
-        }
     }
     return success;
 } /* processHeartbeat */
@@ -424,15 +421,11 @@ processDisconnect( unsigned char* bufp, int bufLen, int socket )
     return success;
 } /* processDisconnect */
 
-void
-killSocket( int socket, const char* why )
+static void
+killSocket( int socket )
 {
-    logf( XW_LOGINFO, "killSocket(%d): %s", socket, why );
+    logf( XW_LOGINFO, "killSocket(%d)", socket );
     CRefMgr::Get()->RemoveSocketRefs( socket );
-    /* Might want to kill the thread it belongs to if we're not in it,
-       e.g. when unable to write to another socket. */
-    logf( XW_LOGINFO,  "killSocket done" );
-    XWThreadPool::GetTPool()->CloseSocket( socket );
 }
 
 time_t
@@ -512,7 +505,7 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     }
 
     if ( !success ) {
-        killSocket( socket, "failure" );
+        XWThreadPool::GetTPool()->EnqueueKill( socket, "failure" );
     }
 
     return success;
@@ -974,7 +967,7 @@ main( int argc, char** argv )
     (void)sigaction( SIGINT, &act, NULL );
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
-    tPool->Setup( nWorkerThreads, processMessage );
+    tPool->Setup( nWorkerThreads, processMessage, killSocket );
 
     /* set up select call */
     fd_set rfds;

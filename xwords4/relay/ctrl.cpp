@@ -46,6 +46,7 @@
 #include "xwrelay_priv.h"
 #include "configs.h"
 #include "lstnrmgr.h"
+#include "tpool.h"
 
 #define MAX_ARGS 10
 
@@ -190,7 +191,7 @@ cmd_kill_eject( int socket, const char** args )
     if ( 0 == strcmp( args[1], "socket" ) ) {
         int victim = atoi( args[2] );
         if ( victim != 0 ) {
-            killSocket( victim, "ctrl command" );
+            XWThreadPool::GetTPool()-> EnqueueKill( victim, "ctrl command" );
             found = true;
         }
     } else if ( 0 == strcmp( args[1], "cref" ) ) {

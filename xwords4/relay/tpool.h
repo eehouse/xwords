@@ -37,11 +37,12 @@ class XWThreadPool {
  public:
     static XWThreadPool* GetTPool();
     typedef bool (*packet_func)( unsigned char* buf, int bufLen, int socket );
+    typedef void (*kill_func)( int socket );
 
     XWThreadPool();
     ~XWThreadPool();
 
-    void Setup( int nThreads, packet_func pFunc );
+    void Setup( int nThreads, packet_func pFunc, kill_func kFunc );
     void Stop();
 
     /* Add to set being listened on */
@@ -49,18 +50,18 @@ class XWThreadPool {
     /* remove from tpool altogether, and close */
     void CloseSocket( int socket );
 
-    void EnqueueKill( int socket );
+    void EnqueueKill( int socket, const char* const why );
 
  private:
     typedef enum { Q_READ, Q_KILL } QAction;
-    typedef pair<QAction, int> QueuePr;
+    typedef struct { QAction m_act; int m_socket; } QueuePr;
 
     /* Remove from set being listened on */
     bool RemoveSocket( int socket );
 
-    void enqueue( int socket );
+    void enqueue( int socket, QAction act = Q_READ );
     void release_socket_locked( int socket );
-    bool grab_elem_locked( int curSock, QueuePr* qpp );
+    void grab_elem_locked( int curSock, QueuePr* qpp );
 
     bool get_process_packet( int socket );
     void interrupt_poll();
@@ -88,6 +89,7 @@ class XWThreadPool {
     bool m_timeToDie;
     int m_nThreads;
     packet_func m_pFunc;
+    kill_func m_kFunc;
 
     static XWThreadPool* g_instance;
 };

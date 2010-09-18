@@ -78,10 +78,11 @@ XWThreadPool::~XWThreadPool()
 } /* ~XWThreadPool */
 
 void
-XWThreadPool::Setup( int nThreads, packet_func pFunc )
+XWThreadPool::Setup( int nThreads, packet_func pFunc, kill_func kFunc )
 {
     m_nThreads = nThreads;
     m_pFunc = pFunc;
+    m_kFunc = kFunc;
 
     pthread_t thread;
 
@@ -148,7 +149,7 @@ XWThreadPool::CloseSocket( int socket )
         RWWriteLock rwl( &m_activeSocketsRWLock );
         deque<QueuePr>::iterator iter = m_queue.begin();
         while ( iter != m_queue.end() ) {
-            if ( iter->second == socket ) {
+            if ( iter->m_socket == socket ) {
                 m_queue.erase( iter );
 /*                 do_interrupt = true; */
                 break;
@@ -167,6 +168,12 @@ XWThreadPool::CloseSocket( int socket )
 /*     } */
 }
 
+void
+XWThreadPool::EnqueueKill( int socket, const char* const why )
+{
+    enqueue( socket, Q_KILL );
+}
+
 bool
 XWThreadPool::get_process_packet( int socket )
 {
@@ -177,18 +184,18 @@ XWThreadPool::get_process_packet( int socket )
     ssize_t nRead = recv( socket, &packetSize, 
                           sizeof(packetSize), MSG_WAITALL );
     if ( nRead != 2 ) {
-        killSocket( socket, "nRead != 2" );
+        EnqueueKill( socket, "nRead != 2" );
     } else {
         packetSize = ntohs( packetSize );
 
         if ( packetSize < 0 || packetSize > MAX_MSG_LEN ) {
-            killSocket( socket, "packetSize wrong" );
+            EnqueueKill( socket, "packetSize wrong" );
         } else {
             unsigned char buf[MAX_MSG_LEN];
             nRead = recv( socket, buf, packetSize, MSG_WAITALL );
 
             if ( nRead != packetSize ) {
-                killSocket( socket, "nRead != packetSize" ); 
+                EnqueueKill( socket, "nRead != packetSize" ); 
             } else {
                 logf( XW_LOGINFO, "read %d bytes", nRead );
 
@@ -213,7 +220,6 @@ XWThreadPool::real_tpool_main()
     logf( XW_LOGINFO, "tpool worker thread starting" );
     int socket = -1;
     for ( ; ; ) {
-
         pthread_mutex_lock( &m_queueMutex );
         release_socket_locked( socket );
 
@@ -227,17 +233,26 @@ XWThreadPool::real_tpool_main()
         }
 
         QueuePr pr;
-        if ( grab_elem_locked( socket, &pr ) ) {
-            socket = pr.second;
-        } else {
-            socket = -1;
-        }
-        pthread_mutex_unlock( &m_queueMutex );
-        logf( XW_LOGINFO, "worker thread got socket %d from queue", socket );
+        grab_elem_locked( socket, &pr );
 
-        if ( socket >= 0 && get_process_packet( socket ) ) {
-            AddSocket( socket );
-        } /* else drop it: error */
+        pthread_mutex_unlock( &m_queueMutex );
+
+        if ( pr.m_socket >= 0 ) {
+            logf( XW_LOGINFO, "worker thread got socket %d from queue", 
+                  pr.m_socket );
+            switch ( pr.m_act ) {
+            case Q_READ:
+                if ( get_process_packet( pr.m_socket ) ) {
+                    AddSocket( pr.m_socket );
+                }
+                break;
+            case Q_KILL:
+                (*m_kFunc)( pr.m_socket );
+                CloseSocket( pr.m_socket );
+                break;
+            }
+        }
+        socket = pr.m_socket;
     }
     logf( XW_LOGINFO, "tpool worker thread exiting" );
     return NULL;
@@ -359,7 +374,7 @@ XWThreadPool::real_listener()
                         enqueue( socket );
                     } else {
                         logf( XW_LOGERROR, "odd revents: %x", curfd->revents );
-                        killSocket( socket, "error/hup in poll()" ); 
+                        EnqueueKill( socket, "error/hup in poll()" ); 
                     }
                     --nEvents;
                 }
@@ -381,10 +396,10 @@ XWThreadPool::listener_main( void* closure )
 }
 
 void
-XWThreadPool::enqueue( int socket ) 
+XWThreadPool::enqueue( int socket, QAction act ) 
 {
     MutexLock ml( &m_queueMutex );
-    pair<QAction, int> pr(Q_READ, socket);
+    QueuePr pr = { act, socket };
     m_queue.push_back( pr );
 
     logf( XW_LOGINFO, "calling pthread_cond_signal" );
@@ -392,13 +407,14 @@ XWThreadPool::enqueue( int socket )
     /* implicit unlock */
 }
 
-bool
+void
 XWThreadPool::grab_elem_locked( int curSock, QueuePr* prp )
 {
     bool found = false;
+    prp->m_socket = -1;
     deque<QueuePr>::iterator iter;
     for ( iter = m_queue.begin(); !found && iter != m_queue.end(); ++iter ) {
-        int socket = iter->second;
+        int socket = iter->m_socket;
         if ( socket == curSock 
              || m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
             *prp = *iter;
@@ -407,8 +423,14 @@ XWThreadPool::grab_elem_locked( int curSock, QueuePr* prp )
             found = true;
         }
     }
+
+    /* I think once an event isn't "found" here there's a chance of events
+       sitting in the queue without the threads knowing to go after them.  So
+       IFF this happens need to deal with it or at least confirm that there's
+       no chance of starvation */
+    // assert( found ); THIS IS FIRING
+
     logf( XW_LOGINFO, "%s()=>%d", __func__, found );
-    return found;
 }
 
 void

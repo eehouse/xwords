@@ -19,7 +19,6 @@ typedef enum {
 void logf( XW_LogLevel level, const char* format, ... );
 
 void denyConnection( int socket, XWREASON err );
-void killSocket( int socket, const char* why );
 bool send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
 
 time_t uptime(void);
