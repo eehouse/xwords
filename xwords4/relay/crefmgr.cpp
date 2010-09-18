@@ -212,6 +212,7 @@ void
 CRefMgr::addToFreeList( CookieRef* cref )
 {
     MutexLock ml( &m_freeList_mutex );
+    logf( XW_LOGINFO, "%s(%p)", __func__, cref );
     m_freeList.push_back( cref );
 }
 
@@ -224,15 +225,16 @@ CRefMgr::getFromFreeList( void )
         cref = m_freeList.front();
         m_freeList.pop_front();
     }
+    logf( XW_LOGINFO, "%s()=>%p", __func__, cref );
     return cref;
 }
 
 
 CookieRef*
-CRefMgr::getMakeCookieRef_locked( const char* cookie, HostID hid, int socket, 
-                                  int nPlayersH, int nPlayersT, int langCode, 
-                                  int gameSeed, bool wantsPublic, 
-                                  bool makePublic )
+CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket, 
+                           int nPlayersH, int nPlayersT, int langCode, 
+                           int gameSeed, bool wantsPublic, 
+                           bool makePublic )
 {
     CookieRef* cref;
 
@@ -265,12 +267,12 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, HostID hid, int socket,
     }
 
     return cref;
-} /* getMakeCookieRef_locked */
+} /* getMakeCookieRef */
 
 /* reconnect case */
 CookieRef* 
-CRefMgr::getMakeCookieRef_locked( const char* connName, HostID hid, int socket, 
-                                  int nPlayersH, int seed )
+CRefMgr::getMakeCookieRef( const char* connName, HostID hid, int socket, 
+                           int nPlayersH, int seed )
 {
     CookieRef* cref = NULL;
 
@@ -454,10 +456,8 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id,
     logf( XW_LOGINFO, "making new cref: %d", id );
     
     if ( !!ref ) {
-        logf( XW_LOGVERBOSE1, "using from free list" );
         ref->ReInit( cookie, connName, id, langCode, nPlayers, nAlreadyHere );
     } else {
-        logf( XW_LOGVERBOSE1, "calling constructor" );
         ref = new CookieRef( cookie, connName, id, langCode, nPlayers, 
                              nAlreadyHere );
     }
@@ -620,7 +620,7 @@ SafeCref::SafeCref( const char* cookie, int socket, int nPlayersH, int nPlayersS
 {
     CookieRef* cref;
 
-    cref = m_mgr->getMakeCookieRef_locked( cookie, 0, socket,
+    cref = m_mgr->getMakeCookieRef( cookie, 0, socket,
                                            nPlayersH, nPlayersS, langCode,
                                            gameSeed, wantsPublic, makePublic );
     if ( cref != NULL ) {
@@ -640,8 +640,7 @@ SafeCref::SafeCref( const char* connName, HostID hid,
 {
     CookieRef* cref;
 
-    cref = m_mgr->getMakeCookieRef_locked( connName, hid, socket, nPlayersH, 
-                                           gameSeed );
+    cref = m_mgr->getMakeCookieRef( connName, hid, socket, nPlayersH, gameSeed );
     if ( cref != NULL ) {
         m_locked = cref->Lock();
         m_cref = cref;
