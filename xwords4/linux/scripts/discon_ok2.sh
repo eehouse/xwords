@@ -3,6 +3,9 @@
 NGAMES=${NGAMES:-1}
 NROOMS=${NROOMS:-1}
 
+LOGDIR=$(basename $0)_logs
+mkdir -p $LOGDIR
+
 USE_GTK=${USE_GTK:-FALSE}
 
 if [ $USE_GTK = FALSE ]; then
@@ -41,7 +44,10 @@ do_device() {
         sleep $((RANDOM%10+10))
         kill $PID 2>/dev/null
 
-        [ $(grep -c 'all remaining tiles' $LOG) -eq $NDEVS ] && break
+        if [ $(grep -c 'all remaining tiles' $LOG) -eq $NDEVS ]; then
+            echo "game for $LOG succeeded"
+            break
+        fi
         pidof xwrelay > /dev/null || break
     done
 }
@@ -50,7 +56,7 @@ do_game() {
     INDEX=$1
     NDEVS=$(($RANDOM%3+2))
 
-    LOG="LOG_${INDEX}.txt"
+    LOG="${LOGDIR}/LOG_${INDEX}.txt"
     rm -f $LOG
 
     for DEV in $(seq $NDEVS); do
