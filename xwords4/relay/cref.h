@@ -94,7 +94,10 @@ class CookieRef {
     int GetHeartbeat() { return m_heatbeat; }
     int SocketForHost( HostID dest );
 
+    /* connect case */
     bool AlreadyHere( unsigned short seed, int socket );
+    /* reconnect case */
+    bool AlreadyHere( HostID hid, unsigned short seed, int socket );
     bool GameOpen( const char* cookie );
 
     /* for console */
@@ -127,7 +130,7 @@ class CookieRef {
     void logf( XW_LogLevel level, const char* format, ... );
 
     class CRefEvent {
-    public :
+    public:
         CRefEvent() { type = XWE_NONE; }
         CRefEvent( XW_RELAY_EVENT typ ) { type = typ; }
         XW_RELAY_EVENT type;
@@ -242,6 +245,8 @@ class CookieRef {
                         unsigned int len );
     void send_stored_messages( HostID dest, int socket );
     unsigned int count_msgs_stored( void ) { return m_nHostMsgs; }
+
+    void printSeeds( const char* caller );
 
     /* timer callback */
     static void s_checkAllConnected( void* closure );
