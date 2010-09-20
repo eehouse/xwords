@@ -317,7 +317,9 @@ reset_internal( CommsCtxt* comms, XP_Bool isServer,
     cleanupAddrRecs( comms );
 
     comms->nextChannelNo = 0;
-    comms->channelSeed = 0;
+    if ( resetRelay ) {
+        comms->channelSeed = 0;
+    }
 
     comms->connID = CONN_ID_NONE;
 #ifdef XWFEATURE_RELAY
