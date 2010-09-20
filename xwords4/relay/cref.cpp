@@ -133,6 +133,8 @@ CookieRef::~CookieRef()
         m_sockets.erase( iter );
     }
 
+    printSeeds(__func__);
+
     logf( XW_LOGINFO, 
           "CookieRef for %d being deleted; sent %d bytes over lifetime", 
           m_cookieID, m_totalSent );
@@ -209,8 +211,8 @@ void
 CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                        int seed )
 {
-    if ( AlreadyHere( seed, socket ) ) {
-        logf( XW_LOGINFO, "dropping [re]connection because already here" );
+    if ( AlreadyHere( hid, seed, socket ) ) {
+        logf( XW_LOGINFO, "dropping reconnection because already here" );
     } else {
         (void)CRefMgr::Get()->Associate( socket, this );
         pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
@@ -299,17 +301,49 @@ CookieRef::GameOpen( const char* cookie )
 bool 
 CookieRef::AlreadyHere( unsigned short seed, int socket )
 {
+    logf( XW_LOGINFO, "%s(seed=%x,socket=%d)", __func__, seed, socket );
     bool here = false;
 
-    if ( socket != -1 ) {
-        vector<HostRec>::const_iterator iter;
-        for ( iter = m_sockets.begin(); !here && iter != m_sockets.end(); 
-              ++iter ) {
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        if ( iter->m_seed == seed ) { /* client already registered */
             if ( iter->m_socket == socket ) {
-                /* NFW should the socket be here but seed not match */
-                assert( seed != iter->m_seed );
+                /* dup packet */
                 here = true;
+            } else {
+                logf( XW_LOGINFO, "%s: seeds match; nuking existing record"
+                      "for socket %d b/c assumed closed", __func__, 
+                      iter->m_socket );
+                m_sockets.erase( iter );
             }
+            break;
+        }
+    }
+    
+    logf( XW_LOGINFO, "%s=>%d", __func__, here );
+    return here;
+}
+
+bool 
+CookieRef::AlreadyHere( HostID hid, unsigned short seed, int socket )
+{
+    logf( XW_LOGINFO, "%s(hid=%d,seed=%x,socket=%d)", __func__, 
+          hid, seed, socket );
+    bool here = false;
+
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        if ( iter->m_hostID == hid ) {
+            assert( seed == iter->m_seed );
+            if ( socket == iter->m_socket ) {
+                here = true;    /* dup packet */
+            } else {
+                logf( XW_LOGINFO, "%s: hids match; nuking existing record"
+                      "for socket %d b/c assumed closed", __func__, 
+                      iter->m_socket );
+                m_sockets.erase( iter );
+            }
+            break;
         }
     }
     
@@ -335,23 +369,39 @@ CookieRef::removeSocket( int socket )
     logf( XW_LOGINFO, "%s(socket=%d)", __func__, socket );
     int count;
     {
+        bool found = false;
         ASSERT_LOCKED();
 
         count = m_sockets.size();
+        assert( count <= 4 );
         if ( count > 0 ) {
             vector<HostRec>::iterator iter;
-            for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+            for ( iter = m_sockets.begin(); 
+                  !found && iter != m_sockets.end(); ++iter ) {
                 if ( iter->m_socket == socket ) {
+                    if ( iter->m_ackPending ) {
+                        logf( XW_LOGINFO,
+                              "Never got ack; removing %d players from DB",
+                              iter->m_nPlayersH );
+                        DBMgr::Get()->RmPlayers( ConnName(), iter->m_nPlayersH );
+                        m_nPlayersHere -= iter->m_nPlayersH;
+                        --m_nPendingAcks;
+                    }
                     m_sockets.erase(iter);
                     --count;
-                    break;
+                    found = true;
                 }
             }
         } else {
             logf( XW_LOGERROR, "%s: no socket %d to remove", __func__, 
                   socket );
         }
+        if ( !found ) {
+            logf( XW_LOGINFO, "%s: socket %d not found", __func__, socket );
+        }
     }
+
+    printSeeds(__func__);
 
     if ( count == 0 ) {
         pushLastSocketGoneEvent();
@@ -771,10 +821,12 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
           "socket=%d (size=%d)", 
           __func__, hostid, socket, m_sockets.size());
 
+    assert( m_sockets.size() < 4 );
+
     HostRec hr( hostid, socket, nPlayersH, seed, !reconn );
     m_sockets.push_back( hr );
 
-    assert( !AlreadyHere( evt->u.con.seed, -1 ) );
+    printSeeds(__func__);
 
     logf( XW_LOGVERBOSE1, "%s: here=%d; total=%d", __func__,
           m_nPlayersHere, m_nPlayersSought );
@@ -800,6 +852,7 @@ CookieRef::modPending( const CRefEvent* evt, bool keep )
             break;
         }
     }
+    printSeeds(__func__);
 }
 
 void
@@ -1166,6 +1219,19 @@ CookieRef::_CheckNotAcked()
         m_eventQueue.push_back( newEvt );
         handleEvents();
     }
+}
+
+void
+CookieRef::printSeeds( const char* caller )
+{
+    int len = 0;
+    char buf[64];
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        len += snprintf( &buf[len], sizeof(buf)-len, "%.4x/%d ", 
+                         iter->m_seed, iter->m_socket );
+    }
+    logf( XW_LOGINFO, "seeds after %s(): %s", caller, buf );
 }
 
 void
