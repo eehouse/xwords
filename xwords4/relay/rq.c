@@ -27,6 +27,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
+#include <assert.h>
+
+#include "xwrelay.h"
 
 #ifndef DEFAULT_PORT
 # define DEFAULT_PORT 10998
@@ -35,24 +38,42 @@
 # define DEFAULT_HOST "localhost"
 #endif
 
+/* 
+ * Query:
+ * list of all public games by language and number of players
+ *
+ * For debugging (localhost only, maybe)
+ * count of all games in-play (cid!=null)
+ */
+
 static void
 usage( const char * const argv0 )
 {
     fprintf( stderr, "usage: %s \\\n", argv0 );
     fprintf( stderr, "\t[-p <port>]     # (default %d)\\\n", DEFAULT_PORT );
     fprintf( stderr, "\t[-a <host>]     # (default: %s)\\\n", DEFAULT_HOST );
+    fprintf( stderr, "\t-r              # list open public rooms\\\n" );
     exit( 1 );
 }
 
+static void
+do_rooms( int sockfd )
+{
+    unsigned char byt = 0;      /* protocol */
+    write( sockfd, &byt, sizeof(byt) );
+    byt = PRX_PUBROOMS;
+    write( sockfd, &byt, sizeof(byt) );
+}
 
 int
 main( int argc, char * const argv[] )
 {
     int port = DEFAULT_PORT;
+    bool doRooms = false;
     const char* host = DEFAULT_HOST;
 
     for ( ; ; ) {
-        int opt = getopt( argc, argv, "a:p:" );
+        int opt = getopt( argc, argv, "a:p:r" );
         if ( opt < 0 ) {
             break;
         }
@@ -62,6 +83,9 @@ main( int argc, char * const argv[] )
             break;
         case 'p':
             port = atoi(optarg);
+            break;
+        case 'r':
+            doRooms = true;
             break;
         default:
             usage( argv[0] );
@@ -87,6 +111,12 @@ main( int argc, char * const argv[] )
                        sizeof(to_sock) ) ) {
         fprintf( stderr, "connect failed: %d (%s)\n", errno, strerror(errno) );
         exit( 1 );
+    }
+
+    if ( doRooms ) {
+        do_rooms( sockfd );
+    } else {
+        usage( argv[0] );
     }
 
     close( sockfd );
