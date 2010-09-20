@@ -4,6 +4,7 @@ NGAMES=${NGAMES:-1}
 NROOMS=${NROOMS:-1}
 
 LOGDIR=$(basename $0)_logs
+mv $LOGDIR /tmp/$LOGDIR_$$
 mkdir -p $LOGDIR
 
 USE_GTK=${USE_GTK:-FALSE}
@@ -27,7 +28,9 @@ do_device() {
     GAME=$1
     DEV=$2
     NDEVS=$3
-    LOG=$4
+
+    LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
+    rm -f $LOG
     ROOM=ROOM_$((GAME%NROOMS))
 
     FILE="GAME_${GAME}_${DEV}.xwg"
@@ -41,11 +44,16 @@ do_device() {
         ./obj_linux_memdbg/xwords -C $ROOM -r edd $OTHERS \
             -d dict.xwd -f $FILE $PLAT_PARMS >/dev/null 2>>$LOG &
         PID=$!
-        sleep $((RANDOM%10+10))
-        kill $PID 2>/dev/null
+        sleep $((RANDOM%10+5))
+        while :; do
+            kill $PID 2>/dev/null
+            [ -d /proc/$PID ] || break
+            sleep 1
+        done
 
-        if [ $(grep -c 'all remaining tiles' $LOG) -eq $NDEVS ]; then
-            echo "game for $LOG succeeded"
+        if grep -q 'all remaining tiles' $LOG; then
+            echo -n "device $DEV in game $GAME succeeded ..."
+            date
             break
         fi
         pidof xwrelay > /dev/null || break
@@ -56,11 +64,8 @@ do_game() {
     INDEX=$1
     NDEVS=$(($RANDOM%3+2))
 
-    LOG="${LOGDIR}/LOG_${INDEX}.txt"
-    rm -f $LOG
-
     for DEV in $(seq $NDEVS); do
-        do_device $INDEX $DEV $NDEVS $LOG &
+        do_device $INDEX $DEV $NDEVS &
     done
 }
 
@@ -77,3 +82,10 @@ for GAME in $(seq 1 $NGAMES); do
 done
 
 wait
+
+for LOG in $LOGDIR/*LOG.txt; do
+    echo -n "$LOG "
+    grep 'got_connect_cmd: connName' $LOG | \
+        sed 's,^.*connName: \"\(.*\)\"$,\1,' | \
+        sort -u 
+done
