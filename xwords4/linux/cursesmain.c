@@ -475,22 +475,6 @@ showStatus( CursesAppGlobals* globals )
 static XP_Bool
 handleQuit( CursesAppGlobals* globals )
 {
-    if ( !!globals->cGlobals.params->fileName ) {
-        XWStreamCtxt* outStream;
-
-        outStream = mem_stream_make( 
-               MPPARM(globals->cGlobals.params->util->mpool)
-               globals->cGlobals.params->vtMgr, 
-               &globals->cGlobals, 0, writeToFile );
-        stream_open( outStream );
-
-        game_saveToStream( &globals->cGlobals.game, 
-                           &globals->cGlobals.params->gi, 
-                           outStream );
-
-        stream_destroy( outStream );
-    }
-
     globals->timeToExit = XP_TRUE;
     return XP_TRUE;
 } /* handleQuit */
@@ -1531,6 +1515,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                                    &g_globals.cp, &procs );
 
         stream_destroy( stream );
+
+        if ( !isServer && params->gi.serverRole == SERVER_ISSERVER ) {
+            isServer = XP_TRUE;
+        }
     } else {
         game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)g_globals.draw,
@@ -1618,6 +1606,22 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                 }
             }
         }
+    }
+
+    if ( !!g_globals.cGlobals.params->fileName ) {
+        XWStreamCtxt* outStream;
+
+        outStream = mem_stream_make( 
+               MPPARM(g_globals.cGlobals.params->util->mpool)
+               g_globals.cGlobals.params->vtMgr, 
+               &g_globals.cGlobals, 0, writeToFile );
+        stream_open( outStream );
+
+        game_saveToStream( &g_globals.cGlobals.game, 
+                           &g_globals.cGlobals.params->gi, 
+                           outStream );
+
+        stream_destroy( outStream );
     }
 
     game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */

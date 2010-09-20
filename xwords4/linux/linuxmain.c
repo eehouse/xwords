@@ -728,6 +728,12 @@ parsePair( const char* optarg, XP_U16* min, XP_U16* max )
 }
 #endif
 
+static void
+tmp_noop_sigintterm( int XP_UNUSED(sig) )
+{
+    LOG_FUNC();
+}
+
 int
 main( int argc, char** argv )
 {
@@ -741,6 +747,13 @@ main( int argc, char** argv )
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 robotCount = 0;
+
+    /* install a no-op signal handler.  Later curses- or gtk-specific code
+       will install one that does the right thing in that context */
+
+    struct sigaction act = { .sa_handler = tmp_noop_sigintterm };
+    sigaction( SIGINT, &act, NULL );
+    sigaction( SIGTERM, &act, NULL );
     
     CommsConnType conType = COMMS_CONN_NONE;
 #ifdef XWFEATURE_SMS

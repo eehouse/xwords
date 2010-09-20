@@ -649,7 +649,13 @@ handle_client_event( GtkWidget *widget, GdkEventClient *event,
 #endif
 
 static void
-quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
+quit( void )
+{
+    gtk_main_quit();
+}
+
+static void
+cleanup( GtkAppGlobals* globals )
 {
     if ( !!globals->cGlobals.params->fileName ) {
         XWStreamCtxt* outStream;
@@ -680,9 +686,7 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
 #ifdef XWFEATURE_RELAY
     linux_close_socket( &globals->cGlobals );
 #endif
-
-    gtk_main_quit();
-} /* quit */
+} /* cleanup */
 
 GtkWidget*
 makeAddSubmenu( GtkWidget* menubar, gchar* label )
@@ -1328,7 +1332,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc )
 
     if ( cGlobals->params->quitAfter >= 0 ) {
         sleep( cGlobals->params->quitAfter );
-        quit( NULL, globals );
+        quit();
     } else if ( cGlobals->params->undoWhenDone ) {
         server_handleUndo( cGlobals->game.server );
         board_draw( cGlobals->game.board );
@@ -2060,7 +2064,8 @@ static GtkAppGlobals* g_globals_for_signal;
 static void
 handle_sigintterm( int XP_UNUSED(sig) )
 {
-    quit( NULL, g_globals_for_signal );
+    LOG_FUNC();
+    gtk_main_quit();
 }
 
 int
@@ -2217,6 +2222,8 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     gtk_main();
 
 /*      MONCONTROL(1); */
+
+    cleanup( &globals );
 
     return 0;
 } /* gtkmain */
