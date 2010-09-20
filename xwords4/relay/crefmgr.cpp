@@ -227,7 +227,7 @@ CRefMgr::getFromFreeList( void )
     return cref;
 }
 
-
+/* connect case */
 CookieRef*
 CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket, 
                            int nPlayersH, int nPlayersT, int langCode, 
