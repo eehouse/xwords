@@ -70,7 +70,7 @@ do_rooms( int sockfd, int lang, int nPlayers )
     write( sockfd, &len, sizeof(len) );
     write( sockfd, msg, sizeof(msg) );
 
-    fprintf( stderr, "Waiting for response...." );
+    fprintf( stderr, "Waiting for response....\n" );
     ssize_t nRead = recv( sockfd, &len, 
                           sizeof(len), MSG_WAITALL );
     assert( nRead == sizeof(len) );
@@ -89,7 +89,7 @@ do_rooms( int sockfd, int lang, int nPlayers )
     char* saveptr;
     for ( ii = 0; ii < nRooms; ++ii ) {
         char* str = strtok_r( ptr, "\n", &saveptr );
-        fprintf( stdout, "%s", str );
+        fprintf( stdout, "%s\n", str );
         ptr = NULL;
     }
 }
