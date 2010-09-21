@@ -329,6 +329,7 @@ cursesShowFinalScores( CursesAppGlobals* globals )
     (void)cursesask( globals, text, 1, "Ok" );
 
     free( text );
+    stream_destroy( stream );
 } /* cursesShowFinalScores */
 
 static void
