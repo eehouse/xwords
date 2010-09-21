@@ -228,12 +228,13 @@ XWThreadPool::real_tpool_main()
         }
 
         if ( m_timeToDie ) {
+            logf( XW_LOGINFO, "%s: unlocking b/c m_timeToDie set", __func__ );
             pthread_mutex_unlock( &m_queueMutex );
             break;
         }
 
         QueuePr pr;
-        grab_elem_locked( socket, &pr );
+        grab_elem_locked( &pr );
 
         pthread_mutex_unlock( &m_queueMutex );
 
@@ -408,30 +409,24 @@ XWThreadPool::enqueue( int socket, QAction act )
 }
 
 void
-XWThreadPool::grab_elem_locked( int curSock, QueuePr* prp )
+XWThreadPool::grab_elem_locked( QueuePr* prp )
 {
+    logf( XW_LOGINFO, "%s()", __func__ );
     bool found = false;
     prp->m_socket = -1;
     deque<QueuePr>::iterator iter;
     for ( iter = m_queue.begin(); !found && iter != m_queue.end(); ++iter ) {
         int socket = iter->m_socket;
-        if ( socket == curSock 
-             || m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
+        if ( m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
             *prp = *iter;
-            m_queue.erase( iter );
+            m_queue.erase( iter ); /* double-free! */
             m_sockets_in_use.insert( socket );
             found = true;
         }
     }
 
-    /* I think once an event isn't "found" here there's a chance of events
-       sitting in the queue without the threads knowing to go after them.  So
-       IFF this happens need to deal with it or at least confirm that there's
-       no chance of starvation */
-    // assert( found ); THIS IS FIRING
-
     logf( XW_LOGINFO, "%s()=>%d", __func__, found );
-}
+} /* grab_elem_locked */
 
 void
 XWThreadPool::release_socket_locked( int socket )

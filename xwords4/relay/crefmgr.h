@@ -204,6 +204,7 @@ class SafeCref {
 
     bool Forward( HostID src, HostID dest, unsigned char* buf, int buflen ) {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             m_cref->_Forward( src, dest, buf, buflen );
             return true;
         } else {
@@ -212,6 +213,7 @@ class SafeCref {
     }
     bool Connect( int socket, int nPlayersH, int nPlayersS, int seed ) {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             return m_cref->_Connect( socket, nPlayersH, nPlayersS, seed );
         } else {
             return false;
@@ -220,6 +222,7 @@ class SafeCref {
     bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                     int seed ) {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersS, seed );
             return true;
         } else {
@@ -228,11 +231,13 @@ class SafeCref {
     }
     void Disconnect(int socket, HostID hostID ) {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             m_cref->_Disconnect( socket, hostID );
         }
     }
     bool HandleAck(HostID hostID ) {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             m_cref->_HandleAck( hostID );
             return true;
         } else {
@@ -241,11 +246,13 @@ class SafeCref {
     }
     void Shutdown() {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             m_cref->_Shutdown();
         }
     }
     void Remove( int socket ) {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             m_cref->_Remove( socket );
         }
     }
@@ -253,6 +260,7 @@ class SafeCref {
 #ifdef RELAY_HEARTBEAT
     bool HandleHeartbeat( HostID id, int socket ) {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             m_cref->_HandleHeartbeat( id, socket );
             return true;
         } else {
@@ -261,6 +269,7 @@ class SafeCref {
     }
     void CheckHeartbeats( time_t now ) {
         if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
             m_cref->_CheckHeartbeats( now );
         }
     }
