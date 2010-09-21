@@ -910,6 +910,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
     /* Now send the response */
     unsigned char buf[1       /* cmd */
                       + sizeof(unsigned char) /* hostID */
+                      + sizeof(short) /* cookidID */
                       + sizeof(short) /* heartbeat */
                       + sizeof(unsigned char) /* total here */
                       + sizeof(unsigned char) /* total expected */
@@ -920,6 +921,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
 
     *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     *bufp++ = evt->u.con.srcID;
+    putNetShort( &bufp, GetCookieID() );
     putNetShort( &bufp, GetHeartbeat() );
     *bufp++ = GetPlayersSought();
     *bufp++ = GetPlayersHere();
@@ -1225,7 +1227,7 @@ void
 CookieRef::printSeeds( const char* caller )
 {
     int len = 0;
-    char buf[64];
+    char buf[64] = {0};
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         len += snprintf( &buf[len], sizeof(buf)-len, "%.4x/%d ", 

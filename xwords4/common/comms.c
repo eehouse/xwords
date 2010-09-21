@@ -1084,6 +1084,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 static void
 send_ack( CommsCtxt* comms )
 {
+    LOG_FUNC();
     send_via_relay( comms, XWRELAY_ACK, comms->r.myHostID, NULL, 0 );
 }
 
@@ -1157,6 +1158,7 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
                         comms->r.nPlayersTotal, XP_FALSE );
     }
 
+    comms->r.cookieID = stream_getU16( stream );
     comms->r.heartbeat = stream_getU16( stream );
     nSought = (XP_U16)stream_getU8( stream );
     nHere = (XP_U16)stream_getU8( stream );
@@ -1212,7 +1214,9 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                    || comms->r.myHostID == srcID );
         comms->r.myHostID = srcID;
         XP_LOGF( "set hostid: %x", comms->r.myHostID );
-        comms->r.cookieID = stream_getU16( stream );
+        cookieID = stream_getU16( stream );
+        XP_ASSERT( cookieID == comms->r.cookieID );
+        // comms->r.cookieID = stream_getU16( stream );
         XP_LOGF( "set cookieID = %d", comms->r.cookieID );
 
 #ifdef DEBUG
@@ -1256,7 +1260,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             if ( COMMS_RELAYSTATE_ALLCONNECTED == comms->r.relayState ) {
                 consumed = cookieID != comms->r.cookieID;
             } else {
-                XP_ASSERT( COMMS_RELAYSTATE_RECONNECTED == comms->r.relayState );
+                XP_ASSERT( COMMS_RELAYSTATE_RECONNECTED == comms->r.relayState ); /* this is firing */
             }
         }
         if ( consumed ) {
@@ -1905,6 +1909,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
         switch ( cmd ) {
         case XWRELAY_MSG_TORELAY:
+            XP_ASSERT( 0 != comms->r.cookieID );
             stream_putU16( tmpStream, comms->r.cookieID );
             stream_putU8( tmpStream, comms->r.myHostID );
             stream_putU8( tmpStream, destID );
