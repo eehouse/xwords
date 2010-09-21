@@ -2,6 +2,7 @@
 
 NGAMES=${NGAMES:-1}
 NROOMS=${NROOMS:-1}
+TIMEOUT=${TIMEOUT:-600}
 
 LOGDIR=$(basename $0)_logs
 mv $LOGDIR /tmp/$LOGDIR_$$
@@ -11,14 +12,12 @@ USE_GTK=${USE_GTK:-FALSE}
 
 if [ $USE_GTK = FALSE ]; then
     PLAT_PARMS="-u -0"
-else
-    PLAT_PARMS="-z 1:10"
 fi
 
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 0
@@ -39,10 +38,11 @@ do_device() {
         OTHERS="-N $OTHERS"
     done
 
+    STOPTIME=$(($(date "+%s") + TIMEOUT))
     while :; do
         sleep $((RANDOM%5))
         ./obj_linux_memdbg/xwords -C $ROOM -r edd $OTHERS \
-            -d dict.xwd -f $FILE $PLAT_PARMS >/dev/null 2>>$LOG &
+            -d dict.xwd -f $FILE -z 1:3 $PLAT_PARMS >/dev/null 2>>$LOG &
         PID=$!
         sleep $((RANDOM%10+5))
         while :; do
@@ -52,11 +52,16 @@ do_device() {
         done
 
         if grep -q 'all remaining tiles' $LOG; then
-            echo -n "device $DEV in game $GAME succeeded ..."
+            echo -n "device $DEV in game $GAME succeeded ($LOG)"
             date
             break
+        elif [ $(date "+%s") -ge $STOPTIME ]; then
+            echo -n "timeout exceeded for device $DEV in game $GAME ($LOG)"
+            date
+            break
+        elif ! pidof xwrelay > /dev/null; then
+            break
         fi
-        pidof xwrelay > /dev/null || break
     done
 }
 
