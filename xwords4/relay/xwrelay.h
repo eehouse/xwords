@@ -146,7 +146,7 @@ XWREASON
 #ifndef CANT_DO_TYPEDEF
 typedef
 #endif
-enum { RX_NONE             /* 0 is an illegal value */
+enum { PRX_NONE             /* 0 is an illegal value */
        ,PRX_PUBROOMS
 }
 #ifndef CANT_DO_TYPEDEF
@@ -157,6 +157,8 @@ XWPRXYCMD
 #ifndef CANT_DO_TYPEDEF
 typedef unsigned short CookieID;
 #endif
+
+#define MAX_PROXY_MSGLEN 128
 
 #define COOKIE_ID_NONE 0L
 

@@ -645,54 +645,41 @@ handlePipe( int sig )
     logf( XW_LOGINFO, "%s", __func__ );
 }
 
+bool
+read_packet( int sock, unsigned char* buf, int buflen )
+{
+    bool result = false;
+    ssize_t nread;
+    unsigned short msgLen;
+    nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
+    if ( nread == sizeof(msgLen) ) {
+        msgLen = ntohs( msgLen );
+        if ( msgLen >= buflen ) {
+            nread = recv( sock, buf, msgLen, MSG_WAITALL );
+            result = nread == msgLen;
+        }
+    }
+    return result;
+}
 
 static void*
 handle_proxy_tproc( void* closure )
 {
     int sock = (int)closure;
-    unsigned char protocol;
-    ssize_t nread;
 
-    nread = recv( sock, &protocol, sizeof(protocol), 
-                  MSG_WAITALL );
-    if ( nread == sizeof(protocol) && (0 == protocol) ) {
-        logf( XW_LOGERROR, "proxy socket connected; "
-              "protocol=%d", protocol );
-        unsigned short count;
-        nread = recv( sock, &count, sizeof(count), 
-                      MSG_WAITALL );
-        if ( nread == sizeof( count ) ) {
-            count = ntohs( count );
-            logf( XW_LOGERROR, "count=%d", count );
-            if ( count < MAX_PROXY_COUNT ) {
-                for ( int ii = 0; ii < count; ++ii ) {
-                    unsigned short len;
-                    nread = recv( sock, &len, sizeof(len), 
-                                  MSG_WAITALL );
-                    if ( nread != sizeof(len) ) {
-                        break;
-                    }
-                    len = ntohs( len );
-                    if ( len > MAX_PROXY_LEN ) {
-                        break;
-                    }
-                    logf( XW_LOGERROR, "len=%d", len );
-                    unsigned char buf[MAX_PROXY_LEN+1];
-                    nread = recv( sock, buf, len, 
-                                  MSG_WAITALL );
-                    if ( nread == len ) {
-                        buf[len] = '\0';
-                        logf( XW_LOGINFO, "read %s", buf );
-                    }
-
-                    /* fake, random result */
-                    unsigned char result = ii % 2 == 0? 1 : 0;
-                    write( sock, &result, sizeof(result) );
-                }
+    unsigned char buf[MAX_PROXY_MSGLEN];
+    int len = read_packet( sock, buf, sizeof(buf) );
+    if ( len > 0 ) {
+        unsigned char* bufp = buf;
+        if ( (0 == *bufp++) ) { /* protocol */
+            XWPRXYCMD cmd = (XWPRXYCMD)*bufp++;
+            switch( cmd ) {
+            case PRX_NONE:
+                break;
+            case PRX_PUBROOMS:
+                logf( XW_LOGINFO, "%s: PRX_PUBROOMS", __func__ );
+                break;
             }
-        } else {
-            logf( XW_LOGERROR, "Read %d bytes instead of %d", 
-                  nread, sizeof(count) );
         }
     }
     close( sock );

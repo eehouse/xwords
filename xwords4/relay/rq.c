@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make rq"; -*- */
 
 /* 
  * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights reserved.
@@ -53,33 +53,70 @@ usage( const char * const argv0 )
     fprintf( stderr, "\t[-p <port>]     # (default %d)\\\n", DEFAULT_PORT );
     fprintf( stderr, "\t[-a <host>]     # (default: %s)\\\n", DEFAULT_HOST );
     fprintf( stderr, "\t-r              # list open public rooms\\\n" );
+    fprintf( stderr, "\t[-l <n>]        # language for rooms "
+             "(1=English default)\\\n" );
+    fprintf( stderr, "\t[-n <n>]        # number of players (1 default)\\\n" );
     exit( 1 );
 }
 
 static void
-do_rooms( int sockfd )
+do_rooms( int sockfd, int lang, int nPlayers )
 {
-    unsigned char byt = 0;      /* protocol */
-    write( sockfd, &byt, sizeof(byt) );
-    byt = PRX_PUBROOMS;
-    write( sockfd, &byt, sizeof(byt) );
+    unsigned char msg[] = { 0,      /* protocol */
+                            PRX_PUBROOMS,
+                            lang,
+                            nPlayers };
+    unsigned short len = htons( sizeof(msg) );
+    write( sockfd, &len, sizeof(len) );
+    write( sockfd, msg, sizeof(msg) );
+
+    fprintf( stderr, "Waiting for response...." );
+    ssize_t nRead = recv( sockfd, &len, 
+                          sizeof(len), MSG_WAITALL );
+    assert( nRead == sizeof(len) );
+    len = ntohs( len );
+    char reply[len];
+    nRead = recv( sockfd, reply, len, MSG_WAITALL );
+    assert( nRead == len );
+
+    char* ptr = reply;
+    unsigned short nRooms;
+    memcpy( &nRooms, ptr, sizeof(nRooms) );
+    ptr += sizeof( nRooms );
+    nRooms = ntohs( nRooms );
+    
+    int ii;
+    char* saveptr;
+    for ( ii = 0; ii < nRooms; ++ii ) {
+        char* str = strtok_r( ptr, "\n", &saveptr );
+        fprintf( stdout, "%s", str );
+        ptr = NULL;
+    }
 }
 
 int
 main( int argc, char * const argv[] )
 {
     int port = DEFAULT_PORT;
+    int lang = 1;
+    int nPlayers = 1;
     bool doRooms = false;
     const char* host = DEFAULT_HOST;
 
     for ( ; ; ) {
-        int opt = getopt( argc, argv, "a:p:r" );
+        int opt = getopt( argc, argv, "a:p:rl:n:" );
         if ( opt < 0 ) {
             break;
         }
         switch ( opt ) {
         case 'a':
             host = optarg;
+            break;
+        case 'l':
+            lang = atoi(optarg);
+            break;
+        case 'n':
+            nPlayers = atoi(optarg);
             break;
         case 'p':
             port = atoi(optarg);
@@ -94,7 +131,6 @@ main( int argc, char * const argv[] )
     }
 
     fprintf( stderr, "got port %d, host %s\n", port, host );
-
 
     int sockfd = socket( AF_INET, SOCK_STREAM, 0 );
     struct sockaddr_in to_sock;
@@ -114,7 +150,7 @@ main( int argc, char * const argv[] )
     }
 
     if ( doRooms ) {
-        do_rooms( sockfd );
+        do_rooms( sockfd, lang, nPlayers );
     } else {
         usage( argv[0] );
     }
