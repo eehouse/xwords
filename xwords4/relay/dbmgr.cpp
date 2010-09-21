@@ -228,9 +228,27 @@ DBMgr::ClearCIDs( void )
 void
 DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
 {
-    *nNames = 2;
-    names.append( "hello world/2\n" );
-    names.append( "Room 222/1\n" );
+    int ii;
+    int nTuples;
+    
+    const char* fmt = "SELECT room, nTotal-nJoined FROM " TABLE_NAME 
+        " WHERE ispublic = TRUE AND lang = %d AND ntotal =% d";
+
+    char query[256];
+    snprintf( query, sizeof(query), fmt, lang, nPlayers );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    MutexLock ml( &m_dbMutex );
+
+    PGresult* result = PQexec( m_pgconn, query );
+    nTuples = PQntuples( result );
+    for ( ii = 0; ii < nTuples; ++ii ) {
+        names.append( PQgetvalue( result, ii, 0 ) );
+        names.append( "/" );
+        names.append( PQgetvalue( result, ii, 1 ) );
+    }
+    PQclear( result );
+    *nNames = nTuples;
 }
 
 void
