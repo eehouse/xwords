@@ -6,18 +6,26 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 15 release</b>
+<b>Crosswords 4.4 beta 16 release</b>
 
-<p>This is a quick bug-fix release while I continue work on the new relay connection code.</p>
+<p>This is a <em>another</em> quick bug-fix release while I continue 
+work on the new relay connection code -- which is coming along, 
+BTW.  Please email if you're willing to comment on an early version.</p>
 
 <ul>Bugs fixed:
-  <li>Robot wouldn't give up turn when unable to find a move. (Thanks S.A.)</li>
-  <li>"Crosshairs" was drawn only three columns wide when started on top row</li>
+  <li>Dictionary download could be routed to Browser if you weren't careful or
+  your phone maker hard-coded the type.  Now it always routes to Crosswords.
+  (Thanks B.S.)</li>
 </ul>
 
 <ul>(Still) coming soon
-  <li>builtin hints and help</li>
-  <li>rewrite of gameplay via relay to make connecting easier and allow closed game to receive moves.</li>
+  <li>builtin hints and help, starting with the Game Settings 
+  screen</li>
+
+  <li>rewrite of gameplay via relay to make connecting easier (no 
+  host/guest stuff or requirement that both be online at the same 
+  time) and allow closed game to receive moves.</li>
+
 </ul>
 
 <p>Please remember that this is beta software.  Letting me know (at 
