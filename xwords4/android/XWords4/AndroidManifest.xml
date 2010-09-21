@@ -89,10 +89,17 @@
         <action android:name="android.intent.action.VIEW"></action>
         <category android:name="android.intent.category.DEFAULT"></category>
         <category android:name="android.intent.category.BROWSABLE"></category>
-        <data android:scheme="file" android:host="*" android:pathPattern=".*\\.xwd" />
-        <data android:scheme="http" android:host="*" android:pathPattern=".*\\.xwd" />
+        <data android:scheme="file" android:host="*" 
+              android:pathPattern=".*\\.xwd" />
+        <data android:scheme="http"
+              android:mimeType="application/x-xwordsdict"
+              android:host="*" 
+              android:pathPattern=".*\\.xwd" />
       </intent-filter> 
     </activity>
 
   </application>
 </manifest>
+
+
+<!--data android:mimeType="application/x-xwordsdict" android:host="*" android:pathPattern=".*\\.xwd" / -->
