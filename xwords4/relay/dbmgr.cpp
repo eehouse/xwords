@@ -226,6 +226,14 @@ DBMgr::ClearCIDs( void )
 }
 
 void
+DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
+{
+    *nNames = 2;
+    names.append( "hello world/2\n" );
+    names.append( "Room 222/1\n" );
+}
+
+void
 DBMgr::execSql( const char* query )
 {
     MutexLock ml( &m_dbMutex );
