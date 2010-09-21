@@ -27,6 +27,8 @@ int GetNSpawns(void);
 
 int make_socket( unsigned long addr, unsigned short port );
 
+int read_packet( int sock, unsigned char* buf, int buflen );
+
 const char* cmdToStr( XWRELAY_Cmd cmd );
 
 extern class ListenerMgr g_listeners;
