@@ -181,28 +181,13 @@ XWThreadPool::get_process_packet( int socket )
     short packetSize;
     assert( sizeof(packetSize) == 2 );
 
-    ssize_t nRead = recv( socket, &packetSize, 
-                          sizeof(packetSize), MSG_WAITALL );
-    if ( nRead != 2 ) {
-        EnqueueKill( socket, "nRead != 2" );
+    unsigned char buf[MAX_MSG_LEN];
+    int nRead = read_packet( socket, buf, sizeof(buf) );
+    if ( nRead < 0 ) {
+        EnqueueKill( socket, "bad packet" );
     } else {
-        packetSize = ntohs( packetSize );
-
-        if ( packetSize < 0 || packetSize > MAX_MSG_LEN ) {
-            EnqueueKill( socket, "packetSize wrong" );
-        } else {
-            unsigned char buf[MAX_MSG_LEN];
-            nRead = recv( socket, buf, packetSize, MSG_WAITALL );
-
-            if ( nRead != packetSize ) {
-                EnqueueKill( socket, "nRead != packetSize" ); 
-            } else {
-                logf( XW_LOGINFO, "read %d bytes", nRead );
-
-                logf( XW_LOGINFO, "calling m_pFunc" );
-                success = (*m_pFunc)( buf, packetSize, socket );
-            }
-        }
+        logf( XW_LOGINFO, "calling m_pFunc" );
+        success = (*m_pFunc)( buf, nRead, socket );
     }
     return success;
 } /* get_process_packet */

@@ -55,7 +55,7 @@ xwrelay: $(OBJ)
 rq: rq.c
 
 clean:
-	rm -f xwrelay $(OBJ)
+	rm -f xwrelay $(OBJ) rq
 
 tags:
 	etags *.cpp *.h

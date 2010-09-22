@@ -21,8 +21,12 @@
 #ifndef _DBMGR_H_
 #define _DBMGR_H_
 
+#include <string>
+
 #include "xwrelay.h"
 #include <libpq-fe.h>
+
+using namespace std;
 
 class DBMgr {
  public:
@@ -45,6 +49,12 @@ class DBMgr {
     void RmPlayers( const char* const connName, int nToAdd );
     void AddCID( const char* connName, CookieID cid );
     void ClearCID( const char* connName );
+
+    /* Return list of roomName/playersStillWanted for open public games
+       matching this language and total game size. Will probably want to cache
+       lists locally and only update them every few seconds to avoid to many
+       queries.*/
+    void PublicRooms( int lang, int nPlayers, int* nNames, string& names );
 
  private:
     DBMgr();

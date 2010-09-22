@@ -38,6 +38,8 @@
 # define DEFAULT_HOST "localhost"
 #endif
 
+#define MAX_CONN_NAMES 32
+
 /* 
  * Query:
  * list of all public games by language and number of players
@@ -52,10 +54,11 @@ usage( const char * const argv0 )
     fprintf( stderr, "usage: %s \\\n", argv0 );
     fprintf( stderr, "\t[-p <port>]     # (default %d)\\\n", DEFAULT_PORT );
     fprintf( stderr, "\t[-a <host>]     # (default: %s)\\\n", DEFAULT_HOST );
-    fprintf( stderr, "\t-r              # list open public rooms\\\n" );
+    fprintf( stderr, "\t -r             # list open public rooms\\\n" );
     fprintf( stderr, "\t[-l <n>]        # language for rooms "
              "(1=English default)\\\n" );
-    fprintf( stderr, "\t[-n <n>]        # number of players (1 default)\\\n" );
+    fprintf( stderr, "\t[-n <n>]        # number of players (2 default)\\\n" );
+    fprintf( stderr, "\t[-m <connName:devid>    # list msg count\\\n" );
     exit( 1 );
 }
 
@@ -63,14 +66,14 @@ static void
 do_rooms( int sockfd, int lang, int nPlayers )
 {
     unsigned char msg[] = { 0,      /* protocol */
-                            PRX_PUBROOMS,
+                            PRX_PUB_ROOMS,
                             lang,
                             nPlayers };
     unsigned short len = htons( sizeof(msg) );
     write( sockfd, &len, sizeof(len) );
     write( sockfd, msg, sizeof(msg) );
 
-    fprintf( stderr, "Waiting for response...." );
+    fprintf( stderr, "Waiting for response....\n" );
     ssize_t nRead = recv( sockfd, &len, 
                           sizeof(len), MSG_WAITALL );
     assert( nRead == sizeof(len) );
@@ -89,22 +92,47 @@ do_rooms( int sockfd, int lang, int nPlayers )
     char* saveptr;
     for ( ii = 0; ii < nRooms; ++ii ) {
         char* str = strtok_r( ptr, "\n", &saveptr );
-        fprintf( stdout, "%s", str );
+        fprintf( stdout, "%s\n", str );
         ptr = NULL;
     }
 }
+
+static void
+do_msgs( int sockfd, const char** connNames, int nConnNames )
+{
+    unsigned short len, netlen;
+    int ii;
+    for ( len = 0, ii = 0; ii < nConnNames; ++ii ) {
+        len += 1 + strlen( connNames[ii] );
+    }
+
+    unsigned char hdr[] = { 0, PRX_HAS_MSGS };
+    unsigned short netNConnNames = htons( nConnNames );
+    netlen = sizeof(hdr) + sizeof( netNConnNames ) + len;
+    netlen = htons( netlen );
+    write( sockfd, &netlen, sizeof(netlen) );
+    write( sockfd, &hdr, sizeof(hdr) );
+    write( sockfd, &netNConnNames, sizeof(netNConnNames) );
+    for ( len = 0, ii = 0; ii < nConnNames; ++ii ) {
+        write( sockfd, connNames[ii], strlen(connNames[ii]) );
+        write( sockfd, "\n", 1 );
+    }
+} /* do_msgs */
 
 int
 main( int argc, char * const argv[] )
 {
     int port = DEFAULT_PORT;
     int lang = 1;
-    int nPlayers = 1;
+    int nPlayers = 2;
     bool doRooms = false;
+    bool doMgs = false;
     const char* host = DEFAULT_HOST;
+    char const* connNames[MAX_CONN_NAMES];
+    int nConnNames = 0;
 
     for ( ; ; ) {
-        int opt = getopt( argc, argv, "a:p:rl:n:" );
+        int opt = getopt( argc, argv, "a:p:rl:n:m:" );
         if ( opt < 0 ) {
             break;
         }
@@ -114,6 +142,11 @@ main( int argc, char * const argv[] )
             break;
         case 'l':
             lang = atoi(optarg);
+            break;
+        case 'm':
+            assert( nConnNames < MAX_CONN_NAMES - 1 );
+            connNames[nConnNames++] = optarg;
+            doMgs = true;
             break;
         case 'n':
             nPlayers = atoi(optarg);
@@ -151,8 +184,9 @@ main( int argc, char * const argv[] )
 
     if ( doRooms ) {
         do_rooms( sockfd, lang, nPlayers );
-    } else {
-        usage( argv[0] );
+    }
+    if ( doMgs ) {
+        do_msgs( sockfd, connNames, nConnNames );
     }
 
     close( sockfd );

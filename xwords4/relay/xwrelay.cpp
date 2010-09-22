@@ -74,6 +74,7 @@
 #include "timermgr.h"
 #include "permid.h"
 #include "lstnrmgr.h"
+#include "dbmgr.h"
 
 static int s_nSpawns = 0;
 #define MAX_PROXY_LEN 64
@@ -645,18 +646,20 @@ handlePipe( int sig )
     logf( XW_LOGINFO, "%s", __func__ );
 }
 
-bool
+int
 read_packet( int sock, unsigned char* buf, int buflen )
 {
-    bool result = false;
+    int result = -1;
     ssize_t nread;
     unsigned short msgLen;
     nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
     if ( nread == sizeof(msgLen) ) {
         msgLen = ntohs( msgLen );
-        if ( msgLen >= buflen ) {
+        if ( msgLen <= buflen ) {
             nread = recv( sock, buf, msgLen, MSG_WAITALL );
-            result = nread == msgLen;
+            if ( nread == msgLen ) {
+                result = nread;
+            }
         }
     }
     return result;
@@ -676,8 +679,22 @@ handle_proxy_tproc( void* closure )
             switch( cmd ) {
             case PRX_NONE:
                 break;
-            case PRX_PUBROOMS:
-                logf( XW_LOGINFO, "%s: PRX_PUBROOMS", __func__ );
+            case PRX_PUB_ROOMS:
+                if ( len >= 4 ) {
+                    int lang = *bufp++;
+                    int nPlayers = *bufp++;
+                    string names;
+                    int nNames;
+                    DBMgr::Get()->PublicRooms( lang, nPlayers, &nNames, names );
+                    unsigned short netshort = htons( names.size()
+                                                     + sizeof(unsigned short) );
+                    write( sock, &netshort, sizeof(netshort) );
+                    netshort = htons( (unsigned short)nNames );
+                    write( sock, &netshort, sizeof(netshort) );
+                    write( sock, names.c_str(), names.size() );
+                }
+                break;
+            case PRX_HAS_MSGS:
                 break;
             }
         }
