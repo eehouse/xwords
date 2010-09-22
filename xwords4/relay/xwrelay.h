@@ -147,7 +147,8 @@ XWREASON
 typedef
 #endif
 enum { PRX_NONE             /* 0 is an illegal value */
-       ,PRX_PUBROOMS
+       ,PRX_PUB_ROOMS       /* list all public rooms for lang/nPlayers */
+       ,PRX_HAS_MSGS        /* return message counts for connName/devid array */
 }
 #ifndef CANT_DO_TYPEDEF
 XWPRXYCMD

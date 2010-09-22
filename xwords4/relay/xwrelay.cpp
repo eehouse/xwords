@@ -679,7 +679,7 @@ handle_proxy_tproc( void* closure )
             switch( cmd ) {
             case PRX_NONE:
                 break;
-            case PRX_PUBROOMS:
+            case PRX_PUB_ROOMS:
                 if ( len >= 4 ) {
                     int lang = *bufp++;
                     int nPlayers = *bufp++;
@@ -693,6 +693,8 @@ handle_proxy_tproc( void* closure )
                     write( sock, &netshort, sizeof(netshort) );
                     write( sock, names.c_str(), names.size() );
                 }
+                break;
+            case PRX_HAS_MSGS:
                 break;
             }
         }
