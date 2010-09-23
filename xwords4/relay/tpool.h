@@ -62,6 +62,7 @@ class XWThreadPool {
     void enqueue( int socket, QAction act = Q_READ );
     void release_socket_locked( int socket );
     void grab_elem_locked( QueuePr* qpp );
+    void print_in_use( void );
 
     bool get_process_packet( int socket );
     void interrupt_poll();

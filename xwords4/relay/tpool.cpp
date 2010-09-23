@@ -402,15 +402,18 @@ XWThreadPool::grab_elem_locked( QueuePr* prp )
     deque<QueuePr>::iterator iter;
     for ( iter = m_queue.begin(); !found && iter != m_queue.end(); ++iter ) {
         int socket = iter->m_socket;
+        /* If NOT found */
         if ( m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
             *prp = *iter;
-            m_queue.erase( iter ); /* double-free! */
+            m_queue.erase( iter ); /* this was a double-free once! */
             m_sockets_in_use.insert( socket );
             found = true;
         }
     }
 
-    logf( XW_LOGINFO, "%s()=>%d", __func__, found );
+    print_in_use();
+
+    logf( XW_LOGINFO, "%s()=>%d", __func__, prp->m_socket );
 } /* grab_elem_locked */
 
 void
@@ -422,4 +425,19 @@ XWThreadPool::release_socket_locked( int socket )
         assert( iter != m_sockets_in_use.end() );
         m_sockets_in_use.erase( iter );
     }
+    print_in_use();
+}
+
+void
+XWThreadPool::print_in_use( void )
+{
+    char buf[32] = {0};
+    int len = 0;
+    set<int>::iterator iter;
+
+    for ( iter = m_sockets_in_use.begin(); 
+          iter != m_sockets_in_use.end(); ++iter ) {
+        len += snprintf( &buf[len], sizeof(buf)-len, "%d ", *iter );
+    }
+    logf( XW_LOGINFO, "%s: %s", __func__, buf );
 }
