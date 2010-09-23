@@ -637,6 +637,7 @@ SafeCref::SafeCref( const char* connName, HostID hid,
     , m_isValid( false )
 {
     CookieRef* cref;
+    assert( hid <= 4 );         /* no more than 4 hosts */
 
     cref = m_mgr->getMakeCookieRef( connName, hid, socket, nPlayersH, gameSeed );
     if ( cref != NULL ) {
