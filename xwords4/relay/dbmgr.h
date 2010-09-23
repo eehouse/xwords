@@ -57,6 +57,15 @@ class DBMgr {
        queries.*/
     void PublicRooms( int lang, int nPlayers, int* nNames, string& names );
 
+    /* message storage -- different DB */
+    int CountStoredMessages( const char* const connName );
+    void StoreMessage( const char* const connName, int hid, 
+                       const unsigned char* const buf, int len );
+    bool GetStoredMessage( const char* const connName, int hid, 
+                           unsigned char* buf, size_t* buflen, int* msgID );
+    void RemoveStoredMessage( int msgID );
+
+
  private:
     DBMgr();
     void execSql( const char* query ); /* no-results query */

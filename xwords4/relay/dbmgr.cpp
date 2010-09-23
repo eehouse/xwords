@@ -20,13 +20,15 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "dbmgr.h"
 #include "mlock.h"
 #include "xwrelay_priv.h"
 
 #define DB_NAME "xwgames"
-#define TABLE_NAME "games"
+#define GAMES_TABLE "games"
+#define MSGS_TABLE "msgs"
 
 #define ARRAYSUM "(nPerDevice[1]+nPerDevice[2]+nPerDevice[3]+nPerDevice[4])"
 
@@ -87,9 +89,9 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !cookie ) cookie = "";
     if ( !connName ) connName = "";
 
-    const char* fmt = "INSERT INTO " TABLE_NAME
-        "(cid, room, connName, nTotal, nPerDevice, lang, ispublic, ctime) "
-        "VALUES( %d, '%s', '%s', %d, ARRAY[0,0,0,0], %d, %s, 'now' )";
+    const char* fmt = "INSERT INTO " GAMES_TABLE
+        " (cid, room, connName, nTotal, nPerDevice, lang, ispublic, ctime)"
+        " VALUES( %d, '%s', '%s', %d, ARRAY[0,0,0,0], %d, %s, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
               nPlayersT, langCode, isPublic?"TRUE":"FALSE" );
@@ -103,9 +105,9 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice FROM " TABLE_NAME
-        " where connName = '%s' "
-        "LIMIT 1";
+    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice FROM " 
+        GAMES_TABLE " WHERE connName = '%s'"
+        " LIMIT 1";
     char query[256];
     snprintf( query, sizeof(query), fmt, connName );
     logf( XW_LOGINFO, "query: %s", query );
@@ -133,7 +135,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, connName, nPerDevice FROM " TABLE_NAME " "
+    const char* fmt = "SELECT cid, connName, nPerDevice FROM " GAMES_TABLE
         " WHERE room = '%s'"
         " AND lang = %d"
         " AND nTotal = %d"
@@ -175,7 +177,7 @@ DBMgr::AddDevice( const char* connName, int nToAdd )
     }
     assert( newID <= 4 );
 
-    const char* fmt = "UPDATE " TABLE_NAME " SET nPerDevice[%d] = %d "
+    const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d "
         "WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, newID, nToAdd, connName );
@@ -189,7 +191,7 @@ DBMgr::AddDevice( const char* connName, int nToAdd )
 void
 DBMgr::RmDevice( const char* connName, HostID hid )
 {
-    const char* fmt = "UPDATE " TABLE_NAME " SET nPerDevice[%d] = 0 "
+    const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0 "
         "WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, hid, connName );
@@ -201,7 +203,7 @@ DBMgr::RmDevice( const char* connName, HostID hid )
 void
 DBMgr::AddCID( const char* const connName, CookieID cid )
 {
-    const char* fmt = "UPDATE " TABLE_NAME " SET cid = %d "
+    const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d "
         "WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, cid, connName );
@@ -213,7 +215,7 @@ DBMgr::AddCID( const char* const connName, CookieID cid )
 void
 DBMgr::ClearCID( const char* connName )
 {
-    const char* fmt = "UPDATE " TABLE_NAME " SET cid = null "
+    const char* fmt = "UPDATE " GAMES_TABLE " SET cid = null "
         "WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, connName );
@@ -225,7 +227,7 @@ DBMgr::ClearCID( const char* connName )
 void
 DBMgr::ClearCIDs( void )
 {
-    execSql( "UPDATE " TABLE_NAME " set cid = null" );
+    execSql( "UPDATE " GAMES_TABLE " set cid = null" );
 }
 
 void
@@ -234,7 +236,7 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     int ii;
     int nTuples;
     
-    const char* fmt = "SELECT room, nTotal-" ARRAYSUM " FROM " TABLE_NAME 
+    const char* fmt = "SELECT room, nTotal-" ARRAYSUM " FROM " GAMES_TABLE
         " WHERE ispublic = TRUE AND lang = %d AND ntotal =% d";
 
     char query[256];
@@ -275,7 +277,7 @@ DBMgr::execSql_locked( const char* query )
 void
 DBMgr::readArray_locked( const char* const connName, int arr[]  ) /* len 4 */
 {
-    const char* fmt = "SELECT nPerDevice FROM " TABLE_NAME " WHERE connName='%s'";
+    const char* fmt = "SELECT nPerDevice FROM " GAMES_TABLE " WHERE connName='%s'";
 
     char query[256];
     snprintf( query, sizeof(query), fmt, connName );
@@ -302,13 +304,105 @@ sumArray( const char* const arrStr )
 }
 
 /*
+ id | connname  | hid |   msg   
+----+-----------+-----+---------
+  1 | abcd:1234 |   2 | xyzzx
+  2 | abcd:1234 |   2 | xyzzxxx
+  3 | abcd:1234 |   3 | xyzzxxx
+*/
+
+int
+DBMgr::CountStoredMessages( const char* const connName )
+{
+    const char* fmt = "SELECT count(*) FROM " MSGS_TABLE 
+        " WHERE connname = '%s' ";
+
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    MutexLock ml( &m_dbMutex );
+
+    PGresult* result = PQexec( m_pgconn, query );
+    assert( 1 == PQntuples( result ) );
+    int count = atoi( PQgetvalue( result, 0, 0 ) );
+    PQclear( result );
+    return count;
+} /* CountStoredMessages */
+
+void
+DBMgr::StoreMessage( const char* const connName, int hid, 
+                     const unsigned char* buf, int len )
+{
+    size_t newLen;
+    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg)"
+        " VALUES( '%s', %d, '%s' )";
+
+    MutexLock ml( &m_dbMutex );
+
+    unsigned char* bytes = PQescapeByteaConn( m_pgconn, buf, len, &newLen );
+    assert( NULL != bytes );
+    
+    char query[512];
+    snprintf( query, sizeof(query), fmt, connName, hid, bytes );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    PQfreemem( bytes );
+
+    execSql_locked( query );
+}
+
+bool
+DBMgr::GetStoredMessage( const char* const connName, int hid, 
+                         unsigned char* buf, size_t* buflen, int* msgID )
+{
+    const char* fmt = "SELECT id, msg FROM " MSGS_TABLE
+        " WHERE connName = '%s' AND hid = %d ORDER BY id LIMIT 1";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName, hid );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    MutexLock ml( &m_dbMutex );
+    PGresult* result = PQexec( m_pgconn, query );
+    int nTuples = PQntuples( result );
+    assert( nTuples <= 1 );
+
+    bool found = nTuples == 1;
+    if ( found ) {
+        *msgID = atoi( PQgetvalue( result, 0, 0 ) );
+
+        /* int len = PQgetlength( result, 0, 1 ); */
+        const unsigned char* from =
+            (const unsigned char* )PQgetvalue( result, 0, 1 );
+        size_t to_length;
+        unsigned char* bytes = PQunescapeBytea( from, &to_length );
+        assert( to_length <= *buflen );
+        memcpy( buf, bytes, to_length );
+        PQfreemem( bytes );
+        *buflen = to_length;
+    }
+    PQclear( result );
+    return found;
+}
+
+void
+DBMgr::RemoveStoredMessage( int msgID )
+{
+    const char* fmt = "DELETE from " MSGS_TABLE " WHERE id = %d";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, msgID );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    execSql( query );
+}
+
+/*
   Schema:
   CREATE TABLE games ( 
   cid integer,
   room VARCHAR(32),
   connName VARCHAR(64) UNIQUE PRIMARY KEY,
   nTotal INTEGER,
-  nJoined INTEGER, 
+  nPerDevice INTEGER[], 
   lang INTEGER,
   ctime TIMESTAMP,
   mtime TIMESTAMP
