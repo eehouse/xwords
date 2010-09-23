@@ -31,6 +31,15 @@ ctime TIMESTAMP,
 mtime TIMESTAMP
 );
 EOF
+
+    cat | psql xwgames --file - <<EOF
+CREATE TABLE msgs ( 
+id SERIAL,
+connName VARCHAR(64),
+hid INTEGER,
+msg BYTEA
+);
+EOF
 }
 
 do_start() {
