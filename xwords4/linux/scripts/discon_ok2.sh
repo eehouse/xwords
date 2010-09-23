@@ -2,15 +2,17 @@
 
 NGAMES=${NGAMES:-1}
 NROOMS=${NROOMS:-1}
-TIMEOUT=${TIMEOUT:-600}
 HOST=${HOST:-localhost}
 PORT=${PORT:-10997}
+TIMEOUT=${TIMEOUT:-400}
 
 NAMES=(Brynn Ariela Kati Eric)
 
 LOGDIR=$(basename $0)_logs
-mv $LOGDIR /tmp/$LOGDIR_$$
+[ -d $LOGDIR ] && mv $LOGDIR /tmp/${LOGDIR}_$$
 mkdir -p $LOGDIR
+DONEDIR=$LOGDIR/done
+mkdir -p $DONEDIR
 
 USE_GTK=${USE_GTK:-FALSE}
 
@@ -25,6 +27,13 @@ usage() {
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 0
+}
+
+connName() {
+    LOG=$1
+    grep 'got_connect_cmd: connName' $LOG | \
+        sed 's,^.*connName: \"\(.*\)\"$,\1,' | \
+        sort -u 
 }
 
 do_device() {
@@ -57,11 +66,13 @@ do_device() {
         done
 
         if grep -q 'all remaining tiles' $LOG; then
-            echo -n "device $DEV in game $GAME succeeded ($LOG)"
+            echo -n "device $DEV in game $GAME succeeded ($LOG $(connName $LOG)) "
             date
+            mv $LOG $DONEDIR
             break
         elif [ $(date "+%s") -ge $STOPTIME ]; then
-            echo -n "timeout exceeded for device $DEV in game $GAME ($LOG)"
+            echo -n "timeout exceeded for device $DEV in game $GAME " 
+            echo -n "($LOG $(connName $LOG)) "
             date
             break
         elif [ ! -d $LOGDIR ]; then
@@ -93,9 +104,9 @@ done
 
 wait
 
-for LOG in $LOGDIR/*LOG.txt; do
-    echo -n "$LOG "
-    grep 'got_connect_cmd: connName' $LOG | \
-        sed 's,^.*connName: \"\(.*\)\"$,\1,' | \
-        sort -u 
-done
+# for LOG in $LOGDIR/*LOG.txt; do
+#     echo -n "$LOG "
+#     grep 'got_connect_cmd: connName' $LOG | \
+#         sed 's,^.*connName: \"\(.*\)\"$,\1,' | \
+#         sort -u 
+# done
