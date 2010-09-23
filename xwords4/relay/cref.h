@@ -242,7 +242,6 @@ class CookieRef {
     void store_message( HostID dest, const unsigned char* buf, 
                         unsigned int len );
     void send_stored_messages( HostID dest, int socket );
-    unsigned int count_msgs_stored( void ) { return m_nHostMsgs; }
 
     void printSeeds( const char* caller );
 
@@ -250,8 +249,6 @@ class CookieRef {
     static void s_checkAllConnected( void* closure );
     static void s_checkAck( void* closure );
     
-    unsigned int m_nHostMsgs;
-    MsgBufQueue m_hostMsgQueues[4];
     vector<HostRec> m_sockets;
     bool m_gameFull;         /* once we've filled up, no more *new*
                                 connections ever */

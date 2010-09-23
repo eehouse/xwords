@@ -93,7 +93,6 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     m_locking_thread = 0;
     m_starttime = uptime();
     m_gameFull = false;
-    m_nHostMsgs = 0;
     m_in_handleEvents = false;
     m_langCode = langCode;
     m_nPendingAcks = 0;
@@ -146,14 +145,6 @@ CookieRef::Clear(void)
     m_connName = "";
     m_cookieID = 0;
     m_eventQueue.clear();
-
-    if ( 0 < m_nHostMsgs ) {
-        unsigned int ii;
-        for ( ii = 0; ii < sizeof(m_hostMsgQueues)/sizeof(m_hostMsgQueues[0]);++ii){
-            m_hostMsgQueues[ii].clear();
-        }
-        /* m_nHostMsgs will get cleared in ReInit */
-    }
 } /* Clear */
 
 bool
@@ -686,7 +677,7 @@ CookieRef::handleEvents()
 
             case XWA_NOTE_EMPTY:
                 //cancelAllConnectedTimer();
-                if ( 0 == count_msgs_stored() ) {
+                if ( 0 == DBMgr::Get()->CountStoredMessages( ConnName() ) ) {
                     CRefEvent evt( XWE_NOMOREMSGS );
                     m_eventQueue.push_back( evt );
                 }
@@ -746,41 +737,30 @@ CookieRef::store_message( HostID dest, const unsigned char* buf,
 {
     logf( XW_LOGVERBOSE0, "%s: storing msg size %d for dest %d", __func__,
           len, dest );
-    assert( dest > 0 );
-    --dest;                     // 1-based
-    MsgBuffer* entry = new MsgBuffer( buf, buf+len );
-    assert( dest < sizeof(m_hostMsgQueues)/sizeof(m_hostMsgQueues[0]) );
-    m_hostMsgQueues[dest].push_back( entry );
-    ++m_nHostMsgs;
+
+    DBMgr::Get()->StoreMessage( ConnName(), dest, buf, len );
 }
 
 void
 CookieRef::send_stored_messages( HostID dest, int socket )
 {
-    assert( dest > 0 );
     logf( XW_LOGVERBOSE0, "%s(dest=%d)", __func__, dest );
-    --dest;                   // 0 is invalid value
-    assert( dest < sizeof(m_hostMsgQueues)/sizeof(m_hostMsgQueues[0]) );
+
+    assert( dest > 0 && dest <= 4 );
     assert( -1 != socket );
 
-    MsgBufQueue& mqueue = m_hostMsgQueues[dest];
-    while ( mqueue.size() > 0 ) {
-        assert( m_nHostMsgs > 0 );
-        // send_with_length will call _Remove if it fails to send.  So
-        // need to check on presence of socket each time through!  No,
-        // the break below takes care of that.
-
-        MsgBufQueue::iterator iter = mqueue.begin();
-
-        logf( XW_LOGVERBOSE0, "%s: sending stored msg (len=%d)", 
-              __func__, (*iter)->size() );
-        if ( ! send_with_length( socket, &((**iter)[0]), (*iter)->size(), 
-                                 true ) ) {
+    for ( ; ; ) {
+        unsigned char buf[MAX_MSG_LEN];
+        size_t buflen = sizeof(buf);
+        int msgID;
+        if ( !DBMgr::Get()->GetStoredMessage( ConnName(), dest, 
+                                              buf, &buflen, &msgID ) ) {
             break;
         }
-        mqueue.erase( iter );
-        delete *iter;
-        --m_nHostMsgs;
+        if ( ! send_with_length( socket, buf, buflen, true ) ) {
+            break;
+        }
+        DBMgr::Get()->RemoveStoredMessage( msgID );
     }
 } /* send_stored_messages */
 
