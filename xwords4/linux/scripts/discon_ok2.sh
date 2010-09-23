@@ -65,7 +65,9 @@ do_device() {
             sleep 1
         done
 
-        if grep -q 'all remaining tiles' $LOG; then
+        if [ ! -d $LOGDIR ]; then
+            break;
+        elif grep -q 'all remaining tiles' $LOG; then
             echo -n "device $DEV in game $GAME succeeded ($LOG $(connName $LOG)) "
             date
             mv $LOG $DONEDIR
@@ -75,8 +77,6 @@ do_device() {
             echo -n "($LOG $(connName $LOG)) "
             date
             break
-        elif [ ! -d $LOGDIR ]; then
-            break;
         fi
     done
 }
