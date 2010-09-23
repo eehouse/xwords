@@ -88,7 +88,6 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     m_cookieID = id;
     m_totalSent = 0;
     m_curState = XWS_INITED;
-    m_nextHostID = HOST_ID_SERVER;
     m_nPlayersSought = nPlayers;
     m_nPlayersHere = nAlreadyHere;
     m_locking_thread = 0;
@@ -383,7 +382,7 @@ CookieRef::removeSocket( int socket )
                         logf( XW_LOGINFO,
                               "Never got ack; removing %d players from DB",
                               iter->m_nPlayersH );
-                        DBMgr::Get()->RmPlayers( ConnName(), iter->m_nPlayersH );
+                        DBMgr::Get()->RmDevice( ConnName(), iter->m_hostID );
                         m_nPlayersHere -= iter->m_nPlayersH;
                         --m_nPendingAcks;
                     }
@@ -482,7 +481,7 @@ CookieRef::pushConnectEvent( int socket, int nPlayersH, int nPlayersS,
     CRefEvent evt;
     evt.type = XWE_DEVCONNECT;
     evt.u.con.socket = socket;
-    evt.u.con.srcID = nextHostID();
+    evt.u.con.srcID = HOST_ID_NONE;
     evt.u.con.nPlayersH = nPlayersH;
     evt.u.con.nPlayersS = nPlayersS;
     evt.u.con.seed = seed;
@@ -786,7 +785,7 @@ CookieRef::send_stored_messages( HostID dest, int socket )
 } /* send_stored_messages */
 
 bool
-CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
+CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn )
 {
     int nPlayersH = evt->u.con.nPlayersH;
     int socket = evt->u.con.socket;
@@ -812,10 +811,10 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt, bool reconn )
     if ( !reconn ) {
         m_nPlayersHere += nPlayersH;
         assert( m_nPlayersHere <= m_nPlayersSought );
-        DBMgr::Get()->AddPlayers( ConnName(), nPlayersH );
+        evt->u.con.srcID = DBMgr::Get()->AddDevice( ConnName(), nPlayersH );
     }
-
     HostID hostid = evt->u.con.srcID;
+
     /* first add the rec here, whether it'll get ack'd or not */
     logf( XW_LOGINFO, "%s: remembering pair: hostid=%x, "
           "socket=%d (size=%d)", 
@@ -846,7 +845,7 @@ CookieRef::modPending( const CRefEvent* evt, bool keep )
             if ( keep ) {
                 iter->m_ackPending = false;
             } else {
-                DBMgr::Get()->RmPlayers( ConnName(), iter->m_nPlayersH );
+                DBMgr::Get()->RmDevice( ConnName(), iter->m_hostID );
                 m_sockets.erase( iter );
             }
             break;

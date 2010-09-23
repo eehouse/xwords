@@ -28,7 +28,11 @@
 #define DB_NAME "xwgames"
 #define TABLE_NAME "games"
 
+#define ARRAYSUM "(nPerDevice[1]+nPerDevice[2]+nPerDevice[3]+nPerDevice[4])"
+
 static DBMgr* s_instance = NULL;
+
+static int sumArray( const char* const str );
 
 /* static */ DBMgr*
 DBMgr::Get() 
@@ -80,39 +84,17 @@ void
 DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid, 
                int langCode, int nPlayersT, bool isPublic )
 {         
-#if 1
     if ( !cookie ) cookie = "";
     if ( !connName ) connName = "";
 
     const char* fmt = "INSERT INTO " TABLE_NAME
-        "(cid, room, connName, nTotal, nJoined, lang, ispublic, ctime) "
-        "VALUES( %d, '%s', '%s', %d, %d, %d, %s, 'now' )";
+        "(cid, room, connName, nTotal, nPerDevice, lang, ispublic, ctime) "
+        "VALUES( %d, '%s', '%s', %d, ARRAY[0,0,0,0], %d, %s, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
-              nPlayersT, 0, langCode, isPublic?"TRUE":"FALSE" );
+              nPlayersT, langCode, isPublic?"TRUE":"FALSE" );
     logf( XW_LOGINFO, "passing %s", buf );
     execSql( buf );
-#else
-    const char* command = "INSERT INTO games (cookie, connName, ntotal, "
-        "nJoined, lang) VALUES( $1, $2, $3, $4, $5 )";
-    char nPlayersTBuf[4];
-    char langBuf[4];
-
-    snprintf( nPlayersHBuf, sizeof(nPlayersHBuf), "%d", nPlayersH );
-    snprintf( nPlayersTBuf, sizeof(nPlayersTBuf), "%d", nPlayersT );
-    snprintf( langBuf, sizeof(langBuf), "%d", langCode );
-
-    const char * const paramValues[] = { cookie, connName, nPlayersTBuf, nPlayersHBuf, langBuf };
-
-    PGresult* result = PQexecParams( m_pgconn, command,
-                                     sizeof(paramValues)/sizeof(paramValues[0]),
-                                     NULL, /*const Oid *paramTypes,*/
-                                     paramValues,
-                                     NULL, /*const int *paramLengths,*/
-                                     NULL, /*const int *paramFormats,*/
-                                     0 /*int resultFormat*/ );
-    logf( XW_LOGINFO, "PQexecParams=>%d", result );
-#endif
 }
 
 CookieID
@@ -121,7 +103,7 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, room, lang, nTotal, nJoined FROM " TABLE_NAME
+    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice FROM " TABLE_NAME
         " where connName = '%s' "
         "LIMIT 1";
     char query[256];
@@ -151,13 +133,13 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, connName, nJoined FROM " TABLE_NAME " "
-        "WHERE room = '%s' "
-        "AND lang = %d "
-        "AND nTotal = %d "
-        "AND %d <= nTotal-nJoined "
-        "AND %s = ispublic "
-        "LIMIT 1";
+    const char* fmt = "SELECT cid, connName, nPerDevice FROM " TABLE_NAME " "
+        " WHERE room = '%s'"
+        " AND lang = %d"
+        " AND nTotal = %d"
+        " AND %d <= nTotal-" ARRAYSUM
+        " AND %s = ispublic"
+        " LIMIT 1";
     char query[256];
     snprintf( query, sizeof(query), fmt,
               cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
@@ -169,7 +151,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
-        *nPlayersHP = atoi( PQgetvalue( result, 0, 2 ) );
+        *nPlayersHP = sumArray( PQgetvalue( result, 0, 2 ) );
         /* cid may be 0, but should use game anyway  */
     }
     PQclear( result );
@@ -177,22 +159,43 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     return cid;
 } /* FindOpen */
 
-void
-DBMgr::AddPlayers( const char* connName, int nToAdd )
+HostID
+DBMgr::AddDevice( const char* connName, int nToAdd )
 {
-    const char* fmt = "UPDATE " TABLE_NAME " SET nJoined = nJoined+%d "
+    HostID newID = HOST_ID_NONE;
+    int arr[4];
+
+    MutexLock ml( &m_dbMutex );
+
+    readArray_locked( connName, arr );
+    for ( newID = HOST_ID_SERVER; newID <= 4; ++newID ) {
+        if ( arr[newID-1] == 0 ) {
+            break;
+        }
+    }
+    assert( newID <= 4 );
+
+    const char* fmt = "UPDATE " TABLE_NAME " SET nPerDevice[%d] = %d "
         "WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, nToAdd, connName );
+    snprintf( query, sizeof(query), fmt, newID, nToAdd, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-    execSql( query );
+    execSql_locked( query );
+
+    return newID;
 }
 
 void
-DBMgr::RmPlayers( const char* connName, int nToAdd )
+DBMgr::RmDevice( const char* connName, HostID hid )
 {
-    AddPlayers( connName, 0 - nToAdd );
+    const char* fmt = "UPDATE " TABLE_NAME " SET nPerDevice[%d] = 0 "
+        "WHERE connName = '%s'";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, hid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    execSql( query );
 }
 
 void
@@ -231,7 +234,7 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     int ii;
     int nTuples;
     
-    const char* fmt = "SELECT room, nTotal-nJoined FROM " TABLE_NAME 
+    const char* fmt = "SELECT room, nTotal-" ARRAYSUM " FROM " TABLE_NAME 
         " WHERE ispublic = TRUE AND lang = %d AND ntotal =% d";
 
     char query[256];
@@ -255,12 +258,47 @@ void
 DBMgr::execSql( const char* query )
 {
     MutexLock ml( &m_dbMutex );
+    execSql_locked( query );
+}
+
+void
+DBMgr::execSql_locked( const char* query )
+{
     PGresult* result = PQexec( m_pgconn, query );
     if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
         logf( XW_LOGERROR, "PQexec=>%s", PQresStatus(PQresultStatus(result) ));
         logf( XW_LOGERROR, "PQexec=>%s", PQresultErrorMessage(result) );
     }
     PQclear( result );
+}
+
+void
+DBMgr::readArray_locked( const char* const connName, int arr[]  ) /* len 4 */
+{
+    const char* fmt = "SELECT nPerDevice FROM " TABLE_NAME " WHERE connName='%s'";
+
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    PGresult* result = PQexec( m_pgconn, query );
+    assert( 1 == PQntuples( result ) );
+    const char* arrStr = PQgetvalue( result, 0, 0 );
+    sscanf( arrStr, "{%d,%d,%d,%d}", &arr[0], &arr[1], &arr[2], &arr[3] );
+    PQclear( result );
+}
+
+static int
+sumArray( const char* const arrStr )
+{
+    int arr[4];
+    sscanf( arrStr, "{%d,%d,%d,%d}", &arr[0], &arr[1], &arr[2], &arr[3] );
+    int sum = 0;
+    int ii;
+    for ( ii = 0; ii < 4; ++ii ) {
+        sum += arr[ii];
+    }
+    return sum;
 }
 
 /*

@@ -202,7 +202,7 @@ class CookieRef {
     void sendResponse( const CRefEvent* evt, bool initial );
     void sendAnyStored( const CRefEvent* evt );
     void initPlayerCounts( const CRefEvent* evt );
-    bool increasePlayerCounts( const CRefEvent* evt, bool reconn );
+    bool increasePlayerCounts( CRefEvent* evt, bool reconn );
     void modPending( const CRefEvent* evt, bool keep );
 
     void postCheckAllHere();
@@ -234,8 +234,6 @@ class CookieRef {
     void assignConnName( void );
     void assignHostIds( void );
     
-    HostID nextHostID() { return m_nextHostID++; }
-
     time_t GetStarttime( void ) { return m_starttime; }
     int GetLangCode( void ) { return m_langCode; }
 
@@ -272,7 +270,6 @@ class CookieRef {
     XW_RELAY_STATE     m_curState;
     deque<CRefEvent>   m_eventQueue;
 
-    HostID m_nextHostID;
     int m_nPlayersSought;
     int m_nPlayersHere;
     int m_langCode;

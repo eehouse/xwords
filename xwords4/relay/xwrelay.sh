@@ -26,7 +26,7 @@ lang INTEGER,
 isPublic BOOLEAN,
 connName VARCHAR(64) UNIQUE PRIMARY KEY,
 nTotal INTEGER,
-nJoined INTEGER, 
+nPerDevice INTEGER[], 
 ctime TIMESTAMP,
 mtime TIMESTAMP
 );

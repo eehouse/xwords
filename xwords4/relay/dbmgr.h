@@ -24,6 +24,7 @@
 #include <string>
 
 #include "xwrelay.h"
+#include "xwrelay_priv.h"
 #include <libpq-fe.h>
 
 using namespace std;
@@ -45,8 +46,8 @@ class DBMgr {
                        int nPlayersH, bool wantsPublic, 
                        char* connNameBuf, int bufLen, int* nPlayersHP );
 
-    void AddPlayers( const char* const connName, int nToAdd );
-    void RmPlayers( const char* const connName, int nToAdd );
+    HostID AddDevice( const char* const connName, int nToAdd );
+    void RmDevice( const char* const connName, HostID id );
     void AddCID( const char* connName, CookieID cid );
     void ClearCID( const char* connName );
 
@@ -59,6 +60,9 @@ class DBMgr {
  private:
     DBMgr();
     void execSql( const char* query ); /* no-results query */
+    void execSql_locked( const char* query );
+    void readArray_locked( const char* const connName, int arr[] );
+
     PGconn* m_pgconn;
     pthread_mutex_t m_dbMutex;
 }; /* DBMgr */
