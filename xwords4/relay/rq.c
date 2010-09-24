@@ -62,6 +62,25 @@ usage( const char * const argv0 )
     exit( 1 );
 }
 
+int
+read_packet( int sock, unsigned char* buf, int buflen )
+{
+    int result = -1;
+    ssize_t nread;
+    unsigned short msgLen;
+    nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
+    if ( nread == sizeof(msgLen) ) {
+        msgLen = ntohs( msgLen );
+        if ( msgLen <= buflen ) {
+            nread = recv( sock, buf, msgLen, MSG_WAITALL );
+            if ( nread == msgLen ) {
+                result = nread;
+            }
+        }
+    }
+    return result;
+}
+
 static void
 do_rooms( int sockfd, int lang, int nPlayers )
 {
@@ -117,6 +136,29 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
         write( sockfd, connNames[ii], strlen(connNames[ii]) );
         write( sockfd, "\n", 1 );
     }
+
+    fprintf( stderr, "Waiting for response....\n" );
+    unsigned char reply[1024];
+    int nRead = read_packet( sockfd, reply, sizeof(reply) );
+    if ( nRead > 2 ) {
+        const unsigned char* bufp = reply;
+        const unsigned char* const end = bufp + nRead;
+        unsigned short count;
+        memcpy( &count, bufp, sizeof( count ) );
+        bufp += sizeof( count );
+        count = ntohs( count );
+        assert( count == nConnNames );
+        fprintf( stderr, "got count: %d\n", count );
+
+        int ii;
+        for ( ii = 0; ii < nConnNames && bufp < end; ++ii ) {
+            memcpy( &count, bufp, sizeof( count ) );
+            bufp += sizeof( count );
+            count = ntohs( count );
+            fprintf( stdout, "%s -- %d\n", connNames[ii], count );
+        }
+    }
+
 } /* do_msgs */
 
 int
