@@ -34,10 +34,11 @@ EOF
 
     cat | psql xwgames --file - <<EOF
 CREATE TABLE msgs ( 
-id SERIAL,
-connName VARCHAR(64),
-hid INTEGER,
-msg BYTEA
+id SERIAL
+,connName VARCHAR(64)
+,hid INTEGER
+,ctime TIMESTAMP
+,msg BYTEA
 );
 EOF
 }

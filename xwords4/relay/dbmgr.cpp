@@ -335,8 +335,8 @@ DBMgr::StoreMessage( const char* const connName, int hid,
                      const unsigned char* buf, int len )
 {
     size_t newLen;
-    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg)"
-        " VALUES( '%s', %d, '%s' )";
+    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg, ctime)"
+        " VALUES( '%s', %d, '%s', 'now' )";
 
     MutexLock ml( &m_dbMutex );
 
