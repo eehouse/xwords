@@ -256,6 +256,34 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     *nNames = nTuples;
 }
 
+int
+DBMgr::PendingMsgCount( const char* connNameIDPair )
+{
+    int count = 0;
+    const char* hid = strrchr( connNameIDPair, '/' );
+    if ( NULL != hid ) {
+        char name[MAX_CONNNAME_LEN];
+        int connNameLen = hid - connNameIDPair;
+        strncpy( name, connNameIDPair, connNameLen );
+        name[connNameLen] = '\0';
+
+        const char* fmt = "SELECT COUNT(*) FROM " MSGS_TABLE
+            " WHERE connName = '%s' AND hid = %s";
+        char query[256];
+        snprintf( query, sizeof(query), fmt, name, hid+1 );
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+        MutexLock ml( &m_dbMutex );
+
+        PGresult* result = PQexec( m_pgconn, query );
+        if ( 1 == PQntuples( result ) ) {
+            count = atoi( PQgetvalue( result, 0, 0 ) );
+        }
+        PQclear( result );
+    }
+    return count;
+}
+
 void
 DBMgr::execSql( const char* query )
 {

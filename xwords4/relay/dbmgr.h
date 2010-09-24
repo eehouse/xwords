@@ -57,6 +57,9 @@ class DBMgr {
        queries.*/
     void PublicRooms( int lang, int nPlayers, int* nNames, string& names );
 
+    /* Return number of messages pending for connName:hostid pair passed in */
+    int PendingMsgCount( const char* const connNameIDPair );
+
     /* message storage -- different DB */
     int CountStoredMessages( const char* const connName );
     void StoreMessage( const char* const connName, int hid, 

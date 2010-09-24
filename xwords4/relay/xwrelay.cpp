@@ -671,9 +671,11 @@ handle_proxy_tproc( void* closure )
     int sock = (int)closure;
 
     unsigned char buf[MAX_PROXY_MSGLEN];
-    int len = read_packet( sock, buf, sizeof(buf) );
+    int len = read_packet( sock, buf, sizeof(buf)-1 );
     if ( len > 0 ) {
+        buf[len] = '\0';        /* so can use strtok */
         unsigned char* bufp = buf;
+        unsigned char* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
             XWPRXYCMD cmd = (XWPRXYCMD)*bufp++;
             switch( cmd ) {
@@ -695,6 +697,38 @@ handle_proxy_tproc( void* closure )
                 }
                 break;
             case PRX_HAS_MSGS:
+                if ( len >= 2 ) {
+                    unsigned short nameCount;
+                    if ( getNetShort( &bufp, end, &nameCount ) ) {
+                        char* in = (char*)bufp;
+                        char* saveptr;
+                        vector<int> ids;
+                        for ( ; ; ) {
+                            char* name = strtok_r( in, "\n", &saveptr );
+                            if ( NULL == name ) {
+                                break;
+                            }
+                            ids.push_back( DBMgr::Get()->
+                                           PendingMsgCount( name ) );
+
+                            in = NULL;
+                        }
+
+                        unsigned short len = 
+                            (ids.size() * sizeof(unsigned short))
+                            + sizeof( unsigned short );
+                        len = htons( len );
+                        write( sock, &len, sizeof(len) );
+                        len = htons( nameCount );
+                        write( sock, &len, sizeof(len) );
+                        vector<int>::const_iterator iter;
+                        for ( iter = ids.begin(); iter != ids.end(); ++iter ) {
+                            unsigned short num = *iter;
+                            num = htons( num );
+                            write( sock, &num, sizeof(num) );
+                        }
+                    }
+                }
                 break;
             }
         }
