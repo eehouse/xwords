@@ -182,6 +182,7 @@ public class XwJNI {
     public static native int model_getNMoves( int gamePtr );
 
     // Server
+    public static native void server_reset( int gamePtr );
     public static native void server_handleUndo( int gamePtr );
     public static native boolean server_do( int gamePtr );
     public static native String server_formatDictCounts( int gamePtr, int nCols );
