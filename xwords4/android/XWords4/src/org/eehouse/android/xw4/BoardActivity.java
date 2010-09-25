@@ -604,6 +604,21 @@ public class BoardActivity extends Activity implements UtilCtxt {
                             R.string.tiles_left_title );
     }
 
+    public void setIsServer( boolean isServer )
+    {
+        Utils.logf( "setIsServer(%s)", isServer?"true":"false" );
+        DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
+            : DeviceRole.SERVER_ISCLIENT;
+        if ( newRole != m_gi.serverRole ) {
+            Utils.logf( "new role: %s; old role: %s", 
+                        newRole.toString(), m_gi.serverRole.toString() );
+            m_gi.serverRole = newRole;
+            if ( !isServer ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_SWITCHCLIENT );
+            }
+        }
+    }
+
     public void setTimer( int why, int when, int handle )
     {
         if ( null != m_timers[why] ) {
