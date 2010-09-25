@@ -90,7 +90,7 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !connName ) connName = "";
 
     const char* fmt = "INSERT INTO " GAMES_TABLE
-        " (cid, room, connName, nTotal, nPerDevice, lang, ispublic, ctime)"
+        " (cid, room, connName, nTotal, nPerDevice, lang, pub, ctime)"
         " VALUES( %d, '%s', '%s', %d, ARRAY[0,0,0,0], %d, %s, 'now' )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
@@ -140,7 +140,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
         " AND lang = %d"
         " AND nTotal = %d"
         " AND %d <= nTotal-" ARRAYSUM
-        " AND %s = ispublic"
+        " AND %s = pub"
         " LIMIT 1";
     char query[256];
     snprintf( query, sizeof(query), fmt,
@@ -237,7 +237,7 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     int nTuples;
     
     const char* fmt = "SELECT room, nTotal-" ARRAYSUM " FROM " GAMES_TABLE
-        " WHERE ispublic = TRUE AND lang = %d AND ntotal =% d";
+        " WHERE pub = TRUE AND lang = %d AND ntotal =% d";
 
     char query[256];
     snprintf( query, sizeof(query), fmt, lang, nPlayers );
@@ -364,7 +364,7 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 {
     size_t newLen;
     const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg, ctime)"
-        " VALUES( '%s', %d, '%s', 'now' )";
+        " VALUES( '%s', %d, E'%s', 'now' )";
 
     MutexLock ml( &m_dbMutex );
 
