@@ -732,6 +732,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1redoReplacedTiles
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1reset
+(JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    server_reset( state->game.server, state->game.comms );
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1handleUndo
 (JNIEnv* env, jclass C, jint gamePtr)
 {

@@ -355,6 +355,15 @@ and_util_remSelected(XW_UtilCtxt* uc)
     UTIL_CBK_TAIL();
 }
 
+static void
+and_util_setIsServer(XW_UtilCtxt* uc, XP_Bool isServer )
+{
+    /* Change both the C and Java structs, which need to stay in sync */
+    uc->gameInfo->serverRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
+    UTIL_CBK_HEADER("setIsServer", "(Z)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, isServer );
+    UTIL_CBK_TAIL();
+}
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
@@ -437,6 +446,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(getUserString);
     SET_PROC(warnIllegalWord);
     SET_PROC(remSelected);
+    SET_PROC(setIsServer);
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(addrChange);

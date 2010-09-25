@@ -44,6 +44,7 @@ public class JNIThread extends Thread {
             CMD_DRAW,
             CMD_LAYOUT,
             CMD_START,
+            CMD_SWITCHCLIENT,
             CMD_RESET,
             CMD_SAVE,
             CMD_DO,
@@ -287,6 +288,13 @@ public class JNIThread extends Thread {
                 }
                 draw = XwJNI.server_do( m_jniGamePtr );
                 break;
+
+            case CMD_SWITCHCLIENT:
+                XwJNI.server_reset( m_jniGamePtr );
+                XwJNI.server_initClientConnection( m_jniGamePtr );
+                draw = XwJNI.server_do( m_jniGamePtr );
+                break;
+
             case CMD_DO:
                 if ( nextSame( JNICmd.CMD_DO ) ) {
                     continue;

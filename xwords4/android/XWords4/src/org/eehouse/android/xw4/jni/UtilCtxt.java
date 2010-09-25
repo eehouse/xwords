@@ -45,9 +45,10 @@ public interface UtilCtxt {
     public static final int TIMER_SLOWROBOT = 4;
     void setTimer( int why, int when, int handle );
     void clearTimer( int why );
+
     void requestTime();
     void remSelected();
-
+    void setIsServer( boolean isServer );
 
     static final int STRD_ROBOT_TRADED =                  1;
     static final int STR_ROBOT_MOVED =                    2;

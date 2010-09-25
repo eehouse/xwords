@@ -459,7 +459,7 @@ public class GameConfig extends Activity implements View.OnClickListener,
             m_notNetworkedGame = m_notNetworkedGameCheckbx.isChecked();
             m_gi.setServerRole( m_notNetworkedGame
                                 ? DeviceRole.SERVER_STANDALONE 
-                                : DeviceRole.SERVER_ISSERVER );
+                                : DeviceRole.SERVER_ISCLIENT );
 
             loadPlayers();
         } else if ( m_joinPublicCheck == view ) {
