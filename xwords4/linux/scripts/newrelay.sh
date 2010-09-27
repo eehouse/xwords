@@ -11,6 +11,7 @@ PORT=${PORT:-10997}
 [ $USE_GTK = FALSE ] && CURSES_PARM="-u -0"
 
 LOGDIR=$(basename $0)_logs
+[ -d $LOGDIR ] && mv $LOGDIR /tmp/${LOGDIR}_$$
 mkdir -p $LOGDIR
 
 usage() {

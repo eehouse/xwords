@@ -23,7 +23,7 @@ CREATE TABLE games (
 cid integer,
 room VARCHAR(32),
 lang INTEGER,
-isPublic BOOLEAN,
+pub BOOLEAN,
 connName VARCHAR(64) UNIQUE PRIMARY KEY,
 nTotal INTEGER,
 nPerDevice INTEGER[], 
