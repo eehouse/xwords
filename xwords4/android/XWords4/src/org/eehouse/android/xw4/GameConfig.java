@@ -41,6 +41,7 @@ import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.view.MenuInflater;
 import android.view.KeyEvent;
 import android.widget.Spinner;
@@ -74,6 +75,7 @@ public class GameConfig extends Activity implements View.OnClickListener,
     private boolean m_notNetworkedGame;
     private Button m_addPlayerButton;
     private Button m_jugglePlayersButton;
+    private ImageButton m_refreshRoomsButton;
     private View m_connectSet;  // really a LinearLayout
     private Spinner m_roomChoose;
     // private Button m_configureButton;
@@ -366,13 +368,10 @@ public class GameConfig extends Activity implements View.OnClickListener,
         // m_configureButton = (Button)findViewById(R.id.configure_role);
         // m_configureButton.setOnClickListener( this );
 
-        m_roomChoose = (Spinner)findViewById(R.id.room_spinner);
-        String[] rooms = { "Room 1", "NSA 1200+", "Some other room" };
-        ArrayAdapter<String> adapter = 
-            new ArrayAdapter<String>( this,
-                                      android.R.layout.simple_spinner_item,
-                                      rooms );
-        m_roomChoose.setAdapter( adapter );
+        m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
+
+        m_refreshRoomsButton = (ImageButton)findViewById( R.id.refresh_button );
+        m_refreshRoomsButton.setOnClickListener( this );
 
         adjustConnectStuff();
 
@@ -477,6 +476,9 @@ public class GameConfig extends Activity implements View.OnClickListener,
         //         showDialog( ROLE_EDIT_BT );
         //         break;
         //     }
+        } else if ( m_refreshRoomsButton == view ) {
+            new RefreshNamesTask( this, m_gi.dictLang, m_gi.nPlayers, 
+                                  m_roomChoose ).execute();
         } else {
             Utils.logf( "unknown v: " + view.toString() );
         }
@@ -674,16 +676,18 @@ public class GameConfig extends Activity implements View.OnClickListener,
             m_privateRoomsSet.setVisibility( View.GONE );
             m_publicRoomsSet.setVisibility( View.VISIBLE );
 
-            // make the room spinner match the saved value if present
-            String invite = m_car.ip_relay_invite;
-            ArrayAdapter<String> adapter = 
-                (ArrayAdapter<String>)m_roomChoose.getAdapter();
-            for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
-                if ( adapter.getItem(ii).equals( invite ) ) {
-                    m_roomChoose.setSelection( ii );
-                    break;
-                }
-            }
+            // // make the room spinner match the saved value if present
+            // String invite = m_car.ip_relay_invite;
+            // ArrayAdapter<String> adapter = 
+            //     (ArrayAdapter<String>)m_roomChoose.getAdapter();
+            // if ( null != adapter ) {
+            //     for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
+            //         if ( adapter.getItem(ii).equals( invite ) ) {
+            //             m_roomChoose.setSelection( ii );
+            //             break;
+            //         }
+            //     }
+            // }
 
         } else {
             m_privateRoomsSet.setVisibility( View.VISIBLE );
@@ -776,8 +780,10 @@ public class GameConfig extends Activity implements View.OnClickListener,
             if ( m_car.ip_relay_seeksPublicRoom ) {
                 ArrayAdapter<String> adapter = 
                     (ArrayAdapter<String>)m_roomChoose.getAdapter();
-                m_car.ip_relay_invite = 
-                    adapter.getItem(m_roomChoose.getSelectedItemPosition());
+                if ( null != adapter ) {
+                    m_car.ip_relay_invite = 
+                        adapter.getItem(m_roomChoose.getSelectedItemPosition());
+                }
             } else {
                 m_car.ip_relay_invite = Utils.getText( this, R.id.room_edit );
             }
