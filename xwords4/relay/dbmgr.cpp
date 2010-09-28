@@ -247,13 +247,19 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
 
     PGresult* result = PQexec( m_pgconn, query );
     nTuples = PQntuples( result );
+    int goodCount = 0;
     for ( ii = 0; ii < nTuples; ++ii ) {
-        names.append( PQgetvalue( result, ii, 0 ) );
-        names.append( "/" );
-        names.append( PQgetvalue( result, ii, 1 ) );
+        int nOpen = atoi( PQgetvalue( result, ii, 1 ) );
+        if ( nOpen > 0 ) {
+            names.append( PQgetvalue( result, ii, 0 ) );
+            names.append( "/" );
+            names.append( PQgetvalue( result, ii, 1 ) );
+            names.append( "\n" );
+            ++goodCount;
+        }
     }
     PQclear( result );
-    *nNames = nTuples;
+    *nNames = goodCount;
 }
 
 int
