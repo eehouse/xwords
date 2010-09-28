@@ -39,14 +39,6 @@ import java.util.ArrayList;
 import org.eehouse.android.xw4.jni.GameSummary;
 
 public class RelayService extends Service {
-
-    private static final String proxy_addr = "10.0.2.2";
-    private static final int proxy_port = 10998;
-    private static final byte PROTOCOL_VERSION = 0;
-
-    // from xwrelay.h
-    private static byte PRX_PUB_ROOMS = 1;
-    private static byte PRX_HAS_MSGS = 2;
     
     private NotificationManager m_nm;
 
@@ -63,11 +55,9 @@ public class RelayService extends Service {
                     ArrayList<byte[]>ids = collectIDs( nBytes );
                     if ( null != ids && 0 < ids.size() ) {
                         try {
-                            SocketFactory factory = SocketFactory.getDefault();
-                            InetAddress addr = InetAddress.getByName( proxy_addr );
-                            Socket socket = factory.createSocket( addr, 
-                                                                  proxy_port );
-                            socket.setSoTimeout( 3000 );
+                            Socket socket = 
+                                NetUtils.MakeProxySocket( RelayService.this, 
+                                                          3000 );
                             DataOutputStream outStream = 
                                 new DataOutputStream( socket.getOutputStream() );
 
@@ -76,8 +66,8 @@ public class RelayService extends Service {
                             Utils.logf( "total packet size: %d",
                                         2 + nBytes[0] + ids.size() );
 
-                            outStream.writeByte( PROTOCOL_VERSION );
-                            outStream.writeByte( PRX_HAS_MSGS );
+                            outStream.writeByte( NetUtils.PROTOCOL_VERSION );
+                            outStream.writeByte( NetUtils.PRX_HAS_MSGS );
 
                             // number of ids
                             outStream.writeShort( ids.size() );
@@ -117,7 +107,7 @@ public class RelayService extends Service {
                                                           ids.get(ii).toString() );
                                         // Toast.makeText( RelayService.this, msg,
                                         //                 Toast.LENGTH_SHORT).
-                                            // show();
+                                        // show();
                                     }
                                 }
                             }
@@ -126,6 +116,8 @@ public class RelayService extends Service {
                             Utils.logf( uhe.toString() );
                         } catch( java.io.IOException ioe ) {
                             Utils.logf( ioe.toString() );
+                        } catch( NullPointerException npe ) {
+                            Utils.logf( npe.toString() );
                         }
                     }
                     RelayService.this.stopSelf();
