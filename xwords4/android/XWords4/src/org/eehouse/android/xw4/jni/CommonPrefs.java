@@ -145,10 +145,22 @@ public class CommonPrefs {
         String val = getString( context, R.string.key_relay_port );
         int result = 0;
         try {
-            return Integer.parseInt( val );
+            result = Integer.parseInt( val );
         } catch ( Exception ex ) {
-            return 0;
         } 
+        return result;
+    }
+
+    public static int getDefaultProxyPort( Context context )
+    {
+        String val = getString( context, R.string.key_proxy_port );
+        int result = 0;
+        try {
+            result = Integer.parseInt( val );
+        } catch ( Exception ex ) {
+        } 
+        Utils.logf( "getDefaultProxyPort=>%d", result );
+        return result;
     }
 
     public static String getDefaultDictURL( Context context )

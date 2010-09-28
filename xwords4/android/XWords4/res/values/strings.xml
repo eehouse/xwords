@@ -287,7 +287,8 @@
     <string name="advanced_summary">You may never need these...</string>
     <string name="relay_host">Relay address</string>
     <string name="dict_host">Dictionary download URL</string>
-    <string name="relay_port">Relay port</string>
+    <string name="relay_port">Relay game port</string>
+    <string name="proxy_port">Relay device port</string>
     <string name="sms_port">SMS port</string>
 
     <string name="sms_phone_label">sms_phone_label</string>

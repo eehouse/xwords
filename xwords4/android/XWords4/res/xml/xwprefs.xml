@@ -182,6 +182,11 @@
                         android:defaultValue="10999"
                         android:numeric="decimal"
                         />
+    <EditTextPreference android:key="@string/key_proxy_port"
+                        android:title="@string/proxy_port"
+                        android:defaultValue="10998"
+                        android:numeric="decimal"
+                        />
     <!-- <EditTextPreference android:key="@string/key_sms_port" -->
          <!--                     android:title="@string/sms_port" -->
          <!--                     android:defaultValue="5432" -->
