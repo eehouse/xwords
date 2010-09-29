@@ -687,6 +687,9 @@ handle_proxy_tproc( void* closure )
                     int nPlayers = *bufp++;
                     string names;
                     int nNames;
+
+                    // sleep(2);   /* use this to test when running locally */
+
                     DBMgr::Get()->PublicRooms( lang, nPlayers, &nNames, names );
                     unsigned short netshort = htons( names.size()
                                                      + sizeof(unsigned short) );
