@@ -57,8 +57,9 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
-public class GameConfig extends Activity implements View.OnClickListener,
-                                                    XWListItem.DeleteCallback {
+public class GameConfig extends Activity implements View.OnClickListener
+                                                    ,XWListItem.DeleteCallback
+                                                    ,RefreshNamesTask.NoNameFound {
 
     private static final int PLAYER_EDIT = 1;
     // private static final int ROLE_EDIT_RELAY = 2;
@@ -66,6 +67,7 @@ public class GameConfig extends Activity implements View.OnClickListener,
     // private static final int ROLE_EDIT_BT = 4;
     private static final int FORCE_REMOTE = 5;
     private static final int CONFIRM_CHANGE = 6;
+    private static final int NO_NAME_FOUND = 7;
 
     private CheckBox m_notNetworkedGameCheckbx;
     private CheckBox m_joinPublicCheck;
@@ -218,6 +220,11 @@ public class GameConfig extends Activity implements View.OnClickListener,
                                     })
                 .create();
             break;
+        case NO_NAME_FOUND:
+            dialog = new AlertDialog.Builder( this )
+                .setPositiveButton( R.string.button_ok, null )
+                .setMessage( R.string.no_name_found )
+                .create();
         }
         return dialog;
     }
@@ -437,6 +444,12 @@ public class GameConfig extends Activity implements View.OnClickListener,
         }
     }
 
+    // NoNameFound interface
+    public void NoNameFound()
+    {
+        showDialog( NO_NAME_FOUND );
+    }
+
     public void onClick( View view ) 
     {
         if ( m_addPlayerButton == view ) {
@@ -477,8 +490,8 @@ public class GameConfig extends Activity implements View.OnClickListener,
         //         break;
         //     }
         } else if ( m_refreshRoomsButton == view ) {
-            new RefreshNamesTask( this, m_gi.dictLang, m_gi.nPlayers, 
-                                  m_roomChoose ).execute();
+            new RefreshNamesTask( this, this, m_gi.dictLang, 
+                                  m_gi.nPlayers, m_roomChoose ).execute();
         } else {
             Utils.logf( "unknown v: " + view.toString() );
         }

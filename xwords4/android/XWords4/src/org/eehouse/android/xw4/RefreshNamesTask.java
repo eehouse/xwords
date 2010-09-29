@@ -32,17 +32,25 @@ import java.util.ArrayList;
 import java.net.Socket;
 
 public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
+
+    public interface NoNameFound {
+        public void NoNameFound();
+    };
+
     private Context m_context;
     private Spinner m_resultSpinner;
     private int m_lang;
     private int m_nInGame;
     private ProgressDialog m_progress;
+    private NoNameFound m_nnf;
 
-    public RefreshNamesTask( Context context, int lang, int nInGame, 
+    public RefreshNamesTask( Context context, NoNameFound nnf,
+                             int lang, int nInGame, 
                              Spinner getsResults )
     {
         super();
         m_context = context;
+        m_nnf = nnf;
         m_resultSpinner = getsResults;
         m_lang = lang;
         m_nInGame = nInGame;
@@ -117,6 +125,10 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
          m_resultSpinner.setAdapter( adapter );
 
          m_progress.cancel();
+
+         if ( result.length == 0 ) {
+             m_nnf.NoNameFound();
+         }
 
          Utils.logf( "onPostExecute() done" );
      }

@@ -383,5 +383,7 @@
 
     <string name="public_names_progress">Fetching public rooms for
     %d-player games in %s.</string>
+    <string name="no_name_found">No public rooms found.  Try
+    refreshing or creating your own.</string>
 
 </resources>
