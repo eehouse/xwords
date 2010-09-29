@@ -38,14 +38,9 @@ public class DictLangCache {
         return name + " (" + getLangName( context, name ) + ")";
     }
 
-    private static String getLangName( Context context, String name )
+    public static String getLangName( Context context, int code )
     {
-        int code = getLangCode( context, name );
-        if ( null == s_langNames ) {
-            Resources res = context.getResources();
-            s_langNames = res.getStringArray( R.array.language_names );
-        }
-        return s_langNames[code];
+        return getNamesArray(context)[code];
     }
 
     public static int getLangCode( Context context, String name )
@@ -60,4 +55,20 @@ public class DictLangCache {
         }
         return code;
     }
+
+    private static String getLangName( Context context, String name )
+    {
+        int code = getLangCode( context, name );
+        return getNamesArray(context)[code];
+    }
+
+    private static String[] getNamesArray( Context context )
+    {
+        if ( null == s_langNames ) {
+            Resources res = context.getResources();
+            s_langNames = res.getStringArray( R.array.language_names );
+        }
+        return s_langNames;
+    }
+
 }
