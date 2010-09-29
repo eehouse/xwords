@@ -61,7 +61,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
         Utils.logf( "doInBackground()" );
 
         try {
-            Socket socket = NetUtils.MakeProxySocket( m_context, 3000 );
+            Socket socket = NetUtils.MakeProxySocket( m_context, 15000 );
 
             DataOutputStream outStream = 
                 new DataOutputStream( socket.getOutputStream() );
