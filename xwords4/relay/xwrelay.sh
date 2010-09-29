@@ -19,6 +19,18 @@ usage() {
 make_db() {
     createdb xwgames
     cat | psql xwgames --file - <<EOF
+create or replace function sum_array( DECIMAL [] )
+returns decimal
+as \$\$
+select sum(\$1[i])
+from generate_series(
+    array_lower(\$1,1),
+    array_upper(\$1,1)
+) g(i);
+\$\$ language sql immutable;
+EOF
+
+    cat | psql xwgames --file - <<EOF
 CREATE TABLE games ( 
 cid integer,
 room VARCHAR(32),
@@ -27,6 +39,7 @@ pub BOOLEAN,
 connName VARCHAR(64) UNIQUE PRIMARY KEY,
 nTotal INTEGER,
 nPerDevice INTEGER[], 
+seeds INTEGER[], 
 ctime TIMESTAMP,
 mtime TIMESTAMP
 );

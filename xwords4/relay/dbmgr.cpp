@@ -162,7 +162,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
 } /* FindOpen */
 
 HostID
-DBMgr::AddDevice( const char* connName, int nToAdd )
+DBMgr::AddDevice( const char* connName, int nToAdd, unsigned short seed )
 {
     HostID newID = HOST_ID_NONE;
     int arr[4];
@@ -177,10 +177,10 @@ DBMgr::AddDevice( const char* connName, int nToAdd )
     }
     assert( newID <= 4 );
 
-    const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d "
-        "WHERE connName = '%s'";
+    const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
+        " seeds[%d] = %d WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, newID, nToAdd, connName );
+    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql_locked( query );
@@ -191,10 +191,10 @@ DBMgr::AddDevice( const char* connName, int nToAdd )
 void
 DBMgr::RmDevice( const char* connName, HostID hid )
 {
-    const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0 "
-        "WHERE connName = '%s'";
+    const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0, "
+        "seeds[%d] = 0 WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, hid, connName );
+    snprintf( query, sizeof(query), fmt, hid, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );
@@ -233,11 +233,11 @@ DBMgr::ClearCIDs( void )
 void
 DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
 {
-    int ii;
-    int nTuples;
-    
     const char* fmt = "SELECT room, nTotal-" ARRAYSUM " FROM " GAMES_TABLE
-        " WHERE pub = TRUE AND lang = %d AND ntotal =% d";
+        " WHERE pub = TRUE"
+        " AND lang = %d"
+        " AND nTotal>" ARRAYSUM 
+        " AND nTotal = %d";
 
     char query[256];
     snprintf( query, sizeof(query), fmt, lang, nPlayers );
@@ -246,20 +246,15 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     MutexLock ml( &m_dbMutex );
 
     PGresult* result = PQexec( m_pgconn, query );
-    nTuples = PQntuples( result );
-    int goodCount = 0;
-    for ( ii = 0; ii < nTuples; ++ii ) {
-        int nOpen = atoi( PQgetvalue( result, ii, 1 ) );
-        if ( nOpen > 0 ) {
-            names.append( PQgetvalue( result, ii, 0 ) );
-            names.append( "/" );
-            names.append( PQgetvalue( result, ii, 1 ) );
-            names.append( "\n" );
-            ++goodCount;
-        }
+    int nTuples = PQntuples( result );
+    for ( int ii = 0; ii < nTuples; ++ii ) {
+        names.append( PQgetvalue( result, ii, 0 ) );
+        names.append( "/" );
+        names.append( PQgetvalue( result, ii, 1 ) );
+        names.append( "\n" );
     }
     PQclear( result );
-    *nNames = goodCount;
+    *nNames = nTuples;
 }
 
 int
@@ -428,23 +423,3 @@ DBMgr::RemoveStoredMessage( int msgID )
 
     execSql( query );
 }
-
-/*
-  Schema:
-  CREATE TABLE games ( 
-  cid integer,
-  room VARCHAR(32),
-  connName VARCHAR(64) UNIQUE PRIMARY KEY,
-  nTotal INTEGER,
-  nPerDevice INTEGER[], 
-  lang INTEGER,
-  ctime TIMESTAMP,
-  mtime TIMESTAMP
-);
-
-  May also want
-  seeds INTEGER ARRAY,
-  ipAddresses INTEGER ARRAY,
-
-        
- */
