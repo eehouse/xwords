@@ -46,7 +46,7 @@ class DBMgr {
                        int nPlayersH, bool wantsPublic, 
                        char* connNameBuf, int bufLen, int* nPlayersHP );
 
-    HostID AddDevice( const char* const connName, int nToAdd );
+    HostID AddDevice( const char* const connName, int nToAdd, unsigned short seed );
     void RmDevice( const char* const connName, HostID id );
     void AddCID( const char* connName, CookieID cid );
     void ClearCID( const char* connName );
