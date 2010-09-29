@@ -1101,7 +1101,7 @@ comms_resendAll( CommsCtxt* comms )
         if ( result == 0 && oneResult != 0 ) {
             result = oneResult;
         }
-        XP_STATUSF( "resend: msgID=" XP_LD "; rslt=%d", 
+        XP_STATUSF( "%s: msgID=" XP_LD "; rslt=%d", __func__,
                     msg->msgID, oneResult );
     }
 
