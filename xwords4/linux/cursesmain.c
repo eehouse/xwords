@@ -1623,6 +1623,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                            outStream );
 
         stream_destroy( outStream );
+        sync();
     }
 
     game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
