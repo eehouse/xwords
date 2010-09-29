@@ -30,7 +30,7 @@
 #define GAMES_TABLE "games"
 #define MSGS_TABLE "msgs"
 
-#define ARRAYSUM "(nPerDevice[1]+nPerDevice[2]+nPerDevice[3]+nPerDevice[4])"
+#define ARRAYSUM "sum_array(nPerDevice)"
 
 static DBMgr* s_instance = NULL;
 
@@ -139,7 +139,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
         " WHERE room = '%s'"
         " AND lang = %d"
         " AND nTotal = %d"
-        " AND %d <= nTotal-" ARRAYSUM
+        " AND %d <= nTotal-sum_array(nPerDevice)"
         " AND %s = pub"
         " LIMIT 1";
     char query[256];
@@ -233,10 +233,11 @@ DBMgr::ClearCIDs( void )
 void
 DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
 {
-    const char* fmt = "SELECT room, nTotal-" ARRAYSUM " FROM " GAMES_TABLE
+    const char* fmt = "SELECT room, nTotal-sum_array(nPerDevice)"
+	" FROM " GAMES_TABLE
         " WHERE pub = TRUE"
         " AND lang = %d"
-        " AND nTotal>" ARRAYSUM 
+        " AND nTotal>sum_array(nPerDevice)"
         " AND nTotal = %d";
 
     char query[256];
