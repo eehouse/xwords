@@ -781,8 +781,10 @@ public class GameConfig extends Activity implements View.OnClickListener,
                 ArrayAdapter<String> adapter = 
                     (ArrayAdapter<String>)m_roomChoose.getAdapter();
                 if ( null != adapter ) {
-                    m_car.ip_relay_invite = 
-                        adapter.getItem(m_roomChoose.getSelectedItemPosition());
+                    int pos = m_roomChoose.getSelectedItemPosition();
+                    if ( pos >= 0 && pos < adapter.getCount() ) {
+                        m_car.ip_relay_invite = adapter.getItem(pos);
+                    }
                 }
             } else {
                 m_car.ip_relay_invite = Utils.getText( this, R.id.room_edit );
