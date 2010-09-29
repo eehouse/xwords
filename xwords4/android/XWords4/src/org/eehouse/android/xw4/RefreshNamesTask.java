@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.content.Context;
 import android.widget.ArrayAdapter;
@@ -35,6 +36,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
     private Spinner m_resultSpinner;
     private int m_lang;
     private int m_nInGame;
+    private ProgressDialog m_progress;
 
     public RefreshNamesTask( Context context, int lang, int nInGame, 
                              Spinner getsResults )
@@ -44,6 +46,13 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
         m_resultSpinner = getsResults;
         m_lang = lang;
         m_nInGame = nInGame;
+
+        String fmt = context.getString( R.string.public_names_progress );
+        String msg = String.format( fmt, nInGame, 
+                                    DictLangCache.getLangName(context,lang) );
+
+        m_progress = ProgressDialog.show( context, msg, null, true, 
+                                          true );
     }
 
     protected String[] doInBackground( Void...unused ) 
@@ -106,6 +115,9 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
                                        android.R.layout.simple_spinner_item,
                                        result );
          m_resultSpinner.setAdapter( adapter );
+
+         m_progress.cancel();
+
          Utils.logf( "onPostExecute() done" );
      }
 }

@@ -381,4 +381,7 @@
 	<string name="connect_daily">Once every day</string>
 	<string name="connect_never">Never connect</string>
 
+    <string name="public_names_progress">Fetching public rooms for
+    %d-player games in %s.</string>
+
 </resources>
