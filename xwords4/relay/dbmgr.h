@@ -62,6 +62,7 @@ class DBMgr {
 
     /* message storage -- different DB */
     int CountStoredMessages( const char* const connName );
+    int CountStoredMessages( const char* const connName, int hid );
     void StoreMessage( const char* const connName, int hid, 
                        const unsigned char* const buf, int len );
     bool GetStoredMessage( const char* const connName, int hid, 

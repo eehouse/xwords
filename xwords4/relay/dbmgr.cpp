@@ -342,14 +342,19 @@ sumArray( const char* const arrStr )
 */
 
 int
-DBMgr::CountStoredMessages( const char* const connName )
+DBMgr::CountStoredMessages( const char* const connName, int hid )
 {
     const char* fmt = "SELECT count(*) FROM " MSGS_TABLE 
         " WHERE connname = '%s' ";
 
     char query[256];
-    snprintf( query, sizeof(query), fmt, connName );
+    int len = snprintf( query, sizeof(query), fmt, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    if ( hid != -1 ) {
+        snprintf( &query[len], sizeof(query)-len, "AND hid = %d",
+                  hid );
+    }
 
     MutexLock ml( &m_dbMutex );
 
@@ -358,6 +363,12 @@ DBMgr::CountStoredMessages( const char* const connName )
     int count = atoi( PQgetvalue( result, 0, 0 ) );
     PQclear( result );
     return count;
+}
+
+int
+DBMgr::CountStoredMessages( const char* const connName )
+{
+    return CountStoredMessages( connName, -1 );
 } /* CountStoredMessages */
 
 void
