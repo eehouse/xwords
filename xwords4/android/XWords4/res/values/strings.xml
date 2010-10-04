@@ -91,6 +91,7 @@
 	<string name="board_menu_game_history">Game history</string>
 	<string name="board_menu_game_final">Final scores</string>
 	<string name="board_menu_game_resend">Resend messages</string>
+    <string name="board_menu_game_chat">Send message</string>
 	<string name="board_submenu_file">File</string>
 	<string name="board_menu_file_new">New game</string>
 	<string name="board_menu_file_about">About Crosswords</string>
@@ -387,5 +388,6 @@
     refreshing or creating your own.</string>
 
     <string name="chat_received">Message received</string>
-
+    <string name="button_send">Send</string>
+    <string name="compose_chat">Message for all devices</string>
 </resources>

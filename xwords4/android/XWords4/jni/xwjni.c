@@ -1184,3 +1184,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
     server_endGame( state->game.server );
     XWJNI_END();
 }
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
+( JNIEnv* env, jclass C, jint gamePtr, jstring jmsg )
+{
+    XWJNI_START();
+    XP_ASSERT( !!state->game.server );
+    const char* msg = (*env)->GetStringUTFChars( env, jmsg, NULL );
+    server_sendChat( state->game.server, msg );
+    (*env)->ReleaseStringUTFChars( env, jmsg, msg );
+    XWJNI_END();
+}

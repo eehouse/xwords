@@ -61,6 +61,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 6;
     private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 7;
     private static final int DLG_RETRY = Utils.DIALOG_LAST + 8;
+    private static final int GET_MESSAGE = Utils.DIALOG_LAST + 9;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -74,6 +75,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     private String m_dlgBytes = null;
     private EditText m_passwdEdit = null;
+    private EditText m_chatMsg = null;
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
@@ -213,6 +215,26 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                     })
                 .create();
             break;
+
+        case GET_MESSAGE:
+            if ( null == m_chatMsg ) {
+                m_chatMsg = new EditText( this );
+            }
+            dialog = new AlertDialog.Builder( this )
+                .setMessage( R.string.compose_chat )
+                .setPositiveButton(R.string.button_send,
+                                   new DialogInterface.OnClickListener() {
+                                       public void onClick( DialogInterface dlg, 
+                                                            int item ) {
+                                           m_jniThread.handle( JNICmd.CMD_SENDCHAT, 
+                                                               m_chatMsg.getText().toString() );
+                                       }
+                                   })
+                .setNegativeButton( R.string.button_cancel, null )
+                .setView( m_chatMsg )
+                .create();
+            break;
+
         default:
             dialog = Utils.onCreateDialog( this, id );
             Assert.assertTrue( null != dialog );
@@ -466,6 +488,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
         case R.id.board_menu_game_resend:
             m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
+            break;
+        case R.id.board_menu_game_chat:
+            showDialog( GET_MESSAGE );
             break;
         case R.id.board_menu_file_prefs:
             m_firingPrefs = true;

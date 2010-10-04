@@ -77,6 +77,7 @@ public class JNIThread extends Thread {
             CMD_FINAL,
             CMD_ENDGAME,
             CMD_POST_OVER,
+            CMD_SENDCHAT,
             CMD_DRAW_CONNS_STATUS,
             };
 
@@ -452,6 +453,10 @@ public class JNIThread extends Thread {
             case CMD_POST_OVER:
                 sendForDialog( R.string.finalscores_title,
                                XwJNI.server_writeFinalScores( m_jniGamePtr ) );
+                break;
+
+            case CMD_SENDCHAT:
+                XwJNI.server_sendChat( m_jniGamePtr, (String)args[0] );
                 break;
 
             case CMD_DRAW_CONNS_STATUS:

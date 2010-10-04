@@ -46,6 +46,8 @@
               android:title="@string/board_menu_game_final" />
         <item android:id="@+id/board_menu_game_resend"
               android:title="@string/board_menu_game_resend" />
+        <item android:id="@+id/board_menu_game_chat"
+              android:title="@string/board_menu_game_chat" />
       </menu>
     </item>
 
