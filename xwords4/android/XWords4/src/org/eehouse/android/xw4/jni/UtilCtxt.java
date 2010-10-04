@@ -108,4 +108,6 @@ public interface UtilCtxt {
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
 
     boolean warnIllegalWord( String[] words, int turn, boolean turnLost );
+
+    void showChat( String msg );
 }

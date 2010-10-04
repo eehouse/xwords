@@ -346,6 +346,15 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     return result;
 }
 
+static void
+and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg )
+{
+    UTIL_CBK_HEADER("showChat", "(Ljava/lang/String;)V" );
+    jstring jmsg = (*env)->NewStringUTF( env, msg );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg );
+    (*env)->DeleteLocalRef( env, jmsg );
+    UTIL_CBK_TAIL();
+}
 
 static void
 and_util_remSelected(XW_UtilCtxt* uc)
@@ -445,6 +454,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(makeEmptyDict);
     SET_PROC(getUserString);
     SET_PROC(warnIllegalWord);
+    SET_PROC(showChat);
     SET_PROC(remSelected);
     SET_PROC(setIsServer);
 

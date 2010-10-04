@@ -386,4 +386,6 @@
     <string name="no_name_found">No public rooms found.  Try
     refreshing or creating your own.</string>
 
+    <string name="chat_received">Message received</string>
+
 </resources>

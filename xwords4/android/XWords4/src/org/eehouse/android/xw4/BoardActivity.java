@@ -1152,4 +1152,12 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return accept;
     }
 
+    public void showChat( String msg )
+    {
+        Utils.logf( "showChat(%s)", msg );
+        m_dlgBytes = msg;
+        m_dlgTitle = R.string.chat_received;
+        showDialog( DLG_OKONLY );
+    }
+
 } // class BoardActivity
