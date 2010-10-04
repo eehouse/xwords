@@ -141,6 +141,8 @@ static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XP_S16 turn );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server, 
+                                              XP_U16 devIndex, XW_Proto code );
 static XP_Bool handleRegistrationMsg( ServerCtxt* server, 
                                       XWStreamCtxt* stream );
 static void registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream );
@@ -520,6 +522,37 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
     }
     stream_destroy( stream );
 } /* server_initClientConnection */
+#endif
+
+#ifdef XWFEATURE_CHAT
+static void
+sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg )
+{
+    XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex, XWPROTO_CHAT );
+    stringToStream( stream, msg );
+    stream_destroy( stream );
+}
+
+static void
+sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip, 
+                         const XP_UCHAR const* msg )
+{
+    XP_U16 devIndex;
+    for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
+        if ( devIndex != skip ) {
+            sendChatTo( server, devIndex, msg );
+        }
+    }
+}
+
+void server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg )
+{
+    if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
+        sendChatTo( server, SERVER_DEVICE, msg );
+    } else {
+        sendChatToClientsExcept( server, SERVER_DEVICE, msg );
+    }
+}
 #endif
 
 static void
@@ -2403,6 +2436,17 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
         accepted = client_readInitialMessage( server, incoming );
 
+#ifdef XWFEATURE_CHAT
+    } else if ( code == XWPROTO_CHAT ) {
+        XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
+        if ( server->vol.gi->serverRole == SERVER_ISSERVER ) {
+            XP_U16 sourceClientIndex = 
+                getIndexForDevice( server, stream_getAddress( incoming ) );
+            sendChatToClientsExcept( server, sourceClientIndex, msg );
+        }
+        util_showChat( server->vol.util, msg );
+        XP_FREE( server->mpool, msg );
+#endif
     } else if ( readStreamHeader( server, incoming ) ) {
 
         switch( code ) {

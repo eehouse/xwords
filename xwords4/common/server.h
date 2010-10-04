@@ -105,12 +105,16 @@ XP_Bool server_commitTrade( ServerCtxt* server, TileBit bits );
 void server_endGame( ServerCtxt* server );
 
 /* called when running as either client or server */
-XP_Bool server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incomming );
+XP_Bool server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming );
 
 /* client-side messages.  Client (platform code)owns the stream used to talk
  * to the server, and passes it in. */
 #ifndef XWFEATURE_STANDALONE_ONLY
 void server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream );
+#endif
+
+#ifdef XWFEATURE_CHAT
+void server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg );
 #endif
 
 void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,

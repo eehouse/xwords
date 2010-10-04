@@ -168,6 +168,10 @@ typedef struct UtilVtable {
                                           XP_U16* min, XP_U16* max );
 #endif
 
+#ifdef XWFEATURE_CHAT
+    void (*m_util_showChat)( XW_UtilCtxt* uc, const XP_UCHAR* const msg );
+#endif
+
 #ifdef SHOW_PROGRESS
     void (*m_util_engineStarting)( XW_UtilCtxt* uc, XP_U16 nBlanks );
     void (*m_util_engineStopping)( XW_UtilCtxt* uc );
@@ -267,6 +271,9 @@ struct XW_UtilCtxt {
          (uc)->vtable->m_util_getTraySearchLimits((uc), (min), (max))
 #endif
 
+#ifdef XWFEATURE_CHAT
+# define util_showChat( uc, m ) (uc)->vtable->m_util_showChat((uc),(m))
+#endif
 
 # ifdef SHOW_PROGRESS
 # define util_engineStarting( uc, nb ) \
