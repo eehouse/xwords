@@ -51,6 +51,7 @@
 #include "draw.h"
 #include "game.h"
 #include "gtkask.h"
+#include "gtkchat.h"
 #include "gtknewgame.h"
 #include "gtkletterask.h"
 #include "gtkpasswdask.h"
@@ -877,6 +878,18 @@ handle_resend( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     }
 } /* handle_resend */
 
+#ifdef XWFEATURE_CHAT
+static void
+handle_chat( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    gchar* msg = gtkGetChatMessage( globals );
+    if ( NULL != msg ) {
+        server_sendChat( globals->cGlobals.game.server, msg );
+        g_free( msg );
+    }
+}
+#endif
+
 #ifdef DEBUG
 static void
 handle_commstats( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
@@ -977,6 +990,10 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
 #ifndef XWFEATURE_STANDALONE_ONLY
     (void)createAddItem( fileMenu, "Resend", 
                          GTK_SIGNAL_FUNC(handle_resend), globals );
+# ifdef XWFEATURE_CHAT
+    (void)createAddItem( fileMenu, "Send Chat", 
+                         GTK_SIGNAL_FUNC(handle_chat), globals );
+# endif
 # ifdef DEBUG
     (void)createAddItem( fileMenu, "Stats", 
                          GTK_SIGNAL_FUNC(handle_commstats), globals );
@@ -1605,6 +1622,14 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
                                             sendOnCloseGTK );
     return stream;
 } /* gtk_util_makeStreamFromAddr */
+
+#ifdef XWFEATURE_CHAT
+static void
+gtk_util_showChat( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* const msg )
+{
+    (void)gtkask( msg, GTK_BUTTONS_OK );
+}
+#endif
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -1822,6 +1847,9 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_remSelected = gtk_util_remSelected;
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = gtk_util_makeStreamFromAddr;
+#endif
+#ifdef XWFEATURE_CHAT
+    util->vtable->m_util_showChat = gtk_util_showChat;
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
     util->vtable->m_util_getTraySearchLimits = gtk_util_getTraySearchLimits;
