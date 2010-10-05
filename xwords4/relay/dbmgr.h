@@ -74,11 +74,9 @@ class DBMgr {
  private:
     DBMgr();
     void execSql( const char* query ); /* no-results query */
-    void execSql_locked( const char* query );
-    void readArray_locked( const char* const connName, int arr[] );
+    void readArray( const char* const connName, int arr[] );
 
-    PGconn* m_pgconn;
-    pthread_mutex_t m_dbMutex;
+    PGconn* getThreadConn( void );
 }; /* DBMgr */
 
 

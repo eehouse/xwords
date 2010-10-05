@@ -48,16 +48,6 @@ DBMgr::Get()
 DBMgr::DBMgr()
 {
     logf( XW_LOGINFO, "%s called", __func__ );
-    m_pgconn = PQconnectdb( "dbname = " DB_NAME );
-    logf( XW_LOGINFO, "%s:, m_pgconn: %p", __func__, m_pgconn );        
-
-    ConnStatusType status = PQstatus( m_pgconn );
-    if ( CONNECTION_OK != status ) {
-        fprintf( stderr, "%s: unable to open db; does it exist?\n", __func__ );
-        exit( 1 );
-    }
-
-    pthread_mutex_init( &m_dbMutex, NULL );
 
     /* Now figure out what the largest cid currently is.  There must be a way
        to get postgres to do this for me.... */
@@ -76,7 +66,6 @@ DBMgr::DBMgr()
 DBMgr::~DBMgr()
 {
     logf( XW_LOGINFO, "%s called", __func__ );
-    PQfinish( m_pgconn );
 
     assert( s_instance == this );
     s_instance = NULL;
@@ -112,9 +101,7 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
     snprintf( query, sizeof(query), fmt, connName );
     logf( XW_LOGINFO, "query: %s", query );
 
-    MutexLock ml( &m_dbMutex );
-
-    PGresult* result = PQexec( m_pgconn, query );
+    PGresult* result = PQexec( getThreadConn(), query );
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
@@ -147,9 +134,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
               cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
     logf( XW_LOGINFO, "query: %s", query );
 
-    MutexLock ml( &m_dbMutex );
-
-    PGresult* result = PQexec( m_pgconn, query );
+    PGresult* result = PQexec( getThreadConn(), query );
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
@@ -167,11 +152,9 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
 {
     HostID newID = curID;
 
-    MutexLock ml( &m_dbMutex );
-
     if ( newID == HOST_ID_NONE ) {
         int arr[4];
-        readArray_locked( connName, arr );
+        readArray( connName, arr );
         for ( newID = HOST_ID_SERVER; newID <= 4; ++newID ) {
             if ( arr[newID-1] == 0 ) {
                 break;
@@ -186,7 +169,7 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
     snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-    execSql_locked( query );
+    execSql( query );
 
     return newID;
 }
@@ -247,9 +230,7 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     snprintf( query, sizeof(query), fmt, lang, nPlayers );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-    MutexLock ml( &m_dbMutex );
-
-    PGresult* result = PQexec( m_pgconn, query );
+    PGresult* result = PQexec( getThreadConn(), query );
     int nTuples = PQntuples( result );
     for ( int ii = 0; ii < nTuples; ++ii ) {
         names.append( PQgetvalue( result, ii, 0 ) );
@@ -278,9 +259,7 @@ DBMgr::PendingMsgCount( const char* connNameIDPair )
         snprintf( query, sizeof(query), fmt, name, hid+1 );
         logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-        MutexLock ml( &m_dbMutex );
-
-        PGresult* result = PQexec( m_pgconn, query );
+        PGresult* result = PQexec( getThreadConn(), query );
         if ( 1 == PQntuples( result ) ) {
             count = atoi( PQgetvalue( result, 0, 0 ) );
         }
@@ -292,14 +271,7 @@ DBMgr::PendingMsgCount( const char* connNameIDPair )
 void
 DBMgr::execSql( const char* query )
 {
-    MutexLock ml( &m_dbMutex );
-    execSql_locked( query );
-}
-
-void
-DBMgr::execSql_locked( const char* query )
-{
-    PGresult* result = PQexec( m_pgconn, query );
+    PGresult* result = PQexec( getThreadConn(), query );
     if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
         logf( XW_LOGERROR, "PQexec=>%s", PQresStatus(PQresultStatus(result) ));
         logf( XW_LOGERROR, "PQexec=>%s", PQresultErrorMessage(result) );
@@ -308,7 +280,7 @@ DBMgr::execSql_locked( const char* query )
 }
 
 void
-DBMgr::readArray_locked( const char* const connName, int arr[]  ) /* len 4 */
+DBMgr::readArray( const char* const connName, int arr[]  ) /* len 4 */
 {
     const char* fmt = "SELECT nPerDevice FROM " GAMES_TABLE " WHERE connName='%s'";
 
@@ -316,7 +288,7 @@ DBMgr::readArray_locked( const char* const connName, int arr[]  ) /* len 4 */
     snprintf( query, sizeof(query), fmt, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-    PGresult* result = PQexec( m_pgconn, query );
+    PGresult* result = PQexec( getThreadConn(), query );
     assert( 1 == PQntuples( result ) );
     const char* arrStr = PQgetvalue( result, 0, 0 );
     sscanf( arrStr, "{%d,%d,%d,%d}", &arr[0], &arr[1], &arr[2], &arr[3] );
@@ -359,9 +331,7 @@ DBMgr::CountStoredMessages( const char* const connName, int hid )
                   hid );
     }
 
-    MutexLock ml( &m_dbMutex );
-
-    PGresult* result = PQexec( m_pgconn, query );
+    PGresult* result = PQexec( getThreadConn(), query );
     assert( 1 == PQntuples( result ) );
     int count = atoi( PQgetvalue( result, 0, 0 ) );
     PQclear( result );
@@ -382,9 +352,7 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg, ctime)"
         " VALUES( '%s', %d, E'%s', 'now' )";
 
-    MutexLock ml( &m_dbMutex );
-
-    unsigned char* bytes = PQescapeByteaConn( m_pgconn, buf, len, &newLen );
+    unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, len, &newLen );
     assert( NULL != bytes );
     
     char query[512];
@@ -392,7 +360,7 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
     PQfreemem( bytes );
 
-    execSql_locked( query );
+    execSql( query );
 }
 
 bool
@@ -405,8 +373,7 @@ DBMgr::GetStoredMessage( const char* const connName, int hid,
     snprintf( query, sizeof(query), fmt, connName, hid );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-    MutexLock ml( &m_dbMutex );
-    PGresult* result = PQexec( m_pgconn, query );
+    PGresult* result = PQexec( getThreadConn(), query );
     int nTuples = PQntuples( result );
     assert( nTuples <= 1 );
 
@@ -437,4 +404,36 @@ DBMgr::RemoveStoredMessage( int msgID )
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );
+}
+
+static void
+destr_function( void* conn )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    PGconn* pgconn = (PGconn*)conn;
+    PQfinish( pgconn );
+}
+
+static pthread_key_t s_conn_key;
+
+static void conn_key_alloc()
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    pthread_key_create( &s_conn_key, destr_function );
+}
+
+PGconn* 
+DBMgr::getThreadConn( void )
+{
+    PGconn* conn = NULL;
+    
+    static pthread_once_t key_once = PTHREAD_ONCE_INIT;
+    pthread_once( &key_once, conn_key_alloc );
+    conn = (PGconn*)pthread_getspecific( s_conn_key );
+
+    if ( NULL == conn ) {
+        conn = PQconnectdb( "dbname = " DB_NAME );
+        pthread_setspecific( s_conn_key, conn );
+    }
+    return conn;
 }
