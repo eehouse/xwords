@@ -548,6 +548,7 @@ print_prompt( int socket )
 static void*
 ctrl_thread_main( void* arg )
 {
+    blockSignals();
     int sock = (int)arg;
 
     {
