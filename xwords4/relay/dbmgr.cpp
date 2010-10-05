@@ -162,17 +162,20 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
 } /* FindOpen */
 
 HostID
-DBMgr::AddDevice( const char* connName, int nToAdd, unsigned short seed )
+DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd, 
+                  unsigned short seed )
 {
-    HostID newID = HOST_ID_NONE;
-    int arr[4];
+    HostID newID = curID;
 
     MutexLock ml( &m_dbMutex );
 
-    readArray_locked( connName, arr );
-    for ( newID = HOST_ID_SERVER; newID <= 4; ++newID ) {
-        if ( arr[newID-1] == 0 ) {
-            break;
+    if ( newID == HOST_ID_NONE ) {
+        int arr[4];
+        readArray_locked( connName, arr );
+        for ( newID = HOST_ID_SERVER; newID <= 4; ++newID ) {
+            if ( arr[newID-1] == 0 ) {
+                break;
+            }
         }
     }
     assert( newID <= 4 );

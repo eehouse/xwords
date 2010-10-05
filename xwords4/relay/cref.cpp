@@ -797,8 +797,11 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn )
     if ( !reconn ) {
         m_nPlayersHere += nPlayersH;
         assert( m_nPlayersHere <= m_nPlayersSought );
-        evt->u.con.srcID = DBMgr::Get()->AddDevice( ConnName(), nPlayersH, seed );
     }
+
+    evt->u.con.srcID = DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID,
+                                                nPlayersH, seed );
+
     HostID hostid = evt->u.con.srcID;
 
     /* first add the rec here, whether it'll get ack'd or not */

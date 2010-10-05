@@ -376,8 +376,9 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
             SafeCref scr( connName[0]? connName : NULL, 
-                          srcID, socket, nPlayersH, 
-                          nPlayersT, gameSeed, langCode );
+                          cookie, srcID, socket, nPlayersH, 
+                          nPlayersT, gameSeed, langCode,
+                          wantsPublic, makePublic );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
                                      gameSeed );
         }

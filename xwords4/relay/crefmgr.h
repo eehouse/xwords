@@ -142,8 +142,10 @@ class CRefMgr {
                                  bool wantsPublic, bool makePublic );
 
     /* reconnect case; just the stuff we don't have in db */
-    CookieRef* getMakeCookieRef( const char* connName, HostID hid, int socket, 
-                                 int nPlayersH, int seed );
+    CookieRef* getMakeCookieRef( const char* connName, const char* cookie, 
+                                 HostID hid, int socket, int nPlayersH, 
+                                 int nPlayersS, int seed, int langCode, 
+                                 bool isPublic );
 
     CookieRef* getCookieRef( CookieID cookieID );
     CookieRef* getCookieRef( int socket );
@@ -194,9 +196,10 @@ class SafeCref {
               unsigned short gameSeed, int langCode, bool wantsPublic, 
               bool makePublic );
     /* for reconnect */
-    SafeCref( const char* connName, HostID hid, 
+    SafeCref( const char* connName, const char* cookie, HostID hid, 
               int socket, int nPlayersH, int nPlayersS, 
-              unsigned short gameSeed, int langCode );
+              unsigned short gameSeed, int langCode, 
+              bool wantsPublic, bool makePublic );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );
