@@ -23,6 +23,8 @@ bool send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
 
 time_t uptime(void);
 
+void blockSignals( void );      /* call from all but main thread */
+
 int GetNSpawns(void);
 
 int make_socket( unsigned long addr, unsigned short port );

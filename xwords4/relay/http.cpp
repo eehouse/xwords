@@ -213,6 +213,8 @@ class HttpInstance {
 static void*
 http_thread_main( void* arg )
 {
+    blockSignals();
+
     HttpInstance* inst = (HttpInstance*)arg;
     HttpState* state = inst->m_state;
     int sock = inst->m_sock;

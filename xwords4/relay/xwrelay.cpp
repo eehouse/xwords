@@ -437,6 +437,17 @@ uptime( void )
     return time(NULL) - startTime;
 }
 
+void
+blockSignals( void )
+{
+    sigset_t set;
+    sigemptyset( &set );
+    sigaddset( &set, SIGINT );
+    sigaddset( &set, SIGTERM);
+    int s = pthread_sigmask( SIG_BLOCK, &set, NULL );
+    assert( 0 == s );
+}
+
 int
 GetNSpawns(void)
 {
@@ -669,6 +680,7 @@ read_packet( int sock, unsigned char* buf, int buflen )
 static void*
 handle_proxy_tproc( void* closure )
 {
+    blockSignals();
     int sock = (int)closure;
 
     unsigned char buf[MAX_PROXY_MSGLEN];

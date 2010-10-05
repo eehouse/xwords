@@ -195,6 +195,8 @@ XWThreadPool::get_process_packet( int socket )
 /* static */ void*
 XWThreadPool::tpool_main( void* closure )
 {
+    blockSignals();
+
     XWThreadPool* me = (XWThreadPool*)closure;
     return me->real_tpool_main();
 }
@@ -377,6 +379,8 @@ XWThreadPool::real_listener()
 /* static */ void*
 XWThreadPool::listener_main( void* closure )
 {
+    blockSignals();    
+
     XWThreadPool* me = (XWThreadPool*)closure;
     return me->real_listener();
 }
