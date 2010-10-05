@@ -62,6 +62,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 7;
     private static final int DLG_RETRY = Utils.DIALOG_LAST + 8;
     private static final int GET_MESSAGE = Utils.DIALOG_LAST + 9;
+    private static final int GOT_MESSAGE = Utils.DIALOG_LAST + 10;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -122,6 +123,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case DLG_OKONLY:
         case DLG_BADWORDS:
         case DLG_RETRY:
+        case GOT_MESSAGE:
             ab = new AlertDialog.Builder( BoardActivity.this )
                 //.setIcon( R.drawable.alert_dialog_icon )
                 .setTitle( m_dlgTitle )
@@ -135,6 +137,14 @@ public class BoardActivity extends Activity implements UtilCtxt {
                         }
                     };
                 ab.setNegativeButton( R.string.button_retry, lstnr );
+            } else if ( GOT_MESSAGE == id ) {
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            Utils.notImpl( BoardActivity.this ) ;
+                        }
+                    };
+                ab.setNegativeButton( R.string.button_reply, lstnr );
             }
             dialog = ab.create();
             break;
@@ -1183,7 +1193,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 public void run() {
                     m_dlgBytes = msg;
                     m_dlgTitle = R.string.chat_received;
-                    showDialog( DLG_OKONLY );
+                    showDialog( GOT_MESSAGE );
                 }
             } );
     }
