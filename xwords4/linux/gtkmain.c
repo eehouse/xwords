@@ -1329,6 +1329,7 @@ gtkShowFinalScores( const CommonGlobals* cGlobals )
     server_writeFinalScores( cGlobals->game.server, stream );
 
     text = strFromStream( stream );
+    stream_destroy( stream );
 
     (void)gtkask_timeout( text, GTK_BUTTONS_OK, 500 );
 
