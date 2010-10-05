@@ -16,6 +16,11 @@ mkdir -p $DONEDIR
 
 USE_GTK=${USE_GTK:-FALSE}
 
+declare -A PIDS
+declare -A CMDS
+declare -A FILES
+declare -A LOGS
+
 if [ $USE_GTK = FALSE ]; then
     PLAT_PARMS="-u -0"
 fi
@@ -36,60 +41,6 @@ connName() {
         sort -u 
 }
 
-do_device() {
-    GAME=$1
-    DEV=$2
-    NDEVS=$3
-
-    LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
-    rm -f $LOG
-    ROOM=ROOM_$((GAME%NROOMS))
-
-    FILE="GAME_${GAME}_${DEV}.xwg"
-    rm -f $FILE
-    for II in $(seq 2 $NDEVS); do
-        OTHERS="-N $OTHERS"
-    done
-
-    STOPTIME=$(($(date "+%s") + TIMEOUT))
-    while :; do
-        sleep $((RANDOM%5))
-        ./obj_linux_memdbg/xwords -C $ROOM -r ${NAMES[$DEV]} $OTHERS \
-            -d dict.xwd -p $PORT -a $HOST -f $FILE -z 1:3 $PLAT_PARMS \
-            >/dev/null 2>>$LOG &
-        PID=$!
-        sleep $((RANDOM%10+5))
-        while :; do
-            kill $PID 2>/dev/null
-            [ -d /proc/$PID ] || break
-            sleep 1
-        done
-
-        if [ ! -d $LOGDIR ]; then
-            break;
-        elif grep -q 'all remaining tiles' $LOG; then
-            echo -n "device $DEV in game $GAME succeeded ($LOG $(connName $LOG)) "
-            date
-            mv $LOG $DONEDIR
-            break
-        elif [ $(date "+%s") -ge $STOPTIME ]; then
-            echo -n "timeout exceeded for device $DEV in game $GAME " 
-            echo -n "($LOG $(connName $LOG)) "
-            date
-            break
-        fi
-    done
-}
-
-do_game() {
-    INDEX=$1
-    NDEVS=$(($RANDOM%3+2))
-
-    for DEV in $(seq $NDEVS); do
-        do_device $INDEX $DEV $NDEVS &
-    done
-}
-
 while [ -n "$1" ]; do
     case $1 in
         *) usage
@@ -98,15 +49,107 @@ while [ -n "$1" ]; do
     shift
 done
 
-for GAME in $(seq 1 $NGAMES); do
-    do_game $GAME
-done
+build_cmds() {
+    COUNTER=0
+    for GAME in $(seq 1 $NGAMES); do
+        ROOM=ROOM_$((GAME % NROOMS))
+        NDEVS=$(($RANDOM%3+2))
+        NDEVS=2
+
+        unset OTHERS
+        for II in $(seq 2 $NDEVS); do
+            OTHERS="-N $OTHERS"
+        done
+
+        for DEV in $(seq $NDEVS); do
+            FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
+            LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
+            CMD="./obj_linux_memdbg/xwords -C $ROOM -r ${NAMES[$DEV]} $OTHERS"
+            CMD="$CMD -d dict.xwd -p $PORT -a $HOST -f $FILE -z 1:3 $PLAT_PARMS"
+            CMDS[$COUNTER]=$CMD
+            FILES[$COUNTER]=$FILE
+            LOGS[$COUNTER]=$LOG
+            PIDS[$COUNTER]=0
+            COUNTER=$((COUNTER+1))
+        done
+    done
+}
+
+launch() {
+    LOG=${LOGS[$1]}
+    CMD="${CMDS[$1]}"
+    exec $CMD >/dev/null 2>>$LOG
+}
+
+close_device() {
+    ID=$1
+    if [ ${PIDS[$ID]} -ne 0 ]; then
+        kill ${PIDS[$ID]}
+    fi
+    unset PIDS[$ID]
+    unset CMDS[$ID]
+    mv ${FILES[$ID]} $DONEDIR
+    unset FILES[$ID]
+    mv ${LOGS[$ID]} $DONEDIR
+    unset LOGS[$ID]
+    echo "closed $ID"
+}
+
+check_game() {
+    KEY=$1
+    LOG=${LOGS[$KEY]}
+    CONNNAME="$(connName $LOG)"
+    unset OTHERS
+    if [ -n "$CONNNAME" ]; then
+        if grep -q 'all remaining tiles' $LOG; then
+            ALL_DONE=TRUE
+            for INDX in ${!LOGS[*]}; do
+                [ $INDX -eq $KEY ] && continue
+                ALOG=${LOGS[$INDX]}
+                CONNNAME2="$(connName $ALOG)"
+                if [ "$CONNNAME2" = "$CONNNAME" ]; then
+                    if ! grep -q 'all remaining tiles' $ALOG; then
+                        unset OTHERS
+                        break
+                    fi
+                    OTHERS="$OTHERS $INDX"
+                fi
+            done
+        fi
+    fi
+
+    if [ -n "$OTHERS" ]; then
+        for ID in $OTHERS $KEY; do
+            close_device $ID
+        done
+    fi
+}
+
+run_cmds() {
+    while :; do
+        COUNT=${#CMDS[*]}
+        [ 0 -ge $COUNT ] && break
+        INDX=$(($RANDOM%COUNT))
+        KEYS=( ${!CMDS[*]} )
+        KEY=${KEYS[$INDX]}
+        if [ 0 -eq ${PIDS[$KEY]} ]; then
+            launch $KEY &
+            PIDS[$KEY]=$!
+        else
+            sleep 2             # make sure it's had some time
+            kill ${PIDS[$KEY]}
+            PIDS[$KEY]=0
+            check_game $KEY
+        fi
+    done
+}
+
+print_stats() {
+    :
+}
+
+build_cmds
+run_cmds
+print_stats
 
 wait
-
-# for LOG in $LOGDIR/*LOG.txt; do
-#     echo -n "$LOG "
-#     grep 'got_connect_cmd: connName' $LOG | \
-#         sed 's,^.*connName: \"\(.*\)\"$,\1,' | \
-#         sort -u 
-# done
