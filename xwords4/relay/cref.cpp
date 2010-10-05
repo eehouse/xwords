@@ -1221,7 +1221,7 @@ CookieRef::printSeeds( const char* caller )
         len += snprintf( &buf[len], sizeof(buf)-len, "%.4x/%d ", 
                          iter->m_seed, iter->m_socket );
     }
-    logf( XW_LOGINFO, "seeds after %s(): %s", caller, buf );
+    logf( XW_LOGINFO, "seeds/sockets after %s(): %s", caller, buf );
 }
 
 void
