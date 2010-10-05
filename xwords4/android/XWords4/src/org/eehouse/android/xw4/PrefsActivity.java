@@ -112,7 +112,7 @@ public class PrefsActivity extends PreferenceActivity
 
         int[] textKeyIds = { R.string.key_relay_host,
                              R.string.key_relay_port,
-                             // R.string.key_sms_port,
+                             R.string.key_proxy_port,
                              R.string.key_dict_host,
                              R.string.key_board_size,
                              R.string.key_initial_player_minutes,
