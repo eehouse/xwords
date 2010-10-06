@@ -1226,13 +1226,13 @@ curses_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc),
 
 static void
 curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), 
-                           XP_U16 XP_UNUSED_DBG(maxOffset),
-                           XP_U16 oldOffset, XP_U16 newOffset )
+                           XP_U16 XP_UNUSED(maxOffset),
+                           XP_U16 XP_UNUSED(oldOffset), XP_U16 XP_UNUSED(newOffset) )
 {
-    if ( oldOffset != newOffset ) {
-        XP_WARNF( "curses_util_yOffsetChange(%d,%d,%d) not implemented",
-                  maxOffset, oldOffset, newOffset );    
-    }
+    /* if ( oldOffset != newOffset ) { */
+    /*     XP_WARNF( "curses_util_yOffsetChange(%d,%d,%d) not implemented", */
+    /*               maxOffset, oldOffset, newOffset ); */
+    /* } */
 } /* curses_util_yOffsetChange */
 
 static XP_Bool
