@@ -118,7 +118,6 @@ public class PrefsActivity extends PreferenceActivity
                              R.string.key_initial_player_minutes,
                              R.string.key_default_dict,
                              R.string.key_default_phonies,
-                             R.string.key_connect_frequency,
         };
 
         SharedPreferences sp
