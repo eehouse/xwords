@@ -64,7 +64,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
                     + CONTYPE    + " INTEGER,"
                     + ROOMNAME   + " TEXT,"
-                    + RELAYID    + " BLOB,"
+                    + RELAYID    + " TEXT,"
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"
                     + GAMEID     + " INTEGER,"

@@ -32,5 +32,5 @@ public class GameSummary {
     public String smsPhone;
     // relay-related fields
     public String roomName;
-    public byte[] relayID;
+    public String relayID;
 }

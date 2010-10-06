@@ -52,7 +52,7 @@ public class RelayService extends Service {
                 public void run() {
 
                     int[] nBytes = new int[1];
-                    ArrayList<byte[]>ids = collectIDs( nBytes );
+                    ArrayList<String>ids = collectIDs( nBytes );
                     if ( null != ids && 0 < ids.size() ) {
                         try {
                             Socket socket = 
@@ -74,11 +74,11 @@ public class RelayService extends Service {
                             Utils.logf( "wrote count %d to proxy socket",
                                         ids.size() );
 
-                            for ( byte[] id : ids ) {
+                            for ( String id : ids ) {
                                 // outStream.writeShort( id.length );
                                 // Utils.logf( "wrote length %d to proxy socket",
                                 //             id.length );
-                                outStream.write( id, 0, id.length );
+                                outStream.writeBytes( id );
                                 outStream.write( '\n' );
                             }
                             outStream.flush();
@@ -93,6 +93,8 @@ public class RelayService extends Service {
                                 msgCounts = new short[nameCount];
                                 for ( int ii = 0; ii < nameCount; ++ii ) {
                                     msgCounts[ii] = dis.readShort();
+                                    Utils.logf( "msgCounts[%d]=%d", ii, 
+                                                msgCounts[ii] );
                                 }
                             }
                             socket.close();
@@ -105,9 +107,7 @@ public class RelayService extends Service {
                                             String.format("%d messages for %s",
                                                           msgCounts[ii], 
                                                           ids.get(ii).toString() );
-                                        // Toast.makeText( RelayService.this, msg,
-                                        //                 Toast.LENGTH_SHORT).
-                                        // show();
+                                        Utils.logf( msg );
                                     }
                                 }
                             }
@@ -166,19 +166,19 @@ public class RelayService extends Service {
     //     m_nm.notify( R.string.running_notification, notification );
     // }
 
-    private ArrayList<byte[]> collectIDs( int[] nBytes )
+    private ArrayList<String> collectIDs( int[] nBytes )
     {
         nBytes[0] = 0;
-        ArrayList<byte[]> ids = new ArrayList<byte[]>();
+        ArrayList<String> ids = new ArrayList<String>();
         String[] games = GameUtils.gamesList( this );
         for ( String path : games ) {
             Utils.logf( "looking at %s", path );
             GameSummary summary = DBUtils.getSummary( this, path );
             if ( null != summary && null != summary.relayID ) {
                 Utils.logf( "adding id %s with length %d", summary.relayID, 
-                            summary.relayID.length );
+                            summary.relayID.length() );
                 ids.add( summary.relayID );
-                nBytes[0] += summary.relayID.length;
+                nBytes[0] += summary.relayID.length();
             } else {
                 Utils.logf( "no summary" );
             }

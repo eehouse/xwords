@@ -82,7 +82,7 @@ public class DBUtils {
                     }
                     col = cursor.getColumnIndex( DBHelper.RELAYID );
                     if ( col >= 0 ) {
-                        summary.relayID = cursor.getBlob( col );
+                        summary.relayID = cursor.getString( col );
                     }
                     col = cursor.getColumnIndex( DBHelper.SMSPHONE );
                     if ( col >= 0 ) {
