@@ -64,6 +64,7 @@ build_cmds() {
         for DEV in $(seq $NDEVS); do
             FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
+            touch $LOG          # so greps won't show errors
             CMD="./obj_linux_memdbg/xwords -C $ROOM -r ${NAMES[$DEV]} $OTHERS"
             CMD="$CMD -d dict.xwd -p $PORT -a $HOST -f $FILE -z 1:3 $PLAT_PARMS"
             CMDS[$COUNTER]=$CMD
@@ -86,13 +87,14 @@ close_device() {
     if [ ${PIDS[$ID]} -ne 0 ]; then
         kill ${PIDS[$ID]}
     fi
+    echo -n "closing $ID (log ${LOGS[$ID]}): "
+    date
     unset PIDS[$ID]
     unset CMDS[$ID]
     mv ${FILES[$ID]} $DONEDIR
     unset FILES[$ID]
     mv ${LOGS[$ID]} $DONEDIR
     unset LOGS[$ID]
-    echo "closed $ID"
 }
 
 check_game() {
@@ -101,14 +103,14 @@ check_game() {
     CONNNAME="$(connName $LOG)"
     unset OTHERS
     if [ -n "$CONNNAME" ]; then
-        if grep -q 'all remaining tiles' $LOG; then
+        if grep -q '\[unused tiles\]' $LOG; then
             ALL_DONE=TRUE
             for INDX in ${!LOGS[*]}; do
                 [ $INDX -eq $KEY ] && continue
                 ALOG=${LOGS[$INDX]}
                 CONNNAME2="$(connName $ALOG)"
                 if [ "$CONNNAME2" = "$CONNNAME" ]; then
-                    if ! grep -q 'all remaining tiles' $ALOG; then
+                    if ! grep -q '\[unused tiles\]' $ALOG; then
                         unset OTHERS
                         break
                     fi
@@ -126,9 +128,11 @@ check_game() {
 }
 
 run_cmds() {
+    ENDTIME=$(($(date +%s) + TIMEOUT))
     while :; do
         COUNT=${#CMDS[*]}
         [ 0 -ge $COUNT ] && break
+        [ $(date +%s) -ge $ENDTIME ] && break
         INDX=$(($RANDOM%COUNT))
         KEYS=( ${!CMDS[*]} )
         KEY=${KEYS[$INDX]}
@@ -142,6 +146,14 @@ run_cmds() {
             check_game $KEY
         fi
     done
+
+    # kill any remaining games
+    for PID in ${PIDS[*]}; do
+        if [ $PID -ne 0 ]; then
+            echo "$PID still alive; killing..."
+            kill $PID
+        fi
+    done
 }
 
 print_stats() {
@@ -153,3 +165,5 @@ run_cmds
 print_stats
 
 wait
+echo -n "$0 done: "
+date
