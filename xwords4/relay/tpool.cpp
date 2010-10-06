@@ -423,7 +423,6 @@ XWThreadPool::grab_elem_locked( QueuePr* prp )
 void
 XWThreadPool::release_socket_locked( int socket )
 {
-    logf( XW_LOGINFO, "%s(%d)", __func__, socket );
     if ( -1 != socket ) {
         set<int>::iterator iter = m_sockets_in_use.find( socket );
         assert( iter != m_sockets_in_use.end() );
@@ -443,5 +442,4 @@ XWThreadPool::print_in_use( void )
           iter != m_sockets_in_use.end(); ++iter ) {
         len += snprintf( &buf[len], sizeof(buf)-len, "%d ", *iter );
     }
-    logf( XW_LOGINFO, "%s: %s", __func__, buf );
 }
