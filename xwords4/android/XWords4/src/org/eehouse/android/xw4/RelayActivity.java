@@ -23,6 +23,11 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.os.Bundle;
 import android.content.Intent;
+import android.content.Context;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+
+import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class RelayActivity extends Activity {
     @Override
@@ -34,5 +39,30 @@ public class RelayActivity extends Activity {
         startService( service );
 
         finish();
+    }
+
+    public static void RestartTimer( Context context )
+    {
+        RestartTimer( context, 
+                      1000 * CommonPrefs.getProxyInterval( context ) );
+    }
+
+    public static void RestartTimer( Context context, long interval_millis )
+    {
+        AlarmManager am =
+            (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
+        PendingIntent intent = 
+            PendingIntent.getActivity( context, 0, 
+                                       new Intent(context, 
+                                                  RelayActivity.class), 0);
+
+        if ( interval_millis > 0 ) {
+            Utils.logf( "setting alarm for %d millis", interval_millis );
+            am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+                                    0, // first firing
+                                    interval_millis, intent );
+        } else {
+            am.cancel( intent );
+        }
     }
 }
