@@ -134,22 +134,7 @@ public class GamesList extends ListActivity {
 
         FirstRunDialog.show( this, false );
 
-        // Intent service = new Intent(this, RelayService.class );
-        // startService( service );
-
-        AlarmManager am = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        PendingIntent intent = 
-            PendingIntent.getActivity( this, 0, 
-                                       new Intent(this, RelayActivity.class), 0);
-        long interval_millis = 1000 *
-            CommonPrefs.getProxyInterval( this );
-        if ( interval_millis > 0 ) {
-            am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
-                                    0, // first firing
-                                    interval_millis, intent );
-        } else {
-            am.cancel( intent );
-        }
+        RelayActivity.RestartTimer( this );
     }
 
     @Override
