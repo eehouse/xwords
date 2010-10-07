@@ -32,16 +32,17 @@ EOF
 
     cat | psql xwgames --file - <<EOF
 CREATE TABLE games ( 
-cid integer,
-room VARCHAR(32),
-lang INTEGER,
-pub BOOLEAN,
-connName VARCHAR(64) UNIQUE PRIMARY KEY,
-nTotal INTEGER,
-nPerDevice INTEGER[], 
-seeds INTEGER[], 
-ctime TIMESTAMP,
-mtime TIMESTAMP
+cid integer
+,room VARCHAR(32)
+,lang INTEGER
+,pub BOOLEAN
+,connName VARCHAR(64) UNIQUE PRIMARY KEY
+,nTotal INTEGER
+,nPerDevice INTEGER[]
+,seeds INTEGER[]
+,nSent INTEGER DEFAULT 0
+,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+,mtime TIMESTAMP
 );
 EOF
 

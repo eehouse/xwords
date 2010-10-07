@@ -176,11 +176,7 @@ class CookieRef {
                            bool cascade );
     void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
                    bool cascade );
-
-    void RecordSent( int nBytes, int socket ) {
-        m_totalSent += nBytes;
-    }
-
+    void RecordSent( int nBytes, int socket );
     void pushConnectEvent( int socket, int nPlayersH, int nPlayersS,
                            int seed );
     void pushReconnectEvent( int socket, HostID srcID,

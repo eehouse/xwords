@@ -79,8 +79,8 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !connName ) connName = "";
 
     const char* fmt = "INSERT INTO " GAMES_TABLE
-        " (cid, room, connName, nTotal, nPerDevice, lang, pub, ctime)"
-        " VALUES( %d, '%s', '%s', %d, ARRAY[0,0,0,0], %d, %s, 'now' )";
+        " (cid, room, connName, nTotal, nPerDevice, lang, pub)"
+        " VALUES( %d, '%s', '%s', %d, ARRAY[0,0,0,0], %d, %s )";
     char buf[256];
     snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
               nPlayersT, langCode, isPublic?"TRUE":"FALSE" );
@@ -164,7 +164,8 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
     assert( newID <= 4 );
 
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
-        " seeds[%d] = %d WHERE connName = '%s'";
+        " seeds[%d] = %d, mtime='now'"
+        " WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
@@ -178,7 +179,7 @@ void
 DBMgr::RmDevice( const char* connName, HostID hid )
 {
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0, "
-        "seeds[%d] = 0 WHERE connName = '%s'";
+        "seeds[%d] = 0, mtime='now' WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, hid, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
@@ -189,8 +190,8 @@ DBMgr::RmDevice( const char* connName, HostID hid )
 void
 DBMgr::AddCID( const char* const connName, CookieID cid )
 {
-    const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d "
-        "WHERE connName = '%s'";
+    const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d, "
+        " mtime='now' WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, cid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
@@ -208,6 +209,19 @@ DBMgr::ClearCID( const char* connName )
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );
+}
+
+void
+DBMgr::RecordSent( const char* const connName, int nBytes )
+{
+   const char* fmt = "UPDATE " GAMES_TABLE " SET"
+       " nsent = nsent + %d, mtime = 'now'"
+       " WHERE connName = '%s'";
+   char query[256];
+   snprintf( query, sizeof(query), fmt, nBytes, connName );
+   logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+   execSql( query );
 }
 
 void
@@ -349,8 +363,8 @@ DBMgr::StoreMessage( const char* const connName, int hid,
                      const unsigned char* buf, int len )
 {
     size_t newLen;
-    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg, ctime)"
-        " VALUES( '%s', %d, E'%s', 'now' )";
+    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg)"
+        " VALUES( '%s', %d, E'%s')";
 
     unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, len, &newLen );
     assert( NULL != bytes );

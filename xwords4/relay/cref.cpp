@@ -994,6 +994,13 @@ CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
     send_with_length( socket, buf, len, cascade );
 } /* send_msg */
 
+
+void
+CookieRef::RecordSent( int nBytes, int socket ) {
+    m_totalSent += nBytes;
+    DBMgr::Get()->RecordSent( ConnName(), nBytes );
+}
+
 void
 CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 {
