@@ -7,7 +7,7 @@ CONFFILE=${DIR}/xwrelay.conf
 IDFILE=${DIR}/nextid.txt
 CSSFILE=${DIR}/xwrelay.css
 
-LOGFILE=/tmp/xwrelay_log.txt
+LOGFILE=/tmp/xwrelay_log_$$.txt
 #LOGFILE=/dev/null
 
 date > $LOGFILE
