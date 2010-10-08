@@ -391,4 +391,7 @@
     <string name="button_send">Send</string>
     <string name="button_reply">Reply</string>
     <string name="compose_chat">Message for all devices</string>
+
+    <string name="running_notification">running_notification</string>
+    <string name="notify_title">notify_title</string>
 </resources>
