@@ -38,6 +38,7 @@ public class DBHelper extends SQLiteOpenHelper {
     // for which messages arrive.  Add now while changing the DB
     // format
     public static final String GAMEID = "GAMEID";
+    public static final String HASMSGS = "HASMSGS";
     public static final String SNAPSHOT = "SNAPSHOT";
     public static final String CONTYPE = "CONTYPE";
     public static final String ROOMNAME = "ROOMNAME";
@@ -68,6 +69,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"
                     + GAMEID     + " INTEGER,"
+                    // HASMSGS: sqlite doesn't have bool; use 0 and 1
+                    + HASMSGS    + " INTEGER DEFAULT 0,"
 
                     + CREATE_TIME + " INTEGER,"
                     + LASTPLAY_TIME + " INTEGER,"
