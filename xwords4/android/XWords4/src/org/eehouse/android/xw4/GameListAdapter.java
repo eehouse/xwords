@@ -50,8 +50,7 @@ public class GameListAdapter extends XWListAdapter {
             sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
         } catch ( Exception ex ) {}
 
-        m_layoutId = sdk_int >= android.os.Build.VERSION_CODES.DONUT
-            ? R.layout.game_list_item : R.layout.game_list_item_onefive;
+        m_layoutId = R.layout.game_list_item;
 
         m_viewsCache = new HashMap<String,View>();
     }
@@ -93,11 +92,15 @@ public class GameListAdapter extends XWListAdapter {
                 } else {
                     view.setVisibility( View.GONE );
                 }
+
+                view = (TextView)layout.findViewById( R.id.msg_marker );
+                view.setVisibility( summary.msgsPending? 
+                                    View.VISIBLE : View.GONE );
             }
             m_viewsCache.put( path, layout );
         }
         return layout;
-    }
+    } // getItem
 
     public View getView( int position, View convertView, ViewGroup parent ) {
         return (View)getItem( position );
