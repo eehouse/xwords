@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIR=${DIR:-$(dirname $0)}
+DIR=$(pwd)
 XWRELAY=${DIR}/xwrelay
 PIDFILE=${DIR}/xwrelay.pid
 CONFFILE=${DIR}/xwrelay.conf
@@ -61,7 +61,7 @@ do_start() {
     if [ -f $PIDFILE ] && [ -f /proc/$(cat $PIDFILE)/exe ]; then
         echo "already running: pid=$(cat $PIDFILE)" | tee -a $LOGFILE
     elif pidof $XWRELAY >/dev/null; then
-        echo "already running: pid=$(pidof $XWRELAY)" | tee -a $LOGFILE
+        echo "already running: pid($XWRELAY)=>$(pidof $XWRELAY)" | tee -a $LOGFILE
     else
         echo "starting..." | tee -a $LOGFILE
         echo "running $XWRELAY $@ -f $CONFFILE -s $CSSFILE" | tee -a $LOGFILE
