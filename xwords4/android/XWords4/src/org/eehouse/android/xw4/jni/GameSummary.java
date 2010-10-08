@@ -33,4 +33,5 @@ public class GameSummary {
     // relay-related fields
     public String roomName;
     public String relayID;
+    public boolean msgsPending;
 }
