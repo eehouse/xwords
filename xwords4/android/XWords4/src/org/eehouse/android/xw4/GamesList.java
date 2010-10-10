@@ -138,6 +138,24 @@ public class GamesList extends ListActivity {
     }
 
     @Override
+    protected void onNewIntent( Intent intent )
+    {
+        RelayService.CancelNotification();
+
+        Utils.logf( "onNewIntent called" );
+        String[] relayIDs = intent.
+            getStringArrayExtra( getString(R.string.relayids_extra) );
+        if ( null != relayIDs && relayIDs.length > 0 ) {
+            for ( String relayID : relayIDs ) {
+                Utils.logf( "got %s", relayID );
+                String path = DBUtils.getPathFor( this, relayID );
+                m_adapter.inval( path );
+            }
+            onContentChanged();
+        }
+    }
+
+    @Override
     public void onWindowFocusChanged( boolean hasFocus )
     {
         super.onWindowFocusChanged( hasFocus );

@@ -40,14 +40,14 @@ import org.eehouse.android.xw4.jni.GameSummary;
 
 public class RelayService extends Service {
     
-    private NotificationManager m_nm;
+    private static NotificationManager s_nm;
 
     @Override
     public void onCreate()
     {
         super.onCreate();
 
-        m_nm = (NotificationManager)getSystemService( NOTIFICATION_SERVICE );
+        s_nm = (NotificationManager)getSystemService( NOTIFICATION_SERVICE );
 
         Thread thread = new Thread( null, new Runnable() {
                 public void run() {
@@ -99,6 +99,8 @@ public class RelayService extends Service {
                             Utils.logf( "closed proxy socket" );
 
                             if ( null != msgCounts ) {
+                                ArrayList<String> idsWMsgs =
+                                    new ArrayList<String>( nameCount );
                                 for ( int ii = 0; ii < nameCount; ++ii ) {
                                     if ( msgCounts[ii] > 0 ) {
                                         String msg = 
@@ -107,9 +109,11 @@ public class RelayService extends Service {
                                                           ids[ii] );
                                         Utils.logf( msg );
                                         DBUtils.setHasMsgs( ids[ii] );
+                                        idsWMsgs.add( ids[ii] );
                                     }
                                 }
-                                setupNotification();
+                                ids = new String[idsWMsgs.size()];
+                                setupNotification( idsWMsgs.toArray( ids ) );
                             }
 
                         } catch( java.net.UnknownHostException uhe ) {
@@ -142,6 +146,13 @@ public class RelayService extends Service {
         return null;
     }
 
+    public static void CancelNotification()
+    {
+        if ( null != s_nm ) {
+            s_nm.cancel( R.string.relayids_extra );
+        }
+    }
+
     //@Override
     // protected int onStartCommand( Intent intent, int flags, int startId )
     // {
@@ -150,7 +161,7 @@ public class RelayService extends Service {
     //     return 0;
     // }
 
-    private void setupNotification()
+    private void setupNotification( String[] relayIDs )
     {
         Notification notification = 
             new Notification( R.drawable.icon48x48, 
@@ -158,11 +169,15 @@ public class RelayService extends Service {
                               System.currentTimeMillis());
 
         Intent intent = new Intent(this, GamesList.class);
-        PendingIntent pi = PendingIntent.getActivity( this, 0, intent, 0);
+        intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        intent.putExtra( getString(R.string.relayids_extra), relayIDs );
+
+        PendingIntent pi = PendingIntent.
+            getActivity( this, 0, intent, PendingIntent.FLAG_ONE_SHOT );
 
         notification.setLatestEventInfo( this, "bazz", "bar", pi );
         
-        m_nm.notify( R.string.running_notification, notification );
+        s_nm.notify( R.string.relayids_extra, notification );
     }
 
     private String[] collectIDs( int[] nBytes )
