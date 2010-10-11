@@ -374,7 +374,8 @@
     <string name="relay_behavior">Relay behavior</string>
     <string name="relay_behavior_summary">Relay behavior summary</string>
     <string name="connect_frequency">Background move check frequency</string>
-	<string name="connect_ten_seconds">10 seconds</string>
+	<string name="connect_sixty_seconds">1 minute</string>
+	<string name="connect_five_mins">5 minutes</string>
 	<string name="connect_fifteen_mins">15 minutes</string>
 	<string name="connect_thirty_mins">30 minutes</string>
 	<string name="connect_one_hour">Hourly</string>
