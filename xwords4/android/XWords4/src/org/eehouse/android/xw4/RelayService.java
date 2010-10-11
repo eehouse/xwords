@@ -169,11 +169,11 @@ public class RelayService extends Service {
                               System.currentTimeMillis());
 
         Intent intent = new Intent(this, GamesList.class);
-        intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        // intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
         intent.putExtra( getString(R.string.relayids_extra), relayIDs );
 
         PendingIntent pi = PendingIntent.
-            getActivity( this, 0, intent, PendingIntent.FLAG_ONE_SHOT );
+            getActivity( this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT );
 
         notification.setLatestEventInfo( this, "bazz", "bar", pi );
         
