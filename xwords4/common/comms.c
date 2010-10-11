@@ -749,7 +749,7 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 
 #ifdef XWFEATURE_RELAY
 XP_Bool
-comms_getRelayID( const CommsCtxt* comms, XP_U8* buf, XP_U16* lenp )
+comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* lenp )
 {
     XP_Bool success = comms->r.connName[0] != 0;
     if ( success ) {
