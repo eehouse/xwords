@@ -51,6 +51,7 @@ class DBMgr {
     void RmDevice( const char* const connName, HostID id );
     void AddCID( const char* connName, CookieID cid );
     void ClearCID( const char* connName );
+    void RecordSent( const char* const connName, int nBytes );
 
     /* Return list of roomName/playersStillWanted for open public games
        matching this language and total game size. Will probably want to cache

@@ -304,7 +304,7 @@ CookieRef::AlreadyHere( unsigned short seed, int socket )
                 here = true;
             } else {
                 logf( XW_LOGINFO, "%s: seeds match; nuking existing record"
-                      "for socket %d b/c assumed closed", __func__, 
+                      " for socket %d b/c assumed closed", __func__, 
                       iter->m_socket );
                 m_sockets.erase( iter );
             }
@@ -993,6 +993,13 @@ CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
     assert( len <= sizeof(buf) );
     send_with_length( socket, buf, len, cascade );
 } /* send_msg */
+
+
+void
+CookieRef::RecordSent( int nBytes, int socket ) {
+    m_totalSent += nBytes;
+    DBMgr::Get()->RecordSent( ConnName(), nBytes );
+}
 
 void
 CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )

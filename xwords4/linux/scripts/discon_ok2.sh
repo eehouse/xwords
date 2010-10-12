@@ -4,9 +4,10 @@ NGAMES=${NGAMES:-1}
 NROOMS=${NROOMS:-1}
 HOST=${HOST:-localhost}
 PORT=${PORT:-10997}
-TIMEOUT=${TIMEOUT:-400}
+TIMEOUT=${TIMEOUT:-1000}
+DICT=${DICT:-dict.xwd}
 
-NAMES=(Brynn Ariela Kati Eric)
+NAMES=(UNUSED Brynn Ariela Kati Eric)
 
 LOGDIR=$(basename $0)_logs
 [ -d $LOGDIR ] && mv $LOGDIR /tmp/${LOGDIR}_$$
@@ -28,7 +29,7 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICT; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 0
@@ -49,12 +50,23 @@ while [ -n "$1" ]; do
     shift
 done
 
+check_room() {
+    ROOM=$1
+    NUM=$(echo "SELECT COUNT(*) FROM games WHERE ntotal!=sum_array(nperdevice) AND room='$ROOM'" |
+        psql -q -t xwgames)
+    NUM=$((NUM+0))
+    if [ "$NUM" -gt 0 ]; then
+        echo "There are unconsummated games in $ROOM in the DB.  This test will fail if you don't remove them."
+        exit 0
+    fi
+}
+
 build_cmds() {
     COUNTER=0
     for GAME in $(seq 1 $NGAMES); do
         ROOM=ROOM_$((GAME % NROOMS))
+        check_room $ROOM
         NDEVS=$(($RANDOM%3+2))
-        NDEVS=2
 
         unset OTHERS
         for II in $(seq 2 $NDEVS); do
@@ -66,7 +78,7 @@ build_cmds() {
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             touch $LOG          # so greps won't show errors
             CMD="./obj_linux_memdbg/xwords -C $ROOM -r ${NAMES[$DEV]} $OTHERS"
-            CMD="$CMD -d dict.xwd -p $PORT -a $HOST -f $FILE -z 1:3 $PLAT_PARMS"
+            CMD="$CMD -d $DICT -p $PORT -a $HOST -f $FILE -z 1:3 $PLAT_PARMS"
             CMDS[$COUNTER]=$CMD
             FILES[$COUNTER]=$FILE
             LOGS[$COUNTER]=$LOG
@@ -84,16 +96,16 @@ launch() {
 
 close_device() {
     ID=$1
+    MVTO=$2
     if [ ${PIDS[$ID]} -ne 0 ]; then
-        kill ${PIDS[$ID]}
+        kill ${PIDS[$ID]} 2>/dev/null
+        wait ${PIDS[$ID]}
     fi
-    echo -n "closing $ID (log ${LOGS[$ID]}): "
-    date
     unset PIDS[$ID]
     unset CMDS[$ID]
-    mv ${FILES[$ID]} $DONEDIR
+    [ -f ${FILES[$ID]} ] && mv ${FILES[$ID]} $MVTO
     unset FILES[$ID]
-    mv ${LOGS[$ID]} $DONEDIR
+    mv ${LOGS[$ID]} $MVTO
     unset LOGS[$ID]
 }
 
@@ -121,9 +133,12 @@ check_game() {
     fi
 
     if [ -n "$OTHERS" ]; then
+        echo -n "Closing $CONNNAME: "
         for ID in $OTHERS $KEY; do
-            close_device $ID
+            echo -n "${LOGS[$ID]}, "
+            close_device $ID $DONEDIR
         done
+        date
     fi
 }
 
@@ -148,12 +163,13 @@ run_cmds() {
     done
 
     # kill any remaining games
-    for PID in ${PIDS[*]}; do
-        if [ $PID -ne 0 ]; then
-            echo "$PID still alive; killing..."
-            kill $PID
-        fi
-    done
+    if [ $COUNT -gt 0 ]; then
+        mkdir -p ${LOGDIR}/not_done
+        echo "processing unfinished games...."
+        for KEY in ${!CMDS[*]}; do
+            close_device $KEY ${LOGDIR}/not_done
+        done
+    fi
 }
 
 print_stats() {

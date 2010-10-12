@@ -1,13 +1,13 @@
 #!/bin/sh
 
-DIR=${DIR:-$(dirname $0)}
+DIR=$(pwd)
 XWRELAY=${DIR}/xwrelay
 PIDFILE=${DIR}/xwrelay.pid
 CONFFILE=${DIR}/xwrelay.conf
 IDFILE=${DIR}/nextid.txt
 CSSFILE=${DIR}/xwrelay.css
 
-LOGFILE=/tmp/xwrelay_log.txt
+LOGFILE=/tmp/xwrelay_log_$$.txt
 #LOGFILE=/dev/null
 
 date > $LOGFILE
@@ -32,16 +32,17 @@ EOF
 
     cat | psql xwgames --file - <<EOF
 CREATE TABLE games ( 
-cid integer,
-room VARCHAR(32),
-lang INTEGER,
-pub BOOLEAN,
-connName VARCHAR(64) UNIQUE PRIMARY KEY,
-nTotal INTEGER,
-nPerDevice INTEGER[], 
-seeds INTEGER[], 
-ctime TIMESTAMP,
-mtime TIMESTAMP
+cid integer
+,room VARCHAR(32)
+,lang INTEGER
+,pub BOOLEAN
+,connName VARCHAR(64) UNIQUE PRIMARY KEY
+,nTotal INTEGER
+,nPerDevice INTEGER[]
+,seeds INTEGER[]
+,nSent INTEGER DEFAULT 0
+,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+,mtime TIMESTAMP
 );
 EOF
 
@@ -60,7 +61,7 @@ do_start() {
     if [ -f $PIDFILE ] && [ -f /proc/$(cat $PIDFILE)/exe ]; then
         echo "already running: pid=$(cat $PIDFILE)" | tee -a $LOGFILE
     elif pidof $XWRELAY >/dev/null; then
-        echo "already running: pid=$(pidof $XWRELAY)" | tee -a $LOGFILE
+        echo "already running: pid($XWRELAY)=>$(pidof $XWRELAY)" | tee -a $LOGFILE
     else
         echo "starting..." | tee -a $LOGFILE
         echo "running $XWRELAY $@ -f $CONFFILE -s $CSSFILE" | tee -a $LOGFILE
