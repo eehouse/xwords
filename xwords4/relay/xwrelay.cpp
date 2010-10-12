@@ -320,7 +320,8 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
              && getNetByte( &bufp, end, &nPlayersT )
              && getNetShort( &bufp, end, &gameSeed )
              && getNetByte( &bufp, end, &langCode ) ) {
-            logf( XW_LOGINFO, "%s(): langCode=%d; wantsPublic=%d", __func__, langCode, wantsPublic );
+            logf( XW_LOGINFO, "%s(): langCode=%d; nPlayersT=%d; wantsPublic=%d", __func__,
+                  langCode, nPlayersT, wantsPublic );
 
             /* Make sure second thread can't create new cref for same cookie
                this one just handled.*/
