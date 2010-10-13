@@ -27,21 +27,23 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.widget.Toast;
 import android.os.Bundle;
+import java.util.HashSet;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DispatchNotify extends Activity {
-    private static Activity s_running = null;
+    private static HashSet<Activity> s_running = new HashSet<Activity>();
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
 
-        if ( null == s_running ) {
+        if ( s_running.isEmpty() ) {
             Utils.logf( "DispatchNotify: nothing running" );
             startActivity( new Intent( this, GamesList.class ) );
         } else {
+            Utils.logf( "DispatchNotify: something running" );
             Intent intent = getIntent();
             String[] relayIDs = 
                 intent.getStringArrayExtra(getString(R.string.relayids_extra));
@@ -58,6 +60,12 @@ public class DispatchNotify extends Activity {
 
     public static void SetRunning( Activity running )
     {
-        s_running = running;
+        s_running.add( running );
     }
+
+    public static void ClearRunning( Activity running )
+    {
+        s_running.remove( running );
+    }
+
 }

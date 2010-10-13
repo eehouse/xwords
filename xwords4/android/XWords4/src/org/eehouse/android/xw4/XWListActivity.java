@@ -37,6 +37,6 @@ public class XWListActivity extends ListActivity {
     {
         Utils.logf( "XWListActivity::onStop" );
         super.onStop();
-        DispatchNotify.SetRunning( null );
+        DispatchNotify.ClearRunning( this );
     }
 }
