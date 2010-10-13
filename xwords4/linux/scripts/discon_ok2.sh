@@ -4,7 +4,7 @@ NGAMES=${NGAMES:-1}
 NROOMS=${NROOMS:-1}
 HOST=${HOST:-localhost}
 PORT=${PORT:-10997}
-TIMEOUT=${TIMEOUT:-1000}
+TIMEOUT=${TIMEOUT:-$((NGAMES*60))}
 DICT=${DICT:-dict.xwd}
 
 NAMES=(UNUSED Brynn Ariela Kati Eric)
@@ -50,14 +50,19 @@ while [ -n "$1" ]; do
     shift
 done
 
+declare -A CHECKED_ROOMS
 check_room() {
     ROOM=$1
-    NUM=$(echo "SELECT COUNT(*) FROM games WHERE ntotal!=sum_array(nperdevice) AND room='$ROOM'" |
-        psql -q -t xwgames)
-    NUM=$((NUM+0))
-    if [ "$NUM" -gt 0 ]; then
-        echo "There are unconsummated games in $ROOM in the DB.  This test will fail if you don't remove them."
-        exit 0
+    if [ -z "${CHECKED_ROOMS[$ROOM]}" ]; then
+        NUM=$(echo "SELECT COUNT(*) FROM games WHERE ntotal!=sum_array(nperdevice) AND room='$ROOM'" |
+            psql -q -t xwgames)
+        NUM=$((NUM+0))
+        if [ "$NUM" -gt 0 ]; then
+            echo "$ROOM in the DB has unconsummated games.  Remove them."
+            exit 0
+        else
+            CHECKED_ROOMS[$ROOM]=1
+        fi
     fi
 }
 
@@ -176,10 +181,11 @@ print_stats() {
     :
 }
 
+echo "*********$0 starting: $(date)**************"
+
 build_cmds
 run_cmds
 print_stats
 
 wait
-echo -n "$0 done: "
-date
+echo "*********$0 finished: $(date)**************"
