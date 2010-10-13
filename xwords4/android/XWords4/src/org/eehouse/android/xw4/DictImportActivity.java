@@ -34,7 +34,7 @@ import java.net.URI;
 
 import junit.framework.Assert;
 
-public class DictImportActivity extends Activity {
+public class DictImportActivity extends XWActivity {
 
     private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> {
         @Override

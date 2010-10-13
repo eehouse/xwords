@@ -51,7 +51,7 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
-public class BoardActivity extends Activity implements UtilCtxt {
+public class BoardActivity extends XWActivity implements UtilCtxt {
 
     private static final int DLG_OKONLY = Utils.DIALOG_LAST + 1;
     private static final int DLG_BADWORDS = Utils.DIALOG_LAST + 2;
