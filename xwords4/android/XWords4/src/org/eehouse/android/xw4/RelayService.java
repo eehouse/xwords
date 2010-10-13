@@ -40,7 +40,12 @@ import org.eehouse.android.xw4.jni.GameSummary;
 
 public class RelayService extends Service {
     
+    public interface HandleRelaysIface {
+        public void HandleRelaysIDs( String[] relayIDs );
+    }
+
     private static NotificationManager s_nm;
+    private static HandleRelaysIface s_handler = null;
 
     @Override
     public void onCreate()
@@ -152,6 +157,11 @@ public class RelayService extends Service {
             s_nm.cancel( R.string.relayids_extra );
         }
     }
+    
+    public static void SetRelayIDsHandler( HandleRelaysIface iface )
+    {
+        s_handler = iface;
+    }
 
     //@Override
     // protected int onStartCommand( Intent intent, int flags, int startId )
@@ -163,21 +173,25 @@ public class RelayService extends Service {
 
     private void setupNotification( String[] relayIDs )
     {
-        Notification notification = 
-            new Notification( R.drawable.icon48x48, 
-                              getString(R.string.notify_title),
-                              System.currentTimeMillis());
+        if ( null != s_handler ) {
+            s_handler.HandleRelaysIDs( relayIDs );
+        } else {
+            Intent intent = new Intent( this, DispatchNotify.class );
+            //intent.addFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP );
+            intent.putExtra( getString(R.string.relayids_extra), relayIDs );
 
-        Intent intent = new Intent(this, GamesList.class);
-        // intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-        intent.putExtra( getString(R.string.relayids_extra), relayIDs );
+            PendingIntent pi = PendingIntent.
+                getActivity( this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT );
+            Notification notification = 
+                new Notification( R.drawable.icon48x48, 
+                                  getString(R.string.notify_title),
+                                  System.currentTimeMillis() );
+            notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
-        PendingIntent pi = PendingIntent.
-            getActivity( this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT );
-
-        notification.setLatestEventInfo( this, "bazz", "bar", pi );
+            notification.setLatestEventInfo( this, "bazz", "bar", pi );
         
-        s_nm.notify( R.string.relayids_extra, notification );
+            s_nm.notify( R.string.relayids_extra, notification );
+        }
     }
 
     private String[] collectIDs( int[] nBytes )
