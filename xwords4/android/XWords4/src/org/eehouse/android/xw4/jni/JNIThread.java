@@ -451,8 +451,10 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_POST_OVER:
-                sendForDialog( R.string.finalscores_title,
-                               XwJNI.server_writeFinalScores( m_jniGamePtr ) );
+                if ( XwJNI.server_getGameIsOver( m_jniGamePtr ) ) {
+                    sendForDialog( R.string.finalscores_title,
+                                   XwJNI.server_writeFinalScores( m_jniGamePtr ) );
+                }
                 break;
 
             case CMD_SENDCHAT:

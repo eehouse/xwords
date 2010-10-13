@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,13 +46,16 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
-public class GamesList extends ListActivity {
+public class GamesList extends XWListActivity 
+    implements RelayService.HandleRelaysIface {
+
     private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
     private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
 
     private GameListAdapter m_adapter;
     private String m_invalPath = null;
     private String m_missingDict;
+    private Handler m_handler;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -112,6 +116,8 @@ public class GamesList extends ListActivity {
     {
         super.onCreate(savedInstanceState);
 
+        m_handler = new Handler();
+
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, false );
 
         setContentView(R.layout.game_list);
@@ -136,6 +142,49 @@ public class GamesList extends ListActivity {
 
         RelayActivity.RestartTimer( this );
     }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        RelayService.SetRelayIDsHandler( this );
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        RelayService.SetRelayIDsHandler( null );
+    }
+
+    // RelayService.SetRelayIDsHandler interface
+    public void HandleRelaysIDs( final String[] relayIDs )
+    {
+        m_handler.post( new Runnable() {
+                public void run() {
+                    if ( null != relayIDs && relayIDs.length > 0 ) {
+                        for ( String relayID : relayIDs ) {
+                            Utils.logf( "HandleRelaysIDs: got %s", relayID );
+                            String path = DBUtils.getPathFor( GamesList.this,
+                                                              relayID );
+                            m_adapter.inval( path );
+                        }
+                        onContentChanged();
+                    }
+                }
+            } );
+    }
+
+    // @Override
+    // protected void onNewIntent( Intent intent )
+    // {
+    //     RelayService.CancelNotification();
+
+    //     Utils.logf( "onNewIntent called" );
+    //     String[] relayIDs = intent.
+    //         getStringArrayExtra( getString(R.string.relayids_extra) );
+    //     HandleRelaysIDs( relayIDs );
+    // }
 
     @Override
     public void onWindowFocusChanged( boolean hasFocus )

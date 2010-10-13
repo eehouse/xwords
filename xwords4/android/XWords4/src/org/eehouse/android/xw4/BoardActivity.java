@@ -51,7 +51,7 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
-public class BoardActivity extends Activity implements UtilCtxt {
+public class BoardActivity extends XWActivity implements UtilCtxt {
 
     private static final int DLG_OKONLY = Utils.DIALOG_LAST + 1;
     private static final int DLG_BADWORDS = Utils.DIALOG_LAST + 2;
@@ -299,7 +299,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
         if ( m_path.charAt(0) == '/' ) {
             m_path = m_path.substring( 1 );
         }
-
     } // onCreate
 
     @Override
@@ -762,7 +761,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 }
                 m_jniThread.handle( JNICmd.CMD_START );
 
-                // setTitle( GameUtils.gameName( this, m_path ) );
+                if ( !CommonPrefs.getHideTitleBar( this ) ) {
+                    setTitle( GameUtils.gameName( this, m_path ) );
+                }
                 m_toolbar = 
                     new Toolbar( this, findViewById( R.id.toolbar_horizontal ),
                                  findViewById( R.id.toolbar_vertical ) );

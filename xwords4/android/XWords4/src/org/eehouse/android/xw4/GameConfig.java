@@ -57,9 +57,10 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
-public class GameConfig extends Activity implements View.OnClickListener
-                                                    ,XWListItem.DeleteCallback
-                                                    ,RefreshNamesTask.NoNameFound {
+public class GameConfig extends XWActivity 
+    implements View.OnClickListener
+               ,XWListItem.DeleteCallback
+               ,RefreshNamesTask.NoNameFound {
 
     private static final int PLAYER_EDIT = 1;
     // private static final int ROLE_EDIT_RELAY = 2;

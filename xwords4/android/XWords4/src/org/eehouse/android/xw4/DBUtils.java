@@ -26,6 +26,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
 import java.util.StringTokenizer;
 import android.content.ContentValues;
+import java.util.ArrayList;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -45,7 +46,7 @@ public class DBUtils {
             String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER,
                                  DBHelper.CONTYPE, DBHelper.ROOMNAME,
                                  DBHelper.RELAYID, DBHelper.SMSPHONE, 
-                                 DBHelper.SCORES
+                                 DBHelper.SCORES, DBHelper.HASMSGS
             };
             String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
 
@@ -88,6 +89,11 @@ public class DBUtils {
                     if ( col >= 0 ) {
                         summary.smsPhone = cursor.getString( col );
                     }
+                }
+                
+                col = cursor.getColumnIndex( DBHelper.HASMSGS );
+                if ( col >= 0 ) {
+                    summary.msgsPending = 0 != cursor.getInt( col );
                 }
             }
             cursor.close();
@@ -136,6 +142,69 @@ public class DBUtils {
             }
             db.close();
         }
+    }
+
+    public static void setHasMsgs( String relayID )
+    {
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            String cmd = String.format( "UPDATE %s SET %s = 1 WHERE %s = '%s'",
+                                        DBHelper.TABLE_NAME, DBHelper.HASMSGS, 
+                                        DBHelper.RELAYID, relayID );
+            db.execSQL( cmd );
+            db.close();
+        }
+    }
+
+    public static String getPathFor( Context context, String relayID )
+    {
+        String result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.FILE_NAME };
+            String selection = DBHelper.RELAYID + "='" + relayID + "'";
+            Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
+                                      null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getString( cursor
+                                           .getColumnIndex(DBHelper.FILE_NAME));
+
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static String[] getRelayIDNoMsgs( Context context )
+    {
+        initDB( context );
+        ArrayList<String> ids = new ArrayList<String>();
+
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.RELAYID };
+            String selection = DBHelper.RELAYID + " NOT null AND " 
+                + "NOT " + DBHelper.HASMSGS;
+
+            Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
+                                      null, null, null, null );
+
+            if ( 0 < cursor.getCount() ) {
+                cursor.moveToFirst();
+                while ( !cursor.isLast() ) {
+                    ids.add( cursor.
+                             getString( cursor.
+                                        getColumnIndex(DBHelper.RELAYID)) );
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        return ids.toArray( new String[ids.size()] );
     }
 
     private static void initDB( Context context )

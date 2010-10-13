@@ -40,20 +40,26 @@ import org.eehouse.android.xw4.jni.GameSummary;
 
 public class RelayService extends Service {
     
-    private NotificationManager m_nm;
+    public interface HandleRelaysIface {
+        public void HandleRelaysIDs( String[] relayIDs );
+    }
+
+    private static NotificationManager s_nm;
+    private static HandleRelaysIface s_handler = null;
 
     @Override
     public void onCreate()
     {
         super.onCreate();
-        Utils.logf( "RelayService::onCreate() called" );
+
+        s_nm = (NotificationManager)getSystemService( NOTIFICATION_SERVICE );
 
         Thread thread = new Thread( null, new Runnable() {
                 public void run() {
 
                     int[] nBytes = new int[1];
-                    ArrayList<String>ids = collectIDs( nBytes );
-                    if ( null != ids && 0 < ids.size() ) {
+                    String[] ids = collectIDs( nBytes );
+                    if ( null != ids && 0 < ids.length ) {
                         try {
                             Socket socket = 
                                 NetUtils.MakeProxySocket( RelayService.this, 
@@ -62,22 +68,19 @@ public class RelayService extends Service {
                                 new DataOutputStream( socket.getOutputStream() );
 
                             // total packet size
-                            outStream.writeShort( 2 + nBytes[0] + ids.size() + 1 );
+                            outStream.writeShort( 2 + nBytes[0] + ids.length + 1 );
                             Utils.logf( "total packet size: %d",
-                                        2 + nBytes[0] + ids.size() );
+                                        2 + nBytes[0] + ids.length );
 
                             outStream.writeByte( NetUtils.PROTOCOL_VERSION );
                             outStream.writeByte( NetUtils.PRX_HAS_MSGS );
 
                             // number of ids
-                            outStream.writeShort( ids.size() );
+                            outStream.writeShort( ids.length );
                             Utils.logf( "wrote count %d to proxy socket",
-                                        ids.size() );
+                                        ids.length );
 
                             for ( String id : ids ) {
-                                // outStream.writeShort( id.length );
-                                // Utils.logf( "wrote length %d to proxy socket",
-                                //             id.length );
                                 outStream.writeBytes( id );
                                 outStream.write( '\n' );
                             }
@@ -89,7 +92,7 @@ public class RelayService extends Service {
                             short result = dis.readShort();
                             short nameCount = dis.readShort();
                             short[] msgCounts = null;
-                            if ( nameCount == ids.size() ) {
+                            if ( nameCount == ids.length ) {
                                 msgCounts = new short[nameCount];
                                 for ( int ii = 0; ii < nameCount; ++ii ) {
                                     msgCounts[ii] = dis.readShort();
@@ -101,15 +104,21 @@ public class RelayService extends Service {
                             Utils.logf( "closed proxy socket" );
 
                             if ( null != msgCounts ) {
+                                ArrayList<String> idsWMsgs =
+                                    new ArrayList<String>( nameCount );
                                 for ( int ii = 0; ii < nameCount; ++ii ) {
                                     if ( msgCounts[ii] > 0 ) {
                                         String msg = 
                                             String.format("%d messages for %s",
                                                           msgCounts[ii], 
-                                                          ids.get(ii).toString() );
+                                                          ids[ii] );
                                         Utils.logf( msg );
+                                        DBUtils.setHasMsgs( ids[ii] );
+                                        idsWMsgs.add( ids[ii] );
                                     }
                                 }
+                                ids = new String[idsWMsgs.size()];
+                                setupNotification( idsWMsgs.toArray( ids ) );
                             }
 
                         } catch( java.net.UnknownHostException uhe ) {
@@ -142,6 +151,18 @@ public class RelayService extends Service {
         return null;
     }
 
+    public static void CancelNotification()
+    {
+        if ( null != s_nm ) {
+            s_nm.cancel( R.string.relayids_extra );
+        }
+    }
+    
+    public static void SetRelayIDsHandler( HandleRelaysIface iface )
+    {
+        s_handler = iface;
+    }
+
     //@Override
     // protected int onStartCommand( Intent intent, int flags, int startId )
     // {
@@ -150,40 +171,40 @@ public class RelayService extends Service {
     //     return 0;
     // }
 
-    // private void setupNotification()
-    // {
-    //     m_nm = (NotificationManager)getSystemService( NOTIFICATION_SERVICE );
-
-    //     Notification notification = 
-    //         new Notification( R.drawable.icon48x48, "foo",
-    //                           System.currentTimeMillis());
-
-    //     PendingIntent intent = PendingIntent
-    //         .getActivity( this, 0, new Intent(this, BoardActivity.class), 0);
-
-    //     notification.setLatestEventInfo( this, "bazz", "bar", intent );
-        
-    //     m_nm.notify( R.string.running_notification, notification );
-    // }
-
-    private ArrayList<String> collectIDs( int[] nBytes )
+    private void setupNotification( String[] relayIDs )
     {
-        nBytes[0] = 0;
-        ArrayList<String> ids = new ArrayList<String>();
-        String[] games = GameUtils.gamesList( this );
-        for ( String path : games ) {
-            Utils.logf( "looking at %s", path );
-            GameSummary summary = DBUtils.getSummary( this, path );
-            if ( null != summary && null != summary.relayID ) {
-                Utils.logf( "adding id %s with length %d", summary.relayID, 
-                            summary.relayID.length() );
-                ids.add( summary.relayID );
-                nBytes[0] += summary.relayID.length();
-            } else {
-                Utils.logf( "no summary" );
-            }
-        }
+        if ( null != s_handler ) {
+            s_handler.HandleRelaysIDs( relayIDs );
+        } else {
+            Intent intent = new Intent( this, DispatchNotify.class );
+            //intent.addFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP );
+            intent.putExtra( getString(R.string.relayids_extra), relayIDs );
+
+            PendingIntent pi = PendingIntent.
+                getActivity( this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT );
+            Notification notification = 
+                new Notification( R.drawable.icon48x48, 
+                                  getString(R.string.notify_title),
+                                  System.currentTimeMillis() );
+            notification.flags |= Notification.FLAG_AUTO_CANCEL;
+
+            notification.setLatestEventInfo( this, "bazz", "bar", pi );
         
+            s_nm.notify( R.string.relayids_extra, notification );
+        }
+    }
+
+    private String[] collectIDs( int[] nBytes )
+    {
+        Utils.logf( "collectIDs" );
+        String[] ids = DBUtils.getRelayIDNoMsgs( this );
+
+        int len = 0;
+        for ( String id : ids ) {
+            Utils.logf( "got relayID: %s", id );
+            len += id.length();
+        }
+        nBytes[0] = len;
         return ids;
     }
 

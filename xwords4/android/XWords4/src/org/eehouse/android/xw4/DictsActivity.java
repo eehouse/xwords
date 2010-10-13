@@ -40,7 +40,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 
-public class DictsActivity extends ListActivity 
+public class DictsActivity extends XWListActivity 
     implements View.OnClickListener,
                XWListItem.DeleteCallback {
     String[] m_dicts;

@@ -37,6 +37,7 @@
   <string name="key_default_phonies">key_default_phonies2</string>
   <string name="key_default_timerenabled">key_default_timerenabled</string>
   <string name="key_connect_frequency">key_connect_frequency</string>
+  <string name="relayids_extra">org.eehouse.android.xw4.relayids_extra</string>
   
   <!-- other -->
   <string name="default_host">eehouse.org</string>
@@ -62,7 +63,8 @@
   </string-array>
 
   <string-array name="connect_frequencies">
-    <item>@string/connect_ten_seconds</item>
+    <item>@string/connect_thirty_seconds</item>
+    <item>@string/connect_five_mins</item>
     <item>@string/connect_fifteen_mins</item>
     <item>@string/connect_thirty_mins</item>
     <item>@string/connect_one_hour</item>
@@ -72,7 +74,8 @@
   </string-array>
 
   <string-array name="connect_frequencies_values">
-    <item>10</item>
+    <item>30</item>
+    <item>300</item>
     <item>900</item>
     <item>1800</item>
     <item>3600</item>

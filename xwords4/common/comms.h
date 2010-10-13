@@ -165,7 +165,7 @@ void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 
 #ifdef XWFEATURE_RELAY
-XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_U8* buf, XP_U16* len );
+XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );
 #endif
 
 CommsConnType comms_getConType( const CommsCtxt* comms );

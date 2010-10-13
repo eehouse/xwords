@@ -1,7 +1,7 @@
-/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,20 +18,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.eehouse.android.xw4.jni;
+package org.eehouse.android.xw4;
 
+import android.app.Activity;
 
-/** Info we want to access when the game's closed that's not available
- * in CurGameInfo
- */
-public class GameSummary {
-    public int nMoves;
-    public int[] scores;
-    public boolean gameOver;
-    public CommsAddrRec.CommsConnType conType;
-    public String smsPhone;
-    // relay-related fields
-    public String roomName;
-    public String relayID;
-    public boolean msgsPending;
+public class XWActivity extends Activity {
+
+    @Override
+    protected void onStart()
+    {
+        Utils.logf( "XWActivity::onStart()" );
+        super.onStart();
+        DispatchNotify.SetRunning( this );
+    }
+
+    @Override
+    protected void onStop()
+    {
+        Utils.logf( "XWActivity::onStop()" );
+        super.onStop();
+        DispatchNotify.ClearRunning( this );
+    }
 }
