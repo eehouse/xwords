@@ -5,7 +5,13 @@ NROOMS=${NROOMS:-1}
 HOST=${HOST:-localhost}
 PORT=${PORT:-10997}
 TIMEOUT=${TIMEOUT:-$((NGAMES*60))}
-DICT=${DICT:-dict.xwd}
+DICTS=${DICTS:-dict.xwd}
+SAVE_GOOD=${SAVE_GOOD:-YES}
+
+declare -a DICTS_ARR
+for DICT in $DICTS; do
+    DICTS_ARR[${#DICTS_ARR[*]}]=$DICT
+done
 
 NAMES=(UNUSED Brynn Ariela Kati Eric)
 
@@ -29,7 +35,7 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICT; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 0
@@ -72,6 +78,7 @@ build_cmds() {
         ROOM=ROOM_$((GAME % NROOMS))
         check_room $ROOM
         NDEVS=$(($RANDOM%3+2))
+        DICT=${DICTS_ARR[$((GAME%${#DICTS_ARR[*]}))]}
 
         unset OTHERS
         for II in $(seq 2 $NDEVS); do
@@ -108,9 +115,14 @@ close_device() {
     fi
     unset PIDS[$ID]
     unset CMDS[$ID]
-    [ -f ${FILES[$ID]} ] && mv ${FILES[$ID]} $MVTO
+    if [ "$SAVE_GOOD" = YES ]; then
+        [ -f ${FILES[$ID]} ] && mv ${FILES[$ID]} $MVTO
+        mv ${LOGS[$ID]} $MVTO
+    else
+        rm -f ${FILES[$ID]}
+        rm -f ${LOGS[$ID]}
+    fi
     unset FILES[$ID]
-    mv ${LOGS[$ID]} $MVTO
     unset LOGS[$ID]
 }
 
