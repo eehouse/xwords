@@ -233,8 +233,9 @@ DBMgr::ClearCIDs( void )
 void
 DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
 {
-    const char* fmt = "SELECT room, nTotal-sum_array(nPerDevice)"
-	" FROM " GAMES_TABLE
+    const char* fmt = "SELECT room, nTotal-sum_array(nPerDevice),"
+        " round( extract( epoch from age('now', ctime)))"
+        " FROM " GAMES_TABLE
         " WHERE pub = TRUE"
         " AND lang = %d"
         " AND nTotal>sum_array(nPerDevice)"
@@ -250,6 +251,8 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
         names.append( PQgetvalue( result, ii, 0 ) );
         names.append( "/" );
         names.append( PQgetvalue( result, ii, 1 ) );
+        names.append( "/" );
+        names.append( PQgetvalue( result, ii, 2 ) );
         names.append( "\n" );
     }
     PQclear( result );
