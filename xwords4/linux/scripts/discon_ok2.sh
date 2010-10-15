@@ -18,8 +18,11 @@ NAMES=(UNUSED Brynn Ariela Kati Eric)
 LOGDIR=$(basename $0)_logs
 [ -d $LOGDIR ] && mv $LOGDIR /tmp/${LOGDIR}_$$
 mkdir -p $LOGDIR
-DONEDIR=$LOGDIR/done
-mkdir -p $DONEDIR
+
+if [ "$SAVE_GOOD" = YES ]; then
+    DONEDIR=$LOGDIR/done
+    mkdir -p $DONEDIR
+fi
 
 USE_GTK=${USE_GTK:-FALSE}
 
@@ -115,7 +118,7 @@ close_device() {
     fi
     unset PIDS[$ID]
     unset CMDS[$ID]
-    if [ "$SAVE_GOOD" = YES ]; then
+    if [ -n "$MVTO" ]; then
         [ -f ${FILES[$ID]} ] && mv ${FILES[$ID]} $MVTO
         mv ${LOGS[$ID]} $MVTO
     else
