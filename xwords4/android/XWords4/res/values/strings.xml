@@ -393,5 +393,6 @@
     <string name="button_reply">Reply</string>
     <string name="compose_chat">Message for all devices</string>
 
-    <string name="notify_title">notify_title</string>
+    <string name="notify_title">Crosswords data</string>
+    <string name="notify_body">New game data available on relay</string>
 </resources>

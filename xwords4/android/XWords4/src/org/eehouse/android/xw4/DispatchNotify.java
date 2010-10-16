@@ -32,30 +32,56 @@ import java.util.HashSet;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DispatchNotify extends Activity {
+
+    public interface HandleRelaysIface {
+        void HandleRelaysIDs( final String[] relayIDs );
+    }
+
     private static HashSet<Activity> s_running = new HashSet<Activity>();
+    private static HandleRelaysIface s_handler;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
+        Utils.logf( "DispatchNotify.onCreate()" );
         super.onCreate( savedInstanceState );
 
-        if ( s_running.isEmpty() ) {
+        Intent intent = getIntent();
+        String[] relayIDs = 
+            intent.getStringArrayExtra( getString(R.string.relayids_extra) );
+
+        if ( null != s_handler ) {
+            Utils.logf( "calling s_handler" );
+            s_handler.HandleRelaysIDs( relayIDs );
+        } else if ( s_running.isEmpty() ) {
             Utils.logf( "DispatchNotify: nothing running" );
             startActivity( new Intent( this, GamesList.class ) );
         } else {
             Utils.logf( "DispatchNotify: something running" );
-            Intent intent = getIntent();
-            String[] relayIDs = 
-                intent.getStringArrayExtra(getString(R.string.relayids_extra));
+
             String ids = "new moves available; need to inval";
             for ( String id : relayIDs ) {
                 ids += " " + id ;
             }
 
-            Toast.makeText( this, ids, Toast.LENGTH_SHORT).show();
+            // Toast.makeText( this, ids, Toast.LENGTH_SHORT).show();
+
+            // for ( Activity activity : s_running ) {
+            //     if ( activity instanceof DispatchNotify.HandleRelaysIface ) {
+            //         DispatchNotify.HandleRelaysIface iface =
+            //             (DispatchNotify.HandleRelaysIface)activity;
+            //         iface.HandleRelaysIDs( relayIDs );
+            //     }
+            // }
         }
 
         finish();
+    }
+
+    @Override
+    protected void onNewIntent( Intent intent )
+    {
+        Utils.logf( "DispatchNotify.onNewIntent() called" );
     }
 
     public static void SetRunning( Activity running )
@@ -68,4 +94,8 @@ public class DispatchNotify extends Activity {
         s_running.remove( running );
     }
 
+    public static void SetRelayIDsHandler( HandleRelaysIface iface )
+    {
+        s_handler = iface;
+    }
 }

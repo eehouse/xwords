@@ -47,7 +47,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends XWListActivity 
-    implements RelayService.HandleRelaysIface {
+    implements DispatchNotify.HandleRelaysIface {
 
     private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
     private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
@@ -140,29 +140,33 @@ public class GamesList extends XWListActivity
 
         FirstRunDialog.show( this, false );
 
-        RelayActivity.RestartTimer( this );
+        RelayReceiver.RestartTimer( this );
     }
 
     @Override
     protected void onStart()
     {
         super.onStart();
-        RelayService.SetRelayIDsHandler( this );
+        DispatchNotify.SetRelayIDsHandler( this );
     }
 
     @Override
     protected void onStop()
     {
         super.onStop();
-        RelayService.SetRelayIDsHandler( null );
+        DispatchNotify.SetRelayIDsHandler( null );
     }
 
-    // RelayService.SetRelayIDsHandler interface
+    // DispatchNotify.HandleRelaysIface interface
     public void HandleRelaysIDs( final String[] relayIDs )
     {
         m_handler.post( new Runnable() {
                 public void run() {
-                    if ( null != relayIDs && relayIDs.length > 0 ) {
+                    if ( null == relayIDs ) {
+                        Utils.logf( "relayIDs null" );
+                    } else if ( relayIDs.length == 0 ) {
+                        Utils.logf( "relayIDs empty" );
+                    } else {
                         for ( String relayID : relayIDs ) {
                             Utils.logf( "HandleRelaysIDs: got %s", relayID );
                             String path = DBUtils.getPathFor( GamesList.this,
