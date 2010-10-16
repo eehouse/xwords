@@ -1254,15 +1254,18 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                  cookieID, srcID, destID );
         /* If these values don't check out, drop it */
 
-        consumed = destID != comms->r.myHostID;
-        /* it's ok for cookieID not to match */
-        if ( !consumed ) {
-            if ( COMMS_RELAYSTATE_ALLCONNECTED == comms->r.relayState ) {
-                consumed = cookieID != comms->r.cookieID;
-            } else {
-                XP_ASSERT( COMMS_RELAYSTATE_RECONNECTED == comms->r.relayState ); /* this is firing */
-            }
+        XP_ASSERT( COMMS_RELAYSTATE_ALLCONNECTED == comms->r.relayState
+                   || COMMS_RELAYSTATE_CONNECTED == comms->r.relayState
+                   || COMMS_RELAYSTATE_RECONNECTED == comms->r.relayState );
+
+        if ( destID == comms->r.myHostID ) { /* When would this not happen? */
+            consumed = XP_FALSE;
+        } else if ( cookieID == comms->r.cookieID ) {
+            XP_LOGF( "%s: keeping message though hostID not what expected (%d vs %d)",
+                     __func__, destID, comms->r.myHostID );
+            consumed = XP_FALSE;
         }
+
         if ( consumed ) {
             XP_LOGF( "%s: rejecting data message", __func__ );
         } else {

@@ -53,7 +53,7 @@ class DBMgr {
     void ClearCID( const char* connName );
     void RecordSent( const char* const connName, int nBytes );
 
-    /* Return list of roomName/playersStillWanted for open public games
+    /* Return list of roomName/playersStillWanted/age for open public games
        matching this language and total game size. Will probably want to cache
        lists locally and only update them every few seconds to avoid to many
        queries.*/
