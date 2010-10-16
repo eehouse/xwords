@@ -194,10 +194,13 @@ public class DBUtils {
 
             if ( 0 < cursor.getCount() ) {
                 cursor.moveToFirst();
-                while ( !cursor.isLast() ) {
+                for ( ; ; ) {
                     ids.add( cursor.
                              getString( cursor.
                                         getColumnIndex(DBHelper.RELAYID)) );
+                    if ( cursor.isLast() ) {
+                        break;
+                    }
                     cursor.moveToNext();
                 }
             }
