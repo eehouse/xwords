@@ -83,9 +83,9 @@
               >
     </activity>
 
-    <activity android:name="RelayActivity"
-              >
-    </activity>
+    <receiver android:name="RelayReceiver"
+              android:process=":remote"
+              />
 
     <activity android:name="DispatchNotify"
               >
@@ -107,8 +107,6 @@
               android:pathPattern=".*\\.xwd" />
       </intent-filter> 
     </activity>
-
-    <service android:name=".RelayService" />
 
   </application>
 </manifest>
