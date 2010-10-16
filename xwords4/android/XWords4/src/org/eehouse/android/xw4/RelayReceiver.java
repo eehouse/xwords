@@ -124,8 +124,10 @@ public class RelayReceiver extends BroadcastReceiver {
                             idsWMsgs.add( ids[ii] );
                         }
                     }
-                    ids = new String[idsWMsgs.size()];
-                    setupNotification( context, idsWMsgs.toArray( ids ) );
+                    if ( 0 < idsWMsgs.size() ) {
+                        ids = new String[idsWMsgs.size()];
+                        setupNotification( context, idsWMsgs.toArray( ids ) );
+                    }
                 }
 
             } catch( java.net.UnknownHostException uhe ) {
