@@ -141,7 +141,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
-                            Utils.notImpl( BoardActivity.this ) ;
+                            showDialog( GET_MESSAGE );
                         }
                     };
                 ab.setNegativeButton( R.string.button_reply, lstnr );
@@ -268,6 +268,9 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         case ASK_PASSWORD_BLK:
             m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
             dialog.setTitle( m_dlgTitleStr );
+            break;
+        case GET_MESSAGE:
+            m_chatMsg.setText("");
             break;
         }
         super.onPrepareDialog( id, dialog );
