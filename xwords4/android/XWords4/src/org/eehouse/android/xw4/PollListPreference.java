@@ -45,14 +45,14 @@ public class PollListPreference extends ListPreference
     {
         // String key = getString( R.string.key_connect_frequency );
         String val = getPersistedString( "0" );
-        setSummary( String.format( "%s minutes", val ) );
+        setSummary( String.format( "%s seconds", val ) );
     }
 
     // Preference.OnPreferenceChangeListener interface
     public boolean onPreferenceChange( Preference preference, Object newValue )
     {
         int val = Integer.parseInt((String)newValue);
-        RelayActivity.RestartTimer( m_context, val * 1000 );
+        RelayReceiver.RestartTimer( m_context, val * 1000 );
         setSummary( String.format( "%d seconds", val ) );
         return true;
     }
