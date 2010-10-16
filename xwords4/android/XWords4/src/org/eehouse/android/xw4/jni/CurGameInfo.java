@@ -129,7 +129,7 @@ public class CurGameInfo {
     {
         boolean matter = nPlayers != other.nPlayers
             || serverRole != other.serverRole
-            || !dictName.equals( other.dictName )
+            || dictLang != other.dictLang
             || boardSize != other.boardSize
             || hintsNotAllowed != other.hintsNotAllowed
             || allowPickTiles != other.allowPickTiles
