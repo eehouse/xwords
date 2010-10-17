@@ -750,6 +750,7 @@ handle_proxy_tproc( void* closure )
             }
         }
     }
+    sleep( 2 );
     close( sock );
     return NULL;
 } /* handle_proxy_tproc */
