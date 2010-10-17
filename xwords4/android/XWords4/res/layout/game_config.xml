@@ -101,6 +101,8 @@
                   android:scrollHorizontally="false"
                   android:autoText="false"
                   android:capitalize="none"
+                  android:singleLine="true"
+                  android:selectAllOnFocus="true"
                   android:hint="@string/new_room_hint"
                   />
         <CheckBox android:id="@+id/advertise_new_room_check"
