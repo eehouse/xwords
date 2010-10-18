@@ -180,7 +180,7 @@
                         />
     <EditTextPreference android:key="@string/key_relay_port"
                         android:title="@string/relay_port"
-                        android:defaultValue="10999"
+                        android:defaultValue="10997"
                         android:numeric="decimal"
                         />
     <EditTextPreference android:key="@string/key_proxy_port"
