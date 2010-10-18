@@ -37,23 +37,28 @@ public class PollListPreference extends ListPreference
         super( context, attrs );
         m_context = context;
         setOnPreferenceChangeListener( this );
-
     }
 
     @Override
     protected void onAttachedToActivity()
     {
-        // String key = getString( R.string.key_connect_frequency );
         String val = getPersistedString( "0" );
-        setSummary( String.format( "%s seconds", val ) );
+        setSummaryToMatch( val );
     }
 
     // Preference.OnPreferenceChangeListener interface
     public boolean onPreferenceChange( Preference preference, Object newValue )
     {
-        int val = Integer.parseInt((String)newValue);
-        RelayReceiver.RestartTimer( m_context, val * 1000 );
-        setSummary( String.format( "%d seconds", val ) );
+        setSummaryToMatch( (String)newValue );
         return true;
+    }
+
+    private void setSummaryToMatch( String value )
+    {
+        int index = findIndexOfValue( value );
+        if ( 0 <= index ) {
+            CharSequence entry = getEntries()[index];
+            setSummary( entry );
+        }
     }
 }
