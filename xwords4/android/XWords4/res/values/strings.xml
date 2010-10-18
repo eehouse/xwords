@@ -167,7 +167,7 @@
     <string name="room_public">Make new room public</string>
     <string name="join_room">Join public room</string>
     <string name="new_room_hint">New room name</string>
-    <string name="room_public_prompt">Pick room to play in</string>
+    <string name="room_public_prompt">Select public room</string>
 
     <string name="configure_role">Configure connection</string>
     <string name="configure_rolef">Configure %s connection</string>
@@ -385,8 +385,8 @@
 
     <string name="public_names_progress">Fetching public rooms for
     %d-player games in %s.</string>
-    <string name="no_name_found">No public rooms found.  Try
-    refreshing or creating your own.</string>
+    <string name="no_name_found_f">No public rooms found for %d-player
+    games in %s. Try refreshing or creating your own.</string>
 
     <string name="chat_received">Message received</string>
     <string name="button_send">Send</string>

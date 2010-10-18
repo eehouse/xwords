@@ -242,11 +242,13 @@ public class GameConfig extends XWActivity
         case NO_NAME_FOUND:
             dialog = new AlertDialog.Builder( this )
                 .setPositiveButton( R.string.button_ok, null )
-                .setMessage( R.string.no_name_found )
+                // message added below since varies with language etc.
+                .setMessage("") // if not set here can't change later
                 .create();
+            break;
         }
         return dialog;
-    }
+    } // onCreateDialog
 
     @Override
     protected void onPrepareDialog( int id, Dialog dialog )
@@ -266,6 +268,12 @@ public class GameConfig extends XWActivity
         case FORCE_REMOTE:
             ListView listview = (ListView)dialog.findViewById( R.id.players );
             listview.setAdapter( new RemoteChoices() );
+            break;
+        case NO_NAME_FOUND:
+            String format = getString( R.string.no_name_found_f );
+            String msg = String.format( format, m_gi.nPlayers, DictLangCache.
+                                        getLangName( this, m_gi.dictLang ) );
+            ((AlertDialog)dialog).setMessage( msg );
             break;
         }
         super.onPrepareDialog( id, dialog );
@@ -726,6 +734,8 @@ public class GameConfig extends XWActivity
     private void adjustConnectStuff()
     {
         if ( m_joinPublicCheck.isChecked() ) {
+            new RefreshNamesTask( this, this, m_gi.dictLang, 
+                                  m_gi.nPlayers, m_roomChoose ).execute();
             m_privateRoomsSet.setVisibility( View.GONE );
             m_publicRoomsSet.setVisibility( View.VISIBLE );
 
