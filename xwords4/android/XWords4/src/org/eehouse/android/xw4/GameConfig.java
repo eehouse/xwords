@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -391,7 +390,7 @@ public class GameConfig extends XWActivity
                           m_car.ip_relay_advertiseRoom );
         m_publicRoomsSet = (LinearLayout)findViewById(R.id.public_rooms_set );
         m_privateRoomsSet = (LinearLayout)findViewById(R.id.private_rooms_set );
-        Utils.setText( this, R.id.room_edit, m_car.ip_relay_invite );
+        //Utils.setText( this, R.id.room_edit, m_car.ip_relay_invite );
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
