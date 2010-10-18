@@ -840,7 +840,8 @@ public class GameConfig extends XWActivity
                     }
                 }
             } else {
-                m_car.ip_relay_invite = Utils.getText( this, R.id.room_edit );
+                m_car.ip_relay_invite = 
+                    Utils.getText( this, R.id.room_edit ).trim();
             }
         }
 
@@ -852,7 +853,7 @@ public class GameConfig extends XWActivity
         m_car.conType = m_notNetworkedGame
             ? CommsAddrRec.CommsConnType.COMMS_CONN_NONE
             : CommsAddrRec.CommsConnType.COMMS_CONN_RELAY;
-    }
+    } // saveChanges
 
     private void applyChanges( boolean forceNew )
     {
