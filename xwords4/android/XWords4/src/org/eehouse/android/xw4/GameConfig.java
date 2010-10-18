@@ -227,7 +227,7 @@ public class GameConfig extends XWActivity
         case CONFIRM_CHANGE_PLAY:
             dialog = new AlertDialog.Builder( this )
                 .setTitle( R.string.confirm_save_title )
-                .setMessage( R.string.confirm_save_play )
+                .setMessage( R.string.confirm_save )
                 .setPositiveButton( R.string.button_save,
                                     new DialogInterface.OnClickListener() {
                                         public void onClick( DialogInterface dlg, 
