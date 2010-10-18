@@ -830,14 +830,6 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                                                            .CMD_UNDO_CUR );
                                    }
                                }) ;
-        m_toolbar.setListener( Toolbar.BUTTON_VALUES,
-                               new View.OnClickListener() {
-                                   @Override
-                                   public void onClick( View view ) {
-                                       m_jniThread.handle( JNIThread.JNICmd
-                                                           .CMD_VALUES );
-                                   }
-                               }) ;
     } // populateToolbar
 
     private DialogInterface.OnDismissListener makeODLforBlocking()

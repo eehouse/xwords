@@ -219,9 +219,6 @@ public class JNIThread extends Thread {
         int canFlip = visTileCount > 1 ? 1 : 0;
         Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_FLIP,
                         canFlip ).sendToTarget();
-        int canValues = visTileCount > 0 ? 1 : 0;
-        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_VALUES,
-                        canValues ).sendToTarget();
 
         int canShuffle = XwJNI.board_canShuffle( m_jniGamePtr ) ? 1 : 0;
         Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_JUGGLE,
