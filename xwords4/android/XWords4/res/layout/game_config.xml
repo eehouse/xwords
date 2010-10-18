@@ -188,6 +188,7 @@
               />
 
     <Spinner android:id="@+id/phonies_spinner"
+             android:prompt="@string/phonies_spinner_prompt"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
              android:drawSelectorOnTop="true"

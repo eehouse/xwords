@@ -259,7 +259,7 @@
     <string name="prefs_behavior_summary">Settings controlling app behavior</string>
 
     <string name="default_dict">Game dictionary</string>
-    <string name="default_phonies">Handle phonies</string>
+    <string name="phonies_spinner_prompt">Handle phonies (words not in dictionary)</string>    
     <string name="board_size">Board size</string>
     <string name="default_timerenabled">Use game timer</string>
 
@@ -393,6 +393,7 @@
     <string name="button_reply">Reply</string>
     <string name="compose_chat">Message for all devices</string>
 
-    <string name="notify_title">Crosswords data</string>
+    <string name="notify_title">Data available</string>
     <string name="notify_body">New game data available on relay</string>
+
 </resources>
