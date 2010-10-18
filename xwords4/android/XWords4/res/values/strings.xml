@@ -171,7 +171,7 @@
 
     <string name="configure_role">Configure connection</string>
     <string name="configure_rolef">Configure %s connection</string>
-    <string name="settings_label">Game settings</string>
+    <string name="settings_label">Other settings</string>
     <string name="minutes_label">Minutes per player</string>
 
     <string name="smart_robot">Smart robot</string>
