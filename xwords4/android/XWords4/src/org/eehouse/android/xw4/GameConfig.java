@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import java.io.File;
 import java.util.ArrayList;
 import android.view.Gravity;
 import android.view.Menu;
@@ -68,7 +69,8 @@ public class GameConfig extends XWActivity
     // private static final int ROLE_EDIT_BT = 4;
     private static final int FORCE_REMOTE = 5;
     private static final int CONFIRM_CHANGE = 6;
-    private static final int NO_NAME_FOUND = 7;
+    private static final int CONFIRM_CHANGE_PLAY = 7;
+    private static final int NO_NAME_FOUND = 8;
 
     private CheckBox m_notNetworkedGameCheckbx;
     private CheckBox m_joinPublicCheck;
@@ -78,6 +80,7 @@ public class GameConfig extends XWActivity
     private boolean m_notNetworkedGame;
     private Button m_addPlayerButton;
     private Button m_jugglePlayersButton;
+    private Button m_playButton;
     private ImageButton m_refreshRoomsButton;
     private View m_connectSet;  // really a LinearLayout
     private Spinner m_roomChoose;
@@ -219,6 +222,21 @@ public class GameConfig extends XWActivity
                                             finish();
                                         }
                                     })
+                .create();
+            break;
+        case CONFIRM_CHANGE_PLAY:
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.confirm_save_title )
+                .setMessage( R.string.confirm_save_play )
+                .setPositiveButton( R.string.button_save,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg, 
+                                                             int whichButton ) {
+                                            applyChanges( true );
+                                            launchGame();
+                                        }
+                                    })
+                .setNegativeButton( R.string.button_cancel, null )
                 .create();
             break;
         case NO_NAME_FOUND:
@@ -371,6 +389,8 @@ public class GameConfig extends XWActivity
         m_addPlayerButton.setOnClickListener( this );
         m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
         m_jugglePlayersButton.setOnClickListener( this );
+        m_playButton = (Button)findViewById( R.id.play_button );
+        m_playButton.setOnClickListener( this );
 
         m_connectSet = findViewById(R.id.connect_set);
         // m_configureButton = (Button)findViewById(R.id.configure_role);
@@ -493,6 +513,24 @@ public class GameConfig extends XWActivity
         } else if ( m_refreshRoomsButton == view ) {
             new RefreshNamesTask( this, this, m_gi.dictLang, 
                                   m_gi.nPlayers, m_roomChoose ).execute();
+        } else if ( m_playButton == view ) {
+            // Launch BoardActivity for m_path, but ONLY IF user
+            // confirms any changes required.  So we either launch
+            // from here if there's no confirmation needed, or launch
+            // a new dialog whose OK button does the same thing.
+            saveChanges();
+            if ( 0 >= m_nMoves ) { // no confirm needed 
+                applyChanges( true );
+                launchGame();
+            } else if ( m_giOrig.changesMatter(m_gi) 
+                        || (! m_notNetworkedGame
+                            && m_carOrig.changesMatter(m_car) ) ) {
+                showDialog( CONFIRM_CHANGE_PLAY );
+            } else {
+                applyChanges( false );
+                launchGame();
+            }
+
         } else {
             Utils.logf( "unknown v: " + view.toString() );
         }
@@ -507,7 +545,8 @@ public class GameConfig extends XWActivity
             if ( 0 >= m_nMoves ) { // no confirm needed 
                 applyChanges( true );
             } else if ( m_giOrig.changesMatter(m_gi) 
-                        || m_carOrig.changesMatter(m_car) ) {
+                        || (! m_notNetworkedGame
+                            && m_carOrig.changesMatter(m_car) ) ) {
                 showDialog( CONFIRM_CHANGE );
                 consumed = true; // don't dismiss activity yet!
             } else {
@@ -853,6 +892,16 @@ public class GameConfig extends XWActivity
         DBUtils.saveSummary( m_path, summary );
 
         XwJNI.game_dispose( gamePtr );
+    }
+
+    private void launchGame()
+    {
+        File file = new File( m_path );
+        Uri uri = Uri.fromFile( file );
+        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                    this, BoardActivity.class );
+        startActivity( intent );
+        finish();
     }
 
 }

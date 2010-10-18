@@ -182,6 +182,9 @@
     <string name="confirm_save">This game is in play.  If you save
       these changes it must be restarted.  Do you want to save or
       discard these changes?</string>
+    <string name="confirm_save_play">This game is in play.  If you
+      save these changes it must be restarted.  Do you want to save
+      these changes?</string>
     <string name="confirm_delete_all">Are you sure you want to
     delete all games?  This action cannot be undone.</string>
     

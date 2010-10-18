@@ -195,6 +195,12 @@
              android:entries="@array/phony_names"
              />
 
+    <Button android:id="@+id/play_button"
+            android:layout_width="fill_parent" 
+            android:layout_height="wrap_content"
+            android:text="@string/play" 
+            />
+
   </LinearLayout>
 
 </ScrollView>
