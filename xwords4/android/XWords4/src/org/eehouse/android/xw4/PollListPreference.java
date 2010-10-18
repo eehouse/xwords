@@ -49,7 +49,11 @@ public class PollListPreference extends ListPreference
     // Preference.OnPreferenceChangeListener interface
     public boolean onPreferenceChange( Preference preference, Object newValue )
     {
-        setSummaryToMatch( (String)newValue );
+        String valstr = (String)newValue;
+        int val = Integer.parseInt(valstr);
+        RelayReceiver.RestartTimer( m_context, val * 1000 );
+
+        setSummaryToMatch( valstr );
         return true;
     }
 
