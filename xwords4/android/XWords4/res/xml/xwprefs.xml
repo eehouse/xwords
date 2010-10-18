@@ -130,7 +130,7 @@
     <CheckBoxPreference android:key="@string/key_explain_robot"
                         android:title="@string/explain_robot"
                         android:summary="@string/explain_robot_summary"
-                        android:defaultValue="false"
+                        android:defaultValue="true"
                         />
     <CheckBoxPreference android:key="@string/key_skip_confirm"
                         android:title="@string/skip_confirm_turn"
@@ -157,11 +157,7 @@
                         android:summary="@string/peek_other_summary"
                         android:defaultValue="false"
                         />
-  </PreferenceScreen>
 
-  <PreferenceScreen android:title="@string/relay_behavior"
-                    android:summary="@string/relay_behavior_summary"
-                    >
     <org.eehouse.android.xw4.PollListPreference
        android:key="@string/key_connect_frequency"
        android:title="@string/connect_frequency"
