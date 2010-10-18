@@ -371,8 +371,6 @@
     <string name="changes_title">Recent changes</string>
     <string name="changes_button">Recent changes</string>
 
-    <string name="relay_behavior">Relay behavior</string>
-    <string name="relay_behavior_summary">Relay behavior summary</string>
     <string name="connect_frequency">Background move check frequency</string>
 	<string name="connect_thirty_seconds">30 seconds</string>
 	<string name="connect_five_mins">5 minutes</string>
