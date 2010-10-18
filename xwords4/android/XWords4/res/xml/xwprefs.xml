@@ -163,7 +163,7 @@
        android:title="@string/connect_frequency"
        android:entries="@array/connect_frequencies"
        android:entryValues="@array/connect_frequencies_values"
-       android:defaultValue="60"
+       android:defaultValue="900"
        />
   </PreferenceScreen>
 
