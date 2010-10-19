@@ -393,5 +393,11 @@
 
     <string name="notify_title">Data available</string>
     <string name="notify_body">New game data available on relay</string>
+    <string name="gamel_menu_checkmoves">Check server</string>
+
+    <string name="no_games_to_refresh">No games found that connect via
+    the meetup server.</string>
+
+    <string name="msgs_progress">Checking meetup server for messages...</string>
 
 </resources>
