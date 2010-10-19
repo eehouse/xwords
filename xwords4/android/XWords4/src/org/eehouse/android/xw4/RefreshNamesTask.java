@@ -70,39 +70,41 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
 
         try {
             Socket socket = NetUtils.MakeProxySocket( m_context, 15000 );
-
-            DataOutputStream outStream = 
-                new DataOutputStream( socket.getOutputStream() );
+            if ( null != socket ) {
+                DataOutputStream outStream = 
+                    new DataOutputStream( socket.getOutputStream() );
         
-            outStream.writeShort( 4 );                // total packet length
-            outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-            outStream.writeByte( NetUtils.PRX_PUB_ROOMS );
-            outStream.writeByte( (byte)m_lang );
-            outStream.writeByte( (byte)m_nInGame );
-            outStream.flush();
+                outStream.writeShort( 4 );                // total packet length
+                outStream.writeByte( NetUtils.PROTOCOL_VERSION );
+                outStream.writeByte( NetUtils.PRX_PUB_ROOMS );
+                outStream.writeByte( (byte)m_lang );
+                outStream.writeByte( (byte)m_nInGame );
+                outStream.flush();
 
-            // read result -- will block
-            DataInputStream dis = 
-                new DataInputStream(socket.getInputStream());
-            short len = dis.readShort();
-            short nRooms = dis.readShort();
-            Utils.logf( "%s: got %d rooms", "doInBackground", nRooms );
+                // read result -- will block
+                DataInputStream dis = 
+                    new DataInputStream(socket.getInputStream());
+                short len = dis.readShort();
+                short nRooms = dis.readShort();
+                Utils.logf( "%s: got %d rooms", "doInBackground", nRooms );
 
-            // Can't figure out how to read a null-terminated string
-            // from DataInputStream so parse it myself.
-            byte[] bytes = new byte[len];
-            dis.read( bytes );
+                // Can't figure out how to read a null-terminated string
+                // from DataInputStream so parse it myself.
+                byte[] bytes = new byte[len];
+                dis.read( bytes );
 
-            int index = -1;
-            for ( int ii = 0; ii < nRooms; ++ii ) {
-                int lastIndex = ++index; // skip the null
-                while ( bytes[index] != '\n' ) {
-                    ++index;
+                int index = -1;
+                for ( int ii = 0; ii < nRooms; ++ii ) {
+                    int lastIndex = ++index; // skip the null
+                    while ( bytes[index] != '\n' ) {
+                        ++index;
+                    }
+                    String name = new String( bytes, lastIndex, index - lastIndex );
+                    Utils.logf( "got public room name: %s", name );
+                    int indx = name.lastIndexOf( "/" );
+                    indx = name.lastIndexOf( "/", indx-1 );
+                    names.add( name.substring(0, indx ) );
                 }
-                String name = new String( bytes, lastIndex, index - lastIndex );
-                Utils.logf( "got public room name: %s", name );
-                int indx = name.lastIndexOf("/");
-                names.add( name.substring(0, indx ) );
             }
         } catch ( java.io.IOException ioe ) {
             Utils.logf( "%s", ioe.toString() );

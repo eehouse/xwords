@@ -49,10 +49,6 @@
                    style="@style/toolbar_button"
     	           android:src="@drawable/zoom"
                    />
-   	  <ImageButton android:id="@+id/values_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/values"
-                   />
    	  <ImageButton android:id="@+id/undo_button_horizontal"
                    style="@style/toolbar_button"
     	           android:src="@drawable/undo"
@@ -84,10 +80,6 @@
    	<ImageButton android:id="@+id/zoom_button_vertical"
                  style="@style/toolbar_button"
     	         android:src="@drawable/zoom"
-                 />
-   	<ImageButton android:id="@+id/values_button_vertical"
-                 style="@style/toolbar_button"
-    	         android:src="@drawable/values"
                  />
    	<ImageButton android:id="@+id/undo_button_vertical"
                  style="@style/toolbar_button"

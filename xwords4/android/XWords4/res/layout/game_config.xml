@@ -101,6 +101,8 @@
                   android:scrollHorizontally="false"
                   android:autoText="false"
                   android:capitalize="none"
+                  android:singleLine="true"
+                  android:selectAllOnFocus="true"
                   android:hint="@string/new_room_hint"
                   />
         <CheckBox android:id="@+id/advertise_new_room_check"
@@ -186,11 +188,18 @@
               />
 
     <Spinner android:id="@+id/phonies_spinner"
+             android:prompt="@string/phonies_spinner_prompt"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
              android:drawSelectorOnTop="true"
              android:entries="@array/phony_names"
              />
+
+    <Button android:id="@+id/play_button"
+            android:layout_width="fill_parent" 
+            android:layout_height="wrap_content"
+            android:text="@string/play" 
+            />
 
   </LinearLayout>
 

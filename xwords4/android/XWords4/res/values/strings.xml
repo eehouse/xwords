@@ -167,11 +167,11 @@
     <string name="room_public">Make new room public</string>
     <string name="join_room">Join public room</string>
     <string name="new_room_hint">New room name</string>
-    <string name="room_public_prompt">Pick room to play in</string>
+    <string name="room_public_prompt">Select public room</string>
 
     <string name="configure_role">Configure connection</string>
     <string name="configure_rolef">Configure %s connection</string>
-    <string name="settings_label">Game settings</string>
+    <string name="settings_label">Other settings</string>
     <string name="minutes_label">Minutes per player</string>
 
     <string name="smart_robot">Smart robot</string>
@@ -179,9 +179,9 @@
     <string name="download_dicts">Download more...</string>
 
     <string name="confirm_save_title">Confirm save</string>
-    <string name="confirm_save">This game is in play.  If you save
-      these changes it must be restarted.  Do you want to save or
-      discard these changes?</string>
+    <string name="confirm_save">This game is in play.  If you
+      save these changes it must be restarted.  Do you want to save
+      these changes?</string>
     <string name="confirm_delete_all">Are you sure you want to
     delete all games?  This action cannot be undone.</string>
     
@@ -259,7 +259,7 @@
     <string name="prefs_behavior_summary">Settings controlling app behavior</string>
 
     <string name="default_dict">Game dictionary</string>
-    <string name="default_phonies">Handle phonies</string>
+    <string name="phonies_spinner_prompt">Handle phonies (words not in dictionary)</string>    
     <string name="board_size">Board size</string>
     <string name="default_timerenabled">Use game timer</string>
 
@@ -385,14 +385,15 @@
 
     <string name="public_names_progress">Fetching public rooms for
     %d-player games in %s.</string>
-    <string name="no_name_found">No public rooms found.  Try
-    refreshing or creating your own.</string>
+    <string name="no_name_found_f">No public rooms found for %d-player
+    games in %s. Try refreshing or creating your own.</string>
 
     <string name="chat_received">Message received</string>
     <string name="button_send">Send</string>
     <string name="button_reply">Reply</string>
     <string name="compose_chat">Message for all devices</string>
 
-    <string name="notify_title">Crosswords data</string>
+    <string name="notify_title">Data available</string>
     <string name="notify_body">New game data available on relay</string>
+
 </resources>
