@@ -518,8 +518,7 @@ public class GameConfig extends XWActivity
         //         break;
         //     }
         } else if ( m_refreshRoomsButton == view ) {
-            new RefreshNamesTask( this, this, m_gi.dictLang, 
-                                  m_gi.nPlayers, m_roomChoose ).execute();
+            refreshNames();
         } else if ( m_playButton == view ) {
             // Launch BoardActivity for m_path, but ONLY IF user
             // confirms any changes required.  So we either launch
@@ -733,8 +732,7 @@ public class GameConfig extends XWActivity
     private void adjustConnectStuff()
     {
         if ( m_joinPublicCheck.isChecked() ) {
-            new RefreshNamesTask( this, this, m_gi.dictLang, 
-                                  m_gi.nPlayers, m_roomChoose ).execute();
+            refreshNames();
             m_privateRoomsSet.setVisibility( View.GONE );
             m_publicRoomsSet.setVisibility( View.VISIBLE );
 
@@ -912,6 +910,12 @@ public class GameConfig extends XWActivity
                                     this, BoardActivity.class );
         startActivity( intent );
         finish();
+    }
+
+    private void refreshNames()
+    {
+        new RefreshNamesTask( this, this, m_gi.dictLang, 
+                              m_gi.nPlayers, m_roomChoose ).execute();
     }
 
 }
