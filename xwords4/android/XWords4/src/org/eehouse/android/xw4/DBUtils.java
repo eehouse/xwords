@@ -180,6 +180,7 @@ public class DBUtils {
 
     public static String[] getRelayIDNoMsgs( Context context )
     {
+        String[] result = null;
         initDB( context );
         ArrayList<String> ids = new ArrayList<String>();
 
@@ -207,7 +208,11 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        return ids.toArray( new String[ids.size()] );
+
+        if ( 0 < ids.size() ) {
+            result = ids.toArray( new String[ids.size()] );
+        }
+        return result;
     }
 
     private static void initDB( Context context )
