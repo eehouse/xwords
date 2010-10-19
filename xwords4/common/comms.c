@@ -54,6 +54,9 @@ typedef struct MsgQueueElem {
     XP_PlayerAddr channelNo;
     XP_U16 sendCount;           /* how many times sent? */
     MsgID msgID;                /* saved for ease of deletion */
+#ifdef DEBUG
+    gchar* checksum;
+#endif
 } MsgQueueElem;
 
 typedef struct AddressRecord {
@@ -550,7 +553,10 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         msg->len = stream_getU16( stream );
         msg->msg = (XP_U8*)XP_MALLOC( mpool, msg->len );
         stream_getBytes( stream, msg->msg, msg->len );
-
+#ifdef DEBUG
+        msg->checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
+                                                     msg->msg, msg->len );
+#endif
         msg->next = (MsgQueueElem*)NULL;
         *prevsQueueNext = comms->msgQueueTail = msg;
         comms->msgQueueTail = msg;
@@ -880,6 +886,11 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
         stream_getBytes( stream, newMsgElem->msg + headerLen, streamSize );
     }
 
+#ifdef DEBUG
+    newMsgElem->checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
+                                                        newMsgElem->msg, 
+                                                        newMsgElem->len );
+#endif
     return newMsgElem;
 } /* makeElemWithID */
 
@@ -951,8 +962,8 @@ printQueue( const CommsCtxt* comms )
 
     for ( elem = comms->msgQueueHead, i = 0; i < comms->queueLen; 
           elem = elem->next, ++i ) {
-        XP_STATUSF( "\t%d: channel: %x; msgID=" XP_LD,
-                    i+1, elem->channelNo, elem->msgID );
+        XP_STATUSF( "\t%d: channel: %x; msgID=" XP_LD "; check=%s",
+                    i+1, elem->channelNo, elem->msgID, elem->checksum );
     }
 }
 
@@ -970,6 +981,7 @@ assertQueueOk( const CommsCtxt* comms )
         }
     }
     XP_ASSERT( count == comms->queueLen );
+    XP_ASSERT( count < 10 );
 }
 #endif
 
@@ -977,6 +989,9 @@ static void
 freeElem( const CommsCtxt* XP_UNUSED_DBG(comms), MsgQueueElem* elem )
 {
     XP_FREE( comms->mpool, elem->msg );
+#ifdef DEBUG
+    g_free( elem->checksum );
+#endif
     XP_FREE( comms->mpool, elem );
 }
 
@@ -1011,7 +1026,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
                queue, and receiving something from the server is an implicit
                ACK -- IFF it isn't left over from the last game. */
 
-            if ( (elem->channelNo == 0) && (channelNo != 0) ) {
+            if ( ((CHANNEL_MASK & elem->channelNo) == 0) && (channelNo!= 0) ) {
                 XP_ASSERT( !comms->isServer );
                 XP_ASSERT( elem->msgID == 0 );
             } else if ( elem->channelNo != channelNo ) {
