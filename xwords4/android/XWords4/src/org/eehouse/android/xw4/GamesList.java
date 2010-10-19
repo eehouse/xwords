@@ -47,7 +47,8 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends XWListActivity 
-    implements DispatchNotify.HandleRelaysIface {
+    implements DispatchNotify.HandleRelaysIface,
+               RefreshMsgsTask.RefreshMsgsIface {
 
     private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
     private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
@@ -56,6 +57,8 @@ public class GamesList extends XWListActivity
     private String m_invalPath = null;
     private String m_missingDict;
     private Handler m_handler;
+
+    private Object[] m_dlgObjects = null;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -96,7 +99,7 @@ public class GamesList extends XWListActivity
                 .create();
             break;
         default:
-            dialog = Utils.onCreateDialog( this, id );
+            dialog = Utils.onCreateDialog( this, id, m_dlgObjects );
         }
         return dialog;
     }
@@ -179,6 +182,12 @@ public class GamesList extends XWListActivity
             } );
     }
 
+    // RefreshMsgsTask.RefreshMsgsIface interface
+    public void RefreshMsgsResults( String[] relayIDs )
+    {
+        HandleRelaysIDs( relayIDs );
+    }
+
     // @Override
     // protected void onNewIntent( Intent intent )
     // {
@@ -251,12 +260,24 @@ public class GamesList extends XWListActivity
             startActivity( intent );
             break;
 
+        case R.id.gamel_menu_checkmoves:
+            if ( null == DBUtils.getRelayIDNoMsgs( this ) ) {
+                m_dlgObjects = new Object[] {
+                    new Integer(R.string.no_games_to_refresh)
+                };
+                showDialog( Utils.DIALOG_OKONLY );
+            } else {
+                new RefreshMsgsTask( this, this ).execute();
+            }
+            break;
+
         case R.id.gamel_menu_prefs:
             intent = new Intent( this, PrefsActivity.class );
             startActivity( intent );
             break;
 
         case R.id.gamel_menu_about:
+            m_dlgObjects = null;
             showDialog( Utils.DIALOG_ABOUT );
             break;
 
