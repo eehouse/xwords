@@ -54,7 +54,7 @@ typedef struct MsgQueueElem {
     XP_PlayerAddr channelNo;
     XP_U16 sendCount;           /* how many times sent? */
     MsgID msgID;                /* saved for ease of deletion */
-#ifdef DEBUG
+#ifdef COMMS_CHECKSUM
     gchar* checksum;
 #endif
 } MsgQueueElem;
@@ -553,7 +553,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         msg->len = stream_getU16( stream );
         msg->msg = (XP_U8*)XP_MALLOC( mpool, msg->len );
         stream_getBytes( stream, msg->msg, msg->len );
-#ifdef DEBUG
+#ifdef COMMS_CHECKSUM
         msg->checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
                                                      msg->msg, msg->len );
 #endif
@@ -886,7 +886,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
         stream_getBytes( stream, newMsgElem->msg + headerLen, streamSize );
     }
 
-#ifdef DEBUG
+#ifdef COMMS_CHECKSUM
     newMsgElem->checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
                                                         newMsgElem->msg, 
                                                         newMsgElem->len );
@@ -962,8 +962,15 @@ printQueue( const CommsCtxt* comms )
 
     for ( elem = comms->msgQueueHead, i = 0; i < comms->queueLen; 
           elem = elem->next, ++i ) {
-        XP_STATUSF( "\t%d: channel: %x; msgID=" XP_LD "; check=%s",
-                    i+1, elem->channelNo, elem->msgID, elem->checksum );
+        XP_STATUSF( "\t%d: channel: %x; msgID=" XP_LD 
+#ifdef COMMS_CHECKSUM
+                    "; check=%s"
+#endif
+                    ,i+1, elem->channelNo, elem->msgID
+#ifdef COMMS_CHECKSUM
+                    , elem->checksum 
+#endif
+);
     }
 }
 
@@ -989,7 +996,7 @@ static void
 freeElem( const CommsCtxt* XP_UNUSED_DBG(comms), MsgQueueElem* elem )
 {
     XP_FREE( comms->mpool, elem->msg );
-#ifdef DEBUG
+#ifdef COMMS_CHECKSUM
     g_free( elem->checksum );
 #endif
     XP_FREE( comms->mpool, elem );
