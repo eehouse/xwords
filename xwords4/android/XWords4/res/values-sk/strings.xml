@@ -188,19 +188,6 @@
     <string name="ringer_zoom">Priblížiť tlačidlami hlasitosti</string>
     <string name="ringer_zoom_summary">Priblížiť hracie pole pomocou tlačidiel ovládania hlasitosti zvuku</string>
 
-    <string name="role_standalone">Samostatný</string>
-    <string name="role_host">Server</string>
-    <string name="role_guest">Klient</string>
-    <string name="role_prompt">Zvolte Standalone ak všetci hráči hrajú 
-    na tomto zariadení. Inak môžete byť Serverom alebo sa ako Klient pripojiť k inému Serveru.</string>
-
-    <string name="room_edit_hint_host">Ako Server musíte vytvoriť a pomenovať miestnosť pre vás a vašich Klientov. 
-    Musíte sa pripojiť prvý pred všetkými klientmi.</string>
-    <string name="room_edit_hint_guest">Ako Klient sa môžete pripojiť do miestnosti vytvorenej Serverom. 
-    Musíte ale počkať než se do miestnosti pripojí Server.</string>
-    <string name="room_edit_hint_connect">(Pripojenie sa uskutoční automaticky pokiaľ spustíte hru nakonfigurovanú
-    pre použitie relay.)</string>
-
     <string name="phonies_ignore">Ignorovať slovník</string>
     <string name="phonies_warn">Varovať ak nie je v slovníku</string>
     <string name="phonies_disallow">Zakázať ak nie je v slovníku</string>
@@ -231,7 +218,6 @@
     <string name="trading_text">Výmena kameňov. Zvoľte\n\'Ukončiť ťah\' až budete hotový.</string>
     <string name="tile_back">Pozadie kamenňov</string>
     <string name="empty">Prázdne pole/pozadie</string>
-    <string name="focus">Farba focus</string>
     <string name="advanced">Rozšírené</string>
     <string name="advanced_summary">Toto by ste nemali potrebovať meniť...</string>
     <string name="relay_host">Relay adresa</string>

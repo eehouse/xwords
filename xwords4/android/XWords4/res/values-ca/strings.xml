@@ -199,15 +199,6 @@
     <string name="show_bonussum">Mostra les bonificacions</string>
     <string name="show_bonussum_summary">Mostra el text com "2P" a les caselles bonificadores lliures</string>
  
-    <string name="role_standalone">Solitari</string>
-    <string name="role_host">Amfitrió</string>
-    <string name="role_guest">Visitant</string>
-    <string name="role_prompt">Solitari si tots els jugador faran servir aquest dispositiu; altrament sigueu l\'amfitrió d\'una partida o un visitant.</string>
-
-    <string name="room_edit_hint_host">Com a amfitrió, poseu nom a la sala que fareu servir els jugadors. Heu de connectar-vos abans que els visitants per establir establis la sala al servidor repetidor.</string>
-    <string name="room_edit_hint_guest">Com a visitant. entreu a la sala amb el nom que ha triat l\'amfitrió.  Heu d\'esperar a connectar fins que l\'amfitrió ho hagi fet.</string>
-    <string name="room_edit_hint_connect">(La connexió s\'estableix automàticament quan obriu una partida que configurada per usar el repetidor.)</string>
-
     <string name="phonies_ignore">Ignora-les</string>
     <string name="phonies_warn">Avisa\'m</string>
     <string name="phonies_disallow">No es poden jugar</string>
@@ -258,7 +249,6 @@
     <string name="tile_back">Fons de la fitxa</string>
     <string name="empty">Cel·la buida/fons</string>
     <string name="clr_crosshairs">Creu d\'ubicació</string>
-    <string name="focus">Color del focus</string>
     <string name="advanced">Avançat</string>
     <string name="advanced_summary">No hauríeu de necessitar canviar això</string>
     <string name="relay_host">Adreça del repetidor</string>

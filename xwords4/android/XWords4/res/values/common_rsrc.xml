@@ -50,12 +50,6 @@
     <item>11x11</item>
   </string-array>
 
-  <string-array name="role_names">
-    <item>@string/role_standalone</item>
-    <item>@string/role_host</item>
-    <item>@string/role_guest</item>
-  </string-array>
-
   <string-array name="phony_names">
     <item>@string/phonies_ignore</item>
     <item>@string/phonies_warn</item>
