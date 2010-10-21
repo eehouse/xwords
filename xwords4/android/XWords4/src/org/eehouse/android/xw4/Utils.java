@@ -44,9 +44,6 @@ import org.eehouse.android.xw4.jni.*;
 public class Utils {
     static final String TAG = "XW4";
 
-    static final int DIALOG_ABOUT = 1;
-    static final int DIALOG_OKONLY = 2;
-    static final int DIALOG_LAST = DIALOG_OKONLY;
     static final String DB_PATH = "XW_GAMES";
 
     private static Time s_time = new Time();
@@ -71,61 +68,6 @@ public class Utils {
     {
         CharSequence text = "Feature coming soon";
         Toast.makeText( context, text, Toast.LENGTH_SHORT).show();
-    }
-
-    static Dialog onCreateDialog( final Context context, int id, 
-                                  Object... args )
-    {
-        Dialog dialog = null;
-        if ( DIALOG_ABOUT == id ) {
-            dialog = doAboutDialog( context );
-        } else if ( DIALOG_OKONLY == id ) {
-            dialog = doOKDialog( context, args );
-        }
-        return dialog;
-    }
-
-    private static Dialog doOKDialog( final Context context, Object... args )
-    {
-        logf( "doOKDialog" );
-        return new AlertDialog.Builder( context )
-            .setTitle( R.string.info_title )
-            .setMessage( ((Integer)args[0]).intValue() )
-            .setPositiveButton( R.string.button_ok, null )
-            .create();
-    }
-
-    private static Dialog doAboutDialog( final Context context )
-    {
-        LayoutInflater factory = LayoutInflater.from( context );
-        final View view = factory.inflate( R.layout.about_dlg, null );
-        TextView vers = (TextView)view.findViewById( R.id.version_string );
-        vers.setText( String.format( context.getString(R.string.about_versf), 
-                                     XWConstants.VERSION_STR, 
-                                     GitVersion.VERS ) );
-
-        TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
-        String str = context.getString( R.string.xlator );
-        if ( str.length() > 0 ) {
-            xlator.setText( str );
-        } else {
-            xlator.setVisibility( View.GONE );
-        }
-
-        return new AlertDialog.Builder( context )
-            .setIcon( R.drawable.icon48x48 )
-            .setTitle( R.string.app_name )
-            .setView( view )
-            .setPositiveButton( R.string.changes_button,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick( DialogInterface dlg, 
-                                                         int which )
-                                    {
-                                        FirstRunDialog.show( context, true );
-                                    }
-                                } )
-            .create();
     }
 
     public static Intent mkDownloadActivity( Context context )

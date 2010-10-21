@@ -50,8 +50,8 @@ public class GamesList extends XWListActivity
     implements DispatchNotify.HandleRelaysIface,
                RefreshMsgsTask.RefreshMsgsIface {
 
-    private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
-    private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
+    private static final int WARN_NODICT = XWActivity.DIALOG_LAST + 1;
+    private static final int CONFIRM_DELETE_ALL = WARN_NODICT + 1;
 
     private GameListAdapter m_adapter;
     private String m_invalPath = null;
@@ -63,43 +63,46 @@ public class GamesList extends XWListActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = null;
-        switch( id ) {
-        case WARN_NODICT:
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.no_dict_title )
-                .setMessage( "" ) // required to get to change it later
-                .setPositiveButton( R.string.button_ok, null )
-                .setNegativeButton( R.string.button_download,
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            switch( id ) {
+            case WARN_NODICT:
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.no_dict_title )
+                    .setMessage( "" ) // required to get to change it later
+                    .setPositiveButton( R.string.button_ok, null )
+                    .setNegativeButton( R.string.button_download,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg, int item ) {
+                                                Intent intent = 
+                                                    Utils.mkDownloadActivity(GamesList.this);
+                                                startActivity( intent );
+                                            }
+                                        })
+                    .create();
+                break;
+            case CONFIRM_DELETE_ALL:
+                DialogInterface.OnClickListener lstnr = 
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            Intent intent = 
-                                Utils.mkDownloadActivity(GamesList.this);
-                            startActivity( intent );
+                            for( String game:GameUtils.gamesList(GamesList.this)) {
+                                GameUtils.deleteGame( GamesList.this, game  );
+                            }
+                            m_adapter = new GameListAdapter( GamesList.this );
+                            setListAdapter( m_adapter );
                         }
-                    })
-                .create();
-            break;
-        case CONFIRM_DELETE_ALL:
-            DialogInterface.OnClickListener lstnr = 
-                new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        for( String game:GameUtils.gamesList(GamesList.this)) {
-                            GameUtils.deleteGame( GamesList.this, game  );
-                        }
-                        m_adapter = new GameListAdapter( GamesList.this );
-                        setListAdapter( m_adapter );
-                    }
-                };
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.query_title )
-                .setMessage( R.string.confirm_delete_all )
-                .setPositiveButton( R.string.button_ok, lstnr )
-                .setNegativeButton( R.string.button_cancel, null )
-                .create();
-            break;
-        default:
-            dialog = Utils.onCreateDialog( this, id, m_dlgObjects );
+                    };
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.query_title )
+                    .setMessage( R.string.confirm_delete_all )
+                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .create();
+                break;
+            default:
+                Assert.assertTrue(false);
+                // dialog = Utils.onCreateDialog( this, id, m_dlgObjects );
+            }
         }
         return dialog;
     }
@@ -265,7 +268,7 @@ public class GamesList extends XWListActivity
                 m_dlgObjects = new Object[] {
                     new Integer(R.string.no_games_to_refresh)
                 };
-                showDialog( Utils.DIALOG_OKONLY );
+                showDialog( XWActivity.DIALOG_OKONLY );
             } else {
                 new RefreshMsgsTask( this, this ).execute();
             }
@@ -278,7 +281,7 @@ public class GamesList extends XWListActivity
 
         case R.id.gamel_menu_about:
             m_dlgObjects = null;
-            showDialog( Utils.DIALOG_ABOUT );
+            showDialog( XWActivity.DIALOG_ABOUT );
             break;
 
         // case R.id.gamel_menu_view_hidden:

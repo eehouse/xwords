@@ -53,16 +53,16 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class BoardActivity extends XWActivity implements UtilCtxt {
 
-    private static final int DLG_OKONLY = Utils.DIALOG_LAST + 1;
-    private static final int DLG_BADWORDS = Utils.DIALOG_LAST + 2;
-    private static final int QUERY_REQUEST_BLK = Utils.DIALOG_LAST + 3;
-    private static final int QUERY_INFORM_BLK = Utils.DIALOG_LAST + 4;
-    private static final int PICK_TILE_REQUEST_BLK = Utils.DIALOG_LAST + 5;
-    private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 6;
-    private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 7;
-    private static final int DLG_RETRY = Utils.DIALOG_LAST + 8;
-    private static final int GET_MESSAGE = Utils.DIALOG_LAST + 9;
-    private static final int GOT_MESSAGE = Utils.DIALOG_LAST + 10;
+    private static final int DLG_OKONLY = XWActivity.DIALOG_LAST + 1;
+    private static final int DLG_BADWORDS = DLG_OKONLY + 1;
+    private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
+    private static final int QUERY_INFORM_BLK = DLG_OKONLY + 3;
+    private static final int PICK_TILE_REQUEST_BLK = DLG_OKONLY + 4;
+    private static final int QUERY_ENDGAME = DLG_OKONLY + 5;
+    private static final int ASK_PASSWORD_BLK = DLG_OKONLY + 6;
+    private static final int DLG_RETRY = DLG_OKONLY + 7;
+    private static final int GET_MESSAGE = DLG_OKONLY + 8;
+    private static final int GOT_MESSAGE = DLG_OKONLY + 9;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -115,139 +115,141 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = null;
-        DialogInterface.OnClickListener lstnr;
-        AlertDialog.Builder ab;
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            DialogInterface.OnClickListener lstnr;
+            AlertDialog.Builder ab;
 
-        switch ( id ) {
-        case DLG_OKONLY:
-        case DLG_BADWORDS:
-        case DLG_RETRY:
-        case GOT_MESSAGE:
-            ab = new AlertDialog.Builder( BoardActivity.this )
-                //.setIcon( R.drawable.alert_dialog_icon )
-                .setTitle( m_dlgTitle )
-                .setMessage( m_dlgBytes )
-                .setPositiveButton( R.string.button_ok, null );
-            if ( DLG_RETRY == id ) {
+            switch ( id ) {
+            case DLG_OKONLY:
+            case DLG_BADWORDS:
+            case DLG_RETRY:
+            case GOT_MESSAGE:
+                ab = new AlertDialog.Builder( BoardActivity.this )
+                    //.setIcon( R.drawable.alert_dialog_icon )
+                    .setTitle( m_dlgTitle )
+                    .setMessage( m_dlgBytes )
+                    .setPositiveButton( R.string.button_ok, null );
+                if ( DLG_RETRY == id ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                m_jniThread.handle( JNIThread.JNICmd.CMD_RESET );
+                            }
+                        };
+                    ab.setNegativeButton( R.string.button_retry, lstnr );
+                } else if ( GOT_MESSAGE == id ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                showDialog( GET_MESSAGE );
+                            }
+                        };
+                    ab.setNegativeButton( R.string.button_reply, lstnr );
+                }
+                dialog = ab.create();
+                break;
+
+            case QUERY_REQUEST_BLK:
+            case QUERY_INFORM_BLK:
+                ab = new AlertDialog.Builder( this )
+                    .setTitle( m_dlgTitle )
+                    .setMessage( m_dlgBytes );
                 lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, 
+                        public void onClick( DialogInterface dialog, 
                                              int whichButton ) {
-                            m_jniThread.handle( JNIThread.JNICmd.CMD_RESET );
+                            m_resultCode = 1;
                         }
                     };
-                ab.setNegativeButton( R.string.button_retry, lstnr );
-            } else if ( GOT_MESSAGE == id ) {
+                ab.setPositiveButton( R.string.button_yes, lstnr );
                 lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, 
+                        public void onClick( DialogInterface dialog, 
                                              int whichButton ) {
-                            showDialog( GET_MESSAGE );
+                            m_resultCode = 0;
                         }
                     };
-                ab.setNegativeButton( R.string.button_reply, lstnr );
+                if ( QUERY_INFORM_BLK != id ) {
+                    ab.setNegativeButton( R.string.button_no, lstnr );
+                }
+
+                dialog = ab.create();
+                dialog.setOnDismissListener( makeODLforBlocking() );
+                break;
+
+            case PICK_TILE_REQUEST_BLK:
+                ab = new AlertDialog.Builder( this )
+                    .setTitle( R.string.title_tile_picker );
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            m_resultCode = item;
+                        }
+                    };
+                ab.setItems( m_texts, lstnr );
+
+                dialog = ab.create();
+                dialog.setOnDismissListener( makeODLforBlocking() );
+                break;
+
+            case ASK_PASSWORD_BLK:
+                ab = new AlertDialog.Builder( this )
+                    .setTitle( m_dlgTitleStr )
+                    .setView( m_passwdEdit )
+                    .setPositiveButton( R.string.button_ok,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg,
+                                                                 int whichButton ) {
+                                                m_resultCode = 1;
+                                            }
+                                        });
+                dialog = ab.create();
+                dialog.setOnDismissListener( makeODLforBlocking() );
+                break;
+
+            case QUERY_ENDGAME:
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.query_title )
+                    .setMessage( R.string.ids_endnow )
+                    .setPositiveButton( R.string.button_yes,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg, 
+                                                                 int item ) {
+                                                m_jniThread.handle(JNICmd.CMD_ENDGAME);
+                                            }
+                                        })
+                    .setNegativeButton( R.string.button_no,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg, 
+                                                                 int item ) {
+                                                // do nothing
+                                            }
+                                        })
+                    .create();
+                break;
+
+            case GET_MESSAGE:
+                if ( null == m_chatMsg ) {
+                    m_chatMsg = new EditText( this );
+                }
+                dialog = new AlertDialog.Builder( this )
+                    .setMessage( R.string.compose_chat )
+                    .setPositiveButton(R.string.button_send,
+                                       new DialogInterface.OnClickListener() {
+                                           public void onClick( DialogInterface dlg, 
+                                                                int item ) {
+                                               m_jniThread.handle( JNICmd.CMD_SENDCHAT, 
+                                                                   m_chatMsg.getText().toString() );
+                                           }
+                                       })
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .setView( m_chatMsg )
+                    .create();
+                break;
+
+            default:
+                dialog = Utils.onCreateDialog( this, id );
+                Assert.assertTrue( null != dialog );
             }
-            dialog = ab.create();
-            break;
-
-        case QUERY_REQUEST_BLK:
-        case QUERY_INFORM_BLK:
-            ab = new AlertDialog.Builder( this )
-                .setTitle( m_dlgTitle )
-                .setMessage( m_dlgBytes );
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dialog, 
-                                         int whichButton ) {
-                        m_resultCode = 1;
-                    }
-                };
-            ab.setPositiveButton( R.string.button_yes, lstnr );
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dialog, 
-                                         int whichButton ) {
-                        m_resultCode = 0;
-                    }
-                };
-            if ( QUERY_INFORM_BLK != id ) {
-                ab.setNegativeButton( R.string.button_no, lstnr );
-            }
-
-            dialog = ab.create();
-            dialog.setOnDismissListener( makeODLforBlocking() );
-            break;
-
-        case PICK_TILE_REQUEST_BLK:
-            ab = new AlertDialog.Builder( this )
-                .setTitle( R.string.title_tile_picker );
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dialog, 
-                                         int item ) {
-                        m_resultCode = item;
-                    }
-                };
-            ab.setItems( m_texts, lstnr );
-
-            dialog = ab.create();
-            dialog.setOnDismissListener( makeODLforBlocking() );
-            break;
-
-        case ASK_PASSWORD_BLK:
-            ab = new AlertDialog.Builder( this )
-                .setTitle( m_dlgTitleStr )
-                .setView( m_passwdEdit )
-                .setPositiveButton( R.string.button_ok,
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg,
-                                                             int whichButton ) {
-                                            m_resultCode = 1;
-                                        }
-                                    });
-            dialog = ab.create();
-            dialog.setOnDismissListener( makeODLforBlocking() );
-            break;
-
-        case QUERY_ENDGAME:
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.query_title )
-                .setMessage( R.string.ids_endnow )
-                .setPositiveButton( R.string.button_yes,
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int item ) {
-                                            m_jniThread.handle(JNICmd.CMD_ENDGAME);
-                                        }
-                                    })
-                .setNegativeButton( R.string.button_no,
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int item ) {
-                                            // do nothing
-                                        }
-                                    })
-                .create();
-            break;
-
-        case GET_MESSAGE:
-            if ( null == m_chatMsg ) {
-                m_chatMsg = new EditText( this );
-            }
-            dialog = new AlertDialog.Builder( this )
-                .setMessage( R.string.compose_chat )
-                .setPositiveButton(R.string.button_send,
-                                   new DialogInterface.OnClickListener() {
-                                       public void onClick( DialogInterface dlg, 
-                                                            int item ) {
-                                           m_jniThread.handle( JNICmd.CMD_SENDCHAT, 
-                                                               m_chatMsg.getText().toString() );
-                                       }
-                                   })
-                .setNegativeButton( R.string.button_cancel, null )
-                .setView( m_chatMsg )
-                .create();
-            break;
-
-        default:
-            dialog = Utils.onCreateDialog( this, id );
-            Assert.assertTrue( null != dialog );
         }
         return dialog;
     } // onCreateDialog
@@ -509,7 +511,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             startActivity( new Intent( this, PrefsActivity.class ) );
             break;
         case R.id.board_menu_file_about:
-            showDialog( Utils.DIALOG_ABOUT );
+            showDialog( DIALOG_ABOUT );
             break;
 
         default:

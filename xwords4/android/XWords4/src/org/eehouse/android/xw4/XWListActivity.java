@@ -21,8 +21,11 @@
 package org.eehouse.android.xw4;
 
 import android.app.ListActivity;
+import android.app.Dialog;
 
 public class XWListActivity extends ListActivity {
+
+    private static int DLG_SOMETIMES = 100;
 
     @Override
     protected void onStart()
@@ -38,5 +41,15 @@ public class XWListActivity extends ListActivity {
         Utils.logf( "XWListActivity::onStop" );
         super.onStop();
         DispatchNotify.ClearRunning( this );
+    }
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        Dialog dialog = XWActivity.onCreateDialog( this, id );
+        if ( null == dialog ) {
+            dialog = super.onCreateDialog( id );
+        }
+        return dialog;
     }
 }
