@@ -394,10 +394,12 @@
 
     <string name="button_notagain">Do not show again</string>
 
-    <string name="not_again_sync">This action connects to the relay
-    server on behalf of any connected games to see if there are any
-    moves or other messages pending from other devices in the game.
-    If so the games will be redrawn with a sync icon on the
-    left.</string>
+    <string name="not_again_sync">This action checks the relay for
+      pending moves for all games. Games with pending moves are
+      flagged. When you open the game the new moves will be
+      downloaded.</string>
+
+    <string name="not_again_chat">Crosswords is not a f*cking chat
+    client!!!</string>
 
 </resources>
