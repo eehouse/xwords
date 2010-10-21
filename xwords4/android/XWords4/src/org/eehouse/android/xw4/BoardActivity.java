@@ -53,7 +53,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class BoardActivity extends XWActivity implements UtilCtxt {
 
-    private static final int DLG_OKONLY = XWActivity.DIALOG_LAST + 1;
+    private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
     private static final int DLG_BADWORDS = DLG_OKONLY + 1;
     private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
     private static final int QUERY_INFORM_BLK = DLG_OKONLY + 3;
@@ -121,7 +121,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             AlertDialog.Builder ab;
 
             switch ( id ) {
-            case DLG_OKONLY:
+            // case DLG_OKONLY:
             case DLG_BADWORDS:
             case DLG_RETRY:
             case GOT_MESSAGE:
@@ -510,7 +510,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             startActivity( new Intent( this, PrefsActivity.class ) );
             break;
         case R.id.board_menu_file_about:
-            showDialog( DIALOG_ABOUT );
+            showAboutDialog();
             break;
 
         default:
@@ -781,6 +781,19 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         }
     } // loadGame
 
+    private void handleChatButton()
+    {
+        Runnable runnable = new Runnable() {
+                public void run() {
+                    showDialog( GET_MESSAGE );
+                }
+            };
+
+        showNotAgainDlgThen( R.string.not_again_chat, 
+                             R.string.key_notagain_chat,
+                             runnable );
+    }
+
     private void populateToolbar()
     {
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
@@ -829,6 +842,13 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                                    public void onClick( View view ) {
                                        m_jniThread.handle( JNIThread.JNICmd
                                                            .CMD_UNDO_CUR );
+                                   }
+                               }) ;
+        m_toolbar.setListener( Toolbar.BUTTON_CHAT,
+                               new View.OnClickListener() {
+                                   @Override
+                                   public void onClick( View view ) {
+                                       handleChatButton();
                                    }
                                }) ;
     } // populateToolbar

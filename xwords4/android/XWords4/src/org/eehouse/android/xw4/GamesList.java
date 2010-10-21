@@ -50,7 +50,7 @@ public class GamesList extends XWListActivity
     implements DispatchNotify.HandleRelaysIface,
                RefreshMsgsTask.RefreshMsgsIface {
 
-    private static final int WARN_NODICT = XWActivity.DIALOG_LAST + 1;
+    private static final int WARN_NODICT = DlgDelegate.DIALOG_LAST + 1;
     private static final int CONFIRM_DELETE_ALL = WARN_NODICT + 1;
 
     private GameListAdapter m_adapter;
@@ -286,7 +286,7 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_about:
-            showDialog( XWActivity.DIALOG_ABOUT );
+            showAboutDialog();
             break;
 
         // case R.id.gamel_menu_view_hidden:

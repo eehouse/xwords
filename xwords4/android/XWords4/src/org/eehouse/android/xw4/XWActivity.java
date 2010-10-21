@@ -36,14 +36,13 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class XWActivity extends Activity {
 
-    public static final int DIALOG_ABOUT = 1;
-    public static final int DIALOG_OKONLY = 2;
-    public static final int DIALOG_NOTAGAIN = 3;
-    public static final int DIALOG_LAST = DIALOG_NOTAGAIN;
+    private DlgDelegate m_delegate;
 
-    private static int s_msgID;
-    private static Runnable s_dialogRunnable = null;
-    private static int s_prefsKey;
+    protected void onCreate( Bundle savedInstanceState ) 
+    {
+        super.onCreate( savedInstanceState );
+        m_delegate = new DlgDelegate( this );
+    }
 
     @Override
     protected void onStart()
@@ -64,106 +63,21 @@ public class XWActivity extends Activity {
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        return onCreateDialog( this, id );
+        return m_delegate.onCreateDialog( id );
     }
 
-    public static Dialog onCreateDialog( Context context, int id )
+    // these are duplicated in XWListActivity -- sometimes multiple
+    // inheritance would be nice to have...
+    protected void showAboutDialog()
     {
-        Dialog dialog = null;
-        switch( id ) {
-        case DIALOG_ABOUT:
-            dialog = doAboutDialog( context );
-            break;
-        case DIALOG_OKONLY:
-            dialog = doOKDialog( context );
-            break;
-        case DIALOG_NOTAGAIN:
-            dialog = doNotAgainDialog( context );
-            break;
-        }
-        return dialog;
+        m_delegate.showAboutDialog();
     }
 
-    private static Dialog doAboutDialog( final Context context )
+    protected void showNotAgainDlgThen( int msgID, int prefsKey,
+                                        Runnable proc )
     {
-        LayoutInflater factory = LayoutInflater.from( context );
-        final View view = factory.inflate( R.layout.about_dlg, null );
-        TextView vers = (TextView)view.findViewById( R.id.version_string );
-        vers.setText( String.format( context.getString(R.string.about_versf), 
-                                     XWConstants.VERSION_STR, 
-                                     GitVersion.VERS ) );
-
-        TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
-        String str = context.getString( R.string.xlator );
-        if ( str.length() > 0 ) {
-            xlator.setText( str );
-        } else {
-            xlator.setVisibility( View.GONE );
-        }
-
-        return new AlertDialog.Builder( context )
-            .setIcon( R.drawable.icon48x48 )
-            .setTitle( R.string.app_name )
-            .setView( view )
-            .setPositiveButton( R.string.changes_button,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick( DialogInterface dlg, 
-                                                         int which )
-                                    {
-                                        FirstRunDialog.show( context, true );
-                                    }
-                                } )
-            .create();
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, proc );
     }
 
-    private static Dialog doOKDialog( final Context context )
-    {
-        return new AlertDialog.Builder( context )
-            .setTitle( R.string.info_title )
-            .setMessage( s_msgID )
-            .setPositiveButton( R.string.button_ok, null )
-            .create();
-    }
-
-    private static Dialog doNotAgainDialog( final Context context )
-    {
-        DialogInterface.OnClickListener lstnr_p = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    s_dialogRunnable.run();
-                }
-            };
-
-        DialogInterface.OnClickListener lstnr_n = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    CommonPrefs.setPrefsBoolean( context, s_prefsKey, true );
-                    s_dialogRunnable.run();
-                }
-            };
-
-        return new AlertDialog.Builder( context )
-            .setTitle( R.string.info_title )
-            .setMessage( s_msgID )
-            .setPositiveButton( R.string.button_ok, lstnr_p )
-            .setNegativeButton( R.string.button_notagain, lstnr_n )
-            .create();
-    }
-
-    public static void setDialogMsgID( int msgID )
-    {
-        s_msgID = msgID;
-    }
-
-    public static void setDialogRunnable( Runnable runnable )
-    {
-        s_dialogRunnable = runnable;
-    }
-
-    public static void setDialogPrefsKey( int prefsKey )
-    {
-        s_prefsKey = prefsKey;
-    }
 
 }

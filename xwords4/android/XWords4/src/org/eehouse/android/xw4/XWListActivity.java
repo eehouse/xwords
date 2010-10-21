@@ -27,6 +27,14 @@ import android.os.Bundle;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class XWListActivity extends ListActivity {
+    private DlgDelegate m_delegate;
+
+    @Override
+    protected void onCreate( Bundle savedInstanceState ) 
+    {
+        super.onCreate( savedInstanceState );
+        m_delegate = new DlgDelegate( this );
+    }
 
     @Override
     protected void onStart()
@@ -34,26 +42,6 @@ public class XWListActivity extends ListActivity {
         Utils.logf( "XWListActivity::onStart" );
         super.onStart();
         DispatchNotify.SetRunning( this );
-    }
-
-    protected void showOKOnlyDialog( int msgID )
-    {
-        XWActivity.setDialogMsgID( msgID );
-        showDialog( XWActivity.DIALOG_OKONLY );
-    }
-
-    protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        Runnable proc )
-    {
-        boolean set = CommonPrefs.getPrefsBoolean( this, prefsKey, false );
-        if ( set ) {
-            proc.run();
-        } else {
-            XWActivity.setDialogMsgID( msgID );
-            XWActivity.setDialogRunnable( proc );
-            XWActivity.setDialogPrefsKey( prefsKey );
-            showDialog( XWActivity.DIALOG_NOTAGAIN );
-        }
     }
 
     @Override
@@ -67,10 +55,28 @@ public class XWListActivity extends ListActivity {
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = XWActivity.onCreateDialog( this, id );
+        Dialog dialog = m_delegate.onCreateDialog( id );
         if ( null == dialog ) {
             dialog = super.onCreateDialog( id );
         }
         return dialog;
     }
+
+    // It sucks that these must be duplicated here and XWActivity
+    protected void showAboutDialog()
+    {
+        m_delegate.showAboutDialog();
+    }
+
+    protected void showNotAgainDlgThen( int msgID, int prefsKey,
+                                        Runnable proc )
+    {
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, proc );
+    }
+
+    protected void showOKOnlyDialog( int msgID )
+    {
+        m_delegate.showOKOnlyDialog( msgID );
+    }
+
 }
