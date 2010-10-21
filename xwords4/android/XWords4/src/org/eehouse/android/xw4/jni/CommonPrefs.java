@@ -170,7 +170,7 @@ public class CommonPrefs {
 
     public static boolean getVolKeysZoom( Context context )
     {
-        return getBoolean( context, R.string.key_ringer_zoom, false );
+        return getPrefsBoolean( context, R.string.key_ringer_zoom, false );
     }
 
     public static int getDefaultBoardSize( Context context )
@@ -233,31 +233,43 @@ public class CommonPrefs {
     
     public static boolean getDefaultTimerEnabled( Context context )
     {
-        return getBoolean( context, R.string.key_default_timerenabled, false );
+        return getPrefsBoolean( context, R.string.key_default_timerenabled, 
+                                false );
     }
 
     public static boolean getHideTitleBar( Context context )
     {
-        return getBoolean( context, R.string.key_hide_title, true );
+        return getPrefsBoolean( context, R.string.key_hide_title, true );
     }
 
     public static boolean getClickLaunches( Context context )
     {
-        return getBoolean( context, R.string.key_click_launches, false );
+        return getPrefsBoolean( context, R.string.key_click_launches, false );
     }
 
     public static boolean getShowBonusSumms( Context context )
     {
-        return getBoolean( context, R.string.key_show_bonussum, false );
+        return getPrefsBoolean( context, R.string.key_show_bonussum, false );
     }
 
-    private static boolean getBoolean( Context context, int keyID,
-                                       boolean defaultValue )
+    public static boolean getPrefsBoolean( Context context, int keyID,
+                                           boolean defaultValue )
     {
         String key = context.getString( keyID );
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
         return sp.getBoolean( key, defaultValue );
+    }
+
+    public static void setPrefsBoolean( Context context, int keyID, 
+                                        boolean newValue )
+    {
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        SharedPreferences.Editor editor = sp.edit();
+        String key = context.getString( keyID );
+        editor.putBoolean( key, newValue );
+        editor.commit();
     }
 
     private static String getString( Context context, int keyID )
