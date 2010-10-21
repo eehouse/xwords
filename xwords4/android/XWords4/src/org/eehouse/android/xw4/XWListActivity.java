@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.ListActivity;
 import android.app.Dialog;
+import android.os.Bundle;
 
 public class XWListActivity extends ListActivity {
 
@@ -51,5 +52,10 @@ public class XWListActivity extends ListActivity {
             dialog = super.onCreateDialog( id );
         }
         return dialog;
+    }
+
+    protected void setDialogBundle( Bundle bundle )
+    {
+        XWActivity.setDialogBundle( bundle );
     }
 }

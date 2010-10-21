@@ -30,6 +30,7 @@ import junit.framework.Assert;
 import android.view.View;
 import android.widget.TextView;
 import android.app.AlertDialog;
+import android.os.Bundle;
 
 public class XWActivity extends Activity {
 
@@ -37,6 +38,8 @@ public class XWActivity extends Activity {
     public static final int DIALOG_OKONLY = 2;
     public static final int DIALOG_NOTAGAIN = 3;
     public static final int DIALOG_LAST = DIALOG_NOTAGAIN;
+
+    public static Bundle s_dialogBundle = null;
 
     @Override
     protected void onStart()
@@ -58,7 +61,7 @@ public class XWActivity extends Activity {
     protected Dialog onCreateDialog( int id )
     {
         return onCreateDialog( this, id );
-    }    
+    }
 
     public static Dialog onCreateDialog( Context context, int id )
     {
@@ -66,7 +69,10 @@ public class XWActivity extends Activity {
         switch( id ) {
         case DIALOG_ABOUT:
             dialog = doAboutDialog( context );
+            break;
         case DIALOG_OKONLY:
+            dialog = doOKDialog( context );
+            break;
         case DIALOG_NOTAGAIN:
             break;
         }
@@ -104,6 +110,23 @@ public class XWActivity extends Activity {
                                     }
                                 } )
             .create();
+    }
+
+    private static Dialog doOKDialog( final Context context )
+    {
+        Bundle bundle = s_dialogBundle;
+        Assert.assertTrue( null  != bundle );
+        int msgID = bundle.getInt( "msgID" );
+        return new AlertDialog.Builder( context )
+            .setTitle( R.string.info_title )
+            .setMessage( msgID )
+            .setPositiveButton( R.string.button_ok, null )
+            .create();
+    }
+
+    public static void setDialogBundle( Bundle bundle )
+    {
+        s_dialogBundle = bundle;
     }
 
 }

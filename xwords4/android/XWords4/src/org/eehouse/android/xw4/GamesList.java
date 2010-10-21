@@ -58,8 +58,6 @@ public class GamesList extends XWListActivity
     private String m_missingDict;
     private Handler m_handler;
 
-    private Object[] m_dlgObjects = null;
-
     @Override
     protected Dialog onCreateDialog( int id )
     {
@@ -265,9 +263,9 @@ public class GamesList extends XWListActivity
 
         case R.id.gamel_menu_checkmoves:
             if ( null == DBUtils.getRelayIDNoMsgs( this ) ) {
-                m_dlgObjects = new Object[] {
-                    new Integer(R.string.no_games_to_refresh)
-                };
+                Bundle bundle = new Bundle();
+                bundle.putInt( "msgID", R.string.no_games_to_refresh );
+                setDialogBundle( bundle );
                 showDialog( XWActivity.DIALOG_OKONLY );
             } else {
                 new RefreshMsgsTask( this, this ).execute();
@@ -280,7 +278,6 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_about:
-            m_dlgObjects = null;
             showDialog( XWActivity.DIALOG_ABOUT );
             break;
 
