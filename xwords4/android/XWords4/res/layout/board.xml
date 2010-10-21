@@ -53,6 +53,10 @@
                    style="@style/toolbar_button"
     	           android:src="@drawable/undo"
                    />
+   	  <ImageButton android:id="@+id/chat_button_horizontal"
+                   style="@style/toolbar_button"
+    	           android:src="@drawable/stat_notify_chat"
+                   />
     </LinearLayout>
   </LinearLayout>
 
@@ -85,6 +89,11 @@
                  style="@style/toolbar_button"
     	         android:src="@drawable/undo"
                  />
+   	<ImageButton android:id="@+id/chat_button_vertical"
+                 style="@style/toolbar_button"
+    	         android:src="@drawable/stat_notify_chat"
+                 />
+
   </LinearLayout>
 
 </LinearLayout>

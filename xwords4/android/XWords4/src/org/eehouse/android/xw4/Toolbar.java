@@ -47,6 +47,7 @@ public class Toolbar {
     public static final int BUTTON_JUGGLE = 3;
     public static final int BUTTON_ZOOM = 4;
     public static final int BUTTON_UNDO = 5;
+    public static final int BUTTON_CHAT = 6;
 
     private static TBButtonInfo[] s_buttonInfo = {
         // BUTTON_HINT_PREV
@@ -67,6 +68,9 @@ public class Toolbar {
         // BUTTON_UNDO
         new TBButtonInfo( R.id.undo_button_horizontal,
                           R.id.undo_button_vertical ),
+        // BUTTON_CHAT
+        new TBButtonInfo( R.id.chat_button_horizontal,
+                          R.id.chat_button_vertical ),
     };
 
     private Activity m_activity;
