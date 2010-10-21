@@ -25,17 +25,14 @@ import java.lang.Thread;
 import android.widget.Toast;
 import android.content.Context;
 import android.content.Intent;
-import android.content.DialogInterface;
 import android.widget.CheckBox;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.AlertDialog;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.view.View;
 import android.text.format.Time;
 import java.util.Formatter;
-import android.view.LayoutInflater;
 import android.net.Uri;
 import junit.framework.Assert;
 
