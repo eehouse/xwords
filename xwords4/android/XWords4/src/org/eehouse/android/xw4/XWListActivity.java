@@ -24,9 +24,9 @@ import android.app.ListActivity;
 import android.app.Dialog;
 import android.os.Bundle;
 
-public class XWListActivity extends ListActivity {
+import org.eehouse.android.xw4.jni.CommonPrefs;
 
-    private static int DLG_SOMETIMES = 100;
+public class XWListActivity extends ListActivity {
 
     @Override
     protected void onStart()
@@ -34,6 +34,26 @@ public class XWListActivity extends ListActivity {
         Utils.logf( "XWListActivity::onStart" );
         super.onStart();
         DispatchNotify.SetRunning( this );
+    }
+
+    protected void showOKOnlyDialog( int msgID )
+    {
+        XWActivity.setDialogMsgID( msgID );
+        showDialog( XWActivity.DIALOG_OKONLY );
+    }
+
+    protected void showNotAgainDlgThen( int msgID, int prefsKey,
+                                        Runnable proc )
+    {
+        boolean set = CommonPrefs.getPrefsBoolean( this, prefsKey, false );
+        if ( set ) {
+            proc.run();
+        } else {
+            XWActivity.setDialogMsgID( msgID );
+            XWActivity.setDialogRunnable( proc );
+            XWActivity.setDialogPrefsKey( prefsKey );
+            showDialog( XWActivity.DIALOG_NOTAGAIN );
+        }
     }
 
     @Override
@@ -52,10 +72,5 @@ public class XWListActivity extends ListActivity {
             dialog = super.onCreateDialog( id );
         }
         return dialog;
-    }
-
-    protected void setDialogBundle( Bundle bundle )
-    {
-        XWActivity.setDialogBundle( bundle );
     }
 }

@@ -32,6 +32,8 @@ import android.widget.TextView;
 import android.app.AlertDialog;
 import android.os.Bundle;
 
+import org.eehouse.android.xw4.jni.CommonPrefs;
+
 public class XWActivity extends Activity {
 
     public static final int DIALOG_ABOUT = 1;
@@ -39,7 +41,9 @@ public class XWActivity extends Activity {
     public static final int DIALOG_NOTAGAIN = 3;
     public static final int DIALOG_LAST = DIALOG_NOTAGAIN;
 
-    public static Bundle s_dialogBundle = null;
+    private static int s_msgID;
+    private static Runnable s_dialogRunnable = null;
+    private static int s_prefsKey;
 
     @Override
     protected void onStart()
@@ -74,6 +78,7 @@ public class XWActivity extends Activity {
             dialog = doOKDialog( context );
             break;
         case DIALOG_NOTAGAIN:
+            dialog = doNotAgainDialog( context );
             break;
         }
         return dialog;
@@ -114,19 +119,51 @@ public class XWActivity extends Activity {
 
     private static Dialog doOKDialog( final Context context )
     {
-        Bundle bundle = s_dialogBundle;
-        Assert.assertTrue( null  != bundle );
-        int msgID = bundle.getInt( "msgID" );
         return new AlertDialog.Builder( context )
             .setTitle( R.string.info_title )
-            .setMessage( msgID )
+            .setMessage( s_msgID )
             .setPositiveButton( R.string.button_ok, null )
             .create();
     }
 
-    public static void setDialogBundle( Bundle bundle )
+    private static Dialog doNotAgainDialog( final Context context )
     {
-        s_dialogBundle = bundle;
+        DialogInterface.OnClickListener lstnr_p = 
+            new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    s_dialogRunnable.run();
+                }
+            };
+
+        DialogInterface.OnClickListener lstnr_n = 
+            new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    CommonPrefs.setPrefsBoolean( context, s_prefsKey, true );
+                    s_dialogRunnable.run();
+                }
+            };
+
+        return new AlertDialog.Builder( context )
+            .setTitle( R.string.info_title )
+            .setMessage( s_msgID )
+            .setPositiveButton( R.string.button_ok, lstnr_p )
+            .setNegativeButton( R.string.button_notagain, lstnr_n )
+            .create();
+    }
+
+    public static void setDialogMsgID( int msgID )
+    {
+        s_msgID = msgID;
+    }
+
+    public static void setDialogRunnable( Runnable runnable )
+    {
+        s_dialogRunnable = runnable;
+    }
+
+    public static void setDialogPrefsKey( int prefsKey )
+    {
+        s_prefsKey = prefsKey;
     }
 
 }

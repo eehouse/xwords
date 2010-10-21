@@ -243,6 +243,15 @@ public class GamesList extends XWListActivity
         return true;
     }
 
+    private void doSyncMenuitem()
+    {
+        if ( null == DBUtils.getRelayIDNoMsgs( this ) ) {
+            showOKOnlyDialog( R.string.no_games_to_refresh );
+        } else {
+            new RefreshMsgsTask( this, this ).execute();
+        }
+    }
+
     public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
@@ -262,14 +271,13 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_checkmoves:
-            if ( null == DBUtils.getRelayIDNoMsgs( this ) ) {
-                Bundle bundle = new Bundle();
-                bundle.putInt( "msgID", R.string.no_games_to_refresh );
-                setDialogBundle( bundle );
-                showDialog( XWActivity.DIALOG_OKONLY );
-            } else {
-                new RefreshMsgsTask( this, this ).execute();
-            }
+            showNotAgainDlgThen( R.string.not_again_sync,
+                                 R.string.key_notagain_sync,
+                                 new Runnable() {
+                                     public void run() {
+                                         doSyncMenuitem();
+                                     }
+                                 } );
             break;
 
         case R.id.gamel_menu_prefs:

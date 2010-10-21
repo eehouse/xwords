@@ -392,4 +392,12 @@
     <string name="msgs_progress">Checking meetup server for moves
     etc...</string>
 
+    <string name="button_notagain">Do not show again</string>
+
+    <string name="not_again_sync">This action connects to the relay
+    server on behalf of any connected games to see if there are any
+    moves or other messages pending from other devices in the game.
+    If so the games will be redrawn with a sync icon on the
+    left.</string>
+
 </resources>
