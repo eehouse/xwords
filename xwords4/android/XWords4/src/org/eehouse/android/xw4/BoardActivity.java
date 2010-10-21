@@ -121,7 +121,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             AlertDialog.Builder ab;
 
             switch ( id ) {
-            // case DLG_OKONLY:
+            case DLG_OKONLY:
             case DLG_BADWORDS:
             case DLG_RETRY:
             case GOT_MESSAGE:
