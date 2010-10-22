@@ -602,6 +602,25 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         }
     }
 
+    private void handleConndMessage( Message msg )
+    {
+        String str = null;
+        switch ( msg.arg1 ) {
+        case CommsTransport.RELAY_CONNND_ALLHERE:
+            str = getString( R.string.msg_relay_all_here );
+            break;
+        case CommsTransport.RELAY_CONNND_MISSING:
+            String fmt = getString( R.string.msg_relay_waiting );
+            str = String.format( fmt, msg.arg2 );
+            break;
+        }
+
+        if ( null != str ) {
+            Toast.makeText( BoardActivity.this, str,
+                            Toast.LENGTH_SHORT).show();
+        }
+    }
+
     //////////////////////////////////////////
     // XW_UtilCtxt interface implementation //
     //////////////////////////////////////////
@@ -719,6 +738,9 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                                     Toast.makeText( BoardActivity.this,
                                                     (CharSequence)(msg.obj),
                                                     Toast.LENGTH_SHORT).show();
+                                    break;
+                                case CommsTransport.RELAY_COND:
+                                    handleConndMessage( msg );
                                     break;
                                 }
                             }

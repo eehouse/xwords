@@ -46,6 +46,10 @@ public class CommsTransport extends Thread implements TransportProcs {
     public static final int DIALOG = 0;
     public static final int DIALOG_RETRY = 1;
     public static final int TOAST = 2;
+    public static final int RELAY_COND = 3;
+
+    public static final int RELAY_CONNND_ALLHERE = 0;
+    public static final int RELAY_CONNND_MISSING = 1;
 
     private Selector m_selector;
     private SocketChannel m_socketChannel;
@@ -353,13 +357,11 @@ public class CommsTransport extends Thread implements TransportProcs {
     {
         String message = null;
         if ( allHere ) {
-            message = m_context.getString( R.string.msg_relay_all_here );
+            Message.obtain( m_handler, RELAY_COND, RELAY_CONNND_ALLHERE )
+                .sendToTarget();
         } else if ( nMissing > 0 ) {
-            String fmt = m_context.getString( R.string.msg_relay_waiting );
-            message = String.format( fmt, nMissing );
-        }
-        if ( null != message ) {
-            Message.obtain( m_handler, TOAST, message ).sendToTarget();
+            Message.obtain( m_handler, RELAY_COND, RELAY_CONNND_MISSING, 
+                            nMissing ).sendToTarget();
         }
     }
 
