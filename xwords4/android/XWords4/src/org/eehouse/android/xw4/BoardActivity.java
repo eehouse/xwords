@@ -161,14 +161,16 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                             m_resultCode = 1;
                         }
                     };
-                ab.setPositiveButton( R.string.button_yes, lstnr );
-                lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dialog, 
-                                             int whichButton ) {
-                            m_resultCode = 0;
-                        }
-                    };
-                if ( QUERY_INFORM_BLK != id ) {
+                ab.setPositiveButton( QUERY_INFORM_BLK == id ?
+                                      R.string.button_ok : R.string.button_yes,
+                                      lstnr );
+                if ( QUERY_REQUEST_BLK == id ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, 
+                                                 int whichButton ) {
+                                m_resultCode = 0;
+                            }
+                        };
                     ab.setNegativeButton( R.string.button_no, lstnr );
                 }
 
