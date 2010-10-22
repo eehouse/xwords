@@ -1120,6 +1120,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1canTogglePending
     return result;
 }
 
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1canChat
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = NULL != state->game.comms && comms_canChat( state->game.comms );
+    XWJNI_END();
+    return result;
+}
+
 #ifdef KEYBOARD_NAV
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handleKey

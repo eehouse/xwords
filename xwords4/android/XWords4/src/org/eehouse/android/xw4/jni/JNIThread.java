@@ -234,7 +234,7 @@ public class JNIThread extends Thread {
         Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_HINT_NEXT,
                         canHint ).sendToTarget();
 
-        int canMsg = DeviceRole.SERVER_STANDALONE != m_gi.serverRole? 1 : 0;
+        int canMsg = XwJNI.comms_canChat( m_jniGamePtr ) ? 1 : 0;
         Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_CHAT,
                         canMsg ).sendToTarget();
     }

@@ -1647,6 +1647,15 @@ comms_checkComplete( const CommsAddrRec* addr )
     return result;
 }
 
+XP_Bool
+comms_canChat( const CommsCtxt* const comms )
+{
+    XP_Bool canChat = COMMS_CONN_RELAY == comms_getConType( comms )
+        && COMMS_RELAYSTATE_CONNECTED <= comms->r.relayState;
+    LOG_RETURNF( "%s", canChat?"true":"false" );
+    return canChat;
+}
+
 #ifdef COMMS_HEARTBEAT
 static void
 sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec )
