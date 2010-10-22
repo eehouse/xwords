@@ -399,7 +399,9 @@
       flagged. When you open the game the new moves will be
       downloaded.</string>
 
-    <string name="not_again_chat">Crosswords is not a f*cking chat
-    client!!!</string>
+    <string name="not_again_chat">In networked game you may have no
+    idea who your opponent is. This feature lets you exchange contact
+    info or a short \"bingo!\" Please do not expect Crosswords to be a
+    full-fledged chat app!</string>
 
 </resources>
