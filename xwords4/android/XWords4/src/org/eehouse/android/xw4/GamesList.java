@@ -354,10 +354,14 @@ public class GamesList extends XWListActivity
                     break;
 
                 case R.id.list_item_copy:
-                    stream = GameUtils.savedGame( this, path );
-                    newName = GameUtils.saveGame( this, stream );
-                    DBUtils.saveSummary( newName, 
-                                         DBUtils.getSummary( this, path ) );
+                    GameSummary summary = DBUtils.getSummary( this, path );
+                    if ( summary.inNetworkGame() ) {
+                        showOKOnlyDialog( R.string.no_copy_network );
+                    } else {
+                        stream = GameUtils.savedGame( this, path );
+                        newName = GameUtils.saveGame( this, stream );
+                        DBUtils.saveSummary( newName, summary );
+                    }
                     break;
 
                     // These require some notion of predictable sort order.

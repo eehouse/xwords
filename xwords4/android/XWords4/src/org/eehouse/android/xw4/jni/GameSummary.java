@@ -34,4 +34,9 @@ public class GameSummary {
     public String roomName;
     public String relayID;
     public boolean msgsPending;
+
+    public boolean inNetworkGame()
+    {
+        return null != relayID;
+    }
 }
