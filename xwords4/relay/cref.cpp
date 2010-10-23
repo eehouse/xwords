@@ -1034,7 +1034,6 @@ void
 CookieRef::sendAllHere( bool initial )
 {
     unsigned char buf[1 + 1     /* hostID */
-                      + sizeof(CookieID) 
                       + 1 + MAX_CONNNAME_LEN];
 
     unsigned char* bufp = buf;
@@ -1042,8 +1041,6 @@ CookieRef::sendAllHere( bool initial )
     
     *bufp++ = initial? XWRELAY_ALLHERE : XWRELAY_ALLBACK;
     idLoc = bufp++;                 /* space for hostId, remembering address */
-
-    putNetShort( &bufp, GetCookieID() );
 
     const char* connName = ConnName();
     assert( !!connName && connName[0] );
@@ -1054,13 +1051,27 @@ CookieRef::sendAllHere( bool initial )
     bufp += len;
 
     ASSERT_LOCKED();
-    vector<HostRec>::iterator iter = m_sockets.begin();
-    while ( iter != m_sockets.end() ) { 
-        logf( XW_LOGINFO, "%s: sending to hostid %d", __func__, 
-              iter->m_hostID );
-        *idLoc = iter->m_hostID;   /* write in this target's hostId */
-        send_with_length( iter->m_socket, buf, bufp-buf, true );
-        ++iter;
+
+    /* Assuming destIds in range 1 .. nSought, for each find if it's here and
+       if it is try sending to it.  If fail, or it's not here, store the
+       message for it.  Would be better if could look up rather than run
+       through the vector each time. */
+    HostID dest;
+    for ( dest = 1; dest <= m_nPlayersHere; ++dest ) {
+        bool sent = false;
+        *idLoc = dest;   /* write in this target's hostId */
+        vector<HostRec>::iterator iter;
+        for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) { 
+            if ( iter->m_hostID == dest ) {
+                sent = send_with_length( iter->m_socket, buf, bufp-buf, 
+                                         true );
+                break;
+            }
+        }
+
+        if ( !sent ) {
+            store_message( dest, buf, bufp-buf );
+        }
     }
 } /* sendAllHere */
 
