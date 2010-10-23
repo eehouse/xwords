@@ -93,9 +93,9 @@ public class GameListAdapter extends XWListAdapter {
                     view.setVisibility( View.GONE );
                 }
 
-                view = (TextView)layout.findViewById( R.id.msg_marker );
-                view.setVisibility( summary.msgsPending? 
-                                    View.VISIBLE : View.GONE );
+                View marker = layout.findViewById( R.id.msg_marker );
+                marker.setVisibility( summary.msgsPending? 
+                                      View.VISIBLE : View.GONE );
             }
             m_viewsCache.put( path, layout );
         }
