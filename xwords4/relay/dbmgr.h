@@ -52,6 +52,8 @@ class DBMgr {
     void AddCID( const char* connName, CookieID cid );
     void ClearCID( const char* connName );
     void RecordSent( const char* const connName, int nBytes );
+    void GetPlayerCounts( const char* const connName, int* nTotal,
+                          int* nHere );
 
     /* Return list of roomName/playersStillWanted/age for open public games
        matching this language and total game size. Will probably want to cache

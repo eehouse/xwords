@@ -911,8 +911,10 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
     *bufp++ = evt->u.con.srcID;
     putNetShort( &bufp, GetCookieID() );
     putNetShort( &bufp, GetHeartbeat() );
-    *bufp++ = GetPlayersSought();
-    *bufp++ = GetPlayersHere();
+    int nTotal, nHere;
+    DBMgr::Get()->GetPlayerCounts( ConnName(), &nTotal, &nHere );
+    *bufp++ = nTotal;
+    *bufp++ = nHere;
 
     const char* connName = ConnName();
     assert( !!connName && connName[0] );
