@@ -6,7 +6,7 @@
               android:padding="4sp">
 
   <ImageView android:id="@+id/msg_marker"
-	         android:layout_width="30sp" 
+	         android:layout_width="wrap_content"
 	         android:layout_height="fill_parent"
              android:layout_gravity="center_vertical|center_horizontal"
              android:layout_weight="0"
