@@ -55,16 +55,33 @@ public class DlgDelegate {
         Dialog dialog = null;
         switch( id ) {
         case DIALOG_ABOUT:
-            dialog = doAboutDialog();
+            dialog = createAboutDialog();
             break;
         case DIALOG_OKONLY:
-            dialog = doOKDialog();
+            dialog = createOKDialog();
             break;
         case DIALOG_NOTAGAIN:
-            dialog = doNotAgainDialog();
+            dialog = createNotAgainDialog();
             break;
         }
         return dialog;
+    }
+
+    public void onPrepareDialog( int id, Dialog dialog )
+    {
+        AlertDialog ad = (AlertDialog)dialog;
+        switch( id ) {
+        case DIALOG_ABOUT:
+            break;
+        case DIALOG_NOTAGAIN:
+            // Don't think onclick listeners need to be reset.  They
+            // reference instance vars that are changed each time
+            // showNotAgainDlgThen() is called
+            // FALLTHRU
+        case DIALOG_OKONLY:
+            ad.setMessage( m_activity.getString(m_msgID) );
+            break;
+        }
     }
 
     public void showOKOnlyDialog( int msgID )
@@ -78,21 +95,24 @@ public class DlgDelegate {
         m_activity.showDialog( DIALOG_ABOUT );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     Runnable proc )
+    public boolean showNotAgainDlgThen( int msgID, int prefsKey,
+                                        Runnable proc )
     {
         boolean set = CommonPrefs.getPrefsBoolean( m_activity, prefsKey, false );
         if ( set ) {
-            proc.run();
+            if ( null != proc ) {
+                proc.run();
+            } 
         } else {
             m_msgID = msgID;
             m_proc = proc;
             m_prefsKey = prefsKey;
             m_activity.showDialog( DIALOG_NOTAGAIN );
         }
+        return !set;
     }
 
-    private Dialog doAboutDialog()
+    private Dialog createAboutDialog()
     {
         LayoutInflater factory = LayoutInflater.from( m_activity );
         final View view = factory.inflate( R.layout.about_dlg, null );
@@ -125,7 +145,7 @@ public class DlgDelegate {
             .create();
     }
 
-    private Dialog doOKDialog()
+    private Dialog createOKDialog()
     {
         return new AlertDialog.Builder( m_activity )
             .setTitle( R.string.info_title )
@@ -134,7 +154,7 @@ public class DlgDelegate {
             .create();
     }
 
-    private Dialog doNotAgainDialog()
+    private Dialog createNotAgainDialog()
     {
         DialogInterface.OnClickListener lstnr_p = 
             new DialogInterface.OnClickListener() {
@@ -161,7 +181,7 @@ public class DlgDelegate {
             .setPositiveButton( R.string.button_ok, lstnr_p )
             .setNegativeButton( R.string.button_notagain, lstnr_n )
             .create();
-    }
+    } // createNotAgainDialog
 
     // public void setDialogMsgID( int msgID )
     // {
