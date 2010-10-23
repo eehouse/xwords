@@ -277,10 +277,10 @@
     <string name="clr_crosshairs">Crosshairs color</string>
     <string name="advanced">Advanced</string>
     <string name="advanced_summary">You may never need these...</string>
-    <string name="relay_host">Meetup server address</string>
+    <string name="relay_host">Relay address</string>
     <string name="dict_host">Dictionary download URL</string>
-    <string name="relay_port">Meetup server game port</string>
-    <string name="proxy_port">Meetup string device port</string>
+    <string name="relay_port">Relay game port</string>
+    <string name="proxy_port">Relay device port</string>
     <string name="sms_port">SMS port</string>
 
     <string name="sms_phone_label">sms_phone_label</string>
@@ -390,9 +390,9 @@
     to the relay cannot be copied.</string>
 
     <string name="no_games_to_refresh">No games found that connect via
-    the meetup server.</string>
+    the relay.</string>
 
-    <string name="msgs_progress">Checking meetup server for moves
+    <string name="msgs_progress">Checking relay for moves
     etc...</string>
 
     <string name="button_notagain">Do not show again</string>
