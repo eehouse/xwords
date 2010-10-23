@@ -95,8 +95,8 @@ public class DlgDelegate {
         m_activity.showDialog( DIALOG_ABOUT );
     }
 
-    public boolean showNotAgainDlgThen( int msgID, int prefsKey,
-                                        Runnable proc )
+    public void showNotAgainDlgThen( int msgID, int prefsKey,
+                                     Runnable proc )
     {
         boolean set = CommonPrefs.getPrefsBoolean( m_activity, prefsKey, false );
         if ( set ) {
@@ -109,7 +109,6 @@ public class DlgDelegate {
             m_prefsKey = prefsKey;
             m_activity.showDialog( DIALOG_NOTAGAIN );
         }
-        return !set;
     }
 
     private Dialog createAboutDialog()

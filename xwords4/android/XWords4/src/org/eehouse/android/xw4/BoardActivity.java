@@ -258,7 +258,6 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     @Override
     protected void onPrepareDialog( int id, Dialog dialog )
     {
-        Utils.logf( "onPrepareDialog(id=" + id + ")" );
         switch( id ) {
         case DLG_OKONLY:
             dialog.setTitle( m_dlgTitle );
@@ -504,13 +503,12 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         case R.id.board_menu_game_resend:
             m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
             break;
-        case R.id.board_menu_game_chat:
-            showDialog( GET_MESSAGE );
-            break;
+
         case R.id.board_menu_file_prefs:
             m_firingPrefs = true;
             startActivity( new Intent( this, PrefsActivity.class ) );
             break;
+
         case R.id.board_menu_file_about:
             showAboutDialog();
             break;

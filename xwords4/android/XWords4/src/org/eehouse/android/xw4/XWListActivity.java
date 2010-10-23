@@ -62,6 +62,12 @@ public class XWListActivity extends ListActivity {
         return dialog;
     }
 
+    @Override
+    protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        m_delegate.onPrepareDialog( id, dialog );
+    }
+
     // It sucks that these must be duplicated here and XWActivity
     protected void showAboutDialog()
     {

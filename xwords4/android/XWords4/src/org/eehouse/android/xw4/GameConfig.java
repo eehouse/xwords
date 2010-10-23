@@ -62,14 +62,11 @@ public class GameConfig extends XWActivity
                ,XWListItem.DeleteCallback
                ,RefreshNamesTask.NoNameFound {
 
-    private static final int PLAYER_EDIT = 1;
-    // private static final int ROLE_EDIT_RELAY = 2;
-    // private static final int ROLE_EDIT_SMS = 3;
-    // private static final int ROLE_EDIT_BT = 4;
-    private static final int FORCE_REMOTE = 5;
-    private static final int CONFIRM_CHANGE = 6;
-    private static final int CONFIRM_CHANGE_PLAY = 7;
-    private static final int NO_NAME_FOUND = 8;
+    private static final int PLAYER_EDIT = DlgDelegate.DIALOG_LAST + 1;
+    private static final int FORCE_REMOTE = PLAYER_EDIT + 1;
+    private static final int CONFIRM_CHANGE = PLAYER_EDIT + 2;
+    private static final int CONFIRM_CHANGE_PLAY = PLAYER_EDIT + 3;
+    private static final int NO_NAME_FOUND = PLAYER_EDIT + 4;
 
     private CheckBox m_notNetworkedGameCheckbx;
     private CheckBox m_joinPublicCheck;
@@ -133,118 +130,120 @@ public class GameConfig extends XWActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = null;
-        LayoutInflater factory;
-        DialogInterface.OnClickListener dlpos;
-        AlertDialog.Builder ab;
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            LayoutInflater factory;
+            DialogInterface.OnClickListener dlpos;
+            AlertDialog.Builder ab;
 
-        switch (id) {
-        case PLAYER_EDIT:
-            factory = LayoutInflater.from(this);
-            final View playerEditView
-                = factory.inflate( R.layout.player_edit, null );
+            switch (id) {
+            case PLAYER_EDIT:
+                factory = LayoutInflater.from(this);
+                final View playerEditView
+                    = factory.inflate( R.layout.player_edit, null );
 
-            dialog = new AlertDialog.Builder( this )
-                .setTitle(R.string.player_edit_title)
-                .setView(playerEditView)
-                .setPositiveButton( R.string.button_ok,
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int whichButton ) {
-                                            getPlayerSettings();
-                                            loadPlayers();
-                                        }
-                                    })
-                .setNegativeButton( R.string.button_cancel, null )
-                .create();
-            break;
-        // case ROLE_EDIT_RELAY:
-        // case ROLE_EDIT_SMS:
-        // case ROLE_EDIT_BT:
-        //     dialog = new AlertDialog.Builder( this )
-        //         .setTitle(titleForDlg(id))
-        //         .setView( LayoutInflater.from(this)
-        //                   .inflate( layoutForDlg(id), null ))
-        //         .setPositiveButton( R.string.button_ok,
-        //                             new DialogInterface.OnClickListener() {
-        //                                 public void onClick( DialogInterface dlg, 
-        //                                                      int whichButton ) {
-        //                                     getRoleSettings();
-        //                                 }
-        //                             })
-        //         .setNegativeButton( R.string.button_cancel, null )
-        //         .create();
-        //     break;
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle(R.string.player_edit_title)
+                    .setView(playerEditView)
+                    .setPositiveButton( R.string.button_ok,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg, 
+                                                                 int whichButton ) {
+                                                getPlayerSettings();
+                                                loadPlayers();
+                                            }
+                                        })
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .create();
+                break;
+                // case ROLE_EDIT_RELAY:
+                // case ROLE_EDIT_SMS:
+                // case ROLE_EDIT_BT:
+                //     dialog = new AlertDialog.Builder( this )
+                //         .setTitle(titleForDlg(id))
+                //         .setView( LayoutInflater.from(this)
+                //                   .inflate( layoutForDlg(id), null ))
+                //         .setPositiveButton( R.string.button_ok,
+                //                             new DialogInterface.OnClickListener() {
+                //                                 public void onClick( DialogInterface dlg, 
+                //                                                      int whichButton ) {
+                //                                     getRoleSettings();
+                //                                 }
+                //                             })
+                //         .setNegativeButton( R.string.button_cancel, null )
+                //         .create();
+                //     break;
 
-        case FORCE_REMOTE:
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.force_title )
-                .setView( LayoutInflater.from(this)
-                          .inflate( layoutForDlg(id), null ) )
-                .setPositiveButton( R.string.button_ok,
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int whichButton ) {
-                                            loadPlayers();
-                                        }
-                                    })
-                .create();
-            dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss( DialogInterface di ) 
-                    {
-                        if ( m_gi.forceRemoteConsistent() ) {
-                            Toast.makeText( GameConfig.this, 
-                                            R.string.forced_consistent,
-                                            Toast.LENGTH_SHORT).show();
-                            loadPlayers();
+            case FORCE_REMOTE:
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.force_title )
+                    .setView( LayoutInflater.from(this)
+                              .inflate( layoutForDlg(id), null ) )
+                    .setPositiveButton( R.string.button_ok,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg, 
+                                                                 int whichButton ) {
+                                                loadPlayers();
+                                            }
+                                        })
+                    .create();
+                dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                        @Override
+                            public void onDismiss( DialogInterface di ) 
+                        {
+                            if ( m_gi.forceRemoteConsistent() ) {
+                                Toast.makeText( GameConfig.this, 
+                                                R.string.forced_consistent,
+                                                Toast.LENGTH_SHORT).show();
+                                loadPlayers();
+                            }
                         }
-                    }
-                });
-            break;
-        case CONFIRM_CHANGE:
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.confirm_save_title )
-                .setMessage( R.string.confirm_save )
-                .setPositiveButton( R.string.button_save,
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int whichButton ) {
-                                            applyChanges( true );
-                                            finish();
-                                        }
-                                    })
-                .setNegativeButton( R.string.button_discard, 
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int whichButton ) {
-                                            finish();
-                                        }
-                                    })
-                .create();
-            break;
-        case CONFIRM_CHANGE_PLAY:
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.confirm_save_title )
-                .setMessage( R.string.confirm_save )
-                .setPositiveButton( R.string.button_save,
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int whichButton ) {
-                                            applyChanges( true );
-                                            launchGame();
-                                        }
-                                    })
-                .setNegativeButton( R.string.button_cancel, null )
-                .create();
-            break;
-        case NO_NAME_FOUND:
-            dialog = new AlertDialog.Builder( this )
-                .setPositiveButton( R.string.button_ok, null )
-                // message added below since varies with language etc.
-                .setMessage("") // if not set here can't change later
-                .create();
-            break;
+                    });
+                break;
+            case CONFIRM_CHANGE:
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.confirm_save_title )
+                    .setMessage( R.string.confirm_save )
+                    .setPositiveButton( R.string.button_save,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg, 
+                                                                 int whichButton ) {
+                                                applyChanges( true );
+                                                finish();
+                                            }
+                                        })
+                    .setNegativeButton( R.string.button_discard, 
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg, 
+                                                                 int whichButton ) {
+                                                finish();
+                                            }
+                                        })
+                    .create();
+                break;
+            case CONFIRM_CHANGE_PLAY:
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.confirm_save_title )
+                    .setMessage( R.string.confirm_save )
+                    .setPositiveButton( R.string.button_save,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick( DialogInterface dlg, 
+                                                                 int whichButton ) {
+                                                applyChanges( true );
+                                                launchGame();
+                                            }
+                                        })
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .create();
+                break;
+            case NO_NAME_FOUND:
+                dialog = new AlertDialog.Builder( this )
+                    .setPositiveButton( R.string.button_ok, null )
+                    // message added below since varies with language etc.
+                    .setMessage("") // if not set here can't change later
+                    .create();
+                break;
+            }
         }
         return dialog;
     } // onCreateDialog
@@ -490,18 +489,26 @@ public class GameConfig extends XWActivity
             m_gi.juggle();
             loadPlayers();
         } else if ( m_notNetworkedGameCheckbx == view ) {
-            if ( m_gi.nPlayers < 2 ) {
-                Assert.assertTrue( m_gi.nPlayers == 1 );
-                m_gi.addPlayer();
-                Toast.makeText( this, R.string.added_player,
-                                Toast.LENGTH_SHORT).show();
-            }
-            m_notNetworkedGame = m_notNetworkedGameCheckbx.isChecked();
-            m_gi.setServerRole( m_notNetworkedGame
-                                ? DeviceRole.SERVER_STANDALONE 
-                                : DeviceRole.SERVER_ISCLIENT );
+            Runnable proc = new Runnable() {
+                    public void run() {
+                        if ( m_gi.nPlayers < 2 ) {
+                            Assert.assertTrue( m_gi.nPlayers == 1 );
+                            m_gi.addPlayer();
+                            Toast.makeText( GameConfig.this, 
+                                            R.string.added_player,
+                                            Toast.LENGTH_SHORT).show();
+                        }
+                        m_notNetworkedGame = 
+                            m_notNetworkedGameCheckbx.isChecked();
+                        m_gi.setServerRole( m_notNetworkedGame
+                                            ? DeviceRole.SERVER_STANDALONE 
+                                            : DeviceRole.SERVER_ISCLIENT );
 
-            loadPlayers();
+                        loadPlayers();
+                    }
+                };
+            showNotAgainDlgThen( R.string.not_again_relay,
+                                 R.string.key_notagain_relay, proc );
         } else if ( m_joinPublicCheck == view ) {
             adjustConnectStuff();
         // } else if ( m_configureButton == view ) {

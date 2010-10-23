@@ -242,11 +242,6 @@ public class CommonPrefs {
         return getPrefsBoolean( context, R.string.key_hide_title, true );
     }
 
-    public static boolean getClickLaunches( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_click_launches, false );
-    }
-
     public static boolean getShowBonusSumms( Context context )
     {
         return getPrefsBoolean( context, R.string.key_show_bonussum, false );

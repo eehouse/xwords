@@ -113,6 +113,7 @@ public class GamesList extends XWListActivity
             String msg = String.format( format, m_missingDict );
             ((AlertDialog)dialog).setMessage( msg );
         }
+        super.onPrepareDialog( id, dialog );
     }
 
     @Override
@@ -136,6 +137,8 @@ public class GamesList extends XWListActivity
                 public void onClick( View v ) {
                     saveNew( new CurGameInfo( GamesList.this ) );
                     onContentChanged();
+                    showNotAgainDlgThen( R.string.not_again_newgame, 
+                                         R.string.key_notagain_newgame, null );
                 }
             } );
 
@@ -217,9 +220,6 @@ public class GamesList extends XWListActivity
     {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.games_list_item_menu, menu );
-        if ( CommonPrefs.getClickLaunches( this ) ) {
-            menu.removeItem( R.id.list_item_play );
-        }
     }
         
     @Override
@@ -303,12 +303,13 @@ public class GamesList extends XWListActivity
     protected void onListItemClick( ListView l, View v, int position, long id )
     {
         super.onListItemClick( l, v, position, id );
-
-        if ( CommonPrefs.getClickLaunches( this ) ) {
-            handleMenuItem( R.id.list_item_play, position );
-        } else {
-            v.showContextMenu();
-        }
+        String path = GameUtils.gamesList( this )[position];
+        File file = new File( path );
+        Uri uri = Uri.fromFile( file );
+        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                    this, BoardActivity.class );
+        startActivity( intent );
+        m_invalPath = path;
     }
 
     private boolean handleMenuItem( int menuID, int position ) 
@@ -330,21 +331,13 @@ public class GamesList extends XWListActivity
                 showDialog( WARN_NODICT );
             } else {
                 switch ( menuID ) {
-                case R.id.list_item_play:
-                    File file = new File( path );
-                    Uri uri = Uri.fromFile( file );
-                    Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                                this, BoardActivity.class );
-                    startActivity( intent );
-                    m_invalPath = path;
-                    break;
-
                 case R.id.list_item_config:
                     doConfig( path );
                     m_invalPath = path;
                     break;
 
                 case R.id.list_item_reset:
+                    // TODO confirm_data_loss();
                     GameUtils.resetGame( this, path, path );
                     invalPath = path;
                     break;

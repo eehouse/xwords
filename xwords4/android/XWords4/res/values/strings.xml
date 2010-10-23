@@ -91,7 +91,6 @@
 	<string name="board_menu_game_history">Game history</string>
 	<string name="board_menu_game_final">Final scores</string>
 	<string name="board_menu_game_resend">Resend messages</string>
-    <string name="board_menu_game_chat">Send message</string>
 	<string name="board_submenu_file">File</string>
 	<string name="board_menu_file_new">New game</string>
 	<string name="board_menu_file_about">About Crosswords</string>
@@ -205,9 +204,6 @@
     are added</string>
     <string name="ringer_zoom">Volume keys zoom</string>
     <string name="ringer_zoom_summary">Zoom board using volume keys</string>
-    <string name="click_launches">Tap to play</string>
-    <string name="click_launches_summary">Tapping on game in games
-    list opens it rather than dropping a menu</string>
     <string name="hide_title">Hide titlebar</string>
     <string name="hide_title_summary">Hiding the game name lets the
       board be slightly larger</string>
@@ -393,18 +389,31 @@
     the relay.</string>
 
     <string name="msgs_progress">Checking relay for moves
-    etc...</string>
+      etc...</string>
 
+    <!-- Messages for a series of dialogs that offer newbie hints in
+         strategic places.  This set will be expanding for a
+         while. -->
     <string name="button_notagain">Do not show again</string>
 
     <string name="not_again_sync">This action checks the relay for
-      pending moves for all games. Games with pending moves are
-      flagged. When you open the game the new moves will be
-      downloaded.</string>
+      pending moves/messages for all networked games and flags those
+      with pending moves. When you open a flagged game it will connect
+      and sync. (In a later release these moves will be downloaded in
+      the background.)</string>
 
-    <string name="not_again_chat">In networked game you may have no
-    idea who your opponent is. This feature lets you exchange contact
-    info or a short \"bingo!\" Please do not expect Crosswords to be a
-    full-fledged chat app!</string>
+    <string name="not_again_chat">This button lets you send a short
+      message to everyone in this game -- or exchange contact info so
+      you can converse via email or texting.</string>
+
+    <string name="not_again_relay">Multi-device games work through an
+      internet relay that connects devices in \"rooms\".  To play
+      against a friend, make sure you both specify the same room name.
+      Or try joining or creating a public room.</string>
+
+    <string name="not_again_newgame">The new game you have created has
+      two players, the first a robot, both on this device.  To play
+      the game, tap it; to change its configuration or for other
+      options, long-tap it.</string>
 
 </resources>
