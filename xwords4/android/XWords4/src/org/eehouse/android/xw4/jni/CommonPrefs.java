@@ -199,7 +199,7 @@ public class CommonPrefs {
         try {
             return Long.parseLong( value );
         } catch ( Exception ex ) {
-            return 25L;
+            return -1;
         }
     }
 
