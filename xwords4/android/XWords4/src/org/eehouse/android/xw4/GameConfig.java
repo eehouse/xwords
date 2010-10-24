@@ -68,7 +68,6 @@ public class GameConfig extends XWActivity
     private static final int CONFIRM_CHANGE_PLAY = PLAYER_EDIT + 3;
     private static final int NO_NAME_FOUND = PLAYER_EDIT + 4;
 
-    private CheckBox m_notNetworkedGameCheckbx;
     private CheckBox m_joinPublicCheck;
     private LinearLayout m_publicRoomsSet;
     private LinearLayout m_privateRoomsSet;
@@ -376,20 +375,26 @@ public class GameConfig extends XWActivity
 
         setContentView(R.layout.game_config);
 
-        m_notNetworkedGameCheckbx = 
-            (CheckBox)findViewById(R.id.game_not_networked);
-        m_notNetworkedGameCheckbx.setOnClickListener( this );
-        // m_notNetworkedGameCheckbx.setChecked( true );
-        // m_notNetworkedGame = true;
+        m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
 
-        m_joinPublicCheck = (CheckBox)findViewById(R.id.join_public_room_check);
-        m_joinPublicCheck.setOnClickListener( this );
-        m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
-        Utils.setChecked( this, R.id.advertise_new_room_check, 
-                          m_car.ip_relay_advertiseRoom );
-        m_publicRoomsSet = (LinearLayout)findViewById(R.id.public_rooms_set );
-        m_privateRoomsSet = (LinearLayout)findViewById(R.id.private_rooms_set );
-        //Utils.setText( this, R.id.room_edit, m_car.ip_relay_invite );
+        if ( !m_notNetworkedGame ) {
+            m_joinPublicCheck = (CheckBox)findViewById(R.id.join_public_room_check);
+            m_joinPublicCheck.setOnClickListener( this );
+            m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
+            Utils.setChecked( this, R.id.advertise_new_room_check, 
+                              m_car.ip_relay_advertiseRoom );
+            m_publicRoomsSet = (LinearLayout)findViewById(R.id.public_rooms_set );
+            m_privateRoomsSet = (LinearLayout)findViewById(R.id.private_rooms_set );
+
+            m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
+
+            m_refreshRoomsButton = (ImageButton)findViewById( R.id.refresh_button );
+            m_refreshRoomsButton.setOnClickListener( this );
+
+            adjustConnectStuff();
+        }
+
+        m_connectSet = findViewById(R.id.connect_set);
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
@@ -398,43 +403,11 @@ public class GameConfig extends XWActivity
         m_playButton = (Button)findViewById( R.id.play_button );
         m_playButton.setOnClickListener( this );
 
-        m_connectSet = findViewById(R.id.connect_set);
-        // m_configureButton = (Button)findViewById(R.id.configure_role);
-        // m_configureButton.setOnClickListener( this );
-
-        m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
-
-        m_refreshRoomsButton = (ImageButton)findViewById( R.id.refresh_button );
-        m_refreshRoomsButton.setOnClickListener( this );
-
-        adjustConnectStuff();
-
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
-        m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
-        m_notNetworkedGameCheckbx.setChecked( m_notNetworkedGame );
         loadPlayers();
 
         m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
         configDictSpinner();
-
-        // m_roleSpinner = (Spinner)findViewById( R.id.role_spinner );
-        // m_roleSpinner.setSelection( m_gi.serverRole.ordinal() );
-        // m_roleSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-        //         @Override
-        //         public void onItemSelected(AdapterView<?> parentView, 
-        //                                    View selectedItemView, int position, 
-        //                                    long id ) {
-        //             m_gi.setServerRole( DeviceRole.values()[position] );
-        //             adjustVisibility();
-        //             loadPlayers();
-        //         }
-
-        //         @Override
-        //         public void onNothingSelected(AdapterView<?> parentView) {
-        //         }
-        //     });
-
-        // configConnectSpinner();
 
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
@@ -457,9 +430,9 @@ public class GameConfig extends XWActivity
 
         Utils.setChecked( this, R.id.smart_robot, 0 < m_gi.robotSmartness );
 
-        // adjustVisibility();
-
-        String fmt = getString( R.string.title_game_configf );
+        String fmt = getString( m_notNetworkedGame ?
+                                R.string.title_game_configf
+                                : R.string.title_gamenet_configf );
         setTitle( String.format( fmt, GameUtils.gameName( this, m_path ) ) );
     } // onCreate
 
@@ -488,42 +461,8 @@ public class GameConfig extends XWActivity
         } else if ( m_jugglePlayersButton == view ) {
             m_gi.juggle();
             loadPlayers();
-        } else if ( m_notNetworkedGameCheckbx == view ) {
-            Runnable proc = new Runnable() {
-                    public void run() {
-                        if ( m_gi.nPlayers < 2 ) {
-                            Assert.assertTrue( m_gi.nPlayers == 1 );
-                            m_gi.addPlayer();
-                            Toast.makeText( GameConfig.this, 
-                                            R.string.added_player,
-                                            Toast.LENGTH_SHORT).show();
-                        }
-                        m_notNetworkedGame = 
-                            m_notNetworkedGameCheckbx.isChecked();
-                        m_gi.setServerRole( m_notNetworkedGame
-                                            ? DeviceRole.SERVER_STANDALONE 
-                                            : DeviceRole.SERVER_ISCLIENT );
-
-                        loadPlayers();
-                    }
-                };
-            showNotAgainDlgThen( R.string.not_again_relay,
-                                 R.string.key_notagain_relay, proc );
         } else if ( m_joinPublicCheck == view ) {
             adjustConnectStuff();
-        // } else if ( m_configureButton == view ) {
-        //     int position = m_connectSpinner.getSelectedItemPosition();
-        //     switch ( m_types[ position ] ) {
-        //     case COMMS_CONN_RELAY:
-        //         showDialog( ROLE_EDIT_RELAY );
-        //         break;
-        //     case COMMS_CONN_SMS:
-        //         showDialog( ROLE_EDIT_SMS );
-        //         break;
-        //     case COMMS_CONN_BT:
-        //         showDialog( ROLE_EDIT_BT );
-        //         break;
-        //     }
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
         } else if ( m_playButton == view ) {

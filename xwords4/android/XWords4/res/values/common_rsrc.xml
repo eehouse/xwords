@@ -41,6 +41,7 @@
   <string name="key_notagain_chat">key_notagain_chat</string>
   <string name="key_notagain_relay">key_notagain_relay</string>
   <string name="key_notagain_newgame">key_notagain_newgame</string>
+  <string name="key_notagain_newgamenet">key_notagain_newgamenet</string>
 
   <string name="relayids_extra">org.eehouse.android.xw4.relayids_extra</string>
   

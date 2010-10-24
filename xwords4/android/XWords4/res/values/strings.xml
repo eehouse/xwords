@@ -18,6 +18,7 @@
     <string name="menu_delete">Delete</string>
     <string name="menu_insert">Add game</string>
     <string name="button_new_game">Add game</string>
+    <string name="button_new_game_net">Add networked game</string>
 
     <string name="list_item_play">Play game</string>
     <string name="list_item_config">Game settings...</string>
@@ -43,6 +44,7 @@
 	<string name="title_dicts_list">Crosswords dictionaries</string>   
 	<string name="title_game">Game</string>  
 	<string name="title_game_configf">%s settings</string>  
+	<string name="title_gamenet_configf">%s settings (networked)</string>  
 	<string name="title_prefs">Crosswords settings</string>  
 	
 	<string name="app_name">Crosswords</string>  
@@ -213,8 +215,6 @@
     <string name="show_bonussum">Show bonus values</string>
     <string name="show_bonussum_summary">Include text like "2W" on
     empty bonus squares</string>
-
-	<string name="all_players_here">All players live on this device</string>
 
     <string name="phonies_ignore">Ignore phonies</string>
     <string name="phonies_warn">Warn if phonies</string>
@@ -415,5 +415,7 @@
       two players, the first a robot, both on this device.  To play
       the game, tap it; to change its configuration or for other
       options, long-tap it.</string>
+
+    <string name="not_again_newgamenet">The new game you have created </string>
 
 </resources>

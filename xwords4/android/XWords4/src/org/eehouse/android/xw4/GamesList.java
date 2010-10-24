@@ -135,12 +135,20 @@ public class GamesList extends XWListActivity
         newGameB.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
-                    saveNew( new CurGameInfo( GamesList.this ) );
-                    onContentChanged();
+                    addGame( false );
                     showNotAgainDlgThen( R.string.not_again_newgame, 
                                          R.string.key_notagain_newgame, null );
                 }
-            } );
+            });
+        newGameB = (Button)findViewById(R.id.new_game_net);
+        newGameB.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick( View v ) {
+                    addGame( true );
+                    showNotAgainDlgThen( R.string.not_again_newgamenet, 
+                                         R.string.key_notagain_newgamenet, null );
+                }
+            });
 
         m_adapter = new GameListAdapter( this );
         setListAdapter( m_adapter );
@@ -398,8 +406,13 @@ public class GamesList extends XWListActivity
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
             GameUtils.saveGame( this, bytes );
-        } else {
-            Utils.logf( "gi_to_stream=>null" );
         }
     }
+
+    private void addGame( boolean networked )
+    {
+        saveNew( new CurGameInfo( this, networked ) );
+        onContentChanged();
+    }
+
 }

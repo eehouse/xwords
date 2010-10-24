@@ -25,13 +25,6 @@
                 android:layout_height="fill_parent"
                 android:orientation="vertical">
 
-    <CheckBox android:id="@+id/game_not_networked"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:text="@string/all_players_here"
-              />
-
-
     <!-- players -->
     <TextView style="@style/config_separator"
               android:id="@+id/players_label"
