@@ -1236,10 +1236,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                    || comms->r.myHostID == srcID );
         comms->r.myHostID = srcID;
         XP_LOGF( "set hostid: %x", comms->r.myHostID );
-        cookieID = stream_getU16( stream );
-        XP_ASSERT( cookieID == comms->r.cookieID );
-        // comms->r.cookieID = stream_getU16( stream );
-        XP_LOGF( "set cookieID = %d", comms->r.cookieID );
 
 #ifdef DEBUG
         {

@@ -1097,7 +1097,7 @@ main( int argc, char** argv )
     } else if ( conType == COMMS_CONN_RELAY ) {
         mainParams.connInfo.relay.relayName = hostName;
         if ( NULL == portNum ) {
-            portNum = "10999";
+            portNum = "10997";
         }
         mainParams.connInfo.relay.defaultSendPort = atoi( portNum );
 #endif
