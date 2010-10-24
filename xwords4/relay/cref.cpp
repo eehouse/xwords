@@ -1041,7 +1041,7 @@ CookieRef::sendAllHere( bool initial )
     unsigned char* bufp = buf;
     unsigned char* idLoc;
     
-    *bufp++ = initial? XWRELAY_ALLHERE : XWRELAY_ALLBACK;
+    *bufp++ = XWRELAY_ALLHERE;
     idLoc = bufp++;                 /* space for hostId, remembering address */
 
     const char* connName = ConnName();

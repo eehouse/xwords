@@ -1144,7 +1144,6 @@ relayCmdToStr( XWRELAY_Cmd cmd )
         CASESTR( XWRELAY_CONNECT_RESP );
         CASESTR( XWRELAY_RECONNECT_RESP );
         CASESTR( XWRELAY_ALLHERE );
-        CASESTR( XWRELAY_ALLBACK );
         CASESTR( XWRELAY_DISCONNECT_YOU );
         CASESTR( XWRELAY_DISCONNECT_OTHER );
         CASESTR( XWRELAY_CONNECTDENIED );
@@ -1184,6 +1183,9 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     comms->r.heartbeat = stream_getU16( stream );
     nSought = (XP_U16)stream_getU8( stream );
     nHere = (XP_U16)stream_getU8( stream );
+    if ( nSought == nHere ) {
+        set_relay_state( comms, COMMS_RELAYSTATE_ALLCONNECTED );
+    }
 
 #ifdef DEBUG
     {
@@ -1230,7 +1232,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         break;
 
     case XWRELAY_ALLHERE:
-    case XWRELAY_ALLBACK:
         srcID = (XWHostID)stream_getU8( stream );
         XP_ASSERT( comms->r.myHostID == HOST_ID_NONE
                    || comms->r.myHostID == srcID );
