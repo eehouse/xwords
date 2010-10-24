@@ -225,6 +225,22 @@ DBMgr::RecordSent( const char* const connName, int nBytes )
 }
 
 void
+DBMgr::GetPlayerCounts( const char* const connName, int* nTotal, int* nHere )
+{
+    const char* fmt = "SELECT ntotal, sum_array(nperdevice) FROM " GAMES_TABLE
+        " WHERE connName = '%s'";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    PGresult* result = PQexec( getThreadConn(), query );
+    assert( 1 == PQntuples( result ) );
+    *nTotal = atoi( PQgetvalue( result, 0, 0 ) );
+    *nHere = atoi( PQgetvalue( result, 0, 1 ) );
+    PQclear( result );
+}
+
+void
 DBMgr::ClearCIDs( void )
 {
     execSql( "UPDATE " GAMES_TABLE " set cid = null" );
