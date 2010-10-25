@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ImageButton;
@@ -73,7 +74,7 @@ public class Toolbar {
                           R.id.chat_button_vertical ),
     };
 
-    private Activity m_activity;
+    private XWActivity m_activity;
     private LinearLayout m_horLayout;
     private LinearLayout m_vertLayout;
 
@@ -83,7 +84,7 @@ public class Toolbar {
             };
     private ORIENTATION m_curOrient = ORIENTATION.ORIENT_UNKNOWN;
 
-    public Toolbar( Activity activity, View horLayout, View vertLayout )
+    public Toolbar( XWActivity activity, View horLayout, View vertLayout )
     {
         m_activity = activity;
         m_horLayout = (LinearLayout)horLayout;
@@ -97,6 +98,17 @@ public class Toolbar {
             ImageButton button = (ImageButton)m_activity.findViewById( id );
             button.setOnClickListener( listener );
         }
+    }
+
+    public void setListener( int index, final int msgID, final int prefsKey, 
+                             final Runnable proc )
+    {
+        View.OnClickListener listener = new View.OnClickListener() {
+                public void onClick( View view ) {
+                    m_activity.showNotAgainDlgThen( msgID, prefsKey, proc );
+                }
+            };
+        setListener( index, listener );
     }
 
     public void orientChanged( boolean landscape )

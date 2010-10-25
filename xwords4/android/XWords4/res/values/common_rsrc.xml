@@ -42,6 +42,12 @@
   <string name="key_notagain_relay">key_notagain_relay</string>
   <string name="key_notagain_newgame">key_notagain_newgame</string>
   <string name="key_notagain_newgamenet">key_notagain_newgamenet</string>
+  <string name="key_notagain_hintprev">key_notagain_hintprev</string>
+  <string name="key_notagain_hintnext">key_notagain_hintnext</string>
+  <string name="key_notagain_juggle">key_notagain_juggle</string>
+  <string name="key_notagain_flip">key_notagain_flip</string>
+  <string name="key_notagain_zoom">key_notagain_zoom</string>
+  <string name="key_notagain_undo">key_notagain_undo</string>
 
   <string name="relayids_extra">org.eehouse.android.xw4.relayids_extra</string>
   

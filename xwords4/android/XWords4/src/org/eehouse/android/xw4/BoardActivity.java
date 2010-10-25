@@ -803,76 +803,76 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         }
     } // loadGame
 
-    private void handleChatButton()
-    {
-        Runnable runnable = new Runnable() {
-                public void run() {
-                    showDialog( GET_MESSAGE );
-                }
-            };
-
-        showNotAgainDlgThen( R.string.not_again_chat, 
-                             R.string.key_notagain_chat,
-                             runnable );
-    }
-
     private void populateToolbar()
     {
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
-                               new View.OnClickListener() {
-                                   @Override
-                                       public void onClick( View view ) {
+                               R.string.not_again_hintprev,
+                               R.string.key_notagain_hintprev,
+                               new Runnable() {
+                                   public void run() {
                                        m_jniThread.handle( JNIThread.JNICmd
                                                            .CMD_PREV_HINT );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
-                               new View.OnClickListener() {
+                               R.string.not_again_hintnext,
+                               R.string.key_notagain_hintnext,
+                               new Runnable() {
                                    @Override
-                                   public void onClick( View view ) {
+                                   public void run() {
                                        m_jniThread.handle( JNIThread.JNICmd
                                                            .CMD_NEXT_HINT );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
-                               new View.OnClickListener() {
+                               R.string.not_again_juggle,
+                               R.string.key_notagain_juggle,
+                               new Runnable() {
                                    @Override
-                                   public void onClick( View view ) {
+                                   public void run() {
                                        m_jniThread.handle( JNIThread.JNICmd
                                                            .CMD_JUGGLE );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_FLIP,
-                               new View.OnClickListener() {
+                               R.string.not_again_flip,
+                               R.string.key_notagain_flip,
+                               new Runnable() {
                                    @Override
-                                   public void onClick( View view ) {
+                                   public void run() {
                                        m_jniThread.handle( JNIThread.JNICmd
                                                            .CMD_FLIP );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
-                               new View.OnClickListener() {
+                               R.string.not_again_zoom,
+                               R.string.key_notagain_zoom,
+                               new Runnable() {
                                    @Override
-                                   public void onClick( View view ) {
+                                   public void run() {
                                        m_jniThread.handle( JNIThread.JNICmd
                                                            .CMD_TOGGLEZOOM );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_UNDO,
-                               new View.OnClickListener() {
+                               R.string.not_again_undo,
+                               R.string.key_notagain_undo,
+                               new Runnable() {
                                    @Override
-                                   public void onClick( View view ) {
+                                   public void run() {
                                        m_jniThread.handle( JNIThread.JNICmd
                                                            .CMD_UNDO_CUR );
                                    }
-                               }) ;
+                               });
         m_toolbar.setListener( Toolbar.BUTTON_CHAT,
-                               new View.OnClickListener() {
+                               R.string.not_again_chat, 
+                               R.string.key_notagain_chat,
+                               new Runnable() {
                                    @Override
-                                   public void onClick( View view ) {
-                                       handleChatButton();
+                                   public void run() {
+                                       showDialog( GET_MESSAGE );
                                    }
-                               }) ;
+                               });
     } // populateToolbar
 
     private DialogInterface.OnDismissListener makeODLforBlocking()
