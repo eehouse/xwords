@@ -401,17 +401,20 @@ public class GamesList extends XWListActivity
         startActivity( intent );
     }
 
-    private void saveNew( CurGameInfo gi )
+    private String saveNew( CurGameInfo gi )
     {
+        String path = null;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            GameUtils.saveGame( this, bytes );
+            path = GameUtils.saveGame( this, bytes );
         }
+        return path;
     }
 
     private void addGame( boolean networked )
     {
-        saveNew( new CurGameInfo( this, networked ) );
+        String path = saveNew( new CurGameInfo( this, networked ) );
+        GameUtils.resetGame( this, path, path );
         onContentChanged();
     }
 
