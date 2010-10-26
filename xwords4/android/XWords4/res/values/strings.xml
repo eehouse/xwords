@@ -433,5 +433,8 @@
       turn.</string>
 
     <string name="not_again_newgamenet">The new game you have created </string>
+    <string name="not_again_done">The \"pts\" counter that appears at
+      the right end of the rack is an alternative to this menu
+      item.</string>
 
 </resources>

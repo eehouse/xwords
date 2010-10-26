@@ -448,11 +448,18 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     {
         boolean handled = true;
         JNIThread.JNICmd cmd = JNIThread.JNICmd.CMD_NONE;
+        Runnable proc = null;
 
         int id = item.getItemId();
         switch ( id ) {
         case R.id.board_menu_done:
-            cmd = JNIThread.JNICmd.CMD_COMMIT;
+            proc = new Runnable() {
+                    public void run() {
+                        m_jniThread.handle( JNIThread.JNICmd.CMD_COMMIT );
+                    }
+                };
+            showNotAgainDlgThen( R.string.not_again_done, 
+                                 R.string.key_notagain_done, proc );
             break;
         // case R.id.board_menu_juggle:
         //     cmd = JNIThread.JNICmd.CMD_JUGGLE;

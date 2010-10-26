@@ -48,6 +48,7 @@
   <string name="key_notagain_flip">key_notagain_flip</string>
   <string name="key_notagain_zoom">key_notagain_zoom</string>
   <string name="key_notagain_undo">key_notagain_undo</string>
+  <string name="key_notagain_done">key_notagain_done</string>
 
   <string name="relayids_extra">org.eehouse.android.xw4.relayids_extra</string>
   
