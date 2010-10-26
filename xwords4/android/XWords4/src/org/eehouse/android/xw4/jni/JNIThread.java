@@ -263,7 +263,7 @@ public class JNIThread extends Thread {
                 XwJNI.game_summarize( m_jniGamePtr, m_gi.nPlayers, summary );
                 byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
                 GameUtils.saveGame( m_context, state, m_path );
-                DBUtils.saveSummary( m_path, summary );
+                DBUtils.saveSummary( m_context, m_path, summary );
                 break;
 
             case CMD_DRAW:

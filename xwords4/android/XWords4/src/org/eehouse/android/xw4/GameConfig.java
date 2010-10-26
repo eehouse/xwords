@@ -843,7 +843,7 @@ public class GameConfig extends XWActivity
 
         GameSummary summary = new GameSummary();
         XwJNI.game_summarize( gamePtr, m_gi.nPlayers, summary );
-        DBUtils.saveSummary( m_path, summary );
+        DBUtils.saveSummary( this, m_path, summary );
 
         XwJNI.game_dispose( gamePtr );
     }

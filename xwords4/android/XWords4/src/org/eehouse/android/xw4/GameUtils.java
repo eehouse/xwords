@@ -88,7 +88,7 @@ public class GameUtils {
 
         GameSummary summary = new GameSummary();
         XwJNI.game_summarize( gamePtr, gi.nPlayers, summary );
-        DBUtils.saveSummary( pathOut, summary );
+        DBUtils.saveSummary( context, pathOut, summary );
 
         XwJNI.game_dispose( gamePtr );
     } // resetGame
@@ -115,7 +115,7 @@ public class GameUtils {
     {
         // does this need to be synchronized?
         context.deleteFile( path );
-        DBUtils.saveSummary( path, null );
+        DBUtils.saveSummary( context, path, null );
     }
 
     public static void loadMakeGame( Context context, int gamePtr, 

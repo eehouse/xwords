@@ -102,8 +102,10 @@ public class DBUtils {
         return summary;
     }
 
-    public static void saveSummary( String path, GameSummary summary )
+    public static void saveSummary( Context context, String path, 
+                                    GameSummary summary )
     {
+        initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 

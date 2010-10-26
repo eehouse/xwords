@@ -361,7 +361,7 @@ public class GamesList extends XWListActivity
                     } else {
                         stream = GameUtils.savedGame( this, path );
                         newName = GameUtils.saveGame( this, stream );
-                        DBUtils.saveSummary( newName, summary );
+                        DBUtils.saveSummary( this, newName, summary );
                     }
                     break;
 
