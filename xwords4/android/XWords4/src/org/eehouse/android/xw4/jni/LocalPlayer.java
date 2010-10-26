@@ -33,7 +33,7 @@ public class LocalPlayer {
     public LocalPlayer( Context context, int num )
     {
         isLocal = true;
-        isRobot = num == 0;     // 1st player is a robot by default
+        isRobot = false;
         String fmt = context.getString( R.string.playerf );
         name = String.format( fmt, num + 1 );
         password = "";

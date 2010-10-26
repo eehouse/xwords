@@ -27,6 +27,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.DictLangCache;
 
 public class CurGameInfo {
 
@@ -72,7 +73,7 @@ public class CurGameInfo {
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
         dictName = CommonPrefs.getDefaultDict( context );
-        dictLang = -1;          // error we can check for.
+        dictLang = DictLangCache.getLangCode( context, dictName );
         hintsNotAllowed = false;
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
@@ -88,6 +89,8 @@ public class CurGameInfo {
         }
         if ( isNetworked ) {
             players[1].isLocal = false;
+        } else {
+            players[0].isRobot = true;
         }
     }
 
