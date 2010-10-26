@@ -67,6 +67,12 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           Format: hostID: 1; connectionID: 2; connNameLen: 1;
           connName<connNameLen>; */
 
+       , XWRELAY_ALLBACK__UNUSED
+       /* Like XWRELAY_ALLHERE, but indicates a return to all devices being
+          present rather than the first time that's achieved.  Has no real
+          purpose now that the relay does store-and-forward, but at least lets
+          devices tell users everybody's home. */
+
        , XWRELAY_DISCONNECT_YOU
        /* Sent from relay when existing connection is terminated.  
           Format: errorCode: 1 */
