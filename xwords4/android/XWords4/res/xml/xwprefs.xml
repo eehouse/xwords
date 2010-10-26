@@ -10,6 +10,7 @@
     <org.eehouse.android.xw4.DictListPreference 
        android:key="@string/key_default_dict"
        android:title="@string/default_dict"
+       android:defaultValue="CollegeEng_2to8"
        />
 
     <ListPreference android:key="@string/key_default_phonies"
