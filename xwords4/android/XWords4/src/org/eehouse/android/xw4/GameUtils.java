@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import android.content.res.AssetManager;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameUtils {
 
@@ -65,12 +66,19 @@ public class GameUtils {
         CurGameInfo gi = new CurGameInfo( context );
         CommsAddrRec addr = null;
 
+        // loadMakeGame, if makinga new game, will add comms as long
+        // as DeviceRole.SERVER_STANDALONE != gi.serverRole
         loadMakeGame( context, gamePtr, gi, pathIn );
         byte[] dictBytes = GameUtils.openDict( context, gi.dictName );
         
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec( context );
             XwJNI.comms_getAddr( gamePtr, addr );
+            if ( CommsAddrRec.CommsConnType.COMMS_CONN_NONE == addr.conType ) {
+                String relayName = CommonPrefs.getDefaultRelayHost( context );
+                int relayPort = CommonPrefs.getDefaultRelayPort( context );
+                XwJNI.comms_getInitialAddr( addr, relayName, relayPort );
+            }
         }
         XwJNI.game_dispose( gamePtr );
 
