@@ -186,6 +186,9 @@
       these changes?</string>
     <string name="confirm_delete_all">Are you sure you want to
     delete all games?  This action cannot be undone.</string>
+    <string name="confirm_delete_dict">Are you sure you want to delete
+    this dictionary? You will not be able to open any games that use
+    it.</string>
     
     <string name="hints_allowed">Allow hints</string>
     <string name="progress_title">Searching for moves</string>

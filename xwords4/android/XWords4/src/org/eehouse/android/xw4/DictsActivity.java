@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu;
@@ -142,10 +143,17 @@ public class DictsActivity extends XWListActivity
     }
 
     // DeleteCallback interface
-    public void deleteCalled( int myPosition )
+    public void deleteCalled( final int myPosition )
     {
-        GameUtils.deleteDict( this, m_dicts[myPosition] );
-        mkListAdapter();
+        DialogInterface.OnClickListener action = 
+            new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    GameUtils.deleteDict( DictsActivity.this, 
+                                          m_dicts[myPosition] );
+                    mkListAdapter();
+                }
+            };
+        showConfirmThen( R.string.confirm_delete_dict, action );
     }
 
     private void mkListAdapter()
