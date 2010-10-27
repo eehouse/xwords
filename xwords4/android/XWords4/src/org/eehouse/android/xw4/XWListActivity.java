@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.ListActivity;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -88,6 +89,12 @@ public class XWListActivity extends ListActivity {
     protected void showNoDict( String name, int lang )
     {
         m_delegate.showNoDict( name, lang );
+    }
+
+    protected void showConfirmThen( int msgID, 
+                                    DialogInterface.OnClickListener action )
+    {
+        m_delegate.showConfirmThen( msgID, action );
     }
 
 }

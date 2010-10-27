@@ -58,38 +58,6 @@ public class GamesList extends XWListActivity
     private Handler m_handler;
 
     @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            switch( id ) {
-            case CONFIRM_DELETE_ALL:
-                DialogInterface.OnClickListener lstnr = 
-                    new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            for( String game:GameUtils.gamesList(GamesList.this)) {
-                                GameUtils.deleteGame( GamesList.this, game  );
-                            }
-                            m_adapter = new GameListAdapter( GamesList.this );
-                            setListAdapter( m_adapter );
-                        }
-                    };
-                dialog = new AlertDialog.Builder( this )
-                    .setTitle( R.string.query_title )
-                    .setMessage( R.string.confirm_delete_all )
-                    .setPositiveButton( R.string.button_ok, lstnr )
-                    .setNegativeButton( R.string.button_cancel, null )
-                    .create();
-                break;
-            default:
-                Assert.assertTrue(false);
-                // dialog = Utils.onCreateDialog( this, id, m_dlgObjects );
-            }
-        }
-        return dialog;
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
@@ -241,7 +209,17 @@ public class GamesList extends XWListActivity
         switch (item.getItemId()) {
         case R.id.gamel_menu_delete_all:
             if ( GameUtils.gamesList( this ).length > 0 ) {
-                showDialog( CONFIRM_DELETE_ALL );
+                DialogInterface.OnClickListener lstnr =
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            for( String game:GameUtils.gamesList(GamesList.this)) {
+                                GameUtils.deleteGame( GamesList.this, game  );
+                            }
+                            m_adapter = new GameListAdapter( GamesList.this );
+                            setListAdapter( m_adapter );
+                        }
+                    };
+                showConfirmThen( R.string.confirm_delete_all, lstnr );
             }
             handled = true;
             break;

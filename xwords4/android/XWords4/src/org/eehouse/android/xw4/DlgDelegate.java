@@ -41,13 +41,15 @@ public class DlgDelegate {
     public static final int DIALOG_OKONLY = 2;
     public static final int DIALOG_NOTAGAIN = 3;
     public static final int WARN_NODICT = 4;
-    public static final int DIALOG_LAST = WARN_NODICT;
+    public static final int CONFIRM_THEN = 5;
+    public static final int DIALOG_LAST = CONFIRM_THEN;
 
     private int m_msgID;
     private Runnable m_proc = null;
     private int m_prefsKey;
     private Activity m_activity;
     private String m_dictName = null;
+    DialogInterface.OnClickListener m_then;
 
     public DlgDelegate( Activity activity ) {
         m_activity = activity;
@@ -68,6 +70,9 @@ public class DlgDelegate {
             break;
         case WARN_NODICT:
             dialog = createNoDictDialog();
+            break;
+        case CONFIRM_THEN:
+            dialog = createConfirmThenDialog();
             break;
         }
         return dialog;
@@ -90,7 +95,12 @@ public class DlgDelegate {
         case WARN_NODICT:
             String format = m_activity.getString( R.string.no_dictf );
             String msg = String.format( format, m_dictName );
-            ((AlertDialog)dialog).setMessage( msg );
+            ad.setMessage( msg );
+            break;
+        case CONFIRM_THEN:
+            ad.setMessage( m_activity.getString(m_msgID) );
+            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
+                          m_activity.getString( R.string.button_ok ), m_then );
             break;
         }
     }
@@ -127,6 +137,13 @@ public class DlgDelegate {
         m_dictName = DictLangCache.annotatedDictName( m_activity, name,
                                                       lang );
         m_activity.showDialog( WARN_NODICT );
+    }
+
+    public void showConfirmThen( int id, DialogInterface.OnClickListener then )
+    {
+        m_msgID = id;
+        m_then = then;
+        m_activity.showDialog( CONFIRM_THEN );
     }
 
     private Dialog createAboutDialog()
@@ -221,6 +238,17 @@ public class DlgDelegate {
                     m_activity.finish();
                 }
             });
+        return dialog;
+    }
+
+    private Dialog createConfirmThenDialog()
+    {
+        Dialog dialog = new AlertDialog.Builder( m_activity )
+            .setTitle( R.string.query_title )
+            .setMessage( "" )
+            .setPositiveButton( R.string.button_ok, null ) // will change
+            .setNegativeButton( R.string.button_cancel, null )
+            .create();
         return dialog;
     }
 }
