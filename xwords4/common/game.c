@@ -439,9 +439,8 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     }
 
     gi->gameID = stream_getU16( stream );
-    if ( strVersion >= STREAM_VERS_DICTLANG ) {
-        gi->dictLang = stream_getU8( stream );
-    }
+    gi->dictLang =
+        strVersion >= STREAM_VERS_DICTLANG ? stream_getU8( stream ) : 0;
     if ( gi->timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {
         gi->gameSeconds = stream_getU16( stream );
     }

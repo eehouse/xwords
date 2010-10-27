@@ -488,7 +488,6 @@ undoFromMoveInfo( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveInfo* mi )
         }
         model_addPlayerTile( model, turn, -1, tile );
     }
-    XP_LOGF( "%s: %d tiles on board", __func__, model->vol.nTilesOnBoard );
     adjustScoreForUndone( model, mi, turn );
 } /* undoFromMoveInfo */
 
