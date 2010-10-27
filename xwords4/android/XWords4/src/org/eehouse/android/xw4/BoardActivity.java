@@ -723,8 +723,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             Utils.logf( "loadGame: dict name: %s", m_gi.dictName );
             byte[] dictBytes = GameUtils.openDict( this, m_gi.dictName );
             if ( null == dictBytes ) {
-                Assert.fail();
-                finish();
+                showNoDict( m_gi.dictName );
             } else {
                 m_jniGamePtr = XwJNI.initJNI();
 

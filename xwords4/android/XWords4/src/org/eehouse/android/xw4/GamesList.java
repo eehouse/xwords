@@ -50,8 +50,7 @@ public class GamesList extends XWListActivity
     implements DispatchNotify.HandleRelaysIface,
                RefreshMsgsTask.RefreshMsgsIface {
 
-    private static final int WARN_NODICT = DlgDelegate.DIALOG_LAST + 1;
-    private static final int CONFIRM_DELETE_ALL = WARN_NODICT + 1;
+    private static final int CONFIRM_DELETE_ALL = DlgDelegate.DIALOG_LAST + 1;
 
     private GameListAdapter m_adapter;
     private String m_invalPath = null;
@@ -64,21 +63,6 @@ public class GamesList extends XWListActivity
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             switch( id ) {
-            case WARN_NODICT:
-                dialog = new AlertDialog.Builder( this )
-                    .setTitle( R.string.no_dict_title )
-                    .setMessage( "" ) // required to get to change it later
-                    .setPositiveButton( R.string.button_ok, null )
-                    .setNegativeButton( R.string.button_download,
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, int item ) {
-                                                Intent intent = 
-                                                    Utils.mkDownloadActivity(GamesList.this);
-                                                startActivity( intent );
-                                            }
-                                        })
-                    .create();
-                break;
             case CONFIRM_DELETE_ALL:
                 DialogInterface.OnClickListener lstnr = 
                     new DialogInterface.OnClickListener() {
@@ -103,17 +87,6 @@ public class GamesList extends XWListActivity
             }
         }
         return dialog;
-    }
-
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        if ( WARN_NODICT == id ) {
-            String format = getString( R.string.no_dictf );
-            String msg = String.format( format, m_missingDict );
-            ((AlertDialog)dialog).setMessage( msg );
-        }
-        super.onPrepareDialog( id, dialog );
     }
 
     @Override
@@ -335,8 +308,7 @@ public class GamesList extends XWListActivity
             String[] missingName = new String[1];
             boolean hasDict = GameUtils.gameDictHere( this, path, missingName );
             if ( !hasDict ) {
-                m_missingDict = missingName[0];
-                showDialog( WARN_NODICT );
+                showNoDict( missingName[0] );
             } else {
                 switch ( menuID ) {
                 case R.id.list_item_config:

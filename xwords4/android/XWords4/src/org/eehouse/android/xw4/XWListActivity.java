@@ -85,4 +85,9 @@ public class XWListActivity extends ListActivity {
         m_delegate.showOKOnlyDialog( msgID );
     }
 
+    protected void showNoDict( String name )
+    {
+        m_delegate.showNoDict( name );
+    }
+
 }
