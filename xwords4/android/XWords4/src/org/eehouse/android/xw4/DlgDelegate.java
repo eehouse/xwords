@@ -193,7 +193,7 @@ public class DlgDelegate {
             };
 
         return new AlertDialog.Builder( m_activity )
-            .setTitle( R.string.info_title )
+            .setTitle( R.string.newbie_title )
             .setMessage( m_msgID )
             .setPositiveButton( R.string.button_ok, lstnr_p )
             .setNegativeButton( R.string.button_notagain, lstnr_n )

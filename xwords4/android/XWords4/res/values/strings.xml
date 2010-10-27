@@ -63,6 +63,7 @@
 
 	<string name="error_title">Error</string>
 	<string name="info_title">FYI...</string>
+	<string name="newbie_title">New user info</string>
 	<string name="error_message">Error loading game</string>
 	<string name="query_title">A question...</string>
 	<string name="query_trade">Are you sure you want to exchange the selected tiles?</string>
