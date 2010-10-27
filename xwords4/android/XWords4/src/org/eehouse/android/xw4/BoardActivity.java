@@ -723,7 +723,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             Utils.logf( "loadGame: dict name: %s", m_gi.dictName );
             byte[] dictBytes = GameUtils.openDict( this, m_gi.dictName );
             if ( null == dictBytes ) {
-                showNoDict( m_gi.dictName );
+                showNoDict( m_gi.dictName, m_gi.dictLang );
             } else {
                 m_jniGamePtr = XwJNI.initJNI();
 

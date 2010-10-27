@@ -306,9 +306,11 @@ public class GamesList extends XWListActivity
             invalPath = path;
         } else {
             String[] missingName = new String[1];
-            boolean hasDict = GameUtils.gameDictHere( this, path, missingName );
+            int[] missingLang = new int[1];
+            boolean hasDict = GameUtils.gameDictHere( this, path, 
+                                                      missingName, missingLang );
             if ( !hasDict ) {
-                showNoDict( missingName[0] );
+                showNoDict( missingName[0], missingLang[0] );
             } else {
                 switch ( menuID ) {
                 case R.id.list_item_config:

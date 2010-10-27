@@ -85,9 +85,9 @@ public class XWActivity extends Activity {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, proc );
     }
 
-    protected void showNoDict( String name )
+    protected void showNoDict( String name, int lang )
     {
-        m_delegate.showNoDict( name );
+        m_delegate.showNoDict( name, lang );
     }
 
 }

@@ -179,13 +179,15 @@ public class GameUtils {
     }
 
     public static boolean gameDictHere( Context context, String path, 
-                                        String[] missingName )
+                                        String[] missingName, 
+                                        int[] missingLang )
     {
         byte[] stream = savedGame( context, path );
         CurGameInfo gi = new CurGameInfo( context );
         XwJNI.gi_from_stream( gi, stream );
         String dictName = removeExtn( gi.dictName );
         missingName[0] = dictName;
+        missingLang[0] = gi.dictLang;
 
         boolean exists = false;
         for ( String name : dictList( context ) ) {
@@ -198,10 +200,10 @@ public class GameUtils {
     }
 
     public static boolean gameDictHere( Context context, int indx, 
-                                        String[] name )
+                                        String[] name, int[] lang )
     {
         String path = GameUtils.gamesList( context )[indx];
-        return gameDictHere( context, path, name );
+        return gameDictHere( context, path, name, lang );
     }
 
     public static String newName( Context context ) 

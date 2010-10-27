@@ -38,6 +38,12 @@ public class DictLangCache {
         return name + " (" + getLangName( context, name ) + ")";
     }
 
+    public static String annotatedDictName( Context context, String name,
+                                            int lang )
+    {
+        return name + " (" + getLangName( context, lang ) + ")";
+    }
+
     public static String getLangName( Context context, int code )
     {
         return getNamesArray(context)[code];

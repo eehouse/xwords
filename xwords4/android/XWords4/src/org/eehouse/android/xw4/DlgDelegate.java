@@ -122,9 +122,10 @@ public class DlgDelegate {
         }
     }
 
-    public void showNoDict( String name )
+    public void showNoDict( String name, int lang )
     {
-        m_dictName = name;
+        m_dictName = DictLangCache.annotatedDictName( m_activity, name,
+                                                      lang );
         m_activity.showDialog( WARN_NODICT );
     }
 
