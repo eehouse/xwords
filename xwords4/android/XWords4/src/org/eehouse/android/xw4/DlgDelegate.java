@@ -204,13 +204,7 @@ public class DlgDelegate {
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.no_dict_title )
             .setMessage( "" ) // required to get to change it later
-            .setPositiveButton( R.string.button_ok, 
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick( DialogInterface dlg, 
-                                                         int item ) {
-                                        m_activity.finish();
-                                    }
-                                })
+            .setPositiveButton( R.string.button_ok, null )
             .setNegativeButton( R.string.button_download,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick( DialogInterface dlg, 
@@ -218,26 +212,14 @@ public class DlgDelegate {
                                         Intent intent = Utils
                                             .mkDownloadActivity(m_activity);
                                         m_activity.startActivity( intent );
-                                        m_activity.finish();
                                     }
                                 })
             .create();
+        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                public void onDismiss( DialogInterface di ) {
+                    m_activity.finish();
+                }
+            });
         return dialog;
     }
-
-    // public void setDialogMsgID( int msgID )
-    // {
-    //     m_msgID = msgID;
-    // }
-
-    // public void setDialogRunnable( Runnable runnable )
-    // {
-    //     m_dialogRunnable = runnable;
-    // }
-
-    // public void setDialogPrefsKey( int prefsKey )
-    // {
-    //     m_prefsKey = prefsKey;
-    // }
-
 }
