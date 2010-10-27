@@ -33,7 +33,12 @@ public class DictListPreference extends ListPreference {
         super( context, attrs );
 
         String[] dicts = GameUtils.dictList( context  );
-        setEntries( dicts );
+        String[] dictEntries = new String[dicts.length];
+        for ( int ii = 0; ii < dicts.length; ++ii ) {
+            dictEntries[ii] = 
+                DictLangCache.annotatedDictName( context, dicts[ii] );
+        }
+        setEntries( dictEntries );
         setEntryValues( dicts );
     }
 }
