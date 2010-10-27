@@ -417,12 +417,12 @@
       the game, tap it; to change its configuration or for other
       options, long-tap it.</string>
 
-    <string name="not_again_hintprev">This button moves backwards
-      through the list of possible moves using tiles to the right of
-      the rack divider.</string>
-    <string name="not_again_hintnext">This button moves forward
-      through the list of possible moves using tiles to the right of
-      the rack divider.</string>
+    <string name="not_again_hintprev">This button shows all possible
+      moves in ascending order (using tiles to the right of the rack
+      divider.)</string>
+    <string name="not_again_hintnext">This button shows all possible
+      moves in descending order (using tiles to the right of the rack
+      divider.)</string>
     <string name="not_again_juggle">This button randomly rearranges
       tiles in the rack.</string>
     <string name="not_again_flip">This button flips the board across a
@@ -430,8 +430,8 @@
     <string name="not_again_zoom">This button toggles the board
       between zoomed and regular size. Drag it when it is zoomed to
       see parts that are hidden.</string>
-    <string name="not_again_undo">This button undos/redoes the current
-      turn.</string>
+    <string name="not_again_undo">This button undos or redoes the
+      current turn.</string>
 
     <string name="not_again_newgamenet">The new game you have created </string>
     <string name="not_again_done">The \"pts\" counter that appears at
