@@ -243,6 +243,22 @@ public class GameUtils {
         return al.toArray( new String[al.size()] );
     }
 
+    public static boolean dictExists( Context context, String name )
+    {
+        boolean exists = dictIsBuiltin( context, name );
+        if ( !exists ) {
+            name = addDictExtn( name );
+            try {
+                FileInputStream fis = context.openFileInput( name );
+                fis.close();
+                exists = true;
+            } catch ( java.io.FileNotFoundException fnf ) {
+            } catch ( java.io.IOException ioe ) {
+            }
+        }
+        return exists;
+    }
+
     public static boolean dictIsBuiltin( Context context, String name )
     {
         boolean builtin = false;

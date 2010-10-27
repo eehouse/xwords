@@ -206,7 +206,7 @@ public class CommonPrefs {
     public static String getDefaultDict( Context context )
     {
         String value = getString( context, R.string.key_default_dict );
-        if ( value.equals("") ) {
+        if ( value.equals("") || !GameUtils.dictExists( context, value ) ) {
             value = GameUtils.dictList( context )[0];
         }
         return value;
