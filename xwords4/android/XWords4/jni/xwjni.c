@@ -1191,8 +1191,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1isConnected
 {
     jboolean result;
     XWJNI_START();
-    XP_ASSERT( !!state->game.comms );
-    result = comms_isConnected( state->game.comms );
+    result = NULL != state->game.comms && comms_isConnected( state->game.comms );
     XWJNI_END();
     return result;
 }
