@@ -794,6 +794,8 @@ comms_getInitialAddr( CommsAddrRec* addr
         XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
         XP_MEMCPY( addr->u.ip_relay.invite, room, XP_STRLEN(room)+1 );
     }
+    addr->u.ip_relay.seeksPublicRoom = false;
+    addr->u.ip_relay.advertiseRoom = false;
 #elif defined PLATFORM_PALM
     /* default values; default is still IR where there's a choice, at least on
        Palm... */
@@ -1651,6 +1653,20 @@ comms_canChat( const CommsCtxt* const comms )
         && COMMS_RELAYSTATE_CONNECTED <= comms->r.relayState;
     LOG_RETURNF( "%s", canChat?"true":"false" );
     return canChat;
+}
+
+XP_Bool
+comms_isConnected( const CommsCtxt* const comms )
+{
+    XP_Bool result = XP_FALSE;
+    switch ( comms->addr.conType ) {
+    case COMMS_CONN_RELAY:
+        result = 0 != comms->r.connName[0];
+        break;
+    default:
+        break;
+    }
+    return result;
 }
 
 #ifdef COMMS_HEARTBEAT
