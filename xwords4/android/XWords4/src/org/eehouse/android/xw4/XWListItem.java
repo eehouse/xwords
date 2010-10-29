@@ -30,7 +30,6 @@ import android.graphics.Rect;
 
 public class XWListItem extends LinearLayout {
     private int m_position;
-    private ImageButton m_button;
     private Context m_context;
     DeleteCallback m_cb;
 
@@ -63,5 +62,16 @@ public class XWListItem extends LinearLayout {
                 }
             } );
         button.setVisibility( View.VISIBLE );
+    }
+
+    @Override
+    public void setEnabled( boolean enabled ) 
+    {
+        ImageButton button = (ImageButton)getChildAt( 1 );
+        button.setEnabled( enabled );
+        // calling super here means the list item can't be opened for
+        // the user to inspect data.  Might want to reconsider this.
+        // PENDING
+        super.setEnabled( enabled );
     }
 }
