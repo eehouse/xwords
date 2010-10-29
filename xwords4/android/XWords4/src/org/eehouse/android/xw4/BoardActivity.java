@@ -275,8 +275,10 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         case GET_MESSAGE:
             m_chatMsg.setText("");
             break;
+        default:
+            super.onPrepareDialog( id, dialog );
+            break;
         }
-        super.onPrepareDialog( id, dialog );
     }
 
     @Override
