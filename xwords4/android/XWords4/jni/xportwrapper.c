@@ -95,16 +95,19 @@ and_xport_relayStatus( void* closure, CommsRelayState newState )
 }
 
 static void
-and_xport_relayConnd( void* closure, XP_Bool allHere, XP_U16 nMissing )
+and_xport_relayConnd( void* closure, XP_UCHAR* const room,
+                      XP_Bool allHere, XP_U16 nMissing )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = *aprocs->envp;
-        const char* sig = "(ZI)V";
+        const char* sig = "(Ljava/lang/String;ZI)V";
         jmethodID mid = getMethodID( env, aprocs->jxport, "relayConnd", sig );
 
+        jstring str = (*env)->NewStringUTF( env, room );
         (*env)->CallVoidMethod( env, aprocs->jxport, mid, 
-                                allHere, nMissing );
+                                str, allHere, nMissing );
+        (*env)->DeleteLocalRef( env, str );
     }
 }
 
