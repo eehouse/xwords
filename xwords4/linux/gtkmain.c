@@ -313,7 +313,7 @@ relay_status_gtk( void* closure, CommsRelayState state )
 
 static void
 relay_connd_gtk( void* XP_UNUSED(closure), XP_UCHAR* const room,
-                 XP_Bool allHere, XP_U16 nMissing )
+                 XP_U16 devOrder, XP_Bool allHere, XP_U16 nMissing )
 {
     XP_Bool skip = XP_FALSE;
     char buf[256];
@@ -323,8 +323,8 @@ relay_connd_gtk( void* XP_UNUSED(closure), XP_UCHAR* const room,
                   "All expected players have joined in %s.  Play!", room );
     } else {
         if ( nMissing > 0 ) {
-            snprintf( buf, sizeof(buf), "Connected to relay; waiting "
-                      "in %s for %d player[s].", room, nMissing );
+            snprintf( buf, sizeof(buf), "%dth connected to relay; waiting "
+                      "in %s for %d player[s].", devOrder, room, nMissing );
         } else {
             /* an allHere message should be coming immediately, so no
                notification now. */
