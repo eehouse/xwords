@@ -58,11 +58,11 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
     private static final int QUERY_INFORM_BLK = DLG_OKONLY + 3;
     private static final int PICK_TILE_REQUEST_BLK = DLG_OKONLY + 4;
-    private static final int QUERY_ENDGAME = DLG_OKONLY + 5;
+    private static final int GOT_MESSAGE_BLK = DLG_OKONLY + 5;
     private static final int ASK_PASSWORD_BLK = DLG_OKONLY + 6;
     private static final int DLG_RETRY = DLG_OKONLY + 7;
     private static final int GET_MESSAGE = DLG_OKONLY + 8;
-    private static final int GOT_MESSAGE = DLG_OKONLY + 9;
+    private static final int QUERY_ENDGAME = DLG_OKONLY + 9;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -124,7 +124,6 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             case DLG_OKONLY:
             case DLG_BADWORDS:
             case DLG_RETRY:
-            case GOT_MESSAGE:
                 ab = new AlertDialog.Builder( BoardActivity.this )
                     //.setIcon( R.drawable.alert_dialog_icon )
                     .setTitle( m_dlgTitle )
@@ -138,20 +137,13 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
-                } else if ( GOT_MESSAGE == id ) {
-                    lstnr = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dlg, 
-                                                 int whichButton ) {
-                                showDialog( GET_MESSAGE );
-                            }
-                        };
-                    ab.setNegativeButton( R.string.button_reply, lstnr );
                 }
                 dialog = ab.create();
                 break;
 
             case QUERY_REQUEST_BLK:
             case QUERY_INFORM_BLK:
+            case GOT_MESSAGE_BLK:
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes );
@@ -161,8 +153,8 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                             m_resultCode = 1;
                         }
                     };
-                ab.setPositiveButton( QUERY_INFORM_BLK == id ?
-                                      R.string.button_ok : R.string.button_yes,
+                ab.setPositiveButton( QUERY_REQUEST_BLK == id ?
+                                      R.string.button_yes : R.string.button_ok,
                                       lstnr );
                 if ( QUERY_REQUEST_BLK == id ) {
                     lstnr = new DialogInterface.OnClickListener() {
@@ -172,6 +164,14 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                             }
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
+                } else if ( GOT_MESSAGE_BLK == id ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                showDialog( GET_MESSAGE );
+                            }
+                        };
+                    ab.setNegativeButton( R.string.button_reply, lstnr );
                 }
 
                 dialog = ab.create();
@@ -262,6 +262,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         case DLG_OKONLY:
             dialog.setTitle( m_dlgTitle );
             // FALLTHRU
+        case GOT_MESSAGE_BLK:
         case DLG_BADWORDS:
         case QUERY_REQUEST_BLK:
         case QUERY_INFORM_BLK:
@@ -1247,14 +1248,14 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         return accept;
     }
 
-    public void showChat( final String msg )
+    // Let's have this block in case there are multiple messages.  If
+    // we don't block the jni thread will continue processing messages
+    // and may stack dialogs on top of this one.  Including later
+    // chat-messages.
+    public void showChat( String msg )
     {
-        m_handler.post( new Runnable() {
-                public void run() {
-                    m_dlgBytes = msg;
-                    m_dlgTitle = R.string.chat_received;
-                    showDialog( GOT_MESSAGE );
-                }
-            } );
+        m_dlgBytes = msg;
+        m_dlgTitle = R.string.chat_received;
+        waitBlockingDialog( GOT_MESSAGE_BLK, 0 );
     }
 } // class BoardActivity
