@@ -1185,6 +1185,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1transportFailed
     XWJNI_END();
 }
 
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1isConnected
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = NULL != state->game.comms && comms_isConnected( state->game.comms );
+    XWJNI_END();
+    return result;
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
 ( JNIEnv* env, jclass C, jint gamePtr )
@@ -1206,3 +1217,4 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
     (*env)->ReleaseStringUTFChars( env, jmsg, msg );
     XWJNI_END();
 }
+

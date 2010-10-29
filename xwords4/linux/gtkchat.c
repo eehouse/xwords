@@ -24,13 +24,29 @@
 gchar*
 gtkGetChatMessage( GtkAppGlobals* XP_UNUSED(globals) )
 {
-    /* GtkWidget* dlg = gtk_message_dialog_new( NULL, /\* parent *\/ */
-    /*                                          GTK_MESSAGE_QUESTION, */
-    /*                                          GTK_DIALOG_MODAL, */
-    /*                                          buttons, "%s", message ); */
+    gchar* result = NULL;
+    GtkWidget* dialog = gtk_dialog_new_with_buttons( "message text", NULL, //GtkWindow *parent,
+                                                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                     GTK_STOCK_OK,
+                                                     GTK_RESPONSE_ACCEPT,
+                                                     NULL );
 
-    gchar* msg = g_strdup( "Hello world" );
-    return msg;
+    GtkWidget* entry = gtk_entry_new();
+
+    gtk_container_add( GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog))),
+                       entry );
+    gtk_widget_show_all( dialog );
+    gtk_dialog_run( GTK_DIALOG (dialog) );
+
+    const char* text = gtk_entry_get_text( GTK_ENTRY(entry) );
+
+    if ( 0 != text[0] ) {
+        result = g_strdup( text );
+    }
+    gtk_widget_destroy (dialog); 
+
+    LOG_RETURNF( "%s", result );
+    return result;
 }
 
 #endif

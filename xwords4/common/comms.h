@@ -186,6 +186,7 @@ XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 
 XP_Bool comms_canChat( const CommsCtxt* comms );
+XP_Bool comms_isConnected( const CommsCtxt* const comms );
 
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
