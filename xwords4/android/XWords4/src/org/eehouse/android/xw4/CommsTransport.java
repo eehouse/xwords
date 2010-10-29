@@ -353,15 +353,15 @@ public class CommsTransport extends Thread implements TransportProcs {
         }
     }
 
-    public void relayConnd( boolean allHere, int nMissing )
+    public void relayConnd( String room, boolean allHere, int nMissing )
     {
         String message = null;
         if ( allHere ) {
-            Message.obtain( m_handler, RELAY_COND, RELAY_CONNND_ALLHERE )
-                .sendToTarget();
+            Message.obtain( m_handler, RELAY_COND, RELAY_CONNND_ALLHERE, 
+                            -1/*ignored*/, room ).sendToTarget();
         } else if ( nMissing > 0 ) {
             Message.obtain( m_handler, RELAY_COND, RELAY_CONNND_MISSING, 
-                            nMissing ).sendToTarget();
+                            nMissing, room ).sendToTarget();
         }
     }
 

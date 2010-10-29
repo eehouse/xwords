@@ -32,7 +32,7 @@ public interface TransportProcs {
     };
     void relayStatus( CommsRelayState newState );
 
-    void relayConnd( boolean allHere, int nMissing );
+    void relayConnd( String room, boolean allHere, int nMissing );
 
     public static enum XWRELAY_ERROR { NONE
             ,OLDFLAGS 

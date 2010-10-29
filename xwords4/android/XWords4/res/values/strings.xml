@@ -292,8 +292,10 @@
     <string name="tab_sms">SMS (broken)</string>
     <string name="tab_bluetooth">Bluetooth (pending)</string>
 
-    <string name="msg_relay_waiting">Connected to relay. Waiting for %d player[s].</string>
-    <string name="msg_relay_all_here">All players are here.</string>
+    <string name="msg_relay_waiting">Connected to relay in room
+      \"%s\". Waiting for %d player[s].</string>
+    <string name="msg_relay_all_heref">All players are here in room
+      \"%s\".</string>
     <string name="title_relay_status">Connection status.</string>
 
     <string name="relay_alert">Connection error</string>

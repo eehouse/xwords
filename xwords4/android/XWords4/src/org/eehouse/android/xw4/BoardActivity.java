@@ -610,13 +610,15 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     private void handleConndMessage( Message msg )
     {
         String str = null;
+        String fmt;
         switch ( msg.arg1 ) {
         case CommsTransport.RELAY_CONNND_ALLHERE:
-            str = getString( R.string.msg_relay_all_here );
+            fmt = getString( R.string.msg_relay_all_heref );
+            str = String.format( fmt, (String)msg.obj );
             break;
         case CommsTransport.RELAY_CONNND_MISSING:
-            String fmt = getString( R.string.msg_relay_waiting );
-            str = String.format( fmt, msg.arg2 );
+            fmt = getString( R.string.msg_relay_waiting );
+            str = String.format( fmt, (String)msg.obj, msg.arg2 );
             break;
         }
 
