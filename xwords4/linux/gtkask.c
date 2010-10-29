@@ -47,6 +47,7 @@ gtkask_timeout( const gchar *message, GtkButtonsType buttons, XP_U16 timeout )
                                              buttons, "%s", message );
 
     if ( timeout > 0 ) {
+        XP_LOGF( "%s(%s)", __func__, message ); /* log since times out... */
         src = g_timeout_add( timeout, timer_func, dlg );
     }
 
