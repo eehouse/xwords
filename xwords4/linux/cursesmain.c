@@ -1423,7 +1423,8 @@ relay_status_curses( void* XP_UNUSED(closure),
 }
 
 static void
-relay_connd_curses( void* XP_UNUSED(closure), XP_Bool XP_UNUSED_DBG(allHere),
+relay_connd_curses( void* XP_UNUSED(closure), XP_UCHAR* const XP_UNUSED(room),
+                    XP_Bool XP_UNUSED_DBG(allHere),
                     XP_U16 XP_UNUSED_DBG(nMissing) )
 {
     XP_LOGF( "%s got allHere: %d; nMissing: %d", __func__, allHere, nMissing );
