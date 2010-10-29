@@ -607,19 +607,32 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         }
     }
 
+    // You have started a game in a new room.  Once the remaining
+    // devices have joined your room and you have assigned them tiles
+    // (which Crosswords does for you) the game can begin.
+
+    // You have joined a game on the relay.  Once the remaining
+    // devices have joined your room the game can begin.
+
+    // You have joined a game on the relay and the room is now full.
+    // Next you will receive your initial tiles from the device that
+    // created the room and play can begin.
+
     private void handleConndMessage( Message msg )
     {
+        CommsTransport.ConndMsg cndmsg = 
+            (CommsTransport.ConndMsg)msg.obj;
+        Utils.logf( "handleConndMessage: devOrder=%d", cndmsg.m_devOrder );
         String str = null;
-        String fmt;
-        switch ( msg.arg1 ) {
-        case CommsTransport.RELAY_CONNND_ALLHERE:
-            fmt = getString( R.string.msg_relay_all_heref );
-            str = String.format( fmt, (String)msg.obj );
-            break;
-        case CommsTransport.RELAY_CONNND_MISSING:
-            fmt = getString( R.string.msg_relay_waiting );
-            str = String.format( fmt, (String)msg.obj, msg.arg2 );
-            break;
+        if ( cndmsg.m_allHere ) {
+            // All players have now joined the game.  The device that
+            // created the room will assign tiles.  Then it will be
+            // the first player's turn
+            String fmt = getString( R.string.msg_relay_all_heref );
+            str = String.format( fmt, cndmsg.m_room );
+        } else if ( cndmsg.m_nMissing > 0 ) {
+            String fmt = getString( R.string.msg_relay_waiting );
+            str = String.format( fmt, cndmsg.m_room, cndmsg.m_nMissing );
         }
 
         if ( null != str ) {

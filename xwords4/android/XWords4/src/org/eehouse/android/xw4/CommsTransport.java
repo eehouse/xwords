@@ -51,6 +51,20 @@ public class CommsTransport extends Thread implements TransportProcs {
     public static final int RELAY_CONNND_ALLHERE = 0;
     public static final int RELAY_CONNND_MISSING = 1;
 
+    public class ConndMsg {
+        ConndMsg( String room, int devOrder, boolean allHere, int nMissing )
+        {
+            m_room = room;
+            m_devOrder = devOrder;
+            m_allHere = allHere;
+            m_nMissing = nMissing;
+        }
+        public String m_room;
+        public int m_devOrder;
+        public boolean m_allHere;
+        public int m_nMissing;
+    }
+
     private Selector m_selector;
     private SocketChannel m_socketChannel;
     private int m_jniGamePtr;
@@ -353,16 +367,11 @@ public class CommsTransport extends Thread implements TransportProcs {
         }
     }
 
-    public void relayConnd( String room, boolean allHere, int nMissing )
+    public void relayConnd( String room, int devOrder, boolean allHere, 
+                            int nMissing )
     {
-        String message = null;
-        if ( allHere ) {
-            Message.obtain( m_handler, RELAY_COND, RELAY_CONNND_ALLHERE, 
-                            -1/*ignored*/, room ).sendToTarget();
-        } else if ( nMissing > 0 ) {
-            Message.obtain( m_handler, RELAY_COND, RELAY_CONNND_MISSING, 
-                            nMissing, room ).sendToTarget();
-        }
+        ConndMsg cndmsg = new ConndMsg( room, devOrder, allHere, nMissing );
+        Message.obtain( m_handler, RELAY_COND, cndmsg ).sendToTarget();
     }
 
     public void relayErrorProc( XWRELAY_ERROR relayErr )
