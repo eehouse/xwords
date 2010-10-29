@@ -119,8 +119,8 @@ typedef void (*TransportReset)( void* closure );
 
 #ifdef XWFEATURE_RELAY
 typedef void (*RelayStatusProc)( void* closure, CommsRelayState newState );
-typedef void (*RelayConndProc)( void* closure, XP_Bool allHere, 
-                                XP_U16 nMissing );
+typedef void (*RelayConndProc)( void* closure, XP_UCHAR* const room,
+                                XP_Bool allHere, XP_U16 nMissing );
 typedef void (*RelayErrorProc)( void* closure, XWREASON relayErr );
 #endif
 

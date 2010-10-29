@@ -794,6 +794,9 @@ comms_getInitialAddr( CommsAddrRec* addr
         XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
         XP_MEMCPY( addr->u.ip_relay.invite, room, XP_STRLEN(room)+1 );
     }
+    addr->u.ip_relay.seeksPublicRoom = XP_FALSE;
+    addr->u.ip_relay.advertiseRoom = XP_FALSE;
+
 #elif defined PLATFORM_PALM
     /* default values; default is still IR where there's a choice, at least on
        Palm... */
@@ -1203,11 +1206,13 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
 
     if ( ! reconnected ) {
         /* This may belong as an alert to user so knows has connected. */
-        (*comms->procs.rconnd)( comms->procs.closure, XP_FALSE, nSought - nHere );
+        (*comms->procs.rconnd)( comms->procs.closure, 
+                                comms->addr.u.ip_relay.invite,
+                                XP_FALSE, nSought - nHere );
     }
     XP_LOGF( "%s: have %d of %d players", __func__, nHere, nSought );
     setHeartbeatTimer( comms );
-}
+} /* got_connect_cmd */
 
 static XP_Bool
 relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
@@ -1261,7 +1266,9 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         comms_resendAll( comms );
         /* } */
         if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
-            (*comms->procs.rconnd)( comms->procs.closure, XP_TRUE, 0 );
+            (*comms->procs.rconnd)( comms->procs.closure, 
+                                    comms->addr.u.ip_relay.invite,
+                                    XP_TRUE, 0 );
         }
         set_relay_state( comms, COMMS_RELAYSTATE_ALLCONNECTED );
         break;
