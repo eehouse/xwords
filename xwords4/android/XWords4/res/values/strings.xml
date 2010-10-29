@@ -153,6 +153,7 @@
     <string name="players_label_standalone">Players</string>
     <string name="players_label_host">Players (%d local, %d off-device)</string>
     <string name="players_label_guest">Players -- local only</string>
+    <string name="game_locked">Lock settings</string>
     <string name="button_add_player">Add player</string>
     <string name="button_juggle_players">Shuffle players</string>
 
@@ -442,5 +443,9 @@
     <string name="not_again_done">The \"pts\" counter that appears at
       the right end of the rack is an alternative to this menu
       item.</string>
+    <string name="not_again_unlock">This game is in play. Some
+      settings, e.g. the number of players, cannot be changed without
+      restarting it.  When you leave this page you will have a chance
+      to discard changes to avoid a restart.</string>
 
 </resources>

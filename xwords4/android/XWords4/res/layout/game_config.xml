@@ -25,6 +25,13 @@
                 android:layout_height="fill_parent"
                 android:orientation="vertical">
 
+    <CheckBox android:id="@+id/game_locked_check"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:text="@string/game_locked"
+              android:visibility="gone"
+              />
+
     <!-- players -->
     <TextView style="@style/config_separator"
               android:id="@+id/players_label"

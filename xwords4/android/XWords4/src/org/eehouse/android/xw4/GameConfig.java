@@ -69,6 +69,8 @@ public class GameConfig extends XWActivity
     private static final int NO_NAME_FOUND = PLAYER_EDIT + 4;
 
     private CheckBox m_joinPublicCheck;
+    private CheckBox m_gameLockedCheck;
+    private boolean m_isLocked;
     private LinearLayout m_publicRoomsSet;
     private LinearLayout m_privateRoomsSet;
 
@@ -98,9 +100,23 @@ public class GameConfig extends XWActivity
     private CommonPrefs m_cp;
     private boolean m_canDoSMS = false;
     private boolean m_canDoBT = false;
-    private int m_nMoves = 0;
+    private boolean m_gameStarted = false;
     private CommsAddrRec.CommsConnType[] m_types;
     private String[] m_connStrings;
+    private static final int[] s_disabledWhenLocked = { R.id.juggle_players
+                                                        ,R.id.add_player
+                                                        ,R.id.dict_spinner
+                                                        ,R.id.join_public_room_check
+                                                        ,R.id.room_edit
+                                                        ,R.id.advertise_new_room_check
+                                                        ,R.id.room_spinner
+                                                        ,R.id.refresh_button
+                                                        ,R.id.hints_allowed
+                                                        ,R.id.use_timer
+                                                        ,R.id.timer_minutes_edit
+                                                        ,R.id.smart_robot
+                                                        ,R.id.phonies_spinner
+    };
 
     class RemoteChoices extends XWListAdapter {
         public RemoteChoices() { super( GameConfig.this, m_gi.nPlayers ); }
@@ -127,7 +143,7 @@ public class GameConfig extends XWActivity
     }
 
     @Override
-    protected Dialog onCreateDialog( int id )
+    protected Dialog onCreateDialog( final int id )
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
@@ -199,41 +215,40 @@ public class GameConfig extends XWActivity
                         }
                     });
                 break;
-            case CONFIRM_CHANGE:
-                dialog = new AlertDialog.Builder( this )
-                    .setTitle( R.string.confirm_save_title )
-                    .setMessage( R.string.confirm_save )
-                    .setPositiveButton( R.string.button_save,
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, 
-                                                                 int whichButton ) {
-                                                applyChanges( true );
-                                                finish();
-                                            }
-                                        })
-                    .setNegativeButton( R.string.button_discard, 
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, 
-                                                                 int whichButton ) {
-                                                finish();
-                                            }
-                                        })
-                    .create();
-                break;
             case CONFIRM_CHANGE_PLAY:
-                dialog = new AlertDialog.Builder( this )
+            case CONFIRM_CHANGE:
+                dlpos = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            applyChanges( true );
+                            if ( CONFIRM_CHANGE_PLAY == id ) {
+                                launchGame();
+                            }
+                        }
+                    };
+                ab = new AlertDialog.Builder( this )
                     .setTitle( R.string.confirm_save_title )
                     .setMessage( R.string.confirm_save )
-                    .setPositiveButton( R.string.button_save,
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, 
-                                                                 int whichButton ) {
-                                                applyChanges( true );
-                                                launchGame();
-                                            }
-                                        })
-                    .setNegativeButton( R.string.button_cancel, null )
-                    .create();
+                    .setPositiveButton( R.string.button_save, dlpos );
+                if ( CONFIRM_CHANGE_PLAY == id ) {
+                    dlpos = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                launchGame();
+                            }
+                        };
+                } else {
+                    dlpos = null;
+                }
+                ab.setNegativeButton( R.string.button_discard, dlpos );
+                dialog = ab.create();
+
+                dialog.setOnDismissListener( new DialogInterface.
+                                             OnDismissListener() {
+                        public void onDismiss( DialogInterface di ) {
+                            finish();
+                        }
+                    });
                 break;
             case NO_NAME_FOUND:
                 dialog = new AlertDialog.Builder( this )
@@ -350,11 +365,23 @@ public class GameConfig extends XWActivity
             m_path = m_path.substring( 1 );
         }
 
+        setContentView(R.layout.game_config);
+
         int gamePtr = XwJNI.initJNI();
         m_giOrig = new CurGameInfo( this );
         GameUtils.loadMakeGame( this, gamePtr, m_giOrig, m_path );
-        m_nMoves = XwJNI.model_getNMoves( gamePtr );
-        m_giOrig.setInProgress( 0 < m_nMoves );
+        m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
+            || XwJNI.comms_isConnected( gamePtr );
+        m_giOrig.setInProgress( m_gameStarted );
+
+        if ( m_gameStarted ) {
+            m_gameLockedCheck = (CheckBox)findViewById( R.id.game_locked_check );
+            m_gameLockedCheck.setVisibility( View.VISIBLE );
+            m_gameLockedCheck.setChecked( true );
+            m_gameLockedCheck.setOnClickListener( this );
+            handleLockedChange();
+        }
+
         int curSel = listAvailableDicts( m_giOrig.dictName );
         m_giOrig.dictLang = 
             DictLangCache.getLangCode( this, 
@@ -372,8 +399,6 @@ public class GameConfig extends XWActivity
         XwJNI.game_dispose( gamePtr );
 
         m_car = new CommsAddrRec( m_carOrig );
-
-        setContentView(R.layout.game_config);
 
         m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
 
@@ -463,6 +488,14 @@ public class GameConfig extends XWActivity
             loadPlayers();
         } else if ( m_joinPublicCheck == view ) {
             adjustConnectStuff();
+        } else if ( m_gameLockedCheck == view ) {
+            showNotAgainDlgThen( R.string.not_again_unlock, 
+                                 R.string.key_notagain_unlock,
+                                 new Runnable() {
+                                     public void run() {
+                                         handleLockedChange();
+                                     }
+                                 });
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
         } else if ( m_playButton == view ) {
@@ -471,7 +504,7 @@ public class GameConfig extends XWActivity
             // from here if there's no confirmation needed, or launch
             // a new dialog whose OK button does the same thing.
             saveChanges();
-            if ( 0 >= m_nMoves ) { // no confirm needed 
+            if ( !m_gameStarted ) { // no confirm needed 
                 applyChanges( true );
                 launchGame();
             } else if ( m_giOrig.changesMatter(m_gi) 
@@ -494,7 +527,7 @@ public class GameConfig extends XWActivity
         boolean consumed = false;
         if ( keyCode == KeyEvent.KEYCODE_BACK ) {
             saveChanges();
-            if ( 0 >= m_nMoves ) { // no confirm needed 
+            if ( !m_gameStarted ) { // no confirm needed 
                 applyChanges( true );
             } else if ( m_giOrig.changesMatter(m_gi) 
                         || (! m_notNetworkedGame
@@ -544,6 +577,7 @@ public class GameConfig extends XWActivity
                     }
                 } );
             m_playerLayout.addView( view );
+            view.setEnabled( !m_isLocked );
 
             View divider = factory.inflate( R.layout.divider_view, null );
             divider.setVisibility( View.VISIBLE );
@@ -698,6 +732,26 @@ public class GameConfig extends XWActivity
         } else {
             m_privateRoomsSet.setVisibility( View.VISIBLE );
             m_publicRoomsSet.setVisibility( View.GONE );
+        }
+    }
+
+    // User's toggling whether everything's locked.  That should mean
+    // we enable/disable a bunch of widgits.  And if we're going from
+    // unlocked to locked we need to confirm that everything can be
+    // reverted.
+    private void handleLockedChange()
+    {
+        boolean locking = m_gameLockedCheck.isChecked();
+        m_isLocked = locking;
+        for ( int id : s_disabledWhenLocked ) {
+            View view = findViewById( id );
+            view.setEnabled( !m_isLocked );
+        }
+        if ( null != m_playerLayout ) {
+            for ( int ii = m_playerLayout.getChildCount()-1; ii >= 0; --ii ) {
+                View view = m_playerLayout.getChildAt( ii );
+                view.setEnabled( !m_isLocked );
+            }
         }
     }
     
