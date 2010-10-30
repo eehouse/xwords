@@ -298,8 +298,17 @@ public class GamesList extends XWListActivity
 
                 case R.id.list_item_reset:
                     // TODO confirm_data_loss();
-                    GameUtils.resetGame( this, path, path );
-                    invalPath = path;
+                    final String fpath = path;
+                    DialogInterface.OnClickListener lstnr =
+                        new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, int ii ) {
+                                GameUtils.resetGame( GamesList.this, 
+                                                     fpath, fpath );
+                                m_adapter.inval( fpath );
+                                onContentChanged();
+                            }
+                        };
+                    showConfirmThen( R.string.confirm_reset, lstnr );
                     break;
                 case R.id.list_item_new_from:
                     String newName = GameUtils.resetGame( this, path );  

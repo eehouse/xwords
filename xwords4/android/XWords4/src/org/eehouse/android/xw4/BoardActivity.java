@@ -625,7 +625,9 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     {
         CommsTransport.ConndMsg cndmsg = 
             (CommsTransport.ConndMsg)msg.obj;
-        Utils.logf( "handleConndMessage: devOrder=%d", cndmsg.m_devOrder );
+
+        int naMsg;
+        int naKey;
         String str = null;
         if ( cndmsg.m_allHere ) {
             // All players have now joined the game.  The device that
@@ -633,16 +635,34 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             // the first player's turn
             String fmt = getString( R.string.msg_relay_all_heref );
             str = String.format( fmt, cndmsg.m_room );
+            naMsg = R.string.not_again_conndall;
+            naKey = R.string.key_notagain_conndall;
         } else if ( cndmsg.m_nMissing > 0 ) {
             String fmt = getString( R.string.msg_relay_waiting );
-            str = String.format( fmt, cndmsg.m_room, cndmsg.m_nMissing );
+            str = String.format( fmt, cndmsg.m_devOrder,
+                                 cndmsg.m_room, cndmsg.m_nMissing );
+            if ( cndmsg.m_devOrder == 1 ) {
+                naMsg = R.string.not_again_conndfirst;
+                naKey = R.string.key_notagain_conndfirst;
+            } else {
+                naMsg = R.string.not_again_conndmid;
+                naKey = R.string.key_notagain_conndmid;
+            }
+        } else {
+            naMsg = naKey = 0;  // keep compiler happy
         }
 
         if ( null != str ) {
-            Toast.makeText( BoardActivity.this, str,
-                            Toast.LENGTH_SHORT).show();
+            final String fstr = str;
+            Runnable proc = new Runnable() {
+                    public void run() {
+                        Toast.makeText( BoardActivity.this, fstr,
+                                        Toast.LENGTH_SHORT).show();
+                    }
+                };
+            showNotAgainDlgThen( naMsg, naKey, proc );
         }
-    }
+    } // handleConndMessage
 
     //////////////////////////////////////////
     // XW_UtilCtxt interface implementation //

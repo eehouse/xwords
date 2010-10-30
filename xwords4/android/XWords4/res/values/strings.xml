@@ -186,7 +186,11 @@
       save these changes it must be restarted.  Do you want to save
       these changes?</string>
     <string name="confirm_delete_all">Are you sure you want to
-    delete all games?  This action cannot be undone.</string>
+      delete all games?  This action cannot be undone.</string>
+    <string name="confirm_reset">Are you sure you want to reset this
+      game? Resetting erases all moves and any connection
+      information.</string>
+
     <string name="confirm_delete_dict">Are you sure you want to delete
     this dictionary? You will not be able to open any games that use
     it.</string>
@@ -293,8 +297,8 @@
     <string name="tab_sms">SMS (broken)</string>
     <string name="tab_bluetooth">Bluetooth (pending)</string>
 
-    <string name="msg_relay_waiting">Connected to relay in room
-      \"%s\". Waiting for %d player[s].</string>
+    <string name="msg_relay_waiting">Device %d connected to relay in
+      room \"%s\". Waiting for %d player[s].</string>
     <string name="msg_relay_all_heref">All players are here in room
       \"%s\".</string>
     <string name="title_relay_status">Connection status.</string>
@@ -419,9 +423,15 @@
       Or try joining or creating a public room.</string>
 
     <string name="not_again_newgame">The new game you have created has
-      two players, the first a robot, both on this device.  To play
-      the game, tap it; to change its configuration or for other
-      options, long-tap it.</string>
+      two players, the first a robot, both on this device. Tap it to
+      play; long-tap it to change its configuration or for other
+      options.</string>
+    <string name="not_again_newgamenet">The new game you have created
+      has two players but only one is on this device.  To play the
+      game, tap it, and it will begin by connecting over the internet
+      looking for that other player in the default no-name
+      room. Long-tap it to configure - e.g. change the room name - or
+      for other options.</string>
 
     <string name="not_again_hintprev">This button shows all possible
       moves in ascending order (using tiles to the right of the rack
@@ -439,7 +449,6 @@
     <string name="not_again_undo">This button undos or redoes the
       current turn.</string>
 
-    <string name="not_again_newgamenet">The new game you have created </string>
     <string name="not_again_done">The \"pts\" counter that appears at
       the right end of the rack is an alternative to this menu
       item.</string>
@@ -447,5 +456,17 @@
       settings, e.g. the number of players, cannot be changed without
       restarting it.  When you leave this page you will have a chance
       to discard changes to avoid a restart.</string>
+
+    <string name="not_again_conndall">You have connected and joined a
+      game on the relay; the room is now full. The device that
+      created the room will now assign your initial tiles and play can
+      begin.</string>
+    <string name="not_again_conndfirst">You have connected and started
+      a game in a new room.  Once the remaining devices have joined
+      your room and Crosswords has assigned them tiles the game can
+      begin.</string>
+    <string name="not_again_conndmid">You have connected and joined a
+      game on the relay. You will be notified when the remaining
+      device[s] have joined your room and play can begin.</string>
 
 </resources>
