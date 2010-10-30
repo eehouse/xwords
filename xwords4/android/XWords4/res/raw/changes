@@ -6,27 +6,49 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 16 release</b>
+<b>Crosswords 4.4 beta 17 release</b>
 
-<p>This is a <em>another</em> quick bug-fix release while I continue 
-work on the new relay connection code -- which is coming along, 
-BTW.  Please email if you're willing to comment on an early version.</p>
+<p>This release changes how networked games are created, configured 
+and connect with each other.  It tries to make the process simpler and 
+should mean it's much more likely to succeed.  I've also scattered 
+"new user hints" around the app, dialogs with tips that you can 
+dismiss with a "Do not show again" button when you don't need to see 
+that hint again.</p>
 
-<ul>Bugs fixed:
-  <li>Dictionary download could be routed to Browser if you weren't careful or
-  your phone maker hard-coded the type.  Now it always routes to Crosswords.
-  (Thanks B.S.)</li>
+<p>I'm breaking from tradition and not listing bugs fixed or features 
+added here -- because there have been well over 300 separate changes 
+committed since the last beta.  Instead I'll outline how you get 
+started with a two-player networked game.</p>
+
+<p>Assume you and a friend each have Crosswords on an Android phone. 
+You both need to
+  <ul>
+  <li>Launch Crosswords and tap the "Add networked game" button on 
+  your device</li>
+
+  <li>When the game appears, long-tap it and choose "Game settings..." 
+  from the menu</li>
+
+  <li>Agree on a "room name" -- let's say it's "andy" --and enter it 
+  in the "New room name" text box.</li>
+
+  <li>Scroll to the bottom of the window and tap the "Play game" button</li>
+
+  <li>Wait as your phones connect.  You'll see a status message and 
+  maybe a "new user hint", then the status icon in the upper-right 
+  will go all-green and boards on both phones will get tiles</li>
+
+  <li>Now the first player makes a move, commits it, and it shows up 
+  on the other device.  Rinse, lather, repeat.</li>
+
+  <li>The "relay" server stores moves it receives until it can deliver 
+  them.  If you have a bunch of networked games going, choose the 
+  "Check server" menu on the main list-of-games screen.  It will 
+  redraw all games for which there are waiting messages.  You can then 
+  open them and they will sync up.</li>
+
 </ul>
-
-<ul>(Still) coming soon
-  <li>builtin hints and help, starting with the Game Settings 
-  screen</li>
-
-  <li>rewrite of gameplay via relay to make connecting easier (no 
-  host/guest stuff or requirement that both be online at the same 
-  time) and allow closed game to receive moves.</li>
-
-</ul>
+</p>
 
 <p>Please remember that this is beta software.  Letting me know (at 
 eehouse@eehouse.org) what's broken and what features you'd most like 
