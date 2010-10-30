@@ -91,14 +91,13 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
     trayVisible = board->trayVisState == TRAY_REVEALED;
     if ( trayVisible && holdsPendingTile( board, col, row ) ) {
         XP_U16 modelc, modelr;
-        XP_Bool ignore;
 
         ds->dtype = DT_TILE;
         flipIf( board, col, row, &modelc, &modelr );
 
         found = model_getTile( board->model, modelc, modelr, XP_TRUE, 
                                board->selPlayer, &ds->tile, &ds->isBlank, 
-                               &ignore, &ignore );
+                               NULL, NULL );
         XP_ASSERT( found );
     } else {
         /* If we're not dragging a tile, we can either drag the board (scroll)

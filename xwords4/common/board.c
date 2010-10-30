@@ -1215,10 +1215,8 @@ invalCellsWithTiles( BoardCtxt* board )
      */
     for ( row = model_numRows( model )-1; row >= 0; --row ) {
         for ( col = model_numCols( model )-1; col >= 0; --col ) {
-            Tile tile;
-            XP_Bool ignore;
             if ( model_getTile( model, col, row, includePending,
-                                turn, &tile, &ignore, &ignore, &ignore ) ) {
+                                turn, NULL, NULL, NULL, NULL ) ) {
                 XP_U16 boardCol, boardRow;
                 flipIf( board, col, row, &boardCol, &boardRow );
                 invalCell( board, boardCol, boardRow );
@@ -2327,13 +2325,12 @@ cellOccupied( const BoardCtxt* board, XP_U16 col, XP_U16 row,
               XP_Bool inclPending )
 {
     Tile tile;
-    XP_Bool ignr;
     XP_Bool result;
 
     flipIf( board, col, row, &col, &row );
     result = model_getTile( board->model, col, row, inclPending,
                             board->selPlayer, &tile, 
-                            &ignr, &ignr, &ignr );
+                            NULL, NULL, NULL );
     return result;
 } /* cellOccupied */
 
@@ -2379,13 +2376,13 @@ XP_Bool
 holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 {
     Tile tile;
-    XP_Bool ignore, isPending;
+    XP_Bool isPending;
     XP_U16 modcol, modrow;
     flipIf( board, pencol, penrow, &modcol, &modrow );
 
     return model_getTile( board->model, modcol, modrow, XP_TRUE,
-                          board->selPlayer, &tile, &ignore, &isPending, 
-                          (XP_Bool*)NULL )
+                          board->selPlayer, &tile, NULL, &isPending, 
+                          NULL )
         && isPending;
 } /* holdsPendingTile */
 
@@ -3232,16 +3229,14 @@ boardCellChanged( void* p_board, XP_U16 turn, XP_U16 modelCol, XP_U16 modelRow,
                   XP_Bool added )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
-    XP_Bool pending, found, ignoreBlank;
-    Tile ignoreTile;
+    XP_Bool pending, found;
     XP_U16 col, row;
 
     flipIf( board, modelCol, modelRow, &col, &row );
 
     /* for each player, check if the tile overwrites the cursor */
     found = model_getTile( board->model, modelCol, modelRow, XP_TRUE, turn,
-                           &ignoreTile, &ignoreBlank, &pending, 
-                           (XP_Bool*)NULL );
+                           NULL, NULL, &pending, NULL );
 
     XP_ASSERT( !added || found ); /* if added is true so must found be */
 

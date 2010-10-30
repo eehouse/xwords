@@ -327,10 +327,16 @@ model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
     if ( (cellTile & TILE_EMPTY_BIT) != 0 ) {
         return XP_FALSE;
     }
-
-    *tileP = cellTile & TILE_VALUE_MASK;
-    *isBlank = IS_BLANK(cellTile);
-    *pendingP = pending;
+    
+    if ( NULL != tileP ) {
+        *tileP = cellTile & TILE_VALUE_MASK;
+    }
+    if ( NULL != isBlank ) {
+        *isBlank = IS_BLANK(cellTile);
+    }
+    if ( NULL != pendingP ) {
+        *pendingP = pending;
+    }
     if ( !!recentP ) {
         *recentP = (cellTile & PREV_MOVE_BIT) != 0;
     }
