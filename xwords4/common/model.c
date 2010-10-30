@@ -1013,12 +1013,11 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
 XP_Bool
 model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
 {
-    XP_Bool changed = XP_FALSE;
+    XP_U16 actualCnt = 0;
 
     PlayerCtxt* player = &model->players[turn];
     XP_U16 nUndone = player->nUndone;
-    changed = nUndone > 0;
-    if ( changed ) {
+    if ( nUndone > 0 ) {
         PendingTile pendingTiles[nUndone];
         PendingTile* pt = pendingTiles;
 
@@ -1037,11 +1036,16 @@ model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
             }
             foundAt = model_trayContains( model, turn, tile );
             XP_ASSERT( foundAt >= 0 );
-            model_moveTrayToBoard( model, turn, pt->col, pt->row,
-                                   foundAt, pt->tile & ~TILE_BLANK_BIT );
+
+            if ( !model_getTile( model, pt->col, pt->row, XP_FALSE, turn, 
+                                 NULL, NULL, NULL, NULL ) ) {
+                 model_moveTrayToBoard( model, turn, pt->col, pt->row,
+                                        foundAt, pt->tile & ~TILE_BLANK_BIT );
+                 ++actualCnt;
+            }
         }
     }
-    return changed;
+    return actualCnt > 0;
 }
 
 void
