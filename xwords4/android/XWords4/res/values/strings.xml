@@ -79,8 +79,8 @@
 	<string name="board_menu_done">Turn done</string>
 	<string name="board_menu_juggle">Shuffle</string>
 	<string name="board_menu_flip">Flip</string>
-	<string name="board_menu_trade">Exchange</string>
-	<string name="board_menu_tray">Hide tray</string>
+	<string name="board_menu_trade">Exchange tiles</string>
+	<string name="board_menu_tray">Hide rack</string>
 	<string name="board_submenu_undo">Undo</string>
 	<string name="board_menu_undo_current">Undo current</string>
 	<string name="board_menu_undo_last">Undo last</string>
@@ -112,7 +112,7 @@
     <string name="str_pass"> - %d [time]</string>
     <string name="strs_move_across">move (from %s across)</string>
     <string name="strs_move_down">move (from %s down)</string>
-    <string name="strs_tray_at_start">Tray at start: %s</string>
+    <string name="strs_tray_at_start">Rack at start: %s</string>
     <string name="strss_traded_for">Exchanged %s for %s.</string>
     <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
     <string name="strd_cumulative_score">Cumulative score: %d</string>
@@ -204,8 +204,8 @@
     <string name="color_tiles_summary">Draw tiles using color of
     player who played them</string>
     <string name="show_arrow">Show board arrow</string>
-    <string name="show_arrow_summary">Tapped tray tiles land on this
-    arrow when it is visible</string>
+    <string name="show_arrow_summary">Tapped rack tiles land on this
+      arrow when it is visible</string>
     <string name="explain_robot">Explain robot moves</string>
     <string name="explain_robot_summary">Display score summary after
     every robot turn</string>
@@ -213,8 +213,8 @@
     <string name="skip_confirm_turn_summary">Do NOT display score
     summary after every human turn</string>
     <string name="title_sort_tiles">Sort new tiles</string>
-    <string name="summary_sort_tiles">Sort trays whenever new tiles
-    are added</string>
+    <string name="summary_sort_tiles">Sort racks whenever new tiles
+      are added</string>
     <string name="ringer_zoom">Volume keys zoom</string>
     <string name="ringer_zoom_summary">Zoom board using volume keys</string>
     <string name="hide_title">Hide titlebar</string>
@@ -451,9 +451,10 @@
     <string name="not_again_undo">This button undos or redoes the
       current turn.</string>
 
-    <string name="not_again_done">The \"pts\" counter that appears at
-      the right end of the rack is an alternative to this menu
-      item.</string>
+    <string name="not_again_done">Tapping the \"pts\" counter that
+      appears at the right end of the rack is the easiest way to
+      commit a move. (There is no shortcut for ending a
+      trade.)</string>
     <string name="not_again_unlock">This game is in play. Some
       settings, e.g. the number of players, cannot be changed without
       restarting it.  When you leave this page you will have a chance
