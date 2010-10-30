@@ -471,7 +471,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         //     cmd = JNIThread.JNICmd.CMD_FLIP;
         //     break;
         case R.id.board_menu_trade:
-            cmd = JNIThread.JNICmd.CMD_TOGGLE_TRADE;
+            cmd = JNIThread.JNICmd.CMD_TRADE;
             break;
         case R.id.board_menu_tray:
             cmd = JNIThread.JNICmd.CMD_TOGGLE_TRAY;
