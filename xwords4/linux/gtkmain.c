@@ -503,6 +503,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 #endif
     server_do( globals->cGlobals.game.server );
 
+    disenable_buttons( globals );
 } /* createOrLoadObjects */
 
 /* Create a new backing pixmap of the appropriate size and set up contxt to
@@ -880,18 +881,6 @@ handle_resend( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     }
 } /* handle_resend */
 
-#ifdef XWFEATURE_CHAT
-static void
-handle_chat( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
-{
-    gchar* msg = gtkGetChatMessage( globals );
-    if ( NULL != msg ) {
-        server_sendChat( globals->cGlobals.game.server, msg );
-        g_free( msg );
-    }
-}
-#endif
-
 #ifdef DEBUG
 static void
 handle_commstats( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
@@ -992,10 +981,6 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
 #ifndef XWFEATURE_STANDALONE_ONLY
     (void)createAddItem( fileMenu, "Resend", 
                          GTK_SIGNAL_FUNC(handle_resend), globals );
-# ifdef XWFEATURE_CHAT
-    (void)createAddItem( fileMenu, "Send Chat", 
-                         GTK_SIGNAL_FUNC(handle_chat), globals );
-# endif
 # ifdef DEBUG
     (void)createAddItem( fileMenu, "Stats", 
                          GTK_SIGNAL_FUNC(handle_commstats), globals );
@@ -1024,6 +1009,10 @@ disenable_buttons( GtkAppGlobals* globals )
 
     XP_Bool canToggle = board_canTogglePending( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->toggle_undo_button, canToggle );
+
+    XP_Bool canChat = !!globals->cGlobals.game.comms
+        && comms_canChat( globals->cGlobals.game.comms );
+    gtk_widget_set_sensitive( globals->chat_button, canChat );
 }
 
 static gboolean
@@ -1171,6 +1160,18 @@ handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
         setZoomButtons( globals, inOut );
     }
 } /* handle_done_button */
+
+#ifdef XWFEATURE_CHAT
+static void
+handle_chat_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    gchar* msg = gtkGetChatMessage( globals );
+    if ( NULL != msg ) {
+        server_sendChat( globals->cGlobals.game.server, msg );
+        g_free( msg );
+    }
+}
+#endif
 
 static void
 scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
@@ -1788,7 +1789,11 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
     button = makeShowButtonFromBitmap( globals, "../done.xpm", "-",
                                        G_CALLBACK(handle_zoomout_button) );
-    globals->zoomout_button = button;
+#ifdef XWFEATURE_CHAT
+    button = makeShowButtonFromBitmap( globals, "", "chat",
+                                       G_CALLBACK(handle_chat_button) );
+    globals->chat_button = button;
+#endif
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );

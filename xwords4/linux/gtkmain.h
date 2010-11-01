@@ -91,6 +91,9 @@ typedef struct GtkAppGlobals {
     GtkWidget* zoomin_button;
     GtkWidget* zoomout_button;
     GtkWidget* toggle_undo_button;
+#ifdef XWFEATURE_CHAT
+    GtkWidget* chat_button;
+#endif
 
     EngineCtxt* engine;
 
