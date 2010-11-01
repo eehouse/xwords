@@ -1653,8 +1653,8 @@ comms_checkComplete( const CommsAddrRec* addr )
 XP_Bool
 comms_canChat( const CommsCtxt* const comms )
 {
-    XP_Bool canChat = COMMS_CONN_RELAY == comms_getConType( comms )
-        && COMMS_RELAYSTATE_CONNECTED <= comms->r.relayState;
+    XP_Bool canChat = comms_isConnected( comms )
+        && comms->connID != 0;
     LOG_RETURNF( "%s", canChat?"true":"false" );
     return canChat;
 }
