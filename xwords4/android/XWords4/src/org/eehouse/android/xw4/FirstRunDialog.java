@@ -39,7 +39,7 @@ public class FirstRunDialog {
 	private static final String HIDDEN_PREFS = "xwprefs_hidden";
     private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
 
-    static void show( Context context, boolean skipCheck )
+    static boolean show( Context context, boolean skipCheck )
     {
         int thisVersion = 0;
         int shownVersion = 0;
@@ -61,7 +61,8 @@ public class FirstRunDialog {
             shownVersion = prefs.getInt( SHOWN_VERSION_KEY, 0 );
         }
 
-        if ( skipCheck || shownVersion < thisVersion ) {
+        boolean isUpgrade = shownVersion < thisVersion;
+        if ( skipCheck || isUpgrade ) {
             showDialog( context );
         
             if ( !skipCheck ) {
@@ -70,6 +71,7 @@ public class FirstRunDialog {
                 editor.commit();
             }
         }
+        return isUpgrade;
     }
 
     private static void showDialog( Context context )
