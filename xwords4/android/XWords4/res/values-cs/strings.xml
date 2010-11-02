@@ -237,7 +237,6 @@
     <string name="tab_bluetooth">Bluetooth (připravuje se)</string>
 
     <string name="msg_relay_waiting">Připojen na relay. Čekám na %d hráče.</string>
-    <string name="msg_relay_all_here">Všichni hráči jsou zde.</string>
     <string name="title_relay_status">Stav připojení.</string>
 
     <string name="relay_alert">Chyba připojení</string>
