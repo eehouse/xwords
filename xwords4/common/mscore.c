@@ -317,11 +317,10 @@ static XP_Bool
 modelIsEmptyAt( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
     Tile tile;
-    XP_Bool ignore;
     XP_Bool found;
 
     found = model_getTile( model, col, row, XP_FALSE, -1, &tile,
-                           &ignore, &ignore, (XP_Bool*)NULL );
+                           NULL, NULL, NULL );
     return !found;
 } /* modelIsEmptyAt */
 
@@ -643,11 +642,10 @@ scoreWord( const ModelCtxt* model, MoveInfo* movei, /* new tiles */
                     ++tiles;
                     --nTiles;
                 } else { /* placed on the board before this move */
-                    XP_Bool ignore;
                     tileMultiplier = 1;
 
                     (void)model_getTile( model, col, row, XP_FALSE, -1, &tile,
-                                         &isBlank, &ignore, (XP_Bool*)NULL );
+                                         &isBlank, NULL, NULL );
 
                     XP_ASSERT( (tile & TILE_VALUE_MASK) == tile );
                 }

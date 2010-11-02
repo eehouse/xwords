@@ -274,15 +274,32 @@ public class GamesList extends XWListActivity
     private boolean handleMenuItem( int menuID, int position ) 
     {
         boolean handled = true;
-        byte[] stream;
-        String invalPath = null;
 
-        String path = GameUtils.gamesList( this )[position];
+        final String path = GameUtils.gamesList( this )[position];
     
         if ( R.id.list_item_delete == menuID ) {
-            GameUtils.deleteGame( this, path );
-            invalPath = path;
+            DialogInterface.OnClickListener lstnr =
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int ii ) {
+                        GameUtils.deleteGame( GamesList.this, path );
+                        m_adapter.inval( path );
+                        onContentChanged();
+                    }
+                };
+            showConfirmThen( R.string.confirm_delete, lstnr );
+        } else if ( R.id.list_item_reset == menuID ) {
+            DialogInterface.OnClickListener lstnr =
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int ii ) {
+                        GameUtils.resetGame( GamesList.this, 
+                                             path, path );
+                        m_adapter.inval( path );
+                        onContentChanged();
+                    }
+                };
+            showConfirmThen( R.string.confirm_reset, lstnr );
         } else {
+            String invalPath = null;
             String[] missingName = new String[1];
             int[] missingLang = new int[1];
             boolean hasDict = GameUtils.gameDictHere( this, path, 
@@ -296,11 +313,6 @@ public class GamesList extends XWListActivity
                     m_invalPath = path;
                     break;
 
-                case R.id.list_item_reset:
-                    // TODO confirm_data_loss();
-                    GameUtils.resetGame( this, path, path );
-                    invalPath = path;
-                    break;
                 case R.id.list_item_new_from:
                     String newName = GameUtils.resetGame( this, path );  
                     invalPath = newName;
@@ -311,7 +323,7 @@ public class GamesList extends XWListActivity
                     if ( summary.inNetworkGame() ) {
                         showOKOnlyDialog( R.string.no_copy_network );
                     } else {
-                        stream = GameUtils.savedGame( this, path );
+                        byte[] stream = GameUtils.savedGame( this, path );
                         newName = GameUtils.saveGame( this, stream );
                         DBUtils.saveSummary( this, newName, summary );
                     }
@@ -331,14 +343,13 @@ public class GamesList extends XWListActivity
                     break;
                 }
             }
-        }
 
-        if ( null != invalPath ) {
-            m_adapter.inval( invalPath );
-        }
-
-        if ( handled ) {
-            onContentChanged();
+            if ( null != invalPath ) {
+                m_adapter.inval( invalPath );
+            }
+            if ( handled ) {
+                onContentChanged();
+            }
         }
 
         return handled;

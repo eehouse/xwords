@@ -732,7 +732,7 @@ localGetBoardTile( EngineCtxt* engine, XP_U16 col, XP_U16 row,
                    XP_Bool substBlank )
 {
     Tile result;
-    XP_Bool isBlank, ignore;
+    XP_Bool isBlank;
 
     if ( !engine->searchHorizontal ) {
         XP_U16 tmp = col;
@@ -742,7 +742,7 @@ localGetBoardTile( EngineCtxt* engine, XP_U16 col, XP_U16 row,
 
     if ( model_getTile( engine->model, col, row, XP_FALSE,
                         0, /* don't get pending, so turn doesn't matter */
-                        &result, &isBlank, &ignore, (XP_Bool*)NULL ) ) {
+                        &result, &isBlank, NULL, NULL ) ) {
         if ( isBlank && substBlank ) {
             result = engine->blankTile;
         }
