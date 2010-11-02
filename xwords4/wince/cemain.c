@@ -1570,7 +1570,7 @@ ceSetDictName( const wchar_t* XP_UNUSED(wPath), XP_U16 XP_UNUSED_DBG(index),
 } /* ceSetDictName */
 
 static XP_Bool
-ceHandleHintRequest( CEAppGlobals* globals, UINT message )
+ceHandleHintRequest( CEAppGlobals* globals, int wmId )
 {
     XP_Bool notDone;
     XP_Bool draw;
@@ -1580,10 +1580,10 @@ ceHandleHintRequest( CEAppGlobals* globals, UINT message )
 #ifdef XWFEATURE_SEARCHLIMIT
                               globals->askTrayLimits,
 #endif
-                              message == ID_MOVE_PREVHINT, &notDone );
+                              wmId == ID_MOVE_PREVHINT, &notDone );
     globals->hintPending = notDone;
     if ( draw ) {               /* don't turn on if disallowed */
-        ceSetLeftSoftkey( globals, message );
+        ceSetLeftSoftkey( globals, wmId );
     }
     return draw;
 } /* ceHandleHintRequest */
@@ -2642,7 +2642,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 /* fallthru */
             case ID_MOVE_NEXTHINT:
             case ID_MOVE_PREVHINT:
-                draw = ceHandleHintRequest( globals, message );
+                draw = ceHandleHintRequest( globals, wmId );
                 break;
 
             case ID_FILE_EXIT:
