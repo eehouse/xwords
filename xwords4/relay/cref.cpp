@@ -41,8 +41,6 @@
 #include "crefmgr.h"
 #include "permid.h"
 
-#define MAX_STORED_MSGS 4
-
 using namespace std;
 
 /*****************************************************************************
