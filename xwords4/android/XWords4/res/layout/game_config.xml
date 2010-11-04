@@ -95,6 +95,8 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     >
+
+        <!-- maxLength derives from MAX_INVITE_LEN in xwrelay.h -->
         <EditText android:id="@+id/room_edit"
                   android:layout_height="wrap_content"
                   android:layout_width="fill_parent"
@@ -103,6 +105,7 @@
                   android:capitalize="none"
                   android:singleLine="true"
                   android:selectAllOnFocus="true"
+                  android:maxLength="31"
                   android:hint="@string/new_room_hint"
                   />
         <CheckBox android:id="@+id/advertise_new_room_check"
