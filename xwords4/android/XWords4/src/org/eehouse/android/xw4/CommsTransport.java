@@ -34,6 +34,7 @@ import android.telephony.SmsManager;
 import android.content.Intent;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 
@@ -117,7 +118,11 @@ public class CommsTransport extends Thread implements TransportProcs {
     @Override
     public void run() 
     {
-        try {
+        try {   
+            if ( Build.PRODUCT.contains("sdk") ) {
+                System.setProperty("java.net.preferIPv6Addresses", "false");
+            }
+
             m_selector = Selector.open();
 
             loop();
@@ -354,6 +359,8 @@ public class CommsTransport extends Thread implements TransportProcs {
             // }
             break;
         case COMMS_CONN_BT:
+        default:
+            Assert.fail();
             break;
         }
 
