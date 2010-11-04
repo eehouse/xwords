@@ -53,6 +53,7 @@ id SERIAL
 ,hid INTEGER
 ,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ,msg BYTEA
+,UNIQUE ( connName, hid, msg )
 );
 EOF
 }
