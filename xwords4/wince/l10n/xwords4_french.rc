@@ -83,6 +83,7 @@ BEGIN
         POPUP "Conseil"
         BEGIN
             MENUITEM "Conseil suivant",           ID_MOVE_NEXTHINT
+            MENUITEM "Previous hint",             ID_MOVE_PREVHINT
             MENUITEM "Conseil",                   ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
             MENUITEM "Conseil limité...",        ID_MOVE_LIMITEDHINT

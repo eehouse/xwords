@@ -84,7 +84,8 @@ static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len,
                             void* closure );
 static void ce_relay_status( void* closure, 
                              CommsRelayState newState );
-static void ce_relay_connd( void* closure, XP_Bool allHere,
+static void ce_relay_connd( void* closure, XP_UCHAR* const room,
+                            XP_U16 devOrder, XP_Bool allHere, 
                             XP_U16 nMissing );
 static void ce_relay_error( void* closure, XWREASON relayErr );
 
@@ -1569,7 +1570,7 @@ ceSetDictName( const wchar_t* XP_UNUSED(wPath), XP_U16 XP_UNUSED_DBG(index),
 } /* ceSetDictName */
 
 static XP_Bool
-ceHandleHintRequest( CEAppGlobals* globals )
+ceHandleHintRequest( CEAppGlobals* globals, int wmId )
 {
     XP_Bool notDone;
     XP_Bool draw;
@@ -1579,10 +1580,10 @@ ceHandleHintRequest( CEAppGlobals* globals )
 #ifdef XWFEATURE_SEARCHLIMIT
                               globals->askTrayLimits,
 #endif
-                              &notDone );
+                              wmId == ID_MOVE_PREVHINT, &notDone );
     globals->hintPending = notDone;
     if ( draw ) {               /* don't turn on if disallowed */
-        ceSetLeftSoftkey( globals, ID_MOVE_NEXTHINT );
+        ceSetLeftSoftkey( globals, wmId );
     }
     return draw;
 } /* ceHandleHintRequest */
@@ -2640,7 +2641,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 board_resetEngine( globals->game.board );
                 /* fallthru */
             case ID_MOVE_NEXTHINT:
-                draw = ceHandleHintRequest( globals );
+            case ID_MOVE_PREVHINT:
+                draw = ceHandleHintRequest( globals, wmId );
                 break;
 
             case ID_FILE_EXIT:
@@ -3179,7 +3181,10 @@ ce_relay_status( void* closure, CommsRelayState newState )
 }
 
 static void
-ce_relay_connd( void* closure, XP_Bool allHere, XP_U16 nMissing )
+ce_relay_connd( void* closure, XP_UCHAR* const XP_UNUSED(room),
+                XP_U16 XP_UNUSED(devOrder), /* 1 means created room, etc. */
+                XP_Bool allHere, 
+                XP_U16 nMissing )
 {
     CEAppGlobals* globals = (CEAppGlobals*)closure;
     XP_U16 strID = 0;

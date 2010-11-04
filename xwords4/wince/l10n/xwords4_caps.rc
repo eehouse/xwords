@@ -83,6 +83,7 @@ BEGIN
         POPUP "HINT"                                                                      // <- translate 
         BEGIN
             MENUITEM "NEXT HINT",              ID_MOVE_NEXTHINT                           // <- translate
+            MENUITEM "Previous hint",          ID_MOVE_PREVHINT
             MENUITEM "HINT",                   ID_MOVE_HINT                               // <- translate
 #ifdef XWFEATURE_SEARCHLIMIT
             MENUITEM "LIMITED HINT...",        ID_MOVE_LIMITEDHINT                        // <- translate
