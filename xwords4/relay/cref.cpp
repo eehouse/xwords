@@ -41,8 +41,6 @@
 #include "crefmgr.h"
 #include "permid.h"
 
-#define MAX_STORED_MSGS 4
-
 using namespace std;
 
 /*****************************************************************************
@@ -737,14 +735,9 @@ void
 CookieRef::store_message( HostID dest, const unsigned char* buf, 
                           unsigned int len )
 {
-    int nStored = DBMgr::Get()->CountStoredMessages( ConnName(), dest );
-    if ( nStored < MAX_STORED_MSGS ) {
-        logf( XW_LOGVERBOSE0, "%s: storing msg size %d for dest %d", __func__,
-              len, dest );
-        DBMgr::Get()->StoreMessage( ConnName(), dest, buf, len );
-    } else {
-        logf( XW_LOGINFO, "not storing message for %d", dest );
-    }
+    logf( XW_LOGVERBOSE0, "%s: storing msg size %d for dest %d", __func__,
+          len, dest );
+    DBMgr::Get()->StoreMessage( ConnName(), dest, buf, len );
 }
 
 void

@@ -1851,10 +1851,13 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Last message acknowledged: %d\n", 
-                     rec->lastACK);
+                     (XP_UCHAR*)"Last message received: %ld\n", 
+                     rec->lastMsgRcd );
         stream_catString( stream, buf );
-
+        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
+                     (XP_UCHAR*)"Last message acknowledged: %d\n", 
+                     rec->lastACK );
+        stream_catString( stream, buf );
     }
 } /* comms_getStats */
 #endif

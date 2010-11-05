@@ -403,17 +403,23 @@ public class GameConfig extends XWActivity
         m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
 
         if ( !m_notNetworkedGame ) {
-            m_joinPublicCheck = (CheckBox)findViewById(R.id.join_public_room_check);
+            m_joinPublicCheck = 
+                (CheckBox)findViewById(R.id.join_public_room_check);
             m_joinPublicCheck.setOnClickListener( this );
             m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
             Utils.setChecked( this, R.id.advertise_new_room_check, 
                               m_car.ip_relay_advertiseRoom );
-            m_publicRoomsSet = (LinearLayout)findViewById(R.id.public_rooms_set );
-            m_privateRoomsSet = (LinearLayout)findViewById(R.id.private_rooms_set );
+            m_publicRoomsSet = 
+                (LinearLayout)findViewById(R.id.public_rooms_set );
+            m_privateRoomsSet = 
+                (LinearLayout)findViewById(R.id.private_rooms_set );
 
+            Utils.setText( this, R.id.room_edit, m_car.ip_relay_invite );
+        
             m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
 
-            m_refreshRoomsButton = (ImageButton)findViewById( R.id.refresh_button );
+            m_refreshRoomsButton = 
+                (ImageButton)findViewById( R.id.refresh_button );
             m_refreshRoomsButton.setOnClickListener( this );
 
             adjustConnectStuff();
@@ -838,12 +844,11 @@ public class GameConfig extends XWActivity
             m_car.ip_relay_advertiseRoom = 
                 Utils.getChecked( this, R.id.advertise_new_room_check );
             if ( m_car.ip_relay_seeksPublicRoom ) {
-                ArrayAdapter<String> adapter = 
-                    (ArrayAdapter<String>)m_roomChoose.getAdapter();
+                SpinnerAdapter adapter = m_roomChoose.getAdapter();
                 if ( null != adapter ) {
                     int pos = m_roomChoose.getSelectedItemPosition();
                     if ( pos >= 0 && pos < adapter.getCount() ) {
-                        m_car.ip_relay_invite = adapter.getItem(pos);
+                        m_car.ip_relay_invite = (String)adapter.getItem(pos);
                     }
                 }
             } else {

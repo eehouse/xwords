@@ -306,8 +306,7 @@ DBMgr::execSql( const char* query )
 {
     PGresult* result = PQexec( getThreadConn(), query );
     if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
-        logf( XW_LOGERROR, "PQexec=>%s", PQresStatus(PQresultStatus(result) ));
-        logf( XW_LOGERROR, "PQexec=>%s", PQresultErrorMessage(result) );
+        logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), PQresultErrorMessage(result) );
     }
     PQclear( result );
 }
@@ -388,10 +387,11 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, len, &newLen );
     assert( NULL != bytes );
     
-    char query[512];
-    snprintf( query, sizeof(query), fmt, connName, hid, bytes );
+    char query[newLen+128];
+    unsigned int siz = snprintf( query, sizeof(query), fmt, connName, hid, bytes );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
     PQfreemem( bytes );
+    assert( siz < sizeof(query) );
 
     execSql( query );
 }

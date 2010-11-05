@@ -233,16 +233,19 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                 if ( null == m_chatMsg ) {
                     m_chatMsg = new EditText( this );
                 }
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int item ) {
+                            String msg = m_chatMsg.getText().toString();
+                            if ( msg.length() > 0 ) {
+                                m_jniThread.handle( JNICmd.CMD_SENDCHAT, msg );
+                            }
+                                                                   
+                        }
+                    };
                 dialog = new AlertDialog.Builder( this )
                     .setMessage( R.string.compose_chat )
-                    .setPositiveButton(R.string.button_send,
-                                       new DialogInterface.OnClickListener() {
-                                           public void onClick( DialogInterface dlg, 
-                                                                int item ) {
-                                               m_jniThread.handle( JNICmd.CMD_SENDCHAT, 
-                                                                   m_chatMsg.getText().toString() );
-                                           }
-                                       })
+                    .setPositiveButton(R.string.button_send, lstnr )
                     .setNegativeButton( R.string.button_cancel, null )
                     .setView( m_chatMsg )
                     .create();
