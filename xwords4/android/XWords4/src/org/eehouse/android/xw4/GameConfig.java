@@ -838,12 +838,11 @@ public class GameConfig extends XWActivity
             m_car.ip_relay_advertiseRoom = 
                 Utils.getChecked( this, R.id.advertise_new_room_check );
             if ( m_car.ip_relay_seeksPublicRoom ) {
-                ArrayAdapter<String> adapter = 
-                    (ArrayAdapter<String>)m_roomChoose.getAdapter();
+                SpinnerAdapter adapter = m_roomChoose.getAdapter();
                 if ( null != adapter ) {
                     int pos = m_roomChoose.getSelectedItemPosition();
                     if ( pos >= 0 && pos < adapter.getCount() ) {
-                        m_car.ip_relay_invite = adapter.getItem(pos);
+                        m_car.ip_relay_invite = (String)adapter.getItem(pos);
                     }
                 }
             } else {
