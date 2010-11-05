@@ -16,6 +16,24 @@
 	        android:layout_height="wrap_content"
    	        android:textAppearance="?android:attr/textAppearanceMedium"
             />
+  <TextView android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+   	        android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/explain_b1"
+            android:paddingLeft="8dp"
+            />
+  <TextView android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+   	        android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/explain_b2"
+            android:paddingLeft="8dp"
+            />
+  <TextView android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+   	        android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/explain_b3"
+            android:paddingLeft="8dp"
+            />
 
   <EditText android:id="@+id/room_edit"
             android:layout_height="wrap_content"
@@ -34,14 +52,10 @@
             android:text="@string/play" 
             />
 
-    <TextView style="@style/config_separator"
-              android:text="@string/relay_config_label"
-              />
-
     <Button android:id="@+id/config_button"
             android:layout_width="fill_parent" 
             android:layout_height="wrap_content"
-            android:text="@string/list_item_config"
+            android:text="@string/advanced_config"
             />
 
   </LinearLayout>
