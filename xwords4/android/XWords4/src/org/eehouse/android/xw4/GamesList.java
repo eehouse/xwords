@@ -64,9 +64,10 @@ public class GamesList extends XWListActivity
 
         m_handler = new Handler();
 
-        PreferenceManager.setDefaultValues( this, R.xml.xwprefs, false );
-
         setContentView(R.layout.game_list);
+
+        boolean isUpgrade = FirstRunDialog.show( this, false );
+        PreferenceManager.setDefaultValues( this, R.xml.xwprefs, isUpgrade );
 
         // setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
 
@@ -96,8 +97,6 @@ public class GamesList extends XWListActivity
 
         m_adapter = new GameListAdapter( this );
         setListAdapter( m_adapter );
-
-        FirstRunDialog.show( this, false );
 
         RelayReceiver.RestartTimer( this );
     }

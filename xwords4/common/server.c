@@ -528,7 +528,8 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 static void
 sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg )
 {
-    XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex, XWPROTO_CHAT );
+    XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex, 
+                                                    XWPROTO_CHAT );
     stringToStream( stream, msg );
     stream_destroy( stream );
 }
@@ -545,7 +546,8 @@ sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip,
     }
 }
 
-void server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg )
+void
+server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg )
 {
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         sendChatTo( server, SERVER_DEVICE, msg );

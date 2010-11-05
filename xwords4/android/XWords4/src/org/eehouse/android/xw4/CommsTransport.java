@@ -144,6 +144,9 @@ public class CommsTransport extends Thread implements TransportProcs {
                         try {
                             m_socketChannel = SocketChannel.open();
                             m_socketChannel.configureBlocking( false );
+                            Utils.logf( "connecting to %s:%d",
+                                        m_addr.ip_relay_hostName, 
+                                        m_addr.ip_relay_port );
                             InetSocketAddress isa
                                 = new InetSocketAddress( m_addr.ip_relay_hostName, 
                                                          m_addr.ip_relay_port );

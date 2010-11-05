@@ -190,8 +190,6 @@
     <string name="summary_sort_tiles">Ordena el faristol en agafar noves fitxes</string>
     <string name="ringer_zoom">Zoom amb els botons de volum</string>
     <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum.</string>
-    <string name="click_launches">Clic per a jugar</string>
-    <string name="click_launches_summary">obre la partida en fer-hi clic al llistat de partides, en compte d\'obrir un menú d\'opcions</string>
 
     <string name="hide_title">Amaga la capçalera</string>
     <string name="hide_title_summary">Permet que el tauler sigui una mica més gran</string>
@@ -266,7 +264,6 @@
     <string name="tab_bluetooth">Bluetooth (en desenvolupament)</string>
     
     <string name="msg_relay_waiting">Esteu connectat al repetidor. S\'està esperant a %d jugador/s.</string>
-    <string name="msg_relay_all_here">Ja hi són tots els jugadors.</string>
     <string name="title_relay_status">Estat de la connexió.</string>
 
     <string name="relay_alert">Error en la connexió</string>
