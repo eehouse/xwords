@@ -34,6 +34,21 @@
             android:text="@string/play" 
             />
 
+    <TextView style="@style/config_separator"
+              android:text="@string/relay_config_label"
+              />
+
+    <TextView android:layout_width="fill_parent"
+	          android:layout_height="wrap_content"
+              android:text="@string/relay_config_explain"
+              />
+    
+    <Button android:id="@+id/config_button"
+            android:layout_width="fill_parent" 
+            android:layout_height="wrap_content"
+            android:text="@string/list_item_config"
+            />
+
   </LinearLayout>
 
 </ScrollView>

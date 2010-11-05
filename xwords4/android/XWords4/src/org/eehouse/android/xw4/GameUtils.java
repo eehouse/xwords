@@ -413,6 +413,13 @@ public class GameUtils {
         XwJNI.game_dispose( gamePtr );
     }
 
+    public static void doConfig( Activity activity, String path, Class clazz )
+    {
+        Uri uri = Uri.fromFile( new File(path) );
+        Intent intent = new Intent( Intent.ACTION_EDIT, uri, activity, clazz );
+        activity.startActivity( intent );
+    }
+
     private static String removeExtn( String str )
     {
         if ( str.endsWith( XWConstants.DICT_EXTN ) ) {

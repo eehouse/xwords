@@ -478,4 +478,13 @@
     field below.  Do that and press the Play game button and you\'ll
     connect.</string>
 
+    <string name="relay_config_explain">To make more advanced changes
+    to your game, e.g. to change the dictionary and language it uses,
+    the number of players in the game or on this device, to enter or
+    create a public room, etc., tap the configure button below.  You
+    can reach the configure screen at any time via the long-press menu
+    in the main Game list screen.</string>
+
+    <string name="relay_config_label">Advanced settings</string>
+
 </resources>

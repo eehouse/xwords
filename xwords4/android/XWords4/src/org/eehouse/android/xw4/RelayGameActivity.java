@@ -26,11 +26,13 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import java.io.File;
 import android.os.Bundle;
 import android.net.Uri;
 import android.widget.Button;
 import android.widget.TextView;
 import android.view.View;
+import android.content.Intent;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -41,6 +43,8 @@ public class RelayGameActivity extends XWActivity
     private String m_path;
     private CurGameInfo m_gi;
     private CommsAddrRec m_car;
+    private Button m_playButton;
+    private Button m_configButton;
 
     @Override
     public void onCreate( Bundle savedInstanceState ) 
@@ -74,16 +78,24 @@ public class RelayGameActivity extends XWActivity
         TextView text = (TextView)findViewById( R.id.explain );
         text.setText( String.format( fmt, lang ) );
 
-        Button play_button = (Button)findViewById( R.id.play_button );
-        play_button.setOnClickListener( this );
+        m_playButton = (Button)findViewById( R.id.play_button );
+        m_playButton.setOnClickListener( this );
+
+        m_configButton = (Button)findViewById( R.id.config_button );
+        m_configButton.setOnClickListener( this );
     } // onCreate
 
     @Override
     public void onClick( View view ) 
     {
-        m_car.ip_relay_invite = Utils.getText( this, R.id.room_edit ).trim();
-        GameUtils.applyChanges( this, m_gi, m_car, m_path, false );
-        GameUtils.launchGame( this, m_path );
+        if ( view == m_playButton ) {
+            m_car.ip_relay_invite = Utils.getText( this, R.id.room_edit ).trim();
+            GameUtils.applyChanges( this, m_gi, m_car, m_path, false );
+            GameUtils.launchGame( this, m_path );
+        } else if ( view == m_configButton ) {
+            GameUtils.doConfig( this, m_path, GameConfig.class );
+            finish();
+        }
     }
 
 } // class RelayGameActivity

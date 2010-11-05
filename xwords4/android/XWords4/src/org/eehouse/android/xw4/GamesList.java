@@ -89,7 +89,8 @@ public class GamesList extends XWListActivity
                     showNotAgainDlgThen( R.string.not_again_newgamenet, 
                                          R.string.key_notagain_newgamenet, null );
 
-                    doConfig( path, RelayGameActivity.class );
+                    GameUtils.doConfig( GamesList.this, path, 
+                                        RelayGameActivity.class );
                 }
             });
 
@@ -311,13 +312,13 @@ public class GamesList extends XWListActivity
             } else {
                 switch ( menuID ) {
                 case R.id.list_item_config:
-                    doConfig( path, GameConfig.class );
+                    GameUtils.doConfig( this, path, GameConfig.class );
                     m_invalPath = path;
                     break;
 
                     // For development only; don't ship!!!
                 case R.id.list_item_netconfig:
-                    doConfig( path, RelayGameActivity.class );
+                    GameUtils.doConfig( this, path, RelayGameActivity.class );
                     m_invalPath = path;
                     break;
 
@@ -362,13 +363,6 @@ public class GamesList extends XWListActivity
 
         return handled;
     } // handleMenuItem
-
-    private void doConfig( String path, Class clazz )
-    {
-        Uri uri = Uri.fromFile( new File(path) );
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri, this, clazz );
-        startActivity( intent );
-    }
 
     private String saveNew( CurGameInfo gi )
     {
