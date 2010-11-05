@@ -864,52 +864,12 @@ public class GameConfig extends XWActivity
 
     private void applyChanges( boolean forceNew )
     {
-        // This should be a separate function, commitChanges() or
-        // somesuch.  But: do we have a way to save changes to a gi
-        // that don't reset the game, e.g. player name for standalone
-        // games?
-        byte[] dictBytes = GameUtils.openDict( this, m_gi.dictName );
-        int gamePtr = XwJNI.initJNI();
-        boolean madeGame = false;
-
-        if ( !forceNew ) {
-            byte[] stream = GameUtils.savedGame( this, m_path );
-            // Will fail if there's nothing in the stream but a gi.
-            madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
-                                                  JNIUtilsImpl.get(),
-                                                  new CurGameInfo(this), 
-                                                  dictBytes, m_gi.dictName, 
-                                                  m_cp );
-        }
-
-        if ( forceNew || !madeGame ) {
-            m_gi.setInProgress( false );
-            m_gi.fixup();
-            XwJNI.game_makeNewGame( gamePtr, m_gi, JNIUtilsImpl.get(), 
-                                    m_cp, dictBytes, m_gi.dictName );
-        }
-
-        if ( null != m_car ) {
-            XwJNI.comms_setAddr( gamePtr, m_car );
-        }
-
-        GameUtils.saveGame( this, gamePtr, m_gi, m_path );
-
-        GameSummary summary = new GameSummary();
-        XwJNI.game_summarize( gamePtr, m_gi.nPlayers, summary );
-        DBUtils.saveSummary( this, m_path, summary );
-
-        XwJNI.game_dispose( gamePtr );
+        GameUtils.applyChanges( this, m_gi, m_car, m_path, forceNew );
     }
 
     private void launchGame()
     {
-        File file = new File( m_path );
-        Uri uri = Uri.fromFile( file );
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                    this, BoardActivity.class );
-        startActivity( intent );
-        finish();
+        GameUtils.launchGame( this, m_path );
     }
 
     private void refreshNames()

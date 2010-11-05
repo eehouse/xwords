@@ -472,4 +472,10 @@
       game on the relay. You will be notified when the remaining
       device[s] have joined your room and play can begin.</string>
 
+    <string name="relay_game_explainf">To start a simple two-player
+    game in %s over the network all you need to do is agree on a room
+    name with the other person and make sure you both enter it in the
+    field below.  Do that and press the Play game button and you\'ll
+    connect.</string>
+
 </resources>
