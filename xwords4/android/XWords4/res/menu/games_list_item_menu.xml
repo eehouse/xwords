@@ -4,6 +4,9 @@
     <item android:id="@+id/list_item_config"
           android:title="@string/list_item_config"
           />
+    <!-- <item android:id="@+id/list_item_netconfig" -->
+    <!--       android:title="net (remove me)" -->
+    <!--       /> -->
     <item android:id="@+id/list_item_copy"
           android:title="@string/list_item_copy"
           />

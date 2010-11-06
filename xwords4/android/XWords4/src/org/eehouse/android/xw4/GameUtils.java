@@ -20,10 +20,14 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.content.Context;
-import java.io.InputStream;
+import android.content.Intent;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import android.net.Uri;
 import java.util.ArrayList;
 import android.content.res.AssetManager;
 
@@ -355,6 +359,65 @@ public class GameUtils {
     public static String gameName( Context context, String path )
     {
         return path.substring( 0, path.lastIndexOf( XWConstants.GAME_EXTN ) );
+    }
+
+    public static void launchGame( Activity activity, String path )
+    {
+        File file = new File( path );
+        Uri uri = Uri.fromFile( file );
+        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                    activity, BoardActivity.class );
+        activity.startActivity( intent );
+        activity.finish();
+    }
+
+    public static void applyChanges( Context context, CurGameInfo gi, 
+                                     CommsAddrRec car, String path, 
+                                     boolean forceNew )
+    {
+        // This should be a separate function, commitChanges() or
+        // somesuch.  But: do we have a way to save changes to a gi
+        // that don't reset the game, e.g. player name for standalone
+        // games?
+        byte[] dictBytes = GameUtils.openDict( context, gi.dictName );
+        int gamePtr = XwJNI.initJNI();
+        boolean madeGame = false;
+        CommonPrefs cp = CommonPrefs.get( context );
+
+        if ( !forceNew ) {
+            byte[] stream = GameUtils.savedGame( context, path );
+            // Will fail if there's nothing in the stream but a gi.
+            madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
+                                                  JNIUtilsImpl.get(),
+                                                  new CurGameInfo(context), 
+                                                  dictBytes, gi.dictName, cp );
+        }
+
+        if ( forceNew || !madeGame ) {
+            gi.setInProgress( false );
+            gi.fixup();
+            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
+                                    cp, dictBytes, gi.dictName );
+        }
+
+        if ( null != car ) {
+            XwJNI.comms_setAddr( gamePtr, car );
+        }
+
+        GameUtils.saveGame( context, gamePtr, gi, path );
+
+        GameSummary summary = new GameSummary();
+        XwJNI.game_summarize( gamePtr, gi.nPlayers, summary );
+        DBUtils.saveSummary( context, path, summary );
+
+        XwJNI.game_dispose( gamePtr );
+    }
+
+    public static void doConfig( Activity activity, String path, Class clazz )
+    {
+        Uri uri = Uri.fromFile( new File(path) );
+        Intent intent = new Intent( Intent.ACTION_EDIT, uri, activity, clazz );
+        activity.startActivity( intent );
     }
 
     private static String removeExtn( String str )

@@ -108,5 +108,7 @@
       </intent-filter> 
     </activity>
 
+    <activity android:name="RelayGameActivity"/>
+
   </application>
 </manifest>

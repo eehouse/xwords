@@ -83,6 +83,7 @@ BEGIN
         POPUP "Podpowiedź"
         BEGIN
             MENUITEM "Następna podp.",           ID_MOVE_NEXTHINT
+            MENUITEM "Previous hint",            ID_MOVE_PREVHINT
             MENUITEM "Podpowiedź",               ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
             MENUITEM "Podp. ograniczona...",     ID_MOVE_LIMITEDHINT

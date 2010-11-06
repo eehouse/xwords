@@ -62,7 +62,7 @@ public class DictLangCache {
         return code;
     }
 
-    private static String getLangName( Context context, String name )
+    public static String getLangName( Context context, String name )
     {
         int code = getLangCode( context, name );
         return getNamesArray(context)[code];

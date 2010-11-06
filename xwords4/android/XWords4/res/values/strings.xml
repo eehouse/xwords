@@ -472,4 +472,15 @@
       game on the relay. You will be notified when the remaining
       device[s] have joined your room and play can begin.</string>
 
+    <string name="relay_game_explainf">To start a basic networked two-player
+    game in %s over the network:</string>
+
+    <string name="explain_b1">• Agree on a room name with your friend</string>
+    <string name="explain_b2">• Put it in the box below and on
+    your friend\'s Android smartphone</string>
+    <string name="explain_b3">• Press the \"Play game\" button</string>
+
+    <string name="advanced_config">Advanced game settings</string>
+
+
 </resources>

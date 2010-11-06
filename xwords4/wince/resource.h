@@ -244,20 +244,21 @@
 # define ID_MOVE_LIMITEDHINT            40011
 #endif
 #define ID_MOVE_NEXTHINT                40012
-#define ID_MOVE_UNDOCURRENT             40013
-#define ID_MOVE_UNDOLAST                40014
-#define ID_MOVE_TRADE                   40015
-#define ID_MOVE_JUGGLE                  40016
-#define ID_MOVE_HIDETRAY                40017
-#define ID_MOVE_TURNDONE                40018
-#define ID_MOVE_FLIP                    40019
-#define ID_MOVE_VALUES                  40027
-#define ID_FILE_NEWGAME                 40020
-#define ID_FILE_SAVEDGAMES              40021
-#define ID_EDITTEXT                     40022
-#define ID_FILE_PREFERENCES             40023
-#define ID_GAME_RESENDMSGS              40025
-#define ID_FILE_FULLSCREEN              40026
+#define ID_MOVE_PREVHINT                40013
+#define ID_MOVE_UNDOCURRENT             40014
+#define ID_MOVE_UNDOLAST                40015
+#define ID_MOVE_TRADE                   40016
+#define ID_MOVE_JUGGLE                  40017
+#define ID_MOVE_HIDETRAY                40018
+#define ID_MOVE_TURNDONE                40019
+#define ID_MOVE_FLIP                    40020
+#define ID_MOVE_VALUES                  40021
+#define ID_FILE_NEWGAME                 40022
+#define ID_FILE_SAVEDGAMES              40023
+#define ID_EDITTEXT                     40024
+#define ID_FILE_PREFERENCES             40025
+#define ID_GAME_RESENDMSGS              40026
+#define ID_FILE_FULLSCREEN              40027
 
 #define ID_INITIAL_SOFTID               ID_MOVE_TURNDONE
 

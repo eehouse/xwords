@@ -86,9 +86,12 @@ public class GamesList extends XWListActivity
         newGameB.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
-                    addGame( true );
+                    String path = addGame( true );
                     showNotAgainDlgThen( R.string.not_again_newgamenet, 
                                          R.string.key_notagain_newgamenet, null );
+
+                    GameUtils.doConfig( GamesList.this, path, 
+                                        RelayGameActivity.class );
                 }
             });
 
@@ -308,7 +311,7 @@ public class GamesList extends XWListActivity
             } else {
                 switch ( menuID ) {
                 case R.id.list_item_config:
-                    doConfig( path );
+                    GameUtils.doConfig( this, path, GameConfig.class );
                     m_invalPath = path;
                     break;
 
@@ -354,15 +357,6 @@ public class GamesList extends XWListActivity
         return handled;
     } // handleMenuItem
 
-    private void doConfig( String path )
-    {
-        Uri uri = Uri.fromFile( new File(path) );
-        
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                    this, GameConfig.class );
-        startActivity( intent );
-    }
-
     private String saveNew( CurGameInfo gi )
     {
         String path = null;
@@ -373,11 +367,12 @@ public class GamesList extends XWListActivity
         return path;
     }
 
-    private void addGame( boolean networked )
+    private String addGame( boolean networked )
     {
         String path = saveNew( new CurGameInfo( this, networked ) );
         GameUtils.resetGame( this, path, path );
         onContentChanged();
+        return path;
     }
 
 }

@@ -83,6 +83,7 @@ BEGIN
         POPUP "Pista"
         BEGIN
             MENUITEM "Pista següent",                 ID_MOVE_NEXTHINT
+            MENUITEM "Previous hint",                 ID_MOVE_PREVHINT
             MENUITEM "Pista",                         ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
             MENUITEM "Límits de pistes...",           ID_MOVE_LIMITEDHINT
