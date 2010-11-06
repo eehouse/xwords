@@ -89,6 +89,7 @@ public class GamesList extends XWListActivity
                     String path = addGame( true );
                     GameUtils.doConfig( GamesList.this, path, 
                                         RelayGameActivity.class );
+                    m_invalPath = path;
                 }
             });
 
