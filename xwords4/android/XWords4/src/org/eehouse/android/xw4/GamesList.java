@@ -87,9 +87,6 @@ public class GamesList extends XWListActivity
                 @Override
                 public void onClick( View v ) {
                     String path = addGame( true );
-                    showNotAgainDlgThen( R.string.not_again_newgamenet, 
-                                         R.string.key_notagain_newgamenet, null );
-
                     GameUtils.doConfig( GamesList.this, path, 
                                         RelayGameActivity.class );
                 }

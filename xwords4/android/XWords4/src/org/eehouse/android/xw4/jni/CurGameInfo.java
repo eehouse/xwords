@@ -302,6 +302,15 @@ public class CurGameInfo {
         return added;
     }
 
+    public void setFirstLocalName( String name ) {
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            if ( players[ii].isLocal ) {
+                players[ii].name = name;
+                break;
+            }
+        }
+    }
+
     public boolean moveUp( int which )
     {
         boolean canMove = which > 0 && which < nPlayers;

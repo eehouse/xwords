@@ -16,23 +16,17 @@
 	        android:layout_height="wrap_content"
    	        android:textAppearance="?android:attr/textAppearanceMedium"
             />
-  <TextView android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-   	        android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/explain_b1"
-            android:paddingLeft="8dp"
+  <TextView android:text="@string/explain_b1"
+            style="@style/relay_explain"
             />
-  <TextView android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-   	        android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/explain_b2"
-            android:paddingLeft="8dp"
+  <TextView android:text="@string/explain_b2"
+            style="@style/relay_explain"
             />
-  <TextView android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-   	        android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/explain_b3"
-            android:paddingLeft="8dp"
+  <TextView android:text="@string/explain_b3"
+            style="@style/relay_explain"
+            />
+  <TextView android:text="@string/explain_b4"
+            style="@style/relay_explain"
             />
 
   <EditText android:id="@+id/room_edit"
@@ -43,7 +37,19 @@
             android:capitalize="none"
             android:singleLine="true"
             android:selectAllOnFocus="true"
+            android:maxLength="31"
             android:hint="@string/new_room_hint"
+            />
+
+  <EditText android:id="@+id/local_name_edit"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:scrollHorizontally="false"
+            android:autoText="false"
+            android:capitalize="none"
+            android:singleLine="true"
+            android:selectAllOnFocus="true"
+            android:hint="@string/local_name_hint"
             />
 
     <Button android:id="@+id/play_button"

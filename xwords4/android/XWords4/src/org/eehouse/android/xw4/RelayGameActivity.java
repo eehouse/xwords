@@ -90,6 +90,8 @@ public class RelayGameActivity extends XWActivity
     {
         if ( view == m_playButton ) {
             m_car.ip_relay_invite = Utils.getText( this, R.id.room_edit ).trim();
+            String name = Utils.getText( this, R.id.local_name_edit );
+            m_gi.setFirstLocalName( name );
             GameUtils.applyChanges( this, m_gi, m_car, m_path, false );
             GameUtils.launchGame( this, m_path );
         } else if ( view == m_configButton ) {

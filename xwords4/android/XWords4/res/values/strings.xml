@@ -428,12 +428,6 @@
       two players, the first a robot, both on this device. Tap it to
       play; long-tap it to change its configuration or for other
       options.</string>
-    <string name="not_again_newgamenet">The new game you have created
-      has two players but only one is on this device.  To play the
-      game, tap it, and it will begin by connecting over the internet
-      looking for that other player in the default no-name
-      room. Long-tap it to configure - e.g. change the room name - or
-      for other options.</string>
 
     <string name="not_again_hintprev">This button shows all possible
       moves in ascending order (using tiles to the right of the rack
@@ -473,14 +467,19 @@
       device[s] have joined your room and play can begin.</string>
 
     <string name="relay_game_explainf">To start a basic networked two-player
-    game in %s over the network:</string>
+    game in %s:</string>
 
-    <string name="explain_b1">• Agree on a room name with your friend</string>
-    <string name="explain_b2">• Put it in the box below and on
-    your friend\'s Android smartphone</string>
-    <string name="explain_b3">• Press the \"Play game\" button</string>
+    <string name="explain_b1">• Agree on a room name with the other
+      player.</string>
+    <string name="explain_b2">• Enter the new room name in the first
+      box below. The room names on your two phones must be
+      identical.</string>
+    <string name="explain_b3">• Optionally, enter player names in the
+      second box (one per phone)</string>
+    <string name="explain_b4">• Press the \"Play game\" button on both
+      phones to start the game.</string>
 
     <string name="advanced_config">Advanced game settings</string>
 
-
+    <string name="local_name_hint">Player name</string>
 </resources>
