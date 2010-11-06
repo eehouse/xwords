@@ -874,7 +874,11 @@ public class GameConfig extends XWActivity
 
     private void launchGame()
     {
-        GameUtils.launchGame( this, m_path );
+        if ( m_car.ip_relay_invite.length() == 0 ) {
+            showOKOnlyDialog( R.string.no_empty_rooms );            
+        } else {
+            GameUtils.launchGame( this, m_path );
+        }
     }
 
     private void refreshNames()

@@ -263,11 +263,21 @@ public class GamesList extends XWListActivity
     {
         super.onListItemClick( l, v, position, id );
         String path = GameUtils.gamesList( this )[position];
-        File file = new File( path );
-        Uri uri = Uri.fromFile( file );
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                    this, BoardActivity.class );
-        startActivity( intent );
+
+        // We need a way to let the user get back to the basic-config
+        // dialog in case it was dismissed.  That way it to check for
+        // an empty room name.
+        GameSummary summary = DBUtils.getSummary( this, path );
+        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
+             && summary.roomName.length() == 0 ) {
+            GameUtils.doConfig( this, path, RelayGameActivity.class );
+        } else {
+            File file = new File( path );
+            Uri uri = Uri.fromFile( file );
+            Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                        this, BoardActivity.class );
+            startActivity( intent );
+        }
         m_invalPath = path;
     }
 

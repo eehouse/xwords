@@ -169,7 +169,7 @@
     <string name="connect_label">Connection (via internet)</string>
     <string name="room_public">Make new room public</string>
     <string name="join_room">Join public room</string>
-    <string name="new_room_hint">New room name</string>
+    <string name="new_room_hint">Room name</string>
     <string name="room_public_prompt">Select public room</string>
 
     <string name="configure_role">Configure connection</string>
@@ -471,8 +471,8 @@
 
     <string name="explain_b1">• Agree on a room name with the other
       player.</string>
-    <string name="explain_b2">• Enter the new room name in the first
-      box below. The room names on your two phones must be
+    <string name="explain_b2">• Enter the room name in the first box
+      below. The room names on your two phones must be
       identical.</string>
     <string name="explain_b3">• Optionally, enter player names in the
       second box (one per phone)</string>
@@ -482,4 +482,7 @@
     <string name="advanced_config">Advanced game settings</string>
 
     <string name="local_name_hint">Player name</string>
+    <string name="no_empty_rooms">This game cannot connect without a
+      room name.</string>
+
 </resources>

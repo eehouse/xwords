@@ -89,11 +89,18 @@ public class RelayGameActivity extends XWActivity
     public void onClick( View view ) 
     {
         if ( view == m_playButton ) {
-            m_car.ip_relay_invite = Utils.getText( this, R.id.room_edit ).trim();
-            String name = Utils.getText( this, R.id.local_name_edit );
-            m_gi.setFirstLocalName( name );
-            GameUtils.applyChanges( this, m_gi, m_car, m_path, false );
-            GameUtils.launchGame( this, m_path );
+            String room = Utils.getText( this, R.id.room_edit ).trim();
+            if ( room.length() == 0 ) {
+                showOKOnlyDialog( R.string.no_empty_rooms );
+            } else {
+                m_car.ip_relay_invite = room;
+                String name = Utils.getText( this, R.id.local_name_edit );
+                if ( name.length() > 0 ) {
+                    m_gi.setFirstLocalName( name );
+                }
+                GameUtils.applyChanges( this, m_gi, m_car, m_path, false );
+                GameUtils.launchGame( this, m_path );
+            }
         } else if ( view == m_configButton ) {
             GameUtils.doConfig( this, m_path, GameConfig.class );
             finish();
