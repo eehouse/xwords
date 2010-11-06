@@ -315,12 +315,6 @@ public class GamesList extends XWListActivity
                     m_invalPath = path;
                     break;
 
-                    // For development only; don't ship!!!
-                case R.id.list_item_netconfig:
-                    GameUtils.doConfig( this, path, RelayGameActivity.class );
-                    m_invalPath = path;
-                    break;
-
                 case R.id.list_item_new_from:
                     String newName = GameUtils.resetGame( this, path );  
                     invalPath = newName;
