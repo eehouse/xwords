@@ -206,9 +206,9 @@
     <string name="show_arrow">Show board arrow</string>
     <string name="show_arrow_summary">Tapped rack tiles land on this
       arrow when it is visible</string>
-    <string name="explain_robot">Explain robot moves</string>
+    <string name="explain_robot">Explain other moves</string>
     <string name="explain_robot_summary">Display score summary after
-    every robot turn</string>
+      every robot or remote turn</string>
     <string name="skip_confirm_turn">Skip confirming turn</string>
     <string name="skip_confirm_turn_summary">Do NOT display score
     summary after every human turn</string>
