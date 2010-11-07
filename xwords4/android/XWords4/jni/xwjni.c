@@ -992,6 +992,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     XWJNI_START();
     XP_S16 nMoves = model_getNMoves( state->game.model );
     setInt( env, jsummary, "nMoves", nMoves );
+    setInt( env, jsummary, "nPlayers", nPlayers );
     XP_Bool gameOver = server_getGameIsOver( state->game.server );
     setBool( env, jsummary, "gameOver", gameOver );
     

@@ -32,6 +32,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
+    public static final String NUM_PLAYERS = "NUM_PLAYERS";
     public static final String GAME_OVER = "GAME_OVER";
     public static final String SCORES = "SCORES";
     // GAMEID: this isn't used yet but we'll want it to look up games
@@ -59,9 +60,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate( SQLiteDatabase db ) 
     {
         db.execSQL( "CREATE TABLE " + TABLE_NAME + " ("
-                    + FILE_NAME + " TEXT PRIMARY KEY,"
-                    + NUM_MOVES + " INTEGER,"
-                    + GAME_OVER + " INTEGER,"
+                    + FILE_NAME   + " TEXT PRIMARY KEY,"
+                    + NUM_MOVES   + " INTEGER,"
+                    + NUM_PLAYERS + " INTEGER,"
+                    + GAME_OVER   + " INTEGER,"
 
                     + CONTYPE    + " INTEGER,"
                     + ROOMNAME   + " TEXT,"

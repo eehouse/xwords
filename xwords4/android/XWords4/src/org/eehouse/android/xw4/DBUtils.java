@@ -43,7 +43,8 @@ public class DBUtils {
 
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER,
+            String[] columns = { DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
+                                 DBHelper.GAME_OVER,
                                  DBHelper.CONTYPE, DBHelper.ROOMNAME,
                                  DBHelper.RELAYID, DBHelper.SMSPHONE, 
                                  DBHelper.SCORES, DBHelper.HASMSGS
@@ -56,6 +57,9 @@ public class DBUtils {
                 summary = new GameSummary();
                 summary.nMoves = cursor.getInt(cursor.
                                                getColumnIndex(DBHelper.NUM_MOVES));
+                summary.nPlayers = 
+                    cursor.getInt(cursor.
+                                  getColumnIndex(DBHelper.NUM_PLAYERS));
                 int tmp = cursor.getInt(cursor.
                                         getColumnIndex(DBHelper.GAME_OVER));
                 summary.gameOver = tmp == 0 ? false : true;
@@ -116,6 +120,7 @@ public class DBUtils {
                 ContentValues values = new ContentValues();
                 values.put( DBHelper.FILE_NAME, path );
                 values.put( DBHelper.NUM_MOVES, summary.nMoves );
+                values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
 
                 if ( null != summary.scores ) {

@@ -26,6 +26,7 @@ package org.eehouse.android.xw4.jni;
  */
 public class GameSummary {
     public int nMoves;
+    public int nPlayers;
     public int[] scores;
     public boolean gameOver;
     public CommsAddrRec.CommsConnType conType;
