@@ -560,7 +560,8 @@ board_canTogglePending( const BoardCtxt* board )
 XP_Bool
 board_canHint( const BoardCtxt* board )
 {
-    XP_Bool canHint = !board->gi->hintsNotAllowed;
+    XP_Bool canHint = !board->gi->hintsNotAllowed
+        && 0 < model_getNumTilesTotal( board->model, board->selPlayer );
     if ( canHint ) {
         LocalPlayer* lp = &board->gi->players[board->selPlayer];
         canHint = lp->isLocal && !lp->isRobot;
