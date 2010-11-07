@@ -1655,7 +1655,6 @@ comms_canChat( const CommsCtxt* const comms )
 {
     XP_Bool canChat = comms_isConnected( comms )
         && comms->connID != 0;
-    LOG_RETURNF( "%s", canChat?"true":"false" );
     return canChat;
 }
 
