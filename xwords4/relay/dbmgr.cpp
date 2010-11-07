@@ -122,8 +122,10 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
 {
     CookieID cid = 0;
 
+    /* NOTE: ILIKE, for case-insensitive comparison, is a postgres extension
+       to SQL. */
     const char* fmt = "SELECT cid, connName, nPerDevice FROM " GAMES_TABLE
-        " WHERE room = '%s'"
+        " WHERE room ILIKE '%s'"
         " AND lang = %d"
         " AND nTotal = %d"
         " AND %d <= nTotal-sum_array(nPerDevice)"
