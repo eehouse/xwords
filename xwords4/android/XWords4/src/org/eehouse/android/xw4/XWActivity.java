@@ -47,7 +47,6 @@ public class XWActivity extends Activity {
     @Override
     protected void onStart()
     {
-        Utils.logf( "XWActivity::onStart()" );
         super.onStart();
         DispatchNotify.SetRunning( this );
     }
@@ -55,7 +54,6 @@ public class XWActivity extends Activity {
     @Override
     protected void onStop()
     {
-        Utils.logf( "XWActivity::onStop()" );
         super.onStop();
         DispatchNotify.ClearRunning( this );
     }
