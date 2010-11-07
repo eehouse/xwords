@@ -151,12 +151,23 @@ pool_requestTiles( PoolContext* pool, Tile* tiles, XP_U8* maxNum )
 
     XP_ASSERT( numWanted >= 0 );
 
+#ifdef BLANKS_FIRST
+    XP_U16 oldCount = pool->lettersLeft[pool->blankIndex];
+    if ( oldCount > 1 ) {
+        pool->lettersLeft[pool->blankIndex] = 1;
+    }
+#endif
+
     while ( pool->numTilesLeft > 0 && numWanted-- ) {
         Tile t = getRandomTile( pool );
         *tiles++ = t;
         ++numWritten;
     }
     *maxNum = (XP_U8)numWritten;
+
+#ifdef BLANKS_FIRST
+    pool->lettersLeft[pool->blankIndex] = oldCount - 1;
+#endif
 } /* pool_requestTiles */
 
 void
