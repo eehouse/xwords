@@ -107,4 +107,9 @@ public class RelayGameActivity extends XWActivity
         }
     }
 
+    public static boolean isSimpleGame( GameSummary summary )
+    {
+        return summary.nPlayers == 2;
+    }
+
 } // class RelayGameActivity

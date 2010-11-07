@@ -270,7 +270,16 @@ public class GamesList extends XWListActivity
         GameSummary summary = DBUtils.getSummary( this, path );
         if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
              && summary.roomName.length() == 0 ) {
-            GameUtils.doConfig( this, path, RelayGameActivity.class );
+            // If it's unconfigured and of the type RelayGameActivity
+            // can handle send it there, otherwise use the full-on
+            // config.
+            Class clazz;
+            if ( RelayGameActivity.isSimpleGame( summary ) ) {
+                clazz = RelayGameActivity.class;
+            } else {
+                clazz = GameConfig.class;
+            }
+            GameUtils.doConfig( this, path, clazz );
         } else {
             File file = new File( path );
             Uri uri = Uri.fromFile( file );
