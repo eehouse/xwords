@@ -46,7 +46,11 @@ public class DictLangCache {
 
     public static String getLangName( Context context, int code )
     {
-        return getNamesArray(context)[code];
+        String[] namesArray = getNamesArray( context );
+        if ( code < 0 || code >= namesArray.length ) {
+            code = 0;
+        }
+        return namesArray[code];
     }
 
     public static int getLangCode( Context context, String name )
@@ -65,7 +69,7 @@ public class DictLangCache {
     public static String getLangName( Context context, String name )
     {
         int code = getLangCode( context, name );
-        return getNamesArray(context)[code];
+        return getLangName( context, code );
     }
 
     private static String[] getNamesArray( Context context )
