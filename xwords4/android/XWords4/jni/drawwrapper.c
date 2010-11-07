@@ -206,11 +206,15 @@ static void
 and_draw_drawTimer( DrawCtx* dctx, const XP_Rect* rect, XP_U16 player, 
                     XP_S16 secondsLeft )
 {
-    DRAW_CBK_HEADER("drawTimer", "(Landroid/graphics/Rect;II)V" );
+    if ( rect->width == 0 ) {
+        XP_LOGF( "%s: exiting b/c rect empty", __func__ );
+    } else {
+        DRAW_CBK_HEADER("drawTimer", "(Landroid/graphics/Rect;II)V" );
 
-    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, player, secondsLeft );
+        jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
+        (*env)->CallVoidMethod( env, draw->jdraw, mid, 
+                                jrect, player, secondsLeft );
+    }
 }
 
 static XP_Bool
