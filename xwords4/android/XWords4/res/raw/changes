@@ -6,12 +6,15 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 17 release</b>
+<b>Crosswords 4.4 beta 18 release</b>
 
-<p>This release changes how networked games are created, configured 
-and connected.  For the most common two player/two device game there's 
-a new dialog that asks for the one piece of information that's 
-absolutely required: the room name.</p>
+<p>(Beta 18 fixes a couple of oversights with b17, which is described 
+below.)</p>
+
+<p>This release (beta 17) changes how networked games are created, 
+configured and connected.  For the most common two player/two device 
+game there's a new dialog that asks for the one piece of information 
+that's absolutely required: the room name.</p>
 
 <p>I've also scattered "new user hints" around the app, dialogs with 
 tips that you can dismiss with a "Do not show again" button when you 
