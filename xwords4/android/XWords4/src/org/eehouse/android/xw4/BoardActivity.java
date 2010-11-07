@@ -106,7 +106,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         public void run() {
             m_timers[m_why] = null;
             if ( null != m_jniThread ) {
-                m_jniThread.handle( JNICmd.CMD_TIMER_FIRED,
+                m_jniThread.handle( JNICmd.CMD_TIMER_FIRED, false,
                                     m_why, m_when, m_handle );
             }
         }
