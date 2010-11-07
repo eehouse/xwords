@@ -50,8 +50,6 @@ public class GamesList extends XWListActivity
     implements DispatchNotify.HandleRelaysIface,
                RefreshMsgsTask.RefreshMsgsIface {
 
-    private static final int CONFIRM_DELETE_ALL = DlgDelegate.DIALOG_LAST + 1;
-
     private GameListAdapter m_adapter;
     private String m_invalPath = null;
     private String m_missingDict;
