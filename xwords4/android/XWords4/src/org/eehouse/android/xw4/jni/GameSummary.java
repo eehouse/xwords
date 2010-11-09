@@ -34,6 +34,7 @@ public class GameSummary {
     // relay-related fields
     public String roomName;
     public String relayID;
+    public int seed;
     public boolean msgsPending;
 
     public boolean inNetworkGame()
