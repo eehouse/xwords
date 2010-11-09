@@ -896,8 +896,8 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     return newMsgElem;
 } /* makeElemWithID */
 
-static XP_U16
-getChannelSeed( CommsCtxt* comms )
+XP_U16
+comms_getChannelSeed( CommsCtxt* comms )
 {
     while ( comms->channelSeed == 0 ) {
         comms->channelSeed = XP_RANDOM();
@@ -919,7 +919,7 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
     XP_S16 result = -1;
 
     if ( 0 == channelNo ) {
-        channelNo = getChannelSeed(comms) & ~CHANNEL_MASK;
+        channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
     }
 
     XP_DEBUGF( "%s: assigning msgID=" XP_LD " on chnl %x", __func__, 
@@ -1983,7 +1983,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
                      comms->r.nPlayersTotal );
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );
-            stream_putU16( tmpStream, getChannelSeed(comms) );
+            stream_putU16( tmpStream, comms_getChannelSeed(comms) );
             stream_putU8( tmpStream, comms->util->gameInfo->dictLang );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
@@ -2002,7 +2002,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
                      comms->r.nPlayersTotal );
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );
-            stream_putU16( tmpStream, getChannelSeed(comms) );
+            stream_putU16( tmpStream, comms_getChannelSeed(comms) );
             stream_putU8( tmpStream, comms->util->gameInfo->dictLang );
             stringToStream( tmpStream, comms->r.connName );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );

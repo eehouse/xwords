@@ -180,6 +180,7 @@ void comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream );
 
 XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms );
+XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 
 
 XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
