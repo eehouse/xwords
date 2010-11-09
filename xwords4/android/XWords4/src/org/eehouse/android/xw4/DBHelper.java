@@ -28,7 +28,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_NAME = "summaries";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 5;
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -44,6 +44,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CONTYPE = "CONTYPE";
     public static final String ROOMNAME = "ROOMNAME";
     public static final String RELAYID = "RELAYID";
+    public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE";
     // not used yet
     public static final String CREATE_TIME = "CREATE_TIME";
@@ -68,6 +69,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + CONTYPE    + " INTEGER,"
                     + ROOMNAME   + " TEXT,"
                     + RELAYID    + " TEXT,"
+                    + SEED    + " INTEGER,"
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"
                     + GAMEID     + " INTEGER,"

@@ -47,6 +47,7 @@ public class DBUtils {
                                  DBHelper.GAME_OVER,
                                  DBHelper.CONTYPE, DBHelper.ROOMNAME,
                                  DBHelper.RELAYID, DBHelper.SMSPHONE, 
+                                 DBHelper.SEED,
                                  DBHelper.SCORES, DBHelper.HASMSGS
             };
             String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
@@ -88,6 +89,10 @@ public class DBUtils {
                     col = cursor.getColumnIndex( DBHelper.RELAYID );
                     if ( col >= 0 ) {
                         summary.relayID = cursor.getString( col );
+                    }
+                    col = cursor.getColumnIndex( DBHelper.SEED );
+                    if ( col >= 0 ) {
+                        summary.seed = cursor.getInt( col );
                     }
                     col = cursor.getColumnIndex( DBHelper.SMSPHONE );
                     if ( col >= 0 ) {
@@ -135,6 +140,7 @@ public class DBUtils {
                     values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
                     values.put( DBHelper.ROOMNAME, summary.roomName );
                     values.put( DBHelper.RELAYID, summary.relayID );
+                    values.put( DBHelper.SEED, summary.seed );
                     values.put( DBHelper.SMSPHONE, summary.smsPhone );
                 }
 
