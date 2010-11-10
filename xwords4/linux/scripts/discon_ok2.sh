@@ -1,4 +1,5 @@
 #!/bin/bash
+set -u -e
 
 NGAMES=${NGAMES:-1}
 NROOMS=${NROOMS:-1}
@@ -51,7 +52,7 @@ connName() {
         sort -u 
 }
 
-while [ -n "$1" ]; do
+while [ "$#" -gt 0 ]; do
     case $1 in
         *) usage
             ;;
@@ -62,7 +63,7 @@ done
 declare -A CHECKED_ROOMS
 check_room() {
     ROOM=$1
-    if [ -z "${CHECKED_ROOMS[$ROOM]}" ]; then
+    if [ -z ${CHECKED_ROOMS[$ROOM]:-""} ]; then
         NUM=$(echo "SELECT COUNT(*) FROM games WHERE ntotal!=sum_array(nperdevice) AND room='$ROOM'" |
             psql -q -t xwgames)
         NUM=$((NUM+0))
@@ -82,8 +83,10 @@ build_cmds() {
         check_room $ROOM
         NDEVS=$(($RANDOM%3+2))
         DICT=${DICTS_ARR[$((GAME%${#DICTS_ARR[*]}))]}
+        # make one in three games public
+        [ $((RANDOM%3)) -eq 0 ] && PUBLIC="-A -R" || PUBLIC=""
 
-        unset OTHERS
+        OTHERS=""
         for II in $(seq 2 $NDEVS); do
             OTHERS="-N $OTHERS"
         done
@@ -94,6 +97,7 @@ build_cmds() {
             touch $LOG          # so greps won't show errors
             CMD="./obj_linux_memdbg/xwords -C $ROOM -r ${NAMES[$DEV]} $OTHERS"
             CMD="$CMD -d $DICT -p $PORT -a $HOST -f $FILE -z 1:3 $PLAT_PARMS"
+            CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
             FILES[$COUNTER]=$FILE
             LOGS[$COUNTER]=$LOG
@@ -133,7 +137,7 @@ check_game() {
     KEY=$1
     LOG=${LOGS[$KEY]}
     CONNNAME="$(connName $LOG)"
-    unset OTHERS
+    OTHERS=""
     if [ -n "$CONNNAME" ]; then
         if grep -q '\[unused tiles\]' $LOG; then
             ALL_DONE=TRUE
@@ -143,7 +147,7 @@ check_game() {
                 CONNNAME2="$(connName $ALOG)"
                 if [ "$CONNNAME2" = "$CONNNAME" ]; then
                     if ! grep -q '\[unused tiles\]' $ALOG; then
-                        unset OTHERS
+                        OTHERS=""
                         break
                     fi
                     OTHERS="$OTHERS $INDX"
@@ -197,10 +201,10 @@ print_stats() {
 }
 
 echo "*********$0 starting: $(date)**************"
-
+STARTTIME=$(date +%s)
 build_cmds
 run_cmds
 print_stats
 
 wait
-echo "*********$0 finished: $(date)**************"
+echo "*********$0 finished: $(date) (took $(($(date +%s)-$STARTTIME)) seconds)**************"

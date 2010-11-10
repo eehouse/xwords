@@ -734,7 +734,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_fillPaint.setTextAlign( Paint.Align.CENTER );
             m_canvas.drawText( text, center, bottom, m_fillPaint );
         }
-    }
+    } // drawCentered
 
     private void drawScaled( String text, final Rect rect, int descent )
     {
@@ -750,7 +750,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         int bottom = local.bottom - descent;
         canvas.drawText( text, 0, bottom, m_fillPaint );
 
-        m_canvas.drawBitmap( bitmap, local, rect, m_drawPaint );
+        m_canvas.drawBitmap( bitmap, null, rect, m_drawPaint );
     }
 
     private void positionDrawTile( final Rect rect, String text, int val )
