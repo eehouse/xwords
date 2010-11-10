@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "dbmgr.h"
 #include "mlock.h"
@@ -35,6 +36,8 @@
 static DBMgr* s_instance = NULL;
 
 static int sumArray( const char* const str );
+static void formatParams( char* paramValues[], int nParams, const char* fmt, 
+                          char* buf, int bufLen, ... );
 
 /* static */ DBMgr*
 DBMgr::Get() 
@@ -77,15 +80,26 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 {         
     if ( !cookie ) cookie = "";
     if ( !connName ) connName = "";
-
-    const char* fmt = "INSERT INTO " GAMES_TABLE
+ 
+    const char* command = "INSERT INTO " GAMES_TABLE
         " (cid, room, connName, nTotal, nPerDevice, lang, pub)"
-        " VALUES( %d, '%s', '%s', %d, ARRAY[0,0,0,0], %d, %s )";
-    char buf[256];
-    snprintf( buf, sizeof(buf), fmt, cid/*m_nextCID++*/, cookie, connName, 
-              nPlayersT, langCode, isPublic?"TRUE":"FALSE" );
-    logf( XW_LOGINFO, "passing %s", buf );
-    execSql( buf );
+        " VALUES( $1, $2, $3, $4, ARRAY[0,0,0,0], $5, $6 )";
+    int nParams = 6;
+    char* paramValues[nParams];
+    char buf[512];
+    formatParams( paramValues, nParams,  "%d\n%s\n%s\n%d\n%d\n%s\n", buf, 
+                  sizeof(buf), cid, cookie, connName, nPlayersT, langCode, 
+                  isPublic?"TRUE":"FALSE" );
+
+    PGresult* result = PQexecParams( getThreadConn(), command,
+                                     nParams, NULL,
+                                     paramValues, 
+                                     NULL, NULL, 0 );
+    if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
+        logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), 
+              PQresultErrorMessage(result) );
+    }
+    PQclear( result );
 }
 
 CookieID
@@ -122,21 +136,26 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
 {
     CookieID cid = 0;
 
+    int nParams = 5;
+    char* paramValues[nParams];
+    char buf[512];
+    formatParams( paramValues, nParams, "%s\n%d\n%d\n%d\n%s\n", buf, sizeof(buf),
+                  cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
+
     /* NOTE: ILIKE, for case-insensitive comparison, is a postgres extension
        to SQL. */
-    const char* fmt = "SELECT cid, connName, nPerDevice FROM " GAMES_TABLE
-        " WHERE room ILIKE '%s'"
-        " AND lang = %d"
-        " AND nTotal = %d"
-        " AND %d <= nTotal-sum_array(nPerDevice)"
-        " AND %s = pub"
+    const char* cmd = "SELECT cid, connName, nPerDevice FROM " GAMES_TABLE
+        " WHERE room ILIKE $1"
+        " AND lang = $2"
+        " AND nTotal = $3"
+        " AND $4 <= nTotal-sum_array(nPerDevice)"
+        " AND $5 = pub"
         " LIMIT 1";
-    char query[256];
-    snprintf( query, sizeof(query), fmt,
-              cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
-    logf( XW_LOGINFO, "query: %s", query );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexecParams( getThreadConn(), cmd,
+                                     nParams, NULL,
+                                     paramValues, 
+                                     NULL, NULL, 0 );
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
@@ -440,6 +459,29 @@ DBMgr::RemoveStoredMessage( int msgID )
 
     execSql( query );
 }
+
+static void
+formatParams( char* paramValues[], int nParams, const char* fmt, char* buf, 
+              int bufLen, ... )
+{
+    va_list ap;
+    va_start( ap, bufLen );
+
+    int len = vsnprintf( buf, bufLen, fmt, ap );
+
+    int ii, pnum;
+    for ( pnum = 0, ii = 0; ii < len && pnum < nParams; ++pnum ) {
+        paramValues[pnum] = &buf[ii];
+        for ( ; ii < len; ++ii ) {
+            if ( buf[ii] == '\n' ) {
+                buf[ii] = '\0';
+                ++ii;
+                break;
+            }
+        }
+    }
+    va_end(ap);
+} 
 
 static void
 destr_function( void* conn )
