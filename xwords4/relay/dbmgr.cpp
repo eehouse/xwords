@@ -36,6 +36,8 @@
 static DBMgr* s_instance = NULL;
 
 static int sumArray( const char* const str );
+#define DELIM "\1"
+
 static void formatParams( char* paramValues[], int nParams, const char* fmt, 
                           char* buf, int bufLen, ... );
 
@@ -87,9 +89,10 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     int nParams = 6;
     char* paramValues[nParams];
     char buf[512];
-    formatParams( paramValues, nParams,  "%d\n%s\n%s\n%d\n%d\n%s\n", buf, 
-                  sizeof(buf), cid, cookie, connName, nPlayersT, langCode, 
-                  isPublic?"TRUE":"FALSE" );
+    formatParams( paramValues, nParams,
+                  "%d"DELIM"%s"DELIM"%s"DELIM"%d"DELIM"%d"DELIM"%s", 
+                  buf, sizeof(buf), cid, cookie, connName, nPlayersT, 
+                  langCode, isPublic?"TRUE":"FALSE" );
 
     PGresult* result = PQexecParams( getThreadConn(), command,
                                      nParams, NULL,
@@ -139,7 +142,8 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     int nParams = 5;
     char* paramValues[nParams];
     char buf[512];
-    formatParams( paramValues, nParams, "%s\n%d\n%d\n%d\n%s\n", buf, sizeof(buf),
+    formatParams( paramValues, nParams,
+                  "%s"DELIM"%d"DELIM"%d"DELIM"%d"DELIM"%s", buf, sizeof(buf),
                   cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
 
     /* NOTE: ILIKE, for case-insensitive comparison, is a postgres extension
@@ -473,7 +477,7 @@ formatParams( char* paramValues[], int nParams, const char* fmt, char* buf,
     for ( pnum = 0, ii = 0; ii < len && pnum < nParams; ++pnum ) {
         paramValues[pnum] = &buf[ii];
         for ( ; ii < len; ++ii ) {
-            if ( buf[ii] == '\n' ) {
+            if ( buf[ii] == DELIM[0] ) {
                 buf[ii] = '\0';
                 ++ii;
                 break;
