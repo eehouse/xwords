@@ -359,7 +359,7 @@ relay_error_gtk( void* closure, XWREASON relayErr )
     LOG_FUNC();
     GtkAppGlobals* globals = (GtkAppGlobals*)closure;
 
-    gint (*proc)( gpointer data );
+    gint (*proc)( gpointer data ) = NULL;
     switch( relayErr ) {
     case XWRELAY_ERROR_NO_ROOM:
     case XWRELAY_ERROR_DUP_ROOM:
@@ -369,12 +369,18 @@ relay_error_gtk( void* closure, XWREASON relayErr )
     case XWRELAY_ERROR_BADPROTO:
         proc = invoke_new_game;
         break;
+    case XWRELAY_ERROR_DELETED:
+        gtkask_timeout( "relay says another device deleted game.", 
+                        GTK_BUTTONS_OK, 1000 );
+        break;
     default:
         assert(0);
         break;
     }
 
-    (void)g_idle_add( proc, globals );
+    if ( !!proc ) {
+        (void)g_idle_add( proc, globals );
+    }
 }
 
 static void
