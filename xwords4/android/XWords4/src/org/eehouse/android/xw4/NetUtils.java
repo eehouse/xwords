@@ -39,6 +39,7 @@ public class NetUtils {
     // from xwrelay.h
     public static byte PRX_PUB_ROOMS = 1;
     public static byte PRX_HAS_MSGS = 2;
+    public static byte PRX_DEVICE_GONE = 3;
 
     public static Socket MakeProxySocket( Context context, 
                                           int timeoutMillis )
@@ -61,6 +62,47 @@ public class NetUtils {
         Utils.logf( "MakeProxySocket=>%s", null != socket
                     ? socket.toString():"null" );
         return socket;
+    }
+
+    private static class InformThread extends Thread {
+        private Socket m_socket;
+        private String m_relayID;
+        private int m_seed;
+        public InformThread( Socket socket, String relayID, int seed )
+        {
+            m_socket = socket;
+            m_relayID = relayID;
+            m_seed = seed;
+        }
+        public void run() {
+            try {
+                DataOutputStream outStream = 
+                    new DataOutputStream( m_socket.getOutputStream() );
+                outStream.writeShort( 2 + 2 + 2 + m_relayID.length() + 1 );
+                outStream.writeByte( NetUtils.PROTOCOL_VERSION );
+                outStream.writeByte( NetUtils.PRX_DEVICE_GONE );
+                outStream.writeShort( 1 ); // only one id for now
+                outStream.writeShort( m_seed );
+                outStream.writeBytes( m_relayID );
+                outStream.write( '\n' );
+                outStream.flush();
+
+                DataInputStream dis = 
+                    new DataInputStream( m_socket.getInputStream() );
+                short resLen = dis.readShort();
+                m_socket.close();
+            } catch ( java.io.IOException ioe ) {
+                Utils.logf( ioe.toString() );
+            }
+        }
+    }
+
+    public static void informOfDeath( Context context, String relayID, 
+                                      int seed )
+    {
+        Socket socket = MakeProxySocket( context, 10000 );
+        InformThread thread = new InformThread( socket, relayID, seed );
+        thread.start();
     }
 
     public static String[] QueryRelay( Context context )
@@ -156,5 +198,4 @@ public class NetUtils {
         nBytes[0] = len;
         return ids;
     }
-
 }
