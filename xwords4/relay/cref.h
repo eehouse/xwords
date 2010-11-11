@@ -113,9 +113,10 @@ class CookieRef {
 
     bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed );
     void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
-                     int seed );
+                     int seed, bool gameDead );
     void _HandleAck( HostID hostID );
     void _Disconnect(int socket, HostID hostID );
+    void _DeviceGone( HostID hostID, int seed );
     void _Shutdown();
     void _HandleHeartbeat( HostID id, int socket );
     void _CheckHeartbeats( time_t now );
@@ -156,6 +157,10 @@ class CookieRef {
                 HostID srcID;
             } discon;
             struct {
+                HostID hid;
+                int seed;
+            } devgone;
+            struct {
                 HostID id;
                 int socket;
             } heart;
@@ -189,6 +194,7 @@ class CookieRef {
                            int buflen );
     void pushDestBadEvent();
     void pushLastSocketGoneEvent();
+    void pushGameDead( int socket );
     void checkHaveRoom( const CRefEvent* evt );
     void pushRemoveSocketEvent( int socket );
     void pushNotifyDisconEvent( int socket, XWREASON why );
@@ -216,8 +222,10 @@ class CookieRef {
 
     void checkFromServer( const CRefEvent* evt );
     void notifyOthers( int socket, XWRelayMsg msg, XWREASON why );
+    void notifyGameDead( int socket );
 
     void disconnectSockets( int socket, XWREASON why );
+    void removeDevice( const CRefEvent* const evt );
     void noteHeartbeat(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );

@@ -199,15 +199,18 @@ CookieRef::_Connect( int socket, int nPlayersH, int nPlayersS, int seed )
 
 void
 CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
-                       int seed )
+                       int seed, bool gameDead )
 {
     if ( AlreadyHere( hid, seed, socket ) ) {
         logf( XW_LOGINFO, "dropping reconnection because already here" );
     } else {
         (void)CRefMgr::Get()->Associate( socket, this );
         pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
-        handleEvents();
     }
+    if ( gameDead ) {
+        pushGameDead( socket );
+    }
+    handleEvents();
 }
 
 void
@@ -229,6 +232,17 @@ CookieRef::_Disconnect( int socket, HostID hostID )
     CRefEvent evt( XWE_DISCONN );
     evt.u.discon.socket = socket;
     evt.u.discon.srcID = hostID;
+    m_eventQueue.push_back( evt );
+
+    handleEvents();
+}
+
+void
+CookieRef::_DeviceGone( HostID hostID, int seed )
+{
+    CRefEvent evt( XWE_DEVGONE );
+    evt.u.devgone.hid = hostID;
+    evt.u.devgone.seed = seed;
     m_eventQueue.push_back( evt );
 
     handleEvents();
@@ -550,6 +564,14 @@ CookieRef::pushLastSocketGoneEvent()
 }
 
 void
+CookieRef::pushGameDead( int socket )
+{
+    CRefEvent evt( XWE_GAMEDEAD );
+    evt.u.discon.socket = socket;
+    m_eventQueue.push_back( evt );
+}
+
+void
 CookieRef::handleEvents()
 {
     assert( !m_in_handleEvents );
@@ -642,6 +664,14 @@ CookieRef::handleEvents()
                               XWRELAY_ERROR_OTHER_DISCON );
                 removeSocket( evt.u.discon.socket );
                 /* Don't notify.  This is a normal part of a game ending. */
+                break;
+
+            case XWA_RMDEV:
+                removeDevice( &evt );
+                break;
+
+            case XWA_TELLGAMEDEAD:
+                notifyGameDead( evt.u.discon.socket );
                 break;
 
             case XWA_NOTEHEART:
@@ -1012,6 +1042,17 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 } /* notifyOthers */
 
 void
+CookieRef::notifyGameDead( int socket )
+{
+    unsigned char buf[] = { 
+        XWRELAY_MSG_STATUS
+        ,XWRELAY_ERROR_DELETED
+    };
+
+    send_with_length( socket, buf, sizeof(buf), true );
+}
+
+void
 CookieRef::moveSockets( void )
 {
     ASSERT_LOCKED();
@@ -1151,6 +1192,21 @@ CookieRef::disconnectSockets( int socket, XWREASON why )
         pushRemoveSocketEvent( socket );
     }
 } /* disconnectSockets */
+
+void
+CookieRef::removeDevice( const CRefEvent* const evt )
+{
+    DBMgr* dbmgr = DBMgr::Get();
+    if ( dbmgr->HaveDevice( ConnName(), evt->u.devgone.hid,
+                            evt->u.devgone.seed ) ) {
+        dbmgr->KillGame( ConnName(), evt->u.devgone.hid );
+
+        vector<HostRec>::iterator iter;
+        for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+            notifyGameDead( iter->m_socket );
+        }
+    }
+}
 
 void
 CookieRef::noteHeartbeat( const CRefEvent* evt )

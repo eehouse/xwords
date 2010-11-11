@@ -145,7 +145,9 @@ class CRefMgr {
     CookieRef* getMakeCookieRef( const char* connName, const char* cookie, 
                                  HostID hid, int socket, int nPlayersH, 
                                  int nPlayersS, int seed, int langCode, 
-                                 bool isPublic );
+                                 bool isPublic, bool* isDead );
+
+    CookieRef* getMakeCookieRef( const char* const connName );
 
     CookieRef* getCookieRef( CookieID cookieID );
     CookieRef* getCookieRef( int socket );
@@ -200,6 +202,7 @@ class SafeCref {
               int socket, int nPlayersH, int nPlayersS, 
               unsigned short gameSeed, int langCode, 
               bool wantsPublic, bool makePublic );
+    SafeCref( const char* const connName );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );
@@ -226,7 +229,8 @@ class SafeCref {
                     int seed ) {
         if ( IsValid() ) {
             assert( 0 != m_cref->GetCookieID() );
-            m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersS, seed );
+            m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersS, 
+                                seed, m_dead );
             return true;
         } else {
             return false;
@@ -238,6 +242,15 @@ class SafeCref {
             m_cref->_Disconnect( socket, hostID );
         }
     }
+
+    void DeviceGone( HostID hid, int seed )
+    {
+        if ( IsValid() ) {
+            assert( 0 != m_cref->GetCookieID() );
+            m_cref->_DeviceGone( hid, seed );
+        }
+    }
+
     bool HandleAck(HostID hostID ) {
         if ( IsValid() ) {
             assert( 0 != m_cref->GetCookieID() );
@@ -368,6 +381,7 @@ class SafeCref {
     CRefMgr* m_mgr;
     bool m_isValid;
     bool m_locked;
+    bool m_dead;
 }; /* SafeCref class */
 
 

@@ -41,19 +41,23 @@ class DBMgr {
                  int langCode, int nPlayersT, bool isPublic );
 
     CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
-                       int* langP, int* nPlayersTP, int* nPlayersHP );
+                       int* langP, int* nPlayersTP, int* nPlayersHP,
+                       bool* isDead );
     CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
                        int nPlayersH, bool wantsPublic, 
                        char* connNameBuf, int bufLen, int* nPlayersHP );
 
     HostID AddDevice( const char* const connName, HostID curID,
                       int nToAdd, unsigned short seed );
-    void RmDevice( const char* const connName, HostID id );
+    bool RmDevice( const char* const connName, HostID id );
+    bool HaveDevice( const char* const connName, HostID id, int seed );
     void AddCID( const char* connName, CookieID cid );
     void ClearCID( const char* connName );
     void RecordSent( const char* const connName, int nBytes );
     void GetPlayerCounts( const char* const connName, int* nTotal,
                           int* nHere );
+
+    void KillGame( const char* const connName, int hid );
 
     /* Return list of roomName/playersStillWanted/age for open public games
        matching this language and total game size. Will probably want to cache
@@ -62,7 +66,7 @@ class DBMgr {
     void PublicRooms( int lang, int nPlayers, int* nNames, string& names );
 
     /* Return number of messages pending for connName:hostid pair passed in */
-    int PendingMsgCount( const char* const connNameIDPair );
+    int PendingMsgCount( const char* const connName, int hid );
 
     /* message storage -- different DB */
     int CountStoredMessages( const char* const connName );
@@ -73,10 +77,9 @@ class DBMgr {
                            unsigned char* buf, size_t* buflen, int* msgID );
     void RemoveStoredMessage( int msgID );
 
-
  private:
     DBMgr();
-    void execSql( const char* query ); /* no-results query */
+    bool execSql( const char* query ); /* no-results query */
     void readArray( const char* const connName, int arr[] );
 
     PGconn* getThreadConn( void );

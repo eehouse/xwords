@@ -134,6 +134,13 @@ static StateTable g_stateTable[] = {
 { XWS_MISSING,        XWE_HEARTRCVD,     XWA_NOTEHEART,    XWS_MISSING },
 #endif
 
+{ XWS_INITED,         XWE_DEVGONE,       XWA_RMDEV,        XWS_DEAD },
+{ XWS_WAITMORE,       XWE_DEVGONE,       XWA_RMDEV,        XWS_WAITMORE },
+/* This should be impossible unless device allows deleting an open/connected
+   game */
+{ XWS_ALLCONND,       XWE_DEVGONE,       XWA_RMDEV,        XWS_WAITMORE },
+{ XWS_WAITMORE,       XWE_GAMEDEAD,      XWA_TELLGAMEDEAD, XWS_WAITMORE },
+
     /* Connect timer */
 { XWS_WAITMORE,       XWE_CONNTIMER,     XWA_TIMERDISCONN, XWS_DEAD },
 /* { XWS_MISSING,        XWE_CONNTIMER,     XWA_NONE,         XWS_MISSING }, */
@@ -217,6 +224,8 @@ eventString( XW_RELAY_EVENT evt )
         CASESTR(XWE_GOTLASTACK);
         CASESTR(XWE_ACKTIMEOUT);
         CASESTR(XWE_DISCONN);
+        CASESTR(XWE_DEVGONE);
+        CASESTR(XWE_GAMEDEAD);
         CASESTR(XWE_FORWARDMSG);
 #ifdef RELAY_HEARTBEAT
         CASESTR(XWE_HEARTRCVD);
@@ -262,6 +271,8 @@ actString( XW_RELAY_ACTION act )
         CASESTR(XWA_NOTEHEART);
         CASESTR(XWA_TIMERDISCONN);
         CASESTR(XWA_DISCONNECT);
+        CASESTR(XWA_RMDEV);
+        CASESTR(XWA_TELLGAMEDEAD);
         CASESTR(XWA_NOTIFYDISCON);
         CASESTR(XWA_REMOVESOCK_1);
         CASESTR(XWA_REMOVESOCK_2);

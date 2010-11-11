@@ -178,6 +178,21 @@ cmdToStr( XWRELAY_Cmd cmd )
 }
 
 static bool
+parseRelayID( const char* const in, char* buf, HostID* hid )
+{
+    const char* hidp = strrchr( (char*)in, '/' );
+    bool ok = NULL != hidp;
+    if ( ok ) {
+        int connNameLen = hidp - in;
+        strncpy( buf, in, connNameLen );
+        buf[connNameLen] = '\0';
+        *hid = atoi( hidp+1 );
+        logf( XW_LOGINFO, "%s=>%s : %d", __func__, buf, *hid );
+    }
+    return ok;
+}
+
+static bool
 getNetShort( unsigned char** bufpp, unsigned char* end, unsigned short* out )
 {
     bool ok = *bufpp + 2 <= end;
@@ -725,9 +740,11 @@ handle_proxy_tproc( void* closure )
                             if ( NULL == name ) {
                                 break;
                             }
+                            HostID hid;
+                            char connName[MAX_CONNNAME_LEN+1];
+                            parseRelayID( name, connName, &hid );
                             ids.push_back( DBMgr::Get()->
-                                           PendingMsgCount( name ) );
-
+                                           PendingMsgCount( connName, hid ) );
                             in = NULL;
                         }
 
@@ -746,6 +763,31 @@ handle_proxy_tproc( void* closure )
                         }
                     }
                 }
+                break;
+            case PRX_DEVICE_GONE:
+                logf( XW_LOGINFO, "%s: got PRX_DEVICE_GONE", __func__ );
+                if ( len >= 2 ) {
+                    unsigned short nameCount;
+                    if ( getNetShort( &bufp, end, &nameCount ) 
+                         && 1 == nameCount ) {
+                        unsigned short seed;
+                        if ( getNetShort( &bufp, end, &seed ) ) {
+                            const unsigned char* crptr = 
+                                (unsigned char*)strchr( (char*)bufp, '\n' );
+                            if ( NULL != crptr && crptr < end ) {
+                                HostID hid;
+                                char connName[MAX_CONNNAME_LEN+1];
+                                if ( parseRelayID( (char*)bufp, connName, 
+                                                   &hid ) ) {
+                                    SafeCref scr( connName );
+                                    scr.DeviceGone( hid, seed );
+                                }
+                            }
+                        }
+                    }
+                }
+                len = 0;        /* return a 0-length message */
+                write( sock, &len, sizeof(len) );
                 break;
             }
         }

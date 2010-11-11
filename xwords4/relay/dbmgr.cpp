@@ -107,11 +107,11 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 
 CookieID
 DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
-                 int* langP, int* nPlayersTP, int* nPlayersHP )
+                 int* langP, int* nPlayersTP, int* nPlayersHP, bool* isDead )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice FROM " 
+    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice, dead FROM " 
         GAMES_TABLE " WHERE connName = '%s'"
         " LIMIT 1";
     char query[256];
@@ -125,6 +125,7 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
         *langP = atoi( PQgetvalue( result, 0, 2 ) );
         *nPlayersTP = atoi( PQgetvalue( result, 0, 3 ) );
         *nPlayersHP = atoi( PQgetvalue( result, 0, 4 ) );
+        *isDead = 't' == PQgetvalue( result, 0, 5 )[0];
     }
     PQclear( result );
 
@@ -149,7 +150,8 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     /* NOTE: ILIKE, for case-insensitive comparison, is a postgres extension
        to SQL. */
     const char* cmd = "SELECT cid, connName, nPerDevice FROM " GAMES_TABLE
-        " WHERE room ILIKE $1"
+        " WHERE NOT dead"
+        " AND room ILIKE $1"
         " AND lang = $2"
         " AND nTotal = $3"
         " AND $4 <= nTotal-sum_array(nPerDevice)"
@@ -200,7 +202,7 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
     return newID;
 }
 
-void
+bool
 DBMgr::RmDevice( const char* connName, HostID hid )
 {
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0, "
@@ -209,7 +211,22 @@ DBMgr::RmDevice( const char* connName, HostID hid )
     snprintf( query, sizeof(query), fmt, hid, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-    execSql( query );
+    return execSql( query );
+}
+
+bool
+DBMgr::HaveDevice( const char* connName, HostID hid, int seed )
+{
+    bool found = false;
+    const char* fmt = "SELECT * from " GAMES_TABLE 
+        " WHERE connName = '%s' AND seeds[%d] = %d";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName, hid, seed );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    PGresult* result = PQexec( getThreadConn(), query );
+    found = 1 == PQntuples( result );
+    PQclear( result );
+    return found;
 }
 
 void
@@ -266,6 +283,17 @@ DBMgr::GetPlayerCounts( const char* const connName, int* nTotal, int* nHere )
 }
 
 void
+DBMgr::KillGame( const char* const connName, int hid )
+{
+   const char* fmt = "UPDATE " GAMES_TABLE " SET dead = TRUE,"
+       " nperdevice[%d] = -1"
+       " WHERE connName = '%s'";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, hid, connName );
+    execSql( query );
+}
+
+void
 DBMgr::ClearCIDs( void )
 {
     execSql( "UPDATE " GAMES_TABLE " set cid = null" );
@@ -301,39 +329,33 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
 }
 
 int
-DBMgr::PendingMsgCount( const char* connNameIDPair )
+DBMgr::PendingMsgCount( const char* connName, int hid )
 {
     int count = 0;
-    const char* hid = strrchr( connNameIDPair, '/' );
-    if ( NULL != hid ) {
-        char name[MAX_CONNNAME_LEN];
-        int connNameLen = hid - connNameIDPair;
-        strncpy( name, connNameIDPair, connNameLen );
-        name[connNameLen] = '\0';
+    const char* fmt = "SELECT COUNT(*) FROM " MSGS_TABLE
+        " WHERE connName = '%s' AND hid = %d";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName, hid );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-        const char* fmt = "SELECT COUNT(*) FROM " MSGS_TABLE
-            " WHERE connName = '%s' AND hid = %s";
-        char query[256];
-        snprintf( query, sizeof(query), fmt, name, hid+1 );
-        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
-
-        PGresult* result = PQexec( getThreadConn(), query );
-        if ( 1 == PQntuples( result ) ) {
-            count = atoi( PQgetvalue( result, 0, 0 ) );
-        }
-        PQclear( result );
+    PGresult* result = PQexec( getThreadConn(), query );
+    if ( 1 == PQntuples( result ) ) {
+        count = atoi( PQgetvalue( result, 0, 0 ) );
     }
+    PQclear( result );
     return count;
 }
 
-void
+bool
 DBMgr::execSql( const char* query )
 {
     PGresult* result = PQexec( getThreadConn(), query );
-    if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
+    bool ok = PGRES_COMMAND_OK == PQresultStatus(result);
+    if ( !ok ) {
         logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), PQresultErrorMessage(result) );
     }
     PQclear( result );
+    return ok;
 }
 
 void

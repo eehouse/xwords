@@ -90,6 +90,11 @@ typedef enum {
 
     ,XWE_DISCONN           /* disconnect socket from this game/cref */
 
+    /* DEVGONE: a device tells us it will never connect again.  It may be the
+       only device in the game or may not */
+    ,XWE_DEVGONE
+    /* Joined a game where a device has already generated DEVGONE */
+    ,XWE_GAMEDEAD
     ,XWE_FORWARDMSG        /* A message needs forwarding */
 
 #ifdef RELAY_HEARTBEAT
@@ -147,6 +152,9 @@ typedef enum {
     ,XWA_TIMERDISCONN  /* disconnect all because of a timer */
 
     ,XWA_DISCONNECT
+
+    ,XWA_RMDEV                  /* remove the resigning */
+    ,XWA_TELLGAMEDEAD         /* tell the device */
 
     ,XWA_NOTIFYDISCON
 
