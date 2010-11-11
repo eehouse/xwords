@@ -105,6 +105,12 @@ public class GameUtils {
         XwJNI.game_dispose( gamePtr );
     } // resetGame
 
+    public static void resetGame( Context context, String pathIn )
+    {
+        tellRelayDied( context, pathIn );
+        resetGame( context, pathIn, pathIn );
+    }
+
     public static String[] gamesList( Context context )
     {
         ArrayList<String> al = new ArrayList<String>();
@@ -116,7 +122,7 @@ public class GameUtils {
         return al.toArray( new String[al.size()] );
     }
 
-    public static String resetGame( Context context, String pathIn )
+    public static String dupeGame( Context context, String pathIn )
     {
         String newName = newName( context );
         resetGame( context, pathIn, newName );
@@ -126,6 +132,7 @@ public class GameUtils {
     public static void deleteGame( Context context, String path )
     {
         // does this need to be synchronized?
+        tellRelayDied( context, path );
         context.deleteFile( path );
         DBUtils.saveSummary( context, path, null );
     }
@@ -384,7 +391,9 @@ public class GameUtils {
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
 
-        if ( !forceNew ) {
+        if ( forceNew ) {
+            tellRelayDied( context, path );
+        } else {
             byte[] stream = GameUtils.savedGame( context, path );
             // Will fail if there's nothing in the stream but a gi.
             madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
@@ -447,4 +456,13 @@ public class GameUtils {
             return new String[0];
         }
     }
+    
+    private static void tellRelayDied( Context context, String path )
+    {
+        GameSummary summary = DBUtils.getSummary( context, path );
+        if ( null != summary.relayID ) {
+            NetUtils.informOfDeath( context, summary.relayID, summary.seed );
+        }
+    }
+
 }

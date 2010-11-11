@@ -308,8 +308,7 @@ public class GamesList extends XWListActivity
             DialogInterface.OnClickListener lstnr =
                 new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int ii ) {
-                        GameUtils.resetGame( GamesList.this, 
-                                             path, path );
+                        GameUtils.resetGame( GamesList.this, path );
                         m_adapter.inval( path );
                         onContentChanged();
                     }
@@ -331,7 +330,7 @@ public class GamesList extends XWListActivity
                     break;
 
                 case R.id.list_item_new_from:
-                    String newName = GameUtils.resetGame( this, path );  
+                    String newName = GameUtils.dupeGame( this, path );  
                     invalPath = newName;
                     break;
 
@@ -385,7 +384,7 @@ public class GamesList extends XWListActivity
     private String addGame( boolean networked )
     {
         String path = saveNew( new CurGameInfo( this, networked ) );
-        GameUtils.resetGame( this, path, path );
+        GameUtils.resetGame( this, path );
         onContentChanged();
         return path;
     }
