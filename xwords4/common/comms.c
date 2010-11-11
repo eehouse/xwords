@@ -1154,6 +1154,7 @@ relayCmdToStr( XWRELAY_Cmd cmd )
 #endif
         CASESTR( XWRELAY_MSG_FROMRELAY );
         CASESTR( XWRELAY_MSG_TORELAY );
+        CASESTR( XWRELAY_MSG_STATUS );
     default: 
         XP_LOGF( "%s: unknown cmd: %d", __func__, cmd );
         XP_ASSERT( 0 );
@@ -1314,6 +1315,11 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         relayErr = stream_getU8( stream );
         set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
         util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        break;
+
+    case XWRELAY_MSG_STATUS:
+        relayErr = stream_getU8( stream );
+        (*comms->procs.rerror)( comms->procs.closure, relayErr );
         break;
 
     case XWRELAY_CONNECTDENIED: /* socket will get closed by relay */
