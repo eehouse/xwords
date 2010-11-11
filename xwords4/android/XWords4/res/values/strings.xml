@@ -311,6 +311,10 @@
     <string name="msg_dup_room">Another host has already registered a room using that name.  Rename yours or retry later.</string>
     <string name="msg_lost_other">The relay has lost contact with another device in this game.</string>
 
+    <string name="msg_dev_deleted">One of the devices in this game has
+      deleted the game. You will not be able to play any
+      further.</string>
+
     <string name="ids_badwords">Word[s] %s not found in dictionary.</string>
     <string name="badwords_accept">  Do you still want to accept this move?</string>
     <string name="badwords_lost">  Turn lost.</string>

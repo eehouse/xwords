@@ -409,6 +409,11 @@ public class CommsTransport extends Thread implements TransportProcs {
             strID = R.string.msg_lost_other;
             break;
 
+        case DELETED:
+            strID = R.string.msg_dev_deleted;
+            how = DIALOG;
+            break;
+
         case OLDFLAGS:
         case BADPROTO:
         case RELAYBUSY:

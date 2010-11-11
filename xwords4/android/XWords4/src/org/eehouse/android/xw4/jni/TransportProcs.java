@@ -47,6 +47,7 @@ public interface TransportProcs {
             ,NO_ROOM
             ,DUP_ROOM
             ,TOO_MANY
+            ,DELETED
     };
     void relayErrorProc( XWRELAY_ERROR relayErr );
 }
