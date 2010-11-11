@@ -34,6 +34,7 @@ EOF
 CREATE TABLE games ( 
 cid integer
 ,room VARCHAR(32)
+,dead BOOLEAN DEFAULT FALSE
 ,lang INTEGER
 ,pub BOOLEAN
 ,connName VARCHAR(64) UNIQUE PRIMARY KEY
