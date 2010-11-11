@@ -94,6 +94,9 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
        , XWRELAY_MSG_TORELAY
        /* Sent from device to relay.  Format: connectionID: 2; src_hostID:
           1; dest_hostID: 1 */
+
+       , XWRELAY_MSG_STATUS     /* message conveying status of some sort.
+                                   Format: msgCode: 1; varies after that */
 }
 #ifndef CANT_DO_TYPEDEF
  XWRelayMsg
@@ -136,6 +139,7 @@ enum {
     ,XWRELAY_ERROR_NO_ROOM
     ,XWRELAY_ERROR_DUP_ROOM
     ,XWRELAY_ERROR_TOO_MANY
+    ,XWRELAY_ERROR_DELETED
     ,XWRELAY_ERROR_LASTERR
 }
 #ifndef CANT_DO_TYPEDEF
@@ -149,6 +153,7 @@ typedef
 enum { PRX_NONE             /* 0 is an illegal value */
        ,PRX_PUB_ROOMS       /* list all public rooms for lang/nPlayers */
        ,PRX_HAS_MSGS        /* return message counts for connName/devid array */
+       ,PRX_DEVICE_GONE     /* return message counts for connName/devid array */
 }
 #ifndef CANT_DO_TYPEDEF
 XWPRXYCMD
