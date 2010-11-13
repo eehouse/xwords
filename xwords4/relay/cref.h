@@ -98,7 +98,6 @@ class CookieRef {
     bool AlreadyHere( unsigned short seed, int socket );
     /* reconnect case */
     bool AlreadyHere( HostID hid, unsigned short seed, int socket );
-    bool GameOpen( const char* cookie );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -254,8 +253,6 @@ class CookieRef {
     static void s_checkAck( void* closure );
     
     vector<HostRec> m_sockets;
-    bool m_gameFull;         /* once we've filled up, no more *new*
-                                connections ever */
     int m_heatbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */
     string m_connName;          /* globally unique name */

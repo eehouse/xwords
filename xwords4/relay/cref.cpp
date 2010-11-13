@@ -92,7 +92,6 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     m_nPlayersHere = nAlreadyHere;
     m_locking_thread = 0;
     m_starttime = uptime();
-    m_gameFull = false;
     m_in_handleEvents = false;
     m_langCode = langCode;
     m_nPendingAcks = 0;
@@ -274,33 +273,6 @@ CookieRef::SocketForHost( HostID dest )
     logf( XW_LOGVERBOSE0, "returning socket=%d for hostid=%x", socket, dest );
     return socket;
 }
-
-bool
-CookieRef::GameOpen( const char* cookie )
-{
-    bool accept = false;
-    /* First, do we have room.  Second, are we missing this guy? */
-
-    if ( m_gameFull ) {
-        /* do nothing; reject */
-        logf( XW_LOGINFO, "reject: game for %s is full", cookie );
-    } else if ( m_curState != XWS_INITED
-         && m_curState != XWS_WAITMORE ) {
-        /* do nothing; reject */
-        logf( XW_LOGINFO, "reject: bad state %s", stateString(m_curState) );
-    } else {
-        accept = true;
-    }
-
-    /* Error to connect if cookie doesn't match. */
-    if ( accept && !!cookie && 0 != strcasecmp( cookie, Cookie() ) ) {
-        logf( XW_LOGERROR, "%s: not accepting b/c cookie mismatch: %s vs %s",
-              __func__, cookie, Cookie() );
-        accept = false;
-    }
-
-    return accept;
-} /* GameOpen */
 
 bool 
 CookieRef::AlreadyHere( unsigned short seed, int socket )
@@ -871,7 +843,6 @@ CookieRef::postCheckAllHere()
 {
     if ( m_nPendingAcks == 0
          && m_nPlayersHere == m_nPlayersSought ) { /* complete! */
-        m_gameFull = true;
         CRefEvent evt( XWE_ALLHERE );
         m_eventQueue.push_back( evt );
     }
