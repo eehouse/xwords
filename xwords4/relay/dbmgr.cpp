@@ -173,6 +173,23 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     return cid;
 } /* FindOpen */
 
+bool
+DBMgr::GameFull( const char* const connName )
+{
+    const char* cmd = "SELECT ntotal=sum_array(nperdevice) from " GAMES_TABLE
+        " WHERE connName='%s'";
+    char query[256];
+    snprintf( query, sizeof(query), cmd, connName );
+    logf( XW_LOGINFO, "query: %s", query );
+
+    PGresult* result = PQexec( getThreadConn(), query );
+    int nTuples = PQntuples( result );
+    assert( nTuples <= 1 );
+    bool full = 't' == PQgetvalue( result, 0, 0 )[0];
+    PQclear( result );
+    return full;
+}
+
 HostID
 DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd, 
                   unsigned short seed )

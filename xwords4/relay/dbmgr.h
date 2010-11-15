@@ -46,6 +46,7 @@ class DBMgr {
     CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
                        int nPlayersH, bool wantsPublic, 
                        char* connNameBuf, int bufLen, int* nPlayersHP );
+    bool GameFull( const char* const connName );
 
     HostID AddDevice( const char* const connName, HostID curID,
                       int nToAdd, unsigned short seed );
