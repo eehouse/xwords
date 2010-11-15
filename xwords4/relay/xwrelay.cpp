@@ -180,7 +180,7 @@ cmdToStr( XWRELAY_Cmd cmd )
 static bool
 parseRelayID( const char* const in, char* buf, HostID* hid )
 {
-    const char* hidp = strrchr( (char*)in, '/' );
+    const char* hidp = strrchr( (char*)in, ':' );
     bool ok = NULL != hidp;
     if ( ok ) {
         int connNameLen = hidp - in;
@@ -783,7 +783,13 @@ handle_proxy_tproc( void* closure )
                                         SafeCref scr( connName );
                                         scr.DeviceGone( hid, seed );
                                     }
+                                    /* skip "\n" */
+                                    bufp = (unsigned char*)crptr + 1;
+                                } else {
+                                    break;
                                 }
+                            } else {
+                                break;
                             }
                         }
                     }
