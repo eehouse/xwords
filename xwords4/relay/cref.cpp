@@ -841,8 +841,8 @@ CookieRef::modPending( const CRefEvent* evt, bool keep )
 void
 CookieRef::postCheckAllHere()
 {
-    if ( m_nPendingAcks == 0
-         && m_nPlayersHere == m_nPlayersSought ) { /* complete! */
+    if ( m_nPendingAcks == 0 && DBMgr::Get()->GameFull( ConnName() ) ) {
+         /* && m_nPlayersHere == m_nPlayersSought ) { /\* complete! *\/ */
         CRefEvent evt( XWE_ALLHERE );
         m_eventQueue.push_back( evt );
     }
