@@ -768,19 +768,21 @@ handle_proxy_tproc( void* closure )
                 logf( XW_LOGINFO, "%s: got PRX_DEVICE_GONE", __func__ );
                 if ( len >= 2 ) {
                     unsigned short nameCount;
-                    if ( getNetShort( &bufp, end, &nameCount ) 
-                         && 1 == nameCount ) {
-                        unsigned short seed;
-                        if ( getNetShort( &bufp, end, &seed ) ) {
-                            const unsigned char* crptr = 
-                                (unsigned char*)strchr( (char*)bufp, '\n' );
-                            if ( NULL != crptr && crptr < end ) {
-                                HostID hid;
-                                char connName[MAX_CONNNAME_LEN+1];
-                                if ( parseRelayID( (char*)bufp, connName, 
-                                                   &hid ) ) {
-                                    SafeCref scr( connName );
-                                    scr.DeviceGone( hid, seed );
+                    if ( getNetShort( &bufp, end, &nameCount ) ) {
+                        int ii;
+                        for ( ii = 0; ii < nameCount; ++ii ) {
+                            unsigned short seed;
+                            if ( getNetShort( &bufp, end, &seed ) ) {
+                                const unsigned char* crptr = 
+                                    (unsigned char*)strchr( (char*)bufp, '\n' );
+                                if ( NULL != crptr && crptr < end ) {
+                                    HostID hid;
+                                    char connName[MAX_CONNNAME_LEN+1];
+                                    if ( parseRelayID( (char*)bufp, connName, 
+                                                       &hid ) ) {
+                                        SafeCref scr( connName );
+                                        scr.DeviceGone( hid, seed );
+                                    }
                                 }
                             }
                         }

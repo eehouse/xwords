@@ -38,7 +38,7 @@
 # define DEFAULT_HOST "localhost"
 #endif
 
-#define MAX_CONN_NAMES 32
+#define MAX_CONN_NAMES 128
 
 /* 
  * Query:
@@ -59,6 +59,7 @@ usage( const char * const argv0 )
              "(1=English default)\\\n" );
     fprintf( stderr, "\t[-n <n>]        # number of players (2 default)\\\n" );
     fprintf( stderr, "\t[-m <connName:devid>    # list msg count\\\n" );
+    fprintf( stderr, "\t[-d <connName:devid:seed>    # delete game \\\n" );
     exit( 1 );
 }
 
@@ -161,6 +162,46 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
 
 } /* do_msgs */
 
+static void
+do_deletes( int sockfd, const char** connNames, int nConnNames )
+{
+    int ii;
+
+    char buf[4096];
+    int nused = 0;
+    for ( ii = 0; ii < nConnNames; ++ii ) {
+        char tmp[32];
+        strcpy( tmp, connNames[ii] );
+        char* seedp = strrchr( tmp, '/' );
+        assert( !!seedp );
+        *(seedp++) = '\0';       /* skip */
+        unsigned int seed;
+        sscanf( seedp, "%X", &seed );
+        fprintf( stderr, "read %s to %x\n", seedp, seed );
+        short netshort = htons( (short)seed );
+        memcpy( &buf[nused], &netshort, sizeof(netshort) );
+        nused += sizeof(netshort);
+        nused += sprintf( &buf[nused], "%s", tmp );
+        buf[nused++] = '\n';
+    }
+
+    /* total len */
+    short num = htons( 2 + nused );
+    write( sockfd, &num, sizeof(num) );
+    
+    /* header */
+    unsigned char hdr[] = { 0, PRX_DEVICE_GONE };
+    write( sockfd, hdr, sizeof(hdr) );
+
+    /* count */
+    write( sockfd, buf, nused );
+
+    unsigned char reply[2];
+    int nRead = read_packet( sockfd, reply, sizeof(reply) );
+    fprintf( stderr, "read %d back\n", nRead );
+    assert( nRead == 0 );
+}
+
 int
 main( int argc, char * const argv[] )
 {
@@ -169,12 +210,13 @@ main( int argc, char * const argv[] )
     int nPlayers = 2;
     bool doRooms = false;
     bool doMgs = false;
+    bool doDeletes = false;
     const char* host = DEFAULT_HOST;
     char const* connNames[MAX_CONN_NAMES];
     int nConnNames = 0;
 
     for ( ; ; ) {
-        int opt = getopt( argc, argv, "a:p:rl:n:m:" );
+        int opt = getopt( argc, argv, "a:d:p:rl:n:m:" );
         if ( opt < 0 ) {
             break;
         }
@@ -182,10 +224,23 @@ main( int argc, char * const argv[] )
         case 'a':
             host = optarg;
             break;
+        case 'd':
+            if ( doMgs ) {
+                fprintf( stderr, "can't mix -d and -m\n" );
+                usage( argv[0] );
+            }
+            assert( nConnNames < MAX_CONN_NAMES - 1 );
+            connNames[nConnNames++] = optarg;
+            doDeletes = true;
+            break;
         case 'l':
             lang = atoi(optarg);
             break;
         case 'm':
+            if ( doDeletes ) {
+                fprintf( stderr, "can't mix -d and -m\n" );
+                usage( argv[0] );
+            }
             assert( nConnNames < MAX_CONN_NAMES - 1 );
             connNames[nConnNames++] = optarg;
             doMgs = true;
@@ -229,6 +284,9 @@ main( int argc, char * const argv[] )
     }
     if ( doMgs ) {
         do_msgs( sockfd, connNames, nConnNames );
+    }
+    if ( doDeletes ) {
+        do_deletes( sockfd, connNames, nConnNames );
     }
 
     close( sockfd );
