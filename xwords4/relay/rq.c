@@ -59,7 +59,7 @@ usage( const char * const argv0 )
              "(1=English default)\\\n" );
     fprintf( stderr, "\t[-n <n>]        # number of players (2 default)\\\n" );
     fprintf( stderr, "\t[-m <connName:devid>    # list msg count\\\n" );
-    fprintf( stderr, "\t[-d <connName:devid:seed>    # delete game \\\n" );
+    fprintf( stderr, "\t[-d <connName:devid/seed>    # delete game \\\n" );
     exit( 1 );
 }
 
@@ -165,6 +165,7 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
 static void
 do_deletes( int sockfd, const char** connNames, int nConnNames )
 {
+    fprintf( stderr, "%s()\n", __func__ );
     int ii;
 
     char buf[4096];
@@ -185,15 +186,20 @@ do_deletes( int sockfd, const char** connNames, int nConnNames )
         buf[nused++] = '\n';
     }
 
+    unsigned char hdr[] = { 0, PRX_DEVICE_GONE };
+
     /* total len */
-    short num = htons( 2 + nused );
+    short num = htons( sizeof(hdr) + 2 + nused );
     write( sockfd, &num, sizeof(num) );
     
     /* header */
-    unsigned char hdr[] = { 0, PRX_DEVICE_GONE };
     write( sockfd, hdr, sizeof(hdr) );
 
     /* count */
+    num = htons( nConnNames );
+    write( sockfd, &num, sizeof(num) );
+
+    /* buffer */
     write( sockfd, buf, nused );
 
     unsigned char reply[2];
