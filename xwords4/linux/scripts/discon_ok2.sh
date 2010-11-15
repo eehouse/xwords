@@ -45,6 +45,35 @@ usage() {
     exit 0
 }
 
+relayID() {
+    CONNNAME=""
+    HOSTID=""
+    SEED=""
+    LOG=$1
+    while read LINE; do
+        case "$LINE" in
+            *got_connect_cmd:\ connName* )
+                CONNNAME="$(echo $LINE | sed 's,^.*connName: "\(.*\)"$,\1,')"
+                ;;
+            *hostid* )
+                HOSTID=$(echo $LINE | sed 's,^.*set hostid: \(.\)$,\1,')
+                ;;
+            *getChannelSeed:\ channelSeed:*)
+                SEED=$(echo $LINE | sed 's,^.*getChannelSeed: channelSeed: \(.*\)$,\1,')
+                ;;
+        esac
+    done < $LOG
+    if [ -z "${CONNNAME}" ]; then
+        echo "CONNNAME not found in $LOG" >&2
+    elif [ -z "${HOSTID}" ]; then
+        echo "HOSTID not found in $LOG" >&2
+    elif [ -z "${SEED}" ]; then
+        echo "SEED not found in $LOG" >&2
+    else
+        echo ${CONNNAME}:${HOSTID}/${SEED}
+    fi
+}
+
 connName() {
     LOG=$1
     grep 'got_connect_cmd: connName' $LOG | \
@@ -64,7 +93,10 @@ declare -A CHECKED_ROOMS
 check_room() {
     ROOM=$1
     if [ -z ${CHECKED_ROOMS[$ROOM]:-""} ]; then
-        NUM=$(echo "SELECT COUNT(*) FROM games WHERE ntotal!=sum_array(nperdevice) AND room='$ROOM'" |
+        NUM=$(echo "SELECT COUNT(*) FROM games "\
+            "WHERE ntotal!=sum_array(nperdevice) "\
+            "AND ntotal != -sum_array(nperdevice) "\
+            "AND room='$ROOM'" |
             psql -q -t xwgames)
         NUM=$((NUM+0))
         if [ "$NUM" -gt 0 ]; then
@@ -160,6 +192,10 @@ check_game() {
         echo -n "Closing $CONNNAME: "
         for ID in $OTHERS $KEY; do
             echo -n "${LOGS[$ID]}, "
+            RELAYID=$(relayID ${LOGS[$ID]})
+            if [ -n "$RELAYID" ]; then
+                ../relay/rq -d $RELAYID || true
+            fi
             close_device $ID $DONEDIR
         done
         date
