@@ -147,7 +147,7 @@ class CRefMgr {
                                  int nPlayersS, int seed, int langCode, 
                                  bool isPublic, bool* isDead );
 
-    CookieRef* getMakeCookieRef( const char* const connName );
+    CookieRef* getMakeCookieRef( const char* const connName, bool* isDead );
 
     CookieRef* getCookieRef( CookieID cookieID );
     CookieRef* getCookieRef( int socket );

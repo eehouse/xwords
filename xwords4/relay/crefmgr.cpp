@@ -308,24 +308,20 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
 } /* getMakeCookieRef */
 
 CookieRef* 
-CRefMgr::getMakeCookieRef( const char* const connName )
+CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
 {
     CookieRef* cref = NULL;
     char curCookie[MAX_INVITE_LEN+1];
     int curLangCode;
     int nPlayersT = 0;
     int nAlreadyHere = 0;
-    bool isDead;
 
     CookieID cid = m_db->FindGame( connName, curCookie, sizeof(curCookie),
                                    &curLangCode, &nPlayersT, &nAlreadyHere,
-                                   &isDead );
+                                   isDead );
     if ( 0 != cid ) {           /* already open */
         cref = getCookieRef_impl( cid );
     } else {
-        /* The entry may not even be in the DB, e.g. if it got deleted.
-           Deal with that possibility by taking the caller's word for it. */
-
         if ( nPlayersT == 0 ) { /* wasn't in the DB */
             /* do nothing; insufficient info to fake it */
         } else {
@@ -704,11 +700,13 @@ SafeCref::SafeCref( const char* const connName )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
-    CookieRef* cref = m_mgr->getMakeCookieRef( connName );
+    bool isDead;
+    CookieRef* cref = m_mgr->getMakeCookieRef( connName, &isDead );
     if ( cref != NULL ) {
         m_locked = cref->Lock();
         m_cref = cref;
         m_isValid = true;
+        m_dead = isDead;
     }
 }
 
