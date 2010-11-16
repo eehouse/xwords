@@ -56,6 +56,7 @@ CRefMgr::Get()
 
 CRefMgr::CRefMgr()
     : m_nextCID(0)
+    , m_nRoomsFilled(0)
     , m_startTime(time(NULL))
 {
     /* should be using pthread_once() here */
