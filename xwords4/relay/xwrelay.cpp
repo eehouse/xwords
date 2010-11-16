@@ -180,14 +180,14 @@ cmdToStr( XWRELAY_Cmd cmd )
 static bool
 parseRelayID( const char* const in, char* buf, HostID* hid )
 {
-    const char* hidp = strrchr( (char*)in, ':' );
+    const char* hidp = strrchr( (char*)in, '/' );
     bool ok = NULL != hidp;
     if ( ok ) {
         int connNameLen = hidp - in;
         strncpy( buf, in, connNameLen );
         buf[connNameLen] = '\0';
         *hid = atoi( hidp+1 );
-        logf( XW_LOGINFO, "%s=>%s : %d", __func__, buf, *hid );
+        logf( XW_LOGINFO, "%s(%s)=>%s : %d", __func__, in, buf, *hid );
     }
     return ok;
 }
