@@ -165,7 +165,6 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
 static void
 do_deletes( int sockfd, const char** connNames, int nConnNames )
 {
-    fprintf( stderr, "%s()\n", __func__ );
     int ii;
 
     char buf[4096];
@@ -178,7 +177,6 @@ do_deletes( int sockfd, const char** connNames, int nConnNames )
         *(seedp++) = '\0';       /* skip */
         unsigned int seed;
         sscanf( seedp, "%X", &seed );
-        fprintf( stderr, "read %s to %x\n", seedp, seed );
         short netshort = htons( (short)seed );
         memcpy( &buf[nused], &netshort, sizeof(netshort) );
         nused += sizeof(netshort);
@@ -204,9 +202,11 @@ do_deletes( int sockfd, const char** connNames, int nConnNames )
 
     unsigned char reply[2];
     int nRead = read_packet( sockfd, reply, sizeof(reply) );
-    fprintf( stderr, "read %d back\n", nRead );
-    assert( nRead == 0 );
-}
+    if ( nRead != 0 ) {
+        fprintf( stderr, "%s: nRead=%d; errno=%d (%s)\n", __func__,
+                 nRead, errno, strerror(errno) );
+    }
+} /* do_deletes */
 
 int
 main( int argc, char * const argv[] )
