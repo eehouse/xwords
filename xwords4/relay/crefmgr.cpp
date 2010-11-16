@@ -682,7 +682,7 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
     CookieRef* cref;
     assert( hid <= 4 );         /* no more than 4 hosts */
 
-    bool isDead;
+    bool isDead = false;
     cref = m_mgr->getMakeCookieRef( connName, cookie, hid, socket, nPlayersH, 
                                     nPlayersS, gameSeed, langCode,
                                     wantsPublic || makePublic, &isDead );
@@ -700,7 +700,7 @@ SafeCref::SafeCref( const char* const connName )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
-    bool isDead;
+    bool isDead = false;
     CookieRef* cref = m_mgr->getMakeCookieRef( connName, &isDead );
     if ( cref != NULL ) {
         m_locked = cref->Lock();
