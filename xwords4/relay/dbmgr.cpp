@@ -322,7 +322,8 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     const char* fmt = "SELECT room, nTotal-sum_array(nPerDevice),"
         " round( extract( epoch from age('now', ctime)))"
         " FROM " GAMES_TABLE
-        " WHERE pub = TRUE"
+        " WHERE NOT dead"
+        " AND pub = TRUE"
         " AND lang = %d"
         " AND nTotal>sum_array(nPerDevice)"
         " AND nTotal = %d";
