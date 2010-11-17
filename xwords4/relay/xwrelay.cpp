@@ -742,9 +742,10 @@ handle_proxy_tproc( void* closure )
                             }
                             HostID hid;
                             char connName[MAX_CONNNAME_LEN+1];
-                            parseRelayID( name, connName, &hid );
-                            ids.push_back( DBMgr::Get()->
-                                           PendingMsgCount( connName, hid ) );
+                            if ( parseRelayID( name, connName, &hid ) ) {
+                                ids.push_back( DBMgr::Get()->
+                                               PendingMsgCount( connName, hid ) );
+                            }
                             in = NULL;
                         }
 
