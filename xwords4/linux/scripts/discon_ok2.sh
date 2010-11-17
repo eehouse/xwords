@@ -42,7 +42,7 @@ usage() {
     for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
-    exit 0
+    exit 1
 }
 
 connName() {
@@ -73,7 +73,7 @@ check_room() {
         NUM=$((NUM+0))
         if [ "$NUM" -gt 0 ]; then
             echo "$ROOM in the DB has unconsummated games.  Remove them."
-            exit 0
+            exit 1
         else
             CHECKED_ROOMS[$ROOM]=1
         fi
@@ -166,7 +166,7 @@ check_game() {
             echo -n "${LOGS[$ID]}, "
             RELAYID=$(./scripts/relayID.sh ${LOGS[$ID]})
             if [ -n "$RELAYID" ]; then
-                ../relay/rq -d $RELAYID || true
+                ../relay/rq -d $RELAYID 2>/dev/null || true
             fi
             close_device $ID $DONEDIR
         done
