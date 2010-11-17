@@ -6,24 +6,19 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 18 release</b>
+<b>Crosswords 4.4 beta 19 release</b>
+<ul>
+<li>Beginning with Beta 19 Crosswords will notify the relay when you 
+delete a networked game, and the relay will tell others in the game 
+when they try to keep playing.)</li>
 
-<p>(Beta 18 fixes a couple of oversights with b17, which is described 
-below.)</p>
+<li>Fixes a problem drawing wide letters on narrow screens</li>
 
-<p>This release (beta 17) changes how networked games are created, 
-configured and connected.  For the most common two player/two device 
-game there's a new dialog that asks for the one piece of information 
-that's absolutely required: the room name.</p>
+<li>Fix the Play game button at the bottom of the Game setting 
+dialog</li> </ul>
 
-<p>I've also scattered "new user hints" around the app, dialogs with 
-tips that you can dismiss with a "Do not show again" button when you 
-don't need to see that hint again.</p>
-
-<p>The server through which networked games connect has also been 
-rewritten, and games created with earlier versions will no longer 
-connect.  I appologize to those who cannot finish games, especially if 
-you were winning!</p>
+<li>Run on Android 1.5 again -- so you 1.5 user won't have seen an 
+upgrade in a while</li>
 
 <p>Please remember that this is beta software.  Letting me know (at 
 eehouse@eehouse.org) what's broken and what features you'd most like 
