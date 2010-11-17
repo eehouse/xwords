@@ -303,10 +303,10 @@ void
 DBMgr::KillGame( const char* const connName, int hid )
 {
    const char* fmt = "UPDATE " GAMES_TABLE " SET dead = TRUE,"
-       " nperdevice[%d] = -1"
+       " nperdevice[%d] = - nperdevice[%d]"
        " WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, hid, connName );
+    snprintf( query, sizeof(query), fmt, hid, hid, connName );
     execSql( query );
 }
 
