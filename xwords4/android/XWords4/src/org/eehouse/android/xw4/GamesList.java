@@ -291,12 +291,12 @@ public class GamesList extends XWListActivity
     private boolean handleMenuItem( int menuID, int position ) 
     {
         boolean handled = true;
+        DialogInterface.OnClickListener lstnr;
 
         final String path = GameUtils.gamesList( this )[position];
     
         if ( R.id.list_item_delete == menuID ) {
-            DialogInterface.OnClickListener lstnr =
-                new DialogInterface.OnClickListener() {
+            lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int ii ) {
                         GameUtils.deleteGame( GamesList.this, path );
                         m_adapter.inval( path );
@@ -304,16 +304,6 @@ public class GamesList extends XWListActivity
                     }
                 };
             showConfirmThen( R.string.confirm_delete, lstnr );
-        } else if ( R.id.list_item_reset == menuID ) {
-            DialogInterface.OnClickListener lstnr =
-                new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int ii ) {
-                        GameUtils.resetGame( GamesList.this, path );
-                        m_adapter.inval( path );
-                        onContentChanged();
-                    }
-                };
-            showConfirmThen( R.string.confirm_reset, lstnr );
         } else {
             String invalPath = null;
             String[] missingName = new String[1];
@@ -324,6 +314,16 @@ public class GamesList extends XWListActivity
                 showNoDict( missingName[0], missingLang[0] );
             } else {
                 switch ( menuID ) {
+                case R.id.list_item_reset:
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, int ii ) {
+                                GameUtils.resetGame( GamesList.this, path );
+                                m_adapter.inval( path );
+                                onContentChanged();
+                            }
+                        };
+                    showConfirmThen( R.string.confirm_reset, lstnr );
+                    break;
                 case R.id.list_item_config:
                     GameUtils.doConfig( this, path, GameConfig.class );
                     m_invalPath = path;
