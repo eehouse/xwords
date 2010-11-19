@@ -1432,9 +1432,11 @@ relay_connd_curses( void* XP_UNUSED(closure), XP_UCHAR* const XP_UNUSED(room),
 }
 
 static void
-relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED(relayErr) )
+relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED_DBG(relayErr) )
 {
-    LOG_FUNC();
+#ifdef DEBUG
+    XP_LOGF( "%s(%s)", __func__, XWREASON2Str( relayErr ) );
+#endif
 }
 
 void

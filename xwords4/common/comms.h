@@ -195,6 +195,7 @@ XP_Bool comms_isConnected( const CommsCtxt* const comms );
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
 const char* ConnType2Str( CommsConnType typ );
 const char* CommsRelayState2Str( CommsRelayState state );
+const char* XWREASON2Str( XWREASON reason );
 # endif
 
 EXTERN_C_END

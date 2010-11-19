@@ -8,6 +8,7 @@ PORT=${PORT:-10997}
 TIMEOUT=${TIMEOUT:-$((NGAMES*60+500))}
 DICTS=${DICTS:-dict.xwd}
 SAVE_GOOD=${SAVE_GOOD:-YES}
+RESIGN_RATIO=${RESIGN_RATIO:-$((NGAMES/3))}
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -24,6 +25,8 @@ if [ "$SAVE_GOOD" = YES ]; then
     DONEDIR=$LOGDIR/done
     mkdir -p $DONEDIR
 fi
+DEADDIR=$LOGDIR/dead
+mkdir -p $DEADDIR
 
 USE_GTK=${USE_GTK:-FALSE}
 
@@ -109,7 +112,8 @@ build_cmds() {
             COUNTER=$((COUNTER+1))
         done
     done
-}
+    echo "finished creating $COUNTER commands"
+} # build_cmds
 
 launch() {
     LOG=${LOGS[$1]}
@@ -136,6 +140,28 @@ close_device() {
     unset FILES[$ID]
     unset LOGS[$ID]
 }
+
+kill_from_log() {
+    LOG=$1
+    RELAYID=$(./scripts/relayID.sh $LOG)
+    if [ -n "$RELAYID" ]; then
+        ../relay/rq -d $RELAYID 2>/dev/null || true
+        return 0                # success
+    fi
+    return 1
+}
+
+maybe_resign() {
+    KEY=$1
+    LOG=${LOGS[$KEY]}
+    if grep -q XWRELAY_ALLHERE $LOG; then
+        if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
+            echo "making $LOG $(connName $LOG) resign..."
+            kill_from_log $LOG && close_device $KEY $DEADDIR
+        fi
+    fi
+}
+
 
 check_game() {
     KEY=$1
@@ -164,13 +190,16 @@ check_game() {
         echo -n "Closing $CONNNAME: "
         for ID in $OTHERS $KEY; do
             echo -n "${LOGS[$ID]}, "
-            RELAYID=$(./scripts/relayID.sh ${LOGS[$ID]})
-            if [ -n "$RELAYID" ]; then
-                ../relay/rq -d $RELAYID 2>/dev/null || true
-            fi
+            kill_from_log ${LOGS[$ID]} || true
             close_device $ID $DONEDIR
         done
         date
+    elif grep -q 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
+        echo "deleting $LOG $(connName $LOG) b/c another resigned"
+        kill_from_log $LOG || true
+        close_device $KEY $DEADDIR
+    else
+        maybe_resign $KEY
     fi
 }
 
