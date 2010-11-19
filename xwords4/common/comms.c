@@ -216,6 +216,33 @@ CommsRelayState2Str( CommsRelayState state )
 #undef CASE_STR
     return NULL;
 }
+
+const char*
+XWREASON2Str( XWREASON reason )
+{
+#define CASE_STR(s) case s: return #s
+    switch( reason ) {
+        CASE_STR(XWRELAY_ERROR_NONE);
+        CASE_STR(XWRELAY_ERROR_OLDFLAGS);
+        CASE_STR(XWRELAY_ERROR_BADPROTO);
+        CASE_STR(XWRELAY_ERROR_RELAYBUSY);
+        CASE_STR(XWRELAY_ERROR_SHUTDOWN);
+        CASE_STR(XWRELAY_ERROR_TIMEOUT);
+        CASE_STR(XWRELAY_ERROR_HEART_YOU);
+        CASE_STR(XWRELAY_ERROR_HEART_OTHER);
+        CASE_STR(XWRELAY_ERROR_LOST_OTHER);
+        CASE_STR(XWRELAY_ERROR_OTHER_DISCON);
+        CASE_STR(XWRELAY_ERROR_NO_ROOM);
+        CASE_STR(XWRELAY_ERROR_DUP_ROOM);
+        CASE_STR(XWRELAY_ERROR_TOO_MANY);
+        CASE_STR(XWRELAY_ERROR_DELETED);
+        CASE_STR(XWRELAY_ERROR_LASTERR);
+    default:
+        XP_ASSERT(0);
+    }
+#undef CASE_STR
+    return NULL;
+}
 #endif
 
 static void
@@ -236,7 +263,7 @@ static void
 init_relay( CommsCtxt* comms, XP_U16 nPlayersHere, XP_U16 nPlayersTotal )
 {
     comms->r.myHostID = comms->isServer? HOST_ID_SERVER: HOST_ID_NONE;
-    XP_LOGF( "%s: set myHostID to %d", __func__, comms->r.myHostID );
+    XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
     set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
     comms->r.nPlayersHere = nPlayersHere;
     comms->r.nPlayersTotal = nPlayersTotal;
@@ -1173,6 +1200,7 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     set_relay_state( comms, reconnected ? COMMS_RELAYSTATE_RECONNECTED
                      : COMMS_RELAYSTATE_CONNECTED );
     comms->r.myHostID = stream_getU8( stream );
+    XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
     isServer = HOST_ID_SERVER == comms->r.myHostID;
     if ( isServer != comms->isServer ) {
         comms->isServer = isServer;
@@ -1241,7 +1269,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         XP_ASSERT( comms->r.myHostID == HOST_ID_NONE
                    || comms->r.myHostID == srcID );
         comms->r.myHostID = srcID;
-        XP_LOGF( "set hostid: %x", comms->r.myHostID );
+        XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
 
 #ifdef DEBUG
         {
