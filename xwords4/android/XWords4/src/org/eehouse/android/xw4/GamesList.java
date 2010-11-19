@@ -279,11 +279,13 @@ public class GamesList extends XWListActivity
             }
             GameUtils.doConfig( this, path, clazz );
         } else {
-            File file = new File( path );
-            Uri uri = Uri.fromFile( file );
-            Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                        this, BoardActivity.class );
-            startActivity( intent );
+            if ( checkWarnNoDict( path ) ) {
+                File file = new File( path );
+                Uri uri = Uri.fromFile( file );
+                Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                            this, BoardActivity.class );
+                startActivity( intent );
+            }
         }
         m_invalPath = path;
     }
@@ -306,13 +308,7 @@ public class GamesList extends XWListActivity
             showConfirmThen( R.string.confirm_delete, lstnr );
         } else {
             String invalPath = null;
-            String[] missingName = new String[1];
-            int[] missingLang = new int[1];
-            boolean hasDict = GameUtils.gameDictHere( this, path, 
-                                                      missingName, missingLang );
-            if ( !hasDict ) {
-                showNoDict( missingName[0], missingLang[0] );
-            } else {
+            if ( checkWarnNoDict( path ) ) {
                 switch ( menuID ) {
                 case R.id.list_item_reset:
                     lstnr = new DialogInterface.OnClickListener() {
@@ -371,6 +367,18 @@ public class GamesList extends XWListActivity
         return handled;
     } // handleMenuItem
 
+    private boolean checkWarnNoDict( String path )
+    {
+        String[] missingName = new String[1];
+        int[] missingLang = new int[1];
+        boolean hasDict = GameUtils.gameDictHere( this, path, 
+                                                  missingName, missingLang );
+        if ( !hasDict ) {
+            showNoDict( missingName[0], missingLang[0] );
+        }
+        return hasDict;
+    }
+
     private String saveNew( CurGameInfo gi )
     {
         String path = null;
@@ -388,5 +396,4 @@ public class GamesList extends XWListActivity
         onContentChanged();
         return path;
     }
-
 }
