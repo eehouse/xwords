@@ -240,11 +240,6 @@ public class DlgDelegate {
                                     }
                                 })
             .create();
-        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                public void onDismiss( DialogInterface di ) {
-                    m_activity.finish();
-                }
-            });
         return dialog;
     }
 
