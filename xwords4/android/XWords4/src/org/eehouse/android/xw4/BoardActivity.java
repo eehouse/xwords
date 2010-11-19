@@ -767,90 +767,87 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
 
             Utils.logf( "loadGame: dict name: %s", m_gi.dictName );
             byte[] dictBytes = GameUtils.openDict( this, m_gi.dictName );
-            if ( null == dictBytes ) {
-                showNoDict( m_gi.dictName, m_gi.dictLang );
-            } else {
-                m_jniGamePtr = XwJNI.initJNI();
+            Assert.assertNotNull( dictBytes );
+            m_jniGamePtr = XwJNI.initJNI();
 
-                if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                    Handler handler = new Handler() {
-                            public void handleMessage( Message msg ) {
-                                switch( msg.what ) {
-                                case CommsTransport.DIALOG:
-                                case CommsTransport.DIALOG_RETRY:
-                                    m_dlgBytes = (String)msg.obj;
-                                    m_dlgTitle = msg.arg1;
-                                    showDialog( CommsTransport.DIALOG==msg.what
-                                                ? DLG_OKONLY : DLG_RETRY );
-                                    break;
-                                case CommsTransport.TOAST:
-                                    Toast.makeText( BoardActivity.this,
-                                                    (CharSequence)(msg.obj),
-                                                    Toast.LENGTH_SHORT).show();
-                                    break;
-                                case CommsTransport.RELAY_COND:
-                                    handleConndMessage( msg );
-                                    break;
-                                }
+            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                Handler handler = new Handler() {
+                        public void handleMessage( Message msg ) {
+                            switch( msg.what ) {
+                            case CommsTransport.DIALOG:
+                            case CommsTransport.DIALOG_RETRY:
+                                m_dlgBytes = (String)msg.obj;
+                                m_dlgTitle = msg.arg1;
+                                showDialog( CommsTransport.DIALOG==msg.what
+                                            ? DLG_OKONLY : DLG_RETRY );
+                                break;
+                            case CommsTransport.TOAST:
+                                Toast.makeText( BoardActivity.this,
+                                                (CharSequence)(msg.obj),
+                                                Toast.LENGTH_SHORT).show();
+                                break;
+                            case CommsTransport.RELAY_COND:
+                                handleConndMessage( msg );
+                                break;
                             }
-                        };
-                    m_xport = new CommsTransport( m_jniGamePtr, this, handler, 
-                                                  m_gi.serverRole );
-                }
-
-                CommonPrefs cp = CommonPrefs.get( this );
-                if ( null == stream ||
-                     ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                                  m_gi, dictBytes, 
-                                                  m_gi.dictName,this, m_jniu, 
-                                                  m_view, cp, m_xport ) ) {
-                    XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_jniu, 
-                                            m_view, cp, m_xport, 
-                                            dictBytes, m_gi.dictName );
-                }
-
-                m_jniThread = new 
-                    JNIThread( m_jniGamePtr, m_gi, m_view, m_path, this,
-                               new Handler() {
-                                   public void handleMessage( Message msg ) {
-                                       switch( msg.what ) {
-                                       case JNIThread.DRAW:
-                                           m_view.invalidate();
-                                           break;
-                                       case JNIThread.DIALOG:
-                                           m_dlgBytes = (String)msg.obj;
-                                           m_dlgTitle = msg.arg1;
-                                           showDialog( DLG_OKONLY );
-                                           break;
-                                       case JNIThread.QUERY_ENDGAME:
-                                           showDialog( QUERY_ENDGAME );
-                                           break;
-                                       case JNIThread.TOOLBAR_STATES:
-                                           m_toolbar.update( msg.arg1, msg.arg2 );
-                                       }
-                                   }
-                               } );
-                m_jniThread.start();
-
-                m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
-                if ( null != m_xport ) {
-                    m_xport.setReceiver( m_jniThread );
-                }
-                m_jniThread.handle( JNICmd.CMD_START );
-
-                if ( !CommonPrefs.getHideTitleBar( this ) ) {
-                    setTitle( GameUtils.gameName( this, m_path ) );
-                }
-                m_toolbar = 
-                    new Toolbar( this, findViewById( R.id.toolbar_horizontal ),
-                                 findViewById( R.id.toolbar_vertical ) );
-
-                boolean isLandscape = 
-                    getResources().getConfiguration().orientation
-                    == Configuration.ORIENTATION_LANDSCAPE;
-                m_toolbar.orientChanged( isLandscape );
-                populateToolbar();
+                        }
+                    };
+                m_xport = new CommsTransport( m_jniGamePtr, this, handler, 
+                                              m_gi.serverRole );
             }
+
+            CommonPrefs cp = CommonPrefs.get( this );
+            if ( null == stream ||
+                 ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                                              m_gi, dictBytes, 
+                                              m_gi.dictName,this, m_jniu, 
+                                              m_view, cp, m_xport ) ) {
+                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_jniu, 
+                                        m_view, cp, m_xport, 
+                                        dictBytes, m_gi.dictName );
+            }
+
+            m_jniThread = new 
+                JNIThread( m_jniGamePtr, m_gi, m_view, m_path, this,
+                           new Handler() {
+                               public void handleMessage( Message msg ) {
+                                   switch( msg.what ) {
+                                   case JNIThread.DRAW:
+                                       m_view.invalidate();
+                                       break;
+                                   case JNIThread.DIALOG:
+                                       m_dlgBytes = (String)msg.obj;
+                                       m_dlgTitle = msg.arg1;
+                                       showDialog( DLG_OKONLY );
+                                       break;
+                                   case JNIThread.QUERY_ENDGAME:
+                                       showDialog( QUERY_ENDGAME );
+                                       break;
+                                   case JNIThread.TOOLBAR_STATES:
+                                       m_toolbar.update( msg.arg1, msg.arg2 );
+                                   }
+                               }
+                           } );
+            m_jniThread.start();
+
+            m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
+            if ( null != m_xport ) {
+                m_xport.setReceiver( m_jniThread );
+            }
+            m_jniThread.handle( JNICmd.CMD_START );
+
+            if ( !CommonPrefs.getHideTitleBar( this ) ) {
+                setTitle( GameUtils.gameName( this, m_path ) );
+            }
+            m_toolbar = 
+                new Toolbar( this, findViewById( R.id.toolbar_horizontal ),
+                             findViewById( R.id.toolbar_vertical ) );
+
+            boolean isLandscape = 
+                getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
+            m_toolbar.orientChanged( isLandscape );
+            populateToolbar();
         }
     } // loadGame
 
