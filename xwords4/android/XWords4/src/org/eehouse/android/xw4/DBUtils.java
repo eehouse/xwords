@@ -39,7 +39,7 @@ public class DBUtils {
     public static GameSummary getSummary( Context context, String file )
     {
         initDB( context );
-        GameSummary summary = new GameSummary();
+        GameSummary summary = null;
 
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
@@ -47,7 +47,7 @@ public class DBUtils {
                                  DBHelper.GAME_OVER,
                                  DBHelper.CONTYPE, DBHelper.ROOMNAME,
                                  DBHelper.RELAYID, DBHelper.SMSPHONE, 
-                                 DBHelper.SEED,
+                                 DBHelper.SEED, DBHelper.DICTLANG, DBHelper.DICTNAME,
                                  DBHelper.SCORES, DBHelper.HASMSGS
             };
             String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
@@ -61,6 +61,12 @@ public class DBUtils {
                 summary.nPlayers = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.NUM_PLAYERS));
+                summary.dictLang = 
+                    cursor.getInt(cursor.
+                                  getColumnIndex(DBHelper.DICTLANG));
+                summary.dictName = 
+                    cursor.getString(cursor.
+                                     getColumnIndex(DBHelper.DICTNAME));
                 int tmp = cursor.getInt(cursor.
                                         getColumnIndex(DBHelper.GAME_OVER));
                 summary.gameOver = tmp == 0 ? false : true;
@@ -108,6 +114,11 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
+
+        if ( null == summary ) {
+            summary = GameUtils.summarize( context, file );
+            saveSummary( context, file, summary );
+        }
         return summary;
     }
 
@@ -126,6 +137,8 @@ public class DBUtils {
                 values.put( DBHelper.FILE_NAME, path );
                 values.put( DBHelper.NUM_MOVES, summary.nMoves );
                 values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
+                values.put( DBHelper.DICTLANG, summary.dictLang );
+                values.put( DBHelper.DICTNAME, summary.dictName );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
 
                 if ( null != summary.scores ) {
@@ -155,6 +168,26 @@ public class DBUtils {
             }
             db.close();
         }
+    }
+
+    public static int countGamesUsing( Context context, String dict )
+    {
+        int result = 0;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String selection = DBHelper.DICTNAME + " LIKE \'" 
+                + dict + "\'";
+            // null for columns will return whole rows: bad
+            String[] columns = { DBHelper.DICTNAME };
+            Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
+                                      null, null, null, null );
+
+            result = cursor.getCount();
+            cursor.close();
+            db.close();
+        }
+        return result;
     }
 
     public static void setHasMsgs( String relayID )

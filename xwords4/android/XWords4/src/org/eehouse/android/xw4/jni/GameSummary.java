@@ -37,6 +37,18 @@ public class GameSummary {
     public int seed;
     public boolean msgsPending;
 
+    public int dictLang;
+    public String dictName;
+
+    public GameSummary(){}
+
+    public GameSummary( CurGameInfo gi )
+    {
+        nPlayers = gi.nPlayers;
+        dictLang = gi.dictLang;
+        dictName = gi.dictName;
+    }
+
     public boolean inNetworkGame()
     {
         return null != relayID;

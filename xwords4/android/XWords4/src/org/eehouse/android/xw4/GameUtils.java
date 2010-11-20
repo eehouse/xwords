@@ -98,8 +98,8 @@ public class GameUtils {
         }
         saveGame( context, gamePtr, gi, pathOut );
 
-        GameSummary summary = new GameSummary();
-        XwJNI.game_summarize( gamePtr, gi.nPlayers, summary );
+        GameSummary summary = new GameSummary( gi );
+        XwJNI.game_summarize( gamePtr, summary );
         DBUtils.saveSummary( context, pathOut, summary );
 
         XwJNI.game_dispose( gamePtr );
@@ -109,6 +109,20 @@ public class GameUtils {
     {
         tellRelayDied( context, pathIn );
         resetGame( context, pathIn, pathIn );
+    }
+
+    public static GameSummary summarize( Context context, String path )
+    {
+        int gamePtr = XwJNI.initJNI();
+        CurGameInfo gi = new CurGameInfo( context );
+        loadMakeGame( context, gamePtr, gi, path );
+
+        GameSummary summary = new GameSummary( gi );
+        XwJNI.game_summarize( gamePtr, summary );
+        DBUtils.saveSummary( context, path, summary );
+
+        XwJNI.game_dispose( gamePtr );
+        return summary;
     }
 
     public static String[] gamesList( Context context )
@@ -415,12 +429,12 @@ public class GameUtils {
 
         GameUtils.saveGame( context, gamePtr, gi, path );
 
-        GameSummary summary = new GameSummary();
-        XwJNI.game_summarize( gamePtr, gi.nPlayers, summary );
+        GameSummary summary = new GameSummary( gi );
+        XwJNI.game_summarize( gamePtr, summary );
         DBUtils.saveSummary( context, path, summary );
 
         XwJNI.game_dispose( gamePtr );
-    }
+    } // applyChanges
 
     public static void doConfig( Activity activity, String path, Class clazz )
     {

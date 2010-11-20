@@ -192,10 +192,10 @@
     <string name="confirm_reset">Are you sure you want to reset this
       game? Resetting erases all moves and any connection
       information.</string>
-
-    <string name="confirm_delete_dict">Are you sure you want to delete
-    this dictionary? You will not be able to open any games that use
-    it.</string>
+      
+    <string name="confirm_delete_dictf">Are you sure you want to
+    delete %s? It is used by %d games, and you will not be able to
+    open them without reinstalling it.</string>
     
     <string name="hints_allowed">Allow hints</string>
     <string name="progress_title">Searching for moves</string>

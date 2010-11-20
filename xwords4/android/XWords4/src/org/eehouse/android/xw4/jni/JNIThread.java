@@ -259,8 +259,8 @@ public class JNIThread extends Thread {
                 if ( nextSame( JNICmd.CMD_SAVE ) ) {
                     continue;
                 }
-                GameSummary summary = new GameSummary();
-                XwJNI.game_summarize( m_jniGamePtr, m_gi.nPlayers, summary );
+                GameSummary summary = new GameSummary( m_gi );
+                XwJNI.game_summarize( m_jniGamePtr, summary );
                 byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
                 GameUtils.saveGame( m_context, state, m_path );
                 DBUtils.saveSummary( m_context, m_path, summary );

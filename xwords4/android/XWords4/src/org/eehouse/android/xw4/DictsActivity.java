@@ -145,15 +145,21 @@ public class DictsActivity extends XWListActivity
     // DeleteCallback interface
     public void deleteCalled( final int myPosition )
     {
-        DialogInterface.OnClickListener action = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    GameUtils.deleteDict( DictsActivity.this, 
-                                          m_dicts[myPosition] );
-                    mkListAdapter();
-                }
-            };
-        showConfirmThen( R.string.confirm_delete_dict, action );
+        final String dict = m_dicts[myPosition];
+        int nGames = DBUtils.countGamesUsing( this, dict );
+        if ( nGames > 0 ) {
+            DialogInterface.OnClickListener action = 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        GameUtils.deleteDict( DictsActivity.this, 
+                                              m_dicts[myPosition] );
+                        mkListAdapter();
+                    }
+                };
+            String fmt = getString( R.string.confirm_delete_dictf );
+            String msg = String.format( fmt, dict, nGames );
+            showConfirmThen( msg, action );
+        }
     }
 
     private void mkListAdapter()

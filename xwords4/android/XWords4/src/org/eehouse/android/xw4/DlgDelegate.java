@@ -45,6 +45,7 @@ public class DlgDelegate {
     public static final int DIALOG_LAST = CONFIRM_THEN;
 
     private int m_msgID;
+    private String m_msg;
     private Runnable m_proc = null;
     private int m_prefsKey;
     private Activity m_activity;
@@ -100,13 +101,9 @@ public class DlgDelegate {
         case CONFIRM_THEN:
             // I'm getting an occasional 0 here on device only.  May
             // be related to screen orientation changes.  Let's be safe
-            if ( 0 == m_msgID ) {
-                Utils.logf( "skipping dialog b/c msgid == 0" );
-            } else {
-                ad.setMessage( m_activity.getString(m_msgID) ); // m_msgID is 0
-                ad.setButton( AlertDialog.BUTTON_POSITIVE, 
-                              m_activity.getString( R.string.button_ok ), m_then );
-            }
+            ad.setMessage( m_msg );
+            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
+                          m_activity.getString( R.string.button_ok ), m_then );
             break;
         }
     }
@@ -145,10 +142,9 @@ public class DlgDelegate {
         m_activity.showDialog( WARN_NODICT );
     }
 
-    public void showConfirmThen( int id, DialogInterface.OnClickListener then )
+    public void showConfirmThen( String msg, DialogInterface.OnClickListener then )
     {
-        Assert.assertTrue( 0 != id );
-        m_msgID = id;
+        m_msg = msg;
         m_then = then;
         m_activity.showDialog( CONFIRM_THEN );
     }
