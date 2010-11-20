@@ -111,6 +111,7 @@ void model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream );
 void model_init( ModelCtxt* model, XP_U16 nCols, XP_U16 nRows );
 void model_destroy( ModelCtxt* model );
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
+XP_U16 model_getNPlayers( const ModelCtxt* model );
 
 void model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict );
 DictionaryCtxt* model_getDictionary( const ModelCtxt* model );

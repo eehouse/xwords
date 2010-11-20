@@ -257,6 +257,12 @@ model_setNPlayers( ModelCtxt* model, XP_U16 nPlayers )
     model->nPlayers = nPlayers;
 } /* model_setNPlayers */
 
+XP_U16
+model_getNPlayers( const ModelCtxt* model )
+{
+    return model->nPlayers;
+}
+
 void
 model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
 {
