@@ -986,13 +986,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
-( JNIEnv* env, jclass C, jint gamePtr, jint nPlayers, jobject jsummary )
+( JNIEnv* env, jclass C, jint gamePtr, jobject jsummary )
 {
     LOG_FUNC();
     XWJNI_START();
-    XP_S16 nMoves = model_getNMoves( state->game.model );
+    ModelCtxt* model = state->game.model;
+    XP_S16 nMoves = model_getNMoves( model );
     setInt( env, jsummary, "nMoves", nMoves );
-    setInt( env, jsummary, "nPlayers", nPlayers );
     XP_Bool gameOver = server_getGameIsOver( state->game.server );
     setBool( env, jsummary, "gameOver", gameOver );
     
@@ -1017,17 +1017,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         }
     }
 
+    XP_U16 nPlayers = model_getNPlayers( model );
     jint jvals[nPlayers];
     int ii;
     if ( gameOver ) {
         ScoresArray scores;
-        model_figureFinalScores( state->game.model, &scores, NULL );
+        model_figureFinalScores( model, &scores, NULL );
         for ( ii = 0; ii < nPlayers; ++ii ) {
             jvals[ii] = scores.arr[ii];
         }
     } else {
         for ( ii = 0; ii < nPlayers; ++ii ) {
-            jvals[ii] = model_getPlayerScore( state->game.model, ii );
+            jvals[ii] = model_getPlayerScore( model, ii );
         }
     }
     jintArray jarr = makeIntArray( env, nPlayers, jvals );
