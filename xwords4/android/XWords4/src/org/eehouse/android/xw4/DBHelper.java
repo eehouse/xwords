@@ -28,7 +28,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_NAME = "summaries";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 6;
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -39,6 +39,8 @@ public class DBHelper extends SQLiteOpenHelper {
     // for which messages arrive.  Add now while changing the DB
     // format
     public static final String GAMEID = "GAMEID";
+    public static final String DICTLANG = "DICTLANG";
+    public static final String DICTNAME = "DICTNAME";
     public static final String HASMSGS = "HASMSGS";
     public static final String SNAPSHOT = "SNAPSHOT";
     public static final String CONTYPE = "CONTYPE";
@@ -69,7 +71,10 @@ public class DBHelper extends SQLiteOpenHelper {
                     + CONTYPE    + " INTEGER,"
                     + ROOMNAME   + " TEXT,"
                     + RELAYID    + " TEXT,"
-                    + SEED    + " INTEGER,"
+                    + SEED       + " INTEGER,"
+                    + DICTLANG   + " INTEGER,"
+                    + DICTNAME   + " TEXT,"
+
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"
                     + GAMEID     + " INTEGER,"
