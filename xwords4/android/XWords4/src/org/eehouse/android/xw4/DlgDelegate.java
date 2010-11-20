@@ -40,8 +40,7 @@ public class DlgDelegate {
     public static final int DIALOG_ABOUT = 1;
     public static final int DIALOG_OKONLY = 2;
     public static final int DIALOG_NOTAGAIN = 3;
-    public static final int WARN_NODICT = 4;
-    public static final int CONFIRM_THEN = 5;
+    public static final int CONFIRM_THEN = 4;
     public static final int DIALOG_LAST = CONFIRM_THEN;
 
     private int m_msgID;
@@ -69,9 +68,6 @@ public class DlgDelegate {
         case DIALOG_NOTAGAIN:
             dialog = createNotAgainDialog();
             break;
-        case WARN_NODICT:
-            dialog = createNoDictDialog();
-            break;
         case CONFIRM_THEN:
             dialog = createConfirmThenDialog();
             break;
@@ -92,11 +88,6 @@ public class DlgDelegate {
             // FALLTHRU
         case DIALOG_OKONLY:
             ad.setMessage( m_activity.getString(m_msgID) );
-            break;
-        case WARN_NODICT:
-            String format = m_activity.getString( R.string.no_dictf );
-            String msg = String.format( format, m_dictName );
-            ad.setMessage( msg );
             break;
         case CONFIRM_THEN:
             // I'm getting an occasional 0 here on device only.  May
@@ -133,13 +124,6 @@ public class DlgDelegate {
             m_prefsKey = prefsKey;
             m_activity.showDialog( DIALOG_NOTAGAIN );
         }
-    }
-
-    public void showNoDict( String name, int lang )
-    {
-        m_dictName = DictLangCache.annotatedDictName( m_activity, name,
-                                                      lang );
-        m_activity.showDialog( WARN_NODICT );
     }
 
     public void showConfirmThen( String msg, DialogInterface.OnClickListener then )
@@ -219,25 +203,6 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_notagain, lstnr_n )
             .create();
     } // createNotAgainDialog
-
-    private Dialog createNoDictDialog()
-    {
-        Dialog dialog = new AlertDialog.Builder( m_activity )
-            .setTitle( R.string.no_dict_title )
-            .setMessage( "" ) // required to get to change it later
-            .setPositiveButton( R.string.button_ok, null )
-            .setNegativeButton( R.string.button_download,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick( DialogInterface dlg, 
-                                                         int item ) {
-                                        Intent intent = Utils
-                                            .mkDownloadActivity(m_activity);
-                                        m_activity.startActivity( intent );
-                                    }
-                                })
-            .create();
-        return dialog;
-    }
 
     private Dialog createConfirmThenDialog()
     {

@@ -86,11 +86,6 @@ public class XWListActivity extends ListActivity {
         m_delegate.showOKOnlyDialog( msgID );
     }
 
-    protected void showNoDict( String name, int lang )
-    {
-        m_delegate.showNoDict( name, lang );
-    }
-
     protected void showConfirmThen( String msg,
                                     DialogInterface.OnClickListener action )
     {

@@ -50,10 +50,58 @@ public class GamesList extends XWListActivity
     implements DispatchNotify.HandleRelaysIface,
                RefreshMsgsTask.RefreshMsgsIface {
 
+    private static final int WARN_NODICT = DlgDelegate.DIALOG_LAST + 1;
+
     private GameListAdapter m_adapter;
     private String m_invalPath = null;
     private String m_missingDict;
     private Handler m_handler;
+    private String m_missingDictName;
+    private int m_missingDictLang;
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            Assert.assertTrue( id == WARN_NODICT );
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.no_dict_title )
+                .setMessage( "" ) // required to get to change it later
+                .setPositiveButton( R.string.button_ok, null )
+                .setNegativeButton( R.string.button_download, null ) // change
+                .create();
+        }
+        return dialog;
+    }
+
+    @Override
+    protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        DialogInterface.OnClickListener lstnr;
+        AlertDialog ad;
+        
+        switch( id ) {
+        case WARN_NODICT:
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        Intent intent = 
+                            Utils.mkDownloadActivity( GamesList.this,
+                                                      m_missingDictName,
+                                                      m_missingDictLang );
+                        startActivity( intent );
+                    }
+                };
+            ad = (AlertDialog)dialog;
+            ad.setButton( AlertDialog.BUTTON_NEGATIVE, 
+                          getString( R.string.button_download ), lstnr );
+            ad.setMessage( String.format( getString( R.string.no_dictf ),
+                                          m_missingDictName ) );
+            break;
+        default:
+            super.onPrepareDialog( id, dialog );
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -374,7 +422,9 @@ public class GamesList extends XWListActivity
         boolean hasDict = GameUtils.gameDictHere( this, path, 
                                                   missingName, missingLang );
         if ( !hasDict ) {
-            showNoDict( missingName[0], missingLang[0] );
+            m_missingDictName = missingName[0];
+            m_missingDictLang = missingLang[0];
+            showDialog( WARN_NODICT );
         }
         return hasDict;
     }

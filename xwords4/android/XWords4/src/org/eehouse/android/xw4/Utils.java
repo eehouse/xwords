@@ -67,13 +67,23 @@ public class Utils {
         Toast.makeText( context, text, Toast.LENGTH_SHORT).show();
     }
 
-    public static Intent mkDownloadActivity( Context context )
+    public static Intent mkDownloadActivity( Context context,
+                                             String dict, int lang )
     {
         String dict_url = CommonPrefs.getDefaultDictURL( context );
+        if ( null != dict ) {
+            dict_url += "/" + DictLangCache.getLangName( context, lang )
+                + "/" + dict + XWConstants.DICT_EXTN;
+        }
         Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
         intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
         return intent;
+    }
+
+    public static Intent mkDownloadActivity( Context context )
+    {
+        return mkDownloadActivity( context, null, 0 );
     }
 
     public static void setChecked( Activity activity, int id, boolean value )
