@@ -147,19 +147,25 @@ public class DictsActivity extends XWListActivity
     {
         final String dict = m_dicts[myPosition];
         int nGames = DBUtils.countGamesUsing( this, dict );
-        if ( nGames > 0 ) {
+        if ( nGames == 0 ) {
+            deleteDict( dict );
+        } else {
             DialogInterface.OnClickListener action = 
                 new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        GameUtils.deleteDict( DictsActivity.this, 
-                                              m_dicts[myPosition] );
-                        mkListAdapter();
+                        deleteDict( dict );
                     }
                 };
             String fmt = getString( R.string.confirm_delete_dictf );
             String msg = String.format( fmt, dict, nGames );
             showConfirmThen( msg, action );
         }
+    }
+
+    private void deleteDict( String dict )
+    {
+        GameUtils.deleteDict( this, dict );
+        mkListAdapter();
     }
 
     private void mkListAdapter()
