@@ -238,59 +238,6 @@ public class CurGameInfo {
         return names;
     }
 
-    public String summarizePlayers( Context context, GameSummary summary )
-    {
-        StringBuffer sb = new StringBuffer();
-        String vsString = context.getString( R.string.vs );
-        for ( int ii = 0; ; ) {
-
-            int score = 0;
-            try {
-                // scores can be null, but I've seen array OOB too.
-                score = summary.scores[ii];
-            } catch ( Exception ex ){}
-
-            sb.append( String.format( "%s(%d)", players[ii].name, score ) );
-            if ( ++ii >= nPlayers ) {
-                break;
-            }
-            sb.append( String.format( " %s ", vsString ) );
-        }
-        return sb.toString();
-    }
-
-    public String summarizeRole( Context context, GameSummary summary )
-    {
-        String result = null;
-        if ( null != summary
-             && null != summary.conType 
-             && serverRole != DeviceRole.SERVER_STANDALONE ) {
-            Assert.assertTrue( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
-                               == summary.conType );
-            String fmt = context.getString( R.string.summary_fmt_relay );
-            result = String.format( fmt, summary.roomName );
-        }
-        return result;
-    }
-
-    public String summarizeState( Context context, GameSummary summary )
-    {
-        String result = null;
-        if ( summary.gameOver ) {
-            result = context.getString( R.string.gameOver );
-        } else {
-            result = String.format( context.getString(R.string.movesf),
-                                    summary.nMoves );
-        }
-        return result;
-    }
-
-    public String summarizeDict( Context context )
-    {
-        String label = context.getString( R.string.dictionary );
-        return label + " " + dictName;
-    }
-
     public boolean addPlayer() 
     {
         boolean added = nPlayers < MAX_NUM_PLAYERS;
