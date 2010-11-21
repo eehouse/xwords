@@ -32,6 +32,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
+    public static final String PLAYERS = "PLAYERS";
     public static final String NUM_PLAYERS = "NUM_PLAYERS";
     public static final String GAME_OVER = "GAME_OVER";
     public static final String SCORES = "SCORES";
@@ -44,6 +45,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String HASMSGS = "HASMSGS";
     public static final String SNAPSHOT = "SNAPSHOT";
     public static final String CONTYPE = "CONTYPE";
+    public static final String SERVERROLE = "SERVERROLE";
     public static final String ROOMNAME = "ROOMNAME";
     public static final String RELAYID = "RELAYID";
     public static final String SEED = "SEED";
@@ -66,8 +68,10 @@ public class DBHelper extends SQLiteOpenHelper {
                     + FILE_NAME   + " TEXT PRIMARY KEY,"
                     + NUM_MOVES   + " INTEGER,"
                     + NUM_PLAYERS + " INTEGER,"
+                    + PLAYERS     + " TEXT,"
                     + GAME_OVER   + " INTEGER,"
 
+                    + SERVERROLE + " INTEGER,"
                     + CONTYPE    + " INTEGER,"
                     + ROOMNAME   + " TEXT,"
                     + RELAYID    + " TEXT,"

@@ -44,10 +44,11 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
-                                 DBHelper.GAME_OVER,
-                                 DBHelper.CONTYPE, DBHelper.ROOMNAME,
-                                 DBHelper.RELAYID, DBHelper.SMSPHONE, 
-                                 DBHelper.SEED, DBHelper.DICTLANG, DBHelper.DICTNAME,
+                                 DBHelper.GAME_OVER, DBHelper.PLAYERS,
+                                 DBHelper.CONTYPE, DBHelper.SERVERROLE,
+                                 DBHelper.ROOMNAME, DBHelper.RELAYID, 
+                                 DBHelper.SMSPHONE, DBHelper.SEED, 
+                                 DBHelper.DICTLANG, DBHelper.DICTNAME,
                                  DBHelper.SCORES, DBHelper.HASMSGS
             };
             String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
@@ -61,6 +62,9 @@ public class DBUtils {
                 summary.nPlayers = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.NUM_PLAYERS));
+                summary.players = 
+                    cursor.getString(cursor.
+                                  getColumnIndex(DBHelper.PLAYERS));
                 summary.dictLang = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.DICTLANG));
@@ -105,6 +109,10 @@ public class DBUtils {
                         summary.smsPhone = cursor.getString( col );
                     }
                 }
+
+                col = cursor.getColumnIndex( DBHelper.SERVERROLE );
+                tmp = cursor.getInt( col );
+                summary.serverRole = CurGameInfo.DeviceRole.values()[tmp];
                 
                 col = cursor.getColumnIndex( DBHelper.HASMSGS );
                 if ( col >= 0 ) {
@@ -137,6 +145,8 @@ public class DBUtils {
                 values.put( DBHelper.FILE_NAME, path );
                 values.put( DBHelper.NUM_MOVES, summary.nMoves );
                 values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
+                values.put( DBHelper.PLAYERS, 
+                            summary.summarizePlayers(context) );
                 values.put( DBHelper.DICTLANG, summary.dictLang );
                 values.put( DBHelper.DICTNAME, summary.dictName );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
@@ -156,6 +166,7 @@ public class DBUtils {
                     values.put( DBHelper.SEED, summary.seed );
                     values.put( DBHelper.SMSPHONE, summary.smsPhone );
                 }
+                values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
 
                 Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
 
