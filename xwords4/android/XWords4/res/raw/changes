@@ -10,15 +10,21 @@
 <ul>
 <li>Beginning with Beta 19 Crosswords will notify the relay when you 
 delete a networked game, and the relay will tell others in the game 
-when they try to keep playing.)</li>
+that you're gone and the game is over.</li>
 
-<li>Fixes a problem drawing wide letters on narrow screens</li>
+<li>Fix a problem drawing wide letters on narrow screens</li>
 
-<li>Fix the Play game button at the bottom of the Game setting 
-dialog</li> </ul>
+<li>Position the Play game button permanently at the bottom of the 
+Game setting dialog -- no scrolling.</li>
 
-<li>Run on Android 1.5 again -- so you 1.5 user won't have seen an 
-upgrade in a while</li>
+<li>Run on Android 1.5 again -- making this the first upgrade in a while 
+for you 1.5 users.</li>
+
+<li>Speed up game launch</li>
+
+<li>Improve how missing dictionaries are handled -- e.g. stop crashing</li>
+
+</ul>
 
 <p>Please remember that this is beta software.  Letting me know (at 
 eehouse@eehouse.org) what's broken and what features you'd most like 
