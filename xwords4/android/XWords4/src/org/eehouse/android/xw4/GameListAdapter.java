@@ -67,36 +67,30 @@ public class GameListAdapter extends XWListAdapter {
         if ( null == layout ) {
             Utils.logf( "creating new list elem for %s", path );
             layout = m_factory.inflate( m_layoutId, null );
-            byte[] stream = GameUtils.savedGame( m_context, path );
-            if ( null != stream ) {
-                CurGameInfo gi = new CurGameInfo( m_context );
-                XwJNI.gi_from_stream( gi, stream );
 
-                GameSummary summary = DBUtils.getSummary( m_context, path );
+            GameSummary summary = DBUtils.getSummary( m_context, path );
 
-                TextView view = (TextView)layout.findViewById( R.id.players );
-                String gameName = GameUtils.gameName( m_context, path );
-                view.setText( String.format( "%s: %s", gameName,
-                                             gi.summarizePlayers( m_context, 
-                                                                  summary ) ) );
+            TextView view = (TextView)layout.findViewById( R.id.players );
+            String gameName = GameUtils.gameName( m_context, path );
+            view.setText( String.format( "%s: %s", gameName,
+                                         summary.players ) );
 
-                view = (TextView)layout.findViewById( R.id.state );
-                view.setText( gi.summarizeState( m_context, summary ) );
-                view = (TextView)layout.findViewById( R.id.dict );
-                view.setText( gi.summarizeDict( m_context ) );
+            view = (TextView)layout.findViewById( R.id.state );
+            view.setText( summary.summarizeState( m_context ) );
+            view = (TextView)layout.findViewById( R.id.dict );
+            view.setText( summary.dictName );
 
-                view = (TextView)layout.findViewById( R.id.role );
-                String roleSummary = gi.summarizeRole( m_context, summary );
-                if ( null != roleSummary ) {
-                    view.setText( roleSummary );
-                } else {
-                    view.setVisibility( View.GONE );
-                }
-
-                View marker = layout.findViewById( R.id.msg_marker );
-                marker.setVisibility( summary.msgsPending? 
-                                      View.VISIBLE : View.GONE );
+            view = (TextView)layout.findViewById( R.id.role );
+            String roleSummary = summary.summarizeRole( m_context );
+            if ( null != roleSummary ) {
+                view.setText( roleSummary );
+            } else {
+                view.setVisibility( View.GONE );
             }
+
+            View marker = layout.findViewById( R.id.msg_marker );
+            marker.setVisibility( summary.msgsPending? 
+                                  View.VISIBLE : View.GONE );
             m_viewsCache.put( path, layout );
         }
         return layout;
