@@ -24,6 +24,8 @@ for you 1.5 users.</li>
 
 <li>Improve how missing dictionaries are handled -- e.g. stop crashing</li>
 
+<li>Stop relay crashing when room name contains an apostrophe</li>
+
 </ul>
 
 <p>Please remember that this is beta software.  Letting me know (at 
