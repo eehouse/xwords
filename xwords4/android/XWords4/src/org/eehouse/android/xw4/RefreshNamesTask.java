@@ -63,6 +63,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
                                           true );
     }
 
+    @Override
     protected String[] doInBackground( Void...unused ) 
     {
         ArrayList<String> names = new ArrayList<String>();
@@ -117,6 +118,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
      //     setProgressPercent(progress[0]);
      // }
 
+    @Override
      protected void onPostExecute( String[] result )
      {
          Utils.logf( "onPostExecute()" );
@@ -124,6 +126,8 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
              new ArrayAdapter<String>( m_context,
                                        android.R.layout.simple_spinner_item,
                                        result );
+         int resID = android.R.layout.simple_spinner_dropdown_item;
+         adapter.setDropDownViewResource( resID );
          m_resultSpinner.setAdapter( adapter );
 
          m_progress.cancel();
