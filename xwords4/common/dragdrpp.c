@@ -41,11 +41,9 @@ static void setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits );
 #endif
 
 #ifdef XWFEATURE_CROSSHAIRS
-static void crosshairs_init( BoardCtxt* board );
 static XP_Bool crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row );
 static void crosshairs_clear( BoardCtxt* board );
 #else
-# define crosshairs_init( board )
 # define crosshairs_set( board, col, row ) XP_FALSE;
 # define crosshairs_clear( board )
 #endif
@@ -75,6 +73,15 @@ dragDropHasMoved( const BoardCtxt* board )
     return moved;
 } /* dragDropHasMoved */
 
+static void
+clearDS( DragState* ds )
+{
+    XP_MEMSET( ds, 0, sizeof(*ds) );
+#ifdef XWFEATURE_CROSSHAIRS
+    ds->crosshairs.col = ds->crosshairs.row = -1;
+#endif
+}
+
 static XP_Bool
 ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
@@ -85,7 +92,6 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 
     found = coordToCell( board, xx, yy, &col, &row );
     XP_ASSERT( found );
-    crosshairs_init( board );
     (void)crosshairs_set( board, col, row );
 
     trayVisible = board->trayVisState == TRAY_REVEALED;
@@ -166,7 +172,7 @@ ddStartTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
 /* x and y, in board coordinates (not model, should the board be flipped), are
  * already col,row (cells) in the board case, but real x/y (pixels) on the
  * tray.
-*/
+ */
 XP_Bool
 dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
 {
@@ -175,7 +181,7 @@ dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
     if ( dragDropInProgress(board) ) {
         XP_LOGF( "warning: starting drag while dragDropInProgress() true" );
     }
-    XP_MEMSET( ds, 0, sizeof(*ds) );
+    clearDS( ds );
 
     ds->start.obj = obj;
 
@@ -671,13 +677,6 @@ dragDropInCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row,
         *inHor = *inVert = XP_FALSE;
     }
 } /* dragDropInCrosshairs */
-
-static void
-crosshairs_init( BoardCtxt* board )
-{
-    DragState* ds = &board->dragState;
-    ds->crosshairs.col = ds->crosshairs.row = -1;
-}
 
 static XP_Bool
 crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row )
