@@ -53,8 +53,8 @@ public class DBUtils {
             };
             String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
 
-            Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
-                                      null, null, null, null );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
                 summary = new GameSummary();
                 summary.nMoves = cursor.getInt(cursor.
@@ -139,7 +139,7 @@ public class DBUtils {
 
             if ( null == summary ) {
                 String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-                db.delete( DBHelper.TABLE_NAME, selection, null );
+                db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             } else {
                 ContentValues values = new ContentValues();
                 values.put( DBHelper.FILE_NAME, path );
@@ -171,8 +171,8 @@ public class DBUtils {
                 Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
 
                 try {
-                    long result = db.replaceOrThrow( DBHelper.TABLE_NAME, "", 
-                                                     values );
+                    long result = db.replaceOrThrow( DBHelper.TABLE_NAME_SUM,
+                                                     "", values );
                 } catch ( Exception ex ) {
                     Utils.logf( "ex: %s", ex.toString() );
                 }
@@ -191,8 +191,8 @@ public class DBUtils {
                 + dict + "\'";
             // null for columns will return whole rows: bad
             String[] columns = { DBHelper.DICTNAME };
-            Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
-                                      null, null, null, null );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
 
             result = cursor.getCount();
             cursor.close();
@@ -207,7 +207,8 @@ public class DBUtils {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
             String cmd = String.format( "UPDATE %s SET %s = 1 WHERE %s = '%s'",
-                                        DBHelper.TABLE_NAME, DBHelper.HASMSGS, 
+                                        DBHelper.TABLE_NAME_SUM, 
+                                        DBHelper.HASMSGS, 
                                         DBHelper.RELAYID, relayID );
             db.execSQL( cmd );
             db.close();
@@ -222,8 +223,8 @@ public class DBUtils {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { DBHelper.FILE_NAME };
             String selection = DBHelper.RELAYID + "='" + relayID + "'";
-            Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
-                                      null, null, null, null );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
                 result = cursor.getString( cursor
                                            .getColumnIndex(DBHelper.FILE_NAME));
@@ -247,8 +248,8 @@ public class DBUtils {
             String selection = DBHelper.RELAYID + " NOT null AND " 
                 + "NOT " + DBHelper.HASMSGS;
 
-            Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
-                                      null, null, null, null );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
 
             if ( 0 < cursor.getCount() ) {
                 cursor.moveToFirst();
@@ -270,6 +271,27 @@ public class DBUtils {
             result = ids.toArray( new String[ids.size()] );
         }
         return result;
+    }
+
+    public static void addDeceased( Context context, String relayID, 
+                                    int seed )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.RELAYID, relayID );
+            values.put( DBHelper.SEED, seed );
+
+            try {
+                long result = db.replaceOrThrow( DBHelper.TABLE_NAME_OBITS,
+                                                 "", values );
+            } catch ( Exception ex ) {
+                Utils.logf( "ex: %s", ex.toString() );
+            }
+            db.close();
+        }
     }
 
     private static void initDB( Context context )

@@ -26,9 +26,10 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    public static final String TABLE_NAME = "summaries";
+    public static final String TABLE_NAME_SUM = "summaries";
+    public static final String TABLE_NAME_OBITS = "obits";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 6;
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -61,10 +62,9 @@ public class DBHelper extends SQLiteOpenHelper {
         super( context, DB_NAME, null, DB_VERSION );
     }
 
-    @Override
-    public void onCreate( SQLiteDatabase db ) 
+    private void onCreateSum( SQLiteDatabase db ) 
     {
-        db.execSQL( "CREATE TABLE " + TABLE_NAME + " ("
+        db.execSQL( "CREATE TABLE " + TABLE_NAME_SUM + " ("
                     + FILE_NAME   + " TEXT PRIMARY KEY,"
                     + NUM_MOVES   + " INTEGER,"
                     + NUM_PLAYERS + " INTEGER,"
@@ -92,11 +92,34 @@ public class DBHelper extends SQLiteOpenHelper {
                     + ");" );
     }
 
+    private void onCreateObits( SQLiteDatabase db ) 
+    {
+        db.execSQL( "CREATE TABLE " + TABLE_NAME_OBITS + " ("
+                    + RELAYID    + " TEXT,"
+                    + SEED       + " INTEGER"
+                    + ");" );
+    }
+
+    @Override
+    public void onCreate( SQLiteDatabase db ) 
+    {
+        onCreateSum( db );
+        onCreateObits( db );
+    }
+
     @Override
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ) 
     {
         Utils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
-        db.execSQL( "DROP TABLE " + TABLE_NAME + ";" );
-        onCreate( db );
+
+        if ( newVersion == 6 && oldVersion == 5 ) {
+            onCreateObits(db);
+        } else {
+            db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
+            if ( oldVersion >= 6 ) {
+                db.execSQL( "DROP TABLE " + TABLE_NAME_OBITS + ";" );
+            }
+            onCreate( db );
+        }
     }
 }
