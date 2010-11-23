@@ -35,7 +35,6 @@
 
 static DBMgr* s_instance = NULL;
 
-static int sumArray( const char* const str );
 #define DELIM "\1"
 
 static void formatParams( char* paramValues[], int nParams, const char* fmt, 
@@ -84,8 +83,8 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !connName ) connName = "";
  
     const char* command = "INSERT INTO " GAMES_TABLE
-        " (cid, room, connName, nTotal, nPerDevice, lang, pub)"
-        " VALUES( $1, $2, $3, $4, ARRAY[0,0,0,0], $5, $6 )";
+        " (cid, room, connName, nTotal, lang, pub)"
+        " VALUES( $1, $2, $3, $4, $5, $6 )";
     int nParams = 6;
     char* paramValues[nParams];
     char buf[512];
@@ -149,7 +148,8 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
 
     /* NOTE: ILIKE, for case-insensitive comparison, is a postgres extension
        to SQL. */
-    const char* cmd = "SELECT cid, connName, nPerDevice FROM " GAMES_TABLE
+    const char* cmd = "SELECT cid, connName, sum_array(nPerDevice) FROM "
+        GAMES_TABLE
         " WHERE NOT dead"
         " AND room ILIKE $1"
         " AND lang = $2"
@@ -165,7 +165,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
-        *nPlayersHP = sumArray( PQgetvalue( result, 0, 2 ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, 2 ) );
         /* cid may be 0, but should use game anyway  */
     }
     PQclear( result );
@@ -197,7 +197,7 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
     HostID newID = curID;
 
     if ( newID == HOST_ID_NONE ) {
-        int arr[4];
+        int arr[4] = {0};
         readArray( connName, arr );
         for ( newID = HOST_ID_SERVER; newID <= 4; ++newID ) {
             if ( arr[newID-1] == 0 ) {
@@ -390,19 +390,6 @@ DBMgr::readArray( const char* const connName, int arr[]  ) /* len 4 */
     const char* arrStr = PQgetvalue( result, 0, 0 );
     sscanf( arrStr, "{%d,%d,%d,%d}", &arr[0], &arr[1], &arr[2], &arr[3] );
     PQclear( result );
-}
-
-static int
-sumArray( const char* const arrStr )
-{
-    int arr[4];
-    sscanf( arrStr, "{%d,%d,%d,%d}", &arr[0], &arr[1], &arr[2], &arr[3] );
-    int sum = 0;
-    int ii;
-    for ( ii = 0; ii < 4; ++ii ) {
-        sum += arr[ii];
-    }
-    return sum;
 }
 
 /*
