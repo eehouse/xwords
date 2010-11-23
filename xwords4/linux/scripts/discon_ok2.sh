@@ -152,16 +152,17 @@ kill_from_log() {
 }
 
 maybe_resign() {
-    KEY=$1
-    LOG=${LOGS[$KEY]}
-    if grep -q XWRELAY_ALLHERE $LOG; then
-        if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
-            echo "making $LOG $(connName $LOG) resign..."
-            kill_from_log $LOG && close_device $KEY $DEADDIR
+    if [ "$RESIGN_RATIO" -gt 0 ]; then
+        KEY=$1
+        LOG=${LOGS[$KEY]}
+        if grep -q XWRELAY_ALLHERE $LOG; then
+            if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
+                echo "making $LOG $(connName $LOG) resign..."
+                kill_from_log $LOG && close_device $KEY $DEADDIR
+            fi
         fi
     fi
 }
-
 
 check_game() {
     KEY=$1
