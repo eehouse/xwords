@@ -258,8 +258,11 @@ public class GamesList extends XWListActivity
                 DialogInterface.OnClickListener lstnr =
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            for( String game:GameUtils.gamesList(GamesList.this)) {
-                                GameUtils.deleteGame( GamesList.this, game  );
+                            String[] games = 
+                                GameUtils.gamesList( GamesList.this );
+                            for ( int ii = games.length - 1; ii >= 0; --ii ) {
+                                GameUtils.deleteGame( GamesList.this, games[ii], 
+                                                      ii == 0  );
                             }
                             m_adapter = new GameListAdapter( GamesList.this );
                             setListAdapter( m_adapter );
@@ -348,7 +351,7 @@ public class GamesList extends XWListActivity
         if ( R.id.list_item_delete == menuID ) {
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int ii ) {
-                        GameUtils.deleteGame( GamesList.this, path );
+                        GameUtils.deleteGame( GamesList.this, path, true );
                         m_adapter.inval( path );
                         onContentChanged();
                     }

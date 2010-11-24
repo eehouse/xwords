@@ -107,7 +107,7 @@ public class GameUtils {
 
     public static void resetGame( Context context, String pathIn )
     {
-        tellRelayDied( context, pathIn );
+        tellRelayDied( context, pathIn, true );
         resetGame( context, pathIn, pathIn );
     }
 
@@ -143,10 +143,11 @@ public class GameUtils {
         return newName;
     }
 
-    public static void deleteGame( Context context, String path )
+    public static void deleteGame( Context context, String path,
+                                   boolean informNow )
     {
         // does this need to be synchronized?
-        tellRelayDied( context, path );
+        tellRelayDied( context, path, informNow );
         context.deleteFile( path );
         DBUtils.saveSummary( context, path, null );
     }
@@ -406,7 +407,7 @@ public class GameUtils {
         CommonPrefs cp = CommonPrefs.get( context );
 
         if ( forceNew ) {
-            tellRelayDied( context, path );
+            tellRelayDied( context, path, true );
         } else {
             byte[] stream = GameUtils.savedGame( context, path );
             // Will fail if there's nothing in the stream but a gi.
@@ -471,12 +472,15 @@ public class GameUtils {
         }
     }
     
-    private static void tellRelayDied( Context context, String path )
+    private static void tellRelayDied( Context context, String path,
+                                       boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, path );
         if ( null != summary.relayID ) {
             DBUtils.addDeceased( context, summary.relayID, summary.seed );
-            NetUtils.informOfDeaths( context );
+            if ( informNow ) {
+                NetUtils.informOfDeaths( context );
+            }
         }
     }
 
