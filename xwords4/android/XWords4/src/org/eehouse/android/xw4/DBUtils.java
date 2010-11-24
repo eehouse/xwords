@@ -36,6 +36,14 @@ public class DBUtils {
 
     private static SQLiteOpenHelper s_dbHelper = null;
 
+    public static class Obit {
+        public Obit( String relayID, int seed ) {
+            m_relayID = relayID; m_seed = seed;
+        }
+        String m_relayID;
+        int m_seed;
+    }
+
     public static GameSummary getSummary( Context context, String file )
     {
         initDB( context );
@@ -289,6 +297,60 @@ public class DBUtils {
                                                  "", values );
             } catch ( Exception ex ) {
                 Utils.logf( "ex: %s", ex.toString() );
+            }
+            db.close();
+        }
+    }
+
+    public static Obit[] listObits( Context context )
+    {
+        Obit[] result = null;
+        ArrayList<Obit> al = new ArrayList<Obit>();
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.RELAYID, DBHelper.SEED };
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_OBITS, columns, 
+                                      null, null, null, null, null );
+            if ( 0 < cursor.getCount() ) {
+                cursor.moveToFirst();
+                for ( ; ; ) {
+                    int index = cursor.getColumnIndex( DBHelper.RELAYID );
+                    String relayID = cursor.getString( index );
+                    index = cursor.getColumnIndex( DBHelper.SEED );
+                    int seed = cursor.getInt( index );
+                    al.add( new Obit( relayID, seed ) );
+                    if ( cursor.isLast() ) {
+                        break;
+                    }
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+
+        int siz = al.size();
+        if ( siz > 0 ) {
+            result = al.toArray( new Obit[siz] );
+        }
+        return result;
+    }
+
+    public static void clearObits( Context context, Obit[] obits )
+    {
+        String fmt = DBHelper.RELAYID + "= \"%s\" AND + " 
+            + DBHelper.SEED + " = %d";
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            for ( Obit obit: obits ) {
+                String selection = String.format( fmt, obit.m_relayID, 
+                                                  obit.m_seed );
+                db.delete( DBHelper.TABLE_NAME_OBITS, selection, null );
             }
             db.close();
         }

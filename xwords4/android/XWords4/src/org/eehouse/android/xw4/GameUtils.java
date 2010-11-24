@@ -476,7 +476,7 @@ public class GameUtils {
         GameSummary summary = DBUtils.getSummary( context, path );
         if ( null != summary.relayID ) {
             DBUtils.addDeceased( context, summary.relayID, summary.seed );
-            // NetUtils.informOfDeath( context, summary.relayID, summary.seed );
+            NetUtils.informOfDeaths( context );
         }
     }
 
