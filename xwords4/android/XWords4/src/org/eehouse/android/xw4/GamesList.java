@@ -42,6 +42,8 @@ import android.widget.Button;
 import android.view.MenuInflater;
 import java.io.File;
 import android.preference.PreferenceManager;
+// import android.telephony.PhoneStateListener;
+// import android.telephony.TelephonyManager;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -58,6 +60,18 @@ public class GamesList extends XWListActivity
     private Handler m_handler;
     private String m_missingDictName;
     private int m_missingDictLang;
+
+    // private XWPhoneStateListener m_phoneStateListener;
+    // private class XWPhoneStateListener extends PhoneStateListener {
+    //     @Override
+    //     public void onDataConnectionStateChanged( int state )
+    //     {
+    //         Utils.logf( "onDataConnectionStateChanged(%d)", state );
+    //         if ( TelephonyManager.DATA_CONNECTED == state ) {
+    //             NetUtils.informOfDeaths( GamesList.this );
+    //         }
+    //     }
+    // }
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -143,6 +157,7 @@ public class GamesList extends XWListActivity
         setListAdapter( m_adapter );
 
         RelayReceiver.RestartTimer( this );
+        NetUtils.informOfDeaths( this );
     }
 
     @Override
@@ -150,13 +165,25 @@ public class GamesList extends XWListActivity
     {
         super.onStart();
         DispatchNotify.SetRelayIDsHandler( this );
+
+        // TelephonyManager mgr = 
+        //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
+        // m_phoneStateListener = new XWPhoneStateListener();
+        // mgr.listen( m_phoneStateListener,
+        //             PhoneStateListener.LISTEN_DATA_CONNECTION_STATE );
     }
 
     @Override
     protected void onStop()
     {
-        super.onStop();
+        // TelephonyManager mgr = 
+        //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
+        // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
+        // m_phoneStateListener = null;
+
         DispatchNotify.SetRelayIDsHandler( null );
+
+        super.onStop();
     }
 
     // DispatchNotify.HandleRelaysIface interface
