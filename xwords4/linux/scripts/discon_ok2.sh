@@ -141,6 +141,22 @@ close_device() {
     unset LOGS[$ID]
 }
 
+kill_from_logs() {
+    CMDS=""
+    while [ $# -gt 0 ]; do
+        LOG=${LOGS[$1]}
+        RELAYID=$(./scripts/relayID.sh $LOG)
+        if [ -n "$RELAYID" ]; then
+            CMDS="$CMDS -d $RELAYID"
+        fi
+        shift
+    done
+    if [ -n "$CMDS" ]; then
+        echo "../relay/rq $CMDS"
+        ../relay/rq $CMDS 2>/dev/null || true
+    fi
+}
+
 kill_from_log() {
     LOG=$1
     RELAYID=$(./scripts/relayID.sh $LOG)
@@ -189,6 +205,7 @@ check_game() {
 
     if [ -n "$OTHERS" ]; then
         echo -n "Closing $CONNNAME: "
+        # kill_from_logs $OTHERS $KEY
         for ID in $OTHERS $KEY; do
             echo -n "${LOGS[$ID]}, "
             kill_from_log ${LOGS[$ID]} || true
