@@ -773,25 +773,27 @@ handle_proxy_tproc( void* closure )
                         int ii;
                         for ( ii = 0; ii < nameCount; ++ii ) {
                             unsigned short seed;
-                            if ( getNetShort( &bufp, end, &seed ) ) {
-                                const unsigned char* crptr = 
-                                    (unsigned char*)strchr( (char*)bufp, '\n' );
-                                if ( NULL != crptr && crptr < end ) {
-                                    HostID hid;
-                                    char connName[MAX_CONNNAME_LEN+1];
-                                    if ( parseRelayID( (char*)bufp, connName, 
-                                                       &hid ) ) {
-                                        SafeCref scr( connName );
-                                        scr.DeviceGone( hid, seed );
-                                    }
-                                    /* skip "\n" */
-                                    bufp = (unsigned char*)crptr + 1;
-                                } else {
-                                    break;
-                                }
-                            } else {
+                            if ( !getNetShort( &bufp, end, &seed ) ) {
                                 break;
                             }
+                            unsigned char* crptr = 
+                                (unsigned char*)strchr( (char*)bufp, '\n' );
+                            if ( NULL == crptr || crptr >= end ) {
+                                break;
+                            }
+                            *crptr = '\0';
+
+                            HostID hid;
+                            char connName[MAX_CONNNAME_LEN+1];
+                            if ( !parseRelayID( (const char*)bufp, connName, 
+                                                &hid ) ) {
+                                break;
+                            }
+                            SafeCref scr( connName );
+                            scr.DeviceGone( hid, seed );
+
+                            /* skip "\n" */
+                            bufp = crptr + 1;
                         }
                     }
                 }
