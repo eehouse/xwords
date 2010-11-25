@@ -153,6 +153,8 @@ public class GamesList extends XWListActivity
                 }
             });
 
+        GameConverter.convert( this );
+
         m_adapter = new GameListAdapter( this );
         setListAdapter( m_adapter );
 
@@ -281,12 +283,12 @@ public class GamesList extends XWListActivity
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_delete_all:
-            if ( GameUtils.gamesList( this ).length > 0 ) {
+            if ( DBUtils.gamesList( this ).length > 0 ) {
                 DialogInterface.OnClickListener lstnr =
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             String[] games = 
-                                GameUtils.gamesList( GamesList.this );
+                                DBUtils.gamesList( GamesList.this );
                             for ( int ii = games.length - 1; ii >= 0; --ii ) {
                                 GameUtils.deleteGame( GamesList.this, games[ii], 
                                                       ii == 0  );
@@ -338,7 +340,7 @@ public class GamesList extends XWListActivity
     protected void onListItemClick( ListView l, View v, int position, long id )
     {
         super.onListItemClick( l, v, position, id );
-        String path = GameUtils.gamesList( this )[position];
+        String path = DBUtils.gamesList( this )[position];
 
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
@@ -373,7 +375,7 @@ public class GamesList extends XWListActivity
         boolean handled = true;
         DialogInterface.OnClickListener lstnr;
 
-        final String path = GameUtils.gamesList( this )[position];
+        final String path = DBUtils.gamesList( this )[position];
     
         if ( R.id.list_item_delete == menuID ) {
             lstnr = new DialogInterface.OnClickListener() {

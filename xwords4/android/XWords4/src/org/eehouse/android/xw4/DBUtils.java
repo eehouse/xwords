@@ -150,7 +150,6 @@ public class DBUtils {
                 db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             } else {
                 ContentValues values = new ContentValues();
-                values.put( DBHelper.FILE_NAME, path );
                 values.put( DBHelper.NUM_MOVES, summary.nMoves );
                 values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
                 values.put( DBHelper.PLAYERS, 
@@ -158,6 +157,7 @@ public class DBUtils {
                 values.put( DBHelper.DICTLANG, summary.dictLang );
                 values.put( DBHelper.DICTNAME, summary.dictName );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
+                values.put( DBHelper.HASMSGS, 0 );
 
                 if ( null != summary.scores ) {
                     StringBuffer sb = new StringBuffer();
@@ -178,16 +178,14 @@ public class DBUtils {
 
                 Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
 
-                try {
-                    long result = db.replaceOrThrow( DBHelper.TABLE_NAME_SUM,
-                                                     "", values );
-                } catch ( Exception ex ) {
-                    Utils.logf( "ex: %s", ex.toString() );
-                }
+                String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+                long result = db.update( DBHelper.TABLE_NAME_SUM,
+                                         values, selection, null );
+                Assert.assertTrue( result >= 0 );
             }
             db.close();
         }
-    }
+    } // saveSummary
 
     public static int countGamesUsing( Context context, String dict )
     {
@@ -213,12 +211,14 @@ public class DBUtils {
     {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            String cmd = String.format( "UPDATE %s SET %s = 1 WHERE %s = '%s'",
-                                        DBHelper.TABLE_NAME_SUM, 
-                                        DBHelper.HASMSGS, 
-                                        DBHelper.RELAYID, relayID );
-            db.execSQL( cmd );
+            
+            String selection = DBHelper.RELAYID + "=\'" + relayID + "\'";
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.HASMSGS, 1 );
+            
+            int result = db.update( DBHelper.TABLE_NAME_SUM, 
+                                    values, selection, null );
+            Assert.assertTrue( result == 1 );
             db.close();
         }
     }
@@ -354,6 +354,90 @@ public class DBUtils {
             }
             db.close();
         }
+    }
+
+    public static void saveGame( Context context, String path, byte[] bytes )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.SNAPSHOT, bytes );
+
+            int result = db.update( DBHelper.TABLE_NAME_SUM, 
+                                    values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.FILE_NAME, path );
+                long row = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
+                Assert.assertTrue( row >= 0 );
+            }
+            db.close();
+        }
+    }
+
+    public static byte[] loadGame( Context context, String path )
+    {
+        Assert.assertNotNull( path );
+        byte[] result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+
+            String[] columns = { DBHelper.SNAPSHOT };
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getBlob( cursor
+                                         .getColumnIndex(DBHelper.SNAPSHOT));
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static void deleteGame( Context context, String path )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
+            db.close();
+        }
+    }
+
+    public static String[] gamesList( Context context )
+    {
+        ArrayList<String> al = new ArrayList<String>();
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+
+            String[] columns = { DBHelper.FILE_NAME };
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      null, null, null, null, null );
+            if ( 0 < cursor.getCount() ) {
+                cursor.moveToFirst();
+                for ( ; ; ) {
+                    int index = cursor.getColumnIndex( DBHelper.FILE_NAME );
+                    String name = cursor.getString( index );
+                    al.add( cursor.getString( index ) );
+                    if ( cursor.isLast() ) {
+                        break;
+                    }
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+
+        return al.toArray( new String[al.size()] );
     }
 
     private static void initDB( Context context )

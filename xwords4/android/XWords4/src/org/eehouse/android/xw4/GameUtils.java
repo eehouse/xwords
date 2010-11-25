@@ -40,23 +40,7 @@ public class GameUtils {
 
     public static byte[] savedGame( Context context, String path )
     {
-        byte[] stream = null;
-        try {
-            synchronized( s_syncObj ) {
-                FileInputStream in = context.openFileInput( path );
-                int len = in.available();
-                stream = new byte[len];
-                in.read( stream, 0, len );
-                in.close();
-            }
-        } catch ( java.io.FileNotFoundException fnf ) {
-            Utils.logf( fnf.toString() );
-            stream = null;
-        } catch ( java.io.IOException io ) {
-            Utils.logf( io.toString() );
-            stream = null;
-        }
-        return stream;
+        return DBUtils.loadGame( context, path );
     } // savedGame
 
     /**
@@ -125,17 +109,6 @@ public class GameUtils {
         return summary;
     }
 
-    public static String[] gamesList( Context context )
-    {
-        ArrayList<String> al = new ArrayList<String>();
-        for ( String file : context.fileList() ) {
-            if ( isGame( file ) ){
-                al.add( file );
-            }
-        }
-        return al.toArray( new String[al.size()] );
-    }
-
     public static String dupeGame( Context context, String pathIn )
     {
         String newName = newName( context );
@@ -148,8 +121,7 @@ public class GameUtils {
     {
         // does this need to be synchronized?
         tellRelayDied( context, path, informNow );
-        context.deleteFile( path );
-        DBUtils.saveSummary( context, path, null );
+        DBUtils.deleteGame( context, path );
     }
 
     public static void loadMakeGame( Context context, int gamePtr, 
@@ -185,16 +157,17 @@ public class GameUtils {
 
     public static void saveGame( Context context, byte[] bytes, String path )
     {
-        try {
-            synchronized( s_syncObj ) {
-                FileOutputStream out =
-                    context.openFileOutput( path, Context.MODE_PRIVATE );
-                out.write( bytes );
-                out.close();
-            }
-        } catch ( java.io.IOException ex ) {
-            Utils.logf( "got IOException: " + ex.toString() );
-        }
+        DBUtils.saveGame( context, path, bytes );
+        // try {
+        //     synchronized( s_syncObj ) {
+        //         FileOutputStream out =
+        //             context.openFileOutput( path, Context.MODE_PRIVATE );
+        //         out.write( bytes );
+        //         out.close();
+        //     }
+        // } catch ( java.io.IOException ex ) {
+        //     Utils.logf( "got IOException: " + ex.toString() );
+        // }
     }
 
     public static String saveGame( Context context, byte[] bytes )
@@ -228,7 +201,7 @@ public class GameUtils {
     public static boolean gameDictHere( Context context, int indx, 
                                         String[] name, int[] lang )
     {
-        String path = GameUtils.gamesList( context )[indx];
+        String path = DBUtils.gamesList( context )[indx];
         return gameDictHere( context, path, name, lang );
     }
 
@@ -237,7 +210,7 @@ public class GameUtils {
         String name = null;
         Integer num = 1;
         int ii;
-        String[] files = context.fileList();
+        String[] files = DBUtils.gamesList( context );
         String fmt = context.getString( R.string.gamef );
 
         while ( name == null ) {

@@ -41,7 +41,7 @@ public class GameListAdapter extends XWListAdapter {
     private HashMap<String,View> m_viewsCache;
 
     public GameListAdapter( Context context ) {
-        super( context, GameUtils.gamesList(context).length );
+        super( context, DBUtils.gamesList(context).length );
         m_context = context;
         m_factory = LayoutInflater.from( context );
 
@@ -56,12 +56,12 @@ public class GameListAdapter extends XWListAdapter {
     }
     
     public int getCount() {
-        return GameUtils.gamesList(m_context).length;
+        return DBUtils.gamesList(m_context).length;
     }
     
     public Object getItem( int position ) 
     {
-        final String path = GameUtils.gamesList(m_context)[position];
+        final String path = DBUtils.gamesList(m_context)[position];
         View layout = m_viewsCache.get( path );
 
         if ( null == layout ) {
