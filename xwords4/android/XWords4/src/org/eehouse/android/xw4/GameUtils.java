@@ -158,16 +158,6 @@ public class GameUtils {
     public static void saveGame( Context context, byte[] bytes, String path )
     {
         DBUtils.saveGame( context, path, bytes );
-        // try {
-        //     synchronized( s_syncObj ) {
-        //         FileOutputStream out =
-        //             context.openFileOutput( path, Context.MODE_PRIVATE );
-        //         out.write( bytes );
-        //         out.close();
-        //     }
-        // } catch ( java.io.IOException ex ) {
-        //     Utils.logf( "got IOException: " + ex.toString() );
-        // }
     }
 
     public static String saveGame( Context context, byte[] bytes )
