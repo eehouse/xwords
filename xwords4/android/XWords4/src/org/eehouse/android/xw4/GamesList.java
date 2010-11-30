@@ -52,13 +52,17 @@ public class GamesList extends XWListActivity
     implements DispatchNotify.HandleRelaysIface,
                RefreshMsgsTask.RefreshMsgsIface {
 
-    private static final int WARN_NODICT = DlgDelegate.DIALOG_LAST + 1;
+    private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
+    private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
+    private static final int SHOW_SUBST        = WARN_NODICT + 2;
 
     private GameListAdapter m_adapter;
     private String m_invalPath = null;
     private String m_missingDict;
     private Handler m_handler;
     private String m_missingDictName;
+    private String m_missingDictPath;
+    private String[] m_sameLangDicts;
     private int m_missingDictLang;
 
     // private XWPhoneStateListener m_phoneStateListener;
@@ -78,13 +82,60 @@ public class GamesList extends XWListActivity
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
-            Assert.assertTrue( id == WARN_NODICT );
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.no_dict_title )
-                .setMessage( "" ) // required to get to change it later
-                .setPositiveButton( R.string.button_ok, null )
-                .setNegativeButton( R.string.button_download, null ) // change
-                .create();
+            AlertDialog.Builder ab;
+            switch ( id ) {
+            case WARN_NODICT:
+            case WARN_NODICT_SUBST:
+                ab = new AlertDialog.Builder( this )
+                    .setTitle( R.string.no_dict_title )
+                    .setMessage( "" ) // required to get to change it later
+                    .setPositiveButton( R.string.button_ok, null )
+                    .setNegativeButton( R.string.button_download, null ) // change
+                    ;
+                if ( WARN_NODICT_SUBST == id ) {
+                    DialogInterface.OnClickListener lstnr = 
+                        new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, int item ) {
+                                showDialog( SHOW_SUBST );
+                            }
+                        };
+                    ab.setNeutralButton( R.string.button_substdict, lstnr );
+                }
+                dialog = ab.create();
+                break;
+            case SHOW_SUBST:
+                m_sameLangDicts = 
+                    DictLangCache.getHaveLang( this, m_missingDictLang );
+                ab = new AlertDialog.Builder( this )
+                    .setTitle( R.string.subst_dict_title )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .setItems( m_sameLangDicts,
+                               new DialogInterface.OnClickListener() {
+                                   public void onClick( DialogInterface dlg,
+                                                        int which ) {
+                                       String dict = m_sameLangDicts[which];
+                                       GameUtils.replaceDict( GamesList.this,
+                                                              m_missingDictPath,
+                                                              dict );
+                                   }
+                               })
+                    ;
+                dialog = ab.create();
+                // Force destruction so onCreateDialog() will get
+                // called next time and we can insert a different
+                // list.  There seems to be no way to change the list
+                // inside onPrepareDialog().
+                dialog.setOnDismissListener(new DialogInterface.
+                                            OnDismissListener() {
+                        public void onDismiss(DialogInterface dlg) {
+                            removeDialog( SHOW_SUBST );
+                        }
+                    });
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
         }
         return dialog;
     }
@@ -97,6 +148,7 @@ public class GamesList extends XWListActivity
         
         switch( id ) {
         case WARN_NODICT:
+        case WARN_NODICT_SUBST:
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         Intent intent = 
@@ -109,7 +161,9 @@ public class GamesList extends XWListActivity
             ad = (AlertDialog)dialog;
             ad.setButton( AlertDialog.BUTTON_NEGATIVE, 
                           getString( R.string.button_download ), lstnr );
-            ad.setMessage( String.format( getString( R.string.no_dictf ),
+            int fmtId = WARN_NODICT == id? R.string.no_dictf
+                : R.string.no_dict_substf;
+            ad.setMessage( String.format( getString( fmtId ),
                                           m_missingDictName ) );
             break;
         default:
@@ -456,7 +510,12 @@ public class GamesList extends XWListActivity
         if ( !hasDict ) {
             m_missingDictName = missingName[0];
             m_missingDictLang = missingLang[0];
-            showDialog( WARN_NODICT );
+            m_missingDictPath = path;
+            if ( 0 == DictLangCache.getLangCount( this, m_missingDictLang ) ) {
+                showDialog( WARN_NODICT );
+            } else {
+                showDialog( WARN_NODICT_SUBST );
+            }
         }
         return hasDict;
     }

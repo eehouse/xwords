@@ -356,6 +356,32 @@ public class GameUtils {
         activity.finish();
     }
 
+    // This *must* involve a reset if the language is changing!!!
+    // Which isn't possible right now, so make sure the old and new
+    // dict have the same langauge code.
+    public static void replaceDict( Context context, String path,
+                                    String dict )
+    {
+        byte[] stream = savedGame( context, path );
+        CurGameInfo gi = new CurGameInfo( context );
+        byte[] dictBytes = GameUtils.openDict( context, dict );
+
+        int gamePtr = XwJNI.initJNI();
+        XwJNI.game_makeFromStream( gamePtr, stream, 
+                                   JNIUtilsImpl.get(), gi,
+                                   dictBytes, dict,         
+                                   CommonPrefs.get( context ) );
+        gi.dictName = dict;
+
+        saveGame( context, gamePtr, gi, path );
+
+        GameSummary summary = new GameSummary( gi );
+        XwJNI.game_summarize( gamePtr, summary );
+        DBUtils.saveSummary( context, path, summary );
+
+        XwJNI.game_dispose( gamePtr );
+    }
+
     public static void applyChanges( Context context, CurGameInfo gi, 
                                      CommsAddrRec car, String path, 
                                      boolean forceNew )
