@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.content.res.Resources;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
@@ -51,6 +52,32 @@ public class DictLangCache {
             code = 0;
         }
         return namesArray[code];
+    }
+
+    // This populates the cache and will take significant time if it's
+    // mostly empty and there are a lot of dicts.
+    public static int getLangCount( Context context, int code )
+    {
+        int count = 0;
+        String[] dicts = GameUtils.dictList( context );
+        for ( String dict : dicts ) {
+            if ( code == getLangCode( context, dict ) ) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    public static String[] getHaveLang( Context context, int code )
+    {
+        ArrayList<String> al = new ArrayList<String>();
+        String[] dicts = GameUtils.dictList( context );
+        for ( String dict : dicts ) {
+            if ( code == getLangCode( context, dict ) ) {
+                al.add( dict );
+            }
+        }
+        return al.toArray( new String[al.size()] );
     }
 
     public static int getLangCode( Context context, String name )
