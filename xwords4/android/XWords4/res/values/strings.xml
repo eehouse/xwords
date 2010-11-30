@@ -358,8 +358,14 @@
     dictionary %s...</string>
     <string name="no_dict_title">Dictionary not found</string>
     <string name="button_download">Download</string>
+    <string name="subst_dict_title">Substitute dictionary</string>
+    <string name="button_substdict">Substitute</string>
+
     <string name="no_dictf">Unable to open game because dictionary %s
-    not found.</string>
+      not found.</string>
+    <string name="no_dict_substf">Unable to open game because
+      dictionary %s not found. You can download a replacement or
+      substitute another in the same language.</string>
 
 	<string name="msg_ask_password">Password for \"%s\":</string>
 
