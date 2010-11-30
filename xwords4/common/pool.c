@@ -132,10 +132,12 @@ getRandomTile( PoolContext* pool )
     
 #if defined PLATFORM_PALM && ! defined XW_TARGET_PNO
     XP_U16 rr = XP_RANDOM();
+#elif defined PLATFORM_ANDROID
+    XP_U16 rr = XP_RANDOM();
 #else
     XP_U16 rr = (XP_U16)(XP_RANDOM()>>16);
 #endif
-    XP_U16 index = (XP_U16)(rr % pool->numTilesLeft);
+    XP_U16 index = rr % pool->numTilesLeft;
     Tile result = getNthPoolTile( pool, index );
 
     --pool->lettersLeft[result];

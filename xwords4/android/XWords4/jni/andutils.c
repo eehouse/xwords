@@ -18,6 +18,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "andutils.h"
 
 #include "comtypes.h"
@@ -450,6 +454,17 @@ and_empty_stream( MPFORMAL AndGlobals* globals )
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             globals, 0, NULL );
     return stream;
+}
+
+XP_U16
+and_rand( void )
+{
+    XP_U16 num;
+    int fd = open( "/dev/urandom", O_RDONLY );
+    XP_ASSERT( fd >= 0 );
+    (void)read( fd, &num, sizeof(num) );
+    close( fd );
+    return num;
 }
 
 /* #ifdef DEBUG */

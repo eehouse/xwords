@@ -48,7 +48,7 @@ typedef XP_U32 XP_Time;
 #define XP_CR "\n"
 #define XP_LD "%ld"
 
-# define XP_RANDOM() rand()
+#define XP_RANDOM() and_rand()
 
 #ifdef MEM_DEBUG
 # define XP_PLATMALLOC(nbytes) malloc(nbytes)
@@ -95,6 +95,8 @@ void and_assert( const char* test, int line, const char* file, const char* func 
 #define XP_WARNF(...)
 #endif
 
+XP_U16 and_rand(void);
+
 XP_U32 and_ntohl(XP_U32 l);
 XP_U16 and_ntohs(XP_U16 s);
 XP_U32 and_htonl(XP_U32 l);
@@ -114,4 +116,3 @@ extern "C" {
 #endif
 
 #endif
-
