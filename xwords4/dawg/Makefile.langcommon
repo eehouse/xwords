@@ -204,16 +204,6 @@ endif
 frankspecials.bin: ../frank_mkspecials.pl  $(BMPFILES)
 	$< $(BLANK_INFO) $(LANG_SPECIAL_INFO) > $@
 
-# a binary file (one byte) giving the number of tiles in the dict
-charcount.bin: table.bin
-ifdef NEWDAWG
-	siz=$$(ls -l $< | awk '{print $$5}'); \
-	perl -e "print pack(\"c\",$$siz/2)" > $@
-else
-	siz=$$(wc -c $< | sed -e 's/$<//'); \
-	perl -e "print pack(\"c\",$$siz)" > $@
-endif
-
 $(XWLANG)%.$(FRANK_EXT): dawg$(XWLANG)%.stamp $(XWLANG)%_flags.bin charcount.bin table.bin values.bin frankspecials.bin 
 	cat $(XWLANG)$*_flags.bin charcount.bin table.bin values.bin \
 		frankspecials.bin $(XWLANG)StartLoc.bin  \
@@ -233,9 +223,9 @@ $(XWLANG)%.$(FRANK_EXT): dawg$(XWLANG)%.stamp $(XWLANG)%_flags.bin charcount.bin
 $(XWLANG)%_flags.bin: dawg$(XWLANG)%.stamp
 ifdef NEWDAWG
 	if [ 3 = $$(cat $(XWLANG)$*_nodesize.bin) ] ; \
-		then perl -e "print pack(\"n\",0x0002)" > $@; echo "flags=2"; \
+		then perl -e "print pack(\"n\",0x0004)" > $@; echo "flags=4"; \
 	elif [ 4 = $$(cat $(XWLANG)$*_nodesize.bin) ] ; \
-		then perl -e "print pack(\"n\",0x0003)" > $@; echo "flags=3"; \
+		then perl -e "print pack(\"n\",0x0005)" > $@; echo "flags=5"; \
 	elif true; \
 		then echo "Unexpected node size"; exit 1; \
 	fi
@@ -272,8 +262,19 @@ else
 	perl -I../ ../xloc.pl -t -out $@
 endif
 
-values.bin:  ../xloc.pl 
-	perl -I../ ../xloc.pl -v -out $@ $(ENCP)
+values.bin: ../xloc.pl
+	perl -I../ ../xloc.pl -v -out $@
+
+# a binary file, two bytes, one giving the size of tiles data and the
+#  other the number of tiles in the dict.  Tiles data is utf-8 and so
+#  number is not derivable from size.
+charcount.bin: table.bin ../xloc.pl
+	SIZ=$$(ls -l $< | awk '{print $$5}'); \
+	perl -e "print pack(\"c\",$$SIZ)" > $@
+	TMP=/tmp/tmp$$$$; \
+	perl -I../ ../xloc.pl -s -out $$TMP; \
+	cat $$TMP >> $@; \
+	rm -f $$TMP
 
 %.dict: %.dict.gz
 	zcat $< > $@

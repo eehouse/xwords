@@ -1,5 +1,6 @@
-# -*- mode: makefile; coding: iso-8859-1; -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# -*- mode: makefile; coding: utf-8; -*-
+# Copyright 2002 - 2010 by Eric House (xwords@eehouse.org).  All
+# rights reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,7 +18,7 @@
 
 XWLANG = German
 LANGCODE = de_DE
-ENC = ISO-8859-1
+ENC = UTF-8
 
 TARGET_TYPE ?= WINCE
 
@@ -28,11 +29,11 @@ include ../Makefile.langcommon
 SOURCEDICT ?= $(XWDICTPATH)/German/HansGerman.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | tr [a-zäöü] [A-ZÄÖÜ] | \
-		LANG=$(LANGCODE):$(ENC) sed -e 's/ß/SS/g' | \
-		LANG=$(LANGCODE):$(ENC) grep '[AEIOUÄÖÜ]' | \
-		LANG=$(LANGCODE):$(ENC) grep '^[A-ZÄÖÜ]\+$$' | \
-		gzip -c > $@
+	zcat $< \
+		| tr [a-zÃ¤Ã¶Ã¼] [A-ZÃ„Ã–Ãœ] \
+		| sed -e 's/ÃŸ/SS/g' \
+		| grep '^[A-ZÃ„Ã–Ãœ]*$$' \
+		| gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.

@@ -33,7 +33,7 @@ endif
 endif
 
 LANG_SPECIAL_INFO = \
-		"L-L" $(PBITMS)/large_ll.pbitm $(PBITMS)/small_ll.pbitm \
+		"L·L" $(PBITMS)/large_ll.pbitm $(PBITMS)/small_ll.pbitm \
 		"NY" $(PBITMS)/large_ny.pbitm $(PBITMS)/small_ny.pbitm \
 		"QU" $(PBITMS)/large_qu.pbitm $(PBITMS)/small_qu.pbitm \
 

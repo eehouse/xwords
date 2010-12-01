@@ -103,13 +103,6 @@ sub GetValue($$) {
 sub WriteMapFile($$$) {
     my ( $hashR, $unicode, $fhr ) = @_;
 
-    my $packStr;
-    if ( $unicode ) {
-        $packStr = "n";
-    } else {
-        $packStr = "C";
-    }
-
     my $count = GetNTiles($hashR);
     my $specialCount = 0;
     for ( my $i = 0; $i < $count; ++$i ) {
@@ -117,11 +110,12 @@ sub WriteMapFile($$$) {
         my $str = ${$tileR}[2];
 
         if ( $str =~ /\'(.)\'/ ) {
-            print $fhr pack($packStr, ord($1) );
+            print $fhr pack( "U", ord($1) );
+#            printf STDERR "ord: %x ($1)\n", ord($1);
         } elsif ( $str =~ /\"(.+)\"/ ) {
-            print $fhr pack($packStr, $specialCount++ );
+            print $fhr pack( "c", $specialCount++ );
         } elsif ( $str =~ /(\d+)/ ) {
-            print $fhr pack( $packStr, $1 );
+            print $fhr pack( "n", $1 );
         } else {
             die "WriteMapFile: unrecognized face format $str, elem $i";
         }

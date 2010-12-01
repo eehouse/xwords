@@ -1,4 +1,4 @@
-# -*- mode: conf; coding: iso-8859-1; -*-
+# -*- mode: conf; coding: utf-8; -*-
 # Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
@@ -20,6 +20,7 @@
 # below
 
 NEEDSSORT:true
+CHARSET: utf-8
 
 # MSDos LF chars go bye-bye
 LANGFILTER: tr -d '\r'
@@ -27,9 +28,9 @@ LANGFILTER: tr -d '\r'
 # convert accented vowels
 LANGFILTER: | tr '\207\216\222\227\234\237\226' 'aeiouu\321'
 # uppercase
-LANGFILTER: | tr [a-z�] [A-Z�]
+LANGFILTER: | tr [a-zÃ±] [A-ZÃ]
 # remove words with illegal letters
-LANGFILTER: | grep '^[[A-JL-VX-Z�]*$'
+LANGFILTER: | grep '^[[A-JL-VX-ZÃ]*$'
 # substitute pairs (can't figure out how to use octal values)
 LANGFILTER: | sed 's/CH/1/g'
 LANGFILTER: | sed 's/LL/2/g'
@@ -43,7 +44,7 @@ LANGFILTER: | sort -u -z
 D2DARGS: -r -term 0
 
 LANGINFO: <p>Spanish words include all letters in the English alphabet
-LANGINFO: except "K" and "W", and with "�" added. Since there are no
+LANGINFO: except "K" and "W", and with "Ã" added. Since there are no
 LANGINFO: tiles for accented vowels, these are replaced by the
 LANGINFO: unaccented forms.</p>
 
@@ -92,8 +93,7 @@ XLOC_HEADER:0x8600
 1			8	{"LL", true, true}
 2			3	'M'
 5			1	'N'
-#	/*'N~'*/
-1			8	 209
+1			8	'Ñ'
 9			1	'O'
 2			3	'P'
 1			5	'Q'

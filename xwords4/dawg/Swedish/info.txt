@@ -1,4 +1,4 @@
-# -*- mode: conf; coding: iso-8859-1; -*-
+# -*- mode: conf; coding: utf-8; -*-
 # Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -15,16 +15,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+CHARSET: utf-8
 LANGCODE:sv_SE
 
 LANGFILTER: tr -d '\r'
-LANGFILTER: | tr [a-zäåæöü] [A-ZÄÅÆÖÜ]
-LANGFILTER: | grep '^[A-ZÄÅÆÖÜ]*$'
+LANGFILTER: | tr [a-zÃ¤Ã¥Ã¦Ã¶Ã¼] [A-ZÃ„Ã…Ã†Ã–Ãœ]
+LANGFILTER: | grep '^[A-ZÃ„Ã…Ã†Ã–Ãœ]*$'
 
 D2DARGS: -r -term 10
 
 LANGINFO: <p>From an English-speaker&apos;s perspective, Swedish drops Q
-LANGINFO: and W, and adds Ä, Å, Æ, Ö and Ü.</p>
+LANGINFO: and W, and adds Ã„, Ã…, Ã†, Ã– and Ãœ.</p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Swedish==7.  Low byte is padding
@@ -36,11 +37,11 @@ XLOC_HEADER:0x8700
 2			0		{"_"}
 8			1		'A'
 # A with two dots
-2			3		'Ä'
+2			3		'Ã„'
 # A with circle
-2			4		'Å'
-# Æ tile only available for blanks
-0			1		'Æ'
+2			4		'Ã…'
+# Ã† tile only available for blanks
+0			1		'Ã†'
 2			4		'B'
 1			8		'C'
 5			1		'D'
@@ -56,7 +57,7 @@ XLOC_HEADER:0x8700
 6			1		'N'
 5			2		'O'
 # O with two dots
-2			4		'Ö'
+2			4		'Ã–'
 2			4		'P'
 # Q tile only available for blanks
 0			1		'Q'
@@ -64,13 +65,12 @@ XLOC_HEADER:0x8700
 8			1		'S'
 8			1		'T'
 3			4		'U'
-# Ü tile only available for blanks
-0			1		'Ü'
+# Ãœ tile only available for blanks
+0			1		'Ãœ'
 2			3		'V'
 # W tile only available for blanks
 0			1		'W'
 1			8		'X'
 1			7		'Y'
 1			10		'Z'
-
 <END_TILES>

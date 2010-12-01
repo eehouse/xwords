@@ -1,4 +1,6 @@
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# -*- mode: makefile; -*-
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -16,6 +18,7 @@
 
 XWLANG = Hex
 LANGCODE = hex
+ENC = UTF-8
 
 TARGET_TYPE = WINCE
 
@@ -24,14 +27,15 @@ include ../Makefile.2to8
 include ../Makefile.langcommon
 
 # Pass in your own dict here by setting DICT
-DICT ?= $(XWDICTPATH)/English/SOWPODS_official.txt.gz
+DICT ?= $(XWDICTPATH)/English/CSW.dict.gz
 
-# Feel free to base this on whatever dictionary you have at hand.  I'm
-# using CollegeEng for no particular reason.
+# tr 'AE' 'ÄË' doesn't work, so use sed.
 $(XWLANG)Main.dict.gz: $(DICT)
 	@echo "building $@ from $<"
 	zcat $< | tr [a-f] [A-F] | grep -e '^[A-F]\{2,8\}$$' | \
 		echo CAFEBABE DEADBEEF $$(cat -) | \
+		sed 's/A/Ä/g' | \
+		sed 's/E/Ë/g' | \
 		tr ' ' '\n' | sort | gzip > $@
 
 # Everything but creating of the Main.dict file is inherited from the

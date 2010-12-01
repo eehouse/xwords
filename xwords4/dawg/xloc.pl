@@ -23,6 +23,7 @@ use xloc;
 
 my $unicode = -1;
 my $doval = 0;
+my $dosize = 0;
 my $enc;
 my $outfile;
 
@@ -37,6 +38,8 @@ while ( $arg = $ARGV[0] ) {
         $unicode = 0;
     } elsif ( $arg eq "-v" ) {
         $doval = 1;
+    } elsif ( $arg eq "-s" ) {
+        $dosize = 1;
     } elsif ( $arg eq '-out' ) {
         $outfile = $ARGV[1];
         shift @ARGV;
@@ -52,12 +55,20 @@ die "info file $infoFile not found\n" if ! -s $infoFile;
 
 my $xlocToken = xloc::ParseTileInfo($infoFile, $enc);
 
-open OUTFILE, "> $outfile";
+if ( $enc ) {
+    open OUTFILE, ">:encoding($enc)", "$outfile" 
+        or die "couldn't open $outfile";
+} else {
+    open OUTFILE, ">$outfile" or die "couldn't open $outfile";
+}
 # For f*cking windoze linefeeds
-binmode( OUTFILE );
+# binmode( OUTFILE );
 
 if ( $unicode ne -1 ) {
     xloc::WriteMapFile( $xlocToken, $unicode, \*OUTFILE );
+} elsif ( $dosize ) {
+    my $count = xloc::GetNTiles( $xlocToken );
+    print OUTFILE pack("c", $count );
 } elsif ( $doval ) {
     xloc::WriteValuesFile( $xlocToken, \*OUTFILE );
 }

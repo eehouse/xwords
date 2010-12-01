@@ -15,9 +15,15 @@
 use strict;
 
 my @wordSizeCounts;
-my @letterCounts;
+my %letterCounts;
 my $wordCount;
 my $letterCount;
+my $enc = "utf8";               # this could be a cmdline arg....
+
+if ( $enc ) {
+    binmode( STDOUT, ":encoding($enc)" ) ;
+    binmode( STDIN, ":encoding($enc)" ) ;
+}
 
 while (<>) {
 
@@ -27,10 +33,10 @@ while (<>) {
     ++$wordCount;
 
     foreach my $letter (split( / */ ) ) {
-        my $i = ord($letter);
+        my $ii = ord($letter);
         # special-case the bogus chars we add for "specials"
-        die "$0: this is a letter?: $i" if $i <= 32 && $i >= 4 && $i != 0; 
-        ++$letterCounts[$i];
+        die "$0: this is a letter?: $ii" if $ii <= 32 && $ii >= 4 && $ii != 0; 
+        ++$letterCounts{$letter};
         ++$letterCount;
     }
 }
@@ -54,14 +60,12 @@ for ( my $i = 1 ; $i <= 99; ++$i ) {
 print "\n\n**** Letter counts ****\n";
 print "     ASCII ORD  HEX     PCT (of $letterCount)\n";
 my $lineNo = 1;
-for ( my $i = 0; $i < 255; ++$i ) {
-    my $count = $letterCounts[$i];
-    if ( $count > 0 ) {
-        my $pct = (100.00 * $count) / $letterCount;
-        printf( "%2d: %3s   %3d  %x    %5.2f (%d)\n",
-                $lineNo, chr($i), $i, $i, $pct, $count );
-        ++$lineNo;
-    }
+foreach my $key (sort keys %letterCounts) {
+    my $count = $letterCounts{$key};
+    my $pct = (100.00 * $count) / $letterCount;
+    printf( "%2d: %3s   %3d  %x    %5.2f (%d)\n",
+            $lineNo, $key, ord($key), ord($key), $pct, $count );
+    ++$lineNo;
 }
 
 print "\n";

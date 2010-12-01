@@ -1,4 +1,4 @@
-# -*-mode: Makefile; coding: iso-8859-1; -*-
+# -*-mode: Makefile; coding: utf-8; -*-
 # Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
 
 XWLANG=Swedish
 LANGCODE=sv_SE
-ENC = ISO-8859-1
+ENC = UTF-8
 
 # Swedish has too many chars for the old format.
 NEWDAWG=whatever
@@ -28,14 +28,14 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Swedish/swedish15.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/Swedish/swedish15.utf8.gz
 
 # Q and W are not available as tiles, but I'm told there's a custom in
 # Swedish play of allowing blanks to stand for those letters as well.
 # So we don't exclude words with those letters from the dictionary.
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | tr [a-zäåæöü] [A-ZÄÅÆÖÜ] | \
-		LANG=$(LANGCODE):$(ENC) grep '^[A-ZÄÅÆÖÜ]\{2,15\}$$' | \
+	zcat $< | tr [a-zÃ¤Ã¥Ã¦Ã¶Ã¼] [A-ZÃ„Ã…Ã†Ã–Ãœ] | \
+		LANG=$(LANGCODE):$(ENC) grep '^[A-ZÃ„Ã…Ã†Ã–Ãœ]\{2,15\}$$' | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the

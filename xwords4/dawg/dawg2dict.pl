@@ -1,6 +1,6 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -CS
 #
-# Copyright 2004 by Eric House (xwords@eehouse.org)
+# Copyright 2004 - 2009 by Eric House (xwords@eehouse.org)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,9 +22,12 @@
 
 use strict;
 use Fcntl;
+use Encode 'from_to';
+use Encode;
 
 my $gInFile;
 my $gDoRaw = 0;
+my $gDoJSON = 0;
 my $gFileType;
 my $gNodeSize;
 
@@ -33,7 +36,7 @@ sub systell { sysseek($_[0], 0, SEEK_CUR) }
 
 sub usage() {
     print STDERR "USAGE: $0 "
-        . "[-raw] "
+        . "[-raw | -json] "
         . "-dict <xwdORpdb>"
         . "\n"
         . "\t(Takes a .pdb or .xwd and prints its words to stdout)\n";
@@ -45,6 +48,8 @@ sub parseARGV() {
     while ( my $parm = shift(@ARGV) ) {
         if ( $parm eq "-raw" ) {
             $gDoRaw = 1;
+        } elsif ( $parm eq "-json" ) {
+            $gDoJSON = 1;
         } elsif ( $parm eq "-dict" ) {
             $gInFile = shift(@ARGV);
         } else {
@@ -72,18 +77,32 @@ sub countSpecials($) {
 sub readXWDFaces($$$) {
     my ( $fh, $facRef, $nSpecials ) = @_;
 
-    my $buf;
-    my $nRead = sysread( $fh, $buf, 1 );
-    my $nChars = unpack( 'c', $buf );
+    my ( $buf, $nRead, $nChars, $nBytes );
+    $nRead = sysread( $fh, $buf, 1 );
+    $nBytes = unpack( 'c', $buf );
+    printf STDERR "nBytes of faces: %d\n", $nBytes;
+    $nRead = sysread( $fh, $buf, 1 );
+    $nChars = unpack( 'c', $buf );
+    printf STDERR "nChars of faces: %d\n", $nChars;
 
+    binmode( $fh, ":encoding(utf8)" ) or die "binmode(:utf-8) failed\n";
+    sysread( $fh, $buf, $nChars );
+    length($buf) == $nChars or die "didn't read expected number of bytes\n";
+    binmode( $fh ) or die "binmode failed\n";
+
+    print STDERR "string now: $buf\n";
     my @faces;
-    for ( my $i = 0; $i < $nChars; ++$i ) {
-        my $nRead = sysread( $fh, $buf, 2 );
-        push( @faces, chr(unpack( "n", $buf ) ) );
+    for ( my $ii = 0; $ii < $nChars; ++$ii ) {
+        my $chr = substr( $buf, $ii, 1 );
+        print STDERR "pushing $chr \n";
+        push( @faces, $chr );
     }
+
+    printf STDERR "at 0x%x after reading faces\n", systell($fh);
 
     ${$nSpecials} = countSpecials( \@faces );
     @{$facRef} = @faces;
+    printf STDERR "readXWDFaces=>%d\n", $nChars;
     return $nChars;
 } # readXWDFaces
 
@@ -99,6 +118,7 @@ sub skipBitmap($) {
 
         sysread( $fh, $buf, $nBytes );
     }
+    printf STDERR "skipBitmap\n";
 } # skipBitmap
 
 sub getSpecials($$$) {
@@ -138,9 +158,9 @@ sub readNodesToEnd($) {
 
 sub nodeSizeFromFlags($) {
     my ( $flags ) = @_;
-    if ( $flags == 2 ) {
+    if ( $flags == 4 ) {
         return 3;
-    } elsif ( $flags == 3 ) {
+    } elsif ( $flags == 5 ) {
         return 4;
     } else {
         die "invalid dict flags $flags";
@@ -161,6 +181,7 @@ sub mergeSpecials($$) {
 sub prepXWD($$$$) {
     my ( $fh, $facRef, $nodesRef, $startRef ) = @_;
 
+    printf STDERR "at 0x%x at start\n", systell($fh);
     my $buf;
     my $nRead = sysread( $fh, $buf, 2 );
     my $flags = unpack( "n", $buf );
@@ -170,24 +191,30 @@ sub prepXWD($$$$) {
     my $nSpecials;
     my $faceCount = readXWDFaces( $fh, $facRef, \$nSpecials );
 
+    printf STDERR "at 0x%x before header read\n", systell($fh);
     # skip xloc header
     $nRead = sysread( $fh, $buf, 2 );
 
     # skip values info.
+    printf STDERR "at 0x%x before reading %d values\n", systell($fh), $faceCount;
     sysread( $fh, $buf, $faceCount * 2 );
+    printf STDERR "at 0x%x after values read\n", systell($fh);
 
+    printf STDERR "at 0x%x before specials read\n", systell($fh);
     my @specials;
     getSpecials( $fh, $nSpecials, \@specials );
     mergeSpecials( $facRef, \@specials );
+    printf STDERR "at 0x%x after specials read\n", systell($fh);
 
-#    printf STDERR "at 0x%x before offset read\n", systell($fh);
+    printf STDERR "at 0x%x before offset read\n", systell($fh);
     sysread( $fh, $buf, 4 );
     $$startRef = unpack( 'N', $buf );
-#    print STDERR "startRef=$$startRef\n";
+    print STDERR "startRef=$$startRef\n";
 
     my @nodes = readNodesToEnd( $fh );
 
     @$nodesRef = @nodes;
+    print STDERR "prepXWD done\n";
 } # prepXWD
 
 sub readPDBSpecials($$$$$) {
@@ -342,10 +369,52 @@ sub printNodes($$) {
     }
 }
 
+sub printStartJson($) {
+    my ( $startIndex ) = @_;
+    printf( "  start: 0x%.8x,\n", $startIndex );
+}
+
+sub printCharsJson($) {
+    my ( $fr ) = @_;
+    print "  chars: [ ";
+    foreach my $char (@$fr) {
+        print "\"$char\", "
+    }
+    print "],\n"
+}
+
+sub printNodesJson($) {
+    my ( $nr ) = @_;
+    print "  dawg: [\n";
+
+    my $len = @$nr;
+    my $newLine = 1;
+    for ( my $ii = 0; $ii < $len; ++$ii ) {
+        my $node = $$nr[$ii];
+
+        if ( $newLine ) {
+            printf( "    /*%.6x*/ ", $ii );
+            $newLine = 0;
+        }
+
+        printf "0x%.8x, ", $node;
+
+        my ( $chrIndex, $nextEdge, $accepting, $lastEdge );
+        parseNode( $node, \$chrIndex, \$nextEdge, \$accepting, \$lastEdge );
+        if ( $lastEdge ) {
+            print "\n";
+            $newLine = 1;
+        }
+    }
+
+    print "\n  ],\n"
+}
+
 #################################################################
 # main
 #################################################################
 
+binmode( STDERR, ":encoding(utf8)" ) or die "binmode(:utf-8) failed\n";
 
 parseARGV();
 
@@ -364,9 +433,17 @@ if ( $gFileType eq "xwd" ){
 close INFILE;
 
 die "no nodes!!!" if 0 == @nodes;
+
 if ( $gDoRaw ) {
     printNodes( \@nodes, \@faces );
+} elsif ( $gDoJSON ) {
+    print "dict = {\n";
+    printStartJson( $startIndex );
+    printCharsJson( \@faces );
+    printNodesJson( \@nodes );
+    print "}\n";
 } else {
+    binmode( STDOUT, ":encoding(utf8)" ) or die "binmode(:utf-8) failed\n";
     printDAWG( [], \@nodes, $startIndex, \@faces );
 }
 

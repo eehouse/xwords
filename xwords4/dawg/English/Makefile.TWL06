@@ -1,5 +1,6 @@
-# -*-mode: Makefile -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# -*- mode: makefile; compile-command: "make -f Makefile.COSD"; -*-
+# Copyright 2002-2010 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,28 +16,22 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-TARGET_TYPE ?= WINCE
+XWLANG=TWL06
+LANGCODE=en_US
+TARGET_TYPE=WINCE
+
+include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-# This represents the default -- for now
-COMMAND = -f Makefile.BasEnglish TARGET_TYPE=FRANK
+# from http://www.3zsoftware.com/en/wordmagic/lists.php
+SOURCEDICT ?= $(XWDICTPATH)/English/twl06.zip
 
-alleng:
-	for mfile in Makefile.BasEnglish Makefile.OSW Makefile.TWL98 Makefile.CollegeEng; do \
-		$(MAKE) -f $$mfile TARGET_TYPE=$(TARGET_TYPE); \
-	done
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
+	zcat $< | grep -e "^[A-Z]\{2,15\}$$" | gzip -c > $@
 
-%:
-	$(MAKE) $(COMMAND) $@
+# Everything but creating of the Main.dict file is inherited from the
+# "parent" Makefile.langcommon in the parent directory.
 
-all:
-	$(MAKE) $(COMMAND)
-
-clean:
-	$(MAKE) $(COMMAND) clean
-
-help:
-	@echo "try make -f Makefile.[BasEnglish|CollegeEng] \\"
-	@echo "    TARGET_TYPE=[PALM|FRANK]"
-
+clean: clean_common
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb 

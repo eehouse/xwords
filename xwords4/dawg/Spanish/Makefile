@@ -1,4 +1,4 @@
-# -*-mode: Makefile; compile-command: "make all"; coding: iso-8859-1; -*-
+# -*-mode: Makefile; compile-command: "make all"; coding: utf-8; -*-
 # Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -18,7 +18,7 @@
 XWLANG = SpanishFAA41
 LANGCODE = es_ES
 TARGET_TYPE ?= WINCE
-ENC = ISO-8859-1
+ENC = UTF-8
 
 ifeq ($(TARGET_TYPE),PALM)
 PBITMS = ./bmps/palm
@@ -44,14 +44,13 @@ include ../Makefile.langcommon
 #$(LANG)Main.dict.gz: SpanishMain.dict.gz
 #	ln -s $< $@
 
-SOURCEDICT ?= $(XWDICTPATH)/Spanish/FAA_4.1.txt.gz
+SOURCEDICT ?= $(XWDICTPATH)/Spanish/FAA_4.1.utf8.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< \
 	| tr -d '\r' \
-	| tr '\207\216\222\227\234\237\226' 'aeiouu\321' \
-	| tr [a-zñ] [A-ZÑ] \
-	| LANG=$(LANGCODE):$(ENC) grep '^[A-JL-VX-ZÑ]*$$' \
+	| tr [a-zÃ±] [A-ZÃ‘] \
+	| LANG=$(LANGCODE):$(ENC) grep '^[A-JL-VX-ZÃ‘]*$$' \
 	| sed 's/CH/1/g' \
 	| sed 's/LL/2/g' \
 	| sed 's/RR/3/g' \

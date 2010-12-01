@@ -78,7 +78,7 @@ static void (*gReadWordProc)(void) = NULL;
 static NodeList gNodes;       // final array of nodes
 static unsigned int gNBytesPerOutfile = 0xFFFFFFFF;
 static char* gTableFile = NULL;
-static bool gIsMultibyte = false;
+static bool gIsMultibyte = true; // always true
 static const char* gEncoding = NULL;
 static char* gOutFileBase = NULL;
 static char* gStartNodeOut = NULL;
@@ -91,9 +91,9 @@ static const char* gLang = NULL;
 static char* gBytesPerNodeFile = NULL;        // where to write whether node
                                        // size 3 or 4
 int gWordCount = 0;
-std::map<Letter,wchar_t> gTableHash;
+std::map<wchar_t,Letter> gTableHash;
 int gBlankIndex;
-std::vector<char> gRevMap;
+std::vector<wchar_t> gRevMap;
 #ifdef DEBUG
 bool gDebug = false;
 #endif
@@ -107,17 +107,19 @@ int gLimHigh = MAX_WORD_LEN;
 
 
 // OWL is 1.7M
-#define MAX_POOL_SIZE (10 * 0x100000)
+#define MAX_POOL_SIZE (10 * 0x100000 * sizeof(wchar_t))
 #define ERROR_EXIT(...) error_exit( __LINE__, __VA_ARGS__ );
+#define VSIZE(a) (sizeof(a)/sizeof(a[0]))
 
 static char* parseARGV( int argc, char** argv, const char** inFileName );
 static void usage( const char* name );
 static void error_exit( int line, const char* fmt, ... );
 static void makeTableHash( void );
+static void printTableHash( void );
 static WordList* parseAndSort( void );
 static void printWords( WordList* strings );
 static bool firstBeforeSecond( const Letter* lhs, const Letter* rhs );
-static char* tileToAscii( char* out, int outSize, const Letter* in );
+static wchar_t* tilesToText( wchar_t* out, int outLen, const Letter* in );
 static int buildNode( int depth );
 static void TrieNodeSetIsLastSibling( Node* nodeR, bool isLastSibling );
 static int addNodes( NodeList& newedgesR );
@@ -178,6 +180,7 @@ main( int argc, char** argv )
     }
     
     makeTableHash();
+    printTableHash();
 
     // Do I need this stupid thing?  Better to move the first row to
     // the front of the array and patch everything else.  Or fix the
@@ -451,9 +454,9 @@ readFromSortedArray( void )
             }
 #ifdef DEBUG
             if ( gDebug ) {
-                char buf[T2ABUFLEN(MAX_WORD_LEN)];
-                fprintf( stderr, "%s: got word: %s\n", __func__,
-                         tileToAscii( buf, sizeof(buf), word ) );
+                wchar_t buf[T2ABUFLEN(MAX_WORD_LEN)];
+                fprintf( stderr, "%s: got word: %ls\n", __func__,
+                         tilesToText( buf, VSIZE(buf), word ) );
             }
 #endif
         }
@@ -473,13 +476,13 @@ readFromSortedArray( void )
              && !firstBeforeSecond( gCurrentWord, word ) ) {
 #ifdef DEBUG
             if ( gDebug ) {
-                char buf1[T2ABUFLEN(MAX_WORD_LEN)];
-                char buf2[T2ABUFLEN(MAX_WORD_LEN)];
+                wchar_t buf1[T2ABUFLEN(MAX_WORD_LEN)];
+                wchar_t buf2[T2ABUFLEN(MAX_WORD_LEN)];
                 fprintf( stderr,
-                         "%s: words %s and %s are the same or out of order\n",
+                         "%s: words %ls and %ls are the same or out of order\n",
                          __func__, 
-                         tileToAscii( buf1, sizeof(buf1), gCurrentWord ),
-                         tileToAscii( buf2, sizeof(buf2), word ) );
+                         tilesToText( buf1, VSIZE(buf1), gCurrentWord ),
+                         tilesToText( buf2, VSIZE(buf2), word ) );
             }
 #endif
             continue;
@@ -492,9 +495,9 @@ readFromSortedArray( void )
 
 #ifdef DEBUG
     if ( gDebug ) {
-        char buf[T2ABUFLEN(MAX_WORD_LEN)];
-        fprintf( stderr, "gCurrentWord now %s\n", 
-                 tileToAscii( buf, sizeof(buf), gCurrentWord) );
+        wchar_t buf[T2ABUFLEN(MAX_WORD_LEN)];
+        fprintf( stderr, "gCurrentWord now %ls\n", 
+                 tilesToText( buf, VSIZE(buf), gCurrentWord) );
     }
 #endif
 } // readFromSortedArray
@@ -516,6 +519,9 @@ getWideChar( FILE* file )
             assert( 0 == ii );
             dest = byt;
             break;
+        } else if ( byt < ' ' && 0 == ii ) {
+            dest = byt;
+            break;
         }
 
         assert( ii < 4 );
@@ -533,7 +539,7 @@ getWideChar( FILE* file )
 } // getWideChar
 
 static Letter*
-readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
+readOneWord( Letter* wordBuf, const int bufLen, int* lenp, bool* gotEOF )
 {
     Letter* result = NULL;
     int count = 0;
@@ -545,7 +551,7 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
     // return it.  If no, start over ONLY IF the terminator was not
     // EOF.
     for ( ; ; ) {
-        wchar_t byt = gIsMultibyte? getWideChar( gInFile ) : getc( gInFile );
+        wchar_t byt = getWideChar( gInFile );
 
         // EOF is special: we don't try for another word even if
         // dropWord is true; we must leave now.
@@ -557,6 +563,13 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
             if ( !dropWord && (count >= gLimLow) && (count <= gLimHigh) ) {
                 assert( count < bufLen );
                 wordBuf[count] = '\0';
+#ifdef DEBUG
+                if ( gDebug ) {
+                    wchar_t buf[T2ABUFLEN(count)];
+                    fprintf( stderr, "%s: adding word: %ls\n", 
+                             __func__, tilesToText( buf, VSIZE(buf), wordBuf ) );
+                }
+#endif
                 result = wordBuf;
                 *lenp = count;
                 ++gWordCount;
@@ -567,11 +580,12 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
             } 
 #ifdef DEBUG
             if ( gDebug ) {
-                char buf[T2ABUFLEN(count)];
+                wchar_t buf[T2ABUFLEN(count)];
                 wordBuf[count] = '\0';
-                fprintf( stderr, "%s: dropping word (len %d>=%d): %s\n", 
-                         __func__, count, gLimHigh, 
-                         tileToAscii( buf, sizeof(buf), wordBuf ) );
+                fprintf( stderr, "%s: dropping word (len %d >%d or <%d or "
+                         "dropWord:%d): %ls\n", __func__, count, gLimHigh, 
+                         gLimLow, (int)dropWord,
+                         tilesToText( buf, VSIZE(buf), wordBuf ) );
             }
 #endif
             count = 0;  // we'll start over
@@ -579,43 +593,43 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
 
         } else if ( count >= bufLen ) {
             // Just drop it...
+            assert(0);          // Fix this -- but need to warn when out of
+                                // memory!!!
             dropWord = true;
 
             // Don't call into the hashtable twice here!!
-        } else if ( gTableHash.find(byt) != gTableHash.end() ) {
-            assert( count < bufLen );
-            wordBuf[count++] = gTableHash[byt];
-            if ( count >= bufLen ) {
-                dropWord = true;
-            }
-        } else if ( gKillIfMissing || !dropWord ) {
-            char buf[T2ABUFLEN(count)];
-            wordBuf[count] = '\0';
-
-            tileToAscii( buf, sizeof(buf), wordBuf );
-
-            if ( gKillIfMissing ) {
-                ERROR_EXIT( "chr %lc (%d/0x%x) not in map file %s\n"
-                            "last word was %s\n",
-                            byt, (int)byt, (int)byt, gTableFile, buf );
-            } else if ( !dropWord ) {
-#ifdef DEBUG
-                if ( gDebug ) {
-                    fprintf( stderr, "%s: chr %c (%d) not in map file %s\n"
-                             "dropping partial word %s\n", __func__,
-                             (char)byt, (int)byt, gTableFile, buf );
+        } else {
+            std::map<wchar_t,Letter>::iterator iter = gTableHash.find(byt);
+            if ( iter != gTableHash.end() ) {
+                assert( count < bufLen );
+                wordBuf[count++] = iter->second;
+                if ( count >= bufLen ) {
+                    dropWord = true;
                 }
+            } else if ( gKillIfMissing || !dropWord ) {
+                wchar_t buf[T2ABUFLEN(count)];
+                wordBuf[count] = '\0';
+
+                tilesToText( buf, VSIZE(buf), wordBuf );
+
+                if ( gKillIfMissing ) {
+                    ERROR_EXIT( "chr %lc (%d/0x%x) not in map file %s\n"
+                                "last word was %ls\n",
+                                byt, (int)byt, (int)byt, gTableFile, buf );
+                } else if ( !dropWord ) {
+#ifdef DEBUG
+                    if ( gDebug ) {
+                        fprintf( stderr, "%s: chr %lc (%d) not in map file %s\n"
+                                 "dropping partial word %ls\n", __func__,
+                                 byt, (int)byt, gTableFile, buf );
+                    }
 #endif
-                dropWord = true;
+                    dropWord = true;
+                }
             }
         }
-    }
+    } // for
 
-//     if ( NULL != result ) {
-//         char buf[T2ABUFLEN(MAX_WORD_LEN)];
-//         fprintf( stderr, "%s returning %s\n", __func__,
-//                  tileToAscii( buf, sizeof(buf), result ) );
-//     }
     return result;
 } // readOneWord
 
@@ -635,7 +649,7 @@ readFromFile( void )
     // during the sort.  This seems easier.
     for ( ; ; ) {
         if ( !gDone ) {
-            word = readOneWord( wordBuf, sizeof(wordBuf), &len, &s_eof );
+            word = readOneWord( wordBuf, VSIZE(wordBuf), &len, &s_eof );
             gDone = NULL == word;
         }
         if ( gDone ) {
@@ -658,13 +672,13 @@ readFromFile( void )
              && !firstBeforeSecond( gCurrentWord, word ) ) {
 #ifdef DEBUG
             if ( gDebug ) {
-                char buf1[T2ABUFLEN(MAX_WORD_LEN)];
-                char buf2[T2ABUFLEN(MAX_WORD_LEN)];
+                wchar_t buf1[T2ABUFLEN(MAX_WORD_LEN)];
+                wchar_t buf2[T2ABUFLEN(MAX_WORD_LEN)];
                 fprintf( stderr,
-                         "%s: words %s and %s are the smae or out of order\n",
+                         "%s: words %ls and %ls are the smae or out of order\n",
                          __func__, 
-                         tileToAscii( buf1, sizeof(buf1), gCurrentWord ),
-                         tileToAscii( buf2, sizeof(buf2), word ) );
+                         tilesToText( buf1, VSIZE(buf1), gCurrentWord ),
+                         tilesToText( buf2, VSIZE(buf2), word ) );
             }
 #endif
             continue;
@@ -676,9 +690,9 @@ readFromFile( void )
 
 #ifdef DEBUG
     if ( gDebug ) {
-        char buf[T2ABUFLEN(MAX_WORD_LEN)];
-        fprintf( stderr, "gCurrentWord now %s\n", 
-                 tileToAscii( buf, sizeof(buf), gCurrentWord) );
+        wchar_t buf[T2ABUFLEN(MAX_WORD_LEN)];
+        fprintf( stderr, "gCurrentWord now %ls\n", 
+                 tilesToText( buf, VSIZE(buf), gCurrentWord) );
     }
 #endif
 } // readFromFile
@@ -690,14 +704,15 @@ firstBeforeSecond( const Letter* lhs, const Letter* rhs )
     return gt;
 }
 
-static char*
-tileToAscii( char* out, int outSize, const Letter* in )
+static wchar_t*
+tilesToText( wchar_t* out, int outSize, const Letter* in )
 {
-    char tiles[outSize];
-    int tilesLen = 1;
-    tiles[0] = '[';
+    wchar_t tiles[outSize];
+    wchar_t* orig = out;
+    int tilesLen = 0;
 
-    char* orig = out;
+    tiles[tilesLen++] = L'[';
+
     for ( ; ; ) {
         Letter ch = *in++;
         if ( '\0' == ch ) {
@@ -705,14 +720,15 @@ tileToAscii( char* out, int outSize, const Letter* in )
         }
         assert( ch < gRevMap.size() );
         *out++ = gRevMap[ch];
-        tilesLen += sprintf( &tiles[tilesLen], "%d,", ch );
+
+        tilesLen += swprintf( &tiles[tilesLen], outSize-tilesLen, L"%d,", ch );
         assert( (out - orig) < outSize );
     }
 
     assert( tilesLen+1 < outSize );
-    tiles[tilesLen] = ']';
-    tiles[tilesLen+1] = '\0';
-    strcpy( out, tiles );
+    tiles[tilesLen] = L']';
+    tiles[tilesLen+1] = L'\0';
+    wcscpy( out, tiles );
 
     return orig;
 }
@@ -777,9 +793,9 @@ printWords( WordList* strings )
 {
     std::vector<Letter*>::iterator iter = strings->begin();
     while ( iter != strings->end() ) {
-        char buf[T2ABUFLEN(MAX_WORD_LEN)];
-        tileToAscii( buf, sizeof(buf), *iter );
-        fprintf( stderr, "%s\n", buf );
+        wchar_t buf[T2ABUFLEN(MAX_WORD_LEN)];
+        tilesToText( buf, VSIZE(buf), *iter );
+        fprintf( stderr, "%ls\n", buf );
         ++iter;
     }
 }
@@ -906,18 +922,12 @@ makeTableHash( void )
     gRevMap.push_back(0);
 
     for ( ii = 0; ; ++ii ) {
-        int ch = getc(TABLEFILE);
-        if ( ch == EOF ) {
+        wchar_t ch = getWideChar( TABLEFILE );
+        if ( EOF == ch ) {
             break;
         }
 
-        if ( gUseUnicode ) {   // skip the first byte each time: tmp HACK!!!
-            ch = getc(TABLEFILE);
-        }
-        if ( ch == EOF ) {
-            break;
-        }
-
+        fprintf( stderr, "adding %lc/%x\n", ch, ch );
         gRevMap.push_back(ch);
 
         if ( ch == 0 ) {	// blank
@@ -939,6 +949,26 @@ makeTableHash( void )
 
     fclose( TABLEFILE );
 } // makeTableHash
+
+static void
+printTableHash( void )
+{
+    if ( gDebug ) {
+        std::vector<wchar_t>::iterator iter = gRevMap.begin();
+        int count = 0;              // 0th entry is 0
+        while ( iter != gRevMap.end() ) {
+            wchar_t ch = *iter;
+            if ( 0 != ch ) {
+                fprintf( stderr, "%s: gRevMap[%d]: %lc\n", __func__, count, ch );
+                fprintf( stderr, "%s: gTableHash[%lc]: %d\n", __func__, ch, 
+                         gTableHash[ch] );
+                assert( gTableHash[ch] == count );
+            }
+            ++iter; 
+            ++count;
+        }
+    }
+}
 
 // emitNodes. "input" is $gNodes.  From it we write up to
 // $nBytesPerOutfile to files named $outFileBase0..n, mapping the
@@ -1065,6 +1095,9 @@ outputNode( Node node, int nBytes, FILE* outfile )
     unsigned int fco = TrieNodeGetFirstChildOffset(node);
     unsigned int fourthByte = 0;
 
+    assert( ((3 == nBytes) && (fco < (1<<17)))
+            || ((4 == nBytes) && (fco < (1<<24))) );
+
     if ( nBytes == 4 ) {
         fourthByte = fco >> 16;
         if ( fourthByte > 0xFF ) {
@@ -1085,7 +1118,7 @@ outputNode( Node node, int nBytes, FILE* outfile )
     //                                                  |  |  |    
     //                                accepting bit  ---+  |  |
     //                                 last edge bit ------+  |
-    //         ---- last bit (17th on next node addr)---------+
+    //         ---- last bit (17th of next node addr)---------+
 
     // The four-byte format adds a byte at the right end for
     // addressing, but removes the extra bit (5) in order to let the
@@ -1247,13 +1280,13 @@ parseARGV( int argc, char** argv, const char** inFileName )
 
     if ( !!enc ) {
         if ( !strcasecmp( enc, "UTF-8" ) ) {
-            gIsMultibyte = true;
+//             gIsMultibyte = true;
         } else if ( !strcasecmp( enc, "iso-8859-1" ) ) {
-            gIsMultibyte = false;
+//             gIsMultibyte = false;
         } else if ( !strcasecmp( enc, "iso-latin-1" ) ) {
-            gIsMultibyte = false;
+//             gIsMultibyte = false;
         } else if ( !strcasecmp( enc, "ISO-8859-2" ) ) {
-            gIsMultibyte = false;
+//             gIsMultibyte = false;
         } else {
             ERROR_EXIT( "%s: unknown encoding %s", __func__, enc );
         }

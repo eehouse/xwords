@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-2; mode: Makefile; -*-
+# -*- mode: Makefile; -*-
 # Copyright 2002 - 2009 by Eric House (xwords@eehouse.org).  All
 # rights reserved.
 #
@@ -16,9 +16,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=Polish
-LANGCODE=pl_PL
-ENC = ISO-8859-2
+XWLANG = Polish
+LANGCODE = pl_PL
+ENC = UTF-8
 
 # DICT2DAWGARGS = -lang $(LANGCODE)
 # DICT2DAWGARGS = -debug
@@ -29,12 +29,12 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Polish/iso-8859-2/slowa.txt.gz
+SOURCEDICT ?= $(XWDICTPATH)/Polish/slowa.txt.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT)
 	zcat $< | tr -d '\r' \
-	| LANG=$(LANGCODE):$(ENC) tr [a±bcædeêfghijkl³mnñoóprs¶tuwyz¼¿] [A¡BCÆDEÊFGHIJKL£MNÑOÓPRS¦TUWYZ¬¯] \
-    | LANG=$(LANGCODE):$(ENC) grep '^[A¡BCÆDEÊFGHIJKL£MNÑOÓPRS¦TUWYZ¬¯]*$$' \
+	| tr [aÄ…bcÄ‡deÄ™fghijklÅ‚mnÅ„oÃ³prsÅ›tuwyzÅºÅ¼] [AÄ„BCÄ†DEÄ˜FGHIJKLÅMNÅƒOÃ“PRSÅšTUWYZÅ¹Å»] \
+    | grep '^[AÄ„BCÄ†DEÄ˜FGHIJKLÅMNÅƒOÃ“PRSÅšTUWYZÅ¹Å»]*$$' \
     | gzip > $@
 
 # Everything but creating of the Main.dict file is inherited from the

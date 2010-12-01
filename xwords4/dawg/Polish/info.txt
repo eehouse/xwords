@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-2; mode: conf; -*-
+# -*- mode: conf; -*-
 # Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
@@ -17,12 +17,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 LANGCODE:pl_PL
-CHARSET:iso-8859-2
+CHARSET:utf-8
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
-LANGFILTER: | tr [a-pr-uwyz±ÊÍ≥ÒÛ∂ºø] [A-PR-UWYZ°∆ £—”¶¨Ø]
-LANGFILTER: | grep '^[A-PR-UWYZ°∆ £—”¶¨Ø]*$'
+LANGFILTER: | tr [a-pr-uwyzƒÖƒáƒô≈Ç≈Ñ√≥≈õ≈∫≈º] [A-PR-UWYZƒÑƒÜƒò≈Å≈É√ì≈ö≈π≈ª]
+LANGFILTER: | grep '^[A-PR-UWYZƒÑƒÜƒò≈Å≈É√ì≈ö≈π≈ª]*$'
 LANGFILTER: | tr '\n' '\000'
 
 D2DARGS: -r -term 0
@@ -42,8 +42,8 @@ LANGINFO: this working.</p>
 LANGINFO: <p>Note that the blank is the last tile here, while with all
 LANGINFO: other languages it&apos;s the first.</p>
 
-LANGINFO: <p>Also, please note that we currently require the files you
-LANGINFO: upload to use the iso-8859-2 character encoding.</p>
+# LANGINFO: <p>Also, please note that we currently require the files you
+# LANGINFO: upload to use the iso-8859-2 character encoding.</p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Polish==8.  Low byte is padding
@@ -51,13 +51,13 @@ XLOC_HEADER:0x8800
 
 <BEGIN_TILES>
 9           1       'A'
-1           5       161 # '°'
+1           5       'ƒÑ'
 2           3       'B'
 3           2       'C'
-1           6       198 # '∆'
+1           6       'ƒÜ'
 3           2       'D'
 7           1       'E'
-1           5       202 # ' '
+1           5       'ƒò'
 1           5       'F'
 2           3       'G'
 2           3       'H'
@@ -65,23 +65,23 @@ XLOC_HEADER:0x8800
 2           3       'J'
 3           3  	    'K'
 3           2       'L'
-2           3       163 # '£'
+2           3       '≈Å'
 3           2       'M'
 5           1       'N'
-1           7       209 # '—'
+1           7       '≈É'
 6           1       'O'
-1           5       211 # '”'
+1           5       '√ì'
 3           2       'P'
 4           1       'R'
 4           1       'S'
-1           5       166 # '¶'
+1           5       '≈ö'
 3           2       'T'
 2           3       'U'
 4           1       'W'
 4           2  	    'Y'
 5           1       'Z'
-1           9       172 # '¨'
-1           5       175 # 'Ø'
+1           9       '≈π'
+1           5       '≈ª'
 
 # the blank *must* be last here!!!
 2           0       {"_"}
