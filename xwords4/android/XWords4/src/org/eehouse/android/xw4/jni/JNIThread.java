@@ -179,7 +179,7 @@ public class JNIThread extends Thread {
             scoreWidth -= dims.cellSize;
             m_connsIconRect = 
                 new Rect( scoreWidth, 0, scoreWidth + dims.cellSize, 
-                          dims.cellSize );
+                          Math.min( dims.scoreHt, dims.cellSize ) );
         }
 
         if ( m_gi.timerEnabled ) {
