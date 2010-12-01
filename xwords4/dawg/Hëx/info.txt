@@ -1,0 +1,61 @@
+# -*- mode: conf; -*-
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:HEX
+
+# uppercase all
+LANGFILTER: tr [a-f] [A-F]
+LANGFILTER: | grep '^[A-F]*$'
+LANGFILTER: | sed 's/A/Ä/'
+LANGFILTER: | sed 's/E/Ë/'
+LANGFILTER: | sort -u
+
+D2DARGS: -term 10
+
+LANGINFO: <p>The hex "language" is something of a programmers' joke.
+LANGINFO: Hex is short for hexadecimal, a 16-base number system whose
+LANGINFO: "digits" are the numerals 0-9 plus the letters A-F.  Hex
+LANGINFO: letters are often used to represent computer data, and
+LANGINFO: certain sequences are sometimes used as markers because
+LANGINFO: they're easy to pick out in large dumps of otherwise
+LANGINFO: meaningless (to humans) garbage.  In staring at Mac memory
+LANGINFO: dumps, for example, you'd occasionally see the letters
+LANGINFO: DEADBEEF and know that memory in that area was probably
+LANGINFO: undamaged.</p>
+
+LANGINFO: <p>I use Hex dictionaries for testing since they have few
+LANGINFO: tiles and games play quickly.  That's also why the Hex
+LANGINFO: tile set has four blanks; that's the largest number
+LANGINFO: Crosswords supports and I needed to test at the limit.</p>
+
+# High bit means "official".  Next 7 bits are an enum where Hex==127
+# (I just made that up; not sure what it was originally.)  Low byte is
+# padding
+XLOC_HEADER:0xFF00
+
+
+<BEGIN_TILES>
+4			0		{"_"}
+9			1		'Ä'
+2			3		'B'
+2			3		'C'
+4			2		'D'
+12			1		'Ë'
+2			4		'F'
+<END_TILES>
+# should ignore all after the <END_TILES> above

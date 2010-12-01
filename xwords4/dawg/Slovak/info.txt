@@ -1,0 +1,84 @@
+# -*- coding: utf-8; mode: conf; -*-
+# Copyright 2002-2010 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:sk_SK
+CHARSET:utf-8
+
+# deal with DOS files
+LANGFILTER: tr -d '\r'
+
+LANGFILTER: | tr [aáäbcčdďeéfghiíjklĺľmnňoôóprŕsštťuúvxyýzž] [AÁÄBCČDĎEÉFGHIÍJKLĹĽMNŇOÔÓPRŔSŠTŤUÚVXYÝZŽ]
+LANGFILTER: | sort -u
+
+D2DARGS: -r -term 0 -enc UTF-8
+
+LANGINFO: <p>This BYOD language works on Slovak wordlists encoded in
+LANGINFO: UTF-8 and produces dictionaries that should work on
+LANGINFO: Unicode-aware versions of Crosswords. </p>
+
+# High bit means "official".  Next 7 bits are an enum where
+# Slovak==0x31.  Low byte is padding.
+XLOC_HEADER:0x9300
+
+#COUNT     VAL     FACE
+# converted from http://www.deskovehry.info/pravidla/scrabble/scrabble-sk.htm
+<BEGIN_TILES>
+9     1     'A'
+1     4     'Á'
+1     10    'Ä'
+2     4     'B'
+1     4     'C'
+1     5     'Č'
+1     8     'D'
+1     8     'Ď'
+8     1     'E'
+1     7     'É'
+1     8     'F'
+1     8     'G'
+1     4     'H'
+5     1     'I'
+1     5     'Í'
+2     3     'J'
+3     2     'K'
+3     2     'L'
+1     10    'Ĺ'
+1     7     'Ľ'
+4     2     'M'
+5     1     'N'
+1     8     'Ň'
+9     1     'O'
+1     8     'Ô'
+1     10    'Ó'
+3     2     'P'
+4     1     'R'
+1     10    'Ŕ'
+4     1     'S'
+1     5     'Š'
+4     1     'T'
+1     7     'Ť'
+2     3     'U'
+1     7     'Ú'
+4     1     'V'
+1     10    'X'
+1     4     'Y'
+1     5     'Ý'
+1     4     'Z'
+1     5     'Ž'
+# the blank *must* be last here!!!
+2           0       {"_"}
+<END_TILES>

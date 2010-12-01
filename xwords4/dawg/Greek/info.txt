@@ -1,0 +1,60 @@
+# -*- mode: conf; coding: utf-8; -*-
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:el_GK
+CHARSET: utf-8
+
+LANGFILTER: tr -d '\r'
+LANGFILTER: | tr 'αβγδεζηθικλμνξοπρστυφχψω' 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ'
+LANGFILTER: | grep '^[ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ]*$'
+
+LANGINFO: <p>Greek.  Uploaded wordlist must be in utf-8 format.
+LANGINFO: </p>
+
+D2DARGS: -r -term 0 -enc UTF-8
+
+XLOC_HEADER:0x9200
+
+# This alphabet's likely correct but counts and values aren't.
+<BEGIN_TILES>
+2	0	  {"_"}
+1   1     'Α'
+1   1     'Β'
+1   1     'Γ'
+1   1     'Δ'
+1   1     'Ε'
+1   1     'Ζ'
+1   1     'Η'
+1   1     'Θ'
+1   1     'Ι'
+1   1     'Κ'
+1   1     'Λ'
+1   1     'Μ'
+1   1     'Ν'
+1   1     'Ξ'
+1   1     'Ο'
+1   1     'Π'
+1   1     'Ρ'
+1   1     'Σ'
+1   1     'Τ'
+1   1     'Υ'
+1   1     'Φ'
+1   1     'Χ'
+1   1     'Ψ'
+1   1     'Ω'
+<END_TILES>
