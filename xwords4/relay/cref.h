@@ -93,6 +93,7 @@ class CookieRef {
 
     int GetHeartbeat() { return m_heatbeat; }
     int SocketForHost( HostID dest );
+    HostID HostForSocket( int sock );
 
     /* connect case */
     bool AlreadyHere( unsigned short seed, int socket );
