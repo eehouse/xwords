@@ -256,6 +256,22 @@ CookieRef::_Shutdown()
     handleEvents();
 } /* _Shutdown */
 
+HostID
+CookieRef::HostForSocket( int sock )
+{
+    HostID hid = -1;
+    ASSERT_LOCKED();
+    vector<HostRec>::const_iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        if ( iter->m_socket == sock ) {
+            hid = iter->m_hostID;
+            logf( XW_LOGINFO, "%s: assigning hid of %d", __func__, hid );
+            break;
+        }
+    }
+    return hid;
+}
+
 int
 CookieRef::SocketForHost( HostID dest )
 {
@@ -590,9 +606,9 @@ CookieRef::handleEvents()
             /*     break; */
 
             case XWA_SEND_RERSP:
+                increasePlayerCounts( &evt, true );
                 sendResponse( &evt, false );
                 sendAnyStored( &evt );
-                increasePlayerCounts( &evt, true );
                 postCheckAllHere();
                 break;
 
@@ -994,7 +1010,7 @@ CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
 void
 CookieRef::RecordSent( int nBytes, int socket ) {
     m_totalSent += nBytes;
-    DBMgr::Get()->RecordSent( ConnName(), nBytes );
+    DBMgr::Get()->RecordSent( ConnName(), HostForSocket(socket), nBytes );
 }
 
 void

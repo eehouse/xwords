@@ -43,7 +43,7 @@ cid integer
 ,seeds INTEGER[]
 ,nSent INTEGER DEFAULT 0
 ,ctime TIMESTAMP (0) DEFAULT CURRENT_TIMESTAMP
-,mtime TIMESTAMP (0)
+,mtimes TIMESTAMP(0)[]
 );
 EOF
 

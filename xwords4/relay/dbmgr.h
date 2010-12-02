@@ -52,9 +52,9 @@ class DBMgr {
                       int nToAdd, unsigned short seed );
     bool RmDevice( const char* const connName, HostID id );
     bool HaveDevice( const char* const connName, HostID id, int seed );
-    void AddCID( const char* connName, CookieID cid );
+    void AddCID( const char* const connName, CookieID cid );
     void ClearCID( const char* connName );
-    void RecordSent( const char* const connName, int nBytes );
+    void RecordSent( const char* const connName, HostID hid, int nBytes );
     void GetPlayerCounts( const char* const connName, int* nTotal,
                           int* nHere );
 

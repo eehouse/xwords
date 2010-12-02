@@ -208,10 +208,10 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
     assert( newID <= 4 );
 
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
-        " seeds[%d] = %d, mtime='now'"
+        " seeds[%d] = %d, mtimes[%d]='now'"
         " WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, connName );
+    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, newID, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );
@@ -223,9 +223,9 @@ bool
 DBMgr::RmDevice( const char* connName, HostID hid )
 {
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0, "
-        "seeds[%d] = 0, mtime='now' WHERE connName = '%s'";
+        "seeds[%d] = 0, mtimes[%d]='now' WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, hid, hid, connName );
+    snprintf( query, sizeof(query), fmt, hid, hid, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     return execSql( query );
@@ -249,8 +249,8 @@ DBMgr::HaveDevice( const char* connName, HostID hid, int seed )
 void
 DBMgr::AddCID( const char* const connName, CookieID cid )
 {
-    const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d, "
-        " mtime='now' WHERE connName = '%s'";
+    const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d "
+        " WHERE connName = '%s'";
     char query[256];
     snprintf( query, sizeof(query), fmt, cid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
@@ -271,16 +271,17 @@ DBMgr::ClearCID( const char* connName )
 }
 
 void
-DBMgr::RecordSent( const char* const connName, int nBytes )
+DBMgr::RecordSent( const char* const connName, HostID hid, int nBytes )
 {
-   const char* fmt = "UPDATE " GAMES_TABLE " SET"
-       " nsent = nsent + %d, mtime = 'now'"
-       " WHERE connName = '%s'";
-   char query[256];
-   snprintf( query, sizeof(query), fmt, nBytes, connName );
-   logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    assert( hid >= 0 && hid <= 4 );
+    const char* fmt = "UPDATE " GAMES_TABLE " SET"
+        " nsent = nsent + %d, mtimes[%d] = 'now'"
+        " WHERE connName = '%s'";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, nBytes, hid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-   execSql( query );
+    execSql( query );
 }
 
 void
