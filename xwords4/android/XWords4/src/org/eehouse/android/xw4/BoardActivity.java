@@ -32,6 +32,7 @@ import android.view.Window;
 import android.os.Handler;
 import android.os.Message;
 import android.content.Intent;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 import android.net.Uri;
 import android.app.Dialog;
@@ -73,6 +74,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     private String m_path;
     private int m_currentOrient;
     private Toolbar m_toolbar;
+    private Random m_rgen;
 
     private String m_dlgBytes = null;
     private EditText m_passwdEdit = null;
@@ -289,6 +291,8 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     {
         Utils.logf( "BoardActivity::onCreate()" );
         super.onCreate( savedInstanceState );
+
+        m_rgen = new Random();
 
         if ( CommonPrefs.getHideTitleBar( this ) ) {
             requestWindowFeature( Window.FEATURE_NO_TITLE );
@@ -711,6 +715,11 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     {
         m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
                             R.string.tiles_left_title );
+    }
+
+    public int rand()
+    {
+        return m_rgen.nextInt();
     }
 
     public void setIsServer( boolean isServer )
