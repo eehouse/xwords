@@ -88,20 +88,16 @@ public class RelayGameActivity extends XWActivity
     @Override
     public void onClick( View view ) 
     {
+        String room = Utils.getText( this, R.id.room_edit ).trim();
         if ( view == m_playButton ) {
-            String room = Utils.getText( this, R.id.room_edit ).trim();
             if ( room.length() == 0 ) {
                 showOKOnlyDialog( R.string.no_empty_rooms );
             } else {
-                m_car.ip_relay_invite = room;
-                String name = Utils.getText( this, R.id.local_name_edit );
-                if ( name.length() > 0 ) {
-                    m_gi.setFirstLocalName( name );
-                }
-                GameUtils.applyChanges( this, m_gi, m_car, m_path, false );
+                saveRoomAndName( room );
                 GameUtils.launchGame( this, m_path );
             }
         } else if ( view == m_configButton ) {
+            saveRoomAndName( room );
             GameUtils.doConfig( this, m_path, GameConfig.class );
             finish();
         }
@@ -110,6 +106,16 @@ public class RelayGameActivity extends XWActivity
     public static boolean isSimpleGame( GameSummary summary )
     {
         return summary.nPlayers == 2;
+    }
+
+    private void saveRoomAndName( String room )
+    {
+        String name = Utils.getText( this, R.id.local_name_edit );
+        if ( name.length() > 0 ) { // don't wipe existing
+            m_gi.setFirstLocalName( name );
+        }
+        m_car.ip_relay_invite = room;
+        GameUtils.applyChanges( this, m_gi, m_car, m_path, false );
     }
 
 } // class RelayGameActivity
