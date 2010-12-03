@@ -315,7 +315,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     getNV( stream, &server->nv, nPlayers );
     
     if ( stream_getBits(stream, 1) != 0 ) {
-        server->pool = pool_makeFromStream( MPPARM(mpool) stream );
+        server->pool = pool_makeFromStream( MPPARM(mpool) util, stream );
     }
 
     for ( i = 0; i < nPlayers; ++i ) {
@@ -435,7 +435,7 @@ figureSleepTime( const ServerCtxt* server )
     XP_U16 max = server->nv.robotThinkMax;
     if ( min < max ) {
         int diff = max - min + 1;
-        result = XP_RANDOM() % diff;
+        result = util_rand(server->vol.util) % diff;
     }
     result += min;
 
@@ -663,7 +663,7 @@ figureTargetScore( ServerCtxt* server, XP_U16 turn )
         }
 
         result = (XP_S16)(highScore - model_getPlayerScore( model, turn )
-            + (FUDGE_RANGE-(XP_RANDOM() % (FUDGE_RANGE*2))));
+            + (FUDGE_RANGE-(util_rand(server->vol.util) % (FUDGE_RANGE*2))));
         if ( result < 0 ) {
             result = MINIMUM_SCORE;
         }
@@ -1155,7 +1155,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         }
 
         XP_ASSERT( !server->pool );
-        pool = server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
+        pool = server->pool = pool_make( MPPARM(server->mpool) 
+                                         server->vol.util );
         pool_initFromDict( server->pool, model_getDictionary(model));
 
         /* now read the assigned tiles for each player from the stream, and
@@ -1624,7 +1625,7 @@ assignTilesToAll( ServerCtxt* server )
     XP_ASSERT( server->vol.gi->serverRole != SERVER_ISCLIENT );
     XP_ASSERT( model_getDictionary(model) != NULL );
     if ( server->pool == NULL ) {
-        server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
+        server->pool = pool_make( MPPARM(server->mpool) server->vol.util );
         XP_STATUSF( "initing pool" );
         pool_initFromDict( server->pool, model_getDictionary(model));
     }

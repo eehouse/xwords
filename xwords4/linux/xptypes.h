@@ -102,7 +102,7 @@ extern void linux_debugf(const char*, ...)
 #define XP_STRNCMP(s1,s2,len) strncmp((s1),(s2),(len))
 #define XP_STRNCPY(s1,s2,len) strncpy((s1),(s2),(len))
 #define XP_STRCMP(s1,s2)       strcmp((s1),(s2))
-#define XP_RANDOM() random()
+/* #define XP_RANDOM() random() */
 #define XP_SNPRINTF snprintf
 
 #define XP_MIN(a,b) ((a)<(b)?(a):(b))

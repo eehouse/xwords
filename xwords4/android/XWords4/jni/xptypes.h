@@ -48,7 +48,7 @@ typedef XP_U32 XP_Time;
 #define XP_CR "\n"
 #define XP_LD "%ld"
 
-#define XP_RANDOM() and_rand()
+/* #define XP_RANDOM() and_rand() */
 
 #ifdef MEM_DEBUG
 # define XP_PLATMALLOC(nbytes) malloc(nbytes)

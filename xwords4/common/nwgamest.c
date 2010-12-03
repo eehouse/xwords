@@ -309,7 +309,7 @@ newg_juggle( NewGameCtx* ngc )
         /* Get a randomly juggled array of numbers 0..nPlayers-1.  Then the
            number at pos[n] inicates where the entry currently at n should
            be. */
-        changed = randIntArray( pos, nPlayers );
+        changed = randIntArray( ngc->util, pos, nPlayers );
         if ( changed ) {
 
             /* Deep-copy off to tmp storage.  But skip lines that won't be moved
