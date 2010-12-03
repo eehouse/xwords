@@ -153,7 +153,7 @@ kill_from_logs() {
     done
     if [ -n "$CMDS" ]; then
         echo "../relay/rq $CMDS"
-        ../relay/rq $CMDS 2>/dev/null || true
+        ../relay/rq -a $HOST $CMDS 2>/dev/null || true
     fi
 }
 
@@ -161,7 +161,7 @@ kill_from_log() {
     LOG=$1
     RELAYID=$(./scripts/relayID.sh $LOG)
     if [ -n "$RELAYID" ]; then
-        ../relay/rq -d $RELAYID 2>/dev/null || true
+        ../relay/rq -a $HOST -d $RELAYID 2>/dev/null || true
         return 0                # success
     fi
     return 1
