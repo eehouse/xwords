@@ -245,6 +245,10 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
         if ( 0 != (DICT_HEADER_MASK & flags) ) {
             flags &= ~DICT_HEADER_MASK;
             XP_U16 headerLen = n_ptr_tohs( &ptr );
+            if ( 4 <= headerLen ) { /* have word count? */
+                ctxt->super.nWords = n_ptr_tohl( &ptr );
+                headerLen -= 4; /* don't skip it */
+            }
             ptr += headerLen;
         }
 
