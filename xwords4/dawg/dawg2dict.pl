@@ -160,7 +160,6 @@ sub nodeSizeFromFlags($$) {
     my ( $fh, $flags ) = @_;
 
     my $bitSet = $flags & 0x0008;
-    printf STDERR "checking flags 0x%x with 0x%x -> 0x%x\n", $flags, 0x0008, $bitSet;
     if ( 0 != $bitSet ){
         $flags = $flags & ~0x0008;
         # need to skip header
@@ -168,6 +167,7 @@ sub nodeSizeFromFlags($$) {
         2 == sysread( $fh, $buf, 2 ) || die "couldn't read length of header";
         my $len = unpack( "n", $buf );
         $len == sysread( $fh, $buf, $len ) || die  "couldn't read header bytes";
+        printf STDERR "skipped %d bytes of header\n", $len + 2;
     }
 
     if ( $flags == 2 || $ flags == 4 ) {
