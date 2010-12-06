@@ -242,6 +242,11 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
         XP_Bool isUTF8 = XP_FALSE;
 
         flags = n_ptr_tohs( &ptr );
+        if ( 0 != (DICT_HEADER_MASK & flags) ) {
+            flags &= ~DICT_HEADER_MASK;
+            XP_U16 headerLen = n_ptr_tohs( &ptr );
+            ptr += headerLen;
+        }
 
         if ( flags == 0x0002 ) {
             nodeSize = 3;
