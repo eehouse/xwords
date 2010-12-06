@@ -432,7 +432,6 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
     anddict->bytes = localBytes;
 
     parseDict( anddict, localBytes, len );
-    setBlankTile( &anddict->super );
 
     /* copy the name */
     if ( NULL != jname ) {

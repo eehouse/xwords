@@ -35,6 +35,8 @@ extern "C" {
 /* cast to unsigned in case XP_UCHAR is signed */
 #define IS_SPECIAL(face) ((XP_U16)(face) < 0x0020)
 
+#define DICT_HEADER_MASK 0x08
+
 typedef XP_U8 XP_LangCode;
 
 typedef enum {
@@ -78,6 +80,7 @@ struct DictionaryCtxt {
 
     SpecialBitmaps* bitmaps;
     XP_UCHAR** chars;
+    XP_U32 nWords;
 
     XP_LangCode langCode;
 
