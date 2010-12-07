@@ -369,9 +369,14 @@ static XP_U16
 and_util_rand( XW_UtilCtxt* uc )
 {
     jint result = 0;
-    UTIL_CBK_HEADER("rand", "()I" );
-    result = (*env)->CallIntMethod( env, util->jutil, mid );
-    UTIL_CBK_TAIL();
+    AndUtil* util = (AndUtil*)uc;
+    JNIEnv* env = *util->env;
+    if ( NULL != util->jutil ) {
+        jmethodID mid = getMethodID( env, util->jutil, "rand", "()I" );
+        result = (*env)->CallIntMethod( env, util->jutil, mid );
+    } else {
+        result = rand();
+    }
     return result;
 }
 #endif
