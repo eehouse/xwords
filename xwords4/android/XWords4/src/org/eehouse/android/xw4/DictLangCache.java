@@ -27,16 +27,37 @@ import java.util.HashMap;
 
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.DictInfo;
 
 public class DictLangCache {
-    private static final HashMap<String,Integer> s_nameToLang = 
-        new HashMap<String,Integer>();
+    private static final HashMap<String,DictInfo> s_nameToLang = 
+        new HashMap<String,DictInfo>();
     private static String[] s_langNames;
+
+    public static String annotatedDictName( Context context, final String name,
+                                            boolean inclNWords )
+    {
+        int wordCount = 0;
+        if ( inclNWords ) {
+            DictInfo info = getInfo( context, name );
+            wordCount = info.wordCount;
+        }
+
+        String langName = getLangName( context, name );
+        String result;
+        if ( 0 == wordCount ) {
+            result = String.format( "%s (%s)", name, langName );
+        } else {
+            result = String.format( "%s (%s/%d)", name, langName, wordCount );
+        }
+
+        return result;
+    }
 
     public static String annotatedDictName( Context context,
                                             String name )
     {
-        return name + " (" + getLangName( context, name ) + ")";
+        return annotatedDictName( context, name, false );
     }
 
     public static String annotatedDictName( Context context, String name,
@@ -82,15 +103,7 @@ public class DictLangCache {
 
     public static int getLangCode( Context context, String name )
     {
-        int code;
-        if ( s_nameToLang.containsKey( name ) ) {
-            code = s_nameToLang.get( name );
-        } else {
-            byte[] dict = GameUtils.openDict( context, name );
-            code = XwJNI.dict_getLanguageCode( dict, JNIUtilsImpl.get() );
-            s_nameToLang.put( name, new Integer(code) );
-        }
-        return code;
+        return getInfo( context, name ).langCode;
     }
 
     public static String getLangName( Context context, String name )
@@ -106,6 +119,20 @@ public class DictLangCache {
             s_langNames = res.getStringArray( R.array.language_names );
         }
         return s_langNames;
+    }
+
+    private static DictInfo getInfo( Context context, String name )
+    {
+        DictInfo info;
+        if ( s_nameToLang.containsKey( name ) ) {
+            info = s_nameToLang.get( name );
+        } else {
+            byte[] dict = GameUtils.openDict( context, name );
+            info = new DictInfo();
+            XwJNI.dict_getInfo( dict, JNIUtilsImpl.get(), info );
+            s_nameToLang.put( name, info );
+        }
+        return info;
     }
 
 }
