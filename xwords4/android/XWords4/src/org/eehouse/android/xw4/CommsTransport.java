@@ -26,9 +26,13 @@ import java.util.Vector;
 import java.util.Iterator;
 import junit.framework.Assert;
 import android.telephony.SmsManager;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -77,6 +81,9 @@ public class CommsTransport implements TransportProcs {
     BlockingQueue<byte[]> m_queue;
 
     private Context m_context;
+    private ConnectivityManager m_connMgr;
+    private BroadcastReceiver m_receiver;
+    private boolean m_netAvail = false;
 
     public CommsTransport( int jniGamePtr, Context context, Handler handler,
                            DeviceRole role )
@@ -84,6 +91,9 @@ public class CommsTransport implements TransportProcs {
         m_jniGamePtr = jniGamePtr;
         m_context = context;
         m_handler = handler;
+
+        buildNetAvailReceiver();
+        m_queue = new ArrayBlockingQueue<byte[]>(16);
     }
 
     public class WriterThread extends Thread {
@@ -128,6 +138,7 @@ public class CommsTransport implements TransportProcs {
 
             for ( ; ; ) {
                 try { 
+                    Utils.logf( "ReaderThread: blocking inside readShort();" );
                     short len = dis.readShort();
                     Utils.logf( "ReaderThread: read length short: %d", len );
                     byte[] buf = new byte[len];
@@ -157,16 +168,16 @@ public class CommsTransport implements TransportProcs {
                 Utils.logf( "%s", ioe.toString() );
             }
         }
+        // destroyNetAvailReceiver();
     }
 
     private void startThreadsIf()
     {
-        if ( null == m_socket ) {
+        if ( null == m_socket && m_netAvail ) {
             try {
                 m_socket = new Socket( m_addr.ip_relay_hostName, 
                                        m_addr.ip_relay_port );
                 if ( null != m_socket ) {
-                    m_queue = new ArrayBlockingQueue<byte[]>(16);
                     m_reader = new ReaderThread();
                     m_reader.start();
                     m_writer = new WriterThread();
@@ -179,6 +190,59 @@ public class CommsTransport implements TransportProcs {
                 Utils.logf( "%s", ioe.toString() );
                 m_socket = null; // need to notify user on some of these
             }
+        }
+    }
+
+    private class CommsBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive( Context context, Intent intent ) 
+        {
+            Utils.logf( "CommsBroadcastReceiver::onReceive()" );
+            if ( intent.getAction().
+                 equals( ConnectivityManager.CONNECTIVITY_ACTION)) {
+
+                NetworkInfo ni = (NetworkInfo)intent.
+                    getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+                boolean netAvail = NetworkInfo.State.CONNECTED == ni.getState();
+                if ( m_netAvail != netAvail ) {
+                    // Do something; it's a change
+                    m_netAvail = netAvail;
+                    if ( netAvail ) {
+                        startThreadsIf();
+                    // } else {
+                    //     waitToStop();
+                    }
+                }
+
+                Utils.logf( "CommsTransport::onReceive: m_netAvail=%s",
+                            m_netAvail?"true":"false" );
+            }
+        }
+    }
+
+    private void buildNetAvailReceiver()
+    {
+        m_connMgr = (ConnectivityManager)
+            m_context.getSystemService( Context.CONNECTIVITY_SERVICE );
+        NetworkInfo ni = m_connMgr.getActiveNetworkInfo();
+        m_netAvail = null != ni && 
+            NetworkInfo.State.CONNECTED == ni.getState();
+        Utils.logf( "CommsTransport::buildNetAvailReceiver: m_netAvail=%s",
+                    m_netAvail?"true":"false" );
+
+        m_receiver = new CommsBroadcastReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction( ConnectivityManager.CONNECTIVITY_ACTION );
+        Intent intent = m_context.registerReceiver( m_receiver, filter );
+        Utils.logf( "CommsTransport::registerReceiver->%s", 
+                    intent==null?"null" : intent.toString() );
+    }
+
+    private void destroyNetAvailReceiver()
+    {
+        if ( null != m_receiver ) {
+            m_context.unregisterReceiver( m_receiver );
+            m_receiver = null;
         }
     }
 
