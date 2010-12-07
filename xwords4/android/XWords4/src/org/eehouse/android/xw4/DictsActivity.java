@@ -65,7 +65,8 @@ public class DictsActivity extends XWListActivity
             // append language name
             view.setText( DictLangCache.
                           annotatedDictName( DictsActivity.this, 
-                                             m_dicts[position] ) );
+                                             m_dicts[position],
+                                             true ) );
             if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
                                            m_dicts[position] ) ) {
                 view.setDeleteCallback( DictsActivity.this );
