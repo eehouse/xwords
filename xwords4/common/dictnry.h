@@ -152,6 +152,7 @@ void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile,
                           XP_Bitmaps* bmps );
 
 XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );
+XP_U32 dict_getWordCount( const DictionaryCtxt* dict );
 
 void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
 void dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream );

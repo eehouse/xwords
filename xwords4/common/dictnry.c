@@ -437,6 +437,12 @@ dict_getLangCode( const DictionaryCtxt* dict )
     return dict->langCode;
 }
 
+XP_U32
+dict_getWordCount( const DictionaryCtxt* dict )
+{
+    return dict->nWords;
+}
+
 #ifdef STUBBED_DICT
 
 #define BLANK_FACE '\0'
