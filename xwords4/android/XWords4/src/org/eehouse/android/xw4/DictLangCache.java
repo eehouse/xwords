@@ -34,15 +34,11 @@ public class DictLangCache {
         new HashMap<String,DictInfo>();
     private static String[] s_langNames;
 
-    public static String annotatedDictName( Context context, final String name,
-                                            boolean inclNWords )
+    public static String annotatedDictName( Context context, String name )
     {
-        int wordCount = 0;
-        if ( inclNWords ) {
-            DictInfo info = getInfo( context, name );
-            wordCount = info.wordCount;
-        }
-
+        DictInfo info = getInfo( context, name );
+        int wordCount = info.wordCount;
+            
         String langName = getLangName( context, name );
         String result;
         if ( 0 == wordCount ) {
@@ -52,12 +48,6 @@ public class DictLangCache {
         }
 
         return result;
-    }
-
-    public static String annotatedDictName( Context context,
-                                            String name )
-    {
-        return annotatedDictName( context, name, false );
     }
 
     public static String annotatedDictName( Context context, String name,
