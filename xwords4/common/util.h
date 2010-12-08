@@ -157,10 +157,6 @@ typedef struct UtilVtable {
 
     void (*m_util_remSelected)(XW_UtilCtxt* uc);
 
-#ifdef XWFEATURE_RANDOM_VIA_UTILS
-    XP_U16 (*m_util_rand)(XW_UtilCtxt* uc);
-#endif
-
 #ifndef XWFEATURE_STANDALONE_ONLY
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
@@ -260,11 +256,6 @@ struct XW_UtilCtxt {
 
 #define util_remSelected( uc )              \
          (uc)->vtable->m_util_remSelected((uc))
-
-#ifdef XWFEATURE_RANDOM_VIA_UTILS
-# define util_rand( uc )              \
-         (uc)->vtable->m_util_rand((uc))
-#endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define util_addrChange( uc, addro, addrn ) \

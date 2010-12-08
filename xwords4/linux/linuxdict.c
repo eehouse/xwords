@@ -209,11 +209,17 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     XP_U16 facesSize;
     XP_U16 charSize;
     XP_Bool isUTF8 = XP_FALSE;
+    XP_Bool hasHeader = XP_FALSE;
 
     XP_ASSERT( dictF );
     if ( 1 == fread( &flags, sizeof(flags), 1, dictF ) ) {
         flags = ntohs(flags);
-        XP_DEBUGF( "flags=0x%x", flags );
+        XP_DEBUGF( "flags=0X%X", flags );
+        hasHeader = 0 != (DICT_HEADER_MASK & flags);
+        if ( hasHeader ) {
+            flags &= ~DICT_HEADER_MASK;
+            XP_DEBUGF( "has header!" );
+        }
 #ifdef NODE_CAN_4
         if ( flags == 0x0001 ) {
             dctx->super.nodeSize = 3;
@@ -250,6 +256,24 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
 #endif
 
     if ( formatOk ) {
+
+        if ( hasHeader ) {
+            XP_U16 headerLen;
+            if ( 1 != fread( &headerLen, sizeof(headerLen), 1, dictF ) ) {
+                goto closeAndExit;
+            }
+            headerLen = ntohs( headerLen );
+            XP_U32 wordCount;
+            if ( headerLen != sizeof(wordCount) ) { /* the only case we know right now */
+                goto closeAndExit;
+            }
+            if ( 1 != fread( &wordCount, sizeof(wordCount), 1, dictF ) ) {
+                goto closeAndExit;
+            }
+            dctx->super.nWords = ntohl( wordCount );
+            XP_DEBUGF( "dict contains %ld words", dctx->super.nWords );
+        }
+
         if ( isUTF8 ) {
             if ( 1 != fread( &numFaceBytes, sizeof(numFaceBytes), 1, dictF ) ) {
                 goto closeAndExit;

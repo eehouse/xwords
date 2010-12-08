@@ -18,7 +18,6 @@
  */
 /* #include <assert.h> */
 
-#include "util.h"
 #include "pool.h"
 #include "dictnry.h"
 #include "xwstream.h"
@@ -28,7 +27,6 @@
 // #define BLANKS_FIRST 1
 
 struct PoolContext {
-    XW_UtilCtxt* util;
     XP_U8* lettersLeft;
     XP_U16 numTilesLeft;
     XP_U16 numFaces;
@@ -39,14 +37,13 @@ struct PoolContext {
 };
 
 PoolContext*
-pool_make( MPFORMAL XW_UtilCtxt* uc )
+pool_make( MPFORMAL_NOCOMMA )
 {
     PoolContext* result = (PoolContext*)XP_MALLOC(mpool, sizeof(*result) );
 
     if ( result != NULL ) {
         XP_MEMSET( result, 0, sizeof( *result ) );
         MPASSIGN(result->mpool, mpool);
-        result->util = uc;
 
 #ifdef BLANKS_FIRST
         result->blankIndex = -1;
@@ -69,9 +66,9 @@ pool_writeToStream( PoolContext* pool, XWStreamCtxt* stream )
 } /* pool_writeToStream */
 
 PoolContext*
-pool_makeFromStream( MPFORMAL XW_UtilCtxt* uc, XWStreamCtxt* stream )
+pool_makeFromStream( MPFORMAL XWStreamCtxt* stream )
 {
-    PoolContext* pool = pool_make( MPPARM(mpool) uc );
+    PoolContext* pool = pool_make( MPPARM_NOCOMMA(mpool) );
 
     pool->numTilesLeft = stream_getU16( stream );
     pool->numFaces = stream_getU16( stream );
@@ -136,9 +133,9 @@ getRandomTile( PoolContext* pool )
 #if defined PLATFORM_PALM && ! defined XW_TARGET_PNO
     XP_U16 rr = XP_RANDOM();
 #elif defined PLATFORM_ANDROID
-    XP_U16 rr = util_rand(pool->util);
+    XP_U16 rr = XP_RANDOM();
 #else
-    XP_U16 rr = util_rand(pool->util);
+    XP_U16 rr = (XP_U16)(XP_RANDOM()>>16);
 #endif
     XP_U16 index = rr % pool->numTilesLeft;
     Tile result = getNthPoolTile( pool, index );

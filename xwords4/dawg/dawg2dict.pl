@@ -156,9 +156,21 @@ sub readNodesToEnd($) {
     return @nodes;
 } # readNodesToEnd
 
-sub nodeSizeFromFlags($) {
-    my ( $flags ) = @_;
-    if ( $flags == 4 ) {
+sub nodeSizeFromFlags($$) {
+    my ( $fh, $flags ) = @_;
+
+    my $bitSet = $flags & 0x0008;
+    if ( 0 != $bitSet ){
+        $flags = $flags & ~0x0008;
+        # need to skip header
+        my $buf;
+        2 == sysread( $fh, $buf, 2 ) || die "couldn't read length of header";
+        my $len = unpack( "n", $buf );
+        $len == sysread( $fh, $buf, $len ) || die  "couldn't read header bytes";
+        printf STDERR "skipped %d bytes of header\n", $len + 2;
+    }
+
+    if ( $flags == 2 || $ flags == 4 ) {
         return 3;
     } elsif ( $flags == 5 ) {
         return 4;
@@ -186,7 +198,7 @@ sub prepXWD($$$$) {
     my $nRead = sysread( $fh, $buf, 2 );
     my $flags = unpack( "n", $buf );
 
-    $gNodeSize = nodeSizeFromFlags( $flags );
+    $gNodeSize = nodeSizeFromFlags( $fh, $flags );
 
     my $nSpecials;
     my $faceCount = readXWDFaces( $fh, $facRef, \$nSpecials );
@@ -270,7 +282,7 @@ sub prepPDB($$$$) {
     my $nChars = ($offsets[2] - $facesOffset) / 2;
     $nRead += sysread( $fh, $buf, $facesOffset - $nRead );
     my @tmp = unpack( 'Nc6n', $buf );
-    $gNodeSize = nodeSizeFromFlags( $tmp[7] );
+    $gNodeSize = nodeSizeFromFlags( 0, $tmp[7] );
 
     my @faces;
     for ( my $i = 0; $i < $nChars; ++$i ) {

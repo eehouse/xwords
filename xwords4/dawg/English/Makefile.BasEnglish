@@ -19,7 +19,7 @@ XWLANG=BasEnglish
 LANGCODE=en_US
 DICT2DAWGARGS = -r -nosort
 
-TARGET_TYPE ?= PALM
+TARGET_TYPE ?= WINCE
 
 include ../Makefile.2to8
 

@@ -115,10 +115,12 @@ public class DlgDelegate {
     {
         boolean set = CommonPrefs.getPrefsBoolean( m_activity, prefsKey, false );
         if ( set ) {
+            Utils.logf( "showNotAgainDlgThen: skipping message" );
             if ( null != proc ) {
                 proc.run();
             } 
         } else {
+            Utils.logf( "showNotAgainDlgThen: setting message: %d", msgID );
             m_msgID = msgID;
             m_proc = proc;
             m_prefsKey = prefsKey;

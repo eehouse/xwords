@@ -84,7 +84,7 @@ void p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc,
 XP_UCHAR* emptyStringIfNull( XP_UCHAR* str );
 
 /* Produce an array of ints 0..count-1, juggled */
-XP_Bool randIntArray( XW_UtilCtxt* util, XP_U16* rnums, XP_U16 count );
+XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );
 
 #ifdef XWFEATURE_SMS
 void binToSms( XP_UCHAR* out, XP_U16* outlen, const XP_U8* in, XP_U16 inlen );
