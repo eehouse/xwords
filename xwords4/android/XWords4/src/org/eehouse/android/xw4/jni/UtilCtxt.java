@@ -48,7 +48,6 @@ public interface UtilCtxt {
 
     void requestTime();
     void remSelected();
-    int rand();
     void setIsServer( boolean isServer );
 
     static final int STRD_ROBOT_TRADED =                  1;

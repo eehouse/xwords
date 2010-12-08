@@ -364,23 +364,6 @@ and_util_remSelected(XW_UtilCtxt* uc)
     UTIL_CBK_TAIL();
 }
 
-#ifdef XWFEATURE_RANDOM_VIA_UTILS
-static XP_U16
-and_util_rand( XW_UtilCtxt* uc )
-{
-    jint result = 0;
-    AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
-    if ( NULL != util->jutil ) {
-        jmethodID mid = getMethodID( env, util->jutil, "rand", "()I" );
-        result = (*env)->CallIntMethod( env, util->jutil, mid );
-    } else {
-        result = rand();
-    }
-    return result;
-}
-#endif
-
 static void
 and_util_setIsServer(XW_UtilCtxt* uc, XP_Bool isServer )
 {
@@ -473,9 +456,6 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(warnIllegalWord);
     SET_PROC(showChat);
     SET_PROC(remSelected);
-#ifdef XWFEATURE_RANDOM_VIA_UTILS
-    SET_PROC(rand);
-#endif
     SET_PROC(setIsServer);
 
 #ifndef XWFEATURE_STANDALONE_ONLY

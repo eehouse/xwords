@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "util.h"
 #include "strutils.h"
 #include "xwstream.h"
 #include "mempool.h"
@@ -207,7 +206,7 @@ emptyStringIfNull( XP_UCHAR* str )
 } /* emptyStringIfNull */
 
 XP_Bool
-randIntArray( XW_UtilCtxt* util, XP_U16* rnums, XP_U16 count )
+randIntArray( XP_U16* rnums, XP_U16 count )
 {
     XP_Bool changed = XP_FALSE;
     XP_U16 i;
@@ -217,7 +216,7 @@ randIntArray( XW_UtilCtxt* util, XP_U16* rnums, XP_U16 count )
     }
 
     for ( i = count; i > 0 ; ) {
-        XP_U16 rIndex = util_rand(util) % i;
+        XP_U16 rIndex = ((XP_U16)XP_RANDOM()) % i;
         if ( --i != rIndex ) {
             XP_U16 tmp = rnums[rIndex];
             rnums[rIndex] = rnums[i];

@@ -32,13 +32,12 @@ void pool_removeTiles( PoolContext* pool, TrayTileSet* tiles );
 XP_U16 pool_getNTilesLeft( PoolContext* pool );
 XP_U16 pool_getNTilesLeftFor( PoolContext* pool, Tile tile );
 
-PoolContext* pool_make( MPFORMAL XW_UtilCtxt* uc );
+PoolContext* pool_make( MPFORMAL_NOCOMMA );
 
 void pool_destroy( PoolContext* pool );
 void pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict );
 
 void pool_writeToStream( PoolContext* pool, XWStreamCtxt* stream );
-PoolContext* pool_makeFromStream( MPFORMAL XW_UtilCtxt* uc,
-                                  XWStreamCtxt* stream );
+PoolContext* pool_makeFromStream( MPFORMAL XWStreamCtxt* stream );
 
 #endif

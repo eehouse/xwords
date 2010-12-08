@@ -927,7 +927,7 @@ XP_U16
 comms_getChannelSeed( CommsCtxt* comms )
 {
     while ( comms->channelSeed == 0 ) {
-        comms->channelSeed = util_rand(comms->util);
+        comms->channelSeed = XP_RANDOM();
         XP_LOGF( "%s: channelSeed: %.4X", __func__, comms->channelSeed );
     }
     return comms->channelSeed;
