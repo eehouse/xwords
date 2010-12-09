@@ -102,6 +102,11 @@ public class DictLangCache {
         return getLangName( context, code );
     }
 
+    public static void inval( String name )
+    {
+        s_nameToLang.remove( name );
+    }
+
     private static String[] getNamesArray( Context context )
     {
         if ( null == s_langNames ) {
