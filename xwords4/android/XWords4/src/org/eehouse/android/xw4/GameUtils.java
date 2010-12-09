@@ -174,7 +174,7 @@ public class GameUtils {
         byte[] stream = savedGame( context, path );
         CurGameInfo gi = new CurGameInfo( context );
         XwJNI.gi_from_stream( gi, stream );
-        String dictName = removeExtn( gi.dictName );
+        String dictName = removeDictExtn( gi.dictName );
         missingName[0] = dictName;
         missingLang[0] = gi.dictLang;
 
@@ -221,13 +221,13 @@ public class GameUtils {
 
         for ( String file : getAssets( context ) ) {
             if ( isDict( file ) ) {
-                al.add( removeExtn( file ) );
+                al.add( removeDictExtn( file ) );
             }
         }
 
         for ( String file : context.fileList() ) {
             if ( isDict( file ) ) {
-                al.add( removeExtn( file ) );
+                al.add( removeDictExtn( file ) );
             }
         }
 
@@ -433,7 +433,7 @@ public class GameUtils {
         activity.startActivity( intent );
     }
 
-    private static String removeExtn( String str )
+    public static String removeDictExtn( String str )
     {
         if ( str.endsWith( XWConstants.DICT_EXTN ) ) {
             int indx = str.lastIndexOf( XWConstants.DICT_EXTN );
