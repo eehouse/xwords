@@ -6,32 +6,22 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 19 release</b>
+<b>Crosswords 4.4 beta 20 release</b>
 <ul>
-<li>Beginning with Beta 19 Crosswords will notify the relay when you 
-delete a networked game, and the relay will tell others in the game 
-that you're gone and the game is over.</li>
 
-<li>Fix a problem drawing wide letters on narrow screens</li>
+  <li>Replace large tournament-grade dictionary with tiny one.  This should address complaints that the robot's too smart.</li>
 
-<li>Position the Play game button permanently at the bottom of the 
-Game setting dialog -- no scrolling.</li>
+  <li>When a game depends on a dictionary that's been deleted and there are others available in that language, give the option to substitute instead of refusing to open the game.</li>
 
-<li>Run on Android 1.5 again -- making this the first upgrade in a while 
-for you 1.5 users.</li>
+  <li>Include number of words in new dictionary format, and display that along with language where available.  You will need to re-download any dictionaries that are not built-in to take advantage of this.</li>
 
-<li>Speed up game launch</li>
+  <li>Try to handle changes in network availability in the middle of a game -- so you don't have to re-open a game to get it to connect.</li>
 
-<li>Improve how missing dictionaries are handled -- e.g. stop crashing</li>
-
-<li>Stop relay crashing when room name contains an apostrophe</li>
+  <li>Fix glitch drawing board on 600x800 Velocity Cruz eReader tablet -- $160 at Costco, and Crosswords runs great!</li>
 
 </ul>
 
-<p>Please remember that this is beta software.  Letting me know (at 
-eehouse@eehouse.org) what's broken and what features you'd most like 
-to see is the best way to help get this to release quality 
-quickly.</p>
+<p>Please remember that this is beta software.  Please let me know (at eehouse@eehouse.org) what's broken and what features you'd most like to see.</p>
 
 <p>Thanks!<br>--Eric</p>
 
