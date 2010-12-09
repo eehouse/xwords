@@ -179,31 +179,36 @@ public class DlgDelegate {
 
     private Dialog createNotAgainDialog()
     {
-        DialogInterface.OnClickListener lstnr_p = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    if ( null != m_proc ) {
-                        m_proc.run();
+        Dialog dialog = null;
+        if ( 0 != m_msgID ) {
+            DialogInterface.OnClickListener lstnr_p = 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        if ( null != m_proc ) {
+                            m_proc.run();
+                        }
                     }
-                }
-            };
+                };
 
-        DialogInterface.OnClickListener lstnr_n = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    CommonPrefs.setPrefsBoolean( m_activity, m_prefsKey, true );
-                    if ( null != m_proc ) {
-                        m_proc.run();
+            DialogInterface.OnClickListener lstnr_n = 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        CommonPrefs.setPrefsBoolean( m_activity, m_prefsKey, 
+                                                     true );
+                        if ( null != m_proc ) {
+                            m_proc.run();
+                        }
                     }
-                }
-            };
+                };
 
-        return new AlertDialog.Builder( m_activity )
-            .setTitle( R.string.newbie_title )
-            .setMessage( m_msgID )
-            .setPositiveButton( R.string.button_ok, lstnr_p )
-            .setNegativeButton( R.string.button_notagain, lstnr_n )
-            .create();
+            dialog = new AlertDialog.Builder( m_activity )
+                .setTitle( R.string.newbie_title )
+                .setMessage( m_msgID )
+                .setPositiveButton( R.string.button_ok, lstnr_p )
+                .setNegativeButton( R.string.button_notagain, lstnr_n )
+                .create();
+        }
+        return dialog;
     } // createNotAgainDialog
 
     private Dialog createConfirmThenDialog()
