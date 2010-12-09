@@ -107,7 +107,9 @@ public class DictImportActivity extends XWActivity {
     private void saveDict( InputStream inputStream, String path )
     {
         try {
-            GameUtils.saveDict( this, basename(path), inputStream );
+            String name = basename( path );
+            GameUtils.saveDict( this, name, inputStream );
+            DictLangCache.inval( GameUtils.removeDictExtn( name ) );
             inputStream.close();
         } catch ( java.io.IOException ioe ) {
             Utils.logf( "IOException: %s" + ioe.toString() );
