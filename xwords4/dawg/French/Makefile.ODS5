@@ -1,5 +1,5 @@
 # -*-mode: Makefile -*-
-# Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,8 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=Italian
-LANGCODE=it_IT
+XWLANG=ODS5
+LANGCODE=fr_FR
 
 TARGET_TYPE ?= WINCE
 
@@ -24,8 +24,8 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(XWLANG)Main.dict.gz: $(XWDICTPATH)/Italian/ITALIANO.txt.gz
-	zcat $< | tr a-z A-Z | grep '^[A-IL-VZ]*$$' | gzip >$@
+$(XWLANG)Main.dict.gz: $(XWDICTPATH)/French/ODS5.txt.gz
+	zcat $< | tr a-z A-Z | tr -d '\r' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.

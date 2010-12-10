@@ -29,7 +29,7 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Polish/slowa.txt.gz
+SOURCEDICT ?= $(XWDICTPATH)/Polish/slowa-utf8.txt.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT)
 	zcat $< | tr -d '\r' \
