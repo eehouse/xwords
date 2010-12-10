@@ -18,7 +18,7 @@
 XWLANG=Italian
 LANGCODE=it_IT
 
-TARGET_TYPE ?= PALM
+TARGET_TYPE ?= WINCE
 
 include ../Makefile.2to8
 

@@ -25,7 +25,7 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Slovak/slovnik_scrabble.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/Slovak/slovak.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | \
