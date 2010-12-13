@@ -27,12 +27,16 @@ include ../Makefile.2to8
 include ../Makefile.langcommon
 
 # Pass in your own dict here by setting DICT
-DICT ?= $(XWDICTPATH)/English/CSW.dict.gz
+# DICT ?= $(XWDICTPATH)/English/CSW.dict.gz
+DICT ?= $(XWDICTPATH)/English/COSD.dict.gz
 
-# tr 'AE' 'ÄË' doesn't work, so use sed.
+# tr 'AE' 'ÄË' doesn't work, so use sed.  Note that although we're
+# pulling words up to 15 letters in length there are none longer than
+# seven in this dict.  So all three dicts will be the same length and
+# only one is worth publishing.
 $(XWLANG)Main.dict.gz: $(DICT)
 	@echo "building $@ from $<"
-	zcat $< | tr [a-f] [A-F] | grep -e '^[A-F]\{2,8\}$$' | \
+	zcat $< | tr [a-f] [A-F] | grep -e '^[A-F]\{2,15\}$$' | \
 		echo CAFEBABE DEADBEEF $$(cat -) | \
 		sed 's/A/Ä/g' | \
 		sed 's/E/Ë/g' | \
