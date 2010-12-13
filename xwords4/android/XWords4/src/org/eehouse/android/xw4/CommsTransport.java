@@ -122,6 +122,7 @@ public class CommsTransport implements TransportProcs {
 
         private void loop()
         {
+            outer_loop:
             while ( !m_done ) {
                 try {
                     synchronized( this ) {
@@ -193,7 +194,9 @@ public class CommsTransport implements TransportProcs {
                             }
                         }
                     } catch ( java.io.IOException ioe ) {
+                        Utils.logf( "%s: cancelling key", ioe.toString() );
                         key.cancel(); 
+                        break outer_loop;
                     }
                 }
             }
