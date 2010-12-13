@@ -71,7 +71,6 @@ public class GameUtils {
         XwJNI.game_dispose( gamePtr );
 
         gi.setInProgress( false );
-        gi.fixup();
 
         gamePtr = XwJNI.initJNI();
         XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
@@ -408,7 +407,6 @@ public class GameUtils {
 
         if ( forceNew || !madeGame ) {
             gi.setInProgress( false );
-            gi.fixup();
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                     cp, dictBytes, gi.dictName );
         }
