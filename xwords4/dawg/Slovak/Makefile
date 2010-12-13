@@ -15,8 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=Slovak
-LANGCODE=sk_SK
+XWLANG = Slovak
+LANGCODE = sk_SK
 ENC = UTF-8
 
 TARGET_TYPE ?= WINCE
@@ -25,7 +25,7 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Slovak/slovak.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/Slovak/slovnik_scrabble.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | \
