@@ -15,16 +15,16 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 LANGCODE:da_DK
-
+CHARSET: utf-8
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
 # uppercase all
-LANGFILTER: | tr [a-zåæø] [A-ZÅÆØ]
+LANGFILTER: | tr [a-zÃ¥Ã¦Ã¸] [A-ZÃ…Ã†Ã˜]
 # no words not containing a vowel
-LANGFILTER: | grep '[AEIOUYÅÆØ]' 
+LANGFILTER: | grep '[AEIOUYÃ…Ã†Ã˜]' 
 # none with illegal chars
-LANGFILTER: | grep '^[A-PR-VX-ZÅÆØ]\+$'
+LANGFILTER: | grep '^[A-PR-VX-ZÃ…Ã†Ã˜]\+$'
 # remove duplicates
 LANGFILTER: | sort -u
 
@@ -35,17 +35,17 @@ LANGFILTER: | sort -u
 D2DARGS: -r -term 10
 
 LANGINFO: <p>Danish uses all English letters except Q and W.  There
-LANGINFO: are three non-English letters: 'Å', 'Æ' and 'Ø'.  </p>
+LANGINFO: are three non-English letters: 'Ã…', 'Ã†' and 'Ã˜'.  </p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Danish==9.  Low byte is padding
 XLOC_HEADER:0x8900
 
-
-
 <BEGIN_TILES>
 2	0		{"_"}
 7  	1  	  	'A'
+2   4       'Ã…'
+2 	4 	    'Ã†'
 4 	3 	 	'B'
 2 	8 	 	'C'
 5 	2 	 	'D'
@@ -60,6 +60,7 @@ XLOC_HEADER:0x8900
 3 	3 	 	'M'
 6 	1 	 	'N'
 5 	2 	 	'O'
+2 	4 	    'Ã˜'
 2 	4 	 	'P'
 6 	1 	 	'R'
 5 	2 	 	'S'
@@ -69,11 +70,5 @@ XLOC_HEADER:0x8900
 1 	8 	 	'X'
 2 	4 	 	'Y'
 1 	8 	 	'Z'
-# These are the hard ones. O-with-slaththru, A-with-circle-over, and
-# AE ASCII for AE is 198, for O-with-slaththru is 216, and for
-# A-WITH-CIRCLE-OVER is 197.
-2   4       'Å'
-2 	4 	    'Æ'
-2 	4 	    'Ø'
 <END_TILES>
 # should ignore all after the <END_TILES> above
