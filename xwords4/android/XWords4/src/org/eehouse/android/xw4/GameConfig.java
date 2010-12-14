@@ -857,8 +857,6 @@ public class GameConfig extends XWActivity
             }
         }
 
-        m_gi.fixup();
-
         // position = m_connectSpinner.getSelectedItemPosition();
         // m_car.conType = m_types[ position ];
 

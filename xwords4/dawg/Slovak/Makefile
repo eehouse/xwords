@@ -29,7 +29,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Slovak/slovnik_scrabble.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | \
-		tr [aáäbcčdďeéfghiíjklĺľmnňoôóprŕsštťuúvxyýzž] [AÁÄBCČDĎEÉFGHIÍJKLĹĽMNŇOÔÓPRŔSŠTŤUÚVXYÝZŽ] | \
+		sed 's,.,\U\0,g' | \
 		grep '^[AÁÄBCČDĎEÉFGHIÍJKLĹĽMNŇOÔÓPRŔSŠTŤUÚVXYÝZŽ]*$$' | \
 		gzip -c > $@
 

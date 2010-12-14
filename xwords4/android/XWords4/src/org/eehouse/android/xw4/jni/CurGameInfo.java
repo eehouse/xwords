@@ -191,36 +191,6 @@ public class CurGameInfo {
         return !consistent;
     }
 
-    /**
-     * fixup: if we're pretending some players don't exist, move them
-     * up and make externally (i.e. in the jni world) visible fields
-     * consistent.
-     */
-    public void fixup()
-    {
-        // if ( m_nVisiblePlayers < nPlayers ) {
-        //     Assert.assertTrue( serverRole == DeviceRole.SERVER_ISCLIENT );
-            
-        //     for ( int ii = 0; ii < nPlayers; ++ii ) {
-        //         // Assert.assertTrue( m_visiblePlayers[ii] >= ii );
-        //         if ( m_visiblePlayers[ii] != ii ) {
-        //             LocalPlayer tmp = players[ii];
-        //             players[ii] = players[m_visiblePlayers[ii]];
-        //             players[m_visiblePlayers[ii]] = tmp;
-        //             m_visiblePlayers[ii] = ii;
-        //         }
-        //     }
-
-        //     nPlayers = m_nVisiblePlayers;
-        // }
-
-        // if ( !m_inProgress && serverRole != DeviceRole.SERVER_ISSERVER ) {
-        //     for ( int ii = 0; ii < nPlayers; ++ii ) {
-        //         players[ii].isLocal = true;
-        //     }
-        // }
-    }
-
     public String[] visibleNames( Context context )
     {
         String[] names = new String[nPlayers];

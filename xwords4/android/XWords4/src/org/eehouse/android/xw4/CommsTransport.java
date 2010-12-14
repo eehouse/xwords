@@ -100,6 +100,7 @@ public class CommsTransport implements TransportProcs {
         @Override
         public void run()
         {
+            boolean failed = true;
             try {   
                 if ( Build.PRODUCT.contains("sdk") ) {
                     System.setProperty("java.net.preferIPv6Addresses", "false");
@@ -107,7 +108,7 @@ public class CommsTransport implements TransportProcs {
 
                 m_selector = Selector.open();
 
-                loop();
+                failed = loop();
 
                 closeSocket();
             } catch ( java.io.IOException ioe ) {
@@ -117,11 +118,16 @@ public class CommsTransport implements TransportProcs {
                             m_addr.ip_relay_hostName, m_addr.ip_relay_port, 
                             uae.toString() );
             }
+
             m_thread = null;
+            if ( failed ) {
+                m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+            }
         }
 
-        private void loop()
+        private boolean loop()
         {
+            boolean failed = false;
             outer_loop:
             while ( !m_done ) {
                 try {
@@ -136,12 +142,14 @@ public class CommsTransport implements TransportProcs {
                                 Utils.logf( "connecting to %s:%d",
                                             m_addr.ip_relay_hostName, 
                                             m_addr.ip_relay_port );
-                                InetSocketAddress isa
-                                    = new InetSocketAddress( m_addr.ip_relay_hostName, 
-                                                             m_addr.ip_relay_port );
+                                InetSocketAddress isa = new 
+                                    InetSocketAddress(m_addr.ip_relay_hostName,
+                                                      m_addr.ip_relay_port );
                                 m_socketChannel.connect( isa );
                             } catch ( java.io.IOException ioe ) {
                                 Utils.logf( ioe.toString() );
+                                failed = true;
+                                break outer_loop;
                             }
                         }
 
@@ -154,7 +162,7 @@ public class CommsTransport implements TransportProcs {
                     m_selector.select();
                 } catch ( ClosedChannelException cce ) {
                     // we get this when relay goes down.  Need to notify!
-                    m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+                    failed = true;
                     closeSocket();
                     Utils.logf( "exiting: " + cce.toString() );
                     break;          // don't try again
@@ -162,6 +170,10 @@ public class CommsTransport implements TransportProcs {
                     closeSocket();
                     Utils.logf( "exiting: " + ioe.toString() );
                     Utils.logf( ioe.toString() );
+                } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
+                    Utils.logf( "%s", ncp.toString() );
+                    closeSocket();
+                    break;
                 }
 
                 Iterator<SelectionKey> iter = m_selector.selectedKeys().iterator();
@@ -196,12 +208,17 @@ public class CommsTransport implements TransportProcs {
                     } catch ( java.io.IOException ioe ) {
                         Utils.logf( "%s: cancelling key", ioe.toString() );
                         key.cancel(); 
+                        failed = true;
+                        break outer_loop;
+                    } catch ( java.nio.channels.
+                              NoConnectionPendingException ncp ) {
+                        Utils.logf( "%s", ncp.toString() );
                         break outer_loop;
                     }
                 }
             }
+            return failed;
         } // loop
-
     }
     
     public void setReceiver( JNIThread jnit )
