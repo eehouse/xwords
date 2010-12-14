@@ -29,7 +29,7 @@ SOURCEDICT ?= $(XWDICTPATH)/Czech/Czech.2-1-6.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | \
-		tr [aábcčdďeéěfghiíjklmnňoóprřsštťuúůvxyýzž] [AÁBCČDĎEÉĚFGHIÍJKLMNŇOÓPRŘSŠTŤUÚŮVXYÝZŽ] | \
+		sed 's,.,\U\0,g' | \
 		grep '^[AÁBCČDĎEÉĚFGHIÍJKLMNŇOÓPRŘSŠTŤUÚŮVXYÝZŽ]*$$' | \
 		gzip -c > $@
 
