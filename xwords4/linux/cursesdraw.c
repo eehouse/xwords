@@ -315,6 +315,7 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
                       CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    XP_Bool highlight = (flags & (CELL_HIGHLIGHT|CELL_ISCURSOR)) != 0;
     XP_UCHAR loc[4] = { ' ', ' ', ' ', '\0' };
     XP_ASSERT( rect->width < sizeof(loc) );
     if ( !!letter ) {
@@ -339,19 +340,15 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         } /* switch */
     }
 
-    if ( (flags&CELL_HIGHLIGHT) != 0 ) {
+    if ( highlight ) {
         wstandout( dctx->boardWin );
     }
 
     mvwaddnstr( dctx->boardWin, rect->top, rect->left, 
                 loc, rect->width );
 
-    if ( (flags&CELL_HIGHLIGHT) != 0 ) {
+    if ( highlight ) {
         wstandend( dctx->boardWin );
-    }
-
-    if ( (flags&CELL_ISCURSOR) != 0 ) {
-        cursesHiliteRect( dctx->boardWin, rect );
     }
 
     return XP_TRUE;
@@ -375,7 +372,7 @@ getTops( const XP_Rect* rect, int* toptop, int* topbot )
 
 static void
 curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect, 
-                     XP_UCHAR* letter, XP_UCHAR* val )
+                     const XP_UCHAR* letter, const XP_UCHAR* val )
 {
     eraseRect( dctx, rect );
 
@@ -384,7 +381,7 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
 
     if ( !!letter ) {
         mvwaddnstr( dctx->boardWin, toptop, rect->left+(rect->width/2),
-                    letter, strlen(letter) );
+                    letter, -1 );
     }
 
     if ( !!val ) {
@@ -400,14 +397,23 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
                       XP_U16 val, CellFlags flags )
 {
     char numbuf[5];
-    char letterbuf[5];
+    XP_UCHAR letterbuf[5];
     char* nump = NULL;
-    char* letterp = NULL;
+    XP_UCHAR* letterp = NULL;
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    XP_Bool highlight = (flags&(CELL_HIGHLIGHT|CELL_ISCURSOR)) != 0;
+
+    if ( highlight ) {
+        wstandout( dctx->boardWin );
+    }
 
     if ( (flags&CELL_ISEMPTY) == 0 ) {
-        letterbuf[0] = !!textP? *textP: '_'; /* BLANK or bitmap */
-        letterbuf[1] = '\0';
+        if ( !!textP ) {
+            snprintf( letterbuf, sizeof(letterbuf), "%s", textP );
+        } else {
+            letterbuf[0] = '_'; /* BLANK or bitmap */
+            letterbuf[1] = '\0';
+        }
         if ( (flags&CELL_VALHIDDEN) == 0  ) {
             sprintf( numbuf, "%.2d", val );
             if ( numbuf[0] == '0' ) {
@@ -424,8 +430,8 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
                     rect->left, "*-*", 3 );
     }
 
-    if ( (flags&CELL_ISCURSOR) != 0 ) {
-        cursesHiliteRect( dctx->boardWin, rect );
+    if ( highlight ) {
+        wstandend( dctx->boardWin );
     }
 } /* curses_draw_drawTile */
 
