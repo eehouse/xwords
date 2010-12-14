@@ -30,7 +30,8 @@ SOURCEDICT ?= $(XWDICTPATH)/German/HansGerman.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< \
-		| tr [a-zäöü] [A-ZÄÖÜ] \
+		| iconv -f iso88591 -t utf8 \
+		| sed 's,.,\U\0,g' \
 		| sed -e 's/ß/SS/g' \
 		| grep '^[A-ZÄÖÜ]*$$' \
 		| gzip -c > $@
