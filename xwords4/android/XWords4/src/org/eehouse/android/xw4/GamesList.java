@@ -192,8 +192,8 @@ public class GamesList extends XWListActivity
                 @Override
                 public void onClick( View v ) {
                     addGame( false );
-                    showNotAgainDlgThen( R.string.not_again_newgame, 
-                                         R.string.key_notagain_newgame, null );
+                    showNotAgainDlg( R.string.not_again_newgame, 
+                                     R.string.key_notagain_newgame );
                 }
             });
         newGameB = (Button)findViewById(R.id.new_game_net);
