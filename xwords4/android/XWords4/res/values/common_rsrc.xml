@@ -52,6 +52,7 @@
   <string name="key_notagain_conndall">key_notagain_conndall</string>
   <string name="key_notagain_conndfirst">key_notagain_conndfirst</string>
   <string name="key_notagain_conndmid">key_notagain_conndmid</string>
+  <string name="key_notagain_dicts">key_notagain_dicts</string>
 
   <string name="relayids_extra">org.eehouse.android.xw4.relayids_extra</string>
   

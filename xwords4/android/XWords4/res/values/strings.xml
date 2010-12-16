@@ -476,6 +476,13 @@
       game on the relay. You will be notified when the remaining
       device[s] have joined your room and play can begin.</string>
 
+    <string name="not_again_dicts">Crosswords dictionaries, which are
+      just compressed lists of words plus tile information, determine
+      what language a game is played in and how \"smart\" the robot is.
+      You can download different sized dictionaries in many languages
+      here.  Email me at eehouse@eehouse.org for information on building
+      and installing your own dictionaries.</string>
+
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>
 
