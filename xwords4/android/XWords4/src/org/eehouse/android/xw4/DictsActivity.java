@@ -86,6 +86,9 @@ public class DictsActivity extends XWListActivity
         download.setOnClickListener( this );
 
         mkListAdapter();
+
+        showNotAgainDlg( R.string.not_again_dicts, 
+                         R.string.key_notagain_dicts );
     }
 
     @Override
