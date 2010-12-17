@@ -1026,7 +1026,6 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
 
     public void engineStarting( int nBlanks )
     {
-        Utils.logf( "engineStarting(%d)", nBlanks );
         if ( nBlanks > 0 ) {
             m_handler.post( new Runnable() {
                     // Need to keep this from running after activity dies!!
@@ -1044,7 +1043,6 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
 
     public void engineStopping()
     {
-        Utils.logf( "engineStopping" );
         m_handler.post( new Runnable() {
                 public void run() {
                     if ( null != m_progress ) {
