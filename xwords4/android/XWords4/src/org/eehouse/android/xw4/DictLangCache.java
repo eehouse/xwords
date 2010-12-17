@@ -79,16 +79,38 @@ public class DictLangCache {
         return count;
     }
 
-    public static String[] getHaveLang( Context context, int code )
+    private static String[] getHaveLang( Context context, int code,
+                                         boolean withCounts )
     {
         ArrayList<String> al = new ArrayList<String>();
         String[] dicts = GameUtils.dictList( context );
+        String fmt = "%s (%d)"; // must match stripCount below
         for ( String dict : dicts ) {
-            if ( code == getLangCode( context, dict ) ) {
+            DictInfo info = getInfo( context, dict );
+            if ( code == info.langCode ) {
+                if ( withCounts ) {
+                    dict = String.format( fmt, dict, info.wordCount );
+                }
                 al.add( dict );
             }
         }
         return al.toArray( new String[al.size()] );
+    }
+
+    public static String[] getHaveLang( Context context, int code )
+    {
+        return getHaveLang( context, code, false );
+    }
+
+    public static String[] getHaveLangCounts( Context context, int code )
+    {
+        return getHaveLang( context, code, true );
+    }
+
+    public static String stripCount( String nameWithCount )
+    {
+        int indx = nameWithCount.lastIndexOf( " (" );
+        return nameWithCount.substring( 0, indx );
     }
 
     public static int getLangCode( Context context, String name )

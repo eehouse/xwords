@@ -105,7 +105,7 @@ public class GamesList extends XWListActivity
                 break;
             case SHOW_SUBST:
                 m_sameLangDicts = 
-                    DictLangCache.getHaveLang( this, m_missingDictLang );
+                    DictLangCache.getHaveLangCounts( this, m_missingDictLang );
                 ab = new AlertDialog.Builder( this )
                     .setTitle( R.string.subst_dict_title )
                     .setNegativeButton( R.string.button_cancel, null )
@@ -114,6 +114,7 @@ public class GamesList extends XWListActivity
                                    public void onClick( DialogInterface dlg,
                                                         int which ) {
                                        String dict = m_sameLangDicts[which];
+                                       dict = DictLangCache.stripCount( dict );
                                        GameUtils.replaceDict( GamesList.this,
                                                               m_missingDictPath,
                                                               dict );
