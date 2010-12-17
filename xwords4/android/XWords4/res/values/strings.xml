@@ -358,7 +358,7 @@
     dictionary %s...</string>
     <string name="no_dict_title">Dictionary not found</string>
     <string name="button_download">Download</string>
-    <string name="subst_dict_title">Substitute dictionary</string>
+    <string name="subst_dict_title">Substitute dictionary (wordcount)</string>
     <string name="button_substdict">Substitute</string>
 
     <string name="no_dictf">Unable to open game because dictionary %s
