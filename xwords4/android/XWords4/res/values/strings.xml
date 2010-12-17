@@ -502,4 +502,8 @@
     <string name="no_empty_rooms">This game cannot connect without a
       room name.</string>
 
+    <string name="empty_games_list">Use one of the buttons below to
+      create a game. Then tap the game to play or long-tap it for
+      other options.</string>
+
 </resources>

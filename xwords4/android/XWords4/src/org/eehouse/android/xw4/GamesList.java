@@ -179,13 +179,14 @@ public class GamesList extends XWListActivity
         m_handler = new Handler();
 
         setContentView(R.layout.game_list);
+        ListView listView = getListView();
+        listView.setEmptyView( findViewById( R.id.empty_games_list ) );
+        registerForContextMenu( listView );
 
         boolean isUpgrade = FirstRunDialog.show( this, false );
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, isUpgrade );
 
         // setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
-
-        registerForContextMenu( getListView() );
 
         Button newGameB = (Button)findViewById(R.id.new_game);
         newGameB.setOnClickListener( new View.OnClickListener() {
