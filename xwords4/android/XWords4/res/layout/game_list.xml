@@ -24,6 +24,7 @@
               android:layout_height="fill_parent"
               android:layout_width="fill_parent"
               android:text="@string/empty_games_list"
+              android:textAppearance="?android:attr/textAppearanceMedium"
               />
 
   </FrameLayout>
