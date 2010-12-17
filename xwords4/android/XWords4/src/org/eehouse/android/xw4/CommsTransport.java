@@ -384,7 +384,7 @@ public class CommsTransport implements TransportProcs {
     // TransportProcs interface
     public int transportSend( byte[] buf, final CommsAddrRec faddr )
     {
-        Utils.logf( "CommsTransport::transportSend(nbytes=%d)", buf.length );
+        //Utils.logf( "CommsTransport::transportSend(nbytes=%d)", buf.length );
         int nSent = -1;
 
         if ( null == m_addr ) {
