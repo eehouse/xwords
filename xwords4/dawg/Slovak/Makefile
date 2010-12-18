@@ -21,8 +21,6 @@ ENC = UTF-8
 
 TARGET_TYPE ?= WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/Slovak/slovnik_scrabble.dict.gz

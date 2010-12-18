@@ -21,8 +21,6 @@ DICT2DAWGARGS = -r
 
 TARGET_TYPE ?= WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/RU5000.txt.gz

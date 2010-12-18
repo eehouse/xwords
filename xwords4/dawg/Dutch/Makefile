@@ -21,8 +21,6 @@ ENC = ISO-8859-1
 
 TARGET_TYPE ?= WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/Dutch/Dutch__unofficial_alphabetical.dict.gz

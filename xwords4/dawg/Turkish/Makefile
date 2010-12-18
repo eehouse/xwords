@@ -24,8 +24,6 @@ DICT2DAWGARGS = -r -nosort
 
 TARGET_TYPE ?= WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 # Empty dict

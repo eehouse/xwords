@@ -24,8 +24,6 @@ NEWDAWG=whatever
 
 TARGET_TYPE ?= WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/Swedish/swedish15.utf8.gz

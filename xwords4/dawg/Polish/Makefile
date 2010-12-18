@@ -25,8 +25,6 @@ ENC = UTF-8
 
 TARGET_TYPE ?= WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/Polish/slowa-utf8.txt.gz

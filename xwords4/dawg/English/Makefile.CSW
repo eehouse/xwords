@@ -19,8 +19,6 @@ XWLANG=CSW
 LANGCODE=en_US
 TARGET_TYPE=WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/English/CSW.dict.gz

@@ -20,8 +20,6 @@ LANGCODE=fr_FR
 
 TARGET_TYPE ?= PALM
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 $(XWLANG)Main.dict.gz: $(XWDICTPATH)/French/ods4c.txt.gz

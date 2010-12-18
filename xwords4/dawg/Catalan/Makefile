@@ -37,8 +37,6 @@ LANG_SPECIAL_INFO = \
 		"NY" $(PBITMS)/large_ny.pbitm $(PBITMS)/small_ny.pbitm \
 		"QU" $(PBITMS)/large_qu.pbitm $(PBITMS)/small_qu.pbitm \
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/Catalan/DANOSC.txt.gz

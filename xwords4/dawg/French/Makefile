@@ -20,8 +20,6 @@ LANGCODE=fr_FR
 
 TARGET_TYPE ?= FRANK
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 $(XWLANG)Main.dict.gz: ods3.txt.gz

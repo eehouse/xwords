@@ -22,8 +22,6 @@ ENC = UTF-8
 
 TARGET_TYPE = WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 # Pass in your own dict here by setting DICT

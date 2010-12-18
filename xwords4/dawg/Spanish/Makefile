@@ -37,8 +37,6 @@ LANG_SPECIAL_INFO = \
 		"LL" $(PBITMS)/large_ll.pbitm $(PBITMS)/small_ll.pbitm \
 		"RR" $(PBITMS)/large_rr.pbitm $(PBITMS)/small_rr.pbitm \
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 #$(LANG)Main.dict.gz: SpanishMain.dict.gz

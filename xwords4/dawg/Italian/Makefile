@@ -20,8 +20,6 @@ LANGCODE=it_IT
 
 TARGET_TYPE ?= WINCE
 
-include ../Makefile.2to8
-
 include ../Makefile.langcommon
 
 $(XWLANG)Main.dict.gz: $(XWDICTPATH)/Italian/ITALIANO.txt.gz
