@@ -336,7 +336,7 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 {
     jboolean result = XP_FALSE;
     UTIL_CBK_HEADER("warnIllegalWord", "([Ljava/lang/String;IZ)Z" );
-
+    XP_ASSERT( bwi->nWords > 0 );
     jobjectArray jwords = makeStringArray( env, bwi->nWords, 
                                            (const XP_UCHAR**)bwi->words );
     result = (*env)->CallBooleanMethod( env, util->jutil, mid,
