@@ -1,0 +1,55 @@
+# Copyright 2010 by Eric House (xwords@eehouse.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+CHARSET: utf-8
+LANGCODE:ar_AR
+XLOC_HEADER:0x8500
+
+<BEGIN_TILES>
+2           8       'ﺀ'
+2          10       'ﺃ'
+8           1       'ﺍ'
+4           2       'ﺏ'
+4           2       'ﺕ'
+3           2       'ﺙ'
+4           1       'ﺝ'
+3           1       'ﺡ'
+3           1       'ﺥ'
+3           2       'ﺩ'
+3           3       'ﺫ'
+3           2       'ﺭ'
+3           3       'ﺯ'
+3           2       'ﺱ'
+3           3       'ﺵ'
+3           4       'ﺹ' 
+3           4       'ﺽ'
+2           4       'ﻁ'
+2           5       'ﻅ'
+3           4       'ﻉ'
+2           8       'ﻍ'
+3           3       'ﻑ'
+3           3       'ﻕ'
+3           4       'ﻙ'
+4           1       'ﻝ'
+3           1       'ﻡ'
+3           1       'ﻥ'
+3           1       'ﻩ'
+2          10       'ﺅ'
+3           1       'ﻭ'
+3           1       'ﻯ'
+2           6       'ﺉ'
+2           0      {"_"}
+<END_TILES>
