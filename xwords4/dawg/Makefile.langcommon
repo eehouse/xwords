@@ -184,7 +184,7 @@ ifeq ($(TARGET_TYPE),WINCE)
 ### WINCE section here ###
 all: $(XWLANG)2to8.xwd $(XWLANG)2to9.xwd $(XWLANG)2to15.xwd
 	../mkxwdcab.pl -f $<
-
+empty: $(XWLANG)0to0.xwd
 else
 	(Need to define TARGET_TYPE if get error pointing to this line)
 endif				#ifeq ($(TARGET_TYPE),FRANK)
