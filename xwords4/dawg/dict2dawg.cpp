@@ -572,7 +572,9 @@ readOneWord( Letter* wordBuf, const int bufLen, int* lenp, bool* gotEOF )
 #endif
                 result = wordBuf;
                 *lenp = count;
-                ++gWordCount;
+                if ( count > 0 ) {
+                    ++gWordCount;
+                }
                 break;
             } else if ( isEOF ) {
                 assert( !result );
