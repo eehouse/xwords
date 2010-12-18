@@ -286,7 +286,7 @@ $(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin
 
 # clean this up....
 ../dict2dawg: ../dict2dawg.cpp
-	cd ../ && g++ -DDEBUG -O0 -g -Wall -o dict2dawg dict2dawg.cpp
+	g++ -DDEBUG -O0 -g -Wall -o $@ $<
 
 clean_common:
 	rm -f $(XWLANG)Main.dict *.bin *.pdb *.seb dawg*.stamp *.$(FRANK_EXT) \
