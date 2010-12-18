@@ -1,0 +1,55 @@
+# Copyright 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:tr_TR
+CHARSET: utf-8
+
+LANGINFO: <p>Turkish is untested with actual wordlists!</p>
+
+XLOC_HEADER:0x8400
+
+<BEGIN_TILES>
+2           0      {"_"}
+12          1       'A' 
+2           3       'B'
+2           4       'C'
+2           4       'Ç' 
+2           3       'D'
+8           1       'E'
+1           7       'F'
+1           5       'G'
+1           8       'Ğ'
+1           5       'H'
+4           2       'I'
+7           1       'İ'
+1           10      'J'
+7           1       'K'
+7           1       'L'
+4           2       'M'
+5           1       'N'
+3           2       'O'
+1           7       'Ö'
+1           5       'P'
+6           1       'R'
+3           2       'S'
+2           4       'Ş'
+5           1       'T'
+3           2       'U'
+2           3       'Ü'
+1           7       'V'
+2           3       'Y'
+2           4       'Z'
+<END_TILES>
