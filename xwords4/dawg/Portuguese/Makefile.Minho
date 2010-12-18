@@ -1,4 +1,4 @@
-# -*- mode: makefile; coding: iso-8859-1 -*-
+# -*- mode: makefile; coding: utf-8 -*-
 #
 # Copyright 2002, 2006 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
@@ -19,7 +19,7 @@
 
 XWLANG=PortuguesePT
 LANGCODE = pt_PT
-ENC = ISO-8859-1
+ENC = UTF-8
 
 TARGET_TYPE ?= WINCE
 
@@ -30,8 +30,10 @@ include ../Makefile.langcommon
 SOURCEDICT ?= $(XWDICTPATH)/Portuguese/portuguese_pt.bz2
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile.Minho
-	bzcat $< | tr [a-zç] [A-ZÇ] | \
-		LANG=$(LANGCODE):$(ENC) grep '^[A-JL-VXZÇ]\+$$' | \
+	bzcat $< | \
+		iconv -f iso88591 -t utf8 | \
+		sed 's,.,\U\0,g' | \
+		grep '^[ABCÃ‡DEFGHIJLMNOPQRSTUVXZ]\+$$' | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the

@@ -15,15 +15,16 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 LANGCODE:pt_PT
+CHARSET: utf-8
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
 # uppercase all
-LANGFILTER: | tr [a-zç] [A-ZÇ]
+LANGFILTER: | tr [a-zÃ§] [A-ZÃ‡]
 # no words not containing a vowel
 LANGFILTER: | grep '[AEIOU]' 
 # none with illegal chars
-LANGFILTER: | grep '^[A-JL-VXZÇ]\+$'
+LANGFILTER: | grep '^[A-JL-VXZÃ‡]\+$'
 
 # Until I can figure out how to force sort to use a locale's collation
 # rules we can't trust sort in the filtering rules above and so must
@@ -31,8 +32,8 @@ LANGFILTER: | grep '^[A-JL-VXZÇ]\+$'
 D2DARGS: -r -term 10
 
 
-LANGINFO: <p>Portugese uses the letter A-Z, excluding K, W and Y, and adds
-LANGINFO: Ç.  Words containing any other letters are dropped. </p>
+LANGINFO: <p>Portuguese uses the letter A-Z, excluding K, W and Y, and adds
+LANGINFO: Ã‡.  Words containing any other letters are dropped. </p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Portuguese==D.  Low byte is padding
@@ -44,7 +45,7 @@ XLOC_HEADER:0x8D00
 14          1       'A'
 3           3       'B'
 4           2       'C'
-2           3       'Ç'
+2           3       'Ã‡'
 5           2       'D'
 11          1       'E'
 2           4       'F'
