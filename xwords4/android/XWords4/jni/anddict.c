@@ -320,7 +320,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
         andLoadSpecialData( ctxt, &ptr );
 
         dictLength -= ptr - (XP_U8*)mappedBase;
-        if ( dictLength > sizeof(XP_U32) ) {
+        if ( dictLength >= sizeof(offset) ) {
             offset = n_ptr_tohl( &ptr );
             dictLength -= sizeof(offset);
 #ifdef NODE_CAN_4
