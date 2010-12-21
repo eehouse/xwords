@@ -35,8 +35,9 @@ declare -A CMDS
 declare -A FILES
 declare -A LOGS
 
+PLAT_PARMS=""
 if [ $USE_GTK = FALSE ]; then
-    PLAT_PARMS="-u -0"
+    PLAT_PARMS="--curses --close-stdin"
 fi
 
 usage() {
@@ -91,19 +92,22 @@ build_cmds() {
         NDEVS=$(($RANDOM%3+2))
         DICT=${DICTS_ARR[$((GAME%${#DICTS_ARR[*]}))]}
         # make one in three games public
-        [ $((RANDOM%3)) -eq 0 ] && PUBLIC="-A -R" || PUBLIC=""
+        PUBLIC=""
+        [ $((RANDOM%3)) -eq 0 ] && PUBLIC="--make-public --join-public"
 
         OTHERS=""
         for II in $(seq 2 $NDEVS); do
-            OTHERS="-N $OTHERS"
+            OTHERS="--remote-player $OTHERS"
         done
 
         for DEV in $(seq $NDEVS); do
             FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             touch $LOG          # so greps won't show errors
-            CMD="./obj_linux_memdbg/xwords -C $ROOM -r ${NAMES[$DEV]} $OTHERS"
-            CMD="$CMD -d $DICT -p $PORT -a $HOST -f $FILE -z 1:3 $PLAT_PARMS"
+            CMD="./obj_linux_memdbg/xwords --room $ROOM"
+            CMD="$CMD --robot-name ${NAMES[$DEV]} $OTHERS"
+            CMD="$CMD --dict=$DICT --port=$PORT --host=$HOST --file=$FILE "
+            CMD="$CMD --slow-robot 1:3 $PLAT_PARMS"
             CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
             FILES[$COUNTER]=$FILE
