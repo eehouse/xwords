@@ -19,6 +19,7 @@
  */
 #include <stdio.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <locale.h>
@@ -184,106 +185,159 @@ strFromStream( XWStreamCtxt* stream )
     return buf;
 } /* strFromStream */
 
+typedef enum {
+    CMD_SKIP_GAMEOVER
+    ,CMD_SHOW_OTHERSCORES
+    ,CMD_HOSTIP
+    ,CMD_DICT
+    ,CMD_SEED
+    ,CMD_GAMEFILE
+    ,CMD_PRINTHISORY
+    ,CMD_SKIPWARNINGS
+    ,CMD_LOCALPWD
+    ,CMD_ROBOTSANDBAGS		/* dumb robot */
+    ,CMD_DUPPACKETS
+    ,CMD_NOHINTS
+    ,CMD_PICKTILESFACEUP
+    ,CMD_PLAYERNAME
+    ,CMD_REMOTEPLAYER
+    ,CMD_PORT
+    ,CMD_ROBOTNAME
+    ,CMD_SORTNEW
+    ,CMD_ISSERVER
+    ,CMD_SLEEPONANCHOR
+    ,CMD_TIMERMINUTES
+    ,CMD_UNDOWHENDONE
+    ,CMD_NOHEARTBEAT
+    ,CMD_HOSTNAME
+    ,CMD_CLOSESTDIN
+    ,CMD_QUITAFTER
+    ,CMD_BOARDSIZE
+    ,CMD_HIDEVALUES
+    ,CMD_SKIPCONFIRM
+    ,CMD_VERTICALSCORE
+#ifdef XWFEATURE_SEARCHLIMIT
+    ,CMD_HINTRECT
+#endif
+#ifdef XWFEATURE_SMS
+    ,CMD_SMSNUMBER		/* SMS phone number */
+#endif
+#ifdef XWFEATURE_RELAY
+    ,CMD_ROOMNAME
+    ,CMD_ADVERTISEROOM
+    ,CMD_JOINADVERTISED
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+    ,CMD_BTADDR
+#endif
+#ifdef XWFEATURE_SLOW_ROBOT
+    ,CMD_SLOWROBOT
+#endif
+#if defined PLATFORM_GTK && defined PLATFORM_NCURSES
+    ,CMD_GTK
+    ,CMD_CURSES
+#endif
+#if defined PLATFORM_GTK
+    ,CMD_ASKNEWGAME
+    ,CMD_NHIDDENROWS
+#endif
+    ,N_CMDS
+} XwLinuxCmd;
+
+typedef struct _CmdInfoRec {
+    XwLinuxCmd cmd;
+    bool hasArg;
+    const char* param;
+    const char* hint;
+} CmdInfoRec;
+
+static CmdInfoRec CmdInfoRecs[] = {
+    { CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
+    ,{ CMD_SHOW_OTHERSCORES, "false", "show-other", 
+       "show robot and remote scores" }
+    ,{ CMD_HOSTIP, true, "hostip", "remote host ip address (for direct connect)" }
+    ,{ CMD_DICT, true, "dict", "dictionary name" }
+    ,{ CMD_SEED, true, "seed", "random seed" }
+    ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
+    ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
+    ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
+    ,{ CMD_LOCALPWD, true, "password", "password for user (in sequence)" }
+    ,{ CMD_ROBOTSANDBAGS, false, "dumb-robot", "robot keeps score close" }
+    ,{ CMD_DUPPACKETS, false, "dup-packets", "send two of each to test dropping" }
+    ,{ CMD_NOHINTS, false, "no-hints", "disallow hints" }
+    ,{ CMD_PICKTILESFACEUP, false, "pick-face-up", "allow to pick tiles" }
+    ,{ CMD_PLAYERNAME, true, "name", "name of local, non-robot player" }
+    ,{ CMD_REMOTEPLAYER, false, "remote-player", "add an expected player" }
+    ,{ CMD_PORT, true, "port", "port to connect to on host" }
+    ,{ CMD_ROBOTNAME, true, "robot-name", "name of local, robot player" }
+    ,{ CMD_SORTNEW, false, "sort-tiles", "sort tiles each time assigned" }
+    ,{ CMD_ISSERVER, false, "server", "this device acting as host" }
+    ,{ CMD_SLEEPONANCHOR, false, "slow-robot", "slow down hint progress" }
+    ,{ CMD_TIMERMINUTES, true, "timer-minutes", "initial timer setting" }
+    ,{ CMD_UNDOWHENDONE, false, "undo-after", "undo the game after finishing" }
+    ,{ CMD_NOHEARTBEAT, false, "no-heartbeat", "don't send heartbeats" }
+    ,{ CMD_HOSTNAME, true, "host", "name of remote host" }
+    ,{ CMD_CLOSESTDIN, false, "close-stdin", "close stdin on start" }
+    ,{ CMD_QUITAFTER, true, "quit-after", "exit <n> seconds after game's done" }
+    ,{ CMD_BOARDSIZE, true, "board-size", "board is <n> by <n> cells" }
+    ,{ CMD_HIDEVALUES, false, "hide-values", "show letters, not nums, on tiles" }
+    ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
+    ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
+#ifdef XWFEATURE_SEARCHLIMIT
+    ,{ CMD_HINTRECT, false, "hintrect", "enable draggable hint-limits rect" }
+#endif
+#ifdef XWFEATURE_SMS
+    ,{ CMD_SMSNUMBER, true, "sms-number", "phone number of host for sms game" }
+#endif
+#ifdef XWFEATURE_RELAY
+    ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
+    ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
+    ,{ CMD_JOINADVERTISED, false, "join-public", "look for a public room" }
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+    ,{ CMD_BTADDR, true, "btaddr", "bluetooth address of host" }
+#endif
+#ifdef XWFEATURE_SLOW_ROBOT
+    ,{ CMD_SLOWROBOT, false, "slow-robot", "make robot slower" }
+#endif
+#if defined PLATFORM_GTK && defined PLATFORM_NCURSES
+    ,{ CMD_GTK, false, "gtk", "use GTK for display" }
+    ,{ CMD_CURSES, false, "curses", "use curses for display" }
+#endif
+#if defined PLATFORM_GTK
+    ,{ CMD_ASKNEWGAME, false, "ask-new", "put up ui for new game params" }
+    ,{ CMD_NHIDDENROWS, true, "hide-rows", "number of rows obscured by tray" }
+#endif
+};
+
+static struct option* 
+make_longopts()
+{
+    int count = VSIZE( CmdInfoRecs );
+    struct option* result = calloc( count+1, sizeof(*result) );
+    int ii;
+    for ( ii = 0; ii < count; ++ii ) {
+        result[ii].name = CmdInfoRecs[ii].param;
+        result[ii].has_arg = CmdInfoRecs[ii].hasArg;
+        XP_ASSERT( ii == CmdInfoRecs[ii].cmd );
+        result[ii].val = ii;
+    }
+    return result;
+}
 
 static void
 usage( char* appName, char* msg )
 {
+    int ii;
     if ( msg != NULL ) {
         fprintf( stderr, "Error: %s\n\n", msg );
     }
-    fprintf( stderr, "usage: %s \n"
-#if defined PLATFORM_GTK && defined PLATFORM_NCURSES
-	     "\t [-g]             # gtk (default)\n"
-	     "\t [-u]             # ncurses (for dumb terminal)\n"
-#endif
-#if defined PLATFORM_GTK
-	     "\t [-k]             # ask for parameters via \"new games\" dlg\n"
-	     "\t [-h numRowsHidden] \n"
-# ifdef XWFEATURE_SEARCHLIMIT
-	     "\t [-I]             # support hint rect dragging\n"
-# endif
-#endif
-	     "\t [-f file]        # use this file to save/load game\n"
-	     "\t [-q nSecs]       # quit with pause when game over (useful for robot-only)\n"
-	     "\t [-0]             # close fd 0 (stdin) on start; assumes -q\n"
-	     "\t [-S]             # slow robot down \n"
-	     "\t [-i]             # print game history when game over\n"
-	     "\t [-U]             # call 'Undo' after game ends\n"
-	     "\t [-O]             # sort the tray each time tiles are added\n"
-#ifdef XWFEATURE_RELAY
-	     "\t [-H]             # Don't send heartbeats to relay\n"
-         "\t [-A]             # advertise room as public\n"
-         "\t [-R]             # connect to a public room\n"
-#endif
-#ifdef XWFEATURE_SMS
-	     "\t [-M phone]       # Server phone number for SMS\n"
-#endif
-	     "\t [-r name]*       # same-process robot\n"
-	     "\t [-n name]*       # same-process player (no network used)\n"
-	     "\t [-w pwd]*        # passwd for matching local player\n"
-	     "\t [-v]             # put scoreboard in vertical mode\n"
-	     "\t [-V]             # hide values in tray\n"
-	     "\t [-m]             # make the robot duMb (smart is default)\n"
-	     "\t [-l]             # disallow hints\n"
-	     "\t [-L]             # duplicate all packets sent\n"
-	     "\t [-P]             # pick tiles face up\n"
-	     "\t [-F]             # ask for turn confirmation\n"
-	     "\t [-o]             # skip (modal) gameOver notification\n"
-	     "\t [-c]             # explain robot scores after each move\n"
-	     "\t [-C INVITE]      # invite used to groups games on relay\n"
-	     "\t\t # (max of four players total, local and remote)\n"
-	     "\t [-b boardSize]   # number of columns and rows\n"
-	     "\t [-e random_seed] \n"
-	     "\t [-t initial_minutes_on_timer] \n"
-	     "# --------------- choose client or server ----------\n"
-	     "\t -s               # be the server\n"
-	     "\t -d xwd_file      # provides tile counts & values\n"
-	     "\t\t # list each player as local or remote\n"
-	     "\t [-N]*            # remote client (listen for connection)\n"
-#ifdef XWFEATURE_SLOW_ROBOT
-	     "\t [-z min:max]     # robot sleeps random min<=seconds<=max \n"
-#endif
-         "\t                  #     before turn \n"
-#ifdef XWFEATURE_RELAY
-	     "\t [-p relay_port]  # relay is at this port\n"
-	     "\t [-a relay_addr]  # use relay (via port spec'd above)\n"
-	     ""                   " (default localhost)\n"
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-	     "\t [-B n:name|a:00:11:22:33:44:55]\n"
-             "\t\t\t# connect via bluetooth [param ignored if -s]\n"
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-         "\t [-D host_addr]\t\t\tConnect directly to host [param ignored if -s]\n"
-	     "\t [-p host_port]  # put/look for host on this port\n"
-#endif
-
-/* 	     "# --------------- OR client-only ----------\n" */
-/* 	     "\t [-p client_port] # must != server's port if on same device" */
-#ifdef XWFEATURE_RELAY
-         "\nrelay example: \n"
-             "\t host: ./xwords -d dict.xwd -r Eric -s -N -a localhost -p 10999 -C INVITE\n"
-             "\tguest: ./xwords -d dict.xwd -r Kati -a localhost -p 10999 -C INVITE"
-#endif
-#ifdef XWFEATURE_SMS
-         "\nsms example: \n"
-             "\t host: ./xwords -d dict.xwd -r Eric -s -N -M 123-456-7890\n"
-             "\tguest: ./xwords -d dict.xwd -r Kati -M 123-456-7890"
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-         "\nBluetooth example: \n"
-             "\t host: ./xwords -d dict.xwd -r Eric -s -N -B ignored\n"
-             "\tguest: ./xwords -d dict.xwd -r Kati -B n:treo_bt_name (OR b:11:22:33:44:55:66)"
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-         "\nDirect example: \n"
-             "\t host: ./xwords -d dict.xwd -r Eric -s -N -N -D localhost -p 10999\n"
-             "\tguest: ./xwords -d dict.xwd -r Kati -D localhost -p 10999\n"
-             "\tguest: ./xwords -d dict.xwd -r Ariynn -D localhost -p 10999"
-#endif
-
-             "\n"
-	     , appName );
+    fprintf( stderr, "usage: %s \n", appName );
+    for ( ii = 0; ii < VSIZE(CmdInfoRecs); ++ii ) {
+        const CmdInfoRec* rec = &CmdInfoRecs[ii];
+        fprintf( stderr, "    --%s %s # %s\n", rec->param,
+                 rec->hasArg? "<param>" : "", rec->hint );
+    }
     fprintf( stderr, "\n(revision: %s)\n", SVN_REV);
     exit(1);
 } /* usage */
@@ -828,104 +882,81 @@ main( int argc, char** argv )
     useCurses = XP_TRUE;
 #endif
 
-    do {
+    struct option* longopts = make_longopts();
+
+    bool done = false;
+    while ( !done ) {
         short index;
-        opt = getopt( argc, argv, "?"
-#if defined PLATFORM_GTK && defined PLATFORM_NCURSES
-                      "gu"
-#endif
-#if defined PLATFORM_GTK
-                      "h:I"
-#endif
-                      "0b:cod:e:Ff:iKkLlmNn:OPr:Ssq:t:Uw:v"
-#ifdef XWFEATURE_SLOW_ROBOT
-                      "z:"
-#endif
-#ifdef XWFEATURE_SMS
-                      "M:"
-#endif
-#ifdef XWFEATURE_RELAY
-                      "a:p:C:HAR"
-#endif
-#if defined XWFEATURE_RELAY || defined XWFEATURE_IP_DIRECT
-                      "p:"
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-                      "B:" 
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-                      "D:" 
-#endif
-                      );
-        switch( opt ) {
+        opt = getopt_long_only( argc, argv, "", longopts, NULL );
+        switch ( opt ) {
         case '?':
             usage(argv[0], NULL);
             break;
-        case 'o':
+        case CMD_SKIP_GAMEOVER:
             mainParams.skipGameOver = XP_TRUE;
             break;
-        case 'c':
+        case CMD_SHOW_OTHERSCORES:
             mainParams.showRobotScores = XP_TRUE;
             break;
 #ifdef XWFEATURE_RELAY
-        case 'C':
+        case CMD_ROOMNAME:
             XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_RELAY );
             mainParams.connInfo.relay.invite = optarg;
             conType = COMMS_CONN_RELAY;
             break;
 #endif
-        case 'D':
+        case CMD_HOSTIP:
             XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_IP_DIRECT );
             hostName = optarg;
             conType = COMMS_CONN_IP_DIRECT;
             break;
-        case 'd':
+        case CMD_DICT:
             mainParams.gi.dictName = copyString( mainParams.util->mpool,
                                                  (XP_UCHAR*)optarg );
             break;
-        case 'e':
+        case CMD_SEED:
             seed = atoi(optarg);
             break;
-        case 'f':
+        case CMD_GAMEFILE:
             mainParams.fileName = optarg;
             break;
-        case 'i':
+        case CMD_PRINTHISORY:
             mainParams.printHistory = 1;
             break;
 #ifdef XWFEATURE_SEARCHLIMIT
-        case 'I':
+        case CMD_HINTRECT:
             mainParams.allowHintRect = XP_TRUE;
             break;
 #endif
-        case 'K':
+        case CMD_SKIPWARNINGS:
             mainParams.skipWarnings = 1;
             break;
-        case 'w':
+        case CMD_LOCALPWD:
             mainParams.gi.players[mainParams.nLocalPlayers-1].password
                 = (XP_UCHAR*)optarg;
             break;
 #ifdef XWFEATURE_SMS
-        case 'M':		/* SMS phone number */
+        case CMD_SMSNUMBER:		/* SMS phone number */
             XP_ASSERT( COMMS_CONN_NONE == conType );
             serverPhone = optarg;
             conType = COMMS_CONN_SMS;
             break;
 #endif
-        case 'm':		/* dumb robot */
+        case CMD_ROBOTSANDBAGS:		/* dumb robot */
             mainParams.gi.robotSmartness = DUMB_ROBOT;
             break;
-        case 'L':
+        case CMD_DUPPACKETS:
             mainParams.duplicatePackets = XP_TRUE;
             break;
-        case 'l':
+        case CMD_NOHINTS:
             mainParams.gi.hintsNotAllowed = XP_TRUE;
             break;
-        case 'P':
+        case CMD_PICKTILESFACEUP:
             mainParams.gi.allowPickTiles = XP_TRUE;
             break;
-        case 'n':
+        case CMD_PLAYERNAME:
             index = mainParams.gi.nPlayers++;
             ++mainParams.nLocalPlayers;
             mainParams.gi.players[index].isRobot = XP_FALSE;
@@ -933,16 +964,16 @@ main( int argc, char** argv )
             mainParams.gi.players[index].name = 
                 copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
             break;
-        case 'N':
+        case CMD_REMOTEPLAYER:
             index = mainParams.gi.nPlayers++;
             mainParams.gi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
-        case 'p':
+        case CMD_PORT:
             /* could be RELAY or IP_DIRECT or SMS */
             portNum = optarg;
             break;
-        case 'r':
+        case CMD_ROBOTNAME:
             ++robotCount;
             index = mainParams.gi.nPlayers++;
             ++mainParams.nLocalPlayers;
@@ -951,27 +982,27 @@ main( int argc, char** argv )
             mainParams.gi.players[index].name = 
                 copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
             break;
-        case 'O':
+        case CMD_SORTNEW:
             mainParams.sortNewTiles = XP_TRUE;
             break;
-        case 's':
+        case CMD_ISSERVER:
             isServer = XP_TRUE;
             break;
-        case 'S':
+        case CMD_SLEEPONANCHOR:
             mainParams.sleepOnAnchor = XP_TRUE;
             break;
-        case 't':
+        case CMD_TIMERMINUTES:
             mainParams.gi.gameSeconds = atoi(optarg) * 60;
             mainParams.gi.timerEnabled = XP_TRUE;
             break;
-        case 'U':
+        case CMD_UNDOWHENDONE:
             mainParams.undoWhenDone = XP_TRUE;
             break;
-        case 'H':
+        case CMD_NOHEARTBEAT:
             mainParams.noHeartbeat = XP_TRUE;
             XP_ASSERT(0);    /* not implemented!!!  Needs to talk to comms... */
             break;
-        case 'a':
+        case CMD_HOSTNAME:
             /* mainParams.info.clientInfo.serverName =  */
             XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_RELAY );
@@ -979,66 +1010,69 @@ main( int argc, char** argv )
             hostName = optarg;
             break;
 #ifdef XWFEATURE_RELAY
-        case 'A':
+        case CMD_ADVERTISEROOM:
             mainParams.connInfo.relay.advertiseRoom = true;
             break;
-        case 'R':
+        case CMD_JOINADVERTISED:
             mainParams.connInfo.relay.seeksPublicRoom = true;
             break;
 #endif
-        case '0':
+        case CMD_CLOSESTDIN:
             closeStdin = XP_TRUE;
             break;
-        case 'q':
+        case CMD_QUITAFTER:
             mainParams.quitAfter = atoi(optarg);
             break;
-        case 'b':
+        case CMD_BOARDSIZE:
             mainParams.gi.boardSize = atoi(optarg);
             break;
 #ifdef XWFEATURE_BLUETOOTH
-        case 'B':
+        case CMD_BTADDR:
             XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_BT );
             conType = COMMS_CONN_BT;
             btaddr = optarg;
             break;
 #endif
-        case 'V':
+        case CMD_HIDEVALUES:
             mainParams.hideValues = XP_TRUE;
             break;
-        case 'F':
+        case CMD_SKIPCONFIRM:
             mainParams.skipCommitConfirm = XP_FALSE;
             break;
-        case 'v':
+        case CMD_VERTICALSCORE:
             mainParams.verticalScore = XP_TRUE;
             break;
 #ifdef XWFEATURE_SLOW_ROBOT
-        case 'z':
+        case CMD_SLOWROBOT:
             if ( !parsePair( optarg, &mainParams.robotThinkMin,
                               &mainParams.robotThinkMax ) ) {
-                usage(argv[0], "bad param to -z" );
+                usage(argv[0], "bad param" );
             }
             break;
 #endif
 
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
-        case 'g':
+        case CMD_GTK:
             useCurses = XP_FALSE;
             break;
-        case 'u':
+        case CMD_CURSES:
             useCurses = XP_TRUE;
             break;
 #endif
 #if defined PLATFORM_GTK
-        case 'k':
+        case CMD_ASKNEWGAME:
             mainParams.askNewGame = XP_TRUE;
             break;
-        case 'h':
+        case CMD_NHIDDENROWS:
             mainParams.nHidden = atoi(optarg);
             break;
 #endif
+        default:
+            done = true;
+            break;
         }
-    } while ( opt != -1 );
+    }
 
     XP_ASSERT( mainParams.gi.nPlayers == mainParams.nLocalPlayers
                + mainParams.info.serverInfo.nRemotePlayers );
