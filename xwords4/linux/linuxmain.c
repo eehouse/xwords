@@ -272,7 +272,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_ROBOTNAME, true, "robot-name", "name of local, robot player" }
     ,{ CMD_SORTNEW, false, "sort-tiles", "sort tiles each time assigned" }
     ,{ CMD_ISSERVER, false, "server", "this device acting as host" }
-    ,{ CMD_SLEEPONANCHOR, false, "slow-robot", "slow down hint progress" }
+    ,{ CMD_SLEEPONANCHOR, false, "sleep-on-anchor", "slow down hint progress" }
     ,{ CMD_TIMERMINUTES, true, "timer-minutes", "initial timer setting" }
     ,{ CMD_UNDOWHENDONE, false, "undo-after", "undo the game after finishing" }
     ,{ CMD_NOHEARTBEAT, false, "no-heartbeat", "don't send heartbeats" }
@@ -298,7 +298,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_BTADDR, true, "btaddr", "bluetooth address of host" }
 #endif
 #ifdef XWFEATURE_SLOW_ROBOT
-    ,{ CMD_SLOWROBOT, false, "slow-robot", "make robot slower" }
+    ,{ CMD_SLOWROBOT, true, "slow-robot", "make robot slower to test network" }
 #endif
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,{ CMD_GTK, false, "gtk", "use GTK for display" }
@@ -335,7 +335,7 @@ usage( char* appName, char* msg )
     fprintf( stderr, "usage: %s \n", appName );
     for ( ii = 0; ii < VSIZE(CmdInfoRecs); ++ii ) {
         const CmdInfoRec* rec = &CmdInfoRecs[ii];
-        fprintf( stderr, "    --%s %s # %s\n", rec->param,
+        fprintf( stderr, "    --%s %-20s # %s\n", rec->param,
                  rec->hasArg? "<param>" : "", rec->hint );
     }
     fprintf( stderr, "\n(revision: %s)\n", SVN_REV);
