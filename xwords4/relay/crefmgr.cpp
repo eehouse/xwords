@@ -174,7 +174,6 @@ CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
         info.m_connName = cref->ConnName();
         info.m_cookieID = cref->GetCookieID();
         info.m_curState = cref->CurState();
-        info.m_totalSent = cref->GetTotalSent();
         info.m_nPlayersSought = cref->GetPlayersSought();
         info.m_nPlayersHere = cref->GetPlayersHere();
         info.m_startTime = cref->GetStarttime();

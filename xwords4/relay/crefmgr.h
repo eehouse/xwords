@@ -50,7 +50,6 @@ class CrefInfo {
     string m_cookie;
     string m_connName;
     CookieID m_cookieID;
-    int m_totalSent;
     int m_nPlayersSought;
     int m_nPlayersHere;
     XW_RELAY_STATE m_curState;
@@ -326,14 +325,6 @@ class SafeCref {
             return m_cref->GetCookieID();
         } else {
             return 0;          /* so don't crash.... */
-        }
-    }
-
-    int GetTotalSent() { 
-        if ( IsValid() ) {
-            return m_cref->GetTotalSent();
-        } else {
-            return -1;          /* so don't crash.... */
         }
     }
 
