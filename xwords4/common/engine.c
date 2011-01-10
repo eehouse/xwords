@@ -319,7 +319,7 @@ static XP_Bool
 chooseMove( EngineCtxt* engine, PossibleMove** move ) 
 {
     XP_U16 ii;
-    PossibleMove* chosen;
+    PossibleMove* chosen = NULL;
     XP_Bool result;
     XP_Bool done;
     XP_Bool isRobot;

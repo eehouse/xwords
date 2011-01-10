@@ -461,7 +461,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         pl->secondsUsed = stream_getU16( stream );
         pl->robotIQ = ( strVersion < STREAM_VERS_ROBOTIQ )
             ? (XP_U8)stream_getBits( stream, 1 )
-            : pl->robotIQ = stream_getU8( stream );
+            : stream_getU8( stream );
         pl->isLocal = stream_getBits( stream, 1 );
     }
 } /* gi_readFromStream */
