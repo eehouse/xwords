@@ -105,7 +105,7 @@ build_cmds() {
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             touch $LOG          # so greps won't show errors
             CMD="./obj_linux_memdbg/xwords --room $ROOM"
-            CMD="$CMD --robot-name ${NAMES[$DEV]} $OTHERS"
+            CMD="$CMD --robot ${NAMES[$DEV]} $OTHERS"
             CMD="$CMD --dict=$DICT --port=$PORT --host=$HOST --file=$FILE "
             CMD="$CMD --slow-robot 1:3 $PLAT_PARMS"
             CMD="$CMD $PUBLIC"
