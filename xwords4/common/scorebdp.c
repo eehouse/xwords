@@ -161,7 +161,7 @@ drawScoreBoard( BoardCtxt* board )
                         dp->dsi.name = emptyStringIfNull(lp->name);
                         dp->dsi.selected = board->trayVisState != TRAY_HIDDEN
                             && ii==selPlayer;
-                        dp->dsi.isRobot = lp->isRobot;
+                        dp->dsi.isRobot = LP_IS_ROBOT(lp);
                         dp->dsi.isRemote = !lp->isLocal;
                         dp->dsi.nTilesLeft = (nTilesInPool > 0)? -1:
                             model_getNumTilesTotal( model, ii );

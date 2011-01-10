@@ -38,17 +38,16 @@ typedef struct BdHintLimits {
 
 XP_U16 engine_getScoreCache( EngineCtxt* engine, XP_U16 row );
 
-EngineCtxt* engine_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isRobot );
+EngineCtxt* engine_make( MPFORMAL XW_UtilCtxt* util );
 
 void engine_writeToStream( EngineCtxt* ctxt, XWStreamCtxt* stream );
 EngineCtxt* engine_makeFromStream( MPFORMAL XWStreamCtxt* stream,
-                                   XW_UtilCtxt* util, XP_Bool isRobot );
+                                   XW_UtilCtxt* util );
 
 void engine_init( EngineCtxt* ctxt );
 void engine_reset( EngineCtxt* ctxt );
 void engine_destroy( EngineCtxt* ctxt );
 
-#define NO_SCORE_LIMIT 10000 /* for targetScore */
 XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, 
                          const DictionaryCtxt* dict, const Tile* tiles, 
                          XP_U16 nTiles, XP_Bool usePrev,
@@ -56,8 +55,7 @@ XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model,
                          const BdHintLimits* boardLimits,
                          XP_Bool useTileLimits,
 #endif
-                         XP_U16 targetScore, XP_Bool* canMove,
-                         MoveInfo* result );
+                         XP_U16 robotIQ, XP_Bool* canMove, MoveInfo* result );
 XP_Bool engine_check( DictionaryCtxt* dict, Tile* buf, XP_U16 buflen );
 
 #ifdef CPLUS

@@ -198,7 +198,7 @@ cpToLP( NGValue value, const void* cbClosure )
         strAddr = &lp->password;
         break;
     case NG_COL_ROBOT:
-        lp->isRobot = value.ng_bool;
+        lp->robotIQ = value.ng_bool ? 1 : 0;
         break;
     }
 
@@ -591,7 +591,7 @@ loadPlayer( NewGameCtx* ngc, XP_U16 player, const LocalPlayer* lp )
     value.ng_cp = lp->password;
     (*ngc->setColProc)(closure, player, NG_COL_PASSWD, value );
 
-    value.ng_bool = lp->isRobot;
+    value.ng_bool = LP_IS_ROBOT(lp);
     (*ngc->setColProc)(closure, player, NG_COL_ROBOT, value );
 }
 

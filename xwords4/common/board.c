@@ -564,7 +564,7 @@ board_canHint( const BoardCtxt* board )
         && 0 < model_getNumTilesTotal( board->model, board->selPlayer );
     if ( canHint ) {
         LocalPlayer* lp = &board->gi->players[board->selPlayer];
-        canHint = lp->isLocal && !lp->isRobot;
+        canHint = lp->isLocal && !LP_IS_ROBOT(lp);
     }
     return canHint;
 }
@@ -1412,7 +1412,7 @@ chooseBestSelPlayer( BoardCtxt* board )
             for ( i = 0; i < nPlayers; ++i ) {
                 LocalPlayer* lp = &board->gi->players[curTurn];
 
-                if ( !lp->isRobot && lp->isLocal ) {
+                if ( !LP_IS_ROBOT(lp) && lp->isLocal ) {
                     return curTurn;
                 }
                 curTurn = (curTurn + 1) % nPlayers;
@@ -1707,7 +1707,7 @@ board_requestHint( BoardCtxt* board,
 #ifdef XWFEATURE_SEARCHLIMIT
                                              lp, useTileLimits,
 #endif
-                                             NO_SCORE_LIMIT, 
+                                             0, /* 0: not a robot */
                                              &canMove, &newMove );
             board_popTimerSave( board );
 
@@ -2160,7 +2160,7 @@ askRevealTray( BoardCtxt* board )
     } else if ( !lp->isLocal ) {
         util_userError( board->util, ERR_NO_PEEK_REMOTE_TILES );
 #endif
-    } else if ( lp->isRobot ) {
+    } else if ( LP_IS_ROBOT(lp) ) {
         if ( reversed ) {
             util_userError( board->util, ERR_NO_PEEK_ROBOT_TILES );
         } else {
