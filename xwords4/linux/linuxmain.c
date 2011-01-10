@@ -195,7 +195,6 @@ typedef enum {
     ,CMD_PRINTHISORY
     ,CMD_SKIPWARNINGS
     ,CMD_LOCALPWD
-    ,CMD_ROBOTSANDBAGS		/* dumb robot */
     ,CMD_DUPPACKETS
     ,CMD_NOHINTS
     ,CMD_PICKTILESFACEUP
@@ -203,6 +202,7 @@ typedef enum {
     ,CMD_REMOTEPLAYER
     ,CMD_PORT
     ,CMD_ROBOTNAME
+    ,CMD_LOCALSMARTS
     ,CMD_SORTNEW
     ,CMD_ISSERVER
     ,CMD_SLEEPONANCHOR
@@ -262,14 +262,14 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
     ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
     ,{ CMD_LOCALPWD, true, "password", "password for user (in sequence)" }
-    ,{ CMD_ROBOTSANDBAGS, false, "dumb-robot", "robot keeps score close" }
     ,{ CMD_DUPPACKETS, false, "dup-packets", "send two of each to test dropping" }
     ,{ CMD_NOHINTS, false, "no-hints", "disallow hints" }
     ,{ CMD_PICKTILESFACEUP, false, "pick-face-up", "allow to pick tiles" }
     ,{ CMD_PLAYERNAME, true, "name", "name of local, non-robot player" }
     ,{ CMD_REMOTEPLAYER, false, "remote-player", "add an expected player" }
     ,{ CMD_PORT, true, "port", "port to connect to on host" }
-    ,{ CMD_ROBOTNAME, true, "robot-name", "name of local, robot player" }
+    ,{ CMD_ROBOTNAME, true, "robot", "name of local, robot player" }
+    ,{ CMD_LOCALSMARTS, true, "robot-iq", "smarts for robot (in sequence)" }
     ,{ CMD_SORTNEW, false, "sort-tiles", "sort tiles each time assigned" }
     ,{ CMD_ISSERVER, false, "server", "this device acting as host" }
     ,{ CMD_SLEEPONANCHOR, false, "sleep-on-anchor", "slow down hint progress" }
@@ -862,7 +862,6 @@ main( int argc, char** argv )
     mainParams.printHistory = XP_FALSE;
     mainParams.undoWhenDone = XP_FALSE;
     mainParams.gi.timerEnabled = XP_FALSE;
-    mainParams.gi.robotSmartness = SMART_ROBOT;
     mainParams.gi.dictLang = -1;
     mainParams.noHeartbeat = XP_FALSE;
     mainParams.nHidden = 0;
@@ -937,6 +936,11 @@ main( int argc, char** argv )
             mainParams.gi.players[mainParams.nLocalPlayers-1].password
                 = (XP_UCHAR*)optarg;
             break;
+        case CMD_LOCALSMARTS:
+            index = mainParams.gi.nPlayers - 1;
+            XP_ASSERT( LP_IS_ROBOT( &mainParams.gi.players[index] ) );
+            mainParams.gi.players[index].robotIQ = atoi(optarg);
+            break;
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
             XP_ASSERT( COMMS_CONN_NONE == conType );
@@ -944,9 +948,6 @@ main( int argc, char** argv )
             conType = COMMS_CONN_SMS;
             break;
 #endif
-        case CMD_ROBOTSANDBAGS:		/* dumb robot */
-            mainParams.gi.robotSmartness = DUMB_ROBOT;
-            break;
         case CMD_DUPPACKETS:
             mainParams.duplicatePackets = XP_TRUE;
             break;
@@ -959,7 +960,7 @@ main( int argc, char** argv )
         case CMD_PLAYERNAME:
             index = mainParams.gi.nPlayers++;
             ++mainParams.nLocalPlayers;
-            mainParams.gi.players[index].isRobot = XP_FALSE;
+            mainParams.gi.players[index].robotIQ = 0; /* means human */
             mainParams.gi.players[index].isLocal = XP_TRUE;
             mainParams.gi.players[index].name = 
                 copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
@@ -977,7 +978,7 @@ main( int argc, char** argv )
             ++robotCount;
             index = mainParams.gi.nPlayers++;
             ++mainParams.nLocalPlayers;
-            mainParams.gi.players[index].isRobot = XP_TRUE;
+            mainParams.gi.players[index].robotIQ = 1; /* real smart by default */
             mainParams.gi.players[index].isLocal = XP_TRUE;
             mainParams.gi.players[index].name = 
                 copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
