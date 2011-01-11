@@ -330,7 +330,7 @@ public class GameConfig extends XWActivity
             };
         check.setOnCheckedChangeListener( lstnr );
 
-        Utils.setChecked( m_curDialog, R.id.robot_check, lp.isRobot );
+        Utils.setChecked( m_curDialog, R.id.robot_check, lp.isRobot() );
         Utils.setChecked( m_curDialog, R.id.remote_check, ! lp.isLocal );
     }
 
@@ -340,7 +340,7 @@ public class GameConfig extends XWActivity
         lp.name = Utils.getText( m_curDialog, R.id.player_name_edit );
         lp.password = Utils.getText( m_curDialog, R.id.password_edit );
 
-        lp.isRobot = Utils.getChecked( m_curDialog, R.id.robot_check );
+        lp.setIsRobot( Utils.getChecked( m_curDialog, R.id.robot_check ) );
         lp.isLocal = !Utils.getChecked( m_curDialog, R.id.remote_check );
     }
 
@@ -459,7 +459,7 @@ public class GameConfig extends XWActivity
         check.setOnCheckedChangeListener( lstnr );
         Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
 
-        Utils.setChecked( this, R.id.smart_robot, 0 < m_gi.robotSmartness );
+        Utils.setChecked( this, R.id.smart_robot, m_gi.getRobotsAreSmart() );
 
         String fmt = getString( m_notNetworkedGame ?
                                 R.string.title_game_configf
@@ -831,8 +831,7 @@ public class GameConfig extends XWActivity
         m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
         m_gi.gameSeconds = 60 * m_gi.nPlayers *
             Utils.getInt(  this, R.id.timer_minutes_edit );
-        m_gi.robotSmartness
-            = Utils.getChecked( this, R.id.smart_robot ) ? 1 : 0;
+        m_gi.setRobotsAreSmart( Utils.getChecked( this, R.id.smart_robot ) );
 
         int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];

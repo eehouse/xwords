@@ -49,13 +49,13 @@ public class CurGameInfo {
     public boolean timerEnabled;
     public boolean allowPickTiles;
     public boolean allowHintRect;
-    public int robotSmartness;
     public XWPhoniesChoice phoniesAction;
     public boolean confirmBTConnect;   /* only used for BT */
 
     // private int[] m_visiblePlayers;
     // private int m_nVisiblePlayers;
     private boolean m_inProgress;
+    private boolean m_smart;
 
     public CurGameInfo( Context context )
     {
@@ -79,7 +79,6 @@ public class CurGameInfo {
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
         allowPickTiles = false;
         allowHintRect = false;
-        robotSmartness = 1;
 
         // Always create MAX_NUM_PLAYERS so jni code doesn't ever have
         // to cons up a LocalPlayer instance.
@@ -90,7 +89,7 @@ public class CurGameInfo {
         if ( isNetworked ) {
             players[1].isLocal = false;
         } else {
-            players[0].isRobot = true;
+            players[0].setIsRobot( 1 );
         }
     }
 
@@ -110,7 +109,6 @@ public class CurGameInfo {
         timerEnabled = src.timerEnabled;
         allowPickTiles = src.allowPickTiles;
         allowHintRect = src.allowHintRect;
-        robotSmartness = src.robotSmartness;
         
         int ii;
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
@@ -133,6 +131,21 @@ public class CurGameInfo {
         m_inProgress = inProgress;
     }
 
+    public boolean getRobotsAreSmart()
+    {
+        return m_smart;
+    }
+
+    public void setRobotsAreSmart( boolean smart )
+    {
+        m_smart = smart;
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            if ( players[ii].isRobot() ) {
+                players[ii].setIsRobot( smart ? 1 : 100 );
+            }
+        }
+    }
+
     /** return true if any of the changes made would invalide a game
      * in progress, i.e. require that it be restarted with the new
      * params.  E.g. changing a player to a robot is harmless for a
@@ -152,7 +165,7 @@ public class CurGameInfo {
             for ( int ii = 0; ii < nPlayers; ++ii ) {
                 LocalPlayer me = players[ii];
                 LocalPlayer him = other.players[ii];
-                matter = me.isRobot != him.isRobot
+                matter = me.isRobot() != him.isRobot()
                     || me.isLocal != him.isLocal
                     || !me.name.equals( him.name );
                 if ( matter ) {
@@ -198,7 +211,7 @@ public class CurGameInfo {
             LocalPlayer lp = players[ii];
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 names[ii] = lp.name;
-                if ( lp.isRobot ) {
+                if ( lp.isRobot() ) {
                     names[ii] += " " + context.getString( R.string.robot_name );
                 }
             } else {

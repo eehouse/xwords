@@ -22,18 +22,19 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import org.eehouse.android.xw4.R;
+import junit.framework.Assert;
 
 public class LocalPlayer {
     public String name;
     public String password;
     public int secondsUsed;
-    public boolean isRobot;
+    public int robotIQ;
     public boolean isLocal;
 
     public LocalPlayer( Context context, int num )
     {
         isLocal = true;
-        isRobot = false;
+        robotIQ = 0;            // human
         String fmt = context.getString( R.string.playerf );
         name = String.format( fmt, num + 1 );
         password = "";
@@ -42,7 +43,7 @@ public class LocalPlayer {
     public LocalPlayer( final LocalPlayer src )
     {
         isLocal = src.isLocal;
-        isRobot = src.isRobot;
+        robotIQ = src.robotIQ;
         if ( null != src.name ) {
             name = new String(src.name);
         }
@@ -50,6 +51,22 @@ public class LocalPlayer {
             password = new String(src.password);
         }
         secondsUsed = src.secondsUsed;
+    }
+
+    public boolean isRobot() 
+    {
+        return robotIQ > 0;
+    }
+
+    public void setIsRobot( boolean isRobot )
+    {
+        robotIQ = isRobot ? 1 : 0;
+    }
+
+    public void setIsRobot( int iq )
+    {
+        Assert.assertTrue( iq > 0 );
+        robotIQ = iq;
     }
 }
 
