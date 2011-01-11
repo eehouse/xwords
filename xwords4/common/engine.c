@@ -392,7 +392,10 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
         engine->nMovesToSave = 1;
     } else {
         XP_U16 count = NUM_SAVED_ENGINE_MOVES * iq / 100;
-        engine->nMovesToSave = 1 + (XP_RANDOM() % count);
+        engine->nMovesToSave = 1;
+        if ( count > 0 ) {
+            engine->nMovesToSave += XP_RANDOM() % count;
+        }
     }
     XP_LOGF( "%s: set nMovesToSave=%d (iq=%d; NUM_SAVED_ENGINE_MOVES=%d)",
              __func__, engine->nMovesToSave, iq, NUM_SAVED_ENGINE_MOVES );
