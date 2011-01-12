@@ -97,6 +97,7 @@ struct EngineCtxt {
     XP_U16 nMovesToSave;
     XP_U16 star_row;
     XP_Bool returnNOW;
+    XP_Bool isRobot;
     MoveIterationData miData;
 
     XP_S16 blankValues[MAX_TRAY_TILES];
@@ -322,7 +323,6 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
     PossibleMove* chosen = NULL;
     XP_Bool result;
     XP_Bool done;
-    XP_Bool isRobot;
 
     print_savedMoves( engine, "unsorted moves" );
 
@@ -332,7 +332,6 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
        start applying other criteria than score to moves. */
 
     done = !move_cache_empty( engine );
-    isRobot = 0 < engine->nMovesToSave;
     while ( !done ) { /* while so can break */
         done = XP_TRUE;
         PossibleMove* cur = engine->miData.savedMoves;
@@ -349,21 +348,21 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
         }
 
         if ( done ) {
-            if ( !isRobot ) {
+            if ( !engine->isRobot ) {
                 init_move_cache( engine );
             }
             print_savedMoves( engine, "sorted moves" );
         }
+    }
 
-        /* now pick the one we're supposed to return */
-        if ( isRobot ) {
-            XP_ASSERT( engine->miData.nInMoveCache <= NUM_SAVED_ENGINE_MOVES );
-            XP_ASSERT( engine->miData.nInMoveCache <= engine->nMovesToSave );
-            /* PENDING not nInMoveCache-1 below?? */
-            chosen = &engine->miData.savedMoves[engine->miData.nInMoveCache];
-        } else {
-            chosen = next_from_cache( engine );
-        }
+    /* now pick the one we're supposed to return */
+    if ( engine->isRobot ) {
+        XP_ASSERT( engine->miData.nInMoveCache <= NUM_SAVED_ENGINE_MOVES );
+        XP_ASSERT( engine->miData.nInMoveCache <= engine->nMovesToSave );
+        /* PENDING not nInMoveCache-1 below?? */
+        chosen = &engine->miData.savedMoves[engine->miData.nInMoveCache];
+    } else {
+        chosen = next_from_cache( engine );
     }
 
     *move = chosen; /* set either way */
@@ -373,7 +372,7 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
     if ( !result ) {
         engine_reset( engine ); 
     }
-    LOG_RETURNF( "%d", result );
+    LOG_RETURNF( "%s", result?"true":"false" );
     return result;
 } /* chooseMove */
 
@@ -386,9 +385,10 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
 static void
 normalizeIQ( EngineCtxt* engine, XP_U16 iq )
 {
+    engine->isRobot = 0 < iq;
     if ( 0 == iq ) {            /* human */
         engine->nMovesToSave = NUM_SAVED_ENGINE_MOVES; /* save 'em all */
-    } else if ( 1 == iq ) {            /* human */
+    } else if ( 1 == iq ) {            /* smartest robot */
         engine->nMovesToSave = 1;
     } else {
         XP_U16 count = NUM_SAVED_ENGINE_MOVES * iq / 100;
