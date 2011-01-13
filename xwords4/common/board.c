@@ -2286,6 +2286,7 @@ board_handlePenMove( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
     return result;
 } /* board_handlePenMove */
 
+#ifndef DISABLE_TILE_SEL
 /* Called when user taps on the board and a tray tile's selected.
  */
 static XP_Bool
@@ -2320,6 +2321,7 @@ moveSelTileToBoardXY( BoardCtxt* board, XP_U16 col, XP_U16 row )
 
     return result;
 } /* moveSelTileToBoardXY */
+#endif
 
 XP_Bool
 cellOccupied( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
@@ -2412,7 +2414,10 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 static XP_Bool
 handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool isPen )
 {
-    return moveSelTileToBoardXY( board, col, row )
+    return XP_FALSE
+#ifndef DISABLE_TILE_SEL
+        || moveSelTileToBoardXY( board, col, row )
+#endif
         || tryMoveArrow( board, col, row )
         || (!isPen && tryReplaceTile( board, col, row ))
         ;
