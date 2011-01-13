@@ -55,7 +55,7 @@ public class CurGameInfo {
     // private int[] m_visiblePlayers;
     // private int m_nVisiblePlayers;
     private boolean m_inProgress;
-    private boolean m_smart;
+    private int m_smartness;
 
     public CurGameInfo( Context context )
     {
@@ -79,6 +79,7 @@ public class CurGameInfo {
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
         allowPickTiles = false;
         allowHintRect = false;
+        m_smartness = 0;        // needs to be set from players
 
         // Always create MAX_NUM_PLAYERS so jni code doesn't ever have
         // to cons up a LocalPlayer instance.
@@ -89,7 +90,7 @@ public class CurGameInfo {
         if ( isNetworked ) {
             players[1].isLocal = false;
         } else {
-            players[0].setIsRobot( 1 );
+            players[0].setRobotSmartness( 1 );
         }
     }
 
@@ -131,17 +132,26 @@ public class CurGameInfo {
         m_inProgress = inProgress;
     }
 
-    public boolean getRobotsAreSmart()
+    public int getRobotSmartness()
     {
-        return m_smart;
+        if ( m_smartness == 0 ) {
+            m_smartness = 1;    // default if no robots
+            for ( int ii = 0; ii < nPlayers; ++ii ) {
+                if ( players[ii].isRobot() ) {
+                    m_smartness = players[ii].robotIQ;
+                    break;      // should all be the same
+                }
+            }
+        }
+        return m_smartness;
     }
 
-    public void setRobotsAreSmart( boolean smart )
+    public void setRobotSmartness( int smartness )
     {
-        m_smart = smart;
+        m_smartness = smartness;
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             if ( players[ii].isRobot() ) {
-                players[ii].setIsRobot( smart ? 1 : 100 );
+                players[ii].robotIQ = smartness;
             }
         }
     }

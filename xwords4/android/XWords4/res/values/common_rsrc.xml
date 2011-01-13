@@ -73,6 +73,12 @@
     <item>@string/phonies_disallow</item>
   </string-array>
 
+  <string-array name="robot_levels">
+    <item>@string/robot_smartest</item>
+    <item>@string/robot_smarter</item>
+    <item>@string/robot_smart</item>
+  </string-array>
+
   <string-array name="connect_frequencies">
     <item>@string/connect_thirty_seconds</item>
     <item>@string/connect_five_mins</item>

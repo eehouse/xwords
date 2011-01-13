@@ -91,6 +91,7 @@ public class GameConfig extends XWActivity
     // private Spinner m_connectSpinner;
     private Spinner m_phoniesSpinner;
     private Spinner m_dictSpinner;
+    private Spinner m_smartnessSpinner;
     private String[] m_dictItems;
     private String[] m_dicts;
     private int m_browsePosition;
@@ -443,6 +444,9 @@ public class GameConfig extends XWActivity
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
+        m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
+        setSmartnessSpinner();
+
         Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
         Utils.setInt( this, R.id.timer_minutes_edit, 
                       m_gi.gameSeconds/60/m_gi.nPlayers );
@@ -458,8 +462,6 @@ public class GameConfig extends XWActivity
             };
         check.setOnCheckedChangeListener( lstnr );
         Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
-
-        Utils.setChecked( this, R.id.smart_robot, m_gi.getRobotsAreSmart() );
 
         String fmt = getString( m_notNetworkedGame ?
                                 R.string.title_game_configf
@@ -665,6 +667,28 @@ public class GameConfig extends XWActivity
             });
     }
 
+    private void setSmartnessSpinner()
+    {
+        int setting = -1;
+        switch ( m_gi.getRobotSmartness() ) {
+        case 1:
+            setting = 0;
+            break;
+        case 50:
+            setting = 1;
+            break;
+        case 99:
+        case 100:
+            setting = 2;
+            break;
+        default:
+            Utils.logf( "setSmartnessSpinner got %d from getRobotSmartness()", 
+                        m_gi.getRobotSmartness() );
+            Assert.fail();
+        }
+        m_smartnessSpinner.setSelection( setting );
+    }
+
     // private void configConnectSpinner()
     // {
     //     m_connectSpinner = (Spinner)findViewById( R.id.connect_spinner );
@@ -831,10 +855,12 @@ public class GameConfig extends XWActivity
         m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
         m_gi.gameSeconds = 60 * m_gi.nPlayers *
             Utils.getInt(  this, R.id.timer_minutes_edit );
-        m_gi.setRobotsAreSmart( Utils.getChecked( this, R.id.smart_robot ) );
 
         int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];
+
+        position = m_smartnessSpinner.getSelectedItemPosition();
+        m_gi.setRobotSmartness(position * 49 + 1);
 
         if ( !m_notNetworkedGame ) {
             m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();

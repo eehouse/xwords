@@ -177,8 +177,6 @@
     <string name="settings_label">Other settings</string>
     <string name="minutes_label">Minutes per player</string>
 
-    <string name="smart_robot">Smart robot</string>
-
     <string name="download_dicts">Download more...</string>
 
     <string name="confirm_save_title">Confirm save</string>
@@ -230,6 +228,11 @@
     <string name="phonies_ignore">Ignore phonies</string>
     <string name="phonies_warn">Warn if phonies</string>
     <string name="phonies_disallow">Disallow phonies</string>
+    <string name="robot_spinner_prompt">How smart is the robot player?</string>
+    <string name="robot_smart">Smart robot</string>
+    <string name="robot_smarter">Smarter robot</string>
+    <string name="robot_smartest">Smartest robot</string>
+    
     <string name="menu_prefs">Settings</string>
     <string name="gamel_menu_dicts">Dictionaries</string>
     <string name="menu_revert_all">Restore all</string>
@@ -257,7 +260,8 @@
 
     <string name="default_dict">Game dictionary</string>
     <string name="default_phonies">Handle phonies</string>
-    <string name="phonies_spinner_prompt">Handle phonies (words not in dictionary)</string>    
+    <string name="phonies_spinner_prompt">How to handle \"phonies\"
+    (words not in dictionary)</string>
     <string name="board_size">Board size</string>
     <string name="default_timerenabled">Use game timer</string>
 

@@ -63,7 +63,7 @@ public class LocalPlayer {
         robotIQ = isRobot ? 1 : 0;
     }
 
-    public void setIsRobot( int iq )
+    public void setRobotSmartness( int iq )
     {
         Assert.assertTrue( iq > 0 );
         robotIQ = iq;
