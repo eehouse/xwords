@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#undef GDK_DISABLE_DEPRECATED
+
 #include <gdk/gdkdrawable.h>
 
 #include "gtkmain.h"
