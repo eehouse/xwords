@@ -297,7 +297,6 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
     gi->serverRole = SERVER_STANDALONE;
     gi->nPlayers = 2;
     gi->boardSize = 15;
-    gi->robotSmartness = SMART_ROBOT;
     gi->gameSeconds = 25 * 60; /* 25 minute game is common? */
     
     gi->confirmBTConnect = XP_TRUE;
@@ -312,7 +311,7 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
             fp->name = copyString( mpool, buf );
         }
 
-        fp->isRobot = (i == 0); /* one robot */
+        fp->robotIQ = (i == 0) ? 1 : 0; /* one robot */
         fp->isLocal = XP_TRUE;
         fp->secondsUsed = 0;
     }
@@ -367,7 +366,6 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 
     destGI->hintsNotAllowed = srcGI->hintsNotAllowed;
     destGI->timerEnabled = srcGI->timerEnabled;
-    destGI->robotSmartness = (XP_U8)srcGI->robotSmartness;
     destGI->phoniesAction = srcGI->phoniesAction;
     destGI->allowPickTiles = srcGI->allowPickTiles;
 
@@ -378,7 +376,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
         replaceStringIfDifferent( mpool, &destPl->password, 
                                   srcPl->password );
         destPl->secondsUsed = srcPl->secondsUsed;
-        destPl->isRobot = srcPl->isRobot;
+        destPl->robotIQ = srcPl->robotIQ;
         destPl->isLocal = srcPl->isLocal;
     }
 } /* gi_copy */
@@ -391,7 +389,7 @@ gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly )
     const LocalPlayer* lp = gi->players;
     while ( nPlayers-- ) {
         if ( lp->isLocal ) {
-            if ( humanOnly && lp->isRobot ) {
+            if ( humanOnly && LP_IS_ROBOT(lp) ) {
                 // skip
             } else {
                 ++count;
@@ -420,7 +418,9 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->boardSize = (XP_U8)stream_getBits( stream, 4 );
     gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
-    gi->robotSmartness = (XP_U8)stream_getBits( stream, 2 );
+    if ( strVersion < STREAM_VERS_ROBOTIQ ) {
+        (void)stream_getBits( stream, 2 );
+    }
     gi->phoniesAction = (XWPhoniesChoice)stream_getBits( stream, 2 );
     gi->timerEnabled = stream_getBits( stream, 1 );
 
@@ -459,7 +459,9 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         }
 
         pl->secondsUsed = stream_getU16( stream );
-        pl->isRobot = stream_getBits( stream, 1 );
+        pl->robotIQ = ( strVersion < STREAM_VERS_ROBOTIQ )
+            ? (XP_U8)stream_getBits( stream, 1 )
+            : stream_getU8( stream );
         pl->isLocal = stream_getBits( stream, 1 );
     }
 } /* gi_readFromStream */
@@ -476,7 +478,6 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 4, gi->boardSize );
     stream_putBits( stream, 2, gi->serverRole );
     stream_putBits( stream, 1, gi->hintsNotAllowed );
-    stream_putBits( stream, 2, gi->robotSmartness );
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
     stream_putBits( stream, 1, gi->allowPickTiles );
@@ -491,7 +492,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
         stringToStream( stream, pl->name );
         stringToStream( stream, pl->password );
         stream_putU16( stream, pl->secondsUsed );
-        stream_putBits( stream, 1, pl->isRobot );
+        stream_putU8( stream, pl->robotIQ );
         stream_putBits( stream, 1, pl->isLocal );
     }
 } /* gi_writeToStream */

@@ -199,11 +199,13 @@
                   />
       </LinearLayout>
 
-      <CheckBox android:id="@+id/smart_robot"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/smart_robot"
-                />
+      <Spinner android:id="@+id/smart_robot"
+               android:prompt="@string/robot_spinner_prompt"
+               android:layout_width="fill_parent"
+               android:layout_height="wrap_content"
+               android:drawSelectorOnTop="true"
+               android:entries="@array/robot_levels"
+               />
 
       <Spinner android:id="@+id/phonies_spinner"
                android:prompt="@string/phonies_spinner_prompt"

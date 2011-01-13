@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_ROBOTIQ 0x0E /* robots have different smarts */
 #define STREAM_VERS_DICTLANG 0x0D /* save dict lang code in CurGameInfo */
 #define STREAM_VERS_NUNDONE 0x0C /* save undone tile in model */
 #define STREAM_VERS_GAMESECONDS 0x0B /* save gameSeconds whether or not
@@ -48,15 +49,19 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_DICTLANG
+#define CUR_STREAM_VERS STREAM_VERS_ROBOTIQ
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
     XP_UCHAR* password;
     XP_U16 secondsUsed;
-    XP_Bool isRobot;
     XP_Bool isLocal;
+    XP_U8 robotIQ;              /* 0 means not a robot; 1-100 means how
+                                   dumb is it with 1 meaning very smart */
 } LocalPlayer;
+
+#define LP_IS_ROBOT(lp) ((lp)->robotIQ != 0)
+#define LP_IS_LOCAL(lp) ((lp)->isLocal)
 
 #define DUMB_ROBOT 0
 #define SMART_ROBOT 1
@@ -75,7 +80,6 @@ typedef struct CurGameInfo {
     XP_Bool timerEnabled;
     XP_Bool allowPickTiles;
     XP_Bool allowHintRect;
-    XP_U8 robotSmartness;
     XWPhoniesChoice phoniesAction;
     XP_Bool confirmBTConnect;   /* only used for BT */
 } CurGameInfo;

@@ -81,7 +81,6 @@ class CookieRef {
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
     CookieID GetCookieID() { return m_cookieID; }
-    int GetTotalSent() { return m_totalSent; }
     int GetPlayersSought() { return m_nPlayersSought; }
     int GetPlayersHere() { return m_nPlayersHere; }
 
@@ -181,7 +180,6 @@ class CookieRef {
                            bool cascade );
     void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
                    bool cascade );
-    void RecordSent( int nBytes, int socket );
     void pushConnectEvent( int socket, int nPlayersH, int nPlayersS,
                            int seed );
     void pushReconnectEvent( int socket, HostID srcID,
@@ -258,7 +256,6 @@ class CookieRef {
     string m_cookie;            /* cookie used for initial connections */
     string m_connName;          /* globally unique name */
     CookieID m_cookieID;        /* Unique among current games on this server */
-    int m_totalSent;
 
     /* Guard the event queue.  Only one thread at a time can post to the
        queue, but once in a thread can post new events while processing

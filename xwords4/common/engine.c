@@ -90,14 +90,14 @@ struct EngineCtxt {
     XP_Bool usePrev;
     XP_Bool searchInProgress;
     XP_Bool searchHorizontal;
-    XP_Bool isRobot;
     XP_Bool isFirstMove;
     XP_U16 numRows, numCols;
     XP_U16 curRow;
     XP_U16 blankCount;
-    XP_U16 targetScore;
+    XP_U16 nMovesToSave;
     XP_U16 star_row;
     XP_Bool returnNOW;
+    XP_Bool isRobot;
     MoveIterationData miData;
 
     XP_S16 blankValues[MAX_TRAY_TILES];
@@ -202,7 +202,7 @@ engine_getScoreCache( EngineCtxt* engine, XP_U16 row )
  * turn it into a separate code module later.
  ****************************************************************************/ 
 EngineCtxt*
-engine_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isRobot )
+engine_make( MPFORMAL XW_UtilCtxt* util )
 {
     EngineCtxt* result = (EngineCtxt*)XP_MALLOC( mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
@@ -210,8 +210,6 @@ engine_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isRobot )
     MPASSIGN(result->mpool, mpool);
 
     result->util = util;
-
-    result->isRobot = isRobot;
 
     engine_reset( result );
 
@@ -230,9 +228,9 @@ engine_writeToStream( EngineCtxt* XP_UNUSED(ctxt),
 
 EngineCtxt* 
 engine_makeFromStream( MPFORMAL XWStreamCtxt* XP_UNUSED_DBG(stream), 
-                       XW_UtilCtxt* util, XP_Bool isRobot )
+                       XW_UtilCtxt* util )
 {
-    EngineCtxt* engine = engine_make( MPPARM(mpool) util, isRobot );
+    EngineCtxt* engine = engine_make( MPPARM(mpool) util );
 
     /* All the engine's data seems to be used only in the process of finding a
        move.  So if we're willing to have the set of moves found lost across
@@ -306,7 +304,7 @@ print_savedMoves( const EngineCtxt* engine, const char* label )
     int ii;
     int pos = 0;
     char buf[(NUM_SAVED_ENGINE_MOVES*10) + 3] = {0};
-    for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES; ++ii ) {
+    for ( ii = 0; ii < engine->nMovesToSave; ++ii ) {
         if ( 0 < engine->miData.savedMoves[ii].score ) {
             pos += XP_SNPRINTF( &buf[pos], VSIZE(buf)-pos, "[%d]: %d; ", 
                                 ii, engine->miData.savedMoves[ii].score );
@@ -322,8 +320,9 @@ static XP_Bool
 chooseMove( EngineCtxt* engine, PossibleMove** move ) 
 {
     XP_U16 ii;
-    PossibleMove* chosen;
+    PossibleMove* chosen = NULL;
     XP_Bool result;
+    XP_Bool done;
 
     print_savedMoves( engine, "unsorted moves" );
 
@@ -331,31 +330,38 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
        get picked up first.  Don't sort if we're working for a robot; we've
        only been saving the single best move anyway.  At least not until we
        start applying other criteria than score to moves. */
-    if ( engine->isRobot ) {
-        chosen = &engine->miData.savedMoves[0];
-    } else {
-        XP_Bool done = !move_cache_empty( engine );
-        while ( !done ) { /* while so can break */
-            done = XP_TRUE;
-            PossibleMove* cur = engine->miData.savedMoves;
-            for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES-1; ++ii ) {
-                PossibleMove* next = cur + 1;
-                if ( CMPMOVES( cur, next ) > 0 ) {
-                    PossibleMove tmp;
-                    XP_MEMCPY( &tmp, cur, sizeof(tmp) );
-                    XP_MEMCPY( cur, next, sizeof(*cur) );
-                    XP_MEMCPY( next, &tmp, sizeof(*next) );
-                    done = XP_FALSE;
-                }
-                cur = next;
+
+    done = !move_cache_empty( engine );
+    while ( !done ) { /* while so can break */
+        done = XP_TRUE;
+        PossibleMove* cur = engine->miData.savedMoves;
+        for ( ii = 0; ii < engine->nMovesToSave-1; ++ii ) {
+            PossibleMove* next = cur + 1;
+            if ( CMPMOVES( cur, next ) > 0 ) {
+                PossibleMove tmp;
+                XP_MEMCPY( &tmp, cur, sizeof(tmp) );
+                XP_MEMCPY( cur, next, sizeof(*cur) );
+                XP_MEMCPY( next, &tmp, sizeof(*next) );
+                done = XP_FALSE;
             }
-            if ( done ) {
-                init_move_cache( engine );
-                print_savedMoves( engine, "sorted moves" );
-            }
+            cur = next;
         }
 
-        /* now pick the one we're supposed to return */
+        if ( done ) {
+            if ( !engine->isRobot ) {
+                init_move_cache( engine );
+            }
+            print_savedMoves( engine, "sorted moves" );
+        }
+    }
+
+    /* now pick the one we're supposed to return */
+    if ( engine->isRobot ) {
+        XP_ASSERT( engine->miData.nInMoveCache <= NUM_SAVED_ENGINE_MOVES );
+        XP_ASSERT( engine->miData.nInMoveCache <= engine->nMovesToSave );
+        /* PENDING not nInMoveCache-1 below?? */
+        chosen = &engine->miData.savedMoves[engine->miData.nInMoveCache];
+    } else {
         chosen = next_from_cache( engine );
     }
 
@@ -366,9 +372,34 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
     if ( !result ) {
         engine_reset( engine ); 
     }
-    LOG_RETURNF( "%d", result );
+    LOG_RETURNF( "%s", result?"true":"false" );
     return result;
 } /* chooseMove */
+
+/* Robot smartness is a number between 0 and 100, inclusive.  0 means a human
+ * player who may want to iterate, so save all moves.  If a robot player, we
+ * want a random move within a range proportional to the 1-100 range, so we
+ * figure out now what we'll be picking, save only that many moves and take
+ * the worst of 'em in chooseMove().
+ */
+static void
+normalizeIQ( EngineCtxt* engine, XP_U16 iq )
+{
+    engine->isRobot = 0 < iq;
+    if ( 0 == iq ) {            /* human */
+        engine->nMovesToSave = NUM_SAVED_ENGINE_MOVES; /* save 'em all */
+    } else if ( 1 == iq ) {            /* smartest robot */
+        engine->nMovesToSave = 1;
+    } else {
+        XP_U16 count = NUM_SAVED_ENGINE_MOVES * iq / 100;
+        engine->nMovesToSave = 1;
+        if ( count > 0 ) {
+            engine->nMovesToSave += XP_RANDOM() % count;
+        }
+    }
+    XP_LOGF( "%s: set nMovesToSave=%d (iq=%d; NUM_SAVED_ENGINE_MOVES=%d)",
+             __func__, engine->nMovesToSave, iq, NUM_SAVED_ENGINE_MOVES );
+}
 
 /* Return of XP_TRUE means that we ran to completion.  XP_FALSE means we were
  * interrupted.  Whether an actual move was found is indicated by what's
@@ -382,8 +413,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                  const BdHintLimits* searchLimits,
                  XP_Bool useTileLimits,
 #endif
-                 XP_U16 targetScore, XP_Bool* canMoveP, 
-                 MoveInfo* newMove )
+                 XP_U16 robotIQ, XP_Bool* canMoveP, MoveInfo* newMove )
 {
     XP_Bool result = XP_TRUE;
     XP_U16 star_row;
@@ -442,7 +472,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
         util_engineStarting( engine->util, 
                              engine->rack[engine->blankTile] );
 
-        engine->targetScore = targetScore;
+        normalizeIQ( engine, robotIQ );
 
         if ( move_cache_empty( engine ) ) {
             set_search_limits( engine );
@@ -1141,7 +1171,9 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
     XP_Bool usePrev = engine->usePrev;
     XP_Bool foundEmpty = XP_FALSE;
 
-    if ( !engine->isRobot ) { /* robot doesn't ask for next hint.... */
+    if ( 1 == engine->nMovesToSave ) { /* only saving one */
+        mostest = 0;
+    } else {
         mostest = -1;
         /* we're not interested if we've seen this */
         cmpVal = CMPMOVES( posmove, &engine->miData.lastSeenMove );
@@ -1154,7 +1186,7 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
         } else {
             XP_S16 ii;
             /* terminate i at 1 because mostest starts at 0 */
-            for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES; ++ii ) {
+            for ( ii = 0; ii < engine->nMovesToSave; ++ii ) {
                 /* Find the mostest value move and overwrite it.  Note that
                    there might not be one, as all may have the same or higher
                    scores and those that have the same score may compare
@@ -1222,7 +1254,7 @@ set_search_limits( EngineCtxt* engine )
        move as the limit; otherwise the lowest */
     if ( 0 < engine->miData.nInMoveCache ) {
         XP_U16 srcIndx = engine->usePrev
-            ? NUM_SAVED_ENGINE_MOVES-1 : engine->miData.bottom;
+            ? engine->nMovesToSave-1 : engine->miData.bottom;
         XP_MEMCPY( &engine->miData.lastSeenMove, 
                    &engine->miData.savedMoves[srcIndx],
                    sizeof(engine->miData.lastSeenMove) );
@@ -1238,8 +1270,10 @@ set_search_limits( EngineCtxt* engine )
 static void
 init_move_cache( EngineCtxt* engine )
 {
-    XP_U16 nInMoveCache = NUM_SAVED_ENGINE_MOVES;
+    XP_U16 nInMoveCache = engine->nMovesToSave;
     XP_U16 ii;
+
+    XP_ASSERT( engine->nMovesToSave == NUM_SAVED_ENGINE_MOVES );
 
     for ( ii = 0; ii < NUM_SAVED_ENGINE_MOVES; ++ii ) {
         if ( 0 == engine->miData.savedMoves[ii].score ) {
@@ -1306,9 +1340,7 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
     XP_Bool qualifies = XP_FALSE;
     XP_Bool usePrev = engine->usePrev;
 
-    if ( score > engine->targetScore ) {
-        /* drop it */
-    } else if ( usePrev && score < engine->miData.lastSeenMove.score ) {
+    if ( usePrev && score < engine->miData.lastSeenMove.score ) {
         /* drop it */
     } else if ( !usePrev && score > engine->miData.lastSeenMove.score
          /* || (score < engine->miData.lowestSavedScore) */ ) {
@@ -1322,7 +1354,7 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
            NUM_SAVED_ENGINE_MOVES moves in here* and doing a quick test on
            that. Or better, keeping the list in sorted order. */
         for ( ii = 0, savedMoves = engine->miData.savedMoves;
-              ii < NUM_SAVED_ENGINE_MOVES; ++ii, ++savedMoves ) {
+              ii < engine->nMovesToSave; ++ii, ++savedMoves ) {
             if ( savedMoves->score == 0 ) { /* empty slot */
                 qualifies = XP_TRUE;
             } else if ( usePrev && score <= savedMoves->score ) {
@@ -1330,9 +1362,6 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
                 break;
             } else if ( !usePrev && score >= savedMoves->score ) {
                 qualifies = XP_TRUE;
-                break;
-            }
-            if ( engine->isRobot ) { /* we look at only one for robot */
                 break;
             }
         }

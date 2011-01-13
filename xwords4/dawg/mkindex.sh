@@ -10,12 +10,12 @@ usage() {
 
 do_lang() {
     LANG=$1
-    echo "<tr><td>$LANG</td></tr>"
+    echo "<tr><td><a name=\"$LANG\">$LANG</a></td></tr>"
 
     cd $LANG
     for DICT in $(ls *.xwd); do
         echo "<tr>"
-        echo "<td><a href=\"./$LANG/$DICT\">${DICT#.xwd}</a></td>"
+        echo "<td>&nbsp;&nbsp;<a href=\"./$LANG/$DICT\">${DICT%.xwd}</a></td>"
         SIZE=$(ls -l $DICT | awk '{print $5}')
         echo "<td>${SIZE}</td>"
         HEXCOUNT=$(hd $DICT | head -n 1 | awk '{print $6 $7 $8 $9}' | tr [a-f] [A-F])
@@ -41,14 +41,21 @@ done
 
 
 echo "<html><body>"
+
+echo "<p>Download dictionaries for:"
+for DIR in $DIRS; do
+    echo " <a href=\"#$DIR\">$DIR</a>"
+done
+echo ".</p>"
+
 echo "<table>"
 echo "<tr><th>File</th><th>Size</th><th>Wordcount</th></tr>"
-for DIR in  $DIRS; do
+for DIR in $DIRS; do
     do_lang $DIR
 done
 echo "</table>"
-echo "</body></html>"
 
+echo "</body></html>"
 
 cd $WD
 

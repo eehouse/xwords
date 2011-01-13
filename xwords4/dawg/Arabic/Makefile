@@ -1,4 +1,4 @@
-# -*-mode: Makefile; compile-command: "make -f Makefile.BasEnglish"; -*-
+# -*-mode: Makefile; -*-
 # Copyright 2002-2010 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
@@ -27,11 +27,8 @@ TARGET_TYPE ?= WINCE
 include ../Makefile.langcommon
 
 # Empty dict
-$(XWLANG)Main.dict:
-	> $@
-
-$(XWLANG)Main.dict.gz: $(XWLANG)Main.dict
-	gzip -c $< > $@
+$(XWLANG)Main.dict.gz:
+	echo -n "" | gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.

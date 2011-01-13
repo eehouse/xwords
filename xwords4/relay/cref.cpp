@@ -86,7 +86,6 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     m_cookie = cookie==NULL?"":cookie;
     m_connName = connName==NULL?"":connName;
     m_cookieID = id;
-    m_totalSent = 0;
     m_curState = XWS_INITED;
     m_nPlayersSought = nPlayers;
     m_nPlayersHere = nAlreadyHere;
@@ -132,9 +131,7 @@ CookieRef::~CookieRef()
 
     printSeeds(__func__);
 
-    logf( XW_LOGINFO, 
-          "CookieRef for %d being deleted; sent %d bytes over lifetime", 
-          m_cookieID, m_totalSent );
+    logf( XW_LOGINFO, "CookieRef for %d being deleted", m_cookieID );
 } /* ~CookieRef */
 
 void
@@ -729,7 +726,7 @@ CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen,
 {
     bool failed = false;
     if ( send_with_length_unsafe( socket, buf, bufLen ) ) {
-        RecordSent( bufLen, socket );
+        DBMgr::Get()->RecordSent( ConnName(), HostForSocket(socket), bufLen );
     } else {
         failed = true;
     }
@@ -1005,13 +1002,6 @@ CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
     assert( len <= sizeof(buf) );
     send_with_length( socket, buf, len, cascade );
 } /* send_msg */
-
-
-void
-CookieRef::RecordSent( int nBytes, int socket ) {
-    m_totalSent += nBytes;
-    DBMgr::Get()->RecordSent( ConnName(), HostForSocket(socket), nBytes );
-}
 
 void
 CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
@@ -1309,9 +1299,6 @@ CookieRef::_PrintCookieInfo( string& out )
     out += buf;
 
     snprintf( buf, sizeof(buf), "id=%d\n", GetCookieID() );
-    out += buf;
-
-    snprintf( buf, sizeof(buf), "Bytes sent=%d\n", m_totalSent );
     out += buf;
 
     snprintf( buf, sizeof(buf), "Total players=%d\n", m_nPlayersSought );

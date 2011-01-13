@@ -152,7 +152,6 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
                  "<td>%s</td>"  /* conn name */
                  "<td>%d</td>"  /* cookie id */
                  "<td>%s</td>"  /* conntime */
-                 "<td>%d</td>"  /* total sent */
                  "<td>%d</td>"  /* players */
                  "<td>%d</td>"  /* players here */
                  "<td>%s</td>"  /* State */
@@ -164,7 +163,6 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
                  crefInfo->m_connName.c_str(),
                  crefInfo->m_cookieID,
                  conntime,
-                 crefInfo->m_totalSent,
                  crefInfo->m_nPlayersSought, crefInfo->m_nPlayersHere, 
                  stateString( crefInfo->m_curState ),
                  crefInfo->m_hostsIds.c_str(),

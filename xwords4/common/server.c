@@ -45,9 +45,6 @@ extern "C" {
 
 #define LOCAL_ADDR NULL
 
-#define IS_ROBOT(p) ((p)->isRobot)
-#define IS_LOCAL(p) ((p)->isLocal)
-
 enum {
     END_REASON_USER_REQUEST,
     END_REASON_OUT_OF_TILES,
@@ -309,7 +306,6 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 {
     ServerCtxt* server;
     short i;
-    CurGameInfo* gi = util->gameInfo;
 
     server = server_make( MPPARM(mpool) model, comms, util );
     getNV( stream, &server->nv, nPlayers );
@@ -324,10 +320,8 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         player->deviceIndex = stream_getU8( stream );
 
         if ( stream_getU8( stream ) != 0 ) {
-            LocalPlayer* lp = &gi->players[i];
             player->engine = engine_makeFromStream( MPPARM(mpool)
-                                                    stream, util, 
-                                                    lp->isRobot );
+                                                    stream, util );
         }
     }
 
@@ -504,7 +498,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
                 continue;
             }
 
-            stream_putBits( stream, 1, lp->isRobot ); /* better not to send this */
+            stream_putBits( stream, 1, LP_IS_ROBOT(lp) ); /* better not to send this */
 
             /* The first nPlayers players are the ones we'll use.  The local flag
                doesn't matter when for SERVER_ISCLIENT. */
@@ -635,43 +629,6 @@ robotTradeTiles( ServerCtxt* server, MoveInfo* newMove )
 } /* robotTradeTiles */
 #endif
 
-#define FUDGE_RANGE 10
-#define MINIMUM_SCORE 5
-static XP_U16
-figureTargetScore( ServerCtxt* server, XP_U16 turn )
-{
-    XP_S16 result = 1000;
-    XP_S16 highScore = 0;
-    ModelCtxt* model = server->vol.model;
-    XP_U16 nPlayers = server->vol.gi->nPlayers;
-    XP_U16 i;
-
-    XP_ASSERT( IS_ROBOT(&server->vol.gi->players[turn]) );
-
-    if ( 1 /* server->nHumanPlayers > 0 */ ) {
-        result = 0;
-
-        /* find the highest score anybody but the current player has */
-        for ( i = 0; i < nPlayers; ++i ) {
-            if ( i != turn ) {
-                XP_S16 score = model_getPlayerScore( model, i );
-                XP_ASSERT( score >= 0 );
-                if ( highScore < score ) {
-                    highScore = score;
-                }
-            }
-        }
-
-        result = (XP_S16)(highScore - model_getPlayerScore( model, turn )
-            + (FUDGE_RANGE-(XP_RANDOM() % (FUDGE_RANGE*2))));
-        if ( result < 0 ) {
-            result = MINIMUM_SCORE;
-        }
-    }
-    
-    return result;
-} /* figureTargetScore */
-
 static XWStreamCtxt*
 mkServerStream( ServerCtxt* server )
 {
@@ -697,7 +654,6 @@ makeRobotMove( ServerCtxt* server )
     XP_Bool timerEnabled = gi->timerEnabled;
     XP_Bool canMove;
     XP_U32 time = 0L; /* stupid compiler.... */
-    XP_U16 targetScore = NO_SCORE_LIMIT;
     XW_UtilCtxt* util = server->vol.util;
     
     if ( timerEnabled ) {
@@ -715,10 +671,6 @@ makeRobotMove( ServerCtxt* server )
 
     tileSet = model_getPlayerTiles( model, turn );
 
-    if ( gi->robotSmartness == DUMB_ROBOT ) {
-        targetScore = figureTargetScore( server, turn );
-    }
-
     XP_ASSERT( !!server_getEngineFor( server, turn ) );
     searchComplete = engine_findMove( server_getEngineFor( server, turn ),
                                       model, model_getDictionary( model ), 
@@ -726,7 +678,8 @@ makeRobotMove( ServerCtxt* server )
 #ifdef XWFEATURE_SEARCHLIMIT
                                       NULL, XP_FALSE,
 #endif
-                                      targetScore, &canMove, &newMove );
+                                      server->vol.gi->players[turn].robotIQ,
+                                      &canMove, &newMove );
     if ( searchComplete ) {
         const XP_UCHAR* str;
         XWStreamCtxt* stream = NULL;
@@ -806,7 +759,7 @@ robotMovePending( const ServerCtxt* server )
     if ( turn >= 0 && tileCountsOk(server) && NPASSES_OK(server) ) {
         CurGameInfo* gi = server->vol.gi;
         LocalPlayer* player = &gi->players[turn];
-        result = IS_ROBOT(player) && IS_LOCAL(player);
+        result = LP_IS_ROBOT(player) && LP_IS_LOCAL(player);
     }
     return result;
 } /* robotMovePending */
@@ -852,8 +805,8 @@ showPrevScore( ServerCtxt* server )
 
     prevTurn = (server->nv.currentTurn + nPlayers - 1) % nPlayers;
     lp = &gi->players[prevTurn];
-    wasRobot = lp->isRobot;
-    wasLocal = lp->isLocal;
+    wasRobot = LP_IS_ROBOT(lp);
+    wasLocal = LP_IS_LOCAL(lp);
 
     if ( wasLocal ) {
         XP_ASSERT( wasRobot );
@@ -1023,7 +976,7 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
     lp = findFirstPending( server, &player );
 
     /* get data from stream */
-    lp->isRobot = stream_getBits( stream, 1 );
+    lp->robotIQ = 1 == stream_getBits( stream, 1 )? 1 : 0;
     nameLen = stream_getBits( stream, NAME_LEN_NBITS );
     name = (XP_UCHAR*)XP_MALLOC( server->mpool, nameLen + 1 );
     stream_getBytes( stream, name, nameLen );
@@ -1060,8 +1013,8 @@ clearLocalRobots( ServerCtxt* server )
 
     for ( i = 0; i < nPlayers; ++i ) {
         LocalPlayer* player = &gi->players[i];
-        if ( IS_LOCAL( player ) ) {
-            player->isRobot = XP_FALSE;
+        if ( LP_IS_LOCAL( player ) ) {
+            player->robotIQ = 0;
         }
     }
 } /* clearLocalRobots */
@@ -1409,8 +1362,7 @@ server_getEngineFor( ServerCtxt* server, XP_U16 playerNum )
     engine = player->engine;
     if ( !engine && server->vol.gi->players[playerNum].isLocal ) {
         engine = engine_make( MPPARM(server->mpool)
-                              server->vol.util, 
-                              server->vol.gi->players[playerNum].isRobot );
+                              server->vol.util );
         player->engine = engine;
     }
 
@@ -1542,7 +1494,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
     XP_ASSERT( !!pool );
 #ifdef FEATURE_TRAY_EDIT
     ask = server->vol.gi->allowPickTiles
-        && !server->vol.gi->players[playerNum].isRobot;
+        && !LP_IS_ROBOT(&server->vol.gi->players[playerNum]);
 #else
     ask = XP_FALSE;
 #endif
@@ -2060,7 +2012,7 @@ server_commitMove( ServerCtxt* server )
     XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
 
 #ifdef DEBUG
-    if ( IS_ROBOT( &gi->players[turn] ) ) {
+    if ( LP_IS_ROBOT( &gi->players[turn] ) ) {
         XP_ASSERT( model_checkMoveLegal( model, turn, (XWStreamCtxt*)NULL,
                                          (WordNotifierInfo*)NULL ) );
     }
@@ -2388,7 +2340,7 @@ server_handleUndo( ServerCtxt* server )
         ++nUndone;
         XP_ASSERT( moveNum >= 0 );
         lastUndone = moveNum;
-        if ( !IS_ROBOT(&gi->players[lastTurnUndone]) ) {
+        if ( !LP_IS_ROBOT(&gi->players[lastTurnUndone]) ) {
             break;
         }
     }

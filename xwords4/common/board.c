@@ -564,7 +564,7 @@ board_canHint( const BoardCtxt* board )
         && 0 < model_getNumTilesTotal( board->model, board->selPlayer );
     if ( canHint ) {
         LocalPlayer* lp = &board->gi->players[board->selPlayer];
-        canHint = lp->isLocal && !lp->isRobot;
+        canHint = lp->isLocal && !LP_IS_ROBOT(lp);
     }
     return canHint;
 }
@@ -1412,7 +1412,7 @@ chooseBestSelPlayer( BoardCtxt* board )
             for ( i = 0; i < nPlayers; ++i ) {
                 LocalPlayer* lp = &board->gi->players[curTurn];
 
-                if ( !lp->isRobot && lp->isLocal ) {
+                if ( !LP_IS_ROBOT(lp) && lp->isLocal ) {
                     return curTurn;
                 }
                 curTurn = (curTurn + 1) % nPlayers;
@@ -1707,7 +1707,7 @@ board_requestHint( BoardCtxt* board,
 #ifdef XWFEATURE_SEARCHLIMIT
                                              lp, useTileLimits,
 #endif
-                                             NO_SCORE_LIMIT, 
+                                             0, /* 0: not a robot */
                                              &canMove, &newMove );
             board_popTimerSave( board );
 
@@ -2160,7 +2160,7 @@ askRevealTray( BoardCtxt* board )
     } else if ( !lp->isLocal ) {
         util_userError( board->util, ERR_NO_PEEK_REMOTE_TILES );
 #endif
-    } else if ( lp->isRobot ) {
+    } else if ( LP_IS_ROBOT(lp) ) {
         if ( reversed ) {
             util_userError( board->util, ERR_NO_PEEK_ROBOT_TILES );
         } else {
@@ -2286,6 +2286,7 @@ board_handlePenMove( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
     return result;
 } /* board_handlePenMove */
 
+#ifndef DISABLE_TILE_SEL
 /* Called when user taps on the board and a tray tile's selected.
  */
 static XP_Bool
@@ -2320,6 +2321,7 @@ moveSelTileToBoardXY( BoardCtxt* board, XP_U16 col, XP_U16 row )
 
     return result;
 } /* moveSelTileToBoardXY */
+#endif
 
 XP_Bool
 cellOccupied( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
@@ -2412,7 +2414,10 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 static XP_Bool
 handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool isPen )
 {
-    return moveSelTileToBoardXY( board, col, row )
+    return XP_FALSE
+#ifndef DISABLE_TILE_SEL
+        || moveSelTileToBoardXY( board, col, row )
+#endif
         || tryMoveArrow( board, col, row )
         || (!isPen && tryReplaceTile( board, col, row ))
         ;

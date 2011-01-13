@@ -372,7 +372,6 @@ static XP_Bool
 handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
 {
     XP_Bool result = XP_FALSE;
-    const XP_U16 selPlayer = board->selPlayer;
     PerTurnInfo* pti = board->selInfo;
 
     if ( onDivider ) {
@@ -387,6 +386,7 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
         }
     } else if ( index >= 0 ) {
         result = moveTileToArrowLoc( board, (XP_U8)index );
+#ifndef DISABLE_TILE_SEL
         if ( !result ) {
             TileBit newBits = 1 << index;
             XP_U8 selBits = pti->traySelBits;
@@ -398,7 +398,7 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
                 pti->traySelBits = NO_TILES;
             } else if ( selBits != 0 ) {
                 XP_U16 selIndex = indexForBits( selBits );
-                model_moveTileOnTray( board->model, selPlayer,
+                model_moveTileOnTray( board->model, board->selPlayer,
                                       selIndex, index );
                 pti->traySelBits = NO_TILES;
             } else {
@@ -410,6 +410,7 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
             pti->dividerSelected = XP_FALSE;
             result = XP_TRUE;
         }
+#endif
     } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
         result = board_commitTurn( board );
 #ifndef DISABLE_EMPTYTRAY_UNDO

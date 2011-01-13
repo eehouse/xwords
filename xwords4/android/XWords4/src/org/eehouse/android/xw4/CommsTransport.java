@@ -30,14 +30,7 @@ import java.net.InetSocketAddress;
 import java.util.Vector;
 import java.util.Iterator;
 import junit.framework.Assert;
-import android.telephony.SmsManager;
-import android.content.BroadcastReceiver;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -46,7 +39,8 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
-public class CommsTransport implements TransportProcs {
+public class CommsTransport implements TransportProcs, 
+                                       NetStateCache.StateChangedIf {
 
     public static final int DIALOG = 0;
     public static final int DIALOG_RETRY = 1;
@@ -84,8 +78,6 @@ public class CommsTransport implements TransportProcs {
     private ByteBuffer m_bytesIn;
 
     private Context m_context;
-    private BroadcastReceiver m_receiver;
-    private boolean m_netAvail = true;
 
     // assembling inbound packet
     private byte[] m_packetIn;
@@ -100,7 +92,7 @@ public class CommsTransport implements TransportProcs {
         m_buffersOut = new Vector<ByteBuffer>();
         m_bytesIn = ByteBuffer.allocate( 2048 );
 
-        buildNetAvailReceiver();
+        NetStateCache.register( context, this );
     }
 
     public class CommsThread extends Thread {
@@ -238,9 +230,15 @@ public class CommsTransport implements TransportProcs {
     public void waitToStop()
     {
         waitToStopImpl();
-        if ( null != m_receiver ) {
-            m_context.unregisterReceiver( m_receiver );
-            m_receiver = null;
+        NetStateCache.unregister( m_context, this );
+    }
+
+    // NetStateCache.StateChangedIf interface
+    public void netAvail( boolean nowAvailable )
+    {
+        if ( !nowAvailable ) {
+            waitToStopImpl();
+            m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
         }
     }
 
@@ -332,39 +330,6 @@ public class CommsTransport implements TransportProcs {
         }
     }
 
-    private class CommsBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive( Context context, Intent intent ) 
-        {
-            if ( intent.getAction().
-                 equals( ConnectivityManager.CONNECTIVITY_ACTION)) {
-
-                NetworkInfo ni = (NetworkInfo)intent.
-                    getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-                boolean netAvail = NetworkInfo.State.CONNECTED == ni.getState();
-
-                boolean netAvailDet = NetworkInfo.DetailedState.CONNECTED == 
-                    ni.getDetailedState();
-
-                Utils.logf( "CommsTransport::onReceive: netAvail=%s;netAvailDet=%s",
-                            netAvail?"true":"false", netAvailDet?"true":"false" );
-                m_netAvail = netAvail;
-                if ( !netAvail ) {
-                    waitToStopImpl();
-                    m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
-                }
-            }
-        }
-    }
-
-    private void buildNetAvailReceiver()
-    {
-        m_receiver = new CommsBroadcastReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction( ConnectivityManager.CONNECTIVITY_ACTION );
-        Intent intent = m_context.registerReceiver( m_receiver, filter );
-    }
-
     private void waitToStopImpl()
     {
         m_done = true;          // this is in a race!
@@ -398,7 +363,7 @@ public class CommsTransport implements TransportProcs {
 
         switch ( m_addr.conType ) {
         case COMMS_CONN_RELAY:
-            if ( m_netAvail ) {
+            if ( NetStateCache.netAvail( m_context ) ) {
                 putOut( buf );      // add to queue
                 if ( null == m_thread ) {
                     m_thread = new CommsThread();

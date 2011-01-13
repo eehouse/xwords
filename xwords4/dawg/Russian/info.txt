@@ -1,3 +1,4 @@
+# -*- mode: conf; coding: utf-8; -*-
 # Copyright 2002,2007 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
@@ -21,56 +22,54 @@ CHARSET:windows-1251
 # deal with DOS files
 LANGFILTER: tr -d '\r'
 # uppercase all
-LANGFILTER: | tr [àáâãäåæçèéêëìíîïğñòóôõö÷øùÚûüışÿ] [ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß]
+LANGFILTER: | tr [Å•Ã¡Ã¢ÄƒÃ¤ÄºÄ‡Ã§ÄÃ©Ä™Ã«Ä›Ã­Ã®ÄÄ‘Å„ÅˆÃ³Ã´Å‘Ã¶Ã·Å™Å¯ÃšÅ±Ã¼Ã½Å£Ë™] [Å”ÃÃ‚Ä‚Ã„Ä¹Ä†Ã‡ÄŒÃ‰Ä˜Ã‹ÄšÃÃÄÄÅƒÅ‡Ã“Ã”ÅÃ–Ã—Å˜Å®ÃšÅ°ÃœÃÅ¢ÃŸ]
 # LANGFILTER: | tr -s '\n' '\000'
 
 # note: don't turn off sorting!  Can't do it with GNU 'sort' without
 # setting LANG
 D2DARGS: -r -term 10
 
-LANGINFO: <p>Russian wordlists must be in the Windows-1251
-LANGINFO: codepage. Lower-case letters are converted to upper case and
-LANGINFO: any words that contain letters not listed below are
-LANGINFO: removed.</p>
+LANGINFO: <p>Russian wordlists must be in utf-8: codepage. Lower-case
+LANGINFO: letters are converted to upper case and any words that
+LANGINFO: contain letters not listed below are removed.</p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Russian==0x0F.  Low byte is padding.
 XLOC_HEADER:0x8F00
 
-
 <BEGIN_TILES>
-8       1         'À'
-2       3         'Á'
-4       1         'Â'
-2       3         'Ã'
-2       2         'Ä'
-7       1         'Å'
-1       4         'Æ'
-1       3         'Ç'
-7       1         'È'
-1       2         'É'
-4       2         'Ê'
-4       2         'Ë'
-2       3         'Ì'
-4       1         'Í'
-9       1         'Î'
-4       2         'Ï'
-5       1         'Ğ'
-5       1         'Ñ'
-7       1         'Ò'
-4       2         'Ó'
-1       5         'Ô'
-1       4         'Õ'
-1       4         'Ö'
-1       3         '×'
-1       4         'Ø'
-1       5         'Ù'
-1       10        'Ú'
-2       2         'Û'
-4       1         'Ü'
-1       8         'İ'
-1       5         'Ş'
-2       2         'ß'
-2			0		{"_"}
+8       1         'Å”'
+2       3         'Ã'
+4       1         'Ã‚'
+2       3         'Ä‚'
+2       2         'Ã„'
+7       1         'Ä¹'
+1       4         'Ä†'
+1       3         'Ã‡'
+7       1         'ÄŒ'
+1       2         'Ã‰'
+4       2         'Ä˜'
+4       2         'Ã‹'
+2       3         'Äš'
+4       1         'Ã'
+9       1         'Ã'
+4       2         'Ä'
+5       1         'Ä'
+5       1         'Åƒ'
+7       1         'Å‡'
+4       2         'Ã“'
+1       5         'Ã”'
+1       4         'Å'
+1       4         'Ã–'
+1       3         'Ã—'
+1       4         'Å˜'
+1       5         'Å®'
+1       10        'Ãš'
+2       2         'Å°'
+4       1         'Ãœ'
+1       8         'Ã'
+1       5         'Å¢'
+2       2         'ÃŸ'
+2	    0		{"_"}
 <END_TILES>
 # should ignore all after the <END_TILES> above

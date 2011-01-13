@@ -47,7 +47,6 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     gi->boardSize = getInt( env, j_gi, "boardSize" );
     gi->gameID = getInt( env, j_gi, "gameID" );
     gi->dictLang = getInt( env, j_gi, "dictLang" );
-    gi->robotSmartness = getInt( env, j_gi, "robotSmartness" );
     gi->hintsNotAllowed = getBool( env, j_gi, "hintsNotAllowed" );
     gi->timerEnabled =  getBool( env, j_gi, "timerEnabled" );
     gi->allowPickTiles = getBool( env, j_gi, "allowPickTiles" );
@@ -76,7 +75,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            lp->isRobot = getBool( env, jlp, "isRobot" );
+            lp->robotIQ = getInt( env, jlp, "robotIQ" );
             lp->isLocal = getBool( env, jlp, "isLocal" );
 
             getString( env, jlp, "name", buf, VSIZE(buf) );
@@ -105,7 +104,6 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     setInt( env, jgi, "boardSize", gi->boardSize );
     setInt( env, jgi, "gameID", gi->gameID );
     setInt( env, jgi, "dictLang", gi->dictLang );
-    setInt( env, jgi, "robotSmartness", gi->robotSmartness );
     setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed );
     setBool( env, jgi, "timerEnabled", gi->timerEnabled );
     setBool( env, jgi, "allowPickTiles", gi->allowPickTiles );
@@ -127,7 +125,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            setBool( env, jlp, "isRobot", lp->isRobot );
+            setInt( env, jlp, "robotIQ", lp->robotIQ );
             setBool( env, jlp, "isLocal", lp->isLocal );
             setString( env, jlp, "name", lp->name );
             setString( env, jlp, "password", lp->password );
