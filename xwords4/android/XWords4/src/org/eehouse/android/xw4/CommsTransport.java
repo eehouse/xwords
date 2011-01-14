@@ -341,17 +341,28 @@ public class CommsTransport implements TransportProcs {
 
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-                boolean netAvail = NetworkInfo.State.CONNECTED == ni.getState();
 
-                boolean netAvailDet = NetworkInfo.DetailedState.CONNECTED == 
-                    ni.getDetailedState();
+                Utils.logf( "CommsTransport::onReceive: getState()=>%s",
+                            ni.getState().toString() );
 
-                Utils.logf( "CommsTransport::onReceive: netAvail=%s;netAvailDet=%s",
-                            netAvail?"true":"false", netAvailDet?"true":"false" );
-                m_netAvail = netAvail;
-                if ( !netAvail ) {
-                    waitToStopImpl();
-                    m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+                boolean netAvail;
+                switch ( ni.getState() ) {
+                case CONNECTED:
+                    netAvail = true;
+                    break;
+                case DISCONNECTED:
+                    netAvail = false;
+                    break;
+                default:
+                    netAvail = m_netAvail; // so we'll do nothing below
+                }
+
+                if ( m_netAvail != netAvail ) {
+                    m_netAvail = netAvail;
+                    if ( !netAvail ) {
+                        waitToStopImpl();
+                        m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+                    }
                 }
             }
         }
