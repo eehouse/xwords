@@ -237,6 +237,12 @@ public class CommonPrefs {
                                 false );
     }
 
+    public static boolean getDefaultHintsAllowed( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_init_hintsallowed, 
+                                true );
+    }
+
     public static boolean getHideTitleBar( Context context )
     {
         return getPrefsBoolean( context, R.string.key_hide_title, true );
