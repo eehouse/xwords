@@ -196,6 +196,7 @@
     open them without it.</string>
     
     <string name="hints_allowed">Allow hints</string>
+    <string name="hints_allowed_sum">Enable the hint feature</string>
     <string name="progress_title">Searching for moves</string>
     <string name="use_timer">Enable game timer</string>
     <string name="color_tiles">Color tiles</string>
