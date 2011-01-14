@@ -74,7 +74,7 @@ public class CurGameInfo {
             : DeviceRole.SERVER_STANDALONE;
         dictName = CommonPrefs.getDefaultDict( context );
         dictLang = DictLangCache.getLangCode( context, dictName );
-        hintsNotAllowed = false;
+        hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
         allowPickTiles = false;
