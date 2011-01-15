@@ -47,7 +47,11 @@ typedef struct GtkDrawCtx {
     GtkWidget* drawing_area;
     struct GtkAppGlobals* globals;
 
+#ifdef USE_CAIRO
+    cairo_t* cr;
+#else
     GdkGC* drawGC;
+#endif
 
     GdkColor black;
     GdkColor white;

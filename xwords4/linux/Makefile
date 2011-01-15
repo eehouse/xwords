@@ -37,6 +37,7 @@ ifdef CURSES_SMALL_SCREEN
 DO_CURSES += -DCURSES_SMALL_SCREEN
 endif
 DO_GTK = -DPLATFORM_GTK
+# DO_GTK += -DUSE_CAIRO
 
 # uncomment for standalone build
 # STANDALONE = -DXWFEATURE_STANDALONE_ONLY
@@ -178,8 +179,8 @@ endif
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-2.0`
-	CFLAGS += `pkg-config --cflags gtk+-2.0` \
-		-DGDK_DISABLE_DEPRECATED
+	CFLAGS += `pkg-config --cflags gtk+-2.0`
+#   CFLAGS += -DGDK_DISABLE_DEPRECATED
 	POINTER_SUPPORT = -DPOINTER_SUPPORT
 endif
 
