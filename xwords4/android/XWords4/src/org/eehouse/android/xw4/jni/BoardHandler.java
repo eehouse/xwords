@@ -1,3 +1,4 @@
+/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -19,8 +20,11 @@
 
 package org.eehouse.android.xw4.jni;
 
+import org.eehouse.android.xw4.XWActivity;
+
 public interface BoardHandler {
 
-    void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi );
+    void startHandling( XWActivity parent, JNIThread thread, 
+                        int gamePtr, CurGameInfo gi );
 
 }
