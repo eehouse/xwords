@@ -6,19 +6,13 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 20 release</b>
+<b>Crosswords 4.4 beta 21 release</b>
 <ul>
+  <li>Fix, or try anyway, bug reported by users in the UK that meant the network was dropping so often they couldn't get a game connected.</li>
 
-  <li>Replace large tournament-grade dictionary with tiny one.  This should address complaints that the robot's too smart.</li>
+  <li>Remove <em>feature</em> where a tap on an empty board square would move any selected tile there.  This was confusing, and not really useful where you're using a finger instead of a stylus to point.  (Thanks.)</li>
 
-  <li>When a game depends on a dictionary that's been deleted and there are others available in that language, give the option to substitute instead of refusing to open the game.</li>
-
-  <li>Include number of words in new dictionary format, and display that along with language where available.  You will need to re-download any dictionaries that are not built-in to take advantage of this.</li>
-
-  <li>Try to handle changes in network availability in the middle of a game -- so you don't have to re-open a game to get it to connect.</li>
-
-  <li>Fix glitch drawing board on 600x800 Velocity Cruz eReader tablet -- $160 at Costco, and Crosswords runs great!</li>
-
+  <li>Add hints-enabled to the set of defaults for new games.</li>
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at eehouse@eehouse.org) what's broken and what features you'd most like to see.</p>
