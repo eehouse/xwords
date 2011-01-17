@@ -484,6 +484,14 @@
       here.  Email me at eehouse@eehouse.org for information on building
       and installing your own dictionaries.</string>
 
+    <string name="not_again_arrow">Moving tiles to the board:\nYou can
+      drag tiles between the rack and the board, or you can tap an
+      empty square to place the board arrow. Rack tiles you tap will
+      replace the arrow (moving it one square in the direction it
+      points.)  Tap the arrow once to change its orientation; a second
+      time, to hide it. A checkbox in the Appearance section of
+      Settings will hide it permanently.</string>
+
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>
 

@@ -66,6 +66,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Drawable m_origin;
     private int m_left, m_top;
     private JNIThread m_jniThread;
+    private XWActivity m_parent;
     private String[][] m_scores;
     private String[] m_dictChars;
     private Rect m_boundsScratch;
@@ -286,8 +287,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     } // layoutBoardOnce
 
     // BoardHandler interface implementation
-    public void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi ) 
+    public void startHandling( XWActivity parent, JNIThread thread, 
+                               int gamePtr, CurGameInfo gi ) 
     {
+        m_parent = parent;
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
@@ -506,6 +509,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;
     } // drawCell
 
+    private boolean m_arrowHintShown = false;
     public void drawBoardArrow( Rect rect, int bonus, boolean vert, 
                                 int hintAtts, int flags )
     {
@@ -513,6 +517,18 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         Drawable arrow = vert? m_downArrow : m_rightArrow;
         arrow.setBounds( rect );
         arrow.draw( m_canvas );
+
+        if ( !m_arrowHintShown ) {
+            m_arrowHintShown = true;
+            m_viewHandler.post( new Runnable() {
+                    public void run() {
+                        m_parent.
+                            showNotAgainDlgThen( R.string.not_again_arrow, 
+                                                 R.string.key_notagain_arrow, 
+                                                 null );
+                    }
+                } );
+        }
     }
 
     public boolean trayBegin ( Rect rect, int owner, int dfs ) 
