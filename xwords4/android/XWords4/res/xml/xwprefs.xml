@@ -72,6 +72,11 @@
     <PreferenceScreen android:title="@string/prefs_colors"
                       android:summary="@string/prefs_colors_summary"
                       >
+      <CheckBoxPreference android:key="@string/key_hilite_whiteonblack"
+                          android:title="@string/hilite_whiteonblack"
+                          android:summary="@string/hilite_whiteonblack_summary"
+                          android:defaultValue="true"
+                          />
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_player0"
          android:title="@string/player0"
@@ -121,6 +126,11 @@
          android:key="@string/key_clr_crosshairs"
          android:title="@string/clr_crosshairs"
          android:defaultValue="0x7070FF"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_clr_frames"
+         android:title="@string/clr_frames"
+         android:defaultValue="0x101010"
          />
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_empty"
