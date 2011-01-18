@@ -65,6 +65,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Drawable m_rightArrow;
     private Drawable m_downArrow;
     private boolean m_blackArrow;
+    // m_backgroundUsed: alpha not set ensures inequality
+    private int m_backgroundUsed = 0x00000000;
     private Drawable m_origin;
     private int m_left, m_top;
     private JNIThread m_jniThread;
@@ -524,15 +526,18 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         // figure out if the background is more dark than light
         int sum = 0;
         int background = m_otherColors[ CommonPrefs.COLOR_BKGND ];
-        for ( int ii = 0; ii < 3; ++ii ) {
-            sum += background & 0xFF;
-            background >>= 8;
-        }
-        boolean blackArrow = sum > (127 * 3);
+        if ( background != m_backgroundUsed ) {
+            m_backgroundUsed = background;
+            for ( int ii = 0; ii < 3; ++ii ) {
+                sum += background & 0xFF;
+                background >>= 8;
+            }
+            boolean blackArrow = sum > (127 * 3);
         
-        if ( m_blackArrow != blackArrow ) {
-            m_blackArrow = blackArrow;
-            m_downArrow = m_rightArrow = null;
+            if ( m_blackArrow != blackArrow ) {
+                m_blackArrow = blackArrow;
+                m_downArrow = m_rightArrow = null;
+            }
         }
         if ( vert ) {
             if ( null == m_downArrow ) {
