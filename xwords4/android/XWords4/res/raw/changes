@@ -8,7 +8,7 @@
 
 <b>Crosswords 4.4 beta 21 release</b>
 <ul>
-  <li>Fix, or try anyway, bug reported by users in the UK that meant the network was dropping so often they couldn't get a game connected.</li>
+  <li>Fix bug reported by users in the UK that meant the network was dropping so often they couldn't get a game connected.</li>
 
   <li>Remove <em>feature</em> where a tap on an empty board square would move any selected tile there.  This was confusing, and not really useful where you're using a finger instead of a stylus to point.  (Thanks.)</li>
 
