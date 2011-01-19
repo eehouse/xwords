@@ -134,7 +134,7 @@ public class GamesList extends XWListActivity
                     });
                 break;
             default:
-                Assert.fail();
+                // just drop it; super.onCreateDialog likely failed
                 break;
             }
         }

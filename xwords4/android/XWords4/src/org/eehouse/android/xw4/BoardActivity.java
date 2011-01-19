@@ -252,7 +252,8 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                 break;
 
             default:
-                Assert.assertTrue( false );
+                // just drop it; super.onCreateDialog likely failed
+                break;
             }
         }
         return dialog;
