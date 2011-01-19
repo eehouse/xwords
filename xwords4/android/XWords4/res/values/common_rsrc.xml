@@ -25,6 +25,7 @@
   <string name="key_tile_back">key_clr_tile_back</string>
   <string name="key_empty">key_clr_empty</string>
   <string name="key_clr_crosshairs">key_clr_crosshairs</string>
+  <string name="key_board_theme">key_board_theme</string>
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>
   <string name="key_proxy_port">key_proxy_port</string>
@@ -54,6 +55,7 @@
   <string name="key_notagain_conndfirst">key_notagain_conndfirst</string>
   <string name="key_notagain_conndmid">key_notagain_conndmid</string>
   <string name="key_notagain_dicts">key_notagain_dicts</string>
+  <string name="key_notagain_arrow">key_notagain_arrow</string>
 
   <string name="relayids_extra">org.eehouse.android.xw4.relayids_extra</string>
   
@@ -78,6 +80,11 @@
     <item>@string/robot_smartest</item>
     <item>@string/robot_smarter</item>
     <item>@string/robot_smart</item>
+  </string-array>
+
+  <string-array name="board_themes">
+    <item>@string/black_on_white</item>
+    <item>@string/white_on_black</item>
   </string-array>
 
   <string-array name="connect_frequencies">

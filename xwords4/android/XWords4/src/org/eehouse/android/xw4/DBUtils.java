@@ -27,6 +27,7 @@ import android.database.Cursor;
 import java.util.StringTokenizer;
 import android.content.ContentValues;
 import java.util.ArrayList;
+import java.util.Date;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -356,7 +357,8 @@ public class DBUtils {
         }
     }
 
-    public static void saveGame( Context context, String path, byte[] bytes )
+    public static void saveGame( Context context, String path, byte[] bytes,
+                                 boolean setCreate )
     {
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -365,6 +367,12 @@ public class DBUtils {
             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
             ContentValues values = new ContentValues();
             values.put( DBHelper.SNAPSHOT, bytes );
+
+            long timestamp = new Date().getTime();
+            if ( setCreate ) {
+                values.put( DBHelper.CREATE_TIME, timestamp );
+            }
+            values.put( DBHelper.LASTPLAY_TIME, timestamp );
 
             int result = db.update( DBHelper.TABLE_NAME_SUM, 
                                     values, selection, null );

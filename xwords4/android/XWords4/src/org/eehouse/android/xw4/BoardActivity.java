@@ -252,7 +252,8 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                 break;
 
             default:
-                Assert.assertTrue( false );
+                // just drop it; super.onCreateDialog likely failed
+                break;
             }
         }
         return dialog;
@@ -830,7 +831,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
                            } );
             m_jniThread.start();
 
-            m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
+            m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi );
             if ( null != m_xport ) {
                 m_xport.setReceiver( m_jniThread );
             }

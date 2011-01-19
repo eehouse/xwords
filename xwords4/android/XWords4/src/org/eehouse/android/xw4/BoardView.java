@@ -26,6 +26,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.content.Context;
 import android.util.AttributeSet;
 import org.eehouse.android.xw4.jni.*;
@@ -63,9 +64,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Rect m_letterRect;
     private Drawable m_rightArrow;
     private Drawable m_downArrow;
+    private boolean m_blackArrow;
+    // m_backgroundUsed: alpha not set ensures inequality
+    private int m_backgroundUsed = 0x00000000;
+    private boolean m_darkOnLight;
     private Drawable m_origin;
     private int m_left, m_top;
     private JNIThread m_jniThread;
+    private XWActivity m_parent;
     private String[][] m_scores;
     private String[] m_dictChars;
     private Rect m_boundsScratch;
@@ -110,6 +116,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
+    private static final int FRAME_GREY = 0xFF101010;
     private static final int GREY = 0xFF7F7F7F;
     private int[] m_bonusColors;
     private int[] m_playerColors;
@@ -171,7 +178,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_strokePaint.setStyle( Paint.Style.STROKE );
         m_tileStrokePaint = new Paint();
         m_tileStrokePaint.setStyle( Paint.Style.STROKE );
-        Utils.logf( "stroke starts at " + m_tileStrokePaint.getStrokeWidth() );
         float curWidth = m_tileStrokePaint.getStrokeWidth();
         curWidth *= 2;
         if ( curWidth < 2 ) {
@@ -180,8 +186,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_tileStrokePaint.setStrokeWidth( curWidth );
 
         Resources res = getResources();
-        m_rightArrow = res.getDrawable( R.drawable.rightarrow );
-        m_downArrow = res.getDrawable( R.drawable.downarrow );
         m_origin = res.getDrawable( R.drawable.origin );
 
         m_boundsScratch = new Rect();
@@ -286,8 +290,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     } // layoutBoardOnce
 
     // BoardHandler interface implementation
-    public void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi ) 
+    public void startHandling( XWActivity parent, JNIThread thread, 
+                               int gamePtr, CurGameInfo gi ) 
     {
+        m_parent = parent;
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
@@ -312,7 +318,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         synchronized( this ) {
             if ( null != m_canvas ) {
                 if ( 0 == resID ) {
-                    clearToBack( rect );
+                    fillRect( rect, m_otherColors[CommonPrefs.COLOR_BKGND] );
                 } else {
                     Drawable icon = getResources().getDrawable( resID );
                     icon.setBounds( rect );
@@ -326,7 +332,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
                                int remCount, int dfs )
     {
-        clearToBack( rect );
+        fillRect( rect, WHITE );
         m_canvas.save( Canvas.CLIP_SAVE_FLAG );
         m_canvas.clipRect(rect);
         m_scores = new String[numPlayers][];
@@ -434,7 +440,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             String time = String.format( "%s%d:%02d", negSign, secondsLeft/60, 
                                          secondsLeft%60 );
 
-            clearToBack( rect );
+            fillRect( rect, WHITE );
             m_fillPaint.setColor( m_playerColors[player] );
 
             Rect shorter = new Rect( rect );
@@ -472,8 +478,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 }
             }
         } else if ( pending ) {
-            backColor = BLACK;
-            foreColor = WHITE;
+            if ( darkOnLight() ) {
+                foreColor = WHITE;
+                backColor = BLACK;
+            } else {
+                foreColor = BLACK;
+                backColor = WHITE;
+            }
         } else {
             backColor = m_otherColors[CommonPrefs.COLOR_TILE_BACK];
         }
@@ -498,7 +509,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( (CELL_ISBLANK & flags) != 0 ) {
             markBlank( rect, pending );
         }
+
         // frame the cell
+        m_strokePaint.setColor( FRAME_GREY );
         m_canvas.drawRect( rect, m_strokePaint );
 
         drawCrosshairs( rect, flags );
@@ -506,13 +519,44 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;
     } // drawCell
 
+    private boolean m_arrowHintShown = false;
     public void drawBoardArrow( Rect rect, int bonus, boolean vert, 
                                 int hintAtts, int flags )
     {
+        // figure out if the background is more dark than light
+        boolean useDark = darkOnLight();
+        if ( m_blackArrow != useDark ) {
+            m_blackArrow = useDark;
+            m_downArrow = m_rightArrow = null;
+        }
+        Drawable arrow;
+        if ( vert ) {
+            if ( null == m_downArrow ) {
+                m_downArrow = loadAndRecolor( R.drawable.downarrow, useDark );
+            }
+            arrow = m_downArrow;
+        } else {
+            if ( null == m_rightArrow ) {
+                m_rightArrow = loadAndRecolor( R.drawable.rightarrow, useDark );
+            }
+            arrow = m_rightArrow;
+        }
+
         rect.inset( 2, 2 );
-        Drawable arrow = vert? m_downArrow : m_rightArrow;
         arrow.setBounds( rect );
         arrow.draw( m_canvas );
+
+        if ( !m_arrowHintShown ) {
+            m_arrowHintShown = true;
+            m_viewHandler.post( new Runnable() {
+                    public void run() {
+                        m_parent.
+                            showNotAgainDlgThen( R.string.not_again_arrow, 
+                                                 R.string.key_notagain_arrow, 
+                                                 null );
+                    }
+                } );
+        }
     }
 
     public boolean trayBegin ( Rect rect, int owner, int dfs ) 
@@ -617,7 +661,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void drawMiniWindow( String text, Rect rect )
     {
-        clearToBack( rect );
+        fillRect( rect, WHITE );
 
         m_fillPaint.setTextSize( k_miniTextSize );
         m_fillPaint.setTextAlign( Paint.Align.CENTER );
@@ -679,16 +723,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.clipRect( rect );
 
         if ( clearBack ) {
-            clearToBack( rect );
+            fillRect( rect, WHITE );
         }
 
         if ( isCursor || notEmpty ) {
-
-            if ( clearBack ) {
-                int indx = isCursor? CommonPrefs.COLOR_FOCUS 
-                    : CommonPrefs.COLOR_TILE_BACK;
-                fillRect( rect, m_otherColors[indx] );
+            int color = m_otherColors[isCursor? CommonPrefs.COLOR_FOCUS 
+                                      : CommonPrefs.COLOR_TILE_BACK];
+            if ( !clearBack ) {
+                color &= 0x7FFFFFFF; // translucent if being dragged.
             }
+            fillRect( rect, color );
 
             m_fillPaint.setColor( m_playerColors[m_trayOwner] );
 
@@ -802,11 +846,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.drawRect( rect, m_fillPaint );
     }
 
-    private void clearToBack( Rect rect ) 
-    {
-        fillRect( rect, m_otherColors[CommonPrefs.COLOR_BKGND] );
-    }
-
     private void figureFontDims()
     {
         if ( null == m_fontDims ) {
@@ -890,5 +929,42 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( whiteOnBlack ) {
             m_strokePaint.setColor( curColor );
         }
+    }
+
+    private boolean darkOnLight()
+    {
+        int background = m_otherColors[ CommonPrefs.COLOR_BKGND ];
+        if ( background != m_backgroundUsed ) {
+            m_backgroundUsed = background;
+
+            int sum = 0;
+            for ( int ii = 0; ii < 3; ++ii ) {
+                sum += background & 0xFF;
+                background >>= 8;
+            }
+            m_darkOnLight = sum > (127*3);
+        }
+        return m_darkOnLight;
+    }
+
+    private Drawable loadAndRecolor( int resID, boolean useDark )
+    {
+         Resources res = getResources();
+         Drawable arrow = res.getDrawable( resID );
+
+         if ( !useDark ) {
+             Bitmap src = ((BitmapDrawable)arrow).getBitmap();
+             Bitmap bitmap = src.copy( Bitmap.Config.ARGB_8888, true );
+             for ( int xx = 0; xx < bitmap.getWidth(); ++xx ) {
+                 for( int yy = 0; yy < bitmap.getHeight(); ++yy ) {
+                     if ( BLACK == bitmap.getPixel( xx, yy ) ) {
+                         bitmap.setPixel( xx, yy, WHITE );
+                     }
+                 }
+             }
+
+             arrow = new BitmapDrawable(bitmap); 
+         }
+         return arrow;
     }
 }

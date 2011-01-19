@@ -79,7 +79,7 @@ public class GameUtils {
         if ( null != addr ) {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
-        saveGame( context, gamePtr, gi, pathOut );
+        saveGame( context, gamePtr, gi, pathOut, true );
 
         GameSummary summary = new GameSummary( gi );
         XwJNI.game_summarize( gamePtr, summary );
@@ -142,27 +142,29 @@ public class GameUtils {
     }
 
     public static void saveGame( Context context, int gamePtr, 
-                                 CurGameInfo gi, String path )
+                                 CurGameInfo gi, String path, 
+                                 boolean setCreate )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
-        saveGame( context, stream, path );
+        saveGame( context, stream, path, setCreate );
     }
 
     public static void saveGame( Context context, int gamePtr, 
                                  CurGameInfo gi )
     {
-        saveGame( context, gamePtr, gi, newName( context ) );
+        saveGame( context, gamePtr, gi, newName( context ), false );
     }
 
-    public static void saveGame( Context context, byte[] bytes, String path )
+    public static void saveGame( Context context, byte[] bytes, 
+                                 String path, boolean setCreate )
     {
-        DBUtils.saveGame( context, path, bytes );
+        DBUtils.saveGame( context, path, bytes, setCreate );
     }
 
     public static String saveGame( Context context, byte[] bytes )
     {
         String name = newName( context );
-        saveGame( context, bytes, name );
+        saveGame( context, bytes, name, false );
         return name;
     }
 
@@ -372,7 +374,7 @@ public class GameUtils {
                                    CommonPrefs.get( context ) );
         gi.dictName = dict;
 
-        saveGame( context, gamePtr, gi, path );
+        saveGame( context, gamePtr, gi, path, false );
 
         GameSummary summary = new GameSummary( gi );
         XwJNI.game_summarize( gamePtr, summary );
@@ -415,7 +417,7 @@ public class GameUtils {
             XwJNI.comms_setAddr( gamePtr, car );
         }
 
-        GameUtils.saveGame( context, gamePtr, gi, path );
+        saveGame( context, gamePtr, gi, path, false );
 
         GameSummary summary = new GameSummary( gi );
         XwJNI.game_summarize( gamePtr, summary );
