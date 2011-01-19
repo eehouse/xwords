@@ -37,7 +37,7 @@ public class GameConverter {
                 Utils.logf( "GameConverter::convert() converting %s",
                             game );
                 byte[] bytes = savedGame( context, game );
-                DBUtils.saveGame( context, game, bytes );
+                DBUtils.saveGame( context, game, bytes, true );
                 context.deleteFile( game );
             }
         }
