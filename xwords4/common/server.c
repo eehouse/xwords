@@ -1689,7 +1689,7 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
 {
     server->vol.gameOverListener = gol;
     server->vol.gameOverData = data;
-} /* server_setTurnChangeListener */
+} /* server_setGameOverListener */
 
 static XP_Bool
 storeBadWords( XP_UCHAR* word, void* closure )
