@@ -67,6 +67,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private boolean m_blackArrow;
     // m_backgroundUsed: alpha not set ensures inequality
     private int m_backgroundUsed = 0x00000000;
+    private boolean m_darkOnLight;
     private Drawable m_origin;
     private int m_left, m_top;
     private JNIThread m_jniThread;
@@ -115,6 +116,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
+    private static final int FRAME_GREY = 0xFF101010;
     private static final int GREY = 0xFF7F7F7F;
     private int[] m_bonusColors;
     private int[] m_playerColors;
@@ -476,7 +478,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 }
             }
         } else if ( pending ) {
-            if ( CommonPrefs.getHiliteWhiteOnBlack( m_context ) ) {
+            if ( darkOnLight() ) {
                 foreColor = WHITE;
                 backColor = BLACK;
             } else {
@@ -509,7 +511,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         // frame the cell
-        m_strokePaint.setColor( m_otherColors[CommonPrefs.COLOR_FRAMES] );
+        m_strokePaint.setColor( FRAME_GREY );
         m_canvas.drawRect( rect, m_strokePaint );
 
         drawCrosshairs( rect, flags );
@@ -521,32 +523,21 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void drawBoardArrow( Rect rect, int bonus, boolean vert, 
                                 int hintAtts, int flags )
     {
-        Drawable arrow ;
-
         // figure out if the background is more dark than light
-        int sum = 0;
-        int background = m_otherColors[ CommonPrefs.COLOR_BKGND ];
-        if ( background != m_backgroundUsed ) {
-            m_backgroundUsed = background;
-            for ( int ii = 0; ii < 3; ++ii ) {
-                sum += background & 0xFF;
-                background >>= 8;
-            }
-            boolean blackArrow = sum > (127 * 3);
-        
-            if ( m_blackArrow != blackArrow ) {
-                m_blackArrow = blackArrow;
-                m_downArrow = m_rightArrow = null;
-            }
+        boolean useDark = darkOnLight();
+        if ( m_blackArrow != useDark ) {
+            m_blackArrow = useDark;
+            m_downArrow = m_rightArrow = null;
         }
+        Drawable arrow;
         if ( vert ) {
             if ( null == m_downArrow ) {
-                m_downArrow = loadAndRecolor( R.drawable.downarrow );
+                m_downArrow = loadAndRecolor( R.drawable.downarrow, useDark );
             }
             arrow = m_downArrow;
         } else {
             if ( null == m_rightArrow ) {
-                m_rightArrow = loadAndRecolor( R.drawable.rightarrow );
+                m_rightArrow = loadAndRecolor( R.drawable.rightarrow, useDark );
             }
             arrow = m_rightArrow;
         }
@@ -940,12 +931,28 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    private Drawable loadAndRecolor( int resID )
+    private boolean darkOnLight()
+    {
+        int background = m_otherColors[ CommonPrefs.COLOR_BKGND ];
+        if ( background != m_backgroundUsed ) {
+            m_backgroundUsed = background;
+
+            int sum = 0;
+            for ( int ii = 0; ii < 3; ++ii ) {
+                sum += background & 0xFF;
+                background >>= 8;
+            }
+            m_darkOnLight = sum > (127*3);
+        }
+        return m_darkOnLight;
+    }
+
+    private Drawable loadAndRecolor( int resID, boolean useDark )
     {
          Resources res = getResources();
          Drawable arrow = res.getDrawable( resID );
 
-         if ( ! m_blackArrow ) {
+         if ( !useDark ) {
              Bitmap src = ((BitmapDrawable)arrow).getBitmap();
              Bitmap bitmap = src.copy( Bitmap.Config.ARGB_8888, true );
              for ( int xx = 0; xx < bitmap.getWidth(); ++xx ) {

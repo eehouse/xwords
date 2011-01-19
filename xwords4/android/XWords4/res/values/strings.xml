@@ -268,7 +268,7 @@
 
     <string name="manage_dicts">Choose</string>
 
-    <string name="prefs_colors">Colors</string>
+    <string name="prefs_colors">Individual colors</string>
     <string name="prefs_colors_summary">Edit colors used on the board</string>
     <string name="player0">First player</string>
     <string name="player1">Second player</string>
@@ -287,10 +287,9 @@
     <string name="tile_back">Tile background</string>
     <string name="empty">Empty cell/background</string>
     <string name="clr_crosshairs">Crosshairs color</string>
-    <string name="clr_frames">Border color</string>
-    <string name="hilite_whiteonblack">Last play white-on-black</string>
-    <string name="hilite_whiteonblack_summary">Toggle recent move
-      contrast colors</string>
+    <string name="board_themes">Board color schemes</string>
+    <string name="white_on_black">Dark background</string>
+    <string name="black_on_white">Light background</string>
 
     <string name="advanced">Advanced</string>
     <string name="advanced_summary">You may never need these...</string>

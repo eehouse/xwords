@@ -39,6 +39,10 @@ public class PrefsActivity extends PreferenceActivity
     private static final int REVERT_ALL = 2;
 
     private String[] m_keys;
+    private String m_boardThemeKey;
+    private String m_keyEmpty;
+    private String m_whiteOnBlack;
+    private String m_blackOnWhite;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -118,6 +122,7 @@ public class PrefsActivity extends PreferenceActivity
                              R.string.key_initial_player_minutes,
                              R.string.key_default_dict,
                              R.string.key_default_phonies,
+                             R.string.key_board_theme,
         };
 
         SharedPreferences sp
@@ -129,6 +134,10 @@ public class PrefsActivity extends PreferenceActivity
             setSummary( sp, key );
             m_keys[ii] = key;
         }
+        m_boardThemeKey = getString( R.string.key_board_theme );
+        m_keyEmpty = getString( R.string.key_empty );
+        m_whiteOnBlack = getString( R.string.white_on_black );
+        m_blackOnWhite = getString( R.string.black_on_white );
     }
     
     @Override
@@ -149,11 +158,32 @@ public class PrefsActivity extends PreferenceActivity
 
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
+        // This would search faster if it were a hash set...
         for ( String akey : m_keys ) {
             if ( akey.equals( key ) ) {
                 setSummary( sp, key );
                 break;
             }
+        }
+
+        // Change those color elements that follow the "themes" --
+        // currently only key_empty
+        while ( m_boardThemeKey.equals( key ) ) { // while allows break
+            String newValue = sp.getString( key, "" );
+
+            int color;
+            if ( m_whiteOnBlack.equals( newValue ) ) {
+                color = 0xFF000000;
+            } else if ( m_blackOnWhite.equals( newValue ) ) {
+                color = 0xFFFFFFFF;
+            } else {
+                break;
+            }
+
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putInt( m_keyEmpty, color );
+            editor.commit();
+            break;
         }
     }
 

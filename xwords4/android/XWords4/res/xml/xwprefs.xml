@@ -49,11 +49,11 @@
   <PreferenceScreen android:title="@string/prefs_appearance"
                     android:summary="@string/prefs_appearance_summary"
                     >
-    <CheckBoxPreference  android:key="@string/key_color_tiles"
-                         android:title="@string/color_tiles"
-                         android:summary="@string/color_tiles_summary"
-                         android:defaultValue="true"
-                         />
+    <!-- <CheckBoxPreference  android:key="@string/key_color_tiles" -->
+    <!--                      android:title="@string/color_tiles" -->
+    <!--                      android:summary="@string/color_tiles_summary" -->
+    <!--                      android:defaultValue="true" -->
+    <!--                      /> -->
     <CheckBoxPreference android:key="@string/key_show_arrow"
                         android:title="@string/show_arrow"
                         android:summary="@string/show_arrow_summary"
@@ -69,14 +69,16 @@
                         android:summary="@string/show_bonussum_summary"
                         android:defaultValue="true"
                         />
+    <ListPreference android:key="@string/key_board_theme"
+                    android:title="@string/board_themes"
+                    android:entries="@array/board_themes"
+                    android:entryValues="@array/board_themes"
+                    android:defaultValue="@string/white_on_black"
+                    />
+
     <PreferenceScreen android:title="@string/prefs_colors"
                       android:summary="@string/prefs_colors_summary"
                       >
-      <CheckBoxPreference android:key="@string/key_hilite_whiteonblack"
-                          android:title="@string/hilite_whiteonblack"
-                          android:summary="@string/hilite_whiteonblack_summary"
-                          android:defaultValue="true"
-                          />
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_player0"
          android:title="@string/player0"
@@ -117,20 +119,16 @@
          android:title="@string/bonus_w3x"
          android:defaultValue="0xAFAFAF"
          />
-      <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_tile_back"
-         android:title="@string/tile_back"
-         android:defaultValue="0xFFFF99"
-         />
+
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_clr_crosshairs"
          android:title="@string/clr_crosshairs"
          android:defaultValue="0x7070FF"
          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_clr_frames"
-         android:title="@string/clr_frames"
-         android:defaultValue="0x101010"
+         android:key="@string/key_tile_back"
+         android:title="@string/tile_back"
+         android:defaultValue="0xFFFF99"
          />
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_empty"
