@@ -727,12 +727,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         if ( isCursor || notEmpty ) {
-
-            if ( clearBack ) {
-                int indx = isCursor? CommonPrefs.COLOR_FOCUS 
-                    : CommonPrefs.COLOR_TILE_BACK;
-                fillRect( rect, m_otherColors[indx] );
+            int color = m_otherColors[isCursor? CommonPrefs.COLOR_FOCUS 
+                                      : CommonPrefs.COLOR_TILE_BACK];
+            if ( !clearBack ) {
+                color &= 0x7FFFFFFF; // translucent if being dragged.
             }
+            fillRect( rect, color );
 
             m_fillPaint.setColor( m_playerColors[m_trayOwner] );
 
