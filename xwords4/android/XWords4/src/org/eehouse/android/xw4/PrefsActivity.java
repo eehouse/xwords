@@ -31,6 +31,7 @@ import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
+import java.util.HashSet;
 
 public class PrefsActivity extends PreferenceActivity 
     implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -38,7 +39,7 @@ public class PrefsActivity extends PreferenceActivity
     private static final int REVERT_COLORS = 1;
     private static final int REVERT_ALL = 2;
 
-    private String[] m_keys;
+    private HashSet<String> m_keys;
     private String m_boardThemeKey;
     private String m_keyEmpty;
     private String m_whiteOnBlack;
@@ -127,12 +128,12 @@ public class PrefsActivity extends PreferenceActivity
 
         SharedPreferences sp
             = PreferenceManager.getDefaultSharedPreferences( this );
-        m_keys = new String[ textKeyIds.length ];
+        m_keys = new HashSet<String>( textKeyIds.length );
         for ( int ii = 0; ii < textKeyIds.length; ++ii ) {
             int id  = textKeyIds[ii];
             String key = getString( id );
             setSummary( sp, key );
-            m_keys[ii] = key;
+            m_keys.add( key );
         }
         m_boardThemeKey = getString( R.string.key_board_theme );
         m_keyEmpty = getString( R.string.key_empty );
@@ -158,12 +159,8 @@ public class PrefsActivity extends PreferenceActivity
 
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
-        // This would search faster if it were a hash set...
-        for ( String akey : m_keys ) {
-            if ( akey.equals( key ) ) {
-                setSummary( sp, key );
-                break;
-            }
+        if ( m_keys.contains( key ) ) {
+            setSummary( sp, key );
         }
 
         // Change those color elements that follow the "themes" --
