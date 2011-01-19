@@ -29,7 +29,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 7;
+    private static final int DB_VERSION = 6;
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -52,10 +52,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE";
     // not used yet
-    // public static final String CREATE_TIME = "CREATE_TIME";
-    public static final String CTIME = "CTIME";
+    public static final String CREATE_TIME = "CREATE_TIME";
     // not used yet
-    public static final String MTIME = "MTIME";
+    public static final String LASTPLAY_TIME = "LASTPLAY_TIME";
 
 
     public DBHelper( Context context )
@@ -86,11 +85,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     // HASMSGS: sqlite doesn't have bool; use 0 and 1
                     + HASMSGS    + " INTEGER DEFAULT 0,"
 
-                    + CTIME      + " TIMESTAMP,"
-                    + MTIME      + " TIMESTAMP,"
-
-                    // + CREATE_TIME + " INTEGER,"
-                    // + LASTPLAY_TIME + " INTEGER,"
+                    + CREATE_TIME + " INTEGER,"
+                    + LASTPLAY_TIME + " INTEGER,"
 
                     + SNAPSHOT   + " BLOB"
                     + ");" );
@@ -116,24 +112,8 @@ public class DBHelper extends SQLiteOpenHelper {
     {
         Utils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
 
-        if ( newVersion == 7 ) {
-            switch( oldVersion ) {
-            case 5:
-                onCreateObits( db );
-                // FALLTHRU
-            case 6:
-                // F*cking sqlite won't let me add a column with a
-                // non-constant default (i.e.  DEFAULT
-                // (datetime('now','localtime'))," so I'll have to add
-                // the value manually.  Or screw everybody and nuke
-                // the DB rather than modify it.  I want my
-                // postgres...
-                db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM +
-                            " ADD " + CTIME + " TIMESTAMP;" );
-                db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM 
-                            + " ADD " + MTIME + " TIMESTAMP;" );
-                break;
-            }
+        if ( newVersion == 6 && oldVersion == 5 ) {
+            onCreateObits(db);
         } else {
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {
