@@ -287,26 +287,27 @@ XWThreadPool::real_listener()
 #endif
             nSocketsAllocd = nSockets;
         }
-        struct pollfd* curfd = fds;
+        int curfd = 0;
         
-        curfd->fd = m_pipeRead;
-        curfd->events = flags;
+        fds[curfd].fd = m_pipeRead;
+        fds[curfd].events = flags;
 #ifdef LOG_POLL
-        logLen += snprintf( log+logLen, logCapacity - logLen, "%d,", curfd->fd );
+        logLen += snprintf( log+logLen, logCapacity - logLen, "%d,", 
+                            fds[curfd].fd );
 #endif
         ++curfd;
 
         vector<int>::iterator iter = m_activeSockets.begin();
         while ( iter != m_activeSockets.end()  ) {
-            curfd->fd = *iter++;
-            curfd->events = flags;
+            fds[curfd].fd = *iter++;
+            fds[curfd].events = flags;
 #ifdef LOG_POLL
             if ( logCapacity > logLen ) {
                 logLen += snprintf( log+logLen, logCapacity - logLen, "%d,", 
-                                    curfd->fd );
+                                    fds[curfd].fd );
             }
 #endif
-            assert( curfd < fds + nSockets );
+            assert( curfd < nSockets );
             ++curfd;
         }
         pthread_rwlock_unlock( &m_activeSocketsRWLock );
@@ -343,13 +344,13 @@ XWThreadPool::real_listener()
 
         if ( nEvents > 0 ) {
             --nSockets;
-            curfd = &fds[1];
+            curfd = 1;
 
             int ii;
             for ( ii = 0; ii < nSockets && nEvents > 0; ++ii ) {
 
-                if ( curfd->revents != 0 ) {
-                    int socket = curfd->fd;
+                if ( fds[curfd].revents != 0 ) {
+                    int socket = fds[curfd].fd;
                     if ( !RemoveSocket( socket ) ) {
                         /* no further processing if it's been removed while
                            we've been sleeping in poll */
@@ -357,11 +358,12 @@ XWThreadPool::real_listener()
                         continue;
                     }
 
-                    if ( 0 != (curfd->revents & (POLLIN | POLLPRI)) ) {
+                    if ( 0 != (fds[curfd].revents & (POLLIN | POLLPRI)) ) {
                         logf( XW_LOGINFO, "enqueuing %d", socket );
                         enqueue( socket );
                     } else {
-                        logf( XW_LOGERROR, "odd revents: %x", curfd->revents );
+                        logf( XW_LOGERROR, "odd revents: %x", 
+                              fds[curfd].revents );
                         EnqueueKill( socket, "error/hup in poll()" ); 
                     }
                     --nEvents;
