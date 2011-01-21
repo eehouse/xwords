@@ -128,12 +128,14 @@ launch() {
 close_device() {
     ID=$1
     MVTO=$2
+    REASON="$3"
     if [ ${PIDS[$ID]} -ne 0 ]; then
         kill ${PIDS[$ID]} 2>/dev/null
         wait ${PIDS[$ID]}
     fi
     unset PIDS[$ID]
     unset CMDS[$ID]
+    echo "closing game: $REASON" >> ${LOGS[$ID]}
     if [ -n "$MVTO" ]; then
         [ -f ${FILES[$ID]} ] && mv ${FILES[$ID]} $MVTO
         mv ${LOGS[$ID]} $MVTO
@@ -178,7 +180,7 @@ maybe_resign() {
         if grep -q XWRELAY_ALLHERE $LOG; then
             if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
                 echo "making $LOG $(connName $LOG) resign..."
-                kill_from_log $LOG && close_device $KEY $DEADDIR
+                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced"
             fi
         fi
     fi
@@ -213,13 +215,13 @@ check_game() {
         for ID in $OTHERS $KEY; do
             echo -n "${LOGS[$ID]}, "
             kill_from_log ${LOGS[$ID]} || true
-            close_device $ID $DONEDIR
+            close_device $ID $DONEDIR "game over"
         done
         date
     elif grep -q 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
         kill_from_log $LOG || true
-        close_device $KEY $DEADDIR
+        close_device $KEY $DEADDIR "other resigned"
     else
         maybe_resign $KEY
     fi
@@ -250,7 +252,7 @@ run_cmds() {
         mkdir -p ${LOGDIR}/not_done
         echo "processing unfinished games...."
         for KEY in ${!CMDS[*]}; do
-            close_device $KEY ${LOGDIR}/not_done
+            close_device $KEY ${LOGDIR}/not_done "unfinished game"
         done
     fi
 }
