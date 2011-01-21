@@ -168,13 +168,13 @@
                         android:defaultValue="false"
                         />
 
-    <!-- <org.eehouse.android.xw4.PollListPreference -->
-    <!--    android:key="@string/key_connect_frequency" -->
-    <!--    android:title="@string/connect_frequency" -->
-    <!--    android:entries="@array/connect_frequencies" -->
-    <!--    android:entryValues="@array/connect_frequencies_values" -->
-    <!--    android:defaultValue="900" -->
-    <!--    /> -->
+    <org.eehouse.android.xw4.PollListPreference
+       android:key="@string/key_connect_frequency"
+       android:title="@string/connect_frequency"
+       android:entries="@array/connect_frequencies"
+       android:entryValues="@array/connect_frequencies_values"
+       android:defaultValue="900"
+       />
   </PreferenceScreen>
 
   <PreferenceScreen android:title="@string/advanced"
