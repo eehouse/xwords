@@ -683,7 +683,7 @@ read_packet( int sock, unsigned char* buf, int buflen )
     nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
     if ( nread == sizeof(msgLen) ) {
         msgLen = ntohs( msgLen );
-        if ( msgLen <= buflen ) {
+        if ( msgLen < buflen ) {
             nread = recv( sock, buf, msgLen, MSG_WAITALL );
             if ( nread == msgLen ) {
                 result = nread;
@@ -693,16 +693,10 @@ read_packet( int sock, unsigned char* buf, int buflen )
     return result;
 }
 
-static void*
-handle_proxy_tproc( void* closure )
+void
+handle_proxy_packet( unsigned char* buf, int len, int sock )
 {
-    blockSignals();
-    int sock = (int)closure;
-
-    unsigned char buf[MAX_PROXY_MSGLEN];
-    int len = read_packet( sock, buf, sizeof(buf)-1 );
     if ( len > 0 ) {
-        buf[len] = '\0';        /* so can use strtok */
         unsigned char* bufp = buf;
         unsigned char* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
@@ -764,7 +758,7 @@ handle_proxy_tproc( void* closure )
                         }
                     }
                 }
-                break;
+                break;          /* PRX_HAS_MSGS */
             case PRX_DEVICE_GONE:
                 logf( XW_LOGINFO, "%s: got PRX_DEVICE_GONE", __func__ );
                 if ( len >= 2 ) {
@@ -799,24 +793,11 @@ handle_proxy_tproc( void* closure )
                 }
                 len = 0;        /* return a 0-length message */
                 write( sock, &len, sizeof(len) );
-                break;
+                break;          /* PRX_DEVICE_GONE */
             }
         }
     }
-    sleep( 2 );
-    close( sock );
-    return NULL;
-} /* handle_proxy_tproc */
-
-static void
-handle_proxy_connect( int sock )
-{
-    pthread_t thread;
-    if ( 0 == pthread_create( &thread, NULL, handle_proxy_tproc, 
-                              (void*)sock ) ) {
-        pthread_detach( thread );
-    }
-} /* handle_proxy_connect */
+} /* handle_proxy_packet */
 
 int
 main( int argc, char** argv )
@@ -839,7 +820,6 @@ main( int argc, char** argv )
 
     /* Verify sizes here... */
     assert( sizeof(CookieID) == 2 );
-                   
 
     /* Read options. Options trump config file values when they conflict, but
        the name of the config file is an option so we have to get that
@@ -1120,15 +1100,14 @@ main( int argc, char** argv )
                     int newSock = accept( listener, (sockaddr*)&newaddr,
                                           &siz );
 
-                    if ( perGame ) {
-                        logf( XW_LOGINFO, 
-                              "accepting connection from %s on socket %d", 
-                              inet_ntoa(newaddr.sin_addr), newSock );
+                    logf( XW_LOGINFO, 
+                          "accepting connection from %s on socket %d", 
+                          inet_ntoa(newaddr.sin_addr), newSock );
 
-                        tPool->AddSocket( newSock );
-                    } else {
-                        handle_proxy_connect( newSock );
-                    }
+                    tPool->AddSocket( newSock,
+                                      perGame ? XWThreadPool::STYPE_GAME 
+                                      : XWThreadPool::STYPE_PROXY );
+
                     --retval;
                 }
             }

@@ -30,6 +30,7 @@ int GetNSpawns(void);
 int make_socket( unsigned long addr, unsigned short port );
 
 int read_packet( int sock, unsigned char* buf, int buflen );
+void handle_proxy_packet( unsigned char* buf, int bufLen, int socket );
 
 const char* cmdToStr( XWRELAY_Cmd cmd );
 
