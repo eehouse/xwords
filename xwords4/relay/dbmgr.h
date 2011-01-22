@@ -76,6 +76,8 @@ class DBMgr {
                        const unsigned char* const buf, int len );
     bool GetStoredMessage( const char* const connName, int hid, 
                            unsigned char* buf, size_t* buflen, int* msgID );
+    bool GetNthStoredMessage( const char* const connName, int hid, int nn,
+                              unsigned char* buf, size_t* buflen, int* msgID );
     void RemoveStoredMessage( int msgID );
 
  private:
