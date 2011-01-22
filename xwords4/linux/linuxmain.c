@@ -216,6 +216,7 @@ typedef enum {
     ,CMD_HIDEVALUES
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
+    ,CMD_NOPEEK
 #ifdef XWFEATURE_SEARCHLIMIT
     ,CMD_HINTRECT
 #endif
@@ -283,6 +284,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_HIDEVALUES, false, "hide-values", "show letters, not nums, on tiles" }
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
+    ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
 #ifdef XWFEATURE_SEARCHLIMIT
     ,{ CMD_HINTRECT, false, "hintrect", "enable draggable hint-limits rect" }
 #endif
@@ -1043,6 +1045,9 @@ main( int argc, char** argv )
             break;
         case CMD_VERTICALSCORE:
             mainParams.verticalScore = XP_TRUE;
+            break;
+        case CMD_NOPEEK:
+            mainParams.allowPeek = XP_FALSE;
             break;
 #ifdef XWFEATURE_SLOW_ROBOT
         case CMD_SLOWROBOT:
