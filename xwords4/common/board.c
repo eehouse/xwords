@@ -826,7 +826,8 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
         if ( reveal ) {
             checkRevealTray( board );
         }
-    } else if ( canPeek || newPlayer == curTurn ) {
+    } else if ( canPeek || ((newPlayer == curTurn)
+                            && LP_IS_LOCAL( &board->gi->players[newPlayer]))) {
         PerTurnInfo* newInfo = &board->pti[newPlayer];
         XP_U16 oldPlayer = board->selPlayer;
         model_foreachPendingCell( board->model, newPlayer,
