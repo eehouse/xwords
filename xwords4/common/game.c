@@ -229,7 +229,9 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                                                 gi->nPlayers );
             server_prefsChanged( game->server, cp );
             board_prefsChanged( game->board, cp );
-            draw_dictChanged( draw, dict );
+            if ( !!draw ) {
+                draw_dictChanged( draw, dict );
+            }
             success = XP_TRUE;
         } while( XP_FALSE );
     }
