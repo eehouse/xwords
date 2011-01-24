@@ -48,6 +48,7 @@ typedef struct LaunchParams {
     DictionaryCtxt* dict;
     CurGameInfo gi;
     char* fileName;
+    char* pipe;
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;

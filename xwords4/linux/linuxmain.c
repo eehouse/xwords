@@ -217,6 +217,7 @@ typedef enum {
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
     ,CMD_NOPEEK
+    ,CMD_ADDPIPE
 #ifdef XWFEATURE_SEARCHLIMIT
     ,CMD_HINTRECT
 #endif
@@ -285,6 +286,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
+    ,{ CMD_ADDPIPE, true, "with-pipe", "named pipe to listen on for relay msgs" }
 #ifdef XWFEATURE_SEARCHLIMIT
     ,{ CMD_HINTRECT, false, "hintrect", "enable draggable hint-limits rect" }
 #endif
@@ -584,12 +586,27 @@ linux_close_socket( CommonGlobals* cGlobals )
 }
 
 int
+blocking_read( int fd, unsigned char* buf, int len )
+{
+    int nRead = 0;
+    while ( nRead < len ) {
+       ssize_t siz = read( fd, buf + nRead, len - nRead );
+       if ( siz <= 0 ) {
+           nRead = -1;
+           break;
+       }
+       nRead += siz;
+    }
+    return nRead;
+}
+
+int
 linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
     int sock = cGlobals->socket;
     unsigned short tmp;
     unsigned short packetSize;
-    ssize_t nRead = recv( sock, &tmp, sizeof(tmp), 0 );
+    ssize_t nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
     if ( nRead != 2 ) {
         XP_LOGF( "recv => %d, errno=%d (\"%s\")", nRead, errno, strerror(errno) );
         linux_close_socket( cGlobals );
@@ -599,7 +616,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 
         packetSize = ntohs( tmp );
         assert( packetSize <= bufSize );
-        nRead = recv( sock, buf, packetSize, 0 );
+        nRead = blocking_read( sock, buf, packetSize );
         if ( nRead < 0 ) {
             XP_WARNF( "%s: errno=%d (\"%s\")\n", __func__, errno, 
                       strerror(errno) );
@@ -1048,11 +1065,13 @@ main( int argc, char** argv )
             break;
         case CMD_NOPEEK:
             mainParams.allowPeek = XP_FALSE;
+        case CMD_ADDPIPE:
+            mainParams.pipe = optarg;
             break;
 #ifdef XWFEATURE_SLOW_ROBOT
         case CMD_SLOWROBOT:
             if ( !parsePair( optarg, &mainParams.robotThinkMin,
-                              &mainParams.robotThinkMax ) ) {
+                             &mainParams.robotThinkMax ) ) {
                 usage(argv[0], "bad param" );
             }
             break;

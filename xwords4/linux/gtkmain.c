@@ -39,6 +39,8 @@
 #endif
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "main.h"
 #include "linuxmain.h"
@@ -1878,7 +1880,7 @@ newConnectionInput( GIOChannel *source,
                     GIOCondition condition,
                     gpointer data )
 {
-    gboolean keepSource;
+    gboolean keepSource = TRUE;
     int sock = g_io_channel_unix_get_fd( source );
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
@@ -1886,25 +1888,7 @@ newConnectionInput( GIOChannel *source,
 
 /*     XP_ASSERT( sock == globals->cGlobals.socket ); */
 
-    if ( (condition & (G_IO_HUP | G_IO_ERR)) != 0 ) {
-        XP_LOGF( "dropping socket %d", sock );
-        close( sock );
-#ifdef XWFEATURE_RELAY
-        globals->cGlobals.socket = -1;
-#endif
-        if ( 0 ) {
-#ifdef XWFEATURE_BLUETOOTH
-        } else if ( COMMS_CONN_BT == globals->cGlobals.params->conType ) {
-            linux_bt_socketclosed( &globals->cGlobals, sock );
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-        } else if ( COMMS_CONN_IP_DIRECT == globals->cGlobals.params->conType ) {
-            linux_udp_socketclosed( &globals->cGlobals, sock );
-#endif
-        }
-        keepSource = FALSE;           /* remove the event source */
-
-    } else if ( (condition & G_IO_IN) != 0 ) {
+    if ( (condition & G_IO_IN) != 0 ) {
         ssize_t nRead;
         unsigned char buf[512];
         CommsAddrRec* addrp = NULL;
@@ -1972,8 +1956,27 @@ newConnectionInput( GIOChannel *source,
         } else {
             XP_LOGF( "errno from read: %d/%s", errno, strerror(errno) );
         }
-        keepSource = TRUE;
     }
+
+    if ( (condition & (G_IO_HUP | G_IO_ERR)) != 0 ) {
+        XP_LOGF( "dropping socket %d", sock );
+        close( sock );
+#ifdef XWFEATURE_RELAY
+        globals->cGlobals.socket = -1;
+#endif
+        if ( 0 ) {
+#ifdef XWFEATURE_BLUETOOTH
+        } else if ( COMMS_CONN_BT == globals->cGlobals.params->conType ) {
+            linux_bt_socketclosed( &globals->cGlobals, sock );
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+        } else if ( COMMS_CONN_IP_DIRECT == globals->cGlobals.params->conType ) {
+            linux_udp_socketclosed( &globals->cGlobals, sock );
+#endif
+        }
+        keepSource = FALSE;           /* remove the event source */
+    }
+
     return keepSource;                /* FALSE means to remove event source */
 } /* newConnectionInput */
 
@@ -2108,6 +2111,58 @@ handle_sigintterm( int XP_UNUSED(sig) )
 {
     LOG_FUNC();
     gtk_main_quit();
+}
+
+static void
+read_pipe_then_close( GtkAppGlobals* globals )
+{
+    LaunchParams* params = globals->cGlobals.params;
+    XWStreamCtxt* stream = 
+        streamFromFile( &globals->cGlobals, 
+                        params->fileName, globals );
+
+    XP_Bool opened = game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
+                                          &params->gi, 
+                                          params->dict, params->util, 
+                                          (DrawCtx*)globals->draw, 
+                                          &globals->cp, NULL );
+    XP_ASSERT( opened );
+    stream_destroy( stream );
+
+    XP_Bool handled = XP_FALSE;
+    int fd = open( params->pipe, O_RDONLY );
+    while ( fd >= 0 ) {
+        unsigned short len;
+        ssize_t nRead = blocking_read( fd, (unsigned char*)&len, sizeof(len) );
+        if ( nRead != 2 ) {
+            break;
+        }
+        len = ntohs( len );
+        unsigned char buf[len];
+        nRead = blocking_read( fd, buf, len );
+        if ( nRead != len ) {
+            break;
+        }
+        stream = mem_stream_make( MEMPOOL params->vtMgr,
+                                  globals, CHANNEL_NONE, NULL );
+        stream_putBytes( stream, buf, len );
+
+        if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
+                                        stream, NULL ) ) {
+            handled = server_receiveMessage( globals->cGlobals.game.server,
+                                             stream ) || handled;
+        }
+        stream_destroy( stream );
+    }
+    LOG_RETURNF( "%d", handled );
+
+    /* Write it out */
+    stream = mem_stream_make( MEMPOOL params->vtMgr, 
+                              globals, 0, writeToFile );
+    stream_open( stream );
+    game_saveToStream( &globals->cGlobals.game, &params->gi, 
+                       stream );
+    stream_destroy( stream );
 }
 
 int
@@ -2259,11 +2314,14 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 /*  			 | GDK_POINTER_MOTION_HINT_MASK */
 			   );
 
-    gtk_widget_show( window );
+    if ( !!params->pipe && !!params->fileName ) {
+        read_pipe_then_close( &globals );
+    } else {
+        gtk_widget_show( window );
 
-    gtk_main();
-
-/*      MONCONTROL(1); */
+        gtk_main();
+    }
+    /*      MONCONTROL(1); */
 
     cleanup( &globals );
 

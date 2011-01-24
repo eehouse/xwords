@@ -64,6 +64,8 @@ XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name,
                               void* closure );
 void writeToFile( XWStreamCtxt* stream, void* closure );
 
+int blocking_read( int fd, unsigned char* buf, int len );
+
 void linux_close_socket( CommonGlobals* cGlobals );
 
 #ifdef KEYBOARD_NAV
