@@ -241,7 +241,7 @@ run_cmds() {
             PIDS[$KEY]=$!
         else
             sleep 2             # make sure it's had some time
-            kill ${PIDS[$KEY]}
+            kill ${PIDS[$KEY]} || true
             PIDS[$KEY]=0
             check_game $KEY
         fi
@@ -268,4 +268,10 @@ run_cmds
 print_stats
 
 wait
-echo "*********$0 finished: $(date) (took $(($(date +%s)-$STARTTIME)) seconds)**************"
+
+SECONDS=$(($(date +%s)-$STARTTIME))
+HOURS=$((SECONDS/3600))
+SECONDS=$((SECONDS%3600))
+MINUTES=$((SECONDS/60))
+SECONDS=$((SECONDS%60))
+echo "*********$0 finished: $(date) (took $HOURS:$MINUTES:$SECONDS)**************"
