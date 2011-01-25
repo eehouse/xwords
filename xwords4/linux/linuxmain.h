@@ -74,4 +74,6 @@ XP_Bool linShiftFocus( CommonGlobals* cGlobals, XP_Key key,
                        BoardObjectType* nxtP );
 #endif
 
+void read_pipe_then_close( CommonGlobals* cGlobals );
+
 #endif

@@ -137,6 +137,7 @@ typedef struct _TimerInfo {
 
 struct CommonGlobals {
     LaunchParams* params;
+    CommonPrefs cp;
 
     XWGame game;
     XP_U16 lastNTilesToUse;

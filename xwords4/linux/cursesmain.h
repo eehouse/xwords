@@ -58,7 +58,6 @@ struct CursesAppGlobals {
 
     DictionaryCtxt* dictionary;
     EngineCtxt* engine;
-    CommonPrefs cp;
 
     XP_Bool amServer;	/* this process acting as server */
 

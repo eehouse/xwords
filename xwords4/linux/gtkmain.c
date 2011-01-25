@@ -421,7 +421,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
                                       &globals->cGlobals.params->gi, 
                                       params->dict, params->util, 
                                       (DrawCtx*)globals->draw, 
-                                      &globals->cp, &procs );
+                                      &globals->cGlobals.cp, &procs );
         
         stream_destroy( stream );
     }
@@ -442,7 +442,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          &globals->cp, &procs );
+                          &globals->cGlobals.cp, &procs );
 
         addr.conType = params->conType;
         if ( 0 ) {
@@ -784,7 +784,7 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
 
         game_reset( MEMPOOL &globals->cGlobals.game, gi,
                     globals->cGlobals.params->util,
-                    &globals->cp, &procs );
+                    &globals->cGlobals.cp, &procs );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!globals->cGlobals.game.comms ) {
@@ -2113,58 +2113,6 @@ handle_sigintterm( int XP_UNUSED(sig) )
     gtk_main_quit();
 }
 
-static void
-read_pipe_then_close( GtkAppGlobals* globals )
-{
-    LaunchParams* params = globals->cGlobals.params;
-    XWStreamCtxt* stream = 
-        streamFromFile( &globals->cGlobals, 
-                        params->fileName, globals );
-
-    XP_Bool opened = game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
-                                          &params->gi, 
-                                          params->dict, params->util, 
-                                          (DrawCtx*)globals->draw, 
-                                          &globals->cp, NULL );
-    XP_ASSERT( opened );
-    stream_destroy( stream );
-
-    XP_Bool handled = XP_FALSE;
-    int fd = open( params->pipe, O_RDONLY );
-    while ( fd >= 0 ) {
-        unsigned short len;
-        ssize_t nRead = blocking_read( fd, (unsigned char*)&len, sizeof(len) );
-        if ( nRead != 2 ) {
-            break;
-        }
-        len = ntohs( len );
-        unsigned char buf[len];
-        nRead = blocking_read( fd, buf, len );
-        if ( nRead != len ) {
-            break;
-        }
-        stream = mem_stream_make( MEMPOOL params->vtMgr,
-                                  globals, CHANNEL_NONE, NULL );
-        stream_putBytes( stream, buf, len );
-
-        if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
-                                        stream, NULL ) ) {
-            handled = server_receiveMessage( globals->cGlobals.game.server,
-                                             stream ) || handled;
-        }
-        stream_destroy( stream );
-    }
-    LOG_RETURNF( "%d", handled );
-
-    /* Write it out */
-    stream = mem_stream_make( MEMPOOL params->vtMgr, 
-                              globals, 0, writeToFile );
-    stream_open( stream );
-    game_saveToStream( &globals->cGlobals.game, &params->gi, 
-                       stream );
-    stream_destroy( stream );
-}
-
 int
 gtkmain( LaunchParams* params, int argc, char *argv[] )
 {
@@ -2199,16 +2147,16 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cGlobals.addAcceptor = gtk_socket_acceptor;
 #endif
 
-    globals.cp.showBoardArrow = XP_TRUE;
-    globals.cp.hideTileValues = params->hideValues;
-    globals.cp.skipCommitConfirm = params->skipCommitConfirm;
-    globals.cp.sortNewTiles = params->sortNewTiles;
-    globals.cp.showColors = params->showColors;
-    globals.cp.allowPeek = params->allowPeek;
-    globals.cp.showRobotScores = params->showRobotScores;
+    globals.cGlobals.cp.showBoardArrow = XP_TRUE;
+    globals.cGlobals.cp.hideTileValues = params->hideValues;
+    globals.cGlobals.cp.skipCommitConfirm = params->skipCommitConfirm;
+    globals.cGlobals.cp.sortNewTiles = params->sortNewTiles;
+    globals.cGlobals.cp.showColors = params->showColors;
+    globals.cGlobals.cp.allowPeek = params->allowPeek;
+    globals.cGlobals.cp.showRobotScores = params->showRobotScores;
 #ifdef XWFEATURE_SLOW_ROBOT
-    globals.cp.robotThinkMin = params->robotThinkMin;
-    globals.cp.robotThinkMax = params->robotThinkMax;
+    globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
+    globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
 #endif
 
     setupGtkUtilCallbacks( &globals, params->util );
@@ -2315,7 +2263,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 			   );
 
     if ( !!params->pipe && !!params->fileName ) {
-        read_pipe_then_close( &globals );
+        read_pipe_then_close( &globals.cGlobals );
     } else {
         gtk_widget_show( window );
 

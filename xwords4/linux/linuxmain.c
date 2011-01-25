@@ -185,6 +185,57 @@ strFromStream( XWStreamCtxt* stream )
     return buf;
 } /* strFromStream */
 
+void
+read_pipe_then_close( CommonGlobals* cGlobals )
+{
+    LaunchParams* params = cGlobals->params;
+    XWStreamCtxt* stream = 
+        streamFromFile( cGlobals, params->fileName, cGlobals );
+
+    XP_Bool opened = game_makeFromStream( MPPARM(cGlobals->params->util->mpool) 
+                                          stream, &cGlobals->game, 
+                                          &params->gi, 
+                                          params->dict, params->util, 
+                                          NULL /*draw*/,
+                                          &cGlobals->cp, NULL );
+    XP_ASSERT( opened );
+    stream_destroy( stream );
+
+    XP_Bool handled = XP_FALSE;
+    int fd = open( params->pipe, O_RDONLY );
+    while ( fd >= 0 ) {
+        unsigned short len;
+        ssize_t nRead = blocking_read( fd, (unsigned char*)&len, sizeof(len) );
+        if ( nRead != 2 ) {
+            break;
+        }
+        len = ntohs( len );
+        unsigned char buf[len];
+        nRead = blocking_read( fd, buf, len );
+        if ( nRead != len ) {
+            break;
+        }
+        stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool) 
+                                  params->vtMgr, cGlobals, CHANNEL_NONE, NULL );
+        stream_putBytes( stream, buf, len );
+
+        if ( comms_checkIncomingStream( cGlobals->game.comms, 
+                                        stream, NULL ) ) {
+            handled = server_receiveMessage( cGlobals->game.server,
+                                             stream ) || handled;
+        }
+        stream_destroy( stream );
+    }
+    LOG_RETURNF( "%d", handled );
+
+    /* Write it out */
+    /* stream = mem_stream_make( MEMPOOLCG(cGlobals) params->vtMgr,  */
+    /*                           cGlobals, 0, writeToFile ); */
+    /* stream_open( stream ); */
+    /* game_saveToStream( &cGlobals->game, &params->gi, stream ); */
+    /* stream_destroy( stream ); */
+} /* read_pipe_then_close */
+
 typedef enum {
     CMD_SKIP_GAMEOVER
     ,CMD_SHOW_OTHERSCORES

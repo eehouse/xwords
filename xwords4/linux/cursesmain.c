@@ -1458,12 +1458,12 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.socketChangedClosure = &g_globals;
     g_globals.cGlobals.addAcceptor = curses_socket_acceptor;
 
-    g_globals.cp.showBoardArrow = XP_TRUE;
-    g_globals.cp.showRobotScores = params->showRobotScores;
-    g_globals.cp.hideTileValues = params->hideValues;
+    g_globals.cGlobals.cp.showBoardArrow = XP_TRUE;
+    g_globals.cGlobals.cp.showRobotScores = params->showRobotScores;
+    g_globals.cGlobals.cp.hideTileValues = params->hideValues;
 #ifdef XWFEATURE_SLOW_ROBOT
-    g_globals.cp.robotThinkMin = params->robotThinkMin;
-    g_globals.cp.robotThinkMax = params->robotThinkMax;
+    g_globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
+    g_globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
 #endif
 
     dict = params->dict;
@@ -1490,136 +1490,141 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     struct sigaction act2 = { .sa_handler = SIGWINCH_handler };
     sigaction( SIGWINCH, &act2, NULL );
 
-    initCurses( &g_globals );
-    getmaxyx( g_globals.boardWin, height, width );
+    if ( !!params->pipe && !!params->fileName ) {
+        read_pipe_then_close( &g_globals.cGlobals );
+    } else {
 
-    g_globals.draw = (struct CursesDrawCtx*)
-        cursesDrawCtxtMake( g_globals.boardWin );
+        initCurses( &g_globals );
+        getmaxyx( g_globals.boardWin, height, width );
 
-    TransportProcs procs = {
-        .closure = &g_globals,
-        .send = LINUX_SEND,
+        g_globals.draw = (struct CursesDrawCtx*)
+            cursesDrawCtxtMake( g_globals.boardWin );
+
+        TransportProcs procs = {
+            .closure = &g_globals,
+            .send = LINUX_SEND,
 #ifdef COMMS_HEARTBEAT
-        .reset = linux_reset,
+            .reset = linux_reset,
 #endif
 #ifdef XWFEATURE_RELAY
-        .rstatus = relay_status_curses,
-        .rconnd = relay_connd_curses,
-        .rerror = relay_error_curses,
+            .rstatus = relay_status_curses,
+            .rconnd = relay_connd_curses,
+            .rerror = relay_error_curses,
 #endif
-    };
+        };
 
-    if ( !!params->fileName && file_exists( params->fileName ) ) {
-        XWStreamCtxt* stream;
-        stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
-                                 &g_globals );
+        if ( !!params->fileName && file_exists( params->fileName ) ) {
+            XWStreamCtxt* stream;
+            stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
+                                     &g_globals );
 
-        (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
-                                   &params->gi, dict, params->util, 
-                                   (DrawCtx*)g_globals.draw, 
-                                   &g_globals.cp, &procs );
+            (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
+                                       &params->gi, dict, params->util, 
+                                       (DrawCtx*)g_globals.draw, 
+                                       &g_globals.cGlobals.cp, &procs );
 
-        stream_destroy( stream );
+            stream_destroy( stream );
 
-        if ( !isServer && params->gi.serverRole == SERVER_ISSERVER ) {
-            isServer = XP_TRUE;
+            if ( !isServer && params->gi.serverRole == SERVER_ISSERVER ) {
+                isServer = XP_TRUE;
+            }
+        } else {
+            game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
+                              params->util, (DrawCtx*)g_globals.draw,
+                              &g_globals.cGlobals.cp, &procs );
         }
-    } else {
-        game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
-                          params->util, (DrawCtx*)g_globals.draw,
-                          &g_globals.cp, &procs );
-    }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( g_globals.cGlobals.game.comms ) {
-        CommsAddrRec addr = {0};
+        if ( g_globals.cGlobals.game.comms ) {
+            CommsAddrRec addr = {0};
 
-        if ( 0 ) {
+            if ( 0 ) {
 # ifdef XWFEATURE_RELAY
-        } else if ( params->conType == COMMS_CONN_RELAY ) {
-            addr.conType = COMMS_CONN_RELAY;
-            addr.u.ip_relay.ipAddr = 0;       /* ??? */
-            addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
-            addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
-            addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-            XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
-                        sizeof(addr.u.ip_relay.hostName) - 1 );
-            XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
-                        sizeof(addr.u.ip_relay.invite) - 1 );
+            } else if ( params->conType == COMMS_CONN_RELAY ) {
+                addr.conType = COMMS_CONN_RELAY;
+                addr.u.ip_relay.ipAddr = 0;       /* ??? */
+                addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+                addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
+                addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
+                XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
+                            sizeof(addr.u.ip_relay.hostName) - 1 );
+                XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
+                            sizeof(addr.u.ip_relay.invite) - 1 );
 # endif
 # ifdef XWFEATURE_SMS
-        } else if ( params->conType == COMMS_CONN_SMS ) {
-            addr.conType = COMMS_CONN_SMS;
-            XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.serverPhone,
-                        sizeof(addr.u.sms.phone) - 1 );
-            addr.u.sms.port = params->connInfo.sms.port;
+            } else if ( params->conType == COMMS_CONN_SMS ) {
+                addr.conType = COMMS_CONN_SMS;
+                XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.serverPhone,
+                            sizeof(addr.u.sms.phone) - 1 );
+                addr.u.sms.port = params->connInfo.sms.port;
 # endif
 # ifdef XWFEATURE_BLUETOOTH
-        } else if ( params->conType == COMMS_CONN_BT ) {
-            addr.conType = COMMS_CONN_BT;
-            XP_ASSERT( sizeof(addr.u.bt.btAddr) 
-                       >= sizeof(params->connInfo.bt.hostAddr));
-            XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                       sizeof(params->connInfo.bt.hostAddr) );
+            } else if ( params->conType == COMMS_CONN_BT ) {
+                addr.conType = COMMS_CONN_BT;
+                XP_ASSERT( sizeof(addr.u.bt.btAddr) 
+                           >= sizeof(params->connInfo.bt.hostAddr));
+                XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                           sizeof(params->connInfo.bt.hostAddr) );
 # endif
+            }
+            comms_setAddr( g_globals.cGlobals.game.comms, &addr );
         }
-        comms_setAddr( g_globals.cGlobals.game.comms, &addr );
-    }
 #endif
 
-	model_setDictionary( g_globals.cGlobals.game.model, params->dict );
+        model_setDictionary( g_globals.cGlobals.game.model, params->dict );
 
-    positionSizeStuff( &g_globals, width, height );
+        positionSizeStuff( &g_globals, width, height );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    /* send any events that need to get off before the event loop begins */
-    if ( !isServer ) {
-        if ( 1 /* stream_open( params->info.clientInfo.stream )  */) {
-            server_initClientConnection( g_globals.cGlobals.game.server, 
-                                         mem_stream_make( MEMPOOL
-                                                          params->vtMgr,
-                                                          &g_globals,
-                                                          (XP_PlayerAddr)0,
-                                                          sendOnClose ) );
-        } else {
-            cursesUserError( &g_globals, "Unable to open connection to server");
-            exit( 0 );
+        /* send any events that need to get off before the event loop begins */
+        if ( !isServer ) {
+            if ( 1 /* stream_open( params->info.clientInfo.stream )  */) {
+                server_initClientConnection( g_globals.cGlobals.game.server, 
+                                             mem_stream_make( MEMPOOL
+                                                              params->vtMgr,
+                                                              &g_globals,
+                                                              (XP_PlayerAddr)0,
+                                                              sendOnClose ) );
+            } else {
+                cursesUserError( &g_globals, "Unable to open connection to server");
+                exit( 0 );
+            }
         }
-    }
 #endif
 
-    server_do( g_globals.cGlobals.game.server );
+        server_do( g_globals.cGlobals.game.server );
 
-    g_globals.menuList = g_boardMenuList;
-    drawMenuLargeOrSmall( &g_globals, g_boardMenuList ); 
-    board_draw( g_globals.cGlobals.game.board );
+        g_globals.menuList = g_boardMenuList;
+        drawMenuLargeOrSmall( &g_globals, g_boardMenuList ); 
+        board_draw( g_globals.cGlobals.game.board );
 
-    while ( !g_globals.timeToExit ) {
-        int ch = 0;
-        if ( blocking_gotEvent( &g_globals, &ch ) ) {
-            remapKey( &ch );
-            if (
+        while ( !g_globals.timeToExit ) {
+            int ch = 0;
+            if ( blocking_gotEvent( &g_globals, &ch ) ) {
+                remapKey( &ch );
+                if (
 #ifdef CURSES_SMALL_SCREEN
-                 handleKeyEvent( &g_globals, g_rootMenuListShow, ch ) ||
+                    handleKeyEvent( &g_globals, g_rootMenuListShow, ch ) ||
 #endif
-                 handleKeyEvent( &g_globals, g_globals.menuList, ch )
-                 || handleKeyEvent( &g_globals, g_sharedMenuList, ch )
-                 || passKeyToBoard( &g_globals, ch ) ) {
-                if ( g_globals.doDraw ) {
-                    board_draw( g_globals.cGlobals.game.board );
-                    g_globals.doDraw = XP_FALSE;
+                    handleKeyEvent( &g_globals, g_globals.menuList, ch )
+                    || handleKeyEvent( &g_globals, g_sharedMenuList, ch )
+                    || passKeyToBoard( &g_globals, ch ) ) {
+                    if ( g_globals.doDraw ) {
+                        board_draw( g_globals.cGlobals.game.board );
+                        g_globals.doDraw = XP_FALSE;
+                    }
                 }
             }
         }
-    }
 
+    }
     if ( !!g_globals.cGlobals.params->fileName ) {
         XWStreamCtxt* outStream;
 
-        outStream = mem_stream_make( 
-               MPPARM(g_globals.cGlobals.params->util->mpool)
-               g_globals.cGlobals.params->vtMgr, 
-               &g_globals.cGlobals, 0, writeToFile );
+        outStream =
+            mem_stream_make( MPPARM(g_globals.cGlobals.params->util->mpool)
+                             g_globals.cGlobals.params->vtMgr, 
+                             &g_globals.cGlobals, 0, writeToFile );
         stream_open( outStream );
 
         game_saveToStream( &g_globals.cGlobals.game, 
