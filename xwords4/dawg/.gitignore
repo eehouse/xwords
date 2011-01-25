@@ -2,5 +2,6 @@
 *.xwd
 *.pdb
 *.stamp
+*.dict
 *.dict.gz
 dict2dawg
