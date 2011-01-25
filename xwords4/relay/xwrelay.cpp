@@ -868,10 +868,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:i:f:l:t:"
-#ifdef DO_HTTP
-                        "w:s:"
-#endif
+       int opt = getopt(argc, argv, "h?c:p:n:i:f:l:t:s:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -891,6 +888,11 @@ main( int argc, char** argv )
            break;
        case 's':
            cssFile = optarg;
+           break;
+#else
+       case 'w':
+       case 's':
+           fprintf( stderr, "option -%c disabled and ignored\n", opt );
            break;
 #endif
        case 'D':

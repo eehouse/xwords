@@ -41,9 +41,10 @@ OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -pthread -g $(STATIC) \
 	-L$(shell pg_config --libdir) -lpq
 
-CPPFLAGS += -DSPAWN_SELF -DDO_HTTP -g -Wall \
+CPPFLAGS += -DSPAWN_SELF -g -Wall \
 	-I $(shell pg_config --includedir) \
 	-DSVN_REV=\"$(shell cat $(GITINFO) 2>/dev/null || echo -n $(HASH) )\"
+# CPPFLAGS += -DDO_HTTP
 
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS
