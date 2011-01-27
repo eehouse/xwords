@@ -119,8 +119,6 @@ typedef struct GtkAppGlobals {
     XP_UCHAR stateChar;
 #endif
 
-    CommonPrefs cp;
-
     XP_Bool gridOn;
     XP_Bool dropIncommingMsgs;
     XP_Bool mouseDown;

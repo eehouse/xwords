@@ -154,6 +154,7 @@ enum { PRX_NONE             /* 0 is an illegal value */
        ,PRX_PUB_ROOMS       /* list all public rooms for lang/nPlayers */
        ,PRX_HAS_MSGS        /* return message counts for connName/devid array */
        ,PRX_DEVICE_GONE     /* return message counts for connName/devid array */
+       ,PRX_GET_MSGS        /* return full messages for connName/devid array */
 }
 #ifndef CANT_DO_TYPEDEF
 XWPRXYCMD

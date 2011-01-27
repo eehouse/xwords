@@ -12,8 +12,10 @@ HEARTBEAT=60
 # Default -- if not set -- is an infinite timeout.
 # ALLCONN=300
 
-# How many worker threads in the thread pool?  Default is five.
-NTHREADS=3
+# How many worker threads in the thread pool?  Default is five.  Let's
+# keep this at 1 until the race condition is fixed.  All interaction
+# with crefs should be from this one thread, including proxy stuff.
+NTHREADS=1
 
 # How many seconds to wait for device to ack new connName
 DEVACK=3

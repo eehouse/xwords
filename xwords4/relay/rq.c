@@ -54,7 +54,8 @@ usage( const char * const argv0 )
     fprintf( stderr, "usage: %s \\\n", argv0 );
     fprintf( stderr, "\t[-p <port>]     # (default %d)\\\n", DEFAULT_PORT );
     fprintf( stderr, "\t[-a <host>]     # (default: %s)\\\n", DEFAULT_HOST );
-    fprintf( stderr, "\t -r             # list open public rooms\\\n" );
+    fprintf( stderr, "\t[-r]            # list open public rooms\\\n" );
+    fprintf( stderr, "\t[-f <connName:devid>    # fetch message > stdout\\\n" );
     fprintf( stderr, "\t[-l <n>]        # language for rooms "
              "(1=English default)\\\n" );
     fprintf( stderr, "\t[-n <n>]        # number of players (2 default)\\\n" );
@@ -118,7 +119,8 @@ do_rooms( int sockfd, int lang, int nPlayers )
 }
 
 static void
-do_msgs( int sockfd, const char** connNames, int nConnNames )
+write_connnames( int sockfd, char cmd, 
+                 const char** connNames, int nConnNames )
 {
     unsigned short len, netlen;
     int ii;
@@ -126,7 +128,7 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
         len += 1 + strlen( connNames[ii] );
     }
 
-    unsigned char hdr[] = { 0, PRX_HAS_MSGS };
+    unsigned char hdr[] = { 0, cmd };
     unsigned short netNConnNames = htons( nConnNames );
     netlen = sizeof(hdr) + sizeof( netNConnNames ) + len;
     netlen = htons( netlen );
@@ -137,6 +139,12 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
         write( sockfd, connNames[ii], strlen(connNames[ii]) );
         write( sockfd, "\n", 1 );
     }
+}
+
+static void
+do_msgs( int sockfd, const char** connNames, int nConnNames )
+{
+    write_connnames( sockfd, PRX_HAS_MSGS, connNames, nConnNames );
 
     fprintf( stderr, "Waiting for response....\n" );
     unsigned char reply[1024];
@@ -159,8 +167,56 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
             fprintf( stdout, "%s -- %d\n", connNames[ii], count );
         }
     }
-
 } /* do_msgs */
+
+static void
+do_fetch( int sockfd, const char** connNames, int nConnNames )
+{
+    assert( 1 == nConnNames );
+    write_connnames( sockfd, PRX_GET_MSGS, connNames, nConnNames );
+
+    fprintf( stderr, "Waiting for response....\n" );
+    unsigned char reply[1024];
+    int nRead = read_packet( sockfd, reply, sizeof(reply) );
+    if ( nRead > 2 ) {
+        const unsigned char* bufp = reply;
+        const unsigned char* const end = bufp + nRead;
+
+        unsigned short count;
+        memcpy( &count, bufp, sizeof( count ) );
+        bufp += sizeof( count );
+        count = ntohs( count );
+        assert( count == nConnNames );
+        fprintf( stderr, "got count: %d\n", count );
+
+        /* Now we have an array of <countPerDev> <len><len bytes> pairs.  Just
+           write em as long as it makes sense.  countPerDev makes no sense as
+           other than 1 unless the UI is changed so I don't have to write to
+           STDOUT -- e.g. by passing in named pipes to correspond to each
+           deviceid provided */
+
+        while ( bufp < end ) {
+            unsigned short countPerDev;
+            memcpy( &countPerDev, bufp, sizeof( countPerDev ) );
+            bufp += sizeof( countPerDev );
+            countPerDev = ntohs( countPerDev );
+
+            while ( bufp < end && countPerDev-- > 0 ) {
+                unsigned short len;
+                memcpy( &len, bufp, sizeof( len ) );
+                len = ntohs( len ) + sizeof( len );
+                if ( bufp + len > end ) {
+                    break;
+                }
+                write( STDOUT_FILENO, bufp, len );
+                bufp += len;
+            }
+        }
+        if ( bufp != end ) {
+            fprintf( stderr, "error: message not internally as expected\n" );
+        }
+    }
+}
 
 static void
 do_deletes( int sockfd, const char** connNames, int nConnNames )
@@ -217,12 +273,13 @@ main( int argc, char * const argv[] )
     bool doRooms = false;
     bool doMgs = false;
     bool doDeletes = false;
+    bool doFetch = false;
     const char* host = DEFAULT_HOST;
     char const* connNames[MAX_CONN_NAMES];
     int nConnNames = 0;
 
     for ( ; ; ) {
-        int opt = getopt( argc, argv, "a:d:p:rl:n:m:" );
+        int opt = getopt( argc, argv, "a:d:f:p:rl:n:m:" );
         if ( opt < 0 ) {
             break;
         }
@@ -238,6 +295,10 @@ main( int argc, char * const argv[] )
             assert( nConnNames < MAX_CONN_NAMES - 1 );
             connNames[nConnNames++] = optarg;
             doDeletes = true;
+            break;
+        case 'f':
+            connNames[nConnNames++] = optarg;
+            doFetch = true;
             break;
         case 'l':
             lang = atoi(optarg);
@@ -293,6 +354,12 @@ main( int argc, char * const argv[] )
     }
     if ( doDeletes ) {
         do_deletes( sockfd, connNames, nConnNames );
+    }
+    if ( doFetch ) {
+        if ( nConnNames != 1 ) {
+            usage( argv[0] );
+        }
+        do_fetch( sockfd, connNames, nConnNames );
     }
 
     close( sockfd );

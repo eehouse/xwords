@@ -434,14 +434,15 @@ DBMgr::StoreMessage( const char* const connName, int hid,
                      const unsigned char* buf, int len )
 {
     size_t newLen;
-    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg)"
-        " VALUES( '%s', %d, E'%s')";
+    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg, msglen)"
+        " VALUES( '%s', %d, E'%s', %d)";
 
     unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, len, &newLen );
     assert( NULL != bytes );
     
     char query[newLen+128];
-    unsigned int siz = snprintf( query, sizeof(query), fmt, connName, hid, bytes );
+    unsigned int siz = snprintf( query, sizeof(query), fmt, connName, hid, 
+                                 bytes, len );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
     PQfreemem( bytes );
     assert( siz < sizeof(query) );
@@ -450,13 +451,14 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 }
 
 bool
-DBMgr::GetStoredMessage( const char* const connName, int hid, 
-                         unsigned char* buf, size_t* buflen, int* msgID )
+DBMgr::GetNthStoredMessage( const char* const connName, int hid, 
+                            int nn, unsigned char* buf, size_t* buflen, 
+                            int* msgID )
 {
-    const char* fmt = "SELECT id, msg FROM " MSGS_TABLE
-        " WHERE connName = '%s' AND hid = %d ORDER BY id LIMIT 1";
+    const char* fmt = "SELECT id, msg, msglen FROM " MSGS_TABLE
+        " WHERE connName = '%s' AND hid = %d ORDER BY id LIMIT 1 OFFSET %d";
     char query[256];
-    snprintf( query, sizeof(query), fmt, connName, hid );
+    snprintf( query, sizeof(query), fmt, connName, hid, nn );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     PGresult* result = PQexec( getThreadConn(), query );
@@ -465,7 +467,10 @@ DBMgr::GetStoredMessage( const char* const connName, int hid,
 
     bool found = nTuples == 1;
     if ( found ) {
-        *msgID = atoi( PQgetvalue( result, 0, 0 ) );
+        if ( NULL != msgID ) {
+            *msgID = atoi( PQgetvalue( result, 0, 0 ) );
+        }
+        size_t msglen = atoi( PQgetvalue( result, 0, 2 ) );
 
         /* int len = PQgetlength( result, 0, 1 ); */
         const unsigned char* from =
@@ -476,9 +481,17 @@ DBMgr::GetStoredMessage( const char* const connName, int hid,
         memcpy( buf, bytes, to_length );
         PQfreemem( bytes );
         *buflen = to_length;
+        assert( 0 == msglen || to_length == msglen );
     }
     PQclear( result );
     return found;
+}
+
+bool
+DBMgr::GetStoredMessage( const char* const connName, int hid, 
+                         unsigned char* buf, size_t* buflen, int* msgID )
+{
+    return GetNthStoredMessage( connName, hid, 0, buf, buflen, msgID );
 }
 
 void

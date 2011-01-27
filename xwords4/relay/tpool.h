@@ -35,6 +35,8 @@ using namespace std;
 class XWThreadPool {
 
  public:
+    typedef enum { STYPE_UNKNOWN, STYPE_GAME, STYPE_PROXY } SockType;
+
     static XWThreadPool* GetTPool();
     typedef bool (*packet_func)( unsigned char* buf, int bufLen, int socket );
     typedef void (*kill_func)( int socket );
@@ -46,7 +48,7 @@ class XWThreadPool {
     void Stop();
 
     /* Add to set being listened on */
-    void AddSocket( int socket );
+    void AddSocket( int socket, SockType stype );
     /* remove from tpool altogether, and close */
     void CloseSocket( int socket );
 
@@ -54,17 +56,18 @@ class XWThreadPool {
 
  private:
     typedef enum { Q_READ, Q_KILL } QAction;
-    typedef struct { QAction m_act; int m_socket; } QueuePr;
+    typedef struct { QAction m_act; int m_socket; SockType m_type; } QueuePr;
 
     /* Remove from set being listened on */
     bool RemoveSocket( int socket );
 
     void enqueue( int socket, QAction act = Q_READ );
+    void enqueue( int socket, SockType stype, QAction act = Q_READ );
     void release_socket_locked( int socket );
     void grab_elem_locked( QueuePr* qpp );
     void print_in_use( void );
 
-    bool get_process_packet( int socket );
+    bool get_process_packet( int socket, SockType stype );
     void interrupt_poll();
 
     void* real_tpool_main();
@@ -74,7 +77,7 @@ class XWThreadPool {
     static void* listener_main( void* closure );
 
     /* Sockets main thread listens on */
-    vector<int> m_activeSockets;
+    vector< pair<int,SockType> >m_activeSockets;
     pthread_rwlock_t m_activeSocketsRWLock;
 
     /* Sockets waiting for a thread to read 'em */

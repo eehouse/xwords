@@ -77,8 +77,6 @@
 #include "dbmgr.h"
 
 static int s_nSpawns = 0;
-#define MAX_PROXY_LEN 64
-#define MAX_PROXY_COUNT 48
 
 void
 logf( XW_LogLevel level, const char* format, ... )
@@ -193,7 +191,8 @@ parseRelayID( const char* const in, char* buf, HostID* hid )
 }
 
 static bool
-getNetShort( unsigned char** bufpp, unsigned char* end, unsigned short* out )
+getNetShort( unsigned char** bufpp, const unsigned char* end, 
+             unsigned short* out )
 {
     bool ok = *bufpp + 2 <= end;
     if ( ok ) {
@@ -206,7 +205,8 @@ getNetShort( unsigned char** bufpp, unsigned char* end, unsigned short* out )
 } /* getNetShort */
 
 static bool
-getNetByte( unsigned char** bufpp, unsigned char* end, unsigned char* out )
+getNetByte( unsigned char** bufpp, const unsigned char* end, 
+            unsigned char* out )
 {
     bool ok = *bufpp < end;
     if ( ok ) {
@@ -683,7 +683,7 @@ read_packet( int sock, unsigned char* buf, int buflen )
     nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
     if ( nread == sizeof(msgLen) ) {
         msgLen = ntohs( msgLen );
-        if ( msgLen <= buflen ) {
+        if ( msgLen < buflen ) {
             nread = recv( sock, buf, msgLen, MSG_WAITALL );
             if ( nread == msgLen ) {
                 result = nread;
@@ -693,16 +693,82 @@ read_packet( int sock, unsigned char* buf, int buflen )
     return result;
 }
 
-static void*
-handle_proxy_tproc( void* closure )
+static void
+pushShort( vector<unsigned char>& out, unsigned short num )
 {
-    blockSignals();
-    int sock = (int)closure;
+    num = htons( num );
+    out.insert( out.end(), (unsigned char*)&num, ((unsigned char*)&num) + 2 );
+}
 
-    unsigned char buf[MAX_PROXY_MSGLEN];
-    int len = read_packet( sock, buf, sizeof(buf)-1 );
+static void
+pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName, 
+          HostID hid, int msgCount )
+{
+    int ii;
+    for ( ii = 0; ii < msgCount; ++ii ) {
+        unsigned char buf[1024];
+        size_t buflen = sizeof(buf);
+        if ( !dbmgr->GetNthStoredMessage( connName, hid, ii, buf, 
+                                          &buflen, NULL ) ) {
+            logf( XW_LOGERROR, "%s: %dth message not there", __func__, ii );
+            break;
+        }
+        pushShort( out, buflen );
+        out.insert( out.end(), buf, buf + buflen );
+    }
+}
+
+static void
+handleMsgsMsg( int sock, bool sendFull,
+               unsigned char* bufp, const unsigned char* end )
+{
+    unsigned short nameCount;
+    if ( getNetShort( &bufp, end, &nameCount ) ) {
+        char* in = (char*)bufp;
+        DBMgr* dbmgr = DBMgr::Get();
+        unsigned short count;
+        /* This is wrong now */
+        /* reply format: PRX_GET_MSGS case: <message len><n_msgs>[<len><msg>]* 
+         *               PRX_HAS_MSGS case: <message len><n_msgs><count>* 
+         */
+        vector<unsigned char> out(4); /* space for len and n_msgs */
+        assert( out.size() == 4 );
+
+        char* saveptr;
+        for ( count = 0; ; ++count ) {
+            char* name = strtok_r( in, "\n", &saveptr );
+            if ( NULL == name ) {
+                break;
+            }
+            HostID hid;
+            char connName[MAX_CONNNAME_LEN+1];
+            if ( !parseRelayID( name, connName, &hid ) ) {
+                break;
+            }
+
+            /* For each relayID, write the number of messages and then each
+               message (in the getmsg case) */
+            int msgCount = dbmgr->PendingMsgCount( connName, hid );
+            pushShort( out, msgCount );
+            if ( sendFull ) {
+                pushMsgs( out, dbmgr, connName, hid, msgCount );
+            }
+
+            in = NULL;
+        }
+
+        unsigned short tmp = htons( out.size() - sizeof(tmp) );
+        memcpy( &out[0], &tmp, sizeof(tmp) );
+        tmp = htons( count );
+        memcpy( &out[2], &tmp, sizeof(tmp) );
+        write( sock, &out[0], out.size() );
+    }
+}
+
+void
+handle_proxy_packet( unsigned char* buf, int len, int sock )
+{
     if ( len > 0 ) {
-        buf[len] = '\0';        /* so can use strtok */
         unsigned char* bufp = buf;
         unsigned char* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
@@ -729,42 +795,12 @@ handle_proxy_tproc( void* closure )
                 }
                 break;
             case PRX_HAS_MSGS:
+            case PRX_GET_MSGS:
                 if ( len >= 2 ) {
-                    unsigned short nameCount;
-                    if ( getNetShort( &bufp, end, &nameCount ) ) {
-                        char* in = (char*)bufp;
-                        char* saveptr;
-                        vector<int> ids;
-                        for ( ; ; ) {
-                            char* name = strtok_r( in, "\n", &saveptr );
-                            if ( NULL == name ) {
-                                break;
-                            }
-                            HostID hid;
-                            char connName[MAX_CONNNAME_LEN+1];
-                            if ( parseRelayID( name, connName, &hid ) ) {
-                                ids.push_back( DBMgr::Get()->
-                                               PendingMsgCount( connName, hid ) );
-                            }
-                            in = NULL;
-                        }
-
-                        unsigned short len = 
-                            (ids.size() * sizeof(unsigned short))
-                            + sizeof( unsigned short );
-                        len = htons( len );
-                        write( sock, &len, sizeof(len) );
-                        len = htons( nameCount );
-                        write( sock, &len, sizeof(len) );
-                        vector<int>::const_iterator iter;
-                        for ( iter = ids.begin(); iter != ids.end(); ++iter ) {
-                            unsigned short num = *iter;
-                            num = htons( num );
-                            write( sock, &num, sizeof(num) );
-                        }
-                    }
+                    handleMsgsMsg( sock, PRX_GET_MSGS == cmd, bufp, end );
                 }
-                break;
+                break;          /* PRX_HAS_MSGS */
+
             case PRX_DEVICE_GONE:
                 logf( XW_LOGINFO, "%s: got PRX_DEVICE_GONE", __func__ );
                 if ( len >= 2 ) {
@@ -799,24 +835,11 @@ handle_proxy_tproc( void* closure )
                 }
                 len = 0;        /* return a 0-length message */
                 write( sock, &len, sizeof(len) );
-                break;
+                break;          /* PRX_DEVICE_GONE */
             }
         }
     }
-    sleep( 2 );
-    close( sock );
-    return NULL;
-} /* handle_proxy_tproc */
-
-static void
-handle_proxy_connect( int sock )
-{
-    pthread_t thread;
-    if ( 0 == pthread_create( &thread, NULL, handle_proxy_tproc, 
-                              (void*)sock ) ) {
-        pthread_detach( thread );
-    }
-} /* handle_proxy_connect */
+} /* handle_proxy_packet */
 
 int
 main( int argc, char** argv )
@@ -839,17 +862,13 @@ main( int argc, char** argv )
 
     /* Verify sizes here... */
     assert( sizeof(CookieID) == 2 );
-                   
 
     /* Read options. Options trump config file values when they conflict, but
        the name of the config file is an option so we have to get that
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:i:f:l:t:"
-#ifdef DO_HTTP
-                        "w:s:"
-#endif
+       int opt = getopt(argc, argv, "h?c:p:n:i:f:l:t:s:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -869,6 +888,11 @@ main( int argc, char** argv )
            break;
        case 's':
            cssFile = optarg;
+           break;
+#else
+       case 'w':
+       case 's':
+           fprintf( stderr, "option -%c disabled and ignored\n", opt );
            break;
 #endif
        case 'D':
@@ -1120,15 +1144,14 @@ main( int argc, char** argv )
                     int newSock = accept( listener, (sockaddr*)&newaddr,
                                           &siz );
 
-                    if ( perGame ) {
-                        logf( XW_LOGINFO, 
-                              "accepting connection from %s on socket %d", 
-                              inet_ntoa(newaddr.sin_addr), newSock );
+                    logf( XW_LOGINFO, 
+                          "accepting connection from %s on socket %d", 
+                          inet_ntoa(newaddr.sin_addr), newSock );
 
-                        tPool->AddSocket( newSock );
-                    } else {
-                        handle_proxy_connect( newSock );
-                    }
+                    tPool->AddSocket( newSock,
+                                      perGame ? XWThreadPool::STYPE_GAME 
+                                      : XWThreadPool::STYPE_PROXY );
+
                     --retval;
                 }
             }

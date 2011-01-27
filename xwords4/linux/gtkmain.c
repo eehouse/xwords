@@ -39,6 +39,8 @@
 #endif
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "main.h"
 #include "linuxmain.h"
@@ -419,7 +421,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
                                       &globals->cGlobals.params->gi, 
                                       params->dict, params->util, 
                                       (DrawCtx*)globals->draw, 
-                                      &globals->cp, &procs );
+                                      &globals->cGlobals.cp, &procs );
         
         stream_destroy( stream );
     }
@@ -440,7 +442,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          &globals->cp, &procs );
+                          &globals->cGlobals.cp, &procs );
 
         addr.conType = params->conType;
         if ( 0 ) {
@@ -782,7 +784,7 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
 
         game_reset( MEMPOOL &globals->cGlobals.game, gi,
                     globals->cGlobals.params->util,
-                    &globals->cp, &procs );
+                    &globals->cGlobals.cp, &procs );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!globals->cGlobals.game.comms ) {
@@ -1878,7 +1880,7 @@ newConnectionInput( GIOChannel *source,
                     GIOCondition condition,
                     gpointer data )
 {
-    gboolean keepSource;
+    gboolean keepSource = TRUE;
     int sock = g_io_channel_unix_get_fd( source );
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
@@ -1886,25 +1888,7 @@ newConnectionInput( GIOChannel *source,
 
 /*     XP_ASSERT( sock == globals->cGlobals.socket ); */
 
-    if ( (condition & (G_IO_HUP | G_IO_ERR)) != 0 ) {
-        XP_LOGF( "dropping socket %d", sock );
-        close( sock );
-#ifdef XWFEATURE_RELAY
-        globals->cGlobals.socket = -1;
-#endif
-        if ( 0 ) {
-#ifdef XWFEATURE_BLUETOOTH
-        } else if ( COMMS_CONN_BT == globals->cGlobals.params->conType ) {
-            linux_bt_socketclosed( &globals->cGlobals, sock );
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-        } else if ( COMMS_CONN_IP_DIRECT == globals->cGlobals.params->conType ) {
-            linux_udp_socketclosed( &globals->cGlobals, sock );
-#endif
-        }
-        keepSource = FALSE;           /* remove the event source */
-
-    } else if ( (condition & G_IO_IN) != 0 ) {
+    if ( (condition & G_IO_IN) != 0 ) {
         ssize_t nRead;
         unsigned char buf[512];
         CommsAddrRec* addrp = NULL;
@@ -1972,8 +1956,27 @@ newConnectionInput( GIOChannel *source,
         } else {
             XP_LOGF( "errno from read: %d/%s", errno, strerror(errno) );
         }
-        keepSource = TRUE;
     }
+
+    if ( (condition & (G_IO_HUP | G_IO_ERR)) != 0 ) {
+        XP_LOGF( "dropping socket %d", sock );
+        close( sock );
+#ifdef XWFEATURE_RELAY
+        globals->cGlobals.socket = -1;
+#endif
+        if ( 0 ) {
+#ifdef XWFEATURE_BLUETOOTH
+        } else if ( COMMS_CONN_BT == globals->cGlobals.params->conType ) {
+            linux_bt_socketclosed( &globals->cGlobals, sock );
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+        } else if ( COMMS_CONN_IP_DIRECT == globals->cGlobals.params->conType ) {
+            linux_udp_socketclosed( &globals->cGlobals, sock );
+#endif
+        }
+        keepSource = FALSE;           /* remove the event source */
+    }
+
     return keepSource;                /* FALSE means to remove event source */
 } /* newConnectionInput */
 
@@ -2144,16 +2147,16 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cGlobals.addAcceptor = gtk_socket_acceptor;
 #endif
 
-    globals.cp.showBoardArrow = XP_TRUE;
-    globals.cp.hideTileValues = params->hideValues;
-    globals.cp.skipCommitConfirm = params->skipCommitConfirm;
-    globals.cp.sortNewTiles = params->sortNewTiles;
-    globals.cp.showColors = params->showColors;
-    globals.cp.allowPeek = params->allowPeek;
-    globals.cp.showRobotScores = params->showRobotScores;
+    globals.cGlobals.cp.showBoardArrow = XP_TRUE;
+    globals.cGlobals.cp.hideTileValues = params->hideValues;
+    globals.cGlobals.cp.skipCommitConfirm = params->skipCommitConfirm;
+    globals.cGlobals.cp.sortNewTiles = params->sortNewTiles;
+    globals.cGlobals.cp.showColors = params->showColors;
+    globals.cGlobals.cp.allowPeek = params->allowPeek;
+    globals.cGlobals.cp.showRobotScores = params->showRobotScores;
 #ifdef XWFEATURE_SLOW_ROBOT
-    globals.cp.robotThinkMin = params->robotThinkMin;
-    globals.cp.robotThinkMax = params->robotThinkMax;
+    globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
+    globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
 #endif
 
     setupGtkUtilCallbacks( &globals, params->util );
@@ -2259,11 +2262,14 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 /*  			 | GDK_POINTER_MOTION_HINT_MASK */
 			   );
 
-    gtk_widget_show( window );
+    if ( !!params->pipe && !!params->fileName ) {
+        read_pipe_then_close( &globals.cGlobals );
+    } else {
+        gtk_widget_show( window );
 
-    gtk_main();
-
-/*      MONCONTROL(1); */
+        gtk_main();
+    }
+    /*      MONCONTROL(1); */
 
     cleanup( &globals );
 

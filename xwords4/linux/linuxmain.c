@@ -185,6 +185,57 @@ strFromStream( XWStreamCtxt* stream )
     return buf;
 } /* strFromStream */
 
+void
+read_pipe_then_close( CommonGlobals* cGlobals )
+{
+    LaunchParams* params = cGlobals->params;
+    XWStreamCtxt* stream = 
+        streamFromFile( cGlobals, params->fileName, cGlobals );
+
+    XP_Bool opened = game_makeFromStream( MPPARM(cGlobals->params->util->mpool) 
+                                          stream, &cGlobals->game, 
+                                          &params->gi, 
+                                          params->dict, params->util, 
+                                          NULL /*draw*/,
+                                          &cGlobals->cp, NULL );
+    XP_ASSERT( opened );
+    stream_destroy( stream );
+
+    XP_Bool handled = XP_FALSE;
+    int fd = open( params->pipe, O_RDONLY );
+    while ( fd >= 0 ) {
+        unsigned short len;
+        ssize_t nRead = blocking_read( fd, (unsigned char*)&len, sizeof(len) );
+        if ( nRead != 2 ) {
+            break;
+        }
+        len = ntohs( len );
+        unsigned char buf[len];
+        nRead = blocking_read( fd, buf, len );
+        if ( nRead != len ) {
+            break;
+        }
+        stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool) 
+                                  params->vtMgr, cGlobals, CHANNEL_NONE, NULL );
+        stream_putBytes( stream, buf, len );
+
+        if ( comms_checkIncomingStream( cGlobals->game.comms, 
+                                        stream, NULL ) ) {
+            handled = server_receiveMessage( cGlobals->game.server,
+                                             stream ) || handled;
+        }
+        stream_destroy( stream );
+    }
+    LOG_RETURNF( "%d", handled );
+
+    /* Write it out */
+    /* stream = mem_stream_make( MEMPOOLCG(cGlobals) params->vtMgr,  */
+    /*                           cGlobals, 0, writeToFile ); */
+    /* stream_open( stream ); */
+    /* game_saveToStream( &cGlobals->game, &params->gi, stream ); */
+    /* stream_destroy( stream ); */
+} /* read_pipe_then_close */
+
 typedef enum {
     CMD_SKIP_GAMEOVER
     ,CMD_SHOW_OTHERSCORES
@@ -216,6 +267,8 @@ typedef enum {
     ,CMD_HIDEVALUES
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
+    ,CMD_NOPEEK
+    ,CMD_ADDPIPE
 #ifdef XWFEATURE_SEARCHLIMIT
     ,CMD_HINTRECT
 #endif
@@ -283,6 +336,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_HIDEVALUES, false, "hide-values", "show letters, not nums, on tiles" }
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
+    ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
+    ,{ CMD_ADDPIPE, true, "with-pipe", "named pipe to listen on for relay msgs" }
 #ifdef XWFEATURE_SEARCHLIMIT
     ,{ CMD_HINTRECT, false, "hintrect", "enable draggable hint-limits rect" }
 #endif
@@ -582,12 +637,27 @@ linux_close_socket( CommonGlobals* cGlobals )
 }
 
 int
+blocking_read( int fd, unsigned char* buf, int len )
+{
+    int nRead = 0;
+    while ( nRead < len ) {
+       ssize_t siz = read( fd, buf + nRead, len - nRead );
+       if ( siz <= 0 ) {
+           nRead = -1;
+           break;
+       }
+       nRead += siz;
+    }
+    return nRead;
+}
+
+int
 linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
     int sock = cGlobals->socket;
     unsigned short tmp;
     unsigned short packetSize;
-    ssize_t nRead = recv( sock, &tmp, sizeof(tmp), 0 );
+    ssize_t nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
     if ( nRead != 2 ) {
         XP_LOGF( "recv => %d, errno=%d (\"%s\")", nRead, errno, strerror(errno) );
         linux_close_socket( cGlobals );
@@ -597,7 +667,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 
         packetSize = ntohs( tmp );
         assert( packetSize <= bufSize );
-        nRead = recv( sock, buf, packetSize, 0 );
+        nRead = blocking_read( sock, buf, packetSize );
         if ( nRead < 0 ) {
             XP_WARNF( "%s: errno=%d (\"%s\")\n", __func__, errno, 
                       strerror(errno) );
@@ -1044,10 +1114,15 @@ main( int argc, char** argv )
         case CMD_VERTICALSCORE:
             mainParams.verticalScore = XP_TRUE;
             break;
+        case CMD_NOPEEK:
+            mainParams.allowPeek = XP_FALSE;
+        case CMD_ADDPIPE:
+            mainParams.pipe = optarg;
+            break;
 #ifdef XWFEATURE_SLOW_ROBOT
         case CMD_SLOWROBOT:
             if ( !parsePair( optarg, &mainParams.robotThinkMin,
-                              &mainParams.robotThinkMax ) ) {
+                             &mainParams.robotThinkMax ) ) {
                 usage(argv[0], "bad param" );
             }
             break;

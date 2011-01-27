@@ -48,6 +48,7 @@ typedef struct LaunchParams {
     DictionaryCtxt* dict;
     CurGameInfo gi;
     char* fileName;
+    char* pipe;
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
@@ -136,6 +137,7 @@ typedef struct _TimerInfo {
 
 struct CommonGlobals {
     LaunchParams* params;
+    CommonPrefs cp;
 
     XWGame game;
     XP_U16 lastNTilesToUse;
