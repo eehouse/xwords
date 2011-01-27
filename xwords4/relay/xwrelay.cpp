@@ -77,8 +77,6 @@
 #include "dbmgr.h"
 
 static int s_nSpawns = 0;
-#define MAX_PROXY_LEN 64
-#define MAX_PROXY_COUNT 48
 
 void
 logf( XW_LogLevel level, const char* format, ... )
@@ -729,6 +727,7 @@ handleMsgsMsg( int sock, bool sendFull,
         char* in = (char*)bufp;
         DBMgr* dbmgr = DBMgr::Get();
         unsigned short count;
+        /* This is wrong now */
         /* reply format: PRX_GET_MSGS case: <message len><n_msgs>[<len><msg>]* 
          *               PRX_HAS_MSGS case: <message len><n_msgs><count>* 
          */
@@ -747,11 +746,12 @@ handleMsgsMsg( int sock, bool sendFull,
                 break;
             }
 
+            /* For each relayID, write the number of messages and then each
+               message (in the getmsg case) */
             int msgCount = dbmgr->PendingMsgCount( connName, hid );
+            pushShort( out, msgCount );
             if ( sendFull ) {
                 pushMsgs( out, dbmgr, connName, hid, msgCount );
-            } else {
-                pushShort( out, msgCount );
             }
 
             in = NULL;

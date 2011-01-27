@@ -189,18 +189,28 @@ do_fetch( int sockfd, const char** connNames, int nConnNames )
         assert( count == nConnNames );
         fprintf( stderr, "got count: %d\n", count );
 
-        /* Now we have an array of <len><len bytes> pairs.  Just write em as
-           long as it makes sense.*/
+        /* Now we have an array of <countPerDev> <len><len bytes> pairs.  Just
+           write em as long as it makes sense.  countPerDev makes no sense as
+           other than 1 unless the UI is changed so I don't have to write to
+           STDOUT -- e.g. by passing in named pipes to correspond to each
+           deviceid provided */
 
         while ( bufp < end ) {
-            unsigned short len;
-            memcpy( &len, bufp, sizeof( len ) );
-            len = ntohs( len ) + sizeof( len );
-            if ( bufp + len > end ) {
-                break;
+            unsigned short countPerDev;
+            memcpy( &countPerDev, bufp, sizeof( countPerDev ) );
+            bufp += sizeof( countPerDev );
+            countPerDev = ntohs( countPerDev );
+
+            while ( bufp < end && countPerDev-- > 0 ) {
+                unsigned short len;
+                memcpy( &len, bufp, sizeof( len ) );
+                len = ntohs( len ) + sizeof( len );
+                if ( bufp + len > end ) {
+                    break;
+                }
+                write( STDOUT_FILENO, bufp, len );
+                bufp += len;
             }
-            write( STDOUT_FILENO, bufp, len );
-            bufp += len;
         }
         if ( bufp != end ) {
             fprintf( stderr, "error: message not internally as expected\n" );
