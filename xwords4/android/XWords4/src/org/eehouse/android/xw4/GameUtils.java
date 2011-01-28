@@ -30,6 +30,7 @@ import java.io.InputStream;
 import android.net.Uri;
 import java.util.ArrayList;
 import android.content.res.AssetManager;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
@@ -274,22 +275,23 @@ public class GameUtils {
     public static byte[] openDict( Context context, String name )
     {
         byte[] bytes = null;
-        InputStream dict = null;
 
         name = addDictExtn( name );
 
-        AssetManager am = context.getAssets();
         try {
-            dict = am.open( name, 
+            AssetManager am = context.getAssets();
+            InputStream dict = am.open( name, 
                             android.content.res.AssetManager.ACCESS_RANDOM );
 
-            int len = dict.available();
+            int len = dict.available(); // this may not be the full length!
             bytes = new byte[len];
             int nRead = dict.read( bytes, 0, len );
             if ( nRead != len ) {
                 Utils.logf( "**** warning ****; read only " + nRead + " of " 
                             + len + " bytes." );
             }
+            // check that with len bytes we've read the whole file
+            Assert.assertTrue( -1 == dict.read() );
         } catch ( java.io.IOException ee ){
             Utils.logf( "%s failed to open; likely not built-in", name );
         }
@@ -298,7 +300,7 @@ public class GameUtils {
         if ( null == bytes ) {
             try {
                 FileInputStream fis = context.openFileInput( name );
-                int len = fis.available();
+                int len = (int)fis.getChannel().size();
                 bytes = new byte[len];
                 fis.read( bytes, 0, len );
                 fis.close();
