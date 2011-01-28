@@ -26,6 +26,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -52,14 +54,16 @@ static void
 usage( const char * const argv0 )
 {
     fprintf( stderr, "usage: %s \\\n", argv0 );
-    fprintf( stderr, "\t[-p <port>]     # (default %d)\\\n", DEFAULT_PORT );
-    fprintf( stderr, "\t[-a <host>]     # (default: %s)\\\n", DEFAULT_HOST );
-    fprintf( stderr, "\t[-r]            # list open public rooms\\\n" );
-    fprintf( stderr, "\t[-f <connName:devid>    # fetch message > stdout\\\n" );
+    fprintf( stderr, "\t[-p <port>]     # (default %d) \\\n", DEFAULT_PORT );
+    fprintf( stderr, "\t[-a <host>]     # (default: %s) \\\n", DEFAULT_HOST );
+    fprintf( stderr, "\t[-r]            # list open public rooms \\\n" );
+    fprintf( stderr, "\t[-f <connName:devid>    # fetch message > stdout or file \\\n" );
     fprintf( stderr, "\t[-l <n>]        # language for rooms "
-             "(1=English default)\\\n" );
-    fprintf( stderr, "\t[-n <n>]        # number of players (2 default)\\\n" );
-    fprintf( stderr, "\t[-m <connName:devid>    # list msg count\\\n" );
+             "(1=English default) \\\n" );
+    fprintf( stderr, "\t[-n <n>]        # number of players (2 default) \\\n" );
+    fprintf( stderr, "\t[-o <path>]*    # file to be used for -f "
+             "(- = stdout, the default) \\\n" );
+    fprintf( stderr, "\t[-m <connName:devid>    # list msg count \\\n" );
     fprintf( stderr, "\t[-d <connName:devid/seed>    # delete game \\\n" );
     exit( 1 );
 }
@@ -170,9 +174,9 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
 } /* do_msgs */
 
 static void
-do_fetch( int sockfd, const char** connNames, int nConnNames )
+do_fetch( int sockfd, const char** connNames, int nConnNames, 
+          const char** pipes, int nPipes )
 {
-    assert( 1 == nConnNames );
     write_connnames( sockfd, PRX_GET_MSGS, connNames, nConnNames );
 
     fprintf( stderr, "Waiting for response....\n" );
@@ -186,7 +190,7 @@ do_fetch( int sockfd, const char** connNames, int nConnNames )
         memcpy( &count, bufp, sizeof( count ) );
         bufp += sizeof( count );
         count = ntohs( count );
-        assert( count == nConnNames );
+        assert( count <= nConnNames );
         fprintf( stderr, "got count: %d\n", count );
 
         /* Now we have an array of <countPerDev> <len><len bytes> pairs.  Just
@@ -195,11 +199,20 @@ do_fetch( int sockfd, const char** connNames, int nConnNames )
            STDOUT -- e.g. by passing in named pipes to correspond to each
            deviceid provided */
 
-        while ( bufp < end ) {
+        for ( int ii = 0; ii < count && bufp < end; ++ii ) {
+            int fd = STDOUT_FILENO;
             unsigned short countPerDev;
             memcpy( &countPerDev, bufp, sizeof( countPerDev ) );
             bufp += sizeof( countPerDev );
             countPerDev = ntohs( countPerDev );
+
+            if ( ii < nPipes && 0 != strcmp( pipes[ii], "-" ) ) {
+                fd = open( pipes[ii], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
+                if ( fd < 0 ) {
+                    fprintf( stderr, "open(%s) failed: %s\n", pipes[ii], strerror(errno) );
+                    exit( 1 );
+                }
+            }
 
             while ( bufp < end && countPerDev-- > 0 ) {
                 unsigned short len;
@@ -208,8 +221,12 @@ do_fetch( int sockfd, const char** connNames, int nConnNames )
                 if ( bufp + len > end ) {
                     break;
                 }
-                write( STDOUT_FILENO, bufp, len );
+                fprintf( stderr, "writing %d bytes to fd %d\n", len, fd );
+                write( fd, bufp, len );
                 bufp += len;
+            }
+            if ( fd != STDOUT_FILENO ) {
+                close( fd );
             }
         }
         if ( bufp != end ) {
@@ -270,16 +287,19 @@ main( int argc, char * const argv[] )
     int port = DEFAULT_PORT;
     int lang = 1;
     int nPlayers = 2;
-    bool doRooms = false;
-    bool doMgs = false;
-    bool doDeletes = false;
-    bool doFetch = false;
+    int doWhat = 0;
+    const int doRooms = 1;
+    const int doMgs = 2;
+    const int doDeletes = 4;
+    const int doFetch = 8;
     const char* host = DEFAULT_HOST;
     char const* connNames[MAX_CONN_NAMES];
     int nConnNames = 0;
+    const char* pipes[MAX_CONN_NAMES];
+    int nPipes = 0;
 
     for ( ; ; ) {
-        int opt = getopt( argc, argv, "a:d:f:p:rl:n:m:" );
+        int opt = getopt( argc, argv, "a:d:f:p:rl:n:m:o:" );
         if ( opt < 0 ) {
             break;
         }
@@ -288,38 +308,34 @@ main( int argc, char * const argv[] )
             host = optarg;
             break;
         case 'd':
-            if ( doMgs ) {
-                fprintf( stderr, "can't mix -d and -m\n" );
-                usage( argv[0] );
-            }
             assert( nConnNames < MAX_CONN_NAMES - 1 );
             connNames[nConnNames++] = optarg;
-            doDeletes = true;
+            doWhat |= doDeletes;
             break;
         case 'f':
             connNames[nConnNames++] = optarg;
-            doFetch = true;
+            doWhat |= doFetch;
             break;
         case 'l':
             lang = atoi(optarg);
             break;
         case 'm':
-            if ( doDeletes ) {
-                fprintf( stderr, "can't mix -d and -m\n" );
-                usage( argv[0] );
-            }
             assert( nConnNames < MAX_CONN_NAMES - 1 );
             connNames[nConnNames++] = optarg;
-            doMgs = true;
+            doWhat |= doMgs;
             break;
         case 'n':
             nPlayers = atoi(optarg);
+            break;
+        case 'o':
+            assert( nPipes < MAX_CONN_NAMES - 1 );
+            pipes[nPipes++] = optarg;
             break;
         case 'p':
             port = atoi(optarg);
             break;
         case 'r':
-            doRooms = true;
+            doWhat |= doRooms;
             break;
         default:
             usage( argv[0] );
@@ -346,20 +362,26 @@ main( int argc, char * const argv[] )
         exit( 1 );
     }
 
-    if ( doRooms ) {
+    switch ( doWhat ) {
+    case 0:
+        fprintf( stderr, "no command given\n" );
+        usage( argv[0] );
+        break;
+    case doRooms:
         do_rooms( sockfd, lang, nPlayers );
-    }
-    if ( doMgs ) {
+        break;
+    case doMgs:
         do_msgs( sockfd, connNames, nConnNames );
-    }
-    if ( doDeletes ) {
+        break;
+    case doDeletes:
         do_deletes( sockfd, connNames, nConnNames );
-    }
-    if ( doFetch ) {
-        if ( nConnNames != 1 ) {
-            usage( argv[0] );
-        }
-        do_fetch( sockfd, connNames, nConnNames );
+        break;
+    case doFetch:
+        do_fetch( sockfd, connNames, nConnNames, pipes, nPipes );
+        break;
+    default:
+        fprintf( stderr, "conflicting options given\n" );
+        usage( argv[0] );
     }
 
     close( sockfd );
