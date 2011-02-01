@@ -34,7 +34,8 @@ typedef struct _AndDictionaryCtxt {
     DictionaryCtxt super;
     JNIUtilCtxt* jniutil;
     JNIEnv *env;
-    XP_U8* bytes;
+    jbyte* bytes;
+    jbyteArray byteArray;
 } AndDictionaryCtxt;
 
 static void splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, 
@@ -51,7 +52,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
 }
 
 static XP_U32
-n_ptr_tohl( XP_U8** inp )
+n_ptr_tohl( XP_U8 const** inp )
 {
     XP_U32 t;
     XP_MEMCPY( &t, *inp, sizeof(t) );
@@ -62,7 +63,7 @@ n_ptr_tohl( XP_U8** inp )
 } /* n_ptr_tohl */
 
 static XP_U16
-n_ptr_tohs( XP_U8** inp )
+n_ptr_tohs( XP_U8 const ** inp )
 {
     XP_U16 t;
     XP_MEMCPY( &t, *inp, sizeof(t) );
@@ -88,9 +89,9 @@ andCountSpecials( AndDictionaryCtxt* ctxt )
 } /* andCountSpecials */
 
 static XP_Bitmap
-andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
+andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp )
 {
-    XP_U8* ptr = *ptrp;
+    XP_U8 const* ptr = *ptrp;
     XP_U8 nCols = *ptr++;
     jobject bitmap = NULL;
 
@@ -134,10 +135,10 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
 } /* andMakeBitmap */
 
 static void
-andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
+andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp )
 {
     XP_U16 nSpecials = andCountSpecials( ctxt );
-    XP_U8* ptr = *ptrp;
+    XP_U8 const* ptr = *ptrp;
     Tile ii;
     XP_UCHAR** texts;
     SpecialBitmaps* bitmaps;
@@ -230,7 +231,7 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
 } /* splitFaces_via_java */
 
 static void
-parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
+parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength )
 {
     while( !!ptr ) {           /* lets us break.... */
         XP_U32 offset;
@@ -363,6 +364,7 @@ and_dictionary_destroy( DictionaryCtxt* dict )
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
     XP_U16 nSpecials = andCountSpecials( ctxt );
     XP_U16 ii;
+    JNIEnv* env = ctxt->env;
 
     if ( !!ctxt->super.chars ) {
         for ( ii = 0; ii < nSpecials; ++ii ) {
@@ -374,7 +376,6 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         XP_FREE( ctxt->super.mpool, ctxt->super.chars );
     }
     if ( !!ctxt->super.bitmaps ) {
-        JNIEnv* env = ctxt->env;
         for ( ii = 0; ii < nSpecials; ++ii ) {
             jobject bitmap = ctxt->super.bitmaps[ii].largeBM;
             if ( !!bitmap ) {
@@ -391,7 +392,8 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         XP_FREE( ctxt->super.mpool, ctxt->super.name );
     }
 
-    XP_FREE( ctxt->super.mpool, ctxt->bytes );
+    (*env)->ReleaseByteArrayElements( env, ctxt->byteArray, ctxt->bytes, 0 );
+    (*env)->DeleteGlobalRef( env, ctxt->byteArray );
     XP_FREE( ctxt->super.mpool, ctxt );
 }
 
@@ -424,23 +426,17 @@ DictionaryCtxt*
 makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
           jstring jname )
 {
-    AndDictionaryCtxt* anddict = NULL;
+    AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)
+        and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
 
     jsize len = (*env)->GetArrayLength( env, jbytes );
+    anddict->byteArray = (*env)->NewGlobalRef( env, jbytes );
+    anddict->bytes = (*env)->GetByteArrayElements( env, anddict->byteArray, 
+                                                   NULL );
 
-    XP_U8* localBytes = XP_MALLOC( mpool, len );
-    jbyte* src = (*env)->GetByteArrayElements( env, jbytes, NULL );
-    XP_MEMCPY( localBytes, src, len );
-    (*env)->ReleaseByteArrayElements( env, jbytes, src, 0 );
-
-    anddict = (AndDictionaryCtxt*)
-        and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
     anddict->super.destructor = and_dictionary_destroy;
-    /* anddict->super.func_dict_getShortName = and_dict_getShortName; */
 
-    anddict->bytes = localBytes;
-
-    parseDict( anddict, localBytes, len );
+    parseDict( anddict, (XP_U8*)anddict->bytes, len );
 
     /* copy the name */
     if ( NULL != jname ) {
