@@ -306,7 +306,7 @@ typedef struct _CmdInfoRec {
 
 static CmdInfoRec CmdInfoRecs[] = {
     { CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
-    ,{ CMD_SHOW_OTHERSCORES, "false", "show-other", 
+    ,{ CMD_SHOW_OTHERSCORES, false, "show-other", 
        "show robot and remote scores" }
     ,{ CMD_HOSTIP, true, "hostip", "remote host ip address (for direct connect)" }
     ,{ CMD_DICT, true, "dict", "dictionary name" }
