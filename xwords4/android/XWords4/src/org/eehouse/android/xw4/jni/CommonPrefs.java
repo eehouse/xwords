@@ -248,11 +248,6 @@ public class CommonPrefs {
         return getPrefsBoolean( context, R.string.key_hide_title, true );
     }
 
-    public static boolean getShowBonusSumms( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_show_bonussum, false );
-    }
-
     public static boolean getPrefsBoolean( Context context, int keyID,
                                            boolean defaultValue )
     {

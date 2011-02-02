@@ -222,9 +222,6 @@
     <string name="peek_other">View tiles out-of-turn</string>
     <string name="peek_other_summary">Tapping on scoreboard name shows
     that player\'s tiles</string>
-    <string name="show_bonussum">Show bonus values</string>
-    <string name="show_bonussum_summary">Include text like "2W" on
-    empty bonus squares</string>
 
     <string name="phonies_ignore">Ignore phonies</string>
     <string name="phonies_warn">Warn if phonies</string>
