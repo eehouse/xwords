@@ -76,16 +76,28 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
                  __func__ );                                            \
     }
     
-static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* uc, 
+static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc), 
                                             const ModelCtxt* XP_UNUSED(model),
                                             XP_U16 col, XP_U16 row )
 {
-    XWBonusType result = BONUS_NONE;
-    UTIL_CBK_HEADER("getSquareBonus","(II)I" );
-    result = (*env)->CallIntMethod( env, util->jutil, mid, 
-                                  col, row );
-    UTIL_CBK_TAIL();
-    return result;
+    static const int s_buttsBoard[8][8] = {
+        { BONUS_TRIPLE_WORD,  BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_WORD },
+        { BONUS_NONE,         BONUS_DOUBLE_WORD,  BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE },
+
+        { BONUS_NONE,         BONUS_NONE,         BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE },
+        { BONUS_DOUBLE_LETTER,BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER },
+                            
+        { BONUS_NONE,         BONUS_NONE,         BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_WORD,BONUS_NONE,BONUS_NONE,BONUS_NONE },
+        { BONUS_NONE,         BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE },
+                            
+        { BONUS_NONE,         BONUS_NONE,         BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE },
+        { BONUS_TRIPLE_WORD,  BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_WORD },
+    }; /* buttsBoard */
+
+    int half = 15 / 2;          /* remove 15!!!! PENDING */
+    if ( col > half ) { col = (half*2) - col; }
+    if ( row > half ) { row = (half*2) - row; }
+    return s_buttsBoard[row][col];
 }
 
 static void
