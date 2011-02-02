@@ -80,13 +80,9 @@ public class GameUtils {
         if ( null != addr ) {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
+
         saveGame( context, gamePtr, gi, pathOut, true );
-
-        GameSummary summary = new GameSummary( gi );
-        XwJNI.game_summarize( gamePtr, summary );
-        DBUtils.saveSummary( context, pathOut, summary );
-
-        XwJNI.game_dispose( gamePtr );
+        summarizeAndClose( context, pathOut, gamePtr, gi );
     } // resetGame
 
     public static void resetGame( Context context, String pathIn )
@@ -95,18 +91,25 @@ public class GameUtils {
         resetGame( context, pathIn, pathIn );
     }
 
-    public static GameSummary summarize( Context context, String path )
+    private static GameSummary summarizeAndClose( Context context, 
+                                                  String path,
+                                                  int gamePtr, CurGameInfo gi )
     {
-        int gamePtr = XwJNI.initJNI();
-        CurGameInfo gi = new CurGameInfo( context );
-        loadMakeGame( context, gamePtr, gi, path );
-
         GameSummary summary = new GameSummary( gi );
         XwJNI.game_summarize( gamePtr, summary );
         DBUtils.saveSummary( context, path, summary );
 
         XwJNI.game_dispose( gamePtr );
         return summary;
+    }
+
+    public static GameSummary summarize( Context context, String path )
+    {
+        int gamePtr = XwJNI.initJNI();
+        CurGameInfo gi = new CurGameInfo( context );
+        loadMakeGame( context, gamePtr, gi, path );
+
+        return summarizeAndClose( context, path, gamePtr, gi );
     }
 
     public static String dupeGame( Context context, String pathIn )
@@ -359,6 +362,29 @@ public class GameUtils {
         activity.finish();
     }
 
+    public static boolean feedMessages( Context context, String relayID,
+                                        byte[][] msgs )
+    {
+        boolean draw = false;
+        String path = DBUtils.getPathFor( context, relayID );
+        if ( null != path ) {
+            int gamePtr = XwJNI.initJNI();
+            CurGameInfo gi = new CurGameInfo( context );
+            loadMakeGame( context, gamePtr, gi, path );
+
+            for ( byte[] msg : msgs ) {
+                draw = XwJNI.game_receiveMessage( gamePtr, msg ) || draw;
+            }
+
+            // update gi to reflect changes due to messages
+            XwJNI.game_getGi( gamePtr, gi );
+            saveGame( context, gamePtr, gi, path, false );
+            summarizeAndClose( context, path, gamePtr, gi );
+        }
+        Utils.logf( "feedMessages=>%s", draw?"true":"false" );
+        return draw;
+    }
+
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new
     // dict have the same langauge code.
@@ -378,11 +404,7 @@ public class GameUtils {
 
         saveGame( context, gamePtr, gi, path, false );
 
-        GameSummary summary = new GameSummary( gi );
-        XwJNI.game_summarize( gamePtr, summary );
-        DBUtils.saveSummary( context, path, summary );
-
-        XwJNI.game_dispose( gamePtr );
+        summarizeAndClose( context, path, gamePtr, gi );
     }
 
     public static void applyChanges( Context context, CurGameInfo gi, 

@@ -40,7 +40,8 @@ public class NetUtils {
     public static byte PRX_PUB_ROOMS = 1;
     public static byte PRX_HAS_MSGS = 2;
     public static byte PRX_DEVICE_GONE = 3;
-
+    public static byte PRX_GET_MSGS = 4;
+    
     public static Socket MakeProxySocket( Context context, 
                                           int timeoutMillis )
     {
@@ -143,7 +144,7 @@ public class NetUtils {
                             2 + nBytes[0] + ids.length );
 
                 outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-                outStream.writeByte( NetUtils.PRX_HAS_MSGS );
+                outStream.writeByte( NetUtils.PRX_GET_MSGS );
 
                 // number of ids
                 outStream.writeShort( ids.length );
@@ -161,30 +162,38 @@ public class NetUtils {
                 Utils.logf( "reading from proxy socket" );
                 short resLen = dis.readShort();
                 short nameCount = dis.readShort();
-                short[] msgCounts = null;
+                byte[][][] msgs = null;
                 if ( nameCount == ids.length ) {
-                    msgCounts = new short[nameCount];
+                    msgs = new byte[nameCount][][];
                     for ( int ii = 0; ii < nameCount; ++ii ) {
-                        msgCounts[ii] = dis.readShort();
-                        Utils.logf( "msgCounts[%d]=%d", ii, 
-                                    msgCounts[ii] );
+                        short countsThisGame = dis.readShort();
+                        Utils.logf( "msgCounts[%d]=%d", ii, countsThisGame );
+                        if ( countsThisGame > 0 ) {
+                            msgs[ii] = new byte[countsThisGame][];
+                            for ( int jj = 0; jj < countsThisGame; ++jj ) {
+                                short len = dis.readShort();
+                                if ( len > 0 ) {
+                                    byte[] packet = new byte[len];
+                                    dis.read( packet );
+                                    msgs[ii][jj] = packet;
+                                }
+                            }
+                        }
                     }
                 }
                 socket.close();
                 Utils.logf( "closed proxy socket" );
 
-                if ( null == msgCounts ) {
+                if ( null == msgs ) {
                     Utils.logf( "relay has no messages" );
                 } else {
                     ArrayList<String> idsWMsgs =
                         new ArrayList<String>( nameCount );
                     for ( int ii = 0; ii < nameCount; ++ii ) {
-                        if ( msgCounts[ii] > 0 ) {
-                            String msg = 
-                                String.format("%d messages for %s",
-                                              msgCounts[ii], 
-                                              ids[ii] );
-                            Utils.logf( msg );
+                        // if game has messages, open it and feed 'em
+                        // to it.
+                        if ( null != msgs[ii] ) {
+                            GameUtils.feedMessages( context, ids[ii], msgs[ii] );
                             DBUtils.setHasMsgs( ids[ii] );
                             idsWMsgs.add( ids[ii] );
                         }
@@ -204,7 +213,7 @@ public class NetUtils {
             }
         }
         return result;
-    }
+    } // QueryRelay
 
     private static String[] collectIDs( Context context, int[] nBytes )
     {
