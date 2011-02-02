@@ -989,7 +989,6 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jsummary )
 {
-    LOG_FUNC();
     XWJNI_START();
     ModelCtxt* model = state->game.model;
     XP_S16 nMoves = model_getNMoves( model );
@@ -1037,7 +1036,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     (*env)->DeleteLocalRef( env, jarr );
 
     XWJNI_END();
-    LOG_RETURN_VOID();
 }
 
 JNIEXPORT jboolean JNICALL
@@ -1158,6 +1156,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1handleKey
     return result;
 }
 #endif
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_game_1getGi
+( JNIEnv* env, jclass C, jint gamePtr, jobject jgi )
+{
+    XWJNI_START_GLOBALS();
+    setJGI( env, jgi, globals->gi );
+    XWJNI_END();
+}
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1hasComms
