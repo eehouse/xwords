@@ -33,7 +33,7 @@ public class GameSummary {
     public int nPlayers;
     public int[] scores;
     public boolean gameOver;
-    public String players;
+    public String[] players;
     public CommsAddrRec.CommsConnType conType;
     public String smsPhone;
     // relay-related fields
@@ -67,7 +67,6 @@ public class GameSummary {
     public String summarizePlayers( Context context )
     {
         StringBuffer sb = new StringBuffer();
-        String vsString = context.getString( R.string.vs );
         for ( int ii = 0; ; ) {
 
             int score = 0;
@@ -76,11 +75,11 @@ public class GameSummary {
                 score = scores[ii];
             } catch ( Exception ex ){}
 
-            sb.append( String.format( "%s(%d)", m_gi.players[ii].name, score ) );
+            sb.append( m_gi.players[ii].name );
             if ( ++ii >= nPlayers ) {
                 break;
             }
-            sb.append( String.format( " %s ", vsString ) );
+            sb.append( "\n" );
         }
         return sb.toString();
     }
