@@ -29,10 +29,13 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 6;
+    private static final int DB_VERSION = 7;
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
+    public static final String TURN = "TURN";
+    public static final String GIFLAGS = "GIFLAGS";
+
     public static final String PLAYERS = "PLAYERS";
     public static final String NUM_PLAYERS = "NUM_PLAYERS";
     public static final String GAME_OVER = "GAME_OVER";
@@ -67,6 +70,9 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL( "CREATE TABLE " + TABLE_NAME_SUM + " ("
                     + FILE_NAME   + " TEXT PRIMARY KEY,"
                     + NUM_MOVES   + " INTEGER,"
+                    + TURN        + " INTEGER,"
+                    + GIFLAGS     + " INTEGER,"
+
                     + NUM_PLAYERS + " INTEGER,"
                     + PLAYERS     + " TEXT,"
                     + GAME_OVER   + " INTEGER,"
@@ -114,6 +120,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
         if ( newVersion == 6 && oldVersion == 5 ) {
             onCreateObits(db);
+        } else if ( newVersion == 7 && oldVersion == 6 ) {
+            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
+                        " ADD COLUMN " + TURN + "INTEGER;" );
+            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
+                        " ADD COLUMN " + GIFLAGS + "INTEGER;" );
         } else {
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {

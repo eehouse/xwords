@@ -995,6 +995,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     setInt( env, jsummary, "nMoves", nMoves );
     XP_Bool gameOver = server_getGameIsOver( state->game.server );
     setBool( env, jsummary, "gameOver", gameOver );
+    setInt( env, jsummary, "turn", 
+            server_getCurrentTurn( state->game.server ) );
     
     if ( !!state->game.comms ) {
         CommsAddrRec addr;

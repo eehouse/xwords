@@ -30,6 +30,8 @@ import org.eehouse.android.xw4.R;
  */
 public class GameSummary {
     public int nMoves;
+    public int turn;
+    public int giFlags;
     public int nPlayers;
     public int[] scores;
     public boolean gameOver;
@@ -107,6 +109,48 @@ public class GameSummary {
             result = String.format( fmt, roomName );
         }
         return result;
+    }
+
+    private boolean isLocal( int indx ) {
+        int flag = 2 << (indx * 2);
+        return 0 != (giFlags & flag);
+    }
+
+    private boolean isRobot( int indx ) {
+        int flag = 1 << (indx * 2);
+        boolean result = 0 != (giFlags & flag);
+        return result;
+    }
+
+    public int giflags() {
+        Assert.assertNotNull( m_gi );
+        int result = 0;
+        for ( int ii = 0; ii < m_gi.nPlayers; ++ii ) {
+            if ( m_gi.players[ii].isLocal ) {
+                result |= 2 << (ii * 2);
+            }
+            if ( m_gi.players[ii].isRobot() ) {
+                result |= 1 << (ii * 2);
+            }
+        }
+        return result;
+    }
+
+    public String summarizePlayer( Context context, int indx ) {
+        String player = players[indx];
+        if ( !isLocal(indx) ) {
+            player = 
+                String.format( context.getString( R.string.str_nonlocal_name),
+                               player );
+        } else if ( isRobot(indx) ) {
+            String robot = context.getString( R.string.robot_name );
+            player += robot;
+        }
+        return player;
+    }
+
+    public boolean isNextToPlay( int indx ) {
+        return indx == turn && isLocal(indx);
     }
 
 }

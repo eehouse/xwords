@@ -54,6 +54,7 @@ public class DBUtils {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
                                  DBHelper.GAME_OVER, DBHelper.PLAYERS,
+                                 DBHelper.TURN, DBHelper.GIFLAGS,
                                  DBHelper.CONTYPE, DBHelper.SERVERROLE,
                                  DBHelper.ROOMNAME, DBHelper.RELAYID, 
                                  DBHelper.SMSPHONE, DBHelper.SEED, 
@@ -71,6 +72,12 @@ public class DBUtils {
                 summary.nPlayers = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.NUM_PLAYERS));
+                summary.turn = 
+                    cursor.getInt(cursor.
+                                  getColumnIndex(DBHelper.TURN));
+                summary.giFlags = 
+                    cursor.getInt(cursor.
+                                  getColumnIndex(DBHelper.GIFLAGS));
                 summary.players = 
                     parsePlayers( cursor.getString(cursor.
                                                     getColumnIndex(DBHelper.
@@ -88,16 +95,20 @@ public class DBUtils {
 
                  String scoresStr = 
                      cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
-                 if ( null != scoresStr ) {
+                 int[] scores = new int[summary.nPlayers];
+                 if ( null != scoresStr && scoresStr.length() > 0 ) {
                      StringTokenizer st = new StringTokenizer( scoresStr );
-                     int[] scores = new int[st.countTokens()];
                      for ( int ii = 0; ii < scores.length; ++ii ) {
                          Assert.assertTrue( st.hasMoreTokens() );
                          String token = st.nextToken();
                          scores[ii] = Integer.parseInt( token );
                      }
-                     summary.scores = scores;
+                 } else {
+                     for ( int ii = 0; ii < scores.length; ++ii ) {
+                         scores[ii] = 0;
+                     }
                  }
+                 summary.scores = scores;
 
                  int col = cursor.getColumnIndex( DBHelper.CONTYPE );
                  if ( col >= 0 ) {
@@ -155,6 +166,8 @@ public class DBUtils {
                  ContentValues values = new ContentValues();
                  values.put( DBHelper.NUM_MOVES, summary.nMoves );
                  values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
+                 values.put( DBHelper.TURN, summary.turn );
+                 values.put( DBHelper.GIFLAGS, summary.giflags() );
                  values.put( DBHelper.PLAYERS, 
                              summary.summarizePlayers(context) );
                  values.put( DBHelper.DICTLANG, summary.dictLang );
@@ -450,28 +463,29 @@ public class DBUtils {
          return al.toArray( new String[al.size()] );
      }
 
-     private static String[] parsePlayers( final String players, int nPlayers )
-     {
-         String[] result = new String[nPlayers];
-         String sep = "vs. ";
-         if ( players.contains("\n") ) {
-             sep = "\n";
-         }
-
-         int ii, nxt;
-         for ( ii = 0, nxt = 0; ; ++ii ) {
-             int prev = nxt;
-             nxt = players.indexOf( sep, nxt );
-             String name = -1 == nxt ?
-                 players.substring( prev ) : players.substring( prev, nxt );
-             Utils.logf( "got name[%d]: \"%s\"", ii, name );
-             result[ii] = name;
-             if ( -1 == nxt ) {
-                 break;
+     private static String[] parsePlayers( final String players, int nPlayers ){
+         String[] result = null;
+         if ( null != players ) {
+             result = new String[nPlayers];
+             String sep = "vs. ";
+             if ( players.contains("\n") ) {
+                 sep = "\n";
              }
-             nxt += sep.length();
-         }
 
+             int ii, nxt;
+             for ( ii = 0, nxt = 0; ; ++ii ) {
+                 int prev = nxt;
+                 nxt = players.indexOf( sep, nxt );
+                 String name = -1 == nxt ?
+                     players.substring( prev ) : players.substring( prev, nxt );
+                 Utils.logf( "got name[%d]: \"%s\"", ii, name );
+                 result[ii] = name;
+                 if ( -1 == nxt ) {
+                     break;
+                 }
+                 nxt += sep.length();
+             }
+         }
          return result;
     }
 

@@ -77,9 +77,12 @@ public class GameListAdapter extends XWListAdapter {
             for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
                 View tmp = m_factory.inflate( R.layout.player_list_elem, null );
                 view = (TextView)tmp.findViewById( R.id.item_name );
-                view.setText( summary.players[ii] );
+                view.setText( summary.summarizePlayer( m_context, ii ) );
                 view = (TextView)tmp.findViewById( R.id.item_score );
                 view.setText( String.format( "%d", summary.scores[ii] ) );
+                if ( summary.isNextToPlay( ii ) ) {
+                    tmp.setBackgroundColor( 0x7F00FF00 );
+                }
                 list.addView( tmp, ii );
             }
 
