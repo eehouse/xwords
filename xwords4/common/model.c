@@ -1521,14 +1521,14 @@ model_setTrayListener( ModelCtxt* model, TrayListener tl, void* data )
 {
     model->vol.trayListenerFunc = tl;
     model->vol.trayListenerData = data;
-} /* model_setBoardListener */
+} /* model_setTrayListener */
 
 void
 model_setDictListener( ModelCtxt* model, DictListener dl, void* data )
 {
     model->vol.dictListenerFunc = dl;
     model->vol.dictListenerData = data;
-} /* model_setBoardListener */
+} /* model_setDictListener */
 
 static void
 notifyBoardListeners( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,

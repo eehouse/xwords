@@ -27,7 +27,6 @@ public interface UtilCtxt {
     static final int BONUS_TRIPLE_LETTER = 3;
     static final int BONUS_TRIPLE_WORD = 4;
 
-    int getSquareBonus( int col, int row );
     int userPickTile( /* PickInfo* pi, add once tile-picking is enabled */
                      int playerNum, String[] texts );
 

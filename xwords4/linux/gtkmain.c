@@ -1018,6 +1018,10 @@ disenable_buttons( GtkAppGlobals* globals )
     XP_Bool canToggle = board_canTogglePending( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->toggle_undo_button, canToggle );
 
+    XP_Bool canHing = board_canHint( globals->cGlobals.game.board );
+    gtk_widget_set_sensitive( globals->prevhint_button, canHing );
+    gtk_widget_set_sensitive( globals->nexthint_button, canHing );
+
     XP_Bool canChat = !!globals->cGlobals.game.comms
         && comms_canChat( globals->cGlobals.game.comms );
     gtk_widget_set_sensitive( globals->chat_button, canChat );
@@ -1754,9 +1758,11 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
 
     button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?-",
                                        G_CALLBACK(handle_prevhint_button) );
+    globals->prevhint_button = button;
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
     button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?+",
                                        G_CALLBACK(handle_nexthint_button) );
+    globals->nexthint_button = button;
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     button = makeShowButtonFromBitmap( globals, "../hintNum.xpm", "n",

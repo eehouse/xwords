@@ -473,9 +473,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 backColor = m_otherColors[CommonPrefs.COLOR_BKGND];
             } else {
                 backColor = m_bonusColors[bonus];
-                if ( CommonPrefs.getShowBonusSumms(m_context) ) {
-                    bonusStr = m_bonusSummaries[bonus];
-                }
+                bonusStr = m_bonusSummaries[bonus];
             }
         } else if ( pending ) {
             if ( darkOnLight() ) {

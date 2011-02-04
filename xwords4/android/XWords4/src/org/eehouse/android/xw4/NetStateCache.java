@@ -73,13 +73,15 @@ public class NetStateCache {
                 ConnectivityManager connMgr = (ConnectivityManager)
                     context.getSystemService( Context.CONNECTIVITY_SERVICE );
                 NetworkInfo ni = connMgr.getActiveNetworkInfo();
-                s_netAvail = null != ni && 
-                    NetworkInfo.State.CONNECTED == ni.getState();
+
+                s_netAvail = ni != null && ni.isAvailable() && ni.isConnected();
 
                 s_receiver = new CommsBroadcastReceiver();
                 IntentFilter filter = new IntentFilter();
                 filter.addAction( ConnectivityManager.CONNECTIVITY_ACTION );
-                Intent intent = context.registerReceiver( s_receiver, filter );
+
+                Intent intent = context.registerReceiver( s_receiver, 
+                                                          filter );
 
                 s_ifs = new HashSet<StateChangedIf>();
                 s_haveReceiver = true;

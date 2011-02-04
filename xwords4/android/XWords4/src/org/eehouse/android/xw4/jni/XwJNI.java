@@ -98,6 +98,7 @@ public class XwJNI {
     public static native void game_summarize( int gamePtr, GameSummary summary );
     public static native byte[] game_saveToStream( int gamePtr,
                                                    CurGameInfo gi  );
+    public static native void game_getGi( int gamePtr, CurGameInfo gi );
     public static native boolean game_hasComms( int gamePtr );
     public static native void game_dispose( int gamePtr );
 

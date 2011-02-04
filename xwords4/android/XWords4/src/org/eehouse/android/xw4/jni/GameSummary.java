@@ -30,10 +30,12 @@ import org.eehouse.android.xw4.R;
  */
 public class GameSummary {
     public int nMoves;
+    public int turn;
+    public int giFlags;
     public int nPlayers;
     public int[] scores;
     public boolean gameOver;
-    public String players;
+    public String[] players;
     public CommsAddrRec.CommsConnType conType;
     public String smsPhone;
     // relay-related fields
@@ -67,7 +69,6 @@ public class GameSummary {
     public String summarizePlayers( Context context )
     {
         StringBuffer sb = new StringBuffer();
-        String vsString = context.getString( R.string.vs );
         for ( int ii = 0; ; ) {
 
             int score = 0;
@@ -76,11 +77,11 @@ public class GameSummary {
                 score = scores[ii];
             } catch ( Exception ex ){}
 
-            sb.append( String.format( "%s(%d)", m_gi.players[ii].name, score ) );
+            sb.append( m_gi.players[ii].name );
             if ( ++ii >= nPlayers ) {
                 break;
             }
-            sb.append( String.format( " %s ", vsString ) );
+            sb.append( "\n" );
         }
         return sb.toString();
     }
@@ -108,6 +109,48 @@ public class GameSummary {
             result = String.format( fmt, roomName );
         }
         return result;
+    }
+
+    private boolean isLocal( int indx ) {
+        int flag = 2 << (indx * 2);
+        return 0 != (giFlags & flag);
+    }
+
+    private boolean isRobot( int indx ) {
+        int flag = 1 << (indx * 2);
+        boolean result = 0 != (giFlags & flag);
+        return result;
+    }
+
+    public int giflags() {
+        Assert.assertNotNull( m_gi );
+        int result = 0;
+        for ( int ii = 0; ii < m_gi.nPlayers; ++ii ) {
+            if ( m_gi.players[ii].isLocal ) {
+                result |= 2 << (ii * 2);
+            }
+            if ( m_gi.players[ii].isRobot() ) {
+                result |= 1 << (ii * 2);
+            }
+        }
+        return result;
+    }
+
+    public String summarizePlayer( Context context, int indx ) {
+        String player = players[indx];
+        if ( !isLocal(indx) ) {
+            player = 
+                String.format( context.getString( R.string.str_nonlocal_name),
+                               player );
+        } else if ( isRobot(indx) ) {
+            String robot = context.getString( R.string.robot_name );
+            player += robot;
+        }
+        return player;
+    }
+
+    public boolean isNextToPlay( int indx ) {
+        return indx == turn && isLocal(indx);
     }
 
 }

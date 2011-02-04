@@ -28,6 +28,8 @@ import android.database.DataSetObserver;
 import java.io.FileInputStream;
 import java.util.HashMap;
 import android.view.LayoutInflater;
+import android.widget.LinearLayout;
+
 import junit.framework.Assert;
 
 
@@ -65,15 +67,24 @@ public class GameListAdapter extends XWListAdapter {
         View layout = m_viewsCache.get( path );
 
         if ( null == layout ) {
-            Utils.logf( "creating new list elem for %s", path );
+            TextView view;
             layout = m_factory.inflate( m_layoutId, null );
 
             GameSummary summary = DBUtils.getSummary( m_context, path );
 
-            TextView view = (TextView)layout.findViewById( R.id.players );
-            String gameName = GameUtils.gameName( m_context, path );
-            view.setText( String.format( "%s: %s", gameName,
-                                         summary.players ) );
+            LinearLayout list =
+                (LinearLayout)layout.findViewById( R.id.player_list );
+            for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
+                View tmp = m_factory.inflate( R.layout.player_list_elem, null );
+                view = (TextView)tmp.findViewById( R.id.item_name );
+                view.setText( summary.summarizePlayer( m_context, ii ) );
+                view = (TextView)tmp.findViewById( R.id.item_score );
+                view.setText( String.format( "%d", summary.scores[ii] ) );
+                if ( summary.isNextToPlay( ii ) ) {
+                    tmp.setBackgroundColor( 0x7F00FF00 );
+                }
+                list.addView( tmp, ii );
+            }
 
             view = (TextView)layout.findViewById( R.id.state );
             view.setText( summary.summarizeState( m_context ) );
