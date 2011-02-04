@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -140,6 +140,7 @@ static StateTable g_stateTable[] = {
    game */
 { XWS_ALLCONND,       XWE_DEVGONE,       XWA_RMDEV,        XWS_WAITMORE },
 { XWS_WAITMORE,       XWE_GAMEDEAD,      XWA_TELLGAMEDEAD, XWS_WAITMORE },
+{ XWS_ALLCONND,       XWE_GAMEDEAD,      XWA_TELLGAMEDEAD, XWS_ALLCONND },
 
     /* Connect timer */
 { XWS_WAITMORE,       XWE_CONNTIMER,     XWA_TIMERDISCONN, XWS_DEAD },
