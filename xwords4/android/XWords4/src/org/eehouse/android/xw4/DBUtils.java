@@ -260,7 +260,7 @@ public class DBUtils {
          return result;
      }
 
-     public static String[] getRelayIDNoMsgs( Context context )
+     public static String[] getRelayIDs( Context context, boolean noMsgs ) 
      {
          String[] result = null;
          initDB( context );
@@ -269,8 +269,10 @@ public class DBUtils {
          synchronized( s_dbHelper ) {
              SQLiteDatabase db = s_dbHelper.getReadableDatabase();
              String[] columns = { DBHelper.RELAYID };
-             String selection = DBHelper.RELAYID + " NOT null AND " 
-                 + "NOT " + DBHelper.HASMSGS;
+            String selection = DBHelper.RELAYID + " NOT null";
+            if ( noMsgs ) {
+                selection += " AND NOT " + DBHelper.HASMSGS;
+            }
 
              Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                        selection, null, null, null, null );
