@@ -272,17 +272,6 @@ public class GamesList extends XWListActivity
         HandleRelaysIDs( relayIDs );
     }
 
-    // @Override
-    // protected void onNewIntent( Intent intent )
-    // {
-    //     RelayService.CancelNotification();
-
-    //     Utils.logf( "onNewIntent called" );
-    //     String[] relayIDs = intent.
-    //         getStringArrayExtra( getString(R.string.relayids_extra) );
-    //     HandleRelaysIDs( relayIDs );
-    // }
-
     @Override
     public void onWindowFocusChanged( boolean hasFocus )
     {
@@ -325,7 +314,7 @@ public class GamesList extends XWListActivity
 
     private void doSyncMenuitem()
     {
-        if ( null == DBUtils.getRelayIDNoMsgs( this ) ) {
+        if ( null == DBUtils.getRelayIDs( this, false ) ) {
             showOKOnlyDialog( R.string.no_games_to_refresh );
         } else {
             new RefreshMsgsTask( this, this ).execute();
