@@ -317,7 +317,7 @@ and_util_makeEmptyDict( XW_UtilCtxt* uc )
 static const XP_UCHAR*
 and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
 {
-    XP_UCHAR* result = NULL;
+    XP_UCHAR* result = "";
     UTIL_CBK_HEADER("getUserString", "(I)Ljava/lang/String;" );
     int index = stringCode - 1; /* see LocalizedStrIncludes.h */
     XP_ASSERT( index < VSIZE( util->userStrings ) );
