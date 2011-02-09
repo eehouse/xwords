@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -75,7 +75,6 @@ typedef struct ServerVolatiles {
     void* turnChangeData;
     GameOverListener gameOverListener;
     void* gameOverData;
-    XWStreamCtxt* prevMoveStream;     /* save it to print later */
     XW_State stateAfterShow;          /* do I need to serialize this?  What if
                                          someone quits before I can show the
                                          scores?  PENDING(ehouse) */
@@ -95,6 +94,7 @@ typedef struct ServerNonvolatiles {
 #endif
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
+    XWStreamCtxt* prevMoveStream;     /* save it to print later */
 } ServerNonvolatiles;
 
 struct ServerCtxt {
@@ -136,6 +136,7 @@ static void badWordMoveUndoAndTellUser( ServerCtxt* server,
                                         BadWordInfo* bwi );
 static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XP_S16 turn );
+static XWStreamCtxt* mkServerStream( ServerCtxt* server );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server, 
@@ -305,6 +306,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
                        CommsCtxt* comms, XW_UtilCtxt* util, XP_U16 nPlayers )
 {
     ServerCtxt* server;
+    XP_U16 version = stream_getVersion( stream );
     short i;
 
     server = server_make( MPPARM(mpool) model, comms, util );
@@ -325,12 +327,22 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         }
     }
 
-    if ( STREAM_VERS_ALWAYS_MULTI <= stream_getVersion(stream)
+    if ( STREAM_VERS_ALWAYS_MULTI <= version
 #ifndef PREV_WAS_STANDALONE_ONLY
          || XP_TRUE
 #endif
          ) { 
         server->lastMoveSource = (XP_U16)stream_getBits( stream, 2 );
+    }
+
+    if ( version >= STREAM_SAVE_PREVMOVE ) {
+        XP_U16 nBytes = stream_getU16( stream );
+        if ( nBytes > 0 ) {
+            XP_ASSERT( !server->nv.prevMoveStream );
+            server->nv.prevMoveStream = mkServerStream( server );
+            stream_copyFromStream( server->nv.prevMoveStream, 
+                                   stream, nBytes );
+        }
     }
 
     XP_ASSERT( stream_getU32( stream ) == sEND );
@@ -343,6 +355,7 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_U16 i;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
+    XP_U16 nBytes;
 
     putNV( stream, &server->nv, nPlayers );
 
@@ -368,6 +381,13 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
     stream_putBits( stream, 2, 0 );
 #endif
 
+    nBytes = !!server->nv.prevMoveStream ? 
+        stream_getSize( server->nv.prevMoveStream ) : 0;
+    stream_putU16( stream, nBytes );
+    if ( nBytes > 0 ) {
+        stream_copyFromStream( stream, server->nv.prevMoveStream, nBytes );
+    }
+
 #ifdef DEBUG
     stream_putU32( stream, sEND );
 #endif
@@ -391,12 +411,11 @@ cleanupServer( ServerCtxt* server )
         server->pool = (PoolContext*)NULL;
     }
 
-    XP_MEMSET( &server->nv, 0, sizeof(server->nv) );
-
-    if ( !!server->vol.prevMoveStream ) {
-        stream_destroy( server->vol.prevMoveStream );
-        server->vol.prevMoveStream = NULL;
+    if ( !!server->nv.prevMoveStream ) {
+        stream_destroy( server->nv.prevMoveStream );
     }
+
+    XP_MEMSET( &server->nv, 0, sizeof(server->nv) );
 } /* cleanupServer */
 
 void
@@ -707,8 +726,8 @@ makeRobotMove( ServerCtxt* server )
                 XP_SNPRINTF( buf, sizeof(buf), str, MAX_TRAY_TILES );
 
                 stream_catString( stream, buf );
-                XP_ASSERT( !server->vol.prevMoveStream );
-                server->vol.prevMoveStream = stream;
+                XP_ASSERT( !server->nv.prevMoveStream );
+                server->nv.prevMoveStream = stream;
             }
         } else { 
             /* if canMove is false, this is a fake move, a pass */
@@ -718,8 +737,8 @@ makeRobotMove( ServerCtxt* server )
 
                 if ( !!stream ) {
                     (void)model_checkMoveLegal( model, turn, stream, NULL );
-                    XP_ASSERT( !server->vol.prevMoveStream );
-                    server->vol.prevMoveStream = stream;
+                    XP_ASSERT( !server->nv.prevMoveStream );
+                    server->nv.prevMoveStream = stream;
                 }
                 result = server_commitMove( server );
             } else {
@@ -798,18 +817,14 @@ showPrevScore( ServerCtxt* server )
     XP_U16 prevTurn;
     XP_U16 strCode;
     LocalPlayer* lp;
-    XP_Bool wasRobot;
-    XP_Bool wasLocal;
 
     XP_ASSERT( server->nv.showRobotScores );
 
     prevTurn = (server->nv.currentTurn + nPlayers - 1) % nPlayers;
     lp = &gi->players[prevTurn];
-    wasRobot = LP_IS_ROBOT(lp);
-    wasLocal = LP_IS_LOCAL(lp);
 
-    if ( wasLocal ) {
-        XP_ASSERT( wasRobot );
+    if ( LP_IS_LOCAL(lp) ) {
+        XP_ASSERT( LP_IS_ROBOT(lp) );
         strCode = STR_ROBOT_MOVED;
     } else {
         strCode = STR_REMOTE_MOVED;
@@ -820,14 +835,14 @@ showPrevScore( ServerCtxt* server )
     str = util_getUserString( util, strCode );
     stream_catString( stream, str );
 
-    if ( !!server->vol.prevMoveStream ) {
-        XWStreamCtxt* prevStream = server->vol.prevMoveStream;
+    if ( !!server->nv.prevMoveStream ) {
+        XWStreamCtxt* prevStream = server->nv.prevMoveStream;
         XP_U16 len = stream_getSize( prevStream );
         XP_UCHAR* buf = XP_MALLOC( server->mpool, len );
 
         stream_getBytes( prevStream, buf, len );
         stream_destroy( prevStream );
-        server->vol.prevMoveStream = NULL;
+        server->nv.prevMoveStream = NULL;
 
         stream_putBytes( stream, buf, len );
         XP_FREE( server->mpool, buf );
@@ -1913,8 +1928,8 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
         }
 
         if ( !!mvStream ) {
-            XP_ASSERT( !server->vol.prevMoveStream );
-            server->vol.prevMoveStream = mvStream;
+            XP_ASSERT( !server->nv.prevMoveStream );
+            server->nv.prevMoveStream = mvStream;
         }
 
     } else {
@@ -1964,8 +1979,8 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
         }
 
         if ( !!mvStream ) {
-            XP_ASSERT( !server->vol.prevMoveStream );
-            server->vol.prevMoveStream = mvStream;
+            XP_ASSERT( !server->nv.prevMoveStream );
+            server->nv.prevMoveStream = mvStream;
         }
 
         resetEngines( server );

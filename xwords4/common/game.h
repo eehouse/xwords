@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#define STREAM_SAVE_PREVMOVE 0x0F /* server saves prev move explanation */
 #define STREAM_VERS_ROBOTIQ 0x0E /* robots have different smarts */
 #define STREAM_VERS_DICTLANG 0x0D /* save dict lang code in CurGameInfo */
 #define STREAM_VERS_NUNDONE 0x0C /* save undone tile in model */
@@ -49,7 +50,7 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_ROBOTIQ
+#define CUR_STREAM_VERS STREAM_SAVE_PREVMOVE
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
