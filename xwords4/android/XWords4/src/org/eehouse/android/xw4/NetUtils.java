@@ -217,11 +217,10 @@ public class NetUtils {
 
     private static String[] collectIDs( Context context, int[] nBytes )
     {
-        String[] ids = DBUtils.getRelayIDNoMsgs( context );
+        String[] ids = DBUtils.getRelayIDs( context, false );
         int len = 0;
         if ( null != ids ) {
             for ( String id : ids ) {
-                Utils.logf( "got relayID: %s", id );
                 len += id.length();
             }
         }
