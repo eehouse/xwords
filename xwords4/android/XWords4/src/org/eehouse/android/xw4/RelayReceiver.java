@@ -63,9 +63,15 @@ public class RelayReceiver extends BroadcastReceiver {
 
     private void query_relay( Context context ) 
     {
+        Utils.logf( "query_relay" );
         String[] relayIDs = NetUtils.QueryRelay( context );
+
+        // At this point any changes have already been made to the
+        // games.  Need to refresh
         if ( null != relayIDs ) {
-            setupNotification( context, relayIDs );
+            if ( !DispatchNotify.tryHandle( context, relayIDs ) ) {
+                setupNotification( context, relayIDs );
+            }
         }
     }
 
