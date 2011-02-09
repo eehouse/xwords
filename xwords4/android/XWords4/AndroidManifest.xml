@@ -85,7 +85,6 @@
     </activity>
 
     <receiver android:name="RelayReceiver"
-              android:process=":remote"
               />
 
     <activity android:name="DispatchNotify"
