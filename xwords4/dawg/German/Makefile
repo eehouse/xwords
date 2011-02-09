@@ -27,11 +27,11 @@ include ../Makefile.langcommon
 SOURCEDICT ?= $(XWDICTPATH)/German/HansGerman.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
+	file -z $(SOURCEDICT) | grep -q 'UTF-8 Unicode text' || exit 1
 	zcat $< \
-		| iconv -f iso88591 -t utf8 \
 		| sed 's,.,\U\0,g' \
 		| sed -e 's/ß/SS/g' \
-		| grep '^[A-ZÄÖÜ]*$$' \
+		| grep '^[AÄBCDEFGHIJKLMNOÖPQRSTUÜVWXYZ]*$$' \
 		| gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the

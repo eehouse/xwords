@@ -53,6 +53,7 @@ public class DictImportActivity extends XWActivity {
                                         uri.getFragment() );
                     InputStream is = jUri.toURL().openStream();
                     saveDict( is, uri.getPath() );
+                    is.close();
                 } catch ( java.net.URISyntaxException use ) {
                     Utils.logf( "URISyntaxException: %s" + use.toString() );
                 } catch ( java.net.MalformedURLException mue ) {
@@ -106,14 +107,9 @@ public class DictImportActivity extends XWActivity {
 
     private void saveDict( InputStream inputStream, String path )
     {
-        try {
-            String name = basename( path );
-            GameUtils.saveDict( this, name, inputStream );
-            DictLangCache.inval( GameUtils.removeDictExtn( name ) );
-            inputStream.close();
-        } catch ( java.io.IOException ioe ) {
-            Utils.logf( "IOException: %s" + ioe.toString() );
-        }
+        String name = basename( path );
+        GameUtils.saveDict( this, name, inputStream );
+        DictLangCache.inval( GameUtils.removeDictExtn( name ) );
     }
 
     private String basename( String path )

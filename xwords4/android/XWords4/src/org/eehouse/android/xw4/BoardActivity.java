@@ -51,7 +51,7 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
-public class BoardActivity extends XWActivity implements UtilCtxt {
+public class BoardActivity extends XWActivity {
 
     private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
     private static final int DLG_BADWORDS = DLG_OKONLY + 1;
@@ -83,6 +83,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
     private boolean m_firingPrefs;
     private JNIUtils m_jniu;
     private boolean m_volKeysZoom;
+    private BoardUtilCtxt m_utils;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -295,6 +296,7 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
 
+        m_utils = new BoardUtilCtxt();
         m_jniu = JNIUtilsImpl.get();
         setContentView( R.layout.board );
         m_handler = new Handler();
@@ -672,71 +674,365 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         }
     } // handleConndMessage
 
-    //////////////////////////////////////////
-    // XW_UtilCtxt interface implementation //
-    //////////////////////////////////////////
-    public void requestTime() 
-    {
-        m_handler.post( new Runnable() {
-                public void run() {
-                    if ( null != m_jniThread ) {
-                        m_jniThread.handle( JNIThread.JNICmd.CMD_DO, false );
+    private class BoardUtilCtxt extends UtilCtxtImpl {
+
+        public void requestTime() 
+        {
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        if ( null != m_jniThread ) {
+                            m_jniThread.handle( JNIThread.JNICmd.CMD_DO, false );
+                        }
                     }
+                } );
+        }
+
+        public void remSelected() 
+        {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
+                                R.string.tiles_left_title );
+        }
+
+        public void setIsServer( boolean isServer )
+        {
+            Utils.logf( "setIsServer(%s)", isServer?"true":"false" );
+            DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
+                : DeviceRole.SERVER_ISCLIENT;
+            if ( newRole != m_gi.serverRole ) {
+                Utils.logf( "new role: %s; old role: %s", 
+                            newRole.toString(), m_gi.serverRole.toString() );
+                m_gi.serverRole = newRole;
+                if ( !isServer ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_SWITCHCLIENT );
                 }
-            } );
-    }
-
-    public void remSelected() 
-    {
-        m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
-                            R.string.tiles_left_title );
-    }
-
-    public void setIsServer( boolean isServer )
-    {
-        Utils.logf( "setIsServer(%s)", isServer?"true":"false" );
-        DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
-            : DeviceRole.SERVER_ISCLIENT;
-        if ( newRole != m_gi.serverRole ) {
-            Utils.logf( "new role: %s; old role: %s", 
-                        newRole.toString(), m_gi.serverRole.toString() );
-            m_gi.serverRole = newRole;
-            if ( !isServer ) {
-                m_jniThread.handle( JNIThread.JNICmd.CMD_SWITCHCLIENT );
             }
         }
-    }
 
-    public void setTimer( int why, int when, int handle )
-    {
-        if ( null != m_timers[why] ) {
-            m_handler.removeCallbacks( m_timers[why] );
+        public void setTimer( int why, int when, int handle )
+        {
+            if ( null != m_timers[why] ) {
+                m_handler.removeCallbacks( m_timers[why] );
+            }
+
+            m_timers[why] = new TimerRunnable( why, when, handle );
+
+            int inHowLong;
+            switch ( why ) {
+            case UtilCtxt.TIMER_COMMS:
+                inHowLong = when * 1000;
+                break;
+            case UtilCtxt.TIMER_TIMERTICK:
+                inHowLong = 1000;   // when is 0 for TIMER_TIMERTICK
+                break;
+            default:
+                inHowLong = 500;
+            }
+            m_handler.postDelayed( m_timers[why], inHowLong );
         }
 
-        m_timers[why] = new TimerRunnable( why, when, handle );
-
-        int inHowLong;
-        switch ( why ) {
-        case UtilCtxt.TIMER_COMMS:
-            inHowLong = when * 1000;
-            break;
-        case UtilCtxt.TIMER_TIMERTICK:
-            inHowLong = 1000;   // when is 0 for TIMER_TIMERTICK
-            break;
-        default:
-            inHowLong = 500;
+        public void clearTimer( int why ) 
+        {
+            Utils.logf( "clearTimer called" );
+            if ( null != m_timers[why] ) {
+                m_handler.removeCallbacks( m_timers[why] );
+                m_timers[why] = null;
+            }
         }
-        m_handler.postDelayed( m_timers[why], inHowLong );
-    }
-
-    public void clearTimer( int why ) 
-    {
-        Utils.logf( "clearTimer called" );
-        if ( null != m_timers[why] ) {
-            m_handler.removeCallbacks( m_timers[why] );
-            m_timers[why] = null;
+        // This is supposed to be called from the jni thread
+        public int userPickTile( int playerNum, String[] texts )
+        {
+            m_texts = texts;
+            waitBlockingDialog( PICK_TILE_REQUEST_BLK, 0 );
+            return m_resultCode;
         }
-    }
+
+        public String askPassword( String name )
+        {
+            String fmt = getString( R.string.msg_ask_password );
+            m_dlgTitleStr = String.format( fmt, name );
+
+            if ( null == m_passwdEdit ) {
+                LayoutInflater factory = LayoutInflater.from( BoardActivity.this );
+                m_passwdEdit = (EditText)factory.inflate( R.layout.passwd_view, null );
+            }
+            waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
+
+            String result = null;      // means cancelled
+            if ( 0 != m_resultCode ) {
+                result = m_passwdEdit.getText().toString();
+            }
+            return result;
+        }
+
+        public void turnChanged()
+        {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, -8 );
+        }
+
+        public boolean engineProgressCallback()
+        {
+            return ! m_jniThread.busy();
+        }
+
+        public void engineStarting( int nBlanks )
+        {
+            if ( nBlanks > 0 ) {
+                m_handler.post( new Runnable() {
+                        // Need to keep this from running after activity dies!!
+                        public void run() {
+                            if ( m_isVisible ) {
+                                String title = getString( R.string.progress_title );
+                                m_progress = ProgressDialog.show( BoardActivity.this,
+                                                                  title, null, true, 
+                                                                  true );
+                            }
+                        }
+                    } );
+            }
+        }
+
+        public void engineStopping()
+        {
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        if ( null != m_progress ) {
+                            m_progress.cancel();
+                            m_progress = null;
+                        }
+                    }
+                } );
+        }
+
+        public String getUserString( int stringCode )
+        {
+            int id = 0;
+            switch( stringCode ) {
+            case UtilCtxt.STRD_ROBOT_TRADED:
+                id = R.string.strd_robot_traded;
+                break;
+            case UtilCtxt.STR_ROBOT_MOVED:
+                id = R.string.str_robot_moved;
+                break;
+            case UtilCtxt.STRS_VALUES_HEADER:
+                id = R.string.strs_values_header;
+                break;
+            case UtilCtxt.STRD_REMAINING_TILES_ADD:
+                id = R.string.strd_remaining_tiles_add;
+                break;
+            case UtilCtxt.STRD_UNUSED_TILES_SUB:
+                id = R.string.strd_unused_tiles_sub;
+                break;
+            case UtilCtxt.STR_REMOTE_MOVED:
+                id = R.string.str_remote_moved;
+                break;
+            case UtilCtxt.STRD_TIME_PENALTY_SUB:
+                id = R.string.strd_time_penalty_sub;
+                break;
+            case UtilCtxt.STR_PASS:
+                id = R.string.str_pass;
+                break;
+            case UtilCtxt.STRS_MOVE_ACROSS:
+                id = R.string.strs_move_across;
+                break;
+            case UtilCtxt.STRS_MOVE_DOWN:
+                id = R.string.strs_move_down;
+                break;
+            case UtilCtxt.STRS_TRAY_AT_START:
+                id = R.string.strs_tray_at_start;
+                break;
+            case UtilCtxt.STRSS_TRADED_FOR:
+                id = R.string.strss_traded_for;
+                break;
+            case UtilCtxt.STR_PHONY_REJECTED:
+                id = R.string.str_phony_rejected;
+                break;
+            case UtilCtxt.STRD_CUMULATIVE_SCORE:
+                id = R.string.strd_cumulative_score;
+                break;
+            case UtilCtxt.STRS_NEW_TILES:
+                id = R.string.strs_new_tiles;
+                break;
+            case UtilCtxt.STR_PASSED:
+                id = R.string.str_passed;
+                break;
+            case UtilCtxt.STRSD_SUMMARYSCORED:
+                id = R.string.strsd_summaryscored;
+                break;
+            case UtilCtxt.STRD_TRADED:
+                id = R.string.strd_traded;
+                break;
+            case UtilCtxt.STR_LOSTTURN:
+                id = R.string.str_lostturn;
+                break;
+            case UtilCtxt.STR_COMMIT_CONFIRM:
+                id = R.string.str_commit_confirm;
+                break;
+            case UtilCtxt.STR_LOCAL_NAME:
+                id = R.string.str_local_name;
+                break;
+            case UtilCtxt.STR_NONLOCAL_NAME:
+                id = R.string.str_nonlocal_name;
+                break;
+            case UtilCtxt.STR_BONUS_ALL:
+                id = R.string.str_bonus_all;
+                break;
+            case UtilCtxt.STRD_TURN_SCORE:
+                id = R.string.strd_turn_score;
+                break;
+            default:
+                Utils.logf( "no such stringCode: " + stringCode );
+            }
+
+            String result;
+            if ( 0 == id ) {
+                result = "";
+            } else {
+                result = getString( id );
+            }
+            return result;
+        }
+
+        public boolean userQuery( int id, String query )
+        {
+            boolean result;
+
+            switch( id ) {
+                // Though robot-move dialogs don't normally need to block,
+                // if the player after this one is also a robot and we
+                // don't block then a second dialog will replace this one.
+                // So block.  Yuck.
+            case UtilCtxt.QUERY_ROBOT_MOVE:
+            case UtilCtxt.QUERY_ROBOT_TRADE:
+                m_dlgBytes = query;
+                m_dlgTitle = R.string.info_title;
+                waitBlockingDialog( QUERY_INFORM_BLK, 0 );
+                result = true;
+                break;
+
+                // These *are* blocking dialogs
+            case UtilCtxt.QUERY_COMMIT_TRADE:
+            case UtilCtxt.QUERY_COMMIT_TURN:
+                if ( UtilCtxt.QUERY_COMMIT_TRADE == id ) {
+                    m_dlgBytes = getString( R.string.query_trade );
+                } else {
+                    m_dlgBytes = query;
+                }
+                m_dlgTitle = R.string.query_title;
+                result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
+                break;
+            default:
+                Assert.fail();
+                result = false;
+            }
+
+            return result;
+        }
+
+        public void userError( int code )
+        {
+            int resid = 0;
+            switch( code ) {
+            case UtilCtxt.ERR_TILES_NOT_IN_LINE:
+                resid = R.string.str_tiles_not_in_line;
+                break;
+            case UtilCtxt.ERR_NO_EMPTIES_IN_TURN:
+                resid = R.string.str_no_empties_in_turn;
+                break;
+            case UtilCtxt.ERR_TWO_TILES_FIRST_MOVE:
+                resid = R.string.str_two_tiles_first_move;
+                break;
+            case UtilCtxt.ERR_TILES_MUST_CONTACT:
+                resid = R.string.str_tiles_must_contact;
+                break;
+            case UtilCtxt.ERR_NOT_YOUR_TURN:
+                resid = R.string.str_not_your_turn;
+                break;
+            case UtilCtxt.ERR_NO_PEEK_ROBOT_TILES:
+                resid = R.string.str_no_peek_robot_tiles;
+                break;
+            case UtilCtxt.ERR_CANT_TRADE_MID_MOVE:
+                resid = R.string.str_cant_trade_mid_move;
+                break;
+            case UtilCtxt.ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
+                resid = R.string.str_too_few_tiles_left_to_trade;
+                break;
+            case UtilCtxt.ERR_CANT_UNDO_TILEASSIGN:
+                resid = R.string.str_cant_undo_tileassign;
+                break;
+            case UtilCtxt.ERR_CANT_HINT_WHILE_DISABLED:
+                resid = R.string.str_cant_hint_while_disabled;
+                break;
+            case UtilCtxt.ERR_NO_PEEK_REMOTE_TILES:
+                resid = R.string.str_no_peek_remote_tiles;
+                break;
+            case UtilCtxt.ERR_REG_UNEXPECTED_USER:
+                resid = R.string.str_reg_unexpected_user;
+                break;
+            case UtilCtxt.ERR_SERVER_DICT_WINS:
+                resid = R.string.str_server_dict_wins;
+                break;
+            case ERR_REG_SERVER_SANS_REMOTE:
+                resid = R.string.str_reg_server_sans_remote;
+                break;
+            }
+
+            if ( resid != 0 ) {
+                nonBlockingDialog( DLG_OKONLY, getString( resid ) );
+            }
+        } // userError
+
+        public void notifyGameOver()
+        {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
+        }
+
+        // public void yOffsetChange( int maxOffset, int oldOffset, int newOffset )
+        // {
+        //     Utils.logf( "yOffsetChange(maxOffset=%d)", maxOffset );
+        //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
+        // }
+
+        public boolean warnIllegalWord( String[] words, int turn, boolean turnLost )
+        {
+            Utils.logf( "warnIllegalWord" );
+            boolean accept = turnLost;
+
+            StringBuffer sb = new StringBuffer();
+            for ( int ii = 0; ; ) {
+                sb.append( words[ii] );
+                if ( ++ii == words.length ) {
+                    break;
+                }
+                sb.append( "; " );
+            }
+        
+            String format = getString( R.string.ids_badwords );
+            String message = String.format( format, sb.toString() );
+
+            if ( turnLost ) {
+                nonBlockingDialog( DLG_BADWORDS, 
+                                   message + getString(R.string.badwords_lost) );
+            } else {
+                m_dlgBytes = message + getString( R.string.badwords_accept );
+                m_dlgTitle = R.string.query_title;
+                accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
+            }
+
+            Utils.logf( "warnIllegalWord=>" + accept );
+            return accept;
+        }
+
+        // Let's have this block in case there are multiple messages.  If
+        // we don't block the jni thread will continue processing messages
+        // and may stack dialogs on top of this one.  Including later
+        // chat-messages.
+        public void showChat( String msg )
+        {
+            m_dlgBytes = msg;
+            m_dlgTitle = R.string.chat_received;
+            waitBlockingDialog( GOT_MESSAGE_BLK, 0 );
+        }
+    } // class BoardUtilCtxt 
 
     private void loadGame()
     {
@@ -779,9 +1075,9 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
             if ( null == stream ||
                  ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                               m_gi, dictBytes, 
-                                              m_gi.dictName,this, m_jniu, 
+                                              m_gi.dictName, m_utils, m_jniu, 
                                               m_view, cp, m_xport ) ) {
-                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_jniu, 
+                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
                                         m_view, cp, m_xport, 
                                         dictBytes, m_gi.dictName );
             }
@@ -967,298 +1263,4 @@ public class BoardActivity extends XWActivity implements UtilCtxt {
         return handled;
     }
 
-    // This is supposed to be called from the jni thread
-    public int userPickTile( int playerNum, String[] texts )
-    {
-        m_texts = texts;
-        waitBlockingDialog( PICK_TILE_REQUEST_BLK, 0 );
-        return m_resultCode;
-    }
-
-    public String askPassword( String name )
-    {
-        String fmt = getString( R.string.msg_ask_password );
-        m_dlgTitleStr = String.format( fmt, name );
-
-        if ( null == m_passwdEdit ) {
-            LayoutInflater factory = LayoutInflater.from( this );
-            m_passwdEdit = (EditText)factory.inflate( R.layout.passwd_view, null );
-        }
-        waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
-
-        String result = null;      // means cancelled
-        if ( 0 != m_resultCode ) {
-            result = m_passwdEdit.getText().toString();
-        }
-        return result;
-    }
-
-    public void turnChanged()
-    {
-        m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, -8 );
-    }
-
-    public boolean engineProgressCallback()
-    {
-        return ! m_jniThread.busy();
-    }
-
-    public void engineStarting( int nBlanks )
-    {
-        if ( nBlanks > 0 ) {
-            m_handler.post( new Runnable() {
-                    // Need to keep this from running after activity dies!!
-                    public void run() {
-                        if ( m_isVisible ) {
-                            String title = getString( R.string.progress_title );
-                            m_progress = ProgressDialog.show( BoardActivity.this,
-                                                              title, null, true, 
-                                                              true );
-                        }
-                    }
-                } );
-        }
-    }
-
-    public void engineStopping()
-    {
-        m_handler.post( new Runnable() {
-                public void run() {
-                    if ( null != m_progress ) {
-                        m_progress.cancel();
-                        m_progress = null;
-                    }
-                }
-            } );
-    }
-
-    public String getUserString( int stringCode )
-    {
-        int id = 0;
-        switch( stringCode ) {
-        case UtilCtxt.STRD_ROBOT_TRADED:
-            id = R.string.strd_robot_traded;
-            break;
-        case UtilCtxt.STR_ROBOT_MOVED:
-            id = R.string.str_robot_moved;
-            break;
-        case UtilCtxt.STRS_VALUES_HEADER:
-            id = R.string.strs_values_header;
-            break;
-        case UtilCtxt.STRD_REMAINING_TILES_ADD:
-            id = R.string.strd_remaining_tiles_add;
-            break;
-        case UtilCtxt.STRD_UNUSED_TILES_SUB:
-            id = R.string.strd_unused_tiles_sub;
-            break;
-        case UtilCtxt.STR_REMOTE_MOVED:
-            id = R.string.str_remote_moved;
-            break;
-        case UtilCtxt.STRD_TIME_PENALTY_SUB:
-            id = R.string.strd_time_penalty_sub;
-            break;
-        case UtilCtxt.STR_PASS:
-            id = R.string.str_pass;
-            break;
-        case UtilCtxt.STRS_MOVE_ACROSS:
-            id = R.string.strs_move_across;
-            break;
-        case UtilCtxt.STRS_MOVE_DOWN:
-            id = R.string.strs_move_down;
-            break;
-        case UtilCtxt.STRS_TRAY_AT_START:
-            id = R.string.strs_tray_at_start;
-            break;
-        case UtilCtxt.STRSS_TRADED_FOR:
-            id = R.string.strss_traded_for;
-            break;
-        case UtilCtxt.STR_PHONY_REJECTED:
-            id = R.string.str_phony_rejected;
-            break;
-        case UtilCtxt.STRD_CUMULATIVE_SCORE:
-            id = R.string.strd_cumulative_score;
-            break;
-        case UtilCtxt.STRS_NEW_TILES:
-            id = R.string.strs_new_tiles;
-            break;
-        case UtilCtxt.STR_PASSED:
-            id = R.string.str_passed;
-            break;
-        case UtilCtxt.STRSD_SUMMARYSCORED:
-            id = R.string.strsd_summaryscored;
-            break;
-        case UtilCtxt.STRD_TRADED:
-            id = R.string.strd_traded;
-            break;
-        case UtilCtxt.STR_LOSTTURN:
-            id = R.string.str_lostturn;
-            break;
-        case UtilCtxt.STR_COMMIT_CONFIRM:
-            id = R.string.str_commit_confirm;
-            break;
-        case UtilCtxt.STR_LOCAL_NAME:
-            id = R.string.str_local_name;
-            break;
-        case UtilCtxt.STR_NONLOCAL_NAME:
-            id = R.string.str_nonlocal_name;
-            break;
-        case UtilCtxt.STR_BONUS_ALL:
-            id = R.string.str_bonus_all;
-            break;
-        case UtilCtxt.STRD_TURN_SCORE:
-            id = R.string.strd_turn_score;
-            break;
-        default:
-            Utils.logf( "no such stringCode: " + stringCode );
-        }
-
-        String result;
-        if ( 0 == id ) {
-            result = "";
-        } else {
-            result = getString( id );
-        }
-        return result;
-    }
-
-    public boolean userQuery( int id, String query )
-    {
-        boolean result;
-
-        switch( id ) {
-            // Though robot-move dialogs don't normally need to block,
-            // if the player after this one is also a robot and we
-            // don't block then a second dialog will replace this one.
-            // So block.  Yuck.
-        case UtilCtxt.QUERY_ROBOT_MOVE:
-        case UtilCtxt.QUERY_ROBOT_TRADE:
-            m_dlgBytes = query;
-            m_dlgTitle = R.string.info_title;
-            waitBlockingDialog( QUERY_INFORM_BLK, 0 );
-            result = true;
-            break;
-
-            // These *are* blocking dialogs
-        case UtilCtxt.QUERY_COMMIT_TRADE:
-        case UtilCtxt.QUERY_COMMIT_TURN:
-            if ( UtilCtxt.QUERY_COMMIT_TRADE == id ) {
-                m_dlgBytes = getString( R.string.query_trade );
-            } else {
-                m_dlgBytes = query;
-            }
-            m_dlgTitle = R.string.query_title;
-            result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
-            break;
-        default:
-            Assert.fail();
-            result = false;
-        }
-
-        return result;
-    }
-
-    public void userError( int code )
-    {
-        int resid = 0;
-        switch( code ) {
-        case ERR_TILES_NOT_IN_LINE:
-            resid = R.string.str_tiles_not_in_line;
-            break;
-        case ERR_NO_EMPTIES_IN_TURN:
-            resid = R.string.str_no_empties_in_turn;
-            break;
-        case ERR_TWO_TILES_FIRST_MOVE:
-            resid = R.string.str_two_tiles_first_move;
-            break;
-        case ERR_TILES_MUST_CONTACT:
-            resid = R.string.str_tiles_must_contact;
-            break;
-        case ERR_NOT_YOUR_TURN:
-            resid = R.string.str_not_your_turn;
-            break;
-        case ERR_NO_PEEK_ROBOT_TILES:
-            resid = R.string.str_no_peek_robot_tiles;
-            break;
-        case ERR_CANT_TRADE_MID_MOVE:
-            resid = R.string.str_cant_trade_mid_move;
-            break;
-        case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
-            resid = R.string.str_too_few_tiles_left_to_trade;
-            break;
-        case ERR_CANT_UNDO_TILEASSIGN:
-            resid = R.string.str_cant_undo_tileassign;
-            break;
-        case ERR_CANT_HINT_WHILE_DISABLED:
-            resid = R.string.str_cant_hint_while_disabled;
-            break;
-        case ERR_NO_PEEK_REMOTE_TILES:
-            resid = R.string.str_no_peek_remote_tiles;
-            break;
-        case ERR_REG_UNEXPECTED_USER:
-            resid = R.string.str_reg_unexpected_user;
-            break;
-        case ERR_SERVER_DICT_WINS:
-            resid = R.string.str_server_dict_wins;
-            break;
-        case ERR_REG_SERVER_SANS_REMOTE:
-            resid = R.string.str_reg_server_sans_remote;
-            break;
-        }
-
-        if ( resid != 0 ) {
-            nonBlockingDialog( DLG_OKONLY, getString( resid ) );
-        }
-    } // userError
-
-    public void notifyGameOver()
-    {
-        m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
-    }
-
-    // public void yOffsetChange( int maxOffset, int oldOffset, int newOffset )
-    // {
-    //     Utils.logf( "yOffsetChange(maxOffset=%d)", maxOffset );
-    //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
-    // }
-
-    public boolean warnIllegalWord( String[] words, int turn, boolean turnLost )
-    {
-        Utils.logf( "warnIllegalWord" );
-        boolean accept = turnLost;
-
-        StringBuffer sb = new StringBuffer();
-        for ( int ii = 0; ; ) {
-            sb.append( words[ii] );
-            if ( ++ii == words.length ) {
-                break;
-            }
-            sb.append( "; " );
-        }
-        
-        String format = getString( R.string.ids_badwords );
-        String message = String.format( format, sb.toString() );
-
-        if ( turnLost ) {
-            nonBlockingDialog( DLG_BADWORDS, 
-                               message + getString(R.string.badwords_lost) );
-        } else {
-            m_dlgBytes = message + getString( R.string.badwords_accept );
-            m_dlgTitle = R.string.query_title;
-            accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
-        }
-
-        Utils.logf( "warnIllegalWord=>" + accept );
-        return accept;
-    }
-
-    // Let's have this block in case there are multiple messages.  If
-    // we don't block the jni thread will continue processing messages
-    // and may stack dialogs on top of this one.  Including later
-    // chat-messages.
-    public void showChat( String msg )
-    {
-        m_dlgBytes = msg;
-        m_dlgTitle = R.string.chat_received;
-        waitBlockingDialog( GOT_MESSAGE_BLK, 0 );
-    }
 } // class BoardActivity
