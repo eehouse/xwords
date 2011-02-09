@@ -319,7 +319,6 @@ public class GameUtils {
 
     public static void saveDict( Context context, String name, InputStream in )
     {
-        int totalRead = 0;
         try {
             FileOutputStream fos = context.openFileOutput( name,
                                                            Context.MODE_PRIVATE );
@@ -327,13 +326,13 @@ public class GameUtils {
             int nRead;
             while( 0 <= (nRead = in.read( buf, 0, buf.length )) ) {
                 fos.write( buf, 0, nRead );
-                totalRead += nRead;
             }
             fos.close();
         } catch ( java.io.FileNotFoundException fnf ) {
             Utils.logf( "saveDict: FileNotFoundException: %s", fnf.toString() );
         } catch ( java.io.IOException ioe ) {
             Utils.logf( "saveDict: IOException: %s", ioe.toString() );
+            deleteDict( context, name );
         }
     } 
 
