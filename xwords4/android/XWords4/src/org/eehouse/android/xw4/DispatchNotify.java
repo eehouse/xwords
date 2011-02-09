@@ -50,29 +50,9 @@ public class DispatchNotify extends Activity {
         String[] relayIDs = 
             intent.getStringArrayExtra( getString(R.string.relayids_extra) );
 
-        if ( null != s_handler ) {
-            Utils.logf( "calling s_handler" );
-            s_handler.HandleRelaysIDs( relayIDs );
-        } else if ( s_running.isEmpty() ) {
+        if ( !tryHandle( this, relayIDs ) ) {
             Utils.logf( "DispatchNotify: nothing running" );
             startActivity( new Intent( this, GamesList.class ) );
-        } else {
-            Utils.logf( "DispatchNotify: something running" );
-
-            String ids = "new moves available; need to inval";
-            for ( String id : relayIDs ) {
-                ids += " " + id ;
-            }
-
-            // Toast.makeText( this, ids, Toast.LENGTH_SHORT).show();
-
-            // for ( Activity activity : s_running ) {
-            //     if ( activity instanceof DispatchNotify.HandleRelaysIface ) {
-            //         DispatchNotify.HandleRelaysIface iface =
-            //             (DispatchNotify.HandleRelaysIface)activity;
-            //         iface.HandleRelaysIDs( relayIDs );
-            //     }
-            // }
         }
 
         finish();
@@ -97,5 +77,30 @@ public class DispatchNotify extends Activity {
     public static void SetRelayIDsHandler( HandleRelaysIface iface )
     {
         s_handler = iface;
+    }
+
+    public static boolean tryHandle( Context context, String[] relayIDs )
+    {
+        Utils.logf( "tryHandle()" );
+        boolean handled = true;
+        if ( null != s_handler ) {
+            Utils.logf( "calling m_handler" );
+            s_handler.HandleRelaysIDs( relayIDs );
+        } else if ( s_running.isEmpty() ) {
+            Utils.logf( "m_running is empty" );
+            handled = false;
+        } else {
+            Utils.logf( "DispatchNotify: something running" );
+
+            for ( Activity activity : s_running ) {
+                if ( activity instanceof DispatchNotify.HandleRelaysIface ) {
+                    DispatchNotify.HandleRelaysIface iface =
+                        (DispatchNotify.HandleRelaysIface)activity;
+                    iface.HandleRelaysIDs( relayIDs );
+                }
+            }
+        }
+        Utils.logf( "DispatchNotify.tryHandle()=>%s", handled?"true":"false" );
+        return handled;
     }
 }
