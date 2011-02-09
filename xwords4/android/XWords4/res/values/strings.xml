@@ -407,8 +407,8 @@
     <string name="button_reply">Reply</string>
     <string name="compose_chat">Message for all devices</string>
 
-    <string name="notify_title">Data available</string>
-    <string name="notify_body">New game data available on relay</string>
+    <string name="notify_title">Moves made</string>
+    <string name="notify_body">New game moves have arrived</string>
     <string name="gamel_menu_checkmoves">Check server</string>
 
     <string name="no_copy_network">Games that have already connected
