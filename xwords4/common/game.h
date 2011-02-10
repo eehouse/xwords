@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 76; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -31,8 +31,8 @@
 extern "C" {
 #endif
 
-#define STREAM_SAVE_PREVMOVE 0x0F /* server saves prev move explanation */
-#define STREAM_VERS_ROBOTIQ 0x0E /* robots have different smarts */
+#define STREAM_SAVE_PREVMOVE 0x0E /* server saves prev move explanation */
+#define STREAM_VERS_ROBOTIQ STREAM_SAVE_PREVMOVE /* robots have different smarts */
 #define STREAM_VERS_DICTLANG 0x0D /* save dict lang code in CurGameInfo */
 #define STREAM_VERS_NUNDONE 0x0C /* save undone tile in model */
 #define STREAM_VERS_GAMESECONDS 0x0B /* save gameSeconds whether or not
