@@ -444,8 +444,9 @@ public class DBUtils {
              SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
              String[] columns = { DBHelper.FILE_NAME };
+             String orderBy = DBHelper.LASTPLAY_TIME + " DESC";
              Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                       null, null, null, null, null );
+                                       null, null, null, null, orderBy );
              if ( 0 < cursor.getCount() ) {
                  cursor.moveToFirst();
                  for ( ; ; ) {
