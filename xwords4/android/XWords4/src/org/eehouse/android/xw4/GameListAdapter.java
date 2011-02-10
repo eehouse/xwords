@@ -104,6 +104,18 @@ public class GameListAdapter extends XWListAdapter {
                                   View.VISIBLE : View.GONE );
             m_viewsCache.put( path, layout );
         }
+
+        // this doesn't work.  Rather, it breaks highlighting because
+        // the background, if we don't set it, is a more complicated
+        // object like @android:drawable/list_selector_background.  I
+        // tried calling getBackground(), expecting to get a Drawable
+        // I could then clone and modify, but null comes back.  So
+        // layout must be inheriting its background from elsewhere or
+        // it gets set later, during layout.
+        // if ( (position%2) == 0 ) {
+        //     layout.setBackgroundColor( 0xFF3F3F3F );
+        // }
+
         return layout;
     } // getItem
 
