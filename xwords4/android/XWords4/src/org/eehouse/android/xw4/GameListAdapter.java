@@ -26,7 +26,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.database.DataSetObserver;
 import java.io.FileInputStream;
+import java.util.Date;
 import java.util.HashMap;
+import java.text.DateFormat;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 
@@ -41,11 +43,14 @@ public class GameListAdapter extends XWListAdapter {
     private LayoutInflater m_factory;
     private int m_layoutId;
     private HashMap<String,View> m_viewsCache;
+    private DateFormat m_df;
 
     public GameListAdapter( Context context ) {
         super( context, DBUtils.gamesList(context).length );
         m_context = context;
         m_factory = LayoutInflater.from( context );
+        m_df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
+                                               DateFormat.SHORT );
 
         int sdk_int = 0;
         try {
@@ -79,7 +84,7 @@ public class GameListAdapter extends XWListAdapter {
                 view = (TextView)tmp.findViewById( R.id.item_name );
                 view.setText( summary.summarizePlayer( m_context, ii ) );
                 view = (TextView)tmp.findViewById( R.id.item_score );
-                view.setText( String.format( "%d", summary.scores[ii] ) );
+                view.setText( String.format( "  %d", summary.scores[ii] ) );
                 if ( summary.isNextToPlay( ii ) ) {
                     tmp.setBackgroundColor( 0x7F00FF00 );
                 }
@@ -90,6 +95,8 @@ public class GameListAdapter extends XWListAdapter {
             view.setText( summary.summarizeState( m_context ) );
             view = (TextView)layout.findViewById( R.id.dict );
             view.setText( summary.dictName );
+            view = (TextView)layout.findViewById( R.id.modtime );
+            view.setText( m_df.format( new Date( summary.modtime ) ) );
 
             view = (TextView)layout.findViewById( R.id.role );
             String roleSummary = summary.summarizeRole( m_context );

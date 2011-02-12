@@ -59,7 +59,8 @@ public class DBUtils {
                                  DBHelper.ROOMNAME, DBHelper.RELAYID, 
                                  DBHelper.SMSPHONE, DBHelper.SEED, 
                                  DBHelper.DICTLANG, DBHelper.DICTNAME,
-                                 DBHelper.SCORES, DBHelper.HASMSGS
+                                 DBHelper.SCORES, DBHelper.HASMSGS,
+                                 DBHelper.LASTPLAY_TIME
             };
             String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
 
@@ -89,6 +90,9 @@ public class DBUtils {
                  summary.dictName = 
                      cursor.getString(cursor.
                                       getColumnIndex(DBHelper.DICTNAME));
+                 summary.modtime = 
+                     cursor.getLong(cursor.
+                                      getColumnIndex(DBHelper.LASTPLAY_TIME));
                  int tmp = cursor.getInt(cursor.
                                          getColumnIndex(DBHelper.GAME_OVER));
                  summary.gameOver = tmp == 0 ? false : true;

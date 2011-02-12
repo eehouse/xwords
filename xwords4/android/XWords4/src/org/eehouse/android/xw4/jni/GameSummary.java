@@ -43,6 +43,7 @@ public class GameSummary {
     public String relayID;
     public int seed;
     public boolean msgsPending;
+    public long modtime;
 
     public int dictLang;
     public String dictName;
