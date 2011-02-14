@@ -37,7 +37,7 @@
 
     <activity android:name="GamesList" 
               android:label="@string/title_games_list"
-              android:launchMode="singleTop"
+              android:launchMode="singleTask"
               >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
