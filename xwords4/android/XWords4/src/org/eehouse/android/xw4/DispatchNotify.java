@@ -47,12 +47,15 @@ public class DispatchNotify extends Activity {
         super.onCreate( savedInstanceState );
 
         Intent intent = getIntent();
-        String[] relayIDs = 
-            intent.getStringArrayExtra( getString(R.string.relayids_extra) );
+        String id = getString( R.string.relayids_extra );
+        String[] relayIDs = intent.getStringArrayExtra( id );
 
         if ( !tryHandle( this, relayIDs ) ) {
             Utils.logf( "DispatchNotify: nothing running" );
-            startActivity( new Intent( this, GamesList.class ) );
+            intent = new Intent( this, GamesList.class );
+            // intent.setFlags( Intent.FLAG_ACTIVITY_SINGLE_TOP );
+            intent.putExtra( id, relayIDs );
+            startActivity( intent );
         }
 
         finish();
@@ -82,21 +85,19 @@ public class DispatchNotify extends Activity {
     public static boolean tryHandle( Context context, String[] relayIDs )
     {
         Utils.logf( "tryHandle()" );
-        boolean handled = true;
+        boolean handled = false;
         if ( null != s_handler ) {
+            // This means the GamesList activity is frontmost
             Utils.logf( "calling m_handler" );
             s_handler.HandleRelaysIDs( relayIDs );
-        } else if ( s_running.isEmpty() ) {
-            Utils.logf( "m_running is empty" );
-            handled = false;
+            handled = true;
         } else {
-            Utils.logf( "DispatchNotify: something running" );
-
             for ( Activity activity : s_running ) {
                 if ( activity instanceof DispatchNotify.HandleRelaysIface ) {
                     DispatchNotify.HandleRelaysIface iface =
                         (DispatchNotify.HandleRelaysIface)activity;
                     iface.HandleRelaysIDs( relayIDs );
+                    handled = true;
                 }
             }
         }
