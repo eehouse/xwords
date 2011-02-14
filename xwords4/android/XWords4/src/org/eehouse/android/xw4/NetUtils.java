@@ -193,9 +193,11 @@ public class NetUtils {
                         // if game has messages, open it and feed 'em
                         // to it.
                         if ( null != msgs[ii] ) {
-                            GameUtils.feedMessages( context, ids[ii], msgs[ii] );
-                            DBUtils.setHasMsgs( ids[ii] );
-                            idsWMsgs.add( ids[ii] );
+                            if( GameUtils.feedMessages( context, ids[ii], 
+                                                        msgs[ii] ) ) {
+                                DBUtils.setHasMsgs( ids[ii] );
+                                idsWMsgs.add( ids[ii] );
+                            }
                         }
                     }
                     if ( 0 < idsWMsgs.size() ) {
