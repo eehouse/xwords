@@ -219,6 +219,16 @@ public class GamesList extends XWListActivity
     }
 
     @Override
+    // called when we're brought to the front (probably as a result of
+    // notification)
+    protected void onNewIntent( Intent intent )
+    {
+        super.onNewIntent( intent );
+        String id = getString( R.string.relayids_extra );
+        invalRelayIDs( intent.getStringArrayExtra( id ) );
+    }
+
+    @Override
     protected void onStart()
     {
         super.onStart();
@@ -249,19 +259,7 @@ public class GamesList extends XWListActivity
     {
         m_handler.post( new Runnable() {
                 public void run() {
-                    if ( null == relayIDs ) {
-                        Utils.logf( "relayIDs null" );
-                    } else if ( relayIDs.length == 0 ) {
-                        Utils.logf( "relayIDs empty" );
-                    } else {
-                        for ( String relayID : relayIDs ) {
-                            Utils.logf( "HandleRelaysIDs: got %s", relayID );
-                            String path = DBUtils.getPathFor( GamesList.this,
-                                                              relayID );
-                            m_adapter.inval( path );
-                        }
-                        onContentChanged();
-                    }
+                    invalRelayIDs( relayIDs );
                 }
             } );
     }
@@ -527,5 +525,19 @@ public class GamesList extends XWListActivity
         GameUtils.resetGame( this, path );
         onContentChanged();
         return path;
+    }
+
+    private void invalRelayIDs( String[] relayIDs ) 
+    {
+        if ( null == relayIDs ) {
+            Utils.logf( "relayIDs empty" );
+        } else {
+            for ( String relayID : relayIDs ) {
+                Utils.logf( "got relayID %s", relayID );
+                String path = DBUtils.getPathFor( this, relayID );
+                m_adapter.inval( path );
+            }
+            onContentChanged();
+        }
     }
 }
