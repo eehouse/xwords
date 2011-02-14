@@ -485,7 +485,6 @@ public class DBUtils {
                  nxt = players.indexOf( sep, nxt );
                  String name = -1 == nxt ?
                      players.substring( prev ) : players.substring( prev, nxt );
-                 Utils.logf( "got name[%d]: \"%s\"", ii, name );
                  result[ii] = name;
                  if ( -1 == nxt ) {
                      break;
