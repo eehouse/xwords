@@ -80,8 +80,8 @@ public class NetStateCache {
                 IntentFilter filter = new IntentFilter();
                 filter.addAction( ConnectivityManager.CONNECTIVITY_ACTION );
 
-                Intent intent = context.registerReceiver( s_receiver, 
-                                                          filter );
+                Intent intent = context.getApplicationContext().
+                    registerReceiver( s_receiver, filter );
 
                 s_ifs = new HashSet<StateChangedIf>();
                 s_haveReceiver = true;
