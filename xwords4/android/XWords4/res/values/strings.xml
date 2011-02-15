@@ -284,9 +284,6 @@
     <string name="tile_back">Tile background</string>
     <string name="empty">Empty cell/background</string>
     <string name="clr_crosshairs">Crosshairs color</string>
-    <string name="board_themes">Board color schemes</string>
-    <string name="white_on_black">Dark background</string>
-    <string name="black_on_white">Light background</string>
 
     <string name="advanced">Advanced</string>
     <string name="advanced_summary">You may never need these...</string>
