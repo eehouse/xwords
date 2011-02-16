@@ -93,6 +93,18 @@ public class XwJNI {
                                     (TransportProcs)null );
     }
 
+    public static boolean game_makeFromStream( int gamePtr,
+                                               byte[] stream, 
+                                               JNIUtils jniu,
+                                               CurGameInfo gi, 
+                                               byte[] dict, String dictName,
+                                               UtilCtxt util,
+                                               CommonPrefs cp ) {
+        return game_makeFromStream( gamePtr, stream, gi, dict, dictName,
+                                    util, jniu, (DrawCtx)null, cp, 
+                                    (TransportProcs)null );
+    }
+
     public static native boolean game_receiveMessage( int gamePtr, 
                                                       byte[] stream );
     public static native void game_summarize( int gamePtr, GameSummary summary );

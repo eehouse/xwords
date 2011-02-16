@@ -130,6 +130,13 @@ public class GameUtils {
     public static void loadMakeGame( Context context, int gamePtr, 
                                      CurGameInfo gi, String path )
     {
+        loadMakeGame( context, gamePtr, gi, null, path );
+    }
+
+    public static void loadMakeGame( Context context, int gamePtr, 
+                                     CurGameInfo gi, UtilCtxt util,
+                                     String path )
+    {
         byte[] stream = savedGame( context, path );
         XwJNI.gi_from_stream( gi, stream );
         byte[] dictBytes = GameUtils.openDict( context, gi.dictName );
@@ -137,6 +144,7 @@ public class GameUtils {
         boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                       JNIUtilsImpl.get(), gi, 
                                                       dictBytes, gi.dictName,
+                                                      util, 
                                                       CommonPrefs.get(context));
         if ( !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
@@ -361,6 +369,21 @@ public class GameUtils {
         activity.finish();
     }
 
+    private static class FeedUtilsImpl extends UtilCtxtImpl {
+        private Context m_context;
+        private String m_path;
+
+        public FeedUtilsImpl( Context context, String path )
+        {
+            m_context = context;
+            m_path = path;
+        }
+        public void showChat( String msg )
+        {
+            DBUtils.appendChatHistory( m_context, m_path, msg, false );
+        }
+    }
+
     public static boolean feedMessages( Context context, String relayID,
                                         byte[][] msgs )
     {
@@ -369,7 +392,9 @@ public class GameUtils {
         if ( null != path ) {
             int gamePtr = XwJNI.initJNI();
             CurGameInfo gi = new CurGameInfo( context );
-            loadMakeGame( context, gamePtr, gi, path );
+            loadMakeGame( context, gamePtr, gi, 
+                          new FeedUtilsImpl(context, path), 
+                          path );
 
             for ( byte[] msg : msgs ) {
                 draw = XwJNI.game_receiveMessage( gamePtr, msg ) || draw;
