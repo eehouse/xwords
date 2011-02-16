@@ -81,475 +81,475 @@ public class DBUtils {
                                   getColumnIndex(DBHelper.GIFLAGS));
                 summary.players = 
                     parsePlayers( cursor.getString(cursor.
-                                                    getColumnIndex(DBHelper.
-                                                                   PLAYERS)),
-                                   summary.nPlayers );
-                 summary.dictLang = 
-                     cursor.getInt(cursor.
-                                   getColumnIndex(DBHelper.DICTLANG));
-                 summary.dictName = 
-                     cursor.getString(cursor.
-                                      getColumnIndex(DBHelper.DICTNAME));
-                 summary.modtime = 
-                     cursor.getLong(cursor.
-                                      getColumnIndex(DBHelper.LASTPLAY_TIME));
-                 int tmp = cursor.getInt(cursor.
-                                         getColumnIndex(DBHelper.GAME_OVER));
-                 summary.gameOver = tmp == 0 ? false : true;
+                                                   getColumnIndex(DBHelper.
+                                                                  PLAYERS)),
+                                  summary.nPlayers );
+                summary.dictLang = 
+                    cursor.getInt(cursor.
+                                  getColumnIndex(DBHelper.DICTLANG));
+                summary.dictName = 
+                    cursor.getString(cursor.
+                                     getColumnIndex(DBHelper.DICTNAME));
+                summary.modtime = 
+                    cursor.getLong(cursor.
+                                   getColumnIndex(DBHelper.LASTPLAY_TIME));
+                int tmp = cursor.getInt(cursor.
+                                        getColumnIndex(DBHelper.GAME_OVER));
+                summary.gameOver = tmp == 0 ? false : true;
 
-                 String scoresStr = 
-                     cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
-                 int[] scores = new int[summary.nPlayers];
-                 if ( null != scoresStr && scoresStr.length() > 0 ) {
-                     StringTokenizer st = new StringTokenizer( scoresStr );
-                     for ( int ii = 0; ii < scores.length; ++ii ) {
-                         Assert.assertTrue( st.hasMoreTokens() );
-                         String token = st.nextToken();
-                         scores[ii] = Integer.parseInt( token );
-                     }
-                 } else {
-                     for ( int ii = 0; ii < scores.length; ++ii ) {
-                         scores[ii] = 0;
-                     }
-                 }
-                 summary.scores = scores;
+                String scoresStr = 
+                    cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
+                int[] scores = new int[summary.nPlayers];
+                if ( null != scoresStr && scoresStr.length() > 0 ) {
+                    StringTokenizer st = new StringTokenizer( scoresStr );
+                    for ( int ii = 0; ii < scores.length; ++ii ) {
+                        Assert.assertTrue( st.hasMoreTokens() );
+                        String token = st.nextToken();
+                        scores[ii] = Integer.parseInt( token );
+                    }
+                } else {
+                    for ( int ii = 0; ii < scores.length; ++ii ) {
+                        scores[ii] = 0;
+                    }
+                }
+                summary.scores = scores;
 
-                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
-                 if ( col >= 0 ) {
-                     tmp = cursor.getInt( col );
-                     summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
-                     col = cursor.getColumnIndex( DBHelper.ROOMNAME );
-                     if ( col >= 0 ) {
-                         summary.roomName = cursor.getString( col );
-                     }
-                     col = cursor.getColumnIndex( DBHelper.RELAYID );
-                     if ( col >= 0 ) {
-                         summary.relayID = cursor.getString( col );
-                     }
-                     col = cursor.getColumnIndex( DBHelper.SEED );
-                     if ( col >= 0 ) {
-                         summary.seed = cursor.getInt( col );
-                     }
-                     col = cursor.getColumnIndex( DBHelper.SMSPHONE );
-                     if ( col >= 0 ) {
-                         summary.smsPhone = cursor.getString( col );
-                     }
-                 }
+                int col = cursor.getColumnIndex( DBHelper.CONTYPE );
+                if ( col >= 0 ) {
+                    tmp = cursor.getInt( col );
+                    summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
+                    col = cursor.getColumnIndex( DBHelper.ROOMNAME );
+                    if ( col >= 0 ) {
+                        summary.roomName = cursor.getString( col );
+                    }
+                    col = cursor.getColumnIndex( DBHelper.RELAYID );
+                    if ( col >= 0 ) {
+                        summary.relayID = cursor.getString( col );
+                    }
+                    col = cursor.getColumnIndex( DBHelper.SEED );
+                    if ( col >= 0 ) {
+                        summary.seed = cursor.getInt( col );
+                    }
+                    col = cursor.getColumnIndex( DBHelper.SMSPHONE );
+                    if ( col >= 0 ) {
+                        summary.smsPhone = cursor.getString( col );
+                    }
+                }
 
-                 col = cursor.getColumnIndex( DBHelper.SERVERROLE );
-                 tmp = cursor.getInt( col );
-                 summary.serverRole = CurGameInfo.DeviceRole.values()[tmp];
+                col = cursor.getColumnIndex( DBHelper.SERVERROLE );
+                tmp = cursor.getInt( col );
+                summary.serverRole = CurGameInfo.DeviceRole.values()[tmp];
 
-                 col = cursor.getColumnIndex( DBHelper.HASMSGS );
-                 if ( col >= 0 ) {
-                     summary.msgsPending = 0 != cursor.getInt( col );
-                 }
-             }
-             cursor.close();
-             db.close();
-         }
+                col = cursor.getColumnIndex( DBHelper.HASMSGS );
+                if ( col >= 0 ) {
+                    summary.msgsPending = 0 != cursor.getInt( col );
+                }
+            }
+            cursor.close();
+            db.close();
+        }
 
-         if ( null == summary ) {
-             summary = GameUtils.summarize( context, file );
-             saveSummary( context, file, summary );
-         }
-         return summary;
-     }
+        if ( null == summary ) {
+            summary = GameUtils.summarize( context, file );
+            saveSummary( context, file, summary );
+        }
+        return summary;
+    }
 
-     public static void saveSummary( Context context, String path, 
-                                     GameSummary summary )
-     {
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+    public static void saveSummary( Context context, String path, 
+                                    GameSummary summary )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-             if ( null == summary ) {
-                 String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-                 db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
-             } else {
-                 ContentValues values = new ContentValues();
-                 values.put( DBHelper.NUM_MOVES, summary.nMoves );
-                 values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
-                 values.put( DBHelper.TURN, summary.turn );
-                 values.put( DBHelper.GIFLAGS, summary.giflags() );
-                 values.put( DBHelper.PLAYERS, 
-                             summary.summarizePlayers(context) );
-                 values.put( DBHelper.DICTLANG, summary.dictLang );
-                 values.put( DBHelper.DICTNAME, summary.dictName );
-                 values.put( DBHelper.GAME_OVER, summary.gameOver );
-                 values.put( DBHelper.HASMSGS, 0 );
+            if ( null == summary ) {
+                String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+                db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
+            } else {
+                ContentValues values = new ContentValues();
+                values.put( DBHelper.NUM_MOVES, summary.nMoves );
+                values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
+                values.put( DBHelper.TURN, summary.turn );
+                values.put( DBHelper.GIFLAGS, summary.giflags() );
+                values.put( DBHelper.PLAYERS, 
+                            summary.summarizePlayers(context) );
+                values.put( DBHelper.DICTLANG, summary.dictLang );
+                values.put( DBHelper.DICTNAME, summary.dictName );
+                values.put( DBHelper.GAME_OVER, summary.gameOver );
+                values.put( DBHelper.HASMSGS, 0 );
 
-                 if ( null != summary.scores ) {
-                     StringBuffer sb = new StringBuffer();
-                     for ( int score : summary.scores ) {
-                         sb.append( String.format( "%d ", score ) );
-                     }
-                     values.put( DBHelper.SCORES, sb.toString() );
-                 }
+                if ( null != summary.scores ) {
+                    StringBuffer sb = new StringBuffer();
+                    for ( int score : summary.scores ) {
+                        sb.append( String.format( "%d ", score ) );
+                    }
+                    values.put( DBHelper.SCORES, sb.toString() );
+                }
 
-                 if ( null != summary.conType ) {
-                     values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
-                     values.put( DBHelper.ROOMNAME, summary.roomName );
-                     values.put( DBHelper.RELAYID, summary.relayID );
-                     values.put( DBHelper.SEED, summary.seed );
-                     values.put( DBHelper.SMSPHONE, summary.smsPhone );
-                 }
-                 values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
+                if ( null != summary.conType ) {
+                    values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
+                    values.put( DBHelper.ROOMNAME, summary.roomName );
+                    values.put( DBHelper.RELAYID, summary.relayID );
+                    values.put( DBHelper.SEED, summary.seed );
+                    values.put( DBHelper.SMSPHONE, summary.smsPhone );
+                }
+                values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
 
-                 Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
+                Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
 
-                 String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-                 long result = db.update( DBHelper.TABLE_NAME_SUM,
-                                          values, selection, null );
-                 Assert.assertTrue( result >= 0 );
-             }
-             db.close();
-         }
-     } // saveSummary
+                String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+                long result = db.update( DBHelper.TABLE_NAME_SUM,
+                                         values, selection, null );
+                Assert.assertTrue( result >= 0 );
+            }
+            db.close();
+        }
+    } // saveSummary
 
-     public static int countGamesUsing( Context context, String dict )
-     {
-         int result = 0;
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-             String selection = DBHelper.DICTNAME + " LIKE \'" 
-                 + dict + "\'";
-             // null for columns will return whole rows: bad
-             String[] columns = { DBHelper.DICTNAME };
-             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                       selection, null, null, null, null );
+    public static int countGamesUsing( Context context, String dict )
+    {
+        int result = 0;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String selection = DBHelper.DICTNAME + " LIKE \'" 
+                + dict + "\'";
+            // null for columns will return whole rows: bad
+            String[] columns = { DBHelper.DICTNAME };
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
 
-             result = cursor.getCount();
-             cursor.close();
-             db.close();
-         }
-         return result;
-     }
+            result = cursor.getCount();
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
 
-     public static void setHasMsgs( String relayID )
-     {
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+    public static void setHasMsgs( String relayID )
+    {
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-             String selection = DBHelper.RELAYID + "=\'" + relayID + "\'";
-             ContentValues values = new ContentValues();
-             values.put( DBHelper.HASMSGS, 1 );
+            String selection = DBHelper.RELAYID + "=\'" + relayID + "\'";
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.HASMSGS, 1 );
 
-             int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                     values, selection, null );
-             Assert.assertTrue( result == 1 );
-             db.close();
-         }
-     }
+            int result = db.update( DBHelper.TABLE_NAME_SUM, 
+                                    values, selection, null );
+            Assert.assertTrue( result == 1 );
+            db.close();
+        }
+    }
 
-     public static String getPathFor( Context context, String relayID )
-     {
-         String result = null;
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-             String[] columns = { DBHelper.FILE_NAME };
-             String selection = DBHelper.RELAYID + "='" + relayID + "'";
-             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                       selection, null, null, null, null );
-             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                 result = cursor.getString( cursor
-                                            .getColumnIndex(DBHelper.FILE_NAME));
+    public static String getPathFor( Context context, String relayID )
+    {
+        String result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.FILE_NAME };
+            String selection = DBHelper.RELAYID + "='" + relayID + "'";
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getString( cursor
+                                           .getColumnIndex(DBHelper.FILE_NAME));
 
-             }
-             cursor.close();
-             db.close();
-         }
-         return result;
-     }
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
 
-     public static String[] getRelayIDs( Context context, boolean noMsgs ) 
-     {
-         String[] result = null;
-         initDB( context );
-         ArrayList<String> ids = new ArrayList<String>();
+    public static String[] getRelayIDs( Context context, boolean noMsgs ) 
+    {
+        String[] result = null;
+        initDB( context );
+        ArrayList<String> ids = new ArrayList<String>();
 
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-             String[] columns = { DBHelper.RELAYID };
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.RELAYID };
             String selection = DBHelper.RELAYID + " NOT null";
             if ( noMsgs ) {
                 selection += " AND NOT " + DBHelper.HASMSGS;
             }
 
-             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                       selection, null, null, null, null );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
 
-             if ( 0 < cursor.getCount() ) {
-                 cursor.moveToFirst();
-                 for ( ; ; ) {
-                     ids.add( cursor.
-                              getString( cursor.
-                                         getColumnIndex(DBHelper.RELAYID)) );
-                     if ( cursor.isLast() ) {
-                         break;
-                     }
-                     cursor.moveToNext();
-                 }
-             }
-             cursor.close();
-             db.close();
-         }
+            if ( 0 < cursor.getCount() ) {
+                cursor.moveToFirst();
+                for ( ; ; ) {
+                    ids.add( cursor.
+                             getString( cursor.
+                                        getColumnIndex(DBHelper.RELAYID)) );
+                    if ( cursor.isLast() ) {
+                        break;
+                    }
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            db.close();
+        }
 
-         if ( 0 < ids.size() ) {
-             result = ids.toArray( new String[ids.size()] );
-         }
-         return result;
-     }
+        if ( 0 < ids.size() ) {
+            result = ids.toArray( new String[ids.size()] );
+        }
+        return result;
+    }
 
-     public static void addDeceased( Context context, String relayID, 
-                                     int seed )
-     {
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+    public static void addDeceased( Context context, String relayID, 
+                                    int seed )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-             ContentValues values = new ContentValues();
-             values.put( DBHelper.RELAYID, relayID );
-             values.put( DBHelper.SEED, seed );
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.RELAYID, relayID );
+            values.put( DBHelper.SEED, seed );
 
-             try {
-                 long result = db.replaceOrThrow( DBHelper.TABLE_NAME_OBITS,
-                                                  "", values );
-             } catch ( Exception ex ) {
-                 Utils.logf( "ex: %s", ex.toString() );
-             }
-             db.close();
-         }
-     }
+            try {
+                long result = db.replaceOrThrow( DBHelper.TABLE_NAME_OBITS,
+                                                 "", values );
+            } catch ( Exception ex ) {
+                Utils.logf( "ex: %s", ex.toString() );
+            }
+            db.close();
+        }
+    }
 
-     public static Obit[] listObits( Context context )
-     {
-         Obit[] result = null;
-         ArrayList<Obit> al = new ArrayList<Obit>();
+    public static Obit[] listObits( Context context )
+    {
+        Obit[] result = null;
+        ArrayList<Obit> al = new ArrayList<Obit>();
 
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-             String[] columns = { DBHelper.RELAYID, DBHelper.SEED };
-             Cursor cursor = db.query( DBHelper.TABLE_NAME_OBITS, columns, 
-                                       null, null, null, null, null );
-             if ( 0 < cursor.getCount() ) {
-                 cursor.moveToFirst();
-                 for ( ; ; ) {
-                     int index = cursor.getColumnIndex( DBHelper.RELAYID );
-                     String relayID = cursor.getString( index );
-                     index = cursor.getColumnIndex( DBHelper.SEED );
-                     int seed = cursor.getInt( index );
-                     al.add( new Obit( relayID, seed ) );
-                     if ( cursor.isLast() ) {
-                         break;
-                     }
-                     cursor.moveToNext();
-                 }
-             }
-             cursor.close();
-             db.close();
-         }
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.RELAYID, DBHelper.SEED };
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_OBITS, columns, 
+                                      null, null, null, null, null );
+            if ( 0 < cursor.getCount() ) {
+                cursor.moveToFirst();
+                for ( ; ; ) {
+                    int index = cursor.getColumnIndex( DBHelper.RELAYID );
+                    String relayID = cursor.getString( index );
+                    index = cursor.getColumnIndex( DBHelper.SEED );
+                    int seed = cursor.getInt( index );
+                    al.add( new Obit( relayID, seed ) );
+                    if ( cursor.isLast() ) {
+                        break;
+                    }
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            db.close();
+        }
 
-         int siz = al.size();
-         if ( siz > 0 ) {
-             result = al.toArray( new Obit[siz] );
-         }
-         return result;
-     }
+        int siz = al.size();
+        if ( siz > 0 ) {
+            result = al.toArray( new Obit[siz] );
+        }
+        return result;
+    }
 
-     public static void clearObits( Context context, Obit[] obits )
-     {
-         String fmt = DBHelper.RELAYID + "= \"%s\" AND + " 
-             + DBHelper.SEED + " = %d";
+    public static void clearObits( Context context, Obit[] obits )
+    {
+        String fmt = DBHelper.RELAYID + "= \"%s\" AND + " 
+            + DBHelper.SEED + " = %d";
 
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-             for ( Obit obit: obits ) {
-                 String selection = String.format( fmt, obit.m_relayID, 
-                                                   obit.m_seed );
-                 db.delete( DBHelper.TABLE_NAME_OBITS, selection, null );
-             }
-             db.close();
-         }
-     }
+            for ( Obit obit: obits ) {
+                String selection = String.format( fmt, obit.m_relayID, 
+                                                  obit.m_seed );
+                db.delete( DBHelper.TABLE_NAME_OBITS, selection, null );
+            }
+            db.close();
+        }
+    }
 
-     public static void saveGame( Context context, String path, byte[] bytes,
-                                  boolean setCreate )
-     {
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+    public static void saveGame( Context context, String path, byte[] bytes,
+                                 boolean setCreate )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-             ContentValues values = new ContentValues();
-             values.put( DBHelper.SNAPSHOT, bytes );
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.SNAPSHOT, bytes );
 
-             long timestamp = new Date().getTime();
-             if ( setCreate ) {
-                 values.put( DBHelper.CREATE_TIME, timestamp );
-             }
-             values.put( DBHelper.LASTPLAY_TIME, timestamp );
+            long timestamp = new Date().getTime();
+            if ( setCreate ) {
+                values.put( DBHelper.CREATE_TIME, timestamp );
+            }
+            values.put( DBHelper.LASTPLAY_TIME, timestamp );
 
-             int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                     values, selection, null );
-             if ( 0 == result ) {
-                 values.put( DBHelper.FILE_NAME, path );
-                 long row = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
-                 Assert.assertTrue( row >= 0 );
-             }
-             db.close();
-         }
-     }
+            int result = db.update( DBHelper.TABLE_NAME_SUM, 
+                                    values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.FILE_NAME, path );
+                long row = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
+                Assert.assertTrue( row >= 0 );
+            }
+            db.close();
+        }
+    }
 
-     public static byte[] loadGame( Context context, String path )
-     {
-         Assert.assertNotNull( path );
-         byte[] result = null;
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+    public static byte[] loadGame( Context context, String path )
+    {
+        Assert.assertNotNull( path );
+        byte[] result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-             String[] columns = { DBHelper.SNAPSHOT };
-             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                       selection, null, null, null, null );
-             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                 result = cursor.getBlob( cursor
-                                          .getColumnIndex(DBHelper.SNAPSHOT));
-             }
-             cursor.close();
-             db.close();
-         }
-         return result;
-     }
+            String[] columns = { DBHelper.SNAPSHOT };
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getBlob( cursor
+                                         .getColumnIndex(DBHelper.SNAPSHOT));
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
 
-     public static void deleteGame( Context context, String path )
-     {
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
-             db.close();
-         }
-     }
+    public static void deleteGame( Context context, String path )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
+            db.close();
+        }
+    }
 
-     public static String[] gamesList( Context context )
-     {
-         ArrayList<String> al = new ArrayList<String>();
+    public static String[] gamesList( Context context )
+    {
+        ArrayList<String> al = new ArrayList<String>();
 
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-             String[] columns = { DBHelper.FILE_NAME };
-             String orderBy = DBHelper.CREATE_TIME + " DESC";
-             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                       null, null, null, null, orderBy );
-             if ( 0 < cursor.getCount() ) {
-                 cursor.moveToFirst();
-                 for ( ; ; ) {
-                     int index = cursor.getColumnIndex( DBHelper.FILE_NAME );
-                     String name = cursor.getString( index );
-                     al.add( cursor.getString( index ) );
-                     if ( cursor.isLast() ) {
-                         break;
-                     }
-                     cursor.moveToNext();
-                 }
-             }
-             cursor.close();
-             db.close();
-         }
+            String[] columns = { DBHelper.FILE_NAME };
+            String orderBy = DBHelper.CREATE_TIME + " DESC";
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      null, null, null, null, orderBy );
+            if ( 0 < cursor.getCount() ) {
+                cursor.moveToFirst();
+                for ( ; ; ) {
+                    int index = cursor.getColumnIndex( DBHelper.FILE_NAME );
+                    String name = cursor.getString( index );
+                    al.add( cursor.getString( index ) );
+                    if ( cursor.isLast() ) {
+                        break;
+                    }
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            db.close();
+        }
 
-         return al.toArray( new String[al.size()] );
-     }
+        return al.toArray( new String[al.size()] );
+    }
 
-     public static String getChatHistory( Context context, String path )
-     {
-         String result = null;
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+    public static String getChatHistory( Context context, String path )
+    {
+        String result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-             String[] columns = { DBHelper.CHAT_HISTORY };
-             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                       selection, null, null, null, null );
-             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                 result = 
-                     cursor.getString( cursor
-                                       .getColumnIndex(DBHelper.CHAT_HISTORY));
-             }
-             cursor.close();
-             db.close();
-         }
-         return result;
-     }
+            String[] columns = { DBHelper.CHAT_HISTORY };
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = 
+                    cursor.getString( cursor
+                                      .getColumnIndex(DBHelper.CHAT_HISTORY));
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
 
-     public static void appendChatHistory( Context context, String path,
-                                           String msg, boolean local )
-     {
+    public static void appendChatHistory( Context context, String path,
+                                          String msg, boolean local )
+    {
 
-         Assert.assertNotNull( msg );
-         int id;
-         if ( local ) {
-             id = R.string.chat_local_id;
-         } else {
-             id = R.string.chat_other_id;
-         }
-         msg = context.getString( id ) + msg;
+        Assert.assertNotNull( msg );
+        int id;
+        if ( local ) {
+            id = R.string.chat_local_id;
+        } else {
+            id = R.string.chat_other_id;
+        }
+        msg = context.getString( id ) + msg;
 
-         String cur = getChatHistory( context, path );
-         if ( null != cur ) {
-             msg = cur + "\n" + msg;
-         }
+        String cur = getChatHistory( context, path );
+        if ( null != cur ) {
+            msg = cur + "\n" + msg;
+        }
 
-         initDB( context );
-         synchronized( s_dbHelper ) {
-             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-             ContentValues values = new ContentValues();
-             values.put( DBHelper.CHAT_HISTORY, msg );
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.CHAT_HISTORY, msg );
 
-             long timestamp = new Date().getTime();
-             values.put( DBHelper.LASTPLAY_TIME, timestamp );
+            long timestamp = new Date().getTime();
+            values.put( DBHelper.LASTPLAY_TIME, timestamp );
 
-             int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                     values, selection, null );
-             db.close();
-         }
-     } // appendChatHistory
+            int result = db.update( DBHelper.TABLE_NAME_SUM, 
+                                    values, selection, null );
+            db.close();
+        }
+    } // appendChatHistory
 
-     private static String[] parsePlayers( final String players, int nPlayers ){
-         String[] result = null;
-         if ( null != players ) {
-             result = new String[nPlayers];
-             String sep = "vs. ";
-             if ( players.contains("\n") ) {
-                 sep = "\n";
-             }
+    private static String[] parsePlayers( final String players, int nPlayers ){
+        String[] result = null;
+        if ( null != players ) {
+            result = new String[nPlayers];
+            String sep = "vs. ";
+            if ( players.contains("\n") ) {
+                sep = "\n";
+            }
 
-             int ii, nxt;
-             for ( ii = 0, nxt = 0; ; ++ii ) {
-                 int prev = nxt;
-                 nxt = players.indexOf( sep, nxt );
-                 String name = -1 == nxt ?
-                     players.substring( prev ) : players.substring( prev, nxt );
-                 result[ii] = name;
-                 if ( -1 == nxt ) {
-                     break;
-                 }
-                 nxt += sep.length();
-             }
-         }
-         return result;
+            int ii, nxt;
+            for ( ii = 0, nxt = 0; ; ++ii ) {
+                int prev = nxt;
+                nxt = players.indexOf( sep, nxt );
+                String name = -1 == nxt ?
+                    players.substring( prev ) : players.substring( prev, nxt );
+                result[ii] = name;
+                if ( -1 == nxt ) {
+                    break;
+                }
+                nxt += sep.length();
+            }
+        }
+        return result;
     }
 
     private static void initDB( Context context )
