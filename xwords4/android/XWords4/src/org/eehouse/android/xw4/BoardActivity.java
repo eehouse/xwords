@@ -58,11 +58,11 @@ public class BoardActivity extends XWActivity {
     private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
     private static final int QUERY_INFORM_BLK = DLG_OKONLY + 3;
     private static final int PICK_TILE_REQUEST_BLK = DLG_OKONLY + 4;
-    private static final int GOT_MESSAGE_BLK = DLG_OKONLY + 5;
-    private static final int ASK_PASSWORD_BLK = DLG_OKONLY + 6;
-    private static final int DLG_RETRY = DLG_OKONLY + 7;
-    private static final int GET_MESSAGE = DLG_OKONLY + 8;
-    private static final int QUERY_ENDGAME = DLG_OKONLY + 9;
+    private static final int ASK_PASSWORD_BLK = DLG_OKONLY + 5;
+    private static final int DLG_RETRY = DLG_OKONLY + 6;
+    private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
+
+    private static final int CHAT_REQUEST = 1;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -71,12 +71,12 @@ public class BoardActivity extends XWActivity {
     private Handler m_handler;
     private TimerRunnable[] m_timers;
     private String m_path;
+    private Uri m_uri;
     private int m_currentOrient;
     private Toolbar m_toolbar;
 
     private String m_dlgBytes = null;
     private EditText m_passwdEdit = null;
-    private EditText m_chatMsg = null;
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
@@ -144,7 +144,6 @@ public class BoardActivity extends XWActivity {
 
             case QUERY_REQUEST_BLK:
             case QUERY_INFORM_BLK:
-            case GOT_MESSAGE_BLK:
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes );
@@ -165,14 +164,6 @@ public class BoardActivity extends XWActivity {
                             }
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
-                } else if ( GOT_MESSAGE_BLK == id ) {
-                    lstnr = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dlg, 
-                                                 int whichButton ) {
-                                showDialog( GET_MESSAGE );
-                            }
-                        };
-                    ab.setNegativeButton( R.string.button_reply, lstnr );
                 }
 
                 dialog = ab.create();
@@ -230,28 +221,6 @@ public class BoardActivity extends XWActivity {
                     .create();
                 break;
 
-            case GET_MESSAGE:
-                if ( null == m_chatMsg ) {
-                    m_chatMsg = new EditText( this );
-                }
-                lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, 
-                                             int item ) {
-                            String msg = m_chatMsg.getText().toString();
-                            if ( msg.length() > 0 ) {
-                                m_jniThread.handle( JNICmd.CMD_SENDCHAT, msg );
-                            }
-                                                                   
-                        }
-                    };
-                dialog = new AlertDialog.Builder( this )
-                    .setMessage( R.string.compose_chat )
-                    .setPositiveButton(R.string.button_send, lstnr )
-                    .setNegativeButton( R.string.button_cancel, null )
-                    .setView( m_chatMsg )
-                    .create();
-                break;
-
             default:
                 // just drop it; super.onCreateDialog likely failed
                 break;
@@ -267,7 +236,6 @@ public class BoardActivity extends XWActivity {
         case DLG_OKONLY:
             dialog.setTitle( m_dlgTitle );
             // FALLTHRU
-        case GOT_MESSAGE_BLK:
         case DLG_BADWORDS:
         case QUERY_REQUEST_BLK:
         case QUERY_INFORM_BLK:
@@ -276,9 +244,6 @@ public class BoardActivity extends XWActivity {
         case ASK_PASSWORD_BLK:
             m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
             dialog.setTitle( m_dlgTitleStr );
-            break;
-        case GET_MESSAGE:
-            m_chatMsg.setText("");
             break;
         default:
             super.onPrepareDialog( id, dialog );
@@ -308,8 +273,8 @@ public class BoardActivity extends XWActivity {
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
 
         Intent intent = getIntent();
-        Uri uri = intent.getData();
-        m_path = uri.getPath();
+        m_uri = intent.getData();
+        m_path = m_uri.getPath();
         if ( m_path.charAt(0) == '/' ) {
             m_path = m_path.substring( 1 );
         }
@@ -382,6 +347,19 @@ public class BoardActivity extends XWActivity {
             m_jniGamePtr = 0;
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    {
+        if ( Activity.RESULT_CANCELED != resultCode ) {
+            if ( CHAT_REQUEST == requestCode ) {
+                String msg = data.getStringExtra( "chat" );
+                if ( null != msg && msg.length() > 0 ) {
+                    m_jniThread.handle( JNICmd.CMD_SENDCHAT, msg );
+                }
+            }
+        }
     }
 
     @Override
@@ -1026,11 +1004,15 @@ public class BoardActivity extends XWActivity {
         // we don't block the jni thread will continue processing messages
         // and may stack dialogs on top of this one.  Including later
         // chat-messages.
-        public void showChat( String msg )
+        public void showChat( final String msg )
         {
-            m_dlgBytes = msg;
-            m_dlgTitle = R.string.chat_received;
-            waitBlockingDialog( GOT_MESSAGE_BLK, 0 );
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        DBUtils.appendChatHistory( BoardActivity.this, 
+                                                   m_path, msg, false );
+                        startChatActivity();
+                    }
+                } );
         }
     } // class BoardUtilCtxt 
 
@@ -1193,7 +1175,7 @@ public class BoardActivity extends XWActivity {
                                new Runnable() {
                                    @Override
                                    public void run() {
-                                       showDialog( GET_MESSAGE );
+                                       startChatActivity();
                                    }
                                });
     } // populateToolbar
@@ -1261,6 +1243,13 @@ public class BoardActivity extends XWActivity {
             m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, zoomBy );
         }
         return handled;
+    }
+
+    private void startChatActivity()
+    {
+        Intent intent = new Intent( Intent.ACTION_EDIT, 
+                                    m_uri, this, ChatActivity.class );
+        startActivityForResult( intent, CHAT_REQUEST );
     }
 
 } // class BoardActivity

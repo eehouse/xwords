@@ -40,6 +40,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String NUM_PLAYERS = "NUM_PLAYERS";
     public static final String GAME_OVER = "GAME_OVER";
     public static final String SCORES = "SCORES";
+    public static final String CHAT_HISTORY = "CHAT_HISTORY";
     // GAMEID: this isn't used yet but we'll want it to look up games
     // for which messages arrive.  Add now while changing the DB
     // format
@@ -87,6 +88,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"
+                    + CHAT_HISTORY   + " TEXT,"
                     + GAMEID     + " INTEGER,"
                     // HASMSGS: sqlite doesn't have bool; use 0 and 1
                     + HASMSGS    + " INTEGER DEFAULT 0,"
@@ -125,6 +127,8 @@ public class DBHelper extends SQLiteOpenHelper {
                         " ADD COLUMN " + TURN + "INTEGER;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + GIFLAGS + "INTEGER;" );
+            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
+                        " ADD COLUMN " + CHAT_HISTORY + "TEXT;" );
         } else {
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {

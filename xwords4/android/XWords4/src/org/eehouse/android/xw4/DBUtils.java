@@ -470,6 +470,63 @@ public class DBUtils {
          return al.toArray( new String[al.size()] );
      }
 
+     public static String getChatHistory( Context context, String path )
+     {
+         String result = null;
+         initDB( context );
+         synchronized( s_dbHelper ) {
+             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+
+             String[] columns = { DBHelper.CHAT_HISTORY };
+             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                       selection, null, null, null, null );
+             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                 result = 
+                     cursor.getString( cursor
+                                       .getColumnIndex(DBHelper.CHAT_HISTORY));
+             }
+             cursor.close();
+             db.close();
+         }
+         return result;
+     }
+
+     public static void appendChatHistory( Context context, String path,
+                                           String msg, boolean local )
+     {
+
+         Assert.assertNotNull( msg );
+         int id;
+         if ( local ) {
+             id = R.string.chat_local_id;
+         } else {
+             id = R.string.chat_other_id;
+         }
+         msg = context.getString( id ) + msg;
+
+         String cur = getChatHistory( context, path );
+         if ( null != cur ) {
+             msg = cur + "\n" + msg;
+         }
+
+         initDB( context );
+         synchronized( s_dbHelper ) {
+             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+             ContentValues values = new ContentValues();
+             values.put( DBHelper.CHAT_HISTORY, msg );
+
+             long timestamp = new Date().getTime();
+             values.put( DBHelper.LASTPLAY_TIME, timestamp );
+
+             int result = db.update( DBHelper.TABLE_NAME_SUM, 
+                                     values, selection, null );
+             db.close();
+         }
+     } // appendChatHistory
+
      private static String[] parsePlayers( final String players, int nPlayers ){
          String[] result = null;
          if ( null != players ) {

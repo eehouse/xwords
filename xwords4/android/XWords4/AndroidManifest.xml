@@ -110,5 +110,7 @@
 
     <activity android:name="RelayGameActivity"/>
 
+    <activity android:name="ChatActivity"/>
+
   </application>
 </manifest>
