@@ -399,8 +399,8 @@
     <string name="no_name_found_f">No public rooms found for %d-player
     games in %s. Try refreshing or creating your own.</string>
 
-    <string name="chat_local_id">local: </string>
-    <string name="chat_other_id">remote: </string>
+    <string name="chat_local_id">Me: </string>
+    <string name="chat_other_id">Not me: </string>
     <string name="chat_send">Send</string>
 
     <string name="notify_title">Moves made</string>
