@@ -533,13 +533,28 @@ public class DBUtils {
             msg = cur + "\n" + msg;
         }
 
+        saveChatHistory( context, path, msg );
+    } // appendChatHistory
+
+    public static void clearChatHistory( Context context, String path )
+    {
+        saveChatHistory( context, path, null );
+    }
+
+    private static void saveChatHistory( Context context, String path,
+                                         String history )
+    {
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
             ContentValues values = new ContentValues();
-            values.put( DBHelper.CHAT_HISTORY, msg );
+            if ( null != history ) {
+                values.put( DBHelper.CHAT_HISTORY, history );
+            } else {
+                values.putNull( DBHelper.CHAT_HISTORY );
+            }
 
             long timestamp = new Date().getTime();
             values.put( DBHelper.LASTPLAY_TIME, timestamp );
@@ -548,7 +563,7 @@ public class DBUtils {
                                     values, selection, null );
             db.close();
         }
-    } // appendChatHistory
+    }
 
     private static String[] parsePlayers( final String players, int nPlayers ){
         String[] result = null;

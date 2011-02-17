@@ -28,6 +28,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuInflater;
 import android.widget.LinearLayout;
 
 public class ChatActivity extends XWActivity implements View.OnClickListener {
@@ -62,6 +65,29 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
         }
 
         ((Button)findViewById( R.id.send_button )).setOnClickListener( this );
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu )
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate( R.menu.chat_menu, menu );
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) 
+    {
+        boolean handled = R.id.chat_menu_clear == item.getItemId();
+        if ( handled ) {
+            DBUtils.clearChatHistory( this, m_path );
+            LinearLayout layout = 
+                (LinearLayout)findViewById( R.id.chat_history );
+            layout.removeAllViews();
+        } else {
+            handled = super.onOptionsItemSelected( item );
+        }
+        return handled;
     }
 
     @Override
