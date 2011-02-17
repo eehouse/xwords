@@ -12,11 +12,24 @@
                 android:layout_weight="1"
                 />
 
-      <EditText android:id="@+id/chat_edit" 
-                android:layout_width="fill_parent"
+      <LinearLayout android:orientation="horizontal"
+                    android:layout_width="fill_parent" 
+                    android:layout_height="wrap_content"
+                    >
+
+        <EditText android:id="@+id/chat_edit" 
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:singleLine="true"
+                  android:layout_weight="1"
+                  />
+
+        <Button android:id="@+id/send_button"
+                android:layout_width="wrap_content" 
                 android:layout_height="wrap_content"
-                android:singleLine="true"
+                android:text="@string/chat_send" 
+                  android:layout_weight="0"
                 />
 
-
+      </LinearLayout>
 </LinearLayout>
