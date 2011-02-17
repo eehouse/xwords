@@ -46,19 +46,18 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
         if ( m_path.charAt(0) == '/' ) {
             m_path = m_path.substring( 1 );
         }
-        
-        String history = DBUtils.getChatHistory( this, m_path );
+     
+        DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( this, m_path );
         LinearLayout layout = (LinearLayout)findViewById( R.id.chat_history );
         LayoutInflater factory = LayoutInflater.from( this );
-        String local = getString( R.string.chat_local_id );
 
-        for ( String str : parseHistory( history ) ) {
+        for ( DBUtils.HistoryPair pair : pairs ) {
             TextView view = 
-                (TextView)factory.inflate( str.startsWith(local)
+                (TextView)factory.inflate( pair.sourceLocal
                                            ? R.layout.chat_history_local
                                            : R.layout.chat_history_remote, 
                                            null );
-            view.setText( str );
+            view.setText( pair.msg );
             layout.addView( view );
         }
 
@@ -80,11 +79,6 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
             setResult( Activity.RESULT_OK, result );
         }
         finish();
-    }
-
-    private String[] parseHistory( String history )
-    {
-        return history.split( "\n" );
     }
 
 }

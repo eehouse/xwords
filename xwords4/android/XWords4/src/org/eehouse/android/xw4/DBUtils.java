@@ -45,6 +45,16 @@ public class DBUtils {
         int m_seed;
     }
 
+    public static class HistoryPair {
+        private HistoryPair( String p_msg, boolean p_sourceLocal )
+        {
+            msg = p_msg;
+            sourceLocal = p_sourceLocal;
+        }
+        String msg;
+        boolean sourceLocal;
+    }
+
     public static GameSummary getSummary( Context context, String file )
     {
         initDB( context );
@@ -470,7 +480,20 @@ public class DBUtils {
         return al.toArray( new String[al.size()] );
     }
 
-    public static String getChatHistory( Context context, String path )
+    public static HistoryPair[] getChatHistory( Context context, String path )
+    {
+        final String localPrefix = context.getString( R.string.chat_local_id );
+        String[] msgs = getChatHistoryStr( context, path ).split( "\n" );
+        HistoryPair[] result = new HistoryPair[msgs.length];
+        for ( int ii = 0; ii < result.length; ++ii ) {
+            String msg = msgs[ii];
+            boolean isLocal = msg.startsWith( localPrefix );
+            result[ii] = new HistoryPair( msg, isLocal );
+        }
+        return result;
+    }
+
+    private static String getChatHistoryStr( Context context, String path )
     {
         String result = null;
         initDB( context );
@@ -505,7 +528,7 @@ public class DBUtils {
         }
         msg = context.getString( id ) + msg;
 
-        String cur = getChatHistory( context, path );
+        String cur = getChatHistoryStr( context, path );
         if ( null != cur ) {
             msg = cur + "\n" + msg;
         }
