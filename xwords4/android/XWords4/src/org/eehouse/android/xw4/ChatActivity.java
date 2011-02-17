@@ -26,7 +26,9 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 
 public class ChatActivity extends XWActivity implements View.OnClickListener {
 
@@ -46,8 +48,19 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
         }
         
         String history = DBUtils.getChatHistory( this, m_path );
-        TextView textView = (TextView)findViewById( R.id.chat_history );
-        textView.setText( history );
+        LinearLayout layout = (LinearLayout)findViewById( R.id.chat_history );
+        LayoutInflater factory = LayoutInflater.from( this );
+        String local = getString( R.string.chat_local_id );
+
+        for ( String str : parseHistory( history ) ) {
+            TextView view = 
+                (TextView)factory.inflate( str.startsWith(local)
+                                           ? R.layout.chat_history_local
+                                           : R.layout.chat_history_remote, 
+                                           null );
+            view.setText( str );
+            layout.addView( view );
+        }
 
         ((Button)findViewById( R.id.send_button )).setOnClickListener( this );
     }
@@ -67,6 +80,11 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
             setResult( Activity.RESULT_OK, result );
         }
         finish();
+    }
+
+    private String[] parseHistory( String history )
+    {
+        return history.split( "\n" );
     }
 
 }

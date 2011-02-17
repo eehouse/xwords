@@ -6,30 +6,39 @@
               android:layout_height="fill_parent"
               >
 
-      <TextView android:id="@+id/chat_history"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                />
-
-      <LinearLayout android:orientation="horizontal"
-                    android:layout_width="fill_parent" 
-                    android:layout_height="wrap_content"
-                    >
-
-        <EditText android:id="@+id/chat_edit" 
-                  android:layout_width="wrap_content"
+  <!-- history is kept in a scrolling list of textview elems so
+  different style can be applied based on whether they're local or
+  remote.  Inserted at runtime.... -->
+  <ScrollView android:orientation="vertical"
+              android:layout_width="fill_parent" 
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              >
+    <LinearLayout android:id="@+id/chat_history"
+                  android:orientation="vertical"
+                  android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
-                  android:singleLine="true"
-                  android:layout_weight="1"
                   />
+  </ScrollView>
 
-        <Button android:id="@+id/send_button"
-                android:layout_width="wrap_content" 
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent" 
                 android:layout_height="wrap_content"
-                android:text="@string/chat_send" 
-                  android:layout_weight="0"
-                />
+                >
 
-      </LinearLayout>
+    <EditText android:id="@+id/chat_edit" 
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:singleLine="true"
+              android:layout_weight="1"
+              />
+
+    <Button android:id="@+id/send_button"
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content"
+            android:text="@string/chat_send" 
+            android:layout_weight="0"
+            />
+
+  </LinearLayout>
 </LinearLayout>
