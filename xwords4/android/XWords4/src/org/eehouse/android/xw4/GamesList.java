@@ -216,6 +216,13 @@ public class GamesList extends XWListActivity
 
         RelayReceiver.RestartTimer( this );
         NetUtils.informOfDeaths( this );
+
+        Intent intent = getIntent();
+        if ( null != intent ) {
+            String[] relayIDs = intent
+                .getStringArrayExtra( getString( R.string.relayids_extra ) );
+            startFirstHasDict( relayIDs );
+        }
     }
 
     @Override
@@ -403,11 +410,7 @@ public class GamesList extends XWListActivity
             GameUtils.doConfig( this, path, clazz );
         } else {
             if ( checkWarnNoDict( path ) ) {
-                File file = new File( path );
-                Uri uri = Uri.fromFile( file );
-                Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                            this, BoardActivity.class );
-                startActivity( intent );
+                startForPath( path );
             }
         }
         m_invalPath = path;
@@ -538,6 +541,30 @@ public class GamesList extends XWListActivity
                 m_adapter.inval( path );
             }
             onContentChanged();
+        }
+    }
+
+    private void startForPath( String path )
+    {
+        File file = new File( path );
+        Uri uri = Uri.fromFile( file );
+        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                    this, BoardActivity.class );
+        startActivity( intent );
+    }
+
+    // Launch the first of these for which there's a dictionary
+    // present.
+    private void startFirstHasDict( String[] relayIDs )
+    {
+        if ( null != relayIDs ) {
+            for ( String relayID : relayIDs ) {
+                String path = DBUtils.getPathFor( this, relayID );
+                if ( GameUtils.gameDictHere( this, path ) ) {
+                    startForPath( path );
+                    break;
+                }
+            }
         }
     }
 }
