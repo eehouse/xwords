@@ -542,14 +542,8 @@ public class DBUtils {
     public static void appendChatHistory( Context context, String path,
                                           String msg, boolean local )
     {
-
         Assert.assertNotNull( msg );
-        int id;
-        if ( local ) {
-            id = R.string.chat_local_id;
-        } else {
-            id = R.string.chat_other_id;
-        }
+        int id = local ? R.string.chat_local_id : R.string.chat_other_id;
         msg = context.getString( id ) + msg;
 
         String cur = getChatHistoryStr( context, path );
