@@ -51,17 +51,19 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
         }
      
         DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( this, m_path );
-        LinearLayout layout = (LinearLayout)findViewById( R.id.chat_history );
-        LayoutInflater factory = LayoutInflater.from( this );
+        if ( null != pairs ) {
+            LinearLayout layout = (LinearLayout)findViewById( R.id.chat_history );
+            LayoutInflater factory = LayoutInflater.from( this );
 
-        for ( DBUtils.HistoryPair pair : pairs ) {
-            TextView view = 
-                (TextView)factory.inflate( pair.sourceLocal
-                                           ? R.layout.chat_history_local
-                                           : R.layout.chat_history_remote, 
-                                           null );
-            view.setText( pair.msg );
-            layout.addView( view );
+            for ( DBUtils.HistoryPair pair : pairs ) {
+                TextView view = 
+                    (TextView)factory.inflate( pair.sourceLocal
+                                               ? R.layout.chat_history_local
+                                               : R.layout.chat_history_remote, 
+                                               null );
+                view.setText( pair.msg );
+                layout.addView( view );
+            }
         }
 
         ((Button)findViewById( R.id.send_button )).setOnClickListener( this );

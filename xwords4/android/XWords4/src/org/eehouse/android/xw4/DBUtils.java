@@ -164,7 +164,7 @@ public class DBUtils {
             saveSummary( context, file, summary );
         }
         return summary;
-    }
+    } // getSummary
 
     public static void saveSummary( Context context, String path, 
                                     GameSummary summary )
@@ -482,13 +482,17 @@ public class DBUtils {
 
     public static HistoryPair[] getChatHistory( Context context, String path )
     {
+        HistoryPair[] result = null;
         final String localPrefix = context.getString( R.string.chat_local_id );
-        String[] msgs = getChatHistoryStr( context, path ).split( "\n" );
-        HistoryPair[] result = new HistoryPair[msgs.length];
-        for ( int ii = 0; ii < result.length; ++ii ) {
-            String msg = msgs[ii];
-            boolean isLocal = msg.startsWith( localPrefix );
-            result[ii] = new HistoryPair( msg, isLocal );
+        String history = getChatHistoryStr( context, path );
+        if ( null != history ) {
+            String[] msgs = history.split( "\n" );
+            result = new HistoryPair[msgs.length];
+            for ( int ii = 0; ii < result.length; ++ii ) {
+                String msg = msgs[ii];
+                boolean isLocal = msg.startsWith( localPrefix );
+                result[ii] = new HistoryPair( msg, isLocal );
+            }
         }
         return result;
     }
