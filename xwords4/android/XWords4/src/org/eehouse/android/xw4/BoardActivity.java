@@ -1105,6 +1105,8 @@ public class BoardActivity extends XWActivity {
                 == Configuration.ORIENTATION_LANDSCAPE;
             m_toolbar.orientChanged( isLandscape );
             populateToolbar();
+
+            DBUtils.setHasMsgs( m_path, false );
         }
     } // loadGame
 

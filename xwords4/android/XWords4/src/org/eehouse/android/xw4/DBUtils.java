@@ -187,7 +187,6 @@ public class DBUtils {
                 values.put( DBHelper.DICTLANG, summary.dictLang );
                 values.put( DBHelper.DICTNAME, summary.dictName );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
-                values.put( DBHelper.HASMSGS, 0 );
 
                 if ( null != summary.scores ) {
                     StringBuffer sb = new StringBuffer();
@@ -237,14 +236,14 @@ public class DBUtils {
         return result;
     }
 
-    public static void setHasMsgs( String relayID )
+    public static void setHasMsgs( String path, boolean hasMsgs )
     {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-            String selection = DBHelper.RELAYID + "=\'" + relayID + "\'";
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
             ContentValues values = new ContentValues();
-            values.put( DBHelper.HASMSGS, 1 );
+            values.put( DBHelper.HASMSGS, hasMsgs ? 1 : 0 );
 
             int result = db.update( DBHelper.TABLE_NAME_SUM, 
                                     values, selection, null );

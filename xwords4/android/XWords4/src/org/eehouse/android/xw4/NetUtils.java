@@ -195,7 +195,6 @@ public class NetUtils {
                         if ( null != msgs[ii] ) {
                             if( GameUtils.feedMessages( context, ids[ii], 
                                                         msgs[ii] ) ) {
-                                DBUtils.setHasMsgs( ids[ii] );
                                 idsWMsgs.add( ids[ii] );
                             }
                         }

@@ -51,10 +51,13 @@ public class GameSummary {
 
     private CurGameInfo m_gi;
 
-    public GameSummary(){}
+    public GameSummary(){
+        msgsPending = false;
+    }
 
     public GameSummary( CurGameInfo gi )
     {
+        super();
         nPlayers = gi.nPlayers;
         dictLang = gi.dictLang;
         dictName = gi.dictName;
