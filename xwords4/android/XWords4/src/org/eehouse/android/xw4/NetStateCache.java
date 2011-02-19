@@ -28,6 +28,7 @@ import android.net.NetworkInfo;
 import android.net.ConnectivityManager;
 import java.util.HashSet;
 import java.util.Iterator;
+import android.os.Build;
 import junit.framework.Assert;
 
 public class NetStateCache {
@@ -40,6 +41,7 @@ public class NetStateCache {
     private static HashSet<StateChangedIf> s_ifs;
     private static boolean s_netAvail = false;
     private static CommsBroadcastReceiver s_receiver;
+    private static final boolean s_onSim = Build.PRODUCT.contains("sdk");
 
     public static void register( Context context, StateChangedIf proc )
     {
@@ -60,7 +62,7 @@ public class NetStateCache {
     public static boolean netAvail( Context context )
     {
         initIfNot( context );
-        return s_netAvail;
+        return s_netAvail || s_onSim;
     }
 
     private static void initIfNot( Context context )
