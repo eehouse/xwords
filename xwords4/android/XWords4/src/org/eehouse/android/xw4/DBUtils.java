@@ -237,7 +237,6 @@ public class DBUtils {
         return result;
     }
 
-    // 0 means none; 1 just moves; 2 chat
     public static void setHasMsgs( String path, GameSummary.MsgLevel level )
     {
         synchronized( s_dbHelper ) {
