@@ -1106,7 +1106,17 @@ public class BoardActivity extends XWActivity {
             m_toolbar.orientChanged( isLandscape );
             populateToolbar();
 
-            DBUtils.setHasMsgs( m_path, false );
+
+            switch( DBUtils.getHasMsgs( m_path ) ) {
+            case MSG_LEVEL_CHAT:
+                startChatActivity();
+                // FALLTHRU
+            case MSG_LEVEL_TURN:
+                // clear it if non-NONE
+                DBUtils.setHasMsgs( m_path, 
+                                    GameSummary.MsgLevel.MSG_LEVEL_NONE );
+                break;
+            }
         }
     } // loadGame
 

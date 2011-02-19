@@ -152,7 +152,8 @@ public class DBUtils {
 
                 col = cursor.getColumnIndex( DBHelper.HASMSGS );
                 if ( col >= 0 ) {
-                    summary.msgsPending = 0 != cursor.getInt( col );
+                    summary.pendingMsgLevel = 
+                        GameSummary.MsgLevel.values()[cursor.getInt( col )];
                 }
             }
             cursor.close();
@@ -236,20 +237,41 @@ public class DBUtils {
         return result;
     }
 
-    public static void setHasMsgs( String path, boolean hasMsgs )
+    // 0 means none; 1 just moves; 2 chat
+    public static void setHasMsgs( String path, GameSummary.MsgLevel level )
     {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
             ContentValues values = new ContentValues();
-            values.put( DBHelper.HASMSGS, hasMsgs ? 1 : 0 );
+            values.put( DBHelper.HASMSGS, level.ordinal() );
 
             int result = db.update( DBHelper.TABLE_NAME_SUM, 
                                     values, selection, null );
             Assert.assertTrue( result == 1 );
             db.close();
         }
+    }
+
+    public static GameSummary.MsgLevel getHasMsgs( String path )
+    {
+        GameSummary.MsgLevel result = GameSummary.MsgLevel.MSG_LEVEL_NONE;
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            String[] columns = { DBHelper.HASMSGS };
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                int level = cursor.getInt( cursor
+                                         .getColumnIndex(DBHelper.HASMSGS));
+                result = GameSummary.MsgLevel.values()[level];
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
     }
 
     public static String getPathFor( Context context, String relayID )

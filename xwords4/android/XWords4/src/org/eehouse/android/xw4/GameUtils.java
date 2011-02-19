@@ -107,8 +107,10 @@ public class GameUtils {
         XwJNI.game_summarize( gamePtr, summary );
 
         if ( null != feedImpl ) {
-            if ( feedImpl.m_gotMsg ) {
-                summary.msgsPending = true;
+            if ( feedImpl.m_gotChat ) {
+                summary.pendingMsgLevel = GameSummary.MsgLevel.MSG_LEVEL_CHAT;
+            } else if ( feedImpl.m_gotMsg ) {
+                summary.pendingMsgLevel = GameSummary.MsgLevel.MSG_LEVEL_TURN;
             }
         }
 
@@ -397,6 +399,7 @@ public class GameUtils {
         private Context m_context;
         private String m_path;
         public boolean m_gotMsg;
+        public boolean m_gotChat;
 
         public FeedUtilsImpl( Context context, String path )
         {
@@ -407,7 +410,7 @@ public class GameUtils {
         public void showChat( String msg )
         {
             DBUtils.appendChatHistory( m_context, m_path, msg, false );
-            m_gotMsg = true;
+            m_gotChat = true;
         }
         public void turnChanged()
         {
@@ -434,8 +437,11 @@ public class GameUtils {
             XwJNI.game_getGi( gamePtr, gi );
             saveGame( context, gamePtr, gi, path, false );
             summarizeAndClose( context, path, gamePtr, gi, feedImpl );
-            if ( feedImpl.m_gotMsg ) {
-                DBUtils.setHasMsgs( path, true );
+            if ( feedImpl.m_gotChat ) {
+                DBUtils.setHasMsgs( path, GameSummary.MsgLevel.MSG_LEVEL_CHAT );
+                draw = true;
+            } else if ( feedImpl.m_gotMsg ) {
+                DBUtils.setHasMsgs( path, GameSummary.MsgLevel.MSG_LEVEL_TURN );
                 draw = true;
             }
         }
