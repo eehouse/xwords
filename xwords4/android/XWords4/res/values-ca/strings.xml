@@ -168,8 +168,6 @@
     <string name="settings_label">Paràmetres de la partida</string>
     <string name="minutes_label">Minuts a la partida</string>
     
-    <string name="smart_robot">Robot intel·ligent</string>
-
     <string name="download_dicts">Baixa\'n més...</string>
 
     <string name="confirm_save_title">Confirmeu els canvis</string>
@@ -194,9 +192,6 @@
     <string name="hide_title">Amaga la capçalera</string>
     <string name="hide_title_summary">Permet que el tauler sigui una mica més gran</string>
 
-    <string name="show_bonussum">Mostra les bonificacions</string>
-    <string name="show_bonussum_summary">Mostra el text com "2P" a les caselles bonificadores lliures</string>
- 
     <string name="phonies_ignore">Ignora-les</string>
     <string name="phonies_warn">Avisa\'m</string>
     <string name="phonies_disallow">No es poden jugar</string>
