@@ -95,8 +95,25 @@ public class GameUtils {
                                                   String path,
                                                   int gamePtr, CurGameInfo gi )
     {
+        return summarizeAndClose( context, path, gamePtr, gi, null );
+    }
+
+    private static GameSummary summarizeAndClose( Context context, 
+                                                  String path,
+                                                  int gamePtr, CurGameInfo gi,
+                                                  FeedUtilsImpl feedImpl )
+    {
         GameSummary summary = new GameSummary( gi );
         XwJNI.game_summarize( gamePtr, summary );
+
+        if ( null != feedImpl ) {
+            if ( feedImpl.m_gotChat ) {
+                summary.pendingMsgLevel = GameSummary.MsgLevel.MSG_LEVEL_CHAT;
+            } else if ( feedImpl.m_gotMsg ) {
+                summary.pendingMsgLevel = GameSummary.MsgLevel.MSG_LEVEL_TURN;
+            }
+        }
+
         DBUtils.saveSummary( context, path, summary );
 
         XwJNI.game_dispose( gamePtr );
@@ -381,15 +398,23 @@ public class GameUtils {
     private static class FeedUtilsImpl extends UtilCtxtImpl {
         private Context m_context;
         private String m_path;
+        public boolean m_gotMsg;
+        public boolean m_gotChat;
 
         public FeedUtilsImpl( Context context, String path )
         {
             m_context = context;
             m_path = path;
+            m_gotMsg = false;
         }
         public void showChat( String msg )
         {
             DBUtils.appendChatHistory( m_context, m_path, msg, false );
+            m_gotChat = true;
+        }
+        public void turnChanged()
+        {
+            m_gotMsg = true;
         }
     }
 
@@ -401,9 +426,8 @@ public class GameUtils {
         if ( null != path ) {
             int gamePtr = XwJNI.initJNI();
             CurGameInfo gi = new CurGameInfo( context );
-            loadMakeGame( context, gamePtr, gi, 
-                          new FeedUtilsImpl(context, path), 
-                          path );
+            FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, path );
+            loadMakeGame( context, gamePtr, gi, feedImpl, path );
 
             for ( byte[] msg : msgs ) {
                 draw = XwJNI.game_receiveMessage( gamePtr, msg ) || draw;
@@ -412,7 +436,14 @@ public class GameUtils {
             // update gi to reflect changes due to messages
             XwJNI.game_getGi( gamePtr, gi );
             saveGame( context, gamePtr, gi, path, false );
-            summarizeAndClose( context, path, gamePtr, gi );
+            summarizeAndClose( context, path, gamePtr, gi, feedImpl );
+            if ( feedImpl.m_gotChat ) {
+                DBUtils.setHasMsgs( path, GameSummary.MsgLevel.MSG_LEVEL_CHAT );
+                draw = true;
+            } else if ( feedImpl.m_gotMsg ) {
+                DBUtils.setHasMsgs( path, GameSummary.MsgLevel.MSG_LEVEL_TURN );
+                draw = true;
+            }
         }
         Utils.logf( "feedMessages=>%s", draw?"true":"false" );
         return draw;

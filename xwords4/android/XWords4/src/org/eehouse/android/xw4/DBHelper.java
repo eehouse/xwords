@@ -124,11 +124,11 @@ public class DBHelper extends SQLiteOpenHelper {
             onCreateObits(db);
         } else if ( newVersion == 7 && oldVersion == 6 ) {
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + TURN + "INTEGER;" );
+                        " ADD COLUMN " + TURN + " INTEGER;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + GIFLAGS + "INTEGER;" );
+                        " ADD COLUMN " + GIFLAGS + " INTEGER;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + CHAT_HISTORY + "TEXT;" );
+                        " ADD COLUMN " + CHAT_HISTORY + " TEXT;" );
         } else {
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {

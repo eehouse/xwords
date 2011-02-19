@@ -152,7 +152,8 @@ public class DBUtils {
 
                 col = cursor.getColumnIndex( DBHelper.HASMSGS );
                 if ( col >= 0 ) {
-                    summary.msgsPending = 0 != cursor.getInt( col );
+                    summary.pendingMsgLevel = 
+                        GameSummary.MsgLevel.values()[cursor.getInt( col )];
                 }
             }
             cursor.close();
@@ -164,7 +165,7 @@ public class DBUtils {
             saveSummary( context, file, summary );
         }
         return summary;
-    }
+    } // getSummary
 
     public static void saveSummary( Context context, String path, 
                                     GameSummary summary )
@@ -187,7 +188,6 @@ public class DBUtils {
                 values.put( DBHelper.DICTLANG, summary.dictLang );
                 values.put( DBHelper.DICTNAME, summary.dictName );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
-                values.put( DBHelper.HASMSGS, 0 );
 
                 if ( null != summary.scores ) {
                     StringBuffer sb = new StringBuffer();
@@ -237,20 +237,41 @@ public class DBUtils {
         return result;
     }
 
-    public static void setHasMsgs( String relayID )
+    // 0 means none; 1 just moves; 2 chat
+    public static void setHasMsgs( String path, GameSummary.MsgLevel level )
     {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-            String selection = DBHelper.RELAYID + "=\'" + relayID + "\'";
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
             ContentValues values = new ContentValues();
-            values.put( DBHelper.HASMSGS, 1 );
+            values.put( DBHelper.HASMSGS, level.ordinal() );
 
             int result = db.update( DBHelper.TABLE_NAME_SUM, 
                                     values, selection, null );
             Assert.assertTrue( result == 1 );
             db.close();
         }
+    }
+
+    public static GameSummary.MsgLevel getHasMsgs( String path )
+    {
+        GameSummary.MsgLevel result = GameSummary.MsgLevel.MSG_LEVEL_NONE;
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            String[] columns = { DBHelper.HASMSGS };
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                int level = cursor.getInt( cursor
+                                         .getColumnIndex(DBHelper.HASMSGS));
+                result = GameSummary.MsgLevel.values()[level];
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
     }
 
     public static String getPathFor( Context context, String relayID )
@@ -482,13 +503,17 @@ public class DBUtils {
 
     public static HistoryPair[] getChatHistory( Context context, String path )
     {
+        HistoryPair[] result = null;
         final String localPrefix = context.getString( R.string.chat_local_id );
-        String[] msgs = getChatHistoryStr( context, path ).split( "\n" );
-        HistoryPair[] result = new HistoryPair[msgs.length];
-        for ( int ii = 0; ii < result.length; ++ii ) {
-            String msg = msgs[ii];
-            boolean isLocal = msg.startsWith( localPrefix );
-            result[ii] = new HistoryPair( msg, isLocal );
+        String history = getChatHistoryStr( context, path );
+        if ( null != history ) {
+            String[] msgs = history.split( "\n" );
+            result = new HistoryPair[msgs.length];
+            for ( int ii = 0; ii < result.length; ++ii ) {
+                String msg = msgs[ii];
+                boolean isLocal = msg.startsWith( localPrefix );
+                result[ii] = new HistoryPair( msg, isLocal );
+            }
         }
         return result;
     }

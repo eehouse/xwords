@@ -107,8 +107,9 @@ public class GameListAdapter extends XWListAdapter {
             }
 
             View marker = layout.findViewById( R.id.msg_marker );
-            marker.setVisibility( summary.msgsPending? 
-                                  View.VISIBLE : View.GONE );
+            marker.setVisibility( summary.pendingMsgLevel 
+                                  == GameSummary.MsgLevel.MSG_LEVEL_NONE
+                                  ? View.GONE : View.VISIBLE );
             m_viewsCache.put( path, layout );
         }
 

@@ -29,6 +29,8 @@ import org.eehouse.android.xw4.R;
  * in CurGameInfo
  */
 public class GameSummary {
+    public enum MsgLevel { MSG_LEVEL_NONE, MSG_LEVEL_TURN, MSG_LEVEL_CHAT };
+
     public int nMoves;
     public int turn;
     public int giFlags;
@@ -42,19 +44,23 @@ public class GameSummary {
     public String roomName;
     public String relayID;
     public int seed;
-    public boolean msgsPending;
+    public MsgLevel pendingMsgLevel;
     public long modtime;
 
     public int dictLang;
     public String dictName;
     public CurGameInfo.DeviceRole serverRole;
 
+
     private CurGameInfo m_gi;
 
-    public GameSummary(){}
+    public GameSummary(){
+        pendingMsgLevel = MsgLevel.MSG_LEVEL_NONE;
+    }
 
     public GameSummary( CurGameInfo gi )
     {
+        super();
         nPlayers = gi.nPlayers;
         dictLang = gi.dictLang;
         dictName = gi.dictName;
