@@ -809,48 +809,47 @@ postponeRobotMove( ServerCtxt* server )
 static void
 showPrevScore( ServerCtxt* server )
 {
-    XW_UtilCtxt* util = server->vol.util;
-    XWStreamCtxt* stream;
-    const XP_UCHAR* str;
-    CurGameInfo* gi = server->vol.gi;
-    XP_U16 nPlayers = gi->nPlayers;
-    XP_U16 prevTurn;
-    XP_U16 strCode;
-    LocalPlayer* lp;
+    if ( server->nv.showRobotScores ) { /* this can be changed between turns */
+        XW_UtilCtxt* util = server->vol.util;
+        XWStreamCtxt* stream;
+        const XP_UCHAR* str;
+        CurGameInfo* gi = server->vol.gi;
+        XP_U16 nPlayers = gi->nPlayers;
+        XP_U16 prevTurn;
+        XP_U16 strCode;
+        LocalPlayer* lp;
 
-    XP_ASSERT( server->nv.showRobotScores );
+        prevTurn = (server->nv.currentTurn + nPlayers - 1) % nPlayers;
+        lp = &gi->players[prevTurn];
 
-    prevTurn = (server->nv.currentTurn + nPlayers - 1) % nPlayers;
-    lp = &gi->players[prevTurn];
+        if ( LP_IS_LOCAL(lp) ) {
+            XP_ASSERT( LP_IS_ROBOT(lp) );
+            strCode = STR_ROBOT_MOVED;
+        } else {
+            strCode = STR_REMOTE_MOVED;
+        }
 
-    if ( LP_IS_LOCAL(lp) ) {
-        XP_ASSERT( LP_IS_ROBOT(lp) );
-        strCode = STR_ROBOT_MOVED;
-    } else {
-        strCode = STR_REMOTE_MOVED;
+        stream = mkServerStream( server );
+
+        str = util_getUserString( util, strCode );
+        stream_catString( stream, str );
+
+        if ( !!server->nv.prevMoveStream ) {
+            XWStreamCtxt* prevStream = server->nv.prevMoveStream;
+            XP_U16 len = stream_getSize( prevStream );
+            XP_UCHAR* buf = XP_MALLOC( server->mpool, len );
+
+            stream_getBytes( prevStream, buf, len );
+            stream_destroy( prevStream );
+            server->nv.prevMoveStream = NULL;
+
+            stream_putBytes( stream, buf, len );
+            XP_FREE( server->mpool, buf );
+        }
+
+        (void)util_userQuery( util, QUERY_ROBOT_MOVE, stream );
+        stream_destroy( stream );
     }
-
-    stream = mkServerStream( server );
-
-    str = util_getUserString( util, strCode );
-    stream_catString( stream, str );
-
-    if ( !!server->nv.prevMoveStream ) {
-        XWStreamCtxt* prevStream = server->nv.prevMoveStream;
-        XP_U16 len = stream_getSize( prevStream );
-        XP_UCHAR* buf = XP_MALLOC( server->mpool, len );
-
-        stream_getBytes( prevStream, buf, len );
-        stream_destroy( prevStream );
-        server->nv.prevMoveStream = NULL;
-
-        stream_putBytes( stream, buf, len );
-        XP_FREE( server->mpool, buf );
-    }
-
-    (void)util_userQuery( util, QUERY_ROBOT_MOVE, stream );
-    stream_destroy( stream );
-
     SETSTATE( server, server->vol.stateAfterShow );
 } /* showPrevScore */
 
