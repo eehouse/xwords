@@ -217,13 +217,8 @@ public class GamesList extends XWListActivity
         RelayReceiver.RestartTimer( this );
         NetUtils.informOfDeaths( this );
 
-        Intent intent = getIntent();
-        if ( null != intent ) {
-            String[] relayIDs = intent
-                .getStringArrayExtra( getString( R.string.relayids_extra ) );
-            startFirstHasDict( relayIDs );
-        }
-    }
+        startFirstHasDict( getIntent() );
+    } // onCreate
 
     @Override
     // called when we're brought to the front (probably as a result of
@@ -233,6 +228,7 @@ public class GamesList extends XWListActivity
         super.onNewIntent( intent );
         String id = getString( R.string.relayids_extra );
         invalRelayIDs( intent.getStringArrayExtra( id ) );
+        startFirstHasDict( intent );
     }
 
     @Override
@@ -555,14 +551,18 @@ public class GamesList extends XWListActivity
 
     // Launch the first of these for which there's a dictionary
     // present.
-    private void startFirstHasDict( String[] relayIDs )
+    private void startFirstHasDict( Intent intent )
     {
-        if ( null != relayIDs ) {
-            for ( String relayID : relayIDs ) {
-                String path = DBUtils.getPathFor( this, relayID );
-                if ( GameUtils.gameDictHere( this, path ) ) {
-                    startForPath( path );
-                    break;
+        if ( null != intent ) {
+            String[] relayIDs = intent
+                .getStringArrayExtra( getString( R.string.relayids_extra ) );
+            if ( null != relayIDs ) {
+                for ( String relayID : relayIDs ) {
+                    String path = DBUtils.getPathFor( this, relayID );
+                    if ( GameUtils.gameDictHere( this, path ) ) {
+                        startForPath( path );
+                        break;
+                    }
                 }
             }
         }
