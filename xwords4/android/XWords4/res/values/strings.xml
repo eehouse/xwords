@@ -403,6 +403,7 @@
     <string name="chat_other_id">Not me: </string>
     <string name="chat_send">Send</string>
     <string name="chat_menu_clear">Clear history</string>
+    <string name="chat_title">Crosswords message history</string>
 
     <string name="notify_title">Moves made</string>
     <string name="notify_body">New game moves have arrived</string>
@@ -428,9 +429,9 @@
       and sync. (In a later release these moves will be downloaded in
       the background.)</string>
 
-    <string name="not_again_chat">This button lets you send a short
-      message to everyone in this game -- or exchange contact info so
-      you can converse via email or texting.</string>
+    <string name="not_again_chat">This button opens the screen for
+      messaging between devices in this game.  Messages will be kept
+      until you delete their game.</string>
 
     <string name="not_again_relay">Multi-device games work through an
       internet relay that connects devices in \"rooms\".  To play
