@@ -47,9 +47,11 @@ public class RelayReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        Utils.logf( "RelayReceiver::onReceive()" );
-        Toast.makeText(context, "RelayReceiver: fired", 
-                       Toast.LENGTH_SHORT).show();
+        // Utils.logf( "RelayReceiver::onReceive()" );
+        // if ( XWConstants.s_showProxyToast ) {
+        //     Toast.makeText(context, "RelayReceiver: fired", 
+        //                    Toast.LENGTH_SHORT).show();
+        // }
 
         // Do the actual background work.  Could do it here, but only
         // if we're sure to finish in 10 seconds and if it'll always
@@ -63,7 +65,7 @@ public class RelayReceiver extends BroadcastReceiver {
 
     private void query_relay( Context context ) 
     {
-        Utils.logf( "query_relay" );
+        // Utils.logf( "query_relay" );
         String[] relayIDs = NetUtils.QueryRelay( context );
 
         // At this point any changes have already been made to the
@@ -115,7 +117,7 @@ public class RelayReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
         if ( interval_millis > 0 ) {
-            Utils.logf( "setting alarm for %d millis", interval_millis );
+            // Utils.logf( "setting alarm for %d millis", interval_millis );
             am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
                                     0, // first firing
                                     interval_millis, pi );
