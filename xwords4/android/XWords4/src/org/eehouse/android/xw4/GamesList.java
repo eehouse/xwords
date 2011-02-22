@@ -50,7 +50,8 @@ import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends XWListActivity 
     implements DispatchNotify.HandleRelaysIface,
-               RefreshMsgsTask.RefreshMsgsIface {
+               RefreshMsgsTask.RefreshMsgsIface,
+               DBUtils.DBChangeListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -236,6 +237,7 @@ public class GamesList extends XWListActivity
     {
         super.onStart();
         DispatchNotify.SetRelayIDsHandler( this );
+        DBUtils.setDBChangeListener( this );
 
         // TelephonyManager mgr = 
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
@@ -251,7 +253,7 @@ public class GamesList extends XWListActivity
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
         // m_phoneStateListener = null;
-
+        DBUtils.setDBChangeListener( null );
         DispatchNotify.SetRelayIDsHandler( null );
 
         super.onStop();
@@ -271,6 +273,17 @@ public class GamesList extends XWListActivity
     public void RefreshMsgsResults( String[] relayIDs )
     {
         HandleRelaysIDs( relayIDs );
+    }
+
+    // DBUtils.DBChangeListener interface
+    public void pathSaved( final String path )
+    {
+        m_handler.post( new Runnable() {
+                public void run() {
+                    m_adapter.inval( path );
+                    onContentChanged();
+                }
+            } );
     }
 
     @Override

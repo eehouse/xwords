@@ -35,6 +35,12 @@ import org.eehouse.android.xw4.jni.*;
 
 public class DBUtils {
 
+    public static interface DBChangeListener {
+        public void pathSaved( String path );
+    }
+    private static DBChangeListener[] s_listeners = 
+        new DBChangeListener[]{ null };
+
     private static SQLiteOpenHelper s_dbHelper = null;
 
     public static class Obit {
@@ -213,6 +219,7 @@ public class DBUtils {
                                          values, selection, null );
                 Assert.assertTrue( result >= 0 );
             }
+            notifyListeners( path );
             db.close();
         }
     } // saveSummary
@@ -250,6 +257,7 @@ public class DBUtils {
                                     values, selection, null );
             Assert.assertTrue( result == 1 );
             db.close();
+            notifyListeners( path );
         }
     }
 
@@ -433,6 +441,7 @@ public class DBUtils {
                 Assert.assertTrue( row >= 0 );
             }
             db.close();
+            notifyListeners( path );
         }
     }
 
@@ -559,6 +568,14 @@ public class DBUtils {
         saveChatHistory( context, path, null );
     }
 
+    public static void setDBChangeListener( DBChangeListener listener )
+    {
+        synchronized( s_listeners ) {
+            Assert.assertTrue( listener != s_listeners[0] );
+            s_listeners[0] = listener;
+        }
+    }
+
     private static void saveChatHistory( Context context, String path,
                                          String history )
     {
@@ -612,6 +629,15 @@ public class DBUtils {
     {
         if ( null == s_dbHelper ) {
             s_dbHelper = new DBHelper( context );
+        }
+    }
+
+    private static void notifyListeners( String path )
+    {
+        synchronized( s_listeners ) {
+            if ( null != s_listeners[0] ) {
+                s_listeners[0].pathSaved( path );
+            }
         }
     }
 
