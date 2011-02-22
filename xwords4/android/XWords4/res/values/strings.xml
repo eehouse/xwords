@@ -431,7 +431,7 @@
 
     <string name="not_again_chat">This button opens the screen for
       messaging between devices in this game.  Messages will be kept
-      until you delete their game.</string>
+      until you delete the game that contains them.</string>
 
     <string name="not_again_relay">Multi-device games work through an
       internet relay that connects devices in \"rooms\".  To play
