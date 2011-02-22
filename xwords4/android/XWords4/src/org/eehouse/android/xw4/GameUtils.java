@@ -392,6 +392,11 @@ public class GameUtils {
         Intent intent = new Intent( Intent.ACTION_EDIT, uri,
                                     activity, BoardActivity.class );
         activity.startActivity( intent );
+    }
+
+    public static void launchGameAndFinish( Activity activity, String path )
+    {
+        launchGame( activity, path );
         activity.finish();
     }
 

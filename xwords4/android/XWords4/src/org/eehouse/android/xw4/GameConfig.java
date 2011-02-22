@@ -898,7 +898,7 @@ public class GameConfig extends XWActivity
     private void launchGame()
     {
         if ( m_notNetworkedGame || m_car.ip_relay_invite.length() > 0 ) {
-            GameUtils.launchGame( this, m_path );
+            GameUtils.launchGameAndFinish( this, m_path );
         } else {
             showOKOnlyDialog( R.string.no_empty_rooms );            
         }

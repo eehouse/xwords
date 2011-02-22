@@ -406,7 +406,7 @@ public class GamesList extends XWListActivity
             GameUtils.doConfig( this, path, clazz );
         } else {
             if ( checkWarnNoDict( path ) ) {
-                startForPath( path );
+                GameUtils.launchGame( this, path );
             }
         }
         m_invalPath = path;
@@ -540,15 +540,6 @@ public class GamesList extends XWListActivity
         }
     }
 
-    private void startForPath( String path )
-    {
-        File file = new File( path );
-        Uri uri = Uri.fromFile( file );
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                    this, BoardActivity.class );
-        startActivity( intent );
-    }
-
     // Launch the first of these for which there's a dictionary
     // present.
     private void startFirstHasDict( Intent intent )
@@ -560,7 +551,7 @@ public class GamesList extends XWListActivity
                 for ( String relayID : relayIDs ) {
                     String path = DBUtils.getPathFor( this, relayID );
                     if ( GameUtils.gameDictHere( this, path ) ) {
-                        startForPath( path );
+                        GameUtils.launchGame( this, path );
                         break;
                     }
                 }

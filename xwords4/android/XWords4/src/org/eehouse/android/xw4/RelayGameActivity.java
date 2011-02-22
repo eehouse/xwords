@@ -94,7 +94,7 @@ public class RelayGameActivity extends XWActivity
                 showOKOnlyDialog( R.string.no_empty_rooms );
             } else {
                 saveRoomAndName( room );
-                GameUtils.launchGame( this, m_path );
+                GameUtils.launchGameAndFinish( this, m_path );
             }
         } else if ( view == m_configButton ) {
             saveRoomAndName( room );
