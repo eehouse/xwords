@@ -57,49 +57,8 @@ public class RelayReceiver extends BroadcastReceiver {
         // if we're sure to finish in 10 seconds and if it'll always
         // result in posting a notification.  Some scenarios
 
-        query_relay( context );
-
-        // Intent service = new Intent( context, RelayService.class );
-        // context.startService( service );
-    }
-
-    private void query_relay( Context context ) 
-    {
-        // Utils.logf( "query_relay" );
-        String[] relayIDs = NetUtils.QueryRelay( context );
-
-        // At this point any changes have already been made to the
-        // games.  Need to refresh
-        if ( null != relayIDs ) {
-            if ( !DispatchNotify.tryHandle( context, relayIDs ) ) {
-                setupNotification( context, relayIDs );
-            }
-        }
-    }
-
-    private void setupNotification( Context context, String[] relayIDs )
-    {
-        Intent intent = new Intent( context, DispatchNotify.class );
-        //intent.addFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP );
-        intent.putExtra( context.getString(R.string.relayids_extra), 
-                         relayIDs );
-
-        PendingIntent pi = PendingIntent.
-            getActivity( context, 0, intent, 
-                         PendingIntent.FLAG_UPDATE_CURRENT );
-        String title = context.getString(R.string.notify_title);
-        Notification notification = 
-            new Notification( R.drawable.icon48x48, title,
-                              System.currentTimeMillis() );
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
-
-        notification.
-            setLatestEventInfo( context, title, 
-                                context.getString(R.string.notify_body), pi );
-
-        NotificationManager nm = (NotificationManager)
-            context.getSystemService( Context.NOTIFICATION_SERVICE );
-        nm.notify( R.string.relayids_extra, notification );
+        Intent service = new Intent( context, RelayService.class );
+        context.startService( service );
     }
 
     public static void RestartTimer( Context context )

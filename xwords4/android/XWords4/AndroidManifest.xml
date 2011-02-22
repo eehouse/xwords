@@ -81,6 +81,7 @@
               android:theme="@android:style/Theme.Light"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
+              android:launchMode="singleTask"
               >
     </activity>
 
@@ -113,6 +114,8 @@
     <activity android:name="ChatActivity"
               android:label="@string/chat_title"
               />
+
+    <service android:name="RelayService"/>
 
   </application>
 </manifest>
