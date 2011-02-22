@@ -60,8 +60,6 @@ public class NetUtils {
         } catch( java.io.IOException ioe ) {
             Utils.logf( ioe.toString() );
         }
-        Utils.logf( "MakeProxySocket=>%s", null != socket
-                    ? socket.toString():"null" );
         return socket;
     }
 
@@ -140,16 +138,12 @@ public class NetUtils {
 
                 // total packet size
                 outStream.writeShort( 2 + nBytes[0] + ids.length + 1 );
-                Utils.logf( "total packet size: %d",
-                            2 + nBytes[0] + ids.length );
 
                 outStream.writeByte( NetUtils.PROTOCOL_VERSION );
                 outStream.writeByte( NetUtils.PRX_GET_MSGS );
 
                 // number of ids
                 outStream.writeShort( ids.length );
-                Utils.logf( "wrote count %d to proxy socket",
-                            ids.length );
 
                 for ( String id : ids ) {
                     outStream.writeBytes( id );
@@ -159,7 +153,6 @@ public class NetUtils {
 
                 DataInputStream dis = 
                     new DataInputStream(socket.getInputStream());
-                Utils.logf( "reading from proxy socket" );
                 short resLen = dis.readShort();
                 short nameCount = dis.readShort();
                 byte[][][] msgs = null;
@@ -167,7 +160,6 @@ public class NetUtils {
                     msgs = new byte[nameCount][][];
                     for ( int ii = 0; ii < nameCount; ++ii ) {
                         short countsThisGame = dis.readShort();
-                        Utils.logf( "msgCounts[%d]=%d", ii, countsThisGame );
                         if ( countsThisGame > 0 ) {
                             msgs[ii] = new byte[countsThisGame][];
                             for ( int jj = 0; jj < countsThisGame; ++jj ) {
@@ -182,11 +174,8 @@ public class NetUtils {
                     }
                 }
                 socket.close();
-                Utils.logf( "closed proxy socket" );
 
-                if ( null == msgs ) {
-                    Utils.logf( "relay has no messages" );
-                } else {
+                if ( null != msgs ) {
                     ArrayList<String> idsWMsgs =
                         new ArrayList<String>( nameCount );
                     for ( int ii = 0; ii < nameCount; ++ii ) {
