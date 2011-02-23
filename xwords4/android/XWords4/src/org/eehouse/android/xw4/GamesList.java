@@ -58,7 +58,6 @@ public class GamesList extends XWListActivity
     private static final int SHOW_SUBST        = WARN_NODICT + 2;
 
     private GameListAdapter m_adapter;
-    private String m_invalPath = null;
     private String m_missingDict;
     private Handler m_handler;
     private String m_missingDictName;
@@ -206,7 +205,6 @@ public class GamesList extends XWListActivity
                     String path = addGame( true );
                     GameUtils.doConfig( GamesList.this, path, 
                                         RelayGameActivity.class );
-                    m_invalPath = path;
                 }
             });
 
@@ -290,9 +288,7 @@ public class GamesList extends XWListActivity
     public void onWindowFocusChanged( boolean hasFocus )
     {
         super.onWindowFocusChanged( hasFocus );
-        if ( hasFocus && null != m_invalPath ) {
-            m_adapter.inval( m_invalPath );
-            m_invalPath = null;
+        if ( hasFocus ) {
             onContentChanged();
         }
     }
@@ -422,7 +418,6 @@ public class GamesList extends XWListActivity
                 GameUtils.launchGame( this, path );
             }
         }
-        m_invalPath = path;
     }
 
     private boolean handleMenuItem( int menuID, int position ) 
@@ -457,7 +452,6 @@ public class GamesList extends XWListActivity
                     break;
                 case R.id.list_item_config:
                     GameUtils.doConfig( this, path, GameConfig.class );
-                    m_invalPath = path;
                     break;
 
                 case R.id.list_item_new_from:
