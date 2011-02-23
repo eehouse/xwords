@@ -37,6 +37,7 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 
 import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class RelayService extends Service {
 
@@ -81,9 +82,14 @@ public class RelayService extends Service {
         Notification notification = 
             new Notification( R.drawable.icon48x48, title,
                               System.currentTimeMillis() );
-        notification.flags |=
-            Notification.FLAG_AUTO_CANCEL | Notification.DEFAULT_SOUND;
-        notification.flags |= Notification.DEFAULT_VIBRATE;
+
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        if ( CommonPrefs.getSoundNotify( this ) ) {
+            notification.flags |= Notification.DEFAULT_SOUND;
+        }
+        if ( CommonPrefs.getVibrateNotify( this ) ) {
+            notification.flags |= Notification.DEFAULT_VIBRATE;
+        }
 
         notification.
             setLatestEventInfo( this, title, 

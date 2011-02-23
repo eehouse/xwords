@@ -248,6 +248,16 @@ public class CommonPrefs {
         return getPrefsBoolean( context, R.string.key_hide_title, true );
     }
 
+    public static boolean getSoundNotify( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_notify_sound, true );
+    }
+
+    public static boolean getVibrateNotify( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_notify_vibrate, false );
+    }
+
     public static boolean getPrefsBoolean( Context context, int keyID,
                                            boolean defaultValue )
     {
