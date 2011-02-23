@@ -81,7 +81,9 @@ public class RelayService extends Service {
         Notification notification = 
             new Notification( R.drawable.icon48x48, title,
                               System.currentTimeMillis() );
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        notification.flags |=
+            Notification.FLAG_AUTO_CANCEL | Notification.DEFAULT_SOUND;
+        notification.flags |= Notification.DEFAULT_VIBRATE;
 
         notification.
             setLatestEventInfo( this, title, 
