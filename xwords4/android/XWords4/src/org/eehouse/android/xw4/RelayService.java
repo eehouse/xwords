@@ -85,10 +85,10 @@ public class RelayService extends Service {
 
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
         if ( CommonPrefs.getSoundNotify( this ) ) {
-            notification.flags |= Notification.DEFAULT_SOUND;
+            notification.defaults |= Notification.DEFAULT_SOUND;
         }
         if ( CommonPrefs.getVibrateNotify( this ) ) {
-            notification.flags |= Notification.DEFAULT_VIBRATE;
+            notification.defaults |= Notification.DEFAULT_VIBRATE;
         }
 
         notification.
