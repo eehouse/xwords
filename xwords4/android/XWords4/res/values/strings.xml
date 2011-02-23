@@ -403,7 +403,7 @@
     <string name="chat_other_id">Not me: </string>
     <string name="chat_send">Send</string>
     <string name="chat_menu_clear">Clear history</string>
-    <string name="chat_title">Crosswords message history</string>
+    <string name="chat_titlef">%s message history</string>
 
     <string name="notify_title">Moves made</string>
     <string name="notify_body">New game moves have arrived</string>

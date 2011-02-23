@@ -112,7 +112,6 @@
     <activity android:name="RelayGameActivity"/>
 
     <activity android:name="ChatActivity"
-              android:label="@string/chat_title"
               />
 
     <service android:name="RelayService"/>

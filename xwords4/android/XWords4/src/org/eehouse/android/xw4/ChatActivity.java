@@ -67,6 +67,9 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
         }
 
         ((Button)findViewById( R.id.send_button )).setOnClickListener( this );
+
+        String fmt = getString( R.string.chat_titlef );
+        setTitle( String.format( fmt, GameUtils.gameName( this, m_path ) ) );
     }
 
     @Override
