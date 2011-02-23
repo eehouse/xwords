@@ -145,8 +145,10 @@ public class BoardActivity extends XWActivity {
             case QUERY_REQUEST_BLK:
             case QUERY_INFORM_BLK:
                 ab = new AlertDialog.Builder( this )
-                    .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes );
+                if ( 0 != m_dlgTitle ) {
+                    ab.setTitle( m_dlgTitle );
+                }
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int whichButton ) {
