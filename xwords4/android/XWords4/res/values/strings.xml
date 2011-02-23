@@ -256,6 +256,10 @@
     <string name="prefs_behavior">Behavior</string>
     <string name="prefs_behavior_summary">Settings controlling app behavior</string>
 
+    <string name="network_behavior">Network settings</string>
+    <string name="network_behavior_summary">Settings that apply to
+      networked games</string>
+
     <string name="default_dict">Game dictionary</string>
     <string name="default_phonies">Handle phonies</string>
     <string name="phonies_spinner_prompt">How to handle \"phonies\"
@@ -393,6 +397,10 @@
 	<string name="connect_six_hours">Every six hours</string>
 	<string name="connect_daily">Once every day</string>
 	<string name="connect_never">Never connect</string>
+
+	<string name="notify_sound">Play sound</string>
+	<string name="notify_vibrate">Vibrate</string>
+	<string name="notify_other_summary">When opponent moves arrive</string>
 
     <string name="public_names_progress">Fetching public rooms for
     %d-player games in %s.</string>

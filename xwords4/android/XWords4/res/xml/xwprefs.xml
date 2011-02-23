@@ -156,7 +156,11 @@
                         android:summary="@string/peek_other_summary"
                         android:defaultValue="false"
                         />
+  </PreferenceScreen>
 
+  <PreferenceScreen android:title="@string/network_behavior"
+                    android:summary="@string/network_behavior_summary"
+                    >
     <org.eehouse.android.xw4.PollListPreference
        android:key="@string/key_connect_frequency"
        android:title="@string/connect_frequency"
@@ -164,6 +168,17 @@
        android:entryValues="@array/connect_frequencies_values"
        android:defaultValue="900"
        />
+
+    <CheckBoxPreference android:key="@string/key_notify_sound"
+                        android:title="@string/notify_sound"
+                        android:summary="@string/notify_other_summary"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_notify_vibrate"
+                        android:title="@string/notify_vibrate"
+                        android:summary="@string/notify_other_summary"
+                        android:defaultValue="false"
+                        />
   </PreferenceScreen>
 
   <PreferenceScreen android:title="@string/advanced"
