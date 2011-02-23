@@ -47,18 +47,19 @@ public class RelayReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        // Utils.logf( "RelayReceiver::onReceive()" );
-        // if ( XWConstants.s_showProxyToast ) {
-        //     Toast.makeText(context, "RelayReceiver: fired", 
-        //                    Toast.LENGTH_SHORT).show();
-        // }
-
-        // Do the actual background work.  Could do it here, but only
-        // if we're sure to finish in 10 seconds and if it'll always
-        // result in posting a notification.  Some scenarios
-
-        Intent service = new Intent( context, RelayService.class );
-        context.startService( service );
+        if ( null != intent && null != intent.getAction() 
+             && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
+            Utils.logf( "launching timer on boot" );
+            RestartTimer( context );
+        } else {
+            // Utils.logf( "RelayReceiver::onReceive()" );
+            // if ( XWConstants.s_showProxyToast ) {
+            //     Toast.makeText(context, "RelayReceiver: fired", 
+            //                    Toast.LENGTH_SHORT).show();
+            // }
+            Intent service = new Intent( context, RelayService.class );
+            context.startService( service );
+        }
     }
 
     public static void RestartTimer( Context context )

@@ -28,6 +28,8 @@
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <uses-permission android:name="android.permission.VIBRATE" />
 
   <uses-sdk android:minSdkVersion="3" android:targetSdkVersion="4" />
 
@@ -85,12 +87,13 @@
               >
     </activity>
 
-    <receiver android:name="RelayReceiver"
-              />
+    <receiver android:name="RelayReceiver">
+      <intent-filter>
+        <action android:name="android.intent.action.RECEIVE__BOOT_COMPLETED"/>
+      </intent-filter>
+    </receiver>
 
-    <activity android:name="DispatchNotify"
-              >
-    </activity>
+    <activity android:name="DispatchNotify" />
 
     <!-- downloading dicts -->
     <activity android:name=".DictImportActivity"
