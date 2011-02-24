@@ -188,13 +188,15 @@ public class BoardActivity extends XWActivity {
                 break;
 
             case ASK_PASSWORD_BLK:
+                m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitleStr )
                     .setView( m_passwdEdit )
                     .setPositiveButton( R.string.button_ok,
                                         new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg,
-                                                                 int whichButton ) {
+                                            public void 
+                                                onClick( DialogInterface dlg,
+                                                         int whichButton ) {
                                                 m_resultCode = 1;
                                             }
                                         });
@@ -208,15 +210,18 @@ public class BoardActivity extends XWActivity {
                     .setMessage( R.string.ids_endnow )
                     .setPositiveButton( R.string.button_yes,
                                         new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, 
-                                                                 int item ) {
-                                                m_jniThread.handle(JNICmd.CMD_ENDGAME);
+                                            public void 
+                                                onClick( DialogInterface dlg, 
+                                                         int item ) {
+                                                m_jniThread.
+                                                    handle(JNICmd.CMD_ENDGAME);
                                             }
                                         })
                     .setNegativeButton( R.string.button_no,
                                         new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, 
-                                                                 int item ) {
+                                            public void 
+                                                onClick( DialogInterface dlg, 
+                                                         int item ) {
                                                 // do nothing
                                             }
                                         })
@@ -230,28 +235,6 @@ public class BoardActivity extends XWActivity {
         }
         return dialog;
     } // onCreateDialog
-
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        switch( id ) {
-        case DLG_OKONLY:
-            dialog.setTitle( m_dlgTitle );
-            // FALLTHRU
-        case DLG_BADWORDS:
-        case QUERY_REQUEST_BLK:
-        case QUERY_INFORM_BLK:
-            ((AlertDialog)dialog).setMessage( m_dlgBytes );
-            break;
-        case ASK_PASSWORD_BLK:
-            m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
-            dialog.setTitle( m_dlgTitleStr );
-            break;
-        default:
-            super.onPrepareDialog( id, dialog );
-            break;
-        }
-    }
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 

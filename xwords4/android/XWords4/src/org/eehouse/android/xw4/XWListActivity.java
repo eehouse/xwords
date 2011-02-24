@@ -61,11 +61,23 @@ public class XWListActivity extends ListActivity {
     }
 
     @Override
-    protected Dialog onCreateDialog( int id )
+    protected Dialog onCreateDialog( final int id )
     {
+        Utils.logf( "%s.onCreateDialog() called", getClass().getName() );
         Dialog dialog = m_delegate.onCreateDialog( id );
         if ( null == dialog ) {
             dialog = super.onCreateDialog( id );
+        }
+        if ( null != dialog ) {
+            DialogInterface.OnDismissListener lstnr = 
+                new DialogInterface.OnDismissListener() {
+                    public void onDismiss( DialogInterface di ) {
+                        Utils.logf( "%s.onDismiss() called", 
+                                    getClass().getName() );
+                        removeDialog( id );
+                    }
+                };
+            dialog.setOnDismissListener( lstnr );
         }
         return dialog;
     }

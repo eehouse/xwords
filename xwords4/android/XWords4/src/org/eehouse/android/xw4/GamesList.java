@@ -80,21 +80,33 @@ public class GamesList extends XWListActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
+        DialogInterface.OnClickListener lstnr;
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             AlertDialog.Builder ab;
             switch ( id ) {
             case WARN_NODICT:
             case WARN_NODICT_SUBST:
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            Intent intent = 
+                                Utils.mkDownloadActivity( GamesList.this,
+                                                          m_missingDictName,
+                                                          m_missingDictLang );
+                            startActivity( intent );
+                        }
+                    };
+                int fmtId = WARN_NODICT == id? R.string.no_dictf
+                    : R.string.no_dict_substf;
                 ab = new AlertDialog.Builder( this )
                     .setTitle( R.string.no_dict_title )
-                    .setMessage( "" ) // required to get to change it later
+                    .setMessage( String.format( getString( fmtId ),
+                                                m_missingDictName ) )
                     .setPositiveButton( R.string.button_ok, null )
-                    .setNegativeButton( R.string.button_download, null ) // change
+                    .setNegativeButton( R.string.button_download, lstnr )
                     ;
                 if ( WARN_NODICT_SUBST == id ) {
-                    DialogInterface.OnClickListener lstnr = 
-                        new DialogInterface.OnClickListener() {
+                    lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, int item ) {
                                 showDialog( SHOW_SUBST );
                             }
@@ -139,38 +151,7 @@ public class GamesList extends XWListActivity
             }
         }
         return dialog;
-    }
-
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        DialogInterface.OnClickListener lstnr;
-        AlertDialog ad;
-        
-        switch( id ) {
-        case WARN_NODICT:
-        case WARN_NODICT_SUBST:
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        Intent intent = 
-                            Utils.mkDownloadActivity( GamesList.this,
-                                                      m_missingDictName,
-                                                      m_missingDictLang );
-                        startActivity( intent );
-                    }
-                };
-            ad = (AlertDialog)dialog;
-            ad.setButton( AlertDialog.BUTTON_NEGATIVE, 
-                          getString( R.string.button_download ), lstnr );
-            int fmtId = WARN_NODICT == id? R.string.no_dictf
-                : R.string.no_dict_substf;
-            ad.setMessage( String.format( getString( fmtId ),
-                                          m_missingDictName ) );
-            break;
-        default:
-            super.onPrepareDialog( id, dialog );
-        }
-    }
+    } // onCreateDialog
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 

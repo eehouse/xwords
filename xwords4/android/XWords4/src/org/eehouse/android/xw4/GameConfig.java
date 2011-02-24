@@ -86,7 +86,6 @@ public class GameConfig extends XWActivity
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
     private int m_whichPlayer;
-    private Dialog m_curDialog;
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
     private Spinner m_phoniesSpinner;
@@ -163,9 +162,10 @@ public class GameConfig extends XWActivity
                     .setView(playerEditView)
                     .setPositiveButton( R.string.button_ok,
                                         new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, 
-                                                                 int whichButton ) {
-                                                getPlayerSettings();
+                                            public void 
+                                                onClick( DialogInterface dlg, 
+                                                                 int button ) {
+                                                getPlayerSettings( dlg );
                                                 loadPlayers();
                                             }
                                         })
@@ -252,10 +252,14 @@ public class GameConfig extends XWActivity
                     });
                 break;
             case NO_NAME_FOUND:
+                String format = getString( R.string.no_name_found_f );
+                String msg = 
+                    String.format( format, m_gi.nPlayers, DictLangCache.
+                                   getLangName( this, m_gi.dictLang ) );
                 dialog = new AlertDialog.Builder( this )
                     .setPositiveButton( R.string.button_ok, null )
                     // message added below since varies with language etc.
-                    .setMessage("") // if not set here can't change later
+                    .setMessage( msg )
                     .create();
                 break;
             }
@@ -266,11 +270,9 @@ public class GameConfig extends XWActivity
     @Override
     protected void onPrepareDialog( int id, Dialog dialog )
     { 
-        m_curDialog = dialog;
-
         switch ( id ) {
         case PLAYER_EDIT:
-            setPlayerSettings();
+            setPlayerSettings( dialog );
             break;
         // case ROLE_EDIT_RELAY:
         // case ROLE_EDIT_SMS:
@@ -282,28 +284,22 @@ public class GameConfig extends XWActivity
             ListView listview = (ListView)dialog.findViewById( R.id.players );
             listview.setAdapter( new RemoteChoices() );
             break;
-        case NO_NAME_FOUND:
-            String format = getString( R.string.no_name_found_f );
-            String msg = String.format( format, m_gi.nPlayers, DictLangCache.
-                                        getLangName( this, m_gi.dictLang ) );
-            ((AlertDialog)dialog).setMessage( msg );
-            break;
         }
         super.onPrepareDialog( id, dialog );
     }
 
-    private void setPlayerSettings()
+    private void setPlayerSettings( final Dialog dialog )
     {
         // Hide remote option if in standalone mode...
         boolean isServer = !m_notNetworkedGame;
         LocalPlayer lp = m_gi.players[m_whichPlayer];
-        Utils.setText( m_curDialog, R.id.player_name_edit, lp.name );
-        Utils.setText( m_curDialog, R.id.password_edit, lp.password );
+        Utils.setText( dialog, R.id.player_name_edit, lp.name );
+        Utils.setText( dialog, R.id.password_edit, lp.password );
 
-        final View localSet = m_curDialog.findViewById( R.id.local_player_set );
+        final View localSet = dialog.findViewById( R.id.local_player_set );
 
         CheckBox check = (CheckBox)
-            m_curDialog.findViewById( R.id.remote_check );
+            dialog.findViewById( R.id.remote_check );
         if ( isServer ) {
             CompoundButton.OnCheckedChangeListener lstnr =
                 new CompoundButton.OnCheckedChangeListener() {
@@ -320,29 +316,30 @@ public class GameConfig extends XWActivity
             localSet.setVisibility( View.VISIBLE );
         }
 
-        check = (CheckBox)m_curDialog.findViewById( R.id.robot_check );
+        check = (CheckBox)dialog.findViewById( R.id.robot_check );
         CompoundButton.OnCheckedChangeListener lstnr =
             new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged( CompoundButton buttonView, 
                                               boolean checked ) {
-                    View view = m_curDialog.findViewById( R.id.password_set );
+                    View view = dialog.findViewById( R.id.password_set );
                     view.setVisibility( checked ? View.GONE : View.VISIBLE );
                 }
             };
         check.setOnCheckedChangeListener( lstnr );
 
-        Utils.setChecked( m_curDialog, R.id.robot_check, lp.isRobot() );
-        Utils.setChecked( m_curDialog, R.id.remote_check, ! lp.isLocal );
+        Utils.setChecked( dialog, R.id.robot_check, lp.isRobot() );
+        Utils.setChecked( dialog, R.id.remote_check, ! lp.isLocal );
     }
 
-    private void getPlayerSettings()
+    private void getPlayerSettings( DialogInterface di )
     {
+        Dialog dialog = (Dialog)di;
         LocalPlayer lp = m_gi.players[m_whichPlayer];
-        lp.name = Utils.getText( m_curDialog, R.id.player_name_edit );
-        lp.password = Utils.getText( m_curDialog, R.id.password_edit );
+        lp.name = Utils.getText( dialog, R.id.player_name_edit );
+        lp.password = Utils.getText( dialog, R.id.password_edit );
 
-        lp.setIsRobot( Utils.getChecked( m_curDialog, R.id.robot_check ) );
-        lp.isLocal = !Utils.getChecked( m_curDialog, R.id.remote_check );
+        lp.setIsRobot( Utils.getChecked( dialog, R.id.robot_check ) );
+        lp.isLocal = !Utils.getChecked( dialog, R.id.remote_check );
     }
 
     @Override
