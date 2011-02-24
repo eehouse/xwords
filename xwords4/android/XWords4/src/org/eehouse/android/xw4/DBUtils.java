@@ -158,8 +158,7 @@ public class DBUtils {
 
                 col = cursor.getColumnIndex( DBHelper.HASMSGS );
                 if ( col >= 0 ) {
-                    summary.pendingMsgLevel = 
-                        GameSummary.MsgLevel.values()[cursor.getInt( col )];
+                    summary.pendingMsgLevel = cursor.getInt( col );
                 }
             }
             cursor.close();
@@ -244,14 +243,14 @@ public class DBUtils {
         return result;
     }
 
-    public static void setHasMsgs( String path, GameSummary.MsgLevel level )
+    public static void setMsgFlags( String path, int flags )
     {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
             ContentValues values = new ContentValues();
-            values.put( DBHelper.HASMSGS, level.ordinal() );
+            values.put( DBHelper.HASMSGS, flags );
 
             int result = db.update( DBHelper.TABLE_NAME_SUM, 
                                     values, selection, null );
@@ -261,9 +260,9 @@ public class DBUtils {
         }
     }
 
-    public static GameSummary.MsgLevel getHasMsgs( String path )
+    public static int getMsgFlags( String path )
     {
-        GameSummary.MsgLevel result = GameSummary.MsgLevel.MSG_LEVEL_NONE;
+        int flags = GameSummary.MSG_FLAGS_NONE;
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
@@ -271,14 +270,13 @@ public class DBUtils {
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                int level = cursor.getInt( cursor
+                flags = cursor.getInt( cursor
                                          .getColumnIndex(DBHelper.HASMSGS));
-                result = GameSummary.MsgLevel.values()[level];
             }
             cursor.close();
             db.close();
         }
-        return result;
+        return flags;
     }
 
     public static String getPathFor( Context context, String relayID )

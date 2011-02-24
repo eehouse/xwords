@@ -1091,16 +1091,15 @@ public class BoardActivity extends XWActivity {
             m_toolbar.orientChanged( isLandscape );
             populateToolbar();
 
-
-            switch( DBUtils.getHasMsgs( m_path ) ) {
-            case MSG_LEVEL_CHAT:
+            int flags = DBUtils.getMsgFlags( m_path );
+            if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
                 startChatActivity();
-                // FALLTHRU
-            case MSG_LEVEL_TURN:
-                // clear it if non-NONE
-                DBUtils.setHasMsgs( m_path, 
-                                    GameSummary.MsgLevel.MSG_LEVEL_NONE );
-                break;
+            }
+            if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
+            }
+            if ( 0 != flags ) {
+                DBUtils.setMsgFlags( m_path, GameSummary.MSG_FLAGS_NONE );
             }
         }
     } // loadGame

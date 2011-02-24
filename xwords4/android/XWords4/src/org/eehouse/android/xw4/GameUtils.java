@@ -108,9 +108,13 @@ public class GameUtils {
 
         if ( null != feedImpl ) {
             if ( feedImpl.m_gotChat ) {
-                summary.pendingMsgLevel = GameSummary.MsgLevel.MSG_LEVEL_CHAT;
-            } else if ( feedImpl.m_gotMsg ) {
-                summary.pendingMsgLevel = GameSummary.MsgLevel.MSG_LEVEL_TURN;
+                summary.pendingMsgLevel |= GameSummary.MSG_FLAGS_CHAT;
+            } 
+            if ( feedImpl.m_gotMsg ) {
+                summary.pendingMsgLevel |= GameSummary.MSG_FLAGS_TURN;
+            }
+            if ( feedImpl.m_gameOver ) {
+                summary.pendingMsgLevel |= GameSummary.MSG_FLAGS_GAMEOVER;
             }
         }
 
@@ -405,12 +409,14 @@ public class GameUtils {
         private String m_path;
         public boolean m_gotMsg;
         public boolean m_gotChat;
+        public boolean m_gameOver;
 
         public FeedUtilsImpl( Context context, String path )
         {
             m_context = context;
             m_path = path;
             m_gotMsg = false;
+            m_gameOver = false;
         }
         public void showChat( String msg )
         {
@@ -420,6 +426,11 @@ public class GameUtils {
         public void turnChanged()
         {
             m_gotMsg = true;
+        }
+
+        public void notifyGameOver()
+        {
+            m_gameOver = true;
         }
     }
 
@@ -442,12 +453,20 @@ public class GameUtils {
             XwJNI.game_getGi( gamePtr, gi );
             saveGame( context, gamePtr, gi, path, false );
             summarizeAndClose( context, path, gamePtr, gi, feedImpl );
+
+            int flags = GameSummary.MSG_FLAGS_NONE;
             if ( feedImpl.m_gotChat ) {
-                DBUtils.setHasMsgs( path, GameSummary.MsgLevel.MSG_LEVEL_CHAT );
+                flags |= GameSummary.MSG_FLAGS_CHAT;
+            } 
+            if ( feedImpl.m_gotMsg ) {
+                flags |= GameSummary.MSG_FLAGS_TURN;
+            }
+            if ( feedImpl.m_gameOver ) {
+                flags |= GameSummary.MSG_FLAGS_GAMEOVER;
+            }
+            if ( GameSummary.MSG_FLAGS_NONE != flags ) {
                 draw = true;
-            } else if ( feedImpl.m_gotMsg ) {
-                DBUtils.setHasMsgs( path, GameSummary.MsgLevel.MSG_LEVEL_TURN );
-                draw = true;
+                DBUtils.setMsgFlags( path, flags );
             }
         }
         Utils.logf( "feedMessages=>%s", draw?"true":"false" );
