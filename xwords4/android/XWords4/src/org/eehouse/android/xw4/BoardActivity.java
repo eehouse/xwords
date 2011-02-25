@@ -406,6 +406,12 @@ public class BoardActivity extends XWActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.board_menu, menu );
+
+        // For now undo-last can crash the app or break a game in
+        // networked case.  Disable until this is fixed.
+        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+            menu.removeItem( R.id.board_menu_undo_last );
+        }
         return true;
     }
 
@@ -442,7 +448,14 @@ public class BoardActivity extends XWActivity {
         //     cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
         //     break;
         case R.id.board_menu_undo_last:
-            cmd = JNIThread.JNICmd.CMD_UNDO_LAST;
+            showConfirmThen( R.string.confirm_undo_last,
+                             new DialogInterface.OnClickListener() {
+                                 public void onClick( DialogInterface dlg, 
+                                                      int whichButton ) {
+                                     m_jniThread.handle( JNIThread.JNICmd.
+                                                         CMD_UNDO_LAST );
+                                 }
+                             } );
             break;
         case R.id.board_menu_hint:
             cmd = JNIThread.JNICmd.CMD_HINT;

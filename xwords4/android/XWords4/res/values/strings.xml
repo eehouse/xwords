@@ -190,6 +190,8 @@
     <string name="confirm_reset">Are you sure you want to reset this
       game? Resetting erases all moves and any connection
       information.</string>
+    <string name="confirm_undo_last">Are you sure you want to undo the
+      last committed turn? (There is no redo option.)</string>
       
     <string name="confirm_delete_dictf">Are you sure you want to
     delete %s? It is used by %d games, and you will not be able to
