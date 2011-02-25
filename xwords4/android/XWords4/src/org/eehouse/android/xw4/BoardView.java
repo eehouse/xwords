@@ -451,6 +451,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
+    public boolean boardBegin( Rect rect, int cellWidth, int cellHeight, 
+                               int dfs )
+    {
+        return true;
+    }
+
     public boolean drawCell( final Rect rect, String text, int tile, int owner, 
                              int bonus, int hintAtts, final int flags ) 
     {
