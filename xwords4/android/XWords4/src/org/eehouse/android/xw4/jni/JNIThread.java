@@ -97,7 +97,6 @@ public class JNIThread extends Thread {
     private static final int kMinDivWidth = 10;
     private Rect m_connsIconRect;
     private int m_connsIconID = 0;
-    private boolean m_inBack = false;
 
     LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -149,7 +148,6 @@ public class JNIThread extends Thread {
 
     public void setInBackground( boolean inBack )
     {
-        m_inBack = inBack;
         if ( inBack ) {
             handle( JNICmd.CMD_SAVE );
         }
@@ -308,7 +306,7 @@ public class JNIThread extends Thread {
                 draw = XwJNI.game_receiveMessage( m_jniGamePtr, 
                                                   (byte[])args[0] );
                 handle( JNICmd.CMD_DO );
-                if ( m_inBack ) {
+                if ( draw ) {
                     handle( JNICmd.CMD_SAVE );
                 }
                 break;
