@@ -505,6 +505,11 @@
       time, to hide it. A checkbox in the Appearance section of
       Settings will hide it permanently.</string>
 
+    <string name="not_again_turnchanged">The player whose turn it is
+      is drawn large in the scoreboard.  Hold your finger on a name in
+      the scoreboard to get details about that player\'s most recent
+      move.</string>
+
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>
 

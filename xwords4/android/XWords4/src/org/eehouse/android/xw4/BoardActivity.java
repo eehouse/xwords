@@ -735,7 +735,14 @@ public class BoardActivity extends XWActivity {
 
         public void turnChanged()
         {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, -8 );
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        showNotAgainDlgThen( R.string.not_again_turnchanged, 
+                                             R.string.key_notagain_turnchanged,
+                                             null );
+                    }
+                } );
+            m_jniThread.handle( JNIThread.JNICmd. CMD_ZOOM, -8 );
         }
 
         public boolean engineProgressCallback()
