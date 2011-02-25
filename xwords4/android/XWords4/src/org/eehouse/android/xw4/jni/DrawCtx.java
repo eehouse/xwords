@@ -49,6 +49,8 @@ public interface DrawCtx {
     void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, boolean focussed );
     void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi );
     void drawTimer( Rect rect, int player, int secondsLeft );
+    boolean boardBegin( Rect rect, int cellWidth, int cellHeight, 
+                        int dfs );
 
     boolean drawCell( Rect rect, String text, int tile, 
                       int owner, int bonus, int hintAtts, int flags );

@@ -221,7 +221,14 @@ static XP_Bool
 and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, 
                      XP_U16 cellWidth, XP_U16 cellHeight, DrawFocusState dfs )
 {
-    return XP_TRUE;
+    DRAW_CBK_HEADER( "boardBegin", "(Landroid/graphics/Rect;III)Z" );
+
+    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
+
+    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
+                                                 jrect, cellWidth, cellHeight,
+                                                 (jint)dfs );
+    return result;
 }
 
 static XP_Bool 
