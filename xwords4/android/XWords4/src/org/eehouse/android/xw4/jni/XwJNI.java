@@ -223,4 +223,5 @@ public class XwJNI {
     public static native String[] dict_getChars( int dictPtr );
     public static native void dict_getInfo( byte[] dict, JNIUtils jniu, 
                                             DictInfo info );
+    public static native int dict_getTileValue( int dictPtr, int tile );
 }

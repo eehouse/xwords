@@ -302,6 +302,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getChars
     return result;
 }
 
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTileValue
+( JNIEnv* env, jclass C, jint dictPtr, jint tile )
+{
+    return dict_getTileValue( (DictionaryCtxt*)dictPtr, tile );
+}
+
 typedef struct _JNIState {
     XWGame game;
     JNIEnv* env;
