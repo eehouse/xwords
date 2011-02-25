@@ -99,4 +99,10 @@ public class XWActivity extends Activity {
     {
         m_delegate.showOKOnlyDialog( msgID );
     }
+
+    protected void showConfirmThen( int msgID, 
+                                    DialogInterface.OnClickListener action )
+    {
+        m_delegate.showConfirmThen( getString(msgID), action );
+    }
 }
