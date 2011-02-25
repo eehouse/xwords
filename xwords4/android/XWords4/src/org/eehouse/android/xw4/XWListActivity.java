@@ -46,18 +46,11 @@ public class XWListActivity extends ListActivity {
     }
 
     @Override
-    protected void onRestart()
-    {
-        super.onRestart();
-        DispatchNotify.SetRunning( this );
-    }
-
-    @Override
     protected void onStop()
     {
         Utils.logf( "XWListActivity::onStop" );
-        super.onStop();
         DispatchNotify.ClearRunning( this );
+        super.onStop();
     }
 
     @Override

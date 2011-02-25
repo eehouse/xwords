@@ -274,13 +274,6 @@ public class BoardActivity extends XWActivity {
     }
 
     @Override
-    protected void onRestart()
-    {
-        Utils.logf( "BoardActivity::onRestart" );
-        super.onRestart();
-    }
-
-    @Override
     protected void onPause()
     {
         Utils.logf( "BoardActivity::onPause()" );
