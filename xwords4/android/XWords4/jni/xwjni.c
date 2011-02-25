@@ -976,8 +976,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
 
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, globals->vtMgr,
                                               jstream );
-    result = comms_checkIncomingStream( state->game.comms, stream, NULL )
-        && server_receiveMessage( state->game.server, stream );
+    result = comms_checkIncomingStream( state->game.comms, stream, NULL );
+    if ( result ) {
+        (void)server_receiveMessage( state->game.server, stream );
+    }
 
     stream_destroy( stream );
 
