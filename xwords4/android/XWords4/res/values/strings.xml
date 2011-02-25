@@ -256,7 +256,7 @@
     <string name="prefs_behavior">Behavior</string>
     <string name="prefs_behavior_summary">Settings controlling app behavior</string>
 
-    <string name="network_behavior">Network settings</string>
+    <string name="network_behavior">Network game settings</string>
     <string name="network_behavior_summary">Settings that apply to
       networked games</string>
 
@@ -388,7 +388,7 @@
     <string name="changes_title">Recent changes</string>
     <string name="changes_button">Recent changes</string>
 
-    <string name="connect_frequency">Background move check frequency</string>
+    <string name="connect_frequency">Move check frequency</string>
 	<string name="connect_thirty_seconds">30 seconds</string>
 	<string name="connect_five_mins">5 minutes</string>
 	<string name="connect_fifteen_mins">15 minutes</string>
