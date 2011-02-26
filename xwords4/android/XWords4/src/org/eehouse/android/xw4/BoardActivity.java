@@ -51,7 +51,8 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
-public class BoardActivity extends XWActivity {
+public class BoardActivity extends XWActivity 
+    implements TransportProcs.TPMsgHandler {
 
     private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
     private static final int DLG_BADWORDS = DLG_OKONLY + 1;
@@ -61,6 +62,7 @@ public class BoardActivity extends XWActivity {
     private static final int ASK_PASSWORD_BLK = DLG_OKONLY + 5;
     private static final int DLG_RETRY = DLG_OKONLY + 6;
     private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
+    private static final int DLG_DELETED = DLG_OKONLY + 8;
 
     private static final int CHAT_REQUEST = 1;
 
@@ -139,6 +141,29 @@ public class BoardActivity extends XWActivity {
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
                 }
+                dialog = ab.create();
+                break;
+
+            case DLG_DELETED:
+                ab = new AlertDialog.Builder( BoardActivity.this )
+                    .setTitle( R.string.query_title )
+                    .setMessage( R.string.msg_dev_deleted )
+                    .setPositiveButton( R.string.button_ok, null );
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+
+                            waitCloseGame( false );
+                            GameUtils.deleteGame( BoardActivity.this,
+                                                  m_path, false );
+                            // Intent intent = new Intent();
+                            // intent.putExtra( "delete", true );
+                            // intent.putExtra( "path", m_path );
+                            // setResult( Activity.RESULT_OK, intent );
+                            finish();
+                        }
+                    };
+                ab.setNegativeButton( R.string.button_discard, lstnr );
                 dialog = ab.create();
                 break;
 
@@ -306,24 +331,7 @@ public class BoardActivity extends XWActivity {
     protected void onDestroy()
     {
         Utils.logf( "BoardActivity::onDestroy()" );
-        if ( 0 != m_jniGamePtr ) {
-            if ( null != m_xport ) {
-                m_xport.waitToStop();
-                m_xport = null;
-            }
-
-            interruptBlockingThread();
-
-            if ( null != m_jniThread ) {
-                // one last command
-                m_jniThread.handle( JNIThread.JNICmd.CMD_SAVE );
-                m_jniThread.waitToStop();
-                m_jniThread = null;
-            }
-
-            XwJNI.game_dispose( m_jniGamePtr );
-            m_jniGamePtr = 0;
-        }
+        waitCloseGame( true );
         super.onDestroy();
     }
 
@@ -509,6 +517,77 @@ public class BoardActivity extends XWActivity {
         return handled;
     }
 
+
+    //////////////////////////////////////////////////
+    // TransportProcs.TPMsgHandler interface
+    //////////////////////////////////////////////////
+
+    public void tpmRelayConnd( final String room, final int devOrder,
+                               final boolean allHere, final int nMissing )
+    {
+        m_handler.post( new Runnable() {
+                public void run() {
+                    handleConndMessage( room, devOrder, allHere, nMissing );
+                }
+            } );
+    }
+
+    public void tpmRelayErrorProc( TransportProcs.XWRELAY_ERROR relayErr )
+    {
+        int strID = -1;
+        int dlgID = -1;
+        boolean doToast = false;
+
+        switch ( relayErr ) {
+        case TOO_MANY:
+            strID = R.string.msg_too_many;
+            dlgID = DLG_OKONLY;
+            break;
+        case NO_ROOM:
+            strID = R.string.msg_no_room;
+            dlgID = DLG_RETRY;
+            break;
+        case DUP_ROOM:
+            strID = R.string.msg_dup_room;
+            dlgID = DLG_OKONLY;
+            break;
+        case LOST_OTHER:
+        case OTHER_DISCON:
+            strID = R.string.msg_lost_other;
+            doToast = true;
+            break;
+
+        case DELETED:
+            strID = R.string.msg_dev_deleted;
+            dlgID = DLG_DELETED;
+            break;
+
+        case OLDFLAGS:
+        case BADPROTO:
+        case RELAYBUSY:
+        case SHUTDOWN:
+        case TIMEOUT:
+        case HEART_YOU:
+        case HEART_OTHER:
+            break;
+        }
+
+        if ( doToast ) {
+            Toast.makeText( this, getString( strID ), 
+                            Toast.LENGTH_SHORT).show();
+        } else if ( dlgID >= 0 ) {
+            final int strIDf = strID;
+            final int dlgIDf = dlgID;
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        m_dlgBytes = getString( strIDf );
+                        m_dlgTitle = R.string.relay_alert;
+                        showDialog( dlgIDf );
+                    }
+                });
+        }
+    }
+
     private XwJNI.XP_Key keyCodeToXPKey( int keyCode )
     {
         XwJNI.XP_Key xpKey = XwJNI.XP_Key.XP_KEY_NONE;
@@ -585,40 +664,27 @@ public class BoardActivity extends XWActivity {
         }
     }
 
-    // You have started a game in a new room.  Once the remaining
-    // devices have joined your room and you have assigned them tiles
-    // (which Crosswords does for you) the game can begin.
-
-    // You have joined a game on the relay.  Once the remaining
-    // devices have joined your room the game can begin.
-
-    // You have joined a game on the relay and the room is now full.
-    // Next you will receive your initial tiles from the device that
-    // created the room and play can begin.
-
-    private void handleConndMessage( Message msg )
+    private void handleConndMessage( String room, int devOrder, boolean allHere, 
+                                     int nMissing )
     {
-        CommsTransport.ConndMsg cndmsg = 
-            (CommsTransport.ConndMsg)msg.obj;
-
         int naMsg = 0;
         int naKey = 0;
         String str = null;
-        if ( cndmsg.m_allHere ) {
+        if ( allHere ) {
             // All players have now joined the game.  The device that
             // created the room will assign tiles.  Then it will be
             // the first player's turn
             String fmt = getString( R.string.msg_relay_all_heref );
-            str = String.format( fmt, cndmsg.m_room );
-            if ( cndmsg.m_devOrder > 1 ) {
+            str = String.format( fmt, room );
+            if ( devOrder > 1 ) {
                 naMsg = R.string.not_again_conndall;
                 naKey = R.string.key_notagain_conndall;
             }
-        } else if ( cndmsg.m_nMissing > 0 ) {
+        } else if ( nMissing > 0 ) {
             String fmt = getString( R.string.msg_relay_waiting );
-            str = String.format( fmt, cndmsg.m_devOrder,
-                                 cndmsg.m_room, cndmsg.m_nMissing );
-            if ( cndmsg.m_devOrder == 1 ) {
+            str = String.format( fmt, devOrder,
+                                 room, nMissing );
+            if ( devOrder == 1 ) {
                 naMsg = R.string.not_again_conndfirst;
                 naKey = R.string.key_notagain_conndfirst;
             } else {
@@ -1026,28 +1092,7 @@ public class BoardActivity extends XWActivity {
             m_jniGamePtr = XwJNI.initJNI();
 
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                Handler handler = new Handler() {
-                        public void handleMessage( Message msg ) {
-                            switch( msg.what ) {
-                            case CommsTransport.DIALOG:
-                            case CommsTransport.DIALOG_RETRY:
-                                m_dlgBytes = (String)msg.obj;
-                                m_dlgTitle = msg.arg1;
-                                showDialog( CommsTransport.DIALOG==msg.what
-                                            ? DLG_OKONLY : DLG_RETRY );
-                                break;
-                            case CommsTransport.TOAST:
-                                Toast.makeText( BoardActivity.this,
-                                                (CharSequence)(msg.obj),
-                                                Toast.LENGTH_SHORT).show();
-                                break;
-                            case CommsTransport.RELAY_COND:
-                                handleConndMessage( msg );
-                                break;
-                            }
-                        }
-                    };
-                m_xport = new CommsTransport( m_jniGamePtr, this, handler, 
+                m_xport = new CommsTransport( m_jniGamePtr, this, this, 
                                               m_gi.serverRole );
             }
 
@@ -1259,6 +1304,29 @@ public class BoardActivity extends XWActivity {
         Intent intent = new Intent( Intent.ACTION_EDIT, 
                                     m_uri, this, ChatActivity.class );
         startActivityForResult( intent, CHAT_REQUEST );
+    }
+
+    private void waitCloseGame( boolean save ) 
+    {
+        if ( 0 != m_jniGamePtr ) {
+            if ( null != m_xport ) {
+                m_xport.waitToStop();
+                m_xport = null;
+            }
+
+            interruptBlockingThread();
+
+            if ( null != m_jniThread ) {
+                if ( save ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_SAVE );
+                }
+                m_jniThread.waitToStop();
+                m_jniThread = null;
+            }
+
+            XwJNI.game_dispose( m_jniGamePtr );
+            m_jniGamePtr = 0;
+        }
     }
 
 } // class BoardActivity

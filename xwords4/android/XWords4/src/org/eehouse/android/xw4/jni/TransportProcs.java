@@ -50,4 +50,10 @@ public interface TransportProcs {
             ,DELETED
     };
     void relayErrorProc( XWRELAY_ERROR relayErr );
+
+    public interface TPMsgHandler {
+        public void tpmRelayConnd( String room, int devOrder, boolean allHere, 
+                                   int nMissing );
+        public void tpmRelayErrorProc( XWRELAY_ERROR relayErr );
+    }
 }

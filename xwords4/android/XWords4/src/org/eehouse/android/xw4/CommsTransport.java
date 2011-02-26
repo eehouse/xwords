@@ -41,36 +41,13 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class CommsTransport implements TransportProcs, 
                                        NetStateCache.StateChangedIf {
-
-    public static final int DIALOG = 0;
-    public static final int DIALOG_RETRY = 1;
-    public static final int TOAST = 2;
-    public static final int RELAY_COND = 3;
-
-    public static final int RELAY_CONNND_ALLHERE = 0;
-    public static final int RELAY_CONNND_MISSING = 1;
-
-    public class ConndMsg {
-        ConndMsg( String room, int devOrder, boolean allHere, int nMissing )
-        {
-            m_room = room;
-            m_devOrder = devOrder;
-            m_allHere = allHere;
-            m_nMissing = nMissing;
-        }
-        public String m_room;
-        public int m_devOrder;
-        public boolean m_allHere;
-        public int m_nMissing;
-    }
-
     private Selector m_selector;
     private SocketChannel m_socketChannel;
     private int m_jniGamePtr;
     private CommsAddrRec m_addr;
     private JNIThread m_jniThread;
     private CommsThread m_thread;
-    private Handler m_handler;
+    private TransportProcs.TPMsgHandler m_handler;
     private boolean m_done = false;
 
     private Vector<ByteBuffer> m_buffersOut;
@@ -83,7 +60,8 @@ public class CommsTransport implements TransportProcs,
     private byte[] m_packetIn;
     private int m_haveLen = -1;
 
-    public CommsTransport( int jniGamePtr, Context context, Handler handler,
+    public CommsTransport( int jniGamePtr, Context context, 
+                           TransportProcs.TPMsgHandler handler,
                            DeviceRole role )
     {
         m_jniGamePtr = jniGamePtr;
@@ -426,54 +404,11 @@ public class CommsTransport implements TransportProcs,
     public void relayConnd( String room, int devOrder, boolean allHere, 
                             int nMissing )
     {
-        ConndMsg cndmsg = new ConndMsg( room, devOrder, allHere, nMissing );
-        Message.obtain( m_handler, RELAY_COND, cndmsg ).sendToTarget();
+        m_handler.tpmRelayConnd( room, devOrder, allHere, nMissing );
     }
 
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
-        //Utils.logf( "relayErrorProc called; got " + relayErr.toString() );
-
-        int strID = 0;
-        int how = TOAST;
-
-        switch ( relayErr ) {
-        case TOO_MANY: 
-            strID = R.string.msg_too_many;
-            how = DIALOG;
-            break;
-        case NO_ROOM:
-            strID = R.string.msg_no_room;
-            how = DIALOG_RETRY;
-            break;
-        case DUP_ROOM:
-            strID = R.string.msg_dup_room;
-            how = DIALOG;
-            break;
-        case LOST_OTHER:
-        case OTHER_DISCON:
-            strID = R.string.msg_lost_other;
-            break;
-
-        case DELETED:
-            strID = R.string.msg_dev_deleted;
-            how = DIALOG;
-            break;
-
-        case OLDFLAGS:
-        case BADPROTO:
-        case RELAYBUSY:
-        case SHUTDOWN:
-        case TIMEOUT:
-        case HEART_YOU:
-        case HEART_OTHER:
-            break;
-        }
-
-        if ( 0 != strID ) {
-            String str = m_context.getString( strID );
-            Message.obtain( m_handler, how, R.string.relay_alert, 
-                            0, str ).sendToTarget();
-        }
+        m_handler.tpmRelayErrorProc( relayErr );
     }
 }
