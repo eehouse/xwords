@@ -71,8 +71,7 @@ public class RelayService extends Service {
     private void setupNotification( String[] relayIDs )
     {
         Intent intent = new Intent( this, DispatchNotify.class );
-        //intent.addFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP );
-        intent.addFlags( PendingIntent.FLAG_UPDATE_CURRENT );
+
         intent.putExtra( getString(R.string.relayids_extra), 
                          relayIDs );
 
