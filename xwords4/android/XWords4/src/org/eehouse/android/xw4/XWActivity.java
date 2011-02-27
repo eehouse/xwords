@@ -40,6 +40,7 @@ public class XWActivity extends Activity {
 
     protected void onCreate( Bundle savedInstanceState ) 
     {
+        Utils.logf( "%s.onCreate()", getClass().getName() );
         super.onCreate( savedInstanceState );
         m_delegate = new DlgDelegate( this );
     }
@@ -47,6 +48,7 @@ public class XWActivity extends Activity {
     @Override
     protected void onStart()
     {
+        Utils.logf( "%s.onStart()", getClass().getName() );
         super.onStart();
         DispatchNotify.SetRunning( this );
     }
@@ -54,8 +56,16 @@ public class XWActivity extends Activity {
     @Override
     protected void onStop()
     {
-        super.onStop();
+        Utils.logf( "%s.onStop()", getClass().getName() );
         DispatchNotify.ClearRunning( this );
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        Utils.logf( "%s.onDestroy()", getClass().getName() );
+        super.onDestroy();
     }
 
     @Override

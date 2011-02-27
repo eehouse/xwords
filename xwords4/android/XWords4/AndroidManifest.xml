@@ -39,7 +39,6 @@
 
     <activity android:name="GamesList" 
               android:label="@string/title_games_list"
-              android:launchMode="singleTask"
               >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -83,7 +82,6 @@
               android:theme="@android:style/Theme.Light"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
-              android:launchMode="singleTask"
               >
     </activity>
 

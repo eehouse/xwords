@@ -53,7 +53,7 @@ public class DispatchNotify extends Activity {
         if ( !tryHandle( this, relayIDs ) ) {
             Utils.logf( "DispatchNotify: nothing running" );
             intent = new Intent( this, GamesList.class );
-            // intent.setFlags( Intent.FLAG_ACTIVITY_SINGLE_TOP );
+            intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP );
             intent.putExtra( id, relayIDs );
             startActivity( intent );
         }
