@@ -33,6 +33,7 @@ public class XWListActivity extends ListActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
+        Utils.logf( "%s.onCreate()", getClass().getName() );
         super.onCreate( savedInstanceState );
         m_delegate = new DlgDelegate( this );
     }
@@ -40,7 +41,7 @@ public class XWListActivity extends ListActivity {
     @Override
     protected void onStart()
     {
-        Utils.logf( "XWListActivity::onStart" );
+        Utils.logf( "%s.onStart", getClass().getName() );
         super.onStart();
         DispatchNotify.SetRunning( this );
     }
@@ -48,9 +49,16 @@ public class XWListActivity extends ListActivity {
     @Override
     protected void onStop()
     {
-        Utils.logf( "XWListActivity::onStop" );
+        Utils.logf( "%s.onStop", getClass().getName() );
         DispatchNotify.ClearRunning( this );
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        Utils.logf( "%s.onDestroy", getClass().getName() );
+        super.onDestroy();
     }
 
     @Override
