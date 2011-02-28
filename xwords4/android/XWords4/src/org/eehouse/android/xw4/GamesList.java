@@ -303,15 +303,6 @@ public class GamesList extends XWListActivity
         return true;
     }
 
-    private void doSyncMenuitem()
-    {
-        if ( null == DBUtils.getRelayIDs( this, false ) ) {
-            showOKOnlyDialog( R.string.no_games_to_refresh );
-        } else {
-            new RefreshMsgsTask( this, this ).execute();
-        }
-    }
-
     public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;

@@ -115,4 +115,9 @@ public class XWActivity extends Activity {
     {
         m_delegate.showConfirmThen( getString(msgID), action );
     }
+
+    protected void doSyncMenuitem()
+    {
+        m_delegate.doSyncMenuitem();
+    }
 }

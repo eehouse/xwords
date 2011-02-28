@@ -84,9 +84,6 @@
 	<string name="board_submenu_undo">Undo</string>
 	<string name="board_menu_undo_current">Undo current</string>
 	<string name="board_menu_undo_last">Undo last</string>
-	<string name="board_submenu_hint">Hint</string>
-	<string name="board_menu_hint_next">Next hint</string>
-	<string name="board_menu_hint">First hint</string>
 	<string name="board_menu_values">Show values</string>
 	<string name="board_submenu_game">Game</string>
 	<string name="board_menu_game_counts">Counts and values</string>

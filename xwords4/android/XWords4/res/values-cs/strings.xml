@@ -79,9 +79,6 @@
 	<string name="board_submenu_undo">Zpět</string>
 	<string name="board_menu_undo_current">Zpět současný</string>
 	<string name="board_menu_undo_last">Zpět minulý</string>
-	<string name="board_submenu_hint">Rada</string>
-	<string name="board_menu_hint_next">Další rada</string>
-	<string name="board_menu_hint">Rada</string>
 	<string name="board_menu_values">Ukaž hodnoty</string>
 	<string name="board_submenu_game">Hra</string>
 	<string name="board_menu_game_counts">Počty a hodnoty</string>

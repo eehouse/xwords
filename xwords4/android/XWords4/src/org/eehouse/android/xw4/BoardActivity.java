@@ -465,12 +465,6 @@ public class BoardActivity extends XWActivity
                                  }
                              } );
             break;
-        case R.id.board_menu_hint:
-            cmd = JNIThread.JNICmd.CMD_HINT;
-            break;
-        case R.id.board_menu_hint_next:
-            cmd = JNIThread.JNICmd.CMD_NEXT_HINT;
-            break;
         case R.id.board_menu_values:
             cmd = JNIThread.JNICmd.CMD_VALUES;
             break;
@@ -495,6 +489,10 @@ public class BoardActivity extends XWActivity
 
         case R.id.board_menu_game_resend:
             m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
+            break;
+
+        case R.id.gamel_menu_checkmoves:
+            doSyncMenuitem();
             break;
 
         case R.id.board_menu_file_prefs:

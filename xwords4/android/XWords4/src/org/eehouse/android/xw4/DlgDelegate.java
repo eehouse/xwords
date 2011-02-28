@@ -133,6 +133,15 @@ public class DlgDelegate {
         m_activity.showDialog( CONFIRM_THEN );
     }
 
+    public void doSyncMenuitem()
+    {
+        if ( null == DBUtils.getRelayIDs( m_activity, false ) ) {
+            showOKOnlyDialog( R.string.no_games_to_refresh );
+        } else {
+            RelayReceiver.RestartTimer( m_activity );            
+        }
+    }
+
     private Dialog createAboutDialog()
     {
         LayoutInflater factory = LayoutInflater.from( m_activity );

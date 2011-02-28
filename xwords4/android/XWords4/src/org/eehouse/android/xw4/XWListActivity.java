@@ -123,4 +123,9 @@ public class XWListActivity extends ListActivity {
         showConfirmThen( getString(msgID), action );
     }
 
+    protected void doSyncMenuitem()
+    {
+        m_delegate.doSyncMenuitem();
+    }
+
 }

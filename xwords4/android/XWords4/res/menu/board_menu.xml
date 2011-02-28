@@ -49,17 +49,9 @@
       </menu>
     </item>
 
-    <item android:title="@string/board_submenu_hint">
-      <menu>
-        <item android:id="@+id/board_menu_hint"
-              android:title="@string/board_menu_hint"
-              />
-        <item android:id="@+id/board_menu_hint_next"
-              android:title="@string/board_menu_hint_next" 
-              android:alphabeticShortcut="H"
-              />
-      </menu>
-    </item>
+    <item android:id="@+id/gamel_menu_checkmoves"
+          android:title="@string/gamel_menu_checkmoves"
+          />
 
     <item android:id="@+id/board_menu_file_prefs"
           android:title="@string/menu_prefs"
