@@ -39,6 +39,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String PLAYERS = "PLAYERS";
     public static final String NUM_PLAYERS = "NUM_PLAYERS";
     public static final String GAME_OVER = "GAME_OVER";
+    public static final String IN_USE = "IN_USE";
     public static final String SCORES = "SCORES";
     public static final String CHAT_HISTORY = "CHAT_HISTORY";
     // GAMEID: this isn't used yet but we'll want it to look up games
@@ -77,6 +78,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + NUM_PLAYERS + " INTEGER,"
                     + PLAYERS     + " TEXT,"
                     + GAME_OVER   + " INTEGER,"
+                    + IN_USE      + " INTEGER," // really a boolean
 
                     + SERVERROLE + " INTEGER,"
                     + CONTYPE    + " INTEGER,"
@@ -129,6 +131,8 @@ public class DBHelper extends SQLiteOpenHelper {
                         " ADD COLUMN " + GIFLAGS + " INTEGER;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + CHAT_HISTORY + " TEXT;" );
+            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
+                        " ADD COLUMN " + IN_USE + " INTEGER;" );
         } else {
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {
