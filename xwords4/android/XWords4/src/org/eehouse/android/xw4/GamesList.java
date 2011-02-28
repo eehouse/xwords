@@ -231,7 +231,7 @@ public class GamesList extends XWListActivity
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
         // m_phoneStateListener = null;
-        DBUtils.setDBChangeListener( null );
+        DBUtils.clearDBChangeListener( this );
         DispatchNotify.SetRelayIDsHandler( null );
 
         super.onStop();
