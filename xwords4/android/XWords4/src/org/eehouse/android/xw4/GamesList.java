@@ -243,6 +243,7 @@ public class GamesList extends XWListActivity
         m_handler.post( new Runnable() {
                 public void run() {
                     invalRelayIDs( relayIDs );
+                    startFirstHasDict( relayIDs );
                 }
             } );
     }
@@ -514,20 +515,25 @@ public class GamesList extends XWListActivity
 
     // Launch the first of these for which there's a dictionary
     // present.
+    private void startFirstHasDict( String[] relayIDs )
+    {
+        if ( null != relayIDs ) {
+            for ( String relayID : relayIDs ) {
+                String path = DBUtils.getPathFor( this, relayID );
+                if ( GameUtils.gameDictHere( this, path ) ) {
+                    GameUtils.launchGame( this, path );
+                    break;
+                }
+            }
+        }
+    }
+
     private void startFirstHasDict( Intent intent )
     {
         if ( null != intent ) {
             String[] relayIDs = intent
                 .getStringArrayExtra( getString( R.string.relayids_extra ) );
-            if ( null != relayIDs ) {
-                for ( String relayID : relayIDs ) {
-                    String path = DBUtils.getPathFor( this, relayID );
-                    if ( GameUtils.gameDictHere( this, path ) ) {
-                        GameUtils.launchGame( this, path );
-                        break;
-                    }
-                }
-            }
+            startFirstHasDict( relayIDs );
         }
     }
 }
