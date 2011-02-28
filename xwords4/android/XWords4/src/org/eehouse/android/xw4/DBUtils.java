@@ -28,6 +28,8 @@ import java.util.StringTokenizer;
 import android.content.ContentValues;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -38,8 +40,8 @@ public class DBUtils {
     public static interface DBChangeListener {
         public void pathSaved( String path );
     }
-    private static DBChangeListener[] s_listeners = 
-        new DBChangeListener[]{ null };
+    private static HashSet<DBChangeListener> s_listeners = 
+        new HashSet<DBChangeListener>();
 
     private static SQLiteOpenHelper s_dbHelper = null;
 
@@ -569,8 +571,16 @@ public class DBUtils {
     public static void setDBChangeListener( DBChangeListener listener )
     {
         synchronized( s_listeners ) {
-            Assert.assertTrue( listener != s_listeners[0] );
-            s_listeners[0] = listener;
+            Assert.assertNotNull( listener );
+            s_listeners.add( listener );
+        }
+    }
+
+    public static void clearDBChangeListener( DBChangeListener listener )
+    {
+        synchronized( s_listeners ) {
+            Assert.assertTrue( s_listeners.contains( listener ) );
+            s_listeners.remove( listener );
         }
     }
 
@@ -633,8 +643,9 @@ public class DBUtils {
     private static void notifyListeners( String path )
     {
         synchronized( s_listeners ) {
-            if ( null != s_listeners[0] ) {
-                s_listeners[0].pathSaved( path );
+            Iterator<DBChangeListener> iter = s_listeners.iterator();
+            while ( iter.hasNext() ) {
+                iter.next().pathSaved( path );
             }
         }
     }
