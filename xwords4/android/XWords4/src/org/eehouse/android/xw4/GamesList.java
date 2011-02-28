@@ -50,7 +50,6 @@ import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends XWListActivity 
     implements DispatchNotify.HandleRelaysIface,
-               RefreshMsgsTask.RefreshMsgsIface,
                DBUtils.DBChangeListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
@@ -246,12 +245,6 @@ public class GamesList extends XWListActivity
                     invalRelayIDs( relayIDs );
                 }
             } );
-    }
-
-    // RefreshMsgsTask.RefreshMsgsIface interface
-    public void RefreshMsgsResults( String[] relayIDs )
-    {
-        HandleRelaysIDs( relayIDs );
     }
 
     // DBUtils.DBChangeListener interface
