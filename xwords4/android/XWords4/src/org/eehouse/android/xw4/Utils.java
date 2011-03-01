@@ -25,6 +25,8 @@ import java.lang.Thread;
 import android.widget.Toast;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.widget.CheckBox;
 import android.app.Activity;
 import android.app.Dialog;
@@ -43,22 +45,42 @@ public class Utils {
 
     static final String DB_PATH = "XW_GAMES";
 
+    static boolean s_doLog = true;
+
     private static Time s_time = new Time();
 
     private Utils() {}
 
+    public static void logEnable( boolean enable )
+    {
+        s_doLog = enable;
+    }
+
+    public static void logEnable( Context context )
+    {
+        SharedPreferences sp
+            = PreferenceManager.getDefaultSharedPreferences( context );
+        String key = context.getString( R.string.key_logging_on );
+        boolean on = sp.getBoolean( key, false );
+        logEnable( on );
+    }
+
     public static void logf( String msg ) 
     {
-        s_time.setToNow();
-        String time = s_time.format("[%H:%M:%S]");
-        long id = Thread.currentThread().getId();
-        Log.d( TAG, time + "-" + id + "-" + msg );
+        if ( s_doLog ) {
+            s_time.setToNow();
+            String time = s_time.format("[%H:%M:%S]");
+            long id = Thread.currentThread().getId();
+            Log.d( TAG, time + "-" + id + "-" + msg );
+        }
     } // logf
 
     public static void logf( String format, Object... args )
     {
-        Formatter formatter = new Formatter();
-        logf( formatter.format( format, args ).toString() );
+        if ( s_doLog ) {
+            Formatter formatter = new Formatter();
+            logf( formatter.format( format, args ).toString() );
+        }
     } // logf
 
     public static void notImpl( Context context ) 

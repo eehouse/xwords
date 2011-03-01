@@ -29,6 +29,7 @@
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
   <string name="key_dict_host">key_dict_host2</string>
+  <string name="key_logging_on">key_logging_on</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
   <string name="key_board_size">key_board_size</string>
   <string name="key_initial_player_minutes">key_initial_player_minutes</string>
@@ -96,7 +97,7 @@
 
   <string-array name="connect_frequencies_values">
     <item>-1</item>
-    <!-- <item>30</item> -->
+    <!-- <item>60</item> -->
     <item>300</item>
     <item>900</item>
     <item>1800</item>

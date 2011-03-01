@@ -41,6 +41,7 @@ public class PrefsActivity extends PreferenceActivity
 
     private HashSet<String> m_keys;
     private String m_keyEmpty;
+    private String m_keyLogging;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -132,6 +133,7 @@ public class PrefsActivity extends PreferenceActivity
             m_keys.add( key );
         }
         m_keyEmpty = getString( R.string.key_empty );
+        m_keyLogging = getString( R.string.key_logging_on );
     }
     
     @Override
@@ -154,6 +156,9 @@ public class PrefsActivity extends PreferenceActivity
     {
         if ( m_keys.contains( key ) ) {
             setSummary( sp, key );
+        }
+        if ( key.equals( m_keyLogging ) ) {
+            Utils.logEnable( sp.getBoolean( key, false ) );
         }
     }
 
