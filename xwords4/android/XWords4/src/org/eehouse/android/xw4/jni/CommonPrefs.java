@@ -51,10 +51,6 @@ public class CommonPrefs {
     public int[] bonusColors;
     public int[] otherColors;
 
-    static {
-        Utils.logf( "CommonPrefs class initialized" );
-    }
-
     private CommonPrefs()
     {
         playerColors = new int[4];
@@ -159,7 +155,7 @@ public class CommonPrefs {
             result = Integer.parseInt( val );
         } catch ( Exception ex ) {
         } 
-        Utils.logf( "getDefaultProxyPort=>%d", result );
+        // Utils.logf( "getDefaultProxyPort=>%d", result );
         return result;
     }
 
@@ -285,5 +281,4 @@ public class CommonPrefs {
             .getDefaultSharedPreferences( context );
         return sp.getString( key, "" );
     }
-
 }
