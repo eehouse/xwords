@@ -293,7 +293,6 @@ public class BoardActivity extends XWActivity
     @Override
     protected void onStart()
     {
-        Utils.logf( "BoardActivity::onStart" );
         loadGame();
         super.onStart();
     }
@@ -301,7 +300,6 @@ public class BoardActivity extends XWActivity
     @Override
     protected void onPause()
     {
-        Utils.logf( "BoardActivity::onPause()" );
         if ( null != m_jniThread ) {
             m_jniThread.setInBackground( true );
         }
@@ -312,7 +310,6 @@ public class BoardActivity extends XWActivity
     @Override
     protected void onResume()
     {
-        Utils.logf( "BoardActivity::onResume()" );
         if ( null != m_jniThread ) {
             m_jniThread.setInBackground( false );
         }
@@ -321,16 +318,8 @@ public class BoardActivity extends XWActivity
     }
 
     @Override
-    protected void onStop()
-    {
-        Utils.logf( "BoardActivity::onStop()" );
-        super.onStop();
-    }
-
-    @Override
     protected void onDestroy()
     {
-        Utils.logf( "BoardActivity::onDestroy()" );
         waitCloseGame( true );
         super.onDestroy();
     }
