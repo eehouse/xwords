@@ -197,6 +197,8 @@ public class GamesList extends XWListActivity
         NetUtils.informOfDeaths( this );
 
         startFirstHasDict( getIntent() );
+
+        DBUtils.setDBChangeListener( this );
     } // onCreate
 
     @Override
@@ -215,7 +217,6 @@ public class GamesList extends XWListActivity
     {
         super.onStart();
         DispatchNotify.SetRelayIDsHandler( this );
-        DBUtils.setDBChangeListener( this );
 
         // TelephonyManager mgr = 
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
@@ -231,10 +232,16 @@ public class GamesList extends XWListActivity
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
         // m_phoneStateListener = null;
-        DBUtils.clearDBChangeListener( this );
         DispatchNotify.SetRelayIDsHandler( null );
 
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        DBUtils.clearDBChangeListener( this );
+        super.onDestroy();
     }
 
     // DispatchNotify.HandleRelaysIface interface
