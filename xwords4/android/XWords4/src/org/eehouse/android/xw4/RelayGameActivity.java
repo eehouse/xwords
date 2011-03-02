@@ -42,6 +42,7 @@ public class RelayGameActivity extends XWActivity
 
     private String m_path;
     private CurGameInfo m_gi;
+    private DBUtils.GameLock m_gameLock;
     private CommsAddrRec m_car;
     private Button m_playButton;
     private Button m_configButton;
@@ -59,9 +60,22 @@ public class RelayGameActivity extends XWActivity
             m_path = m_path.substring( 1 );
         }
 
+        m_playButton = (Button)findViewById( R.id.play_button );
+        m_playButton.setOnClickListener( this );
+
+        m_configButton = (Button)findViewById( R.id.config_button );
+        m_configButton.setOnClickListener( this );
+    } // onCreate
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+
         int gamePtr = XwJNI.initJNI();
         m_gi = new CurGameInfo( this );
-        GameUtils.loadMakeGame( this, gamePtr, m_gi, m_path );
+        m_gameLock = new DBUtils.GameLock( m_path, true ).lock();
+        GameUtils.loadMakeGame( this, gamePtr, m_gi, m_gameLock );
         m_car = new CommsAddrRec( this );
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             XwJNI.comms_getAddr( gamePtr, m_car );
@@ -77,13 +91,17 @@ public class RelayGameActivity extends XWActivity
         String fmt = getString( R.string.relay_game_explainf );
         TextView text = (TextView)findViewById( R.id.explain );
         text.setText( String.format( fmt, lang ) );
+    }
 
-        m_playButton = (Button)findViewById( R.id.play_button );
-        m_playButton.setOnClickListener( this );
-
-        m_configButton = (Button)findViewById( R.id.config_button );
-        m_configButton.setOnClickListener( this );
-    } // onCreate
+    @Override
+    protected void onPause()
+    {
+        if ( null != m_gameLock ) {
+            m_gameLock.unlock();
+            m_gameLock = null;
+        }
+        super.onPause();
+    }
 
     @Override
     public void onClick( View view ) 
@@ -115,7 +133,9 @@ public class RelayGameActivity extends XWActivity
             m_gi.setFirstLocalName( name );
         }
         m_car.ip_relay_invite = room;
-        GameUtils.applyChanges( this, m_gi, m_car, m_path, false );
+        GameUtils.applyChanges( this, m_gi, m_car, m_gameLock, false );
+        m_gameLock.unlock();
+        m_gameLock = null;
     }
 
 } // class RelayGameActivity

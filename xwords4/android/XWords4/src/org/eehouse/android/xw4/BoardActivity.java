@@ -68,6 +68,7 @@ public class BoardActivity extends XWActivity
 
     private BoardView m_view;
     private int m_jniGamePtr;
+    private DBUtils.GameLock m_gameLock;
     private CurGameInfo m_gi;
     CommsTransport m_xport;
     private Handler m_handler;
@@ -291,37 +292,18 @@ public class BoardActivity extends XWActivity
     } // onCreate
 
     @Override
-    protected void onStart()
-    {
-        loadGame();
-        super.onStart();
-    }
-
-    @Override
     protected void onPause()
     {
-        if ( null != m_jniThread ) {
-            m_jniThread.setInBackground( true );
-        }
-        m_isVisible = false;
+        waitCloseGame( true );
         super.onPause();
     }
 
     @Override
     protected void onResume()
     {
-        if ( null != m_jniThread ) {
-            m_jniThread.setInBackground( false );
-        }
-        m_isVisible = true;
         super.onResume();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        waitCloseGame( true );
-        super.onDestroy();
+        loadGame();
+        super.onResume();
     }
 
     @Override
@@ -1070,7 +1052,10 @@ public class BoardActivity extends XWActivity
     private void loadGame()
     {
         if ( 0 == m_jniGamePtr ) {
-            byte[] stream = GameUtils.savedGame( this, m_path );
+            Assert.assertNull( m_gameLock );
+            m_gameLock = new DBUtils.GameLock( m_path, true ).lock();
+
+            byte[] stream = GameUtils.savedGame( this, m_gameLock );
             XwJNI.gi_from_stream( m_gi, stream );
 
             Utils.logf( "loadGame: dict name: %s", m_gi.dictName );
@@ -1095,7 +1080,7 @@ public class BoardActivity extends XWActivity
             }
 
             m_jniThread = new 
-                JNIThread( m_jniGamePtr, m_gi, m_view, m_path, this,
+                JNIThread( m_jniGamePtr, m_gi, m_view, m_gameLock, this,
                            new Handler() {
                                public void handleMessage( Message msg ) {
                                    switch( msg.what ) {
@@ -1313,6 +1298,9 @@ public class BoardActivity extends XWActivity
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
+
+            m_gameLock.unlock();
+            m_gameLock = null;
         }
     }
 

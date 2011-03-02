@@ -28,8 +28,12 @@ import java.util.StringTokenizer;
 import android.content.ContentValues;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -63,7 +67,88 @@ public class DBUtils {
         boolean sourceLocal;
     }
 
+
+    // Implements read-locks and write-locks per game.  A read lock is
+    // obtainable when other read locks are granted but not when a
+    // write lock is.  Write-locks are exclusive.
+    public static class GameLock {
+        private String m_path;
+        private boolean m_isForWrite;
+        private ReentrantReadWriteLock m_rwlock;
+
+        // This will leak empty ReentrantReadWriteLock instances for
+        // now.
+        private static HashMap<String, ReentrantReadWriteLock> 
+            s_locks = new HashMap<String,ReentrantReadWriteLock>();
+
+        public GameLock( String path, boolean isForWrite ) 
+        {
+            m_path = path;
+            m_isForWrite = isForWrite;
+            synchronized( s_locks ) {
+                if ( s_locks.containsKey( m_path ) ) {
+                    m_rwlock = s_locks.get( m_path );
+                } else {
+                    m_rwlock = new ReentrantReadWriteLock();
+                    s_locks.put( path, m_rwlock );
+                }
+            }
+        }
+
+        public GameLock lock()
+        {
+            getLock().lock();
+            return this;
+        }
+
+        public boolean tryLock()
+        {
+            boolean gotIt = false;
+            synchronized( s_locks ) {
+                boolean hasWaiters = m_isForWrite && m_rwlock.isWriteLocked();
+                if ( !hasWaiters ) {
+                    getLock().lock();
+                    gotIt = true;
+                }
+            }
+            return gotIt;
+        }
+        
+        public void unlock()
+        {
+            synchronized( s_locks ) {
+                getLock().unlock();
+            }
+        }
+
+        public String getPath() 
+        {
+            return m_path;
+        }
+
+        // used only for asserts
+        public boolean canWrite()
+        {
+            return m_isForWrite && m_rwlock.isWriteLocked();
+        }
+
+        private Lock getLock() 
+        { 
+            Lock lock = m_isForWrite? m_rwlock.writeLock() 
+                : m_rwlock.readLock();
+            return lock;
+        }
+    }
+
     public static GameSummary getSummary( Context context, String file )
+    {
+        DBUtils.GameLock lock = new DBUtils.GameLock( file, false ).lock();
+        GameSummary result = getSummary( context, lock );
+        lock.unlock();
+        return result;
+    }
+
+    public static GameSummary getSummary( Context context, DBUtils.GameLock lock )
     {
         initDB( context );
         GameSummary summary = null;
@@ -80,7 +165,7 @@ public class DBUtils {
                                  DBHelper.SCORES, DBHelper.HASMSGS,
                                  DBHelper.LASTPLAY_TIME
             };
-            String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
+            String selection = DBHelper.FILE_NAME + "=\"" + lock.getPath() + "\"";
 
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
@@ -168,15 +253,17 @@ public class DBUtils {
         }
 
         if ( null == summary ) {
-            summary = GameUtils.summarize( context, file );
-            saveSummary( context, file, summary );
+            summary = GameUtils.summarize( context, lock );
+            saveSummary( context, lock, summary );
         }
         return summary;
     } // getSummary
 
-    public static void saveSummary( Context context, String path, 
+    public static void saveSummary( Context context, DBUtils.GameLock lock,
                                     GameSummary summary )
     {
+        Assert.assertTrue( lock.canWrite() );
+        String path = lock.getPath();
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
@@ -416,9 +503,11 @@ public class DBUtils {
         }
     }
 
-    public static void saveGame( Context context, String path, byte[] bytes,
+    public static void saveGame( Context context, GameLock lock, byte[] bytes,
                                  boolean setCreate )
     {
+        Assert.assertTrue( lock.canWrite() );
+        String path = lock.getPath();
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
@@ -445,8 +534,9 @@ public class DBUtils {
         }
     }
 
-    public static byte[] loadGame( Context context, String path )
+    public static byte[] loadGame( Context context, GameLock lock )
     {
+        String path = lock.getPath();
         Assert.assertNotNull( path );
         byte[] result = null;
         initDB( context );
@@ -467,12 +557,12 @@ public class DBUtils {
         return result;
     }
 
-    public static void deleteGame( Context context, String path )
+    public static void deleteGame( Context context, GameLock lock )
     {
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            String selection = DBHelper.FILE_NAME + "=\"" + lock.getPath() + "\"";
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }

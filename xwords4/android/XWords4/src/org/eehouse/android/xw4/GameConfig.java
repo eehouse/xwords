@@ -85,6 +85,7 @@ public class GameConfig extends XWActivity
     private String m_path;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
+    private DBUtils.GameLock m_gameLock;
     private int m_whichPlayer;
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
@@ -365,9 +366,37 @@ public class GameConfig extends XWActivity
 
         setContentView(R.layout.game_config);
 
+
+        m_connectSet = findViewById(R.id.connect_set);
+        m_addPlayerButton = (Button)findViewById(R.id.add_player);
+        m_addPlayerButton.setOnClickListener( this );
+        m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
+        m_jugglePlayersButton.setOnClickListener( this );
+        m_playButton = (Button)findViewById( R.id.play_button );
+        m_playButton.setOnClickListener( this );
+
+        m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
+        m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
+        m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
+        m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
+
+        String fmt = getString( m_notNetworkedGame ?
+                                R.string.title_game_configf
+                                : R.string.title_gamenet_configf );
+        setTitle( String.format( fmt, GameUtils.gameName( this, m_path ) ) );
+    } // onCreate
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        
         int gamePtr = XwJNI.initJNI();
         m_giOrig = new CurGameInfo( this );
-        GameUtils.loadMakeGame( this, gamePtr, m_giOrig, m_path );
+        // Lock in case we're going to config.  We *could* re-get the
+        // lock once the user decides to make changes.  PENDING.
+        m_gameLock = new DBUtils.GameLock( m_path, true ).lock();
+        GameUtils.loadMakeGame( this, gamePtr, m_giOrig, m_gameLock );
         m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
             || XwJNI.comms_isConnected( gamePtr );
         m_giOrig.setInProgress( m_gameStarted );
@@ -423,25 +452,12 @@ public class GameConfig extends XWActivity
             adjustConnectStuff();
         }
 
-        m_connectSet = findViewById(R.id.connect_set);
-
-        m_addPlayerButton = (Button)findViewById(R.id.add_player);
-        m_addPlayerButton.setOnClickListener( this );
-        m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
-        m_jugglePlayersButton.setOnClickListener( this );
-        m_playButton = (Button)findViewById( R.id.play_button );
-        m_playButton.setOnClickListener( this );
-
-        m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
         loadPlayers();
 
-        m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
         configDictSpinner();
 
-        m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
-        m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
         setSmartnessSpinner();
 
         Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
@@ -459,12 +475,17 @@ public class GameConfig extends XWActivity
             };
         check.setOnCheckedChangeListener( lstnr );
         Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
+    } // onStart
 
-        String fmt = getString( m_notNetworkedGame ?
-                                R.string.title_game_configf
-                                : R.string.title_gamenet_configf );
-        setTitle( String.format( fmt, GameUtils.gameName( this, m_path ) ) );
-    } // onCreate
+    @Override
+    protected void onStop()
+    {
+        if ( null != m_gameLock ) {
+            m_gameLock.unlock();
+            m_gameLock = null;
+        }
+        super.onStop();
+    }
 
     // DeleteCallback interface
     public void deleteCalled( int myPosition )
@@ -889,7 +910,7 @@ public class GameConfig extends XWActivity
 
     private void applyChanges( boolean forceNew )
     {
-        GameUtils.applyChanges( this, m_gi, m_car, m_path, forceNew );
+        GameUtils.applyChanges( this, m_gi, m_car, m_gameLock, forceNew );
     }
 
     private void launchGame()

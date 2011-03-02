@@ -89,7 +89,7 @@ public class JNIThread extends Thread {
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
-    private String m_path;
+    private DBUtils.GameLock m_lock;
     private Context m_context;
     private CurGameInfo m_gi;
     private Handler m_handler;
@@ -111,12 +111,12 @@ public class JNIThread extends Thread {
     }
 
     public JNIThread( int gamePtr, CurGameInfo gi, SyncedDraw drawer, 
-                      String path, Context context, Handler handler ) 
+                      DBUtils.GameLock lock, Context context, Handler handler ) 
     {
         m_jniGamePtr = gamePtr;
         m_gi = gi;
         m_drawer = drawer;
-        m_path = path;
+        m_lock = lock;
         m_context = context;
         m_handler = handler;
 
@@ -260,8 +260,8 @@ public class JNIThread extends Thread {
                 GameSummary summary = new GameSummary( m_gi );
                 XwJNI.game_summarize( m_jniGamePtr, summary );
                 byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
-                GameUtils.saveGame( m_context, state, m_path, false );
-                DBUtils.saveSummary( m_context, m_path, summary );
+                GameUtils.saveGame( m_context, state, m_lock, false );
+                DBUtils.saveSummary( m_context, m_lock, summary );
                 break;
 
             case CMD_DRAW:
