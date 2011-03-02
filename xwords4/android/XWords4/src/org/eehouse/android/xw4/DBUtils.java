@@ -503,7 +503,7 @@ public class DBUtils {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
             String[] columns = { DBHelper.FILE_NAME };
-            String orderBy = DBHelper.CREATE_TIME + " DESC";
+            String orderBy = DBHelper.FILE_NAME + " DESC";
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       null, null, null, null, orderBy );
             if ( 0 < cursor.getCount() ) {
