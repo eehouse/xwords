@@ -37,8 +37,8 @@ public class GameConverter {
                 Utils.logf( "GameConverter::convert() converting %s",
                             game );
                 byte[] bytes = savedGame( context, game );
-                DBUtils.GameLock lock =
-                    new DBUtils.GameLock( game, true ).lock();
+                GameUtils.GameLock lock =
+                    new GameUtils.GameLock( game, true ).lock();
                 DBUtils.saveGame( context, lock, bytes, true );
                 lock.unlock();
                 context.deleteFile( game );

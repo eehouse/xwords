@@ -68,7 +68,7 @@ public class BoardActivity extends XWActivity
 
     private BoardView m_view;
     private int m_jniGamePtr;
-    private DBUtils.GameLock m_gameLock;
+    private GameUtils.GameLock m_gameLock;
     private CurGameInfo m_gi;
     CommsTransport m_xport;
     private Handler m_handler;
@@ -1053,7 +1053,7 @@ public class BoardActivity extends XWActivity
     {
         if ( 0 == m_jniGamePtr ) {
             Assert.assertNull( m_gameLock );
-            m_gameLock = new DBUtils.GameLock( m_path, true ).lock();
+            m_gameLock = new GameUtils.GameLock( m_path, true ).lock();
 
             byte[] stream = GameUtils.savedGame( this, m_gameLock );
             XwJNI.gi_from_stream( m_gi, stream );

@@ -89,7 +89,7 @@ public class JNIThread extends Thread {
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
-    private DBUtils.GameLock m_lock;
+    private GameUtils.GameLock m_lock;
     private Context m_context;
     private CurGameInfo m_gi;
     private Handler m_handler;
@@ -111,7 +111,7 @@ public class JNIThread extends Thread {
     }
 
     public JNIThread( int gamePtr, CurGameInfo gi, SyncedDraw drawer, 
-                      DBUtils.GameLock lock, Context context, Handler handler ) 
+                      GameUtils.GameLock lock, Context context, Handler handler ) 
     {
         m_jniGamePtr = gamePtr;
         m_gi = gi;

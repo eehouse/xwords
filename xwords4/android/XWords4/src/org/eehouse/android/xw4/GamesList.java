@@ -431,7 +431,7 @@ public class GamesList extends XWListActivity
                         showOKOnlyDialog( R.string.no_copy_network );
                     } else {
                         byte[] stream = GameUtils.savedGame( this, path );
-                        DBUtils.GameLock lock = GameUtils.saveGame( this, stream );
+                        GameUtils.GameLock lock = GameUtils.saveGame( this, stream );
                         DBUtils.saveSummary( this, lock, summary );
                         lock.unlock();
                     }
@@ -487,7 +487,7 @@ public class GamesList extends XWListActivity
         String path = null;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            DBUtils.GameLock lock = GameUtils.saveGame( this, bytes );
+            GameUtils.GameLock lock = GameUtils.saveGame( this, bytes );
             path = lock.getPath();
             lock.unlock();
         }

@@ -42,7 +42,7 @@ public class RelayGameActivity extends XWActivity
 
     private String m_path;
     private CurGameInfo m_gi;
-    private DBUtils.GameLock m_gameLock;
+    private GameUtils.GameLock m_gameLock;
     private CommsAddrRec m_car;
     private Button m_playButton;
     private Button m_configButton;
@@ -74,7 +74,7 @@ public class RelayGameActivity extends XWActivity
 
         int gamePtr = XwJNI.initJNI();
         m_gi = new CurGameInfo( this );
-        m_gameLock = new DBUtils.GameLock( m_path, true ).lock();
+        m_gameLock = new GameUtils.GameLock( m_path, true ).lock();
         GameUtils.loadMakeGame( this, gamePtr, m_gi, m_gameLock );
         m_car = new CommsAddrRec( this );
         if ( XwJNI.game_hasComms( gamePtr ) ) {

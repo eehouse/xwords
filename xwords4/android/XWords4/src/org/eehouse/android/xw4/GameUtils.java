@@ -30,6 +30,10 @@ import java.io.InputStream;
 import android.net.Uri;
 import java.util.ArrayList;
 import android.content.res.AssetManager;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
+import java.util.HashMap;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -37,17 +41,89 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameUtils {
 
+    // Implements read-locks and write-locks per game.  A read lock is
+    // obtainable when other read locks are granted but not when a
+    // write lock is.  Write-locks are exclusive.
+    public static class GameLock {
+        private String m_path;
+        private boolean m_isForWrite;
+        private ReentrantReadWriteLock m_rwlock;
+
+        // This will leak empty ReentrantReadWriteLock instances for
+        // now.
+        private static HashMap<String, ReentrantReadWriteLock> 
+            s_locks = new HashMap<String,ReentrantReadWriteLock>();
+
+        public GameLock( String path, boolean isForWrite ) 
+        {
+            m_path = path;
+            m_isForWrite = isForWrite;
+            synchronized( s_locks ) {
+                if ( s_locks.containsKey( m_path ) ) {
+                    m_rwlock = s_locks.get( m_path );
+                } else {
+                    m_rwlock = new ReentrantReadWriteLock();
+                    s_locks.put( path, m_rwlock );
+                }
+            }
+        }
+
+        public GameLock lock()
+        {
+            getLock().lock();
+            return this;
+        }
+
+        public boolean tryLock()
+        {
+            boolean gotIt = false;
+            synchronized( s_locks ) {
+                boolean hasWaiters = m_isForWrite && m_rwlock.isWriteLocked();
+                if ( !hasWaiters ) {
+                    getLock().lock();
+                    gotIt = true;
+                }
+            }
+            return gotIt;
+        }
+        
+        public void unlock()
+        {
+            synchronized( s_locks ) {
+                getLock().unlock();
+            }
+        }
+
+        public String getPath() 
+        {
+            return m_path;
+        }
+
+        // used only for asserts
+        public boolean canWrite()
+        {
+            return m_isForWrite && m_rwlock.isWriteLocked();
+        }
+
+        private Lock getLock() 
+        { 
+            Lock lock = m_isForWrite? m_rwlock.writeLock() 
+                : m_rwlock.readLock();
+            return lock;
+        }
+    }
+
     private static Object s_syncObj = new Object();
 
     public static byte[] savedGame( Context context, String path )
     {
-        DBUtils.GameLock lock = new DBUtils.GameLock( path, false ).lock();
+        GameLock lock = new GameLock( path, false ).lock();
         byte[] result = savedGame( context, lock );
         lock.unlock();
         return result;
     }
 
-    public static byte[] savedGame( Context context, DBUtils.GameLock lock )
+    public static byte[] savedGame( Context context, GameLock lock )
     {
         return DBUtils.loadGame( context, lock );
     } // savedGame
@@ -56,8 +132,8 @@ public class GameUtils {
      * Open an existing game, and use its gi and comms addr as the
      * basis for a new one.
      */
-    public static void resetGame( Context context, DBUtils.GameLock lockSrc, 
-                                  DBUtils.GameLock lockDest )
+    public static void resetGame( Context context, GameLock lockSrc, 
+                                  GameLock lockDest )
     {
         int gamePtr = XwJNI.initJNI();
         CurGameInfo gi = new CurGameInfo( context );
@@ -95,7 +171,7 @@ public class GameUtils {
 
     public static void resetGame( Context context, String pathIn )
     {
-        DBUtils.GameLock lock = new DBUtils.GameLock( pathIn, true )
+        GameLock lock = new GameLock( pathIn, true )
             .lock();
         tellRelayDied( context, lock, true );
         resetGame( context, lock, lock );
@@ -103,14 +179,14 @@ public class GameUtils {
     }
 
     private static GameSummary summarizeAndClose( Context context, 
-                                                  DBUtils.GameLock lock,
+                                                  GameLock lock,
                                                   int gamePtr, CurGameInfo gi )
     {
         return summarizeAndClose( context, lock, gamePtr, gi, null );
     }
 
     private static GameSummary summarizeAndClose( Context context, 
-                                                  DBUtils.GameLock lock,
+                                                  GameLock lock,
                                                   int gamePtr, CurGameInfo gi,
                                                   FeedUtilsImpl feedImpl )
     {
@@ -135,7 +211,7 @@ public class GameUtils {
         return summary;
     }
 
-    public static GameSummary summarize( Context context, DBUtils.GameLock lock )
+    public static GameSummary summarize( Context context, GameLock lock )
     {
         int gamePtr = XwJNI.initJNI();
         CurGameInfo gi = new CurGameInfo( context );
@@ -146,10 +222,10 @@ public class GameUtils {
 
     public static String dupeGame( Context context, String pathIn )
     {
-        DBUtils.GameLock lockSrc = new DBUtils.GameLock( pathIn, false ).lock();
+        GameLock lockSrc = new GameLock( pathIn, false ).lock();
         String newName = newName( context );
-        DBUtils.GameLock lockDest = 
-            new DBUtils.GameLock( newName, true ).lock();
+        GameLock lockDest = 
+            new GameLock( newName, true ).lock();
         resetGame( context, lockSrc, lockDest );
         lockDest.unlock();
         lockSrc.unlock();
@@ -159,7 +235,7 @@ public class GameUtils {
     public static void deleteGame( Context context, String path, boolean informNow )
     {
         // does this need to be synchronized?
-        DBUtils.GameLock lock = new DBUtils.GameLock( path, true );
+        GameLock lock = new GameLock( path, true );
         if ( lock.tryLock() ) {
             tellRelayDied( context, lock, informNow );
             DBUtils.deleteGame( context, lock );
@@ -168,14 +244,14 @@ public class GameUtils {
     }
 
     public static void loadMakeGame( Context context, int gamePtr, 
-                                     CurGameInfo gi, DBUtils.GameLock lock )
+                                     CurGameInfo gi, GameLock lock )
     {
         loadMakeGame( context, gamePtr, gi, null, lock );
     }
 
     public static void loadMakeGame( Context context, int gamePtr, 
                                      CurGameInfo gi, UtilCtxt util,
-                                     DBUtils.GameLock lock )
+                                     GameLock lock )
     {
         byte[] stream = savedGame( context, lock );
         XwJNI.gi_from_stream( gi, stream );
@@ -194,7 +270,7 @@ public class GameUtils {
     }
 
     public static void saveGame( Context context, int gamePtr, 
-                                 CurGameInfo gi, DBUtils.GameLock lock,
+                                 CurGameInfo gi, GameLock lock,
                                  boolean setCreate )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
@@ -205,23 +281,23 @@ public class GameUtils {
                                  CurGameInfo gi )
     {
         String path = newName( context );
-        DBUtils.GameLock lock = 
-            new DBUtils.GameLock( path, true ).lock();
+        GameLock lock = 
+            new GameLock( path, true ).lock();
         saveGame( context, gamePtr, gi, lock, false );
         lock.unlock();
     }
 
     public static void saveGame( Context context, byte[] bytes, 
-                                 DBUtils.GameLock lock, boolean setCreate )
+                                 GameLock lock, boolean setCreate )
     {
         DBUtils.saveGame( context, lock, bytes, setCreate );
     }
 
-    public static DBUtils.GameLock saveGame( Context context, byte[] bytes )
+    public static GameLock saveGame( Context context, byte[] bytes )
     {
         String name = newName( context );
-        DBUtils.GameLock lock = 
-            new DBUtils.GameLock( name, true ).lock();
+        GameLock lock = 
+            new GameLock( name, true ).lock();
         saveGame( context, bytes, lock, false );
         return lock;
     }
@@ -468,7 +544,7 @@ public class GameUtils {
             int gamePtr = XwJNI.initJNI();
             CurGameInfo gi = new CurGameInfo( context );
             FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, path );
-            DBUtils.GameLock lock = new DBUtils.GameLock( path, true );
+            GameLock lock = new GameLock( path, true );
             if ( lock.tryLock() ) {
                 loadMakeGame( context, gamePtr, gi, feedImpl, lock );
 
@@ -508,7 +584,7 @@ public class GameUtils {
     public static void replaceDict( Context context, String path,
                                     String dict )
     {
-        DBUtils.GameLock lock = new DBUtils.GameLock( path, true ).lock();
+        GameLock lock = new GameLock( path, true ).lock();
         byte[] stream = savedGame( context, lock );
         CurGameInfo gi = new CurGameInfo( context );
         byte[] dictBytes = GameUtils.openDict( context, dict );
@@ -528,7 +604,7 @@ public class GameUtils {
     }
 
     public static void applyChanges( Context context, CurGameInfo gi, 
-                                     CommsAddrRec car, DBUtils.GameLock lock,
+                                     CommsAddrRec car, GameLock lock,
                                      boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
@@ -605,7 +681,7 @@ public class GameUtils {
         }
     }
     
-    private static void tellRelayDied( Context context, DBUtils.GameLock lock,
+    private static void tellRelayDied( Context context, GameLock lock,
                                        boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
