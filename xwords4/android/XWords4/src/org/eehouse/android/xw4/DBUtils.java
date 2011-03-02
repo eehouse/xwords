@@ -269,8 +269,8 @@ public class DBUtils {
                                     values, selection, null );
             Assert.assertTrue( result == 1 );
             db.close();
-            notifyListeners( path );
         }
+        notifyListeners( path );
     }
 
     public static int getMsgFlags( String path )
@@ -454,8 +454,8 @@ public class DBUtils {
                 Assert.assertTrue( row >= 0 );
             }
             db.close();
-            notifyListeners( path );
         }
+        notifyListeners( path );
     }
 
     public static byte[] loadGame( Context context, GameUtils.GameLock lock )
@@ -483,6 +483,7 @@ public class DBUtils {
 
     public static void deleteGame( Context context, GameUtils.GameLock lock )
     {
+        Assert.assertTrue( lock.canWrite() );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
@@ -490,6 +491,7 @@ public class DBUtils {
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }
+        notifyListeners( lock.getPath() );
     }
 
     public static String[] gamesList( Context context )
@@ -598,6 +600,8 @@ public class DBUtils {
         }
     }
 
+    // Chat is independent of the GameLock mechanism because it's not
+    // touching the SNAPSHOT column.
     private static void saveChatHistory( Context context, String path,
                                          String history )
     {

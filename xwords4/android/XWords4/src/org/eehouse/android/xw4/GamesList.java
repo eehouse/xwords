@@ -267,15 +267,6 @@ public class GamesList extends XWListActivity
     }
 
     @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        super.onWindowFocusChanged( hasFocus );
-        if ( hasFocus ) {
-            onContentChanged();
-        }
-    }
-
-    @Override
     public void onCreateContextMenu( ContextMenu menu, View view, 
                                      ContextMenuInfo menuInfo ) 
     {
@@ -404,8 +395,6 @@ public class GamesList extends XWListActivity
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int ii ) {
                         GameUtils.deleteGame( GamesList.this, path, true );
-                        m_adapter.inval( path );
-                        onContentChanged();
                     }
                 };
             showConfirmThen( R.string.confirm_delete, lstnr );
@@ -417,8 +406,6 @@ public class GamesList extends XWListActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, int ii ) {
                                 GameUtils.resetGame( GamesList.this, path );
-                                m_adapter.inval( path );
-                                onContentChanged();
                             }
                         };
                     showConfirmThen( R.string.confirm_reset, lstnr );
@@ -438,7 +425,8 @@ public class GamesList extends XWListActivity
                         showOKOnlyDialog( R.string.no_copy_network );
                     } else {
                         byte[] stream = GameUtils.savedGame( this, path );
-                        GameUtils.GameLock lock = GameUtils.saveGame( this, stream );
+                        GameUtils.GameLock lock = 
+                            GameUtils.saveGame( this, stream );
                         DBUtils.saveSummary( this, lock, summary );
                         lock.unlock();
                     }
@@ -461,9 +449,6 @@ public class GamesList extends XWListActivity
 
             if ( null != invalPath ) {
                 m_adapter.inval( invalPath );
-            }
-            if ( handled ) {
-                onContentChanged();
             }
         }
 
@@ -505,7 +490,6 @@ public class GamesList extends XWListActivity
     {
         String path = saveNew( new CurGameInfo( this, networked ) );
         GameUtils.resetGame( this, path );
-        onContentChanged();
         return path;
     }
 
