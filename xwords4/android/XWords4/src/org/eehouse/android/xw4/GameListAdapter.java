@@ -91,6 +91,8 @@ public class GameListAdapter extends XWListAdapter {
                 list.addView( tmp, ii );
             }
 
+            view = (TextView)layout.findViewById( R.id.game_name );
+            view.setText( GameUtils.gameName( m_context, path ) );
             view = (TextView)layout.findViewById( R.id.state );
             view.setText( summary.summarizeState( m_context ) );
             view = (TextView)layout.findViewById( R.id.dict );
