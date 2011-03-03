@@ -78,7 +78,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     + NUM_PLAYERS + " INTEGER,"
                     + PLAYERS     + " TEXT,"
                     + GAME_OVER   + " INTEGER,"
-                    + IN_USE      + " INTEGER," // really a boolean
 
                     + SERVERROLE + " INTEGER,"
                     + CONTYPE    + " INTEGER,"
@@ -131,8 +130,6 @@ public class DBHelper extends SQLiteOpenHelper {
                         " ADD COLUMN " + GIFLAGS + " INTEGER;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + CHAT_HISTORY + " TEXT;" );
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + IN_USE + " INTEGER;" );
         } else {
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {
