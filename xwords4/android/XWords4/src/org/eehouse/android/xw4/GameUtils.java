@@ -47,51 +47,77 @@ public class GameUtils {
     public static class GameLock {
         private String m_path;
         private boolean m_isForWrite;
-        private ReentrantReadWriteLock m_rwlock;
+        private int m_lockCount;
 
         // This will leak empty ReentrantReadWriteLock instances for
         // now.
-        private static HashMap<String, ReentrantReadWriteLock> 
-            s_locks = new HashMap<String,ReentrantReadWriteLock>();
+        private static HashMap<String, GameLock> 
+            s_locks = new HashMap<String,GameLock>();
 
         public GameLock( String path, boolean isForWrite ) 
         {
             m_path = path;
             m_isForWrite = isForWrite;
-            synchronized( s_locks ) {
-                if ( s_locks.containsKey( m_path ) ) {
-                    m_rwlock = s_locks.get( m_path );
-                } else {
-                    m_rwlock = new ReentrantReadWriteLock();
-                    s_locks.put( path, m_rwlock );
-                }
-            }
+            m_lockCount = 0;
+            Utils.logf( "GameLock.GameLock(%s,%s) done", m_path, 
+                        m_isForWrite?"T":"F" );
         }
 
-        public GameLock lock()
-        {
-            getLock().lock();
-            return this;
-        }
-
+        // This could be written to allow multiple read locks.  Let's
+        // see if not doing that causes problems.
         public boolean tryLock()
         {
             boolean gotIt = false;
             synchronized( s_locks ) {
-                boolean hasWaiters = m_isForWrite && m_rwlock.isWriteLocked();
-                if ( !hasWaiters ) {
-                    getLock().lock();
+                GameLock owner = s_locks.get( m_path );
+                if ( null == owner ) { // unowned
+                    Assert.assertTrue( 0 == m_lockCount );
+                    s_locks.put( m_path, this );
+                    ++m_lockCount;
+                    gotIt = true;
+                } else if ( this == owner && ! m_isForWrite ) {
+                    Assert.assertTrue( 0 == m_lockCount );
+                    ++m_lockCount;
                     gotIt = true;
                 }
             }
             return gotIt;
         }
         
+        public GameLock lock()
+        {
+            Utils.logf( "GameLock.lock(%s)", m_path );
+            // Utils.printStack();
+            for ( ; ; ) {
+                if ( tryLock() ) {
+                    break;
+                }
+                Utils.logf( "GameLock.lock() failed; sleeping" );
+                // Utils.printStack();
+                try {
+                    Thread.sleep( 100 ); // milliseconds
+                } catch( InterruptedException ie ) {
+                    Utils.logf( "GameLock.lock(): %s", ie.toString() );
+                    break;
+                }
+            }
+            Utils.logf( "GameLock.lock(%s) done", m_path );
+            return this;
+        }
+
         public void unlock()
         {
+            Utils.logf( "GameLock.unlock(%s)", m_path );
             synchronized( s_locks ) {
-                getLock().unlock();
+                Assert.assertTrue( this == s_locks.get(m_path) );
+                if ( 1 == m_lockCount ) {
+                    s_locks.remove( m_path );
+                } else {
+                    Assert.assertTrue( !m_isForWrite );
+                }
+                --m_lockCount;
             }
+            Utils.logf( "GameLock.unlock(%s) done", m_path );
         }
 
         public String getPath() 
@@ -102,14 +128,7 @@ public class GameUtils {
         // used only for asserts
         public boolean canWrite()
         {
-            return m_isForWrite && m_rwlock.isWriteLocked();
-        }
-
-        private Lock getLock() 
-        { 
-            Lock lock = m_isForWrite? m_rwlock.writeLock() 
-                : m_rwlock.readLock();
-            return lock;
+            return m_isForWrite && 1 == m_lockCount;
         }
     }
 
