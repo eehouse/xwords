@@ -66,9 +66,12 @@ public class DBUtils {
 
     public static GameSummary getSummary( Context context, String file )
     {
-        GameUtils.GameLock lock = new GameUtils.GameLock( file, false ).lock();
-        GameSummary result = getSummary( context, lock );
-        lock.unlock();
+        GameSummary result = null;
+        GameUtils.GameLock lock = new GameUtils.GameLock( file, false );
+        if ( lock.tryLock() ) {
+            result = getSummary( context, lock );
+            lock.unlock();
+        }
         return result;
     }
 

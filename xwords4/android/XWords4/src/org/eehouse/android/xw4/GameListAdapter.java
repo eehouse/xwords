@@ -72,47 +72,51 @@ public class GameListAdapter extends XWListAdapter {
         View layout = m_viewsCache.get( path );
 
         if ( null == layout ) {
-            TextView view;
             layout = m_factory.inflate( m_layoutId, null );
 
+            // If we can't read the summary right now we still need to
+            // return a view but shouldn't cache it
             GameSummary summary = DBUtils.getSummary( m_context, path );
+            if ( null != summary ) {
+                TextView view;
 
-            LinearLayout list =
-                (LinearLayout)layout.findViewById( R.id.player_list );
-            for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
-                View tmp = m_factory.inflate( R.layout.player_list_elem, null );
-                view = (TextView)tmp.findViewById( R.id.item_name );
-                view.setText( summary.summarizePlayer( m_context, ii ) );
-                view = (TextView)tmp.findViewById( R.id.item_score );
-                view.setText( String.format( "  %d", summary.scores[ii] ) );
-                if ( summary.isNextToPlay( ii ) ) {
-                    tmp.setBackgroundColor( 0x7F00FF00 );
+                LinearLayout list =
+                    (LinearLayout)layout.findViewById( R.id.player_list );
+                for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
+                    View tmp = m_factory.inflate( R.layout.player_list_elem, null );
+                    view = (TextView)tmp.findViewById( R.id.item_name );
+                    view.setText( summary.summarizePlayer( m_context, ii ) );
+                    view = (TextView)tmp.findViewById( R.id.item_score );
+                    view.setText( String.format( "  %d", summary.scores[ii] ) );
+                    if ( summary.isNextToPlay( ii ) ) {
+                        tmp.setBackgroundColor( 0x7F00FF00 );
+                    }
+                    list.addView( tmp, ii );
                 }
-                list.addView( tmp, ii );
+
+                view = (TextView)layout.findViewById( R.id.game_name );
+                view.setText( GameUtils.gameName( m_context, path ) );
+                view = (TextView)layout.findViewById( R.id.state );
+                view.setText( summary.summarizeState( m_context ) );
+                view = (TextView)layout.findViewById( R.id.dict );
+                view.setText( summary.dictName );
+                view = (TextView)layout.findViewById( R.id.modtime );
+                view.setText( m_df.format( new Date( summary.modtime ) ) );
+
+                view = (TextView)layout.findViewById( R.id.role );
+                String roleSummary = summary.summarizeRole( m_context );
+                if ( null != roleSummary ) {
+                    view.setText( roleSummary );
+                } else {
+                    view.setVisibility( View.GONE );
+                }
+
+                View marker = layout.findViewById( R.id.msg_marker );
+                marker.setVisibility( summary.pendingMsgLevel 
+                                      == GameSummary.MSG_FLAGS_NONE
+                                      ? View.GONE : View.VISIBLE );
+                m_viewsCache.put( path, layout );
             }
-
-            view = (TextView)layout.findViewById( R.id.game_name );
-            view.setText( GameUtils.gameName( m_context, path ) );
-            view = (TextView)layout.findViewById( R.id.state );
-            view.setText( summary.summarizeState( m_context ) );
-            view = (TextView)layout.findViewById( R.id.dict );
-            view.setText( summary.dictName );
-            view = (TextView)layout.findViewById( R.id.modtime );
-            view.setText( m_df.format( new Date( summary.modtime ) ) );
-
-            view = (TextView)layout.findViewById( R.id.role );
-            String roleSummary = summary.summarizeRole( m_context );
-            if ( null != roleSummary ) {
-                view.setText( roleSummary );
-            } else {
-                view.setVisibility( View.GONE );
-            }
-
-            View marker = layout.findViewById( R.id.msg_marker );
-            marker.setVisibility( summary.pendingMsgLevel 
-                                  == GameSummary.MSG_FLAGS_NONE
-                                  ? View.GONE : View.VISIBLE );
-            m_viewsCache.put( path, layout );
         }
 
         // this doesn't work.  Rather, it breaks highlighting because
