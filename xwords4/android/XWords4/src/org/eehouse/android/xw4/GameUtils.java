@@ -456,8 +456,9 @@ public class GameUtils {
         return bytes;
     }
 
-    public static void saveDict( Context context, String name, InputStream in )
+    public static boolean saveDict( Context context, String name, InputStream in )
     {
+        boolean success = false;
         try {
             FileOutputStream fos = context.openFileOutput( name,
                                                            Context.MODE_PRIVATE );
@@ -467,12 +468,14 @@ public class GameUtils {
                 fos.write( buf, 0, nRead );
             }
             fos.close();
+            success = true;
         } catch ( java.io.FileNotFoundException fnf ) {
             Utils.logf( "saveDict: FileNotFoundException: %s", fnf.toString() );
         } catch ( java.io.IOException ioe ) {
             Utils.logf( "saveDict: IOException: %s", ioe.toString() );
             deleteDict( context, name );
         }
+        return success;
     } 
 
     private static boolean isGame( String file )
