@@ -83,6 +83,16 @@ public class Utils {
         }
     } // logf
 
+    public static void printStack()
+    {
+        if ( s_doLog ) {
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            for ( int ii = 0; ii < trace.length; ++ii ) {
+                Utils.logf( "ste %d: %s", ii, trace[ii].toString() );
+            }
+        }
+    }
+
     public static void notImpl( Context context ) 
     {
         CharSequence text = "Feature coming soon";
