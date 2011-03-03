@@ -2,9 +2,12 @@
 
 set -u -e
 
+DO_MD5=""
+
 usage() {
-    echo "usage: $0 /path/to/dicts"
+    echo "usage: $0 [--md5] /path/to/dicts"
     echo "   write to stdout an html file that serves up all .xwd files inside /path/to/dicts"
+    echo "   optionally, write dictName.md5 in dir for every dict."
     exit 1
 }
 
@@ -22,10 +25,17 @@ do_lang() {
         DECCOUNT=$(echo "ibase=16;$HEXCOUNT" | bc)
         echo "<td>${DECCOUNT}</td>"
         echo "</tr>"
+        [ -n "$DO_MD5" ] && md5sum $DICT | awk '{print $1}' > $DICT.md5
     done
 
     cd ..
 }
+
+if [ $# -eq 2 ]; then
+    [ $1 = "--md5" ] || usage
+    DO_MD5=1
+    shift
+fi
 
 [ $# -eq 1 ] || usage
 
