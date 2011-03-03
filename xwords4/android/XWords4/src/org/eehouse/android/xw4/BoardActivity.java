@@ -303,7 +303,6 @@ public class BoardActivity extends XWActivity
     {
         super.onResume();
         loadGame();
-        super.onResume();
     }
 
     @Override
