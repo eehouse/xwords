@@ -98,7 +98,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_htProportion = gotHt / askedHt;
             Assert.assertTrue( (bottomRow+1) >= askedHt );
             float descent = (bottomRow+1) - askedHt;
-            Utils.logf( "descent: " + descent );
+            // Utils.logf( "descent: " + descent );
             m_descentProportion = descent / askedHt;
             Assert.assertTrue( m_descentProportion >= 0 );
             m_widthProportion = width / askedHt;
