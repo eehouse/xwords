@@ -1215,8 +1215,15 @@ public class BoardActivity extends XWActivity
         };
     }
 
+    /* m_blockingDlgPosted: very rarely m_forResultWait will get
+     * interrupted before the runnable gets run.  In that case there's
+     * no dialog to dismiss.  So track it.
+     */
+    private boolean m_blockingDlgPosted;
+
     private int waitBlockingDialog( final int dlgID, int cancelResult )
     {
+        m_blockingDlgPosted = false;
         setBlockingThread();
         int orient = m_currentOrient == Configuration.ORIENTATION_LANDSCAPE
             ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -1226,15 +1233,18 @@ public class BoardActivity extends XWActivity
         m_handler.post( new Runnable() {
                 public void run() {
                     showDialog( dlgID );
+                    m_blockingDlgPosted = true;
                 }
             } );
 
         try {
             m_forResultWait.acquire();
         } catch ( java.lang.InterruptedException ie ) {
-            m_resultCode = cancelResult;
-            dismissDialog( dlgID );
             Utils.logf( "waitBlockingDialog: got " + ie.toString() );
+            m_resultCode = cancelResult;
+            if ( m_blockingDlgPosted ) {
+                dismissDialog( dlgID );
+            }
         }
         clearBlockingThread();
         return m_resultCode;
