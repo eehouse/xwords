@@ -2,62 +2,70 @@
 <!-- -*- compile-command: "cd ../../; ant install"; -*- -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
+              android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
-              android:padding="4sp">
+              >
 
-  <ImageView android:id="@+id/msg_marker"
-	         android:layout_width="wrap_content"
-	         android:layout_height="fill_parent"
-             android:layout_gravity="center_vertical|center_horizontal"
-             android:layout_weight="0"
-    	     android:src="@drawable/ic_popup_sync_1"
+  <TextView android:id="@+id/game_name"
+	        android:layout_width="fill_parent" 
+	        android:layout_height="wrap_content"
+            android:gravity="center"
             />
 
-  <LinearLayout android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:layout_weight="1"
-                >
-    
-    <LinearLayout android:id="@+id/player_list"
-                  android:orientation="vertical"
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="4sp">
+
+    <ImageView android:id="@+id/msg_marker"
+	           android:layout_width="wrap_content"
+	           android:layout_height="fill_parent"
+               android:layout_gravity="center_vertical|center_horizontal"
+               android:layout_weight="0"
+    	       android:src="@drawable/ic_popup_sync_1"
+               />
+
+    <LinearLayout android:orientation="vertical"
                   android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
+                  android:layout_height="fill_parent"
+                  android:layout_weight="1"
                   >
+      
+      <LinearLayout android:id="@+id/player_list"
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    >
+      </LinearLayout>
+
+      <TextView android:id="@+id/role"
+	            android:layout_width="wrap_content" 
+	            android:layout_height="wrap_content"
+                />
     </LinearLayout>
 
-    <TextView android:id="@+id/role"
-	          android:layout_width="wrap_content" 
-	          android:layout_height="wrap_content"
-              />
-  </LinearLayout>
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="wrap_content"
+                  android:layout_height="fill_parent"
+                  >
+      <TextView android:id="@+id/modtime"
+	            android:layout_width="wrap_content" 
+	            android:layout_height="wrap_content"
+	            android:gravity="right"
+                />
+      <TextView android:id="@+id/state"
+	            android:layout_width="wrap_content" 
+	            android:layout_height="wrap_content"
+	            android:gravity="right"
+                />
+      <TextView android:id="@+id/dict"
+	            android:layout_width="wrap_content" 
+	            android:layout_height="wrap_content"
+	            android:gravity="right"
+                />
+    </LinearLayout>
 
-  <LinearLayout android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                >
-    <TextView android:id="@+id/game_name"
-	          android:layout_width="wrap_content" 
-	          android:layout_height="wrap_content"
-	          android:gravity="right"
-              />
-    <TextView android:id="@+id/modtime"
-	          android:layout_width="wrap_content" 
-	          android:layout_height="wrap_content"
-	          android:gravity="right"
-              />
-    <TextView android:id="@+id/state"
-	          android:layout_width="wrap_content" 
-	          android:layout_height="wrap_content"
-	          android:gravity="right"
-              />
-    <TextView android:id="@+id/dict"
-	          android:layout_width="wrap_content" 
-	          android:layout_height="wrap_content"
-	          android:gravity="right"
-              />
   </LinearLayout>
 
 </LinearLayout>
