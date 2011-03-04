@@ -73,6 +73,7 @@ public class GameListAdapter extends XWListAdapter {
 
         if ( null == layout ) {
             layout = m_factory.inflate( m_layoutId, null );
+            boolean hideTitle = CommonPrefs.getHideTitleBar( m_context );
 
             // If we can't read the summary right now we still need to
             // return a view but shouldn't cache it
@@ -95,7 +96,11 @@ public class GameListAdapter extends XWListAdapter {
                 }
 
                 view = (TextView)layout.findViewById( R.id.game_name );
-                view.setText( GameUtils.gameName( m_context, path ) );
+                if ( hideTitle ) {
+                    view.setVisibility( View.GONE );
+                } else {
+                    view.setText( GameUtils.gameName( m_context, path ) );
+                }
                 view = (TextView)layout.findViewById( R.id.state );
                 view.setText( summary.summarizeState( m_context ) );
                 view = (TextView)layout.findViewById( R.id.dict );
