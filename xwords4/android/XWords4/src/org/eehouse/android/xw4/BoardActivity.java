@@ -795,10 +795,12 @@ public class BoardActivity extends XWActivity
                         // Need to keep this from running after activity dies!!
                         public void run() {
                             if ( m_isVisible ) {
-                                String title = getString( R.string.progress_title );
-                                m_progress = ProgressDialog.show( BoardActivity.this,
-                                                                  title, null, true, 
-                                                                  true );
+                                String title = 
+                                    getString( R.string.progress_title );
+                                m_progress = 
+                                    ProgressDialog.show( BoardActivity.this,
+                                                         title, null, true, 
+                                                         true );
                             }
                         }
                     } );
@@ -1103,6 +1105,9 @@ public class BoardActivity extends XWActivity
                                    }
                                }
                            } );
+            // see http://stackoverflow.com/questions/680180/where-to-stop-\
+            // destroy-threads-in-android-service-class
+            m_jniThread.setDaemon( true );
             m_jniThread.start();
 
             m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi );
