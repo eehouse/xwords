@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- -*- compile-command: "ant install"; -*- -->
 <!-- Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +41,7 @@
 
     <activity android:name="GamesList" 
               android:label="@string/title_games_list"
+              android:launchMode="singleTop"
               >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
