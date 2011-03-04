@@ -1326,6 +1326,7 @@ public class BoardActivity extends XWActivity
             while ( iter.hasNext() ) {
                 m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
             }
+            m_pendingChats.clear();
         }
     }
 
