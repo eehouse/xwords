@@ -33,6 +33,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.content.Intent;
 import java.util.concurrent.Semaphore;
+import java.util.ArrayList;
+import java.util.Iterator;
 import android.net.Uri;
 import android.app.Dialog;
 import android.app.AlertDialog;
@@ -77,6 +79,7 @@ public class BoardActivity extends XWActivity
     private Uri m_uri;
     private int m_currentOrient;
     private Toolbar m_toolbar;
+    private ArrayList<String> m_pendingChats = new ArrayList<String>();
 
     private String m_dlgBytes = null;
     private EditText m_passwdEdit = null;
@@ -312,7 +315,8 @@ public class BoardActivity extends XWActivity
             if ( CHAT_REQUEST == requestCode ) {
                 String msg = data.getStringExtra( "chat" );
                 if ( null != msg && msg.length() > 0 ) {
-                    m_jniThread.handle( JNICmd.CMD_SENDCHAT, msg );
+                    m_pendingChats.add( msg );
+                    trySendChats();
                 }
             }
         }
@@ -1130,6 +1134,8 @@ public class BoardActivity extends XWActivity
             if ( 0 != flags ) {
                 DBUtils.setMsgFlags( m_path, GameSummary.MSG_FLAGS_NONE );
             }
+
+            trySendChats();
         }
     } // loadGame
 
@@ -1310,6 +1316,16 @@ public class BoardActivity extends XWActivity
 
             m_gameLock.unlock();
             m_gameLock = null;
+        }
+    }
+
+    private void trySendChats()
+    {
+        if ( null != m_jniThread ) {
+            Iterator<String> iter = m_pendingChats.iterator();
+            while ( iter.hasNext() ) {
+                m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
+            }
         }
     }
 
