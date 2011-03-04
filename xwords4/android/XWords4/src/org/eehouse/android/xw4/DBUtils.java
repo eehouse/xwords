@@ -64,18 +64,23 @@ public class DBUtils {
         boolean sourceLocal;
     }
 
-    public static GameSummary getSummary( Context context, String file )
+    public static GameSummary getSummary( Context context, String file, 
+                                          boolean wait )
     {
         GameSummary result = null;
         GameUtils.GameLock lock = new GameUtils.GameLock( file, false );
-        if ( lock.tryLock() ) {
+        if ( wait ) {
+            result = getSummary( context, lock.lock() );
+            lock.unlock();
+        } else if ( lock.tryLock() ) {
             result = getSummary( context, lock );
             lock.unlock();
         }
         return result;
     }
 
-    public static GameSummary getSummary( Context context, GameUtils.GameLock lock )
+    public static GameSummary getSummary( Context context, 
+                                          GameUtils.GameLock lock )
     {
         initDB( context );
         GameSummary summary = null;

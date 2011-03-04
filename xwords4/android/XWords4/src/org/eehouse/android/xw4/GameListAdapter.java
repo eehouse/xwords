@@ -76,7 +76,7 @@ public class GameListAdapter extends XWListAdapter {
 
             // If we can't read the summary right now we still need to
             // return a view but shouldn't cache it
-            GameSummary summary = DBUtils.getSummary( m_context, path );
+            GameSummary summary = DBUtils.getSummary( m_context, path, false );
             if ( null != summary ) {
                 TextView view;
 
