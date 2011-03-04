@@ -127,7 +127,12 @@ public class JNIThread extends Thread {
         m_stopped = true;
         handle( JNICmd.CMD_NONE );     // tickle it
         try {
-            join(200);          // wait up to 2/10 second
+            // Can't pass timeout to join.  There's no way to kill
+            // this thread unless it's doing something interruptable
+            // (like blocking on a socket) so might as well let it
+            // take however log it takes.  If that's too long, fix it.
+            join();
+            // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
             Utils.logf( "got InterruptedException: " + ie.toString() );
         }
