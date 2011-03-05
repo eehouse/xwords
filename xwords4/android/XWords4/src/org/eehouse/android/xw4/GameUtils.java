@@ -48,6 +48,7 @@ public class GameUtils {
         private String m_path;
         private boolean m_isForWrite;
         private int m_lockCount;
+        StackTraceElement[] m_lockTrace;
 
         // This will leak empty ReentrantReadWriteLock instances for
         // now.
@@ -75,6 +76,11 @@ public class GameUtils {
                     s_locks.put( m_path, this );
                     ++m_lockCount;
                     gotIt = true;
+                    
+                    StackTraceElement[] trace = Thread.currentThread().
+                        getStackTrace();
+                    m_lockTrace = new StackTraceElement[trace.length];
+                    System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
                 } else if ( this == owner && ! m_isForWrite ) {
                     Assert.assertTrue( 0 == m_lockCount );
                     ++m_lockCount;
@@ -86,6 +92,7 @@ public class GameUtils {
         
         public GameLock lock()
         {
+            long stopTime = System.currentTimeMillis() + 1000;
             Utils.logf( "GameLock.lock(%s)", m_path );
             // Utils.printStack();
             for ( ; ; ) {
@@ -95,10 +102,14 @@ public class GameUtils {
                 Utils.logf( "GameLock.lock() failed; sleeping" );
                 // Utils.printStack();
                 try {
-                    Thread.sleep( 100 ); // milliseconds
+                    Thread.sleep( 25 ); // milliseconds
                 } catch( InterruptedException ie ) {
                     Utils.logf( "GameLock.lock(): %s", ie.toString() );
                     break;
+                }
+                if ( System.currentTimeMillis() >= stopTime ) {
+                    Utils.printStack( m_lockTrace );
+                    Assert.fail();
                 }
             }
             Utils.logf( "GameLock.lock(%s) done", m_path );
