@@ -387,10 +387,10 @@ public class GameConfig extends XWActivity
     } // onCreate
 
     @Override
-    protected void onStart()
+    protected void onResume()
     {
-        super.onStart();
-        
+        super.onResume();
+
         int gamePtr = XwJNI.initJNI();
         m_giOrig = new CurGameInfo( this );
         // Lock in case we're going to config.  We *could* re-get the
@@ -475,16 +475,16 @@ public class GameConfig extends XWActivity
             };
         check.setOnCheckedChangeListener( lstnr );
         Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
-    } // onStart
+    } // onResume
 
     @Override
-    protected void onStop()
+    protected void onPause()
     {
         if ( null != m_gameLock ) {
             m_gameLock.unlock();
             m_gameLock = null;
         }
-        super.onStop();
+        super.onPause();
     }
 
     // DeleteCallback interface
@@ -566,13 +566,6 @@ public class GameConfig extends XWActivity
         }
 
         return consumed || super.onKeyDown( keyCode, event );
-    }
-
-    @Override
-    protected void onResume()
-    {
-        configDictSpinner();
-        super.onResume();
     }
 
     private void loadPlayers()
@@ -916,6 +909,8 @@ public class GameConfig extends XWActivity
     private void launchGame()
     {
         if ( m_notNetworkedGame || m_car.ip_relay_invite.length() > 0 ) {
+            m_gameLock.unlock();
+            m_gameLock = null;
             GameUtils.launchGameAndFinish( this, m_path );
         } else {
             showOKOnlyDialog( R.string.no_empty_rooms );            
