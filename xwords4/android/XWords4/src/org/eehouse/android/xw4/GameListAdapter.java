@@ -73,7 +73,8 @@ public class GameListAdapter extends XWListAdapter {
 
         if ( null == layout ) {
             layout = m_factory.inflate( m_layoutId, null );
-            boolean hideTitle = CommonPrefs.getHideTitleBar( m_context );
+            final boolean hideTitle = 
+                false;//CommonPrefs.getHideTitleBar( m_context );
 
             // If we can't read the summary right now we still need to
             // return a view but shouldn't cache it
