@@ -198,7 +198,7 @@ public class BoardActivity extends XWActivity
                 }
 
                 dialog = ab.create();
-                dialog.setOnDismissListener( makeODLforBlocking() );
+                dialog.setOnDismissListener( makeODLforBlocking( id ) );
                 break;
 
             case PICK_TILE_REQUEST_BLK:
@@ -213,7 +213,7 @@ public class BoardActivity extends XWActivity
                 ab.setItems( m_texts, lstnr );
 
                 dialog = ab.create();
-                dialog.setOnDismissListener( makeODLforBlocking() );
+                dialog.setOnDismissListener( makeODLforBlocking( id ) );
                 break;
 
             case ASK_PASSWORD_BLK:
@@ -230,7 +230,7 @@ public class BoardActivity extends XWActivity
                                             }
                                         });
                 dialog = ab.create();
-                dialog.setOnDismissListener( makeODLforBlocking() );
+                dialog.setOnDismissListener( makeODLforBlocking( id ) );
                 break;
 
             case QUERY_ENDGAME:
@@ -1216,12 +1216,13 @@ public class BoardActivity extends XWActivity
                                });
     } // populateToolbar
 
-    private DialogInterface.OnDismissListener makeODLforBlocking()
+    private DialogInterface.OnDismissListener makeODLforBlocking( final int id )
     {
         return new DialogInterface.OnDismissListener() {
             public void onDismiss( DialogInterface di ) {
                 setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_SENSOR );
                 releaseIfBlocking();
+                removeDialog( id );
             }
         };
     }
