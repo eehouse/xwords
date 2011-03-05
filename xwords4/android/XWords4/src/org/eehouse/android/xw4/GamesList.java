@@ -302,18 +302,16 @@ public class GamesList extends XWListActivity
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_delete_all:
-            if ( DBUtils.gamesList( this ).length > 0 ) {
+            final String[] games = DBUtils.gamesList( this );
+            if ( games.length > 0 ) {
                 DialogInterface.OnClickListener lstnr =
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            String[] games = 
-                                DBUtils.gamesList( GamesList.this );
                             for ( int ii = games.length - 1; ii >= 0; --ii ) {
                                 GameUtils.deleteGame( GamesList.this, games[ii], 
                                                       ii == 0  );
+                                m_adapter.inval( games[ii] );
                             }
-                            m_adapter = new GameListAdapter( GamesList.this );
-                            setListAdapter( m_adapter );
                         }
                     };
                 showConfirmThen( R.string.confirm_delete_all, lstnr );
