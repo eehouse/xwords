@@ -48,7 +48,7 @@ public class GameUtils {
         private String m_path;
         private boolean m_isForWrite;
         private int m_lockCount;
-        StackTraceElement[] m_lockTrace;
+        // StackTraceElement[] m_lockTrace;
 
         // This will leak empty ReentrantReadWriteLock instances for
         // now.
@@ -60,8 +60,8 @@ public class GameUtils {
             m_path = path;
             m_isForWrite = isForWrite;
             m_lockCount = 0;
-            Utils.logf( "GameLock.GameLock(%s,%s) done", m_path, 
-                        m_isForWrite?"T":"F" );
+            // Utils.logf( "GameLock.GameLock(%s,%s) done", m_path, 
+            //             m_isForWrite?"T":"F" );
         }
 
         // This could be written to allow multiple read locks.  Let's
@@ -77,10 +77,10 @@ public class GameUtils {
                     ++m_lockCount;
                     gotIt = true;
                     
-                    StackTraceElement[] trace = Thread.currentThread().
-                        getStackTrace();
-                    m_lockTrace = new StackTraceElement[trace.length];
-                    System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
+                    // StackTraceElement[] trace = Thread.currentThread().
+                    //     getStackTrace();
+                    // m_lockTrace = new StackTraceElement[trace.length];
+                    // System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
                 } else if ( this == owner && ! m_isForWrite ) {
                     Assert.assertTrue( 0 == m_lockCount );
                     ++m_lockCount;
@@ -93,13 +93,13 @@ public class GameUtils {
         public GameLock lock()
         {
             long stopTime = System.currentTimeMillis() + 1000;
-            Utils.logf( "GameLock.lock(%s)", m_path );
+            // Utils.logf( "GameLock.lock(%s)", m_path );
             // Utils.printStack();
             for ( ; ; ) {
                 if ( tryLock() ) {
                     break;
                 }
-                Utils.logf( "GameLock.lock() failed; sleeping" );
+                // Utils.logf( "GameLock.lock() failed; sleeping" );
                 // Utils.printStack();
                 try {
                     Thread.sleep( 25 ); // milliseconds
@@ -108,17 +108,17 @@ public class GameUtils {
                     break;
                 }
                 if ( System.currentTimeMillis() >= stopTime ) {
-                    Utils.printStack( m_lockTrace );
+                    // Utils.printStack( m_lockTrace );
                     Assert.fail();
                 }
             }
-            Utils.logf( "GameLock.lock(%s) done", m_path );
+            // Utils.logf( "GameLock.lock(%s) done", m_path );
             return this;
         }
 
         public void unlock()
         {
-            Utils.logf( "GameLock.unlock(%s)", m_path );
+            // Utils.logf( "GameLock.unlock(%s)", m_path );
             synchronized( s_locks ) {
                 Assert.assertTrue( this == s_locks.get(m_path) );
                 if ( 1 == m_lockCount ) {
@@ -128,7 +128,7 @@ public class GameUtils {
                 }
                 --m_lockCount;
             }
-            Utils.logf( "GameLock.unlock(%s) done", m_path );
+            // Utils.logf( "GameLock.unlock(%s) done", m_path );
         }
 
         public String getPath() 
