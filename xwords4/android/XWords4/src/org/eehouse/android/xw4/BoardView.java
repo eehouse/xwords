@@ -665,11 +665,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void drawMiniWindow( String text, Rect rect )
     {
-        fillRect( rect, WHITE );
+        fillRect( rect, darkOnLight()? BLACK : WHITE );
 
         m_fillPaint.setTextSize( k_miniTextSize );
         m_fillPaint.setTextAlign( Paint.Align.CENTER );
-        m_fillPaint.setColor( BLACK );
+        m_fillPaint.setColor( darkOnLight()? WHITE : BLACK );
 
         String[] lines = text.split("\n");
         int lineHt = rect.height() / lines.length;
