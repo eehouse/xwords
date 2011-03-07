@@ -285,7 +285,7 @@
     <string name="bonus_l3x_summary">3L</string>
     <string name="bonus_w3x_summary">3W</string>
     <string name="pts">pts</string>
-    <string name="trading_text">Exchanging tiles. Select\n\'Turn done\' when ready.</string>
+    <string name="trading_text">Select one or more tiles\nto exchange.</string>
     <string name="tile_back">Tile background</string>
     <string name="empty">Empty cell/background</string>
     <string name="clr_crosshairs">Crosshairs color</string>
