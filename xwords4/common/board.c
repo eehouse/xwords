@@ -752,13 +752,14 @@ board_commitTurn( BoardCtxt* board )
             invalSelTradeWindow( board );
             pti->tradeInProgress = XP_FALSE;
 
-            if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
-                                 (XWStreamCtxt*)NULL ) ) {
+            if ( NO_TILES == pti->traySelBits ) {
+                util_userError( board->util, ERR_NO_EMPTY_TRADE );
+            } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
+                                        (XWStreamCtxt*)NULL ) ) {
                 result = server_commitTrade( board->server, 
                                              pti->traySelBits );
-                /* XP_DEBUGF( "server_commitTrade returned %d\n", result ); */
+                pti->traySelBits = NO_TILES;
             }
-            pti->traySelBits = 0x00;
         } else {
             XP_Bool warn, legal;
             WordNotifierInfo info;

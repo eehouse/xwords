@@ -53,6 +53,7 @@ typedef enum {
     STR_NEED_BT_HOST_ADDR,
 #endif
     ERR_CANT_TRADE_MID_MOVE,
+    ERR_NO_EMPTY_TRADE,
 /*     ERR_CANT_ENGINE_MID_MOVE, */
 /*     ERR_NOT_YOUR_TURN_TO_TRADE, */
 /*     ERR_NOT_YOUR_TURN_TO_MOVE, */
