@@ -246,6 +246,10 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "Remove played tiles before trading.";
         break;
 
+    case ERR_NO_EMPTY_TRADE:
+        message = "No tiles selected; trade cancelled.";
+        break;
+
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
         break;
