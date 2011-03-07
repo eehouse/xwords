@@ -970,6 +970,9 @@ public class BoardActivity extends XWActivity
             case UtilCtxt.ERR_CANT_TRADE_MID_MOVE:
                 resid = R.string.str_cant_trade_mid_move;
                 break;
+            case UtilCtxt.ERR_NO_EMPTY_TRADE:
+                resid = R.string.str_no_empty_trade;
+                break;
             case UtilCtxt.ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
                 resid = R.string.str_too_few_tiles_left_to_trade;
                 break;

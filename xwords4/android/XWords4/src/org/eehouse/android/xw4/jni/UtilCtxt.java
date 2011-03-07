@@ -97,9 +97,10 @@ public interface UtilCtxt {
     static final int ERR_REG_SERVER_SANS_REMOTE = 11;
     static final int STR_NEED_BT_HOST_ADDR = 12;
     static final int ERR_CANT_TRADE_MID_MOVE = 13;
-    static final int ERR_CANT_UNDO_TILEASSIGN = 14;
-    static final int ERR_CANT_HINT_WHILE_DISABLED = 15;
-    static final int ERR_RELAY_BASE = 16;
+    static final int ERR_NO_EMPTY_TRADE = 14;
+    static final int ERR_CANT_UNDO_TILEASSIGN = 15;
+    static final int ERR_CANT_HINT_WHILE_DISABLED = 16;
+    static final int ERR_RELAY_BASE = 17;
     void userError( int id );
 
     void notifyGameOver();
