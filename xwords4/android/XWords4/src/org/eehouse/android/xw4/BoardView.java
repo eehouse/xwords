@@ -502,7 +502,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             } else if ( null != bonusStr ) {
                 m_fillPaint.setColor( GREY );
                 Rect brect = new Rect( rect );
-                brect.inset( 0, (brect.height() - m_defaultFontHt)/2 );
+                brect.inset( 0, brect.height()/10 );
                 drawCentered( bonusStr, brect, m_fontDims );
             }
         } else {
