@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -30,6 +29,7 @@ import android.net.Uri;
 import junit.framework.Assert;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.app.AlertDialog;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -138,7 +138,10 @@ public class DlgDelegate {
         if ( null == DBUtils.getRelayIDs( m_activity, false ) ) {
             showOKOnlyDialog( R.string.no_games_to_refresh );
         } else {
-            RelayReceiver.RestartTimer( m_activity );            
+            RelayReceiver.RestartTimer( m_activity );
+            Toast.makeText( m_activity, 
+                            m_activity.getString( R.string.msgs_progress ),
+                            Toast.LENGTH_LONG ).show();
         }
     }
 
