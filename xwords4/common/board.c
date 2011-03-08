@@ -561,7 +561,8 @@ XP_Bool
 board_canHint( const BoardCtxt* board )
 {
     XP_Bool canHint = !board->gi->hintsNotAllowed
-        && 0 < model_getNumTilesTotal( board->model, board->selPlayer );
+        && 0 < model_getNumTilesTotal( board->model, board->selPlayer )
+        && ! board->pti[board->selPlayer].tradeInProgress;
     if ( canHint ) {
         LocalPlayer* lp = &board->gi->players[board->selPlayer];
         canHint = lp->isLocal && !LP_IS_ROBOT(lp);
