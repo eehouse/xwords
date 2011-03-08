@@ -16,9 +16,8 @@
 
 <resources>
     <string name="menu_delete">Delete</string>
-    <string name="menu_insert">Add game</string>
-    <string name="button_new_game">Add game</string>
-    <string name="button_new_game_net">Add networked game</string>
+    <string name="button_new_game">Add single-device game</string>
+    <string name="button_new_game_net">Add multi-device game</string>
 
     <string name="list_item_play">Play game</string>
     <string name="list_item_config">Game settings...</string>
