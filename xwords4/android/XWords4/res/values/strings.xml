@@ -448,9 +448,9 @@
       Or try joining or creating a public room.</string>
 
     <string name="not_again_newgame">The new game you have created has
-      two players, the first a robot, both on this device. Tap it to
-      play; long-tap it to change its configuration or for other
-      options.</string>
+      two players. Player 1 is a robot; Player 2 is you. Tap the game
+      to play; long-tap (hold your finger on the game) to change its
+      settings or for other options.</string>
 
     <string name="not_again_hintprev">This button shows all possible
       moves in ascending order (using tiles to the right of the rack
