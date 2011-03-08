@@ -1135,6 +1135,7 @@ handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     if ( board_beginTrade( globals->cGlobals.game.board ) ) {
         board_draw( globals->cGlobals.game.board );
+        disenable_buttons( globals );
     }
 } /* handle_juggle_button */
 
@@ -1143,6 +1144,7 @@ handle_done_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     if ( board_commitTurn( globals->cGlobals.game.board ) ) {
         board_draw( globals->cGlobals.game.board );
+        disenable_buttons( globals );
     }
 } /* handle_done_button */
 
