@@ -112,7 +112,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         int descentFor( int ht ) { return (int)(ht * m_descentProportion); }
         int widthFor( int width ) { return (int)(width / m_widthProportion); }
     }
-    FontDims m_fontDims;
+    private FontDims m_fontDims;
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;

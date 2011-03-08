@@ -41,7 +41,6 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
-    private int m_layoutId;
     private HashMap<String,View> m_viewsCache;
     private DateFormat m_df;
 
@@ -57,8 +56,6 @@ public class GameListAdapter extends XWListAdapter {
             sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
         } catch ( Exception ex ) {}
 
-        m_layoutId = R.layout.game_list_item;
-
         m_viewsCache = new HashMap<String,View>();
     }
     
@@ -72,7 +69,7 @@ public class GameListAdapter extends XWListAdapter {
         View layout = m_viewsCache.get( path );
 
         if ( null == layout ) {
-            layout = m_factory.inflate( m_layoutId, null );
+            layout = m_factory.inflate( R.layout.game_list_item, null );
             final boolean hideTitle = 
                 false;//CommonPrefs.getHideTitleBar( m_context );
 
