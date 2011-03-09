@@ -8,7 +8,7 @@
 
 <b>Crosswords 4.4 beta 22 release</b>
 <ul>
-  <li>Add periodic background checks for moves made by other device in 
+  <li>Add periodic background checks for moves made by other devices in 
   multi-device game.</li>
 
   <li>Improve chat experience: now keeps history for each game.</li>
@@ -27,7 +27,7 @@
   make tiles translucent as they're being dragged; etc.
   </li>
 
-  <li>Removed "undo last" option for networked games.  It's not safe...</li>
+  <li>Removed "undo last" option for multi-device games.  It's not safe...</li>
 
   <li>Delete partial dictionary left behind by failed download</li>
 
