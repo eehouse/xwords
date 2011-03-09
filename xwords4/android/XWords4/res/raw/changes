@@ -14,8 +14,9 @@
   <li>Improve chat experience: now keeps history for each game.</li>
 
   <li>Smart robot checkbox replaced by three-way choice, and now less 
-  intelligent robots pick their dumb moves randomly.  Better solution 
-  coming: robots will be able to use different, smaller dictionaries.</li>
+  smart robots pick their less smart moves randomly.  A better 
+  solution is coming: robots will be able to use different, smaller 
+  dictionaries.</li>
 
   <li>Add hints-enabled to the set of defaults for new games.</li>
 
