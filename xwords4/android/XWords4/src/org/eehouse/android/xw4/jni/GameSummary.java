@@ -125,7 +125,7 @@ public class GameSummary {
 
     private boolean isLocal( int indx ) {
         int flag = 2 << (indx * 2);
-        return 0 != (giFlags & flag);
+        return 0 == (giFlags & flag);
     }
 
     private boolean isRobot( int indx ) {
@@ -138,7 +138,7 @@ public class GameSummary {
         Assert.assertNotNull( m_gi );
         int result = 0;
         for ( int ii = 0; ii < m_gi.nPlayers; ++ii ) {
-            if ( m_gi.players[ii].isLocal ) {
+            if ( ! m_gi.players[ii].isLocal ) {
                 result |= 2 << (ii * 2);
             }
             if ( m_gi.players[ii].isRobot() ) {
