@@ -7,27 +7,20 @@
               android:paddingLeft="8dp"
               android:paddingRight="8dp">
  
-  <!-- FrameLayout required since Activity will pick between the two
-  view using the latter only if the list is empty. -->
-  <FrameLayout android:layout_width="fill_parent" 
-               android:layout_height="0dip"
-               android:layout_weight="1" >
+  <TextView android:id="@+id/empty_games_list"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/empty_games_list"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
 
-    <ListView android:id="@id/android:list"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
-              android:layout_weight="1"
-              android:drawSelectorOnTop="false"
-              />
-
-    <TextView android:id="@+id/empty_games_list"
-              android:layout_height="fill_parent"
-              android:layout_width="fill_parent"
-              android:text="@string/empty_games_list"
-              android:textAppearance="?android:attr/textAppearanceMedium"
-              />
-
-  </FrameLayout>
+  <ListView android:id="@id/android:list"
+            android:layout_width="fill_parent" 
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="false"
+            >
+  </ListView>
 
   <Button android:id="@+id/new_game"
           android:layout_width="fill_parent" 

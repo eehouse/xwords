@@ -161,7 +161,6 @@ public class GamesList extends XWListActivity
 
         setContentView(R.layout.game_list);
         ListView listView = getListView();
-        listView.setEmptyView( findViewById( R.id.empty_games_list ) );
         registerForContextMenu( listView );
 
         boolean isUpgrade = FirstRunDialog.show( this, false );
@@ -242,6 +241,17 @@ public class GamesList extends XWListActivity
     {
         DBUtils.clearDBChangeListener( this );
         super.onDestroy();
+    }
+
+    @Override
+    public void onContentChanged()
+    {
+        int count = DBUtils.gamesList( this ).length;
+        int hereOrGone = count > 3 ? View.GONE : View.VISIBLE;
+        View hint = findViewById( R.id.empty_games_list );
+        hint.setVisibility( hereOrGone );
+
+        super.onContentChanged();
     }
 
     // DispatchNotify.HandleRelaysIface interface
