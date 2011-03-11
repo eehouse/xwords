@@ -113,7 +113,6 @@
     <string name="strs_new_tiles">Fitxes noves: %s</string>
     <string name="str_passed">Ha passat</string>
     <string name="strsd_summaryscored"></string>
-    <string name="strd_traded">%s:%d</string>
     <string name="str_lostturn">Torn perdut</string>
     <string name="str_commit_confirm">Voleu fer la jugada?\n</string>
     <string name="str_local_name">%s</string>

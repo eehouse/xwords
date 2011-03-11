@@ -110,7 +110,6 @@
     <string name="strs_new_tiles">Nové kamene: %s</string>
     <string name="str_passed">Prešiel</string>
     <string name="strsd_summaryscored">%s:%d</string>
-    <string name="strd_traded">%s:%d</string>
     <string name="str_lostturn">Ťah bol stratený</string>
     <string name="str_commit_confirm">Potvrdiť tento ťah?\n</string>
     <string name="str_local_name">%s</string>
