@@ -12,6 +12,8 @@
             android:layout_width="wrap_content"
             android:text="@string/empty_games_list"
             android:textAppearance="?android:attr/textAppearanceMedium"
+            android:background="#FF202020"
+            android:gravity="center"
             />
 
   <ListView android:id="@id/android:list"

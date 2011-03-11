@@ -247,7 +247,7 @@ public class GamesList extends XWListActivity
     public void onContentChanged()
     {
         int count = DBUtils.gamesList( this ).length;
-        int hereOrGone = count > 3 ? View.GONE : View.VISIBLE;
+        int hereOrGone = count > 2 ? View.GONE : View.VISIBLE;
         View hint = findViewById( R.id.empty_games_list );
         hint.setVisibility( hereOrGone );
 
