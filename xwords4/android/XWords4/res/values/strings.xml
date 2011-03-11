@@ -110,7 +110,7 @@
     <string name="str_pass"> - %d [time]</string>
     <string name="strs_move_across">move (from %s across)</string>
     <string name="strs_move_down">move (from %s down)</string>
-    <string name="strs_tray_at_start">Rack at start: %s</string>
+    <string name="strs_tray_at_start">Rack at start: %s\n</string>
     <string name="strss_traded_for">Exchanged %s for %s.</string>
     <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
     <string name="strd_cumulative_score">Cumulative score: %d</string>
