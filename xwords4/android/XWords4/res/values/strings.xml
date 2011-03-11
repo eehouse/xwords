@@ -532,7 +532,8 @@
 
     <string name="empty_games_list">Use one of the buttons below to
       create a game. Then tap the game to play or long-tap it for
-      other options.\n(This hint will disappear whenever there are
-      more than two games in the list.)</string>
+      other options.</string>
+    <string name="empty_games_list2">This hint will disappear
+      whenever there are more than two games in the list.</string>
 
 </resources>

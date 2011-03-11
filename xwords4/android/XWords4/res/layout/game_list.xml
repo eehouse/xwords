@@ -6,15 +6,26 @@
               android:layout_height="fill_parent"
               android:paddingLeft="8dp"
               android:paddingRight="8dp">
- 
-  <TextView android:id="@+id/empty_games_list"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="@string/empty_games_list"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:background="#FF202020"
-            android:gravity="center"
-            />
+
+  <LinearLayout android:id="@+id/empty_games_list"
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                > 
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              android:text="@string/empty_games_list"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              android:background="#FF202020"
+              android:gravity="center"
+              />
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              android:text="@string/empty_games_list2"
+              android:background="#FF202020"
+              android:gravity="center"
+              />
+  </LinearLayout>
 
   <ListView android:id="@id/android:list"
             android:layout_width="fill_parent" 
