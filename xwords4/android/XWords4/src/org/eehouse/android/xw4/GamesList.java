@@ -217,6 +217,11 @@ public class GamesList extends XWListActivity
         super.onStart();
         DispatchNotify.SetRelayIDsHandler( this );
 
+        boolean hide = CommonPrefs.getHideIntro( this );
+        int hereOrGone = hide ? View.GONE : View.VISIBLE;
+        View hint = findViewById( R.id.empty_games_list );
+        hint.setVisibility( hereOrGone );
+
         // TelephonyManager mgr = 
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // m_phoneStateListener = new XWPhoneStateListener();
@@ -241,17 +246,6 @@ public class GamesList extends XWListActivity
     {
         DBUtils.clearDBChangeListener( this );
         super.onDestroy();
-    }
-
-    @Override
-    public void onContentChanged()
-    {
-        int count = DBUtils.gamesList( this ).length;
-        int hereOrGone = count > 2 ? View.GONE : View.VISIBLE;
-        View hint = findViewById( R.id.empty_games_list );
-        hint.setVisibility( hereOrGone );
-
-        super.onContentChanged();
     }
 
     // DispatchNotify.HandleRelaysIface interface

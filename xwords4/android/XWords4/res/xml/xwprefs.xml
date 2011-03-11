@@ -54,14 +54,19 @@
     <!--                      android:summary="@string/color_tiles_summary" -->
     <!--                      android:defaultValue="true" -->
     <!--                      /> -->
-    <CheckBoxPreference android:key="@string/key_show_arrow"
-                        android:title="@string/show_arrow"
-                        android:summary="@string/show_arrow_summary"
-                        android:defaultValue="true"
+    <CheckBoxPreference android:key="@string/key_hide_intro"
+                        android:title="@string/hide_intro"
+                        android:summary="@string/hide_intro_summary"
+                        android:defaultValue="false"
                         />
     <CheckBoxPreference android:key="@string/key_hide_title"
                         android:title="@string/hide_title"
                         android:summary="@string/hide_title_summary"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_show_arrow"
+                        android:title="@string/show_arrow"
+                        android:summary="@string/show_arrow_summary"
                         android:defaultValue="true"
                         />
 

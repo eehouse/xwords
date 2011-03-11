@@ -221,6 +221,9 @@
     <string name="hide_title">Hide titlebar</string>
     <string name="hide_title_summary">Hiding the game name lets the
       board be slightly larger</string>
+    <string name="hide_intro">Hide main-page hint</string>
+    <string name="hide_intro_summary">It\'s useful only when you\'re starting
+    out...</string>
     <string name="peek_other">View tiles out-of-turn</string>
     <string name="peek_other_summary">Tapping on scoreboard name shows
     that player\'s tiles</string>
@@ -291,8 +294,8 @@
     <string name="empty">Empty cell/background</string>
     <string name="clr_crosshairs">Crosshairs color</string>
 
-    <string name="advanced">Advanced</string>
-    <string name="advanced_summary">You may never need these...</string>
+    <string name="advanced">For debugging</string>
+    <string name="advanced_summary">You should never need these...</string>
     <string name="relay_host">Relay address</string>
     <string name="dict_host">Dictionary download URL</string>
     <string name="logging_on">Enable logging</string>
@@ -399,7 +402,7 @@
 	<string name="connect_one_hour">Hourly</string>
 	<string name="connect_six_hours">Every six hours</string>
 	<string name="connect_daily">Once every day</string>
-	<string name="connect_never">Never connect</string>
+	<string name="connect_never">Never check</string>
 
 	<string name="notify_sound">Play sound</string>
 	<string name="notify_vibrate">Vibrate</string>
@@ -533,7 +536,7 @@
     <string name="empty_games_list">Use one of the buttons below to
       create a game. Then tap the game to play or long-tap it for
       other options.</string>
-    <string name="empty_games_list2">This hint will disappear
-      whenever there are more than two games in the list.</string>
+    <string name="empty_games_list2">You can hide this in the
+      Appearance section of Settings (via the menu key).</string>
 
 </resources>

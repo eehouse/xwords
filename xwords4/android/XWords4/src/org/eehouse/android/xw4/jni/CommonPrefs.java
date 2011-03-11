@@ -254,6 +254,11 @@ public class CommonPrefs {
         return getPrefsBoolean( context, R.string.key_notify_vibrate, false );
     }
 
+    public static boolean getHideIntro( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_hide_intro, false );
+    }
+
     public static boolean getPrefsBoolean( Context context, int keyID,
                                            boolean defaultValue )
     {
