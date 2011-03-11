@@ -117,7 +117,7 @@
     <string name="strs_new_tiles">New tiles: %s</string>
     <string name="str_passed">Passed</string>
     <string name="strsd_summaryscored">%s:%d</string>
-    <string name="strd_traded">%s:%d</string>
+    <string name="strd_traded">Traded %d</string>
     <string name="str_lostturn">Lost turn</string>
     <string name="str_commit_confirm">Commit the current move?\n</string>
     <string name="str_local_name">%s</string>
