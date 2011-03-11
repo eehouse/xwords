@@ -108,12 +108,12 @@
     <string name="str_remote_moved">Remote player made this move: </string>
     <string name="strd_time_penalty_sub"></string>
     <string name="str_pass"> - %d [time]</string>
-    <string name="strs_move_across">move (from %s across)</string>
-    <string name="strs_move_down">move (from %s down)</string>
+    <string name="strs_move_across">move (from %s across)\n</string>
+    <string name="strs_move_down">move (from %s down)\n</string>
     <string name="strs_tray_at_start">Rack at start: %s\n</string>
     <string name="strss_traded_for">Exchanged %s for %s.</string>
     <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
-    <string name="strd_cumulative_score">Cumulative score: %d</string>
+    <string name="strd_cumulative_score">Cumulative score: %d\n</string>
     <string name="strs_new_tiles">New tiles: %s</string>
     <string name="str_passed">Passed</string>
     <string name="strsd_summaryscored">%s:%d</string>
