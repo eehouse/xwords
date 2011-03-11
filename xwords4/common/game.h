@@ -85,6 +85,15 @@ typedef struct CurGameInfo {
     XP_Bool confirmBTConnect;   /* only used for BT */
 } CurGameInfo;
 
+typedef struct _GameStateInfo {
+    XP_U16 visTileCount;
+    XP_Bool canHint;
+    XP_Bool canRedo;
+    XP_Bool inTrade;
+    XP_Bool gameIsConnected;
+    XP_Bool canShuffle;
+} GameStateInfo;
+
 typedef struct XWGame {
     BoardCtxt* board;
     ModelCtxt* model;
@@ -109,6 +118,9 @@ XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
                         XWStreamCtxt* stream );
 void game_dispose( XWGame* game );
+
+void game_getState( const XWGame* game, GameStateInfo* gsi );
+
 void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, 
                         const XP_UCHAR* nameTemplate );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );

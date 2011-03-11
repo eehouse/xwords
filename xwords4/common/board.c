@@ -750,17 +750,14 @@ board_commitTurn( BoardCtxt* board )
             result = XP_TRUE; /* there's at least the window to clean up
                                  after */
 
-            invalSelTradeWindow( board );
-            pti->tradeInProgress = XP_FALSE;
-
             if ( NO_TILES == pti->traySelBits ) {
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
             } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
                                         (XWStreamCtxt*)NULL ) ) {
                 result = server_commitTrade( board->server, 
                                              pti->traySelBits );
-                pti->traySelBits = NO_TILES;
             }
+            (void)board_endTrade( board );
         } else {
             XP_Bool warn, legal;
             WordNotifierInfo info;
@@ -1571,6 +1568,13 @@ board_flip( BoardCtxt* board )
 } /* board_flip */
 
 XP_Bool
+board_inTrade( const BoardCtxt* board )
+{
+    const PerTurnInfo* pti = &board->pti[board->selPlayer];
+    return pti->tradeInProgress;
+}
+
+XP_Bool
 board_get_showValues( const BoardCtxt* board )
 {
     return board->showCellValues;
@@ -2060,6 +2064,20 @@ board_beginTrade( BoardCtxt* board )
     }
     return result;
 } /* board_beginTrade */
+
+XP_Bool
+board_endTrade( BoardCtxt* board )
+{
+    XP_Bool result = board_inTrade( board );
+    if ( result ) {
+        PerTurnInfo* pti = board->selInfo;
+        invalSelTradeWindow( board );
+        pti->tradeInProgress = XP_FALSE;
+        pti->traySelBits = NO_TILES;
+    }
+    return result;
+}
+
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 static XP_Bool

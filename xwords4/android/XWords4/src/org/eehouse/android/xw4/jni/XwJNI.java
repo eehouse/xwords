@@ -111,6 +111,8 @@ public class XwJNI {
     public static native byte[] game_saveToStream( int gamePtr,
                                                    CurGameInfo gi  );
     public static native void game_getGi( int gamePtr, CurGameInfo gi );
+    public static native void game_getState( int gamePtr, 
+                                             JNIThread.GameStateInfo gsi );
     public static native boolean game_hasComms( int gamePtr );
     public static native void game_dispose( int gamePtr );
 
@@ -156,13 +158,9 @@ public class XwJNI {
                                                     boolean goBackwards,
                                                     boolean[] workRemains );
     public static native boolean board_beginTrade( int gamePtr );
+    public static native boolean board_endTrade( int gamePtr );
 
     public static native String board_formatRemainingTiles( int gamePtr );
-
-    public static native int board_visTileCount( int gamePtr );
-    public static native boolean board_canHint( int gamePtr );
-    public static native boolean board_canShuffle( int gamePtr );
-    public static native boolean board_canTogglePending( int gamePtr );
 
     public enum XP_Key {
         XP_KEY_NONE,
@@ -215,7 +213,6 @@ public class XwJNI {
     public static native void comms_setAddr( int gamePtr, CommsAddrRec addr );
     public static native void comms_resendAll( int gamePtr );
     public static native void comms_transportFailed( int gamePtr );
-    public static native boolean comms_canChat( int gamePtr );
     public static native boolean comms_isConnected( int gamePtr );
 
     // Dicts

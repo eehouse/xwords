@@ -685,6 +685,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1beginTrade
 }
 
 JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1endTrade
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_endTrade( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1toggle_1showValues
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
@@ -1090,61 +1101,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1focusChanged
 }
 #endif
 
-JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1visTileCount
-( JNIEnv* env, jclass C, jint gamePtr )
-{
-    jint result;
-    XWJNI_START();
-    result = board_visTileCount( state->game.board );
-    XWJNI_END();
-    return result;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1canHint
-( JNIEnv* env, jclass C, jint gamePtr )
-{
-    jboolean result;
-    XWJNI_START();
-    result = board_canHint( state->game.board );
-    XWJNI_END();
-    return result;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1canShuffle
-( JNIEnv* env, jclass C, jint gamePtr )
-{
-    jboolean result;
-    XWJNI_START();
-    result = board_canShuffle( state->game.board );
-    XWJNI_END();
-    return result;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1canTogglePending
-( JNIEnv* env, jclass C, jint gamePtr )
-{
-    jboolean result;
-    XWJNI_START();
-    result = board_canTogglePending( state->game.board );
-    XWJNI_END();
-    return result;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1canChat
-( JNIEnv* env, jclass C, jint gamePtr )
-{
-    jboolean result;
-    XWJNI_START();
-    result = NULL != state->game.comms && comms_canChat( state->game.comms );
-    XWJNI_END();
-    return result;
-}
-
 #ifdef KEYBOARD_NAV
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handleKey
@@ -1174,6 +1130,24 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getGi
 {
     XWJNI_START_GLOBALS();
     setJGI( env, jgi, globals->gi );
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
+( JNIEnv* env, jclass C, jint gamePtr, jobject jgsi )
+{
+    XWJNI_START();
+    GameStateInfo info;
+    game_getState( &state->game, &info );
+
+    setInt( env, jgsi, "visTileCount", info.visTileCount );
+    setBool( env, jgsi, "canHint", info.canHint );
+    setBool( env, jgsi, "canRedo", info.canRedo);
+    setBool( env, jgsi, "inTrade", info.inTrade );
+    setBool( env, jgsi, "gameIsConnected", info.gameIsConnected );
+    setBool( env, jgsi, "canShuffle", info.canShuffle );
+
     XWJNI_END();
 }
 
@@ -1240,4 +1214,3 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
     (*env)->ReleaseStringUTFChars( env, jmsg, msg );
     XWJNI_END();
 }
-

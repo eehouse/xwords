@@ -134,11 +134,10 @@ public class Toolbar {
         }
     }
 
-    public void update( int index, int enable )
+    public void update( int index, boolean enable )
     {
-        boolean show = enable!=0;
         TBButtonInfo info = s_buttonInfo[index];
-        int vis = enable != 0 ? View.VISIBLE : View.GONE;
+        int vis = enable ? View.VISIBLE : View.GONE;
 
         ImageButton button;
         for ( int id : info.m_ids ) {

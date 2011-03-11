@@ -62,6 +62,7 @@ public class JNIThread extends Thread {
             CMD_FLIP,
             CMD_TOGGLE_TRAY,
             CMD_TRADE,
+            CMD_CANCELTRADE,
             CMD_UNDO_CUR,
             CMD_UNDO_LAST,
             CMD_HINT,
@@ -86,6 +87,25 @@ public class JNIThread extends Thread {
     public static final int DIALOG = 3;
     public static final int QUERY_ENDGAME = 4;
     public static final int TOOLBAR_STATES = 5;
+
+    public class GameStateInfo implements Cloneable {
+        public int visTileCount;
+        public boolean canHint;
+        public boolean canRedo;
+        public boolean inTrade;
+        public boolean gameIsConnected;
+        public boolean canShuffle;
+        public GameStateInfo clone() {
+            GameStateInfo obj = null;
+            try {
+                obj = (GameStateInfo)super.clone();
+            } catch ( CloneNotSupportedException cnse ) {
+            }
+            return obj;
+        }
+    }
+
+    private GameStateInfo m_gsi = new GameStateInfo();
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
@@ -158,6 +178,13 @@ public class JNIThread extends Thread {
         }
     }
 
+    public GameStateInfo getGameStateInfo()
+    {
+        synchronized( m_gsi ) {
+            return m_gsi.clone();
+        }
+    }
+
     private boolean toggleTray() {
         boolean draw;
         int state = XwJNI.board_getTrayVisState( m_jniGamePtr );
@@ -218,28 +245,10 @@ public class JNIThread extends Thread {
 
     private void checkButtons()
     {
-        int visTileCount = XwJNI.board_visTileCount( m_jniGamePtr );
-        int canFlip = visTileCount > 1 ? 1 : 0;
-        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_FLIP,
-                        canFlip ).sendToTarget();
-
-        int canShuffle = XwJNI.board_canShuffle( m_jniGamePtr ) ? 1 : 0;
-        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_JUGGLE,
-                        canShuffle ).sendToTarget();
-
-        int canRedo = XwJNI.board_canTogglePending( m_jniGamePtr ) ? 1 : 0;
-        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_UNDO,
-                        canRedo ).sendToTarget();
-
-        int canHint = XwJNI.board_canHint( m_jniGamePtr ) ? 1 : 0;
-        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_HINT_PREV,
-                        canHint ).sendToTarget();
-        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_HINT_NEXT,
-                        canHint ).sendToTarget();
-
-        int canMsg = XwJNI.comms_canChat( m_jniGamePtr ) ? 1 : 0;
-        Message.obtain( m_handler, TOOLBAR_STATES, Toolbar.BUTTON_CHAT,
-                        canMsg ).sendToTarget();
+        synchronized( m_gsi ) {
+            XwJNI.game_getState( m_jniGamePtr, m_gsi );
+        }
+        Message.obtain( m_handler, TOOLBAR_STATES ).sendToTarget();
     }
 
     public void run() 
@@ -370,6 +379,9 @@ public class JNIThread extends Thread {
                 break;
             case CMD_TRADE:
                 draw = XwJNI.board_beginTrade( m_jniGamePtr );
+                break;
+            case CMD_CANCELTRADE:
+                draw = XwJNI.board_endTrade( m_jniGamePtr );
                 break;
             case CMD_UNDO_CUR:
                 draw = XwJNI.board_replaceTiles( m_jniGamePtr )

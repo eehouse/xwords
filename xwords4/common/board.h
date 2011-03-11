@@ -100,6 +100,7 @@ XP_Bool board_draw( BoardCtxt* board );
 
 XP_Bool board_get_flipped( const BoardCtxt* board );
 XP_Bool board_flip( BoardCtxt* board );
+XP_Bool board_inTrade( const BoardCtxt* board );
 XP_Bool board_get_showValues( const BoardCtxt* board );
 XP_Bool board_toggle_showValues( BoardCtxt* board );
 XP_Bool board_replaceTiles( BoardCtxt* board );
@@ -158,6 +159,7 @@ XW_TrayVisState board_getTrayVisState( const BoardCtxt* board );
 void board_invalTrayTiles( BoardCtxt* board, TileBit what );
 XP_Bool board_juggleTray( BoardCtxt* board );
 XP_Bool board_beginTrade( BoardCtxt* board );
+XP_Bool board_endTrade( BoardCtxt* board );
 
 #if defined FOR_GREMLINS
 XP_Bool board_moveDivider( BoardCtxt* board, XP_Bool right );

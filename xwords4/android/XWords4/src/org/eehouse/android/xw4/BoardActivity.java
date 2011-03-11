@@ -97,6 +97,7 @@ public class BoardActivity extends XWActivity
 
     private Thread m_blockingThread;
     private JNIThread m_jniThread;
+    private JNIThread.GameStateInfo m_gsi;
 
     private ProgressDialog m_progress;
     private boolean m_isVisible;
@@ -386,7 +387,9 @@ public class BoardActivity extends XWActivity
         return super.onKeyUp( keyCode, event );
     }
 
-    public boolean onCreateOptionsMenu(Menu menu) {
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu ) 
+    {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.board_menu, menu );
 
@@ -395,6 +398,20 @@ public class BoardActivity extends XWActivity
         if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
             menu.removeItem( R.id.board_menu_undo_last );
         }
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
+    {
+        super.onPrepareOptionsMenu( menu );
+
+        if ( null != m_gsi ) {
+            boolean inTrade = m_gsi.inTrade;
+            menu.setGroupVisible( R.id.group_intrade, inTrade ) ;
+            menu.setGroupVisible( R.id.group_done, !inTrade );
+        }
+
         return true;
     }
 
@@ -424,6 +441,13 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_trade:
             cmd = JNIThread.JNICmd.CMD_TRADE;
             break;
+        case R.id.board_menu_trade_commit:
+            cmd = JNIThread.JNICmd.CMD_COMMIT;
+            break;
+        case R.id.board_menu_trade_cancel:
+            cmd = JNIThread.JNICmd.CMD_CANCELTRADE;
+            break;
+
         case R.id.board_menu_tray:
             cmd = JNIThread.JNICmd.CMD_TOGGLE_TRAY;
             break;
@@ -1105,7 +1129,8 @@ public class BoardActivity extends XWActivity
                                        showDialog( QUERY_ENDGAME );
                                        break;
                                    case JNIThread.TOOLBAR_STATES:
-                                       m_toolbar.update( msg.arg1, msg.arg2 );
+                                       m_gsi = m_jniThread.getGameStateInfo();
+                                       updateToolbar();
                                    }
                                }
                            } );
@@ -1338,6 +1363,16 @@ public class BoardActivity extends XWActivity
             }
             m_pendingChats.clear();
         }
+    }
+
+    private void updateToolbar()
+    {
+        m_toolbar.update( Toolbar.BUTTON_FLIP, m_gsi.visTileCount > 1 );
+        m_toolbar.update( Toolbar.BUTTON_JUGGLE, m_gsi.canShuffle );
+        m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
+        m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
+        m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
+        m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.gameIsConnected );
     }
 
 } // class BoardActivity
