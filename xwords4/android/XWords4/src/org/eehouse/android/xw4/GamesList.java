@@ -192,7 +192,6 @@ public class GamesList extends XWListActivity
         m_adapter = new GameListAdapter( this );
         setListAdapter( m_adapter );
 
-        RelayReceiver.RestartTimer( this );
         NetUtils.informOfDeaths( this );
 
         startFirstHasDict( getIntent() );
