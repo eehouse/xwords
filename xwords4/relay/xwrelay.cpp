@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make"; -*- */
 
 /* 
  * Copyright 2005-2010 by Eric House (xwords@eehouse.org).  All rights
@@ -690,8 +690,11 @@ read_packet( int sock, unsigned char* buf, int buflen )
             }
         }
     }
+    if ( -1 == result ) {
+        logf( XW_LOGERROR, "%s failed: %s", __func__, strerror(errno) );
+    }
     return result;
-}
+} /* read_packet */
 
 static void
 pushShort( vector<unsigned char>& out, unsigned short num )
@@ -840,6 +843,25 @@ handle_proxy_packet( unsigned char* buf, int len, int sock )
         }
     }
 } /* handle_proxy_packet */
+
+static void
+set_timeouts( int sock )
+{
+    struct timeval tv;
+    int result;
+
+    int timeout = 20;
+    (void)RelayConfigs::GetConfigs()->GetValueFor( "SOCK_TIMEOUT_SECONDS", 
+                                                   &timeout );
+
+    tv.tv_sec = timeout;     /* seconds */
+    tv.tv_usec = 0;    /* microseconds */
+
+    result = setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv) );
+    assert( 0 == result );
+    result = setsockopt( sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv) );
+    assert( 0 == result );
+}
 
 int
 main( int argc, char** argv )
@@ -1143,6 +1165,9 @@ main( int argc, char** argv )
                     socklen_t siz = sizeof(newaddr);
                     int newSock = accept( listener, (sockaddr*)&newaddr,
                                           &siz );
+
+                    /* Set timeout so send and recv won't block forever */
+                    set_timeouts( newSock );
 
                     logf( XW_LOGINFO, 
                           "accepting connection from %s on socket %d", 
