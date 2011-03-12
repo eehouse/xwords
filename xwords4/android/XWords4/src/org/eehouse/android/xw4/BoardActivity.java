@@ -1138,14 +1138,8 @@ public class BoardActivity extends XWActivity
             if ( !CommonPrefs.getHideTitleBar( this ) ) {
                 setTitle( GameUtils.gameName( this, m_path ) );
             }
-            m_toolbar = 
-                new Toolbar( this, findViewById( R.id.toolbar_horizontal ),
-                             findViewById( R.id.toolbar_vertical ) );
+            m_toolbar = new Toolbar( this );
 
-            boolean isLandscape = 
-                getResources().getConfiguration().orientation
-                == Configuration.ORIENTATION_LANDSCAPE;
-            m_toolbar.orientChanged( isLandscape );
             populateToolbar();
 
             int flags = DBUtils.getMsgFlags( m_path );

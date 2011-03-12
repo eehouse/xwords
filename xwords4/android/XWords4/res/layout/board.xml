@@ -1,99 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
+              android:orientation="vertical"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
-              android:paddingLeft="3dp"
-              android:paddingRight="3dp"
-              android:paddingTop="3dp"
+              android:layout_weight="1"
               >
- 
-  <LinearLayout android:orientation="vertical"
-                android:layout_width="fill_parent" 
-                android:layout_height="fill_parent"
-                android:layout_weight="1"
-                >
-    <org.eehouse.android.xw4.BoardView
-       android:id="@+id/board_view"
-       android:layout_width="fill_parent" 
-       android:layout_height="fill_parent"
-       android:layout_weight="1"
-       android:focusable="true"
-       android:clickable="true"
-       android:longClickable="true"
-       android:drawSelectorOnTop="false"/>
+  <org.eehouse.android.xw4.BoardView
+     android:id="@+id/board_view"
+     android:layout_width="fill_parent" 
+     android:layout_height="fill_parent"
+     android:layout_weight="1"
+     android:focusable="true"
+     android:clickable="true"
+     android:longClickable="true"
+     android:drawSelectorOnTop="false"/>
 
-    <LinearLayout android:id="@+id/toolbar_horizontal"
-                  android:orientation="horizontal"
-                  android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  >
-   	  <ImageButton android:id="@+id/prevhint_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/prev_hint"
-                   />
-   	  <ImageButton android:id="@+id/nexthint_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/next_hint"
-                   />
-   	  <ImageButton android:id="@+id/shuffle_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/shuffle"
-                   />
-   	  <ImageButton android:id="@+id/flip_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/flip"
-                   />
-   	  <ImageButton android:id="@+id/zoom_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/zoom"
-                   />
-   	  <ImageButton android:id="@+id/undo_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/undo"
-                   />
-   	  <ImageButton android:id="@+id/chat_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/stat_notify_chat"
-                   />
-    </LinearLayout>
-  </LinearLayout>
-
-  <LinearLayout android:id="@+id/toolbar_vertical"
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
+  <LinearLayout android:id="@+id/toolbar_horizontal"
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
                 >
-   	<ImageButton android:id="@+id/prevhint_button_vertical"
+   	<ImageButton android:id="@+id/prevhint_button_horizontal"
                  style="@style/toolbar_button"
     	         android:src="@drawable/prev_hint"
                  />
-   	<ImageButton android:id="@+id/nexthint_button_vertical"
+   	<ImageButton android:id="@+id/nexthint_button_horizontal"
                  style="@style/toolbar_button"
     	         android:src="@drawable/next_hint"
                  />
-   	<ImageButton android:id="@+id/shuffle_button_vertical"
+   	<ImageButton android:id="@+id/shuffle_button_horizontal"
                  style="@style/toolbar_button"
     	         android:src="@drawable/shuffle"
                  />
-   	<ImageButton android:id="@+id/flip_button_vertical"
+   	<ImageButton android:id="@+id/flip_button_horizontal"
                  style="@style/toolbar_button"
     	         android:src="@drawable/flip"
                  />
-   	<ImageButton android:id="@+id/zoom_button_vertical"
+   	<ImageButton android:id="@+id/zoom_button_horizontal"
                  style="@style/toolbar_button"
     	         android:src="@drawable/zoom"
                  />
-   	<ImageButton android:id="@+id/undo_button_vertical"
+   	<ImageButton android:id="@+id/undo_button_horizontal"
                  style="@style/toolbar_button"
     	         android:src="@drawable/undo"
                  />
-   	<ImageButton android:id="@+id/chat_button_vertical"
+   	<ImageButton android:id="@+id/chat_button_horizontal"
                  style="@style/toolbar_button"
     	         android:src="@drawable/stat_notify_chat"
                  />
-
   </LinearLayout>
-
 </LinearLayout>

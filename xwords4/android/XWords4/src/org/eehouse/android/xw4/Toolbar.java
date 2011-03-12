@@ -27,19 +27,16 @@ import android.content.DialogInterface;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ImageButton;
-//import android.view.LayoutInflater;
-//import java.util.HashMap;
-//import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
 public class Toolbar {
 
     private static class TBButtonInfo {
-        public TBButtonInfo( int idHor, int idVert ) {
-            m_ids = new int[] { idHor, idVert };
+        public TBButtonInfo( int id/*, int idVert*/ ) {
+            m_id = id;
         }
-        public int m_ids[];
+        public int m_id;
     }
 
     public static final int BUTTON_HINT_PREV = 0;
@@ -52,31 +49,22 @@ public class Toolbar {
 
     private static TBButtonInfo[] s_buttonInfo = {
         // BUTTON_HINT_PREV
-        new TBButtonInfo(R.id.prevhint_button_horizontal, 
-                         R.id.prevhint_button_vertical),
+        new TBButtonInfo(R.id.prevhint_button_horizontal ),
         // BUTTON_HINT_NEXT
-        new TBButtonInfo(R.id.nexthint_button_horizontal, 
-                         R.id.nexthint_button_vertical),
+        new TBButtonInfo(R.id.nexthint_button_horizontal ),
         // BUTTON_FLIP
-        new TBButtonInfo(R.id.flip_button_horizontal,
-                         R.id.flip_button_vertical),
+        new TBButtonInfo(R.id.flip_button_horizontal ),
         // BUTTON_JUGGLE
-        new TBButtonInfo( R.id.shuffle_button_horizontal,
-                          R.id.shuffle_button_vertical ),
+        new TBButtonInfo( R.id.shuffle_button_horizontal ),
         // BUTTON_ZOOM
-        new TBButtonInfo( R.id.zoom_button_horizontal,
-                          R.id.zoom_button_vertical ),
+        new TBButtonInfo( R.id.zoom_button_horizontal ),
         // BUTTON_UNDO
-        new TBButtonInfo( R.id.undo_button_horizontal,
-                          R.id.undo_button_vertical ),
+        new TBButtonInfo( R.id.undo_button_horizontal ),
         // BUTTON_CHAT
-        new TBButtonInfo( R.id.chat_button_horizontal,
-                          R.id.chat_button_vertical ),
+        new TBButtonInfo( R.id.chat_button_horizontal ),
     };
 
     private XWActivity m_activity;
-    private LinearLayout m_horLayout;
-    private LinearLayout m_vertLayout;
 
     private enum ORIENTATION { ORIENT_UNKNOWN,
             ORIENT_PORTRAIT,
@@ -84,20 +72,16 @@ public class Toolbar {
             };
     private ORIENTATION m_curOrient = ORIENTATION.ORIENT_UNKNOWN;
 
-    public Toolbar( XWActivity activity, View horLayout, View vertLayout )
+    public Toolbar( XWActivity activity )
     {
         m_activity = activity;
-        m_horLayout = (LinearLayout)horLayout;
-        m_vertLayout = (LinearLayout)vertLayout;
     }
 
     public void setListener( int index, View.OnClickListener listener )
     {
         TBButtonInfo info = s_buttonInfo[index];
-        for ( int id : info.m_ids ) {
-            ImageButton button = (ImageButton)m_activity.findViewById( id );
-            button.setOnClickListener( listener );
-        }
+        ImageButton button = (ImageButton)m_activity.findViewById( info.m_id );
+        button.setOnClickListener( listener );
     }
 
     public void setListener( int index, final int msgID, final int prefsKey, 
@@ -111,39 +95,13 @@ public class Toolbar {
         setListener( index, listener );
     }
 
-    public void orientChanged( boolean landscape )
-    {
-        if ( landscape && m_curOrient == ORIENTATION.ORIENT_LANDSCAPE ) {
-            // do nothing
-        } else if ( !landscape && m_curOrient == ORIENTATION.ORIENT_PORTRAIT ) {
-            // do nothing
-        } else {
-            LinearLayout prevLayout, nextLayout;
-            if ( landscape ) {
-                m_curOrient = ORIENTATION.ORIENT_LANDSCAPE;
-                prevLayout = m_horLayout;
-                nextLayout = m_vertLayout;
-            } else {
-                m_curOrient = ORIENTATION.ORIENT_PORTRAIT;
-                prevLayout = m_vertLayout;
-                nextLayout = m_horLayout;
-            }
-
-            prevLayout.setVisibility( View.GONE );
-            nextLayout.setVisibility( View.VISIBLE );
-        }
-    }
-
     public void update( int index, boolean enable )
     {
         TBButtonInfo info = s_buttonInfo[index];
         int vis = enable ? View.VISIBLE : View.GONE;
 
-        ImageButton button;
-        for ( int id : info.m_ids ) {
-            button = (ImageButton)m_activity.findViewById( id );
-            button.setVisibility( vis );
-        }
+        ImageButton button = (ImageButton)m_activity.findViewById( info.m_id );
+        button.setVisibility( vis );
     }
 
 }
