@@ -273,6 +273,8 @@ public class BoardActivity extends XWActivity
         Utils.logf( "BoardActivity::onCreate()" );
         super.onCreate( savedInstanceState );
 
+        setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT );
+
         if ( CommonPrefs.getHideTitleBar( this ) ) {
             requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
@@ -337,18 +339,6 @@ public class BoardActivity extends XWActivity
                 }
             }
         }
-    }
-
-    @Override
-    public void onConfigurationChanged( Configuration newConfig )
-    {
-        m_currentOrient = newConfig.orientation;
-        if ( null != m_toolbar ) {
-            boolean landscape = 
-                m_currentOrient == Configuration.ORIENTATION_LANDSCAPE;
-            m_toolbar.orientChanged( landscape );
-        }
-        super.onConfigurationChanged( newConfig );
     }
 
     @Override
