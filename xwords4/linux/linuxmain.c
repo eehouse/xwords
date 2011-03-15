@@ -105,7 +105,7 @@ void
 writeToFile( XWStreamCtxt* stream, void* closure )
 {
     void* buf;
-    FILE* file;
+    int fd;
     XP_U16 len;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
 
@@ -113,17 +113,21 @@ writeToFile( XWStreamCtxt* stream, void* closure )
     buf = malloc( len );
     stream_getBytes( stream, buf, len );
 
-    file = fopen( cGlobals->params->fileName, "w" );
-    if ( !file ) {
-        XP_LOGF( "%s: fopen => %d (%s)", __func__, errno, strerror(errno) );
+    fd = open( cGlobals->params->fileName, O_CREAT|O_TRUNC|O_WRONLY, 
+               S_IRUSR|S_IWUSR );
+    if ( fd < 0 ) {
+        XP_LOGF( "%s: open => %d (%s)", __func__, errno, strerror(errno) );
     } else {
-        if ( 1 == fwrite( buf, len, 1, file ) ) {
+        ssize_t nWritten = write( fd, buf, len );
+        if ( len == nWritten ) {
             XP_LOGF( "%s: wrote %d bytes to %s", __func__, len,
                      cGlobals->params->fileName );
         } else {
+            XP_LOGF( "%s: write => %s", __func__, strerror(errno) );
             XP_ASSERT( 0 );
         }
-        fclose( file );
+        fsync( fd );
+        close( fd );
     }
 
     free( buf );
