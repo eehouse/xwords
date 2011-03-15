@@ -77,7 +77,6 @@ public class BoardActivity extends XWActivity
     private TimerRunnable[] m_timers;
     private String m_path;
     private Uri m_uri;
-    private int m_currentOrient;
     private Toolbar m_toolbar;
     private ArrayList<String> m_pendingChats = new ArrayList<String>();
 
@@ -1119,8 +1118,11 @@ public class BoardActivity extends XWActivity
                                        showDialog( QUERY_ENDGAME );
                                        break;
                                    case JNIThread.TOOLBAR_STATES:
-                                       m_gsi = m_jniThread.getGameStateInfo();
-                                       updateToolbar();
+                                       if ( null != m_jniThread ) {
+                                           m_gsi = m_jniThread.getGameStateInfo();
+                                           updateToolbar();
+                                       }
+                                       break;
                                    }
                                }
                            } );
@@ -1233,7 +1235,6 @@ public class BoardActivity extends XWActivity
     {
         return new DialogInterface.OnDismissListener() {
             public void onDismiss( DialogInterface di ) {
-                setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_SENSOR );
                 releaseIfBlocking();
                 removeDialog( id );
             }
@@ -1244,31 +1245,29 @@ public class BoardActivity extends XWActivity
      * interrupted before the runnable gets run.  In that case there's
      * no dialog to dismiss.  So track it.
      */
-    private boolean m_blockingDlgPosted;
+    private boolean m_blockingDlgPosted = false;
 
     private int waitBlockingDialog( final int dlgID, int cancelResult )
     {
-        m_blockingDlgPosted = false;
+        Assert.assertFalse( m_blockingDlgPosted );
         setBlockingThread();
-        int orient = m_currentOrient == Configuration.ORIENTATION_LANDSCAPE
-            ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        setRequestedOrientation( orient );
 
         m_handler.post( new Runnable() {
                 public void run() {
-                    showDialog( dlgID );
+                    showDialog( dlgID ); // crash
                     m_blockingDlgPosted = true;
                 }
             } );
 
         try {
             m_forResultWait.acquire();
+            m_blockingDlgPosted = false;
         } catch ( java.lang.InterruptedException ie ) {
             Utils.logf( "waitBlockingDialog: got " + ie.toString() );
             m_resultCode = cancelResult;
             if ( m_blockingDlgPosted ) {
                 dismissDialog( dlgID );
+                m_blockingDlgPosted = false;
             }
         }
         clearBlockingThread();
