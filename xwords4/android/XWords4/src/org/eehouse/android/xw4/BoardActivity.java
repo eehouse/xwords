@@ -272,8 +272,6 @@ public class BoardActivity extends XWActivity
         Utils.logf( "BoardActivity::onCreate()" );
         super.onCreate( savedInstanceState );
 
-        setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT );
-
         if ( CommonPrefs.getHideTitleBar( this ) ) {
             requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
