@@ -323,11 +323,10 @@ dragDropSetAdd( BoardCtxt* board )
     draw = dragDropInProgress(board) && !dragDropIsDividerDrag( board )
         && !dragDropHasMoved( board );
     if ( draw ) {
-        XP_U16 xx = board->penDownX;
-        XP_U16 yy = board->penDownY;
         if ( draw ) {
             ds->yyAdd = (board->trayBounds.height * 2) / 3;
-            draw = dragDropContinueImpl( board, xx, yy, NULL );
+            draw = dragDropContinueImpl( board, board->penDownX, 
+                                         board->penDownY, NULL );
         }
     }
     return draw;
