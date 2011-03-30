@@ -1882,15 +1882,15 @@ figureBoardRect( BoardCtxt* board )
  * added in at the end.
  */
 XP_Bool
-coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP, 
+coordToCell( const BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP, 
              XP_U16* rowP )
 {
     XP_U16 col, row;
     XP_U16 maxCols = model_numCols( board->model );
     XP_S16 gotCol = -1;
     XP_S16 gotRow = -1;
-    ScrollData* hsd = &board->sd[SCROLL_H];
-    ScrollData* vsd = &board->sd[SCROLL_V];
+    const ScrollData* hsd = &board->sd[SCROLL_H];
+    const ScrollData* vsd = &board->sd[SCROLL_V];
 
     xx -= board->boardBounds.left;
     yy -= board->boardBounds.top;
@@ -2457,6 +2457,20 @@ exitTradeMode( BoardCtxt* board )
 } /* exitTradeMode */
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
+
+static XP_Bool
+penMoved( const BoardCtxt* board, XP_U16 curCol, XP_U16 curRow )
+{
+    XP_Bool moved = XP_FALSE;
+    XP_U16 startCol, startRow;
+    
+    if ( coordToCell( board, board->penDownX, board->penDownY,
+                      &startCol, &startRow ) ) {
+        moved = curCol != startCol || curRow != startRow;
+    }
+    return moved;
+}
+
 static XP_Bool
 handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
 {
@@ -2500,10 +2514,11 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
                         }
                     } else {
                         XP_U16 col, row;
-                        coordToCell( board, board->penDownX, board->penDownY,
-                                     &col, &row );
-                        draw = handleActionInCell( board, col, row, 
-                                                   isPen ) || draw;
+                        coordToCell( board, xx, yy, &col, &row );
+                        if ( !penMoved( board, col, row ) ) {
+                            draw = handleActionInCell( board, col, row, 
+                                                       isPen ) || draw;
+                        }
                     }
                 }
                 break;
