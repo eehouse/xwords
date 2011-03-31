@@ -1709,7 +1709,7 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
 
     result = gtkask( question, buttons );
 
-    if ( freeMe > 0 ) {
+    if ( freeMe ) {
         free( question );
     }
 
