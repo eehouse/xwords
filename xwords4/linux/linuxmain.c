@@ -310,8 +310,8 @@ typedef struct _CmdInfoRec {
 
 static CmdInfoRec CmdInfoRecs[] = {
     { CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
-    ,{ CMD_SHOW_OTHERSCORES, false, "show-other", 
-       "show robot and remote scores" }
+    ,{ CMD_SHOW_OTHERSCORES, false, "no-show-other", 
+       "do not show robot and remote scores" }
     ,{ CMD_HOSTIP, true, "hostip", "remote host ip address (for direct connect)" }
     ,{ CMD_DICT, true, "dict", "dictionary name" }
     ,{ CMD_SEED, true, "seed", "random seed" }
@@ -946,6 +946,7 @@ main( int argc, char** argv )
     mainParams.skipCommitConfirm = XP_TRUE;
     mainParams.showColors = XP_TRUE;
     mainParams.allowPeek = XP_TRUE;
+    mainParams.showRobotScores = XP_TRUE;
     
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
@@ -969,7 +970,7 @@ main( int argc, char** argv )
             mainParams.skipGameOver = XP_TRUE;
             break;
         case CMD_SHOW_OTHERSCORES:
-            mainParams.showRobotScores = XP_TRUE;
+            mainParams.showRobotScores = XP_FALSE;
             break;
 #ifdef XWFEATURE_RELAY
         case CMD_ROOMNAME:
