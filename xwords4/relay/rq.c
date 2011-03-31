@@ -63,8 +63,8 @@ usage( const char * const argv0 )
     fprintf( stderr, "\t[-n <n>]        # number of players (2 default) \\\n" );
     fprintf( stderr, "\t[-o <path>]*    # file to be used for -f "
              "(- = stdout, the default) \\\n" );
-    fprintf( stderr, "\t[-m <connName:devid>    # list msg count \\\n" );
-    fprintf( stderr, "\t[-d <connName:devid/seed>    # delete game \\\n" );
+    fprintf( stderr, "\t[-m <connName/devid>    # list msg count \\\n" );
+    fprintf( stderr, "\t[-d <connName/devid/seed>    # delete game \\\n" );
     exit( 1 );
 }
 
