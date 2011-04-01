@@ -78,7 +78,7 @@ class DBMgr {
                            unsigned char* buf, size_t* buflen, int* msgID );
     bool GetNthStoredMessage( const char* const connName, int hid, int nn,
                               unsigned char* buf, size_t* buflen, int* msgID );
-    void RemoveStoredMessage( int msgID );
+    void RemoveStoredMessages( const int* msgID, int nMsgIDs );
 
  private:
     DBMgr();

@@ -495,11 +495,22 @@ DBMgr::GetStoredMessage( const char* const connName, int hid,
 }
 
 void
-DBMgr::RemoveStoredMessage( int msgID )
+DBMgr::RemoveStoredMessages( const int* msgIDs, int nMsgIDs )
 {
-    const char* fmt = "DELETE from " MSGS_TABLE " WHERE id = %d";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, msgID );
+    char ids[1024];
+    int len = 0;
+    int ii;
+    assert( nMsgIDs > 0 );
+    for ( ii = 0; ; ) {
+        len += snprintf( ids + len, sizeof(ids) - len, "%d,", msgIDs[ii] );
+        if ( ++ii == nMsgIDs ) {
+            ids[len-1] = '\0';  /* overwrite last comma */
+            break;
+        }
+    }
+    const char* fmt = "DELETE from " MSGS_TABLE " WHERE id in (%s)";
+    char query[1024];
+    snprintf( query, sizeof(query), fmt, ids );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );
