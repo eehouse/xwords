@@ -547,6 +547,7 @@ public class GameUtils {
 
         public FeedUtilsImpl( Context context, String path )
         {
+            super( context );
             m_context = context;
             m_path = path;
             m_gotMsg = false;
