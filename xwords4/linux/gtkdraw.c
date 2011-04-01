@@ -1134,7 +1134,7 @@ gtkFormatTimerText( XP_UCHAR* buf, XP_U16 bufLen, XP_S16 secondsLeft )
 
 static void
 gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                    XP_U16 XP_UNUSED(player), XP_S16 secondsLeft )
+                    XP_U16 playerNum, XP_S16 secondsLeft )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
@@ -1145,7 +1145,7 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
     gtkEraseRect( dctx, rInner );
     draw_string_at( dctx, NULL, buf, rInner->height-1,
                     rInner, XP_GTK_JUST_CENTER,
-                    &dctx->black, NULL );
+                    &dctx->playerColors[playerNum], NULL );
 } /* gtk_draw_drawTimer */
 
 #define MINI_LINE_HT 12
