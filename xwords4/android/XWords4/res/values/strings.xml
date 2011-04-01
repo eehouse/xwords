@@ -293,6 +293,7 @@
     <string name="tile_back">Tile background</string>
     <string name="empty">Empty cell/background</string>
     <string name="clr_crosshairs">Crosshairs color</string>
+    <string name="background">Board background</string>
 
     <string name="advanced">For debugging</string>
     <string name="advanced_summary">You should never need these...</string>

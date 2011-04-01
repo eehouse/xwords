@@ -129,6 +129,12 @@
          android:title="@string/empty"
          android:defaultValue="0xFFFFFF"
          />
+
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_background"
+         android:title="@string/background"
+         android:defaultValue="0xFFFFFF"
+         />
     </PreferenceScreen>
 
   </PreferenceScreen>

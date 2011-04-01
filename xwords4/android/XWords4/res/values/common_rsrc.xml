@@ -23,6 +23,7 @@
   <string name="key_bonus_w3x">key_clr_bonus_w3x</string>
   <string name="key_tile_back">key_clr_tile_back</string>
   <string name="key_empty">key_clr_empty</string>
+  <string name="key_background">key_clr_background</string>
   <string name="key_clr_crosshairs">key_clr_crosshairs</string>
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>

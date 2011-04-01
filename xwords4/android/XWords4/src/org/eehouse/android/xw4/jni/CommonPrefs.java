@@ -33,9 +33,10 @@ import org.eehouse.android.xw4.GameUtils;
 
 public class CommonPrefs {
     public static final int COLOR_TILE_BACK = 0;
-    public static final int COLOR_BKGND = 1;
+    public static final int COLOR_NOTILE = 1;
     public static final int COLOR_FOCUS = 2;
-    public static final int COLOR_LAST = 3;
+    public static final int COLOR_BACKGRND = 3;
+    public static final int COLOR_LAST = 4;
 
     private static CommonPrefs s_cp = null;
 
@@ -99,6 +100,7 @@ public class CommonPrefs {
         int idsOther[] = { R.string.key_tile_back,
                            R.string.key_empty,
                            R.string.key_clr_crosshairs,
+                           R.string.key_background,
         };
         for ( int ii = 0; ii < idsOther.length; ++ii ) {
             otherColors[ii] = prefToColor( context, sp, idsOther[ii] );

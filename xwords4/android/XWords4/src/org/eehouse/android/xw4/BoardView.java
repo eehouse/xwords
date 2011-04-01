@@ -318,7 +318,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         synchronized( this ) {
             if ( null != m_canvas ) {
                 if ( 0 == resID ) {
-                    fillRect( rect, m_otherColors[CommonPrefs.COLOR_BKGND] );
+                    fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
                 } else {
                     Drawable icon = getResources().getDrawable( resID );
                     icon.setBounds( rect );
@@ -332,7 +332,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
                                int remCount, int dfs )
     {
-        fillRect( rect, WHITE );
+        fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
         m_canvas.save( Canvas.CLIP_SAVE_FLAG );
         m_canvas.clipRect(rect);
         m_scores = new String[numPlayers][];
@@ -365,7 +365,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         int indx = focussed ? CommonPrefs.COLOR_FOCUS
             : CommonPrefs.COLOR_TILE_BACK;
-        fillRect( rOuter, m_otherColors[indx] );
+        fillRectOther( rOuter, indx );
 
         m_fillPaint.setColor( BLACK );
         drawCentered( m_remText, rInner, null );
@@ -416,7 +416,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi )
     {
         if ( 0 != (dsi.flags & CELL_ISCURSOR) ) {
-            fillRect( rOuter, m_otherColors[CommonPrefs.COLOR_FOCUS] );
+            fillRectOther( rOuter, CommonPrefs.COLOR_FOCUS );
         }
         String[] texts = m_scores[dsi.playerNum];
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
@@ -440,7 +440,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             String time = String.format( "%s%d:%02d", negSign, secondsLeft/60, 
                                          secondsLeft%60 );
 
-            fillRect( rect, WHITE );
+            fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
             m_fillPaint.setColor( m_playerColors[player] );
 
             Rect shorter = new Rect( rect );
@@ -476,7 +476,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             backColor = m_otherColors[CommonPrefs.COLOR_FOCUS];
         } else if ( empty ) {
             if ( 0 == bonus ) {
-                backColor = m_otherColors[CommonPrefs.COLOR_BKGND];
+                backColor = m_otherColors[CommonPrefs.COLOR_NOTILE];
             } else {
                 backColor = m_bonusColors[bonus];
                 bonusStr = m_bonusSummaries[bonus];
@@ -606,9 +606,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                     int flags ) 
     {
         String text = score >= 0? String.format( "%d", score ) : "??";
+        int otherIndx = (0 == (flags & CELL_ISCURSOR)) 
+            ? CommonPrefs.COLOR_BACKGRND : CommonPrefs.COLOR_FOCUS;
         ++rect.top;
-        fillRect( rect, (0 == (flags & CELL_ISCURSOR)) 
-                  ? WHITE : m_otherColors[CommonPrefs.COLOR_FOCUS] );
+        fillRectOther( rect, otherIndx );
         m_fillPaint.setColor( m_playerColors[playerNum] );
 
         rect.bottom -= rect.height() / 2;
@@ -727,7 +728,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.clipRect( rect );
 
         if ( clearBack ) {
-            fillRect( rect, WHITE );
+            fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
         }
 
         if ( isCursor || notEmpty ) {
@@ -844,6 +845,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
+    private void fillRectOther( Rect rect, int index )
+    {
+        fillRect( rect, m_otherColors[index] );
+    }
+
     private void fillRect( Rect rect, int color )
     {
         m_fillPaint.setColor( color );
@@ -937,7 +943,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private boolean darkOnLight()
     {
-        int background = m_otherColors[ CommonPrefs.COLOR_BKGND ];
+        int background = m_otherColors[ CommonPrefs.COLOR_NOTILE ];
         if ( background != m_backgroundUsed ) {
             m_backgroundUsed = background;
 
