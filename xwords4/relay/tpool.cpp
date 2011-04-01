@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make -j3"; -*- */
 
 /* 
  * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
@@ -398,8 +398,8 @@ XWThreadPool::listener_main( void* closure )
 void
 XWThreadPool::enqueue( int socket, SockType stype, QAction act ) 
 {
-    MutexLock ml( &m_queueMutex );
     QueuePr pr = { act, socket, stype };
+    MutexLock ml( &m_queueMutex );
     m_queue.push_back( pr );
 
     logf( XW_LOGINFO, "calling pthread_cond_signal" );
