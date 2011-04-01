@@ -78,6 +78,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private String m_remText;
     private int m_dictPtr = 0;
     private int m_lastSecsLeft;
+    private int m_lastTimerPlayer;
     private Handler m_viewHandler;
 
     // FontDims: exists to translate space available to the largest
@@ -432,8 +433,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void drawTimer( Rect rect, int player, int secondsLeft )
     {
-        if ( null != m_canvas && m_lastSecsLeft != secondsLeft ) {
+        if ( null != m_canvas && (m_lastSecsLeft != secondsLeft
+                                  || m_lastTimerPlayer != player) ) {
             m_lastSecsLeft = secondsLeft;
+            m_lastTimerPlayer = player;
 
             String negSign = secondsLeft < 0? "-":"";
             secondsLeft = Math.abs( secondsLeft );
