@@ -774,7 +774,7 @@ CookieRef::send_stored_messages( HostID dest, int socket )
         if ( ! send_with_length( socket, buf, buflen, true ) ) {
             break;
         }
-        DBMgr::Get()->RemoveStoredMessage( msgID );
+        DBMgr::Get()->RemoveStoredMessages( &msgID, 1 );
     }
 } /* send_stored_messages */
 

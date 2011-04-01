@@ -850,7 +850,7 @@ set_timeouts( int sock )
     struct timeval tv;
     int result;
 
-    int timeout = 20;
+    int timeout = 5;
     (void)RelayConfigs::GetConfigs()->GetValueFor( "SOCK_TIMEOUT_SECONDS", 
                                                    &timeout );
 
