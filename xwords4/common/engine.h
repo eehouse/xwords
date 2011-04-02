@@ -49,7 +49,7 @@ void engine_reset( EngineCtxt* ctxt );
 void engine_destroy( EngineCtxt* ctxt );
 
 XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, 
-                         const DictionaryCtxt* dict, const Tile* tiles, 
+                         XP_U16 turn, const Tile* tiles, 
                          XP_U16 nTiles, XP_Bool usePrev,
 #ifdef XWFEATURE_SEARCHLIMIT
                          const BdHintLimits* boardLimits,

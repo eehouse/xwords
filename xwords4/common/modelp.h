@@ -47,6 +47,7 @@ typedef struct ModelVolatiles {
     XW_UtilCtxt* util;
     struct CurGameInfo* gi;
     DictionaryCtxt* dict;
+    PlayerDicts dicts;
     BoardListener boardListenerFunc;
     StackCtxt* stack;
     void* boardListenerData;

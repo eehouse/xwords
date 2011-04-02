@@ -198,8 +198,8 @@ read_pipe_then_close( CommonGlobals* cGlobals )
 
     XP_Bool opened = game_makeFromStream( MPPARM(cGlobals->params->util->mpool) 
                                           stream, &cGlobals->game, 
-                                          &params->gi, 
-                                          params->dict, params->util, 
+                                          &params->gi, params->dict, 
+                                          &params->dicts, params->util, 
                                           NULL /*draw*/,
                                           &cGlobals->cp, NULL );
     XP_ASSERT( opened );
@@ -245,6 +245,7 @@ typedef enum {
     ,CMD_SHOW_OTHERSCORES
     ,CMD_HOSTIP
     ,CMD_DICT
+    ,CMD_PLAYERDICT
     ,CMD_SEED
     ,CMD_GAMEFILE
     ,CMD_PRINTHISORY
@@ -314,7 +315,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SHOW_OTHERSCORES, false, "no-show-other", 
        "do not show robot and remote scores" }
     ,{ CMD_HOSTIP, true, "hostip", "remote host ip address (for direct connect)" }
-    ,{ CMD_DICT, true, "dict", "dictionary name" }
+    ,{ CMD_DICT, true, "game-dict", "dictionary name for game" }
+    ,{ CMD_PLAYERDICT, true, "player-dict", "dictionary name for player (in sequence)" }
     ,{ CMD_SEED, true, "seed", "random seed" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
@@ -876,7 +878,9 @@ main( int argc, char** argv )
     XP_Bool closeStdin = XP_FALSE;
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
+    XP_U16 nPlayerDicts = 0;
     XP_U16 robotCount = 0;
+    XP_U16 ii;
 
     /* install a no-op signal handler.  Later curses- or gtk-specific code
        will install one that does the right thing in that context */
@@ -991,6 +995,9 @@ main( int argc, char** argv )
         case CMD_DICT:
             mainParams.gi.dictName = copyString( mainParams.util->mpool,
                                                  (XP_UCHAR*)optarg );
+            break;
+        case CMD_PLAYERDICT:
+            mainParams.gi.players[nPlayerDicts++].dictName = optarg;
             break;
         case CMD_SEED:
             seed = atoi(optarg);
@@ -1206,7 +1213,9 @@ main( int argc, char** argv )
         XP_WARNF( "no dictionary provided: using English stub dict\n" );
         mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
 #else
-        mainParams.needsNewGame = XP_TRUE;
+        if ( 0 == nPlayerDicts ) {
+            mainParams.needsNewGame = XP_TRUE;
+        }
 #endif
     } else if ( robotCount > 0 ) {
         mainParams.needsNewGame = XP_TRUE;
@@ -1215,6 +1224,14 @@ main( int argc, char** argv )
     if ( 0 < mainParams.info.serverInfo.nRemotePlayers
          && SERVER_STANDALONE == mainParams.gi.serverRole ) {
         mainParams.needsNewGame = XP_TRUE;
+    }
+
+    for ( ii = 0; ii < nPlayerDicts; ++ii ) {
+        XP_UCHAR* name = mainParams.gi.players[ii].dictName;
+        if ( !!name ) {
+            mainParams.dicts.dicts[ii] = 
+                linux_dictionary_make( MPPARM(mainParams.util->mpool) name );
+        }
     }
 
     /* if ( !isServer ) { */

@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -50,7 +50,8 @@ static void notifyBoardListeners( ModelCtxt* model, XP_U16 turn,
                                   XP_U16 col, XP_U16 row, XP_Bool added );
 static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn, 
                                  XP_S16 index1, XP_S16 index2 );
-static void notifyDictListeners( ModelCtxt* model, DictionaryCtxt* oldDict, 
+static void notifyDictListeners( ModelCtxt* model, XP_S16 playerNum, 
+                                 DictionaryCtxt* oldDict,
                                  DictionaryCtxt* newDict );
 
 static CellTile getModelTileRaw( const ModelCtxt* model, XP_U16 col, 
@@ -80,7 +81,8 @@ static XP_U16 model_getRecentPassCount( ModelCtxt* model );
  *
  ****************************************************************************/
 ModelCtxt*
-model_make( MPFORMAL DictionaryCtxt* dict, XW_UtilCtxt* util, XP_U16 nCols, 
+model_make( MPFORMAL DictionaryCtxt* dict,
+            const PlayerDicts* dicts, XW_UtilCtxt* util, XP_U16 nCols, 
             XP_U16 nRows )
 {
     ModelCtxt* result = (ModelCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
@@ -96,6 +98,7 @@ model_make( MPFORMAL DictionaryCtxt* dict, XW_UtilCtxt* util, XP_U16 nCols,
         result->vol.gi = util->gameInfo;
 
         model_setDictionary( result, dict );
+        model_setPlayerDicts( result, dicts );
     }
 
     return result;
@@ -103,7 +106,7 @@ model_make( MPFORMAL DictionaryCtxt* dict, XW_UtilCtxt* util, XP_U16 nCols,
 
 ModelCtxt* 
 model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict, 
-                      XW_UtilCtxt* util )
+                      const PlayerDicts* dicts, XW_UtilCtxt* util )
 {
     ModelCtxt* model;
     XP_U16 nCols, nRows;
@@ -112,7 +115,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
     XP_U16 nPlayers;
     XP_U16 version = stream_getVersion( stream );
 
-    XP_ASSERT( !!dict );
+    XP_ASSERT( !!dict || !!dicts );
 
     nCols = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
     nRows = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
@@ -127,7 +130,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
         dict_destroy( savedDict );
     }
 
-    model = model_make( MPPARM(mpool) dict, util, nCols, nRows );
+    model = model_make( MPPARM(mpool) dict, dicts, util, nCols, nRows );
     model->nPlayers = nPlayers;
 
     stack_loadFromStream( model->vol.stack, stream );
@@ -263,6 +266,16 @@ model_getNPlayers( const ModelCtxt* model )
     return model->nPlayers;
 }
 
+static void
+setStackBits( ModelCtxt* model, const DictionaryCtxt* dict )
+{
+    if ( NULL != dict ) {
+        XP_U16 nFaces = dict_numTileFaces( dict );
+        XP_ASSERT( !!model->vol.stack );
+        stack_setBitsPerTile( model->vol.stack, nFaces <= 32? 5 : 6 );
+    }
+}
+
 void
 model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
 {
@@ -270,20 +283,71 @@ model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
     model->vol.dict = dict;
 
     if ( !!dict ) {
-        XP_U16 nFaces = dict_numTileFaces( dict );
-        XP_ASSERT( !!model->vol.stack );
-        stack_setBitsPerTile( model->vol.stack, nFaces <= 32? 5 : 6 );
-
-        notifyDictListeners( model, oldDict, dict );
+        setStackBits( model, dict );
+        notifyDictListeners( model, -1, oldDict, dict );
     }
 } /* model_setDictionary */
+
+void
+model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts )
+{
+    if ( !!dicts ) {
+        XP_U16 ii;
+        DictionaryCtxt* gameDict = model_getDictionary( model );
+        for ( ii = 0; ii < VSIZE(dicts->dicts); ++ii ) {
+            DictionaryCtxt* oldDict = model->vol.dicts.dicts[ii];
+            DictionaryCtxt* newDict = dicts->dicts[ii];
+            if ( oldDict != newDict ) {
+                XP_ASSERT( NULL == newDict || NULL == gameDict 
+                           || dict_tilesAreSame( gameDict, newDict ) );
+                model->vol.dicts.dicts[ii] = newDict;
+                notifyDictListeners( model, ii, oldDict, newDict );
+                setStackBits( model, newDict );
+            }
+        }
+    }
+}           
 
 DictionaryCtxt*
 model_getDictionary( const ModelCtxt* model )
 {
-/*     XP_ASSERT( !!model->vol.dict ); */
-    return model->vol.dict;
+    XP_U16 ii;
+    DictionaryCtxt* result = model->vol.dict;
+    for ( ii = 0; !result && ii < VSIZE(model->vol.dicts.dicts); ++ii ) {
+        result = model->vol.dicts.dicts[ii];
+    }
+    return result;
 } /* model_getDictionary */
+
+DictionaryCtxt*
+model_getPlayerDict( const ModelCtxt* model, XP_U16 playerNum )
+{
+    DictionaryCtxt* dict = model->vol.dicts.dicts[playerNum];
+    if ( NULL == dict ) {
+        dict = model->vol.dict;
+    }
+    XP_ASSERT( !!dict );
+    return dict;
+}
+
+static void
+destroyNotNull( DictionaryCtxt** dictp )
+{
+    if ( !!*dictp ) {
+        dict_destroy( *dictp );
+        *dictp = NULL;
+    }
+}
+
+void
+model_destroyDicts( ModelCtxt* model )
+{
+    XP_U16 ii;
+    for ( ii = 0; ii < VSIZE(model->vol.dicts.dicts); ++ii ) {
+        destroyNotNull( &model->vol.dicts.dicts[ii] );
+    }
+    destroyNotNull( &model->vol.dict );
+}
 
 static XP_Bool
 getPendingTileFor( const ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
@@ -717,7 +781,7 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                           XWStreamCtxt* stream )
 {
     XP_U16 numTiles;
-    Tile blank = dict_getBlankTile( model->vol.dict );
+    Tile blank = dict_getBlankTile( model_getDictionary(model) );
 
     model_resetCurrentTurn( model, playerNum );
 
@@ -766,7 +830,7 @@ model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
     Tile blank;
     XP_U16 numTiles;
 
-    blank = dict_getBlankTile( model->vol.dict );
+    blank = dict_getBlankTile( model_getDictionary( model ) );
     numTiles = newMove->nTiles;
 
     col = row = newMove->commonCoord; /* just assign both */
@@ -799,8 +863,7 @@ model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
     XP_S16 i;
     Tile blank;
 
-    XP_ASSERT( !!model->vol.dict );
-    blank = dict_getBlankTile( model->vol.dict );
+    blank = dict_getBlankTile( model_getDictionary(model) );
 
     for ( i = 0, player = model->players; i < nPlayers; ++i, ++player ) {
         if ( i != excludePlayer ) {
@@ -925,7 +988,7 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
                      XP_U16* nUsed, const XP_UCHAR** texts,
                      Tile* tiles )
 {
-    DictionaryCtxt* dict = model->vol.dict;
+    DictionaryCtxt* dict = model_getDictionary(model);
     XP_U16 nFaces = dict_numTileFaces( dict );
     Tile blankFace = dict_getBlankTile( dict );
     Tile tile;
@@ -986,7 +1049,7 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
 
     Tile tile = model_removePlayerTile( model, turn, tileIndex );
 
-    if ( tile == dict_getBlankTile(model->vol.dict) ) {
+    if ( tile == dict_getBlankTile(model_getDictionary(model)) ) {
         if ( blankFace != EMPTY_TILE ) {
             tile = blankFace;
         } else {
@@ -1038,7 +1101,7 @@ model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
             XP_S16 foundAt;
 
             if ( isBlank ) {
-                tile = dict_getBlankTile( model->vol.dict );
+                tile = dict_getBlankTile( model_getDictionary(model) );
             }
             foundAt = model_trayContains( model, turn, tile );
             XP_ASSERT( foundAt >= 0 );
@@ -1082,7 +1145,7 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
 
         tile = pt->tile;
         if ( (tile & TILE_BLANK_BIT) != 0 ) {
-            tile = dict_getBlankTile( model->vol.dict );
+            tile = dict_getBlankTile( model_getDictionary(model) );
         }
 
         model_addPlayerTile( model, turn, trayOffset, tile );
@@ -1551,13 +1614,13 @@ notifyTrayListeners( ModelCtxt* model, XP_U16 turn, XP_S16 index1,
 } /* notifyTrayListeners */
 
 static void
-notifyDictListeners( ModelCtxt* model, DictionaryCtxt* oldDict, 
-                     DictionaryCtxt* newDict )
+notifyDictListeners( ModelCtxt* model, XP_S16 playerNum,
+                     DictionaryCtxt* oldDict, DictionaryCtxt* newDict )
 {
     XP_ASSERT( !!newDict );
     if ( model->vol.dictListenerFunc != NULL ) {
-        (*model->vol.dictListenerFunc)( model->vol.dictListenerData, oldDict,
-                                        newDict );
+        (*model->vol.dictListenerFunc)( model->vol.dictListenerData, playerNum, 
+                                        oldDict, newDict );
     }
 } /* notifyDictListeners */
 
@@ -1751,7 +1814,7 @@ makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
               void* closure )
 {
     ModelCtxt* tmpModel = model_make( MPPARM(model->vol.mpool) 
-                                      model_getDictionary(model),
+                                      model_getDictionary(model), NULL,
                                       model->vol.util, model_numCols(model),
                                       model_numRows(model));
     model_setNPlayers( tmpModel, model->nPlayers );
@@ -1811,7 +1874,7 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
             XP_ASSERT( 0 );
         }
 
-        score = figureMoveScore( tmpModel, moveInfo, (EngineCtxt*)NULL, 
+        score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL, 
                                  (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL, 
                                  wordBuf, VSIZE(wordBuf) );
 

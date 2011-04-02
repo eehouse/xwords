@@ -230,8 +230,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 
     CurGameInfo gi;
     XP_MEMSET( &gi, 0, sizeof(gi) );
-    if ( game_makeFromStream( MPPARM(mpool) stream, NULL,
-                              &gi, NULL, NULL, NULL, NULL, NULL ) ) {
+    if ( game_makeFromStream( MPPARM(mpool) stream, NULL, 
+                              &gi, NULL, NULL, NULL, NULL, NULL, NULL ) ) {
         setJGI( env, jgi, &gi );
     } else {
         XP_LOGF( "%s: game_makeFromStream failed", __func__ );
@@ -458,7 +458,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, jcp );
     result = game_makeFromStream( MPPARM(mpool) stream, &state->game, 
-                                  globals->gi, dict, 
+                                  globals->gi, dict, NULL,
                                   globals->util, globals->dctx, &cp,
                                   globals->xportProcs );
     stream_destroy( stream );

@@ -419,7 +419,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         opened = game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
                                       &globals->cGlobals.params->gi, 
-                                      params->dict, params->util, 
+                                      params->dict, &params->dicts, params->util, 
                                       (DrawCtx*)globals->draw, 
                                       &globals->cGlobals.cp, &procs );
         
@@ -485,8 +485,8 @@ createOrLoadObjects( GtkAppGlobals* globals )
         }
 #endif
         model_setDictionary( globals->cGlobals.game.model, params->dict );
+        model_setPlayerDicts( globals->cGlobals.game.model, &params->dicts );
 
-        /*         params->gi.phoniesAction = PHONIES_DISALLOW; */
 #ifdef XWFEATURE_SEARCHLIMIT
         params->gi.allowHintRect = params->allowHintRect;
 #endif

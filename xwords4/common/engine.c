@@ -84,6 +84,7 @@ struct EngineCtxt {
     const ModelCtxt* model;
     const DictionaryCtxt* dict;
     XW_UtilCtxt* util;
+    XP_U16 turn;
 
     Engine_rack rack;
     Tile blankTile;
@@ -407,7 +408,7 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
  */
 XP_Bool
 engine_findMove( EngineCtxt* engine, const ModelCtxt* model, 
-                 const DictionaryCtxt* dict, const Tile* tiles,
+                 XP_U16 turn, const Tile* tiles,
                  XP_U16 nTiles, XP_Bool usePrev,
 #ifdef XWFEATURE_SEARCHLIMIT
                  const BdHintLimits* searchLimits,
@@ -448,9 +449,10 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
 #endif
 
     engine->model = model;
-    engine->dict = dict;
+    engine->dict = model_getPlayerDict( model, turn );
+    engine->turn = turn;
     engine->usePrev = usePrev;
-    engine->blankTile = dict_getBlankTile( dict );
+    engine->blankTile = dict_getBlankTile( engine->dict );
     engine->returnNOW = XP_FALSE;
 #ifdef XWFEATURE_SEARCHLIMIT
     engine->searchLimits = searchLimits;
@@ -465,8 +467,8 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
        dictionary's emtpy or there are no tiles, still return TRUE so we don't
        get scheduled again.  Fixes infinite loop with empty dict and a
        robot. */
-    *canMoveP = dict_getTopEdge(dict) != NULL && initTray( engine, tiles, 
-                                                           nTiles );
+    *canMoveP = NULL != dict_getTopEdge(engine->dict)
+        && initTray( engine, tiles, nTiles );
     if ( *canMoveP  ) {
 
         util_engineStarting( engine->util, 
@@ -1116,7 +1118,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
     if ( blanksLeft == 0 ) {
         XP_U16 score;
 
-        score = figureMoveScore( engine->model,
+        score = figureMoveScore( engine->model, engine->turn,
                                  &posmove->moveInfo,
                                  engine, (XWStreamCtxt*)NULL,
                                  (WordNotifierInfo*)NULL, NULL, 0 );

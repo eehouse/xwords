@@ -138,6 +138,10 @@ typedef struct CommonPrefs {
     XP_Bool         allowPeek;  /* applies to all games */
 } CommonPrefs;
 
+typedef struct _PlayerDicts {
+    DictionaryCtxt* dicts[MAX_NUM_PLAYERS];
+} PlayerDicts;
+
 #ifdef XWFEATURE_BLUETOOTH
 /* temporary debugging hack */
 

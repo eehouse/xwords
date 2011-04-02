@@ -47,6 +47,7 @@ typedef struct LaunchParams {
     XW_UtilCtxt* util;
     DictionaryCtxt* dict;
     CurGameInfo gi;
+    PlayerDicts dicts;
     char* fileName;
     char* pipe;
     VTableMgr* vtMgr;

@@ -86,7 +86,8 @@ curses_draw_destroyCtxt( DrawCtx* XP_UNUSED(p_dctx) )
 } /* draw_setup */
 
 static void
-curses_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx), 
+curses_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx),
+                         XP_S16 XP_UNUSED(playerNum),
                          const DictionaryCtxt* XP_UNUSED(dict) )
 {
 }
