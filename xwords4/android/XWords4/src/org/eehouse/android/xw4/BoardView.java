@@ -593,15 +593,15 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         boolean isCursor = 0 != (flags & CELL_ISCURSOR);
         boolean selected = 0 != (flags & CELL_HIGHLIGHT);
 
-        int backColor = isCursor? m_otherColors[CommonPrefs.COLOR_FOCUS]:WHITE;
+        int index = isCursor? CommonPrefs.COLOR_FOCUS : CommonPrefs.COLOR_BACKGRND;
         rect.inset( 0, 1 );
-        fillRect( rect, backColor );
+        fillRectOther( rect, index );
 
         rect.inset( rect.width()/4, 0 );
         if ( selected ) {
             m_canvas.drawRect( rect, m_strokePaint );
         } else {
-            fillRect( rect, BLACK );
+            fillRect( rect, m_playerColors[m_trayOwner] );
         }
     }
 
