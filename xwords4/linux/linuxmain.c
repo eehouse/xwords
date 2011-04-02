@@ -283,6 +283,7 @@ typedef enum {
     ,CMD_ROOMNAME
     ,CMD_ADVERTISEROOM
     ,CMD_JOINADVERTISED
+    ,CMD_PHONIES
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     ,CMD_BTADDR
@@ -352,6 +353,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
     ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
     ,{ CMD_JOINADVERTISED, false, "join-public", "look for a public room" }
+    ,{ CMD_PHONIES, true, "phonies", "ignore (0, default), warn (1) or lose turn (2)" }
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     ,{ CMD_BTADDR, true, "btaddr", "bluetooth address of host" }
@@ -1092,6 +1094,20 @@ main( int argc, char** argv )
         case CMD_JOINADVERTISED:
             mainParams.connInfo.relay.seeksPublicRoom = true;
             break;
+        case CMD_PHONIES:
+            switch( atoi(optarg) ) {
+            case 0:
+                mainParams.gi.phoniesAction = PHONIES_IGNORE;
+                break;
+            case 1:
+                mainParams.gi.phoniesAction = PHONIES_WARN;
+                break;
+            case 2:
+                mainParams.gi.phoniesAction = PHONIES_DISALLOW;
+                break;
+            default:
+                usage( argv[0], "phonies takes 0 or 1 or 2" );
+            }
 #endif
         case CMD_CLOSESTDIN:
             closeStdin = XP_TRUE;
