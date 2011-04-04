@@ -40,7 +40,7 @@ static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 static XP_S16 checkScoreMove( ModelCtxt* model, XP_S16 turn, 
                               EngineCtxt* engine, XWStreamCtxt* stream, 
                               XP_Bool silent, WordNotifierInfo* notifyInfo );
-static XP_U16 scoreWord( const ModelCtxt* model, MoveInfo* movei,
+static XP_U16 scoreWord( const ModelCtxt* model, XP_U16 turn, MoveInfo* movei,
                          EngineCtxt* engine, XWStreamCtxt* stream, 
                          WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord,
                          XP_U16 mainWordLen );
@@ -102,7 +102,7 @@ adjustScoreForUndone( ModelCtxt* model, MoveInfo* mi, XP_U16 turn )
     if ( mi->nTiles == 0 ) {
         moveScore = 0;
     } else {
-        moveScore = figureMoveScore( model, mi, (EngineCtxt*)NULL, 
+        moveScore = figureMoveScore( model, turn, mi, (EngineCtxt*)NULL, 
                                      (XWStreamCtxt*)NULL, 
                                      (WordNotifierInfo*)NULL, NULL, 0 );
     }
@@ -240,7 +240,7 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
 
         if ( isLegalMove( model, &moveInfo, silent ) ) {
-            score = figureMoveScore( model, &moveInfo, engine, stream, 
+            score = figureMoveScore( model, turn, &moveInfo, engine, stream, 
                                      notifyInfo, NULL, 0 );
         }
     } else if ( !silent ) { /* tiles out of line */
@@ -443,7 +443,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
 } /* isLegalMove */
 
 XP_U16
-figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo, 
+figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo, 
                  EngineCtxt* engine, XWStreamCtxt* stream, 
                  WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord,
                  XP_U16 mainWordLen )
@@ -474,7 +474,7 @@ figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo,
         moveMultiplier *= multipliers[i] = word_multiplier( model, col, row );
     }
 
-    oneScore = scoreWord( model, moveInfo, (EngineCtxt*)NULL, stream,
+    oneScore = scoreWord( model, turn, moveInfo, (EngineCtxt*)NULL, stream,
                           notifyInfo, mainWord, mainWordLen );
     if ( !!stream ) {
         formatWordScore( stream, oneScore, moveMultiplier );
@@ -500,7 +500,7 @@ figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo,
         tmpMI.commonCoord = tiles->varCoord;
         tmpMI.tiles[0].tile = tiles->tile;
 
-        oneScore = scoreWord( model, &tmpMI, engine, stream, 
+        oneScore = scoreWord( model, turn, &tmpMI, engine, stream, 
                               notifyInfo, mainWord, mainWordLen );
         if ( !!stream ) {
             formatWordScore( stream, oneScore, multipliers[i] );
@@ -557,7 +557,8 @@ tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* tile_multiplier */
 
 static XP_U16
-scoreWord( const ModelCtxt* model, MoveInfo* movei, /* new tiles */
+scoreWord( const ModelCtxt* model, XP_U16 turn,
+           MoveInfo* movei, /* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
            WordNotifierInfo* notifyInfo,
@@ -574,7 +575,7 @@ scoreWord( const ModelCtxt* model, MoveInfo* movei, /* new tiles */
     XP_U16 col, row;
     MoveInfoTile* tiles = movei->tiles;
     XP_U16 firstCoord = tiles->varCoord;
-    DictionaryCtxt* dict = model->vol.dict;
+    DictionaryCtxt* dict = model_getPlayerDict( model, turn );
 
     if ( movei->isHorizontal ) {
         row = movei->commonCoord;

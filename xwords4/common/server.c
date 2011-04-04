@@ -692,8 +692,8 @@ makeRobotMove( ServerCtxt* server )
 
     XP_ASSERT( !!server_getEngineFor( server, turn ) );
     searchComplete = engine_findMove( server_getEngineFor( server, turn ),
-                                      model, model_getDictionary( model ), 
-                                      tileSet->tiles, tileSet->nTiles, XP_FALSE,
+                                      model, turn, tileSet->tiles, 
+                                      tileSet->nTiles, XP_FALSE,
 #ifdef XWFEATURE_SEARCHLIMIT
                                       NULL, XP_FALSE,
 #endif

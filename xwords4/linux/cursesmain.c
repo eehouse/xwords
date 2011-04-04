@@ -1443,7 +1443,6 @@ void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
     int piperesult;
-    DictionaryCtxt* dict;
     int width, height;
 
     memset( &g_globals, 0, sizeof(g_globals) );
@@ -1465,8 +1464,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
     g_globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
 #endif
-
-    dict = params->dict;
 
     setupCursesUtilCallbacks( &g_globals, params->util );
 
@@ -1519,7 +1516,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                                      &g_globals );
 
             (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
-                                       &params->gi, dict, params->util, 
+                                       &params->gi, params->dict, &params->dicts,
+                                       params->util, 
                                        (DrawCtx*)g_globals.draw, 
                                        &g_globals.cGlobals.cp, &procs );
 

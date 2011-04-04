@@ -84,7 +84,8 @@ static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col,
                               XP_U16 row, XP_Bool added );
 static void boardTilesChanged( void* board, XP_U16 turn, XP_S16 index1, 
                                XP_S16 index2 );
-static void dictChanged( void* p_board, const DictionaryCtxt* oldDict, 
+static void dictChanged( void* p_board, XP_S16 playerNum, 
+                         const DictionaryCtxt* oldDict, 
                          const DictionaryCtxt* newDict );
 
 static void boardTurnChanged( void* board );
@@ -1708,14 +1709,14 @@ board_requestHint( BoardCtxt* board,
                 }
             }
 #endif
-            searchComplete = engine_findMove(engine, model, 
-                                             model_getDictionary(model),
-                                             tiles, nTiles, usePrev,
+            searchComplete = 
+                engine_findMove( engine, model, selPlayer,
+                                 tiles, nTiles, usePrev,
 #ifdef XWFEATURE_SEARCHLIMIT
-                                             lp, useTileLimits,
+                                 lp, useTileLimits,
 #endif
-                                             0, /* 0: not a robot */
-                                             &canMove, &newMove );
+                                 0, /* 0: not a robot */
+                                 &canMove, &newMove );
             board_popTimerSave( board );
 
             if ( searchComplete && canMove ) {
@@ -3324,13 +3325,13 @@ boardTilesChanged( void* p_board, XP_U16 turn, XP_S16 index1, XP_S16 index2 )
 } /* boardTilesChanged */
 
 static void
-dictChanged( void* p_board, const DictionaryCtxt* oldDict, 
+dictChanged( void* p_board, XP_S16 playerNum, const DictionaryCtxt* oldDict, 
              const DictionaryCtxt* newDict )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     if ( !!board->draw ) {
         if ( (NULL == oldDict) || (oldDict != newDict) ) {
-            draw_dictChanged( board->draw, newDict );
+            draw_dictChanged( board->draw, playerNum, newDict );
         }
     }
 }

@@ -100,11 +100,12 @@ typedef XP_U8 TileBit;    /* bits indicating selection of tiles in tray */
                                           only */
 
 
-ModelCtxt* model_make( MPFORMAL DictionaryCtxt* dict, XW_UtilCtxt* util,
-                       XP_U16 nCols, XP_U16 nRows );
+ModelCtxt* model_make( MPFORMAL DictionaryCtxt* dict, const PlayerDicts* dicts,
+                       XW_UtilCtxt* util, XP_U16 nCols, XP_U16 nRows );
 
 ModelCtxt* model_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
-                                 DictionaryCtxt* dict, XW_UtilCtxt* util );
+                                 DictionaryCtxt* dict, const PlayerDicts* dicts,
+                                 XW_UtilCtxt* util );
 
 void model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream );
 
@@ -115,6 +116,10 @@ XP_U16 model_getNPlayers( const ModelCtxt* model );
 
 void model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict );
 DictionaryCtxt* model_getDictionary( const ModelCtxt* model );
+
+void model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts );
+DictionaryCtxt* model_getPlayerDict( const ModelCtxt* model, XP_U16 playerNum );
+void model_destroyDicts( ModelCtxt* model );
 
 XP_Bool model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
                        XP_Bool getPending, XP_S16 turn,
@@ -209,7 +214,8 @@ typedef void (*TrayListener)( void* data, XP_U16 turn,
                               XP_S16 index1, XP_S16 index2 );
 void model_setTrayListener( ModelCtxt* model, TrayListener bl, 
                             void* data );
-typedef void (*DictListener)( void* data, const DictionaryCtxt* oldDict,
+typedef void (*DictListener)( void* data, XP_S16 playerNum, 
+                              const DictionaryCtxt* oldDict,
                               const DictionaryCtxt* newDict );
 void model_setDictListener( ModelCtxt* model, DictListener dl, 
                             void* data );
@@ -253,7 +259,7 @@ void model_figureFinalScores( ModelCtxt* model, ScoresArray* scores,
                               ScoresArray* tilePenalties );
 
 /* figureMoveScore is meant only for the engine's use */
-XP_U16 figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo, 
+XP_U16 figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* mvInfo, 
                         EngineCtxt* engine, XWStreamCtxt* stream, 
                         WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord,
                         XP_U16 mainWordLen );

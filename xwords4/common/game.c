@@ -85,7 +85,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
     }
     gi->gameID = gameID;
 
-    game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, util, 
+    game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, NULL, util, 
                               gi->boardSize, gi->boardSize );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -170,6 +170,7 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
 XP_Bool
 game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                      CurGameInfo* gi, DictionaryCtxt* dict, 
+                     const PlayerDicts* dicts,
                      XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp, 
                      const TransportProcs* procs )
 {
@@ -217,8 +218,8 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                 game->comms = NULL;
             }
 
-            XP_ASSERT( !!dict );
-            game->model = model_makeFromStream( MPPARM(mpool) stream, dict, util );
+            game->model = model_makeFromStream( MPPARM(mpool) stream, dict, 
+                                                dicts, util );
 
             game->server = server_makeFromStream( MPPARM(mpool) stream, 
                                                   game->model, game->comms, 
@@ -230,7 +231,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
             server_prefsChanged( game->server, cp );
             board_prefsChanged( game->board, cp );
             if ( !!draw ) {
-                draw_dictChanged( draw, dict );
+                draw_dictChanged( draw, -1, dict );
             }
             success = XP_TRUE;
         } while( XP_FALSE );
@@ -288,10 +289,7 @@ game_dispose( XWGame* game )
     }
 #endif
     if ( !!game->model ) { 
-        DictionaryCtxt* dict = model_getDictionary( game->model );
-        if ( !!dict ) { 
-            dict_destroy( dict );
-        }
+        model_destroyDicts( game->model );
         model_destroy( game->model );
         game->model = NULL;
     }
@@ -417,7 +415,7 @@ void
 gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 {
     LocalPlayer* pl;
-    XP_U16 i;
+    XP_U16 ii;
     XP_UCHAR* str;
     XP_U16 strVersion = stream_getVersion( stream );
 
@@ -458,7 +456,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         gi->gameSeconds = stream_getU16( stream );
     }
 
-    for ( pl = gi->players, i = 0; i < gi->nPlayers; ++pl, ++i ) {
+    for ( pl = gi->players, ii = 0; ii < gi->nPlayers; ++pl, ++ii ) {
         str = stringFromStream( mpool, stream );
         replaceStringIfDifferent( mpool, &pl->name, str );
         if ( !!str ) {
@@ -469,6 +467,14 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         replaceStringIfDifferent( mpool, &pl->password, str );
         if ( !!str ) {
             XP_FREE( mpool, str );
+        }
+
+        if ( strVersion >= STREAM_VERS_PLAYERDICTS ) {
+            str = stringFromStream( mpool, stream );
+            replaceStringIfDifferent( mpool, &pl->dictName, str );
+            if ( !!str ) {
+                XP_FREE( mpool, str );
+            }
         }
 
         pl->secondsUsed = stream_getU16( stream );
@@ -483,7 +489,7 @@ void
 gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
 {
     const LocalPlayer* pl;
-    XP_U16 i;
+    XP_U16 ii;
 
     stringToStream( stream, gi->dictName );
 
@@ -500,10 +506,11 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putU16( stream, gi->gameID );
     stream_putU8( stream, gi->dictLang );
     stream_putU16( stream, gi->gameSeconds );
-    
-    for ( pl = gi->players, i = 0; i < gi->nPlayers; ++pl, ++i ) {
+
+    for ( pl = gi->players, ii = 0; ii < gi->nPlayers; ++pl, ++ii ) {
         stringToStream( stream, pl->name );
         stringToStream( stream, pl->password );
+        stringToStream( stream, pl->dictName );
         stream_putU16( stream, pl->secondsUsed );
         stream_putU8( stream, pl->robotIQ );
         stream_putBits( stream, 1, pl->isLocal );

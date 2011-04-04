@@ -382,7 +382,8 @@ and_draw_objFinished( DrawCtx* dctx, BoardObjectType typ,
 }
 
 static void
-and_draw_dictChanged( DrawCtx* dctx, const DictionaryCtxt* dict )
+and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum, 
+                      const DictionaryCtxt* dict )
 {
     AndDraw* draw = (AndDraw*)dctx;
     if ( NULL != draw->jdraw ) {

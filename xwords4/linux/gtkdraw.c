@@ -369,6 +369,7 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 
 static void
 gtk_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx), 
+                      XP_S16 XP_UNUSED(playerNum),
                       const DictionaryCtxt* XP_UNUSED(dict) )
 {
 }

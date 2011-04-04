@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_PLAYERDICTS 0x0F
 #define STREAM_SAVE_PREVMOVE 0x0E /* server saves prev move explanation */
 #define STREAM_VERS_ROBOTIQ STREAM_SAVE_PREVMOVE /* robots have different smarts */
 #define STREAM_VERS_DICTLANG 0x0D /* save dict lang code in CurGameInfo */
@@ -50,11 +51,12 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_SAVE_PREVMOVE
+#define CUR_STREAM_VERS STREAM_VERS_PLAYERDICTS
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
     XP_UCHAR* password;
+    XP_UCHAR* dictName;
     XP_U16 secondsUsed;
     XP_Bool isLocal;
     XP_U8 robotIQ;              /* 0 means not a robot; 1-100 means how
@@ -110,8 +112,8 @@ void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
                  CommonPrefs* cp, const TransportProcs* procs );
 
 XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
-                             CurGameInfo* gi, 
-                             DictionaryCtxt* dict, XW_UtilCtxt* util, 
+                             CurGameInfo* gi, DictionaryCtxt* dict, 
+                             const PlayerDicts* dicts, XW_UtilCtxt* util, 
                              DrawCtx* draw, CommonPrefs* cp,
                              const TransportProcs* procs );
 
