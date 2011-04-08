@@ -69,6 +69,7 @@ public class PrefsActivity extends PreferenceActivity
                             R.string.key_tile_back,
                             R.string.key_clr_crosshairs,
                             R.string.key_empty,
+                            R.string.key_background,
                         };
                         for ( int colorKey : colorKeys ) {
                             editor.remove( getString(colorKey) );
