@@ -53,6 +53,17 @@ linux_debugf( const char* format, ... )
 }
 #endif
 
+#ifndef MEM_DEBUG
+void
+linux_freep( void** ptrp )
+{
+    if ( !!*ptrp ) {
+        free( *ptrp );
+        *ptrp = NULL;
+    }
+}
+#endif
+
 static DictionaryCtxt*
 linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx) )
 {

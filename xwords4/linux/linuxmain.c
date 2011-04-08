@@ -196,12 +196,15 @@ read_pipe_then_close( CommonGlobals* cGlobals )
     XWStreamCtxt* stream = 
         streamFromFile( cGlobals, params->fileName, cGlobals );
 
-    XP_Bool opened = game_makeFromStream( MPPARM(cGlobals->params->util->mpool) 
-                                          stream, &cGlobals->game, 
-                                          &params->gi, params->dict, 
-                                          &params->dicts, params->util, 
-                                          NULL /*draw*/,
-                                          &cGlobals->cp, NULL );
+#ifdef DEBUG
+    XP_Bool opened = 
+#endif
+        game_makeFromStream( MPPARM(cGlobals->params->util->mpool) 
+                             stream, &cGlobals->game, 
+                             &params->gi, params->dict, 
+                             &params->dicts, params->util, 
+                             NULL /*draw*/,
+                             &cGlobals->cp, NULL );
     XP_ASSERT( opened );
     stream_destroy( stream );
 

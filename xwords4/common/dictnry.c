@@ -305,12 +305,8 @@ freeSpecials( DictionaryCtxt* dict )
             XP_ASSERT( !!dict->chars[nSpecials] );
             XP_FREE( dict->mpool, dict->chars[nSpecials] );
 
-            if ( !!dict->bitmaps[nSpecials].largeBM ) { 
-                XP_FREE( dict->mpool, dict->bitmaps[nSpecials].largeBM );
-            }
-            if ( !!dict->bitmaps[nSpecials].smallBM ) { 
-                XP_FREE( dict->mpool, dict->bitmaps[nSpecials].smallBM );
-            }
+            XP_FREEP( dict->mpool, &dict->bitmaps[nSpecials].largeBM );
+            XP_FREEP( dict->mpool, &dict->bitmaps[nSpecials].smallBM );
 
             ++nSpecials;
         }

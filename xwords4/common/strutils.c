@@ -183,9 +183,7 @@ p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr
          (0 == XP_STRCMP( (const char*)curStr, (const char*)newStr ) ) ) {
         /* do nothing; we're golden */
     } else {
-        if ( !!curStr ) {
-            XP_FREE( mpool, curStr );
-        }
+        XP_FREEP( mpool, &curStr );
 #ifdef MEM_DEBUG
         curStr = p_copyString( mpool, newStr, file, func, lineNo );
 #else

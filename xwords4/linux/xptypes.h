@@ -92,6 +92,8 @@ extern void linux_debugf(const char*, ...)
 # define XP_MALLOC(pool,nbytes)       malloc(nbytes)
 # define XP_REALLOC(pool,p,s)         realloc((p),(s))
 # define XP_FREE(pool,p)              free(p)
+void linux_freep( void** ptrp );
+# define XP_FREEP(pool,p)             linux_freep((void**)p)
 #endif
 
 #define XP_MEMSET(src, val, nbytes)     memset( (src), (val), (nbytes) )

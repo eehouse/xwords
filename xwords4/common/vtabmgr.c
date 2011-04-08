@@ -47,9 +47,7 @@ vtmgr_destroy( MPFORMAL VTableMgr* vtmgr )
 
     for ( i = 0; i < VTABLE_NUM_SLOTS; ++i ) {
         void* vtable = vtmgr->slots[i];
-        if ( !!vtable ) {
-            XP_FREE( mpool, vtable );
-        }
+        XP_FREEP( mpool, &vtable );
     }
 
     XP_FREE( mpool, vtmgr );

@@ -328,12 +328,9 @@ newg_juggle( NewGameCtx* ngc )
 
                     loadPlayer( ngc, dest, lp );
 
-                    if ( !!lp->name ) {
-                        XP_FREE( ngc->mpool, lp->name );
-                    }
-                    if ( !!lp->password ) {
-                        XP_FREE( ngc->mpool, lp->password );
-                    }
+                    XP_FREEP( ngc->mpool, &lp->name );
+                    XP_FREEP( ngc->mpool, &lp->password );
+                    XP_FREEP( ngc->mpool, &lp->dictName );
 
                     adjustOneRow( ngc, dest, XP_FALSE );
                 }

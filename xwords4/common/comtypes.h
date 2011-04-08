@@ -191,6 +191,8 @@ typedef struct _PlayerDicts {
     mpool_realloc((pool),(p),(s),__FILE__,__func__,__LINE__)
 # define XP_FREE(pool,p) \
     mpool_free((pool), (p),__FILE__,__func__,__LINE__)
+# define XP_FREEP(pool,pp) \
+    mpool_freep((pool), (void**)(pp),__FILE__,__func__,__LINE__)
 
 # define MPFORMAL_NOCOMMA MemPoolCtx* mpool
 # define MPFORMAL         MPFORMAL_NOCOMMA,

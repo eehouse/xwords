@@ -335,14 +335,9 @@ disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
     LocalPlayer* lp;
 
     for ( lp = gi->players, i = 0; i < MAX_NUM_PLAYERS; ++lp, ++i ) {
-        if ( !!lp->name ) {
-            XP_FREE( mpool, lp->name );
-            lp->name = (XP_UCHAR*)NULL;
-        }
-        if ( !!lp->password ) {
-            XP_FREE( mpool, lp->password );
-            lp->password = (XP_UCHAR*)NULL;
-        }
+        XP_FREEP( mpool, &lp->name );
+        XP_FREEP( mpool, &lp->password );
+        XP_FREEP( mpool, &lp->dictName );
     }
 } /* disposePlayerInfoInt */
 
@@ -351,10 +346,7 @@ gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
 {
     disposePlayerInfoInt( MPPARM(mpool) gi );
 
-    if ( !!gi->dictName ) {
-        XP_FREE( mpool, gi->dictName );
-        gi->dictName = (XP_UCHAR*)NULL;
-    }
+    XP_FREEP( mpool, &gi->dictName );
 } /* gi_disposePlayerInfo */
 
 void
@@ -421,9 +413,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
     str = stringFromStream( mpool, stream );
     replaceStringIfDifferent( mpool, &gi->dictName, str );
-    if ( !!str ) {
-        XP_FREE( mpool, str );
-    }
+    XP_FREEP( mpool, &str );
 
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
     gi->boardSize = (XP_U8)stream_getBits( stream, 4 );
@@ -459,22 +449,16 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     for ( pl = gi->players, ii = 0; ii < gi->nPlayers; ++pl, ++ii ) {
         str = stringFromStream( mpool, stream );
         replaceStringIfDifferent( mpool, &pl->name, str );
-        if ( !!str ) {
-            XP_FREE( mpool, str );
-        }
+        XP_FREEP( mpool, &str );
 
         str = stringFromStream( mpool, stream );
         replaceStringIfDifferent( mpool, &pl->password, str );
-        if ( !!str ) {
-            XP_FREE( mpool, str );
-        }
+        XP_FREEP( mpool, &str );
 
         if ( strVersion >= STREAM_VERS_PLAYERDICTS ) {
             str = stringFromStream( mpool, stream );
             replaceStringIfDifferent( mpool, &pl->dictName, str );
-            if ( !!str ) {
-                XP_FREE( mpool, str );
-            }
+            XP_FREEP( mpool, &str );
         }
 
         pl->secondsUsed = stream_getU16( stream );

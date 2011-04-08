@@ -225,9 +225,7 @@ pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict )
     XP_U16 numFaces = dict_numTileFaces( dict );
     Tile i;
 
-    if ( pool->lettersLeft != NULL ) {
-        XP_FREE( pool->mpool, pool->lettersLeft );
-    }
+    XP_FREEP( pool->mpool, &pool->lettersLeft );
 
     pool->lettersLeft
         = (XP_U8*)XP_MALLOC( pool->mpool, 

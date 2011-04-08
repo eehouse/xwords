@@ -42,6 +42,9 @@ void* mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize,
                      const char* file, const char* func, XP_U32 lineNo );
 void mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, 
                  const char* func, XP_U32 lineNo );
+void mpool_freep( MemPoolCtx* mpool, void** ptr, const char* file, 
+                  const char* func, XP_U32 lineNo );
+
 void mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream );
 XP_U16 mpool_getNUsed( MemPoolCtx* mpool );
 

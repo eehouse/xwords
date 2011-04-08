@@ -252,6 +252,16 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     XP_ASSERT( 0 );
 } /* mpool_free */
 
+void
+mpool_freep( MemPoolCtx* mpool, void** ptr, const char* file, 
+             const char* func, XP_U32 lineNo )
+{
+    if ( !!*ptr ) {
+        mpool_free( mpool, *ptr, file, func, lineNo );
+        *ptr = NULL;
+    }
+}
+
 #define STREAM_OR_LOG(stream,buf) \
     if ( !!stream ) { \
         stream_catString( stream, buf ); \

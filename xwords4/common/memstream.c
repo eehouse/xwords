@@ -414,9 +414,7 @@ mem_stream_destroy( XWStreamCtxt* p_sctx )
         stream_close( p_sctx );
     }
 
-    if ( !!stream->buf ) {
-        XP_FREE( stream->mpool, stream->buf );
-    }
+    XP_FREEP( stream->mpool, &stream->buf );
     
     XP_FREE( stream->mpool, stream );
 } /* mem_stream_destroy */

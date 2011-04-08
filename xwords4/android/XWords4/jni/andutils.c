@@ -462,3 +462,14 @@ and_empty_stream( MPFORMAL AndGlobals* globals )
 /*     return result; */
 /* } */
 /* #endif */
+
+#ifndef MEM_DEBUG
+void
+and_freep( void** ptrp )
+{
+    if ( !!*ptrp ) {
+        free( *ptrp );
+        *ptrp = NULL;
+    }
+}
+#endif

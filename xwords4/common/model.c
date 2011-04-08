@@ -293,7 +293,9 @@ model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts )
 {
     if ( !!dicts ) {
         XP_U16 ii;
+#ifdef DEBUG
         DictionaryCtxt* gameDict = model_getDictionary( model );
+#endif
         for ( ii = 0; ii < VSIZE(dicts->dicts); ++ii ) {
             DictionaryCtxt* oldDict = model->vol.dicts.dicts[ii];
             DictionaryCtxt* newDict = dicts->dicts[ii];
