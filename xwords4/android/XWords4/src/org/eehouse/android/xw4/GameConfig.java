@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -90,11 +91,11 @@ public class GameConfig extends XWActivity
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
     private Spinner m_phoniesSpinner;
-    private Spinner m_dictSpinner;
+    private Spinner m_langSpinner;
     private Spinner m_smartnessSpinner;
-    private String[] m_dictItems;
-    private String[] m_dicts;
-    private int m_browsePosition;
+    private String[] m_langs;
+    // private String[] m_dicts;
+    private int m_langsBrowsePosition;
     private LinearLayout m_playerLayout;
     private CommsAddrRec m_carOrig;
     private CommsAddrRec m_car;
@@ -106,7 +107,7 @@ public class GameConfig extends XWActivity
     private String[] m_connStrings;
     private static final int[] s_disabledWhenLocked = { R.id.juggle_players
                                                         ,R.id.add_player
-                                                        ,R.id.dict_spinner
+                                                        ,R.id.lang_spinner
                                                         ,R.id.join_public_room_check
                                                         ,R.id.room_edit
                                                         ,R.id.advertise_new_room_check
@@ -297,6 +298,14 @@ public class GameConfig extends XWActivity
         Utils.setText( dialog, R.id.player_name_edit, lp.name );
         Utils.setText( dialog, R.id.password_edit, lp.password );
 
+        // Dicts spinner with label
+        String langName = DictLangCache.getLangName( this, m_gi.dictLang );
+        String label = String.format( getString( R.string.dict_lang_labelf ),
+                                      langName );
+        TextView text = (TextView)dialog.findViewById( R.id.dict_label );
+        text.setText( label );
+        configDictSpinner( dialog, lp );
+
         final View localSet = dialog.findViewById( R.id.local_player_set );
 
         CheckBox check = (CheckBox)
@@ -338,6 +347,11 @@ public class GameConfig extends XWActivity
         LocalPlayer lp = m_gi.players[m_whichPlayer];
         lp.name = Utils.getText( dialog, R.id.player_name_edit );
         lp.password = Utils.getText( dialog, R.id.password_edit );
+        Spinner spinner =
+            (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
+        int position = spinner.getSelectedItemPosition();
+        lp.dictName = DictLangCache.getHaveLang( this, m_gi.dictLang )[position];
+        Utils.logf( "reading name via position %d: %s", position, lp.dictName );
 
         lp.setIsRobot( Utils.getChecked( dialog, R.id.robot_check ) );
         lp.isLocal = !Utils.getChecked( dialog, R.id.remote_check );
@@ -376,7 +390,7 @@ public class GameConfig extends XWActivity
         m_playButton.setOnClickListener( this );
 
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
-        m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
+        m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
 
@@ -409,9 +423,9 @@ public class GameConfig extends XWActivity
             handleLockedChange();
         }
 
-        int curSel = listAvailableDicts( m_giOrig.dictName );
+        int curSel = listAvailableLangs( m_giOrig.dictName );
         m_giOrig.dictLang = 
-            DictLangCache.getLangCode( this, 
+            DictLangCache.getDictLangCode( this, 
                                        GameUtils.dictList( this )[curSel] );
         m_gi = new CurGameInfo( m_giOrig );
 
@@ -453,8 +467,7 @@ public class GameConfig extends XWActivity
         }
 
         loadPlayers();
-
-        configDictSpinner();
+        configLangSpinner();
 
         m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
@@ -620,62 +633,109 @@ public class GameConfig extends XWActivity
         adjustPlayersLabel();
     } // loadPlayers
 
-    private int listAvailableDicts( String curDict )
+    private String[] buildListWithBrowse( String[] input )
     {
-        int curSel = -1;
-
-        String[] list = GameUtils.dictList( this );
-
-        m_browsePosition = list.length;
-        m_dictItems = new String[m_browsePosition+1];
-        m_dictItems[m_browsePosition] = getString( R.string.download_dicts );
-        m_dicts = new String[m_browsePosition];
+        Arrays.sort( input );
+        int browsePosn = input.length;
+        String[] result = new String[browsePosn+1];
+        result[browsePosn] = getString( R.string.download_dicts );
         
-        for ( int ii = 0; ii < m_browsePosition; ++ii ) {
-            String dict = list[ii];
-            m_dicts[ii] = dict;
-            m_dictItems[ii] = DictLangCache.annotatedDictName( this, dict );
-            if ( dict.equals( curDict ) ) {
-                curSel = ii;
-            }
+        for ( int ii = 0; ii < browsePosn; ++ii ) {
+            String lang = input[ii];
+            result[ii] = lang;
         }
-
-        return curSel;
+        return result;
     }
 
-    private void configDictSpinner()
+    private int listAvailableLangs( String curDict )
     {
-        int curSel = listAvailableDicts( m_gi.dictName );
+        String[] langs = 
+            DictLangCache.listLangs( this, GameUtils.dictList( this ) );
+        String curLang = DictLangCache.getLangName( this, curDict );
+        m_langs = buildListWithBrowse( langs );
+        m_langsBrowsePosition = m_langs.length - 1;
 
+        return Arrays.binarySearch( m_langs, curLang );
+    } // listAvailableLangs
+
+    private void configDictSpinner( final Dialog dialog, final LocalPlayer lp )
+    {
+        String[] tmpDicts = 
+            DictLangCache.getHaveLang( this, m_gi.dictLang );
+        final String[] dicts = buildListWithBrowse( tmpDicts );
+        Spinner dictsSpinner = 
+            (Spinner)dialog.findViewById( R.id.dict_spinner );
+        int curSel = -1;
+        if ( null != lp.dictName ) {
+            curSel = Arrays.binarySearch( dicts, lp.dictName );
+        }
+
+        OnItemSelectedListener onSel = 
+            new OnItemSelectedListener() {
+                @Override
+                public void onItemSelected( AdapterView<?> parentView, 
+                                            View selectedItemView, 
+                                            int position, long id ) {
+                    if ( position == dicts.length - 1 ) {
+                        Utils.logf( "posn=%d; starting activity", position );
+                        startActivity( Utils.mkDownloadActivity(GameConfig.this,
+                                                                m_gi.dictLang ) );
+                    } else {
+                        // lp.dictName = dicts[position];
+                        // Utils.logf( "set lp.dictName: %s", lp.dictName );
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parentView) {}
+            };
+
+        configSpinnerWDownload( dictsSpinner, dicts, curSel, onSel );
+    }
+
+    private void configLangSpinner()
+    {
+        OnItemSelectedListener onSel = 
+            new OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parentView, 
+                                           View selectedItemView, 
+                                           int position, long id ) {
+                    if ( position == m_langsBrowsePosition ) {
+                        Utils.logf( "configLangSpinner: position=%d; starting download", position );
+                        startActivity( Utils.mkDownloadActivity(GameConfig.this) );
+                    } else {
+                        m_gi.dictLang = 
+                            DictLangCache.getLangLangCode( GameConfig.this, 
+                                                           m_langs[position] );
+                    }
+                }
+
+                @Override
+                    public void onNothingSelected(AdapterView<?> parentView) {}
+            };
+        configSpinnerWDownload( m_langSpinner, m_langs, 
+                                listAvailableLangs( m_gi.dictName ),
+                                onSel );
+    }
+
+    private void configSpinnerWDownload( Spinner spinner, String[] texts,
+                                         int curSel, 
+                                         OnItemSelectedListener onSel )
+    {
         ArrayAdapter<String> adapter = 
             new ArrayAdapter<String>( this,
                                       android.R.layout.simple_spinner_item,
-                                      m_dictItems );
+                                      texts );
         int resID = android.R.layout.simple_spinner_dropdown_item;
         adapter.setDropDownViewResource( resID );
-        m_dictSpinner.setAdapter( adapter );
+        spinner.setAdapter( adapter );
         if ( curSel >= 0 ) {
-            m_dictSpinner.setSelection( curSel );
+            Utils.logf( "setting selection: %d", curSel );
+            spinner.setSelection( curSel );
         } 
 
-        m_dictSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parentView, 
-                                       View selectedItemView, 
-                                       int position, long id ) {
-                if ( position == m_browsePosition ) {
-                    startActivity( Utils.mkDownloadActivity(GameConfig.this) );
-                } else {
-                    m_gi.dictName = m_dicts[position];
-                    Utils.logf( "assigned dictName: " + m_gi.dictName );
-                    m_gi.dictLang = DictLangCache.getLangCode( GameConfig.this, 
-                                                               m_gi.dictName );
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parentView) {}
-            });
+        spinner.setOnItemSelectedListener( onSel );
     }
 
     private void setSmartnessSpinner()

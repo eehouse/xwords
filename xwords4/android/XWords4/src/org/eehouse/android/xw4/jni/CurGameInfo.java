@@ -73,7 +73,7 @@ public class CurGameInfo {
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
         dictName = CommonPrefs.getDefaultDict( context );
-        dictLang = DictLangCache.getLangCode( context, dictName );
+        dictLang = DictLangCache.getDictLangCode( context, dictName );
         hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );

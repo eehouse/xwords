@@ -78,14 +78,14 @@
       </LinearLayout>
 
       <TextView style="@style/config_separator"
-                android:text="@string/dict_label"
+                android:text="@string/lang_label"
                 />
 
-      <Spinner android:id="@+id/dict_spinner"
+      <Spinner android:id="@+id/lang_spinner"
                android:layout_width="fill_parent"
                android:layout_height="wrap_content"
                android:drawSelectorOnTop="true"
-               android:prompt="@string/title_dicts_list"
+               android:prompt="@string/title_langs_list"
                />
 
       <LinearLayout android:id="@+id/connect_set"

@@ -40,7 +40,10 @@
     <string name="title_create">Create game</string>
     <string name="title_edit">Edit game</string>
 	<string name="title_games_list">Crosswords</string>   
-	<string name="title_dicts_list">Dictionaries (language/wordcount)</string>   
+	<string name="title_dicts_list">Dictionaries (wordcount)</string>   
+    <string name="title_langs_list">Languages (based on installed
+      dictionaries)</string>
+    <string name="lang_label">Game language</string>
 	<string name="title_game">Game</string>  
 	<string name="title_game_configf">%s settings</string>  
 	<string name="title_gamenet_configf">%s settings (networked)</string>  
@@ -164,6 +167,7 @@
     <string name="dicts_item_details">Details</string>
 
     <string name="dict_label">Dictionary</string>
+    <string name="dict_lang_labelf">Dictionary (in %s)</string>
     <string name="role_label">Device role</string>
     <string name="connection_label">Connection</string>
     <string name="connect_label">Connection (via internet)</string>

@@ -109,9 +109,11 @@ public class Utils {
                                              String dict, int lang )
     {
         String dict_url = CommonPrefs.getDefaultDictURL( context );
+        if ( 0 != lang ) {
+            dict_url += "/" + DictLangCache.getLangName( context, lang );
+        }
         if ( null != dict ) {
-            dict_url += "/" + DictLangCache.getLangName( context, lang )
-                + "/" + dict + XWConstants.DICT_EXTN;
+            dict_url += "/" + dict + XWConstants.DICT_EXTN;
         }
         Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
@@ -122,6 +124,11 @@ public class Utils {
     public static Intent mkDownloadActivity( Context context )
     {
         return mkDownloadActivity( context, null, 0 );
+    }
+
+    public static Intent mkDownloadActivity( Context context, int lang )
+    {
+        return mkDownloadActivity( context, null, lang );
     }
 
     public static void setChecked( Activity activity, int id, boolean value )

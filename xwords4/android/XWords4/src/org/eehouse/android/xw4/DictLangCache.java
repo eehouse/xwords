@@ -24,6 +24,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Arrays;
 
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -33,6 +35,7 @@ public class DictLangCache {
     private static final HashMap<String,DictInfo> s_nameToLang = 
         new HashMap<String,DictInfo>();
     private static String[] s_langNames;
+    private static String[] s_langNamesPresent;
 
     public static String annotatedDictName( Context context, String name )
     {
@@ -72,7 +75,7 @@ public class DictLangCache {
         int count = 0;
         String[] dicts = GameUtils.dictList( context );
         for ( String dict : dicts ) {
-            if ( code == getLangCode( context, dict ) ) {
+            if ( code == getDictLangCode( context, dict ) ) {
                 ++count;
             }
         }
@@ -94,7 +97,9 @@ public class DictLangCache {
                 al.add( dict );
             }
         }
-        return al.toArray( new String[al.size()] );
+        String[] result = al.toArray( new String[al.size()] );
+        Arrays.sort( result );
+        return result;
     }
 
     public static String[] getHaveLang( Context context, int code )
@@ -113,20 +118,43 @@ public class DictLangCache {
         return nameWithCount.substring( 0, indx );
     }
 
-    public static int getLangCode( Context context, String name )
+    public static int getDictLangCode( Context context, String dict )
     {
-        return getInfo( context, name ).langCode;
+        return getInfo( context, dict ).langCode;
+    }
+
+    public static int getLangLangCode( Context context, String lang )
+    {
+        int code = 0;
+        String[] namesArray = getNamesArray( context );
+        for ( int ii = 0; ii < namesArray.length; ++ii ) {
+            if ( namesArray[ii].equals( lang ) ) {
+                code = ii;
+                break;
+            }
+        }
+        return code;
     }
 
     public static String getLangName( Context context, String name )
     {
-        int code = getLangCode( context, name );
+        int code = getDictLangCode( context, name );
         return getLangName( context, code );
     }
 
     public static void inval( String name )
     {
         s_nameToLang.remove( name );
+    }
+
+    public static String[] listLangs( Context context, final String[] names )
+    {
+        HashSet<String> langs = new HashSet<String>();
+        for ( String name:names ) {
+            langs.add( getLangName( context, name ) );
+        }
+        String[] result = new String[langs.size()];
+        return langs.toArray( result );
     }
 
     private static String[] getNamesArray( Context context )

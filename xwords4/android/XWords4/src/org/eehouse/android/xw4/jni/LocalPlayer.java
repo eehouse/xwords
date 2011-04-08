@@ -27,6 +27,7 @@ import junit.framework.Assert;
 public class LocalPlayer {
     public String name;
     public String password;
+    public String dictName;
     public int secondsUsed;
     public int robotIQ;
     public boolean isLocal;
@@ -49,6 +50,9 @@ public class LocalPlayer {
         }
         if ( null != src.password ) {
             password = new String(src.password);
+        }
+        if ( null != src.dictName ) {
+            dictName = new String(src.dictName);
         }
         secondsUsed = src.secondsUsed;
     }

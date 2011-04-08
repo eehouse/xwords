@@ -82,6 +82,8 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
             lp->name = copyString( mpool, buf );
             getString( env, jlp, "password", buf, VSIZE(buf) );
             lp->password = copyString( mpool, buf );
+            getString( env, jlp, "dictName", buf, VSIZE(buf) );
+            lp->dictName = copyString( mpool, buf );
 
             lp->secondsUsed = 0;
 
@@ -129,6 +131,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
             setBool( env, jlp, "isLocal", lp->isLocal );
             setString( env, jlp, "name", lp->name );
             setString( env, jlp, "password", lp->password );
+            setString( env, jlp, "dictName", lp->dictName );
             setInt( env, jlp, "secondsUsed", lp->secondsUsed );
 
             (*env)->DeleteLocalRef( env, jlp );
