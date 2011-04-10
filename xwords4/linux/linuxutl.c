@@ -128,6 +128,11 @@ parseBonusFile( XP_U16 nCols, const char* bonusFile )
                 if ( !inComment && col < nCols ) {
                     result[(row * nCols) + col] = bonus;
                     ++col;
+                    /* Let's just allow anything to follow the 15 letters we
+                       care about, e.g. comments */
+                    if ( col >= nCols ) {
+                        inComment = true;
+                    }
                 }
             }
             if ( col > 0 && row < nCols - 1) {
