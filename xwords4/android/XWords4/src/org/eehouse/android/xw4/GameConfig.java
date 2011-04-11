@@ -427,7 +427,7 @@ public class GameConfig extends XWActivity
         m_giOrig.dictLang = 
             DictLangCache.getDictLangCode( this, 
                                        GameUtils.dictList( this )[curSel] );
-        m_gi = new CurGameInfo( m_giOrig );
+        m_gi = new CurGameInfo( this, m_giOrig );
 
         m_carOrig = new CommsAddrRec( this );
         if ( XwJNI.game_hasComms( gamePtr ) ) {
@@ -585,7 +585,7 @@ public class GameConfig extends XWActivity
     {
         m_playerLayout.removeAllViews();
 
-        String[] names = m_gi.visibleNames( this );
+        String[] names = m_gi.visibleNames();
         // only enable delete if one will remain (or two if networked)
         boolean canDelete = names.length > 2
             || (m_notNetworkedGame && names.length > 1);

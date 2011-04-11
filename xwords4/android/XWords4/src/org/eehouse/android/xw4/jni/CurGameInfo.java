@@ -56,6 +56,7 @@ public class CurGameInfo {
     // private int m_nVisiblePlayers;
     private boolean m_inProgress;
     private int m_smartness;
+    private Context m_context;
 
     public CurGameInfo( Context context )
     {
@@ -65,6 +66,7 @@ public class CurGameInfo {
     public CurGameInfo( Context context, boolean isNetworked )
     {
         m_inProgress = false;
+        m_context = context;
         nPlayers = 2;
         gameSeconds = 60 * nPlayers *
             CommonPrefs.getDefaultPlayerMinutes( context );
@@ -94,8 +96,9 @@ public class CurGameInfo {
         }
     }
 
-    public CurGameInfo( CurGameInfo src )
+    public CurGameInfo( Context context, CurGameInfo src )
     {
+        m_context = context;
         m_inProgress = src.m_inProgress;
         gameID = src.gameID;
         nPlayers = src.nPlayers;
@@ -214,7 +217,7 @@ public class CurGameInfo {
         return !consistent;
     }
 
-    public String[] visibleNames( Context context )
+    public String[] visibleNames()
     {
         String[] names = new String[nPlayers];
         for ( int ii = 0; ii < nPlayers; ++ii ) {
@@ -222,10 +225,11 @@ public class CurGameInfo {
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 names[ii] = lp.name;
                 if ( lp.isRobot() ) {
-                    names[ii] += " " + context.getString( R.string.robot_name );
+                    names[ii] += 
+                        " " + m_context.getString( R.string.robot_name );
                 }
             } else {
-                names[ii] = context.getString( R.string.guest_name );
+                names[ii] = m_context.getString( R.string.guest_name );
             }
         }
         return names;
