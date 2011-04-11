@@ -232,6 +232,12 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
             board_prefsChanged( game->board, cp );
             if ( !!draw ) {
                 draw_dictChanged( draw, -1, dict );
+                if ( !!dicts ) {
+                    XP_U16 ii;
+                    for ( ii = 0; ii < gi->nPlayers; ++ii ) {
+                        draw_dictChanged( draw, ii, dicts->dicts[ii] );
+                    }
+                }
             }
             success = XP_TRUE;
         } while( XP_FALSE );
