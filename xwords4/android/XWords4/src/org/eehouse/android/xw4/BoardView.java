@@ -707,7 +707,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    public void dictChanged( int dictPtr )
+    public void dictChanged( int playerNum, int dictPtr )
     {
         if ( m_dictPtr != dictPtr ) {
             if ( m_dictPtr == 0 || 

@@ -387,8 +387,8 @@ and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum,
 {
     AndDraw* draw = (AndDraw*)dctx;
     if ( NULL != draw->jdraw ) {
-        DRAW_CBK_HEADER( "dictChanged", "(I)V" );
-        (*env)->CallVoidMethod( env, draw->jdraw, mid, (jint)dict );
+        DRAW_CBK_HEADER( "dictChanged", "(II)V" );
+        (*env)->CallVoidMethod( env, draw->jdraw, mid, playerNum, (jint)dict );
     }
 }
 
