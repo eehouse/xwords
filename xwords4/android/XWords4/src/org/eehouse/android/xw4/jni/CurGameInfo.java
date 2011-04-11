@@ -74,7 +74,7 @@ public class CurGameInfo {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
-        dictName = CommonPrefs.getDefaultDict( context );
+        dictName = CommonPrefs.getDefaultHumanDict( context );
         dictLang = DictLangCache.getDictLangCode( context, dictName );
         hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
@@ -235,6 +235,17 @@ public class CurGameInfo {
         return names;
     }
 
+    public String[] dictNames()
+    {
+        assignDicts();
+
+        String[] result = new String[nPlayers];
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            result[ii] = players[ii].dictName;
+        }
+        return result;
+    }
+
     public boolean addPlayer() 
     {
         boolean added = nPlayers < MAX_NUM_PLAYERS;
@@ -305,5 +316,19 @@ public class CurGameInfo {
             }
         }
         return canJuggle;
+    }
+
+    private void assignDicts()
+    {
+        String humanDict = CommonPrefs.getDefaultHumanDict( m_context );
+        int lang = DictLangCache.getDictLangCode( m_context, humanDict );
+        Assert.assertTrue( lang == dictLang );
+        String robotDict = CommonPrefs.getDefaultRobotDict( m_context );
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            LocalPlayer lp = players[ii];
+            if ( null == lp.dictName ) {
+                lp.dictName = lp.isRobot() ? robotDict : humanDict;
+            }
+        }
     }
 }

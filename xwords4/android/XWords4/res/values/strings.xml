@@ -269,7 +269,9 @@
     <string name="network_behavior_summary">Settings that apply to
       networked games</string>
 
-    <string name="default_dict">Game dictionary</string>
+    <string name="default_dict">Dictionary for humans</string>
+    <string name="default_robodict">Dictionary for robots</string>
+    
     <string name="default_phonies">Handle phonies</string>
     <string name="phonies_spinner_prompt">How to handle \"phonies\"
     (words not in dictionary)</string>

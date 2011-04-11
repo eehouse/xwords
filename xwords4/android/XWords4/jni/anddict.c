@@ -422,6 +422,30 @@ and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
     return (DictionaryCtxt*)anddict;
 }
 
+void
+makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
+           jobjectArray jdicts, jobjectArray jnames )
+{
+    LOG_FUNC();
+    int ii;
+    jsize len = (*env)->GetArrayLength( env, jdicts );
+    XP_ASSERT( len == (*env)->GetArrayLength( env, jnames ) );
+
+    for ( ii = 0; ii < VSIZE(dicts->dicts); ++ii ) {
+        DictionaryCtxt* dict = NULL;
+        if ( ii < len ) {
+            jobject jdict = (*env)->GetObjectArrayElement( env, jdicts, ii );
+            jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
+            dict = makeDict( MPPARM(mpool) env, jniutil, jdict, jname );
+            XP_ASSERT( !!dict );
+            (*env)->DeleteLocalRef( env, jdict );
+            (*env)->DeleteLocalRef( env, jname );
+        } 
+        dicts->dicts[ii] = dict;
+    }
+    LOG_RETURN_VOID();
+}
+
 DictionaryCtxt* 
 makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
           jstring jname )
@@ -448,4 +472,17 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
     }
     
     return (DictionaryCtxt*)anddict;
+}
+
+void
+destroyDicts( PlayerDicts* dicts )
+{
+    DictionaryCtxt** ctxts = dicts->dicts;
+    for ( ; ; ) {
+        if ( !*ctxts ) {
+            break;
+        }
+        dict_destroy( *ctxts );
+        ++ctxts;
+    }
 }

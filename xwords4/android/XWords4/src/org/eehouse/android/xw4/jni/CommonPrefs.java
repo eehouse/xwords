@@ -201,11 +201,20 @@ public class CommonPrefs {
         }
     }
 
-    public static String getDefaultDict( Context context )
+    public static String getDefaultHumanDict( Context context )
     {
         String value = getString( context, R.string.key_default_dict );
         if ( value.equals("") || !GameUtils.dictExists( context, value ) ) {
             value = GameUtils.dictList( context )[0];
+        }
+        return value;
+    }
+
+    public static String getDefaultRobotDict( Context context )
+    {
+        String value = getString( context, R.string.key_default_robodict );
+        if ( value.equals("") || !GameUtils.dictExists( context, value ) ) {
+            value = getDefaultHumanDict( context );
         }
         return value;
     }

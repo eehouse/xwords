@@ -172,7 +172,8 @@ public class GameUtils {
         // loadMakeGame, if makinga new game, will add comms as long
         // as DeviceRole.SERVER_STANDALONE != gi.serverRole
         loadMakeGame( context, gamePtr, gi, lockSrc );
-        byte[] dictBytes = GameUtils.openDict( context, gi.dictName );
+        String[] dictNames = gi.dictNames();
+        byte[][] dictBytes = openDicts( context, dictNames );
         
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec( context );
@@ -190,7 +191,7 @@ public class GameUtils {
         gamePtr = XwJNI.initJNI();
         XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                 CommonPrefs.get( context ), dictBytes, 
-                                gi.dictName );
+                                dictNames );
         if ( null != addr ) {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
@@ -285,17 +286,18 @@ public class GameUtils {
     {
         byte[] stream = savedGame( context, lock );
         XwJNI.gi_from_stream( gi, stream );
-        byte[] dictBytes = GameUtils.openDict( context, gi.dictName );
+        String[] dictNames = gi.dictNames();
+        byte[][] dictBytes = openDicts( context, dictNames );
 
         boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                       JNIUtilsImpl.get(), gi, 
-                                                      dictBytes, gi.dictName,
+                                                      dictBytes, dictNames,
                                                       util, 
                                                       CommonPrefs.get(context));
         if ( !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                     CommonPrefs.get(context), dictBytes, 
-                                    gi.dictName );
+                                    dictNames );
         }
     }
 
@@ -486,6 +488,22 @@ public class GameUtils {
         return bytes;
     }
 
+    public static byte[][] openDicts( Context context, String[] names )
+    {
+        byte[][] result = new byte[names.length][];
+        HashMap<String,byte[]> seen = new HashMap<String,byte[]>();
+        for ( int ii = 0; ii < names.length; ++ii ) {
+            String name = names[ii];
+            byte[] bytes = seen.get( name );
+            if ( null == bytes ) {
+                bytes = openDict( context, name );
+                seen.put( name, bytes );
+            }
+            result[ii] = bytes;
+        }
+        return result;
+    }
+
     public static boolean saveDict( Context context, String name, InputStream in )
     {
         boolean success = false;
@@ -618,23 +636,24 @@ public class GameUtils {
     public static void replaceDict( Context context, String path,
                                     String dict )
     {
-        GameLock lock = new GameLock( path, true ).lock();
-        byte[] stream = savedGame( context, lock );
-        CurGameInfo gi = new CurGameInfo( context );
-        byte[] dictBytes = GameUtils.openDict( context, dict );
+        Assert.fail();
+        // GameLock lock = new GameLock( path, true ).lock();
+        // byte[] stream = savedGame( context, lock );
+        // CurGameInfo gi = new CurGameInfo( context );
+        // byte[] dictBytes = openDict( context, dict );
 
-        int gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeFromStream( gamePtr, stream, 
-                                   JNIUtilsImpl.get(), gi,
-                                   dictBytes, dict,         
-                                   CommonPrefs.get( context ) );
-        gi.dictName = dict;
+        // int gamePtr = XwJNI.initJNI();
+        // XwJNI.game_makeFromStream( gamePtr, stream, 
+        //                            JNIUtilsImpl.get(), gi,
+        //                            dictBytes, dict,         
+        //                            CommonPrefs.get( context ) );
+        // gi.dictName = dict;
 
-        saveGame( context, gamePtr, gi, lock, false );
+        // saveGame( context, gamePtr, gi, lock, false );
 
-        summarizeAndClose( context, lock, gamePtr, gi );
+        // summarizeAndClose( context, lock, gamePtr, gi );
 
-        lock.unlock();
+        // lock.unlock();
     }
 
     public static void applyChanges( Context context, CurGameInfo gi, 
@@ -645,7 +664,8 @@ public class GameUtils {
         // somesuch.  But: do we have a way to save changes to a gi
         // that don't reset the game, e.g. player name for standalone
         // games?
-        byte[] dictBytes = GameUtils.openDict( context, gi.dictName );
+        String[] dictNames = gi.dictNames();
+        byte[][] dictBytes = openDicts( context, dictNames );
         int gamePtr = XwJNI.initJNI();
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
@@ -653,18 +673,18 @@ public class GameUtils {
         if ( forceNew ) {
             tellRelayDied( context, lock, true );
         } else {
-            byte[] stream = GameUtils.savedGame( context, lock );
+            byte[] stream = savedGame( context, lock );
             // Will fail if there's nothing in the stream but a gi.
             madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                   JNIUtilsImpl.get(),
                                                   new CurGameInfo(context), 
-                                                  dictBytes, gi.dictName, cp );
+                                                  dictBytes, dictNames, cp );
         }
 
         if ( forceNew || !madeGame ) {
             gi.setInProgress( false );
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                    cp, dictBytes, gi.dictName );
+                                    cp, dictBytes, dictNames );
         }
 
         if ( null != car ) {

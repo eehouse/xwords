@@ -13,6 +13,12 @@
        android:defaultValue="CollegeEng_2to8"
        />
 
+    <org.eehouse.android.xw4.DictListPreference 
+       android:key="@string/key_default_robodict"
+       android:title="@string/default_robodict"
+       android:defaultValue="BasEnglish2to8"
+       />
+
     <CheckBoxPreference android:key="@string/key_init_hintsallowed"
                         android:title="@string/hints_allowed"
                         android:summary="@string/hints_allowed_sum"

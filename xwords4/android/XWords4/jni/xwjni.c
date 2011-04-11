@@ -380,7 +380,7 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 ( JNIEnv* env, jclass C, jint gamePtr, jobject j_gi, jobject j_util, 
   jobject jniu, jobject j_draw, jobject j_cp, jobject j_procs, 
-  jbyteArray jDictBytes, jstring jDictName )
+  jobjectArray j_dicts, jobjectArray j_names )
 {
     XWJNI_START_GLOBALS();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
@@ -398,16 +398,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     game_makeNewGame( MPPARM(mpool) &state->game, gi, globals->util, dctx, &cp,
                       globals->xportProcs );
 
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil,
-                                     jDictBytes, jDictName );
+    PlayerDicts dicts;
+    makeDicts( MPPARM(mpool) env, globals->jniutil, &dicts, j_dicts, j_names );
 #ifdef STUBBED_DICT
     if ( !dict ) {
         XP_LOGF( "falling back to stubbed dict" );
         dict = make_stubbed_dict( MPPARM_NOCOMMA(mpool) );
     }
 #endif
-    XP_ASSERT( !!dict );
-    model_setDictionary( state->game.model, dict );
+    model_setPlayerDicts( state->game.model, &dicts );
     XWJNI_END();
 } /* makeNewGame */
 
@@ -439,19 +438,19 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
-( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream, 
-  jobject /*out*/jgi, jbyteArray jdict, jstring jdictName, jobject jutil, 
-  jobject jniu, jobject jdraw, jobject jcp, jobject jprocs )
+( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream, jobject /*out*/jgi,
+  jobjectArray jdicts, jobjectArray jdictNames, jobject jutil, jobject jniu, 
+  jobject jdraw, jobject jcp, jobject jprocs )
 {
     jboolean result;
+    PlayerDicts dicts;
     XWJNI_START_GLOBALS();
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
     globals->util = makeUtil( MPPARM(mpool) &state->env, 
                               jutil, globals->gi, globals );
     globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil, 
-                                     jdict, jdictName );
+    makeDicts( MPPARM(mpool) env, globals->jniutil, &dicts, jdicts, jdictNames );
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
 
@@ -461,7 +460,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, jcp );
     result = game_makeFromStream( MPPARM(mpool) stream, &state->game, 
-                                  globals->gi, dict, NULL,
+                                  globals->gi, NULL, &dicts,
                                   globals->util, globals->dctx, &cp,
                                   globals->xportProcs );
     stream_destroy( stream );
@@ -474,8 +473,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     } else {
         destroyDraw( &globals->dctx );
         destroyXportProcs( &globals->xportProcs );
-        dict_destroy( dict );
-        dict = NULL;
+        destroyDicts( &dicts );
         destroyUtil( &globals->util );
         destroyJNIUtil( &globals->jniutil );
         destroyGI( MPPARM(mpool) &globals->gi );

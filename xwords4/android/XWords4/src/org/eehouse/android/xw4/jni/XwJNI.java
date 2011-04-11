@@ -59,13 +59,13 @@ public class XwJNI {
                                                 JNIUtils jniu,
                                                 DrawCtx draw, CommonPrefs cp, 
                                                 TransportProcs procs, 
-                                                byte[] dict, String dictName );
+                                                byte[][] dicts, String[] dictNames );
 
     public static native boolean game_makeFromStream( int gamePtr,
                                                       byte[] stream, 
                                                       CurGameInfo gi, 
-                                                      byte[] dict, 
-                                                      String dictName,
+                                                      byte[][] dicts, 
+                                                      String[] dictNames,
                                                       UtilCtxt util, 
                                                       JNIUtils jniu,
                                                       DrawCtx draw,
@@ -76,19 +76,19 @@ public class XwJNI {
     // played
     public static void game_makeNewGame( int gamePtr, CurGameInfo gi,
                                          JNIUtils jniu, CommonPrefs cp, 
-                                         byte[] dict, String dictName ) {
+                                         byte[][] dicts, String[] dictNames ) {
         game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu,
                           (DrawCtx)null, cp, (TransportProcs)null, 
-                          dict, dictName );
+                          dicts, dictNames );
     }
 
     public static boolean game_makeFromStream( int gamePtr,
                                                byte[] stream, 
                                                JNIUtils jniu,
                                                CurGameInfo gi, 
-                                               byte[] dict, String dictName,
+                                               byte[][] dicts, String[] dictNames,
                                                CommonPrefs cp ) {
-        return game_makeFromStream( gamePtr, stream, gi, dict, dictName,
+        return game_makeFromStream( gamePtr, stream, gi, dicts, dictNames,
                                     (UtilCtxt)null, jniu, (DrawCtx)null, cp, 
                                     (TransportProcs)null );
     }
@@ -97,10 +97,10 @@ public class XwJNI {
                                                byte[] stream, 
                                                JNIUtils jniu,
                                                CurGameInfo gi, 
-                                               byte[] dict, String dictName,
+                                               byte[][] dicts, String[] dictNames,
                                                UtilCtxt util,
                                                CommonPrefs cp ) {
-        return game_makeFromStream( gamePtr, stream, gi, dict, dictName,
+        return game_makeFromStream( gamePtr, stream, gi, dicts, dictNames,
                                     util, jniu, (DrawCtx)null, cp, 
                                     (TransportProcs)null );
     }
