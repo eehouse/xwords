@@ -50,6 +50,7 @@ typedef struct LaunchParams {
     PlayerDicts dicts;
     char* fileName;
     char* pipe;
+    char* bonusFile;
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;

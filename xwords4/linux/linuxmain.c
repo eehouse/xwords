@@ -288,6 +288,7 @@ typedef enum {
     ,CMD_ADVERTISEROOM
     ,CMD_JOINADVERTISED
     ,CMD_PHONIES
+    ,CMD_BONUSFILE
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     ,CMD_BTADDR
@@ -359,6 +360,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
     ,{ CMD_JOINADVERTISED, false, "join-public", "look for a public room" }
     ,{ CMD_PHONIES, true, "phonies", "ignore (0, default), warn (1) or lose turn (2)" }
+    ,{ CMD_BONUSFILE, true, "bonus-file", "provides bonus info: . + * ^ and ! are legal" }
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     ,{ CMD_BTADDR, true, "btaddr", "bluetooth address of host" }
@@ -1118,6 +1120,10 @@ main( int argc, char** argv )
             default:
                 usage( argv[0], "phonies takes 0 or 1 or 2" );
             }
+            break;
+        case CMD_BONUSFILE:
+            mainParams.bonusFile = optarg;
+            break;
 #endif
         case CMD_CLOSESTDIN:
             closeStdin = XP_TRUE;

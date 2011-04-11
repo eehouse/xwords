@@ -23,8 +23,10 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "linuxutl.h"
+#include "main.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef DEBUG
@@ -77,35 +79,111 @@ linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx) )
 #define TL BONUS_TRIPLE_LETTER
 #define TW BONUS_TRIPLE_WORD
 
+static XWBonusType*
+parseBonusFile( XP_U16 nCols, const char* bonusFile )
+{
+    XWBonusType* result = NULL;
+    FILE* file = fopen( bonusFile, "r" );
+    if ( !!file ) {
+        XP_U16 row = 0;
+        XP_U16 col;
+        result = malloc( nCols * nCols * sizeof(*result) );
+        char line[1024];
+        while ( line == fgets( line, sizeof(line), file ) && row < nCols ) {
+            bool inComment = false;
+            char* ch;
+            XWBonusType bonus;
+            col = 0;
+            for ( ch = line; '\0' != *ch; ++ch ) {
+                switch( *ch ) {
+                case '#':       /* comment; line is done */
+                    inComment = true;
+                    break;
+                case '+':
+                    bonus = BONUS_DOUBLE_LETTER;
+                    break;
+                case '*': 
+                    bonus = BONUS_DOUBLE_WORD;
+                    break;
+                case '^':
+                    bonus = BONUS_TRIPLE_LETTER;
+                    break;
+                case '!': 
+                    bonus = BONUS_TRIPLE_WORD;
+                    break;
+                case '.': 
+                case ' ': 
+                    bonus = BONUS_NONE;
+                    break;
+                case '\n':
+                case '\a':
+                    break;
+                default:
+                    if ( !inComment ) {
+                        fprintf( stderr, "unexpected char '%c' in %s\n", *ch, bonusFile );
+                        exit( 1 );
+                    }
+                    break;
+                }
+                if ( !inComment && col < nCols ) {
+                    result[(row * nCols) + col] = bonus;
+                    ++col;
+                    /* Let's just allow anything to follow the 15 letters we
+                       care about, e.g. comments */
+                    if ( col >= nCols ) {
+                        inComment = true;
+                    }
+                }
+            }
+            if ( col > 0 && row < nCols - 1) {
+                ++row;
+            }
+        }
+        fclose( file );
+    }
+    return result;
+}
+
 static XWBonusType
-linux_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc), 
-                           const ModelCtxt* XP_UNUSED(model),
+linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
                            XP_U16 col, XP_U16 row )
 {
-    XP_U16 index;
-    /* This must be static or won't compile under multilink (for Palm).
-       Fix! */
-    static char scrabbleBoard[8*8] = { 
-	TW,EM,EM,DL,EM,EM,EM,TW,
-	EM,DW,EM,EM,EM,TL,EM,EM,
-
-	EM,EM,DW,EM,EM,EM,DL,EM,
-	DL,EM,EM,DW,EM,EM,EM,DL,
-                            
-	EM,EM,EM,EM,DW,EM,EM,EM,
-	EM,TL,EM,EM,EM,TL,EM,EM,
-                            
-	EM,EM,DL,EM,EM,EM,DL,EM,
-	TW,EM,EM,DL,EM,EM,EM,DW,
-    }; /* scrabbleBoard */
-
-    if ( col > 7 ) col = 14 - col;
-    if ( row > 7 ) row = 14 - row;
-    index = (row*8) + col;
-    if ( index >= 8*8 ) {
-	return (XWBonusType)EM;
+    static XWBonusType* parsedFile = NULL;
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    XP_U16 nCols = model_numCols( model );
+    if ( NULL == parsedFile && NULL != cGlobals->params->bonusFile ) {
+        if ( !parsedFile ) {
+            parsedFile = parseBonusFile( nCols, cGlobals->params->bonusFile );
+        }
+    }
+    if ( NULL != parsedFile ) {
+        return parsedFile[(row*nCols) + col];
     } else {
-	return (XWBonusType)scrabbleBoard[index];
+        XP_U16 index;
+        /* This must be static or won't compile under multilink (for Palm).
+           Fix! */
+        static char scrabbleBoard[8*8] = { 
+            TW,EM,EM,DL,EM,EM,EM,TW,
+            EM,DW,EM,EM,EM,TL,EM,EM,
+
+            EM,EM,DW,EM,EM,EM,DL,EM,
+            DL,EM,EM,DW,EM,EM,EM,DL,
+                            
+            EM,EM,EM,EM,DW,EM,EM,EM,
+            EM,TL,EM,EM,EM,TL,EM,EM,
+                            
+            EM,EM,DL,EM,EM,EM,DL,EM,
+            TW,EM,EM,DL,EM,EM,EM,DW,
+        }; /* scrabbleBoard */
+
+        if ( col > 7 ) col = 14 - col;
+        if ( row > 7 ) row = 14 - row;
+        index = (row*8) + col;
+        if ( index >= 8*8 ) {
+            return (XWBonusType)EM;
+        } else {
+            return (XWBonusType)scrabbleBoard[index];
+        }
     }
 } /* linux_util_getSquareBonus */
 
