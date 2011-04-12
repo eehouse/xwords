@@ -151,6 +151,20 @@ getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
     (*env)->DeleteLocalRef( env, cls );
 }
 
+XP_UCHAR* 
+getStringCopy( MPFORMAL JNIEnv* env, jstring jstr )
+{
+    XP_UCHAR* result = NULL;
+    if ( NULL != jstr ) {
+        jsize len = 1 + (*env)->GetStringUTFLength( env, jstr );
+        const char* chars = (*env)->GetStringUTFChars( env, jstr, NULL );
+        result = XP_MALLOC( mpool, len );
+        XP_MEMCPY( result, chars, len );
+        (*env)->ReleaseStringUTFChars( env, jstr, chars );
+    }
+    return result;
+}
+
 bool
 getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
            jobject* ret )

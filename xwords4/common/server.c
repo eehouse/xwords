@@ -2495,13 +2495,13 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
     XP_UCHAR buf[48];
     const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
                                               STRS_VALUES_HEADER );
-    const XP_UCHAR* dname;
+    const XP_UCHAR* langName;
 
     XP_ASSERT( !!server->vol.model );
 
     dict = model_getDictionary( server->vol.model );
-    dname = dict_getShortName( dict );
-    XP_SNPRINTF( buf, sizeof(buf), fmt, dname );
+    langName = dict_getLangName( dict );
+    XP_SNPRINTF( buf, sizeof(buf), fmt, langName );
     stream_catString( stream, buf );
 
     nChars = dict_numTileFaces( dict );

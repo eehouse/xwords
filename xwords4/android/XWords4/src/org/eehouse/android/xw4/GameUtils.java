@@ -191,7 +191,8 @@ public class GameUtils {
         gamePtr = XwJNI.initJNI();
         XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                 CommonPrefs.get( context ), dictBytes, 
-                                dictNames );
+                                dictNames, gi.langName() );
+                                
         if ( null != addr ) {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
@@ -288,16 +289,17 @@ public class GameUtils {
         XwJNI.gi_from_stream( gi, stream );
         String[] dictNames = gi.dictNames();
         byte[][] dictBytes = openDicts( context, dictNames );
+        String langName = gi.langName();
 
         boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                       JNIUtilsImpl.get(), gi, 
                                                       dictBytes, dictNames,
-                                                      util, 
+                                                      langName, util, 
                                                       CommonPrefs.get(context));
         if ( !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                     CommonPrefs.get(context), dictBytes, 
-                                    dictNames );
+                                    dictNames, langName );
         }
     }
 
@@ -666,6 +668,7 @@ public class GameUtils {
         // games?
         String[] dictNames = gi.dictNames();
         byte[][] dictBytes = openDicts( context, dictNames );
+        String langName = gi.langName();
         int gamePtr = XwJNI.initJNI();
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
@@ -678,13 +681,14 @@ public class GameUtils {
             madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                   JNIUtilsImpl.get(),
                                                   new CurGameInfo(context), 
-                                                  dictBytes, dictNames, cp );
+                                                  dictBytes, dictNames, 
+                                                  langName, cp );
         }
 
         if ( forceNew || !madeGame ) {
             gi.setInProgress( false );
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                    cp, dictBytes, dictNames );
+                                    cp, dictBytes, dictNames, langName );
         }
 
         if ( null != car ) {

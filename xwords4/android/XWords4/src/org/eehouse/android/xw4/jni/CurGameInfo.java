@@ -246,6 +246,11 @@ public class CurGameInfo {
         return result;
     }
 
+    public String langName()
+    {
+        return DictLangCache.getLangName( m_context, dictLang );
+    }
+
     public boolean addPlayer() 
     {
         boolean added = nPlayers < MAX_NUM_PLAYERS;

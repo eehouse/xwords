@@ -489,6 +489,7 @@ destroy_stubbed_dict( DictionaryCtxt* dict )
     XP_FREE( dict->mpool, dict->faces );
     XP_FREE( dict->mpool, dict->chars );
     XP_FREE( dict->mpool, dict->name );
+    XP_FREE( dict->mpool, dict->langName );
     XP_FREE( dict->mpool, dict->bitmaps );
     XP_FREE( dict->mpool, dict );
 } /* destroy_stubbed_dict */
@@ -579,6 +580,12 @@ dict_super_init( DictionaryCtxt* dict )
     dict->func_dict_getTopEdge = dict_super_getTopEdge;
     dict->func_dict_getShortName = dict_getName;
 } /* dict_super_init */
+
+const XP_UCHAR* 
+dict_getLangName( const DictionaryCtxt* ctxt )
+{
+    return ctxt->langName;
+}
 
 #ifdef CPLUS
 }

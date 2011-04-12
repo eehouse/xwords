@@ -388,9 +388,8 @@ and_dictionary_destroy( DictionaryCtxt* dict )
     XP_FREE( ctxt->super.mpool, ctxt->super.faces );
     XP_FREE( ctxt->super.mpool, ctxt->super.facePtrs );
     XP_FREE( ctxt->super.mpool, ctxt->super.countsAndValues );
-    if ( NULL != ctxt->super.name ) {
-        XP_FREE( ctxt->super.mpool, ctxt->super.name );
-    }
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.name );
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.langName );
 
     (*env)->ReleaseByteArrayElements( env, ctxt->byteArray, ctxt->bytes, 0 );
     (*env)->DeleteGlobalRef( env, ctxt->byteArray );
@@ -424,7 +423,7 @@ and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
 
 void
 makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
-           jobjectArray jdicts, jobjectArray jnames )
+           jobjectArray jdicts, jobjectArray jnames, jstring jlang )
 {
     LOG_FUNC();
     int ii;
@@ -436,7 +435,7 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
         if ( ii < len ) {
             jobject jdict = (*env)->GetObjectArrayElement( env, jdicts, ii );
             jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
-            dict = makeDict( MPPARM(mpool) env, jniutil, jdict, jname );
+            dict = makeDict( MPPARM(mpool) env, jniutil, jdict, jname, jlang );
             XP_ASSERT( !!dict );
             (*env)->DeleteLocalRef( env, jdict );
             (*env)->DeleteLocalRef( env, jname );
@@ -448,7 +447,7 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
 
 DictionaryCtxt* 
 makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
-          jstring jname )
+          jstring jname, jstring jlangname )
 {
     AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)
         and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
@@ -463,13 +462,8 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
     parseDict( anddict, (XP_U8*)anddict->bytes, len );
 
     /* copy the name */
-    if ( NULL != jname ) {
-        len = 1 + (*env)->GetStringUTFLength( env, jname );
-        const char* chars = (*env)->GetStringUTFChars( env, jname, NULL );
-        anddict->super.name = XP_MALLOC( mpool, len );
-        XP_MEMCPY( anddict->super.name, chars, len );
-        (*env)->ReleaseStringUTFChars( env, jname, chars );
-    }
+    anddict->super.name = getStringCopy( MPPARM(mpool) env, jname );
+    anddict->super.langName = getStringCopy( MPPARM(mpool) env, jlangname );
     
     return (DictionaryCtxt*)anddict;
 }

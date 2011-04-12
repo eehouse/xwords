@@ -997,6 +997,7 @@ public class BoardActivity extends XWActivity
             Utils.logf( "loadGame: dict name: %s", m_gi.dictName );
             String[] dictNames = m_gi.dictNames();
             byte[][] dictBytes = GameUtils.openDicts( this, dictNames );
+            String langName = m_gi.langName();
             m_jniGamePtr = XwJNI.initJNI();
 
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
@@ -1008,11 +1009,11 @@ public class BoardActivity extends XWActivity
             if ( null == stream ||
                  ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                               m_gi, dictBytes, dictNames, 
-                                              m_utils, m_jniu, 
+                                              langName, m_utils, m_jniu, 
                                               m_view, cp, m_xport ) ) {
                 XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
                                         m_view, cp, m_xport, 
-                                        dictBytes, dictNames );
+                                        dictBytes, dictNames, langName );
             }
 
             m_jniThread = new 

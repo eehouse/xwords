@@ -59,13 +59,16 @@ public class XwJNI {
                                                 JNIUtils jniu,
                                                 DrawCtx draw, CommonPrefs cp, 
                                                 TransportProcs procs, 
-                                                byte[][] dicts, String[] dictNames );
+                                                byte[][] dicts, 
+                                                String[] dictNames,
+                                                String langName );
 
     public static native boolean game_makeFromStream( int gamePtr,
                                                       byte[] stream, 
                                                       CurGameInfo gi, 
                                                       byte[][] dicts, 
                                                       String[] dictNames,
+                                                      String langName,
                                                       UtilCtxt util, 
                                                       JNIUtils jniu,
                                                       DrawCtx draw,
@@ -76,32 +79,37 @@ public class XwJNI {
     // played
     public static void game_makeNewGame( int gamePtr, CurGameInfo gi,
                                          JNIUtils jniu, CommonPrefs cp, 
-                                         byte[][] dicts, String[] dictNames ) {
+                                         byte[][] dicts, String[] dictNames,
+                                         String langName ) {
         game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu,
                           (DrawCtx)null, cp, (TransportProcs)null, 
-                          dicts, dictNames );
+                          dicts, dictNames, langName );
     }
 
     public static boolean game_makeFromStream( int gamePtr,
                                                byte[] stream, 
                                                JNIUtils jniu,
                                                CurGameInfo gi, 
-                                               byte[][] dicts, String[] dictNames,
+                                               byte[][] dicts, 
+                                               String[] dictNames,
+                                               String langName,
                                                CommonPrefs cp ) {
         return game_makeFromStream( gamePtr, stream, gi, dicts, dictNames,
-                                    (UtilCtxt)null, jniu, (DrawCtx)null, cp, 
-                                    (TransportProcs)null );
+                                    langName, (UtilCtxt)null, jniu,
+                                    (DrawCtx)null, cp, (TransportProcs)null );
     }
 
     public static boolean game_makeFromStream( int gamePtr,
                                                byte[] stream, 
                                                JNIUtils jniu,
                                                CurGameInfo gi, 
-                                               byte[][] dicts, String[] dictNames,
+                                               byte[][] dicts, 
+                                               String[] dictNames,
+                                               String langName,
                                                UtilCtxt util,
                                                CommonPrefs cp ) {
         return game_makeFromStream( gamePtr, stream, gi, dicts, dictNames,
-                                    util, jniu, (DrawCtx)null, cp, 
+                                    langName, util, jniu, (DrawCtx)null, cp, 
                                     (TransportProcs)null );
     }
 

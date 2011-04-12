@@ -1,3 +1,4 @@
+/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 /*
  * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -29,10 +30,10 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces );
 
 DictionaryCtxt* makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, 
-                          jbyteArray bytes, jstring jname );
+                          jbyteArray bytes, jstring jname, jstring jlang );
 
 void makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
-               jobjectArray jdicts, jobjectArray jnames );
+                jobjectArray jdicts, jobjectArray jnames, jstring jlang );
 
 void destroyDicts( PlayerDicts* dicts );
 

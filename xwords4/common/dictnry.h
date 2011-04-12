@@ -74,6 +74,7 @@ struct DictionaryCtxt {
     array_edge* base; /* the physical beginning of the dictionary; not
                          necessarily the entry point for search!! */
     XP_UCHAR* name;
+    XP_UCHAR* langName;
     XP_UCHAR* faces;
     const XP_UCHAR** facePtrs;
     XP_U8* countsAndValues;
@@ -143,6 +144,8 @@ XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles,
                            XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize );
 const XP_UCHAR* dict_getTileString( const DictionaryCtxt* ctxt, Tile tile );
 const XP_UCHAR* dict_getName( const DictionaryCtxt* ctxt );
+const XP_UCHAR* dict_getLangName(const DictionaryCtxt* ctxt );
+
 XP_Bool dict_isUTF8( const DictionaryCtxt* ctxt );
 
 Tile dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key );
