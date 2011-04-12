@@ -97,14 +97,13 @@ public class GameListAdapter extends XWListAdapter {
                 if ( hideTitle ) {
                     view.setVisibility( View.GONE );
                 } else {
+                    String format = 
+                        m_context.getString( R.string.str_game_namef );
                     String name = GameUtils.gameName( m_context, path );
-                    if ( true ) { // FIXME
-                        name += " (" + 
-                            DictLangCache.getLangName(m_context, 
-                                                      summary.dictName)
-                            + ")";
-                    }
-                    view.setText( name );
+                    String lang = 
+                        DictLangCache.getLangName( m_context, 
+                                                   summary.dictLang );
+                    view.setText( String.format( format, name, lang ) );
                 }
                 view = (TextView)layout.findViewById( R.id.state );
                 view.setText( summary.summarizeState( m_context ) );
