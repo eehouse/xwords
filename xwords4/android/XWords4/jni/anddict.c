@@ -426,7 +426,6 @@ void
 makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
            jobjectArray jdicts, jobjectArray jnames )
 {
-    LOG_FUNC();
     int ii;
     jsize len = (*env)->GetArrayLength( env, jdicts );
     XP_ASSERT( len == (*env)->GetArrayLength( env, jnames ) );
@@ -443,7 +442,6 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
         } 
         dicts->dicts[ii] = dict;
     }
-    LOG_RETURN_VOID();
 }
 
 DictionaryCtxt* 
