@@ -110,7 +110,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     XP_S16 ii, jj;
     DeviceRole role;
     XP_Bool localOnly;
-    XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE, XP_FALSE, XP_FALSE, XP_FALSE};
+    XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE };
 
     ngc->juggleEnabled = TRI_ENAB_NONE;
     ngc->settingsEnabled = TRI_ENAB_NONE;
