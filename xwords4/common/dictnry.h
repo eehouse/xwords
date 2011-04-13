@@ -160,6 +160,12 @@ XP_U32 dict_getWordCount( const DictionaryCtxt* dict );
 void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
 void dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream );
 
+#ifdef TEXT_MODEL
+/* Return the strlen of the longest face, e.g. 1 for English and Italian;
+   2 for Spanish; 3 for Catalan */
+XP_U16 dict_getMaxWidth( const DictionaryCtxt* dict );
+#endif
+
 
 /* These methods get "overridden" by subclasses.  That is, they must be
  implemented by each platform. */

@@ -172,6 +172,47 @@ model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
 #endif
 } /* model_writeToStream */
 
+#ifdef TEXT_MODEL
+void
+model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
+{
+    const DictionaryCtxt* dict = model_getDictionary( model );
+    int width = dict_getMaxWidth( dict );
+    XP_UCHAR empty[4] = {0};
+    XP_U16 ii;
+    XP_U16 col, row;
+
+    for ( ii = 0; ii < width; ++ii ) {
+        empty[ii] = '.';
+    }
+
+    for ( row = 0; row < model->nRows; ++row ) {
+        XP_UCHAR buf[256];
+        XP_U16 len = 0;
+        for ( col = 0; col < model->nCols; ++col ) {
+            XP_Bool isBlank;
+            Tile tile;
+            if ( model_getTile( model, col, row,  XP_FALSE, -1, &tile,
+                                &isBlank, NULL, NULL ) ) {
+                const XP_UCHAR* face = dict_getTileString( dict, tile );
+                XP_UCHAR lower[1+XP_STRLEN(face)];
+                XP_STRNCPY( lower, face, sizeof(lower) );
+                if ( isBlank ) {
+                    XP_LOWERSTR( lower );
+                }
+                len += snprintf( &buf[len], sizeof(buf) - len, "%*s", 
+                                 width, lower );
+            } else {
+                len += snprintf( &buf[len], sizeof(buf) - len, "%s", empty );
+            }
+        }
+        buf[len++] = '\n';
+        buf[len] = '\0';
+        stream_catString( stream, buf );
+    }
+}
+#endif
+
 void
 model_init( ModelCtxt* model, XP_U16 nCols, XP_U16 nRows )
 {

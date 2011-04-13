@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>              /* BAD: use glib to support utf8 */
 
 #include "linuxutl.h"
 #include "main.h"
@@ -409,3 +410,15 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 
     return (XP_UCHAR*)message;
 } /* linux_getErrString */
+
+#ifdef TEXT_MODEL
+/* This is broken for UTF-8, even Spanish */
+void
+linux_lowerstr( XP_UCHAR* str )
+{
+    while ( *str ) {
+        *str = tolower( *str );
+        ++str;
+    }
+}
+#endif

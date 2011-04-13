@@ -109,6 +109,10 @@ ModelCtxt* model_makeFromStream( MPFORMAL XWStreamCtxt* stream,
 
 void model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream );
 
+#ifdef TEXT_MODEL
+void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
+#endif
+
 void model_init( ModelCtxt* model, XP_U16 nCols, XP_U16 nRows );
 void model_destroy( ModelCtxt* model );
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
