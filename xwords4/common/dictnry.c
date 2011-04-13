@@ -390,6 +390,28 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
 } /* dict_loadFromStream */
 #endif
 
+#ifdef TEXT_MODEL
+/* Return the strlen of the longest face, e.g. 1 for English and Italian;
+   2 for Spanish; 3 for Catalan */
+XP_U16
+dict_getMaxWidth( const DictionaryCtxt* dict )
+{
+    XP_U16 result = 0;
+    Tile tile;
+    XP_U16 nFaces = dict_numTileFaces( dict );
+
+    for ( tile = 0; tile < nFaces; ++tile ) {
+        const XP_UCHAR* face = dict_getTileString( dict, tile );
+        XP_U16 len = XP_STRLEN( face );
+        if ( len > result ) {
+            result = len;
+        }
+    }
+    return result;
+}
+#endif
+
+
 const XP_UCHAR*
 dict_getName( const DictionaryCtxt* dict )
 {

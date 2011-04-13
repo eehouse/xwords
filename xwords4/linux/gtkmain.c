@@ -740,6 +740,23 @@ game_history( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     catGameHistory( &globals->cGlobals );
 } /* game_history */
 
+#ifdef TEXT_MODEL
+static void
+dump_board( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    if ( !!globals->cGlobals.game.model ) {
+        XWStreamCtxt* stream = 
+            mem_stream_make( MEMPOOL 
+                             globals->cGlobals.params->vtMgr,
+                             globals, 
+                             CHANNEL_NONE, 
+                             catOnClose );
+        model_writeToTextStream( globals->cGlobals.game.model, stream );
+        stream_destroy( stream );
+    }
+}
+#endif
+
 static void
 final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
@@ -953,6 +970,10 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
                          GTK_SIGNAL_FUNC(tile_values), globals );
     (void)createAddItem( fileMenu, "Game history", 
                          GTK_SIGNAL_FUNC(game_history), globals );
+#ifdef TEXT_MODEL
+    (void)createAddItem( fileMenu, "Dump board", 
+                         GTK_SIGNAL_FUNC(dump_board), globals );
+#endif
 
     (void)createAddItem( fileMenu, "Final scores", 
                          GTK_SIGNAL_FUNC(final_scores), globals );

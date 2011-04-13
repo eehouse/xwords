@@ -104,6 +104,8 @@ void linux_freep( void** ptrp );
 #define XP_STRNCMP(s1,s2,len) strncmp((s1),(s2),(len))
 #define XP_STRNCPY(s1,s2,len) strncpy((s1),(s2),(len))
 #define XP_STRCMP(s1,s2)       strcmp((s1),(s2))
+void linux_lowerstr( XP_UCHAR* str );
+#define XP_LOWERSTR(str)       linux_lowerstr(str)
 #define XP_RANDOM() random()
 #define XP_SNPRINTF snprintf
 
