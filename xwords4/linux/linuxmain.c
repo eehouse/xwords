@@ -272,6 +272,7 @@ typedef enum {
     ,CMD_CLOSESTDIN
     ,CMD_QUITAFTER
     ,CMD_BOARDSIZE
+    ,CMD_BOARDFILE
     ,CMD_HIDEVALUES
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
@@ -343,6 +344,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_CLOSESTDIN, false, "close-stdin", "close stdin on start" }
     ,{ CMD_QUITAFTER, true, "quit-after", "exit <n> seconds after game's done" }
     ,{ CMD_BOARDSIZE, true, "board-size", "board is <n> by <n> cells" }
+    ,{ CMD_BOARDFILE, true, "board-file", "file holding 15x15 record of model" }
     ,{ CMD_HIDEVALUES, false, "hide-values", "show letters, not nums, on tiles" }
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
@@ -1132,6 +1134,9 @@ main( int argc, char** argv )
             break;
         case CMD_BOARDSIZE:
             mainParams.gi.boardSize = atoi(optarg);
+            break;
+        case CMD_BOARDFILE:
+            mainParams.boardFile = optarg;
             break;
 #ifdef XWFEATURE_BLUETOOTH
         case CMD_BTADDR:

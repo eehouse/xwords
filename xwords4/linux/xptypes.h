@@ -26,6 +26,7 @@
 #include <string.h>		/* memset */
 #include <assert.h>		/* memset */
 #include <unistd.h>
+#include <ctype.h>
 #include <netinet/in.h>
 
 #ifdef PLATFORM_GTK
@@ -105,7 +106,10 @@ void linux_freep( void** ptrp );
 #define XP_STRNCPY(s1,s2,len) strncpy((s1),(s2),(len))
 #define XP_STRCMP(s1,s2)       strcmp((s1),(s2))
 void linux_lowerstr( XP_UCHAR* str );
+void linux_upperstr( XP_UCHAR* str );
 #define XP_LOWERSTR(str)       linux_lowerstr(str)
+#define XP_UPPERSTR(str)       linux_upperstr(str)
+#define XP_ISLOWER( ch )       islower(ch)
 #define XP_RANDOM() random()
 #define XP_SNPRINTF snprintf
 

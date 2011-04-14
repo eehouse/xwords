@@ -173,6 +173,42 @@ model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
 } /* model_writeToStream */
 
 #ifdef TEXT_MODEL
+#include <glib.h>
+#include <glib/gprintf.h>
+
+# define EMPTY_CHAR '.'
+void
+model_setFromTextStream( ModelCtxt* model, XWStreamCtxt* stream )
+{
+    const DictionaryCtxt* dict = model_getDictionary( model );
+    XP_U16 col, row;
+
+    for ( row = 0; row < model->nRows; ++row ) {
+        for ( col = 0; col < model->nCols; ++col ) {
+            gchar ch = stream_getU8( stream );
+            if ( EMPTY_CHAR == ch ) {
+                setModelTileRaw( model, col, row, TILE_EMPTY_BIT );
+            } else {
+                XP_Bool isBlank = g_ascii_islower( ch );
+                XP_UCHAR face[2] = { ch, '\0' };
+                if ( isBlank ) {
+                    XP_UPPERSTR( face );
+                }
+                Tile tile = dict_tileForString( dict, face );
+                CellTile raw = tile & TILE_VALUE_MASK;
+                if ( isBlank ) {
+                    raw |= TILE_BLANK_BIT;
+                }
+                setModelTileRaw( model, col, row, raw );
+                notifyBoardListeners( model, 0, col, row, XP_TRUE );
+                ++model->vol.nTilesOnBoard;
+                /* Need to remove from pool too!!! */
+            }
+        }
+        (void)stream_getU8( stream ); /* skip \n */
+    }
+}
+
 void
 model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
 {
@@ -183,7 +219,7 @@ model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
     XP_U16 col, row;
 
     for ( ii = 0; ii < width; ++ii ) {
-        empty[ii] = '.';
+        empty[ii] = EMPTY_CHAR;
     }
 
     for ( row = 0; row < model->nRows; ++row ) {
@@ -572,7 +608,7 @@ setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, CellTile tile )
     XP_ASSERT( col < MAX_COLS );
     XP_ASSERT( row < MAX_ROWS );
     model->tiles[col][row] = tile;
-} /* model_setTile */
+} /* setModelTileRaw */
 
 static CellTile 
 getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )

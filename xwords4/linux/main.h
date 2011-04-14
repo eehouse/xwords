@@ -79,6 +79,9 @@ typedef struct LaunchParams {
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16 robotThinkMin, robotThinkMax;
 #endif
+#ifdef TEXT_MODEL
+    char* boardFile;
+#endif
 
     DeviceRole serverRole;
 

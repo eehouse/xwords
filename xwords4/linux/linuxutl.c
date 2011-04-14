@@ -421,4 +421,13 @@ linux_lowerstr( XP_UCHAR* str )
         ++str;
     }
 }
+
+void
+linux_upperstr( XP_UCHAR* str )
+{
+    while ( *str ) {
+        *str = toupper( *str );
+        ++str;
+    }
+}
 #endif

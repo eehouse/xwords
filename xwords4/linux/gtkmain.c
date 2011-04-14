@@ -504,6 +504,15 @@ createOrLoadObjects( GtkAppGlobals* globals )
         }
     }
 
+#ifdef TEXT_MODEL
+    if ( !!params->boardFile ) {
+        XWStreamCtxt* stream = 
+            streamFromFile( &globals->cGlobals, params->boardFile, globals );
+        model_setFromTextStream( globals->cGlobals.game.model, stream );
+        stream_destroy( stream );
+    }
+#endif
+
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!globals->cGlobals.game.comms ) {
         comms_start( globals->cGlobals.game.comms );
