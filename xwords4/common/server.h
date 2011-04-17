@@ -98,6 +98,16 @@ XP_S16 server_countTilesInPool( ServerCtxt* server );
 
 XP_Bool server_do( ServerCtxt* server );
 
+#ifdef TEXT_MODEL
+void server_assignTiles( ServerCtxt* server, XP_U16 turn, 
+                         Tile* tiles, XP_U16 nTiles );
+void server_genMoveList( ServerCtxt* server, MovePrintFunc proc, 
+                         void* closure );
+void server_genMoveListWith( ServerCtxt* server, 
+                             Tile* tiles, XP_U16 nTiles,
+                             MovePrintFunc proc, void* closure );
+#endif
+
 XP_Bool server_commitMove( ServerCtxt* server );
 XP_Bool server_commitTrade( ServerCtxt* server, TileBit bits );
 
