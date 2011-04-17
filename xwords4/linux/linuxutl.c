@@ -265,6 +265,13 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     }
 } /* linux_util_getUserString */
 
+static VTableMgr*
+linux_util_getVTManager( XW_UtilCtxt* uc )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    return cGlobals->params->vtMgr;
+} /* linux_util_getVTManager */
+
 void
 linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 {
@@ -274,7 +281,7 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
     util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
     util->vtable->m_util_getCurSeconds = linux_util_getCurSeconds;
     util->vtable->m_util_getUserString = linux_util_getUserString;
-
+    util->vtable->m_util_getVTManager = linux_util_getVTManager;
 }
 
 void

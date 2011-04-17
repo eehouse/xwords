@@ -1208,13 +1208,6 @@ initClientSocket( CursesAppGlobals* globals, char* serverName )
 } /* initClientSocket */
 #endif
 
-static VTableMgr*
-curses_util_getVTManager(XW_UtilCtxt* uc)
-{
-    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    return globals->cGlobals.params->vtMgr;
-} /* linux_util_getVTManager */
-
 static XP_Bool
 curses_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc), 
                          const XP_UCHAR* XP_UNUSED(name), 
@@ -1294,7 +1287,6 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 {
     util->vtable->m_util_userError = curses_util_userError;
 
-    util->vtable->m_util_getVTManager = curses_util_getVTManager;
     util->vtable->m_util_askPassword = curses_util_askPassword;
     util->vtable->m_util_yOffsetChange = curses_util_yOffsetChange;
     util->vtable->m_util_warnIllegalWord = curses_util_warnIllegalWord;
@@ -1439,7 +1431,7 @@ relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED_DBG(relayErr) )
 #endif
 }
 
-void
+int
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
     int piperesult;
@@ -1647,5 +1639,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 
     endwin();
+    return 0;
 } /* cursesmain */
 #endif /* PLATFORM_NCURSES */

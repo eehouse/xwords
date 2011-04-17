@@ -106,6 +106,6 @@ DrawCtx* cursesDrawCtxtMake( WINDOW* boardWin );
  */
 
 
-void cursesmain( XP_Bool isServer, LaunchParams* params );
+int cursesmain( XP_Bool isServer, LaunchParams* params );
 
 #endif

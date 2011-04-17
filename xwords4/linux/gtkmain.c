@@ -1052,9 +1052,11 @@ disenable_buttons( GtkAppGlobals* globals )
     gtk_widget_set_sensitive( globals->prevhint_button, canHing );
     gtk_widget_set_sensitive( globals->nexthint_button, canHing );
 
+#ifdef XWFEATURE_CHAT
     XP_Bool canChat = !!globals->cGlobals.game.comms
         && comms_canChat( globals->cGlobals.game.comms );
     gtk_widget_set_sensitive( globals->chat_button, canChat );
+#endif
 }
 
 static gboolean
@@ -1288,13 +1290,6 @@ gtkUserError( GtkAppGlobals* XP_UNUSED(globals), const char* format, ... )
 
     va_end(ap);
 } /* gtkUserError */
-
-static VTableMgr*
-gtk_util_getVTManager(XW_UtilCtxt* uc)
-{
-    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
-    return globals->cGlobals.params->vtMgr;
-} /* linux_util_getVTManager */
 
 static XP_S16
 gtk_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
@@ -1884,7 +1879,6 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
 {
     util->vtable->m_util_userError = gtk_util_userError;
     util->vtable->m_util_userQuery = gtk_util_userQuery;
-    util->vtable->m_util_getVTManager = gtk_util_getVTManager;
     util->vtable->m_util_userPickTile = gtk_util_userPickTile;
     util->vtable->m_util_askPassword = gtk_util_askPassword;
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
