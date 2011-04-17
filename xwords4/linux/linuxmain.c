@@ -50,6 +50,7 @@
 #include "linuxsms.h"
 #include "linuxudp.h"
 #include "main.h"
+#include "mvcount.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
 #endif
@@ -273,6 +274,9 @@ typedef enum {
     ,CMD_QUITAFTER
     ,CMD_BOARDSIZE
     ,CMD_BOARDFILE
+    ,CMD_BOARDPIPE
+    ,CMD_RACKPIPE
+    ,CMD_RACKSTRING
     ,CMD_HIDEVALUES
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
@@ -345,6 +349,9 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_QUITAFTER, true, "quit-after", "exit <n> seconds after game's done" }
     ,{ CMD_BOARDSIZE, true, "board-size", "board is <n> by <n> cells" }
     ,{ CMD_BOARDFILE, true, "board-file", "file holding 15x15 record of model" }
+    ,{ CMD_BOARDPIPE, true, "board-pipe", "pipe to listen on for new boards" }
+    ,{ CMD_RACKPIPE, true, "rack-pipe", "pipe to listen on for new racks" }
+    ,{ CMD_RACKSTRING, true, "rack", "single rack to generate moves for" }
     ,{ CMD_HIDEVALUES, false, "hide-values", "show letters, not nums, on tiles" }
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
@@ -1138,6 +1145,16 @@ main( int argc, char** argv )
         case CMD_BOARDFILE:
             mainParams.boardFile = optarg;
             break;
+        case CMD_BOARDPIPE:
+            mainParams.boardPipe = optarg;
+            break;
+        case CMD_RACKPIPE:
+            mainParams.rackPipe = optarg;
+            break;
+        case CMD_RACKSTRING:
+            mainParams.rackString = optarg;
+            break;
+
 #ifdef XWFEATURE_BLUETOOTH
         case CMD_BTADDR:
             XP_ASSERT( conType == COMMS_CONN_NONE ||
@@ -1348,14 +1365,23 @@ main( int argc, char** argv )
                            &mainParams.gi, NULL );
     }
 
-    /* curses doesn't have newgame dialog */
-    if ( useCurses && !mainParams.needsNewGame ) {
+    int result = 0;
+    if ( 0 ) {
+#ifdef TEXT_MODEL
+    } else if ( !!mainParams.boardPipe || !!mainParams.rackPipe
+                || !!mainParams.rackString ) {
+        XP_ASSERT( !!mainParams.boardPipe );
+        XP_ASSERT( !!mainParams.rackPipe || !!mainParams.rackString );
+        result = movecount_main( &mainParams );
+#endif
 #if defined PLATFORM_NCURSES
-        cursesmain( isServer, &mainParams );
+        /* curses doesn't have newgame dialog */
+    } else if ( useCurses && !mainParams.needsNewGame ) {
+        result = cursesmain( isServer, &mainParams );
 #endif
     } else if ( !useCurses ) {
 #if defined PLATFORM_GTK
-        gtkmain( &mainParams, argc, argv );
+        result = gtkmain( &mainParams, argc, argv );
 #endif
     } else {
         usage( argv[0], "rtfm" );
@@ -1370,6 +1396,6 @@ main( int argc, char** argv )
     free( mainParams.util );
 
     XP_LOGF( "exiting main" );
-    return 0;
+    return result;
 } /* main */
 
