@@ -81,6 +81,9 @@ typedef struct LaunchParams {
 #endif
 #ifdef TEXT_MODEL
     char* boardFile;
+    char* boardPipe;
+    char* rackPipe;
+    char* rackString;
 #endif
 
     DeviceRole serverRole;
