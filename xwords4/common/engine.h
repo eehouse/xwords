@@ -48,6 +48,12 @@ void engine_init( EngineCtxt* ctxt );
 void engine_reset( EngineCtxt* ctxt );
 void engine_destroy( EngineCtxt* ctxt );
 
+#ifdef TEXT_MODEL
+typedef void (*MovePrintFunc)( void* closure, XP_U16 score, 
+                               const MoveInfo* move );
+void engine_setPrinter( EngineCtxt* ctxt, MovePrintFunc proc, void* closure );
+#endif
+
 XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, 
                          XP_U16 turn, const Tile* tiles, 
                          XP_U16 nTiles, XP_Bool usePrev,

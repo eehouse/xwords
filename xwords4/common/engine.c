@@ -114,6 +114,11 @@ struct EngineCtxt {
 #endif
     XP_U16 lastRowToFill;
 
+#ifdef TEXT_MODEL
+    MovePrintFunc printer;
+    void* printClosure;
+#endif
+
 #ifdef DEBUG
     XP_U16 curLimit;
 #endif
@@ -264,6 +269,15 @@ engine_destroy( EngineCtxt* engine )
     XP_ASSERT( engine != NULL );
     XP_FREE( engine->mpool, engine );
 } /* engine_destroy */
+
+#ifdef TEXT_MODEL
+void
+engine_setPrinter( EngineCtxt* ctxt, MovePrintFunc proc, void* closure )
+{
+    ctxt->printer = proc;
+    ctxt->printClosure = closure;
+}
+#endif
 
 static XP_Bool
 initTray( EngineCtxt* engine, const Tile* tiles, XP_U16 numTiles ) 
@@ -1117,6 +1131,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
 
     if ( blanksLeft == 0 ) {
         XP_U16 score;
+        XP_Bool qualifies;
 
         score = figureMoveScore( engine->model, engine->turn,
                                  &posmove->moveInfo,
@@ -1126,7 +1141,8 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
         /* First, check that the score is even what we're interested in.  If
            it is, then go to the expense of filling in a PossibleMove to be
            compared in full */
-        if ( scoreQualifies( engine, score ) ) {
+        qualifies = scoreQualifies( engine, score );
+        if ( qualifies || !!engine->printer ) {
             posmove->score = score;
             XP_MEMSET( &posmove->blankVals, 0, sizeof(posmove->blankVals) );
             for ( ii = 0; ii < usedBlanksCount; ++ii ) {
@@ -1136,7 +1152,13 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
             XP_ASSERT( posmove->moveInfo.isHorizontal ==
                        engine->searchHorizontal );
             posmove->moveInfo.commonCoord = (XP_U8)lastRow;
-            saveMoveIfQualifies( engine, posmove );
+            if ( qualifies ) {
+                saveMoveIfQualifies( engine, posmove );
+            }
+            if ( !!engine->printer ) {
+                (*engine->printer)( engine->printClosure, score, 
+                                    &posmove->moveInfo );
+            }
         }
     } else {
         Tile bTile;
