@@ -107,8 +107,10 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
     game->board = board_make( MPPARM(mpool) game->model, game->server, 
                               draw, util );
 
-    server_prefsChanged( game->server, cp );
-    board_prefsChanged( game->board, cp );
+    if ( NULL != cp ) {
+        server_prefsChanged( game->server, cp );
+        board_prefsChanged( game->board, cp );
+    }
 } /* game_makeNewGame */
 
 void
