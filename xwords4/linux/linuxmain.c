@@ -1370,7 +1370,6 @@ main( int argc, char** argv )
 #ifdef TEXT_MODEL
     } else if ( !!mainParams.boardPipe || !!mainParams.rackPipe
                 || !!mainParams.rackString ) {
-        XP_ASSERT( !!mainParams.boardPipe );
         XP_ASSERT( !!mainParams.rackPipe || !!mainParams.rackString );
         result = movecount_main( &mainParams );
 #endif
