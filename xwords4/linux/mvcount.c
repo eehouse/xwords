@@ -45,7 +45,7 @@ typedef struct _MvCntGlobals {
 static MvCntGlobals* s_globals = NULL;
 
 static void
-handle_sigintterm( int sig )
+handle_sigintterm( int XP_UNUSED_DBG(sig) )
 {
     XP_LOGF( "%s(%d)", __func__, sig );
     g_main_quit( s_globals->loop );
