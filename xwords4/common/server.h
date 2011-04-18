@@ -25,6 +25,7 @@
 
 #include "commmgr.h"
 #include "model.h"
+#include "engine.h"
 
 #ifdef CPLUS
 extern "C" {
