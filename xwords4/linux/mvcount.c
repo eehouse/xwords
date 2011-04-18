@@ -173,6 +173,13 @@ rackRead( GIOChannel* source,
             if ( 0 >= nRead ) {
                 break;
             } else {
+                globals->nInRack += nRead;
+                if ( globals->nInRack > 0 && 
+                     globals->charBuf[globals->nInRack-1] == '\n' ) {
+                    globals->charBuf[globals->nInRack-1] = '\0';
+                    genMovesForString( globals, globals->charBuf );
+                    globals->nInRack = 0;
+                }
             }
             XP_LOGF( "read %d bytes", nRead );
         }
@@ -270,16 +277,24 @@ movecount_main( LaunchParams* params )
 
     globals.loop = g_main_loop_new( NULL, FALSE );
 
-    globals.rackSrcID = makeChannel( &globals, params->rackPipe, rackRead );
-    globals.boardSrcID = makeChannel( &globals, params->boardPipe, boardRead );
-
     if ( params->rackString ) {
         genMovesForString( &globals, params->rackString );
     }
 
-    g_main_loop_run( globals.loop );
+    if ( !!params->rackPipe ) {
+        globals.rackSrcID = makeChannel( &globals, params->rackPipe, 
+                                         rackRead );
+    }
+    if ( params->boardPipe ) {
+        globals.boardSrcID = makeChannel( &globals, params->boardPipe, 
+                                          boardRead );
+    }
+
+    if ( !!globals.rackSrcID || !!params->boardPipe ) {
+        g_main_loop_run( globals.loop );
+    }
     
-    dict_destroy( params->dict );
+    // dict_destroy( params->dict );
     cleanup( &globals );
     stream_destroy( globals.boardStream );
     stream_destroy( globals.rackStream );
