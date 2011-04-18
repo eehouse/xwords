@@ -1614,55 +1614,23 @@ assignTilesToAll( ServerCtxt* server )
 
 #ifdef TEXT_MODEL
 void
-server_assignTiles( ServerCtxt* server, XP_U16 turn, 
-                    Tile* tiles, XP_U16 nTiles )
-{
-    TrayTileSet newTiles;
-    XP_U16 ii;
-
-    newTiles.nTiles = nTiles;
-
-    if ( server->pool == NULL ) {
-        server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
-        pool_initFromDict( server->pool, 
-                           model_getDictionary(server->vol.model) );
-    }
-
-    for ( ii = 0; ii < nTiles; ++ii ) {
-        newTiles.tiles[ii] = tiles[ii];
-    }
-    pool_removeTiles( server->pool, &newTiles );
-    model_assignPlayerTiles( server->vol.model, turn, &newTiles );
-}
-
-void
-server_genMoveList( ServerCtxt* server, MovePrintFunc proc, 
-                    void* closure )
-{
-    XP_U16 turn = 0;
-    XP_Bool ignore;
-    const TrayTileSet* tileSet;
-    ModelCtxt* model = server->vol.model;
-    MoveInfo ignoreMI;
-
-    tileSet = model_getPlayerTiles( model, turn );
-
-    EngineCtxt* engine = server_getEngineFor( server, turn );
-    engine_reset( engine );
-    engine_setPrinter( engine, proc, closure );
-    
-    (void)engine_findMove( server_getEngineFor( server, turn ),
-                           model, turn, tileSet->tiles, tileSet->nTiles, 
-                           XP_FALSE, 1, &ignore, &ignoreMI );
-}
-
-void
 server_genMoveListWith( ServerCtxt* server, 
                         Tile* tiles, XP_U16 nTiles,
                         MovePrintFunc proc, void* closure )
 {
-    server_assignTiles( server, 0, tiles, nTiles );
-    server_genMoveList( server, proc, closure );
+    XP_U16 turn = 0;
+    XP_Bool ignore;
+    ModelCtxt* model = server->vol.model;
+    MoveInfo ignoreMI;
+    EngineCtxt* engine;
+
+    engine = server_getEngineFor( server, turn );
+    engine_reset( engine );
+    engine_setPrinter( engine, proc, closure );
+    
+    (void)engine_findMove( server_getEngineFor( server, turn ),
+                           model, turn, tiles, nTiles, 
+                           XP_FALSE, 1, &ignore, &ignoreMI );
 }
 
 #endif
