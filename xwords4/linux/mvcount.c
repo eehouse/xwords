@@ -32,8 +32,6 @@ typedef struct _MvCntGlobals {
     GMainLoop* loop;
     GIOChannel* boardPipe;
     GIOChannel* rackPipe;
-    XWStreamCtxt* boardStream;
-    XWStreamCtxt* rackStream;
     guint rackSrcID;
     guint boardSrcID;
 
@@ -263,9 +261,9 @@ rackRead( GIOChannel* source, GIOCondition condition, gpointer data )
     }
 
     if ( (condition & G_IO_HUP) != 0 ) {
+        fprintf( stderr, "rack read done\n" );
         close( fd );
         go_on = FALSE;
-
         openRackReader( globals );
     } else if ( (condition & G_IO_ERR) != 0 ) {
         XP_LOGF( "%s: G_IO_ERR", __func__ );
@@ -311,10 +309,10 @@ boardRead( GIOChannel* source, GIOCondition condition, gpointer data )
     }
 
     if ( (condition & G_IO_HUP) != 0 ) {
+        fprintf( stderr, "board read done\n" );
         close( fd );
         go_on = FALSE;
         openBoardReader( globals );
-
     } else if ( (condition & G_IO_ERR) != 0 ) {
         XP_LOGF( "G_IO_ERR" );
         go_on = FALSE;
@@ -419,13 +417,6 @@ movecount_main( LaunchParams* params )
 
     initUtils( params->util );
 
-    /* globals.boardStream = mem_stream_make( MPPARM(params->util->mpool)  */
-    /*                                        params->vtMgr,  */
-    /*                                        &globals, CHANNEL_NONE, NULL ); */
-    /* globals.rackStream = mem_stream_make( MPPARM(params->util->mpool)  */
-    /*                                       params->vtMgr,  */
-    /*                                       &globals, CHANNEL_NONE, NULL ); */
-
     makeGame( &globals );
 
     globals.loop = g_main_loop_new( NULL, FALSE );
@@ -450,8 +441,6 @@ movecount_main( LaunchParams* params )
     
     // dict_destroy( params->dict );
     cleanup( &globals );
-    stream_destroy( globals.boardStream );
-    stream_destroy( globals.rackStream );
 
     return 0;
 }
