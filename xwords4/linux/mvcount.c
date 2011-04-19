@@ -38,7 +38,7 @@ typedef struct _MvCntGlobals {
 
     GArray* move_array;
 
-    XP_UCHAR charBuf[MAX_TRAY_TILES+1];
+    XP_UCHAR rackBuf[MAX_TRAY_TILES+1];
     XP_U16 nInRack;
 
     XP_U16 nInLine, lineNo;
@@ -49,7 +49,6 @@ static MvCntGlobals* s_globals = NULL;
 
 static void openRackReader( MvCntGlobals* globals );
 static void openBoardReader( MvCntGlobals* globals );
-
 
 static void
 handle_sigintterm( int XP_UNUSED_DBG(sig) )
@@ -213,6 +212,8 @@ loadBoardFrom( MvCntGlobals* globals, const char* boardFile )
 
     if ( NULL == file ) {
         fprintf( stderr, "unable to open %s\n", boardFile );
+        assert( 0 );
+        exit( 1 );
     } else {
         char buf[16*15];
         size_t nRead = fread( buf, sizeof(buf), 1, file );
@@ -236,16 +237,16 @@ rackRead( GIOChannel* source, GIOCondition condition, gpointer data )
 
     if ( 0 != (condition & G_IO_IN) ) {
         for ( ; ; ) {
-            ssize_t nRead = read( fd, &globals->charBuf[globals->nInRack], 
-                                  sizeof(globals->charBuf) - globals->nInRack );
+            ssize_t nRead = read( fd, &globals->rackBuf[globals->nInRack], 
+                                  sizeof(globals->rackBuf) - globals->nInRack );
             if ( 0 >= nRead ) {
                 break;
             } else {
                 globals->nInRack += nRead;
                 if ( globals->nInRack > 0 && 
-                     globals->charBuf[globals->nInRack-1] == '\n' ) {
-                    globals->charBuf[globals->nInRack-1] = '\0';
-                    genMovesForString( globals, globals->charBuf );
+                     globals->rackBuf[globals->nInRack-1] == '\n' ) {
+                    globals->rackBuf[globals->nInRack-1] = '\0';
+                    genMovesForString( globals, globals->rackBuf );
                     globals->nInRack = 0;
                 }
             }
@@ -253,7 +254,6 @@ rackRead( GIOChannel* source, GIOCondition condition, gpointer data )
     }
 
     if ( (condition & G_IO_HUP) != 0 ) {
-        XP_LOGF( "%s: G_IO_HUP", __func__ );
         close( fd );
         go_on = FALSE;
 
@@ -270,7 +270,6 @@ static gboolean
 boardRead( GIOChannel* source, GIOCondition condition, gpointer data )
 {
     gboolean go_on = TRUE;
-    XP_LOGF( "got board data!!!" );
     MvCntGlobals* globals = (MvCntGlobals*)data;
     int fd = g_io_channel_unix_get_fd( source );
 
@@ -278,12 +277,10 @@ boardRead( GIOChannel* source, GIOCondition condition, gpointer data )
         for ( ; ; ) {
             char* curBuf = globals->lineBufs[globals->lineNo];
             int toRead = sizeof(globals->lineBufs[0])-globals->nInLine;
-            XP_LOGF( "looking for %d bytes", toRead );
             ssize_t nRead = read( fd, &curBuf[globals->nInLine], toRead );
             if ( 0 >= nRead ) {
                 break;
             } else {
-                XP_LOGF( "%s: read %d bytes", __func__, nRead );
                 globals->nInLine += nRead;
                 if ( globals->nInLine == sizeof(globals->lineBufs[0]) ) {
                     if ( curBuf[globals->nInLine-1] != '\n' ) {
@@ -305,7 +302,6 @@ boardRead( GIOChannel* source, GIOCondition condition, gpointer data )
     }
 
     if ( (condition & G_IO_HUP) != 0 ) {
-        XP_LOGF( "G_IO_HUP" );
         close( fd );
         go_on = FALSE;
         openBoardReader( globals );
@@ -324,7 +320,6 @@ makeChannel( MvCntGlobals*globals, const char* path, GIOFunc func )
     int fd = open( path, O_RDONLY | O_NONBLOCK );
     GIOChannel* channel = g_io_channel_unix_new( fd );
     XP_ASSERT( !!channel );
-    XP_LOGF( "got channel back" );
 
     guint srcID = g_io_add_watch( channel, G_IO_IN | G_IO_ERR | G_IO_HUP,
                                   func, globals );
@@ -336,6 +331,7 @@ openRackReader( MvCntGlobals* globals )
 {
     const LaunchParams* params = globals->cGlobals.params;
     globals->rackSrcID = makeChannel( globals, params->rackPipe, rackRead );
+    globals->nInRack = 0;
 }
 
 static void 
@@ -344,6 +340,8 @@ openBoardReader( MvCntGlobals* globals )
     const LaunchParams* params = globals->cGlobals.params;
     globals->boardSrcID = makeChannel( globals, params->boardPipe, 
                                        boardRead );
+    globals->nInLine = 0;
+    globals->lineNo = 0;
 }
 
 static void
