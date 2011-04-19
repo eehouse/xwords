@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "mvcount.h"
 
@@ -102,7 +103,12 @@ printSaved( MvCntGlobals* globals )
     GArray* move_array = globals->move_array;
     for ( ii = 0; ii < move_array->len; ++ii ) {
         gchar* str = g_array_index( move_array, gchar*, ii );
-        fprintf( stdout, "%s\n", str );
+        if ( ii < 10 ) {
+            fprintf( stdout, "%s\n", str );
+        } else if ( ii == 10 ) {
+            fprintf( stderr, "skipping remaining %d moves\n", 
+                     move_array->len - 10 );
+        }
         g_free( str );
     }
     (void)g_array_free( move_array, TRUE );
@@ -317,9 +323,20 @@ boardRead( GIOChannel* source, GIOCondition condition, gpointer data )
 static guint
 makeChannel( MvCntGlobals*globals, const char* path, GIOFunc func )
 {
+    GIOChannel* channel;
     int fd = open( path, O_RDONLY | O_NONBLOCK );
-    GIOChannel* channel = g_io_channel_unix_new( fd );
-    XP_ASSERT( !!channel );
+    if ( fd <= 0 ) {
+        fprintf( stderr, "unable to open %s: %s\n", path, strerror(errno) );
+        XP_ASSERT( 0 );
+        exit( 1 );
+    }
+
+    channel = g_io_channel_unix_new( fd );
+    if ( !channel ) {
+        fprintf( stderr, "unable to create channel for %s\n", path );
+        XP_ASSERT( 0 );
+        exit( 1 );
+    }
 
     guint srcID = g_io_add_watch( channel, G_IO_IN | G_IO_ERR | G_IO_HUP,
                                   func, globals );
