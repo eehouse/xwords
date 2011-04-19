@@ -183,6 +183,8 @@ model_setFromTextStream( ModelCtxt* model, XWStreamCtxt* stream )
     const DictionaryCtxt* dict = model_getDictionary( model );
     XP_U16 col, row;
 
+    model->vol.nTilesOnBoard = 0;
+
     for ( row = 0; row < model->nRows; ++row ) {
         for ( col = 0; col < model->nCols; ++col ) {
             gchar ch = stream_getU8( stream );
@@ -200,7 +202,7 @@ model_setFromTextStream( ModelCtxt* model, XWStreamCtxt* stream )
                     raw |= TILE_BLANK_BIT;
                 }
                 setModelTileRaw( model, col, row, raw );
-                notifyBoardListeners( model, 0, col, row, XP_TRUE );
+                // notifyBoardListeners( model, 0, col, row, XP_TRUE );
                 ++model->vol.nTilesOnBoard;
                 /* Need to remove from pool too!!! */
             }
