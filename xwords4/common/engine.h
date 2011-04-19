@@ -50,7 +50,7 @@ void engine_destroy( EngineCtxt* ctxt );
 
 #ifdef TEXT_MODEL
 typedef void (*MovePrintFunc)( void* closure, XP_U16 score, 
-                               const MoveInfo* move );
+                               const MoveInfo* move, const XP_UCHAR* word );
 void engine_setPrinter( EngineCtxt* ctxt, MovePrintFunc proc, void* closure );
 #endif
 

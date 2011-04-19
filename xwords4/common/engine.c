@@ -1132,11 +1132,19 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
     if ( blanksLeft == 0 ) {
         XP_U16 score;
         XP_Bool qualifies;
+        XP_UCHAR* mainWord = NULL;
+        XP_UCHAR wordBuf[MAX_ROWS+1];
+        XP_U16 bufLen = 0;
+
+        if ( !!engine->printer ) {
+            mainWord = wordBuf;
+            bufLen = VSIZE(wordBuf);
+        }
 
         score = figureMoveScore( engine->model, engine->turn,
                                  &posmove->moveInfo,
                                  engine, (XWStreamCtxt*)NULL,
-                                 (WordNotifierInfo*)NULL, NULL, 0 );
+                                 (WordNotifierInfo*)NULL, mainWord, bufLen );
 
         /* First, check that the score is even what we're interested in.  If
            it is, then go to the expense of filling in a PossibleMove to be
@@ -1157,7 +1165,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
             }
             if ( !!engine->printer ) {
                 (*engine->printer)( engine->printClosure, score, 
-                                    &posmove->moveInfo );
+                                    &posmove->moveInfo, wordBuf );
             }
         }
     } else {

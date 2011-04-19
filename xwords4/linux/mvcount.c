@@ -64,11 +64,11 @@ startCoord( const MoveInfo* move, XP_UCHAR* out,
 {
     XP_U8 xx, yy;
     if ( move->isHorizontal ) {
+        xx = move->tiles[0].varCoord;
+        yy = move->commonCoord;
+    } else {
         xx = move->commonCoord;
         yy = move->tiles[0].varCoord;
-    } else {
-        yy = move->commonCoord;
-        xx = move->tiles[0].varCoord;
     }
     XP_ASSERT( outLen >= 3 );
     out[0] = 'A' + xx;
@@ -116,7 +116,8 @@ printSaved( MvCntGlobals* globals )
 }
 
 static void
-saver( void* closure, XP_U16 score, const MoveInfo* move )
+saver( void* closure, XP_U16 score, const MoveInfo* move, 
+       const XP_UCHAR* word )
 {
     MvCntGlobals* globals = (MvCntGlobals*)closure;
     const DictionaryCtxt* dict = globals->cGlobals.params->dict;
@@ -144,6 +145,8 @@ saver( void* closure, XP_U16 score, const MoveInfo* move )
         }
         len += snprintf( buf+len, sizeof(buf)-len, "%s", tmp );
     }
+
+    len += snprintf( buf+len, sizeof(buf)-len, ":%s", word );
 
     gchar* str = g_strdup( buf );
     g_array_append_val( globals->move_array, str );
@@ -197,7 +200,6 @@ checkBoard( const char* buf, XP_U16 len )
 static void
 loadBoard( MvCntGlobals* globals, const char* board, XP_U16 len )
 {
-    LOG_FUNC();
     const LaunchParams* params = globals->cGlobals.params;
     XWStreamCtxt* stream;
     
@@ -208,7 +210,8 @@ loadBoard( MvCntGlobals* globals, const char* board, XP_U16 len )
     stream_putBytes( stream, board, len );
     model_setFromTextStream( globals->cGlobals.game.model, stream );
     stream_destroy( stream );
-    LOG_RETURN_VOID();
+
+    fprintf( stderr, "loaded new board\n" );
 }
 
 static void
