@@ -348,7 +348,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_CLOSESTDIN, false, "close-stdin", "close stdin on start" }
     ,{ CMD_QUITAFTER, true, "quit-after", "exit <n> seconds after game's done" }
     ,{ CMD_BOARDSIZE, true, "board-size", "board is <n> by <n> cells" }
-    ,{ CMD_BOARDFILE, true, "board-file", "file holding 15x15 record of model" }
+    ,{ CMD_BOARDFILE, true, "board", "file holding 15x15 record of model" }
     ,{ CMD_BOARDPIPE, true, "board-pipe", "pipe to listen on for new boards" }
     ,{ CMD_RACKPIPE, true, "rack-pipe", "pipe to listen on for new racks" }
     ,{ CMD_RACKSTRING, true, "rack", "single rack to generate moves for" }
