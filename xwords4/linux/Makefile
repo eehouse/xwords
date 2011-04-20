@@ -241,9 +241,10 @@ install: $(TARGET)
 	cp $< $(DESTDIR)/usr/local/bin
 
 tarball:
-	tar chvfz xwords_$(shell svnversion ..).tgz \
+	GIT_DESC=$$(git describe); \
+	tar chvfz xwords_$${GIT_DESC}.tgz \
 		obj_linux_rel/xwords \
 		obj_linux_memdbg/xwords \
 		all_words_2to15.xwd \
-		runme.sh board.txt board_empty.txt
-	md5sum xwords_$(shell svnversion ..).tgz > xwords_$(shell svnversion ..).tgz.md5
+		runme.sh board.txt board_empty.txt; \
+	md5sum xwords_$${GIT_DESC}.tgz > xwords_$${GIT_DESC}.tgz.md5
