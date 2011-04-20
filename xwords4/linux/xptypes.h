@@ -29,8 +29,8 @@
 #include <ctype.h>
 #include <netinet/in.h>
 
+#include <glib.h>
 #ifdef PLATFORM_GTK
-# include <glib.h>
 # include <gdk/gdk.h>
 # include <gtk/gtk.h>
 #endif
