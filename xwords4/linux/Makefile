@@ -36,7 +36,7 @@ DO_CURSES = -DPLATFORM_NCURSES
 ifdef CURSES_SMALL_SCREEN
 DO_CURSES += -DCURSES_SMALL_SCREEN
 endif
-DO_GTK = -DPLATFORM_GTK
+# DO_GTK = -DPLATFORM_GTK
 # DO_GTK += -DUSE_CAIRO
 
 # uncomment for standalone build
@@ -177,6 +177,9 @@ ifdef BLUETOOTH
 LIBS += -lbluetooth
 endif
 
+LIBS += `pkg-config --libs glib-2.0`
+CFLAGS += `pkg-config --cflags glib-2.0`
+
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-2.0`
 	CFLAGS += `pkg-config --cflags gtk+-2.0`
@@ -238,8 +241,9 @@ install: $(TARGET)
 	cp $< $(DESTDIR)/usr/local/bin
 
 tarball:
-	tar cvfz xwords_$(shell svnversion ..).tgz \
-		../linux/Makefile ../linux/*.c ../linux/*.h \
-		../relay/*.h \
-		../common/*.c ../common/*.h ../common/rules.mk ../common/config.mk
+	tar chvfz xwords_$(shell svnversion ..).tgz \
+		obj_linux_rel/xwords \
+		obj_linux_memdbg/xwords \
+		all_words_2to15.xwd \
+		runme.sh board.txt board_empty.txt
 	md5sum xwords_$(shell svnversion ..).tgz > xwords_$(shell svnversion ..).tgz.md5
