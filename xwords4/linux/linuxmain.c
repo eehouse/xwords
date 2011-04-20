@@ -277,6 +277,7 @@ typedef enum {
     ,CMD_BOARDPIPE
     ,CMD_RACKPIPE
     ,CMD_RACKSTRING
+    ,CMD_RACKLIMIT
     ,CMD_HIDEVALUES
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
@@ -352,6 +353,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_BOARDPIPE, true, "board-pipe", "pipe to listen on for new boards" }
     ,{ CMD_RACKPIPE, true, "rack-pipe", "pipe to listen on for new racks" }
     ,{ CMD_RACKSTRING, true, "rack", "single rack to generate moves for" }
+    ,{ CMD_RACKLIMIT, true, "max-words", "max # of moves to print per rack" }
     ,{ CMD_HIDEVALUES, false, "hide-values", "show letters, not nums, on tiles" }
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
@@ -1153,6 +1155,9 @@ main( int argc, char** argv )
             break;
         case CMD_RACKSTRING:
             mainParams.rackString = optarg;
+            break;
+        case CMD_RACKLIMIT:
+            mainParams.rackLimit = atoi(optarg);
             break;
 
 #ifdef XWFEATURE_BLUETOOTH

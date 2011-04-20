@@ -27,6 +27,8 @@
 
 #include "mvcount.h"
 
+#define PREPROD_LIMIT 50
+
 typedef struct _MvCntGlobals {
     CommonGlobals cGlobals;
     GMainLoop* loop;
@@ -98,14 +100,19 @@ static void
 printSaved( MvCntGlobals* globals )
 {
     int ii;
+    XP_U32 limit = globals->cGlobals.params->rackLimit;
+    if ( limit == 0 || limit > PREPROD_LIMIT ) {
+        limit = PREPROD_LIMIT;
+    }
+
     GArray* move_array = globals->move_array;
     for ( ii = 0; ii < move_array->len; ++ii ) {
         gchar* str = g_array_index( move_array, gchar*, ii );
-        if ( ii < 10 ) {
+        if ( limit == 0 || ii < limit ) {
             fprintf( stdout, "%s\n", str );
-        } else if ( ii == 10 ) {
-            fprintf( stderr, "skipping remaining %d moves\n", 
-                     move_array->len - 10 );
+        } else if ( ii == limit ) {
+            fprintf( stderr, "skipping remaining %ld moves\n", 
+                     move_array->len - limit );
         }
         g_free( str );
     }

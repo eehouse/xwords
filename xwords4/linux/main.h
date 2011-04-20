@@ -84,6 +84,7 @@ typedef struct LaunchParams {
     char* boardPipe;
     char* rackPipe;
     char* rackString;
+    XP_U32 rackLimit;
 #endif
 
     DeviceRole serverRole;
