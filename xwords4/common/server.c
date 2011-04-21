@@ -823,7 +823,8 @@ showPrevScore( ServerCtxt* server )
         lp = &gi->players[prevTurn];
 
         if ( LP_IS_LOCAL(lp) ) {
-            XP_ASSERT( LP_IS_ROBOT(lp) );
+            /* Why can't a local non-robot have postponed score? */
+            // XP_ASSERT( LP_IS_ROBOT(lp) );
             strCode = STR_ROBOT_MOVED;
         } else {
             strCode = STR_REMOTE_MOVED;
