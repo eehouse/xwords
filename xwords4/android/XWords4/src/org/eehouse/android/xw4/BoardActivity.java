@@ -994,7 +994,6 @@ public class BoardActivity extends XWActivity
             byte[] stream = GameUtils.savedGame( this, m_gameLock );
             XwJNI.gi_from_stream( m_gi, stream );
 
-            Utils.logf( "loadGame: dict name: %s", m_gi.dictName );
             String[] dictNames = m_gi.dictNames();
             byte[][] dictBytes = GameUtils.openDicts( this, dictNames );
             String langName = m_gi.langName();

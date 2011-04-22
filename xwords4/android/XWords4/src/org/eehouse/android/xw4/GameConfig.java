@@ -351,7 +351,8 @@ public class GameConfig extends XWActivity
             (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
         int position = spinner.getSelectedItemPosition();
         lp.dictName = DictLangCache.getHaveLang( this, m_gi.dictLang )[position];
-        Utils.logf( "reading name via position %d: %s", position, lp.dictName );
+        Utils.logf( "reading name for player %d via position %d: %s", 
+                    m_whichPlayer, position, lp.dictName );
 
         lp.setIsRobot( Utils.getChecked( dialog, R.id.robot_check ) );
         lp.isLocal = !Utils.getChecked( dialog, R.id.remote_check );
@@ -423,10 +424,10 @@ public class GameConfig extends XWActivity
             handleLockedChange();
         }
 
-        int curSel = listAvailableLangs( m_giOrig.dictName );
-        m_giOrig.dictLang = 
-            DictLangCache.getDictLangCode( this, 
-                                       GameUtils.dictList( this )[curSel] );
+        int curSel = listAvailableLangs( m_giOrig.dictLang );
+        // m_giOrig.dictLang = 
+        //     DictLangCache.getDictLangCode( this, 
+        //                                GameUtils.dictList( this )[curSel] );
         m_gi = new CurGameInfo( this, m_giOrig );
 
         m_carOrig = new CommsAddrRec( this );
@@ -647,15 +648,18 @@ public class GameConfig extends XWActivity
         return result;
     }
 
-    private int listAvailableLangs( String curDict )
+    private int listAvailableLangs( int langCode )
     {
         String[] langs = 
             DictLangCache.listLangs( this, GameUtils.dictList( this ) );
-        String curLang = DictLangCache.getLangName( this, curDict );
+        String curLang = DictLangCache.getLangName( this, langCode );
+        Utils.logf( "listAvailableLangs: %s is current", curLang );
         m_langs = buildListWithBrowse( langs );
         m_langsBrowsePosition = m_langs.length - 1;
 
-        return Arrays.binarySearch( m_langs, curLang );
+        int index = Arrays.binarySearch( m_langs, curLang );
+        Utils.logf( "listAvailableLangs: index is %d", index );
+        return index;
     } // listAvailableLangs
 
     private void configDictSpinner( final Dialog dialog, final LocalPlayer lp )
@@ -681,8 +685,9 @@ public class GameConfig extends XWActivity
                         startActivity( Utils.mkDownloadActivity(GameConfig.this,
                                                                 m_gi.dictLang ) );
                     } else {
-                        // lp.dictName = dicts[position];
-                        // Utils.logf( "set lp.dictName: %s", lp.dictName );
+                        // why did I disable these two lines?
+                        lp.dictName = dicts[position];
+                        Utils.logf( "set lp.dictName: %s", lp.dictName );
                     }
                 }
 
@@ -715,7 +720,7 @@ public class GameConfig extends XWActivity
                     public void onNothingSelected(AdapterView<?> parentView) {}
             };
         configSpinnerWDownload( m_langSpinner, m_langs, 
-                                listAvailableLangs( m_gi.dictName ),
+                                listAvailableLangs( m_gi.dictLang ),
                                 onSel );
     }
 

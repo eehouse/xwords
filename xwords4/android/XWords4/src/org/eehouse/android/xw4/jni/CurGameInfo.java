@@ -22,6 +22,8 @@ package org.eehouse.android.xw4.jni;
 
 import java.util.Random;
 import android.content.Context;
+import java.util.HashSet;
+import java.util.Arrays;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Utils;
@@ -36,7 +38,6 @@ public class CurGameInfo {
     public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW };
     public enum DeviceRole { SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT };
 
-    public String dictName;
     public LocalPlayer[] players;
     public int dictLang;
     public int gameID;
@@ -74,7 +75,7 @@ public class CurGameInfo {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
-        dictName = CommonPrefs.getDefaultHumanDict( context );
+        String dictName = CommonPrefs.getDefaultHumanDict( context );
         dictLang = DictLangCache.getDictLangCode( context, dictName );
         hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
@@ -106,7 +107,6 @@ public class CurGameInfo {
         boardSize = src.boardSize;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = src.serverRole;
-        dictName = src.dictName;
         dictLang = src.dictLang;
         hintsNotAllowed = src.hintsNotAllowed;
         phoniesAction = src.phoniesAction;
@@ -237,13 +237,38 @@ public class CurGameInfo {
 
     public String[] dictNames()
     {
-        assignDicts();
+        return dictNames( true );
+    }
+
+    public String[] dictNames( boolean assign )
+    {
+        if ( assign ) {
+            assignDicts();
+        }
 
         String[] result = new String[nPlayers];
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             result[ii] = players[ii].dictName;
         }
         return result;
+    }
+
+    // Replace any dict that doesn't exist with newDict
+    public void replaceDicts( String newDict ) 
+    {
+        String[] dicts = 
+            DictLangCache.getHaveLang( m_context, dictLang );
+        HashSet<String> installed = new HashSet<String>( Arrays.asList(dicts) );
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            String curDict = players[ii].dictName;
+            if ( newDict.equals( curDict ) ) {
+                // we're good
+            } else if ( installed.contains(curDict) ) {
+                // we're good
+            } else {
+                players[ii].dictName = newDict;
+            }
+        }
     }
 
     public String langName()
@@ -325,15 +350,25 @@ public class CurGameInfo {
 
     private void assignDicts()
     {
-        String humanDict = CommonPrefs.getDefaultHumanDict( m_context );
-        int lang = DictLangCache.getDictLangCode( m_context, humanDict );
-        Assert.assertTrue( lang == dictLang );
-        String robotDict = CommonPrefs.getDefaultRobotDict( m_context );
+        // For each player's dict, if non-null and language matches
+        // leave it alone.  Otherwise replace with default if that
+        // matches langauge.  Otherwise pick an arbitrary dict in the
+        // right language.
+
+        String humanDict = 
+            DictLangCache.getBestDefault( m_context, dictLang, true );
+        String robotDict = 
+            DictLangCache.getBestDefault( m_context, dictLang, false );
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             LocalPlayer lp = players[ii];
             if ( null == lp.dictName ) {
-                lp.dictName = lp.isRobot() ? robotDict : humanDict;
+            } else if ( dictLang != 
+                        DictLangCache.getDictLangCode( m_context, 
+                                                       lp.dictName ) ) {
+            } else {
+                continue;
             }
+            lp.dictName = lp.isRobot() ? robotDict : humanDict;
         }
     }
 }

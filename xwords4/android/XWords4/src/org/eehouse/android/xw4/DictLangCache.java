@@ -30,6 +30,7 @@ import java.util.Arrays;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.DictInfo;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictLangCache {
     private static final HashMap<String,DictInfo> s_nameToLang = 
@@ -155,6 +156,22 @@ public class DictLangCache {
         }
         String[] result = new String[langs.size()];
         return langs.toArray( result );
+    }
+
+    public static String getBestDefault( Context context, int lang, 
+                                         boolean human )
+    {
+        String dict = human? CommonPrefs.getDefaultHumanDict( context )
+            : CommonPrefs.getDefaultRobotDict( context );
+        if ( lang != DictLangCache.getDictLangCode( context, dict ) ) {
+            String dicts[] = getHaveLang( context, lang );
+            if ( dicts.length > 0 ) {
+                dict = dicts[0];
+            } else {
+                dict = null;
+            }
+        }
+        return dict;
     }
 
     private static String[] getNamesArray( Context context )

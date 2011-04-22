@@ -53,7 +53,6 @@ public class GameSummary {
     public long modtime;
 
     public int dictLang;
-    public String dictName;
     public CurGameInfo.DeviceRole serverRole;
 
 
@@ -68,7 +67,6 @@ public class GameSummary {
         super();
         nPlayers = gi.nPlayers;
         dictLang = gi.dictLang;
-        dictName = gi.dictName;
         serverRole = gi.serverRole;
         m_gi = gi;
     }

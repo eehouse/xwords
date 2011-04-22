@@ -149,20 +149,29 @@ public class DictsActivity extends XWListActivity
     public void deleteCalled( final int myPosition )
     {
         final String dict = m_dicts[myPosition];
-        int nGames = DBUtils.countGamesUsing( this, dict );
-        if ( nGames == 0 ) {
-            deleteDict( dict );
-        } else {
-            DialogInterface.OnClickListener action = 
-                new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        deleteDict( dict );
-                    }
-                };
-            String fmt = getString( R.string.confirm_delete_dictf );
-            String msg = String.format( fmt, dict, nGames );
-            showConfirmThen( msg, action );
+        int lang = DictLangCache.getDictLangCode( this, dict );
+        int nGames = DBUtils.countGamesUsing( this, lang );
+        String msg = String.format( getString( R.string.confirm_delete_dictf ),
+                                    dict );
+        DialogInterface.OnClickListener action = 
+            new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    deleteDict( dict );
+                }
+            };
+
+        if ( nGames > 0 ) {
+            int fmt;
+            if ( 1 == DictLangCache.getHaveLang( this, lang ).length ) {
+                fmt = R.string.confirm_deleteonly_dictf;
+            } else {
+                fmt = R.string.confirm_deletemore_dictf;
+            }
+            String langName = DictLangCache.getLangName( this, lang );
+            msg += String.format( getString(fmt), langName );
         }
+
+        showConfirmThen( msg, action );
     }
 
     private void deleteDict( String dict )

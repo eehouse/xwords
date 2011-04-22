@@ -199,8 +199,13 @@
       last committed turn? (There is no redo option.)</string>
       
     <string name="confirm_delete_dictf">Are you sure you want to
-    delete %s? It is used by %d games, and you will not be able to
-    open them without it.</string>
+    delete %s?</string>
+    <string name="confirm_deleteonly_dictf">\u0020It is the only %s
+      dictionary installed. One or more games will be unopenable
+      without it.</string>
+    <string name="confirm_deletemore_dictf">\u0020One or more games
+      are using it (but there is another %s dictionary installed that
+      can replace it.)</string>
     
     <string name="hints_allowed">Allow hints</string>
     <string name="hints_allowed_sum">Enable the hint feature</string>
@@ -382,11 +387,11 @@
     <string name="subst_dict_title">Substitute dictionary (wordcount)</string>
     <string name="button_substdict">Substitute</string>
 
-    <string name="no_dictf">Unable to open game because dictionary %s
-      not found.</string>
+    <string name="no_dictf">Unable to open game because no %s
+      dictionary found.</string>
     <string name="no_dict_substf">Unable to open game because
       dictionary %s not found. You can download a replacement or
-      substitute another in the same language.</string>
+      substitute another %s dictionary.</string>
 
 	<string name="msg_ask_password">Password for \"%s\":</string>
 

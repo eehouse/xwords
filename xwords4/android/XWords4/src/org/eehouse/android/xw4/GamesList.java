@@ -59,7 +59,7 @@ public class GamesList extends XWListActivity
     private GameListAdapter m_adapter;
     private String m_missingDict;
     private Handler m_handler;
-    private String m_missingDictName;
+    private String[] m_missingDictNames;
     private String m_missingDictPath;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
@@ -88,19 +88,29 @@ public class GamesList extends XWListActivity
             case WARN_NODICT_SUBST:
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            Intent intent = 
-                                Utils.mkDownloadActivity( GamesList.this,
-                                                          m_missingDictName,
-                                                          m_missingDictLang );
-                            startActivity( intent );
+                            for ( String name : m_missingDictNames ) {
+                                Intent intent = 
+                                    Utils.mkDownloadActivity( GamesList.this,
+                                                              name,
+                                                              m_missingDictLang );
+                                startActivity( intent );
+                            }
                         }
                     };
-                int fmtId = WARN_NODICT == id? R.string.no_dictf
-                    : R.string.no_dict_substf;
+                String message;
+                String langName = DictLangCache.getLangName( this,
+                                                             m_missingDictLang );
+                if ( WARN_NODICT == id ) {
+                    message = String.format( getString(R.string.no_dictf),
+                                             langName );
+                } else {
+                    message = String.format( getString(R.string.no_dict_substf),
+                                             m_missingDictNames[0], langName );
+                }
+
                 ab = new AlertDialog.Builder( this )
                     .setTitle( R.string.no_dict_title )
-                    .setMessage( String.format( getString( fmtId ),
-                                                m_missingDictName ) )
+                    .setMessage( message )
                     .setPositiveButton( R.string.button_ok, null )
                     .setNegativeButton( R.string.button_download, lstnr )
                     ;
@@ -126,9 +136,11 @@ public class GamesList extends XWListActivity
                                                         int which ) {
                                        String dict = m_sameLangDicts[which];
                                        dict = DictLangCache.stripCount( dict );
-                                       GameUtils.replaceDict( GamesList.this,
-                                                              m_missingDictPath,
-                                                              dict );
+                                       GameUtils.
+                                           replaceDicts( GamesList.this,
+                                                         m_missingDictPath,
+                                                         m_missingDictNames[0],
+                                                         dict );
                                    }
                                })
                     ;
@@ -458,12 +470,13 @@ public class GamesList extends XWListActivity
 
     private boolean checkWarnNoDict( String path )
     {
-        String[] missingName = new String[1];
+        String[][] missingNames = new String[1][];
         int[] missingLang = new int[1];
-        boolean hasDict = GameUtils.gameDictHere( this, path, 
-                                                  missingName, missingLang );
-        if ( !hasDict ) {
-            m_missingDictName = missingName[0];
+        boolean hasDicts = GameUtils.gameDictsHere( this, path, 
+                                                    missingNames, 
+                                                    missingLang );
+        if ( !hasDicts ) {
+            m_missingDictNames = missingNames[0];
             m_missingDictLang = missingLang[0];
             m_missingDictPath = path;
             if ( 0 == DictLangCache.getLangCount( this, m_missingDictLang ) ) {
@@ -472,7 +485,7 @@ public class GamesList extends XWListActivity
                 showDialog( WARN_NODICT_SUBST );
             }
         }
-        return hasDict;
+        return hasDicts;
     }
 
     private String saveNew( CurGameInfo gi )
@@ -515,7 +528,7 @@ public class GamesList extends XWListActivity
         if ( null != relayIDs ) {
             for ( String relayID : relayIDs ) {
                 String path = DBUtils.getPathFor( this, relayID );
-                if ( GameUtils.gameDictHere( this, path ) ) {
+                if ( GameUtils.gameDictsHere( this, path ) ) {
                     GameUtils.launchGame( this, path );
                     break;
                 }

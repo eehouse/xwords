@@ -29,10 +29,12 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import android.net.Uri;
 import java.util.ArrayList;
+import java.util.Arrays;
 import android.content.res.AssetManager;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import junit.framework.Assert;
 
@@ -336,41 +338,48 @@ public class GameUtils {
         return lock;
     }
 
-    public static boolean gameDictHere( Context context, String path )
+    public static boolean gameDictsHere( Context context, String path )
     {
-        return gameDictHere( context, path, null, null );
+        return gameDictsHere( context, path, null, null );
     }
 
-    public static boolean gameDictHere( Context context, String path, 
-                                        String[] missingName, 
-                                        int[] missingLang )
+    // Return true if all dicts present.  Return list of those that
+    // are not.
+    public static boolean gameDictsHere( Context context, String path, 
+                                         String[][] missingNames, 
+                                         int[] missingLang )
     {
         byte[] stream = savedGame( context, path );
         CurGameInfo gi = new CurGameInfo( context );
         XwJNI.gi_from_stream( gi, stream );
-        String dictName = removeDictExtn( gi.dictName );
-        if ( null != missingName ) {
-            missingName[0] = dictName;
-        }
+        final String[] dictNames = gi.dictNames( false );
+        HashSet<String> missingSet;
+        String[] installed = dictList( context );
+
         if ( null != missingLang ) {
             missingLang[0] = gi.dictLang;
         }
 
-        boolean exists = false;
-        for ( String name : dictList( context ) ) {
-            if ( name.equals( dictName ) ){
-                exists = true;
-                break;
-            }
+        missingSet = new HashSet<String>( Arrays.asList( dictNames ) );
+        Utils.logf( "missingSet before remove of %s: %s", installed.toString(),
+                    missingSet.toString() );
+        Utils.logf( "missingSet size: %d", missingSet.size() );
+        missingSet.removeAll( Arrays.asList(installed) );
+        Utils.logf( "missingSet after remove: %s", missingSet.toString() );
+        boolean allHere = 0 == missingSet.size();
+        if ( null != missingNames ) {
+            missingNames[0] = 
+                missingSet.toArray( new String[missingSet.size()] );
         }
-        return exists;
+
+        return allHere;
     }
 
-    public static boolean gameDictHere( Context context, int indx, 
-                                        String[] name, int[] lang )
+    public static boolean gameDictsHere( Context context, int indx, 
+                                         String[][] name, int[] lang )
     {
         String path = DBUtils.gamesList( context )[indx];
-        return gameDictHere( context, path, name, lang );
+        return gameDictsHere( context, path, name, lang );
     }
 
     public static String newName( Context context ) 
@@ -635,27 +644,32 @@ public class GameUtils {
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new
     // dict have the same langauge code.
-    public static void replaceDict( Context context, String path,
-                                    String dict )
+    public static void replaceDicts( Context context, String game,
+                                    String oldDict, String newDict )
     {
-        Assert.fail();
-        // GameLock lock = new GameLock( path, true ).lock();
-        // byte[] stream = savedGame( context, lock );
-        // CurGameInfo gi = new CurGameInfo( context );
-        // byte[] dictBytes = openDict( context, dict );
+        GameLock lock = new GameLock( game, true ).lock();
+        byte[] stream = savedGame( context, lock );
+        CurGameInfo gi = new CurGameInfo( context );
+        XwJNI.gi_from_stream( gi, stream );
 
-        // int gamePtr = XwJNI.initJNI();
-        // XwJNI.game_makeFromStream( gamePtr, stream, 
-        //                            JNIUtilsImpl.get(), gi,
-        //                            dictBytes, dict,         
-        //                            CommonPrefs.get( context ) );
-        // gi.dictName = dict;
+        // first time required so dictNames() will work
+        gi.replaceDicts( newDict );
 
-        // saveGame( context, gamePtr, gi, lock, false );
+        String[] dictNames = gi.dictNames();
+        byte[][] dictBytes = openDicts( context, dictNames );
+        
+        int gamePtr = XwJNI.initJNI();
+        XwJNI.game_makeFromStream( gamePtr, stream, JNIUtilsImpl.get(), gi,
+                                   dictBytes, dictNames, gi.langName(), 
+                                   CommonPrefs.get( context ) );
+        // second time required as game_makeFromStream can overwrite
+        gi.replaceDicts( newDict );
 
-        // summarizeAndClose( context, lock, gamePtr, gi );
+        saveGame( context, gamePtr, gi, lock, false );
 
-        // lock.unlock();
+        summarizeAndClose( context, lock, gamePtr, gi );
+
+        lock.unlock();
     }
 
     public static void applyChanges( Context context, CurGameInfo gi, 

@@ -47,7 +47,6 @@ public class DBHelper extends SQLiteOpenHelper {
     // format
     public static final String GAMEID = "GAMEID";
     public static final String DICTLANG = "DICTLANG";
-    public static final String DICTNAME = "DICTNAME";
     public static final String HASMSGS = "HASMSGS";
     public static final String SNAPSHOT = "SNAPSHOT";
     public static final String CONTYPE = "CONTYPE";
@@ -85,7 +84,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     + RELAYID    + " TEXT,"
                     + SEED       + " INTEGER,"
                     + DICTLANG   + " INTEGER,"
-                    + DICTNAME   + " TEXT,"
 
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"

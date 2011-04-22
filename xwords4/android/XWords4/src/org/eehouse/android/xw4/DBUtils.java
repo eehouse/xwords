@@ -93,7 +93,7 @@ public class DBUtils {
                                  DBHelper.CONTYPE, DBHelper.SERVERROLE,
                                  DBHelper.ROOMNAME, DBHelper.RELAYID, 
                                  DBHelper.SMSPHONE, DBHelper.SEED, 
-                                 DBHelper.DICTLANG, DBHelper.DICTNAME,
+                                 DBHelper.DICTLANG, 
                                  DBHelper.SCORES, DBHelper.HASMSGS,
                                  DBHelper.LASTPLAY_TIME
             };
@@ -122,9 +122,6 @@ public class DBUtils {
                 summary.dictLang = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.DICTLANG));
-                summary.dictName = 
-                    cursor.getString(cursor.
-                                     getColumnIndex(DBHelper.DICTNAME));
                 summary.modtime = 
                     cursor.getLong(cursor.
                                    getColumnIndex(DBHelper.LASTPLAY_TIME));
@@ -212,7 +209,6 @@ public class DBUtils {
                 values.put( DBHelper.PLAYERS, 
                             summary.summarizePlayers(context) );
                 values.put( DBHelper.DICTLANG, summary.dictLang );
-                values.put( DBHelper.DICTNAME, summary.dictName );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
 
                 if ( null != summary.scores ) {
@@ -244,16 +240,16 @@ public class DBUtils {
         }
     } // saveSummary
 
-    public static int countGamesUsing( Context context, String dict )
+    public static int countGamesUsing( Context context, int lang )
     {
         int result = 0;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String selection = DBHelper.DICTNAME + " LIKE \'" 
-                + dict + "\'";
+            String selection = String.format( "%s = %d", DBHelper.DICTLANG,
+                                              lang );
             // null for columns will return whole rows: bad
-            String[] columns = { DBHelper.DICTNAME };
+            String[] columns = { DBHelper.DICTLANG };
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
 
