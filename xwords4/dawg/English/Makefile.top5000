@@ -1,0 +1,44 @@
+# -*- mode: makefile; compile-command: "make -f Makefile.CSW"; -*-
+# Copyright 2002 - 2011 by Eric House (xwords@eehouse.org).  All
+# rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+XWLANG = Top5000
+LANGCODE = en_US
+TARGET_TYPE = WINCE
+
+include ../Makefile.langcommon
+
+ENGLISH = $(XWDICTPATH)/English
+SOURCEDICT ?= $(ENGLISH)/CSW.dict.gz
+
+# I have permission to download the "top 5000" wordlist but not
+# necessarily to distribute it.  And it contains words, especially
+# proper nouns, that we don't want.  So we'll use it as a filter: any
+# word from CSW that's also in top5000 makes the grade
+
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) $(ENGLISH)/Top_5000.dict.gz Makefile.top5000
+	zcat $(ENGLISH)/Top_5000.dict.gz | tr [a-z] [A-Z] > /tmp/Top_5000.dict
+	rm -f $@
+	for WORD in $$(zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$"); do \
+		grep -q "^$$WORD$$" /tmp/Top_5000.dict && echo $$WORD; \
+	done | gzip -c > $@
+
+# Everything but creating of the Main.dict file is inherited from the
+# "parent" Makefile.langcommon in the parent directory.
+
+clean: clean_common
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb 
