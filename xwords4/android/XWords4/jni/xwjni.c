@@ -59,9 +59,6 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
         jenumFieldToInt( env, j_gi, "serverRole",
                          "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole");
 
-    getString( env, j_gi, "dictName", buf, VSIZE(buf) );
-    gi->dictName = copyString( mpool, buf );
-
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
     jobject jplayers;
@@ -109,7 +106,6 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed );
     setBool( env, jgi, "timerEnabled", gi->timerEnabled );
     setBool( env, jgi, "allowPickTiles", gi->allowPickTiles );
-    setString( env, jgi, "dictName", gi->dictName );
 
     intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",
                      "org/eehouse/android/xw4/jni/CurGameInfo$XWPhoniesChoice" );
