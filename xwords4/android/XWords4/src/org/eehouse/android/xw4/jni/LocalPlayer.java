@@ -45,15 +45,9 @@ public class LocalPlayer {
     {
         isLocal = src.isLocal;
         robotIQ = src.robotIQ;
-        if ( null != src.name ) {
-            name = new String(src.name);
-        }
-        if ( null != src.password ) {
-            password = new String(src.password);
-        }
-        if ( null != src.dictName ) {
-            dictName = new String(src.dictName);
-        }
+        name = src.name;
+        password = src.password;
+        dictName = src.dictName;
         secondsUsed = src.secondsUsed;
     }
 
