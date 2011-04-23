@@ -417,10 +417,13 @@ public class GameConfig extends XWActivity
         m_giOrig.setInProgress( m_gameStarted );
 
         if ( m_gameStarted ) {
-            m_gameLockedCheck = (CheckBox)findViewById( R.id.game_locked_check );
-            m_gameLockedCheck.setVisibility( View.VISIBLE );
-            m_gameLockedCheck.setChecked( true );
-            m_gameLockedCheck.setOnClickListener( this );
+            if ( null == m_gameLockedCheck ) {
+                m_gameLockedCheck = 
+                    (CheckBox)findViewById( R.id.game_locked_check );
+                m_gameLockedCheck.setVisibility( View.VISIBLE );
+                m_gameLockedCheck.setChecked( true );
+                m_gameLockedCheck.setOnClickListener( this );
+            }
             handleLockedChange();
         }
 
