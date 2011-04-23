@@ -22,10 +22,13 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Handler;
+import android.widget.ArrayAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -36,7 +39,25 @@ public class DictLangCache {
     private static final HashMap<String,DictInfo> s_nameToLang = 
         new HashMap<String,DictInfo>();
     private static String[] s_langNames;
-    private static String[] s_langNamesPresent;
+
+    private static int m_adaptedLang = -1;
+    private static ArrayAdapter<String> m_langsAdapter;
+    private static ArrayAdapter<String> m_dictsAdapter;
+    private static String s_last;
+    private static Handler s_handler;
+    private static Comparator<String> KeepLast = 
+        new Comparator<String>() {
+            public int compare( String str1, String str2 )
+            {
+                if ( s_last.equals( str1 ) ) {
+                    return 1;
+                } else if ( s_last.equals( str2 ) ) {
+                    return -1;
+                } else {
+                    return str1.compareToIgnoreCase( str2 );
+                }
+            }
+        };
 
     public static String annotatedDictName( Context context, String name )
     {
@@ -143,9 +164,34 @@ public class DictLangCache {
         return getLangName( context, code );
     }
 
-    public static void inval( String name )
+    public static void inval( final Context context, String name, 
+                              boolean added )
     {
+        name = GameUtils.removeDictExtn( name );
         s_nameToLang.remove( name );
+        if ( added ) {
+            getInfo( context, name );
+        }
+
+        s_handler.post( new Runnable() {
+                public void run() {
+                    if ( null != m_dictsAdapter ) {
+                        rebuildAdapter( m_dictsAdapter, 
+                                        DictLangCache.
+                                        getHaveLang( context, 
+                                                     m_adaptedLang ) );
+                    }
+                    if ( null != m_langsAdapter ) {
+                        rebuildAdapter( m_langsAdapter, 
+                                        DictLangCache.listLangs( context ) );
+                    }
+                }
+            } );
+    }
+
+    private static String[] listLangs( Context context )
+    {
+        return listLangs( context, GameUtils.dictList( context ) );
     }
 
     public static String[] listLangs( Context context, final String[] names )
@@ -172,6 +218,50 @@ public class DictLangCache {
             }
         }
         return dict;
+    }
+
+    private static void rebuildAdapter( ArrayAdapter<String> adapter,
+                                        String[] items )
+    {
+        adapter.clear();
+
+        for ( String item : items ) {
+            adapter.add( item );
+        }
+        if ( null != s_last ) {
+            adapter.add( s_last );
+        }
+        adapter.sort( KeepLast );
+    }
+
+    public static void setLast( String lastItem )
+    {
+        s_last = lastItem;
+        s_handler = new Handler();
+    }
+
+    public static ArrayAdapter<String> getLangsAdapter( Context context )
+    {
+        if ( null == m_langsAdapter ) {
+            m_langsAdapter = 
+                new ArrayAdapter<String>( context,
+                                          android.R.layout.simple_spinner_item );
+            rebuildAdapter( m_langsAdapter, listLangs( context ) );
+        }
+        return m_langsAdapter;
+    }
+
+    public static ArrayAdapter<String> getDictsAdapter( Context context, 
+                                                        int lang )
+    {
+        if ( lang != m_adaptedLang ) {
+            m_dictsAdapter = 
+                new ArrayAdapter<String>( context,
+                                          android.R.layout.simple_spinner_item );
+            rebuildAdapter( m_dictsAdapter, getHaveLang( context, lang ) );
+            m_adaptedLang = lang;
+        }
+        return m_dictsAdapter;
     }
 
     private static String[] getNamesArray( Context context )

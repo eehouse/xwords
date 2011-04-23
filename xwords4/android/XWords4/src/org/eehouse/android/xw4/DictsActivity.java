@@ -177,6 +177,7 @@ public class DictsActivity extends XWListActivity
     private void deleteDict( String dict )
     {
         GameUtils.deleteDict( this, dict );
+        DictLangCache.inval( this, dict, false );
         mkListAdapter();
     }
 

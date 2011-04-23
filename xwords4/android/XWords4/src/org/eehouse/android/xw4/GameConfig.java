@@ -93,9 +93,7 @@ public class GameConfig extends XWActivity
     private Spinner m_phoniesSpinner;
     private Spinner m_langSpinner;
     private Spinner m_smartnessSpinner;
-    private String[] m_langs;
-    // private String[] m_dicts;
-    private int m_langsBrowsePosition;
+    private String m_browseText;
     private LinearLayout m_playerLayout;
     private CommsAddrRec m_carOrig;
     private CommsAddrRec m_car;
@@ -369,6 +367,8 @@ public class GameConfig extends XWActivity
         //     sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
         // } catch ( Exception ex ) {}
         // m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
+        m_browseText = getString( R.string.download_dicts );
+        DictLangCache.setLast( m_browseText );
 
         m_cp = CommonPrefs.get( this );
 
@@ -424,10 +424,6 @@ public class GameConfig extends XWActivity
             handleLockedChange();
         }
 
-        int curSel = listAvailableLangs( m_giOrig.dictLang );
-        // m_giOrig.dictLang = 
-        //     DictLangCache.getDictLangCode( this, 
-        //                                GameUtils.dictList( this )[curSel] );
         m_gi = new CurGameInfo( this, m_giOrig );
 
         m_carOrig = new CommsAddrRec( this );
@@ -648,31 +644,10 @@ public class GameConfig extends XWActivity
         return result;
     }
 
-    private int listAvailableLangs( int langCode )
-    {
-        String[] langs = 
-            DictLangCache.listLangs( this, GameUtils.dictList( this ) );
-        String curLang = DictLangCache.getLangName( this, langCode );
-        Utils.logf( "listAvailableLangs: %s is current", curLang );
-        m_langs = buildListWithBrowse( langs );
-        m_langsBrowsePosition = m_langs.length - 1;
-
-        int index = Arrays.binarySearch( m_langs, curLang );
-        Utils.logf( "listAvailableLangs: index is %d", index );
-        return index;
-    } // listAvailableLangs
-
     private void configDictSpinner( final Dialog dialog, final LocalPlayer lp )
     {
-        String[] tmpDicts = 
-            DictLangCache.getHaveLang( this, m_gi.dictLang );
-        final String[] dicts = buildListWithBrowse( tmpDicts );
         Spinner dictsSpinner = 
             (Spinner)dialog.findViewById( R.id.dict_spinner );
-        int curSel = -1;
-        if ( null != lp.dictName ) {
-            curSel = Arrays.binarySearch( dicts, lp.dictName );
-        }
 
         OnItemSelectedListener onSel = 
             new OnItemSelectedListener() {
@@ -680,13 +655,14 @@ public class GameConfig extends XWActivity
                 public void onItemSelected( AdapterView<?> parentView, 
                                             View selectedItemView, 
                                             int position, long id ) {
-                    if ( position == dicts.length - 1 ) {
-                        Utils.logf( "posn=%d; starting activity", position );
+                    String chosen = 
+                        (String)parentView.getItemAtPosition( position );
+
+                    if ( chosen.equals( m_browseText ) ) {
                         startActivity( Utils.mkDownloadActivity(GameConfig.this,
                                                                 m_gi.dictLang ) );
                     } else {
-                        // why did I disable these two lines?
-                        lp.dictName = dicts[position];
+                        lp.dictName = chosen;
                         Utils.logf( "set lp.dictName: %s", lp.dictName );
                     }
                 }
@@ -695,7 +671,9 @@ public class GameConfig extends XWActivity
                 public void onNothingSelected(AdapterView<?> parentView) {}
             };
 
-        configSpinnerWDownload( dictsSpinner, dicts, curSel, onSel );
+        ArrayAdapter<String> adapter = 
+            DictLangCache.getDictsAdapter( this, m_gi.dictLang );
+        configSpinnerWDownload( dictsSpinner, adapter, onSel, lp.dictName );
     }
 
     private void configLangSpinner()
@@ -706,41 +684,49 @@ public class GameConfig extends XWActivity
                 public void onItemSelected(AdapterView<?> parentView, 
                                            View selectedItemView, 
                                            int position, long id ) {
-                    if ( position == m_langsBrowsePosition ) {
-                        Utils.logf( "configLangSpinner: position=%d; starting download", position );
+                    String chosen = 
+                        (String)parentView.getItemAtPosition( position );
+                    if ( chosen.equals( m_browseText ) ) {
                         startActivity( Utils.mkDownloadActivity(GameConfig.this) );
                     } else {
                         m_gi.dictLang = 
                             DictLangCache.getLangLangCode( GameConfig.this, 
-                                                           m_langs[position] );
+                                                           chosen );
                     }
                 }
 
                 @Override
                     public void onNothingSelected(AdapterView<?> parentView) {}
             };
-        configSpinnerWDownload( m_langSpinner, m_langs, 
-                                listAvailableLangs( m_gi.dictLang ),
-                                onSel );
+
+        ArrayAdapter<String> adapter = 
+            DictLangCache.getLangsAdapter( this );
+        String lang = DictLangCache.getLangName( this, m_gi.dictLang );
+        configSpinnerWDownload( m_langSpinner, adapter, onSel, lang );
     }
 
-    private void configSpinnerWDownload( Spinner spinner, String[] texts,
-                                         int curSel, 
-                                         OnItemSelectedListener onSel )
+    private void configSpinnerWDownload( Spinner spinner, 
+                                         ArrayAdapter<String> adapter,
+                                         OnItemSelectedListener onSel,
+                                         String curSel )
     {
-        ArrayAdapter<String> adapter = 
-            new ArrayAdapter<String>( this,
-                                      android.R.layout.simple_spinner_item,
-                                      texts );
         int resID = android.R.layout.simple_spinner_dropdown_item;
         adapter.setDropDownViewResource( resID );
         spinner.setAdapter( adapter );
-        if ( curSel >= 0 ) {
-            Utils.logf( "setting selection: %d", curSel );
-            spinner.setSelection( curSel );
-        } 
-
         spinner.setOnItemSelectedListener( onSel );
+        setSpinnerSelection( spinner, adapter, curSel );
+    }
+
+    private void setSpinnerSelection( Spinner spinner, 
+                                      ArrayAdapter<String> adapter,
+                                      String sel )
+    {
+        for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
+            if ( sel.equals( adapter.getItem(ii) ) ) {
+                spinner.setSelection( ii );
+                break;
+            }
+        }
     }
 
     private void setSmartnessSpinner()

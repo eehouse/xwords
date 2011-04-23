@@ -109,7 +109,7 @@ public class DictImportActivity extends XWActivity {
     {
         String name = basename( path );
         GameUtils.saveDict( this, name, inputStream );
-        DictLangCache.inval( GameUtils.removeDictExtn( name ) );
+        DictLangCache.inval( this, name, true );
     }
 
     private String basename( String path )
