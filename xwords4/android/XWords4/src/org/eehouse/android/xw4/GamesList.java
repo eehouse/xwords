@@ -50,7 +50,8 @@ import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends XWListActivity 
     implements DispatchNotify.HandleRelaysIface,
-               DBUtils.DBChangeListener {
+               DBUtils.DBChangeListener,
+               GameListAdapter.LoadItemCB {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -201,7 +202,7 @@ public class GamesList extends XWListActivity
 
         GameConverter.convert( this );
 
-        m_adapter = new GameListAdapter( this );
+        m_adapter = new GameListAdapter( this, this );
         setListAdapter( m_adapter );
 
         NetUtils.informOfDeaths( this );
@@ -279,6 +280,12 @@ public class GamesList extends XWListActivity
                     onContentChanged();
                 }
             } );
+    }
+
+    // GameListAdapter.LoadItemCB interface
+    public void itemLoaded( String path )
+    {
+        onContentChanged();
     }
 
     @Override
