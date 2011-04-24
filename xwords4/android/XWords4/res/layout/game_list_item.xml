@@ -23,6 +23,7 @@
 	           android:layout_height="fill_parent"
                android:layout_gravity="center_vertical|center_horizontal"
                android:layout_weight="0"
+               android:visibility="gone"
     	       android:src="@drawable/ic_popup_sync_1"
                />
 

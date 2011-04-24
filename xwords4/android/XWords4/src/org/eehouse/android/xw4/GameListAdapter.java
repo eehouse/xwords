@@ -72,13 +72,27 @@ public class GameListAdapter extends XWListAdapter {
             layout = m_factory.inflate( R.layout.game_list_item, null );
             final boolean hideTitle = 
                 false;//CommonPrefs.getHideTitleBar( m_context );
+            GameSummary summary = DBUtils.getSummary( m_context, path, false );
+
+            TextView view = (TextView)layout.findViewById( R.id.game_name );
+            if ( hideTitle ) {
+                view.setVisibility( View.GONE );
+            } else {
+                String text = GameUtils.gameName( m_context, path );
+                if ( null != summary ) {
+                    String format = 
+                        m_context.getString( R.string.str_game_namef );
+                    String lang = 
+                        DictLangCache.getLangName( m_context, 
+                                                   summary.dictLang );
+                    text = String.format( format, text, lang );
+                }
+                view.setText( text );
+            }
 
             // If we can't read the summary right now we still need to
             // return a view but shouldn't cache it
-            GameSummary summary = DBUtils.getSummary( m_context, path, false );
             if ( null != summary ) {
-                TextView view;
-
                 LinearLayout list =
                     (LinearLayout)layout.findViewById( R.id.player_list );
                 for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
@@ -93,18 +107,6 @@ public class GameListAdapter extends XWListAdapter {
                     list.addView( tmp, ii );
                 }
 
-                view = (TextView)layout.findViewById( R.id.game_name );
-                if ( hideTitle ) {
-                    view.setVisibility( View.GONE );
-                } else {
-                    String format = 
-                        m_context.getString( R.string.str_game_namef );
-                    String name = GameUtils.gameName( m_context, path );
-                    String lang = 
-                        DictLangCache.getLangName( m_context, 
-                                                   summary.dictLang );
-                    view.setText( String.format( format, name, lang ) );
-                }
                 view = (TextView)layout.findViewById( R.id.state );
                 view.setText( summary.summarizeState( m_context ) );
                 view = (TextView)layout.findViewById( R.id.modtime );
@@ -118,10 +120,10 @@ public class GameListAdapter extends XWListAdapter {
                     view.setVisibility( View.GONE );
                 }
 
-                View marker = layout.findViewById( R.id.msg_marker );
-                marker.setVisibility( summary.pendingMsgLevel 
-                                      == GameSummary.MSG_FLAGS_NONE
-                                      ? View.GONE : View.VISIBLE );
+                if ( summary.pendingMsgLevel != GameSummary.MSG_FLAGS_NONE ) {
+                    View marker = layout.findViewById( R.id.msg_marker );
+                    marker.setVisibility( View.VISIBLE );
+                }
                 m_viewsCache.put( path, layout );
             }
         }
