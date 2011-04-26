@@ -177,6 +177,9 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
 {
     XP_Bool result = XP_FALSE;
 
+    XP_ASSERT( !!dict1 );
+    XP_ASSERT( !!dict2 );
+
     Tile ii;
     XP_U16 nTileFaces = dict_numTileFaces( dict1 );
 
