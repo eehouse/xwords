@@ -385,10 +385,16 @@ static void
 and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum, 
                       const DictionaryCtxt* dict )
 {
-    AndDraw* draw = (AndDraw*)dctx;
-    if ( NULL != draw->jdraw ) {
-        DRAW_CBK_HEADER( "dictChanged", "(II)V" );
-        (*env)->CallVoidMethod( env, draw->jdraw, mid, playerNum, (jint)dict );
+    /* We'll always have a dict for the game itself ( playerNum==-1) and it'll
+       have the same lang as the others so it's the only one that needs to
+       make it through. */
+    if ( playerNum < 0 ) {
+        AndDraw* draw = (AndDraw*)dctx;
+        if ( NULL != draw->jdraw ) {
+            DRAW_CBK_HEADER( "dictChanged", "(II)V" );
+            (*env)->CallVoidMethod( env, draw->jdraw, mid, playerNum, 
+                                    (jint)dict );
+        }
     }
 }
 
