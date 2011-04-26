@@ -38,6 +38,7 @@ public class CurGameInfo {
     public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW };
     public enum DeviceRole { SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT };
 
+    public String dictName;
     public LocalPlayer[] players;
     public int dictLang;
     public int gameID;
@@ -75,7 +76,7 @@ public class CurGameInfo {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
-        String dictName = CommonPrefs.getDefaultHumanDict( context );
+        dictName = CommonPrefs.getDefaultHumanDict( context );
         dictLang = DictLangCache.getDictLangCode( context, dictName );
         hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
@@ -107,6 +108,7 @@ public class CurGameInfo {
         boardSize = src.boardSize;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = src.serverRole;
+        dictName = src.dictName;
         dictLang = src.dictLang;
         hintsNotAllowed = src.hintsNotAllowed;
         phoniesAction = src.phoniesAction;
@@ -246,9 +248,10 @@ public class CurGameInfo {
             assignDicts();
         }
 
-        String[] result = new String[nPlayers];
+        String[] result = new String[nPlayers+1];
+        result[0] = dictName;
         for ( int ii = 0; ii < nPlayers; ++ii ) {
-            result[ii] = players[ii].dictName;
+            result[ii+1] = players[ii].dictName;
         }
         return result;
     }
@@ -359,16 +362,32 @@ public class CurGameInfo {
             DictLangCache.getBestDefault( m_context, dictLang, true );
         String robotDict = 
             DictLangCache.getBestDefault( m_context, dictLang, false );
+
+        if ( null == dictName || 
+             dictLang != DictLangCache.getDictLangCode( m_context, 
+                                                        dictName ) ) {
+            dictName = humanDict;
+        }
+
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             LocalPlayer lp = players[ii];
-            if ( null == lp.dictName ) {
-            } else if ( dictLang != 
-                        DictLangCache.getDictLangCode( m_context, 
-                                                       lp.dictName ) ) {
-            } else {
-                continue;
+
+            if ( null != lp.dictName &&
+                 dictLang != DictLangCache.getDictLangCode( m_context, 
+                                                            lp.dictName ) ) {
+                lp.dictName = null;
             }
-            lp.dictName = lp.isRobot() ? robotDict : humanDict;
+
+            if ( null == lp.dictName ) {
+                if ( lp.isRobot() ) {
+                    if ( robotDict != dictName ) {
+                        lp.dictName = robotDict;
+                    } else if ( humanDict != dictName ) {
+                        lp.dictName = humanDict;
+                    }
+                }
+            }
         }
     }
+
 }

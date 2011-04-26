@@ -361,6 +361,7 @@ public class GameUtils {
         }
 
         missingSet = new HashSet<String>( Arrays.asList( dictNames ) );
+        missingSet.remove( null );
         Utils.logf( "missingSet before remove of %s: %s", installed.toString(),
                     missingSet.toString() );
         Utils.logf( "missingSet size: %d", missingSet.size() );
@@ -504,11 +505,16 @@ public class GameUtils {
         byte[][] result = new byte[names.length][];
         HashMap<String,byte[]> seen = new HashMap<String,byte[]>();
         for ( int ii = 0; ii < names.length; ++ii ) {
+            byte[] bytes = null;
             String name = names[ii];
-            byte[] bytes = seen.get( name );
-            if ( null == bytes ) {
-                bytes = openDict( context, name );
-                seen.put( name, bytes );
+            if ( null == name ) {
+                Utils.logf( "openDicts: names[%d] == null; skipping open", ii );
+            } else {
+                bytes = seen.get( name );
+                if ( null == bytes ) {
+                    bytes = openDict( context, name );
+                    seen.put( name, bytes );
+                }
             }
             result[ii] = bytes;
         }
