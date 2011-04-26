@@ -279,6 +279,15 @@ public class CurGameInfo {
         return DictLangCache.getLangName( m_context, dictLang );
     }
 
+    public String dictName( final LocalPlayer lp )
+    {
+        String dname = lp.dictName;
+        if ( null == dname ) {
+            dname = dictName;
+        }
+        return dname;
+    }
+
     public boolean addPlayer() 
     {
         boolean added = nPlayers < MAX_NUM_PLAYERS;

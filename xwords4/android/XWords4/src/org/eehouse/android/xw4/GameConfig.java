@@ -676,7 +676,8 @@ public class GameConfig extends XWActivity
 
         ArrayAdapter<String> adapter = 
             DictLangCache.getDictsAdapter( this, m_gi.dictLang );
-        configSpinnerWDownload( dictsSpinner, adapter, onSel, lp.dictName );
+        configSpinnerWDownload( dictsSpinner, adapter, onSel, 
+                                m_gi.dictName(lp) );
     }
 
     private void configLangSpinner()
