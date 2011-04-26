@@ -259,18 +259,31 @@ public class CurGameInfo {
     // Replace any dict that doesn't exist with newDict
     public void replaceDicts( String newDict ) 
     {
+        Utils.logf( "replaceDicts(%s)", newDict );
         String[] dicts = 
             DictLangCache.getHaveLang( m_context, dictLang );
         HashSet<String> installed = new HashSet<String>( Arrays.asList(dicts) );
+
+        if ( !installed.contains( dictName ) ) {
+            dictName = newDict;
+        }
+
         for ( int ii = 0; ii < nPlayers; ++ii ) {
-            String curDict = players[ii].dictName;
-            if ( newDict.equals( curDict ) ) {
-                // we're good
-            } else if ( installed.contains(curDict) ) {
-                // we're good
-            } else {
+            LocalPlayer lp = players[ii];
+            if ( null == lp.dictName ) {
+                // continue to inherit
+            } else if ( !installed.contains( players[ii].dictName ) ) {
                 players[ii].dictName = newDict;
             }
+
+            // String curDict = players[ii].dictName;
+            // if ( newDict.equals( curDict ) ) {
+            //     // we're good
+            // } else if ( installed.contains(curDict) ) {
+            //     // we're good
+            // } else {
+            //     players[ii].dictName = newDict;
+            // }
         }
     }
 
@@ -372,9 +385,10 @@ public class CurGameInfo {
         String robotDict = 
             DictLangCache.getBestDefault( m_context, dictLang, false );
 
-        if ( null == dictName || 
-             dictLang != DictLangCache.getDictLangCode( m_context, 
-                                                        dictName ) ) {
+        if ( null == dictName 
+             || ! GameUtils.dictExists( m_context, dictName ) 
+             || dictLang != DictLangCache.getDictLangCode( m_context, 
+                                                           dictName ) ) {
             dictName = humanDict;
         }
 
