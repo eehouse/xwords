@@ -173,20 +173,22 @@ public class DictLangCache {
             getInfo( context, name );
         }
 
-        s_handler.post( new Runnable() {
-                public void run() {
-                    if ( null != m_dictsAdapter ) {
-                        rebuildAdapter( m_dictsAdapter, 
-                                        DictLangCache.
-                                        getHaveLang( context, 
-                                                     m_adaptedLang ) );
+        if ( null != s_handler ) {
+            s_handler.post( new Runnable() {
+                    public void run() {
+                        if ( null != m_dictsAdapter ) {
+                            rebuildAdapter( m_dictsAdapter, 
+                                            DictLangCache.
+                                            getHaveLang( context, 
+                                                         m_adaptedLang ) );
+                        }
+                        if ( null != m_langsAdapter ) {
+                            rebuildAdapter( m_langsAdapter, 
+                                            DictLangCache.listLangs( context ) );
+                        }
                     }
-                    if ( null != m_langsAdapter ) {
-                        rebuildAdapter( m_langsAdapter, 
-                                        DictLangCache.listLangs( context ) );
-                    }
-                }
-            } );
+                } );
+        }
     }
 
     private static String[] listLangs( Context context )
