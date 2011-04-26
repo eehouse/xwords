@@ -32,8 +32,10 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
 DictionaryCtxt* makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, 
                           jbyteArray bytes, jstring jname, jstring jlang );
 
-void makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
-                jobjectArray jdicts, jobjectArray jnames, jstring jlang );
+void makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, 
+                DictionaryCtxt** dict,
+                PlayerDicts* dicts, jobjectArray jdicts, jobjectArray jnames, 
+                jstring jlang );
 
 void destroyDicts( PlayerDicts* dicts );
 

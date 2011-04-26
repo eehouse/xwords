@@ -422,24 +422,32 @@ and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
 }
 
 void
-makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, PlayerDicts* dicts,
+makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, 
+           DictionaryCtxt** dictp, PlayerDicts* dicts,
            jobjectArray jdicts, jobjectArray jnames, jstring jlang )
 {
     int ii;
     jsize len = (*env)->GetArrayLength( env, jdicts );
     XP_ASSERT( len == (*env)->GetArrayLength( env, jnames ) );
 
-    for ( ii = 0; ii < VSIZE(dicts->dicts); ++ii ) {
+    for ( ii = 0; ii <= VSIZE(dicts->dicts); ++ii ) {
         DictionaryCtxt* dict = NULL;
         if ( ii < len ) {
             jobject jdict = (*env)->GetObjectArrayElement( env, jdicts, ii );
-            jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
-            dict = makeDict( MPPARM(mpool) env, jniutil, jdict, jname, jlang );
-            XP_ASSERT( !!dict );
-            (*env)->DeleteLocalRef( env, jdict );
-            (*env)->DeleteLocalRef( env, jname );
-        } 
-        dicts->dicts[ii] = dict;
+            if ( NULL != jdict ) { 
+                jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
+                dict = makeDict( MPPARM(mpool) env, jniutil, jdict, jname, jlang );
+                XP_ASSERT( !!dict );
+                (*env)->DeleteLocalRef( env, jdict );
+                (*env)->DeleteLocalRef( env, jname );
+            }
+        }
+        if ( 0 == ii ) {
+            *dictp = dict;
+        } else {
+            XP_ASSERT( ii-1 < VSIZE( dicts->dicts ) );
+            dicts->dicts[ii-1] = dict;
+        }
     }
 }
 
