@@ -259,7 +259,6 @@ public class CurGameInfo {
     // Replace any dict that doesn't exist with newDict
     public void replaceDicts( String newDict ) 
     {
-        Utils.logf( "replaceDicts(%s)", newDict );
         String[] dicts = 
             DictLangCache.getHaveLang( m_context, dictLang );
         HashSet<String> installed = new HashSet<String>( Arrays.asList(dicts) );
@@ -275,15 +274,6 @@ public class CurGameInfo {
             } else if ( !installed.contains( players[ii].dictName ) ) {
                 players[ii].dictName = newDict;
             }
-
-            // String curDict = players[ii].dictName;
-            // if ( newDict.equals( curDict ) ) {
-            //     // we're good
-            // } else if ( installed.contains(curDict) ) {
-            //     // we're good
-            // } else {
-            //     players[ii].dictName = newDict;
-            // }
         }
     }
 
