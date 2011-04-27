@@ -23,4 +23,5 @@ package org.eehouse.android.xw4.jni;
 public class DictInfo {
     public int langCode;
     public int wordCount;
+    public String name;
 };

@@ -104,34 +104,67 @@ public class DictLangCache {
         return count;
     }
 
-    private static String[] getHaveLang( Context context, int code,
-                                         boolean withCounts )
+    private static DictInfo[] getInfosHaveLang( Context context, int code )
     {
-        ArrayList<String> al = new ArrayList<String>();
+        ArrayList<DictInfo> al = new ArrayList<DictInfo>();
         String[] dicts = GameUtils.dictList( context );
-        String fmt = "%s (%d)"; // must match stripCount below
         for ( String dict : dicts ) {
             DictInfo info = getInfo( context, dict );
             if ( code == info.langCode ) {
-                if ( withCounts ) {
-                    dict = String.format( fmt, dict, info.wordCount );
-                }
-                al.add( dict );
+                al.add( info );
             }
         }
+        DictInfo[] result = al.toArray( new DictInfo[al.size()] );
+        return result;
+    }
+
+    private static String[] getHaveLang( Context context, int code,
+                                         Comparator<DictInfo> comp,
+                                         boolean withCounts )
+    {
+        DictInfo[] infos = getInfosHaveLang( context, code );
+
+        if ( null != comp ) {
+            Arrays.sort( infos, comp );
+        }
+
+        ArrayList<String> al = new ArrayList<String>();
+        String fmt = "%s (%d)"; // must match stripCount below
+        for ( DictInfo info : infos ) {
+            String name = info.name;
+            if ( withCounts ) {
+                name = String.format( fmt, name, info.wordCount );
+            }
+            al.add( name );
+        }
         String[] result = al.toArray( new String[al.size()] );
-        Arrays.sort( result );
+        if ( null == comp ) {
+            Arrays.sort( result );
+        }
         return result;
     }
 
     public static String[] getHaveLang( Context context, int code )
     {
-        return getHaveLang( context, code, false );
+        return getHaveLang( context, code, null, false );
+    }
+
+    private static Comparator<DictInfo> s_ByCount = 
+        new Comparator<DictInfo>() {
+            public int compare( DictInfo di1, DictInfo di2 )
+            {
+                return di2.wordCount - di1.wordCount;
+            }
+        };
+
+    public static String[] getHaveLangByCount( Context context, int code )
+    {
+        return getHaveLang( context, code, s_ByCount, false );
     }
 
     public static String[] getHaveLangCounts( Context context, int code )
     {
-        return getHaveLang( context, code, true );
+        return getHaveLang( context, code, null, true );
     }
 
     public static String stripCount( String nameWithCount )
@@ -212,9 +245,10 @@ public class DictLangCache {
         String dict = human? CommonPrefs.getDefaultHumanDict( context )
             : CommonPrefs.getDefaultRobotDict( context );
         if ( lang != DictLangCache.getDictLangCode( context, dict ) ) {
-            String dicts[] = getHaveLang( context, lang );
+            String dicts[] = getHaveLangByCount( context, lang );
             if ( dicts.length > 0 ) {
-                dict = dicts[0];
+                // Human gets biggest; robot gets smallest
+                dict = dicts[ human ? 0 : dicts.length-1 ];
             } else {
                 dict = null;
             }
@@ -284,6 +318,7 @@ public class DictLangCache {
             byte[] dict = GameUtils.openDict( context, name );
             info = new DictInfo();
             XwJNI.dict_getInfo( dict, JNIUtilsImpl.get(), info );
+            info.name = name;
             s_nameToLang.put( name, info );
         }
         return info;
