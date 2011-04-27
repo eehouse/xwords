@@ -75,6 +75,17 @@ public class DlgDelegate {
         return dialog;
     }
 
+    protected void setRemoveOnDismiss( Dialog dialog, final int id )
+    {
+        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                public void onDismiss( DialogInterface di ) {
+                    Utils.logf( "%s.onDismiss() called", 
+                                getClass().getName() );
+                    m_activity.removeDialog( id );
+                }
+            } );
+    }
+
     public void onPrepareDialog( int id, Dialog dialog )
     {
         AlertDialog ad = (AlertDialog)dialog;

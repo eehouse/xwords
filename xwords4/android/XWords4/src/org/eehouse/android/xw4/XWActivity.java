@@ -79,15 +79,9 @@ public class XWActivity extends Activity {
         return dialog;
     }
 
-    protected void setRemoveOnDismiss( Dialog dialog, final int id )
+    protected void setRemoveOnDismiss( Dialog dialog, int id )
     {
-        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                public void onDismiss( DialogInterface di ) {
-                    Utils.logf( "%s.onDismiss() called", 
-                                getClass().getName() );
-                    removeDialog( id );
-                }
-            } );
+        m_delegate.setRemoveOnDismiss( dialog, id );
     }
 
     @Override
