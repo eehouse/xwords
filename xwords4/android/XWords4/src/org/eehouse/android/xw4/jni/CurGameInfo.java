@@ -96,6 +96,8 @@ public class CurGameInfo {
         } else {
             players[0].setRobotSmartness( 1 );
         }
+
+        assignDicts();
     }
 
     public CurGameInfo( Context context, CurGameInfo src )
