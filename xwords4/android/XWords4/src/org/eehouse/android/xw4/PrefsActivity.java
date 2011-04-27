@@ -121,6 +121,7 @@ public class PrefsActivity extends PreferenceActivity
                              R.string.key_board_size,
                              R.string.key_initial_player_minutes,
                              R.string.key_default_dict,
+                             R.string.key_default_robodict,
                              R.string.key_default_phonies,
         };
 
