@@ -128,14 +128,13 @@ public class DictsActivity extends XWListActivity
         }
         
         int id = item.getItemId();
+        int position = info.position;
         switch( id ) {
-        case R.id.dicts_item_select:
-            SharedPreferences sp
-                = PreferenceManager.getDefaultSharedPreferences( this );
-            SharedPreferences.Editor editor = sp.edit();
-            String key = getString( R.string.key_default_dict );
-            editor.putString( key, m_dicts[info.position] );
-            editor.commit();
+        case R.id.dicts_item_select_human:
+            setDefault( R.string.key_default_dict, position );
+            break;
+        case R.id.dicts_item_select_robot:
+            setDefault( R.string.key_default_robodict, position );
             break;
         case R.id.dicts_item_details:
             Utils.notImpl( this );
@@ -143,6 +142,16 @@ public class DictsActivity extends XWListActivity
         }
 
         return handled;
+    }
+
+    private void setDefault( int keyId, int position )
+    {
+        SharedPreferences sp
+            = PreferenceManager.getDefaultSharedPreferences( this );
+        SharedPreferences.Editor editor = sp.edit();
+        String key = getString( keyId );
+        editor.putString( key, m_dicts[position] );
+        editor.commit();
     }
 
     // DeleteCallback interface
@@ -186,5 +195,4 @@ public class DictsActivity extends XWListActivity
         m_dicts = GameUtils.dictList( this );
         setListAdapter( new DictListAdapter( this ) );
     }
-
 }

@@ -163,7 +163,8 @@
 
     <string name="list_item_up">Up one</string>
     <string name="list_item_down">Down one</string>
-    <string name="dicts_item_select">Make default</string>
+    <string name="dicts_item_select_human">Make default (human)</string>
+    <string name="dicts_item_select_robot">Make default (robot)</string>
     <string name="dicts_item_delete">Delete dictionary</string>
     <string name="dicts_item_details">Details</string>
 
