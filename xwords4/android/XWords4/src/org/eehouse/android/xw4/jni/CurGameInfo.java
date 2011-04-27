@@ -137,6 +137,14 @@ public class CurGameInfo {
         m_inProgress = inProgress;
     }
 
+    public void setLang( int lang )
+    {
+        if ( dictLang != lang ) {
+            dictLang = lang;
+            assignDicts();
+        }
+    }
+
     public int getRobotSmartness()
     {
         if ( m_smartness == 0 ) {
@@ -239,15 +247,6 @@ public class CurGameInfo {
 
     public String[] dictNames()
     {
-        return dictNames( true );
-    }
-
-    public String[] dictNames( boolean assign )
-    {
-        if ( assign ) {
-            assignDicts();
-        }
-
         String[] result = new String[nPlayers+1];
         result[0] = dictName;
         for ( int ii = 0; ii < nPlayers; ++ii ) {

@@ -352,7 +352,7 @@ public class GameUtils {
         byte[] stream = savedGame( context, path );
         CurGameInfo gi = new CurGameInfo( context );
         XwJNI.gi_from_stream( gi, stream );
-        final String[] dictNames = gi.dictNames( false );
+        final String[] dictNames = gi.dictNames();
         HashSet<String> missingSet;
         String[] installed = dictList( context );
 

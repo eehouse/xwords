@@ -693,9 +693,9 @@ public class GameConfig extends XWActivity
                     if ( chosen.equals( m_browseText ) ) {
                         startActivity( Utils.mkDownloadActivity(GameConfig.this) );
                     } else {
-                        m_gi.dictLang = 
-                            DictLangCache.getLangLangCode( GameConfig.this, 
-                                                           chosen );
+                        m_gi.setLang( DictLangCache.
+                                      getLangLangCode( GameConfig.this, 
+                                                       chosen ) );
                     }
                 }
 
