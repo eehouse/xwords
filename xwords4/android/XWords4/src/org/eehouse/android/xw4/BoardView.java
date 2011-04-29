@@ -463,67 +463,68 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public boolean drawCell( final Rect rect, String text, int tile, int owner, 
                              int bonus, int hintAtts, final int flags ) 
     {
-        int backColor;
-        boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
-        boolean pending = 0 != (flags & CELL_HIGHLIGHT);
-        String bonusStr = null;
+        boolean canDraw = figureFontDims();
+        if ( canDraw ) {
+            int backColor;
+            boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
+            boolean pending = 0 != (flags & CELL_HIGHLIGHT);
+            String bonusStr = null;
 
-        figureFontDims();
 
-        if ( owner < 0 ) {
-            owner = 0;
-        }
-        int foreColor = m_playerColors[owner];
+            if ( owner < 0 ) {
+                owner = 0;
+            }
+            int foreColor = m_playerColors[owner];
 
-        if ( 0 != (flags & CELL_ISCURSOR) ) {
-            backColor = m_otherColors[CommonPrefs.COLOR_FOCUS];
-        } else if ( empty ) {
-            if ( 0 == bonus ) {
-                backColor = m_otherColors[CommonPrefs.COLOR_NOTILE];
+            if ( 0 != (flags & CELL_ISCURSOR) ) {
+                backColor = m_otherColors[CommonPrefs.COLOR_FOCUS];
+            } else if ( empty ) {
+                if ( 0 == bonus ) {
+                    backColor = m_otherColors[CommonPrefs.COLOR_NOTILE];
+                } else {
+                    backColor = m_bonusColors[bonus];
+                    bonusStr = m_bonusSummaries[bonus];
+                }
+            } else if ( pending ) {
+                if ( darkOnLight() ) {
+                    foreColor = WHITE;
+                    backColor = BLACK;
+                } else {
+                    foreColor = BLACK;
+                    backColor = WHITE;
+                }
             } else {
-                backColor = m_bonusColors[bonus];
-                bonusStr = m_bonusSummaries[bonus];
+                backColor = m_otherColors[CommonPrefs.COLOR_TILE_BACK];
             }
-        } else if ( pending ) {
-            if ( darkOnLight() ) {
-                foreColor = WHITE;
-                backColor = BLACK;
+
+            fillRect( rect, backColor );
+
+            if ( empty ) {
+                if ( (CELL_ISSTAR & flags) != 0 ) {
+                    m_origin.setBounds( rect );
+                    m_origin.draw( m_canvas );
+                } else if ( null != bonusStr ) {
+                    m_fillPaint.setColor( GREY );
+                    Rect brect = new Rect( rect );
+                    brect.inset( 0, brect.height()/10 );
+                    drawCentered( bonusStr, brect, m_fontDims );
+                }
             } else {
-                foreColor = BLACK;
-                backColor = WHITE;
+                m_fillPaint.setColor( foreColor );
+                drawCentered( text, rect, m_fontDims );
             }
-        } else {
-            backColor = m_otherColors[CommonPrefs.COLOR_TILE_BACK];
-        }
 
-        fillRect( rect, backColor );
-
-        if ( empty ) {
-            if ( (CELL_ISSTAR & flags) != 0 ) {
-                m_origin.setBounds( rect );
-                m_origin.draw( m_canvas );
-            } else if ( null != bonusStr ) {
-                m_fillPaint.setColor( GREY );
-                Rect brect = new Rect( rect );
-                brect.inset( 0, brect.height()/10 );
-                drawCentered( bonusStr, brect, m_fontDims );
+            if ( (CELL_ISBLANK & flags) != 0 ) {
+                markBlank( rect, pending );
             }
-        } else {
-            m_fillPaint.setColor( foreColor );
-            drawCentered( text, rect, m_fontDims );
+
+            // frame the cell
+            m_strokePaint.setColor( FRAME_GREY );
+            m_canvas.drawRect( rect, m_strokePaint );
+
+            drawCrosshairs( rect, flags );
         }
-
-        if ( (CELL_ISBLANK & flags) != 0 ) {
-            markBlank( rect, pending );
-        }
-
-        // frame the cell
-        m_strokePaint.setColor( FRAME_GREY );
-        m_canvas.drawRect( rect, m_strokePaint );
-
-        drawCrosshairs( rect, flags );
-        
-        return true;
+        return canDraw;
     } // drawCell
 
     private boolean m_arrowHintShown = false;
@@ -710,8 +711,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void dictChanged( int playerNum, int dictPtr )
     {
         if ( m_dictPtr != dictPtr ) {
-            if ( m_dictPtr == 0 || 
-                 !XwJNI.dict_tilesAreSame( m_dictPtr, dictPtr ) ) {
+            if ( 0 == dictPtr ) {
+                m_fontDims = null;
+                m_dictChars = null;
+            } else if ( m_dictPtr == 0 || 
+                        !XwJNI.dict_tilesAreSame( m_dictPtr, dictPtr ) ) {
                 m_fontDims = null;
                 m_dictChars = XwJNI.dict_getChars( dictPtr );
             }
@@ -807,29 +811,29 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void positionDrawTile( final Rect rect, String text, int val )
     {
-        figureFontDims();
-
-        if ( null != text ) {
-            if ( null == m_letterRect ) {
-                m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, 
-                                         rect.height() * 3 / 4 );
+        if ( figureFontDims() ) {
+            if ( null != text ) {
+                if ( null == m_letterRect ) {
+                    m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, 
+                                             rect.height() * 3 / 4 );
+                }
+                m_letterRect.offsetTo( rect.left+2, rect.top+2 );
+                drawCentered( text, m_letterRect, m_fontDims );
             }
-            m_letterRect.offsetTo( rect.left+2, rect.top+2 );
-            drawCentered( text, m_letterRect, m_fontDims );
-        }
 
-        if ( val >= 0 ) {
-            if ( null == m_valRect ) {
-                m_valRect = new Rect( 0, 0, rect.width() / 4, rect.height() / 4 );
-                m_valRect.inset( 2, 2 );
+            if ( val >= 0 ) {
+                if ( null == m_valRect ) {
+                    m_valRect = new Rect( 0, 0, rect.width() / 4, rect.height() / 4 );
+                    m_valRect.inset( 2, 2 );
+                }
+                m_valRect.offsetTo( rect.right - (rect.width() / 4),
+                                    rect.bottom - (rect.height() / 4) );
+                text = String.format( "%d", val );
+                m_fillPaint.setTextSize( m_valRect.height() );
+                m_fillPaint.setTextAlign( Paint.Align.RIGHT );
+                m_canvas.drawText( text, m_valRect.right, m_valRect.bottom, 
+                                   m_fillPaint );
             }
-            m_valRect.offsetTo( rect.right - (rect.width() / 4),
-                                rect.bottom - (rect.height() / 4) );
-            text = String.format( "%d", val );
-            m_fillPaint.setTextSize( m_valRect.height() );
-            m_fillPaint.setTextAlign( Paint.Align.RIGHT );
-            m_canvas.drawText( text, m_valRect.right, m_valRect.bottom, 
-                               m_fillPaint );
         }
     }
 
@@ -859,9 +863,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.drawRect( rect, m_fillPaint );
     }
 
-    private void figureFontDims()
+    private boolean figureFontDims()
     {
-        if ( null == m_fontDims ) {
+        if ( null == m_fontDims && null != m_dictChars  ) {
+
             final int ht = 24;
             final int width = 20;
 
@@ -928,6 +933,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         
             m_fontDims = new FontDims( ht, topRow, bottomRow, maxWidth );
         }
+        return null != m_fontDims;
     } // figureFontDims
 
     private void markBlank( final Rect rect, boolean whiteOnBlack )
