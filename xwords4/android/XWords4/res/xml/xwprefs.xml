@@ -16,7 +16,7 @@
     <org.eehouse.android.xw4.DictListPreference 
        android:key="@string/key_default_robodict"
        android:title="@string/default_robodict"
-       android:defaultValue="BasEnglish2to8"
+       android:defaultValue="Top5000"
        />
 
     <CheckBoxPreference android:key="@string/key_init_hintsallowed"
