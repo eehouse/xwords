@@ -1,4 +1,4 @@
-# -*- mode: makefile; compile-command: "make -f Makefile.CSW"; -*-
+# -*- mode: makefile; compile-command: "make -f Makefile.top5000"; -*-
 # Copyright 2002 - 2011 by Eric House (xwords@eehouse.org).  All
 # rights reserved.
 #
