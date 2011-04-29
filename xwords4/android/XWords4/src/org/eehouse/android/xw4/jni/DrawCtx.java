@@ -77,6 +77,6 @@ public interface DrawCtx {
 
     void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs );
 
-    void dictChanged( int player, int dictPtr );
+    void dictChanged( int dictPtr );
 
 }

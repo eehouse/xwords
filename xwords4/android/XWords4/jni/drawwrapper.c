@@ -396,9 +396,8 @@ and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum,
         if ( code != draw->curLang ) {
             draw->curLang = code;
 
-            DRAW_CBK_HEADER( "dictChanged", "(II)V" );
-            (*env)->CallVoidMethod( env, draw->jdraw, mid, playerNum, 
-                                    (jint)dict );
+            DRAW_CBK_HEADER( "dictChanged", "(I)V" );
+            (*env)->CallVoidMethod( env, draw->jdraw, mid, (jint)dict );
         }
     }
 }
