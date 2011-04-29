@@ -32,6 +32,7 @@ typedef struct _AndDraw {
     DrawCtxVTable* vtable;
     JNIEnv** env;
     jobject jdraw;             /* global ref; free it! */
+    XP_LangCode curLang;
     jobject jCache[JCACHE_COUNT];
     XP_UCHAR miniTextBuf[128];
     MPSLOT
@@ -385,12 +386,16 @@ static void
 and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum, 
                       const DictionaryCtxt* dict )
 {
-    /* We'll always have a dict for the game itself ( playerNum==-1) and it'll
-       have the same lang as the others so it's the only one that needs to
-       make it through. */
-    if ( playerNum < 0 ) {
-        AndDraw* draw = (AndDraw*)dctx;
-        if ( NULL != draw->jdraw ) {
+    AndDraw* draw = (AndDraw*)dctx;
+    if ( NULL != draw->jdraw ) {
+        XP_LangCode code = 0;   /* A null dict means no-lang */
+        if ( NULL != dict ) {
+            code = dict_getLangCode( dict );
+        }
+        /* Don't bother sending repeats. */
+        if ( code != draw->curLang ) {
+            draw->curLang = code;
+
             DRAW_CBK_HEADER( "dictChanged", "(II)V" );
             (*env)->CallVoidMethod( env, draw->jdraw, mid, playerNum, 
                                     (jint)dict );
