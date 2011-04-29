@@ -201,8 +201,6 @@ public class GamesList extends XWListActivity
                 }
             });
 
-        GameConverter.convert( this );
-
         m_adapter = new GameListAdapter( this, this );
         setListAdapter( m_adapter );
 
