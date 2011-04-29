@@ -45,6 +45,7 @@ public class GameListAdapter extends XWListAdapter {
     private HashMap<String,View> m_viewsCache;
     private DateFormat m_df;
     private LoadItemCB m_cb;
+    // private int m_taskCounter = 0;
 
     public interface LoadItemCB {
         public void itemLoaded( String path );
@@ -53,66 +54,73 @@ public class GameListAdapter extends XWListAdapter {
     private class LoadItemTask extends AsyncTask<Void, Void, Void> {
         private String m_path;
         private Context m_context;
-        public LoadItemTask( Context context, String path )
+        // private int m_id;
+        public LoadItemTask( Context context, String path/*, int id*/ )
         {
             m_context = context;
             m_path = path;
+            // m_id = id;
         }
 
         @Override
         protected Void doInBackground( Void... unused ) 
         {
+            // Utils.logf( "doInBackground(id=%d)", m_id );
             View layout = m_factory.inflate( R.layout.game_list_item, null );
             boolean hideTitle = false;//CommonPrefs.getHideTitleBar(m_context);
-            GameSummary summary = DBUtils.getSummary( m_context, m_path, true );
-            Assert.assertNotNull( summary );
-
-            TextView view = (TextView)layout.findViewById( R.id.game_name );
-            if ( hideTitle ) {
-                view.setVisibility( View.GONE );
+            GameSummary summary = DBUtils.getSummary( m_context, m_path, false );
+            if ( null == summary ) {
+                m_path = null;
             } else {
-                String name = GameUtils.gameName( m_context, m_path );
-                String format = 
-                    m_context.getString( R.string.str_game_namef );
-                String lang = 
-                    DictLangCache.getLangName( m_context, 
-                                               summary.dictLang );
-                view.setText( String.format( format, name, lang ) );
-            }
+                //Assert.assertNotNull( summary );
 
-            LinearLayout list =
-                (LinearLayout)layout.findViewById( R.id.player_list );
-            for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
-                View tmp = m_factory.inflate( R.layout.player_list_elem, null );
-                view = (TextView)tmp.findViewById( R.id.item_name );
-                view.setText( summary.summarizePlayer( m_context, ii ) );
-                view = (TextView)tmp.findViewById( R.id.item_score );
-                view.setText( String.format( "  %d", summary.scores[ii] ) );
-                if ( summary.isNextToPlay( ii ) ) {
-                    tmp.setBackgroundColor( 0x7F00FF00 );
+                TextView view = (TextView)layout.findViewById( R.id.game_name );
+                if ( hideTitle ) {
+                    view.setVisibility( View.GONE );
+                } else {
+                    String name = GameUtils.gameName( m_context, m_path );
+                    String format = 
+                        m_context.getString( R.string.str_game_namef );
+                    String lang = 
+                        DictLangCache.getLangName( m_context, 
+                                                   summary.dictLang );
+                    view.setText( String.format( format, name, lang ) );
                 }
-                list.addView( tmp, ii );
-            }
 
-            view = (TextView)layout.findViewById( R.id.state );
-            view.setText( summary.summarizeState( m_context ) );
-            view = (TextView)layout.findViewById( R.id.modtime );
-            view.setText( m_df.format( new Date( summary.modtime ) ) );
+                LinearLayout list =
+                    (LinearLayout)layout.findViewById( R.id.player_list );
+                for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
+                    View tmp = m_factory.inflate( R.layout.player_list_elem, null );
+                    view = (TextView)tmp.findViewById( R.id.item_name );
+                    view.setText( summary.summarizePlayer( m_context, ii ) );
+                    view = (TextView)tmp.findViewById( R.id.item_score );
+                    view.setText( String.format( "  %d", summary.scores[ii] ) );
+                    if ( summary.isNextToPlay( ii ) ) {
+                        tmp.setBackgroundColor( 0x7F00FF00 );
+                    }
+                    list.addView( tmp, ii );
+                }
 
-            view = (TextView)layout.findViewById( R.id.role );
-            String roleSummary = summary.summarizeRole( m_context );
-            if ( null != roleSummary ) {
-                view.setText( roleSummary );
-            } else {
-                view.setVisibility( View.GONE );
-            }
+                view = (TextView)layout.findViewById( R.id.state );
+                view.setText( summary.summarizeState( m_context ) );
+                view = (TextView)layout.findViewById( R.id.modtime );
+                view.setText( m_df.format( new Date( summary.modtime ) ) );
 
-            if ( summary.pendingMsgLevel != GameSummary.MSG_FLAGS_NONE ) {
-                View marker = layout.findViewById( R.id.msg_marker );
-                marker.setVisibility( View.VISIBLE );
-            }
-            synchronized( m_viewsCache ) {
-                m_viewsCache.put( m_path, layout );
+                view = (TextView)layout.findViewById( R.id.role );
+                String roleSummary = summary.summarizeRole( m_context );
+                if ( null != roleSummary ) {
+                    view.setText( roleSummary );
+                } else {
+                    view.setVisibility( View.GONE );
+                }
+
+                if ( summary.pendingMsgLevel != GameSummary.MSG_FLAGS_NONE ) {
+                    View marker = layout.findViewById( R.id.msg_marker );
+                    marker.setVisibility( View.VISIBLE );
+                }
+                synchronized( m_viewsCache ) {
+                    m_viewsCache.put( m_path, layout );
+                }
             }
             return null;
         } // doInBackground
@@ -120,7 +128,10 @@ public class GameListAdapter extends XWListAdapter {
         @Override
         protected void onPostExecute( Void unused )
         {
-            m_cb.itemLoaded( m_path );
+            // Utils.logf( "onPostExecute(id=%d)", m_id );
+            if ( null != m_path ) {
+                m_cb.itemLoaded( m_path );
+            }
         }
     } // class LoadItemTask
 
@@ -165,7 +176,7 @@ public class GameListAdapter extends XWListAdapter {
                 view.setText( text );
             }
 
-            new LoadItemTask( m_context, path ).execute();
+            new LoadItemTask( m_context, path/*, ++m_taskCounter*/ ).execute();
         }
 
         // this doesn't work.  Rather, it breaks highlighting because
