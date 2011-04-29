@@ -231,13 +231,9 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
             server_prefsChanged( game->server, cp );
             board_prefsChanged( game->board, cp );
             if ( !!draw ) {
-                draw_dictChanged( draw, -1, dict );
-                if ( !!dicts ) {
-                    XP_U16 ii;
-                    for ( ii = 0; ii < gi->nPlayers; ++ii ) {
-                        draw_dictChanged( draw, ii, dicts->dicts[ii] );
-                    }
-                }
+                /* pick one representative dictionary */
+                DictionaryCtxt* langDict = model_getDictionary( game->model );
+                draw_dictChanged( draw, -1, langDict );
             }
             success = XP_TRUE;
         } while( XP_FALSE );
