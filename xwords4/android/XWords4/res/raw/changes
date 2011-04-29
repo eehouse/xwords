@@ -6,11 +6,24 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 24 release</b>
+<b>Crosswords 4.4 beta 25 release</b>
 <ul>
-  <li>Stop screen rotation when displaying board: portrait only from now on.</li>
 
-  <li>Fix a couple of minor UI glitches.</li>
+  <li>Each player can have its own dictionary, and robots have smaller
+  ones by default (where available).  This should allow robots to be 
+  ...  more human.</li>
+
+  <li>For English, there's a new dictionary with 4288 words that's the 
+  default for robot players</li>
+
+  <li>At the game level you now set a language, not a dictionary. 
+  Dict choice is done at the player level now -- for those who 
+  have a choice and care.</li>
+
+  <li>Load game summaries in background for faster startup</li>
+
+  <li>The ususal list of minor UI tweaks and bug fixes</li>
+
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at eehouse@eehouse.org) what's broken and what features you'd most like to see.</p>
