@@ -111,13 +111,15 @@ public class RelayGameActivity extends XWActivity
             if ( room.length() == 0 ) {
                 showOKOnlyDialog( R.string.no_empty_rooms );
             } else {
-                saveRoomAndName( room );
-                GameUtils.launchGameAndFinish( this, m_path );
+                if ( saveRoomAndName( room ) ) {
+                    GameUtils.launchGameAndFinish( this, m_path );
+                }
             }
         } else if ( view == m_configButton ) {
-            saveRoomAndName( room );
-            GameUtils.doConfig( this, m_path, GameConfig.class );
-            finish();
+            if ( saveRoomAndName( room ) ) {
+                GameUtils.doConfig( this, m_path, GameConfig.class );
+                finish();
+            }
         }
     }
 
@@ -126,16 +128,20 @@ public class RelayGameActivity extends XWActivity
         return summary.nPlayers == 2;
     }
 
-    private void saveRoomAndName( String room )
+    private boolean saveRoomAndName( String room )
     {
-        String name = Utils.getText( this, R.id.local_name_edit );
-        if ( name.length() > 0 ) { // don't wipe existing
-            m_gi.setFirstLocalName( name );
+        boolean canSave = null != m_gameLock;
+        if ( canSave ) {
+            String name = Utils.getText( this, R.id.local_name_edit );
+            if ( name.length() > 0 ) { // don't wipe existing
+                m_gi.setFirstLocalName( name );
+            }
+            m_car.ip_relay_invite = room;
+            GameUtils.applyChanges( this, m_gi, m_car, m_gameLock, false );
+            m_gameLock.unlock();
+            m_gameLock = null;
         }
-        m_car.ip_relay_invite = room;
-        GameUtils.applyChanges( this, m_gi, m_car, m_gameLock, false );
-        m_gameLock.unlock();
-        m_gameLock = null;
+        return canSave;
     }
 
 } // class RelayGameActivity
