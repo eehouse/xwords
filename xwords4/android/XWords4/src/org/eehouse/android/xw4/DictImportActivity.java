@@ -44,9 +44,12 @@ public class DictImportActivity extends XWActivity {
     }
 
     private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> {
+        private String m_saved = null;
         @Override
         protected Long doInBackground( Uri... uris )
         {
+            m_saved = null;
+
             int count = uris.length;
             Assert.assertTrue( 1 == count );
             long totalSize = 0;
@@ -59,7 +62,7 @@ public class DictImportActivity extends XWActivity {
                                         uri.getSchemeSpecificPart(), 
                                         uri.getFragment() );
                     InputStream is = jUri.toURL().openStream();
-                    saveDict( is, uri.getPath() );
+                    m_saved = saveDict( is, uri.getPath() );
                     is.close();
                 } catch ( java.net.URISyntaxException use ) {
                     Utils.logf( "URISyntaxException: %s" + use.toString() );
@@ -76,6 +79,9 @@ public class DictImportActivity extends XWActivity {
         protected void onPostExecute( Long result )
         {
             Utils.logf( "onPostExecute passed %d", result );
+            if ( null != m_saved ) {
+                DictLangCache.inval( DictImportActivity.this, m_saved, true );
+            }
             finish();
         }
     } // class DownloadFilesTask
@@ -112,11 +118,13 @@ public class DictImportActivity extends XWActivity {
         }
 	}
 
-    private void saveDict( InputStream inputStream, String path )
+    private String saveDict( InputStream inputStream, String path )
     {
         String name = basename( path );
         if ( GameUtils.saveDict( this, inputStream, name, s_useSD ) ) {
-            DictLangCache.inval( this, name, true );
+            return name;
+        } else {
+            return null;
         }
     }
 
