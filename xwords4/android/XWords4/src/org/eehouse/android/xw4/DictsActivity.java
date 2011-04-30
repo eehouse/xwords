@@ -47,7 +47,7 @@ public class DictsActivity extends XWListActivity
     implements View.OnClickListener,
                XWListItem.DeleteCallback {
     private String[] m_dicts;
-    private static final int PICK_STORAGE = 1;
+    private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
 
     private class DictListAdapter extends XWListAdapter {
         private Context m_context;
@@ -81,31 +81,26 @@ public class DictsActivity extends XWListActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Assert.assertTrue( PICK_STORAGE == id );
-        DialogInterface.OnClickListener lstnrSD;
-        DialogInterface.OnClickListener lstnrIntrnl;
+        Dialog dialog = super.onCreateDialog( id );
+        switch( id ) {
+        case PICK_STORAGE:
+            DialogInterface.OnClickListener lstnrSD;
 
-        lstnrSD = new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    DictImportActivity.setUseSD( true );
-                    startActivity( Utils.
-                                   mkDownloadActivity( DictsActivity.this ) );
-                }
-            };
-        lstnrIntrnl = new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    DictImportActivity.setUseSD( false );
-                    startActivity( Utils.
-                                   mkDownloadActivity( DictsActivity.this ) );
-                }
-            };
+            lstnrSD = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        startDownload( item != DialogInterface.BUTTON_POSITIVE );
+                    }
+                };
 
-        return new AlertDialog.Builder( this )
-            .setTitle( R.string.storeWhereTitle )
-            .setMessage( R.string.storeWhereMsg )
-            .setPositiveButton( R.string.button_internal, lstnrIntrnl )
-            .setNegativeButton( R.string.button_sd, lstnrSD )
-            .create();
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.storeWhereTitle )
+                .setMessage( R.string.storeWhereMsg )
+                .setPositiveButton( R.string.button_internal, lstnrSD )
+                .setNegativeButton( R.string.button_sd, lstnrSD )
+                .create();
+            break;
+        }
+        return dialog;
     }
 
     @Override
@@ -136,7 +131,7 @@ public class DictsActivity extends XWListActivity
         if ( GameUtils.haveWriteableSD( this ) ) {
             showDialog( PICK_STORAGE );
         } else {
-            startActivity( Utils.mkDownloadActivity( this ) );
+            startDownload( false );
         }
     }
 
@@ -226,6 +221,12 @@ public class DictsActivity extends XWListActivity
         GameUtils.deleteDict( this, dict );
         DictLangCache.inval( this, dict, false );
         mkListAdapter();
+    }
+
+    private void startDownload( boolean toSD )
+    {
+        DictImportActivity.setUseSD( toSD );
+        startActivity( Utils.mkDownloadActivity( this ) );
     }
 
     private void mkListAdapter()
