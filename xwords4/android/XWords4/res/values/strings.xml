@@ -239,6 +239,12 @@
     <string name="peek_other_summary">Tapping on scoreboard name shows
     that player\'s tiles</string>
 
+    <string name="storeWhereTitle">Dictionary storage</string>
+    <string name="storeWhereMsg">Store downloaded dictionaries using
+      internal or external (SD card) memory?</string>
+    <string name="button_internal">Internal</string>
+    <string name="button_sd">External</string>
+
     <string name="phonies_ignore">Ignore phonies</string>
     <string name="phonies_warn">Warn if phonies</string>
     <string name="phonies_disallow">Disallow phonies</string>

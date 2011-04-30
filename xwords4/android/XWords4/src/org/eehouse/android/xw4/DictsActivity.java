@@ -20,6 +20,8 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.widget.Button;
@@ -44,7 +46,8 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 public class DictsActivity extends XWListActivity 
     implements View.OnClickListener,
                XWListItem.DeleteCallback {
-    String[] m_dicts;
+    private String[] m_dicts;
+    private static final int PICK_STORAGE = 1;
 
     private class DictListAdapter extends XWListAdapter {
         private Context m_context;
@@ -76,6 +79,36 @@ public class DictsActivity extends XWListActivity
     }
 
     @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        Assert.assertTrue( PICK_STORAGE == id );
+        DialogInterface.OnClickListener lstnrSD;
+        DialogInterface.OnClickListener lstnrIntrnl;
+
+        lstnrSD = new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    DictImportActivity.setUseSD( true );
+                    startActivity( Utils.
+                                   mkDownloadActivity( DictsActivity.this ) );
+                }
+            };
+        lstnrIntrnl = new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    DictImportActivity.setUseSD( false );
+                    startActivity( Utils.
+                                   mkDownloadActivity( DictsActivity.this ) );
+                }
+            };
+
+        return new AlertDialog.Builder( this )
+            .setTitle( R.string.storeWhereTitle )
+            .setMessage( R.string.storeWhereMsg )
+            .setPositiveButton( R.string.button_internal, lstnrIntrnl )
+            .setNegativeButton( R.string.button_sd, lstnrSD )
+            .create();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
 
@@ -98,8 +131,13 @@ public class DictsActivity extends XWListActivity
         mkListAdapter();
     }
 
-    public void onClick( View v ) {
-        startActivity( Utils.mkDownloadActivity( this ) );
+    public void onClick( View v ) 
+    {
+        if ( GameUtils.haveWriteableSD( this ) ) {
+            showDialog( PICK_STORAGE );
+        } else {
+            startActivity( Utils.mkDownloadActivity( this ) );
+        }
     }
 
     @Override

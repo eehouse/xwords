@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Environment;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -419,6 +420,12 @@ public class GameUtils {
             }
         }
 
+        for ( String file : getSDDir( context ).list() ) {
+            if ( isDict( file ) ) {
+                al.add( removeDictExtn( file ) );
+            }
+        }
+
         return al.toArray( new String[al.size()] );
     }
 
@@ -455,7 +462,13 @@ public class GameUtils {
 
     public static void deleteDict( Context context, String name )
     {
-        context.deleteFile( addDictExtn( name ) );
+        name = addDictExtn( name );
+        File onSD = getSDPathFor( context, name );
+        if ( onSD.exists() ) {
+            onSD.delete();
+        } else {
+            context.deleteFile( name );
+        }
     }
 
     public static byte[] openDict( Context context, String name )
@@ -482,14 +495,23 @@ public class GameUtils {
             Utils.logf( "%s failed to open; likely not built-in", name );
         }
 
-        // not an asset?  Try storage
+        // not an asset?  Try external and internal storage
         if ( null == bytes ) {
             try {
-                FileInputStream fis = context.openFileInput( name );
+                File sdFile = getSDPathFor( context, name );
+                FileInputStream fis;
+                if ( null != sdFile && sdFile.exists() ) {
+                    Utils.logf( "loading %s from SD", name );
+                    fis = new FileInputStream( sdFile );
+                } else {
+                    Utils.logf( "loading %s from private storage", name );
+                    fis = context.openFileInput( name );
+                }
                 int len = (int)fis.getChannel().size();
                 bytes = new byte[len];
                 fis.read( bytes, 0, len );
                 fis.close();
+                Utils.logf( "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
                 Utils.logf( fnf.toString() );
             } catch ( java.io.IOException ioe ) {
@@ -521,24 +543,36 @@ public class GameUtils {
         return result;
     }
 
-    public static boolean saveDict( Context context, String name, InputStream in )
+    public static boolean saveDict( Context context, InputStream in,
+                                    String name, boolean useSD )
     {
         boolean success = false;
-        try {
-            FileOutputStream fos = context.openFileOutput( name,
-                                                           Context.MODE_PRIVATE );
-            byte[] buf = new byte[1024];
-            int nRead;
-            while( 0 <= (nRead = in.read( buf, 0, buf.length )) ) {
-                fos.write( buf, 0, nRead );
+        File sdFile = null;
+        if ( useSD ) {
+            sdFile = getSDPathFor( context, name );
+        }
+
+        if ( null != sdFile || !useSD ) {
+            try {
+                FileOutputStream fos;
+                if ( null != sdFile ) {
+                    fos = new FileOutputStream( sdFile );
+                } else {
+                    fos = context.openFileOutput( name, Context.MODE_PRIVATE );
+                }
+                byte[] buf = new byte[1024];
+                int nRead;
+                while( 0 <= (nRead = in.read( buf, 0, buf.length )) ) {
+                    fos.write( buf, 0, nRead );
+                }
+                fos.close();
+                success = true;
+            } catch ( java.io.FileNotFoundException fnf ) {
+                Utils.logf( "saveDict: FileNotFoundException: %s", fnf.toString() );
+            } catch ( java.io.IOException ioe ) {
+                Utils.logf( "saveDict: IOException: %s", ioe.toString() );
+                deleteDict( context, name );
             }
-            fos.close();
-            success = true;
-        } catch ( java.io.FileNotFoundException fnf ) {
-            Utils.logf( "saveDict: FileNotFoundException: %s", fnf.toString() );
-        } catch ( java.io.IOException ioe ) {
-            Utils.logf( "saveDict: IOException: %s", ioe.toString() );
-            deleteDict( context, name );
         }
         return success;
     } 
@@ -769,6 +803,32 @@ public class GameUtils {
                 NetUtils.informOfDeaths( context );
             }
         }
+    }
+
+    public static boolean haveWriteableSD( Context context )
+    {
+        return true;            // fixme :-)
+    }
+
+    private static File getSDDir( Context context )
+    {
+        File result = null;
+        File storage = Environment.getExternalStorageDirectory();
+        if ( null != storage ) {
+            String packdir = String.format( "Android/data/%s/files/",
+                                            context.getPackageName() );
+            result = new File( storage.getPath(), packdir );
+            if ( !result.exists() ) {
+                result.mkdirs();
+            }
+        }
+        return result;
+    }
+
+    private static File getSDPathFor( Context context, String name )
+    {
+        File dir = getSDDir( context );
+        return new File( dir, name );
     }
 
 }

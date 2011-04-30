@@ -36,6 +36,13 @@ import junit.framework.Assert;
 
 public class DictImportActivity extends XWActivity {
 
+    private static boolean s_useSD = false;
+
+    public static void setUseSD( boolean useSD ) 
+    {
+        s_useSD = useSD;
+    }
+
     private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> {
         @Override
         protected Long doInBackground( Uri... uris )
@@ -108,8 +115,9 @@ public class DictImportActivity extends XWActivity {
     private void saveDict( InputStream inputStream, String path )
     {
         String name = basename( path );
-        GameUtils.saveDict( this, name, inputStream );
-        DictLangCache.inval( this, name, true );
+        if ( GameUtils.saveDict( this, inputStream, name, s_useSD ) ) {
+            DictLangCache.inval( this, name, true );
+        }
     }
 
     private String basename( String path )
