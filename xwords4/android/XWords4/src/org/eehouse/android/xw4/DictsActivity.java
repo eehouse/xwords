@@ -128,7 +128,7 @@ public class DictsActivity extends XWListActivity
 
     public void onClick( View v ) 
     {
-        if ( GameUtils.haveWriteableSD( this ) ) {
+        if ( GameUtils.haveWriteableSD() ) {
             showDialog( PICK_STORAGE );
         } else {
             startDownload( false );

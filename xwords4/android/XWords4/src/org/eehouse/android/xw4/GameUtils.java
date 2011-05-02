@@ -420,9 +420,12 @@ public class GameUtils {
             }
         }
 
-        for ( String file : getSDDir( context ).list() ) {
-            if ( isDict( file ) ) {
-                al.add( removeDictExtn( file ) );
+        File sdDir = getSDDir( context );
+        if ( null != sdDir ) {
+            for ( String file : sdDir.list() ) {
+                if ( isDict( file ) ) {
+                    al.add( removeDictExtn( file ) );
+                }
             }
         }
 
@@ -805,21 +808,27 @@ public class GameUtils {
         }
     }
 
-    public static boolean haveWriteableSD( Context context )
+    public static boolean haveWriteableSD()
     {
-        return true;            // fixme :-)
+        String state = Environment.getExternalStorageState();
+
+        return state.equals( Environment.MEDIA_MOUNTED );
+        // want this later? Environment.MEDIA_MOUNTED_READ_ONLY
     }
 
     private static File getSDDir( Context context )
     {
         File result = null;
-        File storage = Environment.getExternalStorageDirectory();
-        if ( null != storage ) {
-            String packdir = String.format( "Android/data/%s/files/",
-                                            context.getPackageName() );
-            result = new File( storage.getPath(), packdir );
-            if ( !result.exists() ) {
-                result.mkdirs();
+        if ( haveWriteableSD() ) {
+            File storage = Environment.getExternalStorageDirectory();
+            if ( null != storage ) {
+                String packdir = String.format( "Android/data/%s/files/",
+                                                context.getPackageName() );
+                result = new File( storage.getPath(), packdir );
+                if ( !result.exists() ) {
+                    result.mkdirs();
+                    Assert.assertTrue( result.exists() );
+                }
             }
         }
         return result;
@@ -827,8 +836,12 @@ public class GameUtils {
 
     private static File getSDPathFor( Context context, String name )
     {
+        File result = null;
         File dir = getSDDir( context );
-        return new File( dir, name );
+        if ( dir != null ) {
+            result = new File( dir, name );
+        }
+        return result;
     }
 
 }
