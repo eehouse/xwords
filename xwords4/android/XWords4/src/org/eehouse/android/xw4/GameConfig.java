@@ -662,11 +662,9 @@ public class GameConfig extends XWActivity
                         (String)parentView.getItemAtPosition( position );
 
                     if ( chosen.equals( m_browseText ) ) {
-                        startActivity( Utils.mkDownloadActivity(GameConfig.this,
-                                                                m_gi.dictLang ) );
+                        launchDictBrowser( m_gi.dictLang );
                     } else {
                         lp.dictName = chosen;
-                        Utils.logf( "set lp.dictName: %s", lp.dictName );
                     }
                 }
 
@@ -691,7 +689,7 @@ public class GameConfig extends XWActivity
                     String chosen = 
                         (String)parentView.getItemAtPosition( position );
                     if ( chosen.equals( m_browseText ) ) {
-                        startActivity( Utils.mkDownloadActivity(GameConfig.this) );
+                        launchDictBrowser( 0 );
                     } else {
                         m_gi.setLang( DictLangCache.
                                       getLangLangCode( GameConfig.this, 
@@ -976,6 +974,16 @@ public class GameConfig extends XWActivity
     {
         new RefreshNamesTask( this, this, m_gi.dictLang, 
                               m_gi.nPlayers, m_roomChoose ).execute();
+    }
+
+    private void launchDictBrowser( int lang )
+    {
+        Intent intent = new Intent( this, DictsActivity.class );
+        intent.putExtra( DictsActivity.DICT_DOLAUNCH, true );
+        if ( lang > 0 ) {
+            intent.putExtra( DictsActivity.DICT_LANG_EXTRA, lang );
+        }
+        startActivity( intent );
     }
 
 }

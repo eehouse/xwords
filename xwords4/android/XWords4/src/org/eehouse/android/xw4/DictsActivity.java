@@ -29,6 +29,8 @@ import android.widget.TextView;
 import android.widget.AdapterView;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu;
@@ -37,7 +39,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.preference.PreferenceManager;
-import android.content.SharedPreferences;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -46,8 +47,13 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 public class DictsActivity extends XWListActivity 
     implements View.OnClickListener,
                XWListItem.DeleteCallback {
+
+    public static final String DICT_DOLAUNCH = "do_launch";
+    public static final String DICT_LANG_EXTRA = "use_lang";
+
     private String[] m_dicts;
     private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
+    private int m_lang = 0;
 
     private class DictListAdapter extends XWListAdapter {
         private Context m_context;
@@ -88,7 +94,8 @@ public class DictsActivity extends XWListActivity
 
             lstnrSD = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        startDownload( item != DialogInterface.BUTTON_POSITIVE );
+                        startDownload( m_lang, item != 
+                                       DialogInterface.BUTTON_POSITIVE );
                     }
                 };
 
@@ -117,6 +124,15 @@ public class DictsActivity extends XWListActivity
 
         showNotAgainDlg( R.string.not_again_dicts, 
                          R.string.key_notagain_dicts );
+
+        Intent intent = getIntent();
+        if ( null != intent ) {
+            boolean downloadNow = intent.getBooleanExtra( DICT_DOLAUNCH, false );
+            if ( downloadNow ) {
+                int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
+                askStartDownload( lang );
+            }
+        }
     }
 
     @Override
@@ -128,11 +144,7 @@ public class DictsActivity extends XWListActivity
 
     public void onClick( View v ) 
     {
-        if ( GameUtils.haveWriteableSD() ) {
-            showDialog( PICK_STORAGE );
-        } else {
-            startDownload( false );
-        }
+        askStartDownload( 0 );
     }
 
     @Override
@@ -223,10 +235,20 @@ public class DictsActivity extends XWListActivity
         mkListAdapter();
     }
 
-    private void startDownload( boolean toSD )
+    private void askStartDownload( int lang )
+    {
+        if ( GameUtils.haveWriteableSD() ) {
+            m_lang = lang;
+            showDialog( PICK_STORAGE );
+        } else {
+            startDownload( lang, false );
+        }
+    }
+
+    private void startDownload( int lang, boolean toSD )
     {
         DictImportActivity.setUseSD( toSD );
-        startActivity( Utils.mkDownloadActivity( this ) );
+        startActivity( Utils.mkDownloadActivity( this, lang ) );
     }
 
     private void mkListAdapter()
