@@ -445,6 +445,12 @@ public class GameUtils {
             } catch ( java.io.IOException ioe ) {
             }
         }
+
+        if ( !exists ) {
+            File file = getSDPathFor( context, name );
+            exists = null != file && file.exists();
+        }
+
         return exists;
     }
 
