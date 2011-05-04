@@ -6,25 +6,20 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 25 release</b>
-<ul>
+<b>Crosswords 4.4 beta 26 release</b>
 
-  <li>Each player can have its own dictionary, and robots have smaller
-  ones by default (where available).  This should allow robots to be 
-  ...  more human.</li>
+<ul>A quick release to get a much-requested feature in.
 
-  <li>For English, there's a new dictionary with 4288 words that's the 
-  default for robot players</li>
+  <li>Allow storage of downloaded dictionaries on SD card ("external 
+  storage") if present and usable.</li>
 
-  <li>At the game level you now set a language, not a dictionary. 
-  Dict choice is done at the player level now -- for those who 
-  have a choice and care.</li>
-
-  <li>Load game summaries in background for faster startup</li>
-
-  <li>The ususal list of minor UI tweaks and bug fixes</li>
+  <li>Route all download activities through the Dictionary list view.</li>
 
 </ul>
+
+<p>(Allowing install of the app itself on SD is not recommended because 
+of some of the OS features I'm using, e.g. periodic checks for 
+moves).</p>
 
 <p>Please remember that this is beta software.  Please let me know (at eehouse@eehouse.org) what's broken and what features you'd most like to see.</p>
 
