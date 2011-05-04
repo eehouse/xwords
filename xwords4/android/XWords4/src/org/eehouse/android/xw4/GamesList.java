@@ -90,11 +90,11 @@ public class GamesList extends XWListActivity
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             for ( String name : m_missingDictNames ) {
-                                Intent intent = 
-                                    Utils.mkDownloadActivity( GamesList.this,
-                                                              name,
-                                                              m_missingDictLang );
-                                startActivity( intent );
+                                DictsActivity.
+                                    launchAndDownload( GamesList.this, 
+                                                       m_missingDictLang,
+                                                       name );
+                                break; // just do one
                             }
                         }
                     };

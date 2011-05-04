@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -39,21 +40,25 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.preference.PreferenceManager;
+import android.net.Uri;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictsActivity extends XWListActivity 
     implements View.OnClickListener,
                XWListItem.DeleteCallback {
 
-    public static final String DICT_DOLAUNCH = "do_launch";
-    public static final String DICT_LANG_EXTRA = "use_lang";
+    private static final String DICT_DOLAUNCH = "do_launch";
+    private static final String DICT_LANG_EXTRA = "use_lang";
+    private static final String DICT_NAME_EXTRA = "use_dict";
 
     private String[] m_dicts;
     private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
     private int m_lang = 0;
+    private String m_name = null;
 
     private class DictListAdapter extends XWListAdapter {
         private Context m_context;
@@ -94,7 +99,7 @@ public class DictsActivity extends XWListActivity
 
             lstnrSD = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        startDownload( m_lang, item != 
+                        startDownload( m_lang, m_name, item != 
                                        DialogInterface.BUTTON_POSITIVE );
                     }
                 };
@@ -130,7 +135,8 @@ public class DictsActivity extends XWListActivity
             boolean downloadNow = intent.getBooleanExtra( DICT_DOLAUNCH, false );
             if ( downloadNow ) {
                 int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
-                askStartDownload( lang );
+                String name = intent.getStringExtra( DICT_NAME_EXTRA );
+                askStartDownload( lang, name );
             }
         }
     }
@@ -144,7 +150,7 @@ public class DictsActivity extends XWListActivity
 
     public void onClick( View v ) 
     {
-        askStartDownload( 0 );
+        askStartDownload( 0, null );
     }
 
     @Override
@@ -235,20 +241,21 @@ public class DictsActivity extends XWListActivity
         mkListAdapter();
     }
 
-    private void askStartDownload( int lang )
+    private void askStartDownload( int lang, String name )
     {
         if ( GameUtils.haveWriteableSD() ) {
             m_lang = lang;
+            m_name = name;
             showDialog( PICK_STORAGE );
         } else {
-            startDownload( lang, false );
+            startDownload( lang, name, false );
         }
     }
 
-    private void startDownload( int lang, boolean toSD )
+    private void startDownload( int lang, String name, boolean toSD )
     {
         DictImportActivity.setUseSD( toSD );
-        startActivity( Utils.mkDownloadActivity( this, lang ) );
+        startActivity( mkDownloadIntent( this, lang, name ) );
     }
 
     private void mkListAdapter()
@@ -256,4 +263,41 @@ public class DictsActivity extends XWListActivity
         m_dicts = GameUtils.dictList( this );
         setListAdapter( new DictListAdapter( this ) );
     }
+
+    private static Intent mkDownloadIntent( Context context,
+                                            int lang, String dict )
+    {
+        String dict_url = CommonPrefs.getDefaultDictURL( context );
+        if ( 0 != lang ) {
+            dict_url += "/" + DictLangCache.getLangName( context, lang );
+        }
+        if ( null != dict ) {
+            dict_url += "/" + dict + XWConstants.DICT_EXTN;
+        }
+        Uri uri = Uri.parse( dict_url );
+        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        return intent;
+    }
+
+    public static void launchAndDownload( Activity activity, int lang, String name )
+    {
+        Intent intent = new Intent( activity, DictsActivity.class );
+        intent.putExtra( DICT_DOLAUNCH, true );
+        if ( lang > 0 ) {
+            intent.putExtra( DICT_LANG_EXTRA, lang );
+        }
+        if ( null != name ) {
+            Assert.assertTrue( lang != 0 );
+            intent.putExtra( DICT_NAME_EXTRA, name );
+        }
+
+        activity.startActivity( intent );
+    }
+
+    public static void launchAndDownload( Activity activity, int lang )
+    {
+        launchAndDownload( activity, lang, null );
+    }
+
 }

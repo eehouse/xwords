@@ -35,7 +35,6 @@ import android.widget.TextView;
 import android.view.View;
 import android.text.format.Time;
 import java.util.Formatter;
-import android.net.Uri;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -103,32 +102,6 @@ public class Utils {
     {
         CharSequence text = "Feature coming soon";
         Toast.makeText( context, text, Toast.LENGTH_SHORT).show();
-    }
-
-    public static Intent mkDownloadActivity( Context context,
-                                             String dict, int lang )
-    {
-        String dict_url = CommonPrefs.getDefaultDictURL( context );
-        if ( 0 != lang ) {
-            dict_url += "/" + DictLangCache.getLangName( context, lang );
-        }
-        if ( null != dict ) {
-            dict_url += "/" + dict + XWConstants.DICT_EXTN;
-        }
-        Uri uri = Uri.parse( dict_url );
-        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-        return intent;
-    }
-
-    public static Intent mkDownloadActivity( Context context )
-    {
-        return mkDownloadActivity( context, null, 0 );
-    }
-
-    public static Intent mkDownloadActivity( Context context, int lang )
-    {
-        return mkDownloadActivity( context, null, lang );
     }
 
     public static void setChecked( Activity activity, int id, boolean value )
