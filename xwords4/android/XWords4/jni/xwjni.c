@@ -45,7 +45,18 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     gi->nPlayers = getInt( env, j_gi, "nPlayers");
     gi->gameSeconds = getInt( env, j_gi, "gameSeconds");
     gi->boardSize = getInt( env, j_gi, "boardSize" );
+
+    /* Unlike on other platforms, gi is created without a call to
+       game_makeNewGame, which sets gameID.  So check here if it's still unset
+       and if necessary set it -- including back in the java world. */
     gi->gameID = getInt( env, j_gi, "gameID" );
+    if ( 0 == gi->gameID ) {
+        while ( 0 == gi->gameID ) {
+            gi->gameID = and_util_getCurSeconds( NULL );
+        }
+        setInt( env, j_gi, "gameID", gi->gameID );
+    }
+
     gi->dictLang = getInt( env, j_gi, "dictLang" );
     gi->hintsNotAllowed = getBool( env, j_gi, "hintsNotAllowed" );
     gi->timerEnabled =  getBool( env, j_gi, "timerEnabled" );
@@ -194,13 +205,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
     VTableMgr* vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
                                             NULL, 0, NULL );
-
-    /* Unlike on other platforms, gi is created without a call to
-       game_makeNewGame, which sets gameID.  So check here if it's still unset
-       and if necessary set it. */
-    while ( 0 == gi->gameID ) {
-        gi->gameID = and_util_getCurSeconds( NULL );
-    }
 
     game_saveToStream( NULL, gi, stream );
     destroyGI( MPPARM(mpool) &gi );
