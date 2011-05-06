@@ -16,8 +16,8 @@
 
 <resources>
     <string name="menu_delete">Delete</string>
-    <string name="button_new_game">Add single-device game</string>
-    <string name="button_new_game_net">Add multi-device game</string>
+    <string name="button_new_game">Add game</string>
+    <!-- <string name="button_new_game_net">Add multi-device game</string> -->
 
     <string name="list_item_play">Play game</string>
     <string name="list_item_config">Game settings...</string>
@@ -41,6 +41,7 @@
     <string name="title_edit">Edit game</string>
 	<string name="title_games_list">Crosswords</string>   
 	<string name="title_dicts_list">Dictionaries (wordcount)</string>   
+    <string name="title_newgame">New game</string>
     <string name="title_langs_list">Languages (based on installed
       dictionaries)</string>
     <string name="lang_label">Game language</string>
@@ -50,6 +51,11 @@
 	<string name="title_prefs">Crosswords settings</string>  
 	
 	<string name="app_name">Crosswords</string>  
+
+	<string name="new_game_local">Play new local game</string>
+	<string name="new_game_local_config">Configure new local game</string>
+	<string name="new_game_invite">Invite to new networked game</string>
+	<string name="new_game_net_config">Configure new networked game</string>
 	
 	<string name="button_ok">OK</string>  
 	<string name="button_cancel">Cancel</string>  

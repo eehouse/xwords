@@ -69,6 +69,10 @@
               android:label="@string/title_dicts_list"
               />
 
+    <activity android:name="NewGameActivity"
+              android:label="@string/title_newgame"
+              />
+
     <activity android:name="GameConfig"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"

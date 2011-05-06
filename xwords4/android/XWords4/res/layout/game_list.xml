@@ -42,11 +42,11 @@
           android:text="@string/button_new_game" 
           />
 
-  <Button android:id="@+id/new_game_net"
-          android:layout_width="fill_parent" 
-          android:layout_height="wrap_content" 
-          android:layout_gravity="right"
-          android:text="@string/button_new_game_net" 
-          />
+  <!-- <Button android:id="@+id/new_game_net" -->
+  <!--         android:layout_width="fill_parent"  -->
+  <!--         android:layout_height="wrap_content"  -->
+  <!--         android:layout_gravity="right" -->
+  <!--         android:text="@string/button_new_game_net"  -->
+  <!--         /> -->
 
 </LinearLayout>

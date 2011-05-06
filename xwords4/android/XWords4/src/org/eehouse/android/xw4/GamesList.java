@@ -186,27 +186,31 @@ public class GamesList extends XWListActivity
         newGameB.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
-                    addGame( false );
-                    showNotAgainDlg( R.string.not_again_newgame, 
-                                     R.string.key_notagain_newgame );
+                    // addGame( false );
+                    startActivity( new Intent( GamesList.this, 
+                                               NewGameActivity.class ) );
+                    // showNotAgainDlg( R.string.not_again_newgame, 
+                    //                  R.string.key_notagain_newgame );
                 }
             });
-        newGameB = (Button)findViewById(R.id.new_game_net);
-        newGameB.setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    String path = addGame( true );
-                    GameUtils.doConfig( GamesList.this, path, 
-                                        RelayGameActivity.class );
-                }
-            });
+        // newGameB = (Button)findViewById(R.id.new_game_net);
+        // newGameB.setOnClickListener( new View.OnClickListener() {
+        //         @Override
+        //         public void onClick( View v ) {
+        //             String path = addGame( true );
+        //             GameUtils.doConfig( GamesList.this, path, 
+        //                                 RelayGameActivity.class );
+        //         }
+        //     });
 
         m_adapter = new GameListAdapter( this, this );
         setListAdapter( m_adapter );
 
         NetUtils.informOfDeaths( this );
 
-        startFirstHasDict( getIntent() );
+        Intent intent = getIntent();
+        startFirstHasDict( intent );
+        startNewGameIf( intent );
 
         DBUtils.setDBChangeListener( this );
     } // onCreate
@@ -494,25 +498,6 @@ public class GamesList extends XWListActivity
         return hasDicts;
     }
 
-    private String saveNew( CurGameInfo gi )
-    {
-        String path = null;
-        byte[] bytes = XwJNI.gi_to_stream( gi );
-        if ( null != bytes ) {
-            GameUtils.GameLock lock = GameUtils.saveGame( this, bytes );
-            path = lock.getPath();
-            lock.unlock();
-        }
-        return path;
-    }
-
-    private String addGame( boolean networked )
-    {
-        String path = saveNew( new CurGameInfo( this, networked ) );
-        GameUtils.resetGame( this, path );
-        return path;
-    }
-
     private void invalRelayIDs( String[] relayIDs ) 
     {
         if ( null == relayIDs ) {
@@ -548,6 +533,19 @@ public class GamesList extends XWListActivity
             String[] relayIDs = intent
                 .getStringArrayExtra( getString( R.string.relayids_extra ) );
             startFirstHasDict( relayIDs );
+        }
+    }
+
+    private void startNewGameIf( Intent intent )
+    {
+        if ( null != intent ) {
+            Uri data = intent.getData();
+            if ( null != data ) {
+                String room = data.getQueryParameter( "room" );
+                String langStr = data.getQueryParameter( "lang" );
+                int lang = Integer.decode( langStr );
+                Utils.logf( "got data: lang: %d; room: %s", lang, room );
+            }
         }
     }
 }
