@@ -79,21 +79,9 @@ public class NewGameActivity extends XWActivity {
 
     }
 
-    private String saveNew( CurGameInfo gi )
-    {
-        String path = null;
-        byte[] bytes = XwJNI.gi_to_stream( gi );
-        if ( null != bytes ) {
-            GameUtils.GameLock lock = GameUtils.saveGame( this, bytes );
-            path = lock.getPath();
-            lock.unlock();
-        }
-        return path;
-    }
-
     private void newAndLaunch()
     {
-        String path = saveNew( new CurGameInfo( this ) );
+        String path = GameUtils.saveNew( this, new CurGameInfo( this ) );
         GameUtils.launchGame( this, path );
         finish();
     }
@@ -102,24 +90,17 @@ public class NewGameActivity extends XWActivity {
     // providing defaults.
     private void newNetworkedAndLaunch()
     {
-        CommsAddrRec addr = new CommsAddrRec( this );
         Random random = new Random();
-        addr.ip_relay_invite = String.format( "%X", random.nextInt() );
-        Utils.logf( "room: %s", addr.ip_relay_invite );
-
-        CurGameInfo gi = new CurGameInfo( this, true );
-        String path = saveNew( gi );
-
-        GameUtils.GameLock lock = 
-            new GameUtils.GameLock( path, true ).lock();
-        GameUtils.applyChanges( this, gi, addr, lock, false );
-        lock.unlock();
+        String room = String.format( "%X", random.nextInt() );
+        int[] lang = new int[1];
+        lang[0] = 0;
+        String path = GameUtils.makeNewNetGame( this, room, lang, 2 );
 
         Intent intent = new Intent( Intent.ACTION_SEND );
         intent.setType( "plain/text" );
         intent.putExtra( Intent.EXTRA_SUBJECT, "Let's play Crosswords" );
         intent.putExtra( Intent.EXTRA_TEXT, 
-                         mkMsgWithLink( addr.ip_relay_invite, gi.dictLang ) );
+                         mkMsgWithLink( room, lang[0] ) );
 
         GameUtils.launchGame( this, path );
 
@@ -139,7 +120,8 @@ public class NewGameActivity extends XWActivity {
 
     private void newAndConfigure( boolean networked )
     {
-        String path = saveNew( new CurGameInfo( this, networked ) );
+        String path = GameUtils.saveNew( this, new CurGameInfo( this, 
+                                                                networked ) );
         GameUtils.doConfig( this, path, GameConfig.class );
         finish();
     }

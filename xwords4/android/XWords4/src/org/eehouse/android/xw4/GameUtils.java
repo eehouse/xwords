@@ -339,6 +339,40 @@ public class GameUtils {
         return lock;
     }
 
+    public static String saveNew( Context context, CurGameInfo gi )
+    {
+        String path = null;
+        byte[] bytes = XwJNI.gi_to_stream( gi );
+        if ( null != bytes ) {
+            GameLock lock = saveGame( context, bytes );
+            path = lock.getPath();
+            lock.unlock();
+        }
+        return path;
+    }
+
+    public static String makeNewNetGame( Context context, String room, 
+                                         int[] lang, int nPlayers )
+    {
+        CommsAddrRec addr = new CommsAddrRec( context );
+        addr.ip_relay_invite = room;
+
+        CurGameInfo gi = new CurGameInfo( context, true );
+        gi.setLang( lang[0] );
+        lang[0] = gi.dictLang;
+        gi.juggle();
+        // Will need to add a setNPlayers() method to gi to make this
+        // work
+        Assert.assertTrue( gi.nPlayers == nPlayers );
+        String path = saveNew( context, gi );
+
+        GameLock lock = new GameLock( path, true ).lock();
+        applyChanges( context, gi, addr, lock, false );
+        lock.unlock();
+
+        return path;
+    }
+
     public static boolean gameDictsHere( Context context, String path )
     {
         return gameDictsHere( context, path, null, null );

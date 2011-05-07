@@ -76,8 +76,6 @@ public class CurGameInfo {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
-        dictName = CommonPrefs.getDefaultHumanDict( context );
-        dictLang = DictLangCache.getDictLangCode( context, dictName );
         hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
@@ -97,7 +95,7 @@ public class CurGameInfo {
             players[0].setRobotSmartness( 1 );
         }
 
-        assignDicts();
+        setLang( 0 );
     }
 
     public CurGameInfo( Context context, CurGameInfo src )
@@ -141,6 +139,10 @@ public class CurGameInfo {
 
     public void setLang( int lang )
     {
+        if ( 0 == lang ) {
+            String dictName = CommonPrefs.getDefaultHumanDict( m_context );
+            lang = DictLangCache.getDictLangCode( m_context, dictName );
+        }
         if ( dictLang != lang ) {
             dictLang = lang;
             assignDicts();

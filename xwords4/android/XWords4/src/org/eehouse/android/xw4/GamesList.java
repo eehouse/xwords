@@ -210,7 +210,7 @@ public class GamesList extends XWListActivity
 
         Intent intent = getIntent();
         startFirstHasDict( intent );
-        startNewGameIf( intent );
+        startNewNetGameIf( intent );
 
         DBUtils.setDBChangeListener( this );
     } // onCreate
@@ -536,7 +536,7 @@ public class GamesList extends XWListActivity
         }
     }
 
-    private void startNewGameIf( Intent intent )
+    private void startNewNetGameIf( Intent intent )
     {
         if ( null != intent ) {
             Uri data = intent.getData();
@@ -544,7 +544,24 @@ public class GamesList extends XWListActivity
                 String room = data.getQueryParameter( "room" );
                 String langStr = data.getQueryParameter( "lang" );
                 int lang = Integer.decode( langStr );
+                int nPlayers = 2; // Should this be a param?
                 Utils.logf( "got data: lang: %d; room: %s", lang, room );
+
+                // Find out if the game already exists.  If it does,
+                // just open it.  Otherwise create a new one and open
+                // that.  NOTE: this test makes it impossible to start
+                // two halves of the same game on one device using
+                // this feature.  But it'd be worse to have a bunch of
+                // games stacking up when somebody taps the same URL
+                // multiple times.
+                String path = DBUtils.getPathFor( this, room, lang, nPlayers );
+
+                if ( null == path ) {
+                    path = GameUtils.makeNewNetGame( this, room, lang, 
+                                                     nPlayers );
+                }
+
+                GameUtils.launchGame( this, path );
             }
         }
     }

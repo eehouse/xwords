@@ -296,6 +296,33 @@ public class DBUtils {
         return flags;
     }
 
+    public static String getPathFor( Context context, String room,
+                                     int lang, int nPlayers )
+    {
+        String result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.FILE_NAME };
+            String selection = 
+                String.format( "%s = '%s' AND %s = %d AND %s = %d",
+                               DBHelper.ROOMNAME, room,
+                               DBHelper.DICTLANG, lang,
+                               DBHelper.NUM_PLAYERS, nPlayers );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getString( cursor
+                                           .getColumnIndex(DBHelper.FILE_NAME));
+
+            }
+            cursor.close();
+            db.close();
+        }
+        Utils.logf( "getPathFor(%s)=>%s", room, result );
+        return result;
+    }
+
     public static String getPathFor( Context context, String relayID )
     {
         String result = null;
