@@ -557,7 +557,8 @@ public class GamesList extends XWListActivity
                 String path = DBUtils.getPathFor( this, room, lang, nPlayers );
 
                 if ( null == path ) {
-                    path = GameUtils.makeNewNetGame( this, room, lang, 
+                    int[] langarr = { lang };
+                    path = GameUtils.makeNewNetGame( this, room, langarr, 
                                                      nPlayers );
                 }
 
