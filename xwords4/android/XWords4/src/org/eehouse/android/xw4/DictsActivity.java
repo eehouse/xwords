@@ -67,6 +67,11 @@ public class DictsActivity extends ExpandableListActivity
     private class DictListAdapter implements ExpandableListAdapter {
         private Context m_context;
 
+        public DictListAdapter( Context context ) {
+            //super( context, m_dicts.length );
+            m_context = context;
+        }
+
         public boolean areAllItemsEnabled() { return false; }
 
         public Object getChild(int groupPosition, int childPosition)
@@ -137,7 +142,9 @@ public class DictsActivity extends ExpandableListActivity
         public View getGroupView( int groupPosition, boolean isExpanded, 
                                   View convertView, ViewGroup parent )
         {
-            TextView view = new TextView( m_context );
+            View row = LayoutInflater.from(DictsActivity.this).
+                inflate(android.R.layout.simple_expandable_list_item_1, null );
+            TextView view = (TextView)row.findViewById( android.R.id.text1 );
             view.setText( DictLangCache.getLangNames(m_context)[groupPosition] );
             return view;
         }
@@ -150,11 +157,6 @@ public class DictsActivity extends ExpandableListActivity
         public void registerDataSetObserver( DataSetObserver obs ){}
         public void unregisterDataSetObserver( DataSetObserver obs ){}
 
-
-        public DictListAdapter( Context context ) {
-            //super( context, m_dicts.length );
-            m_context = context;
-        }
 
         // public Object getItem( int position) { return m_dicts[position]; }
         // public View getView( final int position, View convertView, 
