@@ -66,10 +66,12 @@ public class DictsActivity extends ExpandableListActivity
 
     private class DictListAdapter implements ExpandableListAdapter {
         private Context m_context;
+        private String[] m_langs;
 
         public DictListAdapter( Context context ) {
             //super( context, m_dicts.length );
             m_context = context;
+            m_langs = DictLangCache.listLangs( m_context );
         }
 
         public boolean areAllItemsEnabled() { return false; }
@@ -129,13 +131,13 @@ public class DictsActivity extends ExpandableListActivity
 
         public int getGroupCount()
         {
-            return DictLangCache.getLangNames( m_context ).length;
+            return m_langs.length;
         }
 
         public long getGroupId( int groupPosition )
         {
-            String[] langNames = DictLangCache.getLangNames( m_context );
-            int lang = DictLangCache.getLangLangCode( m_context, langNames[groupPosition] );
+            int lang = DictLangCache.getLangLangCode( m_context, 
+                                                      m_langs[groupPosition] );
             return lang;
         }
 
@@ -145,7 +147,7 @@ public class DictsActivity extends ExpandableListActivity
             View row = LayoutInflater.from(DictsActivity.this).
                 inflate(android.R.layout.simple_expandable_list_item_1, null );
             TextView view = (TextView)row.findViewById( android.R.id.text1 );
-            view.setText( DictLangCache.getLangNames(m_context)[groupPosition] );
+            view.setText( m_langs[groupPosition] );
             return view;
         }
 
@@ -156,7 +158,6 @@ public class DictsActivity extends ExpandableListActivity
         public void onGroupExpanded(int groupPosition){}
         public void registerDataSetObserver( DataSetObserver obs ){}
         public void unregisterDataSetObserver( DataSetObserver obs ){}
-
 
         // public Object getItem( int position) { return m_dicts[position]; }
         // public View getView( final int position, View convertView, 

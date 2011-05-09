@@ -224,7 +224,7 @@ public class DictLangCache {
         }
     }
 
-    private static String[] listLangs( Context context )
+    public static String[] listLangs( Context context )
     {
         return listLangs( context, GameUtils.dictList( context ) );
     }
