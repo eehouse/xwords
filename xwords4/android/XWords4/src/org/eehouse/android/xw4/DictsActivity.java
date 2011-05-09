@@ -24,6 +24,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.ExpandableListActivity;
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -39,6 +41,7 @@ import android.view.MenuItem;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
+import android.widget.ExpandableListAdapter;
 import android.preference.PreferenceManager;
 import android.net.Uri;
 import junit.framework.Assert;
@@ -47,7 +50,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class DictsActivity extends XWListActivity 
+public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener,
                XWListItem.DeleteCallback {
 
@@ -59,34 +62,119 @@ public class DictsActivity extends XWListActivity
     private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
     private int m_lang = 0;
     private String m_name = null;
+    private String m_download;
 
-    private class DictListAdapter extends XWListAdapter {
+    private class DictListAdapter implements ExpandableListAdapter {
         private Context m_context;
 
+        public boolean areAllItemsEnabled() { return false; }
+
+        public Object getChild(int groupPosition, int childPosition)
+        {
+            return null;
+        }
+
+        public long getChildId( int groupPosition, int childPosition )
+        {
+            return childPosition;
+        }
+
+        public View getChildView( int groupPosition, int childPosition, 
+                                  boolean isLastChild, View convertView, 
+                                  ViewGroup parent)
+        {
+            int lang = (int)getGroupId( groupPosition );
+            String[] dicts = DictLangCache.getHaveLang( m_context, lang );
+            String text;
+            if ( null != dicts && childPosition < dicts.length ) {
+                text = dicts[childPosition];
+            } else {
+                text = m_download;
+            }
+            TextView view = new TextView( m_context );
+            view.setText( text );
+            return view;
+        }
+
+        public int getChildrenCount( int groupPosition )
+        {
+            int lang = (int)getGroupId( groupPosition );
+            String[] dicts = DictLangCache.getHaveLang( m_context, lang );
+            int result = 1;     // for the download option
+            if ( null != dicts ) {
+                result += dicts.length;
+            }
+            return result;
+        }
+
+        public long getCombinedChildId( long groupId, long childId )
+        {
+            return groupId << 16 | childId;
+        }
+
+        public long getCombinedGroupId( long groupId )
+        {
+            return groupId;
+        }
+
+        public Object getGroup( int groupPosition )
+        {
+            return null;
+        }
+
+        public int getGroupCount()
+        {
+            return DictLangCache.getLangNames( m_context ).length;
+        }
+
+        public long getGroupId( int groupPosition )
+        {
+            String[] langNames = DictLangCache.getLangNames( m_context );
+            int lang = DictLangCache.getLangLangCode( m_context, langNames[groupPosition] );
+            return lang;
+        }
+
+        public View getGroupView( int groupPosition, boolean isExpanded, 
+                                  View convertView, ViewGroup parent )
+        {
+            TextView view = new TextView( m_context );
+            view.setText( DictLangCache.getLangNames(m_context)[groupPosition] );
+            return view;
+        }
+
+        public boolean hasStableIds() { return false; }
+        public boolean isChildSelectable( int groupPosition, int childPosition ) { return true; }
+        public boolean isEmpty() { return false; }
+        public void onGroupCollapsed(int groupPosition){}
+        public void onGroupExpanded(int groupPosition){}
+        public void registerDataSetObserver( DataSetObserver obs ){}
+        public void unregisterDataSetObserver( DataSetObserver obs ){}
+
+
         public DictListAdapter( Context context ) {
-            super( context, m_dicts.length );
+            //super( context, m_dicts.length );
             m_context = context;
         }
 
-        public Object getItem( int position) { return m_dicts[position]; }
-        public View getView( final int position, View convertView, 
-                             ViewGroup parent ) {
-            LayoutInflater factory = LayoutInflater.from( DictsActivity.this );
-            final XWListItem view
-                = (XWListItem)factory.inflate( R.layout.list_item, null );
-            view.setPosition( position );
+        // public Object getItem( int position) { return m_dicts[position]; }
+        // public View getView( final int position, View convertView, 
+        //                      ViewGroup parent ) {
+        //     LayoutInflater factory = LayoutInflater.from( DictsActivity.this );
+        //     final XWListItem view
+        //         = (XWListItem)factory.inflate( R.layout.list_item, null );
+        //     view.setPosition( position );
 
-            // append language name
-            view.setText( DictLangCache.
-                          annotatedDictName( DictsActivity.this, 
-                                             m_dicts[position] ) );
-            if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
-                                           m_dicts[position] ) ) {
-                view.setDeleteCallback( DictsActivity.this );
-            }
+        //     // append language name
+        //     view.setText( DictLangCache.
+        //                   annotatedDictName( DictsActivity.this, 
+        //                                      m_dicts[position] ) );
+        //     if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
+        //                                    m_dicts[position] ) ) {
+        //         view.setDeleteCallback( DictsActivity.this );
+        //     }
 
-            return view;
-        }
+        //     return view;
+        // }
     }
 
     @Override
@@ -119,16 +207,18 @@ public class DictsActivity extends XWListActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
 
+        m_download = getString( R.string.download_dicts );
+
         setContentView( R.layout.dict_browse );
-        registerForContextMenu( getListView() );
+        //registerForContextMenu( getListView() );
 
         Button download = (Button)findViewById( R.id.download );
         download.setOnClickListener( this );
 
         mkListAdapter();
 
-        showNotAgainDlg( R.string.not_again_dicts, 
-                         R.string.key_notagain_dicts );
+        // showNotAgainDlg( R.string.not_again_dicts, 
+        //                  R.string.key_notagain_dicts );
 
         Intent intent = getIntent();
         if ( null != intent ) {
@@ -231,7 +321,7 @@ public class DictsActivity extends XWListActivity
             msg += String.format( getString(fmt), langName );
         }
 
-        showConfirmThen( msg, action );
+        // showConfirmThen( msg, action );
     }
 
     private void deleteDict( String dict )
@@ -261,7 +351,8 @@ public class DictsActivity extends XWListActivity
     private void mkListAdapter()
     {
         m_dicts = GameUtils.dictList( this );
-        setListAdapter( new DictListAdapter( this ) );
+        ExpandableListAdapter adapter = new DictListAdapter( this );
+        setListAdapter( adapter );
     }
 
     private static Intent mkDownloadIntent( Context context,

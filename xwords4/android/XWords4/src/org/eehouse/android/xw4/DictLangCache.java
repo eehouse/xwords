@@ -83,7 +83,7 @@ public class DictLangCache {
 
     public static String getLangName( Context context, int code )
     {
-        String[] namesArray = getNamesArray( context );
+        String[] namesArray = getLangNames( context );
         if ( code < 0 || code >= namesArray.length ) {
             code = 0;
         }
@@ -181,7 +181,7 @@ public class DictLangCache {
     public static int getLangLangCode( Context context, String lang )
     {
         int code = 0;
-        String[] namesArray = getNamesArray( context );
+        String[] namesArray = getLangNames( context );
         for ( int ii = 0; ii < namesArray.length; ++ii ) {
             if ( namesArray[ii].equals( lang ) ) {
                 code = ii;
@@ -300,7 +300,7 @@ public class DictLangCache {
         return m_dictsAdapter;
     }
 
-    private static String[] getNamesArray( Context context )
+    public static String[] getLangNames( Context context )
     {
         if ( null == s_langNames ) {
             Resources res = context.getResources();
