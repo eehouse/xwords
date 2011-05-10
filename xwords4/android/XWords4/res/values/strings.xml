@@ -114,18 +114,18 @@
     <string name="strs_move_across">move (from %s across)\n</string>
     <string name="strs_move_down">move (from %s down)\n</string>
     <string name="strs_tray_at_start">Rack at start: %s\n</string>
-    <string name="strss_traded_for">Exchanged %s for %s.</string>
+    <string formatted="false" name="strss_traded_for">Exchanged %s for %s.</string>
     <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
     <string name="strd_cumulative_score">Cumulative score: %d\n</string>
     <string name="strs_new_tiles">New tiles: %s</string>
     <string name="str_passed">Passed</string>
-    <string name="strsd_summaryscored">%s:%d</string>
+    <string formatted="false" name="strsd_summaryscored">%s:%d</string>
     <string name="strd_traded">Traded %d</string>
     <string name="str_lostturn">Lost turn</string>
     <string name="str_commit_confirm">Commit the current move?\n</string>
     <string name="str_local_name">%s</string>
     <string name="str_nonlocal_name">%s (remote)</string>
-    <string name="str_game_namef">%s (%s)</string>
+    <string formatted="false" name="str_game_namef">%s (%s)</string>
     <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
     <string name="strd_turn_score">Score for turn: %d\n</string>
 
@@ -155,7 +155,7 @@
     <string name="player_edit_title">Edit player</string>
 
     <string name="players_label_standalone">Players</string>
-    <string name="players_label_host">Players (%d local, %d off-device)</string>
+    <string formatted="false" name="players_label_host">Players (%d local, %d off-device)</string>
     <string name="players_label_guest">Players -- local only</string>
     <string name="game_locked">Lock settings</string>
     <string name="button_add_player">Add player</string>
@@ -332,8 +332,9 @@
     <string name="tab_sms">SMS (broken)</string>
     <string name="tab_bluetooth">Bluetooth (pending)</string>
 
-    <string name="msg_relay_waiting">Device %d connected to relay in
-      room \"%s\". Waiting for %d player[s].</string>
+    <string formatted="false" name="msg_relay_waiting">Device %d
+      connected to relay in room \"%s\". Waiting for %d
+      player[s].</string>
     <string name="msg_relay_all_heref">All players are here in room
       \"%s\".</string>
     <string name="title_relay_status">Connection status.</string>
@@ -367,12 +368,12 @@
     <string name="dictionary">Dictionary:</string>
     <string name="summary_fmt_listening">%s listening</string>
     <string name="summary_fmt_relay">Connecting via Relay, room \"%s\"</string>
-    <string name="summary_fmt_sms">%s via SMS, dialing %s</string>
+    <string formatted="false" name="summary_fmt_sms">%s via SMS, dialing %s</string>
     <string name="gameOver">Game over</string>
     <string name="movesf">%d moves played</string>
 
     <!-- about dialog stuff -->
-    <string name="about_versf">Crosswords for Android, Version %s,
+    <string formatted="false" name="about_versf">Crosswords for Android, Version %s,
     rev %s.</string>
     <string name="about_copyright">Copyright (C) 1998-2011 by Eric
     House. This free/open source software is released under the GNU Public
@@ -396,7 +397,7 @@
 
     <string name="no_dictf">Unable to open game because no %s
       dictionary found.</string>
-    <string name="no_dict_substf">Unable to open game because
+    <string formatted="false" name="no_dict_substf">Unable to open game because
       dictionary %s not found. You can download a replacement or
       substitute another %s dictionary.</string>
 
@@ -428,10 +429,11 @@
 	<string name="notify_vibrate">Vibrate</string>
 	<string name="notify_other_summary">When opponent moves arrive</string>
 
-    <string name="public_names_progress">Fetching public rooms for
+    <string formatted="false" name="public_names_progress">Fetching public rooms for
     %d-player games in %s.</string>
-    <string name="no_name_found_f">No public rooms found for %d-player
-    games in %s. Try refreshing or creating your own.</string>
+    <string formatted="false" name="no_name_found_f">No public rooms
+    found for %d-player games in %s. Try refreshing or creating your
+    own.</string>
 
     <string name="chat_local_id">Me: </string>
     <string name="chat_other_id">Not me: </string>
