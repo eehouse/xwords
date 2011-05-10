@@ -42,6 +42,8 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.preference.PreferenceManager;
 import android.net.Uri;
 import junit.framework.Assert;
@@ -51,27 +53,26 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictsActivity extends ExpandableListActivity 
-    implements View.OnClickListener,
-               XWListItem.DeleteCallback {
+    implements View.OnClickListener {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
     private static final String DICT_NAME_EXTRA = "use_dict";
 
-    private String[] m_dicts;
     private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
     private int m_lang = 0;
+    private String[] m_langs;
     private String m_name = null;
     private String m_download;
 
+    private DlgDelegate m_delegate;
+
     private class DictListAdapter implements ExpandableListAdapter {
         private Context m_context;
-        private String[] m_langs;
 
         public DictListAdapter( Context context ) {
             //super( context, m_dicts.length );
             m_context = context;
-            m_langs = DictLangCache.listLangs( m_context );
         }
 
         public boolean areAllItemsEnabled() { return false; }
@@ -183,37 +184,48 @@ public class DictsActivity extends ExpandableListActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = super.onCreateDialog( id );
-        switch( id ) {
-        case PICK_STORAGE:
-            DialogInterface.OnClickListener lstnrSD;
+        Dialog dialog = m_delegate.onCreateDialog( id );
+        if ( null != dialog ) {
+            switch( id ) {
+            case PICK_STORAGE:
+                DialogInterface.OnClickListener lstnrSD;
 
-            lstnrSD = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        startDownload( m_lang, m_name, item != 
-                                       DialogInterface.BUTTON_POSITIVE );
-                    }
-                };
+                lstnrSD = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            startDownload( m_lang, m_name, item != 
+                                           DialogInterface.BUTTON_POSITIVE );
+                        }
+                    };
 
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.storeWhereTitle )
-                .setMessage( R.string.storeWhereMsg )
-                .setPositiveButton( R.string.button_internal, lstnrSD )
-                .setNegativeButton( R.string.button_sd, lstnrSD )
-                .create();
-            break;
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.storeWhereTitle )
+                    .setMessage( R.string.storeWhereMsg )
+                    .setPositiveButton( R.string.button_internal, lstnrSD )
+                    .setNegativeButton( R.string.button_sd, lstnrSD )
+                    .create();
+                break;
+            }
         }
         return dialog;
+    }
+
+    @Override
+    public void onPrepareDialog( int id, Dialog dialog )
+    {
+        m_delegate.onPrepareDialog( id, dialog );
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
 
-        m_download = getString( R.string.download_dicts );
+        m_delegate = new DlgDelegate( this );
 
+        m_download = getString( R.string.download_dicts );
+        m_langs = DictLangCache.listLangs( this );
+            
         setContentView( R.layout.dict_browse );
-        //registerForContextMenu( getListView() );
+        registerForContextMenu( getExpandableListView() );
 
         Button download = (Button)findViewById( R.id.download );
         download.setOnClickListener( this );
@@ -252,33 +264,50 @@ public class DictsActivity extends ExpandableListActivity
     {
         super.onCreateContextMenu( menu, view, menuInfo );
 
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.dicts_item_menu, menu );
+        ExpandableListView.ExpandableListContextMenuInfo info
+            = (ExpandableListView.ExpandableListContextMenuInfo)menuInfo;
+        long packedPosition = info.packedPosition;
+        int childPosition = ExpandableListView.
+            getPackedPositionChild( packedPosition );
+        // int groupPosition = ExpandableListView.
+        //     getPackedPositionGroup( packedPosition );
+        // Utils.logf( "onCreateContextMenu: group: %d; child: %d", 
+        //             groupPosition, childPosition );
 
-        AdapterView.AdapterContextMenuInfo info
-            = (AdapterView.AdapterContextMenuInfo)menuInfo;
+        // We don't have a menu yet for languages, just for their dict
+        // children
+        if ( childPosition >= 0 ) {
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate( R.menu.dicts_item_menu, menu );
+        }
     }
    
     @Override
     public boolean onContextItemSelected( MenuItem item ) 
     {
         boolean handled = false;
-        AdapterView.AdapterContextMenuInfo info;
+        ExpandableListContextMenuInfo info = null;
         try {
-            info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            info = (ExpandableListContextMenuInfo)item.getMenuInfo();
         } catch (ClassCastException e) {
             Utils.logf( "bad menuInfo:" + e.toString() );
             return false;
         }
         
+        TextView text = (TextView)info.targetView;
         int id = item.getItemId();
-        int position = info.position;
         switch( id ) {
         case R.id.dicts_item_select_human:
-            setDefault( R.string.key_default_dict, position );
+            setDefault( R.string.key_default_dict, text );
             break;
         case R.id.dicts_item_select_robot:
-            setDefault( R.string.key_default_robodict, position );
+            setDefault( R.string.key_default_robodict, text );
+            break;
+        case R.id.dicts_item_delete:
+            long packedPosition = info.packedPosition;
+            int groupPosition = ExpandableListView.
+                getPackedPositionGroup( packedPosition );
+            deleteDict( groupPosition, text );
             break;
         case R.id.dicts_item_details:
             Utils.notImpl( this );
@@ -288,22 +317,25 @@ public class DictsActivity extends ExpandableListActivity
         return handled;
     }
 
-    private void setDefault( int keyId, int position )
+    private void setDefault( int keyId, final TextView text )
     {
         SharedPreferences sp
             = PreferenceManager.getDefaultSharedPreferences( this );
         SharedPreferences.Editor editor = sp.edit();
         String key = getString( keyId );
-        editor.putString( key, m_dicts[position] );
+        String name = text.getText().toString();
+        editor.putString( key, name );
         editor.commit();
     }
 
     // DeleteCallback interface
-    public void deleteCalled( final int myPosition )
+    private void deleteDict( int group, TextView text )
     {
-        final String dict = m_dicts[myPosition];
-        int lang = DictLangCache.getDictLangCode( this, dict );
-        int nGames = DBUtils.countGamesUsing( this, lang );
+        final String dict = text.getText().toString();
+        Utils.logf( "deleteDict(%s)", dict );
+        String lang = m_langs[group];
+        int code = DictLangCache.getLangLangCode( this, lang );
+        int nGames = DBUtils.countGamesUsing( this, code );
         String msg = String.format( getString( R.string.confirm_delete_dictf ),
                                     dict );
         DialogInterface.OnClickListener action = 
@@ -315,16 +347,15 @@ public class DictsActivity extends ExpandableListActivity
 
         if ( nGames > 0 ) {
             int fmt;
-            if ( 1 == DictLangCache.getHaveLang( this, lang ).length ) {
+            if ( 1 == DictLangCache.getHaveLang( this, code ).length ) {
                 fmt = R.string.confirm_deleteonly_dictf;
             } else {
                 fmt = R.string.confirm_deletemore_dictf;
             }
-            String langName = DictLangCache.getLangName( this, lang );
-            msg += String.format( getString(fmt), langName );
+            msg += String.format( getString(fmt), lang );
         }
 
-        // showConfirmThen( msg, action );
+        m_delegate.showConfirmThen( msg, action );
     }
 
     private void deleteDict( String dict )
@@ -353,7 +384,7 @@ public class DictsActivity extends ExpandableListActivity
 
     private void mkListAdapter()
     {
-        m_dicts = GameUtils.dictList( this );
+        m_langs = DictLangCache.listLangs( this );
         ExpandableListAdapter adapter = new DictListAdapter( this );
         setListAdapter( adapter );
     }
