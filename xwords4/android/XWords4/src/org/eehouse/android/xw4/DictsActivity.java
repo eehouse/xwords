@@ -53,7 +53,7 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictsActivity extends ExpandableListActivity 
-    implements View.OnClickListener {
+    implements View.OnClickListener, XWListItem.DeleteCallback {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
@@ -66,6 +66,7 @@ public class DictsActivity extends ExpandableListActivity
     private String m_download;
 
     private DlgDelegate m_delegate;
+    LayoutInflater m_factory;
 
     private class DictListAdapter implements ExpandableListAdapter {
         private Context m_context;
@@ -94,13 +95,21 @@ public class DictsActivity extends ExpandableListActivity
             int lang = (int)getGroupId( groupPosition );
             String[] dicts = DictLangCache.getHaveLang( m_context, lang );
             String text;
+            boolean canDelete = false;
             if ( null != dicts && childPosition < dicts.length ) {
                 text = dicts[childPosition];
+                canDelete = !GameUtils.dictIsBuiltin( DictsActivity.this,
+                                                      text );
             } else {
                 text = m_download;
             }
-            TextView view = new TextView( m_context );
+            XWListItem view =
+                (XWListItem)m_factory.inflate( R.layout.list_item, null );
             view.setText( text );
+            if ( canDelete ) {
+                view.setDeleteCallback( DictsActivity.this );
+            }
+
             return view;
         }
 
@@ -108,7 +117,7 @@ public class DictsActivity extends ExpandableListActivity
         {
             int lang = (int)getGroupId( groupPosition );
             String[] dicts = DictLangCache.getHaveLang( m_context, lang );
-            int result = 1;     // for the download option
+            int result = 0; // 1;     // 1 for the download option
             if ( null != dicts ) {
                 result += dicts.length;
             }
@@ -184,27 +193,28 @@ public class DictsActivity extends ExpandableListActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = m_delegate.onCreateDialog( id );
-        if ( null != dialog ) {
-            switch( id ) {
-            case PICK_STORAGE:
-                DialogInterface.OnClickListener lstnrSD;
+        Dialog dialog;
+        switch( id ) {
+        case PICK_STORAGE:
+            DialogInterface.OnClickListener lstnrSD;
 
-                lstnrSD = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            startDownload( m_lang, m_name, item != 
-                                           DialogInterface.BUTTON_POSITIVE );
-                        }
-                    };
+            lstnrSD = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        startDownload( m_lang, m_name, item != 
+                                       DialogInterface.BUTTON_POSITIVE );
+                    }
+                };
 
-                dialog = new AlertDialog.Builder( this )
-                    .setTitle( R.string.storeWhereTitle )
-                    .setMessage( R.string.storeWhereMsg )
-                    .setPositiveButton( R.string.button_internal, lstnrSD )
-                    .setNegativeButton( R.string.button_sd, lstnrSD )
-                    .create();
-                break;
-            }
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.storeWhereTitle )
+                .setMessage( R.string.storeWhereMsg )
+                .setPositiveButton( R.string.button_internal, lstnrSD )
+                .setNegativeButton( R.string.button_sd, lstnrSD )
+                .create();
+            break;
+        default:
+            dialog = m_delegate.onCreateDialog( id );
+            break;
         }
         return dialog;
     }
@@ -216,10 +226,12 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) 
+    {
         super.onCreate( savedInstanceState );
 
         m_delegate = new DlgDelegate( this );
+        m_factory = LayoutInflater.from( this );
 
         m_download = getString( R.string.download_dicts );
         m_langs = DictLangCache.listLangs( this );
@@ -294,20 +306,14 @@ public class DictsActivity extends ExpandableListActivity
             return false;
         }
         
-        TextView text = (TextView)info.targetView;
+        XWListItem row = (XWListItem)info.targetView;
         int id = item.getItemId();
         switch( id ) {
         case R.id.dicts_item_select_human:
-            setDefault( R.string.key_default_dict, text );
+            setDefault( R.string.key_default_dict, row );
             break;
         case R.id.dicts_item_select_robot:
-            setDefault( R.string.key_default_robodict, text );
-            break;
-        case R.id.dicts_item_delete:
-            long packedPosition = info.packedPosition;
-            int groupPosition = ExpandableListView.
-                getPackedPositionGroup( packedPosition );
-            deleteDict( groupPosition, text );
+            setDefault( R.string.key_default_robodict, row );
             break;
         case R.id.dicts_item_details:
             Utils.notImpl( this );
@@ -317,24 +323,22 @@ public class DictsActivity extends ExpandableListActivity
         return handled;
     }
 
-    private void setDefault( int keyId, final TextView text )
+    private void setDefault( int keyId, final XWListItem text )
     {
         SharedPreferences sp
             = PreferenceManager.getDefaultSharedPreferences( this );
         SharedPreferences.Editor editor = sp.edit();
         String key = getString( keyId );
-        String name = text.getText().toString();
+        String name = text.getText();
         editor.putString( key, name );
         editor.commit();
     }
 
     // DeleteCallback interface
-    private void deleteDict( int group, TextView text )
+    public void deleteCalled( int myPosition, final String dict )
     {
-        final String dict = text.getText().toString();
-        Utils.logf( "deleteDict(%s)", dict );
-        String lang = m_langs[group];
-        int code = DictLangCache.getLangLangCode( this, lang );
+        int code = DictLangCache.getDictLangCode( this, dict );
+        String lang = DictLangCache.getLangName( this, code );
         int nGames = DBUtils.countGamesUsing( this, code );
         String msg = String.format( getString( R.string.confirm_delete_dictf ),
                                     dict );
