@@ -114,7 +114,7 @@
   </string-array>
 
   <string-array name="language_names">
-    <item>Unknown</item>
+    <item></item> <!-- Unknown -->
     <item>English</item>
     <item>French</item>
     <item>German</item>
@@ -128,9 +128,9 @@
     <item>Dutch</item>
     <item>Catalan</item>
     <item>Portuguese</item>
-    <item>E</item>
+    <item></item> <!-- E -->
     <item>Russian</item>
-    <item>10</item>
+    <item></item> <!-- 10 -->
     <item>Czech</item>
     <item>Greek</item>
     <item>Slovak</item>

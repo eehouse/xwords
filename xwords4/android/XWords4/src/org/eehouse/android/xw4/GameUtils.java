@@ -189,8 +189,6 @@ public class GameUtils {
         }
         XwJNI.game_dispose( gamePtr );
 
-        gi.setInProgress( false );
-
         gamePtr = XwJNI.initJNI();
         XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                 CommonPrefs.get( context ), dictBytes, 
@@ -783,7 +781,6 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            gi.setInProgress( false );
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                     cp, dictBytes, dictNames, langName );
         }

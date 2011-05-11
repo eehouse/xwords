@@ -395,10 +395,7 @@ public class GameConfig extends XWActivity
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
 
-        String fmt = getString( m_notNetworkedGame ?
-                                R.string.title_game_configf
-                                : R.string.title_gamenet_configf );
-        setTitle( String.format( fmt, GameUtils.gameName( this, m_path ) ) );
+        setTitle();
     } // onCreate
 
     @Override
@@ -414,7 +411,6 @@ public class GameConfig extends XWActivity
         GameUtils.loadMakeGame( this, gamePtr, m_giOrig, m_gameLock );
         m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
             || XwJNI.comms_isConnected( gamePtr );
-        m_giOrig.setInProgress( m_gameStarted );
 
         if ( m_gameStarted ) {
             if ( null == m_gameLockedCheck ) {
@@ -442,6 +438,7 @@ public class GameConfig extends XWActivity
         m_car = new CommsAddrRec( m_carOrig );
 
         m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
+        setTitle();
 
         if ( !m_notNetworkedGame ) {
             m_joinPublicCheck = 
@@ -501,7 +498,7 @@ public class GameConfig extends XWActivity
     }
 
     // DeleteCallback interface
-    public void deleteCalled( int myPosition )
+    public void deleteCalled( int myPosition, final String name )
     {
         if ( m_gi.delete( myPosition ) ) {
             loadPlayers();
@@ -973,8 +970,18 @@ public class GameConfig extends XWActivity
 
     private void refreshNames()
     {
-        new RefreshNamesTask( this, this, m_gi.dictLang, 
-                              m_gi.nPlayers, m_roomChoose ).execute();
+        if ( !m_isLocked ) {
+            new RefreshNamesTask( this, this, m_gi.dictLang, 
+                                  m_gi.nPlayers, m_roomChoose ).execute();
+        }
+    }
+
+    private void setTitle()
+    {
+        String fmt = getString( m_notNetworkedGame ?
+                                R.string.title_game_configf
+                                : R.string.title_gamenet_configf );
+        setTitle( String.format( fmt, GameUtils.gameName( this, m_path ) ) );
     }
 
 }

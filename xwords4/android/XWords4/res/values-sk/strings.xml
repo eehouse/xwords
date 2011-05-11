@@ -104,12 +104,12 @@
     <string name="strs_move_across">ťah (od %s naprieč)</string>
     <string name="strs_move_down">ťah (od %s dolu)</string>
     <string name="strs_tray_at_start">Zásobník pri štarte: %s</string>
-    <string name="strss_traded_for">Vymenil %s za %s.</string>
+    <string formatted="false" name="strss_traded_for">Vymenil %s za %s.</string>
     <string name="str_phony_rejected">Nepovolené slovo; ťah stratený!</string>
     <string name="strd_cumulative_score">Celkové skóre: %d</string>
     <string name="strs_new_tiles">Nové kamene: %s</string>
     <string name="str_passed">Prešiel</string>
-    <string name="strsd_summaryscored">%s:%d</string>
+    <string formatted="false" name="strsd_summaryscored">%s:%d</string>
     <string name="str_lostturn">Ťah bol stratený</string>
     <string name="str_commit_confirm">Potvrdiť tento ťah?\n</string>
     <string name="str_local_name">%s</string>
@@ -251,13 +251,13 @@
     <string name="vs">proti</string>
     <string name="dictionary">Slovník:</string>
     <string name="summary_fmt_listening">%s listening</string>
-    <string name="summary_fmt_relay">%s cez Relay, miestnosť \"%s\"</string>
-    <string name="summary_fmt_sms">%s cez SMS, dialing %s</string>
+    <string formatted="false" name="summary_fmt_relay">%s cez Relay, miestnosť \"%s\"</string>
+    <string formatted="false" name="summary_fmt_sms">%s cez SMS, dialing %s</string>
     <string name="gameOver">Hra skončená</string>
     <string name="movesf">Bolo zahraných %d ťahov</string>
 
     <!-- about dialog stuff -->
-    <string name="about_versf">Crosswords pre Android, Verzia %s,
+    <string formatted="false" name="about_versf">Crosswords pre Android, Verzia %s,
     revize %s.</string>
     <string name="about_copyright">Copyright (C) 1998-2011 Eric
     House. Tento software je vydaný pod licenciou GNU Public License.</string>

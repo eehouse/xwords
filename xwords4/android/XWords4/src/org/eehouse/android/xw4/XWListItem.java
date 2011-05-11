@@ -34,7 +34,7 @@ public class XWListItem extends LinearLayout {
     DeleteCallback m_cb;
 
     public interface DeleteCallback {
-        void deleteCalled( int myPosition );
+        void deleteCalled( int myPosition, String name );
     }
 
     public XWListItem( Context cx, AttributeSet as ) {
@@ -51,6 +51,12 @@ public class XWListItem extends LinearLayout {
         view.setText( text );
     }
 
+    public String getText()
+    {
+        TextView view = (TextView)getChildAt( 0 );
+        return view.getText().toString();
+    }
+
     public void setDeleteCallback( DeleteCallback cb ) 
     {
         m_cb = cb;
@@ -58,7 +64,7 @@ public class XWListItem extends LinearLayout {
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                     public void onClick( View view ) {
-                    m_cb.deleteCalled( m_position );
+                    m_cb.deleteCalled( m_position, getText() );
                 }
             } );
         button.setVisibility( View.VISIBLE );
