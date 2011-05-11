@@ -56,7 +56,6 @@ public class CurGameInfo {
 
     // private int[] m_visiblePlayers;
     // private int m_nVisiblePlayers;
-    private boolean m_inProgress;
     private int m_smartness;
     private Context m_context;
 
@@ -67,7 +66,6 @@ public class CurGameInfo {
 
     public CurGameInfo( Context context, boolean isNetworked )
     {
-        m_inProgress = false;
         m_context = context;
         nPlayers = 2;
         gameSeconds = 60 * nPlayers *
@@ -103,7 +101,6 @@ public class CurGameInfo {
     public CurGameInfo( Context context, CurGameInfo src )
     {
         m_context = context;
-        m_inProgress = src.m_inProgress;
         gameID = src.gameID;
         nPlayers = src.nPlayers;
         gameSeconds = src.gameSeconds;
@@ -132,11 +129,6 @@ public class CurGameInfo {
             Assert.assertFalse( players[0].isLocal );
             players[0].isLocal = true;
         }
-    }
-
-    public void setInProgress( boolean inProgress )
-    {
-        m_inProgress = inProgress;
     }
 
     public void setLang( int lang )
