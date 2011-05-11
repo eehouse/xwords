@@ -64,6 +64,7 @@ public class DictsActivity extends ExpandableListActivity
     private String[] m_langs;
     private String m_name = null;
     private String m_download;
+    private ExpandableListView m_expView;
 
     private DlgDelegate m_delegate;
     LayoutInflater m_factory;
@@ -234,10 +235,10 @@ public class DictsActivity extends ExpandableListActivity
         m_factory = LayoutInflater.from( this );
 
         m_download = getString( R.string.download_dicts );
-        m_langs = DictLangCache.listLangs( this );
             
         setContentView( R.layout.dict_browse );
-        registerForContextMenu( getExpandableListView() );
+        m_expView = getExpandableListView();
+        registerForContextMenu( m_expView );
 
         Button download = (Button)findViewById( R.id.download );
         download.setOnClickListener( this );
@@ -263,6 +264,7 @@ public class DictsActivity extends ExpandableListActivity
     {
         super.onResume();
         mkListAdapter();
+        expandGroups();
     }
 
     public void onClick( View v ) 
@@ -389,8 +391,16 @@ public class DictsActivity extends ExpandableListActivity
     private void mkListAdapter()
     {
         m_langs = DictLangCache.listLangs( this );
+        //m_langs = DictLangCache.getLangNames( this );
         ExpandableListAdapter adapter = new DictListAdapter( this );
         setListAdapter( adapter );
+    }
+
+    private void expandGroups()
+    {
+        for ( int ii = 0; ii < m_langs.length; ++ii ) {
+            m_expView.expandGroup( ii );
+        }
     }
 
     private static Intent mkDownloadIntent( Context context,
