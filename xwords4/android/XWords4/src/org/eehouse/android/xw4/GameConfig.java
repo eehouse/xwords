@@ -970,8 +970,10 @@ public class GameConfig extends XWActivity
 
     private void refreshNames()
     {
-        new RefreshNamesTask( this, this, m_gi.dictLang, 
-                              m_gi.nPlayers, m_roomChoose ).execute();
+        if ( !m_isLocked ) {
+            new RefreshNamesTask( this, this, m_gi.dictLang, 
+                                  m_gi.nPlayers, m_roomChoose ).execute();
+        }
     }
 
     private void setTitle()
