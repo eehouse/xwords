@@ -15,11 +15,9 @@
 -->
 
 <resources>
-    <string name="menu_delete">Delete</string>
     <string name="button_new_game">Add single-device game</string>
     <string name="button_new_game_net">Add multi-device game</string>
 
-    <string name="list_item_play">Play game</string>
     <string name="list_item_config">Game settings...</string>
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
@@ -33,12 +31,9 @@
 	<string name="list_item_move_to_bottom">Move to bottom</string>
 
     <string name="resolve_edit">Edit note</string>
-    <string name="resolve_title">Edit title</string>  
 
     <string name="play">Play game</string>
 
-    <string name="title_create">Create game</string>
-    <string name="title_edit">Edit game</string>
 	<string name="title_games_list">Crosswords</string>   
 	<string name="title_dicts_list">Dictionaries (wordcount)</string>   
     <string name="title_langs_list">Languages (based on installed
@@ -60,13 +55,9 @@
 	<string name="button_retry">Retry</string>  
 
     <string name="player_label">Name:</string>
-    <string name="game_config_open">Open</string>
-    <string name="game_config_revert">Revert changes</string>
 
-	<string name="error_title">Error</string>
 	<string name="info_title">FYI...</string>
 	<string name="newbie_title">New user info</string>
-	<string name="error_message">Error loading game</string>
 	<string name="query_title">A question...</string>
 	<string name="query_trade">Are you sure you want to exchange the selected tiles?</string>
 
@@ -79,14 +70,10 @@
 
     <!-- system menu for main board view -->
 	<string name="board_menu_done">Turn done</string>
-	<string name="board_menu_juggle">Shuffle</string>
-	<string name="board_menu_flip">Flip</string>
 	<string name="board_menu_trade">Exchange tiles</string>
     <string name="board_menu_trade_commit">Exchange done</string>
     <string name="board_menu_trade_cancel">Cancel exchange</string>
 	<string name="board_menu_tray">Hide rack</string>
-	<string name="board_submenu_undo">Undo</string>
-	<string name="board_menu_undo_current">Undo current</string>
 	<string name="board_menu_undo_last">Undo last</string>
 	<string name="board_menu_values">Show values</string>
 	<string name="board_submenu_game">Game</string>
@@ -95,8 +82,6 @@
 	<string name="board_menu_game_history">Game history</string>
 	<string name="board_menu_game_final">Final scores</string>
 	<string name="board_menu_game_resend">Resend messages</string>
-	<string name="board_submenu_file">File</string>
-	<string name="board_menu_file_new">New game</string>
 	<string name="board_menu_file_about">About Crosswords</string>
 
 	<string name="gamel_menu_delete_all">Delete all</string>
@@ -114,7 +99,7 @@
     <string name="strs_move_across">move (from %s across)\n</string>
     <string name="strs_move_down">move (from %s down)\n</string>
     <string name="strs_tray_at_start">Rack at start: %s\n</string>
-    <string formatted="false" name="strss_traded_for">Exchanged %s for %s.</string>
+    <string name="strss_traded_for">Exchanged %1$s for %2$s.</string>
     <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
     <string name="strd_cumulative_score">Cumulative score: %d\n</string>
     <string name="strs_new_tiles">New tiles: %s</string>
@@ -156,22 +141,15 @@
 
     <string name="players_label_standalone">Players</string>
     <string formatted="false" name="players_label_host">Players (%d local, %d off-device)</string>
-    <string name="players_label_guest">Players -- local only</string>
     <string name="game_locked">Lock settings</string>
     <string name="button_add_player">Add player</string>
     <string name="button_juggle_players">Shuffle players</string>
 
-    <string name="list_item_up">Up one</string>
-    <string name="list_item_down">Down one</string>
     <string name="dicts_item_select_human">Make default (human)</string>
     <string name="dicts_item_select_robot">Make default (robot)</string>
-    <string name="dicts_item_delete">Delete dictionary</string>
     <string name="dicts_item_details">Details</string>
 
-    <string name="dict_label">Dictionary</string>
     <string name="dict_lang_labelf">Dictionary (in %s)</string>
-    <string name="role_label">Device role</string>
-    <string name="connection_label">Connection</string>
     <string name="connect_label">Connection (via internet)</string>
     <string name="room_public">Make new room public</string>
     <string name="join_room">Join public room</string>
@@ -262,13 +240,6 @@
     <string name="confirm_revert_all">Are you sure you want to restore
     all preferences to their default values?</string>
 
-    <string name="room_label">Room</string>
-    <string name="phone_label">Host phone number</string>
-    <string name="bluetooth_label">Bluetooth support coming soon....</string>
-    <string name="role_edit_title">Connection</string>
-    <string name="connect_prompt">How will Host and Guest devices
-    communicate?</string>
-
     <string name="prefs_defaults">New game defaults</string>
     <string name="prefs_defaults_summary">Default settings for new
     games</string>
@@ -289,9 +260,6 @@
     <string name="phonies_spinner_prompt">How to handle \"phonies\"
     (words not in dictionary)</string>
     <string name="board_size">Board size</string>
-    <string name="default_timerenabled">Use game timer</string>
-
-    <string name="manage_dicts">Choose</string>
 
     <string name="prefs_colors">Individual colors</string>
     <string name="prefs_colors_summary">Edit colors used on the board</string>
@@ -321,12 +289,7 @@
     <string name="logging_on">Enable logging</string>
     <string name="relay_port">Relay game port</string>
     <string name="proxy_port">Relay device port</string>
-    <string name="sms_port">SMS port</string>
 
-    <string name="sms_phone_label">sms_phone_label</string>
-    <string name="sms_port_label">sms_port_label</string>
-    <string name="bt_label">bt_label</string>
-    <string name="list_item_view">list_item_view</string>
     <string name="key_player">key_player</string>
     <string name="tab_relay">Internet/Relay</string>
     <string name="tab_sms">SMS (broken)</string>
@@ -337,7 +300,6 @@
       player[s].</string>
     <string name="msg_relay_all_heref">All players are here in room
       \"%s\".</string>
-    <string name="title_relay_status">Connection status.</string>
 
     <string name="relay_alert">Connection problem</string>
     <string name="msg_too_many">You are providing more players than the host expects.</string>
@@ -360,15 +322,9 @@
     <string name="force_expl">In a multi-device game there must be at
     least one player from and another not from this device.  Please
     check off-device players.</string>
-    <string name="added_player">Player added to meet two-player
-    minimum for multi-device games.</string>
     <string name="forced_consistent">Modified first player.</string>
 
-    <string name="vs">vs.</string>
-    <string name="dictionary">Dictionary:</string>
-    <string name="summary_fmt_listening">%s listening</string>
     <string name="summary_fmt_relay">Connecting via Relay, room \"%s\"</string>
-    <string formatted="false" name="summary_fmt_sms">%s via SMS, dialing %s</string>
     <string name="gameOver">Game over</string>
     <string name="movesf">%d moves played</string>
 
@@ -468,11 +424,6 @@
     <string name="not_again_chat">This button opens the screen for
       messaging between devices in this game.  Messages will be kept
       until you delete the game that contains them.</string>
-
-    <string name="not_again_relay">Multi-device games work through an
-      internet relay that connects devices in \"rooms\".  To play
-      against a friend, make sure you both specify the same room name.
-      Or try joining or creating a public room.</string>
 
     <string name="not_again_newgame">The new game you have created has
       two players. Player 1 is a robot; Player 2 is you. Tap the game
