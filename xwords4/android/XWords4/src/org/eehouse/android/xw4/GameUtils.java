@@ -44,6 +44,8 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameUtils {
 
+    public enum DictLoc { BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
+
     // Implements read-locks and write-locks per game.  A read lock is
     // obtainable when other read locks are granted but not when a
     // write lock is.  Write-locks are exclusive.
@@ -430,41 +432,46 @@ public class GameUtils {
         return al.toArray( new String[al.size()] );
     }
 
-    public static boolean dictExists( Context context, String name )
+    public static DictLoc getDictLoc( Context context, String name )
     {
-        boolean exists = dictIsBuiltin( context, name );
-        if ( !exists ) {
-            name = addDictExtn( name );
+        DictLoc loc = null;
+        name = addDictExtn( name );
+
+        for ( String file : getAssets( context ) ) {
+            if ( file.equals( name ) ) {
+                loc = DictLoc.BUILT_IN;
+                break;
+            }
+        }
+
+        if ( null == loc ) {
             try {
                 FileInputStream fis = context.openFileInput( name );
                 fis.close();
-                exists = true;
+                loc = DictLoc.INTERNAL;
             } catch ( java.io.FileNotFoundException fnf ) {
             } catch ( java.io.IOException ioe ) {
             }
         }
 
-        if ( !exists ) {
+        if ( null == loc ) {
             File file = getSDPathFor( context, name );
-            exists = null != file && file.exists();
+            if ( null != file && file.exists() ) {
+                loc = DictLoc.EXTERNAL;
+            }
         }
 
-        return exists;
+        return loc;
+    }
+
+    public static boolean dictExists( Context context, String name )
+    {
+        return null != getDictLoc( context, name );
     }
 
     public static boolean dictIsBuiltin( Context context, String name )
     {
-        boolean builtin = false;
-        name = addDictExtn( name );
-
-        for ( String file : getAssets( context ) ) {
-            if ( file.equals( name ) ) {
-                builtin = true;
-                break;
-            }
-        }
-
-        return builtin;
+        return DictLoc.BUILT_IN == getDictLoc( context, name );
     }
 
     public static void deleteDict( Context context, String name )
