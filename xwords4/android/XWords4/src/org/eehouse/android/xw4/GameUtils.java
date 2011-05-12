@@ -474,6 +474,12 @@ public class GameUtils {
         return DictLoc.BUILT_IN == getDictLoc( context, name );
     }
 
+    public static void moveDict( Context context, String name,
+                                 DictLoc from, DictLoc to )
+    {
+        
+    }
+
     public static void deleteDict( Context context, String name )
     {
         name = addDictExtn( name );
