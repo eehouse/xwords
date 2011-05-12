@@ -31,6 +31,7 @@ import android.graphics.Rect;
 public class XWListItem extends LinearLayout {
     private int m_position;
     private Context m_context;
+    private Object m_cached;
     DeleteCallback m_cb;
 
     public interface DeleteCallback {
@@ -86,4 +87,19 @@ public class XWListItem extends LinearLayout {
         // PENDING
         super.setEnabled( enabled );
     }
+
+    // I can't just extend an object used in layout -- get a class
+    // cast exception when inflating it and casting to the subclass.
+    // So rather than create a subclass that knows about its purpose
+    // I'll extend this with a general mechanism.  Hackery but ok.
+    public void cache( Object obj )
+    {
+        m_cached = obj;
+    }
+
+    public Object getCached()
+    {
+        return m_cached;
+    }
+
 }
