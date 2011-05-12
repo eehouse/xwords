@@ -31,6 +31,7 @@ import android.graphics.Rect;
 public class XWListItem extends LinearLayout {
     private int m_position;
     private Context m_context;
+    private Object m_cached;
     DeleteCallback m_cb;
 
     public interface DeleteCallback {
@@ -47,20 +48,26 @@ public class XWListItem extends LinearLayout {
 
     public void setText( String text )
     {
-        TextView view = (TextView)getChildAt( 0 );
+        TextView view = (TextView)findViewById( R.id.text_item );
         view.setText( text );
     }
 
     public String getText()
     {
-        TextView view = (TextView)getChildAt( 0 );
+        TextView view = (TextView)findViewById( R.id.text_item );
         return view.getText().toString();
+    }
+
+    public void setComment( String text )
+    {
+        TextView view = (TextView)findViewById( R.id.text_item2 );
+        view.setText( text );
     }
 
     public void setDeleteCallback( DeleteCallback cb ) 
     {
         m_cb = cb;
-        ImageButton button = (ImageButton)getChildAt( 1 );
+        ImageButton button = (ImageButton)findViewById( R.id.del );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                     public void onClick( View view ) {
@@ -73,11 +80,26 @@ public class XWListItem extends LinearLayout {
     @Override
     public void setEnabled( boolean enabled ) 
     {
-        ImageButton button = (ImageButton)getChildAt( 1 );
+        ImageButton button = (ImageButton)findViewById( R.id.del );
         button.setEnabled( enabled );
         // calling super here means the list item can't be opened for
         // the user to inspect data.  Might want to reconsider this.
         // PENDING
         super.setEnabled( enabled );
     }
+
+    // I can't just extend an object used in layout -- get a class
+    // cast exception when inflating it and casting to the subclass.
+    // So rather than create a subclass that knows about its purpose
+    // I'll extend this with a general mechanism.  Hackery but ok.
+    public void cache( Object obj )
+    {
+        m_cached = obj;
+    }
+
+    public Object getCached()
+    {
+        return m_cached;
+    }
+
 }

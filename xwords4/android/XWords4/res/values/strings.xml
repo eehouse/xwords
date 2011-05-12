@@ -150,9 +150,11 @@
     <string name="button_add_player">Add player</string>
     <string name="button_juggle_players">Shuffle players</string>
 
+    <string name="dicts_item_move">Move dictionary</string>
     <string name="dicts_item_select_human">Make default (human)</string>
     <string name="dicts_item_select_robot">Make default (robot)</string>
     <string name="dicts_item_details">Details</string>
+    <string name="move_dictf">Move dictionary %1$s from %2$s to %3$s?</string>
 
     <string name="dict_lang_labelf">Dictionary (in %s)</string>
     <string name="connect_label">Connection (via internet)</string>
@@ -167,6 +169,11 @@
     <string name="minutes_label">Minutes per player</string>
 
     <string name="download_dicts">Download more...</string>
+    <string name="loc_builtin">Built-in</string>
+    <string name="loc_internal">Internal</string>
+    <string name="loc_external">External</string>
+    <string name="loc_downloads">Downloads</string>
+
 
     <string name="confirm_save_title">Confirm save</string>
     <string name="confirm_save">This game is in play.  If you

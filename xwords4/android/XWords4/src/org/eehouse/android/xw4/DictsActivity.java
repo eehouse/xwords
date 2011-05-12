@@ -33,6 +33,7 @@ import android.widget.AdapterView;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,13 +61,19 @@ public class DictsActivity extends ExpandableListActivity
     private static final String DICT_NAME_EXTRA = "use_dict";
 
     private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
+    private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 2;
     private int m_lang = 0;
     private String[] m_langs;
     private String m_name = null;
     private String m_download;
     private ExpandableListView m_expView;
-
     private DlgDelegate m_delegate;
+    private String[] m_locNames;
+
+    GameUtils.DictLoc m_moveFromLoc;
+    GameUtils.DictLoc m_moveToLoc;
+    String m_moveName;
+
     LayoutInflater m_factory;
 
     private class DictListAdapter implements ExpandableListAdapter {
@@ -110,6 +117,11 @@ public class DictsActivity extends ExpandableListActivity
             if ( canDelete ) {
                 view.setDeleteCallback( DictsActivity.this );
             }
+
+            GameUtils.DictLoc loc = 
+                GameUtils.getDictLoc( DictsActivity.this, text );
+            view.setComment( m_locNames[loc.ordinal()] );
+            view.cache( loc );
 
             return view;
         }
@@ -195,9 +207,10 @@ public class DictsActivity extends ExpandableListActivity
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog;
+        DialogInterface.OnClickListener lstnrSD;
+
         switch( id ) {
         case PICK_STORAGE:
-            DialogInterface.OnClickListener lstnrSD;
 
             lstnrSD = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
@@ -213,6 +226,21 @@ public class DictsActivity extends ExpandableListActivity
                 .setNegativeButton( R.string.button_sd, lstnrSD )
                 .create();
             break;
+        case MOVE_DICT:
+            lstnrSD = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        GameUtils.moveDict( DictsActivity.this,
+                                            m_moveName,
+                                            m_moveFromLoc,
+                                            m_moveToLoc );
+                    }
+                };
+            dialog = new AlertDialog.Builder( this )
+                .setMessage( "" ) // will set later
+                .setPositiveButton( R.string.button_ok, lstnrSD )
+                .setNegativeButton( R.string.button_cancel, null )
+                .create();
+            break;
         default:
             dialog = m_delegate.onCreateDialog( id );
             break;
@@ -223,13 +251,30 @@ public class DictsActivity extends ExpandableListActivity
     @Override
     public void onPrepareDialog( int id, Dialog dialog )
     {
-        m_delegate.onPrepareDialog( id, dialog );
+        AlertDialog ad = (AlertDialog)dialog;
+        switch( id ) {
+        case PICK_STORAGE:
+            break;
+        case MOVE_DICT:
+            String format = getString( R.string.move_dictf );
+            String message = 
+                String.format( format, m_moveName,
+                               m_locNames[ m_moveFromLoc.ordinal() ],
+                               m_locNames[ m_moveToLoc.ordinal() ] );
+            ad.setMessage( message );
+            break;
+        default:
+            m_delegate.onPrepareDialog( id, dialog );
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate( savedInstanceState );
+
+        Resources res = getResources();
+        m_locNames = res.getStringArray( R.array.loc_names );
 
         m_delegate = new DlgDelegate( this );
         m_factory = LayoutInflater.from( this );
@@ -293,6 +338,12 @@ public class DictsActivity extends ExpandableListActivity
         if ( childPosition >= 0 ) {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate( R.menu.dicts_item_menu, menu );
+            
+            XWListItem row = (XWListItem)info.targetView;
+            GameUtils.DictLoc loc = (GameUtils.DictLoc)row.getCached();
+            if ( loc == GameUtils.DictLoc.BUILT_IN ) {
+                menu.removeItem( R.id.dicts_item_move );
+            }
         }
     }
    
@@ -311,6 +362,9 @@ public class DictsActivity extends ExpandableListActivity
         XWListItem row = (XWListItem)info.targetView;
         int id = item.getItemId();
         switch( id ) {
+        case R.id.dicts_item_move:
+            askMoveDict( row );
+            break;
         case R.id.dicts_item_select_human:
             setDefault( R.string.key_default_dict, row );
             break;
@@ -334,6 +388,22 @@ public class DictsActivity extends ExpandableListActivity
         String name = text.getText();
         editor.putString( key, name );
         editor.commit();
+    }
+
+    // Move dict.  Put up dialog asking user to confirm move from XX
+    // to YY.  So we need both XX and YY.  There may be several
+    // options for YY?
+    private void askMoveDict( XWListItem item )
+    {
+        m_moveFromLoc = (GameUtils.DictLoc)item.getCached();
+        if ( m_moveFromLoc == GameUtils.DictLoc.INTERNAL ) {
+            m_moveToLoc = GameUtils.DictLoc.EXTERNAL;
+        } else {
+            m_moveToLoc = GameUtils.DictLoc.INTERNAL;
+        }
+        m_moveName = item.getText();
+
+        showDialog( MOVE_DICT );
     }
 
     // DeleteCallback interface
