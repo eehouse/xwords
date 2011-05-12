@@ -162,6 +162,11 @@
     <string name="minutes_label">Minutes per player</string>
 
     <string name="download_dicts">Download more...</string>
+    <string name="loc_builtin">Built-in</string>
+    <string name="loc_internal">Internal</string>
+    <string name="loc_external">External</string>
+    <string name="loc_downloads">Downloads</string>
+
 
     <string name="confirm_save_title">Confirm save</string>
     <string name="confirm_save">This game is in play.  If you

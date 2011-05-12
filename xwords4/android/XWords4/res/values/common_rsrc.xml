@@ -102,6 +102,13 @@
     <item>@string/connect_daily</item>
   </string-array>
 
+  <string-array name="loc_names">
+    <item>@string/loc_builtin</item>
+    <item>@string/loc_internal</item>
+    <item>@string/loc_external</item>
+    <item>@string/loc_downloads</item>
+  </string-array>
+
   <string-array name="connect_frequencies_values">
     <item>-1</item>
     <!-- <item>60</item> -->

@@ -33,6 +33,7 @@ import android.widget.AdapterView;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,8 +66,9 @@ public class DictsActivity extends ExpandableListActivity
     private String m_name = null;
     private String m_download;
     private ExpandableListView m_expView;
-
     private DlgDelegate m_delegate;
+    private String[] m_locNames;
+
     LayoutInflater m_factory;
 
     private class DictListAdapter implements ExpandableListAdapter {
@@ -110,6 +112,10 @@ public class DictsActivity extends ExpandableListActivity
             if ( canDelete ) {
                 view.setDeleteCallback( DictsActivity.this );
             }
+
+            GameUtils.DictLoc loc = 
+                GameUtils.getDictLoc( DictsActivity.this, text );
+            view.setComment( m_locNames[loc.ordinal()] );
 
             return view;
         }
@@ -230,6 +236,9 @@ public class DictsActivity extends ExpandableListActivity
     protected void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate( savedInstanceState );
+
+        Resources res = getResources();
+        m_locNames = res.getStringArray( R.array.loc_names );
 
         m_delegate = new DlgDelegate( this );
         m_factory = LayoutInflater.from( this );
