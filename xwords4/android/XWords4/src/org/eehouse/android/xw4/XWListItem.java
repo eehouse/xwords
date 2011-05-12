@@ -47,20 +47,26 @@ public class XWListItem extends LinearLayout {
 
     public void setText( String text )
     {
-        TextView view = (TextView)getChildAt( 0 );
+        TextView view = (TextView)findViewById( R.id.text_item );
         view.setText( text );
     }
 
     public String getText()
     {
-        TextView view = (TextView)getChildAt( 0 );
+        TextView view = (TextView)findViewById( R.id.text_item );
         return view.getText().toString();
+    }
+
+    public void setComment( String text )
+    {
+        TextView view = (TextView)findViewById( R.id.text_item2 );
+        view.setText( text );
     }
 
     public void setDeleteCallback( DeleteCallback cb ) 
     {
         m_cb = cb;
-        ImageButton button = (ImageButton)getChildAt( 1 );
+        ImageButton button = (ImageButton)findViewById( R.id.del );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                     public void onClick( View view ) {
@@ -73,7 +79,7 @@ public class XWListItem extends LinearLayout {
     @Override
     public void setEnabled( boolean enabled ) 
     {
-        ImageButton button = (ImageButton)getChildAt( 1 );
+        ImageButton button = (ImageButton)findViewById( R.id.del );
         button.setEnabled( enabled );
         // calling super here means the list item can't be opened for
         // the user to inspect data.  Might want to reconsider this.

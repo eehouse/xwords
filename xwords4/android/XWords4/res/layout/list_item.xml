@@ -12,6 +12,7 @@
    android:longClickable="true"
    android:background="@android:drawable/list_selector_background"
    >
+
   <TextView android:id="@+id/text_item"
 	        android:layout_width="wrap_content" 
 	        android:layout_height="wrap_content"
@@ -19,11 +20,19 @@
    	        android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
+  <TextView android:id="@+id/text_item2"
+	        android:layout_width="wrap_content" 
+	        android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="right"
+	        android:text="built-in"
+            />
 
-  <ImageButton android:layout_width="32dp" 
+  <ImageButton android:id="@+id/del"
+               android:layout_width="32dp" 
 	           android:layout_height="32dp"
                android:src="@android:drawable/ic_delete"
-               android:visibility="gone"
+               android:visibility="invisible"
                />
 
   </org.eehouse.android.xw4.XWListItem>
