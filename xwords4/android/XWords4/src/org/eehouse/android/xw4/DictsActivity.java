@@ -62,6 +62,7 @@ public class DictsActivity extends ExpandableListActivity
 
     private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
     private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 2;
+    private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 3;
     private int m_lang = 0;
     private String[] m_langs;
     private String m_name = null;
@@ -208,12 +209,12 @@ public class DictsActivity extends ExpandableListActivity
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog;
-        DialogInterface.OnClickListener lstnrSD;
+        DialogInterface.OnClickListener lstnr;
 
         switch( id ) {
         case PICK_STORAGE:
 
-            lstnrSD = new DialogInterface.OnClickListener() {
+            lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         startDownload( m_lang, m_name, item != 
                                        DialogInterface.BUTTON_POSITIVE );
@@ -223,12 +224,12 @@ public class DictsActivity extends ExpandableListActivity
             dialog = new AlertDialog.Builder( this )
                 .setTitle( R.string.storeWhereTitle )
                 .setMessage( R.string.storeWhereMsg )
-                .setPositiveButton( R.string.button_internal, lstnrSD )
-                .setNegativeButton( R.string.button_sd, lstnrSD )
+                .setPositiveButton( R.string.button_internal, lstnr )
+                .setNegativeButton( R.string.button_sd, lstnr )
                 .create();
             break;
         case MOVE_DICT:
-            lstnrSD = new DialogInterface.OnClickListener() {
+            lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         Utils.logf( "CALLING moveDict" );
                         if ( GameUtils.moveDict( DictsActivity.this,
@@ -244,8 +245,30 @@ public class DictsActivity extends ExpandableListActivity
                 };
             dialog = new AlertDialog.Builder( this )
                 .setMessage( "" ) // will set later
-                .setPositiveButton( R.string.button_ok, lstnrSD )
+                .setPositiveButton( R.string.button_ok, lstnr )
                 .setNegativeButton( R.string.button_cancel, null )
+                .create();
+            break;
+        case SET_DEFAULT:
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        if ( DialogInterface.BUTTON_NEGATIVE == item
+                             || DialogInterface.BUTTON_POSITIVE == item ) {
+                            setDefault( R.string.key_default_dict, m_rowView );
+                        }
+                        if ( DialogInterface.BUTTON_NEGATIVE == item 
+                             || DialogInterface.BUTTON_NEUTRAL == item ) {
+                            setDefault( R.string.key_default_robodict, 
+                                        m_rowView );
+                        }
+                    }
+                };
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.query_title )
+                .setMessage( R.string.set_default_message )
+                .setPositiveButton( R.string.button_default_human, lstnr )
+                .setNeutralButton( R.string.button_default_robot, lstnr )
+                .setNegativeButton( R.string.button_default_both, lstnr )
                 .create();
             break;
         default:
@@ -373,11 +396,9 @@ public class DictsActivity extends ExpandableListActivity
         case R.id.dicts_item_move:
             askMoveDict( row );
             break;
-        case R.id.dicts_item_select_human:
-            setDefault( R.string.key_default_dict, row );
-            break;
-        case R.id.dicts_item_select_robot:
-            setDefault( R.string.key_default_robodict, row );
+        case R.id.dicts_item_select:
+            m_rowView = row;
+            showDialog( SET_DEFAULT );
             break;
         case R.id.dicts_item_details:
             Utils.notImpl( this );

@@ -4,11 +4,8 @@
     <item android:id="@+id/dicts_item_move"
           android:title="@string/dicts_item_move"
           />
-    <item android:id="@+id/dicts_item_select_human"
-          android:title="@string/dicts_item_select_human"
-          />
-    <item android:id="@+id/dicts_item_select_robot"
-          android:title="@string/dicts_item_select_robot"
+    <item android:id="@+id/dicts_item_select"
+          android:title="@string/dicts_item_select"
           />
     <item android:id="@+id/dicts_item_details"
           android:title="@string/dicts_item_details"
