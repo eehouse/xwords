@@ -70,6 +70,7 @@ public class DictsActivity extends ExpandableListActivity
     private DlgDelegate m_delegate;
     private String[] m_locNames;
 
+    private XWListItem m_rowView;
     GameUtils.DictLoc m_moveFromLoc;
     GameUtils.DictLoc m_moveToLoc;
     String m_moveName;
@@ -229,10 +230,16 @@ public class DictsActivity extends ExpandableListActivity
         case MOVE_DICT:
             lstnrSD = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        GameUtils.moveDict( DictsActivity.this,
-                                            m_moveName,
-                                            m_moveFromLoc,
-                                            m_moveToLoc );
+                        Utils.logf( "CALLING moveDict" );
+                        if ( GameUtils.moveDict( DictsActivity.this,
+                                                 m_moveName,
+                                                 m_moveFromLoc,
+                                                 m_moveToLoc ) ) {
+                            m_rowView.
+                                setComment( m_locNames[m_moveToLoc.ordinal()]);
+                            m_rowView.invalidate();
+                        }
+                        Utils.logf( "moveDict RETURNED" );
                     }
                 };
             dialog = new AlertDialog.Builder( this )
@@ -341,7 +348,8 @@ public class DictsActivity extends ExpandableListActivity
             
             XWListItem row = (XWListItem)info.targetView;
             GameUtils.DictLoc loc = (GameUtils.DictLoc)row.getCached();
-            if ( loc == GameUtils.DictLoc.BUILT_IN ) {
+            if ( loc == GameUtils.DictLoc.BUILT_IN
+                 || ! GameUtils.haveWriteableSD() ) {
                 menu.removeItem( R.id.dicts_item_move );
             }
         }
@@ -395,6 +403,7 @@ public class DictsActivity extends ExpandableListActivity
     // options for YY?
     private void askMoveDict( XWListItem item )
     {
+        m_rowView = item;
         m_moveFromLoc = (GameUtils.DictLoc)item.getCached();
         if ( m_moveFromLoc == GameUtils.DictLoc.INTERNAL ) {
             m_moveToLoc = GameUtils.DictLoc.EXTERNAL;

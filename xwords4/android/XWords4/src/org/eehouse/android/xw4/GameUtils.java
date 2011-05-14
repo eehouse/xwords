@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import android.net.Uri;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -474,21 +475,78 @@ public class GameUtils {
         return DictLoc.BUILT_IN == getDictLoc( context, name );
     }
 
-    public static void moveDict( Context context, String name,
-                                 DictLoc from, DictLoc to )
+    public static boolean moveDict( Context context, String name,
+                                    DictLoc from, DictLoc to )
     {
-        
+        name = addDictExtn( name );
+        boolean success = copyDict( context, name, from, to );
+        if ( success ) {
+            deleteDict( context, name, from );
+        }
+        return success;
+    }
+
+    private static boolean copyDict( Context context, String name,
+                                     DictLoc from, DictLoc to )
+    {
+        boolean success = false;
+
+        File file = getSDPathFor( context, name );
+        if ( null != file ) {
+            FileChannel channelIn = null;
+            FileChannel channelOut = null;
+
+            try {
+                FileInputStream fis;
+                FileOutputStream fos;
+                if ( DictLoc.INTERNAL == from ) {
+                    fis = context.openFileInput( name );
+                    fos = new FileOutputStream( file );
+                } else {
+                    fis = new FileInputStream( file );
+                    fos = context.openFileOutput( name, Context.MODE_PRIVATE );
+                }
+
+                channelIn = fis.getChannel();
+                channelOut = fos.getChannel();
+
+                channelIn.transferTo( 0, channelIn.size(), channelOut );
+                success = true;
+
+            } catch ( java.io.FileNotFoundException fnfe ) {
+                Utils.logf( "%s", fnfe.toString() );
+            } catch ( java.io.IOException ioe ) {
+                Utils.logf( "%s", ioe.toString() );
+            } finally {
+                try {
+                    // Order should match assignment order to above in
+                    // case one or both null
+                    channelIn.close();
+                    channelOut.close();
+                } catch ( Exception e ) {
+                    Utils.logf( "%s", e.toString() );
+                }
+            }
+        }
+        return success;
+    } // copyDict
+
+    private static void deleteDict( Context context, String name, DictLoc loc )
+    {
+        if ( DictLoc.EXTERNAL == loc ) {
+            File onSD = getSDPathFor( context, name );
+            if ( null != onSD ) {
+                onSD.delete();
+            } // otherwise what?
+        } else {
+            Assert.assertTrue( DictLoc.INTERNAL == loc );
+            context.deleteFile( name );
+        }
     }
 
     public static void deleteDict( Context context, String name )
     {
-        name = addDictExtn( name );
-        File onSD = getSDPathFor( context, name );
-        if ( onSD.exists() ) {
-            onSD.delete();
-        } else {
-            context.deleteFile( name );
-        }
+        deleteDict( context, name, getDictLoc( context, name ) );
     }
 
     public static byte[] openDict( Context context, String name )
