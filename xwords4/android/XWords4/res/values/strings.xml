@@ -34,7 +34,7 @@
     <string name="play">Play game</string>
 
 	<string name="title_games_list">Crosswords</string>   
-	<string name="title_dicts_list">Dictionaries (wordcount)</string>   
+	<string name="title_dicts_list">Dictionaries</string>   
     <string name="title_newgame">New game</string>
     <string name="title_langs_list">Languages (based on installed
       dictionaries)</string>
@@ -109,13 +109,13 @@
     <string name="strd_cumulative_score">Cumulative score: %d\n</string>
     <string name="strs_new_tiles">New tiles: %s</string>
     <string name="str_passed">Passed</string>
-    <string formatted="false" name="strsd_summaryscored">%s:%d</string>
+    <string name="strsd_summaryscored">%1$s:%2$d</string>
     <string name="strd_traded">Traded %d</string>
     <string name="str_lostturn">Lost turn</string>
     <string name="str_commit_confirm">Commit the current move?\n</string>
     <string name="str_local_name">%s</string>
     <string name="str_nonlocal_name">%s (remote)</string>
-    <string formatted="false" name="str_game_namef">%s (%s)</string>
+    <string name="str_game_namef">%1$s (%2$s)</string>
     <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
     <string name="strd_turn_score">Score for turn: %d\n</string>
 
@@ -145,16 +145,21 @@
     <string name="player_edit_title">Edit player</string>
 
     <string name="players_label_standalone">Players</string>
-    <string formatted="false" name="players_label_host">Players (%d local, %d off-device)</string>
+    <string name="players_label_host">Players (%1$d local, %2$d
+    off-device)</string>
     <string name="game_locked">Lock settings</string>
     <string name="button_add_player">Add player</string>
     <string name="button_juggle_players">Shuffle players</string>
 
     <string name="dicts_item_move">Move dictionary</string>
-    <string name="dicts_item_select_human">Make default (human)</string>
-    <string name="dicts_item_select_robot">Make default (robot)</string>
+    <string name="dicts_item_select">Make default</string>
     <string name="dicts_item_details">Details</string>
     <string name="move_dictf">Move dictionary %1$s from %2$s to %3$s?</string>
+    <string name="set_default_message">Use this dictionary as the
+      default for new games for what kind of players?</string>
+    <string name="button_default_human">Human</string>
+    <string name="button_default_robot">Robot</string>
+    <string name="button_default_both">Both</string>
 
     <string name="dict_lang_labelf">Dictionary (in %s)</string>
     <string name="connect_label">Connection (via internet)</string>
@@ -307,9 +312,8 @@
     <string name="tab_sms">SMS (broken)</string>
     <string name="tab_bluetooth">Bluetooth (pending)</string>
 
-    <string formatted="false" name="msg_relay_waiting">Device %d
-      connected to relay in room \"%s\". Waiting for %d
-      player[s].</string>
+    <string name="msg_relay_waiting">Device %1$d connected to relay in
+      room \"%2$s\". Waiting for %3$d player[s].</string>
     <string name="msg_relay_all_heref">All players are here in room
       \"%s\".</string>
 
@@ -341,8 +345,8 @@
     <string name="movesf">%d moves played</string>
 
     <!-- about dialog stuff -->
-    <string formatted="false" name="about_versf">Crosswords for Android, Version %s,
-    rev %s.</string>
+    <string name="about_versf">Crosswords for Android, Version %1$s,
+    rev %2$s.</string>
     <string name="about_copyright">Copyright (C) 1998-2011 by Eric
     House. This free/open source software is released under the GNU Public
     License.</string>
@@ -365,9 +369,9 @@
 
     <string name="no_dictf">Unable to open game because no %s
       dictionary found.</string>
-    <string formatted="false" name="no_dict_substf">Unable to open game because
-      dictionary %s not found. You can download a replacement or
-      substitute another %s dictionary.</string>
+    <string name="no_dict_substf">Unable to open game because
+      dictionary %1$s not found. You can download a replacement or
+      substitute another %2$s dictionary.</string>
 
 	<string name="msg_ask_password">Password for \"%s\":</string>
 
@@ -397,11 +401,11 @@
 	<string name="notify_vibrate">Vibrate</string>
 	<string name="notify_other_summary">When opponent moves arrive</string>
 
-    <string formatted="false" name="public_names_progress">Fetching public rooms for
-    %d-player games in %s.</string>
-    <string formatted="false" name="no_name_found_f">No public rooms
-    found for %d-player games in %s. Try refreshing or creating your
-    own.</string>
+    <string name="public_names_progress">Fetching public rooms for
+      %1$d-player games in %2$s.</string>
+    <string name="no_name_found_f">No public rooms found for
+      %1$d-player games in %2$s. Try refreshing or creating your
+      own.</string>
 
     <string name="chat_local_id">Me: </string>
     <string name="chat_other_id">Not me: </string>
@@ -414,10 +418,10 @@
     <string name="gamel_menu_checkmoves">Check relay</string>
 
     <string name="no_copy_network">Games that have already connected
-    to the relay cannot be copied.</string>
+      to the relay cannot be copied.</string>
 
     <string name="no_games_to_refresh">No games found that connect via
-    the relay.</string>
+      the relay.</string>
 
     <string name="msgs_progress">Checking relay for moves
       etc...</string>

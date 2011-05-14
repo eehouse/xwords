@@ -15,8 +15,6 @@
 -->
 
 <resources>
-    <string name="menu_delete">Vymazat</string>
-    <string name="menu_insert">Přidat hru</string>
     <string name="button_new_game">Přidat hru</string>
 
     <string name="list_item_config">Konfigurovat</string>
@@ -32,12 +30,9 @@
 	<string name="list_item_move_to_bottom">Přesunout dolů</string>
 
     <string name="resolve_edit">Upravit poznámku</string>
-    <string name="resolve_title">Upravit název</string>  
 
     <string name="play">Hrát hru</string>
 
-    <string name="title_create">Vytvořit hru</string>
-    <string name="title_edit">Upravit hru</string>
 	<string name="title_games_list">Crosswords</string>   
 	<string name="title_dicts_list">Slovníky Crosswords</string>   
 	<string name="title_game">Hra</string>  
@@ -54,12 +49,8 @@
 	<string name="button_discard">Zrušit</string>  
 
     <string name="player_label">Jméno:</string>
-    <string name="game_config_open">Otevřít</string>
-    <string name="game_config_revert">Vrátit změny</string>
 
-	<string name="error_title">Chyba</string>
 	<string name="info_title">Pro vaši informaci...</string>
-	<string name="error_message">Chyba při nahrávání hry</string>
 	<string name="query_title">Dotaz...</string>
 	<string name="query_trade">Chcete určitě vyměnit vybrané kameny?</string>
 
@@ -72,13 +63,8 @@
 
     <!-- system menu for main board view -->
 	<string name="board_menu_done">Ukončit tah</string>
-	<string name="board_menu_juggle">Přehodit</string>
-	<string name="board_menu_flip">Překlopit</string>
 	<string name="board_menu_trade">Vyměnit</string>
 	<string name="board_menu_tray">Skrýt/Ukázat</string>
-	<string name="board_submenu_undo">Zpět</string>
-	<string name="board_menu_undo_current">Zpět současný</string>
-	<string name="board_menu_undo_last">Zpět minulý</string>
 	<string name="board_menu_values">Ukaž hodnoty</string>
 	<string name="board_submenu_game">Hra</string>
 	<string name="board_menu_game_counts">Počty a hodnoty</string>
@@ -86,8 +72,6 @@
 	<string name="board_menu_game_history">Historie hry</string>
 	<string name="board_menu_game_final">Celkové skóre</string>
 	<string name="board_menu_game_resend">Přeposlat zprávy</string>
-	<string name="board_submenu_file">Soubor</string>
-	<string name="board_menu_file_new">Nová hra</string>
 	<string name="board_menu_file_about">O Crosswords</string>
 
 	<string name="gamel_menu_delete_all">Vymazat vše</string>
@@ -105,12 +89,12 @@
     <string name="strs_move_across">tah (od %s napříč)</string>
     <string name="strs_move_down">tah (od %s dolů)</string>
     <string name="strs_tray_at_start">Zásobník při startu: %s</string>
-    <string formatted="false" name="strss_traded_for">Vyměnil %s za %s.</string>
+    <string name="strss_traded_for">Vyměnil %1$s za %2$s.</string>
     <string name="str_phony_rejected">Nepovolené slovo; tah ztracen!</string>
     <string name="strd_cumulative_score">Souhrnné skóre: %d</string>
     <string name="strs_new_tiles">Nové kameny: %s</string>
     <string name="str_passed">Prošel</string>
-    <string formatted="false" name="strsd_summaryscored">%s:%d</string>
+    <string name="strsd_summaryscored">%1$s:%2$d</string>
     <string name="str_lostturn">Tah byl ztracen</string>
     <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
     <string name="str_local_name">%s</string>
@@ -143,19 +127,11 @@
 
     <string name="players_label_standalone">Hráči</string>
     <string name="players_label_host">Hráči -- lokální a očekávaní</string>
-    <string name="players_label_guest">Hráči -- pouze lokální</string>
     <string name="button_add_player">Přidat hráče</string>
     <string name="button_juggle_players">Přehodit hráče</string>
 
-    <string name="list_item_up">O jeden výš</string>
-    <string name="list_item_down">O jeden níž</string>
     <string name="dicts_item_select">Nastavit jako výchozí</string>
-    <string name="dicts_item_delete">Vymazat slovník</string>
     <string name="dicts_item_details">Podrobnosti</string>
-
-    <string name="dict_label">Slovník</string>
-    <string name="role_label">Role zařízení</string>
-    <string name="connection_label">Připojení</string>
 
     <string name="configure_role">Konfigurovat připojení</string>
     <string name="configure_rolef">Konfigurovat %s připojení</string>
@@ -189,18 +165,11 @@
 	<string name="menu_prefs">Předvolby</string>
     <string name="gamel_menu_dicts">Slovníky</string>
 
-    <string name="room_label">Místnost</string>
-    <string name="phone_label">Telefonní číslo Serveru</string>
-    <string name="bluetooth_label">Podpora Bluetooth se připravuje....</string>
-    <string name="role_edit_title">Připojení</string>
-    <string name="connect_prompt">Jak budou spolu komunikovat Server a Klienti?</string>
-
     <string name="prefs_defaults">Výchozí nastavení</string>
     <string name="prefs_defaults_summary">Výchozí nastavení pro novou hru</string>
     <string name="default_dict">Slovník pro hru</string>
     <string name="default_phonies">Předvolby slovníku</string>
     <string name="board_size">Velikost hrací plochy</string>
-    <string name="manage_dicts">Vybrat</string>
     <string name="prefs_colors">Barvy</string>
     <string name="prefs_colors_summary">Upravit barvy hráčů a hrací plochy</string>
     <string name="player0">První hráč</string>
@@ -219,19 +188,13 @@
     <string name="relay_host">Relay adresa</string>
     <string name="dict_host">URL adresa pro nahrávání slovníků</string>
     <string name="relay_port">Relay port</string>
-    <string name="sms_port">SMS port</string>
 
-    <string name="sms_phone_label">sms_phone_label</string>
-    <string name="sms_port_label">sms_port_label</string>
-    <string name="bt_label">bt_label</string>
-    <string name="list_item_view">list_item_view</string>
     <string name="key_player">key_player</string>
     <string name="tab_relay">Internet/Relay</string>
     <string name="tab_sms">SMS (nefunkční)</string>
     <string name="tab_bluetooth">Bluetooth (připravuje se)</string>
 
     <string name="msg_relay_waiting">Připojen na relay. Čekám na %d hráče.</string>
-    <string name="title_relay_status">Stav připojení.</string>
 
     <string name="relay_alert">Chyba připojení</string>
     <string name="msg_too_many">Chcete přihlásit více hráčů než očekává server.</string>
@@ -250,17 +213,13 @@
     <string name="force_expl">Jako Server vyberte jedoho nebo více hráčů kteří se budou moct
     připojit jako Klient.</string>
 
-    <string name="vs">proti</string>
-    <string name="dictionary">Slovník:</string>
-    <string name="summary_fmt_listening">%s listening</string>
-    <string formatted="false" name="summary_fmt_relay">%s přes Relay, místnost \"%s\"</string>
-    <string formatted="false" name="summary_fmt_sms">%s přes SMS, dialing %s</string>
+    <string name="summary_fmt_relay">%1$s přes Relay, místnost \"%2$s\"</string>
     <string name="gameOver">Hra skončena</string>
     <string name="movesf">Bylo zahráno %d tahů</string>
 
     <!-- about dialog stuff -->
-    <string formatted="false" name="about_versf">Crosswords pro Android, Verze %s,
-    revize %s.</string>
+    <string name="about_versf">Crosswords pro Android, Verze %1$s,
+      revize %2$s.</string>
     <string name="about_copyright">Copyright (C) 1998-2011 Eric
     House. Tento software je vydán pod licencí GNU Public License.</string>
 
