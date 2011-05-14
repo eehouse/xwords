@@ -89,12 +89,12 @@
     <string name="strs_move_across">tah (od %s napříč)</string>
     <string name="strs_move_down">tah (od %s dolů)</string>
     <string name="strs_tray_at_start">Zásobník při startu: %s</string>
-    <string formatted="false" name="strss_traded_for">Vyměnil %s za %s.</string>
+    <string name="strss_traded_for">Vyměnil %1$s za %2$s.</string>
     <string name="str_phony_rejected">Nepovolené slovo; tah ztracen!</string>
     <string name="strd_cumulative_score">Souhrnné skóre: %d</string>
     <string name="strs_new_tiles">Nové kameny: %s</string>
     <string name="str_passed">Prošel</string>
-    <string formatted="false" name="strsd_summaryscored">%s:%d</string>
+    <string name="strsd_summaryscored">%1$s:%2$d</string>
     <string name="str_lostturn">Tah byl ztracen</string>
     <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
     <string name="str_local_name">%s</string>
@@ -213,13 +213,13 @@
     <string name="force_expl">Jako Server vyberte jedoho nebo více hráčů kteří se budou moct
     připojit jako Klient.</string>
 
-    <string formatted="false" name="summary_fmt_relay">%s přes Relay, místnost \"%s\"</string>
+    <string name="summary_fmt_relay">%1$s přes Relay, místnost \"%2$s\"</string>
     <string name="gameOver">Hra skončena</string>
     <string name="movesf">Bylo zahráno %d tahů</string>
 
     <!-- about dialog stuff -->
-    <string formatted="false" name="about_versf">Crosswords pro Android, Verze %s,
-    revize %s.</string>
+    <string name="about_versf">Crosswords pro Android, Verze %1$s,
+      revize %2$s.</string>
     <string name="about_copyright">Copyright (C) 1998-2011 Eric
     House. Tento software je vydán pod licencí GNU Public License.</string>
 

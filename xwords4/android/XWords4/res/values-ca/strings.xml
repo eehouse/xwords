@@ -90,7 +90,7 @@
     <string name="strs_move_across">mou (des de %s horitzontal)</string>
     <string name="strs_move_down">mou (des de %s avall)</string>
     <string name="strs_tray_at_start">Faristol a l\'inici: %s</string>
-    <string formatted="false" name="strss_traded_for">Ha canviat %s per %s.</string>
+    <string name="strss_traded_for">Ha canviat %1$s per %2$s.</string>
     <string name="str_phony_rejected">Hi ha una o més paraules no vàlides a la jugada; torn perdut!</string>
     <string name="strd_cumulative_score">Puntuació acumulada: %d</string>
     <string name="strs_new_tiles">Fitxes noves: %s</string>
@@ -234,14 +234,14 @@
     <string name="force_title">Jugador/s remot/s</string>
     <string name="force_expl">Un amfitrió ha de tenir com a mínim un jugador remot.</string>
 
-    <string formatted="false" name="summary_fmt_relay">%s via
-    repetidor, sala \"%s\"</string>
+    <string name="summary_fmt_relay">%1$s via repetidor, sala
+      \"%2$s\"</string>
     <string name="gameOver">Final de partida</string>
     <string name="movesf">%d torns jugats</string>
 
     <!-- about dialog stuff -->
-    <string formatted="false" name="about_versf">Crosswords per a
-    l\'Android, Versió %s, rev %s.</string>
+    <string name="about_versf">Crosswords per a l\'Android, Versió
+      %1$s, rev %2$s.</string>
     <string name="about_copyright">Copyright (C) 1998-2011 d\'Eric
     House. Aquest programari es troba sota la Llicència Pública General GNU.</string>
 
