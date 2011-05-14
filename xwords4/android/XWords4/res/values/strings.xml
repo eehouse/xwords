@@ -35,7 +35,7 @@
     <string name="play">Play game</string>
 
 	<string name="title_games_list">Crosswords</string>   
-	<string name="title_dicts_list">Dictionaries (wordcount)</string>   
+	<string name="title_dicts_list">Dictionaries</string>   
     <string name="title_langs_list">Languages (based on installed
       dictionaries)</string>
     <string name="lang_label">Game language</string>
