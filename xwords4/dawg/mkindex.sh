@@ -19,11 +19,15 @@ do_lang() {
     for DICT in $(ls *.xwd); do
         echo "<tr>"
         echo "<td>&nbsp;&nbsp;<a href=\"./$LANG/$DICT\">${DICT%.xwd}</a></td>"
-        SIZE=$(ls -l $DICT | awk '{print $5}')
-        echo "<td>${SIZE}</td>"
-        HEXCOUNT=$(hd $DICT | head -n 1 | awk '{print $6 $7 $8 $9}' | tr [a-f] [A-F])
+
+        HEXCOUNT=$(hd $DICT | head -n 1 | awk '{print $6 $7 $8 $9}' | \
+            tr [a-f] [A-F])
         DECCOUNT=$(echo "ibase=16;$HEXCOUNT" | bc)
         echo "<td>${DECCOUNT}</td>"
+
+        SIZE=$(ls -l $DICT | awk '{print $5}')
+        echo "<td>${SIZE}</td>"
+
         echo "</tr>"
         [ -n "$DO_MD5" ] && md5sum $DICT | awk '{print $1}' > $DICT.md5
     done
@@ -59,7 +63,7 @@ done
 echo ".</p>"
 
 echo "<table>"
-echo "<tr><th>File</th><th>Size</th><th>Wordcount</th></tr>"
+echo "<tr><th>Dictionary</th><th>Wordcount</th><th>Size</th></tr>"
 for DIR in $DIRS; do
     do_lang $DIR
 done
