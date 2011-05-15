@@ -26,7 +26,8 @@ do_lang() {
         echo "<td>${DECCOUNT}</td>"
 
         SIZE=$(ls -l $DICT | awk '{print $5}')
-        echo "<td>${SIZE}</td>"
+        SIZE=$(((SIZE+1024)/1024))
+        echo "<td>${SIZE}K</td>"
 
         echo "</tr>"
         [ -n "$DO_MD5" ] && md5sum $DICT | awk '{print $1}' > $DICT.md5
