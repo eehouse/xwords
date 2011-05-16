@@ -46,14 +46,14 @@ public class NewGameActivity extends XWActivity {
 
         setContentView( R.layout.new_game );
 
-        Button button = (Button)findViewById( R.id.new_game_local );
+        Button button = (Button)findViewById( R.id.newgame_local );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
                     newAndLaunch();
                 }
             } );
-        button = (Button)findViewById( R.id.new_game_local_config );
+        button = (Button)findViewById( R.id.newgame_local_config );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
@@ -61,7 +61,7 @@ public class NewGameActivity extends XWActivity {
                 }
             } );
 
-        button = (Button)findViewById( R.id.new_game_invite );
+        button = (Button)findViewById( R.id.newgame_invite );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
@@ -69,7 +69,7 @@ public class NewGameActivity extends XWActivity {
                 }
             } );
 
-        button = (Button)findViewById( R.id.new_game_net_config );
+        button = (Button)findViewById( R.id.newgame_net_config );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {

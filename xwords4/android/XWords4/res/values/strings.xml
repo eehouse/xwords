@@ -36,6 +36,7 @@
 	<string name="title_games_list">Crosswords</string>   
 	<string name="title_dicts_list">Dictionaries</string>   
     <string name="title_newgame">New game</string>
+
     <string name="title_langs_list">Languages (based on installed
       dictionaries)</string>
     <string name="lang_label">Game language</string>
@@ -46,10 +47,21 @@
 	
 	<string name="app_name">Crosswords</string>  
 
-	<string name="new_game_local">Play new local game</string>
-	<string name="new_game_local_config">Configure new local game</string>
-	<string name="new_game_invite">Invite to new networked game</string>
-	<string name="new_game_net_config">Configure new networked game</string>
+    <string name="newgame_local_header">New Local-only game</string>
+    <string name="newgame_local_desc">Create a new game where all
+      players will be on this device.  To play with all the default
+      setting, just press \"Play Game\".  To change some settings
+      first, press \"Configure game\".</string>
+    <string name="newgame_networked_header">New Networked game</string>
+    <string name="newgame_networked_desc">Create a game that will be
+      played over the network.  The \"Invite now\" button starts a
+      game and helps you invite a friend to join it.  Or press
+      \"Configure game\" to change some of the defaults before you
+      start your networked game.</string>
+	<string name="newgame_local">Play game</string>
+	<string name="newgame_local_config">Configure game</string>
+	<string name="newgame_invite">Invite now</string>
+	<string name="newgame_net_config">Configure first</string>
 	
 	<string name="button_ok">OK</string>  
 	<string name="button_cancel">Cancel</string>  
