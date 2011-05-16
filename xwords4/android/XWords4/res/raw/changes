@@ -8,20 +8,16 @@
 
 <b>Crosswords 4.4 beta 26 release</b>
 
-<ul>A quick release to get a much-requested feature in.
-
-  <li>Allow storage of downloaded dictionaries on SD card ("external 
-  storage") if present and usable.</li>
-
-  <li>Route all download activities through the Dictionary list view.</li>
-
+<ul>A couple of quick improvements in dictionary display/storage
+  <li>Group dictionaries by language</li>
+  
+  <li>Show location of dictionaries and allow movement between 
+  them (if you have an external storage card).</li>
 </ul>
 
-<p>(Allowing install of the app itself on SD is not recommended because 
-of some of the OS features I'm using, e.g. periodic checks for 
-moves).</p>
-
-<p>Please remember that this is beta software.  Please let me know (at eehouse@eehouse.org) what's broken and what features you'd most like to see.</p>
+<p>Please remember that this is beta software.  Please let me know (at 
+eehouse@eehouse.org) what's broken and what features you'd most like 
+to see.</p>
 
 <p>Thanks!<br>--Eric</p>
 
