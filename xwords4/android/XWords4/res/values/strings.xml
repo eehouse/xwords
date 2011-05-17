@@ -231,7 +231,8 @@
 
     <string name="storeWhereTitle">Dictionary storage</string>
     <string name="storeWhereMsg">Store downloaded dictionaries using
-      internal or external (SD card) memory?</string>
+      internal or external (SD card) memory? (You can always move them
+      later.)</string>
     <string name="button_internal">Internal</string>
     <string name="button_sd">External</string>
 
