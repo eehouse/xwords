@@ -27,7 +27,10 @@
 
 #include "mvcount.h"
 
-#define PREPROD_LIMIT 50
+#ifndef PREPROD_LIMIT
+/* 0 means no limit */
+# define PREPROD_LIMIT 0
+#endif
 
 typedef struct _MvCntGlobals {
     CommonGlobals cGlobals;
