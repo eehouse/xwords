@@ -265,7 +265,7 @@ public class DictsActivity extends ExpandableListActivity
                 };
             dialog = new AlertDialog.Builder( this )
                 .setTitle( R.string.query_title )
-                .setMessage( R.string.set_default_message )
+                .setMessage( "" ) // or can't change it later!
                 .setPositiveButton( R.string.button_default_human, lstnr )
                 .setNeutralButton( R.string.button_default_robot, lstnr )
                 .setNegativeButton( R.string.button_default_both, lstnr )
@@ -282,15 +282,24 @@ public class DictsActivity extends ExpandableListActivity
     public void onPrepareDialog( int id, Dialog dialog )
     {
         AlertDialog ad = (AlertDialog)dialog;
+        String format;
+        String message;
+
         switch( id ) {
         case PICK_STORAGE:
             break;
         case MOVE_DICT:
-            String format = getString( R.string.move_dictf );
-            String message = 
-                String.format( format, m_moveName,
-                               m_locNames[ m_moveFromLoc.ordinal() ],
-                               m_locNames[ m_moveToLoc.ordinal() ] );
+            format = getString( R.string.move_dictf );
+            message = String.format( format, m_moveName,
+                                     m_locNames[ m_moveFromLoc.ordinal() ],
+                                     m_locNames[ m_moveToLoc.ordinal() ] );
+            ad.setMessage( message );
+            break;
+        case SET_DEFAULT:
+            String lang = 
+                DictLangCache.getLangName( this, m_rowView.getText() );
+            format = getString( R.string.set_default_messagef );
+            message = String.format( format, lang );
             ad.setMessage( message );
             break;
         default:
