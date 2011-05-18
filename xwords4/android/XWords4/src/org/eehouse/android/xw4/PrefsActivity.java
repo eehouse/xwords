@@ -123,6 +123,10 @@ public class PrefsActivity extends PreferenceActivity
                              R.string.key_default_dict,
                              R.string.key_default_robodict,
                              R.string.key_default_phonies,
+                             R.string.key_player1_name,
+                             R.string.key_player2_name,
+                             R.string.key_player3_name,
+                             R.string.key_player4_name,
         };
 
         SharedPreferences sp

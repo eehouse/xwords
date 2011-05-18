@@ -284,6 +284,13 @@
     <string name="network_behavior_summary">Settings that apply to
       networked games</string>
 
+    <string name="prefs_names">Player names</string>
+    <string name="prefs_names_summary">Default player names</string>
+    <string name="pref_player1_name">First player</string>
+    <string name="pref_player2_name">Second player</string>
+    <string name="pref_player3_name">Third player</string>
+    <string name="pref_player4_name">Fourth player</string>
+
     <string name="default_dict">Dictionary for humans</string>
     <string name="default_robodict">Dictionary for robots</string>
     

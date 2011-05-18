@@ -7,6 +7,28 @@
                     android:summary="@string/prefs_defaults_summary"
                     >
 
+    <PreferenceScreen android:title="@string/prefs_names"
+                      android:summary="@string/prefs_names_summary"
+                      >
+
+      <EditTextPreference android:key="@string/key_player1_name"
+                          android:title="@string/pref_player1_name"
+                          android:defaultValue=""
+                          />
+      <EditTextPreference android:key="@string/key_player2_name"
+                          android:title="@string/pref_player2_name"
+                          android:defaultValue=""
+                          />
+      <EditTextPreference android:key="@string/key_player3_name"
+                          android:title="@string/pref_player3_name"
+                          android:defaultValue=""
+                          />
+      <EditTextPreference android:key="@string/key_player4_name"
+                          android:title="@string/pref_player4_name"
+                          android:defaultValue=""
+                          />
+    </PreferenceScreen>
+
     <org.eehouse.android.xw4.DictListPreference 
        android:key="@string/key_default_dict"
        android:title="@string/default_dict"

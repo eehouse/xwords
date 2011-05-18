@@ -83,14 +83,22 @@ public class CurGameInfo {
 
         // Always create MAX_NUM_PLAYERS so jni code doesn't ever have
         // to cons up a LocalPlayer instance.
-        int ii;
-        for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+        for ( int ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
             players[ii] = new LocalPlayer( context, ii );
         }
         if ( isNetworked ) {
             players[1].isLocal = false;
         } else {
             players[0].setRobotSmartness( 1 );
+        }
+
+        // name the local humans now
+        int count = 0;
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            LocalPlayer lp = players[ii];
+            if ( lp.isLocal && !lp.isRobot() ) {
+                lp.name = CommonPrefs.getDefaultPlayerName( context, count++ );
+            }
         }
 
         setLang( 0 );

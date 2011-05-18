@@ -218,6 +218,18 @@ public class CommonPrefs {
         }
         return value;
     }
+    
+    public static String getDefaultPlayerName( Context context, int num )
+    {
+        int id = 0;
+        switch( num ) {
+        case 0: id = R.string.key_player1_name; break;
+        case 1: id = R.string.key_player2_name; break;
+        case 2: id = R.string.key_player3_name; break;
+        case 3: id = R.string.key_player4_name; break;
+        }
+        return getString( context, id );
+    }
 
     public static CurGameInfo.XWPhoniesChoice 
         getDefaultPhonies( Context context )
