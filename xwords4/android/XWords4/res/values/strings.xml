@@ -290,6 +290,7 @@
     <string name="pref_player2_name">Second player</string>
     <string name="pref_player3_name">Third player</string>
     <string name="pref_player4_name">Fourth player</string>
+    <string name="tell_unused">Not used yet...</string>
 
     <string name="prefs_dicts">Dictionaries</string>
     <string name="prefs_dicts_summary">Default dictionaries</string>
