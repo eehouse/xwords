@@ -35,6 +35,7 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -187,21 +188,11 @@ public class GamesList extends XWListActivity
                 @Override
                 public void onClick( View v ) {
                     // addGame( false );
-                    startActivity( new Intent( GamesList.this, 
-                                               NewGameActivity.class ) );
+                    startNewGameActivity();
                     // showNotAgainDlg( R.string.not_again_newgame, 
                     //                  R.string.key_notagain_newgame );
                 }
             });
-        // newGameB = (Button)findViewById(R.id.new_game_net);
-        // newGameB.setOnClickListener( new View.OnClickListener() {
-        //         @Override
-        //         public void onClick( View v ) {
-        //             String path = addGame( true );
-        //             GameUtils.doConfig( GamesList.this, path, 
-        //                                 RelayGameActivity.class );
-        //         }
-        //     });
 
         m_adapter = new GameListAdapter( this, this );
         setListAdapter( m_adapter );
@@ -234,8 +225,10 @@ public class GamesList extends XWListActivity
 
         boolean hide = CommonPrefs.getHideIntro( this );
         int hereOrGone = hide ? View.GONE : View.VISIBLE;
-        View hint = findViewById( R.id.empty_games_list );
-        hint.setVisibility( hereOrGone );
+        for ( int id : new int[]{ R.id.empty_games_list, R.id.new_game } ) {
+            View view = findViewById( id /*R.id.empty_games_list*/ );
+            view.setVisibility( hereOrGone );
+        }
 
         // TelephonyManager mgr = 
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
@@ -326,6 +319,10 @@ public class GamesList extends XWListActivity
         Intent intent;
 
         switch (item.getItemId()) {
+        case R.id.gamel_menu_newgame:
+            startNewGameActivity();
+            break;
+
         case R.id.gamel_menu_delete_all:
             final String[] games = DBUtils.gamesList( this );
             if ( games.length > 0 ) {
@@ -534,6 +531,11 @@ public class GamesList extends XWListActivity
                 .getStringArrayExtra( getString( R.string.relayids_extra ) );
             startFirstHasDict( relayIDs );
         }
+    }
+
+    private void startNewGameActivity()
+    {
+        startActivity( new Intent( this, NewGameActivity.class ) );
     }
 
     private void startNewNetGameIf( Intent intent )
