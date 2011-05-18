@@ -224,10 +224,14 @@ public class GamesList extends XWListActivity
 
         boolean hide = CommonPrefs.getHideIntro( this );
         int hereOrGone = hide ? View.GONE : View.VISIBLE;
-        for ( int id : new int[]{ R.id.empty_games_list, R.id.new_game } ) {
-            View view = findViewById( id /*R.id.empty_games_list*/ );
+        for ( int id : new int[]{ R.id.empty_games_list, 
+                                  R.id.new_game } ) {
+            View view = findViewById( id );
             view.setVisibility( hereOrGone );
         }
+        View empty = findViewById( R.id.empty_list_msg );
+        empty.setVisibility( hide ? View.VISIBLE : View.GONE );
+        getListView().setEmptyView( hide? empty : null );
 
         // TelephonyManager mgr = 
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );

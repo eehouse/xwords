@@ -32,8 +32,14 @@
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:drawSelectorOnTop="false"
-            >
-  </ListView>
+            />
+  <TextView android:id="@+id/empty_list_msg"
+            android:layout_width="fill_parent" 
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/empty_list_msg" 
+            />
 
   <Button android:id="@+id/new_game"
           android:layout_width="fill_parent" 

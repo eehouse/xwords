@@ -552,5 +552,6 @@
     <string name="empty_games_list2">You can hide this and the button
       below in the Appearance section of Settings (accessed via your
       device\'s menu key).</string>
+    <string name="empty_list_msg">Use the menu key, Luke!</string>
 
 </resources>
