@@ -29,17 +29,21 @@
                           />
     </PreferenceScreen>
 
-    <org.eehouse.android.xw4.DictListPreference 
-       android:key="@string/key_default_dict"
-       android:title="@string/default_dict"
-       android:defaultValue="CollegeEng_2to8"
-       />
+    <PreferenceScreen android:title="@string/prefs_dicts"
+                      android:summary="@string/prefs_dicts_summary"
+                      >
+      <org.eehouse.android.xw4.DictListPreference 
+         android:key="@string/key_default_dict"
+         android:title="@string/default_dict"
+         android:defaultValue="CollegeEng_2to8"
+         />
 
-    <org.eehouse.android.xw4.DictListPreference 
-       android:key="@string/key_default_robodict"
-       android:title="@string/default_robodict"
-       android:defaultValue="Top5000"
-       />
+      <org.eehouse.android.xw4.DictListPreference 
+         android:key="@string/key_default_robodict"
+         android:title="@string/default_robodict"
+         android:defaultValue="Top5000"
+         />
+    </PreferenceScreen>
 
     <CheckBoxPreference android:key="@string/key_init_hintsallowed"
                         android:title="@string/hints_allowed"

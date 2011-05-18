@@ -291,6 +291,8 @@
     <string name="pref_player3_name">Third player</string>
     <string name="pref_player4_name">Fourth player</string>
 
+    <string name="prefs_dicts">Dictionaries</string>
+    <string name="prefs_dicts_summary">Default dictionaries</string>
     <string name="default_dict">Dictionary for humans</string>
     <string name="default_robodict">Dictionary for robots</string>
     
