@@ -559,7 +559,7 @@ public class GamesList extends XWListActivity
                 // this feature.  But it'd be worse to have a bunch of
                 // games stacking up when somebody taps the same URL
                 // multiple times.
-                String path = DBUtils.getPathFor( this, room, lang, nPlayers );
+                String path = null;// (for now; should be: DBUtils.getPathForOpen( this, room, lang, nPlayers );
 
                 if ( null == path ) {
                     int[] langarr = { lang };
