@@ -381,9 +381,13 @@ public class GameUtils {
         intent.setType( "plain/text" );
         intent.putExtra( Intent.EXTRA_SUBJECT, 
                          context.getString( R.string.invite_subject ) );
-        String format = context.getString( R.string.invite_bodyf );
+
+        String format = context.getString( R.string.game_urlf );
         String host = CommonPrefs.getDefaultRelayHost( context );
-        String message = String.format( format, host, room, lang );
+        String gameUrl = String.format( format, host, room, lang );
+        format = context.getString( R.string.invite_bodyf );
+        String appUrl = context.getString( R.string.app_market_url );
+        String message = String.format( format, gameUrl, appUrl );
         intent.putExtra( Intent.EXTRA_TEXT, message );
 
         String chooserMsg = context.getString( R.string.invite_chooser );
