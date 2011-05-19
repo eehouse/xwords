@@ -374,6 +374,22 @@ public class GameUtils {
         return path;
     }
 
+    public static void launchInviteActivity( Context context, String room, 
+                                             int lang )
+    {
+        Intent intent = new Intent( Intent.ACTION_SEND );
+        intent.setType( "plain/text" );
+        intent.putExtra( Intent.EXTRA_SUBJECT, 
+                         context.getString( R.string.invite_subject ) );
+        String format = context.getString( R.string.invite_bodyf );
+        String host = CommonPrefs.getDefaultRelayHost( context );
+        String message = String.format( format, host, room, lang );
+        intent.putExtra( Intent.EXTRA_TEXT, message );
+
+        String chooserMsg = context.getString( R.string.invite_chooser );
+        context.startActivity( Intent.createChooser( intent, chooserMsg ) );
+    }
+
     public static boolean gameDictsHere( Context context, String path )
     {
         return gameDictsHere( context, path, null, null );

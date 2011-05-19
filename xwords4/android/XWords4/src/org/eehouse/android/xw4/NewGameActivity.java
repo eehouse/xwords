@@ -96,26 +96,11 @@ public class NewGameActivity extends XWActivity {
         lang[0] = 0;
         String path = GameUtils.makeNewNetGame( this, room, lang, 2 );
 
-        Intent intent = new Intent( Intent.ACTION_SEND );
-        intent.setType( "plain/text" );
-        intent.putExtra( Intent.EXTRA_SUBJECT, "Let's play Crosswords" );
-        intent.putExtra( Intent.EXTRA_TEXT, 
-                         mkMsgWithLink( room, lang[0] ) );
-
         GameUtils.launchGame( this, path );
 
-        startActivity( Intent.createChooser( intent, 
-                                             "Send your invitation via" ) );
+        GameUtils.launchInviteActivity( this, room, lang[0] );
 
         finish();
-    }
-
-    private String mkMsgWithLink( String room, int lang )
-    {
-        String host = CommonPrefs.getDefaultRelayHost( this );
-        String format = "Click on this link to start a game: " +
-            "http://%s/redir.php?room=%s&lang=%d";
-        return String.format( format, host, room, lang );
     }
 
     private void newAndConfigure( boolean networked )

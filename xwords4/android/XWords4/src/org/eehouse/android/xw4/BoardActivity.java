@@ -65,6 +65,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_RETRY = DLG_OKONLY + 6;
     private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
     private static final int DLG_DELETED = DLG_OKONLY + 8;
+    private static final int DLG_INVITE = DLG_OKONLY + 9;
 
     private static final int CHAT_REQUEST = 1;
 
@@ -100,6 +101,9 @@ public class BoardActivity extends XWActivity
 
     private ProgressDialog m_progress;
     private boolean m_isVisible;
+    private String m_room;
+    private int m_missing;
+    private boolean m_haveInvited = false;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -257,7 +261,24 @@ public class BoardActivity extends XWActivity
                                         })
                     .create();
                 break;
-
+            case DLG_INVITE:
+                if ( null != m_room ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, 
+                                                 int item ) {
+                                GameUtils.launchInviteActivity( BoardActivity.this,
+                                                                m_room,
+                                                                m_gi.dictLang );
+                            }
+                        };
+                    dialog = new AlertDialog.Builder( this )
+                        .setTitle( R.string.query_title )
+                        .setMessage( "" )
+                        .setPositiveButton( R.string.button_yes, lstnr )
+                        .setNegativeButton( R.string.button_no, null )
+                        .create();
+                }
+                break;
             default:
                 // just drop it; super.onCreateDialog likely failed
                 break;
@@ -265,6 +286,21 @@ public class BoardActivity extends XWActivity
         }
         return dialog;
     } // onCreateDialog
+
+    @Override
+    public void onPrepareDialog( int id, Dialog dialog )
+    {
+        switch( id ) {
+        case DLG_INVITE:
+            AlertDialog ad = (AlertDialog)dialog;
+            String format = getString( R.string.invite_msgf );
+            ad.setMessage( String.format( format, m_missing) );
+            break;
+        default:
+            super.onPrepareDialog( id, dialog );
+            break;
+        }
+    }
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
@@ -648,8 +684,8 @@ public class BoardActivity extends XWActivity
         }
     }
 
-    private void handleConndMessage( String room, int devOrder, boolean allHere, 
-                                     int nMissing )
+    private void handleConndMessage( String room, int devOrder, // <- hostID
+                                     boolean allHere, int nMissing )
     {
         int naMsg = 0;
         int naKey = 0;
@@ -665,15 +701,22 @@ public class BoardActivity extends XWActivity
                 naKey = R.string.key_notagain_conndall;
             }
         } else if ( nMissing > 0 ) {
-            String fmt = getString( R.string.msg_relay_waiting );
-            str = String.format( fmt, devOrder,
-                                 room, nMissing );
-            if ( devOrder == 1 ) {
-                naMsg = R.string.not_again_conndfirst;
-                naKey = R.string.key_notagain_conndfirst;
+            if ( m_haveInvited ) {
+                String fmt = getString( R.string.msg_relay_waiting );
+                str = String.format( fmt, devOrder,
+                                     room, nMissing );
+                if ( devOrder == 1 ) {
+                    naMsg = R.string.not_again_conndfirst;
+                    naKey = R.string.key_notagain_conndfirst;
+                } else {
+                    naMsg = R.string.not_again_conndmid;
+                    naKey = R.string.key_notagain_conndmid;
+                }
             } else {
-                naMsg = R.string.not_again_conndmid;
-                naKey = R.string.key_notagain_conndmid;
+                m_haveInvited = true;
+                m_room = room;
+                m_missing = nMissing;
+                showDialog( DLG_INVITE );
             }
         }
 

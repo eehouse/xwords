@@ -554,4 +554,13 @@
       device\'s menu key).</string>
     <string name="empty_list_msg">Use the menu key, Luke!</string>
 
+    <string name="invite_msgf">This game is missing %1$d remote
+      player[s].  Would you like to invite someone to join -- assuming
+      you haven\'t already?</string>
+    <string name="invite_subject">Let\'s play Crosswords</string>
+    <string name="invite_bodyf">Click on this link to start a game:
+       http://%1$s/redir.php?room=%2$s\u0026lang=%3$d. Use this link
+       to install Crosswords.</string>
+    <string name="invite_chooser">Send invitation via</string>
+
 </resources>
