@@ -95,7 +95,7 @@ and_xport_relayStatus( void* closure, CommsRelayState newState )
 }
 
 static void
-and_xport_relayConnd( void* closure, XP_UCHAR* const room,
+and_xport_relayConnd( void* closure, XP_UCHAR* const room, XP_Bool reconnect, 
                       XP_U16 devOrder, XP_Bool allHere, XP_U16 nMissing )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;

@@ -315,7 +315,8 @@ relay_status_gtk( void* closure, CommsRelayState state )
 
 static void
 relay_connd_gtk( void* XP_UNUSED(closure), XP_UCHAR* const room,
-                 XP_U16 devOrder, XP_Bool allHere, XP_U16 nMissing )
+                 XP_Bool XP_UNUSED(reconnect), XP_U16 devOrder, 
+                 XP_Bool allHere, XP_U16 nMissing )
 {
     XP_Bool skip = XP_FALSE;
     char buf[256];

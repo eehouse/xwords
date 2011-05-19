@@ -1424,7 +1424,7 @@ relay_status_curses( void* XP_UNUSED(closure),
 
 static void
 relay_connd_curses( void* XP_UNUSED(closure), XP_UCHAR* const XP_UNUSED(room),
-                    XP_U16 XP_UNUSED(devOrder),
+                    XP_Bool XP_UNUSED(reconnect), XP_U16 XP_UNUSED(devOrder),
                     XP_Bool XP_UNUSED_DBG(allHere),
                     XP_U16 XP_UNUSED_DBG(nMissing) )
 {
