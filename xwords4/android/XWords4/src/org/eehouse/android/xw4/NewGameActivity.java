@@ -92,13 +92,14 @@ public class NewGameActivity extends XWActivity {
     {
         Random random = new Random();
         String room = String.format( "%X", random.nextInt() );
-        int[] lang = new int[1];
-        lang[0] = 0;
+        int[] lang = {0};
         String path = GameUtils.makeNewNetGame( this, room, lang, 2 );
 
         GameUtils.launchGame( this, path );
 
-        GameUtils.launchInviteActivity( this, room, lang[0] );
+        // Remove this for now at least.  The game itself will suggest
+        // an invite when it connects and is missing someone.
+        // GameUtils.launchInviteActivity( this, room, lang[0] );
 
         finish();
     }
