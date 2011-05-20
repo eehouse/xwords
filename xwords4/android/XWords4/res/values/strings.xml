@@ -126,7 +126,8 @@
     <string name="str_lostturn">Lost turn</string>
     <string name="str_commit_confirm">Commit the current move?\n</string>
     <string name="str_local_name">%s</string>
-    <string name="str_nonlocal_name">%s (remote)</string>
+    <string name="str_nonlocal_name">(remote)</string>
+    <string name="str_nonlocal_namef">%s (remote)</string>
     <string name="str_game_namef">%1$s (%2$s)</string>
     <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
     <string name="strd_turn_score">Score for turn: %d\n</string>
@@ -151,8 +152,9 @@
 
     <string name="remote_label">Off-device player</string>
     <string name="robot_label">Robot player</string>
-    <string name="robot_name">(robot)</string>
+    <string name="robot_namef">%s (robot)</string>
     <string name="guest_name">(Off-device player)</string>
+    <string name="missing_player">(still unknown)</string>
     <string name="password_label">Password</string>
     <string name="player_edit_title">Edit player</string>
 

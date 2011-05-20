@@ -99,7 +99,7 @@
     <string name="str_lostturn">Torn perdut</string>
     <string name="str_commit_confirm">Voleu fer la jugada?\n</string>
     <string name="str_local_name">%s</string>
-    <string name="str_nonlocal_name">%s (remot)</string>
+    <string name="str_nonlocal_namef">%s (remot)</string>
     <string name="str_bonus_all">Bonificació per usar totes les fitxes: 50\n</string>
     <string name="strd_turn_score">Puntuació del torn: %d\n</string>
 
@@ -123,6 +123,7 @@
     <string name="robot_label">Jugador robot</string>
     <string name="password_label">Contrasenya (s\'ignora)</string>
     <string name="robot_name">(robot)</string>
+    <string name="robot_namef">%s (robot)</string>
     <string name="guest_name">(jugador visitant)</string>
     <string name="player_edit_title">Jugador</string>
 
