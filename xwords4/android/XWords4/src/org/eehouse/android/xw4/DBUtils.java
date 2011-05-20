@@ -544,10 +544,9 @@ public class DBUtils {
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       null, null, null, null, orderBy );
             if ( 0 < cursor.getCount() ) {
+                int index = cursor.getColumnIndex( DBHelper.FILE_NAME );
                 cursor.moveToFirst();
                 for ( ; ; ) {
-                    int index = cursor.getColumnIndex( DBHelper.FILE_NAME );
-                    String name = cursor.getString( index );
                     al.add( cursor.getString( index ) );
                     if ( cursor.isLast() ) {
                         break;
