@@ -271,6 +271,7 @@ public class JNIThread extends Thread {
                 if ( nextSame( JNICmd.CMD_SAVE ) ) {
                     continue;
                 }
+                XwJNI.game_getGi( m_jniGamePtr, m_gi );
                 GameSummary summary = new GameSummary( m_gi );
                 XwJNI.game_summarize( m_jniGamePtr, summary );
                 byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
