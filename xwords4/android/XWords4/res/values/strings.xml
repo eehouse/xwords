@@ -154,7 +154,7 @@
     <string name="robot_label">Robot player</string>
     <string name="robot_namef">%s (robot)</string>
     <string name="guest_name">(Off-device player)</string>
-    <string name="missing_player">(still unknown)</string>
+    <string name="missing_player">(not here yet...)</string>
     <string name="password_label">Password</string>
     <string name="player_edit_title">Edit player</string>
 

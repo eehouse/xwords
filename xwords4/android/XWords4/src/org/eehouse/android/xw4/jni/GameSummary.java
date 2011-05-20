@@ -159,7 +159,7 @@ public class GameSummary {
         if ( !isLocal(indx) ) {
             boolean isMissing = 0 != ((1 << indx) & missingPlayers);
             if ( isMissing ) {
-                player = context.getString( R.string.str_nonlocal_name );
+                player = context.getString( R.string.missing_player );
             } else {
                 formatID = R.string.str_nonlocal_namef;
             }
