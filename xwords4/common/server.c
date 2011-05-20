@@ -1016,8 +1016,7 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
     }
 
     player->deviceIndex = deviceIndex;
-    XP_LOGF( "%s: set deviceIndex[%d]=%d", __func__, 
-             player - server->players, deviceIndex );
+
 } /* registerRemotePlayer */
 
 static void
