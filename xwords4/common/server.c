@@ -1016,7 +1016,8 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
     }
 
     player->deviceIndex = deviceIndex;
-
+    XP_LOGF( "%s: set deviceIndex[%d]=%d", __func__, 
+             player - server->players, deviceIndex );
 } /* registerRemotePlayer */
 
 static void
@@ -2136,6 +2137,46 @@ server_getGameIsOver( ServerCtxt* server )
 {
     return server->nv.gameState == XWSTATE_GAMEOVER;
 } /* server_getGameIsOver */
+
+XP_U16
+server_getMissingPlayers( const ServerCtxt* server )
+{
+    /* list players for which we're reserving slots that haven't shown up yet.
+     * If I'm a guest and haven't received the registration message and set
+     * server->nv.addresses[0].channelNo, all non-local players are missing.
+     * If I'm a host, players whose deviceIndex is -1 are missing.
+    */
+
+    XP_U16 result = 0;
+    XP_U16 ii;
+    if ( SERVER_ISCLIENT == server->vol.gi->serverRole ) {
+        if ( 0 == server->nv.addresses[0].channelNo ) {
+            CurGameInfo* gi = server->vol.gi;
+            const LocalPlayer* lp = gi->players;
+            for ( ii = 0; ii < gi->nPlayers; ++ii ) {
+                if ( !lp->isLocal ) {
+                    result |= 1 << ii;
+                }
+                ++lp;
+            }
+        }
+    } else {
+        XP_ASSERT( SERVER_ISSERVER == server->vol.gi->serverRole );
+        if ( 0 < server->nv.pendingRegistrations ) {
+            XP_U16 nPlayers = server->vol.gi->nPlayers;
+            const ServerPlayer* players = server->players;
+            for ( ii = 0; ii < nPlayers; ++ii ) {
+                if ( players->deviceIndex == UNKNOWN_DEVICE ) {
+                    result |= 1 << ii;
+                }
+                ++players;
+            }
+        }
+    }
+
+    LOG_RETURNF( "%x", result );
+    return result;
+}
 
 static void
 doEndGame( ServerCtxt* server )
