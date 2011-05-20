@@ -88,6 +88,7 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
+                                 DBHelper.MISSINGPLYRS,
                                  DBHelper.GAME_OVER, DBHelper.PLAYERS,
                                  DBHelper.TURN, DBHelper.GIFLAGS,
                                  DBHelper.CONTYPE, DBHelper.SERVERROLE,
@@ -108,12 +109,16 @@ public class DBUtils {
                 summary.nPlayers = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.NUM_PLAYERS));
+                summary.missingPlayers = 
+                    cursor.getInt(cursor.
+                                  getColumnIndex(DBHelper.MISSINGPLYRS));
                 summary.turn = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.TURN));
-                summary.giFlags = 
-                    cursor.getInt(cursor.
-                                  getColumnIndex(DBHelper.GIFLAGS));
+                summary.
+                    setGiFlags( cursor.getInt(cursor.
+                                              getColumnIndex(DBHelper.GIFLAGS))
+                                );
                 summary.players = 
                     parsePlayers( cursor.getString(cursor.
                                                    getColumnIndex(DBHelper.
@@ -204,6 +209,7 @@ public class DBUtils {
                 ContentValues values = new ContentValues();
                 values.put( DBHelper.NUM_MOVES, summary.nMoves );
                 values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
+                values.put( DBHelper.MISSINGPLYRS, summary.missingPlayers );
                 values.put( DBHelper.TURN, summary.turn );
                 values.put( DBHelper.GIFLAGS, summary.giflags() );
                 values.put( DBHelper.PLAYERS, 

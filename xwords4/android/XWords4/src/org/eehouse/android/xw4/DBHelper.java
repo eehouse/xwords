@@ -29,7 +29,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 7;
+    private static final int DB_VERSION = 8;
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -38,6 +38,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String PLAYERS = "PLAYERS";
     public static final String NUM_PLAYERS = "NUM_PLAYERS";
+    public static final String MISSINGPLYRS = "MISSINGPLYRS";
     public static final String GAME_OVER = "GAME_OVER";
     public static final String IN_USE = "IN_USE";
     public static final String SCORES = "SCORES";
@@ -75,6 +76,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + GIFLAGS     + " INTEGER,"
 
                     + NUM_PLAYERS + " INTEGER,"
+                    + MISSINGPLYRS + " INTEGER,"
                     + PLAYERS     + " TEXT,"
                     + GAME_OVER   + " INTEGER,"
 
@@ -128,6 +130,9 @@ public class DBHelper extends SQLiteOpenHelper {
                         " ADD COLUMN " + GIFLAGS + " INTEGER;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + CHAT_HISTORY + " TEXT;" );
+        } else if ( newVersion == 8 && oldVersion == 7 ) {
+            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
+                        " ADD COLUMN " + MISSINGPLYRS + " INTEGER;" );
         } else {
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {

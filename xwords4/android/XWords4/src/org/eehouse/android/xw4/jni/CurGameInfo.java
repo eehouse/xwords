@@ -237,10 +237,11 @@ public class CurGameInfo {
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             LocalPlayer lp = players[ii];
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
-                names[ii] = lp.name;
                 if ( lp.isRobot() ) {
-                    names[ii] += 
-                        " " + m_context.getString( R.string.robot_name );
+                    String format = m_context.getString( R.string.robot_namef );
+                    names[ii] = String.format( format, lp.name );
+                } else {
+                    names[ii] = lp.name;
                 }
             } else {
                 names[ii] = m_context.getString( R.string.guest_name );

@@ -1045,6 +1045,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             }
             setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
             setInt( env, jsummary, "seed", comms_getChannelSeed( comms ) );
+            setInt( env, jsummary, "missingPlayers", 
+                    server_getMissingPlayers( state->game.server ) );
         } else if ( COMMS_CONN_SMS == addr.conType ) {
             setString( env, jsummary, "smsPhone", addr.u.sms.phone );
         }

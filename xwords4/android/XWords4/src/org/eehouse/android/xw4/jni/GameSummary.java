@@ -23,6 +23,7 @@ package org.eehouse.android.xw4.jni;
 import android.content.Context;
 import junit.framework.Assert;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils;
 
 
 /** Info we want to access when the game's closed that's not available
@@ -38,8 +39,8 @@ public class GameSummary {
 
     public int nMoves;
     public int turn;
-    public int giFlags;
     public int nPlayers;
+    public int missingPlayers;
     public int[] scores;
     public boolean gameOver;
     public String[] players;
@@ -55,7 +56,7 @@ public class GameSummary {
     public int dictLang;
     public CurGameInfo.DeviceRole serverRole;
 
-
+    private int m_giFlags;
     private CurGameInfo m_gi;
 
     public GameSummary(){
@@ -123,12 +124,12 @@ public class GameSummary {
 
     private boolean isLocal( int indx ) {
         int flag = 2 << (indx * 2);
-        return 0 == (giFlags & flag);
+        return 0 == (m_giFlags & flag);
     }
 
     private boolean isRobot( int indx ) {
         int flag = 1 << (indx * 2);
-        boolean result = 0 != (giFlags & flag);
+        boolean result = 0 != (m_giFlags & flag);
         return result;
     }
 
@@ -146,15 +147,29 @@ public class GameSummary {
         return result;
     }
 
-    public String summarizePlayer( Context context, int indx ) {
+    public void setGiFlags( int flags ) 
+    {
+        m_giFlags = flags;
+    }
+
+    public String summarizePlayer( Context context, int indx ) 
+    {
         String player = players[indx];
+        int formatID = 0;
         if ( !isLocal(indx) ) {
-            player = 
-                String.format( context.getString( R.string.str_nonlocal_name),
-                               player );
+            boolean isMissing = 0 != ((1 << indx) & missingPlayers);
+            if ( isMissing ) {
+                player = context.getString( R.string.str_nonlocal_name );
+            } else {
+                formatID = R.string.str_nonlocal_namef;
+            }
         } else if ( isRobot(indx) ) {
-            String robot = context.getString( R.string.robot_name );
-            player += robot;
+            formatID = R.string.robot_namef;
+        }
+
+        if ( 0 != formatID ) {
+            String format = context.getString( formatID );
+            player = String.format( format, player );
         }
         return player;
     }
