@@ -228,7 +228,12 @@ public class CommonPrefs {
         case 2: id = R.string.key_player3_name; break;
         case 3: id = R.string.key_player4_name; break;
         }
-        return getString( context, id );
+        String result = getString( context, id );
+        if ( null == result || 0 == result.length() ) {
+            String fmt = context.getString( R.string.playerf );
+            result = String.format( fmt, num + 1 );
+        }
+        return result;
     }
 
     public static CurGameInfo.XWPhoniesChoice 
