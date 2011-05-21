@@ -331,12 +331,13 @@ public class GameUtils {
         DBUtils.saveGame( context, lock, bytes, setCreate );
     }
 
-    public static GameLock saveGame( Context context, byte[] bytes )
+    public static GameLock saveGame( Context context, byte[] bytes, 
+                                     boolean setCreate )
     {
         String name = newName( context );
         GameLock lock = 
             new GameLock( name, true ).lock();
-        saveGame( context, bytes, lock, false );
+        saveGame( context, bytes, lock, setCreate );
         return lock;
     }
 
@@ -345,7 +346,7 @@ public class GameUtils {
         String path = null;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            GameLock lock = saveGame( context, bytes );
+            GameLock lock = saveGame( context, bytes, true );
             path = lock.getPath();
             lock.unlock();
         }

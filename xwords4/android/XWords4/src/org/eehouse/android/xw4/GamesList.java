@@ -449,7 +449,7 @@ public class GamesList extends XWListActivity
                     } else {
                         byte[] stream = GameUtils.savedGame( this, path );
                         GameUtils.GameLock lock = 
-                            GameUtils.saveGame( this, stream );
+                            GameUtils.saveGame( this, stream, true );
                         DBUtils.saveSummary( this, lock, summary );
                         lock.unlock();
                     }
