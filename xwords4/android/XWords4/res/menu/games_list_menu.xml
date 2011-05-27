@@ -6,6 +6,7 @@
     <!--       /> -->
     <item android:id="@+id/gamel_menu_newgame"
           android:title="@string/button_new_game"
+          android:icon="@android:drawable/ic_menu_add"
           />
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/menu_prefs"
