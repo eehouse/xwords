@@ -329,6 +329,7 @@ public class BoardActivity extends XWActivity
         if ( m_path.charAt(0) == '/' ) {
             m_path = m_path.substring( 1 );
         }
+        setBackgroundColor();
     } // onCreate
 
     @Override
@@ -370,6 +371,7 @@ public class BoardActivity extends XWActivity
                 if ( null != m_jniThread ) {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
                 }
+                setBackgroundColor();
             }
         }
     }
@@ -1313,6 +1315,13 @@ public class BoardActivity extends XWActivity
         m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.gameIsConnected );
+    }
+
+    private void setBackgroundColor()
+    {
+        int back = CommonPrefs.get(this)
+            .otherColors[CommonPrefs.COLOR_BACKGRND];
+        m_view.getRootView().setBackgroundColor( back );
     }
 
 } // class BoardActivity
