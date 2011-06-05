@@ -106,7 +106,7 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
             DBUtils.appendChatHistory( this, m_path, text, true );
 
             Intent result = new Intent();
-            result.putExtra( "chat", text );
+            result.putExtra( BoardActivity.INTENT_KEY_CHAT, text );
             setResult( Activity.RESULT_OK, result );
         }
         finish();

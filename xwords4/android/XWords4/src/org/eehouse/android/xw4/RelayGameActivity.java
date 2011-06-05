@@ -28,7 +28,6 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import java.io.File;
 import android.os.Bundle;
-import android.net.Uri;
 import android.widget.Button;
 import android.widget.TextView;
 import android.view.View;
@@ -54,11 +53,7 @@ public class RelayGameActivity extends XWActivity
 
         setContentView( R.layout.relay_game_config );
 
-        Uri uri = getIntent().getData();
-        m_path = uri.getPath();
-        if ( m_path.charAt(0) == '/' ) {
-            m_path = m_path.substring( 1 );
-        }
+        m_path = getIntent().getStringExtra( BoardActivity.INTENT_KEY_NAME );
 
         m_playButton = (Button)findViewById( R.id.play_button );
         m_playButton.setOnClickListener( this );

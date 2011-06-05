@@ -29,7 +29,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
-import android.net.Uri;
 import java.util.ArrayList;
 import java.util.Arrays;
 import android.content.res.AssetManager;
@@ -727,10 +726,9 @@ public class GameUtils {
 
     public static void launchGame( Activity activity, String path )
     {
-        File file = new File( path );
-        Uri uri = Uri.fromFile( file );
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                    activity, BoardActivity.class );
+        Intent intent = new Intent( activity, BoardActivity.class );
+        intent.setAction( Intent.ACTION_EDIT );
+        intent.putExtra( BoardActivity.INTENT_KEY_NAME, path );
         activity.startActivity( intent );
     }
 
@@ -892,8 +890,9 @@ public class GameUtils {
 
     public static void doConfig( Activity activity, String path, Class clazz )
     {
-        Uri uri = Uri.fromFile( new File(path) );
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri, activity, clazz );
+        Intent intent = new Intent( activity, clazz );
+        intent.setAction( Intent.ACTION_EDIT );
+        intent.putExtra( BoardActivity.INTENT_KEY_NAME, path );
         activity.startActivity( intent );
     }
 
