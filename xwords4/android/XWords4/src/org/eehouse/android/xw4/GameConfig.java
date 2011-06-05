@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import java.io.File;
 import java.util.ArrayList;
@@ -373,14 +372,9 @@ public class GameConfig extends XWActivity
         m_cp = CommonPrefs.get( this );
 
         Intent intent = getIntent();
-        Uri uri = intent.getData();
-        m_path = uri.getPath();
-        if ( m_path.charAt(0) == '/' ) {
-            m_path = m_path.substring( 1 );
-        }
+        m_path = intent.getStringExtra( BoardActivity.INTENT_KEY_NAME );
 
         setContentView(R.layout.game_config);
-
 
         m_connectSet = findViewById(R.id.connect_set);
         m_addPlayerButton = (Button)findViewById(R.id.add_player);

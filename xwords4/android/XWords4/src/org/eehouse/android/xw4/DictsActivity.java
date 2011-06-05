@@ -528,7 +528,8 @@ public class DictsActivity extends ExpandableListActivity
         return intent;
     }
 
-    public static void launchAndDownload( Activity activity, int lang, String name )
+    public static void launchAndDownload( Activity activity, int lang, 
+                                          String name )
     {
         Intent intent = new Intent( activity, DictsActivity.class );
         intent.putExtra( DICT_DOLAUNCH, true );

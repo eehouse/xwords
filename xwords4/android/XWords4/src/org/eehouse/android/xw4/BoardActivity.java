@@ -35,7 +35,6 @@ import android.content.Intent;
 import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
 import java.util.Iterator;
-import android.net.Uri;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -79,7 +78,6 @@ public class BoardActivity extends XWActivity
     private Handler m_handler;
     private TimerRunnable[] m_timers;
     private String m_name;
-    private Uri m_uri;
     private Toolbar m_toolbar;
     private ArrayList<String> m_pendingChats = new ArrayList<String>();
 
@@ -1221,8 +1219,9 @@ public class BoardActivity extends XWActivity
 
     private void startChatActivity()
     {
-        Intent intent = new Intent( Intent.ACTION_EDIT, 
-                                    m_uri, this, ChatActivity.class );
+        Intent intent = new Intent( this, ChatActivity.class );
+        intent.setAction( Intent.ACTION_EDIT );
+        intent.putExtra( BoardActivity.INTENT_KEY_NAME, m_name );
         startActivityForResult( intent, CHAT_REQUEST );
     }
 
