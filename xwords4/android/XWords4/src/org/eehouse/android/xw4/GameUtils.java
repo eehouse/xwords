@@ -672,10 +672,9 @@ public class GameUtils {
 
     public static void launchGame( Activity activity, String path )
     {
-        File file = new File( path );
-        Uri uri = Uri.fromFile( file );
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                    activity, BoardActivity.class );
+        Intent intent = new Intent( activity, BoardActivity.class );
+        intent.setAction( Intent.ACTION_EDIT );
+        intent.putExtra( BoardActivity.INTENT_KEY_NAME, path );
         activity.startActivity( intent );
     }
 

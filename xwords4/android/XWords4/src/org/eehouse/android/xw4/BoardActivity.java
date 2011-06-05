@@ -56,6 +56,9 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class BoardActivity extends XWActivity 
     implements TransportProcs.TPMsgHandler {
 
+    public static final String INTENT_KEY_NAME = "name";
+    public static final String INTENT_KEY_CHAT = "chat";
+
     private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
     private static final int DLG_BADWORDS = DLG_OKONLY + 1;
     private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
@@ -75,7 +78,7 @@ public class BoardActivity extends XWActivity
     CommsTransport m_xport;
     private Handler m_handler;
     private TimerRunnable[] m_timers;
-    private String m_path;
+    private String m_name;
     private Uri m_uri;
     private Toolbar m_toolbar;
     private ArrayList<String> m_pendingChats = new ArrayList<String>();
@@ -160,7 +163,7 @@ public class BoardActivity extends XWActivity
 
                             waitCloseGame( false );
                             GameUtils.deleteGame( BoardActivity.this,
-                                                  m_path, false );
+                                                  m_name, false );
                             // Intent intent = new Intent();
                             // intent.putExtra( "delete", true );
                             // intent.putExtra( "path", m_path );
@@ -287,12 +290,8 @@ public class BoardActivity extends XWActivity
         m_view = (BoardView)findViewById( R.id.board_view );
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
 
-        Intent intent = getIntent();
-        m_uri = intent.getData();
-        m_path = m_uri.getPath();
-        if ( m_path.charAt(0) == '/' ) {
-            m_path = m_path.substring( 1 );
-        }
+        m_name = getIntent().getStringExtra( INTENT_KEY_NAME );
+
         setBackgroundColor();
     } // onCreate
 
@@ -315,7 +314,7 @@ public class BoardActivity extends XWActivity
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
             if ( CHAT_REQUEST == requestCode ) {
-                String msg = data.getStringExtra( "chat" );
+                String msg = data.getStringExtra( INTENT_KEY_CHAT );
                 if ( null != msg && msg.length() > 0 ) {
                     m_pendingChats.add( msg );
                     trySendChats();
@@ -980,7 +979,7 @@ public class BoardActivity extends XWActivity
             m_handler.post( new Runnable() {
                     public void run() {
                         DBUtils.appendChatHistory( BoardActivity.this, 
-                                                   m_path, msg, false );
+                                                   m_name, msg, false );
                         startChatActivity();
                     }
                 } );
@@ -991,7 +990,7 @@ public class BoardActivity extends XWActivity
     {
         if ( 0 == m_jniGamePtr ) {
             Assert.assertNull( m_gameLock );
-            m_gameLock = new GameUtils.GameLock( m_path, true ).lock();
+            m_gameLock = new GameUtils.GameLock( m_name, true ).lock();
 
             byte[] stream = GameUtils.savedGame( this, m_gameLock );
             XwJNI.gi_from_stream( m_gi, stream );
@@ -1054,13 +1053,13 @@ public class BoardActivity extends XWActivity
             m_jniThread.handle( JNICmd.CMD_START );
 
             if ( !CommonPrefs.getHideTitleBar( this ) ) {
-                setTitle( GameUtils.gameName( this, m_path ) );
+                setTitle( GameUtils.gameName( this, m_name ) );
             }
             m_toolbar = new Toolbar( this );
 
             populateToolbar();
 
-            int flags = DBUtils.getMsgFlags( m_path );
+            int flags = DBUtils.getMsgFlags( m_name );
             if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
                 startChatActivity();
             }
@@ -1068,7 +1067,7 @@ public class BoardActivity extends XWActivity
                 m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
             }
             if ( 0 != flags ) {
-                DBUtils.setMsgFlags( m_path, GameSummary.MSG_FLAGS_NONE );
+                DBUtils.setMsgFlags( m_name, GameSummary.MSG_FLAGS_NONE );
             }
 
             trySendChats();
