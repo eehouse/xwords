@@ -66,8 +66,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Drawable m_downArrow;
     private boolean m_blackArrow;
     // m_backgroundUsed: alpha not set ensures inequality
-    private int m_backgroundUsed = 0x00000000;
-    private boolean m_darkOnLight;
+    private int[] m_backgroundUsed = {0x00000000, 0x00000000};
+    private boolean[] m_darkOnLight = new boolean[2];
     private Drawable m_origin;
     private int m_left, m_top;
     private JNIThread m_jniThread;
@@ -486,7 +486,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                     bonusStr = m_bonusSummaries[bonus];
                 }
             } else if ( pending ) {
-                if ( darkOnLight() ) {
+                if ( darkOnLight(CommonPrefs.COLOR_NOTILE) ) {
                     foreColor = WHITE;
                     backColor = BLACK;
                 } else {
@@ -532,7 +532,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                 int hintAtts, int flags )
     {
         // figure out if the background is more dark than light
-        boolean useDark = darkOnLight();
+        boolean useDark = darkOnLight(CommonPrefs.COLOR_NOTILE);
         if ( m_blackArrow != useDark ) {
             m_blackArrow = useDark;
             m_downArrow = m_rightArrow = null;
@@ -670,11 +670,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void drawMiniWindow( String text, Rect rect )
     {
-        fillRect( rect, darkOnLight()? BLACK : WHITE );
+        fillRect( rect, darkOnLight(CommonPrefs.COLOR_NOTILE)? BLACK : WHITE );
 
         m_fillPaint.setTextSize( k_miniTextSize );
         m_fillPaint.setTextAlign( Paint.Align.CENTER );
-        m_fillPaint.setColor( darkOnLight()? WHITE : BLACK );
+        m_fillPaint.setColor( darkOnLight(CommonPrefs.COLOR_NOTILE)
+                              ? WHITE : BLACK );
 
         String[] lines = text.split("\n");
         int lineHt = rect.height() / lines.length;
@@ -936,34 +937,37 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return null != m_fontDims;
     } // figureFontDims
 
-    private void markBlank( final Rect rect, boolean whiteOnBlack )
+    private void markBlank( final Rect rect, boolean pending )
     {
+        boolean useWhite = !darkOnLight(CommonPrefs.COLOR_TILE_BACK);
+        useWhite ^= pending;
+        
         RectF oval = new RectF( rect.left, rect.top, rect.right, rect.bottom );
         int curColor = 0;
-        if ( whiteOnBlack ) {
+        if ( useWhite ) {
             curColor = m_strokePaint.getColor();
             m_strokePaint.setColor( WHITE );
         }
         m_canvas.drawArc( oval, 0, 360, false, m_strokePaint );
-        if ( whiteOnBlack ) {
+        if ( useWhite ) {
             m_strokePaint.setColor( curColor );
         }
     }
 
-    private boolean darkOnLight()
+    private boolean darkOnLight( int indx )
     {
-        int background = m_otherColors[ CommonPrefs.COLOR_NOTILE ];
-        if ( background != m_backgroundUsed ) {
-            m_backgroundUsed = background;
+        int background = m_otherColors[ indx ];
+        if ( background != m_backgroundUsed[indx] ) {
+            m_backgroundUsed[indx] = background;
 
             int sum = 0;
             for ( int ii = 0; ii < 3; ++ii ) {
                 sum += background & 0xFF;
                 background >>= 8;
             }
-            m_darkOnLight = sum > (127*3);
+            m_darkOnLight[indx] = sum > (127*3);
         }
-        return m_darkOnLight;
+        return m_darkOnLight[indx];
     }
 
     private Drawable loadAndRecolor( int resID, boolean useDark )
