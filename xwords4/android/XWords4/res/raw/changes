@@ -6,13 +6,12 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 26 release</b>
+<b>Crosswords 4.4 beta 28 release</b>
 
-<ul>A couple of quick improvements in dictionary display/storage
-  <li>Group dictionaries by language</li>
+<ul>Quick fixes
+  <li>Fix crash that so far happens on only one device -- my wife's</li>
   
-  <li>Show location of dictionaries and allow movement between 
-  them (if you have an external storage card).</li>
+  <li>Fix contrast problems when using light-on-dark scheme.</li>
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
