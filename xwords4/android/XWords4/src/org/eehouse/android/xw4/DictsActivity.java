@@ -45,6 +45,7 @@ import android.view.MenuInflater;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
+import android.widget.Toast;
 import android.preference.PreferenceManager;
 import android.net.Uri;
 import junit.framework.Assert;
@@ -494,7 +495,12 @@ public class DictsActivity extends ExpandableListActivity
     private void startDownload( int lang, String name, boolean toSD )
     {
         DictImportActivity.setUseSD( toSD );
-        startActivity( mkDownloadIntent( this, lang, name ) );
+        try {
+            startActivity( mkDownloadIntent( this, lang, name ) );
+        } catch ( android.content.ActivityNotFoundException anfe ) {
+            Toast.makeText( this, R.string.no_download_warning, 
+                            Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void mkListAdapter()

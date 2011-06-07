@@ -525,4 +525,7 @@
     <string name="empty_games_list2">You can hide this in the
       Appearance section of Settings (via the menu key).</string>
 
+    <string name="no_download_warning">Unable to download. Do you have
+      a web browser installed?</string>
+
 </resources>
