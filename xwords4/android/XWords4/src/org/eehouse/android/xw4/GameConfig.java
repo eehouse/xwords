@@ -347,9 +347,10 @@ public class GameConfig extends XWActivity
         Spinner spinner =
             (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
         int position = spinner.getSelectedItemPosition();
-        lp.dictName = DictLangCache.getHaveLang( this, m_gi.dictLang )[position];
-        Utils.logf( "reading name for player %d via position %d: %s", 
-                    m_whichPlayer, position, lp.dictName );
+        String[] dicts = DictLangCache.getHaveLang( this, m_gi.dictLang );
+        if ( position < dicts.length ) {
+            lp.dictName = dicts[position];
+        }
 
         lp.setIsRobot( Utils.getChecked( dialog, R.id.robot_check ) );
         lp.isLocal = !Utils.getChecked( dialog, R.id.remote_check );
