@@ -1263,7 +1263,6 @@ public class BoardActivity extends XWActivity
     private void startChatActivity()
     {
         Intent intent = new Intent( this, ChatActivity.class );
-        intent.setAction( Intent.ACTION_EDIT );
         intent.putExtra( BoardActivity.INTENT_KEY_NAME, m_name );
         startActivityForResult( intent, CHAT_REQUEST );
     }
