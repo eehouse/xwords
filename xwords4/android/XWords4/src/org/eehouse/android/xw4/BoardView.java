@@ -515,7 +515,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
 
             if ( (CELL_ISBLANK & flags) != 0 ) {
-                markBlank( rect, pending );
+                markBlank( rect, backColor );
             }
 
             // frame the cell
@@ -936,10 +936,22 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return null != m_fontDims;
     } // figureFontDims
 
-    private void markBlank( final Rect rect, boolean whiteOnBlack )
+    private boolean isLightColor( int color )
+    {
+        int sum = 0;
+        for ( int ii = 0; ii < 3; ++ii ) {
+            sum += color & 0xFF;
+            color >>= 8;
+        }
+        boolean result = sum > (127*3);
+        return result;
+    }
+
+    private void markBlank( final Rect rect, int backColor )
     {
         RectF oval = new RectF( rect.left, rect.top, rect.right, rect.bottom );
         int curColor = 0;
+        boolean whiteOnBlack = !isLightColor( backColor );
         if ( whiteOnBlack ) {
             curColor = m_strokePaint.getColor();
             m_strokePaint.setColor( WHITE );
@@ -955,13 +967,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         int background = m_otherColors[ CommonPrefs.COLOR_NOTILE ];
         if ( background != m_backgroundUsed ) {
             m_backgroundUsed = background;
-
-            int sum = 0;
-            for ( int ii = 0; ii < 3; ++ii ) {
-                sum += background & 0xFF;
-                background >>= 8;
-            }
-            m_darkOnLight = sum > (127*3);
+            m_darkOnLight = isLightColor( background );
         }
         return m_darkOnLight;
     }
