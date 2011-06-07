@@ -564,4 +564,7 @@
       %1$s. (If you don\'t have Crosswords: %2$s.)</string>
     <string name="invite_chooser">Send invitation via</string>
 
+    <string name="no_download_warning">Unable to download. Do you have
+      a web browser installed?</string>
+
 </resources>

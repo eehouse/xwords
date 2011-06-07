@@ -1336,18 +1336,20 @@ readStreamHeader( ServerCtxt* XP_UNUSED(server),
 static void
 sendBadWordMsgs( ServerCtxt* server )
 {
-    XWStreamCtxt* stream;
-
-    stream = messageStreamWithHeader( server, server->lastMoveSource, 
-                                      XWPROTO_BADWORD_INFO );
-    stream_putBits( stream, PLAYERNUM_NBITS, server->nv.currentTurn );
-
     XP_ASSERT( server->illegalWordInfo.nWords > 0 );
-    bwiToStream( stream, &server->illegalWordInfo );
 
-    stream_destroy( stream );
+    if ( server->illegalWordInfo.nWords > 0 ) { /* fail gracefully */
+        XWStreamCtxt* stream = 
+            messageStreamWithHeader( server, server->lastMoveSource, 
+                                     XWPROTO_BADWORD_INFO );
+        stream_putBits( stream, PLAYERNUM_NBITS, server->nv.currentTurn );
 
-    freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
+        bwiToStream( stream, &server->illegalWordInfo );
+
+        stream_destroy( stream );
+
+        freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
+    }
 } /* sendBadWordMsgs */
 #endif
 

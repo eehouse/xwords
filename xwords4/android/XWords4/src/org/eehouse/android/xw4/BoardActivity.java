@@ -448,7 +448,7 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_done:
             proc = new Runnable() {
                     public void run() {
-                        m_jniThread.handle( JNIThread.JNICmd.CMD_COMMIT );
+                        checkAndHandle( JNIThread.JNICmd.CMD_COMMIT );
                     }
                 };
             showNotAgainDlgThen( R.string.not_again_done, 
@@ -1115,6 +1115,13 @@ public class BoardActivity extends XWActivity
         }
     } // loadGame
 
+    private void checkAndHandle( JNIThread.JNICmd cmd )
+    {
+        if ( null != m_jniThread ) {
+            m_jniThread.handle( cmd );
+        }
+    }
+
     private void populateToolbar()
     {
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
@@ -1122,8 +1129,8 @@ public class BoardActivity extends XWActivity
                                R.string.key_notagain_hintprev,
                                new Runnable() {
                                    public void run() {
-                                       m_jniThread.handle( JNIThread.JNICmd
-                                                           .CMD_PREV_HINT );
+                                       checkAndHandle( JNIThread.JNICmd.
+                                                       CMD_PREV_HINT );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
@@ -1132,8 +1139,8 @@ public class BoardActivity extends XWActivity
                                new Runnable() {
                                    @Override
                                    public void run() {
-                                       m_jniThread.handle( JNIThread.JNICmd
-                                                           .CMD_NEXT_HINT );
+                                       checkAndHandle( JNIThread.JNICmd
+                                                       .CMD_NEXT_HINT );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
@@ -1142,8 +1149,8 @@ public class BoardActivity extends XWActivity
                                new Runnable() {
                                    @Override
                                    public void run() {
-                                       m_jniThread.handle( JNIThread.JNICmd
-                                                           .CMD_JUGGLE );
+                                       checkAndHandle( JNIThread.JNICmd
+                                                       .CMD_JUGGLE );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_FLIP,
@@ -1152,8 +1159,8 @@ public class BoardActivity extends XWActivity
                                new Runnable() {
                                    @Override
                                    public void run() {
-                                       m_jniThread.handle( JNIThread.JNICmd
-                                                           .CMD_FLIP );
+                                       checkAndHandle( JNIThread.JNICmd
+                                                       .CMD_FLIP );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
@@ -1162,8 +1169,8 @@ public class BoardActivity extends XWActivity
                                new Runnable() {
                                    @Override
                                    public void run() {
-                                       m_jniThread.handle( JNIThread.JNICmd
-                                                           .CMD_TOGGLEZOOM );
+                                       checkAndHandle( JNIThread.JNICmd
+                                                       .CMD_TOGGLEZOOM );
                                    }
                                } );
         m_toolbar.setListener( Toolbar.BUTTON_UNDO,
@@ -1172,8 +1179,8 @@ public class BoardActivity extends XWActivity
                                new Runnable() {
                                    @Override
                                    public void run() {
-                                       m_jniThread.handle( JNIThread.JNICmd
-                                                           .CMD_UNDO_CUR );
+                                       checkAndHandle( JNIThread.JNICmd
+                                                       .CMD_UNDO_CUR );
                                    }
                                });
         m_toolbar.setListener( Toolbar.BUTTON_CHAT,
