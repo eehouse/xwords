@@ -65,51 +65,49 @@ public class NetUtils {
 
     private static class InformThread extends Thread {
         Context m_context;
-        private Socket m_socket;
         DBUtils.Obit[] m_obits;
-        public InformThread( Context context, DBUtils.Obit[] obits, 
-                             Socket socket )
+        public InformThread( Context context, DBUtils.Obit[] obits )
         {
             m_context = context;
             m_obits = obits;
-            m_socket = socket;
         }
 
         public void run() {
-
-            int strLens = 0;
-            for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                strLens += m_obits[ii].m_relayID.length() + 1; // 1 for /n
-            }
-
-            try {
-                DataOutputStream outStream = 
-                    new DataOutputStream( m_socket.getOutputStream() );
-                outStream.writeShort( 2 + 2 + (2*m_obits.length) + strLens );
-                outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-                outStream.writeByte( NetUtils.PRX_DEVICE_GONE );
-                outStream.writeShort( m_obits.length );
-
+            Socket socket = MakeProxySocket( m_context, 10000 );
+            if ( null != socket ) {
+                int strLens = 0;
                 for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                    outStream.writeShort( m_obits[ii].m_seed );
-                    outStream.writeBytes( m_obits[ii].m_relayID );
-                    outStream.write( '\n' );
+                    strLens += m_obits[ii].m_relayID.length() + 1; // 1 for /n
                 }
 
-                outStream.flush();
+                try {
+                    DataOutputStream outStream = 
+                        new DataOutputStream( socket.getOutputStream() );
+                    outStream.writeShort( 2 + 2 + (2*m_obits.length) + strLens );
+                    outStream.writeByte( NetUtils.PROTOCOL_VERSION );
+                    outStream.writeByte( NetUtils.PRX_DEVICE_GONE );
+                    outStream.writeShort( m_obits.length );
 
-                DataInputStream dis = 
-                    new DataInputStream( m_socket.getInputStream() );
-                short resLen = dis.readShort();
-                m_socket.close();
+                    for ( int ii = 0; ii < m_obits.length; ++ii ) {
+                        outStream.writeShort( m_obits[ii].m_seed );
+                        outStream.writeBytes( m_obits[ii].m_relayID );
+                        outStream.write( '\n' );
+                    }
 
-                if ( resLen == 0 ) {
-                    DBUtils.clearObits( m_context, m_obits );
+                    outStream.flush();
+
+                    DataInputStream dis = 
+                        new DataInputStream( socket.getInputStream() );
+                    short resLen = dis.readShort();
+                    socket.close();
+
+                    if ( resLen == 0 ) {
+                        DBUtils.clearObits( m_context, m_obits );
+                    }
+                } catch ( java.io.IOException ioe ) {
+                    Utils.logf( ioe.toString() );
                 }
-            } catch ( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
             }
-
         }
     }
 
@@ -117,11 +115,8 @@ public class NetUtils {
     {
         DBUtils.Obit[] obits = DBUtils.listObits( context );
         if ( null != obits && 0 < obits.length ) {
-            Socket socket = MakeProxySocket( context, 10000 );
-            if ( null != socket ) {
-                InformThread thread = new InformThread( context, obits, socket );
-                thread.start();
-            }
+            InformThread thread = new InformThread( context, obits );
+            thread.start();
         }
     }
 
