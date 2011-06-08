@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Random;
 
 import junit.framework.Assert;
 
@@ -45,6 +46,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameUtils {
 
     public enum DictLoc { BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
+    public static final String INVITED = "invited";
 
     // Implements read-locks and write-locks per game.  A read lock is
     // obtainable when other read locks are granted but not when a
@@ -374,17 +376,27 @@ public class GameUtils {
         return path;
     }
 
+    public static String makeNewNetGame( Context context, String room, 
+                                         int lang, int nPlayers )
+    {
+        int[] langarr = { lang };
+        return makeNewNetGame( context, room, langarr, nPlayers );
+    }
+
     public static void launchInviteActivity( Context context, String room, 
                                              int lang )
     {
         Intent intent = new Intent( Intent.ACTION_SEND );
-        intent.setType( "plain/text" );
+        intent.setType( "text/plain" );
         intent.putExtra( Intent.EXTRA_SUBJECT, 
                          context.getString( R.string.invite_subject ) );
 
         String format = context.getString( R.string.game_urlf );
         String host = CommonPrefs.getDefaultRelayHost( context );
-        String gameUrl = String.format( format, host, room, lang );
+        Random random = new Random();
+        String inviteID = 
+            String.format( "%x", random.nextInt() ).substring( 0, 4 );
+        String gameUrl = String.format( format, host, room, lang, inviteID );
         format = context.getString( R.string.invite_bodyf );
         String appUrl = context.getString( R.string.app_market_url );
         String message = String.format( format, gameUrl, appUrl );
@@ -724,12 +736,21 @@ public class GameUtils {
         return path.substring( 0, path.lastIndexOf( XWConstants.GAME_EXTN ) );
     }
 
-    public static void launchGame( Activity activity, String path )
+    public static void launchGame( Activity activity, String path,
+                                   boolean invited )
     {
         Intent intent = new Intent( activity, BoardActivity.class );
         intent.setAction( Intent.ACTION_EDIT );
         intent.putExtra( BoardActivity.INTENT_KEY_NAME, path );
+        if ( invited ) {
+            intent.putExtra( INVITED, true );
+        }
         activity.startActivity( intent );
+    }
+
+    public static void launchGame( Activity activity, String path )
+    {
+        launchGame( activity, path, false );
     }
 
     public static void launchGameAndFinish( Activity activity, String path )

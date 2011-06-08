@@ -62,6 +62,10 @@
 	<string name="newgame_local_config">Configure game</string>
 	<string name="newgame_invite">Invite now</string>
 	<string name="newgame_net_config">Configure first</string>
+    <string name="dup_game_queryf">Are you sure you want to create
+      another game in room \"%s\"?  Usually that happens when you open
+      an invitation message for the second time and isn\'t what you
+      want.  Tap Ok to go ahead and create the second game.</string>
 	
 	<string name="button_ok">OK</string>  
 	<string name="button_cancel">Cancel</string>  
@@ -560,7 +564,7 @@
       player[s].  Would you like to invite someone to join -- assuming
       you haven\'t already?</string>
     <string name="invite_subject">Let\'s play Crosswords</string>
-    <string name="invite_bodyf">Click on this link to start a game:
+    <string name="invite_bodyf">Tap on this link to start a game:
       %1$s. (If you don\'t have Crosswords: %2$s.)</string>
     <string name="invite_chooser">Send invitation via</string>
 

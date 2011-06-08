@@ -324,7 +324,9 @@ public class BoardActivity extends XWActivity
         m_view = (BoardView)findViewById( R.id.board_view );
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
 
-        m_name = getIntent().getStringExtra( INTENT_KEY_NAME );
+        Intent intent = getIntent();
+        m_name = intent.getStringExtra( INTENT_KEY_NAME );
+        m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
 
         setBackgroundColor();
     } // onCreate
@@ -700,7 +702,15 @@ public class BoardActivity extends XWActivity
                 naKey = R.string.key_notagain_conndall;
             }
         } else if ( nMissing > 0 ) {
-            if ( m_haveInvited ) {
+
+            // Let's only invite for two-person games for now.  Simple
+            // case first....
+            if ( nMissing == 1 /* && is_2_person_game() */ && !m_haveInvited ) {
+                m_haveInvited = true;
+                m_room = room;
+                m_missing = nMissing;
+                showDialog( DLG_INVITE );
+            } else {
                 String fmt = getString( R.string.msg_relay_waiting );
                 str = String.format( fmt, devOrder,
                                      room, nMissing );
@@ -711,11 +721,6 @@ public class BoardActivity extends XWActivity
                     naMsg = R.string.not_again_conndmid;
                     naKey = R.string.key_notagain_conndmid;
                 }
-            } else {
-                m_haveInvited = true;
-                m_room = room;
-                m_missing = nMissing;
-                showDialog( DLG_INVITE );
             }
         }
 

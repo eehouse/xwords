@@ -350,6 +350,32 @@ public class DBUtils {
         return result;
     }
 
+    public static String getPathForOpen( Context context, String room,
+                                         // String inviteID, 
+                                         int lang, int nPlayers )
+    {
+        String result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.FILE_NAME };
+            String selection = DBHelper.ROOMNAME + "='" + room + "' AND "
+                // + DBHelper.INVITEID + "='" + inviteID + "' AND "
+                + DBHelper.DICTLANG + "=" + lang + " AND "
+                + DBHelper.NUM_PLAYERS + "=" + nPlayers;
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getString( cursor
+                                           .getColumnIndex(DBHelper.FILE_NAME));
+
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
     public static String[] getRelayIDs( Context context, boolean noMsgs ) 
     {
         String[] result = null;

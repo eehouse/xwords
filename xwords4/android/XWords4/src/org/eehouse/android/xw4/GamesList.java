@@ -28,6 +28,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.ContextMenu;
@@ -545,11 +546,12 @@ public class GamesList extends XWListActivity
         if ( null != intent ) {
             Uri data = intent.getData();
             if ( null != data ) {
-                String room = data.getQueryParameter( "room" );
+                final String room = data.getQueryParameter( "room" );
                 String langStr = data.getQueryParameter( "lang" );
-                int lang = Integer.decode( langStr );
-                int nPlayers = 2; // Should this be a param?
-                Utils.logf( "got data: lang: %d; room: %s", lang, room );
+                final int lang = Integer.decode( langStr );
+                final int nPlayers = 2; // Should this be a param?
+                Utils.logf( "got data: lang: %d; room: %s",
+                            lang, room );
 
                 // Find out if the game already exists.  If it does,
                 // just open it.  Otherwise create a new one and open
@@ -558,16 +560,35 @@ public class GamesList extends XWListActivity
                 // this feature.  But it'd be worse to have a bunch of
                 // games stacking up when somebody taps the same URL
                 // multiple times.
-                String path = null;// (for now; should be: DBUtils.getPathForOpen( this, room, lang, nPlayers );
+
+                // No.  If the game already exists, warn the user, but
+                // give him choice to open new or existing game.
+
+                String path = 
+                    DBUtils.getPathForOpen( this, room, lang, nPlayers );
+
+
 
                 if ( null == path ) {
-                    int[] langarr = { lang };
-                    path = GameUtils.makeNewNetGame( this, room, langarr, 
-                                                     nPlayers );
+                    path = GameUtils.makeNewNetGame( this, room, lang, 
+                                                     nPlayers ); 
+                    GameUtils.launchGame( this, path, true );
+                } else {
+                    DialogInterface.OnClickListener then = 
+                        new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, int ii ) {
+                                String path =
+                                    GameUtils.makeNewNetGame( GamesList.this,
+                                                              room, lang, 
+                                                              nPlayers ); 
+                                GameUtils.launchGame( GamesList.this, path, true );
+                            }
+                        };
+                    String fmt = getString( R.string.dup_game_queryf );
+                    String msg = String.format( fmt, room );
+                    showConfirmThen( msg, then );
                 }
-
-                GameUtils.launchGame( this, path );
             }
         }
-    }
+    } // startNewNetGameIf
 }
