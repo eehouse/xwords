@@ -546,47 +546,54 @@ public class GamesList extends XWListActivity
         if ( null != intent ) {
             Uri data = intent.getData();
             if ( null != data ) {
-                final String room = data.getQueryParameter( "room" );
-                String langStr = data.getQueryParameter( "lang" );
-                final int lang = Integer.decode( langStr );
-                final int nPlayers = 2; // Should this be a param?
-                Utils.logf( "got data: lang: %d; room: %s",
-                            lang, room );
+                try {
+                    final String room = data.getQueryParameter( "room" );
+                    String langStr = data.getQueryParameter( "lang" );
+                    final int lang = Integer.decode( langStr );
+                    final int nPlayers = 2; // Should this be a param?
+                    Utils.logf( "got data: lang: %d; room: %s",
+                                lang, room );
 
-                // Find out if the game already exists.  If it does,
-                // just open it.  Otherwise create a new one and open
-                // that.  NOTE: this test makes it impossible to start
-                // two halves of the same game on one device using
-                // this feature.  But it'd be worse to have a bunch of
-                // games stacking up when somebody taps the same URL
-                // multiple times.
+                    // Find out if the game already exists.  If it does,
+                    // just open it.  Otherwise create a new one and open
+                    // that.  NOTE: this test makes it impossible to start
+                    // two halves of the same game on one device using
+                    // this feature.  But it'd be worse to have a bunch of
+                    // games stacking up when somebody taps the same URL
+                    // multiple times.
 
-                // No.  If the game already exists, warn the user, but
-                // give him choice to open new or existing game.
+                    // No.  If the game already exists, warn the user, but
+                    // give him choice to open new or existing game.
 
-                String path = 
-                    DBUtils.getPathForOpen( this, room, lang, nPlayers );
+                    String path = 
+                        DBUtils.getPathForOpen( this, room, lang, nPlayers );
 
 
 
-                if ( null == path ) {
-                    path = GameUtils.makeNewNetGame( this, room, lang, 
-                                                     nPlayers ); 
-                    GameUtils.launchGame( this, path, true );
-                } else {
-                    DialogInterface.OnClickListener then = 
-                        new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dlg, int ii ) {
-                                String path =
-                                    GameUtils.makeNewNetGame( GamesList.this,
-                                                              room, lang, 
-                                                              nPlayers ); 
-                                GameUtils.launchGame( GamesList.this, path, true );
-                            }
-                        };
-                    String fmt = getString( R.string.dup_game_queryf );
-                    String msg = String.format( fmt, room );
-                    showConfirmThen( msg, then );
+                    if ( null == path ) {
+                        path = GameUtils.makeNewNetGame( this, room, lang, 
+                                                         nPlayers ); 
+                        GameUtils.launchGame( this, path, true );
+                    } else {
+                        DialogInterface.OnClickListener then = 
+                            new DialogInterface.OnClickListener() {
+                                public void onClick( DialogInterface dlg, 
+                                                     int ii ) {
+                                    String path =
+                                        GameUtils.makeNewNetGame( GamesList.this,
+                                                                  room, lang, 
+                                                                  nPlayers ); 
+                                    GameUtils.launchGame( GamesList.this, 
+                                                          path, true );
+                                }
+                            };
+                        String fmt = getString( R.string.dup_game_queryf );
+                        String msg = String.format( fmt, room );
+                        showConfirmThen( msg, then );
+                    }
+                } catch( Exception e ) {
+                    Utils.logf( "error parsing uri (%s): %s", data.toString(),
+                                e.toString() );
                 }
             }
         }
