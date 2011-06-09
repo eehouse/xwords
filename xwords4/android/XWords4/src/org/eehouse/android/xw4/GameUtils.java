@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -396,14 +397,26 @@ public class GameUtils {
         Random random = new Random();
         String inviteID = 
             String.format( "%x", random.nextInt() ).substring( 0, 4 );
-        String gameUrl = String.format( format, host, room, lang, inviteID );
-        format = context.getString( R.string.invite_bodyf );
-        String appUrl = context.getString( R.string.app_market_url );
-        String message = String.format( format, gameUrl, appUrl );
-        intent.putExtra( Intent.EXTRA_TEXT, message );
+        StringBuilder query = 
+            new StringBuilder(String.format( format, host, lang, inviteID ));
+        query.append("&room=");
+        String gameUrl = null;
+        try {
+            query.append( URLEncoder.encode(room, "UTF-8") );
+            gameUrl = query.toString();
+        } catch ( java.io.UnsupportedEncodingException uee ) {
+            Utils.logf( "%s", uee.toString() );
+        }
 
-        String chooserMsg = context.getString( R.string.invite_chooser );
-        context.startActivity( Intent.createChooser( intent, chooserMsg ) );
+        if ( null != gameUrl ) {
+            format = context.getString( R.string.invite_bodyf );
+            String appUrl = context.getString( R.string.app_market_url );
+            String message = String.format( format, gameUrl, appUrl );
+            intent.putExtra( Intent.EXTRA_TEXT, message );
+
+            String chooserMsg = context.getString( R.string.invite_chooser );
+            context.startActivity( Intent.createChooser( intent, chooserMsg ) );
+        }
     }
 
     public static boolean gameDictsHere( Context context, String path )
