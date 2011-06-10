@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -384,32 +383,25 @@ public class GameUtils {
         return makeNewNetGame( context, room, langarr, nPlayers );
     }
 
+    public static String makeNewNetGame( Context context, NetLaunchInfo info )
+    {
+        return makeNewNetGame( context, info.room, info.lang, info.nPlayers );
+    }
+
     public static void launchInviteActivity( Context context, String room, 
                                              int lang )
     {
-        Intent intent = new Intent( Intent.ACTION_SEND );
-        intent.setType( "text/plain" );
-        intent.putExtra( Intent.EXTRA_SUBJECT, 
-                         context.getString( R.string.invite_subject ) );
-
-        String format = context.getString( R.string.game_urlf );
-        String host = CommonPrefs.getDefaultRelayHost( context );
         Random random = new Random();
-        String inviteID = 
-            String.format( "%x", random.nextInt() ).substring( 0, 4 );
-        StringBuilder query = 
-            new StringBuilder(String.format( format, host, lang, inviteID ));
-        query.append("&room=");
-        String gameUrl = null;
-        try {
-            query.append( URLEncoder.encode(room, "UTF-8") );
-            gameUrl = query.toString();
-        } catch ( java.io.UnsupportedEncodingException uee ) {
-            Utils.logf( "%s", uee.toString() );
-        }
+        String gameUrl = NetLaunchInfo.makeLaunchURL( context, room,
+                                                      lang, 2 );
 
         if ( null != gameUrl ) {
-            format = context.getString( R.string.invite_bodyf );
+            Intent intent = new Intent( Intent.ACTION_SEND );
+            intent.setType( "text/plain" );
+            intent.putExtra( Intent.EXTRA_SUBJECT, 
+                             context.getString( R.string.invite_subject ) );
+
+            String format = context.getString( R.string.invite_bodyf );
             String appUrl = context.getString( R.string.app_market_url );
             String message = String.format( format, gameUrl, appUrl );
             intent.putExtra( Intent.EXTRA_TEXT, message );

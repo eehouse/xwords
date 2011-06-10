@@ -545,13 +545,9 @@ public class GamesList extends XWListActivity
         if ( null != intent ) {
             Uri data = intent.getData();
             if ( null != data ) {
-                try {
-                    final String room = data.getQueryParameter( "room" );
-                    String langStr = data.getQueryParameter( "lang" );
-                    final int lang = Integer.decode( langStr );
-                    final int nPlayers = 2; // Should this be a param?
-                    Utils.logf( "got data: lang: %d; room: %s",
-                                lang, room );
+
+                NetLaunchInfo info = new NetLaunchInfo( data );
+                if ( info.isValid() ) {
 
                     // Find out if the game already exists.  If it does,
                     // just open it.  Otherwise create a new one and open
@@ -565,34 +561,28 @@ public class GamesList extends XWListActivity
                     // give him choice to open new or existing game.
 
                     String path = 
-                        DBUtils.getPathForOpen( this, room, lang, nPlayers );
-
-
+                        DBUtils.getPathForOpen( this, info.room, info.lang, 
+                                                info.nPlayers );
 
                     if ( null == path ) {
-                        path = GameUtils.makeNewNetGame( this, room, lang, 
-                                                         nPlayers ); 
+                        path = GameUtils.makeNewNetGame( this, info );
                         GameUtils.launchGame( this, path, true );
                     } else {
+                        final NetLaunchInfo finfo = info;
                         DialogInterface.OnClickListener then = 
                             new DialogInterface.OnClickListener() {
                                 public void onClick( DialogInterface dlg, 
                                                      int ii ) {
-                                    String path =
-                                        GameUtils.makeNewNetGame( GamesList.this,
-                                                                  room, lang, 
-                                                                  nPlayers ); 
+                                    String path = GameUtils.
+                                        makeNewNetGame( GamesList.this, finfo ); 
                                     GameUtils.launchGame( GamesList.this, 
                                                           path, true );
                                 }
                             };
                         String fmt = getString( R.string.dup_game_queryf );
-                        String msg = String.format( fmt, room );
+                        String msg = String.format( fmt, finfo.room );
                         showConfirmThen( msg, then );
                     }
-                } catch( Exception e ) {
-                    Utils.logf( "error parsing uri (%s): %s", data.toString(),
-                                e.toString() );
                 }
             }
         }
