@@ -15,13 +15,19 @@ print <<<EOF
 <html>
 <head>
 <title>Crosswords SMS redirect</title>
-<meta http-equiv="REFRESH" 
+<meta http-equiv="REFRESH"
     content="0;url=$scheme://$host?room=$room&lang=$lang">
 </head>
     <body>
-    redirecting to Crosswords....
-    </body>                                                                                                                                                                                     
-    </html>                                                                                                                                                                                     
+    <p>redirecting to Crosswords....</p>
+
+    <p>If this fails because you don't have Crosswords installed <a
+href="https://market.android.com/search?q=pname:org.eehouse.android.xw4">tap
+here</a>.</p>
+
+    </body>
+
+    </html>
 
 EOF;
 ?>
