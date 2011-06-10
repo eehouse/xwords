@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.net.Uri;
+import android.net.Uri.Builder;
 import java.net.URLEncoder;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -34,22 +35,19 @@ public class NetLaunchInfo {
 
     private boolean m_valid;
 
-    public static String makeLaunchURL( Context context, String room,
+    public static Uri makeLaunchUri( Context context, String room,
                                         int lang, int nPlayers )
     {
-        String format = context.getString( R.string.game_urlf );
-        String host = CommonPrefs.getDefaultRelayHost( context );
-        StringBuilder query = 
-            new StringBuilder( String.format( format, host, lang, room ) );
-        query.append( "&room=" );
-        String result = null;
-        try {
-            query.append( URLEncoder.encode(room, "UTF-8") );
-            result = query.toString();
-        } catch ( java.io.UnsupportedEncodingException uee ) {
-            Utils.logf( "%s", uee.toString() );
-        }
-        return result;
+        Builder ub = new Builder();
+        ub.scheme( "http" );
+        String format = context.getString( R.string.game_url_pathf );
+        ub.path( String.format( format,
+                                CommonPrefs.getDefaultRelayHost( context ) ) );
+        
+        ub.appendQueryParameter( "lang", String.format("%d", lang ) );
+        ub.appendQueryParameter( "np", String.format( "%d", nPlayers ) );
+        ub.appendQueryParameter( "room", room );
+        return ub.build();
     }
 
     public NetLaunchInfo( Uri data )

@@ -72,9 +72,7 @@
   <string name="default_host">eehouse.org</string>
   <string name="dict_url">http://eehouse.org/and_dicts_hh</string>
   <string name="app_version">4.4 beta 28</string>
-  <string name="app_market_url">https://market.android.com/search?q=pname:org.eehouse.android.xw4</string>
-  <!--string name="app_market_url">market://search?q=pname:org.eehouse.android.xw4</string-->
-  <string name="game_urlf">http://%1$s/redir.php?lang=%2$d</string>
+  <string name="game_url_pathf">/%1$s/redir.php</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 

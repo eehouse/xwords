@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Environment;
 import java.io.File;
 import java.io.FileInputStream;
@@ -392,18 +393,17 @@ public class GameUtils {
                                              int lang )
     {
         Random random = new Random();
-        String gameUrl = NetLaunchInfo.makeLaunchURL( context, room,
-                                                      lang, 2 );
+        Uri gameUri = NetLaunchInfo.makeLaunchUri( context, room,
+                                                   lang, 2 );
 
-        if ( null != gameUrl ) {
+        if ( null != gameUri ) {
             Intent intent = new Intent( Intent.ACTION_SEND );
             intent.setType( "text/plain" );
             intent.putExtra( Intent.EXTRA_SUBJECT, 
                              context.getString( R.string.invite_subject ) );
 
             String format = context.getString( R.string.invite_bodyf );
-            String appUrl = context.getString( R.string.app_market_url );
-            String message = String.format( format, gameUrl, appUrl );
+            String message = String.format( format, gameUri.toString() );
             intent.putExtra( Intent.EXTRA_TEXT, message );
 
             String chooserMsg = context.getString( R.string.invite_chooser );
