@@ -211,8 +211,7 @@ public class GamesList extends XWListActivity
     protected void onNewIntent( Intent intent )
     {
         super.onNewIntent( intent );
-        String id = getString( R.string.relayids_extra );
-        invalRelayIDs( intent.getStringArrayExtra( id ) );
+        invalRelayIDs( intent.getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA ) );
         startFirstHasDict( intent );
     }
 
@@ -530,8 +529,8 @@ public class GamesList extends XWListActivity
     private void startFirstHasDict( Intent intent )
     {
         if ( null != intent ) {
-            String[] relayIDs = intent
-                .getStringArrayExtra( getString( R.string.relayids_extra ) );
+            String[] relayIDs =
+                intent.getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA );
             startFirstHasDict( relayIDs );
         }
     }

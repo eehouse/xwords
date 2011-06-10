@@ -33,6 +33,8 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DispatchNotify extends Activity {
 
+    public static final String RELAYIDS_EXTRA = "relayids";
+
     public interface HandleRelaysIface {
         void HandleRelaysIDs( final String[] relayIDs );
     }
@@ -47,14 +49,13 @@ public class DispatchNotify extends Activity {
         super.onCreate( savedInstanceState );
 
         Intent intent = getIntent();
-        String id = getString( R.string.relayids_extra );
-        String[] relayIDs = intent.getStringArrayExtra( id );
+        String[] relayIDs = intent.getStringArrayExtra( RELAYIDS_EXTRA );
 
         if ( !tryHandle( this, relayIDs ) ) {
             Utils.logf( "DispatchNotify: nothing running" );
             intent = new Intent( this, GamesList.class );
             intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP );
-            intent.putExtra( id, relayIDs );
+            intent.putExtra( RELAYIDS_EXTRA, relayIDs );
             startActivity( intent );
         }
 

@@ -71,8 +71,7 @@ public class RelayService extends Service {
     private void setupNotification( String[] relayIDs )
     {
         Intent intent = new Intent( this, DispatchNotify.class );
-        intent.putExtra( getString(R.string.relayids_extra), 
-                         relayIDs );
+        intent.putExtra( DispatchNotify.RELAYIDS_EXTRA, relayIDs );
 
         PendingIntent pi = PendingIntent.
             getActivity( this, 0, intent, 
@@ -96,6 +95,7 @@ public class RelayService extends Service {
 
         NotificationManager nm = (NotificationManager)
             getSystemService( Context.NOTIFICATION_SERVICE );
-        nm.notify( R.string.relayids_extra, notification );
+        nm.notify( R.string.notify_body, // unique id; any will do
+                   notification );
     }
 }
