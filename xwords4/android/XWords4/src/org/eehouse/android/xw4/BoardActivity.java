@@ -27,7 +27,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Window;
 import android.os.Handler;
 import android.os.Message;
@@ -823,8 +822,9 @@ public class BoardActivity extends XWActivity
             m_dlgTitleStr = String.format( fmt, name );
 
             if ( null == m_passwdEdit ) {
-                LayoutInflater factory = LayoutInflater.from( BoardActivity.this );
-                m_passwdEdit = (EditText)factory.inflate( R.layout.passwd_view, null );
+                m_passwdEdit = 
+                    (EditText)Utils.inflate( BoardActivity.this,
+                                             R.layout.passwd_view );
             }
             waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
 

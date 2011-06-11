@@ -24,7 +24,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.view.LayoutInflater;
 import junit.framework.Assert;
 import android.view.View;
 import android.widget.TextView;
@@ -157,8 +156,7 @@ public class DlgDelegate {
 
     private Dialog createAboutDialog()
     {
-        LayoutInflater factory = LayoutInflater.from( m_activity );
-        final View view = factory.inflate( R.layout.about_dlg, null );
+        final View view = Utils.inflate( m_activity, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
         vers.setText( String.format( m_activity.getString(R.string.about_versf), 
                                      m_activity.getString(R.string.app_version),

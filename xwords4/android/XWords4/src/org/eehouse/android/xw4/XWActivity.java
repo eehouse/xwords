@@ -24,7 +24,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.view.LayoutInflater;
 import junit.framework.Assert;
 import android.view.View;
 import android.widget.TextView;

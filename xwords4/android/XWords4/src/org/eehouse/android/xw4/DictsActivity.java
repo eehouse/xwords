@@ -170,8 +170,9 @@ public class DictsActivity extends ExpandableListActivity
         public View getGroupView( int groupPosition, boolean isExpanded, 
                                   View convertView, ViewGroup parent )
         {
-            View row = LayoutInflater.from(DictsActivity.this).
-                inflate(android.R.layout.simple_expandable_list_item_1, null );
+            View row = 
+                Utils.inflate(DictsActivity.this, 
+                              android.R.layout.simple_expandable_list_item_1 );
             TextView view = (TextView)row.findViewById( android.R.id.text1 );
             view.setText( m_langs[groupPosition] );
             return view;

@@ -152,9 +152,8 @@ public class GameConfig extends XWActivity
 
             switch (id) {
             case PLAYER_EDIT:
-                factory = LayoutInflater.from(this);
                 final View playerEditView
-                    = factory.inflate( R.layout.player_edit, null );
+                    = Utils.inflate( this, R.layout.player_edit );
 
                 dialog = new AlertDialog.Builder( this )
                     .setTitle(R.string.player_edit_title)
@@ -192,8 +191,7 @@ public class GameConfig extends XWActivity
             case FORCE_REMOTE:
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.force_title )
-                    .setView( LayoutInflater.from(this)
-                              .inflate( layoutForDlg(id), null ) )
+                    .setView( Utils.inflate( this, layoutForDlg(id) ) )
                     .setPositiveButton( R.string.button_ok,
                                         new DialogInterface.OnClickListener() {
                                             public void onClick( DialogInterface dlg, 
