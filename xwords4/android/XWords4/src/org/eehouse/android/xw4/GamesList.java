@@ -161,7 +161,8 @@ public class GamesList extends XWListActivity
                     });
                 break;
             case GET_NAME:
-                final EditText etext = new EditText( this );
+                final EditText etext =
+                    (EditText)Utils.inflate( this, R.layout.dflt_name );
                 etext.setText( CommonPrefs.getDefaultPlayerName( this, 0, 
                                                                  true ) );
                 dialog = new AlertDialog.Builder( this )

@@ -32,6 +32,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.text.format.Time;
 import java.util.Formatter;
@@ -102,6 +103,12 @@ public class Utils {
     {
         CharSequence text = "Feature coming soon";
         Toast.makeText( context, text, Toast.LENGTH_SHORT).show();
+    }
+
+    public static View inflate( Context context, int layoutId )
+    {
+        LayoutInflater factory = LayoutInflater.from( context );
+        return factory.inflate( layoutId, null );
     }
 
     public static void setChecked( Activity activity, int id, boolean value )
