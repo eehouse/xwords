@@ -13,6 +13,7 @@
             android:autoText="false"
             android:capitalize="words"
             android:singleLine="true"
+            android:selectAllOnFocus="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
