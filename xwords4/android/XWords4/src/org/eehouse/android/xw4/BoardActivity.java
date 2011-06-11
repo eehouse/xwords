@@ -39,9 +39,10 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import android.widget.LinearLayout;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import junit.framework.Assert;
 import android.content.res.Configuration;
 import android.content.pm.ActivityInfo;
@@ -83,6 +84,7 @@ public class BoardActivity extends XWActivity
 
     private String m_dlgBytes = null;
     private EditText m_passwdEdit = null;
+    private LinearLayout m_passwdLyt = null;
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
@@ -225,7 +227,7 @@ public class BoardActivity extends XWActivity
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitleStr )
-                    .setView( m_passwdEdit )
+                    .setView( m_passwdLyt )
                     .setPositiveButton( R.string.button_ok,
                                         new DialogInterface.OnClickListener() {
                                             public void 
@@ -822,9 +824,10 @@ public class BoardActivity extends XWActivity
             m_dlgTitleStr = String.format( fmt, name );
 
             if ( null == m_passwdEdit ) {
-                m_passwdEdit = 
-                    (EditText)Utils.inflate( BoardActivity.this,
-                                             R.layout.passwd_view );
+                m_passwdLyt = 
+                    (LinearLayout)Utils.inflate( BoardActivity.this,
+                                                  R.layout.passwd_view );
+                m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
             }
             waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
 
