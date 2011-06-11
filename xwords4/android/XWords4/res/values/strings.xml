@@ -273,9 +273,9 @@
     <string name="menu_revert_all">Restore all</string>
     <string name="menu_revert_colors">Restore colors</string>
     <string name="confirm_revert_colors">Are you sure you want to
-    restore all color preferences to their default values?</string>
+      restore all color preferences to their original values?</string>
     <string name="confirm_revert_all">Are you sure you want to restore
-    all preferences to their default values?</string>
+    all preferences to their original values?</string>
 
     <string name="prefs_defaults">New game defaults</string>
     <string name="prefs_defaults_summary">Default settings for new
@@ -570,5 +570,11 @@
 
     <string name="no_download_warning">Unable to download. Do you have
       a web browser installed?</string>
+
+    <string name="default_name_title">New player welcome</string>
+    <string name="default_name_message">Thanks for installing
+      Crosswords! Feel free to enter your name here.  It will be used
+      when creating new games.  (You can change it later in the \"New
+      game default\" section of Settings.)</string>
 
 </resources>

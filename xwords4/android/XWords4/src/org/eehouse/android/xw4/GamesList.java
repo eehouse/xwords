@@ -37,6 +37,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Button;
 import android.view.MenuInflater;
@@ -56,6 +57,7 @@ public class GamesList extends XWListActivity
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
     private static final int SHOW_SUBST        = WARN_NODICT + 2;
+    private static final int GET_NAME          = WARN_NODICT + 3;
 
     private GameListAdapter m_adapter;
     private String m_missingDict;
@@ -158,6 +160,30 @@ public class GamesList extends XWListActivity
                         }
                     });
                 break;
+            case GET_NAME:
+                final EditText etext = new EditText( this );
+                etext.setText( CommonPrefs.getDefaultPlayerName( this, 0, 
+                                                                 true ) );
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.default_name_title )
+                    .setMessage( R.string.default_name_message )
+                    .setPositiveButton( R.string.button_ok, null )
+                    .setView( etext )
+                    .create();
+                dialog.setOnDismissListener(new DialogInterface.
+                                            OnDismissListener() {
+                        public void onDismiss( DialogInterface dlg ) {
+                            String name = etext.getText().toString();
+                            if ( 0 == name.length() ) {
+                                name = CommonPrefs.
+                                    getDefaultPlayerName( GamesList.this,
+                                                          0, true );
+                            }
+                            CommonPrefs.setDefaultPlayerName( GamesList.this,
+                                                              name );
+                        }
+                    });
+                break;
             default:
                 // just drop it; super.onCreateDialog likely failed
                 break;
@@ -201,6 +227,7 @@ public class GamesList extends XWListActivity
         Intent intent = getIntent();
         startFirstHasDict( intent );
         startNewNetGameIf( intent );
+        askDefaultNameIf();
 
         DBUtils.setDBChangeListener( this );
     } // onCreate
@@ -587,4 +614,12 @@ public class GamesList extends XWListActivity
             }
         }
     } // startNewNetGameIf
+
+    private void askDefaultNameIf()
+    {
+        if ( null == CommonPrefs.getDefaultPlayerName( this, 0, false ) ) {
+            showDialog( GET_NAME );
+        }
+    }
+
 }

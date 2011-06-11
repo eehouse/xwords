@@ -219,7 +219,8 @@ public class CommonPrefs {
         return value;
     }
     
-    public static String getDefaultPlayerName( Context context, int num )
+    public static String getDefaultPlayerName( Context context, int num,
+                                               boolean force )
     {
         int id = 0;
         switch( num ) {
@@ -229,11 +230,24 @@ public class CommonPrefs {
         case 3: id = R.string.key_player4_name; break;
         }
         String result = getString( context, id );
-        if ( null == result || 0 == result.length() ) {
+        if ( null != result && 0 == result.length() ) {
+            result = null;      // be consistent
+        }
+        if ( force && null == result ) {
             String fmt = context.getString( R.string.playerf );
             result = String.format( fmt, num + 1 );
         }
         return result;
+    }
+
+    public static String getDefaultPlayerName( Context context, int num )
+    {
+        return getDefaultPlayerName( context, num, true );
+    }
+
+    public static void setDefaultPlayerName( Context context, String value )
+    {
+        setPrefsString( context, R.string.key_player1_name, value );
     }
 
     public static CurGameInfo.XWPhoniesChoice 
@@ -314,4 +328,16 @@ public class CommonPrefs {
             .getDefaultSharedPreferences( context );
         return sp.getString( key, "" );
     }
+
+    private static void setPrefsString( Context context, int keyID, 
+                                        String newValue )
+    {
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        SharedPreferences.Editor editor = sp.edit();
+        String key = context.getString( keyID );
+        editor.putString( key, newValue );
+        editor.commit();
+    }
+
 }
