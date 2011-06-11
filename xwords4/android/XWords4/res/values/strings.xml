@@ -273,9 +273,9 @@
     <string name="menu_revert_all">Restore all</string>
     <string name="menu_revert_colors">Restore colors</string>
     <string name="confirm_revert_colors">Are you sure you want to
-      restore all color preferences to their original values?</string>
+      restore all color settings to their original values?</string>
     <string name="confirm_revert_all">Are you sure you want to restore
-    all preferences to their original values?</string>
+      all settings to their original values?</string>
 
     <string name="prefs_defaults">New game defaults</string>
     <string name="prefs_defaults_summary">Default settings for new
