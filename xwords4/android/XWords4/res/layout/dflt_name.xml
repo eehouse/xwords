@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<EditText xmlns:android="http://schemas.android.com/apk/res/android" 
-          android:layout_height="wrap_content"
-          android:layout_width="fill_parent"
-          android:autoText="false"
-          android:capitalize="words"
-          android:textAppearance="?android:attr/textAppearanceMedium"
-          />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+  <EditText android:id="@+id/name_edit"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_marginLeft="30dip"
+            android:layout_marginRight="30dip"
+            android:autoText="false"
+            android:capitalize="words"
+            android:singleLine="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+
+</LinearLayout>

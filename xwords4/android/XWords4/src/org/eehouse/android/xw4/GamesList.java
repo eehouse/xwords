@@ -38,6 +38,7 @@ import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Button;
 import android.view.MenuInflater;
@@ -161,15 +162,17 @@ public class GamesList extends XWListActivity
                     });
                 break;
             case GET_NAME:
+                LinearLayout layout =
+                    (LinearLayout)Utils.inflate( this, R.layout.dflt_name );
                 final EditText etext =
-                    (EditText)Utils.inflate( this, R.layout.dflt_name );
+                    (EditText)layout.findViewById( R.id.name_edit );
                 etext.setText( CommonPrefs.getDefaultPlayerName( this, 0, 
                                                                  true ) );
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.default_name_title )
                     .setMessage( R.string.default_name_message )
                     .setPositiveButton( R.string.button_ok, null )
-                    .setView( etext )
+                    .setView( layout )
                     .create();
                 dialog.setOnDismissListener(new DialogInterface.
                                             OnDismissListener() {
