@@ -70,7 +70,7 @@
               />
 
     <activity android:name="NewGameActivity"
-              android:label="@string/title_newgame"
+              android:theme="@android:style/Theme.NoTitleBar"
               />
 
     <activity android:name="GameConfig"
