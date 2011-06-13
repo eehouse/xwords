@@ -678,9 +678,7 @@ public class GameUtils {
         for ( int ii = 0; ii < names.length; ++ii ) {
             byte[] bytes = null;
             String name = names[ii];
-            if ( null == name ) {
-                Utils.logf( "openDicts: names[%d] == null; skipping open", ii );
-            } else {
+            if ( null != name ) {
                 bytes = seen.get( name );
                 if ( null == bytes ) {
                     bytes = openDict( context, name );
