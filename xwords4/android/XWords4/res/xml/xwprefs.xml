@@ -247,6 +247,11 @@
                         android:defaultValue="10998"
                         android:numeric="decimal"
                         />
+    <EditTextPreference android:key="@string/key_redir_host"
+                        android:title="@string/redir_host"
+                        android:defaultValue="@string/default_host"
+                        />
+
     <!-- <EditTextPreference android:key="@string/key_sms_port" -->
          <!--                     android:title="@string/sms_port" -->
          <!--                     android:defaultValue="5432" -->

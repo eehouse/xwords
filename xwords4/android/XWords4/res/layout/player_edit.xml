@@ -53,6 +53,7 @@
                 android:scrollHorizontally="true"
                 android:autoText="false"
                 android:capitalize="words"
+                android:selectAllOnFocus="true"
                 android:gravity="fill_horizontal"
                 android:singleLine="true"
                 android:textAppearance="?android:attr/textAppearanceMedium" 

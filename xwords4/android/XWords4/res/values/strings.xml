@@ -328,14 +328,6 @@
     <string name="clr_crosshairs">Crosshairs color</string>
     <string name="background">Board background</string>
 
-    <string name="advanced">For debugging</string>
-    <string name="advanced_summary">You should never need these...</string>
-    <string name="relay_host">Relay address</string>
-    <string name="dict_host">Dictionary download URL</string>
-    <string name="logging_on">Enable logging</string>
-    <string name="relay_port">Relay game port</string>
-    <string name="proxy_port">Relay device port</string>
-
     <string name="key_player">key_player</string>
     <string name="tab_relay">Internet/Relay</string>
     <string name="tab_sms">SMS (broken)</string>
@@ -532,6 +524,10 @@
       the scoreboard to get details about that player\'s most recent
       move.</string>
 
+    <string name="not_again_newfrom">Create a new ready-to-play game
+      using all the settings from this one.  That is, treat this game
+      as a template.</string>
+
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>
 
@@ -570,9 +566,9 @@
     <string name="no_download_warning">Unable to download. Do you have
       a web browser installed?</string>
 
-    <string name="default_name_title">New player welcome</string>
+    <string name="default_name_title">Welcome</string>
     <string name="default_name_message">Thanks for installing
-      Crosswords! Feel free to enter your name here.  It will be used
+      Crosswords! Feel free to enter your name here. It will be used
       when creating new games.  (You can change it later in the \"New
       game default\" section of Settings.)</string>
 

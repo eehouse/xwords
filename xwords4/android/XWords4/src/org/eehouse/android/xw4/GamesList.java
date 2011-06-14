@@ -468,8 +468,17 @@ public class GamesList extends XWListActivity
                     break;
 
                 case R.id.list_item_new_from:
-                    String newName = GameUtils.dupeGame( this, path );  
-                    invalPath = newName;
+                    Runnable proc = new Runnable() {
+                            public void run() {
+                                String newName = 
+                                    GameUtils.dupeGame( GamesList.this, path );
+                                if ( null != m_adapter ) {
+                                    m_adapter.inval( newName );
+                                }
+                            }
+                        };
+                    showNotAgainDlgThen( R.string.not_again_newfrom,
+                                         R.string.key_notagain_newfrom, proc );
                     break;
 
                 case R.id.list_item_copy:

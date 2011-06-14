@@ -42,7 +42,7 @@ public class NetLaunchInfo {
         ub.scheme( "http" );
         String format = context.getString( R.string.game_url_pathf );
         ub.path( String.format( format,
-                                CommonPrefs.getDefaultRelayHost( context ) ) );
+                                CommonPrefs.getDefaultRedirHost( context ) ) );
         
         ub.appendQueryParameter( "lang", String.format("%d", lang ) );
         ub.appendQueryParameter( "np", String.format( "%d", nPlayers ) );

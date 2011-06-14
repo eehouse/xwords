@@ -28,6 +28,7 @@
   <string name="key_clr_crosshairs">key_clr_crosshairs</string>
 
   <string name="key_relay_host">key_relay_host</string>
+  <string name="key_redir_host">key_redir_host</string>
   <string name="key_relay_port">key_relay_port2</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
@@ -67,13 +68,25 @@
   <string name="key_notagain_dicts">key_notagain_dicts</string>
   <string name="key_notagain_arrow">key_notagain_arrow</string>
   <string name="key_notagain_turnchanged">key_notagain_turnchanged</string>
+  <string name="key_notagain_newfrom">key_notagain_newfrom</string>
 
   <!-- other -->
   <string name="default_host">eehouse.org</string>
+
   <!-- <string name="default_host">10.0.2.2</string> -->
   <string name="dict_url">http://eehouse.org/and_dicts_hh</string>
   <string name="app_version">4.4 beta 28</string>
   <string name="game_url_pathf">//%1$s/redir.php</string>
+
+  <!-- Debugging stuff. No point in localizing it. -->
+  <string name="advanced">For debugging</string>
+  <string name="advanced_summary">You should never need these...</string>
+  <string name="relay_host">Relay host</string>
+  <string name="redir_host">Invite redirect host</string>
+  <string name="dict_host">Dictionary download URL</string>
+  <string name="logging_on">Enable logging</string>
+  <string name="relay_port">Relay game port</string>
+  <string name="proxy_port">Relay device port</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 

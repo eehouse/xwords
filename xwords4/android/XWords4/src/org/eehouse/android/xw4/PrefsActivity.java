@@ -115,6 +115,7 @@ public class PrefsActivity extends PreferenceActivity
         addPreferencesFromResource( R.xml.xwprefs );
 
         int[] textKeyIds = { R.string.key_relay_host,
+                             R.string.key_redir_host,
                              R.string.key_relay_port,
                              R.string.key_proxy_port,
                              R.string.key_dict_host,
