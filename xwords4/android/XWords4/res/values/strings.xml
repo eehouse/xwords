@@ -502,6 +502,10 @@
       the scoreboard to get details about that player\'s most recent
       move.</string>
 
+    <string name="not_again_newfrom">Create a new ready-to-play game
+      using all the settings from this one.  That is, treat this game
+      as a template.</string>
+
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>
 
