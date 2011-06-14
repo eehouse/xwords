@@ -61,10 +61,9 @@
 	<string name="newgame_local_config">Configure game</string>
 	<string name="newgame_invite">Invite now</string>
 	<string name="newgame_net_config">Configure first</string>
-    <string name="dup_game_queryf">Are you sure you want to create
-      another game in room \"%s\"?  Usually that happens when you open
-      an invitation message for the second time and isn\'t what you
-      want.  Tap Ok to go ahead and create the second game.</string>
+    <string name="dup_game_queryf">You already have a game that seems
+      to have been created from the same invitation.  Are you sure you
+      want to open another?</string>
 	
 	<string name="button_ok">OK</string>  
 	<string name="button_cancel">Cancel</string>  
@@ -553,7 +552,8 @@
     <string name="empty_games_list2">You can hide this and the button
       below in the Appearance section of Settings (accessed via your
       device\'s menu key).</string>
-    <string name="empty_list_msg">Use the menu key, Luke!</string>
+    <string name="empty_list_msg">Use the menu key to add a
+      game.</string>
 
     <string name="invite_msgf">This game is missing %1$d remote
       player[s].  Would you like to invite someone to join -- assuming
