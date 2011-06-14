@@ -138,6 +138,11 @@ public class CommonPrefs {
         return getString( context, R.string.key_relay_host );
     }
 
+    public static String getDefaultRedirHost( Context context )
+    {
+        return getString( context, R.string.key_redir_host );
+    }
+
     public static int getDefaultRelayPort( Context context )
     {
         String val = getString( context, R.string.key_relay_port );
