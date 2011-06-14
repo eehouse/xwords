@@ -196,13 +196,11 @@ public class PrefsActivity extends PreferenceActivity
     {
         Preference pref = getPreferenceScreen().findPreference( key );
         String value = sp.getString( key, "" );
-        if ( ! value.equals("") ) {
-            if ( pref instanceof android.preference.ListPreference ) {
-                // Utils.logf( "%s: want to do lookup of user string here",
-                //             key );
-            }
-            pref.setSummary( value );
-        }
+        // if ( pref instanceof android.preference.ListPreference ) {
+        // Utils.logf( "%s: want to do lookup of user string here",
+        //             key );
+        // }
+        pref.setSummary( value );
     }
 
 
