@@ -562,9 +562,9 @@
     <string name="no_download_warning">Unable to download. Do you have
       a web browser installed?</string>
 
-    <string name="default_name_title">New player welcome</string>
+    <string name="default_name_title">Welcome</string>
     <string name="default_name_message">Thanks for installing
-      Crosswords! Feel free to enter your name here.  It will be used
+      Crosswords! Feel free to enter your name here. It will be used
       when creating new games.  (You can change it later in the \"New
       game default\" section of Settings.)</string>
 
