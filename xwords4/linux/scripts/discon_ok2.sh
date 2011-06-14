@@ -106,7 +106,7 @@ build_cmds() {
             touch $LOG          # so greps won't show errors
             CMD="./obj_linux_memdbg/xwords --room $ROOM"
             CMD="$CMD --robot ${NAMES[$DEV]} --robot-iq=$((1 + (RANDOM%100))) "
-            CMD="$CMD $OTHERS --dict=$DICT --port=$PORT --host=$HOST "
+            CMD="$CMD $OTHERS --game-dict=$DICT --port=$PORT --host=$HOST "
             CMD="$CMD --file=$FILE --slow-robot 1:3 $PLAT_PARMS"
             CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
