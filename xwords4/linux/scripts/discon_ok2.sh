@@ -8,7 +8,9 @@ PORT=${PORT:-10997}
 TIMEOUT=${TIMEOUT:-$((NGAMES*60+500))}
 DICTS=${DICTS:-dict.xwd}
 SAVE_GOOD=${SAVE_GOOD:-YES}
+MAXDEVS=${MAXDEVS:-4}
 RESIGN_RATIO=${RESIGN_RATIO:-$((NGAMES/3))}
+DROP_N=1
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -43,7 +45,7 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MAXDEVS RESIGN_RATIO; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 1
@@ -89,7 +91,7 @@ build_cmds() {
     for GAME in $(seq 1 $NGAMES); do
         ROOM=ROOM_$((GAME % NROOMS))
         check_room $ROOM
-        NDEVS=$(($RANDOM%3+2))
+        NDEVS=$(( $RANDOM % ($MAXDEVS-1) + 2 ))
         DICT=${DICTS_ARR[$((GAME%${#DICTS_ARR[*]}))]}
         # make one in three games public
         PUBLIC=""
@@ -107,13 +109,15 @@ build_cmds() {
             CMD="./obj_linux_memdbg/xwords --room $ROOM"
             CMD="$CMD --robot ${NAMES[$DEV]} --robot-iq=$((1 + (RANDOM%100))) "
             CMD="$CMD $OTHERS --game-dict=$DICT --port=$PORT --host=$HOST "
-            CMD="$CMD --file=$FILE --slow-robot 1:3 $PLAT_PARMS"
+            CMD="$CMD --file=$FILE --slow-robot 1:3 --drop-nth-packet $DROP_N $PLAT_PARMS"
             CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
             FILES[$COUNTER]=$FILE
             LOGS[$COUNTER]=$LOG
             PIDS[$COUNTER]=0
             COUNTER=$((COUNTER+1))
+
+            echo "${CMD}" > $LOG
         done
     done
     echo "finished creating $COUNTER commands"
@@ -227,6 +231,17 @@ check_game() {
     fi
 }
 
+increment_drop() {
+    KEY=$1
+    CMD=${CMDS[$KEY]}
+    DROP_N=$(echo $CMD | sed 's,^.*drop-nth-packet \([0-9]*\) .*$,\1,')
+    if [ $DROP_N -gt 0 ]; then
+        NEXT_N=$((DROP_N+1))
+        CMDS[$KEY]=$(echo $CMD | sed "s,^\(.*drop-nth-packet \)$DROP_N\(.*\)$,\1$NEXT_N\2,")
+        echo $CMD
+    fi
+}
+
 run_cmds() {
     ENDTIME=$(($(date +%s) + TIMEOUT))
     while :; do
@@ -244,6 +259,7 @@ run_cmds() {
             kill ${PIDS[$KEY]} || true
             PIDS[$KEY]=0
             check_game $KEY
+            increment_drop $KEY
         fi
     done
 
