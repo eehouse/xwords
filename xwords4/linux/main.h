@@ -54,6 +54,7 @@ typedef struct LaunchParams {
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
+    XP_U16 dropNth;
     XP_Bool askNewGame;
     XP_S16 quitAfter;
     XP_Bool sleepOnAnchor;

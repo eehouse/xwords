@@ -255,6 +255,7 @@ typedef enum {
     ,CMD_SKIPWARNINGS
     ,CMD_LOCALPWD
     ,CMD_DUPPACKETS
+    ,CMD_DROPNTHPACKET
     ,CMD_NOHINTS
     ,CMD_PICKTILESFACEUP
     ,CMD_PLAYERNAME
@@ -326,6 +327,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
     ,{ CMD_LOCALPWD, true, "password", "password for user (in sequence)" }
     ,{ CMD_DUPPACKETS, false, "dup-packets", "send two of each to test dropping" }
+    ,{ CMD_DROPNTHPACKET, true, "drop-nth-packet", "drop this packet; default 0 (none)" }
     ,{ CMD_NOHINTS, false, "no-hints", "disallow hints" }
     ,{ CMD_PICKTILESFACEUP, false, "pick-face-up", "allow to pick tiles" }
     ,{ CMD_PLAYERNAME, true, "name", "name of local, non-robot player" }
@@ -676,13 +678,20 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
         comms_transportFailed( cGlobals->game.comms );
         nRead = -1;
     } else {
-
         packetSize = ntohs( tmp );
         assert( packetSize <= bufSize );
         nRead = blocking_read( sock, buf, packetSize );
         if ( nRead < 0 ) {
             XP_WARNF( "%s: errno=%d (\"%s\")\n", __func__, errno, 
                       strerror(errno) );
+        }
+
+        if ( cGlobals->params->dropNth > 0 ) {
+            if ( --cGlobals->params->dropNth == 0 ) {
+                XP_LOGF( "%s: dropping packet per --drop-nth-packet",
+                         __func__ );
+                nRead = -1;
+            }
         }
     }
     return nRead;
@@ -1038,6 +1047,9 @@ main( int argc, char** argv )
 #endif
         case CMD_DUPPACKETS:
             mainParams.duplicatePackets = XP_TRUE;
+            break;
+        case CMD_DROPNTHPACKET:
+            mainParams.dropNth = atoi( optarg );
             break;
         case CMD_NOHINTS:
             mainParams.gi.hintsNotAllowed = XP_TRUE;
