@@ -238,7 +238,6 @@ increment_drop() {
     if [ $DROP_N -gt 0 ]; then
         NEXT_N=$((DROP_N+1))
         CMDS[$KEY]=$(echo $CMD | sed "s,^\(.*drop-nth-packet \)$DROP_N\(.*\)$,\1$NEXT_N\2,")
-        echo $CMD
     fi
 }
 
@@ -258,8 +257,8 @@ run_cmds() {
             sleep 2             # make sure it's had some time
             kill ${PIDS[$KEY]} || true
             PIDS[$KEY]=0
-            check_game $KEY
             increment_drop $KEY
+            check_game $KEY
         fi
     done
 
