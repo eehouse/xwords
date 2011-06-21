@@ -54,7 +54,8 @@ typedef struct LaunchParams {
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
-    XP_U16 dropNth;
+    XP_S16 dropNthRcvd;         /* negative means use for random calc */
+    XP_U16 nPacketsRcvd;        /* toward dropNthRcvd */
     XP_Bool askNewGame;
     XP_S16 quitAfter;
     XP_Bool sleepOnAnchor;

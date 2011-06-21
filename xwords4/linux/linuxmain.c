@@ -686,10 +686,21 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
                       strerror(errno) );
         }
 
-        if ( cGlobals->params->dropNth > 0 ) {
-            if ( --cGlobals->params->dropNth == 0 ) {
-                XP_LOGF( "%s: dropping packet per --drop-nth-packet",
-                         __func__ );
+        LaunchParams* params = cGlobals->params;
+        ++params->nPacketsRcvd;
+        if ( params->dropNthRcvd == 0 ) {
+            /* do nothing */
+        } else if ( params->dropNthRcvd > 0 ) {
+            if ( params->nPacketsRcvd == params->dropNthRcvd ) {
+                XP_LOGF( "%s: dropping %dth packet per --drop-nth-packet",
+                         __func__, params->nPacketsRcvd );
+                nRead = -1;
+            }
+        } else {
+            if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
+                XP_LOGF( "%s: RANDOMLY dropping %dth packet "
+                         "per --drop-nth-packet",
+                         __func__, params->nPacketsRcvd );
                 nRead = -1;
             }
         }
@@ -1049,7 +1060,7 @@ main( int argc, char** argv )
             mainParams.duplicatePackets = XP_TRUE;
             break;
         case CMD_DROPNTHPACKET:
-            mainParams.dropNth = atoi( optarg );
+            mainParams.dropNthRcvd = atoi( optarg );
             break;
         case CMD_NOHINTS:
             mainParams.gi.hintsNotAllowed = XP_TRUE;

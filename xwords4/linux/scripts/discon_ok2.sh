@@ -10,7 +10,7 @@ DICTS=${DICTS:-dict.xwd}
 SAVE_GOOD=${SAVE_GOOD:-YES}
 MAXDEVS=${MAXDEVS:-4}
 RESIGN_RATIO=${RESIGN_RATIO:-$((NGAMES/3))}
-DROP_N=1
+DROP_N=${DROP_N:-1}
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -257,7 +257,7 @@ run_cmds() {
             sleep 2             # make sure it's had some time
             kill ${PIDS[$KEY]} || true
             PIDS[$KEY]=0
-            increment_drop $KEY
+            [ $DROP_N -ge 0 ] && increment_drop $KEY
             check_game $KEY
         fi
     done
