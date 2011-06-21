@@ -138,7 +138,8 @@ class CRefMgr {
     CookieRef* getMakeCookieRef( const char* cookie, 
                                  HostID hid, int socket, int nPlayersH,
                                  int nPlayersS, int langCode, int seed,
-                                 bool wantsPublic, bool makePublic );
+                                 bool wantsPublic, bool makePublic, 
+                                 bool* seenSeed );
 
     /* reconnect case; just the stuff we don't have in db */
     CookieRef* getMakeCookieRef( const char* connName, const char* cookie, 
@@ -219,7 +220,8 @@ class SafeCref {
     bool Connect( int socket, int nPlayersH, int nPlayersS, int seed ) {
         if ( IsValid() ) {
             assert( 0 != m_cref->GetCookieID() );
-            return m_cref->_Connect( socket, nPlayersH, nPlayersS, seed );
+            return m_cref->_Connect( socket, nPlayersH, nPlayersS, seed, 
+                                     m_seenSeed );
         } else {
             return false;
         }
@@ -300,9 +302,9 @@ class SafeCref {
             m_cref->_CheckAllConnected();
         }
     }
-    void CheckNotAcked() {
+    void CheckNotAcked( HostID hid ) {
         if ( IsValid() ) {
-            m_cref->_CheckNotAcked();
+            m_cref->_CheckNotAcked( hid );
         }
     }
     const char* Cookie() { 
@@ -366,6 +368,7 @@ class SafeCref {
     }
 
     bool IsValid()        { return m_isValid; }
+    bool SeenSeed()        { return m_seenSeed; }
 
  private:
     CookieRef* m_cref;
@@ -373,6 +376,7 @@ class SafeCref {
     bool m_isValid;
     bool m_locked;
     bool m_dead;
+    bool m_seenSeed;
 }; /* SafeCref class */
 
 

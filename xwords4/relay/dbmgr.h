@@ -43,14 +43,22 @@ class DBMgr {
     CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
                        int* langP, int* nPlayersTP, int* nPlayersHP,
                        bool* isDead );
+
+    bool SeenSeed( const char* cookie, unsigned short seed,
+                   int langCode, int nPlayersT, bool wantsPublic, 
+                   char* connNameBuf, int bufLen, int* nPlayersHP,
+                   CookieID* cid );
+
     CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
                        int nPlayersH, bool wantsPublic, 
                        char* connNameBuf, int bufLen, int* nPlayersHP );
-    bool GameFull( const char* const connName );
+    bool AllDevsAckd( const char* const connName );
 
     HostID AddDevice( const char* const connName, HostID curID,
-                      int nToAdd, unsigned short seed );
-    bool RmDevice( const char* const connName, HostID id );
+                      int nToAdd, unsigned short seed, bool unAckd );
+    void NoteAckd( const char* const connName, HostID id );
+    bool RmDeviceByHid( const char* const connName, HostID id );
+    void RmDeviceBySeed( const char* const connName, unsigned short seed );
     bool HaveDevice( const char* const connName, HostID id, int seed );
     void AddCID( const char* const connName, CookieID cid );
     void ClearCID( const char* connName );

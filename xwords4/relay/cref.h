@@ -58,6 +58,12 @@ HostRec(HostID hostID, int socket, int nPlayersH, int seed, bool ackPending )
     bool m_ackPending;
 };
 
+struct AckTimer {
+public:
+    HostID m_hid;
+    class CookieRef* m_this;
+};
+
 class CookieRef {
 
  private:
@@ -95,7 +101,7 @@ class CookieRef {
     HostID HostForSocket( int sock );
 
     /* connect case */
-    bool AlreadyHere( unsigned short seed, int socket );
+    bool AlreadyHere( unsigned short seed, int socket, HostID* prevHostID );
     /* reconnect case */
     bool AlreadyHere( HostID hid, unsigned short seed, int socket );
 
@@ -110,7 +116,8 @@ class CookieRef {
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
-    bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed );
+    bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed, 
+                   bool seenSeed );
     void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                      int seed, bool gameDead );
     void _HandleAck( HostID hostID );
@@ -122,9 +129,9 @@ class CookieRef {
     void _Forward( HostID src, HostID dest, unsigned char* buf, int buflen );
     void _Remove( int socket );
     void _CheckAllConnected();
-    void _CheckNotAcked();
+    void _CheckNotAcked( HostID hid );
 
-    bool ShouldDie() { return m_curState == XWS_DEAD; }
+    bool ShouldDie() { return m_curState == XWS_EMPTY; }
     XW_RELAY_STATE CurState() { return m_curState; }
 
     void logf( XW_LogLevel level, const char* format, ... );
@@ -202,18 +209,21 @@ class CookieRef {
     void sendResponse( const CRefEvent* evt, bool initial );
     void sendAnyStored( const CRefEvent* evt );
     void initPlayerCounts( const CRefEvent* evt );
-    bool increasePlayerCounts( CRefEvent* evt, bool reconn );
-    void modPending( const CRefEvent* evt, bool keep );
+    bool increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp );
+    void updateAck( HostID hostID, bool keep );
+    void dropPending( int seed );
 
     void postCheckAllHere();
+    void postDropDevice( HostID hostID );
+
     bool hostAlreadyHere( int seed, int socket );
 
     void reducePlayerCounts( int socket );
 
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
-    void setAckTimer();
-    void cancelAckTimer();
+    void setAckTimer( HostID hid );
+    void cancelAckTimer( HostID hid );
 
     void forward_or_store( const CRefEvent* evt );
     void send_denied( const CRefEvent* evt, XWREASON why );
@@ -271,7 +281,8 @@ class CookieRef {
     int m_langCode;
 
     time_t m_starttime;
-    int m_nPendingAcks;
+
+    AckTimer m_timers[4];
 
     pthread_mutex_t m_mutex;
 

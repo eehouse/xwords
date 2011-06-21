@@ -27,6 +27,7 @@ typedef
 enum {
     XWS_NONE
     ,XWS_ANY                  /* wildcard */
+    ,XWS_SAME                 /* wildcard: means use same state as current */
 
     /* ,XWS_CHKCOUNTS_INIT */       /* from initial state, check if all players
                                    are here.  Success should be an error,
@@ -40,11 +41,13 @@ enum {
     /* ,XWS_CHK_ALLHERE_2 */        /* same as above, but triggered by a reconnect
                                    rather than a connect request */
 
-    ,XWS_INITED               /* Relay's running and the object's been
-                                   created, but nobody's signed up yet.  This
-                                   is a very short-lived state since an
-                                   incoming connection is why the object was
-                                   created.  */
+    ,XWS_EMPTY                  /* Relay's running and the object's been
+                                   created, and nobody's signed up yet.  The
+                                   object should never be in this state except
+                                   immediately after created, just before
+                                   deleted, or transitionally, as after a
+                                   device is removed prior to replacing its
+                                   record with another.  */
 
     ,XWS_WAITMORE             /* At least one device has connected, but no
                                    packets have yet arrived to be
@@ -63,8 +66,6 @@ enum {
 
     /* ,XWS_ROOMCHK */              /* do we have room for as many players as are
                                  being provided */
-
-    ,XWS_DEAD                 /* About to kill the object */
 } XW_RELAY_STATE;
 
 
@@ -129,7 +130,6 @@ typedef enum {
 
     // ,XWA_ADDDEVICE              /* got ack, so device is in for sure */
     ,XWA_NOTEACK
-    ,XWA_NOTEACKCHECK
     ,XWA_DROPDEVICE             /* no ack; remove all traces of device */
 
     ,XWA_SEND_INITRSP           /* response to first to connect */

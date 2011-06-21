@@ -314,8 +314,6 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
     unsigned char* end = bufp + bufLen;
     bool success = false;
 
-    logf( XW_LOGINFO, "%s()", __func__ );
-
     cookie[0] = '\0';
 
     unsigned char flags = *bufp++;
@@ -324,7 +322,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
         /* HostID srcID; */
         unsigned char nPlayersH;
         unsigned char nPlayersT;
-        unsigned short gameSeed;
+        unsigned short seed;
         unsigned char langCode;
         unsigned char makePublic, wantsPublic;
         if ( readStr( &bufp, end, cookie, sizeof(cookie) ) 
@@ -333,10 +331,11 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
              /* && getNetByte( &bufp, end, &srcID ) */
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT )
-             && getNetShort( &bufp, end, &gameSeed )
+             && getNetShort( &bufp, end, &seed )
              && getNetByte( &bufp, end, &langCode ) ) {
-            logf( XW_LOGINFO, "%s(): langCode=%d; nPlayersT=%d; wantsPublic=%d", __func__,
-                  langCode, nPlayersT, wantsPublic );
+            logf( XW_LOGINFO, "%s(): langCode=%d; nPlayersT=%d; "
+                  "wantsPublic=%d; seed=%.4X",
+                  __func__, langCode, nPlayersT, wantsPublic, seed );
 
             /* Make sure second thread can't create new cref for same cookie
                this one just handled.*/
@@ -344,10 +343,10 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
             MutexLock ml( &s_newCookieLock );
 
             SafeCref scr( cookie, socket, nPlayersH, nPlayersT, 
-                          gameSeed, langCode, wantsPublic, makePublic );
+                          seed, langCode, wantsPublic, makePublic );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
-            success = scr.Connect( socket, nPlayersH, nPlayersT, gameSeed );
+            success = scr.Connect( socket, nPlayersH, nPlayersT, seed );
         } else {
             err = XWRELAY_ERROR_BADPROTO;
         }
@@ -442,7 +441,7 @@ processDisconnect( unsigned char* bufp, int bufLen, int socket )
 static void
 killSocket( int socket )
 {
-    logf( XW_LOGINFO, "killSocket(%d)", socket );
+    logf( XW_LOGINFO, "%s(%d)", __func__, socket );
     CRefMgr::Get()->RemoveSocketRefs( socket );
 }
 

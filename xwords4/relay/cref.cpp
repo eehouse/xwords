@@ -86,14 +86,13 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     m_cookie = cookie==NULL?"":cookie;
     m_connName = connName==NULL?"":connName;
     m_cookieID = id;
-    m_curState = XWS_INITED;
+    m_curState = XWS_EMPTY;
     m_nPlayersSought = nPlayers;
     m_nPlayersHere = nAlreadyHere;
     m_locking_thread = 0;
     m_starttime = uptime();
     m_in_handleEvents = false;
     m_langCode = langCode;
-    m_nPendingAcks = 0;
 
     if ( RelayConfigs::GetConfigs()->GetValueFor( "SEND_DELAY_MILLIS", 
                                                    &m_delayMicros ) ) {
@@ -104,8 +103,13 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
     logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
           m_cookie.c_str(), m_connName.c_str() );
-}
 
+    unsigned int ii;
+    for ( ii = 0; ii < sizeof(m_timers)/sizeof(m_timers[0]); ++ii ) {
+        m_timers[ii].m_this = NULL;
+        m_timers[ii].m_hid = ii + 1;
+    }
+}
 
 CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id,
                       int langCode, int nPlayersT, int nAlreadyHere )
@@ -176,19 +180,31 @@ CookieRef::Unlock() {
 }
 
 bool
-CookieRef::_Connect( int socket, int nPlayersH, int nPlayersS, int seed )
+CookieRef::_Connect( int socket, int nPlayersH, int nPlayersS, int seed, 
+                     bool seenSeed  )
 {
     bool connected = false;
-    if ( AlreadyHere( seed, socket ) ) {
-        connected = true;       /* but drop the packet */
-    /* } else if ( AlreadyHere( seed, -1 ) ) { */
-        /* dupe packet on different socket; need host record */
-    } else if ( CRefMgr::Get()->Associate( socket, this ) ) {
-        pushConnectEvent( socket, nPlayersH, nPlayersS, seed );
-        handleEvents();
-        connected = HasSocket_locked( socket );
-    } else {
-        logf( XW_LOGINFO, "dropping connect event; already connected" );
+    HostID prevHostID = HOST_ID_NONE;
+    bool alreadyHere = AlreadyHere( seed, socket, &prevHostID );
+
+    if ( alreadyHere ) {
+        if ( seenSeed ) {   /* we need to get rid of the current entry, then
+                               proceed as if this were a new connection */
+            assert( HOST_ID_NONE != prevHostID );
+            postDropDevice( prevHostID );
+        } else {
+            connected = true;   /* but drop the packet */
+        }
+    }
+
+    if ( !connected ) {
+        if ( CRefMgr::Get()->Associate( socket, this ) ) {
+            pushConnectEvent( socket, nPlayersH, nPlayersS, seed );
+            handleEvents();
+            connected = HasSocket_locked( socket );
+        } else {
+            logf( XW_LOGINFO, "dropping connect event; already connected" );
+        }
     }
     return connected;
 }
@@ -212,7 +228,6 @@ CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
 void
 CookieRef::_HandleAck( HostID hostID )
 {
-    assert( m_nPendingAcks > 0 && m_nPendingAcks <= 4 );
     CRefEvent evt( XWE_GOTONEACK );
     evt.u.ack.srcID = hostID;
     m_eventQueue.push_back( evt );
@@ -288,22 +303,19 @@ CookieRef::SocketForHost( HostID dest )
 }
 
 bool 
-CookieRef::AlreadyHere( unsigned short seed, int socket )
+CookieRef::AlreadyHere( unsigned short seed, int socket, HostID* prevHostID )
 {
     logf( XW_LOGINFO, "%s(seed=%x,socket=%d)", __func__, seed, socket );
     bool here = false;
 
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
-        if ( iter->m_seed == seed ) { /* client already registered */
-            if ( iter->m_socket == socket ) {
-                /* dup packet */
-                here = true;
-            } else {
-                logf( XW_LOGINFO, "%s: seeds match; nuking existing record"
-                      " for socket %d b/c assumed closed", __func__, 
-                      iter->m_socket );
-                m_sockets.erase( iter );
+        here = iter->m_seed == seed; /* client already registered */
+        if ( here ) {
+            if ( iter->m_socket != socket ) { /* not just a dupe packet */
+                logf( XW_LOGINFO, "%s: seeds match; socket %d assumed closed",
+                      __func__, iter->m_socket );
+                *prevHostID = iter->m_hostID;
             }
             break;
         }
@@ -370,11 +382,10 @@ CookieRef::removeSocket( int socket )
                 if ( iter->m_socket == socket ) {
                     if ( iter->m_ackPending ) {
                         logf( XW_LOGINFO,
-                              "Never got ack; removing %d players from DB",
-                              iter->m_nPlayersH );
-                        DBMgr::Get()->RmDevice( ConnName(), iter->m_hostID );
+                              "Never got ack; removing hid %d from DB",
+                              iter->m_hostID );
+                        DBMgr::Get()->RmDeviceByHid( ConnName(), iter->m_hostID );
                         m_nPlayersHere -= iter->m_nPlayersH;
-                        --m_nPendingAcks;
                     }
                     m_sockets.erase(iter);
                     --count;
@@ -577,22 +588,24 @@ CookieRef::handleEvents()
 
             switch( takeAction ) {
 
-            case XWA_SEND_CONNRSP:
-                if ( increasePlayerCounts( &evt, false ) ) {
-                    setAllConnectedTimer();
-                    sendResponse( &evt, takeAction != XWA_SEND_1ST_RERSP );
-                    setAckTimer();
+            case XWA_SEND_CONNRSP: 
+                {
+                    HostID hid;
+                    if ( increasePlayerCounts( &evt, false, &hid ) ) {
+                        setAllConnectedTimer();
+                        sendResponse( &evt, takeAction != XWA_SEND_1ST_RERSP );
+                        setAckTimer( hid );
+                    }
                 }
                 break;
 
-            case XWA_NOTEACKCHECK:
             case XWA_NOTEACK:
-                modPending( &evt, true );
+                updateAck( evt.u.ack.srcID, true );
                 postCheckAllHere();
                 break;
 
             case XWA_DROPDEVICE:
-                modPending( &evt, false );
+                updateAck( evt.u.ack.srcID, false );
                 break;
 
             /* case XWA_SEND_1ST_RERSP: */
@@ -603,7 +616,7 @@ CookieRef::handleEvents()
             /*     break; */
 
             case XWA_SEND_RERSP:
-                increasePlayerCounts( &evt, true );
+                increasePlayerCounts( &evt, true, NULL );
                 sendResponse( &evt, false );
                 sendAnyStored( &evt );
                 postCheckAllHere();
@@ -708,6 +721,16 @@ CookieRef::handleEvents()
             }
 
             m_curState = nextState;
+
+#ifdef DEBUG
+            if ( XWS_EMPTY == m_curState ) {
+                assert( 0 == m_sockets.size() );
+
+                int nTotal, nHere;
+                GetPlayerCounts( ConnName(), &nTotal, &nHere );
+                assert( 0 == nHere );
+            }
+#endif
         } else {
             logf( XW_LOGERROR, "Killing cref b/c unable to find transition "
                   "from %s on event %s", stateString(m_curState),
@@ -779,7 +802,7 @@ CookieRef::send_stored_messages( HostID dest, int socket )
 } /* send_stored_messages */
 
 bool
-CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn )
+CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp )
 {
     int nPlayersH = evt->u.con.nPlayersH;
     int socket = evt->u.con.socket;
@@ -808,9 +831,12 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn )
     }
 
     evt->u.con.srcID = DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID,
-                                                nPlayersH, seed );
+                                                nPlayersH, seed, reconn );
 
     HostID hostid = evt->u.con.srcID;
+    if ( NULL != hidp ) {
+        *hidp = hostid;
+    }
 
     /* first add the rec here, whether it'll get ack'd or not */
     logf( XW_LOGINFO, "%s: remembering pair: hostid=%x, "
@@ -831,34 +857,51 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn )
 } /* increasePlayerCounts */
 
 void
-CookieRef::modPending( const CRefEvent* evt, bool keep )
+CookieRef::updateAck( HostID hostID, bool keep )
 {
-    HostID hostID = evt->u.ack.srcID;
+    assert( hostID >= HOST_ID_SERVER );
+    assert( hostID <= 4 );
+    int socket = 0;
+
+    cancelAckTimer( hostID );
+
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         if ( iter->m_ackPending && iter->m_hostID == hostID ) {
-            --m_nPendingAcks;
 
             if ( keep ) {
                 iter->m_ackPending = false;
+                DBMgr::Get()->NoteAckd( ConnName(), hostID );
             } else {
-                DBMgr::Get()->RmDevice( ConnName(), iter->m_hostID );
-                m_sockets.erase( iter );
+                socket = iter->m_socket;
             }
             break;
         }
     }
+
+    if ( 0 != socket ) {
+        removeSocket( socket );
+    }
+
     printSeeds(__func__);
 }
 
 void
 CookieRef::postCheckAllHere()
 {
-    if ( m_nPendingAcks == 0 && DBMgr::Get()->GameFull( ConnName() ) ) {
-         /* && m_nPlayersHere == m_nPlayersSought ) { /\* complete! *\/ */
+    if ( DBMgr::Get()->AllDevsAckd( ConnName() ) ) {
         CRefEvent evt( XWE_ALLHERE );
         m_eventQueue.push_back( evt );
     }
+}
+
+void
+CookieRef::postDropDevice( HostID hostID )
+{
+    CRefEvent evt( XWE_ACKTIMEOUT );
+    evt.u.ack.srcID = hostID;
+    m_eventQueue.push_back( evt );
+    handleEvents();
 }
 
 void
@@ -872,23 +915,39 @@ CookieRef::setAllConnectedTimer()
 }
 
 void
-CookieRef::setAckTimer( void )
+CookieRef::setAckTimer( HostID hid )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
+    ASSERT_LOCKED();
+    logf( XW_LOGINFO, "%s(%d)", __func__, hid );
+
+    assert( hid >= HOST_ID_SERVER );
+    assert( hid <= 4 );
+    --hid;
+
+    assert( NULL == m_timers[hid].m_this );
+    m_timers[hid].m_this = this;
+
     time_t inHowLong;
     if ( RelayConfigs::GetConfigs()->GetValueFor( "DEVACK", &inHowLong ) ) {
         TimerMgr::GetTimerMgr()->SetTimer( inHowLong,
-                                           s_checkAck, this, 0 );
-        ++m_nPendingAcks;
+                                           s_checkAck, &m_timers[hid], 0 );
     } else {
         logf( XW_LOGINFO, "not setting timer" );
     }
 }
 
 void
-CookieRef::cancelAckTimer( void )
+CookieRef::cancelAckTimer( HostID hid )
 {
-    TimerMgr::GetTimerMgr()->ClearTimer( s_checkAck, this );
+    ASSERT_LOCKED();
+    logf( XW_LOGINFO, "%s(%d)", __func__, hid );
+
+    assert( hid >= HOST_ID_SERVER );
+    assert( hid <= 4 );
+    --hid;
+    m_timers[hid].m_this = NULL;
+    
+    // TimerMgr::GetTimerMgr()->ClearTimer( s_checkAck, this );
 }
 
 void
@@ -1231,9 +1290,13 @@ CookieRef::s_checkAllConnected( void* closure )
 /* static */ void
 CookieRef::s_checkAck( void* closure )
 {
-    CookieRef* self = (CookieRef*)closure;
-    SafeCref scr(self);
-    scr.CheckNotAcked();
+    AckTimer* at = (AckTimer*)closure;
+    CookieRef* self = at->m_this;
+    if ( NULL != self ) {
+        at->m_this = NULL;
+        SafeCref scr(self);
+        scr.CheckNotAcked( at->m_hid );
+    }
 }
 
 void
@@ -1247,14 +1310,13 @@ CookieRef::_CheckAllConnected()
 }
 
 void
-CookieRef::_CheckNotAcked()
+CookieRef::_CheckNotAcked( HostID hid )
 {
-    logf( XW_LOGINFO, "%s", __func__ );
-    if ( m_nPendingAcks > 0 ) {
-        CRefEvent newEvt( XWE_ACKTIMEOUT );
-        m_eventQueue.push_back( newEvt );
-        handleEvents();
-    }
+    logf( XW_LOGINFO, "%s(hid=%d)", __func__, hid );
+    CRefEvent newEvt( XWE_ACKTIMEOUT );
+    newEvt.u.ack.srcID = hid;
+    m_eventQueue.push_back( newEvt );
+    handleEvents();
 }
 
 void
@@ -1264,10 +1326,11 @@ CookieRef::printSeeds( const char* caller )
     char buf[64] = {0};
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
-        len += snprintf( &buf[len], sizeof(buf)-len, "%.4x/%d ", 
-                         iter->m_seed, iter->m_socket );
+        len += snprintf( &buf[len], sizeof(buf)-len, "%.4x/%d/%c ", 
+                         iter->m_seed, iter->m_socket, 
+                         iter->m_ackPending?'a':'A' );
     }
-    logf( XW_LOGINFO, "seeds/sockets after %s(): %s", caller, buf );
+    logf( XW_LOGINFO, "seeds/sockets/ack'd after %s(): %s", caller, buf );
 }
 
 void

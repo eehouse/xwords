@@ -39,6 +39,8 @@ static DBMgr* s_instance = NULL;
 
 static void formatParams( char* paramValues[], int nParams, const char* fmt, 
                           char* buf, int bufLen, ... );
+static int here_less_seed( const char* seeds, int perDeviceSum, 
+                           unsigned short seed );
 
 /* static */ DBMgr*
 DBMgr::Get() 
@@ -130,6 +132,48 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
 
     logf( XW_LOGINFO, "%s(%s)=>%d", __func__, connName, cid );
     return cid;
+} /* FindGame */
+
+bool
+DBMgr::SeenSeed( const char* cookie, unsigned short seed,
+                 int langCode, int nPlayersT, bool wantsPublic, 
+                 char* connNameBuf, int bufLen, int* nPlayersHP, 
+                 CookieID* cid )
+{
+    int nParams = 5;
+    char* paramValues[nParams];
+    char buf[512];
+    formatParams( paramValues, nParams,
+                  "%s"DELIM"%d"DELIM"%d"DELIM"%d"DELIM"%s", buf, sizeof(buf),
+                  cookie, langCode, nPlayersT, seed, 
+                  wantsPublic?"TRUE":"FALSE" );
+
+    const char* cmd = "SELECT cid, connName, seeds, sum_array(nPerDevice) FROM "
+        GAMES_TABLE
+        " WHERE NOT dead"
+        " AND room ILIKE $1"
+        " AND lang = $2"
+        " AND nTotal = $3"
+        " AND $4 = ANY(seeds)"
+        " AND $5 = pub"
+        " ORDER BY ctime DESC"
+        " LIMIT 1";
+
+    PGresult* result = PQexecParams( getThreadConn(), cmd,
+                                     nParams, NULL,
+                                     paramValues, 
+                                     NULL, NULL, 0 );
+    bool found = 1 == PQntuples( result );
+    if ( found ) {
+        *cid = atoi( PQgetvalue( result, 0, 0 ) );
+        *nPlayersHP = here_less_seed( PQgetvalue( result, 0, 2 ),
+                                      atoi( PQgetvalue( result, 0, 3 ) ),
+                                      seed );
+        snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
+    }
+    PQclear( result );
+    logf( XW_LOGINFO, "%s(%4X)=>%s", __func__, seed, found?"true":"false" );
+    return found;
 }
 
 CookieID
@@ -174,9 +218,9 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
 } /* FindOpen */
 
 bool
-DBMgr::GameFull( const char* const connName )
+DBMgr::AllDevsAckd( const char* const connName )
 {
-    const char* cmd = "SELECT ntotal=sum_array(nperdevice) from " GAMES_TABLE
+    const char* cmd = "SELECT ntotal=sum_array(nperdevice) AND 'A'=ALL(ack) from " GAMES_TABLE
         " WHERE connName='%s'";
     char query[256];
     snprintf( query, sizeof(query), cmd, connName );
@@ -187,12 +231,13 @@ DBMgr::GameFull( const char* const connName )
     assert( nTuples <= 1 );
     bool full = 't' == PQgetvalue( result, 0, 0 )[0];
     PQclear( result );
+    logf( XW_LOGINFO, "%s=>%d", __func__, full );
     return full;
 }
 
 HostID
 DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd, 
-                  unsigned short seed )
+                  unsigned short seed, bool ackd )
 {
     HostID newID = curID;
 
@@ -208,28 +253,78 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
     assert( newID <= 4 );
 
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
-        " seeds[%d] = %d, mtimes[%d]='now'"
+        " seeds[%d] = %d, mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, newID, connName );
+    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, newID, 
+              newID, ackd?'A':'a', connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );
 
     return newID;
+} /* AddDevice */
+
+void
+DBMgr::NoteAckd( const char* const connName, HostID id )
+{
+    char query[256];
+    const char* fmt = "UPDATE " GAMES_TABLE " SET ack[%d]='A'"
+        " WHERE connName = '%s'";
+    snprintf( query, sizeof(query), fmt, id, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    execSql( query );
 }
 
 bool
-DBMgr::RmDevice( const char* connName, HostID hid )
+DBMgr::RmDeviceByHid( const char* connName, HostID hid )
 {
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0, "
-        "seeds[%d] = 0, mtimes[%d]='now' WHERE connName = '%s'";
+        "seeds[%d] = 0, ack[%d]='-', mtimes[%d]='now' WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, hid, hid, hid, connName );
+    snprintf( query, sizeof(query), fmt, hid, hid, hid, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     return execSql( query );
 }
+
+void
+DBMgr::RmDeviceBySeed( const char* const connName, unsigned short seed )
+{
+    char seeds[128] = {0};
+    const char* fmt = "SELECT seeds FROM " GAMES_TABLE
+        " WHERE connName = '%s'"
+        " AND %d = ANY(seeds)";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, connName, seed );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    PGresult* result = PQexec( getThreadConn(), query );
+    if ( 1 == PQntuples( result ) ) {
+        snprintf( seeds, sizeof(seeds), "%s", PQgetvalue( result, 0, 0 ) );
+    }
+    PQclear( result );
+
+    if ( 0 != seeds[0] ) {
+        char *saveptr = NULL;
+        int ii;
+        char* str;
+        for ( str = seeds, ii = 0; ; str = NULL, ++ii ) {
+            char* tok = strtok_r( str, "{},", &saveptr );
+            if ( NULL == tok ) {
+                break;
+            } else {
+                int asint = atoi( tok );
+                if ( asint == seed ) {
+                    RmDeviceByHid( connName, ii + 1 );
+                    break;
+                }
+            }
+        }
+    } else {
+        assert(0);              /* but don't ship with this!!!! */
+    }
+} /* RmDeviceSeed */
 
 bool
 DBMgr::HaveDevice( const char* connName, HostID hid, int seed )
@@ -537,7 +632,15 @@ formatParams( char* paramValues[], int nParams, const char* fmt, char* buf,
         }
     }
     va_end(ap);
-} 
+}
+
+static int
+here_less_seed( const char* seeds, int sumPerDevice, unsigned short seed )
+{
+    logf( XW_LOGINFO, "%s: find %x in \"%s\", sub from \"%d\"", __func__, 
+          seed, seeds, sumPerDevice );
+    return sumPerDevice - 1;    /* FIXME */
+}
 
 static void
 destr_function( void* conn )

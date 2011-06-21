@@ -180,7 +180,8 @@ CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
         info.m_langCode = cref->GetLangCode();
         
         SafeCref sc(cref);
-        sc.GetHostsConnected( &info.m_hostsIds, &info.m_hostSeeds, &info.m_hostIps );
+        sc.GetHostsConnected( &info.m_hostsIds, &info.m_hostSeeds, 
+                              &info.m_hostIps );
         
         mgrInfo.m_crefInfo.push_back( info );
     }
@@ -231,25 +232,31 @@ CRefMgr::getFromFreeList( void )
 CookieRef*
 CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket, 
                            int nPlayersH, int nPlayersT, int langCode, 
-                           int gameSeed, bool wantsPublic, 
-                           bool makePublic )
+                           int seed, bool wantsPublic, 
+                           bool makePublic, bool* seenSeed )
 {
     CookieRef* cref;
+    CookieID cid;
+    char connNameBuf[MAX_CONNNAME_LEN+1] = {0};
+    int alreadyHere = 0;
 
     /* We have a cookie from a new connection or from a reconnect.  This may
        be the first time it's been seen, or there may be a game currently in
-       the XW_ST_CONNECTING state, or it may be a dupe of a connect packet.
-       If there's a game, cool.  Otherwise add a new one.  Pass the connName
-       which will be used if set, but if not set we'll be generating another
-       later when the game is complete.
+       the XW_ST_CONNECTING state, or it may be a dupe of a connect packet on
+       the same or a different socket.  If there's a game, cool.  Otherwise add
+       a new one.  Pass the connName which will be used if set, but if not set
+       we'll be generating another later when the game is complete.
     */
 
-    char connNameBuf[MAX_CONNNAME_LEN+1] = {0};
-    int alreadyHere = 0;
-    CookieID cid = m_db->FindOpen( cookie, langCode, nPlayersT, nPlayersH,
-                                   wantsPublic, 
-                                   connNameBuf, sizeof(connNameBuf), 
-                                   &alreadyHere );
+    *seenSeed = m_db->SeenSeed( cookie, seed, langCode, nPlayersT, 
+                                wantsPublic, connNameBuf, 
+                                sizeof(connNameBuf), &alreadyHere, &cid );
+    if ( !*seenSeed ) {
+        cid = m_db->FindOpen( cookie, langCode, nPlayersT, nPlayersH, 
+                              wantsPublic, connNameBuf, sizeof(connNameBuf), 
+                              &alreadyHere );
+    }
+
     if ( cid > 0 ) {
         cref = getCookieRef_impl( cid ); 
     } else {
@@ -657,12 +664,14 @@ SafeCref::SafeCref( const char* cookie, int socket, int nPlayersH, int nPlayersS
     : m_cref( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
+    , m_seenSeed( false )
 {
     CookieRef* cref;
 
     cref = m_mgr->getMakeCookieRef( cookie, 0, socket,
                                     nPlayersH, nPlayersS, langCode,
-                                    gameSeed, wantsPublic, makePublic );
+                                    gameSeed, wantsPublic, makePublic,
+                                    &m_seenSeed );
     if ( cref != NULL ) {
         m_locked = cref->Lock();
         m_cref = cref;
