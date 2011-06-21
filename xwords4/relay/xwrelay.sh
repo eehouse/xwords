@@ -41,6 +41,7 @@ cid integer
 ,nTotal INTEGER
 ,nPerDevice INTEGER[]
 ,seeds INTEGER[]
+,ack VARCHAR(1)[]
 ,nSent INTEGER DEFAULT 0
 ,ctime TIMESTAMP (0) DEFAULT CURRENT_TIMESTAMP
 ,mtimes TIMESTAMP(0)[]
