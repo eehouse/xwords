@@ -171,6 +171,7 @@ XWThreadPool::CloseSocket( int socket )
 void
 XWThreadPool::EnqueueKill( int socket, const char* const why )
 {
+    logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, socket, why );
     enqueue( socket, STYPE_UNKNOWN, Q_KILL );
 }
 
