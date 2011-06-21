@@ -25,7 +25,7 @@ QUERY="WHERE NOT -NTOTAL = sum_array(nperdevice)"
 echo "Device count:  $(pidof xwords | wc | awk '{print $2}')"
 echo "Row count:" $(psql -t xwgames -c "select count(*) FROM games $QUERY;")
 
-echo "SELECT dead,connname,cid,room,lang,ntotal,nperdevice,seeds,ack,nsent,ctime,mtimes "\
+echo "SELECT dead,connname,cid,room,lang,ntotal,nperdevice,seeds,ack,nsent "\
      "FROM games $QUERY ORDER BY NOT dead, connname LIMIT $LIMIT;" \
     | psql xwgames
 
