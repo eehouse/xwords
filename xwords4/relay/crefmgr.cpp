@@ -55,17 +55,16 @@ CRefMgr::Get()
 } /* Get */
 
 CRefMgr::CRefMgr()
-    : m_nextCID(0)
-    , m_nRoomsFilled(0)
+    : m_nRoomsFilled(0)
     , m_startTime(time(NULL))
 {
     /* should be using pthread_once() here */
     pthread_mutex_init( &m_SocketStuffMutex, NULL );
-    pthread_mutex_init( &m_nextCIDMutex, NULL );
     pthread_mutex_init( &m_roomsFilledMutex, NULL );
     pthread_mutex_init( &m_freeList_mutex, NULL );
     pthread_rwlock_init( &m_cookieMapRWLock, NULL );
     m_db = DBMgr::Get();
+    m_cidlock = CidLock::GetInstance();
 }
 
 CRefMgr::~CRefMgr()
@@ -101,21 +100,21 @@ CRefMgr::CloseAll()
             }
             cref = iter->second; 
             {
-                SafeCref scr( cref ); /* cref */
+                SafeCref scr( cref->GetCookieID(), false ); /* cref */
                 scr.Shutdown();
             }
         }
     }
 } /* CloseAll */
 
-CookieID
-CRefMgr::nextCID( const char* connName )
-{
-    /* Later may want to guarantee that wrap-around doesn't cause an overlap.
-       But that's really only a theoretical possibility. */
-    MutexLock ml(&m_nextCIDMutex);
-    return ++m_nextCID;
-} /* nextCID */
+/* CookieID */
+/* CRefMgr::nextCID( const char* connName ) */
+/* { */
+/*     /\* Later may want to guarantee that wrap-around doesn't cause an overlap. */
+/*        But that's really only a theoretical possibility. *\/ */
+/*     MutexLock ml(&m_nextCIDMutex); */
+/*     return ++m_nextCID; */
+/* } /\* nextCID *\/ */
 
 void 
 CRefMgr::IncrementFullCount( void )
@@ -179,7 +178,7 @@ CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
         info.m_startTime = cref->GetStarttime();
         info.m_langCode = cref->GetLangCode();
         
-        SafeCref sc(cref);
+        SafeCref sc(cref->GetCookieID(), false );
         sc.GetHostsConnected( &info.m_hostsIds, &info.m_hostSeeds, 
                               &info.m_hostIps );
         
@@ -229,13 +228,13 @@ CRefMgr::getFromFreeList( void )
 }
 
 /* connect case */
-CookieRef*
+CidInfo*
 CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket, 
                            int nPlayersH, int nPlayersT, int langCode, 
                            int seed, bool wantsPublic, 
                            bool makePublic, bool* seenSeed )
 {
-    CookieRef* cref;
+    CidInfo* cinfo;
     CookieID cid;
     char connNameBuf[MAX_CONNNAME_LEN+1] = {0};
     int alreadyHere = 0;
@@ -258,11 +257,13 @@ CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket,
     }
 
     if ( cid > 0 ) {
-        cref = getCookieRef_impl( cid ); 
+        cinfo = getCookieRef_impl( cid );
     } else {
-        cid = nextCID( NULL );
-        cref = AddNew( cookie, connNameBuf, cid, langCode, 
-                       nPlayersT, alreadyHere );
+        cinfo = m_cidlock->Claim();
+        cid = cinfo->GetCid();
+        CookieRef* cref = AddNew( cookie, connNameBuf, cid, langCode, 
+                                  nPlayersT, alreadyHere );
+        cinfo->SetRef( cref );
         if ( !connNameBuf[0] ) { /* didn't exist in DB */
             m_db->AddNew( cookie, cref->ConnName(), cid, langCode, nPlayersT, 
                           wantsPublic || makePublic );
@@ -271,17 +272,18 @@ CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket,
         }
     }
 
-    return cref;
+    return cinfo;
 } /* getMakeCookieRef */
 
 /* reconnect case */
-CookieRef* 
+CidInfo*
 CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
                            HostID hid, int socket, int nPlayersH, 
                            int nPlayersS, int seed, int langCode, 
                            bool isPublic, bool* isDead )
 {
     CookieRef* cref = NULL;
+    CidInfo* cinfo;
 
     /* fetch these from DB */
     char curCookie[MAX_INVITE_LEN+1];
@@ -293,11 +295,13 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
                                    &curLangCode, &nPlayersT, &nAlreadyHere,
                                    isDead );
     if ( 0 != cid ) {           /* already open */
-        cref = getCookieRef_impl( cid );
+        cinfo = getCookieRef_impl( cid );
     } else {
+        CookieID cid;
         /* The entry may not even be in the DB, e.g. if it got deleted.
            Deal with that possibility by taking the caller's word for it. */
-        CookieID cid = nextCID( NULL );
+        cinfo = m_cidlock->Claim();
+        cid = cinfo->GetCid();
 
         if ( nPlayersT == 0 ) { /* wasn't in the DB */
             m_db->AddNew( cookie, connName, cid, langCode, nPlayersS, isPublic );
@@ -309,15 +313,17 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
 
         cref = AddNew( cookie, connName, cid, curLangCode, nPlayersT, 
                        nAlreadyHere );
+        cinfo->SetRef( cref );
         m_db->AddCID( connName, cid );
     }
-    return cref;
+    return cinfo;
 } /* getMakeCookieRef */
 
-CookieRef* 
+CidInfo*
 CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
 {
     CookieRef* cref = NULL;
+    CidInfo* cinfo;
     char curCookie[MAX_INVITE_LEN+1];
     int curLangCode;
     int nPlayersT = 0;
@@ -327,23 +333,25 @@ CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
                                    &curLangCode, &nPlayersT, &nAlreadyHere,
                                    isDead );
     if ( 0 != cid ) {           /* already open */
-        cref = getCookieRef_impl( cid );
+        cinfo = getCookieRef_impl( cid );
     } else {
         if ( nPlayersT == 0 ) { /* wasn't in the DB */
             /* do nothing; insufficient info to fake it */
         } else {
-            CookieID cid = nextCID( NULL );
-            cref = AddNew( curCookie, connName, cid, curLangCode, nPlayersT, 
-                           nAlreadyHere );
-            m_db->AddCID( connName, cid );
+            cinfo = m_cidlock->Claim();
+            cref = AddNew( curCookie, connName, cinfo->GetCid(), curLangCode, 
+                           nPlayersT, nAlreadyHere );
+            cinfo->SetRef( cref );
+            m_db->AddCID( connName, cinfo->GetCid() );
         }
     }
-    return cref;
+    return cinfo;
 }
 
 bool
 CRefMgr::Associate( int socket, CookieRef* cref )
 {
+    m_cidlock->Associate( cref, socket );
     MutexLock ml( &m_SocketStuffMutex );
     return Associate_locked( socket, cref );
 }
@@ -372,6 +380,7 @@ CRefMgr::Associate_locked( int socket, CookieRef* cref )
 void 
 CRefMgr::Disassociate_locked( int socket, CookieRef* cref )
 {
+    m_cidlock->DisAssociate( cref, socket );
     SocketMap::iterator iter = m_SocketStuff.find( socket );
     if ( iter == m_SocketStuff.end() ) {
         logf( XW_LOGERROR, "can't find SocketStuff for socket %d", socket );
@@ -457,24 +466,26 @@ CRefMgr::MakeSocketsIterator()
     return iter;
 }
 
-CookieRef* 
+CidInfo*
 CRefMgr::getCookieRef( CookieID cookieID )
 {
     return getCookieRef_impl( cookieID );
 } /* getCookieRef */
 
-CookieRef* 
+CidInfo*
 CRefMgr::getCookieRef( int socket )
 {
-    CookieRef* cref = NULL;
-    MutexLock ml( &m_SocketStuffMutex );
-    SocketMap::iterator iter = m_SocketStuff.find( socket );
-    if ( iter != m_SocketStuff.end() ) {
-        SocketStuff* stuff = iter->second;
-        cref = stuff->m_cref;
-    }
+    CidInfo* cinfo = m_cidlock->ClaimSocket( socket );
+    /* if ( NULL == cinfo ) { */
+    /*     MutexLock ml( &m_SocketStuffMutex ); */
+    /*     SocketMap::iterator iter = m_SocketStuff.find( socket ); */
+    /*     if ( iter != m_SocketStuff.end() ) { */
+    /*         SocketStuff* stuff = iter->second; */
+    /*         cinfo = m_cidlock->Claim( stuff->m_cref->GetCookieID() ); */
+    /*     } */
+    /* } */
 
-    return cref;
+    return cinfo;
 } /* getCookieRef */
 
 #ifdef RELAY_HEARTBEAT
@@ -566,8 +577,9 @@ CRefMgr::Recycle_locked( CookieRef* cref )
 void
 CRefMgr::Recycle( CookieID id )
 {
-    CookieRef* cref = getCookieRef( id );
-    if ( cref != NULL ) {
+    CidInfo* cinfo = getCookieRef( id );
+    if ( cinfo != NULL ) {
+        CookieRef* cref = cinfo->GetRef();
         cref->Lock();
         Recycle_locked( cref );
     }
@@ -580,22 +592,24 @@ CRefMgr::Recycle( const char* connName )
     Recycle( id );
 } /* Delete */
 
-CookieRef* 
-CRefMgr::getCookieRef_impl( CookieID cookieID )
+CidInfo*
+CRefMgr::getCookieRef_impl( CookieID cid )
 {
-    CookieRef* ref = NULL;
-    RWReadLock rwl( &m_cookieMapRWLock );
+    CidInfo* info = m_cidlock->Claim( cid );
+    /* CookieRef* ref = NULL; */
+    /* RWReadLock rwl( &m_cookieMapRWLock ); */
 
-    CookieMap::iterator iter = m_cookieMap.find( cookieID );
-    while ( iter != m_cookieMap.end() ) {
-        CookieRef* second = iter->second;
-        if ( second->GetCookieID() == cookieID ) {
-            ref = second;
-            break;
-        }
-        ++iter;
-    }
-    return ref;
+    /* CookieMap::iterator iter = m_cookieMap.find( cid ); */
+    /* while ( iter != m_cookieMap.end() ) { */
+    /*     CookieRef* second = iter->second; */
+    /*     if ( second->GetCookieID() == cid ) { */
+    /*         ref = second; */
+    /*         break; */
+    /*     } */
+    /*     ++iter; */
+    /* } */
+    /* info->SetRef( ref ); */
+    return info;
 }
 
 #ifdef RELAY_HEARTBEAT
@@ -661,20 +675,21 @@ CookieMapIterator::Next()
 SafeCref::SafeCref( const char* cookie, int socket, int nPlayersH, int nPlayersS, 
                     unsigned short gameSeed, int langCode, bool wantsPublic, 
                     bool makePublic )
-    : m_cref( NULL )
+    : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
     , m_seenSeed( false )
 {
-    CookieRef* cref;
+    CidInfo* cinfo;
 
-    cref = m_mgr->getMakeCookieRef( cookie, 0, socket,
-                                    nPlayersH, nPlayersS, langCode,
-                                    gameSeed, wantsPublic, makePublic,
-                                    &m_seenSeed );
-    if ( cref != NULL ) {
+    cinfo = m_mgr->getMakeCookieRef( cookie, 0, socket,
+                                     nPlayersH, nPlayersS, langCode,
+                                     gameSeed, wantsPublic, makePublic,
+                                     &m_seenSeed );
+    if ( cinfo != NULL ) {
+        CookieRef* cref = cinfo->GetRef();
         m_locked = cref->Lock();
-        m_cref = cref;
+        m_cinfo = cinfo;
         m_isValid = true;
     }
 }
@@ -684,20 +699,20 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
                     int socket, int nPlayersH, int nPlayersS, 
                     unsigned short gameSeed, int langCode, 
                     bool wantsPublic, bool makePublic )
-    : m_cref( NULL )
+    : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
-    CookieRef* cref;
+    CidInfo* cinfo;
     assert( hid <= 4 );         /* no more than 4 hosts */
 
     bool isDead = false;
-    cref = m_mgr->getMakeCookieRef( connName, cookie, hid, socket, nPlayersH, 
-                                    nPlayersS, gameSeed, langCode,
-                                    wantsPublic || makePublic, &isDead );
-    if ( cref != NULL ) {
-        m_locked = cref->Lock();
-        m_cref = cref;
+    cinfo = m_mgr->getMakeCookieRef( connName, cookie, hid, socket, nPlayersH, 
+                                     nPlayersS, gameSeed, langCode,
+                                     wantsPublic || makePublic, &isDead );
+    if ( cinfo != NULL ) {
+        m_locked = cinfo->GetRef()->Lock();
+        m_cinfo = cinfo;
         m_isValid = true;
         m_dead = isDead;
     }
@@ -705,63 +720,70 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
 
 /* ConnName case -- must exist */
 SafeCref::SafeCref( const char* const connName )
-    : m_cref( NULL )
+    : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
     bool isDead = false;
-    CookieRef* cref = m_mgr->getMakeCookieRef( connName, &isDead );
-    if ( cref != NULL ) {
-        m_locked = cref->Lock();
-        m_cref = cref;
+    CidInfo* cinfo = m_mgr->getMakeCookieRef( connName, &isDead );
+    if ( cinfo != NULL ) {
+        m_locked = cinfo->GetRef()->Lock();
+        m_cinfo = cinfo;
         m_isValid = true;
         m_dead = isDead;
     }
 }
 
 SafeCref::SafeCref( CookieID connID, bool failOk )
-    : m_cref( NULL )
+    : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
-    CookieRef* cref = m_mgr->getCookieRef( connID );
-    if ( cref != NULL ) {       /* known cookie? */
+    CidInfo* cinfo = m_mgr->getCookieRef( connID );
+    if ( cinfo != NULL ) {       /* known cookie? */
+        CookieRef* cref = cinfo->GetRef();
         m_locked = cref->Lock();
         m_isValid = m_locked && connID == cref->GetCookieID();
-        m_cref = cref;
+        m_cinfo = cinfo;
     }
 }
 
 SafeCref::SafeCref( int socket )
-    : m_cref( NULL )
+    : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
-    CookieRef* cref = m_mgr->getCookieRef( socket );
-    if ( cref != NULL ) {       /* known socket? */
+    CidInfo* cinfo = m_mgr->getCookieRef( socket );
+    if ( cinfo != NULL ) {       /* known socket? */
+        CookieRef* cref = cinfo->GetRef();
         m_locked = cref->Lock();
         m_isValid = m_locked && cref->HasSocket_locked( socket );
-        m_cref = cref;
+        m_cinfo = cinfo;
     }
 }
 
-SafeCref::SafeCref( CookieRef* cref )
-    : m_cref( NULL )
-    , m_mgr( CRefMgr::Get() )
-    , m_isValid( false )
-{
-    m_locked = cref->Lock();
-    m_isValid = m_locked;
-    m_cref = cref;
-}
+/* SafeCref::SafeCref( CookieRef* cref ) */
+/*     : m_cinfo( NULL ) */
+/*     , m_mgr( CRefMgr::Get() ) */
+/*     , m_isValid( false ) */
+/* { */
+/*     assert(0);                  /\* path to this? *\/ */
+/*     m_locked = cref->Lock(); */
+/*     m_isValid = m_locked; */
+/*     // m_cref = cref; */
+/* } */
 
 SafeCref::~SafeCref()
 {
-    if ( m_cref != NULL && m_locked ) {
-        if ( m_cref->ShouldDie() ) {
-            m_mgr->Recycle_locked( m_cref );
-        } else {
-            m_cref->Unlock();
+    if ( m_cinfo != NULL ) {
+        if ( m_locked ) {
+            CookieRef* cref = m_cinfo->GetRef();
+            if ( cref->ShouldDie() ) {
+                m_mgr->Recycle_locked( cref );
+            } else {
+                cref->Unlock();
+            }
         }
+        m_mgr->m_cidlock->Relinquish( m_cinfo );
     }
 }

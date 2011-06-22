@@ -1283,7 +1283,7 @@ CookieRef::s_checkAllConnected( void* closure )
 {
     /* Need to ensure */
     CookieRef* self = (CookieRef*)closure;
-    SafeCref scr(self);
+    SafeCref scr(self->GetCookieID(), false );
     scr.CheckAllConnected();
 }
 
@@ -1294,7 +1294,7 @@ CookieRef::s_checkAck( void* closure )
     CookieRef* self = at->m_this;
     if ( NULL != self ) {
         at->m_this = NULL;
-        SafeCref scr(self);
+        SafeCref scr(self->GetCookieID(), false );
         scr.CheckNotAcked( at->m_hid );
     }
 }

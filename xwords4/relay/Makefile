@@ -30,6 +30,7 @@ SRC = \
 	states.cpp \
 	timermgr.cpp \
 	tpool.cpp \
+	cidlock.cpp \
 	xwrelay.cpp \
 
 # STATIC ?= -static
