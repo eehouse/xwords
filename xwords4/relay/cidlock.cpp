@@ -112,10 +112,9 @@ CidLock::ClaimSocket( int sock )
     return info;
 }
 
-void
-CidLock::Associate( const CookieRef* cref, int socket )
+bool
+CidLock::Associate_locked( const CookieRef* cref, int socket )
 {
-    MutexLock ml( &m_infos_mutex );
     map< CookieID, CidInfo*>::iterator iter = m_infos.begin();
     while ( iter != m_infos.end() ) {
         if ( cref == iter->second->GetRef() ) {
@@ -124,16 +123,30 @@ CidLock::Associate( const CookieRef* cref, int socket )
         }
         ++iter;
     }
+    bool isNew = m_sockets.find( socket ) == m_sockets.end();
+    if ( isNew ) {
+        m_sockets.insert( socket );
+    }
+    return isNew;
+}
+
+bool
+CidLock::Associate( const CookieRef* cref, int socket )
+{
+    MutexLock ml( &m_infos_mutex );
+    return Associate_locked( cref, socket );
 }
 
 void
 CidLock::DisAssociate( const CookieRef* cref, int socket )
 {
-    Associate( cref, 0 );
+    MutexLock ml( &m_infos_mutex );
+    Associate_locked( cref, 0 );
+    m_sockets.erase( socket );
 }
 
 void
-CidLock::Relinquish( CidInfo* claim )
+CidLock::Relinquish( CidInfo* claim, bool drop )
 {
     CookieID cid = claim->GetCid();
     logf( XW_LOGINFO, "%s(%d)", __func__, cid );
@@ -141,7 +154,12 @@ CidLock::Relinquish( CidInfo* claim )
     MutexLock ml( &m_infos_mutex );
     map< CookieID, CidInfo*>::iterator iter = m_infos.find( cid );
     assert( iter != m_infos.end() );
-    iter->second->SetOwner( 0 );
+    if ( drop ) {
+        delete iter->second;
+        m_infos.erase( iter );
+    } else {
+        iter->second->SetOwner( 0 );
+    }
     print_claimed();
     pthread_cond_signal( &m_infos_condvar );
     logf( XW_LOGINFO, "%s(%d): DONE", __func__, cid );

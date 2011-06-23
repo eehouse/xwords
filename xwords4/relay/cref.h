@@ -103,7 +103,7 @@ class CookieRef {
     /* connect case */
     bool AlreadyHere( unsigned short seed, int socket, HostID* prevHostID );
     /* reconnect case */
-    bool AlreadyHere( HostID hid, unsigned short seed, int socket );
+    bool AlreadyHere( HostID hid, unsigned short seed, int socket, bool* spotTaken );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -118,7 +118,7 @@ class CookieRef {
 
     bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed, 
                    bool seenSeed );
-    void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
+    bool _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                      int seed, bool gameDead );
     void _HandleAck( HostID hostID );
     void _Disconnect(int socket, HostID hostID );

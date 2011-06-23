@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -236,6 +236,7 @@ XWREASON2Str( XWREASON reason )
         CASE_STR(XWRELAY_ERROR_DUP_ROOM);
         CASE_STR(XWRELAY_ERROR_TOO_MANY);
         CASE_STR(XWRELAY_ERROR_DELETED);
+        CASE_STR(XWRELAY_ERROR_NORECONN);
         CASE_STR(XWRELAY_ERROR_LASTERR);
     default:
         XP_ASSERT(0);
@@ -360,7 +361,7 @@ reset_internal( CommsCtxt* comms, XP_Bool isServer,
     }
 #endif
     LOG_RETURN_VOID();
-} /* comms_reset */
+} /* reset_internal */
 
 void
 comms_reset( CommsCtxt* comms, XP_Bool isServer, 
@@ -1247,7 +1248,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     XP_Bool consumed = XP_TRUE;
     XWHostID destID, srcID;
     CookieID cookieID;
-    XP_U8 relayErr;
+    XWREASON relayErr;
 
     /* nothing for us to do here if not using relay */
     XWRELAY_Cmd cmd = stream_getU8( stream );
@@ -1355,10 +1356,16 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 
     case XWRELAY_CONNECTDENIED: /* socket will get closed by relay */
         relayErr = stream_getU8( stream );
+        XP_LOGF( "%s: got reason: %s", __func__, XWREASON2Str( relayErr ) );
         set_relay_state( comms, COMMS_RELAYSTATE_DENIED );
-        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
-        /* requires action, not just notification */
-        (*comms->procs.rerror)( comms->procs.closure, relayErr );
+
+        if ( XWRELAY_ERROR_NORECONN == relayErr ) {
+            init_relay( comms, comms->r.nPlayersHere, comms->r.nPlayersTotal );
+        } else {
+            util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+            /* requires action, not just notification */
+            (*comms->procs.rerror)( comms->procs.closure, relayErr );
+        }
         break;
 
         /* fallthru */

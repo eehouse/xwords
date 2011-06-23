@@ -22,7 +22,6 @@ SRC = \
 	configs.cpp \
 	cref.cpp \
 	crefmgr.cpp \
-	ctrl.cpp \
 	dbmgr.cpp \
 	http.cpp \
 	lstnrmgr.cpp \

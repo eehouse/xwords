@@ -31,20 +31,6 @@
 
 typedef map<CookieID,CookieRef*> CookieMap;
 class CookieMapIterator;
-class SocketStuff;
-typedef map< int, SocketStuff* > SocketMap;
-
-class SocketsIterator {
- public:
-    SocketsIterator( SocketMap::iterator iter, SocketMap::iterator end, 
-                     pthread_mutex_t* mutex );
-    ~SocketsIterator();
-    int Next();
- private:
-    SocketMap::iterator m_iter;
-    SocketMap::iterator m_end;
-    pthread_mutex_t* m_mutex; /* locked */
-};
 
 class CrefInfo {
  public:
@@ -97,8 +83,8 @@ class CRefMgr {
     CookieID CookieIdForName( const char* name );
 
     /* For use from ctrl only!!!! */
-    void LockAll() { pthread_rwlock_wrlock( &m_cookieMapRWLock ); }
-    void UnlockAll() { pthread_rwlock_unlock( &m_cookieMapRWLock ); }
+    /* void LockAll() { pthread_rwlock_wrlock( &m_cookieMapRWLock ); } */
+    /* void UnlockAll() { pthread_rwlock_unlock( &m_cookieMapRWLock ); } */
 
     /* Track sockets independent of cookie refs */
     bool Associate( int socket, CookieRef* cref );
@@ -109,7 +95,7 @@ class CRefMgr {
     pthread_mutex_t* GetWriteMutexForSocket( int socket );
     void RemoveSocketRefs( int socket );
     void PrintSocketInfo( int socket, string& out );
-    SocketsIterator MakeSocketsIterator();
+    /* SocketsIterator MakeSocketsIterator(); */
 
     void IncrementFullCount( void );
     int GetNumRoomsFilled( void );
@@ -176,9 +162,6 @@ class CRefMgr {
     pthread_rwlock_t m_cookieMapRWLock;
     CookieMap m_cookieMap;
 
-    pthread_mutex_t m_SocketStuffMutex;
-    SocketMap m_SocketStuff;
-
     time_t m_startTime;
     string m_ports;
 
@@ -235,9 +218,8 @@ class SafeCref {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCookieID() );
-            cref->_Reconnect( socket, srcID, nPlayersH, nPlayersS, 
-                              seed, m_dead );
-            return true;
+            return cref->_Reconnect( socket, srcID, nPlayersH, nPlayersS, 
+                                     seed, m_dead );
         } else {
             return false;
         }

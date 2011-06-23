@@ -341,16 +341,18 @@ DBMgr::HaveDevice( const char* connName, HostID hid, int seed )
     return found;
 }
 
-void
+bool
 DBMgr::AddCID( const char* const connName, CookieID cid )
 {
     const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d "
-        " WHERE connName = '%s'";
+        " WHERE connName = '%s' AND cid IS NULL";
     char query[256];
     snprintf( query, sizeof(query), fmt, cid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-    execSql( query );
+    bool result = execSql( query );
+    logf( XW_LOGINFO, "%s(cid=%d)=>%d", __func__, cid, result );
+    return result;
 }
 
 void

@@ -59,7 +59,7 @@ CRefMgr::CRefMgr()
     , m_startTime(time(NULL))
 {
     /* should be using pthread_once() here */
-    pthread_mutex_init( &m_SocketStuffMutex, NULL );
+    /* pthread_mutex_init( &m_SocketStuffMutex, NULL ); */
     pthread_mutex_init( &m_roomsFilledMutex, NULL );
     pthread_mutex_init( &m_freeList_mutex, NULL );
     pthread_rwlock_init( &m_cookieMapRWLock, NULL );
@@ -72,15 +72,16 @@ CRefMgr::~CRefMgr()
     assert( this == s_instance );
 
     delete m_db;
+    delete m_cidlock;
 
     pthread_mutex_destroy( &m_freeList_mutex );
     pthread_rwlock_destroy( &m_cookieMapRWLock );
 
-    SocketMap::iterator iter;
-    for ( iter = m_SocketStuff.begin(); iter != m_SocketStuff.end(); ++iter ) {
-        SocketStuff* stuff = iter->second;
-        delete stuff;
-    }
+    /* SocketMap::iterator iter; */
+    /* for ( iter = m_SocketStuff.begin(); iter != m_SocketStuff.end(); ++iter ) { */
+    /*     SocketStuff* stuff = iter->second; */
+    /*     delete stuff; */
+    /* } */
 
     s_instance = NULL;
 }
@@ -235,9 +236,6 @@ CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket,
                            bool makePublic, bool* seenSeed )
 {
     CidInfo* cinfo;
-    CookieID cid;
-    char connNameBuf[MAX_CONNNAME_LEN+1] = {0};
-    int alreadyHere = 0;
 
     /* We have a cookie from a new connection or from a reconnect.  This may
        be the first time it's been seen, or there may be a game currently in
@@ -246,32 +244,54 @@ CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket,
        a new one.  Pass the connName which will be used if set, but if not set
        we'll be generating another later when the game is complete.
     */
+    for ( ; ; ) {
+        /* What's this for loop thing.  It's to fix a race condition.  One
+           thread has "claim" on cid <N>, which is in the DB.  Another comes
+           into this function and looks it up in the DB, retrieving <N>, but
+           progress is blocked inside getCookieRef_impl which calls Claim().
+           The first thread winds up removing <N> from the DB and deleting its
+           cref before calling Relinquish so that when Claim() returns there's
+           no cref.  So we test for that case and retry. */
 
-    *seenSeed = m_db->SeenSeed( cookie, seed, langCode, nPlayersT, 
-                                wantsPublic, connNameBuf, 
-                                sizeof(connNameBuf), &alreadyHere, &cid );
-    if ( !*seenSeed ) {
-        cid = m_db->FindOpen( cookie, langCode, nPlayersT, nPlayersH, 
-                              wantsPublic, connNameBuf, sizeof(connNameBuf), 
-                              &alreadyHere );
-    }
 
-    if ( cid > 0 ) {
-        cinfo = getCookieRef_impl( cid );
-    } else {
-        cinfo = m_cidlock->Claim();
-        cid = cinfo->GetCid();
-        CookieRef* cref = AddNew( cookie, connNameBuf, cid, langCode, 
-                                  nPlayersT, alreadyHere );
-        cinfo->SetRef( cref );
-        if ( !connNameBuf[0] ) { /* didn't exist in DB */
-            m_db->AddNew( cookie, cref->ConnName(), cid, langCode, nPlayersT, 
-                          wantsPublic || makePublic );
-        } else {
-            m_db->AddCID( connNameBuf, cid );
+        CookieID cid;
+        char connNameBuf[MAX_CONNNAME_LEN+1] = {0};
+        int alreadyHere = 0;
+
+        *seenSeed = m_db->SeenSeed( cookie, seed, langCode, nPlayersT, 
+                                    wantsPublic, connNameBuf, 
+                                    sizeof(connNameBuf), &alreadyHere, &cid );
+        if ( !*seenSeed ) {
+            cid = m_db->FindOpen( cookie, langCode, nPlayersT, nPlayersH, 
+                                  wantsPublic, connNameBuf, sizeof(connNameBuf), 
+                                  &alreadyHere );
         }
-    }
 
+        if ( cid > 0 ) {
+            cinfo = m_cidlock->Claim( cid );
+            if ( NULL == cinfo->GetRef() ) {
+                m_cidlock->Relinquish( cinfo, true );
+                continue;
+            }
+        } else {
+            cinfo = m_cidlock->Claim();
+            cid = cinfo->GetCid();
+            CookieRef* cref = AddNew( cookie, connNameBuf, cid, langCode, 
+                                      nPlayersT, alreadyHere );
+            cinfo->SetRef( cref );
+            if ( !connNameBuf[0] ) { /* didn't exist in DB */
+                m_db->AddNew( cookie, cref->ConnName(), cid, langCode, nPlayersT, 
+                              wantsPublic || makePublic );
+            } else {
+                if ( !m_db->AddCID( connNameBuf, cid ) ) {
+                    m_cidlock->Relinquish( cinfo, true );
+                    continue;
+                }
+            }
+        }
+        break;
+    }
+    assert( cinfo->GetRef() );
     return cinfo;
 } /* getMakeCookieRef */
 
@@ -285,37 +305,48 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
     CookieRef* cref = NULL;
     CidInfo* cinfo;
 
-    /* fetch these from DB */
-    char curCookie[MAX_INVITE_LEN+1];
-    int curLangCode;
-    int nPlayersT = 0;
-    int nAlreadyHere = 0;
+    for ( ; ; ) {               /* for: see comment above */
+        /* fetch these from DB */
+        char curCookie[MAX_INVITE_LEN+1];
+        int curLangCode;
+        int nPlayersT = 0;
+        int nAlreadyHere = 0;
 
-    CookieID cid = m_db->FindGame( connName, curCookie, sizeof(curCookie),
-                                   &curLangCode, &nPlayersT, &nAlreadyHere,
-                                   isDead );
-    if ( 0 != cid ) {           /* already open */
-        cinfo = getCookieRef_impl( cid );
-    } else {
-        CookieID cid;
-        /* The entry may not even be in the DB, e.g. if it got deleted.
-           Deal with that possibility by taking the caller's word for it. */
-        cinfo = m_cidlock->Claim();
-        cid = cinfo->GetCid();
-
-        if ( nPlayersT == 0 ) { /* wasn't in the DB */
-            m_db->AddNew( cookie, connName, cid, langCode, nPlayersS, isPublic );
-            curLangCode = langCode;
-            nPlayersT = nPlayersS;
+        CookieID cid = m_db->FindGame( connName, curCookie, sizeof(curCookie),
+                                       &curLangCode, &nPlayersT, &nAlreadyHere,
+                                       isDead );
+        if ( 0 != cid ) {           /* already open */
+            cinfo = m_cidlock->Claim( cid );
+            if ( NULL == cinfo->GetRef() ) {
+                m_cidlock->Relinquish( cinfo, true );
+                continue;
+            }
         } else {
-            cookie = curCookie;
-        }
+            CookieID cid;
+            /* The entry may not even be in the DB, e.g. if it got deleted.
+               Deal with that possibility by taking the caller's word for it. */
+            cinfo = m_cidlock->Claim();
+            cid = cinfo->GetCid();
 
-        cref = AddNew( cookie, connName, cid, curLangCode, nPlayersT, 
-                       nAlreadyHere );
-        cinfo->SetRef( cref );
-        m_db->AddCID( connName, cid );
-    }
+            if ( nPlayersT == 0 ) { /* wasn't in the DB */
+                m_db->AddNew( cookie, connName, cid, langCode, nPlayersS, isPublic );
+                curLangCode = langCode;
+                nPlayersT = nPlayersS;
+            } else {
+                if ( !m_db->AddCID( connName, cid ) ) {
+                    m_cidlock->Relinquish( cinfo, true );
+                    continue;
+                }
+                cookie = curCookie;
+            }
+
+            cref = AddNew( cookie, connName, cid, curLangCode, nPlayersT, 
+                           nAlreadyHere );
+            cinfo->SetRef( cref );
+        }
+        break;
+    } /* for */
+    assert( cinfo->GetRef() );
     return cinfo;
 } /* getMakeCookieRef */
 
@@ -329,86 +360,97 @@ CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
     int nPlayersT = 0;
     int nAlreadyHere = 0;
 
-    CookieID cid = m_db->FindGame( connName, curCookie, sizeof(curCookie),
-                                   &curLangCode, &nPlayersT, &nAlreadyHere,
-                                   isDead );
-    if ( 0 != cid ) {           /* already open */
-        cinfo = getCookieRef_impl( cid );
-    } else {
-        if ( nPlayersT == 0 ) { /* wasn't in the DB */
-            /* do nothing; insufficient info to fake it */
+    for ( ; ; ) {               /* for: see comment above */
+        CookieID cid = m_db->FindGame( connName, curCookie, sizeof(curCookie),
+                                       &curLangCode, &nPlayersT, &nAlreadyHere,
+                                       isDead );
+        if ( 0 != cid ) {           /* already open */
+            cinfo = m_cidlock->Claim( cid );
+            if ( NULL == cinfo->GetRef() ) {
+                m_cidlock->Relinquish( cinfo, true );
+                continue;
+            }
         } else {
-            cinfo = m_cidlock->Claim();
-            cref = AddNew( curCookie, connName, cinfo->GetCid(), curLangCode, 
-                           nPlayersT, nAlreadyHere );
-            cinfo->SetRef( cref );
-            m_db->AddCID( connName, cinfo->GetCid() );
+            if ( nPlayersT == 0 ) { /* wasn't in the DB */
+                /* do nothing; insufficient info to fake it */
+            } else {
+                cinfo = m_cidlock->Claim();
+                if ( !m_db->AddCID( connName, cinfo->GetCid() ) ) {
+                    m_cidlock->Relinquish( cinfo, true );
+                    continue;
+                }
+                cref = AddNew( curCookie, connName, cinfo->GetCid(), curLangCode, 
+                               nPlayersT, nAlreadyHere );
+                cinfo->SetRef( cref );
+            }
         }
+        break;
     }
+    assert( cinfo->GetRef() );
     return cinfo;
 }
 
 bool
 CRefMgr::Associate( int socket, CookieRef* cref )
 {
-    m_cidlock->Associate( cref, socket );
-    MutexLock ml( &m_SocketStuffMutex );
-    return Associate_locked( socket, cref );
+    return m_cidlock->Associate( cref, socket );
+    /* MutexLock ml( &m_SocketStuffMutex ); */
+    /* return Associate_locked( socket, cref ); */
 }
 
-bool
-CRefMgr::Associate_locked( int socket, CookieRef* cref )
-{
-    bool isNew = false;
-    SocketMap::iterator iter = m_SocketStuff.find( socket );
-    /* This isn't enough.  Must provide a way to reuse sockets should a
-       genuinely different connection appear.  Now maybe we already remove
-       this reference when a socket is closed.  Test this!  Or assert
-       something here.  Bottom line: need to swallow repeated/duplicate
-       connect messages from same host. */
-    if ( iter == m_SocketStuff.end() ) {
-        SocketStuff* stuff = new SocketStuff( cref );
-        m_SocketStuff.insert( pair< int, SocketStuff* >( socket, stuff ) );
-        isNew = true;
-    } else {
-        logf( XW_LOGERROR, "Already have cref/threadID pair for socket %d; "
-              "error???", socket );
-    }
-    return isNew;
-}
+/* bool */
+/* CRefMgr::Associate_locked( int socket, CookieRef* cref ) */
+/* { */
+/*     bool isNew = false; */
+/*     SocketMap::iterator iter = m_SocketStuff.find( socket ); */
+/*     /\* This isn't enough.  Must provide a way to reuse sockets should a */
+/*        genuinely different connection appear.  Now maybe we already remove */
+/*        this reference when a socket is closed.  Test this!  Or assert */
+/*        something here.  Bottom line: need to swallow repeated/duplicate */
+/*        connect messages from same host. *\/ */
+/*     if ( iter == m_SocketStuff.end() ) { */
+/*         SocketStuff* stuff = new SocketStuff( cref ); */
+/*         m_SocketStuff.insert( pair< int, SocketStuff* >( socket, stuff ) ); */
+/*         isNew = true; */
+/*     } else { */
+/*         logf( XW_LOGERROR, "Already have cref/threadID pair for socket %d; " */
+/*               "error???", socket ); */
+/*     } */
+/*     return isNew; */
+/* } */
 
-void 
-CRefMgr::Disassociate_locked( int socket, CookieRef* cref )
-{
-    m_cidlock->DisAssociate( cref, socket );
-    SocketMap::iterator iter = m_SocketStuff.find( socket );
-    if ( iter == m_SocketStuff.end() ) {
-        logf( XW_LOGERROR, "can't find SocketStuff for socket %d", socket );
-    } else {
-        SocketStuff* stuff = iter->second;
-        assert( cref == NULL || stuff->m_cref == cref );
-        delete stuff;
-        m_SocketStuff.erase( iter );
-    }
-}
+/* void  */
+/* CRefMgr::Disassociate_locked( int socket, CookieRef* cref ) */
+/* { */
+/*     SocketMap::iterator iter = m_SocketStuff.find( socket ); */
+/*     if ( iter == m_SocketStuff.end() ) { */
+/*         logf( XW_LOGERROR, "can't find SocketStuff for socket %d", socket ); */
+/*     } else { */
+/*         SocketStuff* stuff = iter->second; */
+/*         assert( cref == NULL || stuff->m_cref == cref ); */
+/*         delete stuff; */
+/*         m_SocketStuff.erase( iter ); */
+/*     } */
+/* } */
 
 void 
 CRefMgr::Disassociate( int socket, CookieRef* cref )
 {
-    MutexLock ml( &m_SocketStuffMutex );
-    Disassociate_locked( socket, cref );
+    m_cidlock->DisAssociate( cref, socket );
+    /* MutexLock ml( &m_SocketStuffMutex ); */
+    /* Disassociate_locked( socket, cref ); */
 }
 
-void
-CRefMgr::MoveSockets( vector<int> sockets, CookieRef* cref )
-{
-    MutexLock ml( &m_SocketStuffMutex );
-    vector<int>::iterator iter;
-    for ( iter = sockets.begin(); iter != sockets.end(); ++iter ) {
-        Disassociate_locked( *iter, NULL );
-        Associate_locked( *iter, cref );
-    }
-}
+/* void */
+/* CRefMgr::MoveSockets( vector<int> sockets, CookieRef* cref ) */
+/* { */
+/*     MutexLock ml( &m_SocketStuffMutex ); */
+/*     vector<int>::iterator iter; */
+/*     for ( iter = sockets.begin(); iter != sockets.end(); ++iter ) { */
+/*         Disassociate_locked( *iter, NULL ); */
+/*         Associate_locked( *iter, cref ); */
+/*     } */
+/* } */
 
 #if 0
 pthread_mutex_t* 
@@ -457,19 +499,20 @@ CRefMgr::PrintSocketInfo( int socket, string& out )
     }
 }
 
-/* static */ SocketsIterator 
-CRefMgr::MakeSocketsIterator()
-{
-    pthread_mutex_lock( &m_SocketStuffMutex );
-    SocketsIterator iter( m_SocketStuff.begin(), m_SocketStuff.end(), 
-                          &m_SocketStuffMutex );
-    return iter;
-}
+/* /\* static *\/ SocketsIterator  */
+/* CRefMgr::MakeSocketsIterator() */
+/* { */
+/*     assert( 0 );                /\* called? *\/ */
+/*     pthread_mutex_lock( &m_SocketStuffMutex ); */
+/*     SocketsIterator iter( m_SocketStuff.begin(), m_SocketStuff.end(),  */
+/*                           &m_SocketStuffMutex ); */
+/*     return iter; */
+/* } */
 
 CidInfo*
-CRefMgr::getCookieRef( CookieID cookieID )
+CRefMgr::getCookieRef( CookieID cid )
 {
-    return getCookieRef_impl( cookieID );
+    return m_cidlock->Claim( cid );
 } /* getCookieRef */
 
 CidInfo*
@@ -485,6 +528,7 @@ CRefMgr::getCookieRef( int socket )
     /*     } */
     /* } */
 
+    assert( NULL == cinfo || NULL != cinfo->GetRef() );
     return cinfo;
 } /* getCookieRef */
 
@@ -498,7 +542,7 @@ CRefMgr::heartbeatProc( void* closure )
 #endif
 
 CookieRef*
-CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id,
+CRefMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
                  int langCode, int nPlayers, int nAlreadyHere )
 {
     if ( 0 == connName[0] ) {
@@ -506,17 +550,17 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id,
     }
     /* PENDING: should this return a locked cref? */
     logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, cid=%d)", __func__,
-          cookie, connName, id );
+          cookie, connName, cid );
 
     CookieRef* ref = getFromFreeList();
 
     RWWriteLock rwl( &m_cookieMapRWLock );
-    logf( XW_LOGINFO, "making new cref: %d", id );
+    logf( XW_LOGINFO, "making new cref: %d", cid );
     
     if ( !!ref ) {
-        ref->ReInit( cookie, connName, id, langCode, nPlayers, nAlreadyHere );
+        ref->ReInit( cookie, connName, cid, langCode, nPlayers, nAlreadyHere );
     } else {
-        ref = new CookieRef( cookie, connName, id, langCode, nPlayers, 
+        ref = new CookieRef( cookie, connName, cid, langCode, nPlayers, 
                              nAlreadyHere );
     }
 
@@ -550,6 +594,8 @@ CRefMgr::Recycle_locked( CookieRef* cref )
     addToFreeList( cref );
 
     cref->Unlock();
+
+    sleep(2);
 
     /* don't grab this lock until after releasing cref's lock; otherwise
        deadlock happens. */
@@ -592,25 +638,25 @@ CRefMgr::Recycle( const char* connName )
     Recycle( id );
 } /* Delete */
 
-CidInfo*
-CRefMgr::getCookieRef_impl( CookieID cid )
-{
-    CidInfo* info = m_cidlock->Claim( cid );
-    /* CookieRef* ref = NULL; */
-    /* RWReadLock rwl( &m_cookieMapRWLock ); */
+/* CidInfo* */
+/* CRefMgr::getCookieRef_impl( CookieID cid ) */
+/* { */
+/*     CidInfo* info = m_cidlock->Claim( cid ); */
+/*     /\* CookieRef* ref = NULL; *\/ */
+/*     /\* RWReadLock rwl( &m_cookieMapRWLock ); *\/ */
 
-    /* CookieMap::iterator iter = m_cookieMap.find( cid ); */
-    /* while ( iter != m_cookieMap.end() ) { */
-    /*     CookieRef* second = iter->second; */
-    /*     if ( second->GetCookieID() == cid ) { */
-    /*         ref = second; */
-    /*         break; */
-    /*     } */
-    /*     ++iter; */
-    /* } */
-    /* info->SetRef( ref ); */
-    return info;
-}
+/*     /\* CookieMap::iterator iter = m_cookieMap.find( cid ); *\/ */
+/*     /\* while ( iter != m_cookieMap.end() ) { *\/ */
+/*     /\*     CookieRef* second = iter->second; *\/ */
+/*     /\*     if ( second->GetCookieID() == cid ) { *\/ */
+/*     /\*         ref = second; *\/ */
+/*     /\*         break; *\/ */
+/*     /\*     } *\/ */
+/*     /\*     ++iter; *\/ */
+/*     /\* } *\/ */
+/*     /\* info->SetRef( ref ); *\/ */
+/*     return info; */
+/* } */
 
 #ifdef RELAY_HEARTBEAT
 void
@@ -776,14 +822,16 @@ SafeCref::SafeCref( int socket )
 SafeCref::~SafeCref()
 {
     if ( m_cinfo != NULL ) {
+        bool recycle = false;
         if ( m_locked ) {
             CookieRef* cref = m_cinfo->GetRef();
-            if ( cref->ShouldDie() ) {
+            recycle = cref->ShouldDie();
+            if ( recycle ) {
                 m_mgr->Recycle_locked( cref );
             } else {
                 cref->Unlock();
             }
         }
-        m_mgr->m_cidlock->Relinquish( m_cinfo );
+        m_mgr->m_cidlock->Relinquish( m_cinfo, recycle );
     }
 }

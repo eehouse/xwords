@@ -23,6 +23,7 @@
 #define _CIDLOCK_H_
 
 #include <map>
+#include <set>
 #include "xwrelay.h"
 #include "cref.h"
 
@@ -61,22 +62,24 @@ class CidLock {
         }
         return s_instance;
     }
+    ~CidLock();
 
     CidInfo* Claim( void ) { return Claim(0); }
     CidInfo* Claim( CookieID cid );
     CidInfo* ClaimSocket( int sock );
-    void Relinquish( CidInfo* claim );
+    void Relinquish( CidInfo* claim, bool drop );
 
-    void Associate( const CookieRef* cref, int socket );
+    bool Associate( const CookieRef* cref, int socket ); /* return true if new association */
     void DisAssociate( const CookieRef* cref, int socket );
 
  private:
     CidLock();
-    ~CidLock();
     void print_claimed();
+    bool Associate_locked( const CookieRef* cref, int socket );
 
     static CidLock* s_instance;
-    map< CookieID, CidInfo*> m_infos;
+    set<int> m_sockets;
+    map< CookieID, CidInfo* > m_infos;
     pthread_mutex_t m_infos_mutex;
     pthread_cond_t m_infos_condvar;
     int m_nextCID;

@@ -95,9 +95,8 @@ static StateTable g_stateTable[] = {
 
 /* { XWS_CHK_ALLHERE,    XWE_SOMEMISSING,   XWA_NONE,           XWS_WAITMORE }, */
 
-/* { XWS_ALLCONND,       XWE_DISCONN,       XWA_DISCONNECT,   XWS_MISSING }, */
-/* { XWS_WAITMORE,       XWE_DISCONN,       XWA_DISCONNECT,   XWS_WAITMORE }, */
-/* { XWS_MISSING,        XWE_DISCONN,       XWA_DISCONNECT,   XWS_MISSING }, */
+{ XWS_ALLCONND,       XWE_DISCONN,       XWA_DISCONNECT,   XWS_WAITMORE },
+{ XWS_WAITMORE,       XWE_DISCONN,       XWA_DISCONNECT,   XWS_WAITMORE },
 
 /* EMPTY means have messages to send but no connections.  Time out and free
    memory after a while.  BUT: don't I really want to keep these forever and

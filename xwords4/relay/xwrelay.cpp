@@ -368,9 +368,7 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
 
     unsigned char flags = *bufp++;
     XWREASON err = flagsOK( flags );
-    if ( err != XWRELAY_ERROR_NONE ) {
-        denyConnection( socket, err );
-    } else {
+    if ( err == XWRELAY_ERROR_NONE ) {
         char cookie[MAX_INVITE_LEN+1];
         char connName[MAX_CONNNAME_LEN+1] = {0};
         HostID srcID;
@@ -396,12 +394,18 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
                           wantsPublic, makePublic );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
                                      gameSeed );
-        }
-
-        if ( !success ) {
-            denyConnection( socket, XWRELAY_ERROR_BADPROTO );
+            if ( !success ) {
+                err = XWRELAY_ERROR_NORECONN;
+            }
+        } else { 
+            err = XWRELAY_ERROR_BADPROTO;
         }
     }
+
+    if ( err != XWRELAY_ERROR_NONE ) {
+        denyConnection( socket, err );
+    }
+
     return success;
 } /* processReconnect */
 
@@ -626,7 +630,7 @@ shutdown()
 
     delete tPool;
 
-    stop_ctrl_threads();
+    //stop_ctrl_threads();
 
     g_listeners.RemoveAll();
     close( g_control );
@@ -1180,7 +1184,8 @@ main( int argc, char** argv )
                 }
             }
             if ( FD_ISSET( g_control, &rfds ) ) {
-                run_ctrl_thread( g_control );
+                assert(0);      // not working; don't use until fixed
+                // run_ctrl_thread( g_control );
                 --retval;
             }
 #ifdef DO_HTTP

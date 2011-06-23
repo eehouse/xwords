@@ -47,30 +47,30 @@ using namespace std;
  * SocketsIterator class
  *****************************************************************************/
 
-SocketsIterator::SocketsIterator( SocketMap::iterator iter,
-                                  SocketMap::iterator end,
-                                  pthread_mutex_t* mutex )
-    : m_iter( iter )
-    , m_end( end )
-    , m_mutex( mutex )
-{
-}
+/* SocketsIterator::SocketsIterator( SocketMap::iterator iter, */
+/*                                   SocketMap::iterator end, */
+/*                                   pthread_mutex_t* mutex ) */
+/*     : m_iter( iter ) */
+/*     , m_end( end ) */
+/*     , m_mutex( mutex ) */
+/* { */
+/* } */
 
-SocketsIterator::~SocketsIterator()
-{
-    pthread_mutex_unlock( m_mutex );
-}
+/* SocketsIterator::~SocketsIterator() */
+/* { */
+/*     pthread_mutex_unlock( m_mutex ); */
+/* } */
 
-int
-SocketsIterator::Next()
-{
-    int socket = 0; 
-    if ( m_iter != m_end ) {
-        socket = m_iter->first;
-        ++m_iter;
-    }
-    return socket;
-}
+/* int */
+/* SocketsIterator::Next() */
+/* { */
+/*     int socket = 0;  */
+/*     if ( m_iter != m_end ) { */
+/*         socket = m_iter->first; */
+/*         ++m_iter; */
+/*     } */
+/*     return socket; */
+/* } */
 
 /*****************************************************************************
  * CookieRef class
@@ -209,20 +209,28 @@ CookieRef::_Connect( int socket, int nPlayersH, int nPlayersS, int seed,
     return connected;
 }
 
-void
+bool
 CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                        int seed, bool gameDead )
 {
-    if ( AlreadyHere( hid, seed, socket ) ) {
-        logf( XW_LOGINFO, "dropping reconnection because already here" );
+    bool spotTaken = false;
+    bool alreadyHere = AlreadyHere( hid, seed, socket, &spotTaken );
+    if ( spotTaken ) {
+        logf( XW_LOGINFO, "%s: failing because spot taken", __func__ );
     } else {
-        (void)CRefMgr::Get()->Associate( socket, this );
-        pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
+        if ( alreadyHere ) {
+            logf( XW_LOGINFO, "%s: dropping because already here",
+                  __func__ );
+        } else {
+            (void)CRefMgr::Get()->Associate( socket, this );
+            pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
+        }
+        if ( gameDead ) {
+            pushGameDead( socket );
+        }
+        handleEvents();
     }
-    if ( gameDead ) {
-        pushGameDead( socket );
-    }
-    handleEvents();
+    return !spotTaken;
 }
 
 void
@@ -326,7 +334,8 @@ CookieRef::AlreadyHere( unsigned short seed, int socket, HostID* prevHostID )
 }
 
 bool 
-CookieRef::AlreadyHere( HostID hid, unsigned short seed, int socket )
+CookieRef::AlreadyHere( HostID hid, unsigned short seed, int socket,
+                        bool* spotTaken )
 {
     logf( XW_LOGINFO, "%s(hid=%d,seed=%x,socket=%d)", __func__, 
           hid, seed, socket );
@@ -335,8 +344,9 @@ CookieRef::AlreadyHere( HostID hid, unsigned short seed, int socket )
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         if ( iter->m_hostID == hid ) {
-            assert( seed == iter->m_seed );
-            if ( socket == iter->m_socket ) {
+            if ( seed != iter->m_seed ) {
+                *spotTaken = true;
+            } else if ( socket == iter->m_socket ) {
                 here = true;    /* dup packet */
             } else {
                 logf( XW_LOGINFO, "%s: hids match; nuking existing record"
@@ -386,6 +396,7 @@ CookieRef::removeSocket( int socket )
                               iter->m_hostID );
                         DBMgr::Get()->RmDeviceByHid( ConnName(), iter->m_hostID );
                         m_nPlayersHere -= iter->m_nPlayersH;
+                        cancelAckTimer( iter->m_hostID );
                     }
                     m_sockets.erase(iter);
                     --count;
@@ -918,7 +929,7 @@ void
 CookieRef::setAckTimer( HostID hid )
 {
     ASSERT_LOCKED();
-    logf( XW_LOGINFO, "%s(%d)", __func__, hid );
+    logf( XW_LOGINFO, "%s(hid=%d)", __func__, hid );
 
     assert( hid >= HOST_ID_SERVER );
     assert( hid <= 4 );
@@ -940,12 +951,11 @@ void
 CookieRef::cancelAckTimer( HostID hid )
 {
     ASSERT_LOCKED();
-    logf( XW_LOGINFO, "%s(%d)", __func__, hid );
+    logf( XW_LOGINFO, "%s(hid=%d)", __func__, hid );
 
     assert( hid >= HOST_ID_SERVER );
     assert( hid <= 4 );
-    --hid;
-    m_timers[hid].m_this = NULL;
+    m_timers[hid-1].m_this = NULL;
     
     // TimerMgr::GetTimerMgr()->ClearTimer( s_checkAck, this );
 }
@@ -1088,19 +1098,19 @@ CookieRef::notifyGameDead( int socket )
     send_with_length( socket, buf, sizeof(buf), true );
 }
 
-void
-CookieRef::moveSockets( void )
-{
-    ASSERT_LOCKED();
+/* void */
+/* CookieRef::moveSockets( void ) */
+/* { */
+/*     ASSERT_LOCKED(); */
 
-    vector<int> sockets;
-    vector<HostRec>::iterator iter;
-    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) { 
-        sockets.push_back( iter->m_socket );
-    }
+/*     vector<int> sockets; */
+/*     vector<HostRec>::iterator iter; */
+/*     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {  */
+/*         sockets.push_back( iter->m_socket ); */
+/*     } */
 
-    CRefMgr::Get()->MoveSockets( sockets, this );
-}
+/*     CRefMgr::Get()->MoveSockets( sockets, this ); */
+/* } */
 
 void
 CookieRef::sendAllHere( bool initial )
@@ -1326,9 +1336,9 @@ CookieRef::printSeeds( const char* caller )
     char buf[64] = {0};
     vector<HostRec>::iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
-        len += snprintf( &buf[len], sizeof(buf)-len, "%.4x/%d/%c ", 
-                         iter->m_seed, iter->m_socket, 
-                         iter->m_ackPending?'a':'A' );
+        len += snprintf( &buf[len], sizeof(buf)-len, "[%d]%.4x(%d)/%d/%c ", 
+                         iter->m_hostID, iter->m_seed, iter->m_seed, 
+                         iter->m_socket, iter->m_ackPending?'a':'A' );
     }
     logf( XW_LOGINFO, "seeds/sockets/ack'd after %s(): %s", caller, buf );
 }
