@@ -10,7 +10,7 @@ DICTS=${DICTS:-dict.xwd}
 SAVE_GOOD=${SAVE_GOOD:-YES}
 MAXDEVS=${MAXDEVS:-4}
 RESIGN_RATIO=${RESIGN_RATIO:-$((NGAMES/3))}
-DROP_N=${DROP_N:-1}
+DROP_N=${DROP_N:-0}
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -45,7 +45,7 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MAXDEVS RESIGN_RATIO; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MAXDEVS RESIGN_RATIO DROP_N; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 1
