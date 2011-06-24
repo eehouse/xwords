@@ -272,6 +272,9 @@ CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket,
             if ( NULL == cinfo->GetRef() ) {
                 m_cidlock->Relinquish( cinfo, true );
                 continue;
+            } else if ( !cinfo->GetRef()->HaveRoom( nPlayersH ) ) {
+                m_cidlock->Relinquish( cinfo, false );
+                continue;
             }
         } else {
             cinfo = m_cidlock->Claim();
@@ -595,8 +598,6 @@ CRefMgr::Recycle_locked( CookieRef* cref )
 
     cref->Unlock();
 
-    sleep(2);
-
     /* don't grab this lock until after releasing cref's lock; otherwise
        deadlock happens. */
     RWWriteLock rwl( &m_cookieMapRWLock );
@@ -757,6 +758,7 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
                                      nPlayersS, gameSeed, langCode,
                                      wantsPublic || makePublic, &isDead );
     if ( cinfo != NULL ) {
+        assert( cinfo->GetCid() == cinfo->GetRef()->GetCookieID() );
         m_locked = cinfo->GetRef()->Lock();
         m_cinfo = cinfo;
         m_isValid = true;
@@ -773,6 +775,7 @@ SafeCref::SafeCref( const char* const connName )
     bool isDead = false;
     CidInfo* cinfo = m_mgr->getMakeCookieRef( connName, &isDead );
     if ( cinfo != NULL ) {
+        assert( cinfo->GetCid() == cinfo->GetRef()->GetCookieID() );
         m_locked = cinfo->GetRef()->Lock();
         m_cinfo = cinfo;
         m_isValid = true;
@@ -788,6 +791,7 @@ SafeCref::SafeCref( CookieID connID, bool failOk )
     CidInfo* cinfo = m_mgr->getCookieRef( connID );
     if ( cinfo != NULL ) {       /* known cookie? */
         CookieRef* cref = cinfo->GetRef();
+        assert( cinfo->GetCid() == cref->GetCookieID() );
         m_locked = cref->Lock();
         m_isValid = m_locked && connID == cref->GetCookieID();
         m_cinfo = cinfo;
@@ -802,6 +806,7 @@ SafeCref::SafeCref( int socket )
     CidInfo* cinfo = m_mgr->getCookieRef( socket );
     if ( cinfo != NULL ) {       /* known socket? */
         CookieRef* cref = cinfo->GetRef();
+        assert( cinfo->GetCid() == cref->GetCookieID() );
         m_locked = cref->Lock();
         m_isValid = m_locked && cref->HasSocket_locked( socket );
         m_cinfo = cinfo;
@@ -825,6 +830,7 @@ SafeCref::~SafeCref()
         bool recycle = false;
         if ( m_locked ) {
             CookieRef* cref = m_cinfo->GetRef();
+            assert( m_cinfo->GetCid() == cref->GetCookieID() );
             recycle = cref->ShouldDie();
             if ( recycle ) {
                 m_mgr->Recycle_locked( cref );
