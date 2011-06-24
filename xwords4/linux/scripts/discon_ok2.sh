@@ -54,8 +54,8 @@ usage() {
 connName() {
     LOG=$1
     grep 'got_connect_cmd: connName' $LOG | \
-        sed 's,^.*connName: \"\(.*\)\"$,\1,' | \
-        sort -u 
+        tail -n 1 | \
+        sed 's,^.*connName: \"\(.*\)\"$,\1,'
 }
 
 while [ "$#" -gt 0 ]; do
