@@ -114,7 +114,6 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
 CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id,
                       int langCode, int nPlayersT, int nAlreadyHere )
 {
-    pthread_mutex_init( &m_mutex, NULL );
     ReInit( cookie, connName, id, langCode, nPlayersT, nAlreadyHere );
 }
 
@@ -152,8 +151,6 @@ CookieRef::Lock( void )
 {
     bool success = true;
 
-    pthread_mutex_lock( &m_mutex );
-
     /* We get here possibly after having been blocked on the mutex for a
        while.  This cref may no longer be live.  If it's not, unlock and
        return. */
@@ -166,7 +163,6 @@ CookieRef::Lock( void )
               this );
         success = false;
         m_locking_thread = 0;
-        pthread_mutex_unlock( &m_mutex );
     }
 
     return success;
@@ -176,7 +172,6 @@ void
 CookieRef::Unlock() { 
     assert( m_locking_thread == pthread_self() );
     m_locking_thread = 0;
-    pthread_mutex_unlock( &m_mutex ); 
 }
 
 bool
@@ -313,7 +308,7 @@ CookieRef::SocketForHost( HostID dest )
 bool 
 CookieRef::AlreadyHere( unsigned short seed, int socket, HostID* prevHostID )
 {
-    logf( XW_LOGINFO, "%s(seed=%x,socket=%d)", __func__, seed, socket );
+    logf( XW_LOGINFO, "%s(seed=%x(%d),socket=%d)", __func__, seed, seed, socket );
     bool here = false;
 
     vector<HostRec>::iterator iter;
@@ -337,8 +332,8 @@ bool
 CookieRef::AlreadyHere( HostID hid, unsigned short seed, int socket,
                         bool* spotTaken )
 {
-    logf( XW_LOGINFO, "%s(hid=%d,seed=%x,socket=%d)", __func__, 
-          hid, seed, socket );
+    logf( XW_LOGINFO, "%s(hid=%d,seed=%x(%d),socket=%d)", __func__, 
+          hid, seed, seed, socket );
     bool here = false;
 
     vector<HostRec>::iterator iter;
@@ -418,6 +413,17 @@ CookieRef::removeSocket( int socket )
         pushLastSocketGoneEvent();
     }
 } /* removeSocket */
+
+bool
+CookieRef::HaveRoom( int nPlayers )
+{
+    int total = m_nPlayersSought;
+    int soFar = m_nPlayersHere;
+    bool haveRoom = nPlayers <= total - soFar;
+    logf( XW_LOGINFO, "%s(%d): total %d - soFar %d >= new %d => %d", __func__,
+          nPlayers, total, soFar, nPlayers, haveRoom );
+    return haveRoom;
+}
 
 bool
 CookieRef::HasSocket( int socket )

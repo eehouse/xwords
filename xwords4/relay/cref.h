@@ -90,6 +90,8 @@ class CookieRef {
     int GetPlayersSought() { return m_nPlayersSought; }
     int GetPlayersHere() { return m_nPlayersHere; }
 
+    bool HaveRoom( int nPlayers );
+
     int CountSockets() { return m_sockets.size(); }
     bool HasSocket( int socket );
     bool HasSocket_locked( int socket );
@@ -216,8 +218,6 @@ class CookieRef {
     void postCheckAllHere();
     void postDropDevice( HostID hostID );
 
-    bool hostAlreadyHere( int seed, int socket );
-
     void reducePlayerCounts( int socket );
 
     void setAllConnectedTimer();
@@ -283,8 +283,6 @@ class CookieRef {
     time_t m_starttime;
 
     AckTimer m_timers[4];
-
-    pthread_mutex_t m_mutex;
 
     pthread_t m_locking_thread; /* for debugging only */
     bool m_in_handleEvents;     /* for debugging only */
