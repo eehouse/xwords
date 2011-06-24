@@ -96,18 +96,31 @@ CidInfo*
 CidLock::ClaimSocket( int sock )
 {
     CidInfo* info = NULL;
-    logf( XW_LOGINFO, "%s(%d)", __func__, sock );
+    logf( XW_LOGINFO, "%s(sock=%d)", __func__, sock );
 
-    MutexLock ml( &m_infos_mutex );
-    map< CookieID, CidInfo*>::iterator iter = m_infos.begin();
-    while ( iter != m_infos.end() ) {
-        if ( sock == iter->second->GetSocket() ) {
-            info = iter->second;
+    for ( ; ; ) {
+        MutexLock ml( &m_infos_mutex );
+
+        map< CookieID, CidInfo*>::iterator iter = m_infos.begin();
+        while ( iter != m_infos.end() ) {
+            if ( sock == iter->second->GetSocket() ) {
+                if ( 0 == iter->second->GetOwner() ) {
+                    info = iter->second;
+                    info->SetOwner( pthread_self() );
+                }
+                break;
+            }
+            ++iter;
+        }
+
+        /* break if socket isn't here or if it's not claimed */
+        if ( iter == m_infos.end() || NULL != info ) {
             break;
         }
-        ++iter;
+        logf( XW_LOGINFO, "%s(sock=%d): waiting....", __func__, sock );
+        pthread_cond_wait( &m_infos_condvar, &m_infos_mutex );
     }
-
+    print_claimed();
     logf( XW_LOGINFO, "%s(%d): DONE", __func__, info? info->GetCid():0 );
     return info;
 }
@@ -149,12 +162,14 @@ void
 CidLock::Relinquish( CidInfo* claim, bool drop )
 {
     CookieID cid = claim->GetCid();
-    logf( XW_LOGINFO, "%s(%d)", __func__, cid );
+    logf( XW_LOGINFO, "%s(%d,drop=%d)", __func__, cid, drop );
 
     MutexLock ml( &m_infos_mutex );
     map< CookieID, CidInfo*>::iterator iter = m_infos.find( cid );
     assert( iter != m_infos.end() );
+    assert( iter->second->GetOwner() == pthread_self() );
     if ( drop ) {
+        logf( XW_LOGINFO, "%s: deleting %p", __func__, iter->second );
         delete iter->second;
         m_infos.erase( iter );
     } else {
@@ -162,5 +177,5 @@ CidLock::Relinquish( CidInfo* claim, bool drop )
     }
     print_claimed();
     pthread_cond_signal( &m_infos_condvar );
-    logf( XW_LOGINFO, "%s(%d): DONE", __func__, cid );
+    logf( XW_LOGINFO, "%s(%d,drop=%d): DONE", __func__, cid, drop );
 }
