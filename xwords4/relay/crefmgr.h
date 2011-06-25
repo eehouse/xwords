@@ -86,16 +86,11 @@ class CRefMgr {
     /* void LockAll() { pthread_rwlock_wrlock( &m_cookieMapRWLock ); } */
     /* void UnlockAll() { pthread_rwlock_unlock( &m_cookieMapRWLock ); } */
 
-    /* Track sockets independent of cookie refs */
-    bool Associate( int socket, CookieRef* cref );
-    bool Associate_locked( int socket, CookieRef* cref );
-    void Disassociate( int socket, CookieRef* cref );
-    void Disassociate_locked( int socket, CookieRef* cref );
+
     void MoveSockets( vector<int> sockets, CookieRef* cref );
     pthread_mutex_t* GetWriteMutexForSocket( int socket );
     void RemoveSocketRefs( int socket );
     void PrintSocketInfo( int socket, string& out );
-    /* SocketsIterator MakeSocketsIterator(); */
 
     void IncrementFullCount( void );
     int GetNumRoomsFilled( void );
@@ -152,9 +147,6 @@ class CRefMgr {
 
     static void heartbeatProc( void* closure );
     void checkHeartbeats( time_t now );
-
-    /* pthread_mutex_t m_nextCIDMutex; */
-    /* CookieID m_nextCID; */
 
     pthread_mutex_t m_roomsFilledMutex;
     int m_nRoomsFilled;

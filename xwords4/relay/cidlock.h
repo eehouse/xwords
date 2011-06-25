@@ -34,23 +34,22 @@ class CidInfo {
     CidInfo( CookieID cid )
         :m_cid(cid),
         m_cref(NULL),
-        m_owner(NULL),
-        m_socket(0) {}
+        m_owner(NULL) {}
 
     CookieID GetCid( void ) { return m_cid; }
     CookieRef* GetRef( void ) { return m_cref; }
     pthread_t GetOwner( void ) { return m_owner; }
-    int GetSocket( void ) { return m_socket; }
+    const set<int> GetSockets( void );
+    void SetSockets( set<int> sockets ) { m_sockets = sockets; };
 
     void SetRef( CookieRef* cref ) { m_cref = cref; }
     void SetOwner( pthread_t owner ) { m_owner = owner; }
-    void SetSocket( int socket ) { m_socket = socket; }
 
  private:
     CookieID m_cid;
     CookieRef* m_cref;
     pthread_t m_owner;
-    int m_socket;
+    set<int> m_sockets;
 };
 
 class CidLock {
@@ -69,16 +68,12 @@ class CidLock {
     CidInfo* ClaimSocket( int sock );
     void Relinquish( CidInfo* claim, bool drop );
 
-    bool Associate( const CookieRef* cref, int socket ); /* return true if new association */
-    void DisAssociate( const CookieRef* cref, int socket );
-
  private:
-    CidLock();
-    void print_claimed();
-    bool Associate_locked( const CookieRef* cref, int socket );
-
     static CidLock* s_instance;
-    set<int> m_sockets;
+
+    CidLock();
+    void print_claimed( const char* caller );
+
     map< CookieID, CidInfo* > m_infos;
     pthread_mutex_t m_infos_mutex;
     pthread_cond_t m_infos_condvar;

@@ -114,11 +114,13 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
 CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id,
                       int langCode, int nPlayersT, int nAlreadyHere )
 {
+    pthread_mutex_init( &m_sockSetMutex, NULL );
     ReInit( cookie, connName, id, langCode, nPlayersT, nAlreadyHere );
 }
 
 CookieRef::~CookieRef()
 {
+    logf( XW_LOGINFO, "CookieRef for %d being deleted", m_cookieID );
     cancelAllConnectedTimer();
 
     /* get rid of any sockets still contained */
@@ -129,12 +131,13 @@ CookieRef::~CookieRef()
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         int socket = iter->m_socket;
         tPool->CloseSocket( socket );
+        RmSocket( socket );
         m_sockets.erase( iter );
     }
 
     printSeeds(__func__);
 
-    logf( XW_LOGINFO, "CookieRef for %d being deleted", m_cookieID );
+    pthread_mutex_destroy( &m_sockSetMutex );
 } /* ~CookieRef */
 
 void
@@ -193,7 +196,8 @@ CookieRef::_Connect( int socket, int nPlayersH, int nPlayersS, int seed,
     }
 
     if ( !connected ) {
-        if ( CRefMgr::Get()->Associate( socket, this ) ) {
+        set<int> sockets = GetSockets();
+        if ( sockets.end() == sockets.find( socket ) ) {
             pushConnectEvent( socket, nPlayersH, nPlayersS, seed );
             handleEvents();
             connected = HasSocket_locked( socket );
@@ -217,7 +221,6 @@ CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
             logf( XW_LOGINFO, "%s: dropping because already here",
                   __func__ );
         } else {
-            (void)CRefMgr::Get()->Associate( socket, this );
             pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
         }
         if ( gameDead ) {
@@ -241,7 +244,6 @@ void
 CookieRef::_Disconnect( int socket, HostID hostID )
 {
     logf( XW_LOGINFO, "%s(socket=%d, hostID=%d)", __func__, socket, hostID );
-    CRefMgr::Get()->Disassociate( socket, this );
 
     CRefEvent evt( XWE_DISCONN );
     evt.u.discon.socket = socket;
@@ -344,9 +346,10 @@ CookieRef::AlreadyHere( HostID hid, unsigned short seed, int socket,
             } else if ( socket == iter->m_socket ) {
                 here = true;    /* dup packet */
             } else {
-                logf( XW_LOGINFO, "%s: hids match; nuking existing record"
+                logf( XW_LOGINFO, "%s: hids match; nuking existing record "
                       "for socket %d b/c assumed closed", __func__, 
                       iter->m_socket );
+                RmSocket( iter->m_socket );
                 m_sockets.erase( iter );
             }
             break;
@@ -393,6 +396,7 @@ CookieRef::removeSocket( int socket )
                         m_nPlayersHere -= iter->m_nPlayersH;
                         cancelAckTimer( iter->m_hostID );
                     }
+                    RmSocket( socket );
                     m_sockets.erase(iter);
                     --count;
                     found = true;
@@ -434,6 +438,29 @@ CookieRef::HasSocket( int socket )
         Unlock();
     }
     return result;
+}
+
+set<int> 
+CookieRef::GetSockets()
+{
+    MutexLock ml( &m_sockSetMutex );
+    return m_sockSet;
+}
+
+void
+CookieRef::AddSocket( int socket )
+{
+    MutexLock ml( &m_sockSetMutex );
+    assert( m_sockSet.find(socket) == m_sockSet.end() );
+    m_sockSet.insert( socket );
+}
+
+void
+CookieRef::RmSocket( int socket )
+{
+    MutexLock ml( &m_sockSetMutex );
+    assert( m_sockSet.find(socket) != m_sockSet.end() );
+    m_sockSet.erase( socket );
 }
 
 bool
@@ -864,6 +891,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp )
 
     HostRec hr( hostid, socket, nPlayersH, seed, !reconn );
     m_sockets.push_back( hr );
+    AddSocket( socket );
 
     printSeeds(__func__);
 

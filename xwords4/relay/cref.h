@@ -23,6 +23,7 @@
 #define _CREF_H_
 
 #include <map>
+#include <set>
 #include <vector>
 #include <string>
 #include <deque>
@@ -65,6 +66,8 @@ public:
 };
 
 class CookieRef {
+ public:
+    set<int> GetSockets();
 
  private:
     /* These classes have access to CookieRef.  All others should go through
@@ -257,6 +260,9 @@ class CookieRef {
 
     void printSeeds( const char* caller );
 
+    void AddSocket( int socket );
+    void RmSocket( int socket );
+
     /* timer callback */
     static void s_checkAllConnected( void* closure );
     static void s_checkAck( void* closure );
@@ -267,11 +273,8 @@ class CookieRef {
     string m_connName;          /* globally unique name */
     CookieID m_cookieID;        /* Unique among current games on this server */
 
-    /* Guard the event queue.  Only one thread at a time can post to the
-       queue, but once in a thread can post new events while processing
-       current ones. */
-/*     pthread_mutex_t    m_EventsMutex; */
-
+    pthread_mutex_t    m_sockSetMutex;
+    set<int>           m_sockSet;
 
     XW_RELAY_STATE     m_curState;
     deque<CRefEvent>   m_eventQueue;
@@ -284,7 +287,7 @@ class CookieRef {
 
     AckTimer m_timers[4];
 
-    pthread_t m_locking_thread; /* for debugging only */
+    pthread_t m_locking_thread;
     bool m_in_handleEvents;     /* for debugging only */
     int m_delayMicros;
 }; /* CookieRef */

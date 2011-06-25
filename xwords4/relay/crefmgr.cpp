@@ -77,12 +77,6 @@ CRefMgr::~CRefMgr()
     pthread_mutex_destroy( &m_freeList_mutex );
     pthread_rwlock_destroy( &m_cookieMapRWLock );
 
-    /* SocketMap::iterator iter; */
-    /* for ( iter = m_SocketStuff.begin(); iter != m_SocketStuff.end(); ++iter ) { */
-    /*     SocketStuff* stuff = iter->second; */
-    /*     delete stuff; */
-    /* } */
-
     s_instance = NULL;
 }
 
@@ -107,15 +101,6 @@ CRefMgr::CloseAll()
         }
     }
 } /* CloseAll */
-
-/* CookieID */
-/* CRefMgr::nextCID( const char* connName ) */
-/* { */
-/*     /\* Later may want to guarantee that wrap-around doesn't cause an overlap. */
-/*        But that's really only a theoretical possibility. *\/ */
-/*     MutexLock ml(&m_nextCIDMutex); */
-/*     return ++m_nextCID; */
-/* } /\* nextCID *\/ */
 
 void 
 CRefMgr::IncrementFullCount( void )
@@ -393,88 +378,6 @@ CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
     return cinfo;
 }
 
-bool
-CRefMgr::Associate( int socket, CookieRef* cref )
-{
-    return m_cidlock->Associate( cref, socket );
-    /* MutexLock ml( &m_SocketStuffMutex ); */
-    /* return Associate_locked( socket, cref ); */
-}
-
-/* bool */
-/* CRefMgr::Associate_locked( int socket, CookieRef* cref ) */
-/* { */
-/*     bool isNew = false; */
-/*     SocketMap::iterator iter = m_SocketStuff.find( socket ); */
-/*     /\* This isn't enough.  Must provide a way to reuse sockets should a */
-/*        genuinely different connection appear.  Now maybe we already remove */
-/*        this reference when a socket is closed.  Test this!  Or assert */
-/*        something here.  Bottom line: need to swallow repeated/duplicate */
-/*        connect messages from same host. *\/ */
-/*     if ( iter == m_SocketStuff.end() ) { */
-/*         SocketStuff* stuff = new SocketStuff( cref ); */
-/*         m_SocketStuff.insert( pair< int, SocketStuff* >( socket, stuff ) ); */
-/*         isNew = true; */
-/*     } else { */
-/*         logf( XW_LOGERROR, "Already have cref/threadID pair for socket %d; " */
-/*               "error???", socket ); */
-/*     } */
-/*     return isNew; */
-/* } */
-
-/* void  */
-/* CRefMgr::Disassociate_locked( int socket, CookieRef* cref ) */
-/* { */
-/*     SocketMap::iterator iter = m_SocketStuff.find( socket ); */
-/*     if ( iter == m_SocketStuff.end() ) { */
-/*         logf( XW_LOGERROR, "can't find SocketStuff for socket %d", socket ); */
-/*     } else { */
-/*         SocketStuff* stuff = iter->second; */
-/*         assert( cref == NULL || stuff->m_cref == cref ); */
-/*         delete stuff; */
-/*         m_SocketStuff.erase( iter ); */
-/*     } */
-/* } */
-
-void 
-CRefMgr::Disassociate( int socket, CookieRef* cref )
-{
-    m_cidlock->DisAssociate( cref, socket );
-    /* MutexLock ml( &m_SocketStuffMutex ); */
-    /* Disassociate_locked( socket, cref ); */
-}
-
-/* void */
-/* CRefMgr::MoveSockets( vector<int> sockets, CookieRef* cref ) */
-/* { */
-/*     MutexLock ml( &m_SocketStuffMutex ); */
-/*     vector<int>::iterator iter; */
-/*     for ( iter = sockets.begin(); iter != sockets.end(); ++iter ) { */
-/*         Disassociate_locked( *iter, NULL ); */
-/*         Associate_locked( *iter, cref ); */
-/*     } */
-/* } */
-
-#if 0
-pthread_mutex_t* 
-CRefMgr::GetWriteMutexForSocket( int socket )
-{
-    pthread_mutex_t* mutex = NULL;
-    MutexLock ml( &m_SocketStuffMutex );
-    SocketMap::iterator iter = m_SocketStuff.find( socket );
-    if ( iter != m_SocketStuff.end() ) {
-        SocketStuff* stuff = iter->second;
-        /* this is dangerous!  What if we want to nuke SocketStuff while this
-           is locked?  And shouldn't it be the case that only one thread at a
-           time can be trying to write to one of a given cref's sockets since
-           only one thread at a time is handling a cref? */
-        mutex = &stuff->m_writeMutex;
-    }
-    logf( XW_LOGERROR, "GetWriteMutexForSocket: not found" );
-    return mutex;
-} /* GetWriteMutexForSocket */
-#endif
-
 void 
 CRefMgr::RemoveSocketRefs( int socket )
 {
@@ -482,8 +385,6 @@ CRefMgr::RemoveSocketRefs( int socket )
         SafeCref scr( socket );
         scr.Remove( socket );
     }
-
-    Disassociate( socket, NULL );
 }
 
 void
@@ -502,16 +403,6 @@ CRefMgr::PrintSocketInfo( int socket, string& out )
     }
 }
 
-/* /\* static *\/ SocketsIterator  */
-/* CRefMgr::MakeSocketsIterator() */
-/* { */
-/*     assert( 0 );                /\* called? *\/ */
-/*     pthread_mutex_lock( &m_SocketStuffMutex ); */
-/*     SocketsIterator iter( m_SocketStuff.begin(), m_SocketStuff.end(),  */
-/*                           &m_SocketStuffMutex ); */
-/*     return iter; */
-/* } */
-
 CidInfo*
 CRefMgr::getCookieRef( CookieID cid )
 {
@@ -522,14 +413,6 @@ CidInfo*
 CRefMgr::getCookieRef( int socket )
 {
     CidInfo* cinfo = m_cidlock->ClaimSocket( socket );
-    /* if ( NULL == cinfo ) { */
-    /*     MutexLock ml( &m_SocketStuffMutex ); */
-    /*     SocketMap::iterator iter = m_SocketStuff.find( socket ); */
-    /*     if ( iter != m_SocketStuff.end() ) { */
-    /*         SocketStuff* stuff = iter->second; */
-    /*         cinfo = m_cidlock->Claim( stuff->m_cref->GetCookieID() ); */
-    /*     } */
-    /* } */
 
     assert( NULL == cinfo || NULL != cinfo->GetRef() );
     return cinfo;
@@ -638,26 +521,6 @@ CRefMgr::Recycle( const char* connName )
     CookieID id = cookieIDForConnName( connName );
     Recycle( id );
 } /* Delete */
-
-/* CidInfo* */
-/* CRefMgr::getCookieRef_impl( CookieID cid ) */
-/* { */
-/*     CidInfo* info = m_cidlock->Claim( cid ); */
-/*     /\* CookieRef* ref = NULL; *\/ */
-/*     /\* RWReadLock rwl( &m_cookieMapRWLock ); *\/ */
-
-/*     /\* CookieMap::iterator iter = m_cookieMap.find( cid ); *\/ */
-/*     /\* while ( iter != m_cookieMap.end() ) { *\/ */
-/*     /\*     CookieRef* second = iter->second; *\/ */
-/*     /\*     if ( second->GetCookieID() == cid ) { *\/ */
-/*     /\*         ref = second; *\/ */
-/*     /\*         break; *\/ */
-/*     /\*     } *\/ */
-/*     /\*     ++iter; *\/ */
-/*     /\* } *\/ */
-/*     /\* info->SetRef( ref ); *\/ */
-/*     return info; */
-/* } */
 
 #ifdef RELAY_HEARTBEAT
 void
@@ -812,17 +675,6 @@ SafeCref::SafeCref( int socket )
         m_cinfo = cinfo;
     }
 }
-
-/* SafeCref::SafeCref( CookieRef* cref ) */
-/*     : m_cinfo( NULL ) */
-/*     , m_mgr( CRefMgr::Get() ) */
-/*     , m_isValid( false ) */
-/* { */
-/*     assert(0);                  /\* path to this? *\/ */
-/*     m_locked = cref->Lock(); */
-/*     m_isValid = m_locked; */
-/*     // m_cref = cref; */
-/* } */
 
 SafeCref::~SafeCref()
 {

@@ -25,6 +25,13 @@
 #include "cidlock.h"
 #include "mlock.h"
 
+const set<int>
+CidInfo::GetSockets( void )
+{
+    return 0 == m_owner || NULL == m_cref ? 
+        m_sockets : m_cref->GetSockets();
+}
+
 CidLock* CidLock::s_instance = NULL;
 
 CidLock::CidLock() : m_nextCID(0)
@@ -38,20 +45,18 @@ CidLock::~CidLock()
     pthread_mutex_destroy( &m_infos_mutex );
 }
 
+#define PRINT_CLAIMED() print_claimed(__func__)
 void 
-CidLock::print_claimed()
+CidLock::print_claimed( const char* caller )
 {
-    char buf[256] = {0};
-    int len = 0;
+    char buf[512] = {0};
+    int len = snprintf( buf, sizeof(buf), "after %s: ", caller );
     // Assume we have the mutex!!!!
-    map< CookieID, CidInfo*>::iterator iter = m_infos.begin();
-    while ( iter != m_infos.end() ) {
+    map< CookieID, CidInfo*>::iterator iter;
+    for ( iter = m_infos.begin(); iter != m_infos.end(); ++iter ) {
         CidInfo* info = iter->second;
-        if ( 0 != info->GetOwner() ) {
-            len += snprintf( &buf[len], sizeof(buf)-len, "%d,", 
-                             info->GetCid() );
-        }
-        ++iter;
+        CookieID cid = 0 == info->GetOwner() ? 0 : info->GetCid();
+        len += snprintf( &buf[len], sizeof(buf)-len, "%d,", cid );
     }
     logf( XW_LOGINFO, "%s: claimed: %s", __func__, buf );
 }
@@ -81,7 +86,7 @@ CidLock::Claim( CookieID cid )
 
         if ( NULL != info ) {   // we're done
             info->SetOwner( pthread_self() );
-            print_claimed();
+            PRINT_CLAIMED();
             break;
         }
 
@@ -101,16 +106,17 @@ CidLock::ClaimSocket( int sock )
     for ( ; ; ) {
         MutexLock ml( &m_infos_mutex );
 
-        map< CookieID, CidInfo*>::iterator iter = m_infos.begin();
-        while ( iter != m_infos.end() ) {
-            if ( sock == iter->second->GetSocket() ) {
+        map< CookieID, CidInfo*>::iterator iter;
+        for ( iter = m_infos.begin(); iter != m_infos.end(); ++iter ) {
+            const set<int>& sockets = iter->second->GetSockets();
+            if ( sockets.end() != sockets.find( sock ) ) {
                 if ( 0 == iter->second->GetOwner() ) {
                     info = iter->second;
                     info->SetOwner( pthread_self() );
+                    PRINT_CLAIMED();
                 }
                 break;
             }
-            ++iter;
         }
 
         /* break if socket isn't here or if it's not claimed */
@@ -120,42 +126,9 @@ CidLock::ClaimSocket( int sock )
         logf( XW_LOGINFO, "%s(sock=%d): waiting....", __func__, sock );
         pthread_cond_wait( &m_infos_condvar, &m_infos_mutex );
     }
-    print_claimed();
+
     logf( XW_LOGINFO, "%s(%d): DONE", __func__, info? info->GetCid():0 );
     return info;
-}
-
-bool
-CidLock::Associate_locked( const CookieRef* cref, int socket )
-{
-    map< CookieID, CidInfo*>::iterator iter = m_infos.begin();
-    while ( iter != m_infos.end() ) {
-        if ( cref == iter->second->GetRef() ) {
-            iter->second->SetSocket( socket );
-            break;
-        }
-        ++iter;
-    }
-    bool isNew = m_sockets.find( socket ) == m_sockets.end();
-    if ( isNew ) {
-        m_sockets.insert( socket );
-    }
-    return isNew;
-}
-
-bool
-CidLock::Associate( const CookieRef* cref, int socket )
-{
-    MutexLock ml( &m_infos_mutex );
-    return Associate_locked( cref, socket );
-}
-
-void
-CidLock::DisAssociate( const CookieRef* cref, int socket )
-{
-    MutexLock ml( &m_infos_mutex );
-    Associate_locked( cref, 0 );
-    m_sockets.erase( socket );
 }
 
 void
@@ -167,15 +140,17 @@ CidLock::Relinquish( CidInfo* claim, bool drop )
     MutexLock ml( &m_infos_mutex );
     map< CookieID, CidInfo*>::iterator iter = m_infos.find( cid );
     assert( iter != m_infos.end() );
-    assert( iter->second->GetOwner() == pthread_self() );
+    assert( iter->second == claim );
+    assert( claim->GetOwner() == pthread_self() );
     if ( drop ) {
         logf( XW_LOGINFO, "%s: deleting %p", __func__, iter->second );
-        delete iter->second;
         m_infos.erase( iter );
+        delete claim;
     } else {
-        iter->second->SetOwner( 0 );
+        claim->SetSockets( claim->GetRef()->GetSockets() ); /* cache these */
+        claim->SetOwner( 0 );
     }
-    print_claimed();
+    PRINT_CLAIMED();
     pthread_cond_signal( &m_infos_condvar );
     logf( XW_LOGINFO, "%s(%d,drop=%d): DONE", __func__, cid, drop );
 }
