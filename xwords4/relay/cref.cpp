@@ -85,7 +85,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
 {
     m_cookie = cookie==NULL?"":cookie;
     m_connName = connName==NULL?"":connName;
-    m_cookieID = id;
+    m_cid = id;
     m_curState = XWS_EMPTY;
     m_nPlayersSought = nPlayers;
     m_nPlayersHere = nAlreadyHere;
@@ -120,7 +120,7 @@ CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id,
 
 CookieRef::~CookieRef()
 {
-    logf( XW_LOGINFO, "CookieRef for %d being deleted", m_cookieID );
+    logf( XW_LOGINFO, "CookieRef for %d being deleted", m_cid );
     cancelAllConnectedTimer();
 
     /* get rid of any sockets still contained */
@@ -146,7 +146,7 @@ CookieRef::Clear(void)
 {
     m_cookie = "";
     m_connName = "";
-    m_cookieID = 0;
+    m_cid = 0;
     m_eventQueue.clear();
 } /* Clear */
 
@@ -999,7 +999,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
 
     *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     *bufp++ = evt->u.con.srcID;
-    putNetShort( &bufp, GetCookieID() );
+    putNetShort( &bufp, GetCid() );
     putNetShort( &bufp, GetHeartbeat() );
     int nTotal, nHere;
     DBMgr::Get()->GetPlayerCounts( ConnName(), &nTotal, &nHere );
@@ -1265,7 +1265,7 @@ CookieRef::s_checkAllConnected( void* closure )
 {
     /* Need to ensure */
     CookieRef* self = (CookieRef*)closure;
-    SafeCref scr(self->GetCookieID(), false );
+    SafeCref scr(self->GetCid(), false );
     scr.CheckAllConnected();
 }
 
@@ -1276,7 +1276,7 @@ CookieRef::s_checkAck( void* closure )
     CookieRef* self = at->m_this;
     if ( NULL != self ) {
         at->m_this = NULL;
-        SafeCref scr(self->GetCookieID(), false );
+        SafeCref scr(self->GetCid(), false );
         scr.CheckNotAcked( at->m_hid );
     }
 }
@@ -1324,7 +1324,7 @@ CookieRef::logf( XW_LogLevel level, const char* format, ... )
     char buf[256];
     int len;
 
-    len = snprintf( buf, sizeof(buf), "cid:%d ", m_cookieID );
+    len = snprintf( buf, sizeof(buf), "cid:%d ", m_cid );
 
     va_list ap;
     va_start( ap, format );
@@ -1346,7 +1346,7 @@ CookieRef::_PrintCookieInfo( string& out )
     snprintf( buf, sizeof(buf), "%s\n", ConnName() );
     out += buf;
 
-    snprintf( buf, sizeof(buf), "id=%d\n", GetCookieID() );
+    snprintf( buf, sizeof(buf), "id=%d\n", GetCid() );
     out += buf;
 
     snprintf( buf, sizeof(buf), "Total players=%d\n", m_nPlayersSought );

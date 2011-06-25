@@ -87,7 +87,7 @@ class CookieRef {
 
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
-    CookieID GetCookieID() { return m_cookieID; }
+    CookieID GetCid() { return m_cid; }
     int GetPlayersSought() { return m_nPlayersSought; }
     int GetPlayersHere() { return m_nPlayersHere; }
 
@@ -246,7 +246,7 @@ class CookieRef {
     time_t GetStarttime( void ) { return m_starttime; }
     int GetLangCode( void ) { return m_langCode; }
 
-    bool notInUse(void) { return m_cookieID == 0; }
+    bool notInUse(void) { return m_cid == 0; }
 
     void store_message( HostID dest, const unsigned char* buf, 
                         unsigned int len );
@@ -267,7 +267,7 @@ class CookieRef {
     int m_heatbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */
     string m_connName;          /* globally unique name */
-    CookieID m_cookieID;        /* Unique among current games on this server */
+    CookieID m_cid;        /* Unique among current games on this server */
 
     XW_RELAY_STATE     m_curState;
     deque<CRefEvent>   m_eventQueue;

@@ -95,7 +95,7 @@ CRefMgr::CloseAll()
             }
             cref = iter->second; 
             {
-                SafeCref scr( cref->GetCookieID(), false ); /* cref */
+                SafeCref scr( cref->GetCid(), false ); /* cref */
                 scr.Shutdown();
             }
         }
@@ -157,14 +157,14 @@ CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
         CrefInfo info;
         info.m_cookie = cref->Cookie();
         info.m_connName = cref->ConnName();
-        info.m_cookieID = cref->GetCookieID();
+        info.m_cookieID = cref->GetCid();
         info.m_curState = cref->CurState();
         info.m_nPlayersSought = cref->GetPlayersSought();
         info.m_nPlayersHere = cref->GetPlayersHere();
         info.m_startTime = cref->GetStarttime();
         info.m_langCode = cref->GetLangCode();
         
-        SafeCref sc(cref->GetCookieID(), false );
+        SafeCref sc(cref->GetCid(), false );
         sc.GetHostsConnected( &info.m_hostsIds, &info.m_hostSeeds, 
                               &info.m_hostIps );
         
@@ -452,9 +452,9 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 
     ref->assignConnName();
 
-    m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
+    m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCid(), ref ) );
     logf( XW_LOGINFO, "%s: paired cookie %s/connName %s with cid %d", __func__, 
-          (cookie?cookie:"NULL"), connName, ref->GetCookieID() );
+          (cookie?cookie:"NULL"), connName, ref->GetCid() );
 
 #ifdef RELAY_HEARTBEAT
     if ( m_cookieMap.size() == 1 ) {
@@ -474,7 +474,7 @@ void
 CRefMgr::Recycle_locked( CookieRef* cref )
 {
     logf( XW_LOGINFO, "%s(cref=%p,cookie=%s)", __func__, cref, cref->Cookie() );
-    CookieID id = cref->GetCookieID();
+    CookieID id = cref->GetCid();
     DBMgr::Get()->ClearCID( cref->ConnName() );
     cref->Clear();
     addToFreeList( cref );
@@ -571,7 +571,7 @@ CookieMapIterator::Next()
     CookieID id = 0;
     if ( _iter != CRefMgr::Get()->m_cookieMap.end() ) {
         CookieRef* cref = _iter->second;
-        id = cref->GetCookieID();
+        id = cref->GetCid();
         ++_iter;
     }
     return id;
@@ -621,7 +621,7 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
                                      nPlayersS, gameSeed, langCode,
                                      wantsPublic || makePublic, &isDead );
     if ( cinfo != NULL ) {
-        assert( cinfo->GetCid() == cinfo->GetRef()->GetCookieID() );
+        assert( cinfo->GetCid() == cinfo->GetRef()->GetCid() );
         m_locked = cinfo->GetRef()->Lock();
         m_cinfo = cinfo;
         m_isValid = true;
@@ -638,7 +638,7 @@ SafeCref::SafeCref( const char* const connName )
     bool isDead = false;
     CidInfo* cinfo = m_mgr->getMakeCookieRef( connName, &isDead );
     if ( cinfo != NULL ) {
-        assert( cinfo->GetCid() == cinfo->GetRef()->GetCookieID() );
+        assert( cinfo->GetCid() == cinfo->GetRef()->GetCid() );
         m_locked = cinfo->GetRef()->Lock();
         m_cinfo = cinfo;
         m_isValid = true;
@@ -654,9 +654,9 @@ SafeCref::SafeCref( CookieID connID, bool failOk )
     CidInfo* cinfo = m_mgr->getCookieRef( connID );
     if ( cinfo != NULL ) {       /* known cookie? */
         CookieRef* cref = cinfo->GetRef();
-        assert( cinfo->GetCid() == cref->GetCookieID() );
+        assert( cinfo->GetCid() == cref->GetCid() );
         m_locked = cref->Lock();
-        m_isValid = m_locked && connID == cref->GetCookieID();
+        m_isValid = m_locked && connID == cref->GetCid();
         m_cinfo = cinfo;
     }
 }
@@ -669,7 +669,7 @@ SafeCref::SafeCref( int socket )
     CidInfo* cinfo = m_mgr->getCookieRef( socket );
     if ( cinfo != NULL ) {       /* known socket? */
         CookieRef* cref = cinfo->GetRef();
-        assert( cinfo->GetCid() == cref->GetCookieID() );
+        assert( cinfo->GetCid() == cref->GetCid() );
         m_locked = cref->Lock();
         m_isValid = m_locked && cref->HasSocket_locked( socket );
         m_cinfo = cinfo;
@@ -682,7 +682,7 @@ SafeCref::~SafeCref()
         bool recycle = false;
         if ( m_locked ) {
             CookieRef* cref = m_cinfo->GetRef();
-            assert( m_cinfo->GetCid() == cref->GetCookieID() );
+            assert( m_cinfo->GetCid() == cref->GetCid() );
             recycle = cref->ShouldDie();
             if ( recycle ) {
                 m_mgr->Recycle_locked( cref );
