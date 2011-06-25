@@ -41,9 +41,8 @@ class CookieMapIterator;        /* forward */
 
 struct HostRec {
 public:
-HostRec(HostID hostID, int socket, int nPlayersH, int seed, bool ackPending ) 
+HostRec(HostID hostID, int nPlayersH, int seed, bool ackPending ) 
         : m_hostID(hostID) 
-        , m_socket(socket)
         , m_nPlayersH(nPlayersH) 
         , m_seed(seed) 
         , m_lastHeartbeat(uptime()) 
@@ -52,7 +51,6 @@ HostRec(HostID hostID, int socket, int nPlayersH, int seed, bool ackPending )
             ::logf( XW_LOGINFO, "created HostRec with id %d", m_hostID);
         }
     HostID m_hostID;
-    int m_socket;
     int m_nPlayersH;
     int m_seed;
     time_t m_lastHeartbeat;
@@ -235,19 +233,15 @@ class CookieRef {
     void notifyOthers( int socket, XWRelayMsg msg, XWREASON why );
     void notifyGameDead( int socket );
 
-    void disconnectSockets( int socket, XWREASON why );
+    void disconnectSockets( XWREASON why );
+    void disconnectSocket( int socket, XWREASON why );
     void removeDevice( const CRefEvent* const evt );
     void noteHeartbeat(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
     void sendAllHere( bool initial );
-    void checkSomeMissing( void );
 
-    void moveSockets( void );
-    bool SeedBelongs( int gameSeed );
-    bool SeedsBelong( const char* connName );
     void assignConnName( void );
-    void assignHostIds( void );
     
     time_t GetStarttime( void ) { return m_starttime; }
     int GetLangCode( void ) { return m_langCode; }
@@ -267,14 +261,13 @@ class CookieRef {
     static void s_checkAllConnected( void* closure );
     static void s_checkAck( void* closure );
     
-    vector<HostRec> m_sockets;
+    pthread_rwlock_t m_socketsRWLock;
+    map<int, HostRec> m_sockets;
+
     int m_heatbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */
     string m_connName;          /* globally unique name */
     CookieID m_cookieID;        /* Unique among current games on this server */
-
-    pthread_mutex_t    m_sockSetMutex;
-    set<int>           m_sockSet;
 
     XW_RELAY_STATE     m_curState;
     deque<CRefEvent>   m_eventQueue;
