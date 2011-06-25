@@ -657,6 +657,8 @@ blocking_read( int fd, unsigned char* buf, int len )
     while ( nRead < len ) {
        ssize_t siz = read( fd, buf + nRead, len - nRead );
        if ( siz <= 0 ) {
+           XP_LOGF( "read => %d, errno=%d (\"%s\")", nRead, 
+                    errno, strerror(errno) );
            nRead = -1;
            break;
        }
@@ -673,7 +675,6 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     unsigned short packetSize;
     ssize_t nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
     if ( nRead != 2 ) {
-        XP_LOGF( "recv => %d, errno=%d (\"%s\")", nRead, errno, strerror(errno) );
         linux_close_socket( cGlobals );
         comms_transportFailed( cGlobals->game.comms );
         nRead = -1;
@@ -681,27 +682,24 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
         packetSize = ntohs( tmp );
         assert( packetSize <= bufSize );
         nRead = blocking_read( sock, buf, packetSize );
-        if ( nRead < 0 ) {
-            XP_WARNF( "%s: errno=%d (\"%s\")\n", __func__, errno, 
-                      strerror(errno) );
-        }
-
-        LaunchParams* params = cGlobals->params;
-        ++params->nPacketsRcvd;
-        if ( params->dropNthRcvd == 0 ) {
-            /* do nothing */
-        } else if ( params->dropNthRcvd > 0 ) {
-            if ( params->nPacketsRcvd == params->dropNthRcvd ) {
-                XP_LOGF( "%s: dropping %dth packet per --drop-nth-packet",
-                         __func__, params->nPacketsRcvd );
-                nRead = -1;
-            }
-        } else {
-            if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
-                XP_LOGF( "%s: RANDOMLY dropping %dth packet "
-                         "per --drop-nth-packet",
-                         __func__, params->nPacketsRcvd );
-                nRead = -1;
+        if ( nRead == packetSize ) {
+            LaunchParams* params = cGlobals->params;
+            ++params->nPacketsRcvd;
+            if ( params->dropNthRcvd == 0 ) {
+                /* do nothing */
+            } else if ( params->dropNthRcvd > 0 ) {
+                if ( params->nPacketsRcvd == params->dropNthRcvd ) {
+                    XP_LOGF( "%s: dropping %dth packet per --drop-nth-packet",
+                             __func__, params->nPacketsRcvd );
+                    nRead = -1;
+                }
+            } else {
+                if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
+                    XP_LOGF( "%s: RANDOMLY dropping %dth packet "
+                             "per --drop-nth-packet",
+                             __func__, params->nPacketsRcvd );
+                    nRead = -1;
+                }
             }
         }
     }
