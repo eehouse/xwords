@@ -395,7 +395,10 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
                                      gameSeed );
             if ( !success ) {
-                err = XWRELAY_ERROR_NORECONN;
+                // Can't use XWRELAY_ERROR_NORECONN until it's been out on
+                // devices for a while.  Reconnect() never seems to fail
+                // anyway now that I've fixed a bunch of bugs.
+                err = XWRELAY_ERROR_BADPROTO; // XWRELAY_ERROR_NORECONN
             }
         } else { 
             err = XWRELAY_ERROR_BADPROTO;
