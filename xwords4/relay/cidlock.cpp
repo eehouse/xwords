@@ -25,6 +25,8 @@
 #include "cidlock.h"
 #include "mlock.h"
 
+#define CIDLOCK_DEBUG
+
 const set<int>
 CidInfo::GetSockets( void )
 {
@@ -45,21 +47,32 @@ CidLock::~CidLock()
     pthread_mutex_destroy( &m_infos_mutex );
 }
 
-#define PRINT_CLAIMED() print_claimed(__func__)
+#ifdef CIDLOCK_DEBUG
+# define PRINT_CLAIMED() print_claimed(__func__)
 void 
 CidLock::print_claimed( const char* caller )
 {
     char buf[512] = {0};
+    int unclaimed = 0;
     int len = snprintf( buf, sizeof(buf), "after %s: ", caller );
     // Assume we have the mutex!!!!
     map< CookieID, CidInfo*>::iterator iter;
     for ( iter = m_infos.begin(); iter != m_infos.end(); ++iter ) {
         CidInfo* info = iter->second;
-        CookieID cid = 0 == info->GetOwner() ? 0 : info->GetCid();
-        len += snprintf( &buf[len], sizeof(buf)-len, "%d,", cid );
+        if ( 0 == info->GetOwner() ) {
+            ++unclaimed;
+        } else {
+            len += snprintf( &buf[len], sizeof(buf)-len, "%d,", 
+                             info->GetCid() );
+        }
     }
+    len += snprintf( &buf[len], sizeof(buf)-len, " (plus %d unclaimed.)", 
+                     unclaimed );
     logf( XW_LOGINFO, "%s: claimed: %s", __func__, buf );
 }
+#else
+# define PRINT_CLAIMED()
+#endif
 
 CidInfo* 
 CidLock::Claim( CookieID cid )
@@ -95,7 +108,7 @@ CidLock::Claim( CookieID cid )
     }
     logf( XW_LOGINFO, "%s(%d): DONE", __func__, cid );
     return info;
-}
+} /* CidLock::Claim */
 
 CidInfo* 
 CidLock::ClaimSocket( int sock )
