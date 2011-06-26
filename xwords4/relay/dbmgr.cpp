@@ -25,9 +25,9 @@
 
 #include "dbmgr.h"
 #include "mlock.h"
+#include "configs.h"
 #include "xwrelay_priv.h"
 
-#define DB_NAME "xwgames"
 #define GAMES_TABLE "games"
 #define MSGS_TABLE "msgs"
 
@@ -670,7 +670,13 @@ DBMgr::getThreadConn( void )
     conn = (PGconn*)pthread_getspecific( s_conn_key );
 
     if ( NULL == conn ) {
-        conn = PQconnectdb( "dbname = " DB_NAME );
+        char buf[128];
+        int len = snprintf( buf, sizeof(buf), "dbname = " );
+        if ( !RelayConfigs::GetConfigs()->
+             GetValueFor( "DB_NAME", &buf[len], sizeof(buf)-len ) ) {
+            assert( 0 );
+        }
+        conn = PQconnectdb( buf );
         pthread_setspecific( s_conn_key, conn );
     }
     return conn;

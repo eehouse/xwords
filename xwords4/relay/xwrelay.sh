@@ -1,11 +1,14 @@
 #!/bin/sh
 
+set -e -u
+
 DIR=$(pwd)
 XWRELAY=${DIR}/xwrelay
 PIDFILE=${DIR}/xwrelay.pid
 CONFFILE=${DIR}/xwrelay.conf
 IDFILE=${DIR}/nextid.txt
 CSSFILE=${DIR}/xwrelay.css
+CONFFILE=${DIR}/xwrelay.conf
 
 LOGFILE=/tmp/xwrelay_log_$$.txt
 #LOGFILE=/dev/null
@@ -17,8 +20,17 @@ usage() {
 }
 
 make_db() {
-    createdb xwgames
-    cat | psql xwgames --file - <<EOF
+    if [ ! -e $CONFFILE ]; then
+        echo "unable to find $CONFFILE"
+        exit 1
+    fi
+    DBNAME=$(grep '^DB_NAME' $CONFFILE | sed 's,^.*=,,')
+    if [ -z "$DBNAME" ]; then
+        echo "DB_NAME keyword not found"
+        exit 1
+    fi
+    createdb $DBNAME
+    cat | psql $DBNAME --file - <<EOF
 create or replace function sum_array( DECIMAL [] )
 returns decimal
 as \$\$
@@ -30,7 +42,7 @@ from generate_series(
 \$\$ language sql immutable;
 EOF
 
-    cat | psql xwgames --file - <<EOF
+    cat | psql $DBNAME --file - <<EOF
 CREATE TABLE games ( 
 cid integer
 ,room VARCHAR(32)
@@ -48,7 +60,7 @@ cid integer
 );
 EOF
 
-    cat | psql xwgames --file - <<EOF
+    cat | psql $DBNAME --file - <<EOF
 CREATE TABLE msgs ( 
 id SERIAL
 ,connName VARCHAR(64)

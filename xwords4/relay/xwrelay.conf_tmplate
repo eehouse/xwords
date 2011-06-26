@@ -15,7 +15,7 @@ HEARTBEAT=60
 # How many worker threads in the thread pool?  Default is five.  Let's
 # keep this at 1 until the race condition is fixed.  All interaction
 # with crefs should be from this one thread, including proxy stuff.
-NTHREADS=1
+NTHREADS=5
 
 # How many seconds to wait for device to ack new connName
 DEVACK=3
@@ -47,6 +47,9 @@ WWW_CSS_PATH=./xwrelay.css
 # Need a unique name for every instance of the relay so they can
 # create game ids guaranteed to be unique
 SERVERNAME=eehouse.org
+
+# name of the database.  (Table names are hard-coded.)
+DB_NAME=xwgames
 
 # Initial level of logging.  See xwrelay_priv.h for values.  Currently
 # 0 means errors only, 1 info, 2 verbose and 3 very verbose.
