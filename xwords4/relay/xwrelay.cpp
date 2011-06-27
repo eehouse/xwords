@@ -1171,18 +1171,23 @@ main( int argc, char** argv )
                     socklen_t siz = sizeof(newaddr);
                     int newSock = accept( listener, (sockaddr*)&newaddr,
                                           &siz );
+                    if ( newSock < 0 ) {
+                        logf( XW_LOGERROR, "accept failed: errno(%d)=%s",
+                              errno, strerror(errno) );
+                        assert( 0 ); // we're leaking files or load has grown
+                    } else {
 
-                    /* Set timeout so send and recv won't block forever */
-                    set_timeouts( newSock );
+                        /* Set timeout so send and recv won't block forever */
+                        set_timeouts( newSock );
 
-                    logf( XW_LOGINFO, 
-                          "accepting connection from %s on socket %d", 
-                          inet_ntoa(newaddr.sin_addr), newSock );
+                        logf( XW_LOGINFO, 
+                              "accepting connection from %s on socket %d", 
+                              inet_ntoa(newaddr.sin_addr), newSock );
 
-                    tPool->AddSocket( newSock,
-                                      perGame ? XWThreadPool::STYPE_GAME 
-                                      : XWThreadPool::STYPE_PROXY );
-
+                        tPool->AddSocket( newSock,
+                                          perGame ? XWThreadPool::STYPE_GAME 
+                                          : XWThreadPool::STYPE_PROXY );
+                    }
                     --retval;
                 }
             }
