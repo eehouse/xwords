@@ -301,10 +301,7 @@ run_cmds() {
             MINEND[$KEY]=$(($(date '+%s')+$MINRUN))
         else
             SLEEP=$((${MINEND[$KEY]} - $(date '+%s')))
-            if [ $SLEEP -gt 0 ];then
-                echo "sleeping $SLEEP seconds"
-                sleep $SLEEP
-            fi
+            [ $SLEEP -gt 0 ] && sleep $SLEEP
             kill ${PIDS[$KEY]} || true
             PIDS[$KEY]=0
             [ "$DROP_N" -ge 0 ] && increment_drop $KEY
