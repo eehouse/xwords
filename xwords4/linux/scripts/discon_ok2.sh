@@ -277,10 +277,12 @@ check_game() {
 increment_drop() {
     KEY=$1
     CMD=${CMDS[$KEY]}
-    DROP_N=$(echo $CMD | sed 's,^.*drop-nth-packet \(-*[0-9]*\) .*$,\1,')
-    if [ $DROP_N -gt 0 ]; then
-        NEXT_N=$((DROP_N+1))
-        CMDS[$KEY]=$(echo $CMD | sed "s,^\(.*drop-nth-packet \)$DROP_N\(.*\)$,\1$NEXT_N\2,")
+    if [ "$CMD" != "${CMD/drop-nth-packet//}" ]; then
+        DROP_N=$(echo $CMD | sed 's,^.*drop-nth-packet \(-*[0-9]*\) .*$,\1,')
+        if [ $DROP_N -gt 0 ]; then
+            NEXT_N=$((DROP_N+1))
+            CMDS[$KEY]=$(echo $CMD | sed "s,^\(.*drop-nth-packet \)$DROP_N\(.*\)$,\1$NEXT_N\2,")
+        fi
     fi
 }
 
