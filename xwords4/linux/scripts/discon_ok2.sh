@@ -8,7 +8,9 @@ PORT=${PORT:-10997}
 TIMEOUT=${TIMEOUT:-$((NGAMES*60+500))}
 DICTS=${DICTS:-dict.xwd}
 SAVE_GOOD=${SAVE_GOOD:-YES}
+MAXDEVS=${MAXDEVS:-4}
 RESIGN_RATIO=${RESIGN_RATIO:-$((NGAMES/3))}
+MINRUN=2
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -18,7 +20,25 @@ done
 NAMES=(UNUSED Brynn Ariela Kati Eric)
 
 LOGDIR=$(basename $0)_logs
-[ -d $LOGDIR ] && mv $LOGDIR /tmp/${LOGDIR}_$$
+RESUME=""
+for FILE in $(ls $LOGDIR/*.{xwg,txt} 2>/dev/null); do
+    if [ -e $FILE ]; then
+        echo "Unfinished games found in $LOGDIR; continue with them (or discard)?"
+        read -p "<yes/no> " ANSWER
+        case "$ANSWER" in
+            y|yes|Y|YES)
+                RESUME=1
+                ;;
+            *)
+                ;;
+        esac
+    fi
+    break
+done
+
+if [ -z "$RESUME" -a -d $LOGDIR ];then
+    mv $LOGDIR /tmp/${LOGDIR}_$$
+fi
 mkdir -p $LOGDIR
 
 if [ "$SAVE_GOOD" = YES ]; then
@@ -34,6 +54,7 @@ declare -A PIDS
 declare -A CMDS
 declare -A FILES
 declare -A LOGS
+declare -A MINEND
 
 PLAT_PARMS=""
 if [ $USE_GTK = FALSE ]; then
@@ -43,7 +64,7 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MAXDEVS RESIGN_RATIO; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 1
@@ -52,8 +73,8 @@ usage() {
 connName() {
     LOG=$1
     grep 'got_connect_cmd: connName' $LOG | \
-        sed 's,^.*connName: \"\(.*\)\"$,\1,' | \
-        sort -u 
+        tail -n 1 | \
+        sed 's,^.*connName: \"\(.*\)\"$,\1,'
 }
 
 while [ "$#" -gt 0 ]; do
@@ -89,7 +110,7 @@ build_cmds() {
     for GAME in $(seq 1 $NGAMES); do
         ROOM=ROOM_$((GAME % NROOMS))
         check_room $ROOM
-        NDEVS=$(($RANDOM%3+2))
+        NDEVS=$(( $RANDOM % ($MAXDEVS-1) + 2 ))
         DICT=${DICTS_ARR[$((GAME%${#DICTS_ARR[*]}))]}
         # make one in three games public
         PUBLIC=""
@@ -105,19 +126,44 @@ build_cmds() {
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             touch $LOG          # so greps won't show errors
             CMD="./obj_linux_memdbg/xwords --room $ROOM"
-            CMD="$CMD --robot ${NAMES[$DEV]} --robot-iq=$((1 + (RANDOM%100))) "
-            CMD="$CMD $OTHERS --dict=$DICT --port=$PORT --host=$HOST "
-            CMD="$CMD --file=$FILE --slow-robot 1:3 $PLAT_PARMS"
+            CMD="$CMD --robot ${NAMES[$DEV]} --robot-iq $((1 + (RANDOM%100))) "
+            CMD="$CMD $OTHERS --game-dict $DICT --port $PORT --host $HOST "
+            CMD="$CMD --file $FILE --slow-robot 1:3 $PLAT_PARMS"
             CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
             FILES[$COUNTER]=$FILE
             LOGS[$COUNTER]=$LOG
             PIDS[$COUNTER]=0
             COUNTER=$((COUNTER+1))
+
+            echo "${CMD}" > $LOG
         done
     done
     echo "finished creating $COUNTER commands"
 } # build_cmds
+
+read_resume_cmds() {
+    COUNTER=0
+    for LOG in $(ls $LOGDIR/*.txt); do
+        CMD=$(head -n 1 $LOG)
+
+        CMDS[$COUNTER]=$CMD
+        LOGS[$COUNTER]=$LOG
+        PIDS[$COUNTER]=0
+
+        set $CMD
+        while [ $# -gt 0 ]; do
+            case $1 in
+                --file)
+                    FILES[$COUNTER]=$2
+                    shift
+                    ;;
+            esac
+            shift
+        done
+        COUNTER=$((COUNTER+1))
+    done
+}
 
 launch() {
     LOG=${LOGS[$1]}
@@ -239,8 +285,10 @@ run_cmds() {
         if [ 0 -eq ${PIDS[$KEY]} ]; then
             launch $KEY &
             PIDS[$KEY]=$!
+            MINEND[$KEY]=$(($(date '+%s')+$MINRUN))
         else
-            sleep 2             # make sure it's had some time
+            SLEEP=$((${MINEND[$KEY]} - $(date '+%s')))
+            [ $SLEEP -gt 0 ] && sleep $SLEEP
             kill ${PIDS[$KEY]} || true
             PIDS[$KEY]=0
             check_game $KEY
@@ -263,7 +311,7 @@ print_stats() {
 
 echo "*********$0 starting: $(date)**************"
 STARTTIME=$(date +%s)
-build_cmds
+[ -z "$RESUME" ] && build_cmds || read_resume_cmds
 run_cmds
 print_stats
 
