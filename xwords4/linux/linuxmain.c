@@ -672,14 +672,13 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
     int sock = cGlobals->socket;
     unsigned short tmp;
-    unsigned short packetSize;
     ssize_t nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
     if ( nRead != 2 ) {
         linux_close_socket( cGlobals );
         comms_transportFailed( cGlobals->game.comms );
         nRead = -1;
     } else {
-        packetSize = ntohs( tmp );
+        unsigned short packetSize = ntohs( tmp );
         assert( packetSize <= bufSize );
         nRead = blocking_read( sock, buf, packetSize );
         if ( nRead == packetSize ) {
@@ -703,6 +702,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
             }
         }
     }
+    XP_LOGF( "%s=>%d", __func__, nRead );
     return nRead;
 } /* linux_relay_receive */
 #endif  /* XWFEATURE_RELAY */

@@ -1085,7 +1085,6 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                         XWStreamCtxt* inboundS;
                         redraw = XP_FALSE;
 
-                        XP_STATUSF( "linuxReceive=>%d", nBytes );
                         inboundS = stream_from_msgbuf( &globals->cGlobals, 
                                                        buf, nBytes );
                         if ( !!inboundS ) {
