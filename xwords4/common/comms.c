@@ -1268,37 +1268,45 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         srcID = (XWHostID)stream_getU8( stream );
         XP_ASSERT( comms->r.myHostID == HOST_ID_NONE
                    || comms->r.myHostID == srcID );
-        comms->r.myHostID = srcID;
-        XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
+
+        if ( 0 == comms->r.cookieID ) {
+            XP_LOGF( "%s: cookieID still 0; most likely packet was lost", 
+                     __func__ );
+            comms_transportFailed( comms );
+        } else {
+            comms->r.myHostID = srcID;
+
+            XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
 
 #ifdef DEBUG
-        {
-            XP_UCHAR connName[MAX_CONNNAME_LEN+1];
-            stringFromStreamHere( stream, connName, sizeof(connName) );
-            XP_ASSERT( comms->r.connName[0] == '\0' 
-                       || 0 == XP_STRCMP( comms->r.connName, connName ) );
-            XP_MEMCPY( comms->r.connName, connName, sizeof(comms->r.connName) );
-            XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
-        }
+            {
+                XP_UCHAR connName[MAX_CONNNAME_LEN+1];
+                stringFromStreamHere( stream, connName, sizeof(connName) );
+                XP_ASSERT( comms->r.connName[0] == '\0' 
+                           || 0 == XP_STRCMP( comms->r.connName, connName ) );
+                XP_MEMCPY( comms->r.connName, connName, sizeof(comms->r.connName) );
+                XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
+            }
 #else
-        stringFromStreamHere( stream, comms->r.connName, 
-                              sizeof(comms->r.connName) );
+            stringFromStreamHere( stream, comms->r.connName, 
+                                  sizeof(comms->r.connName) );
 #endif
 
-        /* We're [re-]connected now.  Send any pending messages.  This may
-           need to be done later since we're inside the platform's socket read
-           proc now.  But don't resend if we were previously REconnected, as
-           we'll have sent then.  -- I don't see any send on RECONNECTED, so
-           removing the test for now to fix recon problems on android. */
-        /* if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) { */
-        comms_resendAll( comms );
-        /* } */
-        if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
-            (*comms->procs.rconnd)( comms->procs.closure, 
-                                    comms->addr.u.ip_relay.invite, XP_FALSE,
-                                    comms->r.myHostID, XP_TRUE, 0 );
+            /* We're [re-]connected now.  Send any pending messages.  This may
+               need to be done later since we're inside the platform's socket read
+               proc now.  But don't resend if we were previously REconnected, as
+               we'll have sent then.  -- I don't see any send on RECONNECTED, so
+               removing the test for now to fix recon problems on android. */
+            /* if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) { */
+            comms_resendAll( comms );
+            /* } */
+            if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
+                (*comms->procs.rconnd)( comms->procs.closure, 
+                                        comms->addr.u.ip_relay.invite, XP_FALSE,
+                                        comms->r.myHostID, XP_TRUE, 0 );
+            }
+            set_relay_state( comms, COMMS_RELAYSTATE_ALLCONNECTED );
         }
-        set_relay_state( comms, COMMS_RELAYSTATE_ALLCONNECTED );
         break;
     case XWRELAY_MSG_FROMRELAY:
         cookieID = stream_getU16( stream );
