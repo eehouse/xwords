@@ -109,7 +109,7 @@ check_room() {
 build_cmds() {
     COUNTER=0
     for GAME in $(seq 1 $NGAMES); do
-        ROOM=ROOM_$((GAME % NROOMS))
+        ROOM=$(printf "ROOM_%.3d" $((GAME % NROOMS)))
         check_room $ROOM
         NDEVS=$(( $RANDOM % ($MAXDEVS-1) + 2 ))
         DICT=${DICTS_ARR[$((GAME%${#DICTS_ARR[*]}))]}
@@ -291,16 +291,17 @@ run_cmds() {
     while :; do
         COUNT=${#CMDS[*]}
         [ 0 -ge $COUNT ] && break
-        [ $(date +%s) -ge $ENDTIME ] && break
+        NOW=$(date '+%s')
+        [ $NOW -ge $ENDTIME ] && break
         INDX=$(($RANDOM%COUNT))
         KEYS=( ${!CMDS[*]} )
         KEY=${KEYS[$INDX]}
         if [ 0 -eq ${PIDS[$KEY]} ]; then
             launch $KEY &
             PIDS[$KEY]=$!
-            MINEND[$KEY]=$(($(date '+%s')+$MINRUN))
+            MINEND[$KEY]=$(($NOW + $MINRUN))
         else
-            SLEEP=$((${MINEND[$KEY]} - $(date '+%s')))
+            SLEEP=$((${MINEND[$KEY]} - $NOW))
             [ $SLEEP -gt 0 ] && sleep $SLEEP
             kill ${PIDS[$KEY]} || true
             PIDS[$KEY]=0
