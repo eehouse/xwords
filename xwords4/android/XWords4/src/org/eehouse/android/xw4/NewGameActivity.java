@@ -50,14 +50,14 @@ public class NewGameActivity extends XWActivity {
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
-                    newAndLaunch();
+                    makeNewGame( false, true );
                 }
             } );
         button = (Button)findViewById( R.id.newgame_local_config );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
-                    newAndConfigure( false );
+                    makeNewGame( false, false );
                 }
             } );
 
@@ -65,7 +65,7 @@ public class NewGameActivity extends XWActivity {
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
-                    newNetworkedAndLaunch();
+                    makeNewGame( true, true );
                 }
             } );
 
@@ -73,43 +73,35 @@ public class NewGameActivity extends XWActivity {
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
-                    newAndConfigure( true );
+                    makeNewGame( true, false );
                 }
             } );
 
     }
 
-    private void newAndLaunch()
+    private void makeNewGame( boolean networked, boolean launch )
     {
-        String path = GameUtils.saveNew( this, new CurGameInfo( this ) );
-        GameUtils.launchGame( this, path );
-        finish();
-    }
-
-    // So: Query the user for the desired room name and player name,
-    // providing defaults.
-    private void newNetworkedAndLaunch()
-    {
-        Random random = new Random();
-        String room = 
-            String.format( "%X", random.nextInt() ).substring( 0, 4 );
+        String room = null;
+        String path;
         int[] lang = {0};
-        String path = GameUtils.makeNewNetGame( this, room, lang, 2 );
 
-        GameUtils.launchGame( this, path, true );
+        if ( networked ) {
+            Random random = new Random();
+            room = String.format( "%X", random.nextInt() ).substring( 0, 4 );
+            path = GameUtils.makeNewNetGame( this, room, lang, 2 );
+        } else {
+            path = GameUtils.saveNew( this, new CurGameInfo( this ) );
+        }
 
-        // Remove this for now at least.  The game itself will suggest
-        // an invite when it connects and is missing someone.
-        GameUtils.launchInviteActivity( this, room, lang[0] );
+        if ( launch ) {
+            GameUtils.launchGame( this, path, networked );
+            if ( networked ) {
+                GameUtils.launchInviteActivity( this, room, lang[0] );
+            }
+        } else {
+            GameUtils.doConfig( this, path, GameConfig.class );
+        }
 
-        finish();
-    }
-
-    private void newAndConfigure( boolean networked )
-    {
-        String path = GameUtils.saveNew( this, new CurGameInfo( this, 
-                                                                networked ) );
-        GameUtils.doConfig( this, path, GameConfig.class );
         finish();
     }
 
