@@ -191,9 +191,9 @@ public class DictLangCache {
         return code;
     }
 
-    public static String getLangName( Context context, String name )
+    public static String getLangName( Context context, String dict )
     {
-        int code = getDictLangCode( context, name );
+        int code = getDictLangCode( context, dict );
         return getLangName( context, code );
     }
 
