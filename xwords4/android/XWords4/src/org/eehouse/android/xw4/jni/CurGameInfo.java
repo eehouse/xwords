@@ -102,6 +102,10 @@ public class CurGameInfo {
         }
 
         setLang( 0 );
+
+        if ( CommonPrefs.getAutoJuggle( context ) ) {
+            juggle();
+        }
     }
 
     public CurGameInfo( Context context, CurGameInfo src )
