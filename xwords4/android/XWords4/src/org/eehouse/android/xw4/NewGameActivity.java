@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import java.util.Random;
 
 // import junit.framework.Assert;
@@ -46,6 +47,12 @@ public class NewGameActivity extends XWActivity {
 
         setContentView( R.layout.new_game );
 
+        TextView desc = (TextView)findViewById( R.id.newgame_local_desc );
+        String fmt = getString( R.string.newgame_local_descf );
+        String dict = CommonPrefs.getDefaultHumanDict( this );
+        String lang = DictLangCache.getLangName( this, dict );
+        desc.setText( String.format( fmt, lang ) );
+        
         Button button = (Button)findViewById( R.id.newgame_local );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override

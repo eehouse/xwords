@@ -47,16 +47,18 @@
 	<string name="app_name">Crosswords</string>  
 
     <string name="newgame_local_header">New Local-only game</string>
-    <string name="newgame_local_desc">Create a new game where all
-      players will be on this device.  To play with all the default
-      setting, just press \"Play Game\".  To change some settings
-      first, press \"Configure game\".</string>
+    <string name="newgame_local_descf">Create a new game where all
+      players will be on this device.  To play with your default
+      settings (i.e. with 2 players and in %1$s) just press \"Play
+      Game\".  To change some settings first, press \"Configure
+      game\".</string>
     <string name="newgame_networked_header">New Networked game</string>
     <string name="newgame_networked_desc">Create a game that will be
       played over the network.  The \"Invite now\" button starts a
       game and helps you invite a friend to join it.  Or press
       \"Configure game\" to change some of the defaults before you
-      start your networked game.</string>
+      start your networked game. (You\'ll have a chance to invite
+      a friend later.)</string>
 	<string name="newgame_local">Play game</string>
 	<string name="newgame_local_config">Configure game</string>
 	<string name="newgame_invite">Invite now</string>
