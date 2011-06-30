@@ -157,7 +157,7 @@ CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
         CrefInfo info;
         info.m_cookie = cref->Cookie();
         info.m_connName = cref->ConnName();
-        info.m_cookieID = cref->GetCid();
+        info.m_cid = cref->GetCid();
         info.m_curState = cref->CurState();
         info.m_nPlayersSought = cref->GetPlayersSought();
         info.m_nPlayersHere = cref->GetPlayersHere();
@@ -310,7 +310,6 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
                 continue;
             }
         } else {
-            CookieID cid;
             /* The entry may not even be in the DB, e.g. if it got deleted.
                Deal with that possibility by taking the caller's word for it. */
             cinfo = m_cidlock->Claim();
@@ -474,7 +473,7 @@ void
 CRefMgr::Recycle_locked( CookieRef* cref )
 {
     logf( XW_LOGINFO, "%s(cref=%p,cookie=%s)", __func__, cref, cref->Cookie() );
-    CookieID id = cref->GetCid();
+    CookieID cid = cref->GetCid();
     DBMgr::Get()->ClearCID( cref->ConnName() );
     cref->Clear();
     addToFreeList( cref );
@@ -489,7 +488,7 @@ CRefMgr::Recycle_locked( CookieRef* cref )
     while ( iter != m_cookieMap.end() ) {
         CookieRef* ref = iter->second;
         if ( ref == cref ) {
-            logf( XW_LOGINFO, "%s: erasing cref cid %d", __func__, id );
+            logf( XW_LOGINFO, "%s: erasing cref cid %d", __func__, cid );
             m_cookieMap.erase( iter );
             break;
         }
@@ -505,9 +504,9 @@ CRefMgr::Recycle_locked( CookieRef* cref )
 } /* CRefMgr::Recycle */
 
 void
-CRefMgr::Recycle( CookieID id )
+CRefMgr::Recycle( CookieID cid )
 {
-    CidInfo* cinfo = getCookieRef( id );
+    CidInfo* cinfo = getCookieRef( cid );
     if ( cinfo != NULL ) {
         CookieRef* cref = cinfo->GetRef();
         cref->Lock();
@@ -518,8 +517,7 @@ CRefMgr::Recycle( CookieID id )
 void
 CRefMgr::Recycle( const char* connName )
 {
-    CookieID id = cookieIDForConnName( connName );
-    Recycle( id );
+    Recycle( cookieIDForConnName( connName ) );
 } /* Delete */
 
 #ifdef RELAY_HEARTBEAT
@@ -568,13 +566,13 @@ CookieMapIterator::CookieMapIterator(pthread_rwlock_t* rwlock)
 CookieID
 CookieMapIterator::Next()
 {
-    CookieID id = 0;
+    CookieID cid = 0;
     if ( _iter != CRefMgr::Get()->m_cookieMap.end() ) {
         CookieRef* cref = _iter->second;
-        id = cref->GetCid();
+        cid = cref->GetCid();
         ++_iter;
     }
-    return id;
+    return cid;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -646,17 +644,17 @@ SafeCref::SafeCref( const char* const connName )
     }
 }
 
-SafeCref::SafeCref( CookieID connID, bool failOk )
+SafeCref::SafeCref( CookieID cid, bool failOk )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
-    CidInfo* cinfo = m_mgr->getCookieRef( connID );
+    CidInfo* cinfo = m_mgr->getCookieRef( cid );
     if ( cinfo != NULL ) {       /* known cookie? */
         CookieRef* cref = cinfo->GetRef();
         assert( cinfo->GetCid() == cref->GetCid() );
         m_locked = cref->Lock();
-        m_isValid = m_locked && connID == cref->GetCid();
+        m_isValid = m_locked && cid == cref->GetCid();
         m_cinfo = cinfo;
     }
 }

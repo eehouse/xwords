@@ -74,9 +74,9 @@ class CookieRef {
     friend class SafeCref;
     friend class CookieMapIterator;
 
-    CookieRef( const char* cookie, const char* connName, CookieID id,
+    CookieRef( const char* cookie, const char* connName, CookieID cid,
                int langCode, int nPlayersT, int nPlayersH );
-    void ReInit( const char* cookie, const char* connName, CookieID id,
+    void ReInit( const char* cookie, const char* connName, CookieID cid,
                  int langCode, int nPlayers, int nAlreadyHere );
     ~CookieRef();
 
@@ -116,7 +116,7 @@ class CookieRef {
     static CookieMapIterator GetCookieIterator();
 
     /* Nuke an existing */
-    static void Delete( CookieID id );
+    static void Delete( CookieID cid );
     static void Delete( const char* name );
 
     bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed, 

@@ -80,12 +80,12 @@ using namespace std;
     assert( m_locking_thread == pthread_self() )
 
 void
-CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
+CookieRef::ReInit( const char* cookie, const char* connName, CookieID cid,
                    int langCode, int nPlayers, int nAlreadyHere )
 {
     m_cookie = cookie==NULL?"":cookie;
     m_connName = connName==NULL?"":connName;
-    m_cid = id;
+    m_cid = cid;
     m_curState = XWS_EMPTY;
     m_nPlayersSought = nPlayers;
     m_nPlayersHere = nAlreadyHere;
@@ -111,11 +111,11 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id,
     }
 }
 
-CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id,
+CookieRef::CookieRef( const char* cookie, const char* connName, CookieID cid,
                       int langCode, int nPlayersT, int nAlreadyHere )
 {
     pthread_rwlock_init( &m_socketsRWLock, NULL );
-    ReInit( cookie, connName, id, langCode, nPlayersT, nAlreadyHere );
+    ReInit( cookie, connName, cid, langCode, nPlayersT, nAlreadyHere );
 }
 
 CookieRef::~CookieRef()

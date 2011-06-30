@@ -36,7 +36,7 @@ class CrefInfo {
  public:
     string m_cookie;
     string m_connName;
-    CookieID m_cookieID;
+    CookieID m_cid;
     int m_nPlayersSought;
     int m_nPlayersHere;
     XW_RELAY_STATE m_curState;
@@ -77,7 +77,7 @@ class CRefMgr {
     CookieMapIterator GetCookieIterator();
 
     /* PENDING.  These need to go through SafeCref */
-    void Recycle( CookieID id );
+    void Recycle( CookieID cid );
     void Recycle_locked( CookieRef* cref );
     void Recycle( const char* connName );
     CookieID CookieIdForName( const char* name );
@@ -131,11 +131,11 @@ class CRefMgr {
 
     CidInfo* getMakeCookieRef( const char* const connName, bool* isDead );
 
-    CidInfo* getCookieRef( CookieID cookieID );
+    CidInfo* getCookieRef( CookieID cid );
     CidInfo* getCookieRef( int socket );
     bool checkCookieRef_locked( CookieRef* cref );
-    CidInfo* getCookieRef_impl( CookieID cookieID );
-    CookieRef* AddNew( const char* cookie, const char* connName, CookieID id,
+    CidInfo* getCookieRef_impl( CookieID cid );
+    CookieRef* AddNew( const char* cookie, const char* connName, CookieID cid,
                        int langCode, int nPlayers, int nAlreadyHere );
     CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
                                 HostID hid, int socket, int nPlayersH, 
