@@ -250,6 +250,11 @@ public class CommonPrefs {
                                 true );
     }
 
+    public static boolean getAutoJuggle( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_init_autojuggle, false );
+    }
+
     public static boolean getHideTitleBar( Context context )
     {
         return getPrefsBoolean( context, R.string.key_hide_title, true );

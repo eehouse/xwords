@@ -96,6 +96,10 @@ public class CurGameInfo {
         }
 
         assignDicts();
+
+        if ( CommonPrefs.getAutoJuggle( context ) ) {
+            juggle();
+        }
     }
 
     public CurGameInfo( Context context, CurGameInfo src )

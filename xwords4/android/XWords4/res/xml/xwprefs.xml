@@ -25,6 +25,12 @@
                         android:defaultValue="true"
                         />
 
+    <CheckBoxPreference android:key="@string/key_init_autojuggle"
+                        android:title="@string/init_autojuggle"
+                        android:summary="@string/init_autojuggle_sum"
+                        android:defaultValue="false"
+                        />
+
     <ListPreference android:key="@string/key_default_phonies"
                     android:title="@string/default_phonies"
                     android:entries="@array/phony_names"
