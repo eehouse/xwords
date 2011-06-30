@@ -383,6 +383,12 @@ XWThreadPool::real_listener()
         }
     }
 
+    free( fds );
+    free( stypes );
+#ifdef LOG_POLL
+    free( log );
+#endif
+
     logf( XW_LOGINFO, "real_listener returning" );
     return NULL;
 } /* real_listener */
