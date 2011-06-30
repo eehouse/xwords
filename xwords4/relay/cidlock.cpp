@@ -25,7 +25,7 @@
 #include "cidlock.h"
 #include "mlock.h"
 
-#define CIDLOCK_DEBUG
+// #define CIDLOCK_DEBUG
 
 const set<int>
 CidInfo::GetSockets( void )
@@ -77,7 +77,9 @@ CidLock::print_claimed( const char* caller )
 CidInfo* 
 CidLock::Claim( CookieID cid )
 {
+#ifdef CIDLOCK_DEBUG
     logf( XW_LOGINFO, "%s(%d)", __func__, cid );
+#endif
     CidInfo* info = NULL;
     for ( ; ; ) {
         MutexLock ml( &m_infos_mutex );
@@ -103,10 +105,14 @@ CidLock::Claim( CookieID cid )
             break;
         }
 
+#ifdef CIDLOCK_DEBUG
         logf( XW_LOGINFO, "%s(%d): waiting....", __func__, cid );
+#endif
         pthread_cond_wait( &m_infos_condvar, &m_infos_mutex );
     }
+#ifdef CIDLOCK_DEBUG
     logf( XW_LOGINFO, "%s(%d): DONE", __func__, cid );
+#endif
     return info;
 } /* CidLock::Claim */
 
@@ -114,8 +120,9 @@ CidInfo*
 CidLock::ClaimSocket( int sock )
 {
     CidInfo* info = NULL;
+#ifdef CIDLOCK_DEBUG
     logf( XW_LOGINFO, "%s(sock=%d)", __func__, sock );
-
+#endif
     for ( ; ; ) {
         MutexLock ml( &m_infos_mutex );
 
@@ -136,11 +143,15 @@ CidLock::ClaimSocket( int sock )
         if ( iter == m_infos.end() || NULL != info ) {
             break;
         }
+#ifdef CIDLOCK_DEBUG
         logf( XW_LOGINFO, "%s(sock=%d): waiting....", __func__, sock );
+#endif
         pthread_cond_wait( &m_infos_condvar, &m_infos_mutex );
     }
 
+#ifdef CIDLOCK_DEBUG
     logf( XW_LOGINFO, "%s(%d): DONE", __func__, info? info->GetCid():0 );
+#endif
     return info;
 }
 
@@ -148,7 +159,9 @@ void
 CidLock::Relinquish( CidInfo* claim, bool drop )
 {
     CookieID cid = claim->GetCid();
+#ifdef CIDLOCK_DEBUG
     logf( XW_LOGINFO, "%s(%d,drop=%d)", __func__, cid, drop );
+#endif
 
     MutexLock ml( &m_infos_mutex );
     map< CookieID, CidInfo*>::iterator iter = m_infos.find( cid );
@@ -156,7 +169,9 @@ CidLock::Relinquish( CidInfo* claim, bool drop )
     assert( iter->second == claim );
     assert( claim->GetOwner() == pthread_self() );
     if ( drop ) {
+#ifdef CIDLOCK_DEBUG
         logf( XW_LOGINFO, "%s: deleting %p", __func__, iter->second );
+#endif
         m_infos.erase( iter );
         delete claim;
     } else {
@@ -165,5 +180,7 @@ CidLock::Relinquish( CidInfo* claim, bool drop )
     }
     PRINT_CLAIMED();
     pthread_cond_signal( &m_infos_condvar );
+#ifdef CIDLOCK_DEBUG
     logf( XW_LOGINFO, "%s(%d,drop=%d): DONE", __func__, cid, drop );
+#endif
 }
