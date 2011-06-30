@@ -477,12 +477,14 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
 void
 destroyDicts( PlayerDicts* dicts )
 {
-    DictionaryCtxt** ctxts = dicts->dicts;
-    for ( ; ; ) {
-        if ( !*ctxts ) {
-            break;
+    int ii;
+    DictionaryCtxt** ctxts;
+
+    for ( ctxts = dicts->dicts, ii = 0; 
+          ii < VSIZE(dicts->dicts); 
+          ++ii, ++ctxts ) {
+        if ( NULL != *ctxts ) {
+            dict_destroy( *ctxts );
         }
-        dict_destroy( *ctxts );
-        ++ctxts;
     }
 }
