@@ -185,7 +185,6 @@ parseRelayID( const char* const in, char* buf, HostID* hid )
         strncpy( buf, in, connNameLen );
         buf[connNameLen] = '\0';
         *hid = atoi( hidp+1 );
-        logf( XW_LOGINFO, "%s(%s)=>%s : %d", __func__, in, buf, *hid );
     }
     return ok;
 }
@@ -864,9 +863,15 @@ set_timeouts( int sock )
     tv.tv_usec = 0;    /* microseconds */
 
     result = setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv) );
-    assert( 0 == result );
+    if ( 0 != result ) {
+        logf( XW_LOGERROR, "setsockopt=>%d (%s)", errno, strerror(errno) );
+        assert( 0 );
+    }
     result = setsockopt( sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv) );
-    assert( 0 == result );
+    if ( 0 != result ) {
+        logf( XW_LOGERROR, "setsockopt=>%d (%s)", errno, strerror(errno) );
+        assert( 0 );
+    }
 }
 
 int
