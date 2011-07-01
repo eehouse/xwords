@@ -194,22 +194,6 @@ close_device() {
     unset LOGS[$ID]
 }
 
-kill_from_logs() {
-    CMDS=""
-    while [ $# -gt 0 ]; do
-        LOG=${LOGS[$1]}
-        RELAYID=$(./scripts/relayID.sh $LOG)
-        if [ -n "$RELAYID" ]; then
-            CMDS="$CMDS -d $RELAYID"
-        fi
-        shift
-    done
-    if [ -n "$CMDS" ]; then
-        echo "../relay/rq $CMDS"
-        ../relay/rq -a $HOST $CMDS 2>/dev/null || true
-    fi
-}
-
 kill_from_log() {
     LOG=$1
     RELAYID=$(./scripts/relayID.sh $LOG)
@@ -217,6 +201,7 @@ kill_from_log() {
         ../relay/rq -a $HOST -d $RELAYID 2>/dev/null || true
         return 0                # success
     fi
+    echo "unable to send kill command for $LOG"
     return 1
 }
 
@@ -227,7 +212,7 @@ maybe_resign() {
         if grep -q XWRELAY_ALLHERE $LOG; then
             if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
                 echo "making $LOG $(connName $LOG) resign..."
-                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced"
+                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || true
             fi
         fi
     fi
