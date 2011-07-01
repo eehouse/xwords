@@ -95,6 +95,8 @@ XWThreadPool::Setup( int nThreads, packet_func pFunc, kill_func kFunc )
 
     int result = pthread_create( &thread, NULL, listener_main, this );
     assert( result == 0 );
+    result = pthread_detach( thread );
+    assert( result == 0 );
 }
 
 void
@@ -113,7 +115,6 @@ XWThreadPool::Stop()
 void
 XWThreadPool::AddSocket( int socket, SockType stype )
 {
-    logf( XW_LOGINFO, "%s(%d)", __func__, socket );
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
         m_activeSockets.push_back( pair<int,SockType>(socket, stype) );
@@ -146,7 +147,7 @@ XWThreadPool::CloseSocket( int socket )
 {
 /*     bool do_interrupt = false; */
     if ( !RemoveSocket( socket ) ) {
-        RWWriteLock rwl( &m_activeSocketsRWLock );
+        MutexLock ml( &m_queueMutex );
         deque<QueuePr>::iterator iter = m_queue.begin();
         while ( iter != m_queue.end() ) {
             if ( iter->m_socket == socket ) {
@@ -368,7 +369,6 @@ XWThreadPool::real_listener()
                     }
 
                     if ( 0 != (fds[curfd].revents & (POLLIN | POLLPRI)) ) {
-                        logf( XW_LOGINFO, "enqueuing %d", socket );
                         enqueue( socket, stypes[curfd] );
                     } else {
                         logf( XW_LOGERROR, "odd revents: %x", 
@@ -409,15 +409,12 @@ XWThreadPool::enqueue( int socket, SockType stype, QAction act )
     MutexLock ml( &m_queueMutex );
     m_queue.push_back( pr );
 
-    logf( XW_LOGINFO, "calling pthread_cond_signal" );
     pthread_cond_signal( &m_queueCondVar );
-    /* implicit unlock */
 }
 
 void
 XWThreadPool::grab_elem_locked( QueuePr* prp )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
     bool found = false;
     prp->m_socket = -1;
     deque<QueuePr>::iterator iter;
@@ -433,8 +430,6 @@ XWThreadPool::grab_elem_locked( QueuePr* prp )
     }
 
     print_in_use();
-
-    logf( XW_LOGINFO, "%s()=>%d", __func__, prp->m_socket );
 } /* grab_elem_locked */
 
 void
