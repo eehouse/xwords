@@ -57,7 +57,8 @@ public class NetLaunchInfo {
             room = data.getQueryParameter( "room" );
             String langStr = data.getQueryParameter( "lang" );
             lang = Integer.decode( langStr );
-            nPlayers = 2; // Should this be a param?
+            String np = data.getQueryParameter( "np" );
+            nPlayers = Integer.decode( np );
             m_valid = true;
         } catch ( Exception e ) {
             Utils.logf( "unable to parse \"%s\"", data.toString() );

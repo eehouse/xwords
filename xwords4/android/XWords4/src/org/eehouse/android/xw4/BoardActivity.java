@@ -270,7 +270,8 @@ public class BoardActivity extends XWActivity
                                                  int item ) {
                                 GameUtils.launchInviteActivity( BoardActivity.this,
                                                                 m_room,
-                                                                m_gi.dictLang );
+                                                                m_gi.dictLang,
+                                                                m_gi.nPlayers );
                             }
                         };
                     dialog = new AlertDialog.Builder( this )
