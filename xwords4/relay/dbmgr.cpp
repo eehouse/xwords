@@ -229,7 +229,7 @@ DBMgr::AllDevsAckd( const char* const connName )
     PGresult* result = PQexec( getThreadConn(), query );
     int nTuples = PQntuples( result );
     assert( nTuples <= 1 );
-    bool full = 't' == PQgetvalue( result, 0, 0 )[0];
+    bool full = nTuples == 1 && 't' == PQgetvalue( result, 0, 0 )[0];
     PQclear( result );
     logf( XW_LOGINFO, "%s=>%d", __func__, full );
     return full;
