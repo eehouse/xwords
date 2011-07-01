@@ -8,6 +8,7 @@ $scheme = "newxwgame";
 $host = "10.0.2.2";
 $lang = $_REQUEST["lang"];
 $room = $_REQUEST["room"];
+$np = $_REQUEST["np"];
 
 print <<<EOF
 
@@ -16,7 +17,7 @@ print <<<EOF
 <head>
 <title>Crosswords SMS redirect</title>
 <meta http-equiv="REFRESH"
-    content="0;url=$scheme://$host?room=$room&lang=$lang">
+    content="0;url=$scheme://$host?room=$room&lang=$lang&np=$np">
 </head>
     <body>
     <p>redirecting to Crosswords....</p>
