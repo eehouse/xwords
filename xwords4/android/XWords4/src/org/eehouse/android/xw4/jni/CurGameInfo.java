@@ -310,6 +310,19 @@ public class CurGameInfo {
         return added;
     }
 
+    public void setNPlayers( int nPlayersTotal, int nPlayersHere )
+    {
+        assert( nPlayersTotal < MAX_NUM_PLAYERS );
+        assert( nPlayersHere < nPlayersTotal );
+
+        nPlayers = nPlayersTotal;
+
+        for ( int ii = 0; ii < nPlayersTotal; ++ii ) {
+            players[ii].isLocal = ii < nPlayersHere;
+            assert( !players[ii].isRobot() );
+        }
+    }
+
     public void setFirstLocalName( String name ) {
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             if ( players[ii].isLocal ) {

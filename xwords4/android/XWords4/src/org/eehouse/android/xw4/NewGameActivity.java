@@ -91,11 +91,12 @@ public class NewGameActivity extends XWActivity {
         String room = null;
         String path;
         int[] lang = {0};
+        final int nPlayers = 2; // hard-coded for no-configure case
 
         if ( networked ) {
             Random random = new Random();
             room = String.format( "%X", random.nextInt() ).substring( 0, 4 );
-            path = GameUtils.makeNewNetGame( this, room, lang, 2 );
+            path = GameUtils.makeNewNetGame( this, room, lang, nPlayers, 1 );
         } else {
             path = GameUtils.saveNew( this, new CurGameInfo( this ) );
         }
@@ -103,7 +104,7 @@ public class NewGameActivity extends XWActivity {
         if ( launch ) {
             GameUtils.launchGame( this, path, networked );
             if ( networked ) {
-                GameUtils.launchInviteActivity( this, room, lang[0] );
+                GameUtils.launchInviteActivity( this, room, lang[0], nPlayers );
             }
         } else {
             GameUtils.doConfig( this, path, GameConfig.class );

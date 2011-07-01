@@ -562,6 +562,11 @@
     <string name="invite_msgf">This game is missing %1$d remote
       player[s].  Would you like to invite someone to join -- assuming
       you haven\'t already?</string>
+
+    <string name="invite_multiple">\u0020(You are expecting multiple
+      remote players.  Be sure to address your invitation to
+      that many people.)</string>
+
     <string name="invite_subject">Let\'s play Crosswords</string>
     <string name="invite_bodyf">Tap on this link to start a game:
       %1$s .</string>

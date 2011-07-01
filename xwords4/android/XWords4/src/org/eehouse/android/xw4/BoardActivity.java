@@ -270,7 +270,8 @@ public class BoardActivity extends XWActivity
                                                  int item ) {
                                 GameUtils.launchInviteActivity( BoardActivity.this,
                                                                 m_room,
-                                                                m_gi.dictLang );
+                                                                m_gi.dictLang,
+                                                                m_gi.nPlayers );
                             }
                         };
                     dialog = new AlertDialog.Builder( this )
@@ -296,7 +297,11 @@ public class BoardActivity extends XWActivity
         case DLG_INVITE:
             AlertDialog ad = (AlertDialog)dialog;
             String format = getString( R.string.invite_msgf );
-            ad.setMessage( String.format( format, m_missing) );
+            String message = String.format( format, m_missing );
+            if ( m_missing > 1 ) {
+                message += getString( R.string.invite_multiple );
+            }
+            ad.setMessage( message );
             break;
         default:
             super.onPrepareDialog( id, dialog );
@@ -706,7 +711,7 @@ public class BoardActivity extends XWActivity
 
             // Let's only invite for two-person games for now.  Simple
             // case first....
-            if ( nMissing == 1 /* && is_2_person_game() */ && !m_haveInvited ) {
+            if ( !m_haveInvited ) {
                 m_haveInvited = true;
                 m_room = room;
                 m_missing = nMissing;

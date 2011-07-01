@@ -356,7 +356,8 @@ public class GameUtils {
     }
 
     public static String makeNewNetGame( Context context, String room, 
-                                         int[] lang, int nPlayers )
+                                         int[] lang, int nPlayersT, 
+                                         int nPlayersH )
     {
         CommsAddrRec addr = new CommsAddrRec( context );
         addr.ip_relay_invite = room;
@@ -364,10 +365,11 @@ public class GameUtils {
         CurGameInfo gi = new CurGameInfo( context, true );
         gi.setLang( lang[0] );
         lang[0] = gi.dictLang;
+        gi.setNPlayers( nPlayersT, nPlayersH );
         gi.juggle();
         // Will need to add a setNPlayers() method to gi to make this
         // work
-        Assert.assertTrue( gi.nPlayers == nPlayers );
+        Assert.assertTrue( gi.nPlayers == nPlayersT );
         String path = saveNew( context, gi );
 
         GameLock lock = new GameLock( path, true ).lock();
@@ -381,20 +383,21 @@ public class GameUtils {
                                          int lang, int nPlayers )
     {
         int[] langarr = { lang };
-        return makeNewNetGame( context, room, langarr, nPlayers );
+        return makeNewNetGame( context, room, langarr, nPlayers, 1 );
     }
 
     public static String makeNewNetGame( Context context, NetLaunchInfo info )
     {
-        return makeNewNetGame( context, info.room, info.lang, info.nPlayers );
+        return makeNewNetGame( context, info.room, info.lang, 
+                               info.nPlayers );
     }
 
     public static void launchInviteActivity( Context context, String room, 
-                                             int lang )
+                                             int lang, int nPlayers )
     {
         Random random = new Random();
         Uri gameUri = NetLaunchInfo.makeLaunchUri( context, room,
-                                                   lang, 2 );
+                                                   lang, nPlayers );
 
         if ( null != gameUri ) {
             Intent intent = new Intent( Intent.ACTION_SEND );
