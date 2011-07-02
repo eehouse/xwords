@@ -373,7 +373,6 @@ CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
         }
         break;
     }
-    assert( cinfo->GetRef() );
     return cinfo;
 }
 
@@ -405,7 +404,15 @@ CRefMgr::PrintSocketInfo( int socket, string& out )
 CidInfo*
 CRefMgr::getCookieRef( CookieID cid )
 {
-    return m_cidlock->Claim( cid );
+    CidInfo* cinfo = NULL;
+    for ( ; ; ) {
+        cinfo = m_cidlock->Claim( cid );
+        if ( NULL != cinfo->GetRef() ) {
+            break;
+        }
+        m_cidlock->Relinquish( cinfo, true );
+    }
+    return cinfo;
 } /* getCookieRef */
 
 CidInfo*
@@ -627,7 +634,7 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
     }
 }
 
-/* ConnName case -- must exist */
+/* ConnName case -- must exist (unless DB record's been removed */
 SafeCref::SafeCref( const char* const connName )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
@@ -635,7 +642,7 @@ SafeCref::SafeCref( const char* const connName )
 {
     bool isDead = false;
     CidInfo* cinfo = m_mgr->getMakeCookieRef( connName, &isDead );
-    if ( cinfo != NULL ) {
+    if ( NULL != cinfo && NULL != cinfo->GetRef() ) {
         assert( cinfo->GetCid() == cinfo->GetRef()->GetCid() );
         m_locked = cinfo->GetRef()->Lock();
         m_cinfo = cinfo;
