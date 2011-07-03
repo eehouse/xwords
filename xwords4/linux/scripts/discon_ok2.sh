@@ -8,10 +8,12 @@ PORT=${PORT:-10997}
 TIMEOUT=${TIMEOUT:-$((NGAMES*60+500))}
 DICTS=${DICTS:-dict.xwd}
 SAVE_GOOD=${SAVE_GOOD:-YES}
+MINDEVS=${MINDEVS:-2}
 MAXDEVS=${MAXDEVS:-4}
 RESIGN_RATIO=${RESIGN_RATIO:-$((NGAMES*2))}
 DROP_N=${DROP_N:-0}
 MINRUN=2
+ONE_PER_ROOM=""
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -53,9 +55,11 @@ USE_GTK=${USE_GTK:-FALSE}
 
 declare -A PIDS
 declare -A CMDS
+declare -A ROOMS
 declare -A FILES
 declare -A LOGS
 declare -A MINEND
+declare -A ROOM_PIDS
 
 PLAT_PARMS=""
 if [ $USE_GTK = FALSE ]; then
@@ -65,7 +69,7 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MAXDEVS RESIGN_RATIO DROP_N; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MINDEVS MAXDEVS RESIGN_RATIO DROP_N; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 1
@@ -110,8 +114,10 @@ build_cmds() {
     COUNTER=0
     for GAME in $(seq 1 $NGAMES); do
         ROOM=$(printf "ROOM_%.3d" $((GAME % NROOMS)))
+        ROOM_PIDS[$ROOM]=0
         check_room $ROOM
         NDEVS=$(( $RANDOM % ($MAXDEVS-1) + 2 ))
+        [ $NDEVS -lt $MINDEVS ] && NDEVS=$MINDEVS
         DICT=${DICTS_ARR[$((GAME%${#DICTS_ARR[*]}))]}
         # make one in three games public
         PUBLIC=""
@@ -132,6 +138,7 @@ build_cmds() {
             CMD="$CMD --file $FILE --slow-robot 1:3 --drop-nth-packet $DROP_N $PLAT_PARMS"
             CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
+            ROOMS[$COUNTER]=$ROOM
             FILES[$COUNTER]=$FILE
             LOGS[$COUNTER]=$LOG
             PIDS[$COUNTER]=0
@@ -159,11 +166,16 @@ read_resume_cmds() {
                     FILES[$COUNTER]=$2
                     shift
                     ;;
+                --room)
+                    ROOMS[$COUNTER]=$2
+                    shift
+                    ;;
             esac
             shift
         done
         COUNTER=$((COUNTER+1))
     done
+    ROOM_PIDS[$ROOM]=0
 }
 
 launch() {
@@ -176,9 +188,12 @@ close_device() {
     ID=$1
     MVTO=$2
     REASON="$3"
-    if [ ${PIDS[$ID]} -ne 0 ]; then
+    PID=${PIDS[$ID]}
+    if [ $PID -ne 0 ]; then
         kill ${PIDS[$ID]} 2>/dev/null
         wait ${PIDS[$ID]}
+        ROOM=${ROOMS[$ID]}
+        [ ${ROOM_PIDS[$ROOM]} -eq $PID ] && ROOM_PIDS[$ROOM]=0
     fi
     unset PIDS[$ID]
     unset CMDS[$ID]
@@ -192,22 +207,7 @@ close_device() {
     fi
     unset FILES[$ID]
     unset LOGS[$ID]
-}
-
-kill_from_logs() {
-    CMDS=""
-    while [ $# -gt 0 ]; do
-        LOG=${LOGS[$1]}
-        RELAYID=$(./scripts/relayID.sh $LOG)
-        if [ -n "$RELAYID" ]; then
-            CMDS="$CMDS -d $RELAYID"
-        fi
-        shift
-    done
-    if [ -n "$CMDS" ]; then
-        echo "../relay/rq $CMDS"
-        ../relay/rq -a $HOST $CMDS 2>/dev/null || true
-    fi
+    unset ROOMS[$ID]
 }
 
 kill_from_log() {
@@ -217,6 +217,7 @@ kill_from_log() {
         ../relay/rq -a $HOST -d $RELAYID 2>/dev/null || true
         return 0                # success
     fi
+    echo "unable to send kill command for $LOG"
     return 1
 }
 
@@ -227,7 +228,7 @@ maybe_resign() {
         if grep -q XWRELAY_ALLHERE $LOG; then
             if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
                 echo "making $LOG $(connName $LOG) resign..."
-                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced"
+                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || true
             fi
         fi
     fi
@@ -296,15 +297,23 @@ run_cmds() {
         INDX=$(($RANDOM%COUNT))
         KEYS=( ${!CMDS[*]} )
         KEY=${KEYS[$INDX]}
+        ROOM=${ROOMS[$KEY]}
         if [ 0 -eq ${PIDS[$KEY]} ]; then
+            if [ -n "$ONE_PER_ROOM" -a 0 -ne ${ROOM_PIDS[$ROOM]} ]; then
+                continue
+            fi
             launch $KEY &
-            PIDS[$KEY]=$!
+            PID=$!
+            PIDS[$KEY]=$PID
+            ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
         else
             SLEEP=$((${MINEND[$KEY]} - $NOW))
             [ $SLEEP -gt 0 ] && sleep $SLEEP
             kill ${PIDS[$KEY]} || true
+            wait ${PIDS[$KEY]}
             PIDS[$KEY]=0
+            ROOM_PIDS[$ROOM]=0
             [ "$DROP_N" -ge 0 ] && increment_drop $KEY
             check_game $KEY
         fi

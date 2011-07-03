@@ -19,6 +19,8 @@ while [ $# -ge 1 ]; do
         echo "CONNNAME not found in $LOG" >&2
     elif [ -z "${HOSTID}" ]; then
         echo "HOSTID not found in $LOG" >&2
+    elif [ "${HOSTID}" -eq 0 ]; then
+        echo "HOSTID 0 in $LOG; try later" >&2
     elif [ -z "${SEED}" ]; then
         echo "SEED not found in $LOG" >&2
     else
