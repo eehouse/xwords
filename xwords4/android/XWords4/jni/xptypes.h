@@ -88,9 +88,10 @@ void and_assert( const char* test, int line, const char* file, const char* func 
 #define XP_STATUSF XP_DEBUGF 
 
 #ifdef ENABLE_LOGGING
-#define XP_DEBUGF(...) __android_log_print( ANDROID_LOG_DEBUG, "tag", __VA_ARGS__)
-#define XP_LOGF(...) __android_log_print( ANDROID_LOG_DEBUG, "tag", __VA_ARGS__)
-#define XP_WARNF(...)  __android_log_print( ANDROID_LOG_DEBUG, "tag", __VA_ARGS__)
+void android_debugf(const char*, ...) __attribute__ ((format (printf, 1, 2)));
+#define XP_DEBUGF(...) android_debugf( __VA_ARGS__ )
+#define XP_LOGF(...) android_debugf( __VA_ARGS__ )
+#define XP_WARNF(...) android_debugf( __VA_ARGS__ )
 #else
 #define XP_DEBUGF(...)
 #define XP_LOGF(...)
