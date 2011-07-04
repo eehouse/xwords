@@ -62,13 +62,19 @@ public class RelayReceiver extends BroadcastReceiver {
         }
     }
 
-    public static void RestartTimer( Context context )
+    public static void RestartTimer( Context context, boolean force )
     {
         RestartTimer( context, 
-                      1000 * CommonPrefs.getProxyInterval( context ) );
+                      1000 * CommonPrefs.getProxyInterval( context ), force );
     }
 
-    public static void RestartTimer( Context context, long interval_millis )
+    public static void RestartTimer( Context context )
+    {
+        RestartTimer( context, false );
+    }
+
+    public static void RestartTimer( Context context, long interval_millis, 
+                                     boolean force )
     {
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
@@ -76,7 +82,7 @@ public class RelayReceiver extends BroadcastReceiver {
         Intent intent = new Intent( context, RelayReceiver.class );
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
-        if ( interval_millis > 0 ) {
+        if ( interval_millis > 0 || force ) {
             // Utils.logf( "setting alarm for %d millis", interval_millis );
             am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
                                     0, // first firing
@@ -85,4 +91,10 @@ public class RelayReceiver extends BroadcastReceiver {
             am.cancel( pi );
         }
     }
+
+    public static void RestartTimer( Context context, long interval_millis )
+    {
+        RestartTimer( context, interval_millis, false );
+    }
+
 }
