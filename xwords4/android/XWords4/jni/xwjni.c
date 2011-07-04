@@ -1003,7 +1003,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
                                               jstream );
     result = comms_checkIncomingStream( state->game.comms, stream, NULL );
     if ( result ) {
-        (void)server_receiveMessage( state->game.server, stream );
+        ServerCtxt* server = state->game.server;
+        server_do( server );    /* in case work's pending */
+        (void)server_receiveMessage( server, stream );
     }
 
     stream_destroy( stream );
