@@ -20,14 +20,10 @@
 #ifndef _STATES_H_
 #define _STATES_H_
 
-
-
-
-
-typedef enum {
+enum {
     XWSTATE_NONE,
     XWSTATE_BEGIN,
-    __UNUSED1,              /*XWSTATE_POOL_INITED,*/
+    __UNUSED1,                    /* was XWSTATE_POOL_INITED */
     XWSTATE_NEED_SHOWSCORE,       /* client-only */
     XWSTATE_WAITING_ALL_REG,      /* includes waiting for dict from server */
     XWSTATE_RECEIVED_ALL_REG,     /* includes waiting for dict from server */
@@ -37,8 +33,9 @@ typedef enum {
     XWSTATE_NEEDSEND_ENDGAME,
     XWSTATE_INTURN,
     XWSTATE_GAMEOVER
-    
-} XW_State;
+};
+typedef XP_U8 XW_State;
+#define XWSTATE_NBITS 4
 
 /* Game starts out in BEGIN.  If the server expects other players, it goes
  * into XWSTATE_WAITING_ALL_REG.  Likewise goes any client waiting to hear
