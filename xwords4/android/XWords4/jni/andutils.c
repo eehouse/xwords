@@ -18,6 +18,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <sys/time.h>
+#include <time.h>
+
 #include "andutils.h"
 
 #include "comtypes.h"
@@ -465,6 +468,33 @@ and_empty_stream( MPFORMAL AndGlobals* globals )
                                             globals, 0, NULL );
     return stream;
 }
+
+#ifdef DEBUG
+void 
+android_debugf( const char* format, ... )
+{
+    char buf[1024];
+    va_list ap;
+    int len;
+    struct tm* timp;
+    struct timeval tv;
+    struct timezone tz;
+
+    gettimeofday( &tv, &tz );
+    timp = localtime( &tv.tv_sec );
+
+    len = snprintf( buf, sizeof(buf), "%.2d:%.2d:%.2d: ", 
+                    timp->tm_hour, timp->tm_min, timp->tm_sec );
+    if ( len < sizeof(buf) ) {
+        va_start(ap, format);
+        vsnprintf( buf + len, sizeof(buf)-len, format, ap );
+        va_end(ap);
+    }
+    
+    (void)__android_log_write( ANDROID_LOG_DEBUG, "xw4", buf );
+}
+#endif
+
 
 /* #ifdef DEBUG */
 /* XP_U32 */
