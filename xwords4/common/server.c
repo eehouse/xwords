@@ -75,20 +75,17 @@ typedef struct ServerVolatiles {
     void* turnChangeData;
     GameOverListener gameOverListener;
     void* gameOverData;
-    XW_State stateAfterShow;          /* do I need to serialize this?  What if
-                                         someone quits before I can show the
-                                         scores?  PENDING(ehouse) */
     XP_Bool showPrevMove;
 } ServerVolatiles;
 
 typedef struct ServerNonvolatiles {
     XP_U8 nDevices;
     XW_State gameState;
+    XW_State stateAfterShow;
     XP_S8 currentTurn; /* invalid when game is over */
     XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
     XP_Bool sortNewTiles;
-
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16 robotThinkMin, robotThinkMax;   /* not saved (yet) */
 #endif
@@ -177,7 +174,7 @@ getStateStr( XW_State st )
 }
 #endif
 
-#if 0
+#ifdef DEBUG
 static void
 logNewState( XW_State old, XW_State newst )
 {
@@ -258,46 +255,52 @@ server_make( MPFORMAL ModelCtxt* model, CommsCtxt* comms, XW_UtilCtxt* util )
 static void
 getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
-    XP_U16 i;
+    XP_U16 ii;
+    XP_U16 version = stream_getVersion( stream );
 
-    /* This should go away when stream format changes */
-    (void)stream_getBits( stream, 3 ); /* was npassesinrow */
+    if ( version < STREAM_VERS_SERVER_SAVES_TOSHOW ) {
+        /* no longer used */
+        (void)stream_getBits( stream, 3 ); /* was npassesinrow */
+    }
 
     nv->nDevices = (XP_U8)stream_getBits( stream, NDEVICES_NBITS );
-    if ( stream_getVersion( stream ) > STREAM_VERS_41B4 ) {
+    if ( version > STREAM_VERS_41B4 ) {
         ++nv->nDevices;
     }
 
     XP_ASSERT( XWSTATE_GAMEOVER < 1<<4 );
-    nv->gameState = (XW_State)stream_getBits( stream, 4 );
+    nv->gameState = (XW_State)stream_getBits( stream, XWSTATE_NBITS );
+    if ( version >= STREAM_VERS_SERVER_SAVES_TOSHOW ) {
+        nv->stateAfterShow = (XW_State)stream_getBits( stream, XWSTATE_NBITS );
+    }
 
     nv->currentTurn = (XP_S8)stream_getBits( stream, NPLAYERS_NBITS ) - 1;
     nv->pendingRegistrations = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        nv->addresses[i].channelNo = (XP_PlayerAddr)stream_getBits( stream,
-                                                                    16 );
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        nv->addresses[ii].channelNo =
+            (XP_PlayerAddr)stream_getBits( stream, 16 );
     }
 } /* getNV */
 
 static void
 putNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
-    XP_U16 i;
+    XP_U16 ii;
 
-    stream_putBits( stream, 3, 0 ); /* was nPassesInRow */
     /* number of players is upper limit on device count */
     stream_putBits( stream, NDEVICES_NBITS, nv->nDevices-1 );
 
     XP_ASSERT( XWSTATE_GAMEOVER < 1<<4 );
-    stream_putBits( stream, 4, nv->gameState );
+    stream_putBits( stream, XWSTATE_NBITS, nv->gameState );
+    stream_putBits( stream, XWSTATE_NBITS, nv->stateAfterShow );
 
     /* +1: make -1 (NOTURN) into a positive number */
     stream_putBits( stream, NPLAYERS_NBITS, nv->currentTurn+1 );
     stream_putBits( stream, NPLAYERS_NBITS, nv->pendingRegistrations );
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        stream_putBits( stream, 16, nv->addresses[i].channelNo );
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        stream_putBits( stream, 16, nv->addresses[ii].channelNo );
     }
 } /* putNV */
 
@@ -851,7 +854,7 @@ showPrevScore( ServerCtxt* server )
         (void)util_userQuery( util, QUERY_ROBOT_MOVE, stream );
         stream_destroy( stream );
     }
-    SETSTATE( server, server->vol.stateAfterShow );
+    SETSTATE( server, server->nv.stateAfterShow );
 } /* showPrevScore */
 
 XP_Bool
@@ -1073,7 +1076,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         stream_setVersion( stream, streamVersion );
 
         gameID = stream_getU32( stream );
-        XP_STATUSF( "read gameID of %lx; calling comms_setConnID", gameID );
+        XP_LOGF( "read gameID of %lx; calling comms_setConnID", gameID );
         server->vol.gi->gameID = gameID;
         comms_setConnID( server->vol.comms, gameID );
 
@@ -1671,7 +1674,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
     if ( server->vol.showPrevMove ) {
         server->vol.showPrevMove = XP_FALSE;
         if ( server->nv.showRobotScores ) {
-            server->vol.stateAfterShow = server->nv.gameState;
+            server->nv.stateAfterShow = server->nv.gameState;
             SETSTATE( server, XWSTATE_NEED_SHOWSCORE );
             moreToDo = XP_TRUE;
         }
@@ -1769,7 +1772,7 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
 
         if ( gi->timerEnabled ) {
             stream_putU16( stream, gi->players[turn].secondsUsed );
-            XP_STATUSF("*** wrote secondsUsed for player %d: %d", 
+            XP_LOGF("%s: wrote secondsUsed for player %d: %d", __func__,
                        turn, gi->players[turn].secondsUsed );
         } else {
             XP_ASSERT( gi->players[turn].secondsUsed == 0 );
@@ -1964,6 +1967,7 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     XWStreamCtxt* mvStream = NULL;
 
     moveOk = XWSTATE_INTURN == server->nv.gameState;
+    XP_ASSERT( moveOk );  /* message permanently lost if dropped here! */
     if ( moveOk ) {
         readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
                       &tradedTiles, &isLegal ); /* modifies model */
