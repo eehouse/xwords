@@ -14,6 +14,7 @@ RESIGN_RATIO=${RESIGN_RATIO:-$((NGAMES*2))}
 DROP_N=${DROP_N:-0}
 MINRUN=2
 ONE_PER_ROOM=""
+ALL_VIA_RQ=${ALL_VIA_RQ:-FALSE}
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -60,6 +61,9 @@ declare -A FILES
 declare -A LOGS
 declare -A MINEND
 declare -A ROOM_PIDS
+# if [ TRUE = "$ALL_VIA_RQ" ]; then
+#     declare -A PIPES
+# fi
 
 PLAT_PARMS=""
 if [ $USE_GTK = FALSE ]; then
@@ -69,7 +73,7 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MINDEVS MAXDEVS RESIGN_RATIO DROP_N; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MINDEVS MAXDEVS RESIGN_RATIO DROP_N ALL_VIA_RQ; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 1
@@ -135,7 +139,9 @@ build_cmds() {
             CMD="./obj_linux_memdbg/xwords --room $ROOM"
             CMD="$CMD --robot ${NAMES[$DEV]} --robot-iq $((1 + (RANDOM%100))) "
             CMD="$CMD $OTHERS --game-dict $DICT --port $PORT --host $HOST "
-            CMD="$CMD --file $FILE --slow-robot 1:3 --drop-nth-packet $DROP_N $PLAT_PARMS"
+            CMD="$CMD --file $FILE --slow-robot 1:3"
+            CMD="$CMD --drop-nth-packet $DROP_N $PLAT_PARMS"
+
             CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
             ROOMS[$COUNTER]=$ROOM
@@ -184,6 +190,15 @@ launch() {
     exec $CMD >/dev/null 2>>$LOG
 }
 
+# launch_via_rq() {
+#      KEY=$1
+#      RELAYID=$2
+#      PIPE=${PIPES[$KEY]}
+#      ../relay/rq -f $RELAYID -o $PIPE &
+#      CMD="${CMDS[$KEY]}"
+#      exec $CMD >/dev/null 2>>$LOG
+# }
+
 close_device() {
     ID=$1
     MVTO=$2
@@ -212,7 +227,7 @@ close_device() {
 
 kill_from_log() {
     LOG=$1
-    RELAYID=$(./scripts/relayID.sh $LOG)
+    RELAYID=$(./scripts/relayID.sh --long $LOG)
     if [ -n "$RELAYID" ]; then
         ../relay/rq -a $HOST -d $RELAYID 2>/dev/null || true
         return 0                # success
@@ -329,6 +344,55 @@ run_cmds() {
     fi
 }
 
+# add_pipe() {
+#     KEY=$1
+#     CMD=${CMDS[$KEY]}
+#     LOG=${LOGS[$KEY]}
+#     PIPE=${LOG/LOG.txt/pipe}
+#     PIPES[$KEY]=$PIPE
+#     echo "mkfifo $PIPE"
+#     mkfifo $PIPE
+#     CMDS[$KEY]="$CMD --with-pipe $PIPE"
+#     echo ${CMDS[$KEY]}
+# }
+
+run_via_rq() {
+    # launch then kill all games to give chance to hook up
+    for KEY in ${!CMDS[*]}; do
+        echo "launching $KEY"
+        launch $KEY &
+        PID=$!
+        sleep 1
+        kill $PID
+        wait $PID
+        # add_pipe $KEY
+    done
+
+    echo "now running via rq"
+    # then run them
+    while :; do
+        COUNT=${#CMDS[*]}
+        [ 0 -ge $COUNT ] && break
+
+        INDX=$(($RANDOM%COUNT))
+        KEYS=( ${!CMDS[*]} )
+        KEY=${KEYS[$INDX]}
+        CMD=${CMDS[$KEY]}
+            
+        RELAYID=$(./scripts/relayID.sh --short ${LOGS[$KEY]})
+        MSG_COUNT=$(../relay/rq -a $HOST -m $RELAYID 2>/dev/null | sed 's,^.*-- ,,')
+        if [ $MSG_COUNT -gt 0 ]; then
+            launch $KEY &
+            PID=$!
+            sleep 2
+            kill $PID || true
+            wait $PID
+        fi
+        [ "$DROP_N" -ge 0 ] && increment_drop $KEY
+        check_game $KEY
+    done
+} # run_via_rq
+
 print_stats() {
     :
 }
@@ -336,7 +400,11 @@ print_stats() {
 echo "*********$0 starting: $(date)**************"
 STARTTIME=$(date +%s)
 [ -z "$RESUME" ] && build_cmds || read_resume_cmds
-run_cmds
+if [ TRUE = "$ALL_VIA_RQ" ]; then
+    run_via_rq
+else
+    run_cmds
+fi
 print_stats
 
 wait
