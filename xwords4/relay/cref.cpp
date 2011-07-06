@@ -614,7 +614,7 @@ CookieRef::handleEvents()
                     HostID hid;
                     if ( increasePlayerCounts( &evt, false, &hid ) ) {
                         setAllConnectedTimer();
-                        sendResponse( &evt, takeAction != XWA_SEND_1ST_RERSP );
+                        sendResponse( &evt, true );
                         setAckTimer( hid );
                     }
                 }

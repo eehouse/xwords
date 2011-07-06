@@ -122,8 +122,6 @@ typedef enum {
 typedef enum {
     XWA_NONE
 
-    ,XWA_SEND_1ST_RERSP
-
     ,XWA_SEND_DUP_ROOM          /* host comes in while game open */
     ,XWA_SEND_NO_ROOM           /* guest comes in when no game open */
     ,XWA_SEND_TOO_MANY
