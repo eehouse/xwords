@@ -131,7 +131,7 @@ class CRefMgr {
 
     CidInfo* getMakeCookieRef( const char* const connName, bool* isDead );
 
-    CidInfo* getCookieRef( CookieID cid );
+    CidInfo* getCookieRef( CookieID cid, bool failOk = false );
     CidInfo* getCookieRef( int socket );
     bool checkCookieRef_locked( CookieRef* cref );
     CidInfo* getCookieRef_impl( CookieID cid );
