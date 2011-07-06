@@ -540,6 +540,7 @@ public class BoardActivity extends XWActivity
             doToast = true;
             break;
 
+        case DEADGAME:
         case DELETED:
             strID = R.string.msg_dev_deleted;
             dlgID = DLG_DELETED;
