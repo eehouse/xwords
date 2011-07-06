@@ -175,7 +175,10 @@ CidLock::Relinquish( CidInfo* claim, bool drop )
         m_infos.erase( iter );
         delete claim;
     } else {
-        claim->SetSockets( claim->GetRef()->GetSockets() ); /* cache these */
+        CookieRef* ref = claim->GetRef();
+        if ( NULL != ref ) {
+            claim->SetSockets( ref->GetSockets() ); /* cache these */
+        }
         claim->SetOwner( 0 );
     }
     PRINT_CLAIMED();
