@@ -57,6 +57,7 @@ class DBMgr {
     HostID AddDevice( const char* const connName, HostID curID,
                       int nToAdd, unsigned short seed, bool unAckd );
     void NoteAckd( const char* const connName, HostID id );
+    HostID HIDForSeed( const char* const connName, unsigned short seed );
     bool RmDeviceByHid( const char* const connName, HostID id );
     void RmDeviceBySeed( const char* const connName, unsigned short seed );
     bool HaveDevice( const char* const connName, HostID id, int seed );

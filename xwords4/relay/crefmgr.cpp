@@ -402,12 +402,14 @@ CRefMgr::PrintSocketInfo( int socket, string& out )
 }
 
 CidInfo*
-CRefMgr::getCookieRef( CookieID cid )
+CRefMgr::getCookieRef( CookieID cid, bool failOk )
 {
     CidInfo* cinfo = NULL;
     for ( ; ; ) {
         cinfo = m_cidlock->Claim( cid );
         if ( NULL != cinfo->GetRef() ) {
+            break;
+        } else if ( failOk ) {
             break;
         }
         m_cidlock->Relinquish( cinfo, true );
@@ -655,13 +657,16 @@ SafeCref::SafeCref( CookieID cid, bool failOk )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
+    , m_locked( false )
 {
-    CidInfo* cinfo = m_mgr->getCookieRef( cid );
+    CidInfo* cinfo = m_mgr->getCookieRef( cid, failOk );
     if ( cinfo != NULL ) {       /* known cookie? */
         CookieRef* cref = cinfo->GetRef();
-        assert( cinfo->GetCid() == cref->GetCid() );
-        m_locked = cref->Lock();
-        m_isValid = m_locked && cid == cref->GetCid();
+        if ( NULL != cref ) {
+            assert( cinfo->GetCid() == cref->GetCid() );
+            m_locked = cref->Lock();
+            m_isValid = m_locked && cid == cref->GetCid();
+        }
         m_cinfo = cinfo;
     }
 }
@@ -684,7 +689,7 @@ SafeCref::SafeCref( int socket )
 SafeCref::~SafeCref()
 {
     if ( m_cinfo != NULL ) {
-        bool recycle = false;
+        bool recycle = true;
         if ( m_locked ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( m_cinfo->GetCid() == cref->GetCid() );

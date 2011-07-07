@@ -289,9 +289,10 @@ DBMgr::RmDeviceByHid( const char* connName, HostID hid )
     return execSql( query );
 }
 
-void
-DBMgr::RmDeviceBySeed( const char* const connName, unsigned short seed )
+HostID
+DBMgr::HIDForSeed( const char* const connName, unsigned short seed )
 {
+    HostID hid = HOST_ID_NONE;
     char seeds[128] = {0};
     const char* fmt = "SELECT seeds FROM " GAMES_TABLE
         " WHERE connName = '%s'"
@@ -316,13 +317,24 @@ DBMgr::RmDeviceBySeed( const char* const connName, unsigned short seed )
             } else {
                 int asint = atoi( tok );
                 if ( asint == seed ) {
-                    RmDeviceByHid( connName, ii + 1 );
+                    hid = ii + 1;
                     break;
                 }
             }
         }
     } else {
         assert(0);              /* but don't ship with this!!!! */
+    }
+
+    return hid;
+}
+
+void
+DBMgr::RmDeviceBySeed( const char* const connName, unsigned short seed )
+{
+    HostID hid = HIDForSeed( connName, seed );
+    if ( hid != HOST_ID_NONE ) {
+        RmDeviceByHid( connName, hid );
     }
 } /* RmDeviceSeed */
 
@@ -639,8 +651,8 @@ formatParams( char* paramValues[], int nParams, const char* fmt, char* buf,
 static int
 here_less_seed( const char* seeds, int sumPerDevice, unsigned short seed )
 {
-    logf( XW_LOGINFO, "%s: find %x in \"%s\", sub from \"%d\"", __func__, 
-          seed, seeds, sumPerDevice );
+    logf( XW_LOGINFO, "%s: find %x(%d) in \"%s\", sub from \"%d\"", __func__, 
+          seed, seed, seeds, sumPerDevice );
     return sumPerDevice - 1;    /* FIXME */
 }
 
