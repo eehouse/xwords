@@ -206,15 +206,20 @@ class SafeCref {
         }
     }
     bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
-                    int seed ) {
+                    int seed, XWREASON* errp ) {
+        bool success = false;
+        *errp = XWRELAY_ERROR_NONE;
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            return cref->_Reconnect( socket, srcID, nPlayersH, nPlayersS, 
-                                     seed, m_dead );
-        } else {
-            return false;
+            if ( m_dead ) {
+                *errp = XWRELAY_ERROR_DEADGAME;
+            } else {
+                success = cref->_Reconnect( socket, srcID, nPlayersH, 
+                                            nPlayersS, seed, m_dead );
+            }
         }
+        return success;
     }
     void Disconnect(int socket, HostID hostID ) {
         if ( IsValid() ) {

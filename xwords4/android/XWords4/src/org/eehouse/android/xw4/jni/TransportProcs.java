@@ -48,6 +48,8 @@ public interface TransportProcs {
             ,DUP_ROOM
             ,TOO_MANY
             ,DELETED
+            ,NORECONN
+            ,DEADGAME
     };
     void relayErrorProc( XWRELAY_ERROR relayErr );
 

@@ -141,6 +141,7 @@ enum {
     ,XWRELAY_ERROR_TOO_MANY
     ,XWRELAY_ERROR_DELETED
     ,XWRELAY_ERROR_NORECONN     /* you can't reconnect; reset and try CONNECTING again  */
+    ,XWRELAY_ERROR_DEADGAME     /* Some device in this game has been deleted */
     ,XWRELAY_ERROR_LASTERR
 }
 #ifndef CANT_DO_TYPEDEF
