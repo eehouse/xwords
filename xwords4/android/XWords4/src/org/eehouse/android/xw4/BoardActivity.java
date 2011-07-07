@@ -69,6 +69,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_DELETED = DLG_OKONLY + 8;
 
     private static final int CHAT_REQUEST = 1;
+    private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -77,6 +78,7 @@ public class BoardActivity extends XWActivity
     CommsTransport m_xport;
     private Handler m_handler;
     private TimerRunnable[] m_timers;
+    private Runnable m_screenTimer;
     private String m_name;
     private Toolbar m_toolbar;
     private ArrayList<String> m_pendingChats = new ArrayList<String>();
@@ -1293,6 +1295,21 @@ public class BoardActivity extends XWActivity
     {
         boolean keepOn = CommonPrefs.getKeepScreenOn( this );
         m_view.setKeepScreenOn( keepOn );
+
+        if ( keepOn ) {
+            if ( null == m_screenTimer ) {
+                m_screenTimer = new Runnable() {
+                        public void run() {
+                            Utils.logf( "run() called for setKeepScreenOn()" );
+                            if ( null != m_view ) {
+                                m_view.setKeepScreenOn( false );
+                            }
+                        }
+                    };
+            }
+            m_handler.removeCallbacks( m_screenTimer ); // needed?
+            m_handler.postDelayed( m_screenTimer, SCREEN_ON_TIME );
+        }
     }
 
 } // class BoardActivity

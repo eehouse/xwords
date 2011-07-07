@@ -212,7 +212,7 @@
     <string name="show_arrow_summary">Tapped rack tiles land on this
       arrow when it is visible</string>
     <string name="keep_screenon">Keep screen on</string>
-    <string name="keep_screenon_summary">Never dim or lock board screen</string>
+    <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
     <string name="explain_robot">Explain other moves</string>
     <string name="explain_robot_summary">Display score summary after
       every robot or remote turn</string>
