@@ -12,6 +12,9 @@
   <li>By request: Add preference to leave screen on while you're 
   thinking about a move</li>
 
+  <li>By request: Add preference to auto-juggle players when creating 
+  a new game</li>
+
   <li>Fix various rare crashers reported via devices through google</li>
 
   <li>fix nasty memory leak inside native code introduced when players 
