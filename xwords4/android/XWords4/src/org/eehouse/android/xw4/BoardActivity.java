@@ -307,6 +307,7 @@ public class BoardActivity extends XWActivity
     protected void onResume()
     {
         super.onResume();
+        setKeepScreenOn();
         loadGame();
     }
 
