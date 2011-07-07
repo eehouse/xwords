@@ -291,6 +291,7 @@ public class BoardActivity extends XWActivity
         m_name = getIntent().getStringExtra( INTENT_KEY_NAME );
 
         setBackgroundColor();
+        setKeepScreenOn();
     } // onCreate
 
     @Override
@@ -332,7 +333,9 @@ public class BoardActivity extends XWActivity
                 if ( null != m_jniThread ) {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
                 }
+                // in case of change...
                 setBackgroundColor();
+                setKeepScreenOn();
             }
         }
     }
@@ -1284,6 +1287,12 @@ public class BoardActivity extends XWActivity
         int back = CommonPrefs.get(this)
             .otherColors[CommonPrefs.COLOR_BACKGRND];
         m_view.getRootView().setBackgroundColor( back );
+    }
+
+    private void setKeepScreenOn()
+    {
+        boolean keepOn = CommonPrefs.getKeepScreenOn( this );
+        m_view.setKeepScreenOn( keepOn );
     }
 
 } // class BoardActivity

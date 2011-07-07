@@ -81,6 +81,11 @@
                         android:summary="@string/show_arrow_summary"
                         android:defaultValue="true"
                         />
+    <CheckBoxPreference android:key="@string/key_keep_screenon"
+                        android:title="@string/keep_screenon"
+                        android:summary="@string/keep_screenon_summary"
+                        android:defaultValue="false"
+                        />
 
     <PreferenceScreen android:title="@string/prefs_colors"
                       android:summary="@string/prefs_colors_summary"

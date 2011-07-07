@@ -45,6 +45,7 @@
   <string name="key_notify_sound">key_notify_sound</string>
   <string name="key_notify_vibrate">key_notify_vibrate</string>
   <string name="key_hide_intro">key_hide_intro</string>
+  <string name="key_keep_screenon">key_keep_screenon</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
