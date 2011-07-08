@@ -542,7 +542,7 @@ public class GamesList extends XWListActivity
         if ( null != relayIDs ) {
             for ( String relayID : relayIDs ) {
                 String path = DBUtils.getPathFor( this, relayID );
-                if ( GameUtils.gameDictsHere( this, path ) ) {
+                if ( null != path && GameUtils.gameDictsHere( this, path ) ) {
                     GameUtils.launchGame( this, path );
                     break;
                 }
