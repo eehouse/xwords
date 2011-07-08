@@ -70,6 +70,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_INVITE = DLG_OKONLY + 9;
 
     private static final int CHAT_REQUEST = 1;
+    private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -78,6 +79,7 @@ public class BoardActivity extends XWActivity
     CommsTransport m_xport;
     private Handler m_handler;
     private TimerRunnable[] m_timers;
+    private Runnable m_screenTimer;
     private String m_name;
     private Toolbar m_toolbar;
     private ArrayList<String> m_pendingChats = new ArrayList<String>();
@@ -335,6 +337,7 @@ public class BoardActivity extends XWActivity
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
 
         setBackgroundColor();
+        setKeepScreenOn();
     } // onCreate
 
     @Override
@@ -348,6 +351,7 @@ public class BoardActivity extends XWActivity
     protected void onResume()
     {
         super.onResume();
+        setKeepScreenOn();
         loadGame();
     }
 
@@ -376,7 +380,9 @@ public class BoardActivity extends XWActivity
                 if ( null != m_jniThread ) {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
                 }
+                // in case of change...
                 setBackgroundColor();
+                setKeepScreenOn();
             }
         }
     }
@@ -1340,6 +1346,27 @@ public class BoardActivity extends XWActivity
         int back = CommonPrefs.get(this)
             .otherColors[CommonPrefs.COLOR_BACKGRND];
         m_view.getRootView().setBackgroundColor( back );
+    }
+
+    private void setKeepScreenOn()
+    {
+        boolean keepOn = CommonPrefs.getKeepScreenOn( this );
+        m_view.setKeepScreenOn( keepOn );
+
+        if ( keepOn ) {
+            if ( null == m_screenTimer ) {
+                m_screenTimer = new Runnable() {
+                        public void run() {
+                            Utils.logf( "run() called for setKeepScreenOn()" );
+                            if ( null != m_view ) {
+                                m_view.setKeepScreenOn( false );
+                            }
+                        }
+                    };
+            }
+            m_handler.removeCallbacks( m_screenTimer ); // needed?
+            m_handler.postDelayed( m_screenTimer, SCREEN_ON_TIME );
+        }
     }
 
 } // class BoardActivity

@@ -225,7 +225,7 @@
     <string name="hints_allowed">Allow hints</string>
     <string name="hints_allowed_sum">Enable the hint feature</string>
     <string name="init_autojuggle">Juggle players</string>
-    <string name="init_autojuggle_sum">Randomly re-order players</string>
+    <string name="init_autojuggle_sum">Randomly, for new games</string>
     <string name="progress_title">Searching for moves</string>
     <string name="use_timer">Enable game timer</string>
     <string name="color_tiles">Color tiles</string>
@@ -234,6 +234,8 @@
     <string name="show_arrow">Show board arrow</string>
     <string name="show_arrow_summary">Tapped rack tiles land on this
       arrow when it is visible</string>
+    <string name="keep_screenon">Keep screen on</string>
+    <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
     <string name="explain_robot">Explain other moves</string>
     <string name="explain_robot_summary">Display score summary after
       every robot or remote turn</string>
