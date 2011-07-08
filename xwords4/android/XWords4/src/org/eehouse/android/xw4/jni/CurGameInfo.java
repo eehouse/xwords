@@ -305,6 +305,8 @@ public class CurGameInfo {
         // We can add either by adding a player, if nPlayers <
         // MAX_NUM_PLAYERS, or by making an unusable player usable.
         if ( added ) {
+            players[nPlayers].isLocal = 
+                serverRole == DeviceRole.SERVER_STANDALONE;
             ++nPlayers;
         }
         return added;
