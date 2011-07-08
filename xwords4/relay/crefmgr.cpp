@@ -341,7 +341,7 @@ CidInfo*
 CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
 {
     CookieRef* cref = NULL;
-    CidInfo* cinfo;
+    CidInfo* cinfo = NULL;
     char curCookie[MAX_INVITE_LEN+1];
     int curLangCode;
     int nPlayersT = 0;
