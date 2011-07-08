@@ -6,13 +6,25 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 28 release</b>
+<b>Crosswords 4.4 beta 29 release</b>
 
-<ul>Quick fixes
-  <li>Fix crash that so far happens on only one device -- my wife's</li>
-  
-  <li>Fix contrast problems when using light-on-dark scheme.</li>
+<ul>
+  <li>By request: Add preference to leave screen on while you're 
+  thinking about a move</li>
+
+  <li>By request: Add preference to auto-juggle players when creating 
+  a new game</li>
+
+  <li>Fix various rare crashers reported via devices through google</li>
+
+  <li>fix nasty memory leak inside native code introduced when players 
+  got to have their own dictionaries</li>
+
+  <li>fix bug where moves were lost among networked games with more 
+  than two devices</li>
+
 </ul>
+
 
 <p>Please remember that this is beta software.  Please let me know (at 
 eehouse@eehouse.org) what's broken and what features you'd most like 
