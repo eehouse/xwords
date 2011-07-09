@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2007 The Android Open Source Project
-
-     Licensed under the Apache License, Version 2.0 (the "License");
-     you may not use this file except in compliance with the License.
-     You may obtain a copy of the License at
-  
-          http://www.apache.org/licenses/LICENSE-2.0
-  
-     Unless required by applicable law or agreed to in writing, software
-     distributed under the License is distributed on an "AS IS" BASIS,
-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     See the License for the specific language governing permissions and
-     limitations under the License.
--->
+<!-- -*- compile-command: "../../; make install"; -*- -->
 
 <resources>
     <string name="button_new_game">Add game</string>
@@ -48,19 +35,19 @@
 
     <string name="newgame_local_header">New Local-only game</string>
     <string name="newgame_local_descf">Create a new game where all
-      players will be on this device.  To play with your default
-      settings (i.e. with 2 players and in %1$s) just press \"Play
-      Game\".  To change some settings first, press \"Configure
-      game\".</string>
+      players will be on this device.  To play against a robot and
+      with your default settings (in %1$s, etc.) just press \"Play
+      now\".  To add players or change game settings, press
+      \"Configure first\".</string>
     <string name="newgame_networked_header">New Networked game</string>
     <string name="newgame_networked_desc">Create a game that will be
       played over the network.  The \"Invite now\" button starts a
-      game and helps you invite a friend to join it.  Or press
-      \"Configure game\" to change some of the defaults before you
-      start your networked game. (You\'ll have a chance to invite
-      a friend later.)</string>
-	<string name="newgame_local">Play game</string>
-	<string name="newgame_local_config">Configure game</string>
+      two-device game and helps you invite a friend to join it.  Or
+      press \"Configure first\" to change some of the defaults before
+      you start your networked game. (You\'ll have a chance to send
+      invites later.)</string>
+	<string name="newgame_local">Play now</string>
+	<string name="newgame_local_config">Configure first</string>
 	<string name="newgame_invite">Invite now</string>
 	<string name="newgame_net_config">Configure first</string>
     <string name="dup_game_queryf">You already have a game that seems
