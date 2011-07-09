@@ -438,11 +438,7 @@ public class GameUtils {
 
         missingSet = new HashSet<String>( Arrays.asList( dictNames ) );
         missingSet.remove( null );
-        Utils.logf( "missingSet before remove of %s: %s", installed.toString(),
-                    missingSet.toString() );
-        Utils.logf( "missingSet size: %d", missingSet.size() );
         missingSet.removeAll( Arrays.asList(installed) );
-        Utils.logf( "missingSet after remove: %s", missingSet.toString() );
         boolean allHere = 0 == missingSet.size();
         if ( null != missingNames ) {
             missingNames[0] = 
