@@ -46,6 +46,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static final int k_miniPaddingV = 2;
     private static final float MIN_FONT_DIPS = 14.0f;
 
+    private static Bitmap s_bitmap;    // the board
+
     private Context m_context;
     private Paint m_drawPaint;
     private Paint m_fillPaint;
@@ -57,7 +59,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private CurGameInfo m_gi;
     private int m_layoutWidth;
     private int m_layoutHeight;
-    private Bitmap m_bitmap;    // the board
     private Canvas m_canvas;    // owns the bitmap
     private int m_trayOwner;
     private Rect m_valRect;
@@ -161,7 +162,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
-                canvas.drawBitmap( m_bitmap, m_left, m_top, m_drawPaint );
+                canvas.drawBitmap( s_bitmap, m_left, m_top, m_drawPaint );
             }
         }
     }
@@ -277,10 +278,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_left = dims.left;
             m_top = dims.top;
             
-            m_bitmap = Bitmap.createBitmap( 1 + dims.width,
-                                            1 + dims.height,
-                                            Bitmap.Config.ARGB_8888 );
-            m_canvas = new Canvas( m_bitmap );
+            if ( null == s_bitmap ) {
+                s_bitmap = Bitmap.createBitmap( 1 + dims.width,
+                                                1 + dims.height,
+                                                Bitmap.Config.ARGB_8888 );
+            }
+            m_canvas = new Canvas( s_bitmap );
 
             // need to synchronize??
             m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, dims );
