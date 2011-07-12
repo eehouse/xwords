@@ -971,7 +971,7 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_SEARCHLIMIT
     mainParams.allowHintRect = XP_FALSE;
 #endif
-    mainParams.skipCommitConfirm = XP_TRUE;
+    mainParams.skipCommitConfirm = XP_FALSE;
     mainParams.showColors = XP_TRUE;
     mainParams.allowPeek = XP_TRUE;
     mainParams.showRobotScores = XP_FALSE;
@@ -1166,7 +1166,7 @@ main( int argc, char** argv )
             mainParams.hideValues = XP_TRUE;
             break;
         case CMD_SKIPCONFIRM:
-            mainParams.skipCommitConfirm = XP_FALSE;
+            mainParams.skipCommitConfirm = XP_TRUE;
             break;
         case CMD_VERTICALSCORE:
             mainParams.verticalScore = XP_TRUE;
