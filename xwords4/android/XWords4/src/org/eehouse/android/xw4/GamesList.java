@@ -242,8 +242,10 @@ public class GamesList extends XWListActivity
     protected void onNewIntent( Intent intent )
     {
         super.onNewIntent( intent );
-        invalRelayIDs( intent.getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA ) );
+        invalRelayIDs( intent.
+                       getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA ) );
         startFirstHasDict( intent );
+        startNewNetGameIf( intent );
     }
 
     @Override
