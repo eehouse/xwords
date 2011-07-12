@@ -41,7 +41,7 @@
 
     <activity android:name="GamesList" 
               android:label="@string/title_games_list"
-              android:launchMode="singleTop"
+              android:launchMode="singleTask"
               >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -57,7 +57,7 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="newxwgame" android:host="10.0.2.2" />
+        <data android:scheme="newxwgame"/>
       </intent-filter>
     </activity>
 
