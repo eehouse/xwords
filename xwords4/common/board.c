@@ -746,6 +746,9 @@ board_commitTurn( BoardCtxt* board )
         } else {
             util_userError( board->util, ERR_NOT_YOUR_TURN );
         }
+    } else if ( 0 == model_getNumTilesTotal( board->model, turn ) ) {
+        /* game's over but still undoable so turn hasn't changed; do
+           nothing */
     } else if ( checkRevealTray( board ) ) {
         if ( pti->tradeInProgress ) {
             result = XP_TRUE; /* there's at least the window to clean up
