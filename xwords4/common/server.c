@@ -1666,7 +1666,8 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
             SETSTATE( server, XWSTATE_NEEDSEND_ENDGAME );
             moreToDo = XP_TRUE;
         } else {
-            XP_LOGF( "Doing nothing; waiting for server to end game." );
+            XP_LOGF( "%s: Doing nothing; waiting for server to end game", 
+                     __func__ );
             /* I'm the client. Do ++nothing++. */
         }
     }
