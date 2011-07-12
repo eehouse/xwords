@@ -631,6 +631,8 @@ public class GamesList extends XWListActivity
     private void askDefaultNameIf()
     {
         if ( null == CommonPrefs.getDefaultPlayerName( this, 0, false ) ) {
+            String name = CommonPrefs.getDefaultPlayerName( this, 0, true );
+            CommonPrefs.setDefaultPlayerName( GamesList.this, name );
             showDialog( GET_NAME );
         }
     }
