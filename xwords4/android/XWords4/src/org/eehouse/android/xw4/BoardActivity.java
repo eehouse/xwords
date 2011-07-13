@@ -1232,29 +1232,34 @@ public class BoardActivity extends XWActivity
 
     private int waitBlockingDialog( final int dlgID, int cancelResult )
     {
-        Assert.assertFalse( m_blockingDlgPosted );
-        setBlockingThread();
+        int result = cancelResult;
+        if ( m_blockingDlgPosted ) { // this has been true; dunno why
+            Utils.logf( "waitBlockingDialog: dropping dlgID %d", dlgID );
+        } else {
+            setBlockingThread();
 
-        m_handler.post( new Runnable() {
-                public void run() {
-                    showDialog( dlgID ); // crash
-                    m_blockingDlgPosted = true;
-                }
-            } );
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        showDialog( dlgID ); // crash
+                        m_blockingDlgPosted = true;
+                    }
+                } );
 
-        try {
-            m_forResultWait.acquire();
-            m_blockingDlgPosted = false;
-        } catch ( java.lang.InterruptedException ie ) {
-            Utils.logf( "waitBlockingDialog: got " + ie.toString() );
-            m_resultCode = cancelResult;
-            if ( m_blockingDlgPosted ) {
-                dismissDialog( dlgID );
+            try {
+                m_forResultWait.acquire();
                 m_blockingDlgPosted = false;
+            } catch ( java.lang.InterruptedException ie ) {
+                Utils.logf( "waitBlockingDialog: got " + ie.toString() );
+                m_resultCode = cancelResult;
+                if ( m_blockingDlgPosted ) {
+                    dismissDialog( dlgID );
+                    m_blockingDlgPosted = false;
+                }
             }
+            clearBlockingThread();
+            result = m_resultCode;
         }
-        clearBlockingThread();
-        return m_resultCode;
+        return result;
     }
 
     private void nonBlockingDialog( final int dlgID, String txt ) 
