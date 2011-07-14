@@ -51,8 +51,7 @@ public class RelayService extends Service {
 
                     String[] relayIDs = NetUtils.QueryRelay( RelayService.this );
                     if ( null != relayIDs ) {
-                        if ( !DispatchNotify.tryHandle( RelayService.this, 
-                                                        relayIDs ) ) {
+                        if ( !DispatchNotify.tryHandle( relayIDs ) ) {
                             setupNotification( relayIDs );
                         }
                     }
