@@ -23,7 +23,7 @@ print <<<EOF
     <p>redirecting to Crosswords....</p>
 
     <p>If this fails because you don't have Crosswords installed <a
-href="https://market.android.com/search?q=pname:org.eehouse.android.xw4">tap
+href="http://eehouse.org/xw4/android/Xwords_latest.apk">tap
 here</a>.</p>
 
     </body>
@@ -31,4 +31,9 @@ here</a>.</p>
     </html>
 
 EOF;
+
+/*     <p>If this fails because you don't have Crosswords installed <a */
+/* href="https://market.android.com/search?q=pname:org.eehouse.android.xw4">tap */
+/* here</a>.</p> */
+
 ?>
