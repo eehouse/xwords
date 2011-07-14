@@ -53,15 +53,17 @@ public class NetLaunchInfo {
     public NetLaunchInfo( Uri data )
     {
         m_valid = false;
-        try {
-            room = data.getQueryParameter( "room" );
-            String langStr = data.getQueryParameter( "lang" );
-            lang = Integer.decode( langStr );
-            String np = data.getQueryParameter( "np" );
-            nPlayers = Integer.decode( np );
-            m_valid = true;
-        } catch ( Exception e ) {
-            Utils.logf( "unable to parse \"%s\"", data.toString() );
+        if ( null != data ) {
+            try {
+                room = data.getQueryParameter( "room" );
+                String langStr = data.getQueryParameter( "lang" );
+                lang = Integer.decode( langStr );
+                String np = data.getQueryParameter( "np" );
+                nPlayers = Integer.decode( np );
+                m_valid = true;
+            } catch ( Exception e ) {
+                Utils.logf( "unable to parse \"%s\"", data.toString() );
+            }
         }
     }
 

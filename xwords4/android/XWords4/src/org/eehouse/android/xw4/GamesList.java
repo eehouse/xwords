@@ -241,6 +241,7 @@ public class GamesList extends XWListActivity
     protected void onNewIntent( Intent intent )
     {
         super.onNewIntent( intent );
+        Assert.assertNotNull( intent );
         invalRelayIDs( intent.
                        getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA ) );
         startFirstHasDict( intent );
@@ -619,10 +620,11 @@ public class GamesList extends XWListActivity
     private void startNewNetGame( Intent intent )
     {
         Uri data = intent.getData();
-        Assert.assertNotNull( intent );
-        NetLaunchInfo info = new NetLaunchInfo( data );
-        if ( info.isValid() ) {
-            startNewNetGame( info );
+        if ( null != data ) {
+            NetLaunchInfo info = new NetLaunchInfo( data );
+            if ( info.isValid() ) {
+                startNewNetGame( info );
+            }
         }
     } // startNewNetGame
 
