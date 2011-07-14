@@ -553,11 +553,8 @@ public class GamesList extends XWListActivity
 
     private void invalRelayIDs( String[] relayIDs ) 
     {
-        if ( null == relayIDs ) {
-            Utils.logf( "relayIDs empty" );
-        } else {
+        if ( null != relayIDs ) {
             for ( String relayID : relayIDs ) {
-                Utils.logf( "got relayID %s", relayID );
                 String path = DBUtils.getPathFor( this, relayID );
                 m_adapter.inval( path );
             }
