@@ -21,13 +21,14 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.Context;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Intent;
+import android.net.Uri;
 import android.widget.Toast;
 import android.os.Bundle;
 import java.util.HashSet;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
@@ -37,6 +38,7 @@ public class DispatchNotify extends Activity {
 
     public interface HandleRelaysIface {
         void HandleRelaysIDs( final String[] relayIDs );
+        void HandleInvite( final Uri invite );
     }
 
     private static HashSet<Activity> s_running = new HashSet<Activity>();
@@ -45,27 +47,38 @@ public class DispatchNotify extends Activity {
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        Utils.logf( "DispatchNotify.onCreate()" );
+        boolean mustLaunch = false;
         super.onCreate( savedInstanceState );
 
-        Intent intent = getIntent();
-        String[] relayIDs = intent.getStringArrayExtra( RELAYIDS_EXTRA );
+        String[] relayIDs = getIntent().getStringArrayExtra( RELAYIDS_EXTRA );
+        Uri data = getIntent().getData();
 
-        if ( !tryHandle( this, relayIDs ) ) {
+        if ( null != relayIDs ) {
+            if ( !tryHandle( relayIDs ) ) {
+                mustLaunch = true;
+            }
+        } else if ( null != data ) {
+            if ( !tryHandle( data ) ) {
+                mustLaunch = true;
+            }
+        }
+
+        if ( mustLaunch ) {
             Utils.logf( "DispatchNotify: nothing running" );
-            intent = new Intent( this, GamesList.class );
-            intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP );
-            intent.putExtra( RELAYIDS_EXTRA, relayIDs );
+            Intent intent = new Intent( this, GamesList.class );
+            intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
+                             | Intent.FLAG_ACTIVITY_NEW_TASK );
+            if ( null != relayIDs ) {
+                intent.putExtra( RELAYIDS_EXTRA, relayIDs );
+            } else if ( null != data ) {
+                intent.setData( data );
+            } else {
+                Assert.fail();
+            }
             startActivity( intent );
         }
 
         finish();
-    }
-
-    @Override
-    protected void onNewIntent( Intent intent )
-    {
-        Utils.logf( "DispatchNotify.onNewIntent() called" );
     }
 
     public static void SetRunning( Activity running )
@@ -83,13 +96,31 @@ public class DispatchNotify extends Activity {
         s_handler = iface;
     }
 
-    public static boolean tryHandle( Context context, String[] relayIDs )
+    private static boolean tryHandle( Uri data )
     {
-        Utils.logf( "tryHandle()" );
         boolean handled = false;
         if ( null != s_handler ) {
             // This means the GamesList activity is frontmost
-            Utils.logf( "calling m_handler" );
+            s_handler.HandleInvite( data );
+            handled = true;
+        } else {
+            for ( Activity activity : s_running ) {
+                if ( activity instanceof DispatchNotify.HandleRelaysIface ) {
+                    DispatchNotify.HandleRelaysIface iface =
+                        (DispatchNotify.HandleRelaysIface)activity;
+                    iface.HandleInvite( data );
+                    handled = true;
+                }
+            }
+        }
+        return handled;
+    }
+
+    public static boolean tryHandle( String[] relayIDs )
+    {
+        boolean handled = false;
+        if ( null != s_handler ) {
+            // This means the GamesList activity is frontmost
             s_handler.HandleRelaysIDs( relayIDs );
             handled = true;
         } else {
@@ -102,7 +133,6 @@ public class DispatchNotify extends Activity {
                 }
             }
         }
-        Utils.logf( "DispatchNotify.tryHandle()=>%s", handled?"true":"false" );
         return handled;
     }
 }

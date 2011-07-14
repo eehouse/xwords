@@ -230,7 +230,6 @@ public class GamesList extends XWListActivity
 
         Intent intent = getIntent();
         startFirstHasDict( intent );
-        startNewNetGameIf( intent );
         askDefaultNameIf();
 
         DBUtils.setDBChangeListener( this );
@@ -245,7 +244,7 @@ public class GamesList extends XWListActivity
         invalRelayIDs( intent.
                        getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA ) );
         startFirstHasDict( intent );
-        startNewNetGameIf( intent );
+        startNewNetGame( intent );
     }
 
     @Override
@@ -300,6 +299,19 @@ public class GamesList extends XWListActivity
                     startFirstHasDict( relayIDs );
                 }
             } );
+    }
+
+    public void HandleInvite( final Uri invite )
+    {
+        final NetLaunchInfo nli = new NetLaunchInfo( invite );
+        if ( nli.isValid() ) {
+            m_handler.post( new Runnable() {
+                    @Override
+                    public void run() {
+                        startNewNetGame( nli );
+                    }
+                } );
+        }
     }
 
     // DBUtils.DBChangeListener interface
@@ -582,53 +594,40 @@ public class GamesList extends XWListActivity
         startActivity( new Intent( this, NewGameActivity.class ) );
     }
 
-    private void startNewNetGameIf( Intent intent )
+    private void startNewNetGame( final NetLaunchInfo info )
     {
-        if ( null != intent ) {
-            Uri data = intent.getData();
-            if ( null != data ) {
+        String path = DBUtils.getPathForOpen( this, info.room, info.lang, 
+                                              info.nPlayers );
 
-                NetLaunchInfo info = new NetLaunchInfo( data );
-                if ( info.isValid() ) {
-
-                    // Find out if the game already exists.  If it does,
-                    // just open it.  Otherwise create a new one and open
-                    // that.  NOTE: this test makes it impossible to start
-                    // two halves of the same game on one device using
-                    // this feature.  But it'd be worse to have a bunch of
-                    // games stacking up when somebody taps the same URL
-                    // multiple times.
-
-                    // No.  If the game already exists, warn the user, but
-                    // give him choice to open new or existing game.
-
-                    String path = 
-                        DBUtils.getPathForOpen( this, info.room, info.lang, 
-                                                info.nPlayers );
-
-                    if ( null == path ) {
-                        path = GameUtils.makeNewNetGame( this, info );
-                        GameUtils.launchGame( this, path, true );
-                    } else {
-                        final NetLaunchInfo finfo = info;
-                        DialogInterface.OnClickListener then = 
-                            new DialogInterface.OnClickListener() {
-                                public void onClick( DialogInterface dlg, 
-                                                     int ii ) {
-                                    String path = GameUtils.
-                                        makeNewNetGame( GamesList.this, finfo ); 
-                                    GameUtils.launchGame( GamesList.this, 
-                                                          path, true );
-                                }
-                            };
-                        String fmt = getString( R.string.dup_game_queryf );
-                        String msg = String.format( fmt, finfo.room );
-                        showConfirmThen( msg, then );
+        if ( null == path ) {
+            path = GameUtils.makeNewNetGame( this, info );
+            GameUtils.launchGame( this, path, true );
+        } else {
+            DialogInterface.OnClickListener then = 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, 
+                                         int ii ) {
+                        String path = GameUtils.
+                            makeNewNetGame( GamesList.this, info ); 
+                        GameUtils.launchGame( GamesList.this, 
+                                              path, true );
                     }
-                }
-            }
+                };
+            String fmt = getString( R.string.dup_game_queryf );
+            String msg = String.format( fmt, info.room );
+            showConfirmThen( msg, then );
         }
-    } // startNewNetGameIf
+    } // startNewNetGame
+
+    private void startNewNetGame( Intent intent )
+    {
+        Uri data = intent.getData();
+        Assert.assertNotNull( intent );
+        NetLaunchInfo info = new NetLaunchInfo( data );
+        if ( info.isValid() ) {
+            startNewNetGame( info );
+        }
+    } // startNewNetGame
 
     private void askDefaultNameIf()
     {

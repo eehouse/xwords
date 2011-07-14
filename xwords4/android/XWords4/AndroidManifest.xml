@@ -41,18 +41,11 @@
 
     <activity android:name="GamesList" 
               android:label="@string/title_games_list"
-              android:launchMode="singleTask"
+              android:launchMode="singleTop"
               >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <action android:name="android.intent.action.EDIT" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="newxwgame"/>
       </intent-filter>
     </activity>
 
@@ -92,7 +85,16 @@
       </intent-filter>
     </receiver>
 
-    <activity android:name="DispatchNotify" />
+    <activity android:name="DispatchNotify"
+              >
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <action android:name="android.intent.action.EDIT" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="newxwgame"/>
+      </intent-filter>
+    </activity>
 
     <!-- downloading dicts -->
     <activity android:name=".DictImportActivity"
