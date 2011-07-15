@@ -20,12 +20,21 @@ print <<<EOF
     content="0;url=$scheme://$host?room=$room&lang=$lang&np=$np">
 </head>
     <body>
+
+    <div align="center">
+    <img src="./icon48x48.png">
+
     <p>redirecting to Crosswords....</p>
 
-    <p>If this fails because you don't have Crosswords installed <a
-href="http://eehouse.org/xw4/android/Xwords_latest.apk">tap
-here</a>.</p>
+    <p>This page is meant to be viewed (briefly) on your Android device after which Crosswords should launch.
+    If this fails it's probably because you don't have a new enough version of Crosswords installed. 
+    </p>
 
+    <p>
+    <a href="http://eehouse.org/xw4/android/Xwords_latest.apk">Tap here</a> to fix that.
+    </p>
+
+    </div>
     </body>
 
     </html>
