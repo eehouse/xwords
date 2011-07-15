@@ -31,7 +31,7 @@ print <<<EOF
     </p>
 
     <p>
-    <a href="http://eehouse.org/xw4/android/Xwords_latest.apk">Tap here</a> to fix that.
+    <a href="market://search?q=pname:org.eehouse.android.xw4">Tap here</a> to fix that.
     </p>
 
     </div>
@@ -40,9 +40,5 @@ print <<<EOF
     </html>
 
 EOF;
-
-/*     <p>If this fails because you don't have Crosswords installed <a */
-/* href="https://market.android.com/search?q=pname:org.eehouse.android.xw4">tap */
-/* here</a>.</p> */
 
 ?>
