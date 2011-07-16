@@ -54,7 +54,7 @@ public interface UtilCtxt {
     static final int STRS_VALUES_HEADER =                 3;
     static final int STRD_REMAINING_TILES_ADD =           4;
     static final int STRD_UNUSED_TILES_SUB =              5;
-    static final int STR_REMOTE_MOVED =                   6;
+    static final int STRS_REMOTE_MOVED =                  6;
     static final int STRD_TIME_PENALTY_SUB =              7;
     static final int STR_PASS =                           8;
     static final int STRS_MOVE_ACROSS =                   9;

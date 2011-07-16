@@ -816,10 +816,10 @@ showPrevScore( ServerCtxt* server )
         XW_UtilCtxt* util = server->vol.util;
         XWStreamCtxt* stream;
         const XP_UCHAR* str;
+        XP_UCHAR buf[128];
         CurGameInfo* gi = server->vol.gi;
         XP_U16 nPlayers = gi->nPlayers;
         XP_U16 prevTurn;
-        XP_U16 strCode;
         LocalPlayer* lp;
 
         prevTurn = (server->nv.currentTurn + nPlayers - 1) % nPlayers;
@@ -828,14 +828,14 @@ showPrevScore( ServerCtxt* server )
         if ( LP_IS_LOCAL(lp) ) {
             /* Why can't a local non-robot have postponed score? */
             // XP_ASSERT( LP_IS_ROBOT(lp) );
-            strCode = STR_ROBOT_MOVED;
+            str = util_getUserString( util, STR_ROBOT_MOVED );
         } else {
-            strCode = STR_REMOTE_MOVED;
+            str = util_getUserString( util, STRS_REMOTE_MOVED );
+            XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
+            str = buf;
         }
 
         stream = mkServerStream( server );
-
-        str = util_getUserString( util, strCode );
         stream_catString( stream, str );
 
         if ( !!server->nv.prevMoveStream ) {

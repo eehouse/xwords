@@ -26,7 +26,6 @@
     <string name="title_langs_list">Languages (based on installed
       dictionaries)</string>
     <string name="lang_label">Game language</string>
-	<string name="title_game">Game</string>  
 	<string name="title_game_configf">%s settings</string>  
 	<string name="title_gamenet_configf">%s settings (networked)</string>  
 	<string name="title_prefs">Crosswords settings</string>  
@@ -101,7 +100,7 @@
     <string name="strs_values_header">%s counts/values:\n</string>
     <string name="strd_remaining_tiles_add">+ %d [all remaining tiles]</string>
     <string name="strd_unused_tiles_sub">- %d [unused tiles]</string>
-    <string name="str_remote_moved">Remote player made this move: </string>
+    <string name="str_remote_movedf">Remote player %1$s made this move: </string>
     <string name="strd_time_penalty_sub"></string>
     <string name="str_pass"> - %d [time]</string>
     <string name="strs_move_across">move (from %s across)\n</string>
@@ -174,7 +173,6 @@
     <string name="new_room_hint">Room name</string>
     <string name="room_public_prompt">Select public room</string>
 
-    <string name="configure_role">Configure connection</string>
     <string name="configure_rolef">Configure %s connection</string>
     <string name="settings_label">Other settings</string>
     <string name="minutes_label">Minutes per player</string>
@@ -320,7 +318,6 @@
     <string name="clr_crosshairs">Crosshairs color</string>
     <string name="background">Board background</string>
 
-    <string name="key_player">key_player</string>
     <string name="tab_relay">Internet/Relay</string>
     <string name="tab_sms">SMS (broken)</string>
     <string name="tab_bluetooth">Bluetooth (pending)</string>

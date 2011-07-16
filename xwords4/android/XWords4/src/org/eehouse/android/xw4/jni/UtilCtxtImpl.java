@@ -112,8 +112,8 @@ public class UtilCtxtImpl implements UtilCtxt {
         case UtilCtxt.STRD_UNUSED_TILES_SUB:
             id = R.string.strd_unused_tiles_sub;
             break;
-        case UtilCtxt.STR_REMOTE_MOVED:
-            id = R.string.str_remote_moved;
+        case UtilCtxt.STRS_REMOTE_MOVED:
+            id = R.string.str_remote_movedf;
             break;
         case UtilCtxt.STRD_TIME_PENALTY_SUB:
             id = R.string.strd_time_penalty_sub;
