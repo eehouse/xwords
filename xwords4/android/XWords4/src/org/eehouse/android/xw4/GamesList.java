@@ -204,8 +204,7 @@ public class GamesList extends XWListActivity
         m_handler = new Handler();
 
         setContentView(R.layout.game_list);
-        ListView listView = getListView();
-        registerForContextMenu( listView );
+        registerForContextMenu( getListView() );
 
         boolean isUpgrade = FirstRunDialog.show( this, false );
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, isUpgrade );
