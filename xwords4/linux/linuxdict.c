@@ -22,6 +22,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 /* #include <prc.h> */
 
 #include "comtypes.h"
@@ -37,6 +41,8 @@ typedef struct DictStart {
 
 typedef struct LinuxDictionaryCtxt {
     DictionaryCtxt super;
+    void* mmapBase;
+    size_t mmapLength;
     /*     prc_t* pt; */
     /*     DictStart* starts; */
     /*     XP_U16 numStarts; */
@@ -203,7 +209,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     XP_U8 numFaces, numFaceBytes;
     long curPos, dictLength;
     XP_U32 topOffset;
-    FILE* dictF = fopen( fileName, "r" );
+    FILE* dictF;
     unsigned short xloc;
     XP_U16 flags;
     XP_U16 facesSize;
@@ -211,6 +217,13 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     XP_Bool isUTF8 = XP_FALSE;
     XP_Bool hasHeader = XP_FALSE;
 
+    struct stat statbuf;
+    if ( 0 != stat( fileName, &statbuf ) ) {
+        goto closeAndExit;
+    }
+    dctx->mmapLength = statbuf.st_size;
+
+    dictF = fopen( fileName, "r" );
     XP_ASSERT( dictF );
     if ( 1 == fread( &flags, sizeof(flags), 1, dictF ) ) {
         flags = ntohs(flags);
@@ -316,9 +329,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         skipBitmaps( dctx, dictF );
 
         curPos = ftell( dictF );
-        fseek( dictF, 0L, SEEK_END );
-        dictLength = ftell( dictF ) - curPos;
-        fseek( dictF, curPos, SEEK_SET );
+        dictLength = dctx->mmapLength - curPos;
 
         if ( dictLength > 0 ) {
             if ( 1 != fread( &topOffset, sizeof(topOffset), 1, dictF ) ) {
@@ -339,13 +350,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             XP_ASSERT( (dictLength % 3) == 0 );
 # endif
 #endif
-
-            dctx->super.base = (array_edge*)XP_MALLOC( dctx->super.mpool, 
-                                                   dictLength );
-            XP_ASSERT( !!dctx->super.base );
-            if ( 1 != fread( dctx->super.base, dictLength, 1, dictF ) ) {
-                goto closeAndExit;
-            }
+            dctx->mmapBase = mmap( NULL, dctx->mmapLength, PROT_READ, MAP_PRIVATE, fileno(dictF), 0 );
+            XP_ASSERT( MAP_FAILED != dctx->mmapBase );
+            dctx->super.base = (array_edge*)(dctx->mmapBase + ftell( dictF ) );
 
             dctx->super.topEdge = dctx->super.base + topOffset;
         } else {
@@ -404,7 +411,7 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
     freeSpecials( ctxt );
 
     if ( !!dict->topEdge ) {
-        XP_FREE( dict->mpool, dict->topEdge );
+        (void)munmap( ctxt->mmapBase, ctxt->mmapLength );
     }
 
     XP_FREE( dict->mpool, ctxt->super.countsAndValues );
