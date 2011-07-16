@@ -4,7 +4,7 @@ set -u -e
 
 declare -A ENG_IDS
 LOCS=""
-SEARCH_SOURCE=""
+SEARCH_SOURCE=1
 
 ENG=~/dev/git/ANDROID_BRANCH/xwords4/android/XWords4/res/values/strings.xml
 
@@ -39,13 +39,16 @@ for ID in $(list_ids $ENG); do
 done
 
 if [ -n "$SEARCH_SOURCE" ]; then
-    if grep -q R.string.$ID $(find . -name '*.java'); then
-        :
-    elif grep -q "@string/$ID" $(find . -name '*.xml'); then
-        :
-    else
-        echo "$ID appears to be unused"
-    fi
+    IDS="${!ENG_IDS[*]}"
+    for ID in $IDS; do
+        if grep -qw R.string.$ID $(find . -name '*.java'); then
+            :
+        elif grep -qw "@string/$ID" $(find . -name '*.xml'); then
+            :
+        else
+            echo "$ID appears to be unused"
+        fi
+    done
 fi
 
 
