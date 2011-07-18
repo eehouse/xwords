@@ -38,7 +38,7 @@ public class XWActivity extends Activity {
 
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        Utils.logf( "%s.onCreate(this=%p)", getClass().getName(), this );
+        Utils.logf( "%s.onCreate(this=%x)", getClass().getName(), this );
         super.onCreate( savedInstanceState );
         m_delegate = new DlgDelegate( this );
     }
@@ -46,7 +46,7 @@ public class XWActivity extends Activity {
     @Override
     protected void onStart()
     {
-        Utils.logf( "%s.onStart(this=%p)", getClass().getName(), this );
+        Utils.logf( "%s.onStart(this=%x)", getClass().getName(), this );
         super.onStart();
         DispatchNotify.SetRunning( this );
     }
@@ -54,21 +54,21 @@ public class XWActivity extends Activity {
     @Override
     protected void onResume()
     {
-        Utils.logf( "%s.onResume(this=%p)", getClass().getName(), this );
+        Utils.logf( "%s.onResume(this=%x)", getClass().getName(), this );
         super.onResume();
     }
 
     @Override
     protected void onPause()
     {
-        Utils.logf( "%s.onPause(this=%p)", getClass().getName(), this );
+        Utils.logf( "%s.onPause(this=%x)", getClass().getName(), this );
         super.onPause();
     }
 
     @Override
     protected void onStop()
     {
-        Utils.logf( "%s.onStop(this=%p)", getClass().getName(), this );
+        Utils.logf( "%s.onStop(this=%x)", getClass().getName(), this );
         DispatchNotify.ClearRunning( this );
         super.onStop();
     }
@@ -76,7 +76,7 @@ public class XWActivity extends Activity {
     @Override
     protected void onDestroy()
     {
-        Utils.logf( "%s.onDestroy(this=%p); isFinishing=%s",
+        Utils.logf( "%s.onDestroy(this=%x); isFinishing=%s",
                     getClass().getName(), this, isFinishing()?"true":"false" );
         super.onDestroy();
     }
