@@ -424,6 +424,7 @@ model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 {
     CellTile cellTile = getModelTileRaw( model, col, row );
     XP_Bool pending = XP_FALSE;
+    XP_ASSERT( turn >= 0 );
     
     if ( (cellTile & TILE_PENDING_BIT) != 0 ) {
         if ( getPending
@@ -784,7 +785,9 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
 void
 model_trayToStream( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream )
 {
-    PlayerCtxt* player = &model->players[turn];
+    PlayerCtxt* player;
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
 
     traySetToStream( stream, &player->trayTiles );
 } /* model_trayToStream */
@@ -793,8 +796,12 @@ void
 model_currentMoveToStream( ModelCtxt* model, XP_S16 turn, 
                            XWStreamCtxt* stream )
 {
-    PlayerCtxt* player = &model->players[turn];
-    XP_S16 numTiles = player->nPending;
+    PlayerCtxt* player;
+    XP_S16 numTiles;
+
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
+    numTiles = player->nPending;
 
     stream_putBits( stream, NTILES_NBITS, numTiles );
 
@@ -996,17 +1003,20 @@ model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
 static Tile
 removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 {
-    PlayerCtxt* player = &model->players[turn];
+    PlayerCtxt* player;
     Tile tile;
-    short i;
+    short ii;
+
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
 
     XP_ASSERT( index < player->trayTiles.nTiles );
 
     tile = player->trayTiles.tiles[index];
 
     --player->trayTiles.nTiles;
-    for ( i = index; i < player->trayTiles.nTiles; ++i ) {
-        player->trayTiles.tiles[i] = player->trayTiles.tiles[i+1];
+    for ( ii = index; ii < player->trayTiles.nTiles; ++ii ) {
+        player->trayTiles.tiles[ii] = player->trayTiles.tiles[ii+1];
     }
 
     return tile;
@@ -1016,7 +1026,10 @@ Tile
 model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 {
     Tile tile;
-    PlayerCtxt* player = &model->players[turn];
+    PlayerCtxt* player;
+
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
     if ( index < 0 ) {
         index = player->trayTiles.nTiles - 1;
     }
@@ -1126,9 +1139,13 @@ XP_Bool
 model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
 {
     XP_U16 actualCnt = 0;
+    PlayerCtxt* player;
+    XP_U16 nUndone;
 
-    PlayerCtxt* player = &model->players[turn];
-    XP_U16 nUndone = player->nUndone;
+    XP_ASSERT( turn >= 0 );
+
+    player = &model->players[turn];
+    nUndone = player->nUndone;
     if ( nUndone > 0 ) {
         PendingTile pendingTiles[nUndone];
         PendingTile* pt = pendingTiles;
@@ -1166,10 +1183,11 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
 {
     XP_S16 index;
     PlayerCtxt* player;
-    short i;
+    short ii;
     PendingTile* pt;
     Tile tile;
 
+    XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
     for ( pt = player->pendingTiles, index = 0; 
           index < player->nPending;
@@ -1195,8 +1213,8 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
 
         --player->nPending;
         tmpPending = player->pendingTiles[index];
-        for ( i = index; i < player->nPending; ++i ) {
-            player->pendingTiles[i] = player->pendingTiles[i+1];
+        for ( ii = index; ii < player->nPending; ++ii ) {
+            player->pendingTiles[ii] = player->pendingTiles[ii+1];
         }
         player->pendingTiles[player->nPending] = tmpPending;
 
@@ -1216,8 +1234,13 @@ model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur,
                        XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew )
 {
     XP_Bool found = XP_FALSE;
-    PlayerCtxt* player = &model->players[turn];
-    XP_S16 index = player->nPending;
+    PlayerCtxt* player;
+    XP_S16 index;
+
+    XP_ASSERT( turn >= 0 );
+
+    player = &model->players[turn];
+    index = player->nPending;
 
     while ( index-- ) {
         Tile tile;
@@ -1313,9 +1336,13 @@ incrPendingTileCountAt( ModelCtxt* model, XP_U16 col, XP_U16 row )
 static void
 setPendingCounts( ModelCtxt* model, XP_S16 turn )
 {
-    PlayerCtxt* player = &model->players[turn];
-    PendingTile* pending = player->pendingTiles;
+    PlayerCtxt* player;
+    PendingTile* pending;
     XP_U16 nPending;
+
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
+    pending = player->pendingTiles;
 
     for ( nPending = player->nPending; nPending--; ) {
         incrPendingTileCountAt( model, pending->col, pending->row );
@@ -1345,7 +1372,7 @@ static void
 putBackOtherPlayersTiles( ModelCtxt* model, XP_U16 notMyTurn, 
                           XP_U16 col, XP_U16 row )
 {
-    XP_S16 turn;
+    XP_U16 turn;
 
     for ( turn = 0; turn < model->nPlayers; ++turn ) {
         if ( turn == notMyTurn ) {
@@ -1363,7 +1390,7 @@ static XP_S16
 commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles, 
             XWStreamCtxt* stream, XP_Bool useStack )
 {
-    short i;
+    XP_U16 ii;
     PlayerCtxt* player;
     PendingTile* pt;
     XP_S16 score;
@@ -1394,7 +1421,8 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
         stack_addMove( model->vol.stack, turn, &moveInfo, newTiles );
     }
 
-    for ( i = 0, pt=player->pendingTiles; i < player->nPending; ++i, ++pt ) {
+    for ( ii = 0, pt=player->pendingTiles; ii < player->nPending; 
+          ++ii, ++pt ) {
         XP_U16 col, row;
         CellTile tile;
         XP_U16 val;
@@ -1426,8 +1454,8 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
     player->score += score;
 
     /* Why is this next loop necessary? */
-    for ( i = 0; i < model->nPlayers; ++i ) {
-        invalidateScore( model, i );
+    for ( ii = 0; ii < model->nPlayers; ++ii ) {
+        invalidateScore( model, ii );
     }
 
     player->nPending = 0;
@@ -1482,7 +1510,9 @@ model_makeTileTrade( ModelCtxt* model, XP_S16 player,
 Tile
 model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 {
-    PlayerCtxt* player = &model->players[turn];
+    PlayerCtxt* player;
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
 
     if ( index < 0 ) {
         index = player->trayTiles.nTiles-1;
@@ -1496,7 +1526,9 @@ model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 const TrayTileSet*
 model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn )
 {
-    const PlayerCtxt* player = &model->players[turn];
+    const PlayerCtxt* player;
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
 
     return (const TrayTileSet*)&player->trayTiles;
 } /* model_getPlayerTile */
@@ -1504,15 +1536,18 @@ model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn )
 static void
 addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, Tile tile )
 {
-    PlayerCtxt* player = &model->players[turn];
-    short i;
+    PlayerCtxt* player;
+    short ii;
+
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
 
     XP_ASSERT( player->trayTiles.nTiles < MAX_TRAY_TILES );
     XP_ASSERT( index >= 0 );
 
     /* move tiles up to make room */
-    for ( i = player->trayTiles.nTiles; i > index; --i ) {
-        player->trayTiles.tiles[i] = player->trayTiles.tiles[i-1];
+    for ( ii = player->trayTiles.nTiles; ii > index; --ii ) {
+        player->trayTiles.tiles[ii] = player->trayTiles.tiles[ii-1];
     }
     ++player->trayTiles.nTiles;
     player->trayTiles.tiles[index] = tile;
@@ -1521,7 +1556,10 @@ addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, Tile tile )
 void
 model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, Tile tile )
 {
-    PlayerCtxt* player = &model->players[turn];
+    PlayerCtxt* player;
+
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
     if ( index < 0 ) {
         index = player->trayTiles.nTiles;
     }
@@ -1553,6 +1591,7 @@ void
 model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
                          const TrayTileSet* tiles )
 {
+    XP_ASSERT( turn >= 0 );
     stack_addAssign( model->vol.stack, turn, tiles );
 
     assignPlayerTiles( model, turn, tiles );
@@ -1561,13 +1600,13 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 void
 model_sortTiles( ModelCtxt* model, XP_S16 turn )
 {
-    PlayerCtxt* player = &model->players[turn];
+    PlayerCtxt* player;
     XP_S16 ii;
-
     TrayTileSet tiles = { .nTiles = 0 };
     XP_S16 nTiles;
 
     XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
 
     for ( nTiles = model_getNumTilesInTray( model, turn ) - 1;
           nTiles >= 0; --nTiles ) {
@@ -1599,7 +1638,9 @@ model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn )
 XP_U16
 model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn )
 {
-    PlayerCtxt* player = &model->players[turn];
+    PlayerCtxt* player;
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
     return player->trayTiles.nTiles + player->nPending;
 } /* model_getNumTilesTotal */
 
