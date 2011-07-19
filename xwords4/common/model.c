@@ -401,6 +401,8 @@ getPendingTileFor( const ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
     const PendingTile* pendings;
     XP_U16 i;
 
+    XP_ASSERT( turn < VSIZE(model->players) );
+
     player = &model->players[turn];
     pendings = player->pendingTiles;
     for ( i = 0; i < player->nPending; ++i ) {
@@ -424,7 +426,6 @@ model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 {
     CellTile cellTile = getModelTileRaw( model, col, row );
     XP_Bool pending = XP_FALSE;
-    XP_ASSERT( turn >= 0 );
     
     if ( (cellTile & TILE_PENDING_BIT) != 0 ) {
         if ( getPending
