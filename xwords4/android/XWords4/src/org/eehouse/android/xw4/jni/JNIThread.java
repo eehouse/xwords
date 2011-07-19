@@ -271,7 +271,12 @@ public class JNIThread extends Thread {
                 if ( nextSame( JNICmd.CMD_SAVE ) ) {
                     continue;
                 }
+                // If server has any work to do, e.g. clean up after
+                // showing a remote- or robot-moved dialog, let it do
+                // so before saving state.  In some cases it'll
+                // otherwise drop the move.
                 XwJNI.server_do( m_jniGamePtr );
+
                 XwJNI.game_getGi( m_jniGamePtr, m_gi );
                 GameSummary summary = new GameSummary( m_gi );
                 XwJNI.game_summarize( m_jniGamePtr, summary );
