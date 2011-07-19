@@ -816,12 +816,12 @@ public class BoardActivity extends XWActivity
 
         public void clearTimer( int why ) 
         {
-            Utils.logf( "clearTimer called" );
             if ( null != m_timers[why] ) {
                 m_handler.removeCallbacks( m_timers[why] );
                 m_timers[why] = null;
             }
         }
+
         // This is supposed to be called from the jni thread
         public int userPickTile( int playerNum, String[] texts )
         {

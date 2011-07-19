@@ -526,7 +526,6 @@ public class JNIThread extends Thread {
                 checkButtons();
             }
         }
-        Utils.logf( "run exiting" );
     } // run
 
     public void handle( JNICmd cmd, boolean isUI, Object... args )

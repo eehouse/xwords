@@ -41,11 +41,9 @@ typedef struct DictStart {
 
 typedef struct LinuxDictionaryCtxt {
     DictionaryCtxt super;
-    void* mmapBase;
-    size_t mmapLength;
-    /*     prc_t* pt; */
-    /*     DictStart* starts; */
-    /*     XP_U16 numStarts; */
+    XP_U8* dictBase;
+    size_t dictLength;
+    XP_Bool useMMap;
 } LinuxDictionaryCtxt;
 
 
@@ -59,7 +57,7 @@ static const XP_UCHAR* linux_dict_getShortName( const DictionaryCtxt* dict );
  *
  ****************************************************************************/
 DictionaryCtxt* 
-linux_dictionary_make( MPFORMAL const char* dictFileName )
+linux_dictionary_make( MPFORMAL const char* dictFileName, XP_Bool useMMap )
 {
     LinuxDictionaryCtxt* result = 
         (LinuxDictionaryCtxt*)XP_MALLOC(mpool, sizeof(*result));
@@ -67,6 +65,8 @@ linux_dictionary_make( MPFORMAL const char* dictFileName )
 
     dict_super_init( (DictionaryCtxt*)result );
     MPASSIGN(result->super.mpool, mpool);
+
+    result->useMMap = useMMap;
 
     if ( !!dictFileName ) {
         XP_Bool success = initFromDictFile( result, dictFileName );
@@ -99,14 +99,15 @@ countSpecials( LinuxDictionaryCtxt* ctxt )
 } /* countSpecials */
 
 static XP_Bitmap
-skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), FILE* dictF )
+skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), const XP_U8** ptrp )
 {
     XP_U8 nCols, nRows, nBytes;
     LinuxBMStruct* lbs = NULL;
+    const XP_U8* ptr = *ptrp;
     
-    if ( 1 == fread( &nCols, sizeof(nCols), 1, dictF )
-         && nCols > 0 
-         && 1 == fread( &nRows, sizeof(nRows), 1, dictF ) ) {
+    nCols = *ptr++;
+    if ( nCols > 0 ) {
+	nRows = *ptr++;
 
         nBytes = ((nRows * nCols) + 7) / 8;
 
@@ -114,24 +115,24 @@ skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), FILE* dictF )
         lbs->nRows = nRows;
         lbs->nCols = nCols;
         lbs->nBytes = nBytes;
-
-        if ( 1 != fread( lbs + 1, nBytes, 1, dictF ) ) {
-            XP_FREE( ctxt->super.mpool, lbs );
-            lbs = NULL;
-        }
+	
+	memcpy( lbs + 1, ptr, nBytes );
+	ptr += nBytes;
     }
 
+    *ptrp = ptr;
     return lbs;
 } /* skipBitmap */
 
 static void
-skipBitmaps( LinuxDictionaryCtxt* ctxt, FILE* dictF )
+skipBitmaps( LinuxDictionaryCtxt* ctxt, const XP_U8** ptrp )
 {
     XP_U16 nSpecials;
     XP_UCHAR* text;
     XP_UCHAR** texts;
     SpecialBitmaps* bitmaps;
     Tile tile;
+    const XP_U8* ptr = *ptrp;
 
     nSpecials = countSpecials( ctxt );
 
@@ -150,20 +151,21 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, FILE* dictF )
             XP_ASSERT( *facep < nSpecials );
 
             /* get the string */
-            if ( 1 == fread( &txtlen, sizeof(txtlen), 1, dictF ) ) {
-                text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
-                if ( 1 == fread( text, txtlen, 1, dictF ) ) {
-                    text[txtlen] = '\0';
-                    texts[(XP_U16)*facep] = text;
+	    txtlen = *ptr++;
+	    text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
+	    memcpy( text, ptr, txtlen );
+	    ptr += txtlen;
 
-                    XP_DEBUGF( "skipping bitmaps for " XP_S, texts[asIndex] );
+	    text[txtlen] = '\0';
+	    texts[(XP_U16)*facep] = text;
 
-                    bitmaps[asIndex].largeBM = skipBitmap( ctxt, dictF );
-                    bitmaps[asIndex].smallBM = skipBitmap( ctxt, dictF );
-                }
-            }
+	    XP_DEBUGF( "skipping bitmaps for " XP_S, texts[asIndex] );
+
+	    bitmaps[asIndex].largeBM = skipBitmap( ctxt, &ptr );
+	    bitmaps[asIndex].smallBM = skipBitmap( ctxt, &ptr );
         }
     }
+    *ptrp = ptr;
 
     ctxt->super.chars = texts;
     ctxt->super.bitmaps = bitmaps;
@@ -206,95 +208,104 @@ static XP_Bool
 initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
 {
     XP_Bool formatOk = XP_TRUE;
-    XP_U8 numFaces, numFaceBytes;
     long curPos, dictLength;
     XP_U32 topOffset;
-    FILE* dictF;
     unsigned short xloc;
     XP_U16 flags;
     XP_U16 facesSize;
     XP_U16 charSize;
     XP_Bool isUTF8 = XP_FALSE;
     XP_Bool hasHeader = XP_FALSE;
+    const XP_U8* ptr;
 
     struct stat statbuf;
     if ( 0 != stat( fileName, &statbuf ) ) {
         goto closeAndExit;
     }
-    dctx->mmapLength = statbuf.st_size;
+    dctx->dictLength = statbuf.st_size;
 
-    dictF = fopen( fileName, "r" );
-    XP_ASSERT( dictF );
-    if ( 1 == fread( &flags, sizeof(flags), 1, dictF ) ) {
-        flags = ntohs(flags);
-        XP_DEBUGF( "flags=0X%X", flags );
-        hasHeader = 0 != (DICT_HEADER_MASK & flags);
-        if ( hasHeader ) {
-            flags &= ~DICT_HEADER_MASK;
-            XP_DEBUGF( "has header!" );
-        }
-#ifdef NODE_CAN_4
-        if ( flags == 0x0001 ) {
-            dctx->super.nodeSize = 3;
-            charSize = 1;
-            dctx->super.is_4_byte = XP_FALSE;
-        } else if ( flags == 0x0002 ) {
-            dctx->super.nodeSize = 3;
-            charSize = 2;
-            dctx->super.is_4_byte = XP_FALSE;
-        } else if ( flags == 0x0003 ) {
-            dctx->super.nodeSize = 4;
-            charSize = 2;
-            dctx->super.is_4_byte = XP_TRUE;
-        } else if ( flags == 0x0004 ) {
-            dctx->super.nodeSize = 3;
-            dctx->super.isUTF8 = XP_TRUE;
-            isUTF8 = XP_TRUE;
-            dctx->super.is_4_byte = XP_FALSE;
-        } else if ( flags == 0x0005 ) {
-            dctx->super.nodeSize = 4;
-            dctx->super.isUTF8 = XP_TRUE;
-            isUTF8 = XP_TRUE;
-            dctx->super.is_4_byte = XP_TRUE;
-        } else {
-            /* case I don't know how to deal with */
-            formatOk = XP_FALSE;
-            XP_ASSERT(0);
-        }
-    } else {
-        XP_ASSERT(0);
+    {
+	FILE* dictF = fopen( fileName, "r" );
+	XP_ASSERT( !!dictF );
+	if ( dctx->useMMap ) {
+	    dctx->dictBase = mmap( NULL, dctx->dictLength, PROT_READ, MAP_PRIVATE, fileno(dictF), 0 );
+	} else {
+	    dctx->dictBase = XP_MALLOC( dctx->super.mpool, dctx->dictLength );
+	    if ( dctx->dictLength != fread( dctx->dictBase, 1, dctx->dictLength, dictF ) ) {
+		XP_ASSERT( 0 );
+	    }
+	}
+	fclose( dictF );
     }
+
+    ptr = dctx->dictBase;
+
+    memcpy( &flags, ptr, sizeof(flags) );
+    ptr += sizeof( flags );
+    flags = ntohs(flags);
+
+    XP_DEBUGF( "flags=0X%X", flags );
+    hasHeader = 0 != (DICT_HEADER_MASK & flags);
+    if ( hasHeader ) {
+	flags &= ~DICT_HEADER_MASK;
+	XP_DEBUGF( "has header!" );
+    }
+#ifdef NODE_CAN_4
+    if ( flags == 0x0001 ) {
+	dctx->super.nodeSize = 3;
+	charSize = 1;
+	dctx->super.is_4_byte = XP_FALSE;
+    } else if ( flags == 0x0002 ) {
+	dctx->super.nodeSize = 3;
+	charSize = 2;
+	dctx->super.is_4_byte = XP_FALSE;
+    } else if ( flags == 0x0003 ) {
+	dctx->super.nodeSize = 4;
+	charSize = 2;
+	dctx->super.is_4_byte = XP_TRUE;
+    } else if ( flags == 0x0004 ) {
+	dctx->super.nodeSize = 3;
+	dctx->super.isUTF8 = XP_TRUE;
+	isUTF8 = XP_TRUE;
+	dctx->super.is_4_byte = XP_FALSE;
+    } else if ( flags == 0x0005 ) {
+	dctx->super.nodeSize = 4;
+	dctx->super.isUTF8 = XP_TRUE;
+	isUTF8 = XP_TRUE;
+	dctx->super.is_4_byte = XP_TRUE;
+    } else {
+	/* case I don't know how to deal with */
+	formatOk = XP_FALSE;
+	XP_ASSERT(0);
+    }
+
 #else
-    XP_ASSERT( flags == 0x0001 );
+XP_ASSERT( flags == 0x0001 );
 #endif
 
     if ( formatOk ) {
+	XP_U8 numFaceBytes, numFaces;
 
         if ( hasHeader ) {
             XP_U16 headerLen;
-            if ( 1 != fread( &headerLen, sizeof(headerLen), 1, dictF ) ) {
-                goto closeAndExit;
-            }
-            headerLen = ntohs( headerLen );
             XP_U32 wordCount;
+
+	    memcpy( &headerLen, ptr, sizeof(headerLen) );
+	    ptr += sizeof(headerLen);
+            headerLen = ntohs( headerLen );
             if ( headerLen != sizeof(wordCount) ) { /* the only case we know right now */
                 goto closeAndExit;
             }
-            if ( 1 != fread( &wordCount, sizeof(wordCount), 1, dictF ) ) {
-                goto closeAndExit;
-            }
+	    memcpy( &wordCount, ptr, sizeof(wordCount) );
+	    ptr += sizeof(wordCount);
             dctx->super.nWords = ntohl( wordCount );
             XP_DEBUGF( "dict contains %ld words", dctx->super.nWords );
         }
 
         if ( isUTF8 ) {
-            if ( 1 != fread( &numFaceBytes, sizeof(numFaceBytes), 1, dictF ) ) {
-                goto closeAndExit;
-            }
+	    numFaceBytes = *ptr++;
         }
-        if ( 1 != fread( &numFaces, sizeof(numFaces), 1, dictF ) ) {
-            goto closeAndExit;
-        }
+	numFaces = *ptr++;
         if ( !isUTF8 ) {
             numFaceBytes = numFaces * charSize;
         }
@@ -309,35 +320,31 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         }
 
         XP_U8 tmp[numFaceBytes];
-        if ( 1 != fread( tmp, numFaceBytes, 1, dictF ) ) {
-            goto closeAndExit;
-        }
+	memcpy( tmp, ptr, numFaceBytes );
+	ptr += numFaceBytes;
 
         dict_splitFaces( &dctx->super, tmp, numFaceBytes, numFaces );
 
-        if ( (1 != fread( &xloc, 2, 1, dictF ) )/* read in (dump) the xloc
-                                                 header for now */
-             || (1 != fread( dctx->super.countsAndValues, numFaces*2, 1, 
-                             dictF ) ) ) {
-            goto closeAndExit;
-        }
+	memcpy( &xloc, ptr, sizeof(xloc) );
+	ptr += sizeof(xloc);
+	memcpy( dctx->super.countsAndValues, ptr, numFaces*2 );
+	ptr += numFaces*2;
     }
     
     dctx->super.langCode = xloc & 0x7F;
 
     if ( formatOk ) {
-        skipBitmaps( dctx, dictF );
+        skipBitmaps( dctx, &ptr );
 
-        curPos = ftell( dictF );
-        dictLength = dctx->mmapLength - curPos;
+        curPos = ptr - dctx->dictBase;
+        dictLength = dctx->dictLength - curPos;
 
         if ( dictLength > 0 ) {
-            if ( 1 != fread( &topOffset, sizeof(topOffset), 1, dictF ) ) {
-                goto closeAndExit;
-            }
+	    memcpy( &topOffset, ptr, sizeof(topOffset) );
             /* it's in big-endian order */
             topOffset = ntohl(topOffset);
             dictLength -= sizeof(topOffset); /* first four bytes are offset */
+	    ptr += sizeof(topOffset);
         }
 
         if ( dictLength > 0 ) {
@@ -350,9 +357,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             XP_ASSERT( (dictLength % 3) == 0 );
 # endif
 #endif
-            dctx->mmapBase = mmap( NULL, dctx->mmapLength, PROT_READ, MAP_PRIVATE, fileno(dictF), 0 );
-            XP_ASSERT( MAP_FAILED != dctx->mmapBase );
-            dctx->super.base = (array_edge*)(dctx->mmapBase + ftell( dictF ) );
+            dctx->super.base = (array_edge*)ptr;
 
             dctx->super.topEdge = dctx->super.base + topOffset;
         } else {
@@ -367,7 +372,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
  closeAndExit:
     formatOk = XP_FALSE;
  ok:
-    fclose( dictF );
+
     return formatOk;
 } /* initFromDictFile */
 
@@ -410,8 +415,12 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
 
     freeSpecials( ctxt );
 
-    if ( !!dict->topEdge ) {
-        (void)munmap( ctxt->mmapBase, ctxt->mmapLength );
+    if ( !!ctxt->dictBase ) {
+	if ( ctxt->useMMap ) {
+	    (void)munmap( ctxt->dictBase, ctxt->dictLength );
+	} else {
+	    XP_FREE( dict->mpool, ctxt->dictBase );
+	}
     }
 
     XP_FREE( dict->mpool, ctxt->super.countsAndValues );

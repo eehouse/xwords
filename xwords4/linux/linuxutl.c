@@ -71,7 +71,7 @@ static DictionaryCtxt*
 linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx) )
 {
     XP_DEBUGF( "linux_util_makeEmptyDict called" );
-    return linux_dictionary_make( MPPARM(uctx->mpool) NULL );
+    return linux_dictionary_make( MPPARM(uctx->mpool) NULL, XP_FALSE );
 } /* linux_util_makeEmptyDict */
 
 #define EM BONUS_NONE
