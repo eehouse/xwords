@@ -314,7 +314,6 @@ public class BoardActivity extends XWActivity
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        Utils.logf( "BoardActivity::onCreate()" );
         super.onCreate( savedInstanceState );
 
         if ( CommonPrefs.getHideTitleBar( this ) ) {
