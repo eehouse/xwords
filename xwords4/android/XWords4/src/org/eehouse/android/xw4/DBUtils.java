@@ -234,8 +234,6 @@ public class DBUtils {
                 }
                 values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
 
-                Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
-
                 String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );
