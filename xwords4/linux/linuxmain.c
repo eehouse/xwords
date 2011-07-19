@@ -251,6 +251,7 @@ typedef enum {
     ,CMD_PLAYERDICT
     ,CMD_SEED
     ,CMD_GAMEFILE
+    ,CMD_MMAP
     ,CMD_PRINTHISORY
     ,CMD_SKIPWARNINGS
     ,CMD_LOCALPWD
@@ -323,6 +324,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_PLAYERDICT, true, "player-dict", "dictionary name for player (in sequence)" }
     ,{ CMD_SEED, true, "seed", "random seed" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
+    ,{ CMD_MMAP, false, "use-mmap", "mmap dicts rather than copy them to memory" }
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
     ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
     ,{ CMD_LOCALPWD, true, "password", "password for user (in sequence)" }
@@ -1027,6 +1029,9 @@ main( int argc, char** argv )
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;
             break;
+	case CMD_MMAP:
+            mainParams.useMmap = true;
+            break;
         case CMD_PRINTHISORY:
             mainParams.printHistory = 1;
             break;
@@ -1231,8 +1236,9 @@ main( int argc, char** argv )
     }
 
     if ( !!mainParams.gi.dictName ) {
-        mainParams.dict = linux_dictionary_make( 
-            MPPARM(mainParams.util->mpool) mainParams.gi.dictName );
+        mainParams.dict = 
+	    linux_dictionary_make(MPPARM(mainParams.util->mpool) mainParams.gi.dictName, 
+				  mainParams.useMmap );
         XP_ASSERT( !!mainParams.dict );
         mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
     } else if ( isServer ) {
@@ -1259,7 +1265,8 @@ main( int argc, char** argv )
         XP_UCHAR* name = mainParams.gi.players[ii].dictName;
         if ( !!name ) {
             mainParams.dicts.dicts[ii] = 
-                linux_dictionary_make( MPPARM(mainParams.util->mpool) name );
+                linux_dictionary_make( MPPARM(mainParams.util->mpool) name,
+				       mainParams.useMmap );
         }
     }
 
