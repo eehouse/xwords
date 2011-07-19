@@ -102,6 +102,7 @@ public class BoardActivity extends XWActivity
     private Thread m_blockingThread;
     private JNIThread m_jniThread;
     private JNIThread.GameStateInfo m_gsi;
+    private boolean m_blockingDlgPosted = false;
 
     private ProgressDialog m_progress;
     private boolean m_isVisible;
@@ -1049,6 +1050,9 @@ public class BoardActivity extends XWActivity
 
     private void loadGame()
     {
+        Assert.assertFalse( m_blockingDlgPosted ); // found the problem!
+        m_blockingDlgPosted = false;
+
         if ( 0 == m_jniGamePtr ) {
             Assert.assertNull( m_gameLock );
             m_gameLock = new GameUtils.GameLock( m_name, true ).lock();
@@ -1224,12 +1228,6 @@ public class BoardActivity extends XWActivity
         };
     }
 
-    /* m_blockingDlgPosted: very rarely m_forResultWait will get
-     * interrupted before the runnable gets run.  In that case there's
-     * no dialog to dismiss.  So track it.
-     */
-    private boolean m_blockingDlgPosted = false;
-
     private int waitBlockingDialog( final int dlgID, int cancelResult )
     {
         int result = cancelResult;
@@ -1311,6 +1309,7 @@ public class BoardActivity extends XWActivity
 
             if ( null != m_jniThread ) {
                 if ( save ) {
+                    Utils.logf( "posting CMD_SAVE" );
                     m_jniThread.handle( JNIThread.JNICmd.CMD_SAVE );
                 }
                 m_jniThread.waitToStop();
