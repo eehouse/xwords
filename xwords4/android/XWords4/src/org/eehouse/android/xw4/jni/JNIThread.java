@@ -271,7 +271,7 @@ public class JNIThread extends Thread {
                 if ( nextSame( JNICmd.CMD_SAVE ) ) {
                     continue;
                 }
-                (void)XwJNI.server_do( m_jniGamePtr );
+                XwJNI.server_do( m_jniGamePtr );
                 XwJNI.game_getGi( m_jniGamePtr, m_gi );
                 GameSummary summary = new GameSummary( m_gi );
                 XwJNI.game_summarize( m_jniGamePtr, summary );
