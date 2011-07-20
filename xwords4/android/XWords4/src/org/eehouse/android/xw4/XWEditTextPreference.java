@@ -20,25 +20,29 @@
 
 package org.eehouse.android.xw4;
 
-import android.preference.ListPreference;
+import android.preference.EditTextPreference;
 import android.content.Context;
 import android.util.AttributeSet;
 
 import junit.framework.Assert;
 
-public class DictListPreference extends XWListPreference {
+public class XWEditTextPreference extends EditTextPreference {
 
-    public DictListPreference( Context context, AttributeSet attrs )
+    public XWEditTextPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
-
-        String[] dicts = GameUtils.dictList( context  );
-        String[] dictEntries = new String[dicts.length];
-        for ( int ii = 0; ii < dicts.length; ++ii ) {
-            dictEntries[ii] = 
-                DictLangCache.annotatedDictName( context, dicts[ii] );
-        }
-        setEntries( dictEntries );
-        setEntryValues( dicts );
     }
+
+    protected void onAttachedToActivity()
+    {
+        super.onAttachedToActivity();
+        setSummary( getPersistedString( "" ) );
+    }
+
+    protected boolean persistString( String value )
+    {
+        setSummary( value );
+        return super.persistString( value );
+    }
+
 }

@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -26,19 +26,22 @@ import android.util.AttributeSet;
 
 import junit.framework.Assert;
 
-public class DictListPreference extends XWListPreference {
+public class XWListPreference extends ListPreference {
 
-    public DictListPreference( Context context, AttributeSet attrs )
+    public XWListPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
+    }
 
-        String[] dicts = GameUtils.dictList( context  );
-        String[] dictEntries = new String[dicts.length];
-        for ( int ii = 0; ii < dicts.length; ++ii ) {
-            dictEntries[ii] = 
-                DictLangCache.annotatedDictName( context, dicts[ii] );
-        }
-        setEntries( dictEntries );
-        setEntryValues( dicts );
+    protected void onAttachedToActivity()
+    {
+        super.onAttachedToActivity();
+        setSummary( getPersistedString( "" ) );
+    }
+
+    protected boolean persistString( String value )
+    {
+        setSummary( value );
+        return super.persistString( value );
     }
 }

@@ -39,7 +39,6 @@ public class PrefsActivity extends PreferenceActivity
     private static final int REVERT_COLORS = 1;
     private static final int REVERT_ALL = 2;
 
-    private HashSet<String> m_keys;
     private String m_keyEmpty;
     private String m_keyLogging;
 
@@ -114,31 +113,6 @@ public class PrefsActivity extends PreferenceActivity
         // Load the preferences from an XML resource
         addPreferencesFromResource( R.xml.xwprefs );
 
-        int[] textKeyIds = { R.string.key_relay_host,
-                             R.string.key_redir_host,
-                             R.string.key_relay_port,
-                             R.string.key_proxy_port,
-                             R.string.key_dict_host,
-                             R.string.key_board_size,
-                             R.string.key_initial_player_minutes,
-                             R.string.key_default_dict,
-                             R.string.key_default_robodict,
-                             R.string.key_default_phonies,
-                             R.string.key_player1_name,
-                             R.string.key_player2_name,
-                             R.string.key_player3_name,
-                             R.string.key_player4_name,
-        };
-
-        SharedPreferences sp
-            = PreferenceManager.getDefaultSharedPreferences( this );
-        m_keys = new HashSet<String>( textKeyIds.length );
-        for ( int ii = 0; ii < textKeyIds.length; ++ii ) {
-            int id  = textKeyIds[ii];
-            String key = getString( id );
-            setSummary( sp, key );
-            m_keys.add( key );
-        }
         m_keyEmpty = getString( R.string.key_empty );
         m_keyLogging = getString( R.string.key_logging_on );
     }
@@ -161,9 +135,6 @@ public class PrefsActivity extends PreferenceActivity
 
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
-        if ( m_keys.contains( key ) ) {
-            setSummary( sp, key );
-        }
         if ( key.equals( m_keyLogging ) ) {
             Utils.logEnable( sp.getBoolean( key, false ) );
         }
@@ -196,18 +167,6 @@ public class PrefsActivity extends PreferenceActivity
         }
         return handled;
     }
-
-    private void setSummary( SharedPreferences sp, String key )
-    {
-        Preference pref = getPreferenceScreen().findPreference( key );
-        String value = sp.getString( key, "" );
-        // if ( pref instanceof android.preference.ListPreference ) {
-        // Utils.logf( "%s: want to do lookup of user string here",
-        //             key );
-        // }
-        pref.setSummary( value );
-    }
-
 
     private void relaunch()
     {
