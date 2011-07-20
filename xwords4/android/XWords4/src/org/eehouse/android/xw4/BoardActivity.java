@@ -77,7 +77,7 @@ public class BoardActivity extends XWActivity
     private GameUtils.GameLock m_gameLock;
     private CurGameInfo m_gi;
     CommsTransport m_xport;
-    private Handler m_handler;
+    private Handler m_handler = null;
     private TimerRunnable[] m_timers;
     private Runnable m_screenTimer;
     private String m_name;
@@ -324,7 +324,6 @@ public class BoardActivity extends XWActivity
         m_utils = new BoardUtilCtxt();
         m_jniu = JNIUtilsImpl.get();
         setContentView( R.layout.board );
-        m_handler = new Handler();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
         m_gi = new CurGameInfo( this );
@@ -343,6 +342,7 @@ public class BoardActivity extends XWActivity
     @Override
     protected void onPause()
     {
+        m_handler = null;
         waitCloseGame( true );
         super.onPause();
     }
@@ -351,6 +351,7 @@ public class BoardActivity extends XWActivity
     protected void onResume()
     {
         super.onResume();
+        m_handler = new Handler();
         setKeepScreenOn();
         loadGame();
     }
@@ -558,7 +559,7 @@ public class BoardActivity extends XWActivity
     public void tpmRelayConnd( final String room, final int devOrder,
                                final boolean allHere, final int nMissing )
     {
-        m_handler.post( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     handleConndMessage( room, devOrder, allHere, nMissing );
                 }
@@ -612,7 +613,7 @@ public class BoardActivity extends XWActivity
         } else if ( dlgID >= 0 ) {
             final int strIDf = strID;
             final int dlgIDf = dlgID;
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         m_dlgBytes = getString( strIDf );
                         m_dlgTitle = R.string.relay_alert;
@@ -762,7 +763,7 @@ public class BoardActivity extends XWActivity
 
         public void requestTime() 
         {
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         if ( null != m_jniThread ) {
                             m_jniThread.handle( JNIThread.JNICmd.CMD_DO, false );
@@ -795,7 +796,7 @@ public class BoardActivity extends XWActivity
         public void setTimer( int why, int when, int handle )
         {
             if ( null != m_timers[why] ) {
-                m_handler.removeCallbacks( m_timers[why] );
+                removeCallbacks( m_timers[why] );
             }
 
             m_timers[why] = new TimerRunnable( why, when, handle );
@@ -811,13 +812,13 @@ public class BoardActivity extends XWActivity
             default:
                 inHowLong = 500;
             }
-            m_handler.postDelayed( m_timers[why], inHowLong );
+            postDelayed( m_timers[why], inHowLong );
         }
 
         public void clearTimer( int why ) 
         {
             if ( null != m_timers[why] ) {
-                m_handler.removeCallbacks( m_timers[why] );
+                removeCallbacks( m_timers[why] );
                 m_timers[why] = null;
             }
         }
@@ -852,7 +853,7 @@ public class BoardActivity extends XWActivity
 
         public void turnChanged()
         {
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         showNotAgainDlgThen( R.string.not_again_turnchanged, 
                                              R.string.key_notagain_turnchanged,
@@ -870,7 +871,7 @@ public class BoardActivity extends XWActivity
         public void engineStarting( int nBlanks )
         {
             if ( nBlanks > 0 ) {
-                m_handler.post( new Runnable() {
+                post( new Runnable() {
                         // Need to keep this from running after activity dies!!
                         public void run() {
                             if ( m_isVisible ) {
@@ -888,7 +889,7 @@ public class BoardActivity extends XWActivity
 
         public void engineStopping()
         {
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         if ( null != m_progress ) {
                             m_progress.cancel();
@@ -1037,7 +1038,7 @@ public class BoardActivity extends XWActivity
         // chat-messages.
         public void showChat( final String msg )
         {
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         DBUtils.appendChatHistory( BoardActivity.this, 
                                                    m_name, msg, false );
@@ -1238,7 +1239,7 @@ public class BoardActivity extends XWActivity
         } else {
             setBlockingThread();
 
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         showDialog( dlgID ); // crash
                         m_blockingDlgPosted = true;
@@ -1276,7 +1277,7 @@ public class BoardActivity extends XWActivity
         }
 
         m_dlgBytes = txt;
-        m_handler.post( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     showDialog( dlgID );
                 }
@@ -1369,9 +1370,36 @@ public class BoardActivity extends XWActivity
                         }
                     };
             }
-            m_handler.removeCallbacks( m_screenTimer ); // needed?
-            m_handler.postDelayed( m_screenTimer, SCREEN_ON_TIME );
+            removeCallbacks( m_screenTimer ); // needed?
+            postDelayed( m_screenTimer, SCREEN_ON_TIME );
         }
     }
 
+    private void post( Runnable runnable )
+    {
+        if ( null != m_handler ) {
+            m_handler.post( runnable );
+        } else {
+            Utils.logf( "post: dropping because handler null" );
+        }
+    }
+
+    private void postDelayed( Runnable runnable, int when )
+    {
+        if ( null != m_handler ) {
+            m_handler.postDelayed( runnable, when );
+        } else {
+            Utils.logf( "postDelayed: dropping %d because handler null", when );
+        }
+    }
+
+    private void removeCallbacks( Runnable which )
+    {
+        if ( null != m_handler ) {
+            m_handler.removeCallbacks( which );
+        } else {
+            Utils.logf( "removeCallbacks: dropping %h because handler null", 
+                        which );
+        }
+    }
 } // class BoardActivity
