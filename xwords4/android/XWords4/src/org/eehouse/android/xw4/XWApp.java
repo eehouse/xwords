@@ -28,7 +28,7 @@ public class XWApp extends Application {
     public void onCreate()
     {
         Utils.logEnable( this );
-        Utils.logf( "XWApp.onCreate()" );
+        Utils.logf( "XWApp.onCreate(); svn_rev=%s", getString(R.string.git_rev_gen) );
         super.onCreate();
     }
 }
