@@ -39,7 +39,6 @@ public class PrefsActivity extends PreferenceActivity
     private static final int REVERT_COLORS = 1;
     private static final int REVERT_ALL = 2;
 
-    private String m_keyEmpty;
     private String m_keyLogging;
 
     @Override
@@ -113,7 +112,6 @@ public class PrefsActivity extends PreferenceActivity
         // Load the preferences from an XML resource
         addPreferencesFromResource( R.xml.xwprefs );
 
-        m_keyEmpty = getString( R.string.key_empty );
         m_keyLogging = getString( R.string.key_logging_on );
     }
     
