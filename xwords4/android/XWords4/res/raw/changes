@@ -6,23 +6,18 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 29 release</b>
+<b>Crosswords 4.4 beta 30 release</b>
 
 <ul>
-  <li>By request: Add preference to leave screen on while you're 
-  thinking about a move</li>
 
-  <li>By request: Add preference to auto-juggle players when creating 
-  a new game</li>
+  <li>Redesign of how new games -- in particular networked games --
+  are created. You can now \"invite\" somebody to a game you're
+  creating, or to an existing game that's missing players.</li>
 
-  <li>Fix various rare crashers reported via devices through google</li>
+  <li>Make name fields assume upper-case</li>
 
-  <li>fix nasty memory leak inside native code introduced when players 
-  got to have their own dictionaries</li>
-
-  <li>fix bug where moves were lost among networked games with more 
-  than two devices</li>
-
+  <li>Fix/reduce impact of java memory leaks</li>
+  
 </ul>
 
 
