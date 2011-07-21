@@ -298,7 +298,7 @@ cmpMoves( PossibleMove* m1, PossibleMove* m2 )
 } /* cmpMoves */
 #endif
 
-#ifdef DEBUG
+#if 0
 static void
 print_savedMoves( const EngineCtxt* engine, const char* label )
 {
@@ -398,8 +398,6 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
             engine->nMovesToSave += XP_RANDOM() % count;
         }
     }
-    XP_LOGF( "%s: set nMovesToSave=%d (iq=%d; NUM_SAVED_ENGINE_MOVES=%d)",
-             __func__, engine->nMovesToSave, iq, NUM_SAVED_ENGINE_MOVES );
 }
 
 /* Return of XP_TRUE means that we ran to completion.  XP_FALSE means we were
@@ -1260,8 +1258,6 @@ set_search_limits( EngineCtxt* engine )
         XP_MEMCPY( &engine->miData.lastSeenMove, 
                    &engine->miData.savedMoves[srcIndx],
                    sizeof(engine->miData.lastSeenMove) );
-        XP_LOGF( "%s: saved limit move with score: %d", __func__, 
-                 engine->miData.lastSeenMove.score );
         //engine->miData.lowestSavedScore = 0;
     } else {
         /* we're doing this for first time */
@@ -1293,8 +1289,6 @@ init_move_cache( EngineCtxt* engine )
     } else {
         engine->miData.curCacheIndex = NUM_SAVED_ENGINE_MOVES;
     }
-    XP_LOGF( "%s: set curCacheIndex to %d", __func__, 
-             engine->miData.curCacheIndex );
 }
 
 static PossibleMove*
@@ -1310,8 +1304,6 @@ next_from_cache( EngineCtxt* engine )
             --engine->miData.curCacheIndex;
         }
         move = &engine->miData.savedMoves[engine->miData.curCacheIndex];
-        XP_LOGF( "%s: curCacheIndex now %d", __func__, 
-                 engine->miData.curCacheIndex );
     }
     return move;
 }
@@ -1321,9 +1313,6 @@ move_cache_empty( const EngineCtxt* engine )
 {
     XP_Bool empty;
     const MoveIterationData* miData = &engine->miData;
-    XP_LOGF( "%s: usePrev: %d; curCacheIndex: %d; nInMoveCache: %d",
-             __func__, engine->usePrev, miData->curCacheIndex,
-             miData->nInMoveCache );
 
     if ( 0 == miData->nInMoveCache ) {
         empty = XP_TRUE;
@@ -1332,7 +1321,6 @@ move_cache_empty( const EngineCtxt* engine )
     } else {
         empty = miData->curCacheIndex <= miData->bottom;
     }
-    LOG_RETURNF( "%d", empty );
     return empty;
 }
 
