@@ -129,46 +129,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public BoardView( Context context, AttributeSet attrs ) 
     {
         super( context, attrs );
-        init( context );
-    }
 
-    public boolean onTouchEvent( MotionEvent event ) 
-    {
-        int action = event.getAction();
-        int xx = (int)event.getX() - m_left;
-        int yy = (int)event.getY() - m_top;
-        
-        switch ( action ) {
-        case MotionEvent.ACTION_DOWN:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
-            break;
-        case MotionEvent.ACTION_MOVE:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
-            break;
-        case MotionEvent.ACTION_UP:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
-            break;
-        default:
-            Utils.logf( "unknown action: " + action );
-            Utils.logf( event.toString() );
-        }
-
-        return true;             // required to get subsequent events
-    }
-
-    // This will be called from the UI thread
-    @Override
-    protected void onDraw( Canvas canvas ) 
-    {
-        synchronized( this ) {
-            if ( layoutBoardOnce() ) {
-                canvas.drawBitmap( s_bitmap, m_left, m_top, m_drawPaint );
-            }
-        }
-    }
-
-    private void init( Context context )
-    {
         m_context = context;
         final float scale = getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
@@ -207,6 +168,41 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         m_viewHandler = new Handler();
+    }
+
+    public boolean onTouchEvent( MotionEvent event ) 
+    {
+        int action = event.getAction();
+        int xx = (int)event.getX() - m_left;
+        int yy = (int)event.getY() - m_top;
+        
+        switch ( action ) {
+        case MotionEvent.ACTION_DOWN:
+            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
+            break;
+        case MotionEvent.ACTION_MOVE:
+            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
+            break;
+        case MotionEvent.ACTION_UP:
+            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+            break;
+        default:
+            Utils.logf( "unknown action: " + action );
+            Utils.logf( event.toString() );
+        }
+
+        return true;             // required to get subsequent events
+    }
+
+    // This will be called from the UI thread
+    @Override
+    protected void onDraw( Canvas canvas ) 
+    {
+        synchronized( this ) {
+            if ( layoutBoardOnce() ) {
+                canvas.drawBitmap( s_bitmap, m_left, m_top, m_drawPaint );
+            }
+        }
     }
 
     private BoardDims figureBoardDims( int width, int height,
@@ -284,6 +280,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                                 Bitmap.Config.ARGB_8888 );
             }
             m_canvas = new Canvas( s_bitmap );
+
+            // Clear it
+            fillRect( new Rect( 0, 0, width, height ), WHITE );
 
             // need to synchronize??
             m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, dims );
