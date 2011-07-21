@@ -205,6 +205,7 @@ public class GamesList extends XWListActivity
 
         setContentView(R.layout.game_list);
         registerForContextMenu( getListView() );
+        DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = FirstRunDialog.show( this, false );
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, isUpgrade );
@@ -229,9 +230,9 @@ public class GamesList extends XWListActivity
 
         Intent intent = getIntent();
         startFirstHasDict( intent );
-        askDefaultNameIf();
+        startNewNetGame( intent );
 
-        DBUtils.setDBChangeListener( this );
+        askDefaultNameIf();
     } // onCreate
 
     @Override
