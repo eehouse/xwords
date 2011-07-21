@@ -249,7 +249,8 @@ utilTimerFired( XW_UtilCtxt* uc, XWTimerReason why, int handle )
     AndUtil* util = (AndUtil*)uc;
     TimerStorage* timerStorage = &util->timerStorage[why];
     XP_ASSERT( handle == (int)timerStorage );
-    return (*timerStorage->proc)( timerStorage->closure, why );
+    return (handle == (int)timerStorage)
+        && (*timerStorage->proc)( timerStorage->closure, why );
 }
 
 static void
