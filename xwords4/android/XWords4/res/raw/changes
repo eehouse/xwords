@@ -10,14 +10,20 @@
 
 <ul>
 
-  <li>Redesign of how new games -- in particular networked games --
-  are created. You can now \"invite\" somebody to a game you're
+  <li>Redesign of how new games -- in particular networked games -- 
+  are created. You can now "invite" somebody to a game you're 
   creating, or to an existing game that's missing players.</li>
+
+  <li>Add a setting for default player name, and on startup ask for it 
+  -- but only once.</li>
 
   <li>Make name fields assume upper-case</li>
 
+  <li>Sort games by creation date not name.  (Soon you'll be able to 
+  rename them.)</li>
+
   <li>Fix/reduce impact of java memory leaks</li>
-  
+
 </ul>
 
 
