@@ -919,8 +919,8 @@ public class GameConfig extends XWActivity
 
         if ( !m_notNetworkedGame ) {
             m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
-            Utils.logf( "ip_relay_seeksPublicRoom: %s", 
-                        m_car.ip_relay_seeksPublicRoom?"true":"false" );
+            Utils.logf( "ip_relay_seeksPublicRoom: %b", 
+                        m_car.ip_relay_seeksPublicRoom );
             m_car.ip_relay_advertiseRoom = 
                 Utils.getChecked( this, R.id.advertise_new_room_check );
             if ( m_car.ip_relay_seeksPublicRoom ) {

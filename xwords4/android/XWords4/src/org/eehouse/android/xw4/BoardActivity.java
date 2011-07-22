@@ -352,7 +352,10 @@ public class BoardActivity extends XWActivity
     {
         super.onResume();
         m_handler = new Handler();
+        m_blockingDlgPosted = false;
+
         setKeepScreenOn();
+
         loadGame();
     }
 
@@ -780,7 +783,7 @@ public class BoardActivity extends XWActivity
 
         public void setIsServer( boolean isServer )
         {
-            Utils.logf( "setIsServer(%s)", isServer?"true":"false" );
+            Utils.logf( "setIsServer(%b)", isServer );
             DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
                 : DeviceRole.SERVER_ISCLIENT;
             if ( newRole != m_gi.serverRole ) {
@@ -1050,9 +1053,6 @@ public class BoardActivity extends XWActivity
 
     private void loadGame()
     {
-        Assert.assertFalse( m_blockingDlgPosted ); // found the problem!
-        m_blockingDlgPosted = false;
-
         if ( 0 == m_jniGamePtr ) {
             Assert.assertNull( m_gameLock );
             m_gameLock = new GameUtils.GameLock( m_name, true ).lock();

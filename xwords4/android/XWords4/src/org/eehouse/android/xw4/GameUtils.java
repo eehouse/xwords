@@ -831,7 +831,7 @@ public class GameUtils {
                 lock.unlock();
             }
         }
-        Utils.logf( "feedMessages=>%s", draw?"true":"false" );
+        Utils.logf( "feedMessages=>%b", draw );
         return draw;
     }
 
