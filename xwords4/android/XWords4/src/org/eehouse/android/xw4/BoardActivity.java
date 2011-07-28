@@ -72,6 +72,10 @@ public class BoardActivity extends XWActivity
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
+    private static final String DLG_TITLE = "DLG_TITLE";
+    private static final String DLG_TITLESTR = "DLG_TITLESTR";
+    private static final String DLG_BYTES = "DLG_BYTES";
+
     private BoardView m_view;
     private int m_jniGamePtr;
     private GameUtils.GameLock m_gameLock;
@@ -141,7 +145,6 @@ public class BoardActivity extends XWActivity
             case DLG_BADWORDS:
             case DLG_RETRY:
                 ab = new AlertDialog.Builder( BoardActivity.this )
-                    //.setIcon( R.drawable.alert_dialog_icon )
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
                     .setPositiveButton( R.string.button_ok, null );
@@ -316,6 +319,7 @@ public class BoardActivity extends XWActivity
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
+        getBundledData( savedInstanceState );
 
         if ( CommonPrefs.getHideTitleBar( this ) ) {
             requestWindowFeature( Window.FEATURE_NO_TITLE );
@@ -357,6 +361,24 @@ public class BoardActivity extends XWActivity
         setKeepScreenOn();
 
         loadGame();
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        outState.putInt( DLG_TITLESTR, m_dlgTitle );
+        outState.putString( DLG_TITLESTR, m_dlgTitleStr );
+        outState.putString( DLG_BYTES, m_dlgBytes );
+    }
+
+    private void getBundledData( Bundle bundle )
+    {
+        if ( null != bundle ) {
+            m_dlgTitleStr = bundle.getString( DLG_TITLESTR  );
+            m_dlgTitle = bundle.getInt( DLG_TITLE  );
+            m_dlgBytes = bundle.getString( DLG_BYTES );
+        }
     }
 
     @Override
@@ -1238,7 +1260,7 @@ public class BoardActivity extends XWActivity
 
             post( new Runnable() {
                     public void run() {
-                        showDialog( dlgID ); // crash
+                        showDialog( dlgID );
                         m_blockingDlgPosted = true;
                     }
                 } );
