@@ -1257,25 +1257,27 @@ public class BoardActivity extends XWActivity
             Utils.logf( "waitBlockingDialog: dropping dlgID %d", dlgID );
         } else {
             setBlockingThread();
+            m_resultCode = cancelResult;
 
-            post( new Runnable() {
+            if ( post( new Runnable() {
                     public void run() {
                         showDialog( dlgID );
                         m_blockingDlgPosted = true;
                     }
-                } );
+                } ) ) {
 
-            try {
-                m_forResultWait.acquire();
-                m_blockingDlgPosted = false;
-            } catch ( java.lang.InterruptedException ie ) {
-                Utils.logf( "waitBlockingDialog: got " + ie.toString() );
-                m_resultCode = cancelResult;
-                if ( m_blockingDlgPosted ) {
-                    dismissDialog( dlgID );
+                try {
+                    m_forResultWait.acquire();
                     m_blockingDlgPosted = false;
+                } catch ( java.lang.InterruptedException ie ) {
+                    Utils.logf( "waitBlockingDialog: got %s", ie.toString() );
+                    if ( m_blockingDlgPosted ) {
+                        dismissDialog( dlgID );
+                        m_blockingDlgPosted = false;
+                    }
                 }
             }
+
             clearBlockingThread();
             result = m_resultCode;
         }
@@ -1395,13 +1397,15 @@ public class BoardActivity extends XWActivity
         }
     }
 
-    private void post( Runnable runnable )
+    private boolean post( Runnable runnable )
     {
-        if ( null != m_handler ) {
+        boolean canPost = null != m_handler;
+        if ( canPost ) {
             m_handler.post( runnable );
         } else {
             Utils.logf( "post: dropping because handler null" );
         }
+        return canPost;
     }
 
     private void postDelayed( Runnable runnable, int when )
