@@ -159,7 +159,7 @@ public class JNIThread extends Thread {
             join();
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
-            Utils.logf( "got InterruptedException: " + ie.toString() );
+            Utils.logf( "JNIThread.waitToStop() got %s",  ie.toString() );
         }
     }
 
@@ -556,7 +556,7 @@ public class JNIThread extends Thread {
     public void handle( JNICmd cmd, boolean isUI, Object... args )
     {
         QueueElem elem = new QueueElem( cmd, isUI, args );
-        // Utils.logf( "adding: " + cmd.toString() );
+        // Utils.logf( "adding: %s", cmd.toString() );
         m_queue.add( elem );
     }
 

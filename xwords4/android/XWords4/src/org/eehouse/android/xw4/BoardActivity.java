@@ -566,7 +566,7 @@ public class BoardActivity extends XWActivity
             break;
 
         default:
-            Utils.logf( "menuitem " + item.getItemId() + " not handled" );
+            Utils.logf( "menuitem %d not handled", id );
             handled = false;
         }
 
@@ -1027,7 +1027,8 @@ public class BoardActivity extends XWActivity
         //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
         // }
 
-        public boolean warnIllegalWord( String[] words, int turn, boolean turnLost )
+        public boolean warnIllegalWord( String[] words, int turn, 
+                                        boolean turnLost )
         {
             Utils.logf( "warnIllegalWord" );
             boolean accept = turnLost;
@@ -1053,7 +1054,7 @@ public class BoardActivity extends XWActivity
                 accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
             }
 
-            Utils.logf( "warnIllegalWord=>" + accept );
+            Utils.logf( "warnIllegalWord=>%b", accept );
             return accept;
         }
 

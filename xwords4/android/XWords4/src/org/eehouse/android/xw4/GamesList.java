@@ -347,7 +347,7 @@ public class GamesList extends XWListActivity
         try {
             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         } catch (ClassCastException e) {
-            Utils.logf( "bad menuInfo:" + e.toString() );
+            Utils.logf( "bad menuInfo: %s", e.toString() );
             return false;
         }
 

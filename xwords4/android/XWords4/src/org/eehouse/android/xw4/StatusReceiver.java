@@ -29,7 +29,7 @@ public class StatusReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent ) 
     {
-        Utils.logf( "StatusReceiver::onReceive called: " + intent.toString() );
+        Utils.logf( "StatusReceiver.onReceive called: %s", intent.toString() );
     }
 
 }

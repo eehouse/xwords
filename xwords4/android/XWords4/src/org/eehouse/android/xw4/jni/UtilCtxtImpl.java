@@ -170,7 +170,7 @@ public class UtilCtxtImpl implements UtilCtxt {
             id = R.string.strd_turn_score;
             break;
         default:
-            Utils.logf( "no such stringCode: " + stringCode );
+            Utils.logf( "no such stringCode: %d", stringCode );
         }
 
         String result;

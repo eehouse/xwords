@@ -143,11 +143,11 @@ public class CommsTransport implements TransportProcs,
                     // we get this when relay goes down.  Need to notify!
                     failed = true;
                     closeSocket();
-                    Utils.logf( "exiting: " + cce.toString() );
+                    Utils.logf( "exiting: %s", cce.toString() );
                     break;          // don't try again
                 } catch ( java.io.IOException ioe ) {
                     closeSocket();
-                    Utils.logf( "exiting: " + ioe.toString() );
+                    Utils.logf( "exiting: %s", ioe.toString() );
                     Utils.logf( ioe.toString() );
                 } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
                     Utils.logf( "%s", ncp.toString() );
@@ -318,7 +318,7 @@ public class CommsTransport implements TransportProcs,
             try {
                 m_thread.join(100);   // wait up to 1/10 second
             } catch ( java.lang.InterruptedException ie ) {
-                Utils.logf( "got InterruptedException: " + ie.toString() );
+                Utils.logf( "got InterruptedException: %s", ie.toString() );
             }
             m_thread = null;
         }

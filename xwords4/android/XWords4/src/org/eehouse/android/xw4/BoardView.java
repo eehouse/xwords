@@ -187,7 +187,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
             break;
         default:
-            Utils.logf( "unknown action: " + action );
+            Utils.logf( "unknown action: %d", action );
             Utils.logf( event.toString() );
         }
 

@@ -397,7 +397,7 @@ public class DictsActivity extends ExpandableListActivity
         try {
             info = (ExpandableListContextMenuInfo)item.getMenuInfo();
         } catch (ClassCastException e) {
-            Utils.logf( "bad menuInfo:" + e.toString() );
+            Utils.logf( "bad menuInfo: %s", e.toString() );
             return false;
         }
         

@@ -634,8 +634,8 @@ public class GameUtils {
             bytes = new byte[len];
             int nRead = dict.read( bytes, 0, len );
             if ( nRead != len ) {
-                Utils.logf( "**** warning ****; read only " + nRead + " of " 
-                            + len + " bytes." );
+                Utils.logf( "**** warning ****; read only %d of %d bytes.",
+                            nRead, len );
             }
             // check that with len bytes we've read the whole file
             Assert.assertTrue( -1 == dict.read() );
