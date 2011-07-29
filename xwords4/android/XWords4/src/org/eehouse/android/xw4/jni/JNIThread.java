@@ -108,6 +108,7 @@ public class JNIThread extends Thread {
     private GameStateInfo m_gsi = new GameStateInfo();
 
     private boolean m_stopped = false;
+    private boolean m_saveOnStop = false;
     private int m_jniGamePtr;
     private GameUtils.GameLock m_lock;
     private Context m_context;
@@ -143,8 +144,12 @@ public class JNIThread extends Thread {
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
 
-    public void waitToStop() {
-        m_stopped = true;
+    public void waitToStop( boolean save )
+    {
+        synchronized ( this ) {
+            m_stopped = true;
+            m_saveOnStop = save;
+        }
         handle( JNICmd.CMD_NONE );     // tickle it
         try {
             // Can't pass timeout to join.  There's no way to kill
@@ -251,10 +256,31 @@ public class JNIThread extends Thread {
         Message.obtain( m_handler, TOOLBAR_STATES ).sendToTarget();
     }
 
+    private void save_jni()
+    {
+        // If server has any work to do, e.g. clean up after showing a
+        // remote- or robot-moved dialog, let it do so before saving
+        // state.  In some cases it'll otherwise drop the move.
+        XwJNI.server_do( m_jniGamePtr );
+
+        XwJNI.game_getGi( m_jniGamePtr, m_gi );
+        GameSummary summary = new GameSummary( m_gi );
+        XwJNI.game_summarize( m_jniGamePtr, summary );
+        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
+        GameUtils.saveGame( m_context, state, m_lock, false );
+        DBUtils.saveSummary( m_context, m_lock, summary );
+    }
+
     public void run() 
     {
         boolean[] barr = new boolean[2]; // scratch boolean
-        while ( !m_stopped ) {
+        for ( ; ; ) {
+            synchronized ( this ) {
+                if ( m_stopped ) {
+                    break;
+                }
+            }
+
             QueueElem elem;
             Object[] args;
             try {
@@ -271,18 +297,7 @@ public class JNIThread extends Thread {
                 if ( nextSame( JNICmd.CMD_SAVE ) ) {
                     continue;
                 }
-                // If server has any work to do, e.g. clean up after
-                // showing a remote- or robot-moved dialog, let it do
-                // so before saving state.  In some cases it'll
-                // otherwise drop the move.
-                XwJNI.server_do( m_jniGamePtr );
-
-                XwJNI.game_getGi( m_jniGamePtr, m_gi );
-                GameSummary summary = new GameSummary( m_gi );
-                XwJNI.game_summarize( m_jniGamePtr, summary );
-                byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
-                GameUtils.saveGame( m_context, state, m_lock, false );
-                DBUtils.saveSummary( m_context, m_lock, summary );
+                save_jni();
                 break;
 
             case CMD_DRAW:
@@ -531,6 +546,10 @@ public class JNIThread extends Thread {
 
                 checkButtons();
             }
+        } // for
+
+        if ( m_saveOnStop ) {
+            save_jni();
         }
     } // run
 

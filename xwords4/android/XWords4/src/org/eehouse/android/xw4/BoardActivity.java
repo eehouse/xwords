@@ -1332,11 +1332,7 @@ public class BoardActivity extends XWActivity
             interruptBlockingThread();
 
             if ( null != m_jniThread ) {
-                if ( save ) {
-                    Utils.logf( "posting CMD_SAVE" );
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_SAVE );
-                }
-                m_jniThread.waitToStop();
+                m_jniThread.waitToStop( save );
                 m_jniThread = null;
             }
 
