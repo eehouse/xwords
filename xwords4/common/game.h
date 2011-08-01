@@ -108,7 +108,11 @@ typedef struct XWGame {
 
 void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi, 
                        XW_UtilCtxt* util, DrawCtx* draw, 
-                       CommonPrefs* cp, const TransportProcs* procs );
+                       CommonPrefs* cp, const TransportProcs* procs
+#ifdef SET_GAMESEED
+                       ,XP_U16 gameSeed
+#endif
+                       );
 void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
                  CommonPrefs* cp, const TransportProcs* procs );
 

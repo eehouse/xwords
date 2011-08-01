@@ -278,7 +278,11 @@ CommsCtxt*
 comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer, 
             XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
             XP_U16 XP_UNUSED_RELAY(nPlayersTotal),
-            const TransportProcs* procs )
+            const TransportProcs* procs
+#ifdef SET_GAMESEED
+            , XP_U16 gameSeed
+#endif
+            )
 {
     CommsCtxt* result = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
@@ -293,6 +297,9 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
 
 #ifdef XWFEATURE_RELAY
     init_relay( result, nPlayersHere, nPlayersTotal );
+# ifdef SET_GAMESEED
+    result->channelSeed = gameSeed;
+# endif
 #endif
     return result;
 } /* comms_make */
@@ -527,7 +534,11 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         nPlayersTotal = 0;
     }
     comms = comms_make( MPPARM(mpool) util, isServer, 
-                        nPlayersHere, nPlayersTotal, procs );
+                        nPlayersHere, nPlayersTotal, procs
+#ifdef SET_GAMESEED
+                        , 0
+#endif
+                        );
     XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
 
     comms->connID = stream_getU32( stream );

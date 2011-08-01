@@ -72,7 +72,11 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
 void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
-                  CommonPrefs* cp, const TransportProcs* procs )
+                  CommonPrefs* cp, const TransportProcs* procs
+#ifdef SET_GAMESEED
+                  ,XP_U16 gameSeed 
+#endif
+                  )
 {
     XP_U16 gameID = 0;
     XP_U16 nPlayersHere, nPlayersTotal;
@@ -92,7 +96,12 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
     if ( gi->serverRole != SERVER_STANDALONE ) {
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
-                                  nPlayersHere, nPlayersTotal, procs );
+                                  nPlayersHere, nPlayersTotal, 
+                                  procs
+#ifdef SET_GAMESEED
+                                  , gameSeed
+#endif
+                                  );
     } else {
         game->comms = (CommsCtxt*)NULL;
     }
@@ -141,7 +150,11 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
     } else if ( gi->serverRole != SERVER_STANDALONE ) {
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
-                                  nPlayersHere, nPlayersTotal, procs );
+                                  nPlayersHere, nPlayersTotal, procs
+#ifdef SET_GAMESEED
+                                  , 0
+#endif
+                                  );
     }
 #else
 # ifdef DEBUG

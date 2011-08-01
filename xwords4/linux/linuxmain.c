@@ -250,6 +250,7 @@ typedef enum {
     ,CMD_DICT
     ,CMD_PLAYERDICT
     ,CMD_SEED
+    ,CMD_GAMESEED
     ,CMD_GAMEFILE
     ,CMD_MMAP
     ,CMD_PRINTHISORY
@@ -323,6 +324,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_DICT, true, "game-dict", "dictionary name for game" }
     ,{ CMD_PLAYERDICT, true, "player-dict", "dictionary name for player (in sequence)" }
     ,{ CMD_SEED, true, "seed", "random seed" }
+    ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
     ,{ CMD_MMAP, false, "use-mmap", "mmap dicts rather than copy them to memory" }
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
@@ -1025,6 +1027,9 @@ main( int argc, char** argv )
             break;
         case CMD_SEED:
             seed = atoi(optarg);
+            break;
+        case CMD_GAMESEED:
+            mainParams.gameSeed = atoi(optarg);
             break;
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;

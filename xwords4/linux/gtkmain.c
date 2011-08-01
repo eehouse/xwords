@@ -443,7 +443,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          &globals->cGlobals.cp, &procs );
+                          &globals->cGlobals.cp, &procs, params->gameSeed );
 
         addr.conType = params->conType;
         if ( 0 ) {

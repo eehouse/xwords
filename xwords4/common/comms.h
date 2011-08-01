@@ -142,7 +142,11 @@ typedef struct _TransportProcs {
 CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
                        XP_Bool isServer, 
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-                       const TransportProcs* procs );
+                       const TransportProcs* procs
+#ifdef SET_GAMESEED
+                       ,XP_U16 gameSeed
+#endif
+                       );
 
 void comms_reset( CommsCtxt* comms, XP_Bool isServer, 
                   XP_U16 nPlayersHere, XP_U16 nPlayersTotal );
@@ -174,7 +178,8 @@ CommsConnType comms_getConType( const CommsCtxt* comms );
 XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
-                                 XW_UtilCtxt* util, const TransportProcs* procs );
+                                 XW_UtilCtxt* util, 
+                                 const TransportProcs* procs );
 void comms_start( CommsCtxt* comms );
 void comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream );
 

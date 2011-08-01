@@ -1528,7 +1528,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         } else {
             game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
                               params->util, (DrawCtx*)g_globals.draw,
-                              &g_globals.cGlobals.cp, &procs );
+                              &g_globals.cGlobals.cp, &procs, params->gameSeed );
         }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
