@@ -108,8 +108,6 @@ public class BoardActivity extends XWActivity
     private JNIThread.GameStateInfo m_gsi;
     private boolean m_blockingDlgPosted = false;
 
-    private ProgressDialog m_progress;
-    private boolean m_isVisible;
     private String m_room;
     private int m_missing;
     private boolean m_haveInvited = false;
@@ -891,37 +889,6 @@ public class BoardActivity extends XWActivity
         public boolean engineProgressCallback()
         {
             return ! m_jniThread.busy();
-        }
-
-        public void engineStarting( int nBlanks )
-        {
-            if ( nBlanks > 0 ) {
-                post( new Runnable() {
-                        // Need to keep this from running after activity dies!!
-                        public void run() {
-                            if ( m_isVisible ) {
-                                String title = 
-                                    getString( R.string.progress_title );
-                                m_progress = 
-                                    ProgressDialog.show( BoardActivity.this,
-                                                         title, null, true, 
-                                                         true );
-                            }
-                        }
-                    } );
-            }
-        }
-
-        public void engineStopping()
-        {
-            post( new Runnable() {
-                    public void run() {
-                        if ( null != m_progress ) {
-                            m_progress.cancel();
-                            m_progress = null;
-                        }
-                    }
-                } );
         }
 
         public boolean userQuery( int id, String query )

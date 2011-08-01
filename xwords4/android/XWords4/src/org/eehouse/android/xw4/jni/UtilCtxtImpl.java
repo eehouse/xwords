@@ -63,16 +63,6 @@ public class UtilCtxtImpl implements UtilCtxt {
         return true;
     }
 
-    public void engineStarting( int nBlanks )
-    {
-        subclassOverride( "engineStarting" );
-    }
-
-    public void engineStopping()
-    {
-        subclassOverride( "engineStopping" );
-    }
-
     public void setTimer( int why, int when, int handle )
     {
         subclassOverride( "setTimer" );
