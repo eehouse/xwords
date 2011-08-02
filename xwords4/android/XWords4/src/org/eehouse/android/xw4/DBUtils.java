@@ -38,6 +38,8 @@ import org.eehouse.android.xw4.jni.*;
 
 public class DBUtils {
 
+    private static final String ROW_ID = "rowid";
+
     public static interface DBChangeListener {
         public void pathSaved( String path );
     }
@@ -87,7 +89,8 @@ public class DBUtils {
 
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
+            String[] columns = { ROW_ID,
+                                 DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
                                  DBHelper.MISSINGPLYRS,
                                  DBHelper.GAME_OVER, DBHelper.PLAYERS,
                                  DBHelper.TURN, DBHelper.GIFLAGS,
@@ -103,6 +106,9 @@ public class DBUtils {
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                Utils.logf( "got rowid: %d", 
+                            cursor.getLong( cursor.getColumnIndex(ROW_ID) ) );
+
                 summary = new GameSummary();
                 summary.nMoves = cursor.getInt(cursor.
                                                getColumnIndex(DBHelper.NUM_MOVES));
