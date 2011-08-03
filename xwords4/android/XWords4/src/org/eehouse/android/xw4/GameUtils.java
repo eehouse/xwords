@@ -53,19 +53,19 @@ public class GameUtils {
     // obtainable when other read locks are granted but not when a
     // write lock is.  Write-locks are exclusive.
     public static class GameLock {
-        private String m_path;
+        private long m_rowid;
         private boolean m_isForWrite;
         private int m_lockCount;
         // StackTraceElement[] m_lockTrace;
 
         // This will leak empty ReentrantReadWriteLock instances for
         // now.
-        private static HashMap<String, GameLock> 
-            s_locks = new HashMap<String,GameLock>();
+        private static HashMap<Long, GameLock> 
+            s_locks = new HashMap<Long,GameLock>();
 
-        public GameLock( String path, boolean isForWrite ) 
+        public GameLock( long rowid, boolean isForWrite ) 
         {
-            m_path = path;
+            m_rowid = rowid;
             m_isForWrite = isForWrite;
             m_lockCount = 0;
             // Utils.logf( "GameLock.GameLock(%s,%s) done", m_path, 
@@ -78,10 +78,10 @@ public class GameUtils {
         {
             boolean gotIt = false;
             synchronized( s_locks ) {
-                GameLock owner = s_locks.get( m_path );
+                GameLock owner = s_locks.get( m_rowid );
                 if ( null == owner ) { // unowned
                     Assert.assertTrue( 0 == m_lockCount );
-                    s_locks.put( m_path, this );
+                    s_locks.put( m_rowid, this );
                     ++m_lockCount;
                     gotIt = true;
                     
@@ -128,9 +128,9 @@ public class GameUtils {
         {
             // Utils.logf( "GameLock.unlock(%s)", m_path );
             synchronized( s_locks ) {
-                Assert.assertTrue( this == s_locks.get(m_path) );
+                Assert.assertTrue( this == s_locks.get(m_rowid) );
                 if ( 1 == m_lockCount ) {
-                    s_locks.remove( m_path );
+                    s_locks.remove( m_rowid );
                 } else {
                     Assert.assertTrue( !m_isForWrite );
                 }
@@ -139,9 +139,9 @@ public class GameUtils {
             // Utils.logf( "GameLock.unlock(%s) done", m_path );
         }
 
-        public String getPath() 
+        public long getRowid() 
         {
-            return m_path;
+            return m_rowid;
         }
 
         // used only for asserts
@@ -153,9 +153,9 @@ public class GameUtils {
 
     private static Object s_syncObj = new Object();
 
-    public static byte[] savedGame( Context context, String path )
+    public static byte[] savedGame( Context context, long rowid )
     {
-        GameLock lock = new GameLock( path, false ).lock();
+        GameLock lock = new GameLock( rowid, false ).lock();
         byte[] result = savedGame( context, lock );
         lock.unlock();
         return result;
@@ -170,8 +170,8 @@ public class GameUtils {
      * Open an existing game, and use its gi and comms addr as the
      * basis for a new one.
      */
-    public static void resetGame( Context context, GameLock lockSrc, 
-                                  GameLock lockDest )
+    public static GameLock resetGame( Context context, GameLock lockSrc, 
+				      GameLock lockDest )
     {
         int gamePtr = XwJNI.initJNI();
         CurGameInfo gi = new CurGameInfo( context );
@@ -203,14 +203,20 @@ public class GameUtils {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
 
-        saveGame( context, gamePtr, gi, lockDest, true );
-        summarizeAndClose( context, lockDest, gamePtr, gi );
+	if ( null == lockDest ) {
+	    long rowid = saveNewGame( context, gamePtr, gi );
+	    lockDest = new GameLock( rowid, true ).lock();
+	} else {
+	    saveGame( context, gamePtr, gi, lockDest, true );
+	}
+	summarizeAndClose( context, lockDest, gamePtr, gi );
+
+	return lockDest;
     } // resetGame
 
-    public static void resetGame( Context context, String pathIn )
+    public static void resetGame( Context context, long rowidIn )
     {
-        GameLock lock = new GameLock( pathIn, true )
-            .lock();
+        GameLock lock = new GameLock( rowidIn, true ).lock();
         tellRelayDied( context, lock, true );
         resetGame( context, lock, lock );
         lock.unlock();
@@ -258,22 +264,21 @@ public class GameUtils {
         return summarizeAndClose( context, lock, gamePtr, gi );
     }
 
-    public static String dupeGame( Context context, String pathIn )
+    public static long dupeGame( Context context, long rowidIn )
     {
-        GameLock lockSrc = new GameLock( pathIn, false ).lock();
-        String newName = newName( context );
-        GameLock lockDest = 
-            new GameLock( newName, true ).lock();
-        resetGame( context, lockSrc, lockDest );
+        GameLock lockSrc = new GameLock( rowidIn, false ).lock();
+        GameLock lockDest = resetGame( context, lockSrc, null );
+        long rowid = lockDest.getRowid();
         lockDest.unlock();
         lockSrc.unlock();
-        return newName;
+        return rowid;
     }
 
-    public static void deleteGame( Context context, String path, boolean informNow )
+    public static void deleteGame( Context context, long rowid, 
+                                   boolean informNow )
     {
         // does this need to be synchronized?
-        GameLock lock = new GameLock( path, true );
+        GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
             tellRelayDied( context, lock, informNow );
             DBUtils.deleteGame( context, lock );
@@ -309,56 +314,52 @@ public class GameUtils {
         }
     }
 
-    public static void saveGame( Context context, int gamePtr, 
+    public static long saveGame( Context context, int gamePtr, 
                                  CurGameInfo gi, GameLock lock,
                                  boolean setCreate )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
-        saveGame( context, stream, lock, setCreate );
+        return saveGame( context, stream, lock, setCreate );
     }
 
-    public static void saveGame( Context context, int gamePtr, 
-                                 CurGameInfo gi )
+    public static long saveNewGame( Context context, int gamePtr,
+				    CurGameInfo gi )
     {
-        String path = newName( context );
-        GameLock lock = 
-            new GameLock( path, true ).lock();
-        saveGame( context, gamePtr, gi, lock, false );
+        byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
+        GameLock lock = DBUtils.saveNewGame( context, stream );
+        long rowid = lock.getRowid();
         lock.unlock();
+        return rowid;
     }
 
-    public static void saveGame( Context context, byte[] bytes, 
+    public static long saveGame( Context context, byte[] bytes, 
                                  GameLock lock, boolean setCreate )
     {
-        DBUtils.saveGame( context, lock, bytes, setCreate );
+        return DBUtils.saveGame( context, lock, bytes, setCreate );
     }
 
-    public static GameLock saveGame( Context context, byte[] bytes, 
-                                     boolean setCreate )
+    public static GameLock saveNewGame( Context context, byte[] bytes )
     {
-        String name = newName( context );
-        GameLock lock = 
-            new GameLock( name, true ).lock();
-        saveGame( context, bytes, lock, setCreate );
-        return lock;
+        return DBUtils.saveNewGame( context, bytes );
     }
 
-    public static String saveNew( Context context, CurGameInfo gi )
+    public static long saveNew( Context context, CurGameInfo gi )
     {
-        String path = null;
+        long rowid = -1;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            GameLock lock = saveGame( context, bytes, true );
-            path = lock.getPath();
+            GameLock lock = DBUtils.saveNewGame( context, bytes );
+            rowid = lock.getRowid();
             lock.unlock();
         }
-        return path;
+        return rowid;
     }
 
-    public static String makeNewNetGame( Context context, String room, 
-                                         int[] lang, int nPlayersT, 
-                                         int nPlayersH )
+    public static long makeNewNetGame( Context context, String room, 
+                                        int[] lang, int nPlayersT, 
+                                        int nPlayersH )
     {
+        long rowid = -1;
         CommsAddrRec addr = new CommsAddrRec( context );
         addr.ip_relay_invite = room;
 
@@ -370,23 +371,23 @@ public class GameUtils {
         // Will need to add a setNPlayers() method to gi to make this
         // work
         Assert.assertTrue( gi.nPlayers == nPlayersT );
-        String path = saveNew( context, gi );
+        rowid = saveNew( context, gi );
 
-        GameLock lock = new GameLock( path, true ).lock();
+        GameLock lock = new GameLock( rowid, true ).lock();
         applyChanges( context, gi, addr, lock, false );
         lock.unlock();
 
-        return path;
+        return rowid;
     }
 
-    public static String makeNewNetGame( Context context, String room, 
-                                         int lang, int nPlayers )
+    public static long makeNewNetGame( Context context, String room, 
+				       int lang, int nPlayers )
     {
         int[] langarr = { lang };
         return makeNewNetGame( context, room, langarr, nPlayers, 1 );
     }
 
-    public static String makeNewNetGame( Context context, NetLaunchInfo info )
+    public static long makeNewNetGame( Context context, NetLaunchInfo info )
     {
         return makeNewNetGame( context, info.room, info.lang, 
                                info.nPlayers );
@@ -414,18 +415,18 @@ public class GameUtils {
         }
     }
 
-    public static boolean gameDictsHere( Context context, String path )
+    public static boolean gameDictsHere( Context context, long rowid )
     {
-        return gameDictsHere( context, path, null, null );
+        return gameDictsHere( context, rowid, null, null );
     }
 
     // Return true if all dicts present.  Return list of those that
     // are not.
-    public static boolean gameDictsHere( Context context, String path, 
+    public static boolean gameDictsHere( Context context, long rowid,
                                          String[][] missingNames, 
                                          int[] missingLang )
     {
-        byte[] stream = savedGame( context, path );
+        byte[] stream = savedGame( context, rowid );
         CurGameInfo gi = new CurGameInfo( context );
         XwJNI.gi_from_stream( gi, stream );
         final String[] dictNames = gi.dictNames();
@@ -451,28 +452,29 @@ public class GameUtils {
     public static boolean gameDictsHere( Context context, int indx, 
                                          String[][] name, int[] lang )
     {
-        String path = DBUtils.gamesList( context )[indx];
-        return gameDictsHere( context, path, name, lang );
+        long rowid = DBUtils.gamesList( context )[indx];
+        return gameDictsHere( context, rowid, name, lang );
     }
 
     public static String newName( Context context ) 
     {
-        String name = null;
-        Integer num = 1;
-        int ii;
-        String[] files = DBUtils.gamesList( context );
-        String fmt = context.getString( R.string.gamef );
+        return "untitled";
+        // String name = null;
+        // Integer num = 1;
+        // int ii;
+        // long[] rowids = DBUtils.gamesList( context );
+        // String fmt = context.getString( R.string.gamef );
 
-        while ( name == null ) {
-            name = String.format( fmt + XWConstants.GAME_EXTN, num );
-            for ( ii = 0; ii < files.length; ++ii ) {
-                if ( files[ii].equals(name) ) {
-                    ++num;
-                    name = null;
-                }
-            }
-        }
-        return name;
+        // while ( name == null ) {
+        //     name = String.format( fmt + XWConstants.GAME_EXTN, num );
+        //     for ( ii = 0; ii < files.length; ++ii ) {
+        //         if ( files[ii].equals(name) ) {
+        //             ++num;
+        //             name = null;
+        //         }
+        //     }
+        // }
+        // return name;
     }
 
     public static String[] dictList( Context context )
@@ -733,52 +735,53 @@ public class GameUtils {
         return file.endsWith( XWConstants.DICT_EXTN );
     }
 
-    public static String gameName( Context context, String path )
+    public static String gameName( Context context, long rowid )
     {
-        return path.substring( 0, path.lastIndexOf( XWConstants.GAME_EXTN ) );
+        return String.format( "Row %d", rowid );
+        // return path.substring( 0, path.lastIndexOf( XWConstants.GAME_EXTN ) );
     }
 
-    public static void launchGame( Activity activity, String path,
+    public static void launchGame( Activity activity, long rowid,
                                    boolean invited )
     {
         Intent intent = new Intent( activity, BoardActivity.class );
         intent.setAction( Intent.ACTION_EDIT );
-        intent.putExtra( BoardActivity.INTENT_KEY_NAME, path );
+        intent.putExtra( BoardActivity.INTENT_KEY_ROWID, rowid );
         if ( invited ) {
             intent.putExtra( INVITED, true );
         }
         activity.startActivity( intent );
     }
 
-    public static void launchGame( Activity activity, String path )
+    public static void launchGame( Activity activity, long rowid)
     {
-        launchGame( activity, path, false );
+        launchGame( activity, rowid, false );
     }
 
-    public static void launchGameAndFinish( Activity activity, String path )
+    public static void launchGameAndFinish( Activity activity, long rowid )
     {
-        launchGame( activity, path );
+        launchGame( activity, rowid );
         activity.finish();
     }
 
     private static class FeedUtilsImpl extends UtilCtxtImpl {
         private Context m_context;
-        private String m_path;
+        private long m_rowid;
         public boolean m_gotMsg;
         public boolean m_gotChat;
         public boolean m_gameOver;
 
-        public FeedUtilsImpl( Context context, String path )
+        public FeedUtilsImpl( Context context, long rowid )
         {
             super( context );
             m_context = context;
-            m_path = path;
+            m_rowid = rowid;
             m_gotMsg = false;
             m_gameOver = false;
         }
         public void showChat( String msg )
         {
-            DBUtils.appendChatHistory( m_context, m_path, msg, false );
+            DBUtils.appendChatHistory( m_context, m_rowid, msg, false );
             m_gotChat = true;
         }
         public void turnChanged()
@@ -796,12 +799,12 @@ public class GameUtils {
                                         byte[][] msgs )
     {
         boolean draw = false;
-        String path = DBUtils.getPathFor( context, relayID );
-        if ( null != path ) {
+        long rowid = DBUtils.getRowIDFor( context, relayID );
+        if ( -1 != rowid ) {
             int gamePtr = XwJNI.initJNI();
             CurGameInfo gi = new CurGameInfo( context );
-            FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, path );
-            GameLock lock = new GameLock( path, true );
+            FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
+            GameLock lock = new GameLock( rowid, true );
             if ( lock.tryLock() ) {
                 loadMakeGame( context, gamePtr, gi, feedImpl, lock );
 
@@ -826,7 +829,7 @@ public class GameUtils {
                 }
                 if ( GameSummary.MSG_FLAGS_NONE != flags ) {
                     draw = true;
-                    DBUtils.setMsgFlags( path, flags );
+                    DBUtils.setMsgFlags( rowid, flags );
                 }
                 lock.unlock();
             }
@@ -838,10 +841,10 @@ public class GameUtils {
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new
     // dict have the same langauge code.
-    public static void replaceDicts( Context context, String game,
-                                    String oldDict, String newDict )
+    public static void replaceDicts( Context context, long rowid,
+				     String oldDict, String newDict )
     {
-        GameLock lock = new GameLock( game, true ).lock();
+        GameLock lock = new GameLock( rowid, true ).lock();
         byte[] stream = savedGame( context, lock );
         CurGameInfo gi = new CurGameInfo( context );
         XwJNI.gi_from_stream( gi, stream );
@@ -911,11 +914,11 @@ public class GameUtils {
         XwJNI.game_dispose( gamePtr );
     } // applyChanges
 
-    public static void doConfig( Activity activity, String path, Class clazz )
+    public static void doConfig( Activity activity, long rowid, Class clazz )
     {
         Intent intent = new Intent( activity, clazz );
         intent.setAction( Intent.ACTION_EDIT );
-        intent.putExtra( BoardActivity.INTENT_KEY_NAME, path );
+        intent.putExtra( BoardActivity.INTENT_KEY_ROWID, rowid );
         activity.startActivity( intent );
     }
 

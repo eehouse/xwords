@@ -64,7 +64,7 @@ public class GamesList extends XWListActivity
     private String m_missingDict;
     private Handler m_handler;
     private String[] m_missingDictNames;
-    private String m_missingDictPath;
+    private long m_missingDictRowId;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
 
@@ -143,7 +143,7 @@ public class GamesList extends XWListActivity
                                        dict = DictLangCache.stripCount( dict );
                                        GameUtils.
                                            replaceDicts( GamesList.this,
-                                                         m_missingDictPath,
+                                                         m_missingDictRowId,
                                                          m_missingDictNames[0],
                                                          dict );
                                    }
@@ -316,18 +316,18 @@ public class GamesList extends XWListActivity
     }
 
     // DBUtils.DBChangeListener interface
-    public void pathSaved( final String path )
+    public void gameSaved( final long rowid )
     {
         m_handler.post( new Runnable() {
                 public void run() {
-                    m_adapter.inval( path );
+                    m_adapter.inval( rowid );
                     onContentChanged();
                 }
             } );
     }
 
     // GameListAdapter.LoadItemCB interface
-    public void itemLoaded( String path )
+    public void itemLoaded( long rowid )
     {
         onContentChanged();
     }
@@ -372,7 +372,7 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_delete_all:
-            final String[] games = DBUtils.gamesList( this );
+            final long[] games = DBUtils.gamesList( this );
             if ( games.length > 0 ) {
                 DialogInterface.OnClickListener lstnr =
                     new DialogInterface.OnClickListener() {
@@ -427,12 +427,12 @@ public class GamesList extends XWListActivity
     protected void onListItemClick( ListView l, View v, int position, long id )
     {
         super.onListItemClick( l, v, position, id );
-        String path = DBUtils.gamesList( this )[position];
+        long rowid = DBUtils.gamesList( this )[position];
 
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
-        GameSummary summary = DBUtils.getSummary( this, path, true );
+        GameSummary summary = DBUtils.getSummary( this, rowid, true );
         if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
              && summary.roomName.length() == 0 ) {
             // If it's unconfigured and of the type RelayGameActivity
@@ -444,10 +444,10 @@ public class GamesList extends XWListActivity
             } else {
                 clazz = GameConfig.class;
             }
-            GameUtils.doConfig( this, path, clazz );
+            GameUtils.doConfig( this, rowid, clazz );
         } else {
-            if ( checkWarnNoDict( path ) ) {
-                GameUtils.launchGame( this, path );
+            if ( checkWarnNoDict( rowid ) ) {
+                GameUtils.launchGame( this, rowid );
             }
         }
     }
@@ -457,38 +457,37 @@ public class GamesList extends XWListActivity
         boolean handled = true;
         DialogInterface.OnClickListener lstnr;
 
-        final String path = DBUtils.gamesList( this )[position];
+        final long rowid = DBUtils.gamesList( this )[position];
     
         if ( R.id.list_item_delete == menuID ) {
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int ii ) {
-                        GameUtils.deleteGame( GamesList.this, path, true );
+                        GameUtils.deleteGame( GamesList.this, rowid, true );
                     }
                 };
             showConfirmThen( R.string.confirm_delete, lstnr );
         } else {
-            String invalPath = null;
-            if ( checkWarnNoDict( path ) ) {
+            if ( checkWarnNoDict( rowid ) ) {
                 switch ( menuID ) {
                 case R.id.list_item_reset:
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, int ii ) {
-                                GameUtils.resetGame( GamesList.this, path );
+                                GameUtils.resetGame( GamesList.this, rowid );
                             }
                         };
                     showConfirmThen( R.string.confirm_reset, lstnr );
                     break;
                 case R.id.list_item_config:
-                    GameUtils.doConfig( this, path, GameConfig.class );
+                    GameUtils.doConfig( this, rowid, GameConfig.class );
                     break;
 
                 case R.id.list_item_new_from:
                     Runnable proc = new Runnable() {
                             public void run() {
-                                String newName = 
-                                    GameUtils.dupeGame( GamesList.this, path );
+                                long newid = 
+                                    GameUtils.dupeGame( GamesList.this, rowid );
                                 if ( null != m_adapter ) {
-                                    m_adapter.inval( newName );
+                                    m_adapter.inval( newid );
                                 }
                             }
                         };
@@ -497,13 +496,13 @@ public class GamesList extends XWListActivity
                     break;
 
                 case R.id.list_item_copy:
-                    GameSummary summary = DBUtils.getSummary( this, path, true );
+                    GameSummary summary = DBUtils.getSummary( this, rowid, true );
                     if ( summary.inNetworkGame() ) {
                         showOKOnlyDialog( R.string.no_copy_network );
                     } else {
-                        byte[] stream = GameUtils.savedGame( this, path );
+                        byte[] stream = GameUtils.savedGame( this, rowid );
                         GameUtils.GameLock lock = 
-                            GameUtils.saveGame( this, stream, true );
+                            GameUtils.saveNewGame( this, stream );
                         DBUtils.saveSummary( this, lock, summary );
                         lock.unlock();
                     }
@@ -523,26 +522,22 @@ public class GamesList extends XWListActivity
                     break;
                 }
             }
-
-            if ( null != invalPath ) {
-                m_adapter.inval( invalPath );
-            }
         }
 
         return handled;
     } // handleMenuItem
 
-    private boolean checkWarnNoDict( String path )
+    private boolean checkWarnNoDict( long rowid )
     {
         String[][] missingNames = new String[1][];
         int[] missingLang = new int[1];
-        boolean hasDicts = GameUtils.gameDictsHere( this, path, 
+        boolean hasDicts = GameUtils.gameDictsHere( this, rowid,
                                                     missingNames, 
                                                     missingLang );
         if ( !hasDicts ) {
             m_missingDictNames = missingNames[0];
             m_missingDictLang = missingLang[0];
-            m_missingDictPath = path;
+            m_missingDictRowId = rowid;
             if ( 0 == DictLangCache.getLangCount( this, m_missingDictLang ) ) {
                 showDialog( WARN_NODICT );
             } else {
@@ -556,8 +551,8 @@ public class GamesList extends XWListActivity
     {
         if ( null != relayIDs ) {
             for ( String relayID : relayIDs ) {
-                String path = DBUtils.getPathFor( this, relayID );
-                m_adapter.inval( path );
+                long rowid = DBUtils.getRowIDFor( this, relayID );
+                m_adapter.inval( rowid );
             }
             onContentChanged();
         }
@@ -569,9 +564,9 @@ public class GamesList extends XWListActivity
     {
         if ( null != relayIDs ) {
             for ( String relayID : relayIDs ) {
-                String path = DBUtils.getPathFor( this, relayID );
-                if ( null != path && GameUtils.gameDictsHere( this, path ) ) {
-                    GameUtils.launchGame( this, path );
+                long rowid = DBUtils.getRowIDFor( this, relayID );
+                if ( -1 != rowid && GameUtils.gameDictsHere( this, rowid ) ) {
+                    GameUtils.launchGame( this, rowid );
                     break;
                 }
             }
@@ -594,21 +589,21 @@ public class GamesList extends XWListActivity
 
     private void startNewNetGame( final NetLaunchInfo info )
     {
-        String path = DBUtils.getPathForOpen( this, info.room, info.lang, 
+        long rowid = DBUtils.getRowIDForOpen( this, info.room, info.lang, 
                                               info.nPlayers );
 
-        if ( null == path ) {
-            path = GameUtils.makeNewNetGame( this, info );
-            GameUtils.launchGame( this, path, true );
+        if ( -1 != rowid ) {
+            rowid = GameUtils.makeNewNetGame( this, info );
+            GameUtils.launchGame( this, rowid, true );
         } else {
             DialogInterface.OnClickListener then = 
                 new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, 
                                          int ii ) {
-                        String path = GameUtils.
+                        long rowid = GameUtils.
                             makeNewNetGame( GamesList.this, info ); 
                         GameUtils.launchGame( GamesList.this, 
-                                              path, true );
+					      rowid, true );
                     }
                 };
             String fmt = getString( R.string.dup_game_queryf );

@@ -42,23 +42,23 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
-    private HashMap<String,View> m_viewsCache;
+    private HashMap<Long,View> m_viewsCache;
     private DateFormat m_df;
     private LoadItemCB m_cb;
     // private int m_taskCounter = 0;
 
     public interface LoadItemCB {
-        public void itemLoaded( String path );
+        public void itemLoaded( long rowid );
     }
 
     private class LoadItemTask extends AsyncTask<Void, Void, Void> {
-        private String m_path;
+        private long m_rowid;
         private Context m_context;
         // private int m_id;
-        public LoadItemTask( Context context, String path/*, int id*/ )
+        public LoadItemTask( Context context, long rowid/*, int id*/ )
         {
             m_context = context;
-            m_path = path;
+            m_rowid = rowid;
             // m_id = id;
         }
 
@@ -68,9 +68,9 @@ public class GameListAdapter extends XWListAdapter {
             // Utils.logf( "doInBackground(id=%d)", m_id );
             View layout = m_factory.inflate( R.layout.game_list_item, null );
             boolean hideTitle = false;//CommonPrefs.getHideTitleBar(m_context);
-            GameSummary summary = DBUtils.getSummary( m_context, m_path, false );
+            GameSummary summary = DBUtils.getSummary( m_context, m_rowid, false );
             if ( null == summary ) {
-                m_path = null;
+                m_rowid = -1;
             } else {
                 //Assert.assertNotNull( summary );
 
@@ -78,7 +78,7 @@ public class GameListAdapter extends XWListAdapter {
                 if ( hideTitle ) {
                     view.setVisibility( View.GONE );
                 } else {
-                    String name = GameUtils.gameName( m_context, m_path );
+                    String name = GameUtils.gameName( m_context, m_rowid );
                     String format = 
                         m_context.getString( R.string.str_game_namef );
                     String lang = 
@@ -119,7 +119,7 @@ public class GameListAdapter extends XWListAdapter {
                     marker.setVisibility( View.VISIBLE );
                 }
                 synchronized( m_viewsCache ) {
-                    m_viewsCache.put( m_path, layout );
+                    m_viewsCache.put( m_rowid, layout );
                 }
             }
             return null;
@@ -129,8 +129,8 @@ public class GameListAdapter extends XWListAdapter {
         protected void onPostExecute( Void unused )
         {
             // Utils.logf( "onPostExecute(id=%d)", m_id );
-            if ( null != m_path ) {
-                m_cb.itemLoaded( m_path );
+            if ( -1 != m_rowid ) {
+                m_cb.itemLoaded( m_rowid );
             }
         }
     } // class LoadItemTask
@@ -148,7 +148,7 @@ public class GameListAdapter extends XWListAdapter {
             sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
         } catch ( Exception ex ) {}
 
-        m_viewsCache = new HashMap<String,View>();
+        m_viewsCache = new HashMap<Long,View>();
     }
     
     public int getCount() {
@@ -157,10 +157,10 @@ public class GameListAdapter extends XWListAdapter {
     
     public Object getItem( int position ) 
     {
-        final String path = DBUtils.gamesList(m_context)[position];
+        final long rowid = DBUtils.gamesList(m_context)[position];
         View layout;
         synchronized( m_viewsCache ) {
-            layout = m_viewsCache.get( path );
+            layout = m_viewsCache.get( rowid );
         }
 
         if ( null == layout ) {
@@ -172,11 +172,11 @@ public class GameListAdapter extends XWListAdapter {
             if ( hideTitle ) {
                 view.setVisibility( View.GONE );
             } else {
-                String text = GameUtils.gameName( m_context, path );
+                String text = GameUtils.gameName( m_context, rowid );
                 view.setText( text );
             }
 
-            new LoadItemTask( m_context, path/*, ++m_taskCounter*/ ).execute();
+            new LoadItemTask( m_context, rowid/*, ++m_taskCounter*/ ).execute();
         }
 
         // this doesn't work.  Rather, it breaks highlighting because
@@ -197,10 +197,10 @@ public class GameListAdapter extends XWListAdapter {
         return (View)getItem( position );
     }
 
-    public void inval( String key ) 
+    public void inval( long rowid )
     {
         synchronized( m_viewsCache ) {
-            m_viewsCache.remove( key );
+            m_viewsCache.remove( rowid );
         }
     }
 }

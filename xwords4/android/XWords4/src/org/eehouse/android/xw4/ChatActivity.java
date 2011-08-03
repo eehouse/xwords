@@ -35,7 +35,7 @@ import android.widget.LinearLayout;
 
 public class ChatActivity extends XWActivity implements View.OnClickListener {
 
-    private String m_name;
+    private long m_rowid;
 
     @Override
     public void onCreate( Bundle savedInstanceState ) 
@@ -44,9 +44,9 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
 
         setContentView( R.layout.chat );
 
-        m_name = getIntent().getStringExtra( BoardActivity.INTENT_KEY_NAME );
+        m_rowid = getIntent().getLongExtra( BoardActivity.INTENT_KEY_ROWID, -1 );
      
-        DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( this, m_name );
+        DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( this, m_rowid );
         if ( null != pairs ) {
             LinearLayout layout = (LinearLayout)findViewById( R.id.chat_history );
             LayoutInflater factory = LayoutInflater.from( this );
@@ -65,7 +65,7 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
         ((Button)findViewById( R.id.send_button )).setOnClickListener( this );
 
         String fmt = getString( R.string.chat_titlef );
-        setTitle( String.format( fmt, GameUtils.gameName( this, m_name ) ) );
+        setTitle( String.format( fmt, GameUtils.gameName( this, m_rowid ) ) );
     }
 
     @Override
@@ -81,7 +81,7 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
     {
         boolean handled = R.id.chat_menu_clear == item.getItemId();
         if ( handled ) {
-            DBUtils.clearChatHistory( this, m_name );
+            DBUtils.clearChatHistory( this, m_rowid );
             LinearLayout layout = 
                 (LinearLayout)findViewById( R.id.chat_history );
             layout.removeAllViews();
@@ -99,7 +99,7 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
         if ( null == text || text.length() == 0 ) {
             setResult( Activity.RESULT_CANCELED );
         } else {
-            DBUtils.appendChatHistory( this, m_name, text, true );
+            DBUtils.appendChatHistory( this, m_rowid, text, true );
 
             Intent result = new Intent();
             result.putExtra( BoardActivity.INTENT_KEY_CHAT, text );

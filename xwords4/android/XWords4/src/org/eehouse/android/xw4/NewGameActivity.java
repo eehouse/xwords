@@ -89,25 +89,25 @@ public class NewGameActivity extends XWActivity {
     private void makeNewGame( boolean networked, boolean launch )
     {
         String room = null;
-        String path;
+        long rowid;
         int[] lang = {0};
         final int nPlayers = 2; // hard-coded for no-configure case
 
         if ( networked ) {
             Random random = new Random();
             room = String.format( "%X", random.nextInt() ).substring( 0, 4 );
-            path = GameUtils.makeNewNetGame( this, room, lang, nPlayers, 1 );
+            rowid = GameUtils.makeNewNetGame( this, room, lang, nPlayers, 1 );
         } else {
-            path = GameUtils.saveNew( this, new CurGameInfo( this ) );
+            rowid = GameUtils.saveNew( this, new CurGameInfo( this ) );
         }
 
         if ( launch ) {
-            GameUtils.launchGame( this, path, networked );
+            GameUtils.launchGame( this, rowid, networked );
             if ( networked ) {
                 GameUtils.launchInviteActivity( this, room, lang[0], nPlayers );
             }
         } else {
-            GameUtils.doConfig( this, path, GameConfig.class );
+            GameUtils.doConfig( this, rowid, GameConfig.class );
         }
 
         finish();

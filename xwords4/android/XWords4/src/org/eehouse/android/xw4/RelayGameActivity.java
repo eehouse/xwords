@@ -39,7 +39,7 @@ import org.eehouse.android.xw4.jni.*;
 public class RelayGameActivity extends XWActivity 
     implements View.OnClickListener {
 
-    private String m_name;
+    private long m_rowid;
     private CurGameInfo m_gi;
     private GameUtils.GameLock m_gameLock;
     private CommsAddrRec m_car;
@@ -53,7 +53,7 @@ public class RelayGameActivity extends XWActivity
 
         setContentView( R.layout.relay_game_config );
 
-        m_name = getIntent().getStringExtra( BoardActivity.INTENT_KEY_NAME );
+        m_rowid = getIntent().getLongExtra( BoardActivity.INTENT_KEY_ROWID, -1 );
 
         m_playButton = (Button)findViewById( R.id.play_button );
         m_playButton.setOnClickListener( this );
@@ -69,7 +69,7 @@ public class RelayGameActivity extends XWActivity
 
         int gamePtr = XwJNI.initJNI();
         m_gi = new CurGameInfo( this );
-        m_gameLock = new GameUtils.GameLock( m_name, true ).lock();
+        m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
         GameUtils.loadMakeGame( this, gamePtr, m_gi, m_gameLock );
         m_car = new CommsAddrRec( this );
         if ( XwJNI.game_hasComms( gamePtr ) ) {
@@ -107,12 +107,12 @@ public class RelayGameActivity extends XWActivity
                 showOKOnlyDialog( R.string.no_empty_rooms );
             } else {
                 if ( saveRoomAndName( room ) ) {
-                    GameUtils.launchGameAndFinish( this, m_name );
+                    GameUtils.launchGameAndFinish( this, m_rowid );
                 }
             }
         } else if ( view == m_configButton ) {
             if ( saveRoomAndName( room ) ) {
-                GameUtils.doConfig( this, m_name, GameConfig.class );
+                GameUtils.doConfig( this, m_rowid, GameConfig.class );
                 finish();
             }
         }

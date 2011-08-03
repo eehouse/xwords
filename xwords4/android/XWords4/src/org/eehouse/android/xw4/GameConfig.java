@@ -82,7 +82,7 @@ public class GameConfig extends XWActivity
     private View m_connectSet;  // really a LinearLayout
     private Spinner m_roomChoose;
     // private Button m_configureButton;
-    private String m_name;
+    private long m_rowid;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
     private GameUtils.GameLock m_gameLock;
@@ -371,7 +371,7 @@ public class GameConfig extends XWActivity
         m_cp = CommonPrefs.get( this );
 
         Intent intent = getIntent();
-        m_name = intent.getStringExtra( BoardActivity.INTENT_KEY_NAME );
+        m_rowid = intent.getLongExtra( BoardActivity.INTENT_KEY_ROWID, -1 );
 
         setContentView(R.layout.game_config);
 
@@ -400,7 +400,7 @@ public class GameConfig extends XWActivity
         m_giOrig = new CurGameInfo( this );
         // Lock in case we're going to config.  We *could* re-get the
         // lock once the user decides to make changes.  PENDING.
-        m_gameLock = new GameUtils.GameLock( m_name, true ).lock();
+        m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
         GameUtils.loadMakeGame( this, gamePtr, m_giOrig, m_gameLock );
         m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
             || XwJNI.comms_isConnected( gamePtr );
@@ -955,7 +955,7 @@ public class GameConfig extends XWActivity
         if ( m_notNetworkedGame || m_car.ip_relay_invite.length() > 0 ) {
             m_gameLock.unlock();
             m_gameLock = null;
-            GameUtils.launchGameAndFinish( this, m_name );
+            GameUtils.launchGameAndFinish( this, m_rowid );
         } else {
             showOKOnlyDialog( R.string.no_empty_rooms );            
         }
@@ -974,7 +974,7 @@ public class GameConfig extends XWActivity
         String fmt = getString( m_notNetworkedGame ?
                                 R.string.title_game_configf
                                 : R.string.title_gamenet_configf );
-        setTitle( String.format( fmt, GameUtils.gameName( this, m_name ) ) );
+        setTitle( String.format( fmt, GameUtils.gameName( this, m_rowid ) ) );
     }
 
 }

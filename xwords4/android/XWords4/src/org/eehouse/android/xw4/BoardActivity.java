@@ -55,7 +55,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class BoardActivity extends XWActivity 
     implements TransportProcs.TPMsgHandler {
 
-    public static final String INTENT_KEY_NAME = "name";
+    public static final String INTENT_KEY_ROWID = "rowid";
     public static final String INTENT_KEY_CHAT = "chat";
 
     private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
@@ -84,7 +84,7 @@ public class BoardActivity extends XWActivity
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
     private Runnable m_screenTimer;
-    private String m_name;
+    private long m_rowid;
     private Toolbar m_toolbar;
     private ArrayList<String> m_pendingChats = new ArrayList<String>();
 
@@ -170,7 +170,7 @@ public class BoardActivity extends XWActivity
 
                             waitCloseGame( false );
                             GameUtils.deleteGame( BoardActivity.this,
-                                                  m_name, false );
+                                                  m_rowid, false );
                             // Intent intent = new Intent();
                             // intent.putExtra( "delete", true );
                             // intent.putExtra( "path", m_path );
@@ -334,7 +334,7 @@ public class BoardActivity extends XWActivity
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
 
         Intent intent = getIntent();
-        m_name = intent.getStringExtra( INTENT_KEY_NAME );
+        m_rowid = intent.getLongExtra( INTENT_KEY_ROWID, -1 );
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
 
         setBackgroundColor();
@@ -1034,7 +1034,7 @@ public class BoardActivity extends XWActivity
             post( new Runnable() {
                     public void run() {
                         DBUtils.appendChatHistory( BoardActivity.this, 
-                                                   m_name, msg, false );
+                                                   m_rowid, msg, false );
                         startChatActivity();
                     }
                 } );
@@ -1045,7 +1045,7 @@ public class BoardActivity extends XWActivity
     {
         if ( 0 == m_jniGamePtr ) {
             Assert.assertNull( m_gameLock );
-            m_gameLock = new GameUtils.GameLock( m_name, true ).lock();
+            m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
 
             byte[] stream = GameUtils.savedGame( this, m_gameLock );
             XwJNI.gi_from_stream( m_gi, stream );
@@ -1108,13 +1108,13 @@ public class BoardActivity extends XWActivity
             m_jniThread.handle( JNICmd.CMD_START );
 
             if ( !CommonPrefs.getHideTitleBar( this ) ) {
-                setTitle( GameUtils.gameName( this, m_name ) );
+                setTitle( GameUtils.gameName( this, m_rowid ) );
             }
             m_toolbar = new Toolbar( this );
 
             populateToolbar();
 
-            int flags = DBUtils.getMsgFlags( m_name );
+            int flags = DBUtils.getMsgFlags( m_rowid );
             if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
                 startChatActivity();
             }
@@ -1122,7 +1122,7 @@ public class BoardActivity extends XWActivity
                 m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
             }
             if ( 0 != flags ) {
-                DBUtils.setMsgFlags( m_name, GameSummary.MSG_FLAGS_NONE );
+                DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
             }
 
             trySendChats();
@@ -1285,7 +1285,7 @@ public class BoardActivity extends XWActivity
     private void startChatActivity()
     {
         Intent intent = new Intent( this, ChatActivity.class );
-        intent.putExtra( BoardActivity.INTENT_KEY_NAME, m_name );
+        intent.putExtra( BoardActivity.INTENT_KEY_ROWID, m_rowid );
         startActivityForResult( intent, CHAT_REQUEST );
     }
 
