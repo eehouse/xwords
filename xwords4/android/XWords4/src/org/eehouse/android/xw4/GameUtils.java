@@ -286,6 +286,16 @@ public class GameUtils {
         }
     }
 
+    public static String getName( Context context, long rowid )
+    {
+        String result = DBUtils.getName( context, rowid );
+        if ( null == result || 0 == result.length() ) {
+            String fmt = context.getString( R.string.gamef );
+            result = String.format( fmt, rowid );
+        }
+        return result;
+    }
+
     public static void loadMakeGame( Context context, int gamePtr, 
                                      CurGameInfo gi, GameLock lock )
     {

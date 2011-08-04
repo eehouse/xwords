@@ -227,7 +227,7 @@ public class GamesList extends XWListActivity
     {
         switch( id ) {
         case RENAME_GAME:
-            String name = DBUtils.getName( this, m_rowid );
+            String name = GameUtils.getName( this, m_rowid );
             EditText txt = (EditText)dialog.findViewById( R.id.name_edit );
             txt.setText( name );
             break;

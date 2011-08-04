@@ -601,21 +601,13 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-            String[] columns = { DBHelper.FILE_NAME, DBHelper.GAME_NAME };
+            String[] columns = { DBHelper.GAME_NAME };
             String selection = String.format( ROW_ID_FMT, rowid );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
                 result = cursor.getString( cursor
                                            .getColumnIndex(DBHelper.GAME_NAME));
-                if ( null == result || 0 == result.length() ) {
-                    result = cursor.getString( cursor
-                                               .getColumnIndex(DBHelper.FILE_NAME));
-                    if ( null == result || 0 == result.length() ) {
-                        String fmt = context.getString( R.string.gamef );
-                        result = String.format( fmt, rowid );
-                    }
-                }
             }
             cursor.close();
             db.close();

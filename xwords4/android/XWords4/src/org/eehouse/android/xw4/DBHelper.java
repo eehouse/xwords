@@ -31,7 +31,6 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "xwdb";
     private static final int DB_VERSION = 9;
 
-    public static final String FILE_NAME = "FILE_NAME";
     public static final String GAME_NAME = "GAME_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
     public static final String TURN = "TURN";
@@ -71,7 +70,6 @@ public class DBHelper extends SQLiteOpenHelper {
     private void onCreateSum( SQLiteDatabase db ) 
     {
         db.execSQL( "CREATE TABLE " + TABLE_NAME_SUM + " ("
-                    + FILE_NAME   + " TEXT PRIMARY KEY,"
                     + GAME_NAME   + " TEXT,"
                     + NUM_MOVES   + " INTEGER,"
                     + TURN        + " INTEGER,"

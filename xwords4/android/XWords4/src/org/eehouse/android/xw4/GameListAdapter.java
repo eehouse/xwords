@@ -78,7 +78,7 @@ public class GameListAdapter extends XWListAdapter {
                 if ( hideTitle ) {
                     view.setVisibility( View.GONE );
                 } else {
-                    String name = DBUtils.getName( m_context, m_rowid );
+                    String name = GameUtils.getName( m_context, m_rowid );
                     String format = 
                         m_context.getString( R.string.str_game_namef );
                     String lang = 
@@ -172,7 +172,7 @@ public class GameListAdapter extends XWListAdapter {
             if ( hideTitle ) {
                 view.setVisibility( View.GONE );
             } else {
-                String text = DBUtils.getName( m_context, rowid );
+                String text = GameUtils.getName( m_context, rowid );
                 view.setText( text );
             }
 
