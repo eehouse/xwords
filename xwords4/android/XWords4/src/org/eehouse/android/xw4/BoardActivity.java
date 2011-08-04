@@ -1108,7 +1108,7 @@ public class BoardActivity extends XWActivity
             m_jniThread.handle( JNICmd.CMD_START );
 
             if ( !CommonPrefs.getHideTitleBar( this ) ) {
-                setTitle( GameUtils.gameName( this, m_rowid ) );
+                setTitle( DBUtils.getName( this, m_rowid ) );
             }
             m_toolbar = new Toolbar( this );
 

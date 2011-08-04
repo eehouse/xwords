@@ -735,12 +735,6 @@ public class GameUtils {
         return file.endsWith( XWConstants.DICT_EXTN );
     }
 
-    public static String gameName( Context context, long rowid )
-    {
-        return String.format( "Row %d", rowid );
-        // return path.substring( 0, path.lastIndexOf( XWConstants.GAME_EXTN ) );
-    }
-
     public static void launchGame( Activity activity, long rowid,
                                    boolean invited )
     {

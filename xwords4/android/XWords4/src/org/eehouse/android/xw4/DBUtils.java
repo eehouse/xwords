@@ -593,6 +593,57 @@ public class DBUtils {
         return result;
     }
 
+    // Get either the file name or game name, preferring the latter.
+    public static String getName( Context context, long rowid )
+    {
+        String result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+
+            String[] columns = { DBHelper.FILE_NAME, DBHelper.GAME_NAME };
+            String selection = String.format( ROW_ID_FMT, rowid );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getString( cursor
+                                           .getColumnIndex(DBHelper.GAME_NAME));
+                if ( null == result || 0 == result.length() ) {
+                    result = cursor.getString( cursor
+                                               .getColumnIndex(DBHelper.FILE_NAME));
+                    if ( null == result || 0 == result.length() ) {
+                        String fmt = context.getString( R.string.gamef );
+                        result = String.format( fmt, rowid );
+                    }
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+
+        Utils.logf( "getName(%d)=>%s", rowid, result );
+        return result;
+    }
+
+    public static void setName( Context context, long rowid, String name )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            String selection = String.format( ROW_ID_FMT, rowid );
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.GAME_NAME, name );
+
+            int result = db.update( DBHelper.TABLE_NAME_SUM, 
+                                    values, selection, null );
+            db.close();
+            if ( 0 == result ) {
+                Utils.logf( "setName(%d,%s) failed", rowid, name );
+            }
+        }
+    }
+
     public static HistoryPair[] getChatHistory( Context context, long rowid )
     {
         HistoryPair[] result = null;

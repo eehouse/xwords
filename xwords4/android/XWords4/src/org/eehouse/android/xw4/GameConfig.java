@@ -974,7 +974,7 @@ public class GameConfig extends XWActivity
         String fmt = getString( m_notNetworkedGame ?
                                 R.string.title_game_configf
                                 : R.string.title_gamenet_configf );
-        setTitle( String.format( fmt, GameUtils.gameName( this, m_rowid ) ) );
+        setTitle( String.format( fmt, DBUtils.getName( this, m_rowid ) ) );
     }
 
 }

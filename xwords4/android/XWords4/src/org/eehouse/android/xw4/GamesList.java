@@ -59,6 +59,7 @@ public class GamesList extends XWListActivity
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
     private static final int SHOW_SUBST        = WARN_NODICT + 2;
     private static final int GET_NAME          = WARN_NODICT + 3;
+    private static final int RENAME_GAME       = WARN_NODICT + 4;
 
     private GameListAdapter m_adapter;
     private String m_missingDict;
@@ -67,6 +68,7 @@ public class GamesList extends XWListActivity
     private long m_missingDictRowId;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
+    private long m_rowid;
 
     // private XWPhoneStateListener m_phoneStateListener;
     // private class XWPhoneStateListener extends PhoneStateListener {
@@ -84,6 +86,8 @@ public class GamesList extends XWListActivity
     protected Dialog onCreateDialog( int id )
     {
         DialogInterface.OnClickListener lstnr;
+        LinearLayout layout;
+
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             AlertDialog.Builder ab;
@@ -161,8 +165,30 @@ public class GamesList extends XWListActivity
                         }
                     });
                 break;
+
+            case RENAME_GAME:
+                layout =
+                    (LinearLayout)Utils.inflate( this, R.layout.rename_game );
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlgi, int item ) {
+                            Dialog dlg = (Dialog)dlgi;
+                            EditText txt = 
+                                (EditText)dlg.findViewById( R.id.name_edit );
+                            String name = txt.getText().toString();
+                            DBUtils.setName( GamesList.this, m_rowid, name );
+                            m_adapter.inval( m_rowid );
+                        }
+                    };
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.game_rename_title )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setView( layout )
+                    .create();
+                break;
+
             case GET_NAME:
-                LinearLayout layout =
+                layout = 
                     (LinearLayout)Utils.inflate( this, R.layout.dflt_name );
                 final EditText etext =
                     (EditText)layout.findViewById( R.id.name_edit );
@@ -195,6 +221,21 @@ public class GamesList extends XWListActivity
         }
         return dialog;
     } // onCreateDialog
+
+    @Override
+    public void onPrepareDialog( int id, Dialog dialog )
+    {
+        switch( id ) {
+        case RENAME_GAME:
+            String name = DBUtils.getName( this, m_rowid );
+            EditText txt = (EditText)dialog.findViewById( R.id.name_edit );
+            txt.setText( name );
+            break;
+        default:
+            super.onPrepareDialog( id, dialog );
+            break;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -479,6 +520,10 @@ public class GamesList extends XWListActivity
                     break;
                 case R.id.list_item_config:
                     GameUtils.doConfig( this, rowid, GameConfig.class );
+                    break;
+                case R.id.list_item_rename:
+                    m_rowid = rowid;
+                    showDialog( RENAME_GAME );
                     break;
 
                 case R.id.list_item_new_from:
