@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- -*- compile-command: "../../; make install"; -*- -->
+<!-- -*- compile-command: "cd ../../; ant install"; -*- -->
 
 <resources>
     <string name="button_new_game">Add game</string>
 
+    <string name="game_item_menu_titlef">\"%s\" actions:</string>
     <string name="list_item_config">Game settings...</string>
     <string name="list_item_rename">Rename...</string>
     <string name="game_rename_title">Rename game</string>

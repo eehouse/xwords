@@ -379,6 +379,14 @@ public class GamesList extends XWListActivity
     {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.games_list_item_menu, menu );
+
+        AdapterView.AdapterContextMenuInfo info = 
+            (AdapterView.AdapterContextMenuInfo)menuInfo;
+        int position = info.position;
+        long rowid = DBUtils.gamesList( this )[position];
+        String title = GameUtils.getName( this, rowid );
+        String fmt = getString(R.string.game_item_menu_titlef );
+        menu.setHeaderTitle( String.format( fmt, title ) );
     }
         
     @Override
