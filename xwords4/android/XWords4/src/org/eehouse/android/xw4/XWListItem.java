@@ -71,7 +71,7 @@ public class XWListItem extends LinearLayout {
         ImageButton button = (ImageButton)findViewById( R.id.del );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
-                    public void onClick( View view ) {
+                public void onClick( View view ) {
                     m_cb.deleteCalled( m_position, getText() );
                 }
             } );
