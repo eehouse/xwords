@@ -49,6 +49,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String GAMEID = "GAMEID";
     public static final String DICTLANG = "DICTLANG";
     public static final String HASMSGS = "HASMSGS";
+    public static final String CONTRACTED = "CONTRACTED";
     public static final String SNAPSHOT = "SNAPSHOT";
     public static final String CONTYPE = "CONTYPE";
     public static final String SERVERROLE = "SERVERROLE";
@@ -93,6 +94,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + GAMEID     + " INTEGER,"
                     // HASMSGS: sqlite doesn't have bool; use 0 and 1
                     + HASMSGS    + " INTEGER DEFAULT 0,"
+                    + CONTRACTED + " INTEGER DEFAULT 0,"
 
                     + CREATE_TIME + " INTEGER,"
                     + LASTPLAY_TIME + " INTEGER,"
@@ -136,6 +138,8 @@ public class DBHelper extends SQLiteOpenHelper {
         } else if ( newVersion == 9 && oldVersion == 8 ) {
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + GAME_NAME + " TEXT;" );
+            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
+                        " ADD COLUMN " + CONTRACTED + " INTEGER;" );
         } else {
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {

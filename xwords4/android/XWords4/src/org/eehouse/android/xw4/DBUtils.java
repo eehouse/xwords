@@ -273,40 +273,63 @@ public class DBUtils {
         return result;
     }
 
-    public static void setMsgFlags( long rowid, int flags )
+    private static void setInt( long rowid, String column, int value )
     {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
             String selection = String.format( ROW_ID_FMT, rowid );
             ContentValues values = new ContentValues();
-            values.put( DBHelper.HASMSGS, flags );
+            values.put( column, value );
 
             int result = db.update( DBHelper.TABLE_NAME_SUM, 
                                     values, selection, null );
             Assert.assertTrue( result == 1 );
             db.close();
         }
+    }
+
+    public static void setMsgFlags( long rowid, int flags )
+    {
+        setInt( rowid, DBHelper.HASMSGS, flags );
         notifyListeners( rowid );
     }
 
-    public static int getMsgFlags( long rowid )
+    public static void setExpanded( long rowid, boolean expanded )
     {
-        int flags = GameSummary.MSG_FLAGS_NONE;
+        setInt( rowid, DBHelper.CONTRACTED, expanded?0:1 );
+    }
+
+    private static int getInt( Context context, long rowid, String column,
+                               int dflt )
+    {
+        int result = dflt;
+        initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String selection = String.format( ROW_ID_FMT, rowid );
-            String[] columns = { DBHelper.HASMSGS };
+            String[] columns = { column };
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                flags =
-                    cursor.getInt( cursor.getColumnIndex(DBHelper.HASMSGS));
+                result =
+                    cursor.getInt( cursor.getColumnIndex(column));
             }
             cursor.close();
             db.close();
         }
-        return flags;
+        return result;
+    }
+
+    public static int getMsgFlags( Context context, long rowid )
+    {
+        return getInt( context, rowid, DBHelper.HASMSGS, 
+                       GameSummary.MSG_FLAGS_NONE );
+    }
+
+    public static boolean getExpanded( Context context, long rowid )
+    {
+        return 0 == getInt( context, rowid, DBHelper.CONTRACTED, 0 );
     }
 
     public static long getRowIDFor( Context context, String relayID )

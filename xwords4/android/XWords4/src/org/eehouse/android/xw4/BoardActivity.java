@@ -1114,7 +1114,7 @@ public class BoardActivity extends XWActivity
 
             populateToolbar();
 
-            int flags = DBUtils.getMsgFlags( m_rowid );
+            int flags = DBUtils.getMsgFlags( this, m_rowid );
             if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
                 startChatActivity();
             }

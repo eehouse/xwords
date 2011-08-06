@@ -68,17 +68,15 @@ public class GameListAdapter extends XWListAdapter {
 
         public void onClick( View view ) {
             m_expanded = !m_expanded;
-            s_expandedCache.put( m_rowid, m_expanded );
+            DBUtils.setExpanded( m_rowid, m_expanded );
             showHide();
         }
     }
 
     private HashMap<Long,ViewInfo> m_viewsCache;
-    private static HashMap<Long,Boolean> s_expandedCache = 
-        new HashMap<Long,Boolean>();
     private DateFormat m_df;
     private LoadItemCB m_cb;
-    // private int m_taskCounter = 0;
+
 
     public interface LoadItemCB {
         public void itemLoaded( long rowid );
@@ -160,9 +158,7 @@ public class GameListAdapter extends XWListAdapter {
                     marker.setVisibility( View.VISIBLE );
                 }
 
-                // buttons
-                Boolean Expanded = s_expandedCache.get( m_rowid );
-                boolean expanded = null == Expanded? true : Expanded;
+                boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
                 ViewInfo vi = new ViewInfo( layout, m_rowid, expanded );
 
                 synchronized( m_viewsCache ) {
