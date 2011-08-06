@@ -179,32 +179,13 @@ public class DictsActivity extends ExpandableListActivity
         }
 
         public boolean hasStableIds() { return false; }
-        public boolean isChildSelectable( int groupPosition, int childPosition ) { return true; }
+        public boolean isChildSelectable( int groupPosition, 
+                                          int childPosition ) { return true; }
         public boolean isEmpty() { return false; }
         public void onGroupCollapsed(int groupPosition){}
         public void onGroupExpanded(int groupPosition){}
         public void registerDataSetObserver( DataSetObserver obs ){}
         public void unregisterDataSetObserver( DataSetObserver obs ){}
-
-        // public Object getItem( int position) { return m_dicts[position]; }
-        // public View getView( final int position, View convertView, 
-        //                      ViewGroup parent ) {
-        //     LayoutInflater factory = LayoutInflater.from( DictsActivity.this );
-        //     final XWListItem view
-        //         = (XWListItem)factory.inflate( R.layout.list_item, null );
-        //     view.setPosition( position );
-
-        //     // append language name
-        //     view.setText( DictLangCache.
-        //                   annotatedDictName( DictsActivity.this, 
-        //                                      m_dicts[position] ) );
-        //     if ( !GameUtils.dictIsBuiltin( DictsActivity.this,
-        //                                    m_dicts[position] ) ) {
-        //         view.setDeleteCallback( DictsActivity.this );
-        //     }
-
-        //     return view;
-        // }
     }
 
     @Override
