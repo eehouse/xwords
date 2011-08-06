@@ -558,8 +558,13 @@
       that many people.)</string>
 
     <string name="invite_subject">Let\'s play Crosswords</string>
-    <string name="invite_bodyf">Tap on this link to start a game:
-      %1$s .</string>
+    <string name="invite_bodyf">\u003ca href=\"%1$s\"\u003ETap here to
+      accept\u003c/a\u003E my invitation and join this
+      game.\u003cbr\u003E \u003ca
+      href=\"http://eehouse.org/market.php\"\u003E
+      Tap here to install Crosswords\u003c/a\u003E if you haven\'t
+      already.</string>
+
     <string name="invite_chooser">Send invitation via</string>
 
     <string name="no_download_warning">Unable to download. Do you have

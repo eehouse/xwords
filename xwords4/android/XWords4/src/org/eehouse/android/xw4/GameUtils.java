@@ -38,6 +38,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
+import android.text.Html;
 
 import junit.framework.Assert;
 
@@ -412,13 +413,13 @@ public class GameUtils {
 
         if ( null != gameUri ) {
             Intent intent = new Intent( Intent.ACTION_SEND );
-            intent.setType( "text/plain" );
+            intent.setType("text/html");
             intent.putExtra( Intent.EXTRA_SUBJECT, 
                              context.getString( R.string.invite_subject ) );
 
             String format = context.getString( R.string.invite_bodyf );
             String message = String.format( format, gameUri.toString() );
-            intent.putExtra( Intent.EXTRA_TEXT, message );
+            intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
             String chooserMsg = context.getString( R.string.invite_chooser );
             context.startActivity( Intent.createChooser( intent, chooserMsg ) );

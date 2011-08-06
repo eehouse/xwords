@@ -30,10 +30,6 @@ print <<<EOF
     If this fails it's probably because you don't have a new enough version of Crosswords installed. 
     </p>
 
-    <p>
-    <a href="market://search?q=pname:org.eehouse.android.xw4">Tap here</a> to fix that.
-    </p>
-
     </div>
     </body>
 
