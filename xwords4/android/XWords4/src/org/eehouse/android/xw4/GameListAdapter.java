@@ -26,12 +26,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.database.DataSetObserver;
+import android.widget.ImageButton;
+import android.view.LayoutInflater;
+import android.widget.LinearLayout;
 import java.io.FileInputStream;
 import java.util.Date;
 import java.util.HashMap;       // class is not synchronized
 import java.text.DateFormat;
-import android.view.LayoutInflater;
-import android.widget.LinearLayout;
 
 import junit.framework.Assert;
 
@@ -42,13 +43,46 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
-    private HashMap<Long,View> m_viewsCache;
+
+    private class ViewInfo implements View.OnClickListener {
+        public View m_view;
+        public View m_hideable;
+        public boolean m_expanded;
+        public long m_rowid;
+        private ImageButton m_expandButton;
+        public ViewInfo( View view, long rowid, boolean expanded ) {
+            m_view = view; m_rowid = rowid; m_expanded = expanded;
+            m_hideable = (LinearLayout)view.findViewById( R.id.hideable );
+            m_expandButton = (ImageButton)view.findViewById( R.id.expander );
+            m_expandButton.setOnClickListener( this );
+            showHide();
+        }
+
+        private void showHide()
+        {
+            m_expandButton.setImageResource( m_expanded ?
+                                             R.drawable.expander_ic_maximized :
+                                             R.drawable.expander_ic_minimized);
+            m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
+        }
+
+        public void onClick( View view ) {
+            m_expanded = !m_expanded;
+            s_expandedCache.put( m_rowid, m_expanded );
+            showHide();
+        }
+    }
+
+    private HashMap<Long,ViewInfo> m_viewsCache;
+    private static HashMap<Long,Boolean> s_expandedCache = 
+        new HashMap<Long,Boolean>();
     private DateFormat m_df;
     private LoadItemCB m_cb;
     // private int m_taskCounter = 0;
 
     public interface LoadItemCB {
         public void itemLoaded( long rowid );
+        public void itemClicked( long rowid );
     }
 
     private class LoadItemTask extends AsyncTask<Void, Void, Void> {
@@ -87,6 +121,13 @@ public class GameListAdapter extends XWListAdapter {
                     view.setText( String.format( format, name, lang ) );
                 }
 
+                layout.setOnClickListener( new View.OnClickListener() {
+                        @Override
+                        public void onClick( View v ) {
+                            m_cb.itemClicked( m_rowid );
+                        }
+                    } );
+
                 LinearLayout list =
                     (LinearLayout)layout.findViewById( R.id.player_list );
                 for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
@@ -118,8 +159,14 @@ public class GameListAdapter extends XWListAdapter {
                     View marker = layout.findViewById( R.id.msg_marker );
                     marker.setVisibility( View.VISIBLE );
                 }
+
+                // buttons
+                Boolean Expanded = s_expandedCache.get( m_rowid );
+                boolean expanded = null == Expanded? true : Expanded;
+                ViewInfo vi = new ViewInfo( layout, m_rowid, expanded );
+
                 synchronized( m_viewsCache ) {
-                    m_viewsCache.put( m_rowid, layout );
+                    m_viewsCache.put( m_rowid, vi );
                 }
             }
             return null;
@@ -148,7 +195,7 @@ public class GameListAdapter extends XWListAdapter {
             sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
         } catch ( Exception ex ) {}
 
-        m_viewsCache = new HashMap<Long,View>();
+        m_viewsCache = new HashMap<Long,ViewInfo>();
     }
     
     public int getCount() {
@@ -160,7 +207,8 @@ public class GameListAdapter extends XWListAdapter {
         final long rowid = DBUtils.gamesList(m_context)[position];
         View layout;
         synchronized( m_viewsCache ) {
-            layout = m_viewsCache.get( rowid );
+            ViewInfo vi = m_viewsCache.get( rowid );
+            layout = null == vi? null : vi.m_view;
         }
 
         if ( null == layout ) {

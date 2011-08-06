@@ -177,6 +177,7 @@ public class GamesList extends XWListActivity
                             String name = txt.getText().toString();
                             DBUtils.setName( GamesList.this, m_rowid, name );
                             m_adapter.inval( m_rowid );
+                            onContentChanged();
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -373,6 +374,31 @@ public class GamesList extends XWListActivity
         onContentChanged();
     }
 
+    public void itemClicked( long rowid )
+    {
+        // We need a way to let the user get back to the basic-config
+        // dialog in case it was dismissed.  That way it to check for
+        // an empty room name.
+        GameSummary summary = DBUtils.getSummary( this, rowid, true );
+        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
+             && summary.roomName.length() == 0 ) {
+            // If it's unconfigured and of the type RelayGameActivity
+            // can handle send it there, otherwise use the full-on
+            // config.
+            Class clazz;
+            if ( RelayGameActivity.isSimpleGame( summary ) ) {
+                clazz = RelayGameActivity.class;
+            } else {
+                clazz = GameConfig.class;
+            }
+            GameUtils.doConfig( this, rowid, clazz );
+        } else {
+            if ( checkWarnNoDict( rowid ) ) {
+                GameUtils.launchGame( this, rowid );
+            }
+        }
+    }
+
     @Override
     public void onCreateContextMenu( ContextMenu menu, View view, 
                                      ContextMenuInfo menuInfo ) 
@@ -470,35 +496,6 @@ public class GamesList extends XWListActivity
         }
 
         return handled;
-    }
-
-    @Override
-    protected void onListItemClick( ListView l, View v, int position, long id )
-    {
-        super.onListItemClick( l, v, position, id );
-        long rowid = DBUtils.gamesList( this )[position];
-
-        // We need a way to let the user get back to the basic-config
-        // dialog in case it was dismissed.  That way it to check for
-        // an empty room name.
-        GameSummary summary = DBUtils.getSummary( this, rowid, true );
-        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
-             && summary.roomName.length() == 0 ) {
-            // If it's unconfigured and of the type RelayGameActivity
-            // can handle send it there, otherwise use the full-on
-            // config.
-            Class clazz;
-            if ( RelayGameActivity.isSimpleGame( summary ) ) {
-                clazz = RelayGameActivity.class;
-            } else {
-                clazz = GameConfig.class;
-            }
-            GameUtils.doConfig( this, rowid, clazz );
-        } else {
-            if ( checkWarnNoDict( rowid ) ) {
-                GameUtils.launchGame( this, rowid );
-            }
-        }
     }
 
     private boolean handleMenuItem( int menuID, int position ) 
