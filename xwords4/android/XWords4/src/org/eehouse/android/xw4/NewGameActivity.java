@@ -30,8 +30,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import java.util.Random;
 
-// import junit.framework.Assert;
-
 import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -88,7 +86,21 @@ public class NewGameActivity extends XWActivity {
 
     private void makeNewGame( boolean networked, boolean launch )
     {
-        boolean finished = true;
+        if ( launch && networked ) {
+            // Let 'em cancel before we make the game
+            showTextOrHtmlThen( new DlgDelegate.TextOrHtmlClicked() {
+                    public void clicked( boolean choseText ) {
+                        makeNewGame( true, true, choseText );
+                    }
+                } );
+        } else {
+            makeNewGame( networked, launch, false );
+        }
+    }
+
+    private void makeNewGame( boolean networked, boolean launch,
+                              boolean choseText )
+    {
         String room = null;
         long rowid;
         int[] lang = {0};
@@ -103,32 +115,16 @@ public class NewGameActivity extends XWActivity {
         }
 
         if ( launch ) {
+            GameUtils.launchGame( this, rowid, networked );
             if ( networked ) {
-                finished = false;
-                final String froom = room;
-                final long frowid = rowid;
-                final int flang = lang[0];
-                showTextOrHtmlThen( new DlgDelegate.TextOrHtmlClicked() {
-                        public void clicked( boolean choseText ) {
-                            GameUtils.launchGame( NewGameActivity.this,
-                                                  frowid, true );
-                            GameUtils.
-                                launchInviteActivity( NewGameActivity.this, 
-                                                      choseText, froom, flang,
-                                                      nPlayers );
-                            finish();
-                        }
-                    } );
-            } else {
-                GameUtils.launchGame( this, rowid, false );
+                GameUtils.launchInviteActivity( this, choseText, room,
+                                                lang[0], nPlayers );
             }
         } else {
             GameUtils.doConfig( this, rowid, GameConfig.class );
         }
 
-        if ( finished ) {
-            finish();
-        }
+        finish();
     }
 
 }
