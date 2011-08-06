@@ -57,6 +57,7 @@ public class GameSummary {
     public CurGameInfo.DeviceRole serverRole;
 
     private int m_giFlags;
+    private String m_playersSummary;
     private CurGameInfo m_gi;
 
     public GameSummary(){
@@ -65,7 +66,7 @@ public class GameSummary {
 
     public GameSummary( CurGameInfo gi )
     {
-        super();
+        this();
         nPlayers = gi.nPlayers;
         dictLang = gi.dictLang;
         serverRole = gi.serverRole;
@@ -79,22 +80,34 @@ public class GameSummary {
 
     public String summarizePlayers( Context context )
     {
-        StringBuffer sb = new StringBuffer();
-        for ( int ii = 0; ; ) {
+        String result;
+        if ( null == m_gi ) {
+            result = m_playersSummary;
+        } else {
+            StringBuffer sb = new StringBuffer();
+            for ( int ii = 0; ; ) {
 
-            int score = 0;
-            try {
-                // scores can be null, but I've seen array OOB too.
-                score = scores[ii];
-            } catch ( Exception ex ){}
+                int score = 0;
+                try {
+                    // scores can be null, but I've seen array OOB too.
+                    score = scores[ii];
+                } catch ( Exception ex ){}
 
-            sb.append( m_gi.players[ii].name );
-            if ( ++ii >= nPlayers ) {
-                break;
+                sb.append( m_gi.players[ii].name );
+                if ( ++ii >= nPlayers ) {
+                    break;
+                }
+                sb.append( "\n" );
             }
-            sb.append( "\n" );
+            result = sb.toString();
+            m_playersSummary = result;
         }
-        return sb.toString();
+        return result;
+    }
+
+    public void setPlayerSummary( String summary ) 
+    {
+        m_playersSummary = summary;
     }
 
     public String summarizeState( Context context )
@@ -134,14 +147,18 @@ public class GameSummary {
     }
 
     public int giflags() {
-        Assert.assertNotNull( m_gi );
-        int result = 0;
-        for ( int ii = 0; ii < m_gi.nPlayers; ++ii ) {
-            if ( ! m_gi.players[ii].isLocal ) {
-                result |= 2 << (ii * 2);
-            }
-            if ( m_gi.players[ii].isRobot() ) {
-                result |= 1 << (ii * 2);
+        int result;
+        if ( null == m_gi ) {
+            result = m_giFlags;
+        } else {
+            result = 0;
+            for ( int ii = 0; ii < m_gi.nPlayers; ++ii ) {
+                if ( ! m_gi.players[ii].isLocal ) {
+                    result |= 2 << (ii * 2);
+                }
+                if ( m_gi.players[ii].isRobot() ) {
+                    result |= 1 << (ii * 2);
+                }
             }
         }
         return result;

@@ -102,14 +102,11 @@ public class DBUtils {
                                  DBHelper.SCORES, DBHelper.HASMSGS,
                                  DBHelper.LASTPLAY_TIME
             };
-	    String selection = String.format( ROW_ID_FMT, lock.getRowid() );
+            String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                Utils.logf( "got rowid: %d", 
-                            cursor.getLong( cursor.getColumnIndex(ROW_ID) ) );
-
                 summary = new GameSummary();
                 summary.nMoves = cursor.getInt(cursor.
                                                getColumnIndex(DBHelper.NUM_MOVES));
@@ -119,6 +116,11 @@ public class DBUtils {
                 summary.missingPlayers = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.MISSINGPLYRS));
+                summary.
+                    setPlayerSummary( cursor.
+                                      getString( cursor.
+                                                 getColumnIndex( DBHelper.
+                                                                 PLAYERS ) ) );
                 summary.turn = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.TURN));
