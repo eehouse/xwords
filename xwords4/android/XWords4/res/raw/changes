@@ -6,24 +6,21 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 30 release</b>
+<b>Crosswords 4.4 beta 31 release</b>
 
 <ul>
 
-  <li>Redesign of how new games -- in particular networked games -- 
-  are created. You can now "invite" somebody to a game you're 
-  creating, or to an existing game that's missing players.</li>
+  <li>Give choice between sending invites as TEXT or HTML, then format 
+  differently depending</li>
 
-  <li>Add a setting for default player name, and on startup ask for it 
-  -- but only once.</li>
+  <li>include link in invites to install Crosswords</li>
 
-  <li>Make name fields assume upper-case</li>
+  <li>Add expand/contract buttons to games list</li>
 
-  <li>Sort games by creation date not name.  (Soon you'll be able to 
-  rename them.)</li>
-
-  <li>Fix/reduce impact of java memory leaks</li>
-
+  <li>Add ability to rename games</li>
+  
+  <li>Don't crash when user chooses "Copy"</li>
+  
 </ul>
 
 
