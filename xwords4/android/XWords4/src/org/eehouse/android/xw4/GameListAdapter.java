@@ -43,16 +43,23 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
+    private static final int TURN_COLOR = 0x7F00FF00;
 
     private class ViewInfo implements View.OnClickListener {
-        public View m_view;
-        public View m_hideable;
-        public boolean m_expanded;
-        public long m_rowid;
+        private View m_view;
+        private View m_hideable;
+        private View m_name;
+        private boolean m_expanded, m_haveTurn;
+        private long m_rowid;
         private ImageButton m_expandButton;
-        public ViewInfo( View view, long rowid, boolean expanded ) {
-            m_view = view; m_rowid = rowid; m_expanded = expanded;
+        public ViewInfo( View view, long rowid, boolean expanded, 
+                         boolean haveTurn ) {
+            m_view = view;
+            m_rowid = rowid; 
+            m_expanded = expanded;
+            m_haveTurn = haveTurn;
             m_hideable = (LinearLayout)view.findViewById( R.id.hideable );
+            m_name = (TextView)m_view.findViewById( R.id.game_name );
             m_expandButton = (ImageButton)view.findViewById( R.id.expander );
             m_expandButton.setOnClickListener( this );
             showHide();
@@ -64,6 +71,9 @@ public class GameListAdapter extends XWListAdapter {
                                              R.drawable.expander_ic_maximized :
                                              R.drawable.expander_ic_minimized);
             m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
+
+            m_name.setBackgroundColor( m_haveTurn && !m_expanded ? TURN_COLOR :
+                                       android.R.color.transparent );
         }
 
         public void onClick( View view ) {
@@ -128,14 +138,17 @@ public class GameListAdapter extends XWListAdapter {
 
                 LinearLayout list =
                     (LinearLayout)layout.findViewById( R.id.player_list );
+                boolean haveTurn = false;
                 for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
-                    View tmp = m_factory.inflate( R.layout.player_list_elem, null );
+                    View tmp = m_factory.inflate( R.layout.player_list_elem, 
+                                                  null );
                     view = (TextView)tmp.findViewById( R.id.item_name );
                     view.setText( summary.summarizePlayer( m_context, ii ) );
                     view = (TextView)tmp.findViewById( R.id.item_score );
                     view.setText( String.format( "  %d", summary.scores[ii] ) );
                     if ( summary.isNextToPlay( ii ) ) {
-                        tmp.setBackgroundColor( 0x7F00FF00 );
+                        tmp.setBackgroundColor( TURN_COLOR );
+                        haveTurn = true;
                     }
                     list.addView( tmp, ii );
                 }
@@ -159,7 +172,8 @@ public class GameListAdapter extends XWListAdapter {
                 }
 
                 boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
-                ViewInfo vi = new ViewInfo( layout, m_rowid, expanded );
+                ViewInfo vi = new ViewInfo( layout, m_rowid, 
+                                            expanded, haveTurn );
 
                 synchronized( m_viewsCache ) {
                     m_viewsCache.put( m_rowid, vi );
