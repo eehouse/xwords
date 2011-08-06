@@ -64,6 +64,8 @@
 	<string name="button_save">Save</string>  
 	<string name="button_discard">Discard</string>  
 	<string name="button_retry">Retry</string>  
+	<string name="button_text">Text</string>  
+	<string name="button_html">Html</string>  
 
     <string name="player_label">Name:</string>
 
@@ -558,13 +560,19 @@
       that many people.)</string>
 
     <string name="invite_subject">Let\'s play Crosswords</string>
-    <string name="invite_bodyf">\u003ca href=\"%1$s\"\u003ETap here to
+    <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap here to
       accept\u003c/a\u003E my invitation and join this
       game.\u003cbr\u003E \u003ca
       href=\"http://eehouse.org/market.php\"\u003E
       Tap here to install Crosswords\u003c/a\u003E if you haven\'t
       already.</string>
+    <string name="invite_txtf">Accept my invitation and join this
+      game: %1$s . (But install Crosswords first:
+      http://eehouse.org/market.php ).</string>
 
+    <string name="text_or_html">Send invitation using plain text or
+      html?  Text links are harder to open but can be sent via SMS.
+      Most devices let you send html only via email.</string>
     <string name="invite_chooser">Send invitation via</string>
 
     <string name="no_download_warning">Unable to download. Do you have

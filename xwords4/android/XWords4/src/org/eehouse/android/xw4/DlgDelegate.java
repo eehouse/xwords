@@ -39,6 +39,7 @@ public class DlgDelegate {
     public static final int DIALOG_OKONLY = 2;
     public static final int DIALOG_NOTAGAIN = 3;
     public static final int CONFIRM_THEN = 4;
+    public static final int TEXT_OR_HTML_THEN = 5;
     public static final int DIALOG_LAST = CONFIRM_THEN;
 
     private int m_msgID;
@@ -48,6 +49,11 @@ public class DlgDelegate {
     private Activity m_activity;
     private String m_dictName = null;
     DialogInterface.OnClickListener m_then;
+
+    public interface TextOrHtmlClicked {
+        public void clicked( boolean choseText );
+    };
+    private TextOrHtmlClicked m_txt_or_html;
 
     public DlgDelegate( Activity activity ) {
         m_activity = activity;
@@ -69,6 +75,9 @@ public class DlgDelegate {
         case CONFIRM_THEN:
             dialog = createConfirmThenDialog();
             break;
+        case TEXT_OR_HTML_THEN:
+            dialog = createHtmlThenDialog();
+            break;
         }
         return dialog;
     }
@@ -87,6 +96,8 @@ public class DlgDelegate {
     public void onPrepareDialog( int id, Dialog dialog )
     {
         AlertDialog ad = (AlertDialog)dialog;
+        DialogInterface.OnClickListener lstnr;
+
         switch( id ) {
         case DIALOG_ABOUT:
             break;
@@ -104,6 +115,22 @@ public class DlgDelegate {
             ad.setMessage( m_msg );
             ad.setButton( AlertDialog.BUTTON_POSITIVE, 
                           m_activity.getString( R.string.button_ok ), m_then );
+            break;
+        case TEXT_OR_HTML_THEN:
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int button ) {
+                        if ( null != m_txt_or_html ) {
+                            m_txt_or_html.
+                                clicked( button == AlertDialog.BUTTON_POSITIVE );
+                        }
+                    }
+                };
+            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
+                          m_activity.getString( R.string.button_text ),
+                          lstnr );
+            ad.setButton( AlertDialog.BUTTON_NEGATIVE, 
+                          m_activity.getString( R.string.button_html ),
+                          lstnr );
             break;
         }
     }
@@ -140,6 +167,12 @@ public class DlgDelegate {
         m_msg = msg;
         m_then = then;
         m_activity.showDialog( CONFIRM_THEN );
+    }
+
+    public void showTextOrHtmlThen( TextOrHtmlClicked txtOrHtml )
+    {
+        m_txt_or_html = txtOrHtml;
+        m_activity.showDialog( TEXT_OR_HTML_THEN );
     }
 
     public void doSyncMenuitem()
@@ -239,4 +272,15 @@ public class DlgDelegate {
             .create();
         return dialog;
     }
+
+    private Dialog createHtmlThenDialog()
+    {
+        return new AlertDialog.Builder( m_activity )
+            .setTitle( R.string.query_title )
+            .setMessage( R.string.text_or_html )
+            .setPositiveButton( R.string.button_text, null ) // will change
+            .setNegativeButton( R.string.button_html, null )
+            .create();
+    }
+
 }

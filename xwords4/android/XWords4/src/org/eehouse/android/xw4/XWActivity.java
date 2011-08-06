@@ -127,6 +127,11 @@ public class XWActivity extends Activity {
         m_delegate.showConfirmThen( getString(msgID), action );
     }
 
+    public void showTextOrHtmlThen( DlgDelegate.TextOrHtmlClicked txtOrHtml )
+    {
+        m_delegate.showTextOrHtmlThen( txtOrHtml );
+    }
+
     protected void doSyncMenuitem()
     {
         m_delegate.doSyncMenuitem();

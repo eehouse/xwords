@@ -404,7 +404,9 @@ public class GameUtils {
                                info.nPlayers );
     }
 
-    public static void launchInviteActivity( Context context, String room, 
+    public static void launchInviteActivity( Context context, 
+                                             boolean choseText,
+                                             String room, 
                                              int lang, int nPlayers )
     {
         Random random = new Random();
@@ -413,17 +415,34 @@ public class GameUtils {
 
         if ( null != gameUri ) {
             Intent intent = new Intent( Intent.ACTION_SEND );
-            intent.setType("text/html");
+            intent.setType( choseText? "text/plain" : "text/html");
             intent.putExtra( Intent.EXTRA_SUBJECT, 
                              context.getString( R.string.invite_subject ) );
 
-            String format = context.getString( R.string.invite_bodyf );
+            int fmtId = choseText? R.string.invite_txtf : R.string.invite_htmf;
+            String format = context.getString( fmtId );
             String message = String.format( format, gameUri.toString() );
-            intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+            intent.putExtra( Intent.EXTRA_TEXT, 
+                             choseText ? message : Html.fromHtml(message) );
 
             String chooserMsg = context.getString( R.string.invite_chooser );
             context.startActivity( Intent.createChooser( intent, chooserMsg ) );
         }
+    }
+
+    public static void launchInviteActivity( final XWActivity activity, 
+                                             final String room, 
+                                             final int lang, 
+                                             final int nPlayers )
+    {
+        DlgDelegate.TextOrHtmlClicked cb = 
+            new DlgDelegate.TextOrHtmlClicked() {
+                public void clicked( boolean choseText ) {
+                    launchInviteActivity( activity, choseText, room,
+                                          lang, nPlayers );
+                }
+            };
+        activity.showTextOrHtmlThen( cb );
     }
 
     public static boolean gameDictsHere( Context context, long rowid )
