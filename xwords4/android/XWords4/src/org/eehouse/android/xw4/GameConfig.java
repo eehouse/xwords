@@ -152,7 +152,7 @@ public class GameConfig extends XWActivity
 
             switch (id) {
             case PLAYER_EDIT:
-                final View playerEditView
+                View playerEditView
                     = Utils.inflate( this, R.layout.player_edit );
 
                 dialog = new AlertDialog.Builder( this )
