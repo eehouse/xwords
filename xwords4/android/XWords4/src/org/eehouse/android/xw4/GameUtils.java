@@ -1005,7 +1005,10 @@ public class GameUtils {
                 result = new File( storage.getPath(), packdir );
                 if ( !result.exists() ) {
                     result.mkdirs();
-                    Assert.assertTrue( result.exists() );
+                    if ( !result.exists() ) {
+                        Utils.logf( "unable to create sd dir %s", packdir );
+                        result = null;
+                    }
                 }
             }
         }
