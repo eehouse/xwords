@@ -51,8 +51,9 @@
 
     <activity android:name="DictsActivity"
               android:label="@string/title_dicts_list"
-              />
-
+              android:configChanges="keyboardHidden|orientation"
+          />
+    
     <activity android:name="NewGameActivity"
               android:theme="@android:style/Theme.NoTitleBar"
               />
