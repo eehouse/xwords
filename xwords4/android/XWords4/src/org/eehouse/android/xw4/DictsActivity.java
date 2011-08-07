@@ -214,16 +214,17 @@ public class DictsActivity extends ExpandableListActivity
         case MOVE_DICT:
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        Utils.logf( "CALLING moveDict" );
                         if ( GameUtils.moveDict( DictsActivity.this,
                                                  m_moveName,
                                                  m_moveFromLoc,
                                                  m_moveToLoc ) ) {
                             m_rowView.
                                 setComment( m_locNames[m_moveToLoc.ordinal()]);
+                            m_rowView.cache( m_moveToLoc );
                             m_rowView.invalidate();
+                        } else {
+                            Utils.logf( "moveDict failed" );
                         }
-                        Utils.logf( "moveDict RETURNED" );
                     }
                 };
             dialog = new AlertDialog.Builder( this )
