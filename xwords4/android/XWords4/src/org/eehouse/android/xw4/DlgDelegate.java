@@ -40,7 +40,7 @@ public class DlgDelegate {
     public static final int DIALOG_NOTAGAIN = 3;
     public static final int CONFIRM_THEN = 4;
     public static final int TEXT_OR_HTML_THEN = 5;
-    public static final int DIALOG_LAST = CONFIRM_THEN;
+    public static final int DIALOG_LAST = TEXT_OR_HTML_THEN;
 
     private int m_msgID;
     private String m_msg;
