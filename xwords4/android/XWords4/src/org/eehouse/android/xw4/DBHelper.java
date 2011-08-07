@@ -123,24 +123,28 @@ public class DBHelper extends SQLiteOpenHelper {
     {
         Utils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
 
-        if ( newVersion == 6 && oldVersion == 5 ) {
+        switch( oldVersion ) {
+        case 5:
             onCreateObits(db);
-        } else if ( newVersion == 7 && oldVersion == 6 ) {
+        case 6:
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + TURN + " INTEGER;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + GIFLAGS + " INTEGER;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + CHAT_HISTORY + " TEXT;" );
-        } else if ( newVersion == 8 && oldVersion == 7 ) {
+        case 7:
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + MISSINGPLYRS + " INTEGER;" );
-        } else if ( newVersion == 9 && oldVersion == 8 ) {
+        case 8:
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + GAME_NAME + " TEXT;" );
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + CONTRACTED + " INTEGER;" );
-        } else {
+        case 9:
+            // nothing yet
+            break;
+        default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
             if ( oldVersion >= 6 ) {
                 db.execSQL( "DROP TABLE " + TABLE_NAME_OBITS + ";" );
