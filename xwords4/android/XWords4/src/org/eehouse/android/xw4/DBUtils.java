@@ -638,7 +638,6 @@ public class DBUtils {
             db.close();
         }
 
-        Utils.logf( "getName(%d)=>%s", rowid, result );
         return result;
     }
 
