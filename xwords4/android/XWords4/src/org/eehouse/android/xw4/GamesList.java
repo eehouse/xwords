@@ -61,6 +61,8 @@ public class GamesList extends XWListActivity
     private static final int GET_NAME          = WARN_NODICT + 3;
     private static final int RENAME_GAME       = WARN_NODICT + 4;
 
+    private static final String SAVE_ROWID = "SAVE_ROWID";
+
     private GameListAdapter m_adapter;
     private String m_missingDict;
     private Handler m_handler;
@@ -241,7 +243,8 @@ public class GamesList extends XWListActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
-        super.onCreate(savedInstanceState);
+        super.onCreate( savedInstanceState );
+        getBundledData( savedInstanceState );
 
         m_handler = new Handler();
 
@@ -331,6 +334,20 @@ public class GamesList extends XWListActivity
     {
         DBUtils.clearDBChangeListener( this );
         super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        outState.putLong( SAVE_ROWID, m_rowid );
+    }
+
+    private void getBundledData( Bundle bundle )
+    {
+        if ( null != bundle ) {
+            m_rowid = bundle.getLong( SAVE_ROWID );
+        }
     }
 
     // DispatchNotify.HandleRelaysIface interface
