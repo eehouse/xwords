@@ -388,6 +388,10 @@ public class CommsTransport implements TransportProcs,
             break;
         }
 
+        // Keep this while debugging why the resend_all that gets
+        // fired on reconnect doesn't unstall a game but a manual
+        // resend does.
+        Utils.logf( "transportSend(%d)=>%d", buf.length, nSent );
         return nSent;
     } 
 
