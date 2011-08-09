@@ -26,8 +26,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.database.DataSetObserver;
-import android.widget.ImageButton;
 import android.view.LayoutInflater;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import java.io.FileInputStream;
 import java.util.Date;
@@ -138,7 +139,7 @@ public class GameListAdapter extends XWListAdapter {
 
                 LinearLayout list =
                     (LinearLayout)layout.findViewById( R.id.player_list );
-                boolean haveTurn = false;
+                boolean haveNetTurn = false;
                 for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
                     View tmp = m_factory.inflate( R.layout.player_list_elem, 
                                                   null );
@@ -148,7 +149,9 @@ public class GameListAdapter extends XWListAdapter {
                     view.setText( String.format( "  %d", summary.scores[ii] ) );
                     if ( summary.isNextToPlay( ii ) ) {
                         tmp.setBackgroundColor( TURN_COLOR );
-                        haveTurn = true;
+                        if ( summary.isRelayGame() ) {
+                            haveNetTurn = true;
+                        }
                     }
                     list.addView( tmp, ii );
                 }
@@ -158,6 +161,20 @@ public class GameListAdapter extends XWListAdapter {
                 view = (TextView)layout.findViewById( R.id.modtime );
                 view.setText( m_df.format( new Date( summary.modtime ) ) );
 
+                int iconID;
+                ImageView marker =
+                    (ImageView)layout.findViewById( R.id.msg_marker );
+                if ( summary.isRelayGame() ) {
+                    if ( summary.pendingMsgLevel != GameSummary.MSG_FLAGS_NONE ) {
+                        iconID = R.drawable.ic_popup_sync_1;
+                    } else {
+                        iconID = R.drawable.relaygame;
+                    }
+                } else {
+                    iconID = R.drawable.sologame;
+                }
+                marker.setImageResource( iconID );
+
                 view = (TextView)layout.findViewById( R.id.role );
                 String roleSummary = summary.summarizeRole( m_context );
                 if ( null != roleSummary ) {
@@ -166,14 +183,9 @@ public class GameListAdapter extends XWListAdapter {
                     view.setVisibility( View.GONE );
                 }
 
-                if ( summary.pendingMsgLevel != GameSummary.MSG_FLAGS_NONE ) {
-                    View marker = layout.findViewById( R.id.msg_marker );
-                    marker.setVisibility( View.VISIBLE );
-                }
-
                 boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
                 ViewInfo vi = new ViewInfo( layout, m_rowid, 
-                                            expanded, haveTurn );
+                                            expanded, haveNetTurn );
 
                 synchronized( m_viewsCache ) {
                     m_viewsCache.put( m_rowid, vi );

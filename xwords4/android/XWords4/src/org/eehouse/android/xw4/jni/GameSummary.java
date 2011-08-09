@@ -125,14 +125,20 @@ public class GameSummary {
     public String summarizeRole( Context context )
     {
         String result = null;
-        if ( null != conType 
-             && serverRole != CurGameInfo.DeviceRole.SERVER_STANDALONE ) {
+        if ( isRelayGame() ) {
             Assert.assertTrue( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
                                == conType );
             String fmt = context.getString( R.string.summary_fmt_relay );
             result = String.format( fmt, roomName );
         }
         return result;
+    }
+
+    public boolean isRelayGame()
+    {
+        // This definition will expand as other transports are added
+        return ( null != conType 
+                 && serverRole != CurGameInfo.DeviceRole.SERVER_STANDALONE );
     }
 
     private boolean isLocal( int indx ) {
