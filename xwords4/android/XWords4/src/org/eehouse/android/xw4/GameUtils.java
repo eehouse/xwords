@@ -737,12 +737,14 @@ public class GameUtils {
             String path = null;
             String name = names[ii];
             if ( null != name ) {
-                bytes = seen.get( name );
-                if ( null == bytes ) {
-                    bytes = openDict( context, name );
-                    seen.put( name, bytes );
-                }
                 path = getDictPath( context, name );
+                if ( null == path ) {
+                    bytes = seen.get( name );
+                    if ( null == bytes ) {
+                        bytes = openDict( context, name );
+                        seen.put( name, bytes );
+                    }
+                }
             }
             dictBytes[ii] = bytes;
             dictPaths[ii] = path;

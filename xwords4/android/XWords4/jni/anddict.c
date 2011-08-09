@@ -39,6 +39,7 @@ typedef struct _AndDictionaryCtxt {
     DictionaryCtxt super;
     JNIUtilCtxt* jniutil;
     JNIEnv *env;
+    off_t bytesSize;
     jbyte* bytes;
     jbyteArray byteArray;
 } AndDictionaryCtxt;
@@ -361,7 +362,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength )
 
         break;              /* exit phony while loop */
     }
-}
+} /* parseDict */
 
 static void
 and_dictionary_destroy( DictionaryCtxt* dict )
@@ -396,8 +397,13 @@ and_dictionary_destroy( DictionaryCtxt* dict )
     XP_FREEP( ctxt->super.mpool, &ctxt->super.name );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.langName );
 
-    (*env)->ReleaseByteArrayElements( env, ctxt->byteArray, ctxt->bytes, 0 );
-    (*env)->DeleteGlobalRef( env, ctxt->byteArray );
+    if ( NULL == ctxt->byteArray ) { /* mmap case */
+        int err = munmap( ctxt->bytes, ctxt->bytesSize );
+        XP_ASSERT( 0 == err );
+    } else {
+        (*env)->ReleaseByteArrayElements( env, ctxt->byteArray, ctxt->bytes, 0 );
+        (*env)->DeleteGlobalRef( env, ctxt->byteArray );
+    }
     XP_FREE( ctxt->super.mpool, ctxt );
 }
 
@@ -440,18 +446,18 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil,
         DictionaryCtxt* dict = NULL;
         if ( ii < len ) {
             jobject jdict = (*env)->GetObjectArrayElement( env, jdicts, ii );
-            if ( NULL != jdict ) { 
-                jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
-                jstring jpath = jpaths == NULL ? 
+            jstring jpath = jpaths == NULL ? 
                     NULL : (*env)->GetObjectArrayElement( env, jpaths, ii );
+            if ( NULL != jdict || NULL != jpath ) { 
+                jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
                 dict = makeDict( MPPARM(mpool) env, jniutil, jname, jdict, 
                                  jpath, jlang );
                 XP_ASSERT( !!dict );
                 (*env)->DeleteLocalRef( env, jdict );
                 (*env)->DeleteLocalRef( env, jname );
-                if ( NULL != jpath) {
-                    (*env)->DeleteLocalRef( env, jpath );
-                }
+            }
+            if ( NULL != jpath) {
+                (*env)->DeleteLocalRef( env, jpath );
             }
         }
         if ( 0 == ii ) {
@@ -470,32 +476,31 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname,
     AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)
         and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
 
-    jsize len = (*env)->GetArrayLength( env, jbytes );
-    anddict->byteArray = (*env)->NewGlobalRef( env, jbytes );
-    anddict->bytes = (*env)->GetByteArrayElements( env, anddict->byteArray, 
-                                                   NULL );
+    jsize len = 0;
 
-    if ( NULL != jpath ) {
+    if ( NULL == jpath ) {
+        len = (*env)->GetArrayLength( env, jbytes );
+        anddict->byteArray = (*env)->NewGlobalRef( env, jbytes );
+        anddict->bytes =
+            (*env)->GetByteArrayElements( env, anddict->byteArray, NULL );
+    } else {
+        anddict->byteArray = NULL;
         const char* path = (*env)->GetStringUTFChars( env, jpath, NULL );
 
         struct stat statbuf;
         if ( 0 == stat( path, &statbuf ) ) {
             int fd = open( path,  O_RDONLY );
             if ( fd >= 0 ) {
-                void* ptr = mmap( NULL, statbuf.st_size,
-                                  PROT_READ, MAP_PRIVATE,
-                                  fd, 0 );
+                anddict->bytes = mmap( NULL, statbuf.st_size,
+                                       PROT_READ, MAP_PRIVATE,
+                                       fd, 0 );
                 close( fd );
-                if ( MAP_FAILED != ptr ) {
-                    XP_ASSERT( 0 == memcmp( ptr, anddict->bytes, 
-                                            statbuf.st_size ) );
-                    (void)munmap( ptr, statbuf.st_size );
-                    XP_LOGF( "%s: all %lld bytes of %s checked out!!!!", 
-                             __func__, statbuf.st_size, path );
-                }
+
+                anddict->bytesSize = statbuf.st_size;
+                len = statbuf.st_size;
+                XP_ASSERT( MAP_FAILED != anddict->bytes );
             }
         }
-
         (*env)->ReleaseStringUTFChars( env, jpath, path );
     }
 
