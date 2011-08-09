@@ -100,98 +100,93 @@
   <PreferenceScreen android:title="@string/prefs_appearance"
                     android:summary="@string/prefs_appearance_summary"
                     >
-    <!-- <CheckBoxPreference  android:key="@string/key_color_tiles" -->
-         <!--                      android:title="@string/color_tiles" -->
-         <!--                      android:summary="@string/color_tiles_summary" -->
-         <!--                      android:defaultValue="true" -->
-         <!--                      /> -->
-         <CheckBoxPreference android:key="@string/key_hide_intro"
-                             android:title="@string/hide_intro"
-                             android:summary="@string/hide_intro_summary"
-                             android:defaultValue="false"
-                             />
-         <CheckBoxPreference android:key="@string/key_hide_title"
-                             android:title="@string/hide_title"
-                             android:summary="@string/hide_title_summary"
-                             android:defaultValue="true"
-                             />
-         <CheckBoxPreference android:key="@string/key_show_arrow"
-                             android:title="@string/show_arrow"
-                             android:summary="@string/show_arrow_summary"
-                             android:defaultValue="true"
-                             />
-         <CheckBoxPreference android:key="@string/key_keep_screenon"
-                             android:title="@string/keep_screenon"
-                             android:summary="@string/keep_screenon_summary"
-                             android:defaultValue="false"
-                             />
+    <CheckBoxPreference android:key="@string/key_hide_intro"
+                        android:title="@string/hide_intro"
+                        android:summary="@string/hide_intro_summary"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_hide_title"
+                        android:title="@string/hide_title"
+                        android:summary="@string/hide_title_summary"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_show_arrow"
+                        android:title="@string/show_arrow"
+                        android:summary="@string/show_arrow_summary"
+                        android:defaultValue="true"
+                        />
+    <CheckBoxPreference android:key="@string/key_keep_screenon"
+                        android:title="@string/keep_screenon"
+                        android:summary="@string/keep_screenon_summary"
+                        android:defaultValue="false"
+                        />
 
-         <PreferenceScreen android:title="@string/prefs_colors"
-                           android:summary="@string/prefs_colors_summary"
-                           >
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_player0"
-              android:title="@string/player0"
-              android:defaultValue="0x000000"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_player1"
-              android:title="@string/player1"
-              android:defaultValue="0xFF0000"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_player2"
-              android:title="@string/player2"
-              android:defaultValue="0x0000FF"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_player3"
-              android:title="@string/player3"
-              android:defaultValue="0x008F00"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_bonus_l2x"
-              android:title="@string/bonus_l2x"
-              android:defaultValue="0xAFAF00"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_bonus_l3x"
-              android:title="@string/bonus_l3x"
-              android:defaultValue="0x00AFAF"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_bonus_w2x"
-              android:title="@string/bonus_w2x"
-              android:defaultValue="0xAF00AF"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_bonus_w3x"
-              android:title="@string/bonus_w3x"
-              android:defaultValue="0xAFAFAF"
-              />
+    <PreferenceScreen android:title="@string/prefs_colors"
+                      android:summary="@string/prefs_colors_summary"
+                      >
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_player0"
+         android:title="@string/player0"
+         android:defaultValue="0x000000"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_player1"
+         android:title="@string/player1"
+         android:defaultValue="0xFF0000"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_player2"
+         android:title="@string/player2"
+         android:defaultValue="0x0000FF"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_player3"
+         android:title="@string/player3"
+         android:defaultValue="0x008F00"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_bonus_l2x"
+         android:title="@string/bonus_l2x"
+         android:defaultValue="0xAFAF00"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_bonus_l3x"
+         android:title="@string/bonus_l3x"
+         android:defaultValue="0x00AFAF"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_bonus_w2x"
+         android:title="@string/bonus_w2x"
+         android:defaultValue="0xAF00AF"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_bonus_w3x"
+         android:title="@string/bonus_w3x"
+         android:defaultValue="0xAFAFAF"
+         />
 
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_clr_crosshairs"
-              android:title="@string/clr_crosshairs"
-              android:defaultValue="0x7070FF"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_tile_back"
-              android:title="@string/tile_back"
-              android:defaultValue="0xFFFF99"
-              />
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_empty"
-              android:title="@string/empty"
-              android:defaultValue="0xFFFFFF"
-              />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_clr_crosshairs"
+         android:title="@string/clr_crosshairs"
+         android:defaultValue="0x7070FF"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_tile_back"
+         android:title="@string/tile_back"
+         android:defaultValue="0xFFFF99"
+         />
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_empty"
+         android:title="@string/empty"
+         android:defaultValue="0xFFFFFF"
+         />
 
-           <org.eehouse.android.xw4.EditColorPreference
-              android:key="@string/key_background"
-              android:title="@string/background"
-              android:defaultValue="0xFFFFFF"
-              />
-         </PreferenceScreen>
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_background"
+         android:title="@string/background"
+         android:defaultValue="0xFFFFFF"
+         />
+    </PreferenceScreen>
 
   </PreferenceScreen>
 
