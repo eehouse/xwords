@@ -373,7 +373,6 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
     if ( !result ) {
         engine_reset( engine ); 
     }
-    LOG_RETURNF( "%s", result?"true":"false" );
     return result;
 } /* chooseMove */
 
