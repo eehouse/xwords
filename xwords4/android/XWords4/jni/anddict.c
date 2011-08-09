@@ -21,6 +21,11 @@
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
 #include "anddict.h"
 #include "xptypes.h"
@@ -424,7 +429,8 @@ and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
 void
 makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, 
            DictionaryCtxt** dictp, PlayerDicts* dicts,
-           jobjectArray jdicts, jobjectArray jnames, jstring jlang )
+           jobjectArray jnames, jobjectArray jdicts, jobjectArray jpaths,
+           jstring jlang )
 {
     int ii;
     jsize len = (*env)->GetArrayLength( env, jdicts );
@@ -436,10 +442,16 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil,
             jobject jdict = (*env)->GetObjectArrayElement( env, jdicts, ii );
             if ( NULL != jdict ) { 
                 jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
-                dict = makeDict( MPPARM(mpool) env, jniutil, jdict, jname, jlang );
+                jstring jpath = jpaths == NULL ? 
+                    NULL : (*env)->GetObjectArrayElement( env, jpaths, ii );
+                dict = makeDict( MPPARM(mpool) env, jniutil, jname, jdict, 
+                                 jpath, jlang );
                 XP_ASSERT( !!dict );
                 (*env)->DeleteLocalRef( env, jdict );
                 (*env)->DeleteLocalRef( env, jname );
+                if ( NULL != jpath) {
+                    (*env)->DeleteLocalRef( env, jpath );
+                }
             }
         }
         if ( 0 == ii ) {
@@ -452,8 +464,8 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil,
 }
 
 DictionaryCtxt* 
-makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
-          jstring jname, jstring jlangname )
+makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname, 
+          jbyteArray jbytes, jstring jpath, jstring jlangname )
 {
     AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)
         and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
@@ -462,6 +474,30 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
     anddict->byteArray = (*env)->NewGlobalRef( env, jbytes );
     anddict->bytes = (*env)->GetByteArrayElements( env, anddict->byteArray, 
                                                    NULL );
+
+    if ( NULL != jpath ) {
+        const char* path = (*env)->GetStringUTFChars( env, jpath, NULL );
+
+        struct stat statbuf;
+        if ( 0 == stat( path, &statbuf ) ) {
+            int fd = open( path,  O_RDONLY );
+            if ( fd >= 0 ) {
+                void* ptr = mmap( NULL, statbuf.st_size,
+                                  PROT_READ, MAP_PRIVATE,
+                                  fd, 0 );
+                close( fd );
+                if ( MAP_FAILED != ptr ) {
+                    XP_ASSERT( 0 == memcmp( ptr, anddict->bytes, 
+                                            statbuf.st_size ) );
+                    (void)munmap( ptr, statbuf.st_size );
+                    XP_LOGF( "%s: all %lld bytes of %s checked out!!!!", 
+                             __func__, statbuf.st_size, path );
+                }
+            }
+        }
+
+        (*env)->ReleaseStringUTFChars( env, jpath, path );
+    }
 
     anddict->super.destructor = and_dictionary_destroy;
 

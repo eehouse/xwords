@@ -1051,7 +1051,7 @@ public class BoardActivity extends XWActivity
             XwJNI.gi_from_stream( m_gi, stream );
 
             String[] dictNames = m_gi.dictNames();
-            byte[][] dictBytes = GameUtils.openDicts( this, dictNames );
+            GameUtils.DictPairs pairs = GameUtils.openDicts( this, dictNames );
             String langName = m_gi.langName();
             m_jniGamePtr = XwJNI.initJNI();
 
@@ -1063,12 +1063,13 @@ public class BoardActivity extends XWActivity
             CommonPrefs cp = CommonPrefs.get( this );
             if ( null == stream ||
                  ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                              m_gi, dictBytes, dictNames, 
-                                              langName, m_utils, m_jniu, 
-                                              m_view, cp, m_xport ) ) {
+                                              m_gi, dictNames, pairs.m_bytes, 
+                                              pairs.m_paths, langName, m_utils,
+                                              m_jniu, m_view, cp, m_xport ) ) {
                 XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
-                                        m_view, cp, m_xport, 
-                                        dictBytes, dictNames, langName );
+                                        m_view, cp, m_xport, dictNames, 
+                                        pairs.m_bytes, pairs.m_paths,
+                                        langName );
             }
 
             m_jniThread = new 

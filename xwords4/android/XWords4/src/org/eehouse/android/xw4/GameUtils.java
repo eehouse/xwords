@@ -152,6 +152,14 @@ public class GameUtils {
         }
     }
 
+    public static class DictPairs {
+        public byte[][] m_bytes;
+        public String[] m_paths;
+        public DictPairs( byte[][] bytes, String[] paths ) {
+            m_bytes = bytes; m_paths = paths;
+        }
+    }
+
     private static Object s_syncObj = new Object();
 
     public static byte[] savedGame( Context context, long rowid )
@@ -182,7 +190,7 @@ public class GameUtils {
         // as DeviceRole.SERVER_STANDALONE != gi.serverRole
         loadMakeGame( context, gamePtr, gi, lockSrc );
         String[] dictNames = gi.dictNames();
-        byte[][] dictBytes = openDicts( context, dictNames );
+        DictPairs pairs = openDicts( context, dictNames );
         
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec( context );
@@ -197,8 +205,8 @@ public class GameUtils {
 
         gamePtr = XwJNI.initJNI();
         XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                CommonPrefs.get( context ), dictBytes, 
-                                dictNames, gi.langName() );
+                                CommonPrefs.get( context ), dictNames,
+                                pairs.m_bytes,  pairs.m_paths, gi.langName() );
                                 
         if ( null != addr ) {
             XwJNI.comms_setAddr( gamePtr, addr );
@@ -310,18 +318,19 @@ public class GameUtils {
         byte[] stream = savedGame( context, lock );
         XwJNI.gi_from_stream( gi, stream );
         String[] dictNames = gi.dictNames();
-        byte[][] dictBytes = openDicts( context, dictNames );
+        DictPairs pairs = openDicts( context, dictNames );
         String langName = gi.langName();
 
         boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                       JNIUtilsImpl.get(), gi, 
-                                                      dictBytes, dictNames,
-                                                      langName, util, 
+                                                      dictNames, pairs.m_bytes, 
+                                                      pairs.m_paths, langName,
+                                                      util, 
                                                       CommonPrefs.get(context));
         if ( !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                    CommonPrefs.get(context), dictBytes, 
-                                    dictNames, langName );
+                                    CommonPrefs.get(context), dictNames,
+                                    pairs.m_bytes, pairs.m_paths, langName );
         }
     }
 
@@ -702,12 +711,30 @@ public class GameUtils {
         return bytes;
     }
 
-    public static byte[][] openDicts( Context context, String[] names )
+    public static String getDictPath( Context context, String name )
     {
-        byte[][] result = new byte[names.length][];
+        name = addDictExtn( name );
+
+        File file = context.getFileStreamPath( name );
+        if ( !file.exists() ) {
+            file = getSDPathFor( context, name );
+            if ( !file.exists() ) {
+                file = null;
+            }
+        }
+        String path = null == file? null : file.getPath();
+        return path;
+    }
+
+    public static DictPairs openDicts( Context context, String[] names )
+    {
+        byte[][] dictBytes = new byte[names.length][];
+        String[] dictPaths = new String[names.length];
+
         HashMap<String,byte[]> seen = new HashMap<String,byte[]>();
         for ( int ii = 0; ii < names.length; ++ii ) {
             byte[] bytes = null;
+            String path = null;
             String name = names[ii];
             if ( null != name ) {
                 bytes = seen.get( name );
@@ -715,10 +742,12 @@ public class GameUtils {
                     bytes = openDict( context, name );
                     seen.put( name, bytes );
                 }
+                path = getDictPath( context, name );
             }
-            result[ii] = bytes;
+            dictBytes[ii] = bytes;
+            dictPaths[ii] = path;
         }
-        return result;
+        return new DictPairs( dictBytes, dictPaths );
     }
 
     public static boolean saveDict( Context context, InputStream in,
@@ -877,12 +906,12 @@ public class GameUtils {
         gi.replaceDicts( newDict );
 
         String[] dictNames = gi.dictNames();
-        byte[][] dictBytes = openDicts( context, dictNames );
+        DictPairs pairs = openDicts( context, dictNames );
         
         int gamePtr = XwJNI.initJNI();
         XwJNI.game_makeFromStream( gamePtr, stream, JNIUtilsImpl.get(), gi,
-                                   dictBytes, dictNames, gi.langName(), 
-                                   CommonPrefs.get( context ) );
+                                   dictNames, pairs.m_bytes, pairs.m_paths,
+                                   gi.langName(), CommonPrefs.get( context ) );
         // second time required as game_makeFromStream can overwrite
         gi.replaceDicts( newDict );
 
@@ -902,7 +931,7 @@ public class GameUtils {
         // that don't reset the game, e.g. player name for standalone
         // games?
         String[] dictNames = gi.dictNames();
-        byte[][] dictBytes = openDicts( context, dictNames );
+        DictPairs pairs = openDicts( context, dictNames );
         String langName = gi.langName();
         int gamePtr = XwJNI.initJNI();
         boolean madeGame = false;
@@ -916,13 +945,15 @@ public class GameUtils {
             madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                   JNIUtilsImpl.get(),
                                                   new CurGameInfo(context), 
-                                                  dictBytes, dictNames, 
+                                                  dictNames, pairs.m_bytes,
+                                                  pairs.m_paths,
                                                   langName, cp );
         }
 
         if ( forceNew || !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                    cp, dictBytes, dictNames, langName );
+                                    cp, dictNames, pairs.m_bytes, 
+                                    pairs.m_paths, langName );
         }
 
         if ( null != car ) {

@@ -267,14 +267,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
-(JNIEnv* env, jclass C, jbyteArray jDictBytes, jobject jniu, jobject jinfo )
+( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, 
+  jobject jniu, jobject jinfo )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil,
-                                     jDictBytes, NULL, NULL );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
+                                     jDictBytes, jpath, NULL );
     jint code = dict_getLangCode( dict );
     jint nWords = dict_getWordCount( dict );
     dict_destroy( dict );
@@ -384,7 +385,8 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 ( JNIEnv* env, jclass C, jint gamePtr, jobject j_gi, jobject j_util, 
   jobject jniu, jobject j_draw, jobject j_cp, jobject j_procs, 
-  jobjectArray j_dicts, jobjectArray j_names, jstring j_lang )
+  jobjectArray j_names, jobjectArray j_dicts, jobjectArray j_paths,
+  jstring j_lang )
 {
     XWJNI_START_GLOBALS();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
@@ -404,8 +406,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 
     DictionaryCtxt* dict;
     PlayerDicts dicts;
-    makeDicts( MPPARM(mpool) env, globals->jniutil, &dict, &dicts, j_dicts, 
-               j_names, j_lang );
+    makeDicts( MPPARM(mpool) env, globals->jniutil, &dict, &dicts, j_names, 
+               j_dicts, j_paths, j_lang );
 #ifdef STUBBED_DICT
     if ( !dict ) {
         XP_LOGF( "falling back to stubbed dict" );
@@ -446,8 +448,9 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 ( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream, jobject /*out*/jgi,
-  jobjectArray jdicts, jobjectArray jdictNames, jstring jlang, 
-  jobject jutil, jobject jniu, jobject jdraw, jobject jcp, jobject jprocs )
+  jobjectArray jdictNames, jobjectArray jdicts, jobjectArray jpaths,
+  jstring jlang, jobject jutil, jobject jniu, jobject jdraw, jobject jcp,
+  jobject jprocs )
 {
     jboolean result;
     DictionaryCtxt* dict;
@@ -458,8 +461,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->util = makeUtil( MPPARM(mpool) &state->env, 
                               jutil, globals->gi, globals );
     globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
-    makeDicts( MPPARM(mpool) env, globals->jniutil, &dict, &dicts, jdicts, 
-               jdictNames, jlang );
+    makeDicts( MPPARM(mpool) env, globals->jniutil, &dict, &dicts, jdictNames,
+               jdicts, jpaths,  jlang );
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
 

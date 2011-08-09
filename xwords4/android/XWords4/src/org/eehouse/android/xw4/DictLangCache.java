@@ -316,8 +316,9 @@ public class DictLangCache {
             info = s_nameToLang.get( name );
         } else {
             byte[] dict = GameUtils.openDict( context, name );
+            String path = GameUtils.getDictPath( context, name );
             info = new DictInfo();
-            XwJNI.dict_getInfo( dict, JNIUtilsImpl.get(), info );
+            XwJNI.dict_getInfo( dict, path, JNIUtilsImpl.get(), info );
             info.name = name;
             s_nameToLang.put( name, info );
         }
