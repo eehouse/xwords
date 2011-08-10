@@ -71,18 +71,7 @@ public class GamesList extends XWListActivity
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
     private long m_rowid;
-
-    // private XWPhoneStateListener m_phoneStateListener;
-    // private class XWPhoneStateListener extends PhoneStateListener {
-    //     @Override
-    //     public void onDataConnectionStateChanged( int state )
-    //     {
-    //         Utils.logf( "onDataConnectionStateChanged(%d)", state );
-    //         if ( TelephonyManager.DATA_CONNECTED == state ) {
-    //             NetUtils.informOfDeaths( GamesList.this );
-    //         }
-    //     }
-    // }
+    private String m_nameField;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -347,6 +336,15 @@ public class GamesList extends XWListActivity
     {
         if ( null != bundle ) {
             m_rowid = bundle.getLong( SAVE_ROWID );
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged( boolean hasFocus )
+    {
+        super.onWindowFocusChanged( hasFocus );
+        if ( hasFocus ) {
+            updateField();
         }
     }
 
@@ -696,6 +694,16 @@ public class GamesList extends XWListActivity
             String name = CommonPrefs.getDefaultPlayerName( this, 0, true );
             CommonPrefs.setDefaultPlayerName( GamesList.this, name );
             showDialog( GET_NAME );
+        }
+    }
+
+    private void updateField()
+    {
+        String newField = CommonPrefs.getSummaryField( this );
+        if ( ! newField.equals( m_nameField ) ) {
+            m_nameField = newField;
+            m_adapter.setField( newField );
+            onContentChanged();
         }
     }
 

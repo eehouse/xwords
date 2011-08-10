@@ -189,6 +189,12 @@
     <string name="loc_external">External</string>
     <string name="loc_downloads">Downloads</string>
 
+    <string name="summary_field">Include in game listing</string>
+    <string name="game_summary_field_empty">\u003cNothing\u003E</string>
+    <string name="game_summary_field_language">Game language</string>
+    <string name="game_summary_field_opponents">Opponent name[s]</string>
+    <string name="game_summary_field_state">Game state</string>
+    <string name="game_summary_opponents_pending">Not here yet</string>
 
     <string name="confirm_save_title">Confirm save</string>
     <string name="confirm_save">This game is in play.  If you

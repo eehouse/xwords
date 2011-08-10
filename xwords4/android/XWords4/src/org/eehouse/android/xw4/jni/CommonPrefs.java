@@ -316,6 +316,11 @@ public class CommonPrefs {
         return getPrefsBoolean( context, R.string.key_keep_screenon, false );
     }
 
+    public static String getSummaryField( Context context )
+    {
+        return getString( context, R.string.key_summary_field );
+    }
+
     public static boolean getPrefsBoolean( Context context, int keyID,
                                            boolean defaultValue )
     {

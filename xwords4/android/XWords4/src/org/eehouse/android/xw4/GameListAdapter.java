@@ -44,6 +44,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
+    private int m_fieldID;
     private static final int TURN_COLOR = 0x7F00FF00;
 
     private class ViewInfo implements View.OnClickListener {
@@ -117,17 +118,40 @@ public class GameListAdapter extends XWListAdapter {
             } else {
                 //Assert.assertNotNull( summary );
 
+                String state = summary.summarizeState( m_context );
+
                 TextView view = (TextView)layout.findViewById( R.id.game_name );
                 if ( hideTitle ) {
                     view.setVisibility( View.GONE );
                 } else {
+                    String value = null;
+                    switch ( m_fieldID ) {
+                    case R.string.game_summary_field_empty:
+                        break;
+                    case R.string.game_summary_field_language:
+                        value = 
+                            DictLangCache.getLangName( m_context, 
+                                                       summary.dictLang );
+                        break;
+                    case R.string.game_summary_field_opponents:
+                        value = "vs Kati +2";
+                        break;
+                    case R.string.game_summary_field_state:
+                        value = state;
+                        break;
+                    }
+
                     String name = GameUtils.getName( m_context, m_rowid );
                     String format = 
                         m_context.getString( R.string.str_game_namef );
-                    String lang = 
-                        DictLangCache.getLangName( m_context, 
-                                                   summary.dictLang );
-                    view.setText( String.format( format, name, lang ) );
+
+                    if ( null != value ) {
+                        value = String.format( format, name, value );
+                    } else {
+                        value = name;
+                    }
+                        
+                    view.setText( value );
                 }
 
                 layout.setOnClickListener( new View.OnClickListener() {
@@ -157,7 +181,7 @@ public class GameListAdapter extends XWListAdapter {
                 }
 
                 view = (TextView)layout.findViewById( R.id.state );
-                view.setText( summary.summarizeState( m_context ) );
+                view.setText( state );
                 view = (TextView)layout.findViewById( R.id.modtime );
                 view.setText( m_df.format( new Date( summary.modtime ) ) );
 
@@ -273,4 +297,26 @@ public class GameListAdapter extends XWListAdapter {
             m_viewsCache.remove( rowid );
         }
     }
+
+    public void setField( String field )
+    {
+        int[] ids = {
+            R.string.game_summary_field_empty
+            ,R.string.game_summary_field_language
+            ,R.string.game_summary_field_opponents
+            ,R.string.game_summary_field_state
+        };
+        int result = -1;
+        for ( int id : ids ) {
+            if ( m_context.getString( id ).equals( field ) ) {
+                result = id;
+                break;
+            }
+        }
+        if ( m_fieldID != result ) {
+            m_viewsCache.clear();
+            m_fieldID = result;
+        }
+    }
+
 }

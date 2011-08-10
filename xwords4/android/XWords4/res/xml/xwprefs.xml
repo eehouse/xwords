@@ -100,6 +100,13 @@
   <PreferenceScreen android:title="@string/prefs_appearance"
                     android:summary="@string/prefs_appearance_summary"
                     >
+    <org.eehouse.android.xw4.XWListPreference 
+       android:key="@string/key_summary_field"
+       android:title="@string/summary_field"
+	   android:entries="@array/game_summary_values"
+	   android:entryValues="@array/game_summary_values"
+       android:defaultValue="@string/game_summary_field_opponents"
+       />
     <CheckBoxPreference android:key="@string/key_hide_intro"
                         android:title="@string/hide_intro"
                         android:summary="@string/hide_intro_summary"

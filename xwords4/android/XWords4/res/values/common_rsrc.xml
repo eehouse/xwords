@@ -51,6 +51,7 @@
   <string name="key_notify_vibrate">key_notify_vibrate</string>
   <string name="key_hide_intro">key_hide_intro</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
+  <string name="key_summary_field">key_summary_field</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
@@ -160,6 +161,13 @@
     <item>Czech</item>
     <item>Greek</item>
     <item>Slovak</item>
+  </string-array>
+
+  <string-array name="game_summary_values">
+    <item>@string/game_summary_field_empty</item>
+    <item>@string/game_summary_field_language</item>
+    <item>@string/game_summary_field_opponents</item>
+    <item>@string/game_summary_field_state</item>
   </string-array>
 
 </resources>
