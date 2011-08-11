@@ -321,11 +321,10 @@ public class GameUtils {
         DictPairs pairs = openDicts( context, dictNames );
         String langName = gi.langName();
 
-        boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
-                                                      JNIUtilsImpl.get(), gi, 
+        boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, gi, 
                                                       dictNames, pairs.m_bytes, 
                                                       pairs.m_paths, langName,
-                                                      util, 
+                                                      util, JNIUtilsImpl.get(), 
                                                       CommonPrefs.get(context));
         if ( !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
@@ -911,9 +910,10 @@ public class GameUtils {
         DictPairs pairs = openDicts( context, dictNames );
         
         int gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeFromStream( gamePtr, stream, JNIUtilsImpl.get(), gi,
-                                   dictNames, pairs.m_bytes, pairs.m_paths,
-                                   gi.langName(), CommonPrefs.get( context ) );
+        XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
+                                   pairs.m_bytes, pairs.m_paths,
+                                   gi.langName(), JNIUtilsImpl.get(), 
+                                   CommonPrefs.get( context ) );
         // second time required as game_makeFromStream can overwrite
         gi.replaceDicts( newDict );
 
@@ -945,11 +945,10 @@ public class GameUtils {
             byte[] stream = savedGame( context, lock );
             // Will fail if there's nothing in the stream but a gi.
             madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
-                                                  JNIUtilsImpl.get(),
                                                   new CurGameInfo(context), 
                                                   dictNames, pairs.m_bytes,
-                                                  pairs.m_paths,
-                                                  langName, cp );
+                                                  pairs.m_paths, langName,
+                                                  JNIUtilsImpl.get(), cp );
         }
 
         if ( forceNew || !madeGame ) {
