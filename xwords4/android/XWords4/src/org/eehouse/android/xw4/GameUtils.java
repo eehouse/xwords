@@ -325,7 +325,8 @@ public class GameUtils {
                                                       dictNames, pairs.m_bytes, 
                                                       pairs.m_paths, langName,
                                                       util, JNIUtilsImpl.get(), 
-                                                      CommonPrefs.get(context));
+                                                      CommonPrefs.get(context),
+                                                      tp );
         if ( !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                     CommonPrefs.get(context), dictNames,

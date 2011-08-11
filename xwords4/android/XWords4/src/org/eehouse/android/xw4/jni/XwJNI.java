@@ -116,12 +116,12 @@ public class XwJNI {
                                                UtilCtxt util, 
                                                JNIUtils jniu,
                                                // DrawCtx draw,
-                                               CommonPrefs cp
-                                               // TransportProcs procs
+                                               CommonPrefs cp,
+                                               TransportProcs procs
                                                ) {
         return game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
                                     dictPaths, langName, util, jniu, 
-                                    (DrawCtx)null, cp, (TransportProcs)null );
+                                    (DrawCtx)null, cp, procs );
     }
 
     public static native boolean game_receiveMessage( int gamePtr, 
