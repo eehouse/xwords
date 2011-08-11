@@ -120,10 +120,10 @@ public class NetUtils {
         }
     }
 
-    public static String[] queryRelay( Context context, String[] ids,
-                                       int nBytes )
+    public static byte[][][] queryRelay( Context context, String[] ids,
+                                         int nBytes )
     {
-        String[] result = null;
+        byte[][][] msgs = null;
         try {
             Socket socket = MakeProxySocket( context, 8000 );
             DataOutputStream outStream = 
@@ -148,7 +148,7 @@ public class NetUtils {
                 new DataInputStream(socket.getInputStream());
             short resLen = dis.readShort();
             short nameCount = dis.readShort();
-            byte[][][] msgs = null;
+
             if ( nameCount == ids.length ) {
                 msgs = new byte[nameCount][][];
                 for ( int ii = 0; ii < nameCount; ++ii ) {
@@ -168,25 +168,6 @@ public class NetUtils {
             }
             socket.close();
 
-            if ( null != msgs ) {
-                ArrayList<String> idsWMsgs =
-                    new ArrayList<String>( nameCount );
-                for ( int ii = 0; ii < nameCount; ++ii ) {
-                    // if game has messages, open it and feed 'em
-                    // to it.
-                    if ( null != msgs[ii] ) {
-                        if( GameUtils.feedMessages( context, ids[ii], 
-                                                    msgs[ii] ) ) {
-                            idsWMsgs.add( ids[ii] );
-                        }
-                    }
-                }
-                if ( 0 < idsWMsgs.size() ) {
-                    ids = new String[idsWMsgs.size()];
-                    result = idsWMsgs.toArray( ids );
-                }
-            }
-
         } catch( java.net.UnknownHostException uhe ) {
             Utils.logf( uhe.toString() );
         } catch( java.io.IOException ioe ) {
@@ -194,7 +175,7 @@ public class NetUtils {
         } catch( NullPointerException npe ) {
             Utils.logf( npe.toString() );
         }
-        return result;
+        return msgs;
     } // queryRelay
 
 }
