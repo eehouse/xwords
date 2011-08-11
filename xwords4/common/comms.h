@@ -124,6 +124,8 @@ typedef void (*RelayConndProc)( void* closure, XP_UCHAR* const room,
                                 XP_U16 devOrder, /* 1 means created room, etc. */
                                 XP_Bool allHere, XP_U16 nMissing );
 typedef void (*RelayErrorProc)( void* closure, XWREASON relayErr );
+typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len,
+                                    const XP_UCHAR* relayID, void* closure );
 #endif
 
 typedef struct _TransportProcs {
@@ -135,6 +137,7 @@ typedef struct _TransportProcs {
     RelayStatusProc rstatus;
     RelayConndProc rconnd;
     RelayErrorProc rerror;
+    RelayNoConnProc sendNoConn;
 #endif
     void* closure;
 } TransportProcs;

@@ -111,6 +111,18 @@ and_xport_relayConnd( void* closure, XP_UCHAR* const room, XP_Bool reconnect,
     }
 }
 
+static XP_Bool 
+and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
+                      const XP_UCHAR* relayID, void* closure )
+{
+    LOG_FUNC();
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    if ( NULL != aprocs && NULL != aprocs->jxport ) {
+    }
+    LOG_RETURNF( "%s", "false" );
+    return XP_FALSE;
+}
+
 static void
 and_xport_relayError( void* closure, XWREASON relayErr )
 {
@@ -148,6 +160,7 @@ makeXportProcs( MPFORMAL JNIEnv** envp, jobject jxport )
     aprocs->tp.rstatus = and_xport_relayStatus;
     aprocs->tp.rconnd = and_xport_relayConnd;
     aprocs->tp.rerror = and_xport_relayError;
+    aprocs->tp.sendNoConn = and_xport_sendNoConn;
     aprocs->tp.closure = aprocs;
 
     return (TransportProcs*)aprocs;

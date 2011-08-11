@@ -175,6 +175,8 @@ static XP_Bool relayConnect( CommsCtxt* comms );
 static void relayDisconnect( CommsCtxt* comms );
 static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, 
                                XWHostID destID, void* data, int dlen );
+static XP_Bool sendNoConn( const CommsCtxt* comms, 
+                           const MsgQueueElem* elem, XWHostID destID );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
 static void set_reset_timer( CommsCtxt* comms );
 # ifdef DEBUG
@@ -797,25 +799,32 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 } /* comms_setAddr */
 
 #ifdef XWFEATURE_RELAY
+static XP_Bool
+haveRelayID( const CommsCtxt* comms )
+{
+    XP_Bool result = 0 != comms->r.connName[0]
+        && comms->r.myHostID != HOST_ID_NONE;
+    return result;
+}
+
+static XP_Bool
+formatRelayID( const CommsCtxt* comms, XWHostID hostID,
+               XP_UCHAR* buf, XP_U16* lenp )
+{
+    XP_U16 strln = 1 + XP_SNPRINTF( buf, *lenp, "%s/%d", 
+                                    comms->r.connName, hostID );
+    XP_ASSERT( *lenp >= strln );
+    *lenp = strln;
+    return XP_TRUE;
+}
+
+/* Get *my* "relayID", a combo of connname and host id */
 XP_Bool
 comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* lenp )
 {
-    XP_Bool success = comms->r.connName[0] != 0;
-    if ( success ) {
-        XP_U16 len = sizeof( comms->r.connName ) + 16;
-        XP_UCHAR local[len];
-        XP_SNPRINTF( local, sizeof(local), "%s/%d", 
-                     comms->r.connName, comms->r.myHostID );
-        XP_U16 strln = XP_STRLEN(local);
-        success = *lenp >= strln;
-        if ( success ) {
-            *lenp = strln;
-            XP_MEMCPY( buf, local, strln );
-            XP_LOGF( "%s: keysize=%d", __func__, strln );
-        }
-    }
-    LOG_RETURNF( "%d", success );
-    return success;
+    XP_Bool result = haveRelayID( comms )
+        && formatRelayID( comms, comms->r.myHostID, buf, lenp );
+    return result;
 }
 #endif
 
@@ -1117,8 +1126,10 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
-        if ( comms->r.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
-            XWHostID destID = getDestID( comms, channelNo );
+        XWHostID destID = getDestID( comms, channelNo );
+        if ( haveRelayID( comms ) && sendNoConn( comms, elem, destID ) ) {
+            /* do nothing */
+        } else if ( comms->r.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
             if ( send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
                                  elem->msg, elem->len ) ){
                 result = elem->len;
@@ -2120,6 +2131,23 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
     }
     return success;
 } /* send_via_relay */
+
+static XP_Bool
+sendNoConn( const CommsCtxt* comms, const MsgQueueElem* elem, XWHostID destID )
+{
+    LOG_FUNC();
+    XP_Bool success = XP_FALSE;
+
+    XP_UCHAR relayID[64];
+    XP_U16 len = sizeof(relayID);
+    success = NULL != comms->procs.sendNoConn
+        && formatRelayID( comms, destID, relayID, &len )
+        && (*comms->procs.sendNoConn)( elem->msg, elem->len, relayID,
+                                       comms->procs.closure );
+
+    LOG_RETURNF( "%d", success );
+    return success;
+}
 
 /* Send a CONNECT message to the relay.  This opens up a connection to the
  * relay, and tells it our hostID and cookie so that it can associatate it

@@ -1013,6 +1013,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
         ServerCtxt* server = state->game.server;
         server_do( server );    /* in case work's pending */
         (void)server_receiveMessage( server, stream );
+        server_do( server );    /* in case MORE work's pending */
     }
 
     stream_destroy( stream );
