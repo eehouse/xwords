@@ -53,6 +53,8 @@ public interface TransportProcs {
     };
     void relayErrorProc( XWRELAY_ERROR relayErr );
 
+    boolean relayNoConnProc( byte[] buf, String relayID );
+
     public interface TPMsgHandler {
         public void tpmRelayConnd( String room, int devOrder, boolean allHere, 
                                    int nMissing );

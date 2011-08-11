@@ -308,12 +308,12 @@ public class GameUtils {
     public static void loadMakeGame( Context context, int gamePtr, 
                                      CurGameInfo gi, GameLock lock )
     {
-        loadMakeGame( context, gamePtr, gi, null, lock );
+        loadMakeGame( context, gamePtr, gi, null, null, lock );
     }
 
     public static void loadMakeGame( Context context, int gamePtr, 
                                      CurGameInfo gi, UtilCtxt util,
-                                     GameLock lock )
+                                     TransportProcs tp, GameLock lock )
     {
         byte[] stream = savedGame( context, lock );
         XwJNI.gi_from_stream( gi, stream );
@@ -858,9 +858,10 @@ public class GameUtils {
             int gamePtr = XwJNI.initJNI();
             CurGameInfo gi = new CurGameInfo( context );
             FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
+            CommsTransportStub xpstub = new CommsTransportStub();
             GameLock lock = new GameLock( rowid, true );
             if ( lock.tryLock() ) {
-                loadMakeGame( context, gamePtr, gi, feedImpl, lock );
+                loadMakeGame( context, gamePtr, gi, feedImpl, xpstub, lock );
 
                 for ( byte[] msg : msgs ) {
                     draw = XwJNI.game_receiveMessage( gamePtr, msg ) || draw;

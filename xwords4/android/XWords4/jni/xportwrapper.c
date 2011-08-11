@@ -115,12 +115,22 @@ static XP_Bool
 and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
                       const XP_UCHAR* relayID, void* closure )
 {
-    LOG_FUNC();
+    jboolean result = false;
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs && NULL != aprocs->jxport ) {
+        JNIEnv* env = *aprocs->envp;
+
+        const char* sig = "([BLjava/lang/String;)Z";
+        jmethodID mid = getMethodID( env, aprocs->jxport, 
+                                     "relayNoConnProc", sig );
+        jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
+        jstring str = (*env)->NewStringUTF( env, relayID );
+        result = (*env)->CallBooleanMethod( env, aprocs->jxport, mid, 
+                                            jbytes, str );
+        (*env)->DeleteLocalRef( env, jbytes );
+        (*env)->DeleteLocalRef( env, str );
     }
-    LOG_RETURNF( "%s", "false" );
-    return XP_FALSE;
+    return result;
 }
 
 static void

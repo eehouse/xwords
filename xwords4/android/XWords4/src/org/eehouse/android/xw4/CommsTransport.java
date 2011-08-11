@@ -415,4 +415,11 @@ public class CommsTransport implements TransportProcs,
     {
         m_handler.tpmRelayErrorProc( relayErr );
     }
+
+    public boolean relayNoConnProc( byte[] buf, String relayID )
+    {
+        Utils.logf( "CommsTransport.relayNoConnProc()=>false" );
+        return false;
+    }
+
 }
