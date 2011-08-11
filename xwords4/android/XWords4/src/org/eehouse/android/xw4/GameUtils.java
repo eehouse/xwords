@@ -851,7 +851,7 @@ public class GameUtils {
     }
 
     public static boolean feedMessages( Context context, String relayID,
-                                        byte[][] msgs )
+                                        byte[][] msgs, RelayMsgSink sink )
     {
         boolean draw = false;
         long rowid = DBUtils.getRowIDFor( context, relayID );
@@ -859,10 +859,9 @@ public class GameUtils {
             int gamePtr = XwJNI.initJNI();
             CurGameInfo gi = new CurGameInfo( context );
             FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-            CommsTransportStub xpstub = new CommsTransportStub();
             GameLock lock = new GameLock( rowid, true );
             if ( lock.tryLock() ) {
-                loadMakeGame( context, gamePtr, gi, feedImpl, xpstub, lock );
+                loadMakeGame( context, gamePtr, gi, feedImpl, sink, lock );
 
                 for ( byte[] msg : msgs ) {
                     draw = XwJNI.game_receiveMessage( gamePtr, msg ) || draw;

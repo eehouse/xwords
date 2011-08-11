@@ -24,7 +24,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
-public class CommsTransportStub implements TransportProcs {
+public class RelayMsgSink implements TransportProcs {
 
     public int transportSend( byte[] buf, final CommsAddrRec addr )
     {
