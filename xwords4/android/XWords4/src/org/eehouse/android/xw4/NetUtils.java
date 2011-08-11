@@ -120,96 +120,81 @@ public class NetUtils {
         }
     }
 
-    public static String[] QueryRelay( Context context )
+    public static String[] queryRelay( Context context, String[] ids,
+                                       int nBytes )
     {
         String[] result = null;
-        int[] nBytes = new int[1];
-        String[] ids = collectIDs( context, nBytes );
-        if ( null != ids && 0 < ids.length ) {
-            try {
-                Socket socket = MakeProxySocket( context, 8000 );
-                DataOutputStream outStream = 
-                    new DataOutputStream( socket.getOutputStream() );
+        try {
+            Socket socket = MakeProxySocket( context, 8000 );
+            DataOutputStream outStream = 
+                new DataOutputStream( socket.getOutputStream() );
 
-                // total packet size
-                outStream.writeShort( 2 + nBytes[0] + ids.length + 1 );
+            // total packet size
+            outStream.writeShort( 2 + nBytes + ids.length + 1 );
 
-                outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-                outStream.writeByte( NetUtils.PRX_GET_MSGS );
+            outStream.writeByte( NetUtils.PROTOCOL_VERSION );
+            outStream.writeByte( NetUtils.PRX_GET_MSGS );
 
-                // number of ids
-                outStream.writeShort( ids.length );
+            // number of ids
+            outStream.writeShort( ids.length );
 
-                for ( String id : ids ) {
-                    outStream.writeBytes( id );
-                    outStream.write( '\n' );
-                }
-                outStream.flush();
-
-                DataInputStream dis = 
-                    new DataInputStream(socket.getInputStream());
-                short resLen = dis.readShort();
-                short nameCount = dis.readShort();
-                byte[][][] msgs = null;
-                if ( nameCount == ids.length ) {
-                    msgs = new byte[nameCount][][];
-                    for ( int ii = 0; ii < nameCount; ++ii ) {
-                        short countsThisGame = dis.readShort();
-                        if ( countsThisGame > 0 ) {
-                            msgs[ii] = new byte[countsThisGame][];
-                            for ( int jj = 0; jj < countsThisGame; ++jj ) {
-                                short len = dis.readShort();
-                                if ( len > 0 ) {
-                                    byte[] packet = new byte[len];
-                                    dis.read( packet );
-                                    msgs[ii][jj] = packet;
-                                }
-                            }
-                        }
-                    }
-                }
-                socket.close();
-
-                if ( null != msgs ) {
-                    ArrayList<String> idsWMsgs =
-                        new ArrayList<String>( nameCount );
-                    for ( int ii = 0; ii < nameCount; ++ii ) {
-                        // if game has messages, open it and feed 'em
-                        // to it.
-                        if ( null != msgs[ii] ) {
-                            if( GameUtils.feedMessages( context, ids[ii], 
-                                                        msgs[ii] ) ) {
-                                idsWMsgs.add( ids[ii] );
-                            }
-                        }
-                    }
-                    if ( 0 < idsWMsgs.size() ) {
-                        ids = new String[idsWMsgs.size()];
-                        result = idsWMsgs.toArray( ids );
-                    }
-                }
-
-            } catch( java.net.UnknownHostException uhe ) {
-                Utils.logf( uhe.toString() );
-            } catch( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
-            } catch( NullPointerException npe ) {
-                Utils.logf( npe.toString() );
+            for ( String id : ids ) {
+                outStream.writeBytes( id );
+                outStream.write( '\n' );
             }
+            outStream.flush();
+
+            DataInputStream dis = 
+                new DataInputStream(socket.getInputStream());
+            short resLen = dis.readShort();
+            short nameCount = dis.readShort();
+            byte[][][] msgs = null;
+            if ( nameCount == ids.length ) {
+                msgs = new byte[nameCount][][];
+                for ( int ii = 0; ii < nameCount; ++ii ) {
+                    short countsThisGame = dis.readShort();
+                    if ( countsThisGame > 0 ) {
+                        msgs[ii] = new byte[countsThisGame][];
+                        for ( int jj = 0; jj < countsThisGame; ++jj ) {
+                            short len = dis.readShort();
+                            if ( len > 0 ) {
+                                byte[] packet = new byte[len];
+                                dis.read( packet );
+                                msgs[ii][jj] = packet;
+                            }
+                        }
+                    }
+                }
+            }
+            socket.close();
+
+            if ( null != msgs ) {
+                ArrayList<String> idsWMsgs =
+                    new ArrayList<String>( nameCount );
+                for ( int ii = 0; ii < nameCount; ++ii ) {
+                    // if game has messages, open it and feed 'em
+                    // to it.
+                    if ( null != msgs[ii] ) {
+                        if( GameUtils.feedMessages( context, ids[ii], 
+                                                    msgs[ii] ) ) {
+                            idsWMsgs.add( ids[ii] );
+                        }
+                    }
+                }
+                if ( 0 < idsWMsgs.size() ) {
+                    ids = new String[idsWMsgs.size()];
+                    result = idsWMsgs.toArray( ids );
+                }
+            }
+
+        } catch( java.net.UnknownHostException uhe ) {
+            Utils.logf( uhe.toString() );
+        } catch( java.io.IOException ioe ) {
+            Utils.logf( ioe.toString() );
+        } catch( NullPointerException npe ) {
+            Utils.logf( npe.toString() );
         }
         return result;
-    } // QueryRelay
+    } // queryRelay
 
-    private static String[] collectIDs( Context context, int[] nBytes )
-    {
-        String[] ids = DBUtils.getRelayIDs( context, false );
-        int len = 0;
-        if ( null != ids ) {
-            for ( String id : ids ) {
-                len += id.length();
-            }
-        }
-        nBytes[0] = len;
-        return ids;
-    }
 }

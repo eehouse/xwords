@@ -48,11 +48,16 @@ public class RelayService extends Service {
         
         Thread thread = new Thread( null, new Runnable() {
                 public void run() {
-
-                    String[] relayIDs = NetUtils.QueryRelay( RelayService.this );
-                    if ( null != relayIDs ) {
-                        if ( !DispatchNotify.tryHandle( relayIDs ) ) {
-                            setupNotification( relayIDs );
+                    int[] nBytes = new int[1];
+                    String[] ids = collectIDs( nBytes );
+                    if ( null != ids && 0 < ids.length ) {
+                        String[] relayIDs = 
+                            NetUtils.queryRelay( RelayService.this,
+                                                 ids, nBytes[0] );
+                        if ( null != relayIDs ) {
+                            if ( !DispatchNotify.tryHandle( relayIDs ) ) {
+                                setupNotification( relayIDs );
+                            }
                         }
                     }
                     RelayService.this.stopSelf();
@@ -97,4 +102,18 @@ public class RelayService extends Service {
         nm.notify( R.string.notify_body, // unique id; any will do
                    notification );
     }
+
+    private String[] collectIDs( int[] nBytes )
+    {
+        String[] ids = DBUtils.getRelayIDs( this, false );
+        int len = 0;
+        if ( null != ids ) {
+            for ( String id : ids ) {
+                len += id.length();
+            }
+        }
+        nBytes[0] = len;
+        return ids;
+    }
+
 }
