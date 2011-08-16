@@ -2,37 +2,228 @@
 <!-- -*- compile-command: "cd ../../; ant install"; -*- -->
 
 <resources>
+  
+    <!--
+        ############################################################
+        # Screens
+        ############################################################ 
+      -->
+    <!--   
+           ############################################################
+           # Main screen (list of games)
+           ############################################################ 
+      -->
+    <!-- window title -->
+	<string name="title_games_list">Crosswords</string>   
+    <!-- Text of button at bottom of main games-list screen -->
     <string name="button_new_game">Add game</string>
 
+    <!--       
+               ############################################################
+               # Context menu for main games-list screen
+               ############################################################ 
+      -->
+    <!-- title of contextual menu.  Name of the selected game is
+         substituted in. -->
     <string name="game_item_menu_titlef">\"%s\" actions:</string>
+    <!-- menu items -->
     <string name="list_item_config">Game settings...</string>
     <string name="list_item_rename">Rename...</string>
-    <string name="game_rename_title">Rename game</string>
-    <string name="rename_label">Change the name of this game to:</string>
-    <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
-	<string name="list_item_copy">Copy</string>
 	<string name="list_item_reset">Reset</string>
-
 	<string name="list_item_new_from">New from</string>
-	<string name="list_item_move_up">Move up</string>
-	<string name="list_item_move_down">Move down</string>
-	<string name="list_item_move_to_top">Move to top</string>
-	<string name="list_item_move_to_bottom">Move to bottom</string>
+	<string name="list_item_copy">Copy</string>
+    <!-- Title of dialog for renaming game (triggered by selecting
+         list_item_rename) -->
+    <string name="game_rename_title">Rename game</string>
+    <!-- text within rename dialog (triggered by selecting
+         list_item_rename) -->
+    <string name="rename_label">Change the name of this game to:</string>
 
-    <string name="resolve_edit">Edit note</string>
+    <!--   
+           ############################################################
+           # Dictionaries screen (list of installed dictionaries
+           ############################################################ 
+      -->
+    <!-- window title -->
+	<string name="title_dicts_list">Wordlists</string>   
 
-    <string name="play">Play game</string>
-
-	<string name="title_games_list">Crosswords</string>   
-	<string name="title_dicts_list">Dictionaries</string>   
-
-    <string name="title_langs_list">Languages (based on installed
-      dictionaries)</string>
-    <string name="lang_label">Game language</string>
+    <!--   
+           ############################################################
+           # Game configure screen 
+           ############################################################ 
+      -->
+    <!-- window title (game name substituted for %s) -->
 	<string name="title_game_configf">%s settings</string>  
+
+    <!-- alternate window title used when game is networked -->
 	<string name="title_gamenet_configf">%s settings (networked)</string>  
+
+    <!-- title for popup list of langugages from which user picks -->
+    <string name="title_langs_list">Languages (based on installed
+        dictionaries)</string>
+
+    <!-- text of checkbox at top of dialog allowing to unlock in-play
+    game to make changes -->
+    <string name="game_locked">Lock settings</string>
+
+    <!-- text of button for adding new player to game -->
+    <string name="button_add_player">Add player</string>
+
+    <!-- text of button to juggle (randomly rearrange order of) players -->
+    <string name="button_juggle_players">Shuffle players</string>
+
+    <!-- text of separator marking out the language area of the dialog -->
+    <string name="lang_label">Game language</string>
+
+    <!-- text of separator marking out the connection area of the dialog -->
+    <string name="connect_label">Connection (via internet)</string>
+
+    <!-- text of checkbox asking if user wants to search for open
+    public rooms -->
+    <string name="join_room">Join public room</string>
+
+    <!-- hint (text shown when field is empty) for room name field -->
+    <string name="new_room_hint">Room name</string>
+
+    <!-- text of checkbox -->
+    <string name="room_public">Make new room public</string>
+
+    <!-- title for popup of public rooms found on server -->
+    <string name="room_public_prompt">Select public room</string>
+
+    <!-- text of separator marking out other-setting area of the dialog -->
+    <string name="settings_label">Other settings</string>
+
+    <!-- text of checkbox.  If this checkbox is checked, buttons will
+         appear by which the user can get high- and low-scoring moves
+         generated based on his tray.  Can be used to cheat.  -->
+    <string name="hints_allowed">Allow hints</string>
+
+    <!-- text of checkbox controlling whether there's a game timer -->
+    <string name="use_timer">Enable game timer</string>
+
+    <!-- label for the field used to set the timer's inital value -->
+    <string name="minutes_label">Minutes per player</string>
+
+    <!-- title of popup used to select how "smart" (how capable) the
+    robot player will be. -->
+    <string name="robot_spinner_prompt">How smart is the robot player?</string>
+
+    <!-- title of popup used to determine how words are handled that
+         are not in the wordlist used for the game (or player if using
+         different wordlists per player) -->
+    <string name="phonies_spinner_prompt">How to handle \"phonies\"
+        (words not in dictionary)</string>
+
+
+    <!--   
+           ############################################################
+           # Preferences screen(s)
+           ############################################################ 
+      -->
+    <!-- window title -->
 	<string name="title_prefs">Crosswords settings</string>  
+
+    <string name="prefs_defaults">New game defaults</string>
+    <string name="prefs_defaults_summary">Default settings for new
+        games</string>
+    <string name="prefs_appearance">Appearance</string>
+    <string name="prefs_appearance_summary">Settings controlling
+        appearance</string>
+    <string name="prefs_behavior">Behavior</string>
+    <string name="prefs_behavior_summary">Settings controlling app behavior</string>
+    <string name="prefs_names">Player names</string>
+    <string name="prefs_names_summary">Default player names</string>
+    <string name="pref_player1_name">First player</string>
+    <string name="pref_player2_name">Second player</string>
+    <string name="pref_player3_name">Third player</string>
+    <string name="pref_player4_name">Fourth player</string>
+    <string name="tell_unused">Not used yet...</string>
+    <string name="prefs_dicts">Dictionaries</string>
+    <string name="prefs_dicts_summary">Default dictionaries</string>
+    <string name="default_dict">Dictionary for humans</string>
+    <string name="default_robodict">Dictionary for robots</string>
+    <string name="hints_allowed_sum">Enable the hint feature</string>
+    <string name="init_autojuggle">Juggle players</string>
+    <string name="init_autojuggle_sum">Randomly, for new games</string>
+    <string name="default_phonies">Handle phonies</string>
+    <string name="phonies_warn">Warn if phonies</string>
+	<string name="initial_player_minutes">Timer minutes per player</string>
+    <string name="board_size">Board size</string>
+    <string name="summary_field">Include in game listing</string>
+    <string name="game_summary_field_empty">\u003cNothing\u003E</string>
+    <string name="game_summary_field_language">Game language</string>
+    <string name="game_summary_field_opponents">Opponent name[s]</string>
+    <string name="game_summary_field_state">Game state</string>
+    <string name="game_summary_opponents_pending">Not here yet</string>
+    <string name="hide_intro">Hide main-page hint</string>
+    <string name="hide_intro_summary">It\'s useful only when you\'re
+        starting out...</string>
+    <string name="hide_title">Hide titlebar</string>
+    <string name="hide_title_summary">Hiding the game name lets the
+        board be slightly larger</string>
+    <string name="show_arrow">Show board arrow</string>
+    <string name="show_arrow_summary">Tapped rack tiles land on this
+        arrow when it is visible</string>
+    <string name="keep_screenon">Keep screen on</string>
+    <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
+    <string name="prefs_colors">Individual colors</string>
+    <string name="prefs_colors_summary">Edit colors used on the board</string>
+    <string name="player0">First player</string>
+    <string name="player1">Second player</string>
+    <string name="player2">Third player</string>
+    <string name="player3">Fourth player</string>
+    <string name="bonus_l2x">Double letter</string>
+    <string name="bonus_l3x">Triple letter</string>
+    <string name="bonus_w2x">Double word</string>
+    <string name="bonus_w3x">Triple word</string>
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="bonus_w2x_summary">2W</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w3x_summary">3W</string>
+    <string name="clr_crosshairs">Crosshairs color</string>
+    <string name="tile_back">Tile background</string>
+    <string name="empty">Empty cell/background</string>
+    <string name="background">Board background</string>
+    <string name="explain_robot">Explain other moves</string>
+    <string name="explain_robot_summary">Display score summary after
+        every robot or remote turn</string>
+    <string name="skip_confirm_turn">Skip confirming turn</string>
+    <string name="skip_confirm_turn_summary">Do NOT display score
+        summary after every human turn</string>
+    <string name="title_sort_tiles">Sort new tiles</string>
+    <string name="summary_sort_tiles">Sort racks whenever new tiles
+      are added</string>
+    <string name="ringer_zoom">Volume keys zoom</string>
+    <string name="ringer_zoom_summary">Zoom board using volume keys</string>
+    <string name="peek_other">View tiles out-of-turn</string>
+    <string name="peek_other_summary">Tapping on scoreboard name shows
+        that player\'s tiles</string>
+    <string name="network_behavior">Network game settings</string>
+    <string name="network_behavior_summary">Settings that apply to
+        networked games</string>
+    <string name="connect_frequency">Move check frequency</string>
+	<string name="notify_sound">Play sound</string>
+	<string name="notify_vibrate">Vibrate</string>
+	<string name="notify_other_summary">When opponent moves arrive</string>
+	<string name="git_rev_title">Source version id</string>
+
+    <!--
+        ############################################################
+        # Menus
+        ############################################################ 
+      -->
+
+    <!--
+        ############################################################
+        # Dialogs
+        ############################################################ 
+      -->
+
+
+
+
 	
 	<string name="app_name">Crosswords</string>  
 
@@ -157,9 +348,6 @@
     <string name="players_label_standalone">Players</string>
     <string name="players_label_host">Players (%1$d local, %2$d
     off-device)</string>
-    <string name="game_locked">Lock settings</string>
-    <string name="button_add_player">Add player</string>
-    <string name="button_juggle_players">Shuffle players</string>
 
     <string name="dicts_item_move">Move dictionary</string>
     <string name="dicts_item_select">Make default</string>
@@ -173,15 +361,8 @@
     <string name="button_default_both">Both</string>
 
     <string name="dict_lang_labelf">Dictionary (in %s)</string>
-    <string name="connect_label">Connection (via internet)</string>
-    <string name="room_public">Make new room public</string>
-    <string name="join_room">Join public room</string>
-    <string name="new_room_hint">Room name</string>
-    <string name="room_public_prompt">Select public room</string>
 
     <string name="configure_rolef">Configure %s connection</string>
-    <string name="settings_label">Other settings</string>
-    <string name="minutes_label">Minutes per player</string>
 
     <string name="download_dicts">Download more...</string>
     <string name="loc_builtin">Built-in</string>
@@ -189,12 +370,6 @@
     <string name="loc_external">External</string>
     <string name="loc_downloads">Downloads</string>
 
-    <string name="summary_field">Include in game listing</string>
-    <string name="game_summary_field_empty">\u003cNothing\u003E</string>
-    <string name="game_summary_field_language">Game language</string>
-    <string name="game_summary_field_opponents">Opponent name[s]</string>
-    <string name="game_summary_field_state">Game state</string>
-    <string name="game_summary_opponents_pending">Not here yet</string>
 
     <string name="confirm_save_title">Confirm save</string>
     <string name="confirm_save">This game is in play.  If you
@@ -219,40 +394,10 @@
       is using it (but there is another %s dictionary installed that
       can replace it.)</string>
     
-    <string name="hints_allowed">Allow hints</string>
-    <string name="hints_allowed_sum">Enable the hint feature</string>
-    <string name="init_autojuggle">Juggle players</string>
-    <string name="init_autojuggle_sum">Randomly, for new games</string>
     <string name="progress_title">Searching for moves</string>
-    <string name="use_timer">Enable game timer</string>
     <string name="color_tiles">Color tiles</string>
     <string name="color_tiles_summary">Draw tiles using color of
     player who played them</string>
-    <string name="show_arrow">Show board arrow</string>
-    <string name="show_arrow_summary">Tapped rack tiles land on this
-      arrow when it is visible</string>
-    <string name="keep_screenon">Keep screen on</string>
-    <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
-    <string name="explain_robot">Explain other moves</string>
-    <string name="explain_robot_summary">Display score summary after
-      every robot or remote turn</string>
-    <string name="skip_confirm_turn">Skip confirming turn</string>
-    <string name="skip_confirm_turn_summary">Do NOT display score
-    summary after every human turn</string>
-    <string name="title_sort_tiles">Sort new tiles</string>
-    <string name="summary_sort_tiles">Sort racks whenever new tiles
-      are added</string>
-    <string name="ringer_zoom">Volume keys zoom</string>
-    <string name="ringer_zoom_summary">Zoom board using volume keys</string>
-    <string name="hide_title">Hide titlebar</string>
-    <string name="hide_title_summary">Hiding the game name lets the
-      board be slightly larger</string>
-    <string name="hide_intro">Hide main-page hint</string>
-    <string name="hide_intro_summary">It\'s useful only when you\'re starting
-    out...</string>
-    <string name="peek_other">View tiles out-of-turn</string>
-    <string name="peek_other_summary">Tapping on scoreboard name shows
-    that player\'s tiles</string>
 
     <string name="storeWhereTitle">Dictionary storage</string>
     <string name="storeWhereMsg">Store downloaded dictionaries using
@@ -262,9 +407,7 @@
     <string name="button_sd">External</string>
 
     <string name="phonies_ignore">Ignore phonies</string>
-    <string name="phonies_warn">Warn if phonies</string>
     <string name="phonies_disallow">Disallow phonies</string>
-    <string name="robot_spinner_prompt">How smart is the robot player?</string>
     <string name="robot_smart">Smart robot</string>
     <string name="robot_smarter">Smarter robot</string>
     <string name="robot_smartest">Smartest robot</string>
@@ -278,57 +421,13 @@
     <string name="confirm_revert_all">Are you sure you want to restore
       all settings to their original values?</string>
 
-    <string name="prefs_defaults">New game defaults</string>
-    <string name="prefs_defaults_summary">Default settings for new
-    games</string>
-    <string name="prefs_appearance">Appearance</string>
-    <string name="prefs_appearance_summary">Settings controlling
-    appearance</string>
-    <string name="prefs_behavior">Behavior</string>
-    <string name="prefs_behavior_summary">Settings controlling app behavior</string>
 
-    <string name="network_behavior">Network game settings</string>
-    <string name="network_behavior_summary">Settings that apply to
-      networked games</string>
 
-    <string name="prefs_names">Player names</string>
-    <string name="prefs_names_summary">Default player names</string>
-    <string name="pref_player1_name">First player</string>
-    <string name="pref_player2_name">Second player</string>
-    <string name="pref_player3_name">Third player</string>
-    <string name="pref_player4_name">Fourth player</string>
-    <string name="tell_unused">Not used yet...</string>
 
-    <string name="prefs_dicts">Dictionaries</string>
-    <string name="prefs_dicts_summary">Default dictionaries</string>
-    <string name="default_dict">Dictionary for humans</string>
-    <string name="default_robodict">Dictionary for robots</string>
     
-    <string name="default_phonies">Handle phonies</string>
-    <string name="phonies_spinner_prompt">How to handle \"phonies\"
-    (words not in dictionary)</string>
-    <string name="board_size">Board size</string>
 
-    <string name="prefs_colors">Individual colors</string>
-    <string name="prefs_colors_summary">Edit colors used on the board</string>
-    <string name="player0">First player</string>
-    <string name="player1">Second player</string>
-    <string name="player2">Third player</string>
-    <string name="player3">Fourth player</string>
-    <string name="bonus_l2x">Double letter</string>
-    <string name="bonus_l3x">Triple letter</string>
-    <string name="bonus_w2x">Double word</string>
-    <string name="bonus_w3x">Triple word</string>
-    <string name="bonus_l2x_summary">2L</string>
-    <string name="bonus_w2x_summary">2W</string>
-    <string name="bonus_l3x_summary">3L</string>
-    <string name="bonus_w3x_summary">3W</string>
     <string name="pts">pts</string>
     <string name="trading_text">Select one or more tiles\nto exchange.</string>
-    <string name="tile_back">Tile background</string>
-    <string name="empty">Empty cell/background</string>
-    <string name="clr_crosshairs">Crosshairs color</string>
-    <string name="background">Board background</string>
 
     <string name="tab_relay">Internet/Relay</string>
     <string name="tab_sms">SMS (broken)</string>
@@ -403,13 +502,10 @@
 
 	<string name="gamef">Game %d</string>
 	<string name="playerf">Player %d</string>
-	<string name="initial_player_minutes">Timer minutes per player</string>
 
-	<string name="git_rev_title">Source version id</string>
     <string name="changes_title">Recent changes</string>
     <string name="changes_button">Recent changes</string>
 
-    <string name="connect_frequency">Move check frequency</string>
 	<string name="connect_thirty_seconds">60 seconds</string>
 	<string name="connect_five_mins">5 minutes</string>
 	<string name="connect_fifteen_mins">15 minutes</string>
@@ -419,9 +515,6 @@
 	<string name="connect_daily">Once every day</string>
 	<string name="connect_never">Never check</string>
 
-	<string name="notify_sound">Play sound</string>
-	<string name="notify_vibrate">Vibrate</string>
-	<string name="notify_other_summary">When opponent moves arrive</string>
 
     <string name="public_names_progress">Fetching public rooms for
       %1$d-player games in %2$s.</string>
