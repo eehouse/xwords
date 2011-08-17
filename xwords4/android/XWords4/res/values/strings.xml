@@ -120,54 +120,158 @@
     <!--   
            ############################################################
            # Preferences screen(s)
-           ############################################################ 
-      -->
+           #
+           # There are four screens plus one for debugging that isn't
+           # translated: New-game defaults, Appearances, Behavior, and
+           # Network Game settings
+           ############################################################
+           -->
     <!-- window title -->
 	<string name="title_prefs">Crosswords settings</string>  
 
+    <!--       
+               ############################################################
+               # New-game defaults
+               ############################################################
+      -->
+    <!-- title of this sub-preference -->
     <string name="prefs_defaults">New game defaults</string>
+    <!-- clarification of the above -->
     <string name="prefs_defaults_summary">Default settings for new
         games</string>
+
+    <!-- sub-preference title for editing default player names.
+         There's only enabled now, though.-->
+    <string name="prefs_names">Player names</string>
+
+    <!-- clarification of the above -->
+    <string name="prefs_names_summary">Default player names</string>
+
+    <!-- Label for the first "player name" preference -->
+    <string name="pref_player1_name">First player</string>
+    <!-- Label for the second "player name" preference (unused)-->
+    <string name="pref_player2_name">Second player</string>
+    <!-- Label for the third "player name" preference (unused) -->
+    <string name="pref_player3_name">Third player</string>
+    <!-- Label for the fourth "player name" preference (unused)-->
+    <string name="pref_player4_name">Fourth player</string>
+
+    <!-- Used to indicate that a preference is not enabled, i.e. not
+         part of the game and that the user should ignore it. -->
+    <string name="tell_unused">Not used yet...</string>
+
+    <!-- sub-preference for dictionaries (soon to be called "word lists") -->
+    <string name="prefs_dicts">Dictionaries</string>
+    <!-- clarification of above -->
+    <string name="prefs_dicts_summary">Default dictionaries</string>
+
+    <!-- dictionary used by default for human players when creating
+         new game -->
+    <string name="default_dict">Dictionary for humans</string>
+    <!-- dictionary used by default for robot players when creating
+         new game -->
+    <string name="default_robodict">Dictionary for robots</string>
+
+    <!-- clarification on hints_allowed, whether new games will
+         default to having the hint feature enabled(string elsewhere
+         in this file) -->
+    <string name="hints_allowed_sum">Enable the hint feature</string>
+
+    <!-- Will new games, on default, randomly rearrange the start
+         order of players. -->
+    <string name="init_autojuggle">Juggle players</string>
+    <!-- clarification on above -->
+    <string name="init_autojuggle_sum">Randomly, for new games</string>
+
+    <!-- default new-game setting for handline phonies (words not
+         found in the word list) -->
+    <string name="default_phonies">Handle phonies</string>
+
+    <!-- default number of minutes on timer for new games -->
+	<string name="initial_player_minutes">Timer minutes per player</string>
+
+    <!-- preference for board size (15x15, 13x13 etc.) -->
+    <string name="board_size">Board size</string>
+
+    <!--       
+               ############################################################
+               # Appearances
+               ############################################################
+      -->
+    <!-- title of this sub-preference -->
     <string name="prefs_appearance">Appearance</string>
+    <!-- clarification of the above -->
     <string name="prefs_appearance_summary">Settings controlling
         appearance</string>
-    <string name="prefs_behavior">Behavior</string>
-    <string name="prefs_behavior_summary">Settings controlling app behavior</string>
-    <string name="prefs_names">Player names</string>
-    <string name="prefs_names_summary">Default player names</string>
-    <string name="pref_player1_name">First player</string>
-    <string name="pref_player2_name">Second player</string>
-    <string name="pref_player3_name">Third player</string>
-    <string name="pref_player4_name">Fourth player</string>
-    <string name="tell_unused">Not used yet...</string>
-    <string name="prefs_dicts">Dictionaries</string>
-    <string name="prefs_dicts_summary">Default dictionaries</string>
-    <string name="default_dict">Dictionary for humans</string>
-    <string name="default_robodict">Dictionary for robots</string>
-    <string name="hints_allowed_sum">Enable the hint feature</string>
-    <string name="init_autojuggle">Juggle players</string>
-    <string name="init_autojuggle_sum">Randomly, for new games</string>
-    <string name="default_phonies">Handle phonies</string>
-    <string name="phonies_warn">Warn if phonies</string>
-	<string name="initial_player_minutes">Timer minutes per player</string>
-    <string name="board_size">Board size</string>
+
+    <!-- Preference to control what's listed next to game name in the
+         first line of a game summary in the main games-list screen,
+         e.g., if the option is "Game Language", "English" in the
+         listing "Game 2 (English)"
+         
+         The following strings beginning with "game_summary_field" are
+         possible values -->
     <string name="summary_field">Include in game listing</string>
+
+    <!-- Put nothing in the summary space, so it just reads "Game 2" -->
     <string name="game_summary_field_empty">\u003cNothing\u003E</string>
+    <!-- Put the language there, so it reads "Game 2 (English)" -->
     <string name="game_summary_field_language">Game language</string>
+    <!-- List names of opponents (summarized), e.g. "Game 2 (vs Kati)" -->
     <string name="game_summary_field_opponents">Opponent name[s]</string>
+    <!-- List the state of the game, "Game over" or "10 moves made"
+         etc. -->
     <string name="game_summary_field_state">Game state</string>
-    <string name="game_summary_opponents_pending">Not here yet</string>
+
+    <!-- The main screen, by default, has a "add game" button and some
+         text at the top that take up space and are unnecessary for
+         experienced users.  This checkbox hides them. -->
     <string name="hide_intro">Hide main-page hint</string>
+    <!-- clarification of above -->
     <string name="hide_intro_summary">It\'s useful only when you\'re
         starting out...</string>
+
+    <!-- Checkbox that when set prevents showing a title bar in the
+         game board window to save space -->
     <string name="hide_title">Hide titlebar</string>
+    <!-- clarification of above -->
     <string name="hide_title_summary">Hiding the game name lets the
         board be slightly larger</string>
+
+    <!-- Checkbox that when set makes taps on the board manipulate an
+         arrow that then directs where tiles go when tapped in the
+         tray. -->
     <string name="show_arrow">Show board arrow</string>
+    <!-- clarification of above -->
     <string name="show_arrow_summary">Tapped rack tiles land on this
         arrow when it is visible</string>
+
+    <!-- Checkbox that when set keeps the device screen from dimming
+         if the board screen is what's displayed.  This is to allow
+         users to think about a move without having to touch the
+         screen all the time.-->
     <string name="keep_screenon">Keep screen on</string>
+    <!-- clarification of above -->
     <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
+
+    <!--       
+               ############################################################
+               # Behavior
+               ############################################################
+      -->
+
+    <!-- title of this sub-preference -->
+    <string name="prefs_behavior">Behavior</string>
+    <!-- clarification of the above -->
+    <string name="prefs_behavior_summary">Settings controlling app behavior</string>
+
+    <!--       
+               ############################################################
+               # Network game settings
+               ############################################################
+      -->
+
+
     <string name="prefs_colors">Individual colors</string>
     <string name="prefs_colors_summary">Edit colors used on the board</string>
     <string name="player0">First player</string>
