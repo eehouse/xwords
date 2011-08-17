@@ -398,7 +398,10 @@ and_dictionary_destroy( DictionaryCtxt* dict )
     XP_FREEP( ctxt->super.mpool, &ctxt->super.langName );
 
     if ( NULL == ctxt->byteArray ) { /* mmap case */
-        int err = munmap( ctxt->bytes, ctxt->bytesSize );
+#ifdef DEBUG
+        int err = 
+#endif
+            munmap( ctxt->bytes, ctxt->bytesSize );
         XP_ASSERT( 0 == err );
     } else {
         (*env)->ReleaseByteArrayElements( env, ctxt->byteArray, ctxt->bytes, 0 );
