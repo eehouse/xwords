@@ -1011,16 +1011,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
     result = comms_checkIncomingStream( state->game.comms, stream, NULL );
     if ( result ) {
         ServerCtxt* server = state->game.server;
-        XP_Bool notDone;
+        /* XP_Bool notDone; */
         /* in case work's pending */
-        for ( notDone = XP_TRUE; notDone; ) {
-            server_do( server, &notDone );
-        }
+        /* for ( notDone = XP_TRUE; notDone; ) { */
+            (void)server_do( server, NULL );
+        /* } */
         (void)server_receiveMessage( server, stream );
         /* in case MORE work's pending */
-        for ( notDone = XP_TRUE; notDone; ) {
-            server_do( server, &notDone );
-        }
+        /* for ( notDone = XP_TRUE; notDone; ) { */
+        (void)server_do( server, NULL );
+        /* } */
     }
 
     stream_destroy( stream );
