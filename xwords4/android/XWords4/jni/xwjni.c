@@ -788,7 +788,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1do
 {
     jboolean result;
     XWJNI_START();
-    result = server_do( state->game.server );
+    result = server_do( state->game.server, NULL );
     XWJNI_END();
     return result;
 }
@@ -1011,9 +1011,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
     result = comms_checkIncomingStream( state->game.comms, stream, NULL );
     if ( result ) {
         ServerCtxt* server = state->game.server;
-        server_do( server );    /* in case work's pending */
+        XP_Bool notDone;
+        /* in case work's pending */
+        for ( notDone = XP_TRUE; notDone; ) {
+            server_do( server, &notDone );
+        }
         (void)server_receiveMessage( server, stream );
-        server_do( server );    /* in case MORE work's pending */
+        /* in case MORE work's pending */
+        for ( notDone = XP_TRUE; notDone; ) {
+            server_do( server, &notDone );
+        }
     }
 
     stream_destroy( stream );

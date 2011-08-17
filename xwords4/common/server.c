@@ -858,7 +858,7 @@ showPrevScore( ServerCtxt* server )
 } /* showPrevScore */
 
 XP_Bool
-server_do( ServerCtxt* server )
+server_do( ServerCtxt* server, XP_Bool* moreToDoP )
 {
     XP_Bool result = XP_TRUE;
     XP_Bool moreToDo = XP_FALSE;
@@ -911,7 +911,10 @@ server_do( ServerCtxt* server )
 
     case XWSTATE_NEED_SHOWSCORE:
         showPrevScore( server );
-        moreToDo = XP_TRUE;     /* either process turn or end game... */
+        /* state better have changed or we'll infinite loop... */
+        XP_ASSERT( XWSTATE_NEED_SHOWSCORE != server->nv.gameState );
+        /* either process turn or end game should come next... */
+        moreToDo = XWSTATE_NEED_SHOWSCORE != server->nv.gameState;
         break;
     case XWSTATE_INTURN:
         if ( robotMovePending( server ) && !ROBOTWAITING(server) ) {
@@ -926,7 +929,10 @@ server_do( ServerCtxt* server )
         result = XP_FALSE;
         break;
     }
-    if ( moreToDo ) {
+
+    if ( NULL != moreToDoP ) {
+        *moreToDoP = moreToDo;
+    } else if ( moreToDo ) {
         util_requestTime( server->vol.util );
     }
 

@@ -1113,7 +1113,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
             }
         }
 
-        redraw = server_do( globals->cGlobals.game.server ) || redraw;
+        redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw;
         if ( redraw ) {
             /* messages change a lot */
             board_invalAll( globals->cGlobals.game.board );
@@ -1589,7 +1589,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 #endif
 
-        server_do( g_globals.cGlobals.game.server );
+        server_do( g_globals.cGlobals.game.server, NULL );
 
         g_globals.menuList = g_boardMenuList;
         drawMenuLargeOrSmall( &g_globals, g_boardMenuList ); 
