@@ -21,6 +21,11 @@
 package org.eehouse.android.xw4.jni;
 
 public interface TransportProcs {
+
+    public static final int COMMS_XPORT_FLAGS_NONE = 0;
+    public static final int COMMS_XPORT_FLAGS_HASNOCONN = 1;
+    int getFlags();
+
     int transportSend( byte[] buf, final CommsAddrRec addr );
 
     enum CommsRelayState { COMMS_RELAYSTATE_UNCONNECTED

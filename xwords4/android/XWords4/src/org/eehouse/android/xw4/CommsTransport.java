@@ -325,6 +325,9 @@ public class CommsTransport implements TransportProcs,
     }
 
     // TransportProcs interface
+
+    public int getFlags() { return COMMS_XPORT_FLAGS_NONE; }
+
     public int transportSend( byte[] buf, final CommsAddrRec faddr )
     {
         //Utils.logf( "CommsTransport::transportSend(nbytes=%d)", buf.length );
@@ -418,7 +421,7 @@ public class CommsTransport implements TransportProcs,
 
     public boolean relayNoConnProc( byte[] buf, String relayID )
     {
-        Utils.logf( "CommsTransport.relayNoConnProc()=>false" );
+        Assert.fail();
         return false;
     }
 
