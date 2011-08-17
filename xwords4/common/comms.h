@@ -128,7 +128,21 @@ typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len,
                                     const XP_UCHAR* relayID, void* closure );
 #endif
 
+typedef enum {
+    COMMS_XPORT_FLAGS_NONE = 0
+    ,COMMS_XPORT_FLAGS_HASNOCONN = 1
+} CommsTransportFlags;
+
+#ifdef COMMS_XPORT_FLAGSPROC
+typedef XP_U32 (*FlagsProc)( void* closure );
+#endif
+
 typedef struct _TransportProcs {
+# ifdef COMMS_XPORT_FLAGSPROC
+    FlagsProc getFlags;
+#else
+    XP_U32 flags;
+#endif
     TransportSend send;
 #ifdef COMMS_HEARTBEAT
     TransportReset reset;
