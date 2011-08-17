@@ -59,7 +59,7 @@ public class UtilCtxtImpl implements UtilCtxt {
 
     public boolean engineProgressCallback()
     {
-        subclassOverride( "engineProgressCallback" );
+        // subclassOverride( "engineProgressCallback" );
         return true;
     }
 
