@@ -782,6 +782,61 @@ handleMsgsMsg( int sock, bool sendFull,
     }
 }
 
+static void
+handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    unsigned short nameCount;
+    int ii;
+    if ( getNetShort( &bufp, end, &nameCount ) ) {
+        vector<unsigned char> out(4); /* space for len and n_msgs */
+        assert( out.size() == 4 );
+        for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
+
+            // See NetUtils.java for reply format
+            // message-length: 2
+            // nameCount: 2
+            // name count reps of:
+            //    counts-this-name: 2
+            //    counts-this-name reps of
+            //       len: 2
+            //       msg: <len>
+
+            // pack msgs for one game
+            HostID hid;
+            char connName[MAX_CONNNAME_LEN+1];
+            if ( !parseRelayID( &bufp, end, connName, sizeof(connName),
+                                &hid ) ) {
+                break;
+            }
+            unsigned short nMsgs;
+            if ( getNetShort( &bufp, end, &nMsgs ) ) {
+                SafeCref scr( connName );
+                while ( nMsgs-- > 0 ) {
+                    unsigned short len;
+                    HostID src;
+                    HostID dest;
+                    XWRELAY_Cmd cmd;
+                    if ( getNetShort( &bufp, end, &len ) ) {
+                        unsigned char* start = bufp;
+                        if ( getNetByte( &bufp, end, &cmd )
+                             && getNetByte( &bufp, end, &src )
+                             && getNetByte( &bufp, end, &dest ) ) {
+                            assert( cmd == XWRELAY_MSG_TORELAY_NOCONN );
+                            assert( hid == dest );
+                            scr.PutMsg( src, dest, start, len );
+                            bufp = start + len;
+                            continue;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        assert( bufp == end );  // don't ship with this!!!
+    }
+} // handleProxyMsgs
+
 void
 handle_proxy_packet( unsigned char* buf, int len, int sock )
 {
@@ -817,6 +872,10 @@ handle_proxy_packet( unsigned char* buf, int len, int sock )
                     handleMsgsMsg( sock, PRX_GET_MSGS == cmd, bufp, end );
                 }
                 break;          /* PRX_HAS_MSGS */
+
+            case PRX_PUT_MSGS:
+                handleProxyMsgs( sock, bufp, end );
+                break;
 
             case PRX_DEVICE_GONE:
                 logf( XW_LOGINFO, "%s: got PRX_DEVICE_GONE", __func__ );

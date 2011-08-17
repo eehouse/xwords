@@ -85,6 +85,8 @@ typedef enum {
     ,XWE_RECONNECT         /* A device is re-connecting using the connID for
                                this object */
 
+    ,XWE_PROXYMSG           /* msg when game may not be connected */
+
     ,XWE_GOTONEACK
     ,XWE_GOTLASTACK
     ,XWE_ACKTIMEOUT
@@ -142,6 +144,8 @@ typedef enum {
     ,XWA_SNDALLHERE_2    /* Ditto, but for a reconnect */
 
     ,XWA_FWD             /* Forward a message */
+
+    ,XWA_PROXYMSG        /* out-of-band message */
 
     ,XWA_NOTEHEART       /* Record heartbeat received */
 

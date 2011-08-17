@@ -242,6 +242,19 @@ CookieRef::_HandleAck( HostID hostID )
 }
 
 void
+CookieRef::_PutMsg( HostID srcID, HostID destID, unsigned char* buf, int buflen )
+{
+    CRefEvent evt( XWE_PROXYMSG );
+    evt.u.fwd.src = srcID;
+    evt.u.fwd.dest = destID;
+    evt.u.fwd.buf = buf;
+    evt.u.fwd.buflen = buflen;
+
+    m_eventQueue.push_back( evt );
+    handleEvents();
+}
+
+void
 CookieRef::_Disconnect( int socket, HostID hostID )
 {
     logf( XW_LOGINFO, "%s(socket=%d, hostID=%d)", __func__, socket, hostID );
@@ -659,6 +672,10 @@ CookieRef::handleEvents()
                 forward_or_store( &evt );
                 break;
 
+            case XWA_PROXYMSG:
+                forward_or_store/*_proxy*/( &evt );
+                break;
+
             case XWA_TIMERDISCONN:
                 disconnectSockets( XWRELAY_ERROR_TIMEOUT );
                 break;
@@ -1037,7 +1054,13 @@ CookieRef::forward_or_store( const CRefEvent* evt )
     int destSocket = SocketForHost( dest );
 
     /* This is an ugly hack!!!! */
-    *buf = XWRELAY_MSG_FROMRELAY;
+    if ( *buf == XWRELAY_MSG_TORELAY ) {
+        *buf = XWRELAY_MSG_FROMRELAY;
+    } else if ( *buf == XWRELAY_MSG_TORELAY_NOCONN ) {
+        *buf = XWRELAY_MSG_FROMRELAY_NOCONN;
+    } else {
+        assert( 0 );            /* don't ship this */
+    }
 
     if ( 0 < m_delayMicros && destSocket != -1 ) {
         usleep( m_delayMicros );

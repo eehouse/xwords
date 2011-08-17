@@ -37,29 +37,29 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           flags: 1; cookieLen: 1; cookie: <cookieLen>; hostID: 1; nPlayers: 1;
           nPlayersTotal: 1 */
 
-       , XWRELAY_GAME_RECONNECT
+       , XWRELAY_GAME_RECONNECT /* 1 */
        /* Connect using connName as well as cookie.  Used by a device that's
           lost its connection to a game in progress.  Once a game is locked
           this is the only way a host can get (back) in. Format: flags: 1;
           cookieLen: 1; cookie: <cookieLen>; hostID: 1; nPlayers: 1;
           nPlayersTotal: 1; connNameLen: 1; connName<connNameLen>*/
 
-       , XWRELAY_ACK
+       , XWRELAY_ACK            /* 2 */
 
-       , XWRELAY_GAME_DISCONNECT
+       , XWRELAY_GAME_DISCONNECT /* 3 */
        /* Tell the relay that we're gone for this game.  After this message is
           sent, the host can reconnect on the same socket for a new game.
           Format: cookieID: 2; srcID: 1 */
 
-       , XWRELAY_CONNECT_RESP
+       , XWRELAY_CONNECT_RESP   /* 4 */
        /* Sent from relay to device in response to XWRELAY_CONNECT.  Format:
           heartbeat_seconds: 2; players_here: 1; players_sought: 1; */
 
-       , XWRELAY_RECONNECT_RESP
+       , XWRELAY_RECONNECT_RESP /* 5 */
        /* Sent from relay to device in response to XWRELAY_RECONNECT.  Format:
           same as for XWRELAY_CONNECT_RESP */
 
-       , XWRELAY_ALLHERE
+       , XWRELAY_ALLHERE        /* 6 */
        /* Sent from relay when it enters the state where all expected devices
           are here (at start of new game or after having been gone for a
           while).  Devices should not attempt to forward messages before this
@@ -67,36 +67,38 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           Format: hostID: 1; connectionID: 2; connNameLen: 1;
           connName<connNameLen>; */
 
-       , XWRELAY_ALLBACK__UNUSED
+       , XWRELAY_ALLBACK__UNUSED /* 7 */
        /* Like XWRELAY_ALLHERE, but indicates a return to all devices being
           present rather than the first time that's achieved.  Has no real
           purpose now that the relay does store-and-forward, but at least lets
           devices tell users everybody's home. */
 
-       , XWRELAY_DISCONNECT_YOU
+       , XWRELAY_DISCONNECT_YOU /* 8 */
        /* Sent from relay when existing connection is terminated.  
           Format: errorCode: 1 */
 
-       , XWRELAY_DISCONNECT_OTHER
+       , XWRELAY_DISCONNECT_OTHER /* 9 */
        /* Another device has left the game. 
           Format: errorCode: 1; lostHostId: 1 */
 
-       , XWRELAY_CONNECTDENIED
+       , XWRELAY_CONNECTDENIED  /* 10 */
        /* The relay says go away.  Format: reason code: 1 */
 
-       , XWRELAY_HEARTBEAT
+       , XWRELAY_HEARTBEAT      /* 11 */
        /* Sent in either direction.  Format: cookieID: 2; srcID: 1 */
 
-       , XWRELAY_MSG_FROMRELAY
+       , XWRELAY_MSG_FROMRELAY  /* 12 */
        /* Sent from relay to device.  Format: cookieID: 2; src_hostID: 1;
           dest_hostID: 1; data <len-headerLen> */
 
-       , XWRELAY_MSG_TORELAY
+       , XWRELAY_MSG_TORELAY    /* 13 */
        /* Sent from device to relay.  Format: connectionID: 2; src_hostID:
           1; dest_hostID: 1 */
 
-       , XWRELAY_MSG_STATUS     /* message conveying status of some sort.
+       , XWRELAY_MSG_STATUS     /* 14 message conveying status of some sort.
                                    Format: msgCode: 1; varies after that */
+       , XWRELAY_MSG_TORELAY_NOCONN    /* 15 same as above, but no cookieID */
+       , XWRELAY_MSG_FROMRELAY_NOCONN  /* 16 same as above, but no cookieID */
 }
 #ifndef CANT_DO_TYPEDEF
  XWRelayMsg
@@ -111,7 +113,7 @@ typedef unsigned char XWRELAY_Cmd;
 #define HOST_ID_SERVER 1
 
 #define MAX_INVITE_LEN 31
-#define MAX_MSG_LEN    256      /* 100 is more like it */
+#define MAX_MSG_LEN    1024     /* Used for proxy too! */
 #define MAX_CONNNAME_LEN 48     /* host ID, boot time, and seeds as hex? */
 
 #define XWRELAY_PROTO_VERSION_ORIG            0x01
@@ -157,6 +159,7 @@ enum { PRX_NONE             /* 0 is an illegal value */
        ,PRX_HAS_MSGS        /* return message counts for connName/devid array */
        ,PRX_DEVICE_GONE     /* return message counts for connName/devid array */
        ,PRX_GET_MSGS        /* return full messages for connName/devid array */
+       ,PRX_PUT_MSGS        /* incoming set of messages with connName/devid header */
 }
 #ifndef CANT_DO_TYPEDEF
 XWPRXYCMD
@@ -167,8 +170,6 @@ XWPRXYCMD
 typedef unsigned short CookieID;
 #endif
 
-#define MAX_PROXY_MSGLEN 128
-
-#define COOKIE_ID_NONE 0L
+#define COOKIE_ID_NONE 0
 
 #endif
