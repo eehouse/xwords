@@ -135,6 +135,7 @@ public class RelayService extends Service {
                         setupNotification( relayIDs );
                     }
                 }
+                sink.send( this );
             }
         }
     }

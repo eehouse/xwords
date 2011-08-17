@@ -29,11 +29,18 @@ import java.io.InputStream;
 import java.io.DataInputStream;
 import java.io.OutputStream;
 import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class NetUtils {
+
+    private static final int MAX_SEND = 1024;
+    private static final int MAX_BUF = MAX_SEND - 2;
 
     public static final byte PROTOCOL_VERSION = 0;
     // from xwrelay.h
@@ -41,6 +48,7 @@ public class NetUtils {
     public static byte PRX_HAS_MSGS = 2;
     public static byte PRX_DEVICE_GONE = 3;
     public static byte PRX_GET_MSGS = 4;
+    public static byte PRX_PUT_MSGS = 5;
     
     public static Socket MakeProxySocket( Context context, 
                                           int timeoutMillis )
@@ -146,7 +154,7 @@ public class NetUtils {
 
             DataInputStream dis = 
                 new DataInputStream(socket.getInputStream());
-            short resLen = dis.readShort();
+            short resLen = dis.readShort();          // total message length
             short nameCount = dis.readShort();
 
             if ( nameCount == ids.length ) {
@@ -166,6 +174,10 @@ public class NetUtils {
                     }
                 }
             }
+            if ( 0 != dis.available() ) {
+                msgs = null;
+                Utils.logf( "format error: bytes left over in stream" );
+            }
             socket.close();
 
         } catch( java.net.UnknownHostException uhe ) {
@@ -177,5 +189,78 @@ public class NetUtils {
         }
         return msgs;
     } // queryRelay
+
+    public static void sendToRelay( Context context,
+                                    HashMap<String,ArrayList<byte[]>> msgHash )
+    {
+        // format: total msg lenth: 2
+        //         number-of-relayIDs: 2
+        //         for-each-relayid: relayid + '\n': varies
+        //                           message count: 1
+        //                           for-each-message: length: 2
+        //                                             message: varies
+
+
+        if ( null != msgHash ) {
+            Utils.logf( "sendToRelay called" );
+            try {
+                // Build up a buffer containing everything but the total
+                // message length and number of relayIDs in the message.
+                ByteArrayOutputStream store = 
+                    new ByteArrayOutputStream( MAX_BUF ); // mem
+                DataOutputStream outBuf = new DataOutputStream( store );
+                int msgLen = 4;          // relayID count + protocol stuff
+                int nRelayIDs = 0;
+        
+                Iterator<String> iter = msgHash.keySet().iterator();
+                while ( iter.hasNext() ) {
+                    String relayID = iter.next();
+                    Utils.logf( "sendToRelay: sending for %s", relayID );
+                    int thisLen = 1 + relayID.length(); // string and '\n'
+                    thisLen += 2;                        // message count
+
+                    ArrayList<byte[]> msgs = msgHash.get( relayID );
+                    for ( byte[] msg : msgs ) {
+                        thisLen += 2 + msg.length;
+                    }
+
+                    if ( msgLen + thisLen > MAX_BUF ) {
+                        // Need to deal with this case by sending multiple
+                        // packets.  It WILL happen.
+                        break;
+                    }
+                    // got space; now write it
+                    ++nRelayIDs;
+                    outBuf.writeBytes( relayID );
+                    outBuf.write( '\n' );
+                    outBuf.writeShort( msgs.size() );
+                    for ( byte[] msg : msgs ) {
+                        outBuf.writeShort( msg.length );
+                        outBuf.write( msg );
+                    }
+                    msgLen += thisLen;
+                    Utils.logf( "sendToRelay: %d bytes so far", msgLen );
+                }
+
+                // Now open a real socket, write size and proto, and
+                // copy in the formatted buffer
+                Socket socket = MakeProxySocket( context, 8000 );
+                DataOutputStream outStream = 
+                    new DataOutputStream( socket.getOutputStream() );
+                outStream.writeShort( msgLen );
+                outStream.writeByte( NetUtils.PROTOCOL_VERSION );
+                outStream.writeByte( NetUtils.PRX_PUT_MSGS );
+                outStream.writeShort( nRelayIDs );
+                outStream.write( store.toByteArray() );
+                outStream.flush();
+                socket.close();
+                Utils.logf( "sendToRelay: done", msgLen );
+            } catch ( java.io.IOException ioe ) {
+                Utils.logf( "%s", ioe.toString() );
+            }
+        } else {
+            Utils.logf( "sendToRelay: null msgs" );
+        }
+    } // sendToRelay
 
 }
