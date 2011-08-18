@@ -718,7 +718,7 @@ public class GameUtils {
         File file = context.getFileStreamPath( name );
         if ( !file.exists() ) {
             file = getSDPathFor( context, name );
-            if ( !file.exists() ) {
+            if ( null != file && !file.exists() ) {
                 file = null;
             }
         }
