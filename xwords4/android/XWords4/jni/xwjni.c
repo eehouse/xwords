@@ -1017,10 +1017,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
             (void)server_do( server, NULL );
         /* } */
         (void)server_receiveMessage( server, stream );
-        /* in case MORE work's pending */
-        /* for ( notDone = XP_TRUE; notDone; ) { */
-        (void)server_do( server, NULL );
-        /* } */
+        /* in case MORE work's pending.  Multiple calls are required in at
+           least one case, where I'm a host handling client registration *AND*
+           I'm a robot.  Only one server_do and I'll never make that first
+           robot move.  That's because comms can't detect a duplicate initial
+           packet (in validateInitialMessage()). */
+        int ii;
+        XP_Bool notDone;
+        for ( ii = 0, notDone = XP_TRUE; notDone && ii < 5; ++ii ) {
+            (void)server_do( server, &notDone );
+        }
     }
 
     stream_destroy( stream );
