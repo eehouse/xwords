@@ -158,7 +158,23 @@ public class GameUtils {
         public DictPairs( byte[][] bytes, String[] paths ) {
             m_bytes = bytes; m_paths = paths;
         }
-    }
+
+        public boolean anyMissing( final String[] names )
+        {
+            boolean missing = false;
+            for ( int ii = 0; ii < m_paths.length; ++ii ) {
+                if ( names[ii] != null ) {
+                    // It's ok for there to be no dict IFF there's no
+                    // name.  That's a player using the default dict.
+                    if ( null == m_paths[ii] && null == m_bytes[ii] ) {
+                        missing = true;
+                        break;
+                    }
+                }
+            }
+            return missing;
+        }
+    } // DictPairs
 
     private static Object s_syncObj = new Object();
 
@@ -180,7 +196,7 @@ public class GameUtils {
      * basis for a new one.
      */
     public static GameLock resetGame( Context context, GameLock lockSrc, 
-				      GameLock lockDest )
+                                      GameLock lockDest )
     {
         int gamePtr = XwJNI.initJNI();
         CurGameInfo gi = new CurGameInfo( context );
@@ -897,7 +913,7 @@ public class GameUtils {
     // Which isn't possible right now, so make sure the old and new
     // dict have the same langauge code.
     public static void replaceDicts( Context context, long rowid,
-				     String oldDict, String newDict )
+                                     String oldDict, String newDict )
     {
         GameLock lock = new GameLock( rowid, true ).lock();
         byte[] stream = savedGame( context, lock );
