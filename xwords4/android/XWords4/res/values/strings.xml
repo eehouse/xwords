@@ -389,11 +389,13 @@
     <string name="subst_dict_title">Substitute dictionary (wordcount)</string>
     <string name="button_substdict">Substitute</string>
 
-    <string name="no_dictf">Unable to open game because no %s
-      dictionary found.</string>
-    <string name="no_dict_substf">Unable to open game because
-      dictionary %1$s not found. You can download a replacement or
-      substitute another %2$s dictionary.</string>
+    <string name="no_dictf">Unable to open game \"%1$s\" because no
+      %2$s dictionary found. (It may have been deleted, or stored on
+      an an SD card that\'s been unmounted.)</string>
+    <string name="no_dict_substf">Unable to open game \"%1$s\" because
+      dictionary %2$s not found. (It may have been deleted, or stored
+      on an an SD card that\'s been unmounted.) You can download a
+      replacement or substitute another %3$s dictionary.</string>
 
 	<string name="msg_ask_password">Password for \"%s\":</string>
 
