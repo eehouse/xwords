@@ -1135,6 +1135,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
         XWHostID destID = getDestID( comms, channelNo );
         if ( haveRelayID( comms ) && sendNoConn( comms, elem, destID ) ) {
             /* do nothing */
+            result = elem->len;
         } else if ( comms->r.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
             if ( send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
                                  elem->msg, elem->len ) ){
