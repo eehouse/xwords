@@ -720,19 +720,21 @@ pushShort( vector<unsigned char>& out, unsigned short num )
 
 static void
 pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName, 
-          HostID hid, int msgCount )
+          HostID hid, int msgCount, vector<int>& msgIDs )
 {
     int ii;
     for ( ii = 0; ii < msgCount; ++ii ) {
         unsigned char buf[1024];
         size_t buflen = sizeof(buf);
+        int msgID;
         if ( !dbmgr->GetNthStoredMessage( connName, hid, ii, buf, 
-                                          &buflen, NULL ) ) {
+                                          &buflen, &msgID ) ) {
             logf( XW_LOGERROR, "%s: %dth message not there", __func__, ii );
             break;
         }
         pushShort( out, buflen );
         out.insert( out.end(), buf, buf + buflen );
+        msgIDs.push_back( msgID );
     }
 }
 
@@ -746,6 +748,7 @@ handleMsgsMsg( int sock, bool sendFull,
         DBMgr* dbmgr = DBMgr::Get();
         vector<unsigned char> out(4); /* space for len and n_msgs */
         assert( out.size() == 4 );
+        vector<int> msgIDs;
         for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
 
             // See NetUtils.java for reply format
@@ -770,7 +773,7 @@ handleMsgsMsg( int sock, bool sendFull,
             int msgCount = dbmgr->PendingMsgCount( connName, hid );
             pushShort( out, msgCount );
             if ( sendFull ) {
-                pushMsgs( out, dbmgr, connName, hid, msgCount );
+                pushMsgs( out, dbmgr, connName, hid, msgCount, msgIDs );
             }
         }
 
@@ -778,9 +781,13 @@ handleMsgsMsg( int sock, bool sendFull,
         memcpy( &out[0], &tmp, sizeof(tmp) );
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
-        write( sock, &out[0], out.size() );
+        ssize_t nwritten = write( sock, &out[0], out.size() );
+        if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
+            dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
+        //     dbmgr->RemoveStoredMessages( &msgIDs[0], msgIDs.size() );
+        }
     }
-}
+} // handleMsgsMsg
 
 static void
 handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
