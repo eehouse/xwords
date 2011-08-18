@@ -121,11 +121,9 @@ public class RelayService extends Service {
                 for ( int ii = 0; ii < nameCount; ++ii ) {
                     // if game has messages, open it and feed 'em
                     // to it.
-                    if ( null != msgs[ii] ) {
-                        if ( GameUtils.feedMessages( this, ids[ii], 
-                                                     msgs[ii], sink ) ) {
-                            idsWMsgs.add( ids[ii] );
-                        }
+                    if ( GameUtils.feedMessages( this, ids[ii], 
+                                                 msgs[ii], sink ) ) {
+                        idsWMsgs.add( ids[ii] );
                     }
                 }
                 if ( 0 < idsWMsgs.size() ) {

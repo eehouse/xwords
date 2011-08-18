@@ -863,8 +863,13 @@ public class GameUtils {
             if ( lock.tryLock() ) {
                 loadMakeGame( context, gamePtr, gi, feedImpl, sink, lock );
 
-                for ( byte[] msg : msgs ) {
-                    draw = XwJNI.game_receiveMessage( gamePtr, msg ) || draw;
+                XwJNI.comms_resendAll( gamePtr );
+
+                if ( null != msgs ) {
+                    for ( byte[] msg : msgs ) {
+                        draw = XwJNI.game_receiveMessage( gamePtr, msg )
+                            || draw;
+                    }
                 }
 
                 // update gi to reflect changes due to messages
@@ -891,7 +896,7 @@ public class GameUtils {
         }
         Utils.logf( "feedMessages=>%b", draw );
         return draw;
-    }
+    } // feedMessages
 
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new
