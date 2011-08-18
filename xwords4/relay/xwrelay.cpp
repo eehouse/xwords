@@ -784,7 +784,7 @@ handleMsgsMsg( int sock, bool sendFull,
         ssize_t nwritten = write( sock, &out[0], out.size() );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
-        //     dbmgr->RemoveStoredMessages( &msgIDs[0], msgIDs.size() );
+            dbmgr->RemoveStoredMessages( &msgIDs[0], msgIDs.size() );
         }
     }
 } // handleMsgsMsg
