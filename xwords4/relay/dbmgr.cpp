@@ -22,6 +22,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 #include "dbmgr.h"
 #include "mlock.h"
@@ -394,6 +397,39 @@ DBMgr::RecordSent( const char* const connName, HostID hid, int nBytes )
 }
 
 void
+DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
+{
+    if ( nMsgIDs > 0 ) {
+        stringstream buf;
+        buf << "SELECT connname, hid, sum(msglen) FROM " MSGS_TABLE 
+            " WHERE id IN (";
+
+        for ( int ii = 0; ; ) {
+            buf << msgIDs[ii];
+            if ( ++ii == nMsgIDs ) {
+                break;
+            }
+            buf << ',';
+        }
+        buf << ") GROUP BY connname,hid";
+
+        const char* query = buf.str().c_str();
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+        PGresult* result = PQexec( getThreadConn(), query );
+        if ( PGRES_COMMAND_OK == PQresultStatus( result ) ) {
+            int ntuples = PQntuples( result );
+            for ( int ii = 0; ii < ntuples; ++ii ) {
+                RecordSent( PQgetvalue( result, ii, 0 ),
+                            atoi( PQgetvalue( result, ii, 1 ) ),
+                            atoi( PQgetvalue( result, ii, 2 ) ) );
+            }
+        }
+        PQclear( result );
+    }
+}
+
+void
 DBMgr::GetPlayerCounts( const char* const connName, int* nTotal, int* nHere )
 {
     const char* fmt = "SELECT ntotal, sum_array(nperdevice) FROM " GAMES_TABLE
@@ -475,7 +511,7 @@ DBMgr::PendingMsgCount( const char* connName, int hid )
 }
 
 bool
-DBMgr::execSql( const char* query )
+DBMgr::execSql( const char* const query )
 {
     PGresult* result = PQexec( getThreadConn(), query );
     bool ok = PGRES_COMMAND_OK == PQresultStatus(result);
@@ -606,23 +642,24 @@ DBMgr::GetStoredMessage( const char* const connName, int hid,
 void
 DBMgr::RemoveStoredMessages( const int* msgIDs, int nMsgIDs )
 {
-    char ids[1024];
-    int len = 0;
-    int ii;
-    assert( nMsgIDs > 0 );
-    for ( ii = 0; ; ) {
-        len += snprintf( ids + len, sizeof(ids) - len, "%d,", msgIDs[ii] );
-        if ( ++ii == nMsgIDs ) {
-            ids[len-1] = '\0';  /* overwrite last comma */
-            break;
-        }
-    }
-    const char* fmt = "DELETE from " MSGS_TABLE " WHERE id in (%s)";
-    char query[1024];
-    snprintf( query, sizeof(query), fmt, ids );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    if ( nMsgIDs > 0 ) {
+        stringstream buf;
 
-    execSql( query );
+        buf << "DELETE FROM " MSGS_TABLE " WHERE id IN (";
+
+        for ( int ii = 0; ; ) {
+            buf << msgIDs[ii];
+            if ( ++ii == nMsgIDs ) {
+                break;
+            }
+            buf << ',';
+        }
+        buf << ')';
+
+        const char* query = buf.str().c_str();
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+        execSql( query );
+    }
 }
 
 static void
