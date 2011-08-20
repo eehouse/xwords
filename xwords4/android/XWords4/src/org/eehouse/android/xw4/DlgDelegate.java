@@ -299,12 +299,7 @@ public class DlgDelegate {
         dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.no_dict_title )
             .setMessage( R.string.no_dict_finish )
-            .setPositiveButton( R.string.button_close_game, 
-                new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        m_activity.finish();
-                    }
-                } )
+            .setPositiveButton( R.string.button_close_game, null )
             .create();
 
         dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
