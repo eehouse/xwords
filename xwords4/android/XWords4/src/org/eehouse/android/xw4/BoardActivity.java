@@ -38,6 +38,7 @@ import android.app.Dialog;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.EditText;
@@ -80,7 +81,7 @@ public class BoardActivity extends XWActivity
     private int m_jniGamePtr;
     private GameUtils.GameLock m_gameLock;
     private CurGameInfo m_gi;
-    CommsTransport m_xport;
+    private CommsTransport m_xport;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
     private Runnable m_screenTimer;
@@ -1044,89 +1045,96 @@ public class BoardActivity extends XWActivity
     private void loadGame()
     {
         if ( 0 == m_jniGamePtr ) {
-            Assert.assertNull( m_gameLock );
-            m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
-
-            byte[] stream = GameUtils.savedGame( this, m_gameLock );
-            XwJNI.gi_from_stream( m_gi, stream );
-
             String[] dictNames = m_gi.dictNames();
             GameUtils.DictPairs pairs = GameUtils.openDicts( this, dictNames );
-            String langName = m_gi.langName();
-            m_jniGamePtr = XwJNI.initJNI();
 
-            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                m_xport = new CommsTransport( m_jniGamePtr, this, this, 
-                                              m_gi.serverRole );
-            }
+            if ( pairs.anyMissing( dictNames ) ) {
+                showDictGoneFinish();
+            } else {
 
-            CommonPrefs cp = CommonPrefs.get( this );
-            if ( null == stream ||
-                 ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                              m_gi, dictNames, pairs.m_bytes, 
-                                              pairs.m_paths, langName, m_utils,
-                                              m_jniu, m_view, cp, m_xport ) ) {
-                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
-                                        m_view, cp, m_xport, dictNames, 
-                                        pairs.m_bytes, pairs.m_paths,
-                                        langName );
-            }
+                String langName = m_gi.langName();
 
-            m_jniThread = new 
-                JNIThread( m_jniGamePtr, m_gi, m_view, m_gameLock, this,
-                           new Handler() {
-                               public void handleMessage( Message msg ) {
-                                   switch( msg.what ) {
-                                   case JNIThread.DRAW:
-                                       m_view.invalidate();
-                                       break;
-                                   case JNIThread.DIALOG:
-                                       m_dlgBytes = (String)msg.obj;
-                                       m_dlgTitle = msg.arg1;
-                                       showDialog( DLG_OKONLY );
-                                       break;
-                                   case JNIThread.QUERY_ENDGAME:
-                                       showDialog( QUERY_ENDGAME );
-                                       break;
-                                   case JNIThread.TOOLBAR_STATES:
-                                       if ( null != m_jniThread ) {
-                                           m_gsi = m_jniThread.getGameStateInfo();
-                                           updateToolbar();
+                Assert.assertNull( m_gameLock );
+                m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
+
+                byte[] stream = GameUtils.savedGame( this, m_gameLock );
+                XwJNI.gi_from_stream( m_gi, stream );
+
+                m_jniGamePtr = XwJNI.initJNI();
+
+                if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                    m_xport = new CommsTransport( m_jniGamePtr, this, this, 
+                                                  m_gi.serverRole );
+                }
+
+                CommonPrefs cp = CommonPrefs.get( this );
+                if ( null == stream ||
+                     ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                                                  m_gi, dictNames, pairs.m_bytes, 
+                                                  pairs.m_paths, langName, m_utils,
+                                                  m_jniu, m_view, cp, m_xport ) ) {
+                    XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
+                                            m_view, cp, m_xport, dictNames, 
+                                            pairs.m_bytes, pairs.m_paths,
+                                            langName );
+                }
+
+                m_jniThread = new 
+                    JNIThread( m_jniGamePtr, m_gi, m_view, m_gameLock, this,
+                               new Handler() {
+                                   public void handleMessage( Message msg ) {
+                                       switch( msg.what ) {
+                                       case JNIThread.DRAW:
+                                           m_view.invalidate();
+                                           break;
+                                       case JNIThread.DIALOG:
+                                           m_dlgBytes = (String)msg.obj;
+                                           m_dlgTitle = msg.arg1;
+                                           showDialog( DLG_OKONLY );
+                                           break;
+                                       case JNIThread.QUERY_ENDGAME:
+                                           showDialog( QUERY_ENDGAME );
+                                           break;
+                                       case JNIThread.TOOLBAR_STATES:
+                                           if ( null != m_jniThread ) {
+                                               m_gsi = m_jniThread.getGameStateInfo();
+                                               updateToolbar();
+                                           }
+                                           break;
                                        }
-                                       break;
                                    }
-                               }
-                           } );
-            // see http://stackoverflow.com/questions/680180/where-to-stop-\
-            // destroy-threads-in-android-service-class
-            m_jniThread.setDaemon( true );
-            m_jniThread.start();
+                               } );
+                // see http://stackoverflow.com/questions/680180/where-to-stop-\
+                // destroy-threads-in-android-service-class
+                m_jniThread.setDaemon( true );
+                m_jniThread.start();
 
-            m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi );
-            if ( null != m_xport ) {
-                m_xport.setReceiver( m_jniThread );
-            }
-            m_jniThread.handle( JNICmd.CMD_START );
+                m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi );
+                if ( null != m_xport ) {
+                    m_xport.setReceiver( m_jniThread );
+                }
+                m_jniThread.handle( JNICmd.CMD_START );
 
-            if ( !CommonPrefs.getHideTitleBar( this ) ) {
-                setTitle( GameUtils.getName( this, m_rowid ) );
-            }
-            m_toolbar = new Toolbar( this );
+                if ( !CommonPrefs.getHideTitleBar( this ) ) {
+                    setTitle( GameUtils.getName( this, m_rowid ) );
+                }
+                m_toolbar = new Toolbar( this );
 
-            populateToolbar();
+                populateToolbar();
 
-            int flags = DBUtils.getMsgFlags( this, m_rowid );
-            if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
-                startChatActivity();
-            }
-            if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-                m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
-            }
-            if ( 0 != flags ) {
-                DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
-            }
+                int flags = DBUtils.getMsgFlags( this, m_rowid );
+                if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
+                    startChatActivity();
+                }
+                if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
+                }
+                if ( 0 != flags ) {
+                    DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
+                }
 
-            trySendChats();
+                trySendChats();
+            }
         }
     } // loadGame
 
@@ -1209,9 +1217,9 @@ public class BoardActivity extends XWActivity
                                });
     } // populateToolbar
 
-    private DialogInterface.OnDismissListener makeODLforBlocking( final int id )
+    private OnDismissListener makeODLforBlocking( final int id )
     {
-        return new DialogInterface.OnDismissListener() {
+        return new OnDismissListener() {
             public void onDismiss( DialogInterface di ) {
                 releaseIfBlocking();
                 removeDialog( id );

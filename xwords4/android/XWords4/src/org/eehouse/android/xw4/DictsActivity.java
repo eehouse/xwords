@@ -55,7 +55,8 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictsActivity extends ExpandableListActivity 
-    implements View.OnClickListener, XWListItem.DeleteCallback {
+    implements View.OnClickListener, XWListItem.DeleteCallback,
+               SDCardWatcher.SDCardNotifiee {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
@@ -75,9 +76,10 @@ public class DictsActivity extends ExpandableListActivity
     private XWListItem m_rowView;
     GameUtils.DictLoc m_moveFromLoc;
     GameUtils.DictLoc m_moveToLoc;
-    String m_moveName;
+    private SDCardWatcher m_cardWatcher;
+    private String m_moveName;
 
-    LayoutInflater m_factory;
+    private LayoutInflater m_factory;
 
     private class DictListAdapter implements ExpandableListAdapter {
         private Context m_context;
@@ -331,8 +333,15 @@ public class DictsActivity extends ExpandableListActivity
     protected void onResume()
     {
         super.onResume();
+        m_cardWatcher = new SDCardWatcher( this, this );
         mkListAdapter();
         expandGroups();
+    }
+
+    protected void onPause() {
+        m_cardWatcher.close();
+        m_cardWatcher = null;
+        super.onPause();
     }
 
     public void onClick( View v ) 
@@ -429,7 +438,7 @@ public class DictsActivity extends ExpandableListActivity
         showDialog( MOVE_DICT );
     }
 
-    // DeleteCallback interface
+    // XWListItem.DeleteCallback interface
     public void deleteCalled( int myPosition, final String dict )
     {
         int code = DictLangCache.getDictLangCode( this, dict );
@@ -455,6 +464,13 @@ public class DictsActivity extends ExpandableListActivity
         }
 
         m_delegate.showConfirmThen( msg, action );
+    }
+
+    // SDCardWatcher.SDCardNotifiee interface
+    public void cardMounted()
+    {
+        mkListAdapter();
+        expandGroups();
     }
 
     private void deleteDict( String dict )

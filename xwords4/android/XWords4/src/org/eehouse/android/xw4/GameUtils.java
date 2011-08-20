@@ -158,7 +158,23 @@ public class GameUtils {
         public DictPairs( byte[][] bytes, String[] paths ) {
             m_bytes = bytes; m_paths = paths;
         }
-    }
+
+        public boolean anyMissing( final String[] names )
+        {
+            boolean missing = false;
+            for ( int ii = 0; ii < m_paths.length; ++ii ) {
+                if ( names[ii] != null ) {
+                    // It's ok for there to be no dict IFF there's no
+                    // name.  That's a player using the default dict.
+                    if ( null == m_paths[ii] && null == m_bytes[ii] ) {
+                        missing = true;
+                        break;
+                    }
+                }
+            }
+            return missing;
+        }
+    } // DictPairs
 
     private static Object s_syncObj = new Object();
 
@@ -180,15 +196,14 @@ public class GameUtils {
      * basis for a new one.
      */
     public static GameLock resetGame( Context context, GameLock lockSrc, 
-				      GameLock lockDest )
+                                      GameLock lockDest )
     {
-        int gamePtr = XwJNI.initJNI();
         CurGameInfo gi = new CurGameInfo( context );
         CommsAddrRec addr = null;
 
         // loadMakeGame, if makinga new game, will add comms as long
         // as DeviceRole.SERVER_STANDALONE != gi.serverRole
-        loadMakeGame( context, gamePtr, gi, lockSrc );
+        int gamePtr = loadMakeGame( context, gi, lockSrc );
         String[] dictNames = gi.dictNames();
         DictPairs pairs = openDicts( context, dictNames );
         
@@ -266,9 +281,8 @@ public class GameUtils {
 
     public static GameSummary summarize( Context context, GameLock lock )
     {
-        int gamePtr = XwJNI.initJNI();
         CurGameInfo gi = new CurGameInfo( context );
-        loadMakeGame( context, gamePtr, gi, lock );
+        int gamePtr = loadMakeGame( context, gi, lock );
 
         return summarizeAndClose( context, lock, gamePtr, gi );
     }
@@ -305,33 +319,41 @@ public class GameUtils {
         return result;
     }
 
-    public static void loadMakeGame( Context context, int gamePtr, 
-                                     CurGameInfo gi, GameLock lock )
+    public static int loadMakeGame( Context context, CurGameInfo gi, 
+                                    GameLock lock )
     {
-        loadMakeGame( context, gamePtr, gi, null, null, lock );
+        return loadMakeGame( context, gi, null, null, lock );
     }
 
-    public static void loadMakeGame( Context context, int gamePtr, 
-                                     CurGameInfo gi, UtilCtxt util,
-                                     TransportProcs tp, GameLock lock )
+    public static int loadMakeGame( Context context, CurGameInfo gi, 
+                                    UtilCtxt util, TransportProcs tp, 
+                                    GameLock lock )
     {
+        int gamePtr = 0;
+
         byte[] stream = savedGame( context, lock );
         XwJNI.gi_from_stream( gi, stream );
         String[] dictNames = gi.dictNames();
         DictPairs pairs = openDicts( context, dictNames );
-        String langName = gi.langName();
+        if ( pairs.anyMissing( dictNames ) ) {
+            Utils.logf( "loadMakeGame() failing: dict unavailable" );
+        } else {
+            gamePtr = XwJNI.initJNI();
 
-        boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, gi, 
-                                                      dictNames, pairs.m_bytes, 
-                                                      pairs.m_paths, langName,
-                                                      util, JNIUtilsImpl.get(), 
-                                                      CommonPrefs.get(context),
-                                                      tp );
-        if ( !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                    CommonPrefs.get(context), dictNames,
-                                    pairs.m_bytes, pairs.m_paths, langName );
+            String langName = gi.langName();
+            boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, gi, 
+                                                          dictNames, pairs.m_bytes, 
+                                                          pairs.m_paths, langName,
+                                                          util, JNIUtilsImpl.get(), 
+                                                          CommonPrefs.get(context),
+                                                          tp);
+            if ( !madeGame ) {
+                XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
+                                        CommonPrefs.get(context), dictNames,
+                                        pairs.m_bytes, pairs.m_paths, langName );
+            }
         }
+        return gamePtr;
     }
 
     public static long saveGame( Context context, int gamePtr, 
@@ -718,7 +740,7 @@ public class GameUtils {
         File file = context.getFileStreamPath( name );
         if ( !file.exists() ) {
             file = getSDPathFor( context, name );
-            if ( !file.exists() ) {
+            if ( null != file && !file.exists() ) {
                 file = null;
             }
         }
@@ -856,13 +878,12 @@ public class GameUtils {
         boolean draw = false;
         long rowid = DBUtils.getRowIDFor( context, relayID );
         if ( -1 != rowid ) {
-            int gamePtr = XwJNI.initJNI();
             CurGameInfo gi = new CurGameInfo( context );
             FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
             GameLock lock = new GameLock( rowid, true );
             if ( lock.tryLock() ) {
-                loadMakeGame( context, gamePtr, gi, feedImpl, sink, lock );
-
+                int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+                    
                 XwJNI.comms_resendAll( gamePtr );
 
                 if ( null != msgs ) {
@@ -902,7 +923,7 @@ public class GameUtils {
     // Which isn't possible right now, so make sure the old and new
     // dict have the same langauge code.
     public static void replaceDicts( Context context, long rowid,
-				     String oldDict, String newDict )
+                                     String oldDict, String newDict )
     {
         GameLock lock = new GameLock( rowid, true ).lock();
         byte[] stream = savedGame( context, lock );
