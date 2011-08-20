@@ -198,13 +198,12 @@ public class GameUtils {
     public static GameLock resetGame( Context context, GameLock lockSrc, 
                                       GameLock lockDest )
     {
-        int gamePtr = XwJNI.initJNI();
         CurGameInfo gi = new CurGameInfo( context );
         CommsAddrRec addr = null;
 
         // loadMakeGame, if makinga new game, will add comms as long
         // as DeviceRole.SERVER_STANDALONE != gi.serverRole
-        loadMakeGame( context, gamePtr, gi, lockSrc );
+        int gamePtr = loadMakeGame( context, gi, lockSrc );
         String[] dictNames = gi.dictNames();
         DictPairs pairs = openDicts( context, dictNames );
         
@@ -282,9 +281,8 @@ public class GameUtils {
 
     public static GameSummary summarize( Context context, GameLock lock )
     {
-        int gamePtr = XwJNI.initJNI();
         CurGameInfo gi = new CurGameInfo( context );
-        loadMakeGame( context, gamePtr, gi, lock );
+        int gamePtr = loadMakeGame( context, gi, lock );
 
         return summarizeAndClose( context, lock, gamePtr, gi );
     }
@@ -321,33 +319,40 @@ public class GameUtils {
         return result;
     }
 
-    public static void loadMakeGame( Context context, int gamePtr, 
-                                     CurGameInfo gi, GameLock lock )
+    public static int loadMakeGame( Context context, CurGameInfo gi, 
+                                    GameLock lock )
     {
-        loadMakeGame( context, gamePtr, gi, null, lock );
+        return loadMakeGame( context, gi, null, lock );
     }
 
-    public static void loadMakeGame( Context context, int gamePtr, 
-                                     CurGameInfo gi, UtilCtxt util,
-                                     GameLock lock )
+    public static int loadMakeGame( Context context, CurGameInfo gi, 
+                                    UtilCtxt util, GameLock lock )
     {
+        int gamePtr = 0;
+
         byte[] stream = savedGame( context, lock );
         XwJNI.gi_from_stream( gi, stream );
         String[] dictNames = gi.dictNames();
         DictPairs pairs = openDicts( context, dictNames );
-        String langName = gi.langName();
+        if ( pairs.anyMissing( dictNames ) ) {
+            Utils.logf( "loadMakeGame() failing: dict unavailable" );
+        } else {
+            gamePtr = XwJNI.initJNI();
 
-        boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
-                                                      JNIUtilsImpl.get(), gi, 
-                                                      dictNames, pairs.m_bytes, 
-                                                      pairs.m_paths, langName,
-                                                      util, 
-                                                      CommonPrefs.get(context));
-        if ( !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                    CommonPrefs.get(context), dictNames,
-                                    pairs.m_bytes, pairs.m_paths, langName );
+            String langName = gi.langName();
+            boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
+                                                          JNIUtilsImpl.get(), gi, 
+                                                          dictNames, pairs.m_bytes, 
+                                                          pairs.m_paths, langName,
+                                                          util, 
+                                                          CommonPrefs.get(context));
+            if ( !madeGame ) {
+                XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
+                                        CommonPrefs.get(context), dictNames,
+                                        pairs.m_bytes, pairs.m_paths, langName );
+            }
         }
+        return gamePtr;
     }
 
     public static long saveGame( Context context, int gamePtr, 
@@ -872,12 +877,11 @@ public class GameUtils {
         boolean draw = false;
         long rowid = DBUtils.getRowIDFor( context, relayID );
         if ( -1 != rowid ) {
-            int gamePtr = XwJNI.initJNI();
             CurGameInfo gi = new CurGameInfo( context );
             FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
             GameLock lock = new GameLock( rowid, true );
             if ( lock.tryLock() ) {
-                loadMakeGame( context, gamePtr, gi, feedImpl, lock );
+                int gamePtr = loadMakeGame( context, gi, feedImpl, lock );
 
                 for ( byte[] msg : msgs ) {
                     draw = XwJNI.game_receiveMessage( gamePtr, msg ) || draw;

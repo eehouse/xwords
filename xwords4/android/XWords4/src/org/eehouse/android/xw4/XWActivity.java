@@ -36,6 +36,7 @@ public class XWActivity extends Activity {
 
     private DlgDelegate m_delegate;
 
+    @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
         Utils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
@@ -84,10 +85,10 @@ public class XWActivity extends Activity {
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Utils.logf( "%s.onCreateDialog() called", getClass().getName() );
-        Dialog dialog = m_delegate.onCreateDialog( id );
-        if ( null != dialog ) {
-            setRemoveOnDismiss( dialog, id );
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            Utils.logf( "%s.onCreateDialog() called", getClass().getName() );
+            dialog = m_delegate.onCreateDialog( id );
         }
         return dialog;
     }
@@ -100,6 +101,7 @@ public class XWActivity extends Activity {
     @Override
     protected void onPrepareDialog( int id, Dialog dialog )
     {
+        super.onPrepareDialog( id, dialog ); // docs say should call through
         m_delegate.onPrepareDialog( id, dialog );
     }
 
@@ -119,6 +121,11 @@ public class XWActivity extends Activity {
     protected void showOKOnlyDialog( int msgID )
     {
         m_delegate.showOKOnlyDialog( msgID );
+    }
+
+    protected void showDictGoneFinish()
+    {
+        m_delegate.showDictGoneFinish();
     }
 
     protected void showConfirmThen( int msgID, 

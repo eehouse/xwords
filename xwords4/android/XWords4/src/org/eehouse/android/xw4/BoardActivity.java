@@ -69,7 +69,6 @@ public class BoardActivity extends XWActivity
     private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
-    private static final int DLG_NODICT = DLG_OKONLY + 10;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -287,21 +286,6 @@ public class BoardActivity extends XWActivity
                         .setNegativeButton( R.string.button_no, null )
                         .create();
                 }
-                break;
-            case DLG_NODICT:
-                dialog = new AlertDialog.Builder( this )
-                    .setTitle( R.string.no_dict_title )
-                    .setMessage( R.string.no_dict_finish )
-                    .setPositiveButton( R.string.button_close_game, null )
-                    .create();
-                OnDismissListener dlstnr;
-                dlstnr = new OnDismissListener() {
-                        public void onDismiss( DialogInterface di ) {
-                            // removeDialog( DLG_NODICT );
-                            finish();
-                        }
-                    };
-                dialog.setOnDismissListener( dlstnr );
                 break;
             default:
                 // just drop it; super.onCreateDialog likely failed
@@ -1065,7 +1049,7 @@ public class BoardActivity extends XWActivity
             GameUtils.DictPairs pairs = GameUtils.openDicts( this, dictNames );
 
             if ( pairs.anyMissing( dictNames ) ) {
-                showDialog( DLG_NODICT );
+                showDictGoneFinish();
             } else {
 
                 String langName = m_gi.langName();

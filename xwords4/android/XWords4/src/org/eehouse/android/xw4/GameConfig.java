@@ -396,88 +396,91 @@ public class GameConfig extends XWActivity
     {
         super.onResume();
 
-        int gamePtr = XwJNI.initJNI();
         m_giOrig = new CurGameInfo( this );
         // Lock in case we're going to config.  We *could* re-get the
         // lock once the user decides to make changes.  PENDING.
         m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
-        GameUtils.loadMakeGame( this, gamePtr, m_giOrig, m_gameLock );
-        m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
-            || XwJNI.comms_isConnected( gamePtr );
-
-        if ( m_gameStarted ) {
-            if ( null == m_gameLockedCheck ) {
-                m_gameLockedCheck = 
-                    (CheckBox)findViewById( R.id.game_locked_check );
-                m_gameLockedCheck.setVisibility( View.VISIBLE );
-                m_gameLockedCheck.setChecked( true );
-                m_gameLockedCheck.setOnClickListener( this );
-            }
-            handleLockedChange();
-        }
-
-        m_gi = new CurGameInfo( this, m_giOrig );
-
-        m_carOrig = new CommsAddrRec( this );
-        if ( XwJNI.game_hasComms( gamePtr ) ) {
-            XwJNI.comms_getAddr( gamePtr, m_carOrig );
+        int gamePtr = GameUtils.loadMakeGame( this, m_giOrig, m_gameLock );
+        if ( 0 == gamePtr ) {
+            showDictGoneFinish();
         } else {
-            String relayName = CommonPrefs.getDefaultRelayHost( this );
-            int relayPort = CommonPrefs.getDefaultRelayPort( this );
-            XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
-        }
-        XwJNI.game_dispose( gamePtr );
+            m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
+                || XwJNI.comms_isConnected( gamePtr );
 
-        m_car = new CommsAddrRec( m_carOrig );
-
-        m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
-        setTitle();
-
-        if ( !m_notNetworkedGame ) {
-            m_joinPublicCheck = 
-                (CheckBox)findViewById(R.id.join_public_room_check);
-            m_joinPublicCheck.setOnClickListener( this );
-            m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
-            Utils.setChecked( this, R.id.advertise_new_room_check, 
-                              m_car.ip_relay_advertiseRoom );
-            m_publicRoomsSet = 
-                (LinearLayout)findViewById(R.id.public_rooms_set );
-            m_privateRoomsSet = 
-                (LinearLayout)findViewById(R.id.private_rooms_set );
-
-            Utils.setText( this, R.id.room_edit, m_car.ip_relay_invite );
-        
-            m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
-
-            m_refreshRoomsButton = 
-                (ImageButton)findViewById( R.id.refresh_button );
-            m_refreshRoomsButton.setOnClickListener( this );
-
-            adjustConnectStuff();
-        }
-
-        loadPlayers();
-        configLangSpinner();
-
-        m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
-
-        setSmartnessSpinner();
-
-        Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
-        Utils.setInt( this, R.id.timer_minutes_edit, 
-                      m_gi.gameSeconds/60/m_gi.nPlayers );
-
-        CheckBox check = (CheckBox)findViewById( R.id.use_timer );
-        CompoundButton.OnCheckedChangeListener lstnr =
-            new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged( CompoundButton buttonView, 
-                                              boolean checked ) {
-                    View view = findViewById( R.id.timer_set );
-                    view.setVisibility( checked ? View.VISIBLE : View.GONE );
+            if ( m_gameStarted ) {
+                if ( null == m_gameLockedCheck ) {
+                    m_gameLockedCheck = 
+                        (CheckBox)findViewById( R.id.game_locked_check );
+                    m_gameLockedCheck.setVisibility( View.VISIBLE );
+                    m_gameLockedCheck.setChecked( true );
+                    m_gameLockedCheck.setOnClickListener( this );
                 }
-            };
-        check.setOnCheckedChangeListener( lstnr );
-        Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
+                handleLockedChange();
+            }
+
+            m_gi = new CurGameInfo( this, m_giOrig );
+
+            m_carOrig = new CommsAddrRec( this );
+            if ( XwJNI.game_hasComms( gamePtr ) ) {
+                XwJNI.comms_getAddr( gamePtr, m_carOrig );
+            } else {
+                String relayName = CommonPrefs.getDefaultRelayHost( this );
+                int relayPort = CommonPrefs.getDefaultRelayPort( this );
+                XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
+            }
+            XwJNI.game_dispose( gamePtr );
+
+            m_car = new CommsAddrRec( m_carOrig );
+
+            m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
+            setTitle();
+
+            if ( !m_notNetworkedGame ) {
+                m_joinPublicCheck = 
+                    (CheckBox)findViewById(R.id.join_public_room_check);
+                m_joinPublicCheck.setOnClickListener( this );
+                m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
+                Utils.setChecked( this, R.id.advertise_new_room_check, 
+                                  m_car.ip_relay_advertiseRoom );
+                m_publicRoomsSet = 
+                    (LinearLayout)findViewById(R.id.public_rooms_set );
+                m_privateRoomsSet = 
+                    (LinearLayout)findViewById(R.id.private_rooms_set );
+
+                Utils.setText( this, R.id.room_edit, m_car.ip_relay_invite );
+        
+                m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
+
+                m_refreshRoomsButton = 
+                    (ImageButton)findViewById( R.id.refresh_button );
+                m_refreshRoomsButton.setOnClickListener( this );
+
+                adjustConnectStuff();
+            }
+
+            loadPlayers();
+            configLangSpinner();
+
+            m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
+
+            setSmartnessSpinner();
+
+            Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
+            Utils.setInt( this, R.id.timer_minutes_edit, 
+                          m_gi.gameSeconds/60/m_gi.nPlayers );
+
+            CheckBox check = (CheckBox)findViewById( R.id.use_timer );
+            CompoundButton.OnCheckedChangeListener lstnr =
+                new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged( CompoundButton buttonView, 
+                                                  boolean checked ) {
+                        View view = findViewById( R.id.timer_set );
+                        view.setVisibility( checked ? View.VISIBLE : View.GONE );
+                    }
+                };
+            check.setOnCheckedChangeListener( lstnr );
+            Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
+        }
     } // onResume
 
     @Override

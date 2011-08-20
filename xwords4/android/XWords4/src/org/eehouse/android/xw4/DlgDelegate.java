@@ -40,7 +40,8 @@ public class DlgDelegate {
     public static final int DIALOG_NOTAGAIN = 3;
     public static final int CONFIRM_THEN = 4;
     public static final int TEXT_OR_HTML_THEN = 5;
-    public static final int DIALOG_LAST = TEXT_OR_HTML_THEN;
+    public static final int DLG_DICTGONE = 6;
+    public static final int DIALOG_LAST = DLG_DICTGONE;
 
     private int m_msgID;
     private String m_msg;
@@ -77,6 +78,9 @@ public class DlgDelegate {
             break;
         case TEXT_OR_HTML_THEN:
             dialog = createHtmlThenDialog();
+            break;
+        case DLG_DICTGONE:
+            dialog = createDictGoneDialog();
             break;
         }
         return dialog;
@@ -139,6 +143,11 @@ public class DlgDelegate {
     {
         m_msgID = msgID;
         m_activity.showDialog( DIALOG_OKONLY );
+    }
+
+    public void showDictGoneFinish()
+    {
+        m_activity.showDialog( DLG_DICTGONE );
     }
 
     public void showAboutDialog()
@@ -281,6 +290,30 @@ public class DlgDelegate {
             .setPositiveButton( R.string.button_text, null ) // will change
             .setNegativeButton( R.string.button_html, null )
             .create();
+    }
+
+    private Dialog createDictGoneDialog()
+    {
+        Utils.logf( "DlgDelegate.createDictGoneDialog() called" );
+        Dialog dialog;
+        dialog = new AlertDialog.Builder( m_activity )
+            .setTitle( R.string.no_dict_title )
+            .setMessage( R.string.no_dict_finish )
+            .setPositiveButton( R.string.button_close_game, 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        m_activity.finish();
+                    }
+                } )
+            .create();
+
+        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                public void onDismiss( DialogInterface di ) {
+                    m_activity.finish();
+                }
+            } );
+
+        return dialog;
     }
 
 }
