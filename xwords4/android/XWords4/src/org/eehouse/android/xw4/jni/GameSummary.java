@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
+import android.text.TextUtils;
 import junit.framework.Assert;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
@@ -86,22 +87,11 @@ public class GameSummary {
         if ( null == m_gi ) {
             result = m_playersSummary;
         } else {
-            StringBuffer sb = new StringBuffer();
-            for ( int ii = 0; ; ) {
-
-                int score = 0;
-                try {
-                    // scores can be null, but I've seen array OOB too.
-                    score = scores[ii];
-                } catch ( Exception ex ){}
-
-                sb.append( m_gi.players[ii].name );
-                if ( ++ii >= nPlayers ) {
-                    break;
-                }
-                sb.append( "\n" );
+            String[] names = new String[nPlayers];
+            for ( int ii = 0; ii < nPlayers; ++ii ) {
+                names[ii] = m_gi.players[ii].name;
             }
-            result = sb.toString();
+            result = TextUtils.join( "\n", names );
             m_playersSummary = result;
         }
         return result;
@@ -197,6 +187,24 @@ public class GameSummary {
             player = String.format( format, player );
         }
         return player;
+    }
+
+    public String playerNames()
+    {
+        String[] names = null;
+        if ( null != m_gi ) {
+            names = m_gi.visibleNames()
+        } else if ( null != m_playersSummary ) {
+            names = TextUtils.split( m_playersSummary, "\n" );
+        }
+
+        String result = null;
+        if ( null != names && 0 < names.length ) {
+            String joiner = m_context.getString( R.string.vs_join );
+            result = TextUtils.join( joiner, names );
+        }
+
+        return result;
     }
 
     public boolean isNextToPlay( int indx ) {

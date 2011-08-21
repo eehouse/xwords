@@ -134,7 +134,7 @@ public class GameListAdapter extends XWListAdapter {
                                                        summary.dictLang );
                         break;
                     case R.string.game_summary_field_opponents:
-                        value = "vs Kati +2";
+                        value = summary.playerNames();
                         break;
                     case R.string.game_summary_field_state:
                         value = state;

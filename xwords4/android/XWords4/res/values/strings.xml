@@ -124,6 +124,7 @@
     <string name="str_local_name">%s</string>
     <string name="str_nonlocal_name">(remote)</string>
     <string name="str_nonlocal_namef">%s (remote)</string>
+    <string name="vs_join">\u0020vs.\u0020</string>
     <string name="str_game_namef">%1$s (%2$s)</string>
     <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
     <string name="strd_turn_score">Score for turn: %d\n</string>
