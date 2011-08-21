@@ -678,6 +678,7 @@ public class GameUtils {
 
     public static void deleteDict( Context context, String name )
     {
+        name = addDictExtn( name );
         deleteDict( context, name, getDictLoc( context, name ) );
     }
 
@@ -798,7 +799,8 @@ public class GameUtils {
                 fos.close();
                 success = true;
             } catch ( java.io.FileNotFoundException fnf ) {
-                Utils.logf( "saveDict: FileNotFoundException: %s", fnf.toString() );
+                Utils.logf( "saveDict: FileNotFoundException: %s", 
+                            fnf.toString() );
             } catch ( java.io.IOException ioe ) {
                 Utils.logf( "saveDict: IOException: %s", ioe.toString() );
                 deleteDict( context, name );
