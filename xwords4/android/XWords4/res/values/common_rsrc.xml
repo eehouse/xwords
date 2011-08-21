@@ -32,7 +32,7 @@
   <string name="key_relay_port">key_relay_port2</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
-  <string name="key_dict_host">key_dict_host2</string>
+  <string name="key_dict_host">key_dict_host3</string>
   <string name="key_logging_on">key_logging_on</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
   <string name="key_init_autojuggle">key_init_autojuggle</string>
@@ -77,7 +77,7 @@
   <string name="default_host">eehouse.org</string>
 
   <!-- <string name="default_host">10.0.2.2</string> -->
-  <string name="dict_url">http://eehouse.org/and_dicts_hh</string>
+  <string name="dict_url">http://eehouse.org/and_wordlists</string>
   <string name="app_version">4.4 beta 33</string>
   <string name="game_url_pathf">//%1$s/redir.php</string>
 
@@ -86,7 +86,7 @@
   <string name="advanced_summary">You should never need these...</string>
   <string name="relay_host">Relay host</string>
   <string name="redir_host">Invite redirect host</string>
-  <string name="dict_host">Dictionary download URL</string>
+  <string name="dict_host">Wordlist download URL</string>
   <string name="logging_on">Enable logging</string>
   <string name="relay_port">Relay game port</string>
   <string name="proxy_port">Relay device port</string>
