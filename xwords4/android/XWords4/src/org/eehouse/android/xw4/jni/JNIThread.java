@@ -264,7 +264,7 @@ public class JNIThread extends Thread {
         XwJNI.server_do( m_jniGamePtr );
 
         XwJNI.game_getGi( m_jniGamePtr, m_gi );
-        GameSummary summary = new GameSummary( m_gi );
+        GameSummary summary = new GameSummary( m_context, m_gi );
         XwJNI.game_summarize( m_jniGamePtr, summary );
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
         GameUtils.saveGame( m_context, state, m_lock, false );

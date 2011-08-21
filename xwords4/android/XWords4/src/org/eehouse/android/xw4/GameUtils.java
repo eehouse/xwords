@@ -258,7 +258,7 @@ public class GameUtils {
                                                   int gamePtr, CurGameInfo gi,
                                                   FeedUtilsImpl feedImpl )
     {
-        GameSummary summary = new GameSummary( gi );
+        GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
 
         if ( null != feedImpl ) {
@@ -984,7 +984,7 @@ public class GameUtils {
 
         saveGame( context, gamePtr, gi, lock, false );
 
-        GameSummary summary = new GameSummary( gi );
+        GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
         DBUtils.saveSummary( context, lock, summary );
 

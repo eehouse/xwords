@@ -59,14 +59,16 @@ public class GameSummary {
     private int m_giFlags;
     private String m_playersSummary;
     private CurGameInfo m_gi;
+    private Context m_context;
 
-    public GameSummary(){
+    public GameSummary( Context context ) {
+        m_context = context;
         pendingMsgLevel = 0;
     }
 
-    public GameSummary( CurGameInfo gi )
+    public GameSummary( Context context, CurGameInfo gi )
     {
-        this();
+        this( context );
         nPlayers = gi.nPlayers;
         dictLang = gi.dictLang;
         serverRole = gi.serverRole;
@@ -78,7 +80,7 @@ public class GameSummary {
         return null != relayID;
     }
 
-    public String summarizePlayers( Context context )
+    public String summarizePlayers()
     {
         String result;
         if ( null == m_gi ) {
@@ -110,25 +112,25 @@ public class GameSummary {
         m_playersSummary = summary;
     }
 
-    public String summarizeState( Context context )
+    public String summarizeState()
     {
         String result = null;
         if ( gameOver ) {
-            result = context.getString( R.string.gameOver );
+            result = m_context.getString( R.string.gameOver );
         } else {
-            result = String.format( context.getString(R.string.movesf),
+            result = String.format( m_context.getString(R.string.movesf),
                                     nMoves );
         }
         return result;
     }
 
-    public String summarizeRole( Context context )
+    public String summarizeRole()
     {
         String result = null;
         if ( isRelayGame() ) {
             Assert.assertTrue( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
                                == conType );
-            String fmt = context.getString( R.string.summary_fmt_relay );
+            String fmt = m_context.getString( R.string.summary_fmt_relay );
             result = String.format( fmt, roomName );
         }
         return result;
@@ -175,14 +177,14 @@ public class GameSummary {
         m_giFlags = flags;
     }
 
-    public String summarizePlayer( Context context, int indx ) 
+    public String summarizePlayer( int indx ) 
     {
         String player = players[indx];
         int formatID = 0;
         if ( !isLocal(indx) ) {
             boolean isMissing = 0 != ((1 << indx) & missingPlayers);
             if ( isMissing ) {
-                player = context.getString( R.string.missing_player );
+                player = m_context.getString( R.string.missing_player );
             } else {
                 formatID = R.string.str_nonlocal_namef;
             }
@@ -191,7 +193,7 @@ public class GameSummary {
         }
 
         if ( 0 != formatID ) {
-            String format = context.getString( formatID );
+            String format = m_context.getString( formatID );
             player = String.format( format, player );
         }
         return player;
