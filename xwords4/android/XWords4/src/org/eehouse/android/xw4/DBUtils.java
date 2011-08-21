@@ -107,7 +107,7 @@ public class DBUtils {
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                summary = new GameSummary();
+                summary = new GameSummary( context );
                 summary.nMoves = cursor.getInt(cursor.
                                                getColumnIndex(DBHelper.NUM_MOVES));
                 summary.nPlayers = 
@@ -223,7 +223,7 @@ public class DBUtils {
                 values.put( DBHelper.TURN, summary.turn );
                 values.put( DBHelper.GIFLAGS, summary.giflags() );
                 values.put( DBHelper.PLAYERS, 
-                            summary.summarizePlayers(context) );
+                            summary.summarizePlayers() );
                 values.put( DBHelper.DICTLANG, summary.dictLang );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
 
