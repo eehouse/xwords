@@ -377,6 +377,9 @@ public class DictsActivity extends ExpandableListActivity
                  || ! GameUtils.haveWriteableSD() ) {
                 menu.removeItem( R.id.dicts_item_move );
             }
+
+            String fmt = getString(R.string.game_item_menu_titlef );
+            menu.setHeaderTitle( String.format( fmt, row.getText() ) );
         }
     }
    
