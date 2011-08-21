@@ -28,12 +28,23 @@
               android:textAppearance="?android:attr/textAppearanceMedium"
               android:text="@string/newgame_local_header"
               />
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="fill_parent" 
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="10dip"
+                  android:layout_marginBottom="10dip"
+                  >
+      <ImageView android:src="@drawable/sologame"
+                 android:layout_width="wrap_content"
+	             android:layout_height="wrap_content"
+                 android:layout_weight="0"
+                 android:layout_gravity="center_vertical|center_horizontal"
+                 />
+      <TextView android:id="@+id/newgame_local_desc"
+                style="@style/relay_explain"
+                />
+    </LinearLayout>
 
-    <TextView android:id="@+id/newgame_local_desc"
-              android:layout_marginTop="10dip"
-              android:layout_marginBottom="10dip"
-              style="@style/relay_explain"
-              />
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
@@ -52,17 +63,28 @@
               />
     </LinearLayout>
 
-
     <TextView style="@style/config_separator"
               android:layout_marginTop="10dip"
               android:textAppearance="?android:attr/textAppearanceMedium"
               android:text="@string/newgame_networked_header"
               />
-    <TextView android:text="@string/newgame_networked_desc"
-              android:layout_marginTop="10dip"
-              android:layout_marginBottom="10dip"
-              style="@style/relay_explain"
-              />
+
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="fill_parent" 
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="10dip"
+                  android:layout_marginBottom="10dip"
+                  >
+      <ImageView android:src="@drawable/relaygame"
+                 android:layout_width="wrap_content"
+	             android:layout_height="wrap_content"
+                 android:layout_weight="0"
+                 android:layout_gravity="center_vertical|center_horizontal"
+                 />
+      <TextView android:text="@string/newgame_networked_desc"
+                style="@style/relay_explain"
+                />
+    </LinearLayout>
 
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="fill_parent" 
