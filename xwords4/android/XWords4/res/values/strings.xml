@@ -162,10 +162,11 @@
     <string name="button_add_player">Add player</string>
     <string name="button_juggle_players">Shuffle players</string>
 
-    <string name="dicts_item_move">Move wordlist</string>
+    <string name="dicts_item_move">Change storage location</string>
     <string name="dicts_item_select">Make default</string>
     <string name="dicts_item_details">Details</string>
-    <string name="move_dictf">Move wordlist %1$s from %2$s to %3$s?</string>
+    <string name="move_dictf">Move wordlist %1$s from %2$s to %3$s
+      storage?</string>
     <string name="set_default_messagef">For what players should this
       wordlist be the default for new games? (The language %s will be
       the default for both.)</string>
@@ -417,15 +418,14 @@
     <string name="changes_title">Recent changes</string>
     <string name="changes_button">Recent changes</string>
 
-    <string name="connect_frequency">Move check frequency</string>
-	<string name="connect_thirty_seconds">60 seconds</string>
-	<string name="connect_five_mins">5 minutes</string>
-	<string name="connect_fifteen_mins">15 minutes</string>
-	<string name="connect_thirty_mins">30 minutes</string>
-	<string name="connect_one_hour">Hourly</string>
+    <string name="connect_frequency">Background move check</string>
+	<string name="connect_never">Never check</string>
+	<string name="connect_five_mins">Every 5 minutes</string>
+	<string name="connect_fifteen_mins">Every 15 minutes</string>
+	<string name="connect_thirty_mins">Every 30 minutes</string>
+	<string name="connect_one_hour">Every hour</string>
 	<string name="connect_six_hours">Every six hours</string>
 	<string name="connect_daily">Once every day</string>
-	<string name="connect_never">Never check</string>
 
 	<string name="notify_sound">Play sound</string>
 	<string name="notify_vibrate">Vibrate</string>
