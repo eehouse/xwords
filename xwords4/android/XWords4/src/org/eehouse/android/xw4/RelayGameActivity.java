@@ -67,10 +67,9 @@ public class RelayGameActivity extends XWActivity
     {
         super.onStart();
 
-        int gamePtr = XwJNI.initJNI();
         m_gi = new CurGameInfo( this );
         m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
-        GameUtils.loadMakeGame( this, gamePtr, m_gi, m_gameLock );
+        int gamePtr = GameUtils.loadMakeGame( this, m_gi, m_gameLock );
         m_car = new CommsAddrRec( this );
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             XwJNI.comms_getAddr( gamePtr, m_car );

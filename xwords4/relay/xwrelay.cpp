@@ -176,15 +176,28 @@ cmdToStr( XWRELAY_Cmd cmd )
 }
 
 static bool
-parseRelayID( const char* const in, char* buf, HostID* hid )
+parseRelayID( unsigned char** const inp, const unsigned char* const end,
+              char* buf, int buflen, HostID* hid )
 {
-    const char* hidp = strrchr( (char*)in, '/' );
+    const char* hidp = strchr( (char*)*inp, '/' );
+
     bool ok = NULL != hidp;
+    int connNameLen;
+
     if ( ok ) {
-        int connNameLen = hidp - in;
-        strncpy( buf, in, connNameLen );
+        connNameLen = hidp - (char*)*inp;
+        ok = connNameLen < buflen;
+    }
+    if ( ok ) {
+        strncpy( buf, (char*)*inp, connNameLen );
         buf[connNameLen] = '\0';
         *hid = atoi( hidp+1 );
+        char* endptr;
+        *hid = strtol( hidp + 1, &endptr, 10 );
+        if ( '\n' == *endptr ) {
+            ++endptr;
+        }
+        *inp = (unsigned char*)endptr;
     }
     return ok;
 }
@@ -728,43 +741,42 @@ handleMsgsMsg( int sock, bool sendFull,
                unsigned char* bufp, const unsigned char* end )
 {
     unsigned short nameCount;
+    int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
-        char* in = (char*)bufp;
         DBMgr* dbmgr = DBMgr::Get();
-        unsigned short count;
-        /* This is wrong now */
-        /* reply format: PRX_GET_MSGS case: <message len><n_msgs>[<len><msg>]* 
-         *               PRX_HAS_MSGS case: <message len><n_msgs><count>* 
-         */
         vector<unsigned char> out(4); /* space for len and n_msgs */
         assert( out.size() == 4 );
+        for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
 
-        char* saveptr;
-        for ( count = 0; ; ++count ) {
-            char* name = strtok_r( in, "\n", &saveptr );
-            if ( NULL == name ) {
-                break;
-            }
+            // See NetUtils.java for reply format
+            // message-length: 2
+            // nameCount: 2
+            // name count reps of:
+            //    counts-this-name: 2
+            //    counts-this-name reps of
+            //       len: 2
+            //       msg: <len>
+
+            // pack msgs for one game
             HostID hid;
             char connName[MAX_CONNNAME_LEN+1];
-            if ( !parseRelayID( name, connName, &hid ) ) {
+            if ( !parseRelayID( &bufp, end, connName, sizeof(connName),
+                                &hid ) ) {
                 break;
             }
 
-            /* For each relayID, write the number of messages and then each
-               message (in the getmsg case) */
+            /* For each relayID, write the number of messages and then
+               each message (in the getmsg case) */
             int msgCount = dbmgr->PendingMsgCount( connName, hid );
             pushShort( out, msgCount );
             if ( sendFull ) {
                 pushMsgs( out, dbmgr, connName, hid, msgCount );
             }
-
-            in = NULL;
         }
 
         unsigned short tmp = htons( out.size() - sizeof(tmp) );
         memcpy( &out[0], &tmp, sizeof(tmp) );
-        tmp = htons( count );
+        tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
         write( sock, &out[0], out.size() );
     }
@@ -817,24 +829,15 @@ handle_proxy_packet( unsigned char* buf, int len, int sock )
                             if ( !getNetShort( &bufp, end, &seed ) ) {
                                 break;
                             }
-                            unsigned char* crptr = 
-                                (unsigned char*)strchr( (char*)bufp, '\n' );
-                            if ( NULL == crptr || crptr >= end ) {
-                                break;
-                            }
-                            *crptr = '\0';
 
                             HostID hid;
                             char connName[MAX_CONNNAME_LEN+1];
-                            if ( !parseRelayID( (const char*)bufp, connName, 
-                                                &hid ) ) {
+                            if ( !parseRelayID( &bufp, end, connName, 
+                                                sizeof( connName ), &hid ) ) {
                                 break;
                             }
                             SafeCref scr( connName );
                             scr.DeviceGone( hid, seed );
-
-                            /* skip "\n" */
-                            bufp = crptr + 1;
                         }
                     }
                 }

@@ -118,7 +118,7 @@ public class GameListAdapter extends XWListAdapter {
             } else {
                 //Assert.assertNotNull( summary );
 
-                String state = summary.summarizeState( m_context );
+                String state = summary.summarizeState();
 
                 TextView view = (TextView)layout.findViewById( R.id.game_name );
                 if ( hideTitle ) {
@@ -134,7 +134,7 @@ public class GameListAdapter extends XWListAdapter {
                                                        summary.dictLang );
                         break;
                     case R.string.game_summary_field_opponents:
-                        value = "vs Kati +2";
+                        value = summary.playerNames();
                         break;
                     case R.string.game_summary_field_state:
                         value = state;
@@ -168,7 +168,7 @@ public class GameListAdapter extends XWListAdapter {
                     View tmp = m_factory.inflate( R.layout.player_list_elem, 
                                                   null );
                     view = (TextView)tmp.findViewById( R.id.item_name );
-                    view.setText( summary.summarizePlayer( m_context, ii ) );
+                    view.setText( summary.summarizePlayer( ii ) );
                     view = (TextView)tmp.findViewById( R.id.item_score );
                     view.setText( String.format( "  %d", summary.scores[ii] ) );
                     if ( summary.isNextToPlay( ii ) ) {
@@ -200,7 +200,7 @@ public class GameListAdapter extends XWListAdapter {
                 marker.setImageResource( iconID );
 
                 view = (TextView)layout.findViewById( R.id.role );
-                String roleSummary = summary.summarizeRole( m_context );
+                String roleSummary = summary.summarizeRole();
                 if ( null != roleSummary ) {
                     view.setText( roleSummary );
                 } else {

@@ -46,7 +46,7 @@
            ############################################################ 
       -->
     <!-- window title -->
-	<string name="title_dicts_list">Wordlists</string>   
+	<string name="title_dicts_list">Installed Crosswords Wordlists</string>   
 
     <!--   
            ############################################################
@@ -61,7 +61,7 @@
 
     <!-- title for popup list of langugages from which user picks -->
     <string name="title_langs_list">Languages (based on installed
-        dictionaries)</string>
+      wordlists)</string>
 
     <!-- text of checkbox at top of dialog allowing to unlock in-play
     game to make changes -->
@@ -161,16 +161,16 @@
     <string name="tell_unused">Not used yet...</string>
 
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
-    <string name="prefs_dicts">Dictionaries</string>
+    <string name="prefs_dicts">Wordlists</string>
     <!-- clarification of above -->
-    <string name="prefs_dicts_summary">Default dictionaries</string>
+    <string name="prefs_dicts_summary">Default wordlists</string>
 
     <!-- dictionary used by default for human players when creating
          new game -->
-    <string name="default_dict">Dictionary for humans</string>
+    <string name="default_dict">Wordlist for humans</string>
     <!-- dictionary used by default for robot players when creating
          new game -->
-    <string name="default_robodict">Dictionary for robots</string>
+    <string name="default_robodict">Wordlist for robots</string>
 
     <!-- clarification on hints_allowed, whether new games will
          default to having the hint feature enabled(string elsewhere
@@ -419,6 +419,7 @@
     <string name="str_local_name">%s</string>
     <string name="str_nonlocal_name">(remote)</string>
     <string name="str_nonlocal_namef">%s (remote)</string>
+    <string name="vs_join">\u0020vs.\u0020</string>
     <string name="str_game_namef">%1$s (%2$s)</string>
     <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
     <string name="strd_turn_score">Score for turn: %d\n</string>
@@ -438,7 +439,8 @@
 	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Settings dialog.</string>
 	<string name="str_no_peek_remote_tiles">No peeking at remote players\' tiles!</string>
 	<string name="str_reg_unexpected_user">Refused attempt to register unexpected user[s]</string>
-	<string name="str_server_dict_wins">Conflict between Host and Guest dictionaries; Host wins.</string>
+	<string name="str_server_dict_wins">Conflict between Host and
+	  Guest wordlists; Host wins.</string>
 	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
 
     <string name="remote_label">Off-device player</string>
@@ -453,18 +455,18 @@
     <string name="players_label_host">Players (%1$d local, %2$d
     off-device)</string>
 
-    <string name="dicts_item_move">Move dictionary</string>
+    <string name="dicts_item_move">Move wordlist</string>
     <string name="dicts_item_select">Make default</string>
     <string name="dicts_item_details">Details</string>
-    <string name="move_dictf">Move dictionary %1$s from %2$s to %3$s?</string>
+    <string name="move_dictf">Move wordlist %1$s from %2$s to %3$s?</string>
     <string name="set_default_messagef">For what players should this
-      dictionary (and the language %s) be the default for new
-      games?</string>
+      wordlist be the default for new games? (The language %s will be
+      the default for both.)</string>
     <string name="button_default_human">Human</string>
     <string name="button_default_robot">Robot</string>
     <string name="button_default_both">Both</string>
 
-    <string name="dict_lang_labelf">Dictionary (in %s)</string>
+    <string name="dict_lang_labelf">Wordlist (in %s)</string>
 
     <string name="configure_rolef">Configure %s connection</string>
 
@@ -492,10 +494,10 @@
     <string name="confirm_delete_dictf">Are you sure you want to
     delete %s?</string>
     <string name="confirm_deleteonly_dictf">\u0020It is the only %s
-      dictionary installed. One or more games will be unopenable
+      wordlist installed. One or more games will be unopenable
       without it.</string>
     <string name="confirm_deletemore_dictf">\u0020One game (at least)
-      is using it (but there is another %s dictionary installed that
+      is using it (but there is another %s wordlist installed that
       can replace it.)</string>
     
     <string name="progress_title">Searching for moves</string>
@@ -503,8 +505,8 @@
     <string name="color_tiles_summary">Draw tiles using color of
     player who played them</string>
 
-    <string name="storeWhereTitle">Dictionary storage</string>
-    <string name="storeWhereMsg">Store downloaded dictionaries using
+    <string name="storeWhereTitle">Wordlist storage</string>
+    <string name="storeWhereMsg">Store downloaded wordlists using
       internal or external (SD card) memory? (You can always move them
       later.)</string>
     <string name="button_internal">Internal</string>
@@ -517,7 +519,7 @@
     <string name="robot_smartest">Smartest robot</string>
     
     <string name="menu_prefs">Settings</string>
-    <string name="gamel_menu_dicts">Dictionaries</string>
+    <string name="gamel_menu_dicts">Wordlists</string>
     <string name="menu_revert_all">Restore all</string>
     <string name="menu_revert_colors">Restore colors</string>
     <string name="confirm_revert_colors">Are you sure you want to
@@ -552,7 +554,7 @@
       another device. You will not be able to play any
       further.</string>
 
-    <string name="ids_badwords">Word[s] %s not found in dictionary.</string>
+    <string name="ids_badwords">Word[s] %s not found in wordlist.</string>
     <string name="badwords_accept">  Do you still want to accept this move?</string>
     <string name="badwords_lost">  Turn lost.</string>
     <string name="badwords_title">Illegal word[s]</string>
@@ -586,17 +588,24 @@
     credits pending permission.</string>
 
     <string name="downloading_dictf">Downloading Crosswords
-    dictionary %s...</string>
-    <string name="no_dict_title">Dictionary not found</string>
+      wordlist %s...</string>
+    <string name="no_dict_title">Wordlist not found</string>
     <string name="button_download">Download</string>
-    <string name="subst_dict_title">Substitute dictionary (wordcount)</string>
+    <string name="subst_dict_title">Substitute wordlist (wordcount)</string>
     <string name="button_substdict">Substitute</string>
 
-    <string name="no_dictf">Unable to open game because no %s
-      dictionary found.</string>
-    <string name="no_dict_substf">Unable to open game because
-      dictionary %1$s not found. You can download a replacement or
-      substitute another %2$s dictionary.</string>
+    <string name="button_close_game">Close game</string>
+    <string name="no_dict_finish">A wordlist this game is using has
+      disappeared. (Usually this means it\'s on an external card that
+      is no longer available.)</string>
+    <string name="no_dictf">Unable to open game \"%1$s\" because no
+      %2$s wordlist found. (It may have been deleted, or stored on
+      an external card that is no longer available.)</string>
+    <string name="no_dict_substf">Unable to open game \"%1$s\" because
+      wordlist %2$s not found. (It may have been deleted, or stored
+      on an external card that is no longer available.) You can
+      download a replacement or substitute another %3$s
+      wordlist.</string>
 
 	<string name="msg_ask_password">Password for \"%s\":</string>
 
@@ -703,12 +712,12 @@
       game on the relay. You will be notified when the remaining
       device[s] have joined your room and play can begin.</string>
 
-    <string name="not_again_dicts">Crosswords dictionaries, which are
+    <string name="not_again_dicts">Crosswords wordlists, which are
       just compressed lists of words plus tile information, determine
-      what language a game is played in and how \"smart\" the robot is.
-      You can download different sized dictionaries in many languages
-      here.  Email me at eehouse@eehouse.org for information on building
-      and installing your own dictionaries.</string>
+      what language a game is played in and how \"smart\" the robot
+      is.  You can download different sized wordlists in many
+      languages here.  Email me at eehouse@eehouse.org for information
+      on building and installing your own wordlists.</string>
 
     <string name="not_again_arrow">Moving tiles to the board:\nYou can
       drag tiles between the rack and the board, or you can tap an

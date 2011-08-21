@@ -61,6 +61,7 @@ void
 stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile )
 {
     XP_ASSERT( !!stack );
+    XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
     stack->bitsPerTile = bitsPerTile;
 }
 

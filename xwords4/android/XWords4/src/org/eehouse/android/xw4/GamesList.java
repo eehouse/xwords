@@ -97,14 +97,16 @@ public class GamesList extends XWListActivity
                         }
                     };
                 String message;
-                String langName = DictLangCache.getLangName( this,
-                                                             m_missingDictLang );
+                String langName = 
+                    DictLangCache.getLangName( this, m_missingDictLang );
+                String gameName = GameUtils.getName( this, m_rowid );
                 if ( WARN_NODICT == id ) {
-                    message = String.format( getString(R.string.no_dictf),
-                                             langName );
+                    message = String.format( getString( R.string.no_dictf ),
+                                             gameName, langName );
                 } else {
                     message = String.format( getString(R.string.no_dict_substf),
-                                             m_missingDictNames[0], langName );
+                                             gameName, m_missingDictNames[0], 
+                                             langName );
                 }
 
                 ab = new AlertDialog.Builder( this )
@@ -127,24 +129,26 @@ public class GamesList extends XWListActivity
             case SHOW_SUBST:
                 m_sameLangDicts = 
                     DictLangCache.getHaveLangCounts( this, m_missingDictLang );
-                ab = new AlertDialog.Builder( this )
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg,
+                                             int which ) {
+                            int pos = ((AlertDialog)dlg).getListView().
+                                getCheckedItemPosition();
+                            String dict = m_sameLangDicts[pos];
+                            dict = DictLangCache.stripCount( dict );
+                            GameUtils.replaceDicts( GamesList.this,
+                                                    m_missingDictRowId,
+                                                    m_missingDictNames[0],
+                                                    dict );
+                        }
+                    };
+                dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.subst_dict_title )
+                    .setPositiveButton( R.string.button_substdict, lstnr )
                     .setNegativeButton( R.string.button_cancel, null )
-                    .setItems( m_sameLangDicts,
-                               new DialogInterface.OnClickListener() {
-                                   public void onClick( DialogInterface dlg,
-                                                        int which ) {
-                                       String dict = m_sameLangDicts[which];
-                                       dict = DictLangCache.stripCount( dict );
-                                       GameUtils.
-                                           replaceDicts( GamesList.this,
-                                                         m_missingDictRowId,
-                                                         m_missingDictNames[0],
-                                                         dict );
-                                   }
-                               })
+                    .setSingleChoiceItems( m_sameLangDicts, 0, null )
+                    .create();
                     ;
-                dialog = ab.create();
                 // Force destruction so onCreateDialog() will get
                 // called next time and we can insert a different
                 // list.  There seems to be no way to change the list

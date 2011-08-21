@@ -225,11 +225,17 @@ close_device() {
     unset ROOMS[$ID]
 }
 
+OBITS=""
+
 kill_from_log() {
     LOG=$1
     RELAYID=$(./scripts/relayID.sh --long $LOG)
     if [ -n "$RELAYID" ]; then
-        ../relay/rq -a $HOST -d $RELAYID 2>/dev/null || true
+        OBITS="$OBITS -d $RELAYID"
+        if [ 0 -eq $(($RANDOM%2)) ]; then
+            ../relay/rq -a $HOST $OBITS 2>/dev/null || true
+            OBITS=""
+        fi
         return 0                # success
     fi
     echo "unable to send kill command for $LOG"
@@ -281,7 +287,12 @@ check_game() {
             close_device $ID $DONEDIR "game over"
         done
         date
+        # XWRELAY_ERROR_DELETED may be old
     elif grep -q 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
+        echo "deleting $LOG $(connName $LOG) b/c another resigned"
+        kill_from_log $LOG || true
+        close_device $KEY $DEADDIR "other resigned"
+    elif grep -q 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
         kill_from_log $LOG || true
         close_device $KEY $DEADDIR "other resigned"
@@ -333,6 +344,8 @@ run_cmds() {
             check_game $KEY
         fi
     done
+
+    [ -n "$OBITS" ] && ../relay/rq -a $HOST $OBITS 2>/dev/null || true
 
     # kill any remaining games
     if [ $COUNT -gt 0 ]; then

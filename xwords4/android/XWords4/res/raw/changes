@@ -6,26 +6,32 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 32 release</b>
-
-<p><em>32's a quickie to fix a crash introduced in 31.  So I'll leave the 
-older changes in place</em></p>
+<b>Crosswords 4.4 beta 33 release</b>
 
 <ul>
 
-  <li>Give choice between sending invites as TEXT or HTML, then format 
-  differently depending</li>
+  <li>Use the term "wordlist" instead of "dictionary" to not imply that 
+  there are definitions provided.</li>
 
-  <li>include link in invites to install Crosswords</li>
+  <li>Change how downloaded wordlists are opened to consume much less 
+  Java memory.  Downside: wordlists on external storage are not 
+  available when that storage is mounted on a computer over USB.</li>
 
-  <li>Add expand/contract buttons to games list</li>
+  <li>In the Wordlists screen, hide wordlists stored on external media 
+  when the media's not available.  Notice when it becomes available 
+  and redraw the list.</li>
 
-  <li>Add ability to rename games</li>
-  
-  <li>Don't crash when user chooses "Copy"</li>
-  
+  <li>Make a game's language one of several configurable attributes 
+  that can be displayed along with the game</li>
+
+  <li>Fix rename of games to work when keyboard opened while dialog 
+  up.</li>
+
+  <li>Add icons to games list display so it's easier to tell networked 
+  from standalone.  These are placeholders until I can get an artist 
+  to help out. :-)</li>
+
 </ul>
-
 
 <p>Please remember that this is beta software.  Please let me know (at 
 eehouse@eehouse.org) what's broken and what features you'd most like 
