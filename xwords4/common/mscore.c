@@ -339,6 +339,7 @@ modelIsEmptyAt( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 static XP_Bool
 isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
 {
+    XP_Bool result = XP_TRUE;
     XP_S16 high, low;
     XP_S16 col, row;
     XP_S16* incr;
@@ -376,11 +377,12 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
                 if ( !silent ) {
                     util_userError( model->vol.util, ERR_NO_EMPTIES_IN_TURN );
                 }
-                return XP_FALSE;
+                result = XP_FALSE;
+                goto exit;
             }
         }
         XP_ASSERT( newTile == &moves[nTiles] );
-        return XP_TRUE;
+        goto exit;
 
         /* else we're looking at 2b: make sure there's some contact UNLESS
            this is the first move */
@@ -389,13 +391,13 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
         if ( low != 0 ) {
             *incr = low - 1;
             if ( !modelIsEmptyAt( model, col, row ) ) {
-                return XP_TRUE;
+                goto exit;
             }
         }
         if ( high != MAX_ROWS-1 ) {
             *incr = high+1;
             if ( !modelIsEmptyAt( model, col, row ) ) {
-                return XP_TRUE;
+                goto exit;
             }
         }
         /* now the neighbors above... */
@@ -403,7 +405,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
             --*commonP; /* decrement whatever's not being looped over */
             for ( *incr = low; *incr <= high; ++*incr ) {
                 if ( !modelIsEmptyAt( model, col, row ) ) {
-                    return XP_TRUE;
+                    goto exit;
                 }
             }
             ++*commonP;/* undo the decrement */
@@ -413,7 +415,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
             ++*commonP;
             for ( *incr = low; *incr <= high; ++*incr ) {
                 if ( !modelIsEmptyAt( model, col, row ) ) {
-                    return XP_TRUE;
+                    goto exit;
                 }
             }
             --*commonP;
@@ -424,22 +426,25 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
         if ( ( commonCoord == star_row) && 
              ( low <= star_row) && ( high >= star_row ) ) {
             if ( nTiles > 1 ) {
-                return XP_TRUE;
+                goto exit;
             } else {
                 if ( !silent ) {
                     util_userError(model->vol.util, ERR_TWO_TILES_FIRST_MOVE);
                 }
-                return XP_FALSE;
+                result = XP_FALSE;
+                goto exit;
             }
         } else {
             if ( !silent ) {
                 util_userError( model->vol.util, ERR_TILES_MUST_CONTACT );
             }
-            return XP_FALSE;
+            result = XP_FALSE;
+            goto exit;
         }
     }
-    XP_ASSERT( XP_FALSE );
-    return XP_FALSE; /* keep compiler happy */
+    XP_ASSERT( XP_FALSE );      /* should not get here */
+ exit:
+    return result;
 } /* isLegalMove */
 
 XP_U16
