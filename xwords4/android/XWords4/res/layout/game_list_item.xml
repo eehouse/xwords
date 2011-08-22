@@ -58,25 +58,12 @@
                   android:padding="4sp">
 
       <!-- Player list plus connection status -->
-      <LinearLayout android:orientation="vertical"
+      <LinearLayout android:id="@+id/player_list"
+                    android:orientation="vertical"
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent"
                     android:layout_weight="1"
-                    >
-        
-        <!-- Player names container I stick stuff in -->
-        <LinearLayout android:id="@+id/player_list"
-                      android:orientation="vertical"
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      >
-        </LinearLayout>
-
-        <TextView android:id="@+id/role"
-	              android:layout_width="wrap_content" 
-	              android:layout_height="wrap_content"
-                  />
-      </LinearLayout> <!-- end players column -->
+                    /> <!-- end players column -->
 
       <!-- holds right column.  Could hold more... -->
       <LinearLayout android:orientation="vertical"
@@ -96,6 +83,13 @@
       </LinearLayout>
 
     </LinearLayout>
+
+
+    <TextView android:id="@+id/role"
+	          android:layout_width="wrap_content" 
+	          android:layout_height="wrap_content"
+              android:layout_gravity="center_vertical|center_horizontal"
+              />
 
   </LinearLayout>
 </LinearLayout>
