@@ -365,7 +365,11 @@
     check off-device players.</string>
     <string name="forced_consistent">Modified first player.</string>
 
-    <string name="summary_fmt_relay">Connecting via Relay, room \"%s\"</string>
+    <string name="summary_relay_conff">Configured for room
+      \"%s\"</string>
+    <string name="summary_relay_waitf">Waiting for players in room
+      \"%s\"</string>
+    <string name="summary_relay_connf">Game in play in room \"%s\"</string>
     <string name="gameOver">Game over</string>
     <string name="movesf">%d moves played</string>
 
