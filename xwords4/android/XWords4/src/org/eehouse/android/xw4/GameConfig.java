@@ -644,6 +644,9 @@ public class GameConfig extends XWActivity
     {
         Spinner dictsSpinner = 
             (Spinner)dialog.findViewById( R.id.dict_spinner );
+        String fmt = getString( R.string.dicts_list_promptf );
+        String lang = DictLangCache.getLangName( this, m_gi.dictLang );
+        dictsSpinner.setPrompt(String.format( fmt, lang ) );
 
         OnItemSelectedListener onSel = 
             new OnItemSelectedListener() {
