@@ -68,6 +68,7 @@
 	<string name="button_html">Html</string>  
 
     <string name="player_label">Name:</string>
+	<string name="dicts_list_promptf">Installed wordlists (in %s)</string>
 
 	<string name="info_title">FYI...</string>
 	<string name="newbie_title">New user info</string>
