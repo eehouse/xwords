@@ -24,6 +24,9 @@
   <li>Make a game's language one of several configurable attributes 
   that can be displayed along with the game</li>
 
+  <li>Display relay connection state as being in one of three phases: 
+  configured, connected, and with all players present.</li>
+
   <li>Fix rename of games to work when keyboard opened while dialog 
   up.</li>
 
