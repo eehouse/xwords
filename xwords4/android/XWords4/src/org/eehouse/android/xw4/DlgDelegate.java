@@ -21,14 +21,16 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import junit.framework.Assert;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.AlertDialog;
+
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
@@ -56,8 +58,13 @@ public class DlgDelegate {
     };
     private TextOrHtmlClicked m_txt_or_html;
 
-    public DlgDelegate( Activity activity ) {
+    public DlgDelegate( Activity activity, Bundle bundle ) {
         m_activity = activity;
+    }
+
+    public void onSaveInstanceState( Bundle outState ) 
+    {
+        // not doing anything yet
     }
     
     public Dialog onCreateDialog( int id )

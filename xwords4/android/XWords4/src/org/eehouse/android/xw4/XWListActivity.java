@@ -35,7 +35,7 @@ public class XWListActivity extends ListActivity {
     {
         Utils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
         super.onCreate( savedInstanceState );
-        m_delegate = new DlgDelegate( this );
+        m_delegate = new DlgDelegate( this, savedInstanceState );
     }
 
     @Override
@@ -74,6 +74,13 @@ public class XWListActivity extends ListActivity {
         Utils.logf( "%s.onDestroy(this=%H); isFinishing=%b",
                     getClass().getName(), this, isFinishing() );
         super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        m_delegate.onSaveInstanceState( outState );
     }
 
     @Override

@@ -294,14 +294,14 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) 
+    protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
 
         Resources res = getResources();
         m_locNames = res.getStringArray( R.array.loc_names );
 
-        m_delegate = new DlgDelegate( this );
+        m_delegate = new DlgDelegate( this, savedInstanceState );
         m_factory = LayoutInflater.from( this );
 
         m_download = getString( R.string.download_dicts );
@@ -336,6 +336,13 @@ public class DictsActivity extends ExpandableListActivity
         m_cardWatcher = new SDCardWatcher( this, this );
         mkListAdapter();
         expandGroups();
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        m_delegate.onSaveInstanceState( outState );
     }
 
     protected void onPause() {
