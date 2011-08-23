@@ -301,9 +301,7 @@ public class DlgDelegate {
 
     private Dialog createDictGoneDialog()
     {
-        Utils.logf( "DlgDelegate.createDictGoneDialog() called" );
-        Dialog dialog;
-        dialog = new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.no_dict_title )
             .setMessage( R.string.no_dict_finish )
             .setPositiveButton( R.string.button_close_game, null )
