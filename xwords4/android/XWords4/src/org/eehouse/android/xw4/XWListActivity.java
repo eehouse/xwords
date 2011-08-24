@@ -144,6 +144,16 @@ public class XWListActivity extends ListActivity
         m_delegate.showConfirmThen( msg, action );
     }
 
+    protected void showConfirmThen( String msg, int action )
+    {
+        m_delegate.showConfirmThen( msg, action );
+    }
+
+    protected void showConfirmThen( int msg, int action )
+    {
+        m_delegate.showConfirmThen( getString(msg), action );
+    }
+
     protected void showConfirmThen( int msgID, 
                                     DialogInterface.OnClickListener action )
     {
