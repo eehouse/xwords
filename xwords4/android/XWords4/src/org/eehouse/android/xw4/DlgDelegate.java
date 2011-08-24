@@ -43,14 +43,14 @@ public class DlgDelegate {
     public static final int CONFIRM_THEN = 4;
     public static final int TEXT_OR_HTML_THEN = 5;
     public static final int DLG_DICTGONE = 6;
-    public static final int CONFIRM_THEN2 = 7;
-    public static final int DIALOG_LAST = CONFIRM_THEN2;
+    public static final int DIALOG_LAST = DLG_DICTGONE;
 
     public static final String MSG = "msg";
     public static final String CALLBACK = "callback";
+    public static final String MSGID = "msgid";
 
     public interface DlgClickNotify {
-        void buttonClicked( int id );
+        void buttonClicked( int id, boolean cancelled );
     }
 
     private int m_msgID;
@@ -61,7 +61,6 @@ public class DlgDelegate {
     private Activity m_activity;
     private DlgClickNotify m_clickCallback;
     private String m_dictName = null;
-    DialogInterface.OnClickListener m_then;
 
     public interface TextOrHtmlClicked {
         public void clicked( boolean choseText );
@@ -77,6 +76,7 @@ public class DlgDelegate {
         if ( null != bundle ) {
             m_msg = bundle.getString( MSG );
             m_cbckID = bundle.getInt( CALLBACK );
+            m_msgID = bundle.getInt( MSGID );
         }
     }
 
@@ -84,6 +84,7 @@ public class DlgDelegate {
     {
         outState.putString( MSG, m_msg );
         outState.putInt( CALLBACK, m_cbckID );
+        outState.putInt( MSGID, m_msgID );
     }
     
     public Dialog onCreateDialog( int id )
@@ -100,9 +101,6 @@ public class DlgDelegate {
             dialog = createNotAgainDialog();
             break;
         case CONFIRM_THEN:
-            dialog = createConfirmThenDialog();
-            break;
-        case CONFIRM_THEN2:
             dialog = createConfirmThenDialog();
             break;
         case TEXT_OR_HTML_THEN:
@@ -132,20 +130,17 @@ public class DlgDelegate {
             ad.setMessage( m_activity.getString(m_msgID) );
             break;
         case CONFIRM_THEN:
-            // I'm getting an occasional 0 here on device only.  May
-            // be related to screen orientation changes.  Let's be safe
-            ad.setMessage( m_msg );
-            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
-                          m_activity.getString( R.string.button_ok ), m_then );
-            break;
-        case CONFIRM_THEN2:
             ad.setMessage( m_msg );
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int button ) {
-                        m_clickCallback.buttonClicked( m_cbckID );
+                        boolean cancelled = 
+                            button == DialogInterface.BUTTON_NEGATIVE;
+                        m_clickCallback.buttonClicked( m_cbckID, cancelled );
                     }
                 };
             ad.setButton( AlertDialog.BUTTON_POSITIVE, 
+                          m_activity.getString( R.string.button_ok ), lstnr );
+            ad.setButton( AlertDialog.BUTTON_NEGATIVE,
                           m_activity.getString( R.string.button_ok ), lstnr );
             break;
         case TEXT_OR_HTML_THEN:
@@ -199,18 +194,11 @@ public class DlgDelegate {
         }
     }
 
-    public void showConfirmThen( String msg, DialogInterface.OnClickListener then )
-    {
-        m_msg = msg;
-        m_then = then;
-        m_activity.showDialog( CONFIRM_THEN );
-    }
-
     public void showConfirmThen( String msg, int callbackID )
     {
         m_msg = msg;
         m_cbckID = callbackID;
-        m_activity.showDialog( CONFIRM_THEN2 );
+        m_activity.showDialog( CONFIRM_THEN );
     }
 
     public void showTextOrHtmlThen( TextOrHtmlClicked txtOrHtml )

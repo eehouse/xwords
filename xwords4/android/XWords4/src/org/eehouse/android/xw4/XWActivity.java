@@ -131,8 +131,7 @@ public class XWActivity extends Activity
         m_delegate.showDictGoneFinish();
     }
 
-    protected void showConfirmThen( int msgID, 
-                                    DialogInterface.OnClickListener action )
+    protected void showConfirmThen( int msgID, int action )
     {
         m_delegate.showConfirmThen( getString(msgID), action );
     }
@@ -148,7 +147,7 @@ public class XWActivity extends Activity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void buttonClicked( int id )
+    public void buttonClicked( int id, boolean cancelled )
     {
         Assert.fail();
     }

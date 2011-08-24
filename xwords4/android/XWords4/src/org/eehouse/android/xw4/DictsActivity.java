@@ -551,11 +551,13 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void buttonClicked( int id )
+    public void buttonClicked( int id, boolean cancelled )
     {
         switch( id ) {
         case DELETE_DICT_ACTION:
-            deleteDict( m_deleteDict );
+            if ( !cancelled ) {
+                deleteDict( m_deleteDict );
+            }
             break;
         default:
             Assert.fail();

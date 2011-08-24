@@ -138,12 +138,6 @@ public class XWListActivity extends ListActivity
         m_delegate.showOKOnlyDialog( msgID );
     }
 
-    protected void showConfirmThen( String msg,
-                                    DialogInterface.OnClickListener action )
-    {
-        m_delegate.showConfirmThen( msg, action );
-    }
-
     protected void showConfirmThen( String msg, int action )
     {
         m_delegate.showConfirmThen( msg, action );
@@ -154,19 +148,13 @@ public class XWListActivity extends ListActivity
         m_delegate.showConfirmThen( getString(msg), action );
     }
 
-    protected void showConfirmThen( int msgID, 
-                                    DialogInterface.OnClickListener action )
-    {
-        showConfirmThen( getString(msgID), action );
-    }
-
     protected void doSyncMenuitem()
     {
         m_delegate.doSyncMenuitem();
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void buttonClicked( int id )
+    public void buttonClicked( int id, boolean cancelled )
     {
         Assert.fail();
     }

@@ -404,28 +404,30 @@ public class GamesList extends XWListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void buttonClicked( int id )
+    public void buttonClicked( int id, boolean cancelled )
     {
-        switch( id ) {
-        case NEW_NET_GAME_ACTION:
-            long rowid = GameUtils.makeNewNetGame( this, m_netLaunchInfo ); 
-            GameUtils.launchGame( this, rowid, true );
-            break;
-        case RESET_GAME_ACTION:
-            GameUtils.resetGame( this, m_rowid );
-            break;
-        case DELETE_GAME_ACTION:
-            GameUtils.deleteGame( this, m_rowid, true );
-            break;
-        case DELETE_ALL_ACTION:
-            long[] games = DBUtils.gamesList( this );
-            for ( int ii = games.length - 1; ii >= 0; --ii ) {
-                GameUtils.deleteGame( this, games[ii], ii == 0  );
-                m_adapter.inval( games[ii] );
+        if ( !cancelled ) {
+            switch( id ) {
+            case NEW_NET_GAME_ACTION:
+                long rowid = GameUtils.makeNewNetGame( this, m_netLaunchInfo );
+                GameUtils.launchGame( this, rowid, true );
+                break;
+            case RESET_GAME_ACTION:
+                GameUtils.resetGame( this, m_rowid );
+                break;
+            case DELETE_GAME_ACTION:
+                GameUtils.deleteGame( this, m_rowid, true );
+                break;
+            case DELETE_ALL_ACTION:
+                long[] games = DBUtils.gamesList( this );
+                for ( int ii = games.length - 1; ii >= 0; --ii ) {
+                    GameUtils.deleteGame( this, games[ii], ii == 0  );
+                    m_adapter.inval( games[ii] );
+                }
+                break;
+            default:
+                Assert.fail();
             }
-            break;
-        default:
-            Assert.fail();
         }
     }
 
