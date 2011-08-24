@@ -258,14 +258,7 @@ public class BoardActivity extends XWActivity
                                                     handle(JNICmd.CMD_ENDGAME);
                                             }
                                         })
-                    .setNegativeButton( R.string.button_no,
-                                        new DialogInterface.OnClickListener() {
-                                            public void 
-                                                onClick( DialogInterface dlg, 
-                                                         int item ) {
-                                                // do nothing
-                                            }
-                                        })
+                    .setNegativeButton( R.string.button_no, null )
                     .create();
                 break;
             case DLG_INVITE:
@@ -1079,31 +1072,32 @@ public class BoardActivity extends XWActivity
                                             langName );
                 }
 
-                m_jniThread = new 
-                    JNIThread( m_jniGamePtr, m_gi, m_view, m_gameLock, this,
-                               new Handler() {
-                                   public void handleMessage( Message msg ) {
-                                       switch( msg.what ) {
-                                       case JNIThread.DRAW:
-                                           m_view.invalidate();
-                                           break;
-                                       case JNIThread.DIALOG:
-                                           m_dlgBytes = (String)msg.obj;
-                                           m_dlgTitle = msg.arg1;
-                                           showDialog( DLG_OKONLY );
-                                           break;
-                                       case JNIThread.QUERY_ENDGAME:
-                                           showDialog( QUERY_ENDGAME );
-                                           break;
-                                       case JNIThread.TOOLBAR_STATES:
-                                           if ( null != m_jniThread ) {
-                                               m_gsi = m_jniThread.getGameStateInfo();
-                                               updateToolbar();
-                                           }
-                                           break;
-                                       }
-                                   }
-                               } );
+                Handler handler = new Handler() {
+                        public void handleMessage( Message msg ) {
+                            switch( msg.what ) {
+                            case JNIThread.DRAW:
+                                m_view.invalidate();
+                                break;
+                            case JNIThread.DIALOG:
+                                m_dlgBytes = (String)msg.obj;
+                                m_dlgTitle = msg.arg1;
+                                showDialog( DLG_OKONLY );
+                                break;
+                            case JNIThread.QUERY_ENDGAME:
+                                showDialog( QUERY_ENDGAME );
+                                break;
+                            case JNIThread.TOOLBAR_STATES:
+                                if ( null != m_jniThread ) {
+                                    m_gsi = 
+                                        m_jniThread.getGameStateInfo();
+                                    updateToolbar();
+                                }
+                                break;
+                            }
+                        }
+                    };
+                m_jniThread = new JNIThread( m_jniGamePtr, m_gi, m_view, 
+                                             m_gameLock, this, handler );
                 // see http://stackoverflow.com/questions/680180/where-to-stop-\
                 // destroy-threads-in-android-service-class
                 m_jniThread.setDaemon( true );
