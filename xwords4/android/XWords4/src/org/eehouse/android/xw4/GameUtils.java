@@ -461,21 +461,6 @@ public class GameUtils {
         }
     }
 
-    public static void launchInviteActivity( final XWActivity activity, 
-                                             final String room, 
-                                             final int lang, 
-                                             final int nPlayers )
-    {
-        DlgDelegate.TextOrHtmlClicked cb = 
-            new DlgDelegate.TextOrHtmlClicked() {
-                public void clicked( boolean choseText ) {
-                    launchInviteActivity( activity, choseText, room,
-                                          lang, nPlayers );
-                }
-            };
-        activity.showTextOrHtmlThen( cb );
-    }
-
     public static boolean gameDictsHere( Context context, long rowid )
     {
         return gameDictsHere( context, rowid, null, null );

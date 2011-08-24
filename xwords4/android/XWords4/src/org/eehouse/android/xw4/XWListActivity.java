@@ -25,9 +25,13 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class XWListActivity extends ListActivity {
+public class XWListActivity extends ListActivity 
+    implements DlgDelegate.DlgClickNotify {
+
     private DlgDelegate m_delegate;
 
     @Override
@@ -35,7 +39,7 @@ public class XWListActivity extends ListActivity {
     {
         Utils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
         super.onCreate( savedInstanceState );
-        m_delegate = new DlgDelegate( this );
+        m_delegate = new DlgDelegate( this, this, savedInstanceState );
     }
 
     @Override
@@ -77,6 +81,13 @@ public class XWListActivity extends ListActivity {
     }
 
     @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        m_delegate.onSaveInstanceState( outState );
+    }
+
+    @Override
     protected Dialog onCreateDialog( final int id )
     {
         Utils.logf( "%s.onCreateDialog() called", getClass().getName() );
@@ -96,11 +107,6 @@ public class XWListActivity extends ListActivity {
             dialog.setOnDismissListener( lstnr );
         }
         return dialog;
-    }
-
-    protected void setRemoveOnDismiss( Dialog dialog, int id )
-    {
-        m_delegate.setRemoveOnDismiss( dialog, id );
     }
 
     @Override
@@ -132,21 +138,25 @@ public class XWListActivity extends ListActivity {
         m_delegate.showOKOnlyDialog( msgID );
     }
 
-    protected void showConfirmThen( String msg,
-                                    DialogInterface.OnClickListener action )
+    protected void showConfirmThen( String msg, int action )
     {
         m_delegate.showConfirmThen( msg, action );
     }
 
-    protected void showConfirmThen( int msgID, 
-                                    DialogInterface.OnClickListener action )
+    protected void showConfirmThen( int msg, int action )
     {
-        showConfirmThen( getString(msgID), action );
+        m_delegate.showConfirmThen( getString(msg), action );
     }
 
     protected void doSyncMenuitem()
     {
         m_delegate.doSyncMenuitem();
+    }
+
+    // DlgDelegate.DlgClickNotify interface
+    public void dlgButtonClicked( int id, boolean cancelled )
+    {
+        Assert.fail();
     }
 
 }

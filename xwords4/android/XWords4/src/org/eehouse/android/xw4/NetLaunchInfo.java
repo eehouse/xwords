@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.net.Uri;
 import android.net.Uri.Builder;
+import android.os.Bundle;
 import java.net.URLEncoder;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -33,7 +34,32 @@ public class NetLaunchInfo {
     public int lang;
     public int nPlayers;
 
+    private static final String LANG = "netlaunchinfo_lang";
+    private static final String ROOM = "netlaunchinfo_room";
+    private static final String NPLAYERS = "netlaunchinfo_nplayers";
+    private static final String VALID = "netlaunchinfo_valid";
+
     private boolean m_valid;
+
+    public void putSelf( Bundle bundle )
+    {
+        bundle.putInt( LANG, lang );
+        bundle.putString( ROOM, room );
+        bundle.putInt( NPLAYERS, nPlayers );
+        bundle.putBoolean( VALID, m_valid );
+        Utils.logf( "bundling NetLaunchInfo: %d, %s, %d, %b",
+                    lang, room, nPlayers, m_valid );
+    }
+
+    public NetLaunchInfo( Bundle bundle )
+    {
+        lang = bundle.getInt( LANG  );
+        room = bundle.getString( ROOM );
+        nPlayers = bundle.getInt( NPLAYERS  );
+        m_valid = bundle.getBoolean( VALID  );
+        Utils.logf( "unbundled NetLaunchInfo: %d, %s, %d, %b",
+                    lang, room, nPlayers, m_valid );
+    }
 
     public static Uri makeLaunchUri( Context context, String room,
                                         int lang, int nPlayers )

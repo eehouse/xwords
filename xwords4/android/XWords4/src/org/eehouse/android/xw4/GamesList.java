@@ -63,6 +63,11 @@ public class GamesList extends XWListActivity
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
 
+    private static final int NEW_NET_GAME_ACTION = 1;
+    private static final int RESET_GAME_ACTION = 2;
+    private static final int DELETE_GAME_ACTION = 3;
+    private static final int DELETE_ALL_ACTION = 4;
+
     private GameListAdapter m_adapter;
     private String m_missingDict;
     private Handler m_handler;
@@ -72,6 +77,7 @@ public class GamesList extends XWListActivity
     private int m_missingDictLang;
     private long m_rowid;
     private String m_nameField;
+    private NetLaunchInfo m_netLaunchInfo;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -124,7 +130,7 @@ public class GamesList extends XWListActivity
                     ab.setNeutralButton( R.string.button_substdict, lstnr );
                 }
                 dialog = ab.create();
-                setRemoveOnDismiss( dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
             case SHOW_SUBST:
                 m_sameLangDicts = 
@@ -334,12 +340,16 @@ public class GamesList extends XWListActivity
     {
         super.onSaveInstanceState( outState );
         outState.putLong( SAVE_ROWID, m_rowid );
+        if ( null != m_netLaunchInfo ) {
+            m_netLaunchInfo.putSelf( outState );
+        }
     }
 
     private void getBundledData( Bundle bundle )
     {
         if ( null != bundle ) {
             m_rowid = bundle.getLong( SAVE_ROWID );
+            m_netLaunchInfo = new NetLaunchInfo( bundle );
         }
     }
 
@@ -391,6 +401,34 @@ public class GamesList extends XWListActivity
     public void itemLoaded( long rowid )
     {
         onContentChanged();
+    }
+
+    // DlgDelegate.DlgClickNotify interface
+    public void dlgButtonClicked( int id, boolean cancelled )
+    {
+        if ( !cancelled ) {
+            switch( id ) {
+            case NEW_NET_GAME_ACTION:
+                long rowid = GameUtils.makeNewNetGame( this, m_netLaunchInfo );
+                GameUtils.launchGame( this, rowid, true );
+                break;
+            case RESET_GAME_ACTION:
+                GameUtils.resetGame( this, m_rowid );
+                break;
+            case DELETE_GAME_ACTION:
+                GameUtils.deleteGame( this, m_rowid, true );
+                break;
+            case DELETE_ALL_ACTION:
+                long[] games = DBUtils.gamesList( this );
+                for ( int ii = games.length - 1; ii >= 0; --ii ) {
+                    GameUtils.deleteGame( this, games[ii], ii == 0  );
+                    m_adapter.inval( games[ii] );
+                }
+                break;
+            default:
+                Assert.fail();
+            }
+        }
     }
 
     public void itemClicked( long rowid )
@@ -466,19 +504,9 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_delete_all:
-            final long[] games = DBUtils.gamesList( this );
-            if ( games.length > 0 ) {
-                DialogInterface.OnClickListener lstnr =
-                    new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            for ( int ii = games.length - 1; ii >= 0; --ii ) {
-                                GameUtils.deleteGame( GamesList.this, games[ii], 
-                                                      ii == 0  );
-                                m_adapter.inval( games[ii] );
-                            }
-                        }
-                    };
-                showConfirmThen( R.string.confirm_delete_all, lstnr );
+            if ( DBUtils.gamesList( this ).length > 0 ) {
+                showConfirmThen( R.string.confirm_delete_all, 
+                                 DELETE_ALL_ACTION );
             }
             handled = true;
             break;
@@ -525,22 +553,14 @@ public class GamesList extends XWListActivity
         final long rowid = DBUtils.gamesList( this )[position];
     
         if ( R.id.list_item_delete == menuID ) {
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int ii ) {
-                        GameUtils.deleteGame( GamesList.this, rowid, true );
-                    }
-                };
-            showConfirmThen( R.string.confirm_delete, lstnr );
+            m_rowid = rowid;
+            showConfirmThen( R.string.confirm_delete, DELETE_GAME_ACTION );
         } else {
             if ( checkWarnNoDict( rowid ) ) {
                 switch ( menuID ) {
                 case R.id.list_item_reset:
-                    lstnr = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dlg, int ii ) {
-                                GameUtils.resetGame( GamesList.this, rowid );
-                            }
-                        };
-                    showConfirmThen( R.string.confirm_reset, lstnr );
+                    m_rowid = rowid;
+                    showConfirmThen( R.string.confirm_reset, RESET_GAME_ACTION );
                     break;
                 case R.id.list_item_config:
                     GameUtils.doConfig( this, rowid, GameConfig.class );
@@ -656,7 +676,7 @@ public class GamesList extends XWListActivity
         startActivity( new Intent( this, NewGameActivity.class ) );
     }
 
-    private void startNewNetGame( final NetLaunchInfo info )
+    private void startNewNetGame( NetLaunchInfo info )
     {
         long rowid = DBUtils.getRowIDForOpen( this, info.room, info.lang, 
                                               info.nPlayers );
@@ -665,19 +685,10 @@ public class GamesList extends XWListActivity
             rowid = GameUtils.makeNewNetGame( this, info );
             GameUtils.launchGame( this, rowid, true );
         } else {
-            DialogInterface.OnClickListener then = 
-                new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, 
-                                         int ii ) {
-                        long rowid = GameUtils.
-                            makeNewNetGame( GamesList.this, info ); 
-                        GameUtils.launchGame( GamesList.this, 
-					      rowid, true );
-                    }
-                };
             String fmt = getString( R.string.dup_game_queryf );
             String msg = String.format( fmt, info.room );
-            showConfirmThen( msg, then );
+            m_netLaunchInfo = info;
+            showConfirmThen( msg, NEW_NET_GAME_ACTION );
         }
     } // startNewNetGame
 

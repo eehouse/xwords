@@ -21,14 +21,16 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import junit.framework.Assert;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.AlertDialog;
+
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
@@ -43,21 +45,41 @@ public class DlgDelegate {
     public static final int DLG_DICTGONE = 6;
     public static final int DIALOG_LAST = DLG_DICTGONE;
 
+    public static final String MSG = "msg";
+    public static final String CALLBACK = "callback";
+    public static final String MSGID = "msgid";
+
+    public interface DlgClickNotify {
+        void dlgButtonClicked( int id, boolean cancelled );
+    }
+
     private int m_msgID;
+    private int m_cbckID;
     private String m_msg;
     private Runnable m_proc = null;
     private int m_prefsKey;
     private Activity m_activity;
+    private DlgClickNotify m_clickCallback;
     private String m_dictName = null;
-    DialogInterface.OnClickListener m_then;
 
-    public interface TextOrHtmlClicked {
-        public void clicked( boolean choseText );
-    };
-    private TextOrHtmlClicked m_txt_or_html;
-
-    public DlgDelegate( Activity activity ) {
+    public DlgDelegate( Activity activity, DlgClickNotify callback,
+                        Bundle bundle ) 
+    {
         m_activity = activity;
+        m_clickCallback = callback;
+
+        if ( null != bundle ) {
+            m_msg = bundle.getString( MSG );
+            m_cbckID = bundle.getInt( CALLBACK );
+            m_msgID = bundle.getInt( MSGID );
+        }
+    }
+
+    public void onSaveInstanceState( Bundle outState ) 
+    {
+        outState.putString( MSG, m_msg );
+        outState.putInt( CALLBACK, m_cbckID );
+        outState.putInt( MSGID, m_msgID );
     }
     
     public Dialog onCreateDialog( int id )
@@ -86,17 +108,6 @@ public class DlgDelegate {
         return dialog;
     }
 
-    protected void setRemoveOnDismiss( Dialog dialog, final int id )
-    {
-        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                public void onDismiss( DialogInterface di ) {
-                    Utils.logf( "%s.onDismiss() called", 
-                                getClass().getName() );
-                    m_activity.removeDialog( id );
-                }
-            } );
-    }
-
     public void onPrepareDialog( int id, Dialog dialog )
     {
         AlertDialog ad = (AlertDialog)dialog;
@@ -114,27 +125,18 @@ public class DlgDelegate {
             ad.setMessage( m_activity.getString(m_msgID) );
             break;
         case CONFIRM_THEN:
-            // I'm getting an occasional 0 here on device only.  May
-            // be related to screen orientation changes.  Let's be safe
             ad.setMessage( m_msg );
-            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
-                          m_activity.getString( R.string.button_ok ), m_then );
-            break;
-        case TEXT_OR_HTML_THEN:
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int button ) {
-                        if ( null != m_txt_or_html ) {
-                            m_txt_or_html.
-                                clicked( button == AlertDialog.BUTTON_POSITIVE );
-                        }
+                        boolean cancelled = 
+                            button == DialogInterface.BUTTON_NEGATIVE;
+                        m_clickCallback.dlgButtonClicked( m_cbckID, cancelled );
                     }
                 };
             ad.setButton( AlertDialog.BUTTON_POSITIVE, 
-                          m_activity.getString( R.string.button_text ),
-                          lstnr );
-            ad.setButton( AlertDialog.BUTTON_NEGATIVE, 
-                          m_activity.getString( R.string.button_html ),
-                          lstnr );
+                          m_activity.getString( R.string.button_ok ), lstnr );
+            ad.setButton( AlertDialog.BUTTON_NEGATIVE,
+                          m_activity.getString( R.string.button_ok ), lstnr );
             break;
         }
     }
@@ -171,16 +173,16 @@ public class DlgDelegate {
         }
     }
 
-    public void showConfirmThen( String msg, DialogInterface.OnClickListener then )
+    public void showConfirmThen( String msg, int callbackID )
     {
         m_msg = msg;
-        m_then = then;
+        m_cbckID = callbackID;
         m_activity.showDialog( CONFIRM_THEN );
     }
 
-    public void showTextOrHtmlThen( TextOrHtmlClicked txtOrHtml )
+    public void showTextOrHtmlThen( int callbackID )
     {
-        m_txt_or_html = txtOrHtml;
+        m_cbckID = callbackID;
         m_activity.showDialog( TEXT_OR_HTML_THEN );
     }
 
@@ -284,19 +286,25 @@ public class DlgDelegate {
 
     private Dialog createHtmlThenDialog()
     {
+        DialogInterface.OnClickListener lstnr = 
+            new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int button ) {
+                    boolean cancelled = 
+                        button == DialogInterface.BUTTON_NEGATIVE;
+                    m_clickCallback.dlgButtonClicked( m_cbckID, cancelled );
+                }
+            };
         return new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( R.string.text_or_html )
-            .setPositiveButton( R.string.button_text, null ) // will change
-            .setNegativeButton( R.string.button_html, null )
+            .setPositiveButton( R.string.button_text, lstnr )
+            .setNegativeButton( R.string.button_html, lstnr )
             .create();
     }
 
     private Dialog createDictGoneDialog()
     {
-        Utils.logf( "DlgDelegate.createDictGoneDialog() called" );
-        Dialog dialog;
-        dialog = new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.no_dict_title )
             .setMessage( R.string.no_dict_finish )
             .setPositiveButton( R.string.button_close_game, null )

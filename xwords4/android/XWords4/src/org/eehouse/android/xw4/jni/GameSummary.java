@@ -118,10 +118,18 @@ public class GameSummary {
     {
         String result = null;
         if ( isRelayGame() ) {
+            
             Assert.assertTrue( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
                                == conType );
-            String fmt = m_context.getString( R.string.summary_fmt_relay );
-            result = String.format( fmt, roomName );
+            int fmtID;
+            if ( null == relayID || 0 == relayID.length() ) {
+                fmtID = R.string.summary_relay_conff;
+            } else if ( anyMissing() ) {
+                fmtID = R.string.summary_relay_waitf;
+            } else {
+                fmtID = R.string.summary_relay_connf;
+            }
+            result = String.format( m_context.getString(fmtID), roomName );
         }
         return result;
     }
@@ -142,6 +150,18 @@ public class GameSummary {
         int flag = 1 << (indx * 2);
         boolean result = 0 != (m_giFlags & flag);
         return result;
+    }
+
+    private boolean anyMissing()
+    {
+        boolean missing = false;
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            if ( !isLocal(ii) && (0 != ((1 << ii) & missingPlayers) ) ) {
+                missing = true;
+                break;
+            }
+        }
+        return missing;
     }
 
     public int giflags() {

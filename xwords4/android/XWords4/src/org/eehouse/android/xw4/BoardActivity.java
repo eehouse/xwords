@@ -73,6 +73,8 @@ public class BoardActivity extends XWActivity
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
+    private static final int UNDO_LAST_ACTION = 1;
+
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
     private static final String DLG_BYTES = "DLG_BYTES";
@@ -157,7 +159,7 @@ public class BoardActivity extends XWActivity
                     ab.setNegativeButton( R.string.button_retry, lstnr );
                 }
                 dialog = ab.create();
-                setRemoveOnDismiss( dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
 
             case DLG_DELETED:
@@ -258,14 +260,7 @@ public class BoardActivity extends XWActivity
                                                     handle(JNICmd.CMD_ENDGAME);
                                             }
                                         })
-                    .setNegativeButton( R.string.button_no,
-                                        new DialogInterface.OnClickListener() {
-                                            public void 
-                                                onClick( DialogInterface dlg, 
-                                                         int item ) {
-                                                // do nothing
-                                            }
-                                        })
+                    .setNegativeButton( R.string.button_no, null )
                     .create();
                 break;
             case DLG_INVITE:
@@ -516,14 +511,7 @@ public class BoardActivity extends XWActivity
         //     cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
         //     break;
         case R.id.board_menu_undo_last:
-            showConfirmThen( R.string.confirm_undo_last,
-                             new DialogInterface.OnClickListener() {
-                                 public void onClick( DialogInterface dlg, 
-                                                      int whichButton ) {
-                                     m_jniThread.handle( JNIThread.JNICmd.
-                                                         CMD_UNDO_LAST );
-                                 }
-                             } );
+            showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
             break;
         case R.id.board_menu_values:
             cmd = JNIThread.JNICmd.CMD_VALUES;
@@ -575,6 +563,22 @@ public class BoardActivity extends XWActivity
         return handled;
     }
 
+    //////////////////////////////////////////////////
+    // DlgDelegate.DlgClickNotify interface
+    //////////////////////////////////////////////////
+
+    public void buttonClicked( int id, boolean cancelled )
+    {
+        switch ( id ) {
+        case UNDO_LAST_ACTION:
+            if ( !cancelled ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_LAST );
+            }
+            break;
+        default:
+            Assert.fail();
+        }
+    }
 
     //////////////////////////////////////////////////
     // TransportProcs.TPMsgHandler interface
@@ -1079,31 +1083,32 @@ public class BoardActivity extends XWActivity
                                             langName );
                 }
 
-                m_jniThread = new 
-                    JNIThread( m_jniGamePtr, m_gi, m_view, m_gameLock, this,
-                               new Handler() {
-                                   public void handleMessage( Message msg ) {
-                                       switch( msg.what ) {
-                                       case JNIThread.DRAW:
-                                           m_view.invalidate();
-                                           break;
-                                       case JNIThread.DIALOG:
-                                           m_dlgBytes = (String)msg.obj;
-                                           m_dlgTitle = msg.arg1;
-                                           showDialog( DLG_OKONLY );
-                                           break;
-                                       case JNIThread.QUERY_ENDGAME:
-                                           showDialog( QUERY_ENDGAME );
-                                           break;
-                                       case JNIThread.TOOLBAR_STATES:
-                                           if ( null != m_jniThread ) {
-                                               m_gsi = m_jniThread.getGameStateInfo();
-                                               updateToolbar();
-                                           }
-                                           break;
-                                       }
-                                   }
-                               } );
+                Handler handler = new Handler() {
+                        public void handleMessage( Message msg ) {
+                            switch( msg.what ) {
+                            case JNIThread.DRAW:
+                                m_view.invalidate();
+                                break;
+                            case JNIThread.DIALOG:
+                                m_dlgBytes = (String)msg.obj;
+                                m_dlgTitle = msg.arg1;
+                                showDialog( DLG_OKONLY );
+                                break;
+                            case JNIThread.QUERY_ENDGAME:
+                                showDialog( QUERY_ENDGAME );
+                                break;
+                            case JNIThread.TOOLBAR_STATES:
+                                if ( null != m_jniThread ) {
+                                    m_gsi = 
+                                        m_jniThread.getGameStateInfo();
+                                    updateToolbar();
+                                }
+                                break;
+                            }
+                        }
+                    };
+                m_jniThread = new JNIThread( m_jniGamePtr, m_gi, m_view, 
+                                             m_gameLock, this, handler );
                 // see http://stackoverflow.com/questions/680180/where-to-stop-\
                 // destroy-threads-in-android-service-class
                 m_jniThread.setDaemon( true );

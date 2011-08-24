@@ -487,7 +487,7 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname,
         anddict->bytes =
             (*env)->GetByteArrayElements( env, anddict->byteArray, NULL );
     } else {
-        anddict->byteArray = NULL;
+        XP_ASSERT( NULL == anddict->byteArray );
         const char* path = (*env)->GetStringUTFChars( env, jpath, NULL );
 
         struct stat statbuf;

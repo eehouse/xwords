@@ -32,7 +32,8 @@ import android.os.Bundle;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class XWActivity extends Activity {
+public class XWActivity extends Activity
+    implements DlgDelegate.DlgClickNotify {
 
     private DlgDelegate m_delegate;
 
@@ -41,7 +42,7 @@ public class XWActivity extends Activity {
     {
         Utils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
         super.onCreate( savedInstanceState );
-        m_delegate = new DlgDelegate( this );
+        m_delegate = new DlgDelegate( this, this, savedInstanceState );
     }
 
     @Override
@@ -83,6 +84,13 @@ public class XWActivity extends Activity {
     }
 
     @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        m_delegate.onSaveInstanceState( outState );
+    }
+
+    @Override
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
@@ -91,11 +99,6 @@ public class XWActivity extends Activity {
             dialog = m_delegate.onCreateDialog( id );
         }
         return dialog;
-    }
-
-    protected void setRemoveOnDismiss( Dialog dialog, int id )
-    {
-        m_delegate.setRemoveOnDismiss( dialog, id );
     }
 
     @Override
@@ -128,19 +131,25 @@ public class XWActivity extends Activity {
         m_delegate.showDictGoneFinish();
     }
 
-    protected void showConfirmThen( int msgID, 
-                                    DialogInterface.OnClickListener action )
+    protected void showConfirmThen( int msgID, int action )
     {
         m_delegate.showConfirmThen( getString(msgID), action );
     }
 
-    public void showTextOrHtmlThen( DlgDelegate.TextOrHtmlClicked txtOrHtml )
+    public void showTextOrHtmlThen( int action )
     {
-        m_delegate.showTextOrHtmlThen( txtOrHtml );
+        m_delegate.showTextOrHtmlThen( action );
     }
 
     protected void doSyncMenuitem()
     {
         m_delegate.doSyncMenuitem();
     }
+
+    // DlgDelegate.DlgClickNotify interface
+    public void dlgButtonClicked( int id, boolean cancelled )
+    {
+        Assert.fail();
+    }
+
 }
