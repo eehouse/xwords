@@ -45,6 +45,8 @@ public class DlgDelegate {
     public static final int DLG_DICTGONE = 6;
     public static final int DIALOG_LAST = DLG_DICTGONE;
 
+    public static final String MSG = "msg";
+
     private int m_msgID;
     private String m_msg;
     private Runnable m_proc = null;
@@ -58,13 +60,18 @@ public class DlgDelegate {
     };
     private TextOrHtmlClicked m_txt_or_html;
 
-    public DlgDelegate( Activity activity, Bundle bundle ) {
+    public DlgDelegate( Activity activity, Bundle bundle ) 
+    {
         m_activity = activity;
+
+        if ( null != bundle ) {
+            m_msg = bundle.getString( MSG );
+        }
     }
 
     public void onSaveInstanceState( Bundle outState ) 
     {
-        // not doing anything yet
+        outState.putString( MSG, m_msg );
     }
     
     public Dialog onCreateDialog( int id )
