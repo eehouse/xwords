@@ -50,7 +50,7 @@ public class DlgDelegate {
     public static final String MSGID = "msgid";
 
     public interface DlgClickNotify {
-        void buttonClicked( int id, boolean cancelled );
+        void dlgButtonClicked( int id, boolean cancelled );
     }
 
     private int m_msgID;
@@ -61,11 +61,6 @@ public class DlgDelegate {
     private Activity m_activity;
     private DlgClickNotify m_clickCallback;
     private String m_dictName = null;
-
-    public interface TextOrHtmlClicked {
-        public void clicked( boolean choseText );
-    };
-    private TextOrHtmlClicked m_txt_or_html;
 
     public DlgDelegate( Activity activity, DlgClickNotify callback,
                         Bundle bundle ) 
@@ -135,29 +130,13 @@ public class DlgDelegate {
                     public void onClick( DialogInterface dlg, int button ) {
                         boolean cancelled = 
                             button == DialogInterface.BUTTON_NEGATIVE;
-                        m_clickCallback.buttonClicked( m_cbckID, cancelled );
+                        m_clickCallback.dlgButtonClicked( m_cbckID, cancelled );
                     }
                 };
             ad.setButton( AlertDialog.BUTTON_POSITIVE, 
                           m_activity.getString( R.string.button_ok ), lstnr );
             ad.setButton( AlertDialog.BUTTON_NEGATIVE,
                           m_activity.getString( R.string.button_ok ), lstnr );
-            break;
-        case TEXT_OR_HTML_THEN:
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int button ) {
-                        if ( null != m_txt_or_html ) {
-                            m_txt_or_html.
-                                clicked( button == AlertDialog.BUTTON_POSITIVE );
-                        }
-                    }
-                };
-            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
-                          m_activity.getString( R.string.button_text ),
-                          lstnr );
-            ad.setButton( AlertDialog.BUTTON_NEGATIVE, 
-                          m_activity.getString( R.string.button_html ),
-                          lstnr );
             break;
         }
     }
@@ -201,9 +180,9 @@ public class DlgDelegate {
         m_activity.showDialog( CONFIRM_THEN );
     }
 
-    public void showTextOrHtmlThen( TextOrHtmlClicked txtOrHtml )
+    public void showTextOrHtmlThen( int callbackID )
     {
-        m_txt_or_html = txtOrHtml;
+        m_cbckID = callbackID;
         m_activity.showDialog( TEXT_OR_HTML_THEN );
     }
 
@@ -307,11 +286,19 @@ public class DlgDelegate {
 
     private Dialog createHtmlThenDialog()
     {
+        DialogInterface.OnClickListener lstnr = 
+            new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int button ) {
+                    boolean cancelled = 
+                        button == DialogInterface.BUTTON_NEGATIVE;
+                    m_clickCallback.dlgButtonClicked( m_cbckID, cancelled );
+                }
+            };
         return new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( R.string.text_or_html )
-            .setPositiveButton( R.string.button_text, null ) // will change
-            .setNegativeButton( R.string.button_html, null )
+            .setPositiveButton( R.string.button_text, lstnr )
+            .setNegativeButton( R.string.button_html, lstnr )
             .create();
     }
 

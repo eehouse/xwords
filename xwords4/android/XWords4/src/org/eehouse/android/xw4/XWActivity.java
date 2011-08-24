@@ -136,9 +136,9 @@ public class XWActivity extends Activity
         m_delegate.showConfirmThen( getString(msgID), action );
     }
 
-    public void showTextOrHtmlThen( DlgDelegate.TextOrHtmlClicked txtOrHtml )
+    public void showTextOrHtmlThen( int action )
     {
-        m_delegate.showTextOrHtmlThen( txtOrHtml );
+        m_delegate.showTextOrHtmlThen( action );
     }
 
     protected void doSyncMenuitem()
@@ -147,7 +147,7 @@ public class XWActivity extends Activity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void buttonClicked( int id, boolean cancelled )
+    public void dlgButtonClicked( int id, boolean cancelled )
     {
         Assert.fail();
     }

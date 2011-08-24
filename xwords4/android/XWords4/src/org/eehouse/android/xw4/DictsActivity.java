@@ -551,7 +551,7 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void buttonClicked( int id, boolean cancelled )
+    public void dlgButtonClicked( int id, boolean cancelled )
     {
         switch( id ) {
         case DELETE_DICT_ACTION:

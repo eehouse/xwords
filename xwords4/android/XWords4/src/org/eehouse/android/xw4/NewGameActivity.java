@@ -29,6 +29,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import java.util.Random;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -37,6 +38,8 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 
 public class NewGameActivity extends XWActivity {
+
+    private static final int NEW_GAME_ACTION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -84,15 +87,22 @@ public class NewGameActivity extends XWActivity {
 
     }
 
+    public void dlgButtonClicked( int id, boolean cancelled )
+    {
+        switch( id ) {
+        case NEW_GAME_ACTION:
+            makeNewGame( true, true, !cancelled );
+            break;
+        default:
+            Assert.fail();
+        }
+    }
+
     private void makeNewGame( boolean networked, boolean launch )
     {
         if ( launch && networked ) {
             // Let 'em cancel before we make the game
-            showTextOrHtmlThen( new DlgDelegate.TextOrHtmlClicked() {
-                    public void clicked( boolean choseText ) {
-                        makeNewGame( true, true, choseText );
-                    }
-                } );
+            showTextOrHtmlThen( NEW_GAME_ACTION );
         } else {
             makeNewGame( networked, launch, false );
         }

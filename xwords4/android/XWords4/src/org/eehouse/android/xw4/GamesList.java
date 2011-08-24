@@ -404,7 +404,7 @@ public class GamesList extends XWListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void buttonClicked( int id, boolean cancelled )
+    public void dlgButtonClicked( int id, boolean cancelled )
     {
         if ( !cancelled ) {
             switch( id ) {
