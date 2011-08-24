@@ -324,6 +324,13 @@ public class DictsActivity extends ExpandableListActivity
     } // onCreateDialog
 
     @Override
+    protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        super.onPrepareDialog( id, dialog );
+        m_delegate.onPrepareDialog( id, dialog );
+    }
+
+    @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
