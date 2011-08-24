@@ -32,7 +32,8 @@ import android.os.Bundle;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class XWActivity extends Activity {
+public class XWActivity extends Activity
+    implements DlgDelegate.DlgClickNotify {
 
     private DlgDelegate m_delegate;
 
@@ -41,7 +42,7 @@ public class XWActivity extends Activity {
     {
         Utils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
         super.onCreate( savedInstanceState );
-        m_delegate = new DlgDelegate( this, savedInstanceState );
+        m_delegate = new DlgDelegate( this, this, savedInstanceState );
     }
 
     @Override
@@ -145,4 +146,11 @@ public class XWActivity extends Activity {
     {
         m_delegate.doSyncMenuitem();
     }
+
+    // DlgDelegate.DlgClickNotify interface
+    public void buttonClicked( int id )
+    {
+        Assert.fail();
+    }
+
 }

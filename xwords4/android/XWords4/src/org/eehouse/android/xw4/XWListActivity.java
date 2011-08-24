@@ -25,9 +25,13 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class XWListActivity extends ListActivity {
+public class XWListActivity extends ListActivity 
+    implements DlgDelegate.DlgClickNotify {
+
     private DlgDelegate m_delegate;
 
     @Override
@@ -35,7 +39,7 @@ public class XWListActivity extends ListActivity {
     {
         Utils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
         super.onCreate( savedInstanceState );
-        m_delegate = new DlgDelegate( this, savedInstanceState );
+        m_delegate = new DlgDelegate( this, this, savedInstanceState );
     }
 
     @Override
@@ -149,6 +153,12 @@ public class XWListActivity extends ListActivity {
     protected void doSyncMenuitem()
     {
         m_delegate.doSyncMenuitem();
+    }
+
+    // DlgDelegate.DlgClickNotify interface
+    public void buttonClicked( int id )
+    {
+        Assert.fail();
     }
 
 }

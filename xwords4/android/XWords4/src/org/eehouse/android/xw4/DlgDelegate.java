@@ -43,15 +43,23 @@ public class DlgDelegate {
     public static final int CONFIRM_THEN = 4;
     public static final int TEXT_OR_HTML_THEN = 5;
     public static final int DLG_DICTGONE = 6;
-    public static final int DIALOG_LAST = DLG_DICTGONE;
+    public static final int CONFIRM_THEN2 = 7;
+    public static final int DIALOG_LAST = CONFIRM_THEN2;
 
     public static final String MSG = "msg";
+    public static final String CALLBACK = "callback";
+
+    public interface DlgClickNotify {
+        void buttonClicked( int id );
+    }
 
     private int m_msgID;
+    private int m_cbckID;
     private String m_msg;
     private Runnable m_proc = null;
     private int m_prefsKey;
     private Activity m_activity;
+    private DlgClickNotify m_clickCallback;
     private String m_dictName = null;
     DialogInterface.OnClickListener m_then;
 
@@ -60,18 +68,22 @@ public class DlgDelegate {
     };
     private TextOrHtmlClicked m_txt_or_html;
 
-    public DlgDelegate( Activity activity, Bundle bundle ) 
+    public DlgDelegate( Activity activity, DlgClickNotify callback,
+                        Bundle bundle ) 
     {
         m_activity = activity;
+        m_clickCallback = callback;
 
         if ( null != bundle ) {
             m_msg = bundle.getString( MSG );
+            m_cbckID = bundle.getInt( CALLBACK );
         }
     }
 
     public void onSaveInstanceState( Bundle outState ) 
     {
         outState.putString( MSG, m_msg );
+        outState.putInt( CALLBACK, m_cbckID );
     }
     
     public Dialog onCreateDialog( int id )
@@ -88,6 +100,9 @@ public class DlgDelegate {
             dialog = createNotAgainDialog();
             break;
         case CONFIRM_THEN:
+            dialog = createConfirmThenDialog();
+            break;
+        case CONFIRM_THEN2:
             dialog = createConfirmThenDialog();
             break;
         case TEXT_OR_HTML_THEN:
@@ -122,6 +137,16 @@ public class DlgDelegate {
             ad.setMessage( m_msg );
             ad.setButton( AlertDialog.BUTTON_POSITIVE, 
                           m_activity.getString( R.string.button_ok ), m_then );
+            break;
+        case CONFIRM_THEN2:
+            ad.setMessage( m_msg );
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int button ) {
+                        m_clickCallback.buttonClicked( m_cbckID );
+                    }
+                };
+            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
+                          m_activity.getString( R.string.button_ok ), lstnr );
             break;
         case TEXT_OR_HTML_THEN:
             lstnr = new DialogInterface.OnClickListener() {
@@ -179,6 +204,13 @@ public class DlgDelegate {
         m_msg = msg;
         m_then = then;
         m_activity.showDialog( CONFIRM_THEN );
+    }
+
+    public void showConfirmThen( String msg, int callbackID )
+    {
+        m_msg = msg;
+        m_cbckID = callbackID;
+        m_activity.showDialog( CONFIRM_THEN2 );
     }
 
     public void showTextOrHtmlThen( TextOrHtmlClicked txtOrHtml )

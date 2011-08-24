@@ -56,17 +56,20 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
-               SDCardWatcher.SDCardNotifiee {
+               SDCardWatcher.SDCardNotifiee, DlgDelegate.DlgClickNotify {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
     private static final String DICT_NAME_EXTRA = "use_dict";
     private static final String PACKED_POSITION = "packed_position";
+    private static final String DELETE_DICT = "delete_dict";
     private static final String NAME = "name";
     private static final String LANG = "lang";
     private static final String MOVEFROMLOC = "movefromloc";
     private static final String MOVETOLOC = "movetoloc";
 
+    // For new callback alternative
+    private static final int DELETE_DICT_ACTION = 1;
 
     private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
     private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 2;
@@ -74,6 +77,7 @@ public class DictsActivity extends ExpandableListActivity
     private int m_lang = 0;
     private String[] m_langs;
     private String m_name = null;
+    private String m_deleteDict = null;
     private String m_download;
     private ExpandableListView m_expView;
     private DlgDelegate m_delegate;
@@ -339,7 +343,7 @@ public class DictsActivity extends ExpandableListActivity
         Resources res = getResources();
         m_locNames = res.getStringArray( R.array.loc_names );
 
-        m_delegate = new DlgDelegate( this, savedInstanceState );
+        m_delegate = new DlgDelegate( this, this, savedInstanceState );
         m_factory = LayoutInflater.from( this );
 
         m_download = getString( R.string.download_dicts );
@@ -385,6 +389,7 @@ public class DictsActivity extends ExpandableListActivity
         outState.putLong( PACKED_POSITION, m_packedPosition );
         outState.putString( NAME, m_name );
         outState.putInt( LANG, m_lang );
+        outState.putString( DELETE_DICT, m_deleteDict );
         if ( null != m_moveFromLoc ) {
             outState.putInt( MOVEFROMLOC, m_moveFromLoc.ordinal() );
         }
@@ -399,6 +404,7 @@ public class DictsActivity extends ExpandableListActivity
             m_packedPosition = savedInstanceState.getLong( PACKED_POSITION );
             m_name = savedInstanceState.getString( NAME );
             m_lang = savedInstanceState.getInt( LANG );
+            m_deleteDict = savedInstanceState.getString( DELETE_DICT );
 
             int tmp = savedInstanceState.getInt( MOVEFROMLOC, -1 );
             if ( -1 != tmp ) {
@@ -515,19 +521,14 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     // XWListItem.DeleteCallback interface
-    public void deleteCalled( int myPosition, final String dict )
+    public void deleteCalled( int myPosition, String dict )
     {
         int code = DictLangCache.getDictLangCode( this, dict );
         String lang = DictLangCache.getLangName( this, code );
         int nGames = DBUtils.countGamesUsing( this, code );
         String msg = String.format( getString( R.string.confirm_delete_dictf ),
                                     dict );
-        DialogInterface.OnClickListener action = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    deleteDict( dict );
-                }
-            };
+        m_deleteDict = dict;
 
         if ( nGames > 0 ) {
             int fmt;
@@ -539,7 +540,7 @@ public class DictsActivity extends ExpandableListActivity
             msg += String.format( getString(fmt), lang );
         }
 
-        m_delegate.showConfirmThen( msg, action );
+        m_delegate.showConfirmThen( msg, DELETE_DICT_ACTION );
     }
 
     // SDCardWatcher.SDCardNotifiee interface
@@ -547,6 +548,18 @@ public class DictsActivity extends ExpandableListActivity
     {
         mkListAdapter();
         expandGroups();
+    }
+
+    // DlgDelegate.DlgClickNotify interface
+    public void buttonClicked( int id )
+    {
+        switch( id ) {
+        case DELETE_DICT_ACTION:
+            deleteDict( m_deleteDict );
+            break;
+        default:
+            Assert.fail();
+        }
     }
 
     private void deleteDict( String dict )
