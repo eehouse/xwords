@@ -73,6 +73,8 @@ public class BoardActivity extends XWActivity
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
+    private static final int UNDO_LAST_ACTION = 1;
+
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
     private static final String DLG_BYTES = "DLG_BYTES";
@@ -509,14 +511,7 @@ public class BoardActivity extends XWActivity
         //     cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
         //     break;
         case R.id.board_menu_undo_last:
-            showConfirmThen( R.string.confirm_undo_last,
-                             new DialogInterface.OnClickListener() {
-                                 public void onClick( DialogInterface dlg, 
-                                                      int whichButton ) {
-                                     m_jniThread.handle( JNIThread.JNICmd.
-                                                         CMD_UNDO_LAST );
-                                 }
-                             } );
+            showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
             break;
         case R.id.board_menu_values:
             cmd = JNIThread.JNICmd.CMD_VALUES;
@@ -568,6 +563,22 @@ public class BoardActivity extends XWActivity
         return handled;
     }
 
+    //////////////////////////////////////////////////
+    // DlgDelegate.DlgClickNotify interface
+    //////////////////////////////////////////////////
+
+    public void buttonClicked( int id, boolean cancelled )
+    {
+        switch ( id ) {
+        case UNDO_LAST_ACTION:
+            if ( !cancelled ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_LAST );
+            }
+            break;
+        default:
+            Assert.fail();
+        }
+    }
 
     //////////////////////////////////////////////////
     // TransportProcs.TPMsgHandler interface
