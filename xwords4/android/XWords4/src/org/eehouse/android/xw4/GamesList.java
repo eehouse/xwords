@@ -124,7 +124,7 @@ public class GamesList extends XWListActivity
                     ab.setNeutralButton( R.string.button_substdict, lstnr );
                 }
                 dialog = ab.create();
-                setRemoveOnDismiss( dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
             case SHOW_SUBST:
                 m_sameLangDicts = 

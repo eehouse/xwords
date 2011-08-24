@@ -157,7 +157,7 @@ public class BoardActivity extends XWActivity
                     ab.setNegativeButton( R.string.button_retry, lstnr );
                 }
                 dialog = ab.create();
-                setRemoveOnDismiss( dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
 
             case DLG_DELETED:

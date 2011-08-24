@@ -100,11 +100,6 @@ public class XWActivity extends Activity {
         return dialog;
     }
 
-    protected void setRemoveOnDismiss( Dialog dialog, int id )
-    {
-        m_delegate.setRemoveOnDismiss( dialog, id );
-    }
-
     @Override
     protected void onPrepareDialog( int id, Dialog dialog )
     {

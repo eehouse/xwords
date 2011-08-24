@@ -105,11 +105,6 @@ public class XWListActivity extends ListActivity {
         return dialog;
     }
 
-    protected void setRemoveOnDismiss( Dialog dialog, int id )
-    {
-        m_delegate.setRemoveOnDismiss( dialog, id );
-    }
-
     @Override
     protected void onPrepareDialog( int id, Dialog dialog )
     {
