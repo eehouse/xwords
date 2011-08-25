@@ -61,7 +61,8 @@ public class DlgDelegate {
     }
 
     private int m_msgID;
-    private int m_cbckID;
+    private int m_cbckID = 0;   // if this can be set twice I have a
+                                // problem.  See asserts below.
     private String m_msg;
     private Runnable m_proc = null;
     private int m_prefsKey;
@@ -172,12 +173,16 @@ public class DlgDelegate {
     public void showConfirmThen( String msg, int callbackID )
     {
         m_msg = msg;
+        Assert.assertTrue( 0 != callbackID );
+        Assert.assertTrue( 0 == m_cbckID );
         m_cbckID = callbackID;
         m_activity.showDialog( CONFIRM_THEN );
     }
 
     public void showTextOrHtmlThen( int callbackID )
     {
+        Assert.assertTrue( 0 != callbackID );
+        Assert.assertTrue( 0 == m_cbckID );
         m_cbckID = callbackID;
         m_activity.showDialog( TEXT_OR_HTML_THEN );
     }
@@ -318,6 +323,7 @@ public class DlgDelegate {
         if ( null == s_cbkOnClickLstnr ) {
             s_cbkOnClickLstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int button ) {
+                        Assert.assertTrue( 0 != m_cbckID );
                         m_clickCallback.dlgButtonClicked( m_cbckID, button );
                     }
                 };
@@ -330,7 +336,9 @@ public class DlgDelegate {
         if ( null == s_cbkOnDismissLstnr ) {
             s_cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
                     public void onDismiss( DialogInterface di ) {
-                        m_clickCallback.dlgButtonClicked( m_cbckID, -1 );
+                        Assert.assertTrue( 0 != m_cbckID );
+                        m_clickCallback.dlgButtonClicked( m_cbckID, 0 );
+                        m_cbckID = 0;
                     }
                 };
         }
