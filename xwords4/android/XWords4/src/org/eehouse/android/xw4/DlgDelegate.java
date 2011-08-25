@@ -45,16 +45,21 @@ public class DlgDelegate {
     public static final int DLG_DICTGONE = 6;
     public static final int DIALOG_LAST = DLG_DICTGONE;
 
-    public static final String MSG = "msg";
-    public static final String CALLBACK = "callback";
-    public static final String MSGID = "msgid";
+    public static final int TEXT_BTN = AlertDialog.BUTTON_POSITIVE;
+    public static final int HTML_BTN = AlertDialog.BUTTON_NEGATIVE;
+    public static final int DISMISS_BUTTON = 0;
+
+    private static final String MSG = "msg";
+    private static final String CALLBACK = "callback";
+    private static final String MSGID = "msgid";
 
     public interface DlgClickNotify {
-        void dlgButtonClicked( int id, boolean cancelled );
+        void dlgButtonClicked( int id, int button );
     }
 
     private int m_msgID;
-    private int m_cbckID;
+    private int m_cbckID = 0;   // if this can be set twice I have a
+                                // problem.  See asserts below.
     private String m_msg;
     private Runnable m_proc = null;
     private int m_prefsKey;
@@ -126,17 +131,6 @@ public class DlgDelegate {
             break;
         case CONFIRM_THEN:
             ad.setMessage( m_msg );
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int button ) {
-                        boolean cancelled = 
-                            button == DialogInterface.BUTTON_NEGATIVE;
-                        m_clickCallback.dlgButtonClicked( m_cbckID, cancelled );
-                    }
-                };
-            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
-                          m_activity.getString( R.string.button_ok ), lstnr );
-            ad.setButton( AlertDialog.BUTTON_NEGATIVE,
-                          m_activity.getString( R.string.button_ok ), lstnr );
             break;
         }
     }
@@ -176,12 +170,16 @@ public class DlgDelegate {
     public void showConfirmThen( String msg, int callbackID )
     {
         m_msg = msg;
+        Assert.assertTrue( 0 != callbackID );
+        Assert.assertTrue( 0 == m_cbckID );
         m_cbckID = callbackID;
         m_activity.showDialog( CONFIRM_THEN );
     }
 
     public void showTextOrHtmlThen( int callbackID )
     {
+        Assert.assertTrue( 0 != callbackID );
+        Assert.assertTrue( 0 == m_cbckID );
         m_cbckID = callbackID;
         m_activity.showDialog( TEXT_OR_HTML_THEN );
     }
@@ -275,31 +273,29 @@ public class DlgDelegate {
 
     private Dialog createConfirmThenDialog()
     {
+        DialogInterface.OnClickListener lstnr = mkCallbackClickListener();
+
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( "" )
-            .setPositiveButton( R.string.button_ok, null ) // will change
-            .setNegativeButton( R.string.button_cancel, null )
+            .setPositiveButton( R.string.button_ok, lstnr )
+            .setNegativeButton( R.string.button_cancel, lstnr )
             .create();
-        return dialog;
+        
+        return setCallbackDismissListener( dialog );
     }
 
     private Dialog createHtmlThenDialog()
     {
-        DialogInterface.OnClickListener lstnr = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int button ) {
-                    boolean cancelled = 
-                        button == DialogInterface.BUTTON_NEGATIVE;
-                    m_clickCallback.dlgButtonClicked( m_cbckID, cancelled );
-                }
-            };
-        return new AlertDialog.Builder( m_activity )
+        DialogInterface.OnClickListener lstnr = mkCallbackClickListener();
+        Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( R.string.text_or_html )
             .setPositiveButton( R.string.button_text, lstnr )
             .setNegativeButton( R.string.button_html, lstnr )
             .create();
+
+        return setCallbackDismissListener( dialog );
     }
 
     private Dialog createDictGoneDialog()
@@ -316,6 +312,33 @@ public class DlgDelegate {
                 }
             } );
 
+        return dialog;
+    }
+
+    private DialogInterface.OnClickListener mkCallbackClickListener()
+    {
+        DialogInterface.OnClickListener lstnr =
+            new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int button ) {
+                        Assert.assertTrue( 0 != m_cbckID );
+                        m_clickCallback.dlgButtonClicked( m_cbckID, button );
+                    }
+                };
+        return lstnr;
+    }
+
+    private Dialog setCallbackDismissListener( Dialog dialog )
+    {
+        DialogInterface.OnDismissListener lstnr = 
+            new DialogInterface.OnDismissListener() {
+                    public void onDismiss( DialogInterface di ) {
+                        Assert.assertTrue( 0 != m_cbckID );
+                        m_clickCallback.dlgButtonClicked( m_cbckID, 
+                                                          DISMISS_BUTTON );
+                        m_cbckID = 0;
+                    }
+                };
+        dialog.setOnDismissListener( lstnr );
         return dialog;
     }
 

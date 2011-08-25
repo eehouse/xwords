@@ -74,10 +74,12 @@ public class BoardActivity extends XWActivity
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
     private static final int UNDO_LAST_ACTION = 1;
+    private static final int LAUNCH_INVITE_ACTION = 2;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
     private static final String DLG_BYTES = "DLG_BYTES";
+    private static final String ROOM = "ROOM";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -268,10 +270,7 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int item ) {
-                                GameUtils.launchInviteActivity( BoardActivity.this,
-                                                                m_room,
-                                                                m_gi.dictLang,
-                                                                m_gi.nPlayers );
+                                showTextOrHtmlThen( LAUNCH_INVITE_ACTION );
                             }
                         };
                     dialog = new AlertDialog.Builder( this )
@@ -364,6 +363,7 @@ public class BoardActivity extends XWActivity
         outState.putInt( DLG_TITLESTR, m_dlgTitle );
         outState.putString( DLG_TITLESTR, m_dlgTitleStr );
         outState.putString( DLG_BYTES, m_dlgBytes );
+        outState.putString( ROOM, m_room );
     }
 
     private void getBundledData( Bundle bundle )
@@ -372,6 +372,7 @@ public class BoardActivity extends XWActivity
             m_dlgTitleStr = bundle.getString( DLG_TITLESTR  );
             m_dlgTitle = bundle.getInt( DLG_TITLE  );
             m_dlgBytes = bundle.getString( DLG_BYTES );
+            m_room = bundle.getString( ROOM );
         }
     }
 
@@ -566,13 +567,22 @@ public class BoardActivity extends XWActivity
     //////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
-
-    public void buttonClicked( int id, boolean cancelled )
+    @Override
+    public void dlgButtonClicked( int id, int which )
     {
         switch ( id ) {
         case UNDO_LAST_ACTION:
-            if ( !cancelled ) {
+            if (  AlertDialog.BUTTON_POSITIVE == which ) {
                 m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_LAST );
+            }
+            break;
+        case LAUNCH_INVITE_ACTION:
+            if ( DlgDelegate.DISMISS_BUTTON != which ) {
+                GameUtils.launchInviteActivity( BoardActivity.this,
+                                                DlgDelegate.TEXT_BTN == which,
+                                                m_room,
+                                                m_gi.dictLang,
+                                                m_gi.nPlayers );
             }
             break;
         default:

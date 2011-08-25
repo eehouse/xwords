@@ -551,11 +551,11 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, boolean cancelled )
+    public void dlgButtonClicked( int id, int which )
     {
         switch( id ) {
         case DELETE_DICT_ACTION:
-            if ( !cancelled ) {
+            if ( DialogInterface.BUTTON_POSITIVE == which ) {
                 deleteDict( m_deleteDict );
             }
             break;
