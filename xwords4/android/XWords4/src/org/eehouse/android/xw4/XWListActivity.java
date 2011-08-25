@@ -95,17 +95,6 @@ public class XWListActivity extends ListActivity
         if ( null == dialog ) {
             dialog = super.onCreateDialog( id );
         }
-        if ( null != dialog ) {
-            DialogInterface.OnDismissListener lstnr = 
-                new DialogInterface.OnDismissListener() {
-                    public void onDismiss( DialogInterface di ) {
-                        Utils.logf( "%s.onDismiss() called", 
-                                    getClass().getName() );
-                        removeDialog( id );
-                    }
-                };
-            dialog.setOnDismissListener( lstnr );
-        }
         return dialog;
     }
 
