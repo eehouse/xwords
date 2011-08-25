@@ -45,12 +45,15 @@ public class DlgDelegate {
     public static final int DLG_DICTGONE = 6;
     public static final int DIALOG_LAST = DLG_DICTGONE;
 
-    public static final String MSG = "msg";
-    public static final String CALLBACK = "callback";
-    public static final String MSGID = "msgid";
+    public static final int TEXT_BTN = AlertDialog.BUTTON_POSITIVE;
+    public static final int HTML_BTN = AlertDialog.BUTTON_NEGATIVE;
+
+    private static final String MSG = "msg";
+    private static final String CALLBACK = "callback";
+    private static final String MSGID = "msgid";
 
     public interface DlgClickNotify {
-        void dlgButtonClicked( int id, boolean cancelled );
+        void dlgButtonClicked( int id, int which );
     }
 
     private int m_msgID;
@@ -128,9 +131,7 @@ public class DlgDelegate {
             ad.setMessage( m_msg );
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int button ) {
-                        boolean cancelled = 
-                            button == DialogInterface.BUTTON_NEGATIVE;
-                        m_clickCallback.dlgButtonClicked( m_cbckID, cancelled );
+                        m_clickCallback.dlgButtonClicked( m_cbckID, button );
                     }
                 };
             ad.setButton( AlertDialog.BUTTON_POSITIVE, 
@@ -289,17 +290,23 @@ public class DlgDelegate {
         DialogInterface.OnClickListener lstnr = 
             new DialogInterface.OnClickListener() {
                 public void onClick( DialogInterface dlg, int button ) {
-                    boolean cancelled = 
-                        button == DialogInterface.BUTTON_NEGATIVE;
-                    m_clickCallback.dlgButtonClicked( m_cbckID, cancelled );
+                    m_clickCallback.dlgButtonClicked( m_cbckID, button );
                 }
             };
-        return new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( R.string.text_or_html )
             .setPositiveButton( R.string.button_text, lstnr )
             .setNegativeButton( R.string.button_html, lstnr )
             .create();
+
+        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                public void onDismiss( DialogInterface di ) {
+                    m_clickCallback.dlgButtonClicked( m_cbckID, -1 );
+                }
+            } );
+
+        return dialog;
     }
 
     private Dialog createDictGoneDialog()

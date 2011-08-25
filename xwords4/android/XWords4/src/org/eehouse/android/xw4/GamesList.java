@@ -404,9 +404,10 @@ public class GamesList extends XWListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, boolean cancelled )
+    @Override
+    public void dlgButtonClicked( int id, int which )
     {
-        if ( !cancelled ) {
+        if ( AlertDialog.BUTTON_POSITIVE == which ) {
             switch( id ) {
             case NEW_NET_GAME_ACTION:
                 long rowid = GameUtils.makeNewNetGame( this, m_netLaunchInfo );

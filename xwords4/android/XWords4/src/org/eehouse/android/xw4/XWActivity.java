@@ -147,7 +147,7 @@ public class XWActivity extends Activity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, boolean cancelled )
+    public void dlgButtonClicked( int id, int which )
     {
         Assert.fail();
     }

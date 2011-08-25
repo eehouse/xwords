@@ -87,11 +87,15 @@ public class NewGameActivity extends XWActivity {
 
     }
 
-    public void dlgButtonClicked( int id, boolean cancelled )
+    // DlgDelegate.DlgClickNotify interface
+    @Override
+    public void dlgButtonClicked( int id, int which )
     {
         switch( id ) {
         case NEW_GAME_ACTION:
-            makeNewGame( true, true, !cancelled );
+            if ( -1 != which ) {
+                makeNewGame( true, true, DlgDelegate.TEXT_BTN == which );
+            }
             break;
         default:
             Assert.fail();
