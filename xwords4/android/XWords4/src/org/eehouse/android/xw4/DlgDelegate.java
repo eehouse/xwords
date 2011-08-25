@@ -53,6 +53,10 @@ public class DlgDelegate {
     private static final String CALLBACK = "callback";
     private static final String MSGID = "msgid";
 
+    // Cache a couple of callback implementations that never change:
+    private DialogInterface.OnClickListener m_cbkOnClickLstnr = null;
+    private DialogInterface.OnDismissListener m_cbkOnDismissLstnr = null;
+
     public interface DlgClickNotify {
         void dlgButtonClicked( int id, int button );
     }
@@ -317,20 +321,21 @@ public class DlgDelegate {
 
     private DialogInterface.OnClickListener mkCallbackClickListener()
     {
-        DialogInterface.OnClickListener lstnr =
-            new DialogInterface.OnClickListener() {
+        if ( null == m_cbkOnClickLstnr ) {
+            m_cbkOnClickLstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int button ) {
                         Assert.assertTrue( 0 != m_cbckID );
                         m_clickCallback.dlgButtonClicked( m_cbckID, button );
                     }
                 };
-        return lstnr;
+        }
+        return m_cbkOnClickLstnr;
     }
 
     private Dialog setCallbackDismissListener( Dialog dialog )
     {
-        DialogInterface.OnDismissListener lstnr = 
-            new DialogInterface.OnDismissListener() {
+        if ( null == m_cbkOnDismissLstnr ) {
+            m_cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
                     public void onDismiss( DialogInterface di ) {
                         Assert.assertTrue( 0 != m_cbckID );
                         m_clickCallback.dlgButtonClicked( m_cbckID, 
@@ -338,7 +343,8 @@ public class DlgDelegate {
                         m_cbckID = 0;
                     }
                 };
-        dialog.setOnDismissListener( lstnr );
+        }
+        dialog.setOnDismissListener( m_cbkOnDismissLstnr );
         return dialog;
     }
 
