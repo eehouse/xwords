@@ -52,8 +52,12 @@ public class DlgDelegate {
     private static final String CALLBACK = "callback";
     private static final String MSGID = "msgid";
 
+    // Cache a couple of callback implementations that never change:
+    private static DialogInterface.OnClickListener s_cbkOnClickLstnr = null;
+    private static DialogInterface.OnDismissListener s_cbkOnDismissLstnr = null;
+
     public interface DlgClickNotify {
-        void dlgButtonClicked( int id, int which );
+        void dlgButtonClicked( int id, int button );
     }
 
     private int m_msgID;
@@ -129,15 +133,6 @@ public class DlgDelegate {
             break;
         case CONFIRM_THEN:
             ad.setMessage( m_msg );
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int button ) {
-                        m_clickCallback.dlgButtonClicked( m_cbckID, button );
-                    }
-                };
-            ad.setButton( AlertDialog.BUTTON_POSITIVE, 
-                          m_activity.getString( R.string.button_ok ), lstnr );
-            ad.setButton( AlertDialog.BUTTON_NEGATIVE,
-                          m_activity.getString( R.string.button_ok ), lstnr );
             break;
         }
     }
@@ -276,23 +271,21 @@ public class DlgDelegate {
 
     private Dialog createConfirmThenDialog()
     {
+        DialogInterface.OnClickListener lstnr = mkCallbackClickListener();
+
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( "" )
-            .setPositiveButton( R.string.button_ok, null ) // will change
-            .setNegativeButton( R.string.button_cancel, null )
+            .setPositiveButton( R.string.button_ok, lstnr )
+            .setNegativeButton( R.string.button_cancel, lstnr )
             .create();
-        return dialog;
+        
+        return setCallbackDismissListener( dialog );
     }
 
     private Dialog createHtmlThenDialog()
     {
-        DialogInterface.OnClickListener lstnr = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int button ) {
-                    m_clickCallback.dlgButtonClicked( m_cbckID, button );
-                }
-            };
+        DialogInterface.OnClickListener lstnr = mkCallbackClickListener();
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( R.string.text_or_html )
@@ -300,13 +293,7 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_html, lstnr )
             .create();
 
-        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                public void onDismiss( DialogInterface di ) {
-                    m_clickCallback.dlgButtonClicked( m_cbckID, -1 );
-                }
-            } );
-
-        return dialog;
+        return setCallbackDismissListener( dialog );
     }
 
     private Dialog createDictGoneDialog()
@@ -323,6 +310,31 @@ public class DlgDelegate {
                 }
             } );
 
+        return dialog;
+    }
+
+    private DialogInterface.OnClickListener mkCallbackClickListener()
+    {
+        if ( null == s_cbkOnClickLstnr ) {
+            s_cbkOnClickLstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int button ) {
+                        m_clickCallback.dlgButtonClicked( m_cbckID, button );
+                    }
+                };
+        }
+        return s_cbkOnClickLstnr;
+    }
+
+    private Dialog setCallbackDismissListener( Dialog dialog )
+    {
+        if ( null == s_cbkOnDismissLstnr ) {
+            s_cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
+                    public void onDismiss( DialogInterface di ) {
+                        m_clickCallback.dlgButtonClicked( m_cbckID, -1 );
+                    }
+                };
+        }
+        dialog.setOnDismissListener( s_cbkOnDismissLstnr );
         return dialog;
     }
 
