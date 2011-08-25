@@ -93,7 +93,7 @@ public class NewGameActivity extends XWActivity {
     {
         switch( id ) {
         case NEW_GAME_ACTION:
-            if ( -1 != which ) {
+            if ( DlgDelegate.DISMISS_BUTTON != which ) {
                 makeNewGame( true, true, DlgDelegate.TEXT_BTN == which );
             }
             break;

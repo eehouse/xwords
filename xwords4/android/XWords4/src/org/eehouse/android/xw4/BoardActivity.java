@@ -577,7 +577,7 @@ public class BoardActivity extends XWActivity
             }
             break;
         case LAUNCH_INVITE_ACTION:
-            if ( -1 != which ) {
+            if ( DlgDelegate.DISMISS_BUTTON != which ) {
                 GameUtils.launchInviteActivity( BoardActivity.this,
                                                 DlgDelegate.TEXT_BTN == which,
                                                 m_room,

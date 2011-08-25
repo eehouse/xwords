@@ -47,14 +47,11 @@ public class DlgDelegate {
 
     public static final int TEXT_BTN = AlertDialog.BUTTON_POSITIVE;
     public static final int HTML_BTN = AlertDialog.BUTTON_NEGATIVE;
+    public static final int DISMISS_BUTTON = 0;
 
     private static final String MSG = "msg";
     private static final String CALLBACK = "callback";
     private static final String MSGID = "msgid";
-
-    // Cache a couple of callback implementations that never change:
-    private static DialogInterface.OnClickListener s_cbkOnClickLstnr = null;
-    private static DialogInterface.OnDismissListener s_cbkOnDismissLstnr = null;
 
     public interface DlgClickNotify {
         void dlgButtonClicked( int id, int button );
@@ -320,29 +317,28 @@ public class DlgDelegate {
 
     private DialogInterface.OnClickListener mkCallbackClickListener()
     {
-        if ( null == s_cbkOnClickLstnr ) {
-            s_cbkOnClickLstnr = new DialogInterface.OnClickListener() {
+        DialogInterface.OnClickListener lstnr =
+            new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int button ) {
                         Assert.assertTrue( 0 != m_cbckID );
                         m_clickCallback.dlgButtonClicked( m_cbckID, button );
                     }
                 };
-        }
-        return s_cbkOnClickLstnr;
+        return lstnr;
     }
 
     private Dialog setCallbackDismissListener( Dialog dialog )
     {
-        if ( null == s_cbkOnDismissLstnr ) {
-            s_cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
+        DialogInterface.OnDismissListener lstnr = 
+            new DialogInterface.OnDismissListener() {
                     public void onDismiss( DialogInterface di ) {
                         Assert.assertTrue( 0 != m_cbckID );
-                        m_clickCallback.dlgButtonClicked( m_cbckID, 0 );
+                        m_clickCallback.dlgButtonClicked( m_cbckID, 
+                                                          DISMISS_BUTTON );
                         m_cbckID = 0;
                     }
                 };
-        }
-        dialog.setOnDismissListener( s_cbkOnDismissLstnr );
+        dialog.setOnDismissListener( lstnr );
         return dialog;
     }
 
