@@ -134,7 +134,7 @@ public class XWListActivity extends ListActivity
 
     protected void showConfirmThen( int msg, int action )
     {
-        m_delegate.showConfirmThen( getString(msg), action );
+        showConfirmThen( getString(msg), action );
     }
 
     protected void doSyncMenuitem()
