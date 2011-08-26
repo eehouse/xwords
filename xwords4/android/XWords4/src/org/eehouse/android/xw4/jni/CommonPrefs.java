@@ -36,7 +36,8 @@ public class CommonPrefs {
     public static final int COLOR_NOTILE = 1;
     public static final int COLOR_FOCUS = 2;
     public static final int COLOR_BACKGRND = 3;
-    public static final int COLOR_LAST = 4;
+    public static final int COLOR_BONUSHINT = 4;
+    public static final int COLOR_LAST = 5;
 
     private static CommonPrefs s_cp = null;
 
@@ -101,6 +102,7 @@ public class CommonPrefs {
                            R.string.key_empty,
                            R.string.key_clr_crosshairs,
                            R.string.key_background,
+                           R.string.key_clr_bonushint,
         };
         for ( int ii = 0; ii < idsOther.length; ++ii ) {
             otherColors[ii] = prefToColor( context, sp, idsOther[ii] );
