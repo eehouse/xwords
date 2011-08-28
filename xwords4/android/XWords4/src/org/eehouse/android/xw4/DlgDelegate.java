@@ -48,10 +48,12 @@ public class DlgDelegate {
     public static final int TEXT_BTN = AlertDialog.BUTTON_POSITIVE;
     public static final int HTML_BTN = AlertDialog.BUTTON_NEGATIVE;
     public static final int DISMISS_BUTTON = 0;
+    public static final int SKIP_CALLBACK = -1;
 
     private static final String MSG = "msg";
     private static final String CALLBACK = "callback";
     private static final String MSGID = "msgid";
+    private static final String PREFSKEY = "prefskey";
 
     // Cache a couple of callback implementations that never change:
     private DialogInterface.OnClickListener m_cbkOnClickLstnr = null;
@@ -65,7 +67,6 @@ public class DlgDelegate {
     private int m_cbckID = 0;   // if this can be set twice I have a
                                 // problem.  See asserts below.
     private String m_msg;
-    private Runnable m_proc = null;
     private int m_prefsKey;
     private Activity m_activity;
     private DlgClickNotify m_clickCallback;
@@ -81,6 +82,7 @@ public class DlgDelegate {
             m_msg = bundle.getString( MSG );
             m_cbckID = bundle.getInt( CALLBACK );
             m_msgID = bundle.getInt( MSGID );
+            m_prefsKey = bundle.getInt( PREFSKEY );
         }
     }
 
@@ -89,6 +91,7 @@ public class DlgDelegate {
         outState.putString( MSG, m_msg );
         outState.putInt( CALLBACK, m_cbckID );
         outState.putInt( MSGID, m_msgID );
+        outState.putInt( PREFSKEY, m_prefsKey );
     }
     
     public Dialog onCreateDialog( int id )
@@ -156,19 +159,29 @@ public class DlgDelegate {
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     Runnable proc )
+                                     int callbackID )
     {
         boolean set = CommonPrefs.getPrefsBoolean( m_activity, prefsKey, false );
-        if ( set ) {
-            if ( null != proc ) {
-                proc.run();
-            } 
+        if ( set || 0 != m_cbckID ) {
+            // If it's set, do the action without bothering with the
+            // dialog
+            if ( SKIP_CALLBACK != callbackID ) {
+                m_clickCallback.dlgButtonClicked( callbackID, 
+                                                  AlertDialog.BUTTON_POSITIVE );
+            }
         } else {
             m_msgID = msgID;
-            m_proc = proc;
+            Assert.assertTrue( 0 != callbackID );
+            Assert.assertTrue( 0 == m_cbckID ); // fired
+            m_cbckID = callbackID;
             m_prefsKey = prefsKey;
             m_activity.showDialog( DIALOG_NOTAGAIN );
         }
+    }
+
+    public void showNotAgainDlgThen( int msgID, int prefsKey )
+    {
+        showNotAgainDlgThen( msgID, prefsKey, SKIP_CALLBACK );
     }
 
     public void showConfirmThen( String msg, int callbackID )
@@ -243,36 +256,29 @@ public class DlgDelegate {
 
     private Dialog createNotAgainDialog()
     {
-        Dialog dialog = null;
-        if ( 0 != m_msgID ) {
-            DialogInterface.OnClickListener lstnr_p = 
-                new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        if ( null != m_proc ) {
-                            m_proc.run();
-                        }
-                    }
-                };
+        DialogInterface.OnClickListener lstnr_p = mkCallbackClickListener();
 
-            DialogInterface.OnClickListener lstnr_n = 
-                new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        CommonPrefs.setPrefsBoolean( m_activity, m_prefsKey, 
-                                                     true );
-                        if ( null != m_proc ) {
-                            m_proc.run();
-                        }
+        DialogInterface.OnClickListener lstnr_n = 
+            new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    CommonPrefs.setPrefsBoolean( m_activity, m_prefsKey,
+                                                 true );
+                    if ( SKIP_CALLBACK != m_cbckID ) {
+                        m_clickCallback.
+                            dlgButtonClicked( m_cbckID, 
+                                              AlertDialog.BUTTON_POSITIVE );
                     }
-                };
+                }
+            };
 
-            dialog = new AlertDialog.Builder( m_activity )
-                .setTitle( R.string.newbie_title )
-                .setMessage( m_msgID )
-                .setPositiveButton( R.string.button_ok, lstnr_p )
-                .setNegativeButton( R.string.button_notagain, lstnr_n )
-                .create();
-        }
-        return dialog;
+        Dialog dialog = new AlertDialog.Builder( m_activity )
+            .setTitle( R.string.newbie_title )
+            .setMessage( m_msgID )
+            .setPositiveButton( R.string.button_ok, lstnr_p )
+            .setNegativeButton( R.string.button_notagain, lstnr_n )
+            .create();
+
+        return setCallbackDismissListener( dialog );
     } // createNotAgainDialog
 
     private Dialog createConfirmThenDialog()
@@ -324,8 +330,10 @@ public class DlgDelegate {
         if ( null == m_cbkOnClickLstnr ) {
             m_cbkOnClickLstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int button ) {
-                        Assert.assertTrue( 0 != m_cbckID );
-                        m_clickCallback.dlgButtonClicked( m_cbckID, button );
+                        if ( SKIP_CALLBACK != m_cbckID ) {
+                            m_clickCallback.dlgButtonClicked( m_cbckID, 
+                                                              button );
+                        }
                     }
                 };
         }
@@ -337,9 +345,10 @@ public class DlgDelegate {
         if ( null == m_cbkOnDismissLstnr ) {
             m_cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
                     public void onDismiss( DialogInterface di ) {
-                        Assert.assertTrue( 0 != m_cbckID );
-                        m_clickCallback.dlgButtonClicked( m_cbckID, 
-                                                          DISMISS_BUTTON );
+                        if ( SKIP_CALLBACK != m_cbckID ) {
+                            m_clickCallback.dlgButtonClicked( m_cbckID, 
+                                                              DISMISS_BUTTON );
+                        }
                         m_cbckID = 0;
                     }
                 };

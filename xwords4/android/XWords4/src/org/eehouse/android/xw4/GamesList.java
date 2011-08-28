@@ -67,6 +67,8 @@ public class GamesList extends XWListActivity
     private static final int RESET_GAME_ACTION = 2;
     private static final int DELETE_GAME_ACTION = 3;
     private static final int DELETE_ALL_ACTION = 4;
+    private static final int SYNC_MENU_ACTION = 5;
+    private static final int DUPE_GAME_ACTION = 6;
 
     private GameListAdapter m_adapter;
     private String m_missingDict;
@@ -426,6 +428,15 @@ public class GamesList extends XWListActivity
                     m_adapter.inval( games[ii] );
                 }
                 break;
+            case SYNC_MENU_ACTION:
+                doSyncMenuitem();
+                break;
+            case DUPE_GAME_ACTION:
+                long newid = GameUtils.dupeGame( GamesList.this, m_rowid );
+                if ( null != m_adapter ) {
+                    m_adapter.inval( newid );
+                }
+                break;
             default:
                 Assert.fail();
             }
@@ -520,11 +531,7 @@ public class GamesList extends XWListActivity
         case R.id.gamel_menu_checkmoves:
             showNotAgainDlgThen( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
-                                 new Runnable() {
-                                     public void run() {
-                                         doSyncMenuitem();
-                                     }
-                                 } );
+                                 SYNC_MENU_ACTION );
             break;
 
         case R.id.gamel_menu_prefs:
@@ -551,46 +558,36 @@ public class GamesList extends XWListActivity
         boolean handled = true;
         DialogInterface.OnClickListener lstnr;
 
-        final long rowid = DBUtils.gamesList( this )[position];
-    
+        m_rowid = DBUtils.gamesList( this )[position];
+        
         if ( R.id.list_item_delete == menuID ) {
-            m_rowid = rowid;
             showConfirmThen( R.string.confirm_delete, DELETE_GAME_ACTION );
         } else {
-            if ( checkWarnNoDict( rowid ) ) {
+            if ( checkWarnNoDict( m_rowid ) ) {
                 switch ( menuID ) {
                 case R.id.list_item_reset:
-                    m_rowid = rowid;
                     showConfirmThen( R.string.confirm_reset, RESET_GAME_ACTION );
                     break;
                 case R.id.list_item_config:
-                    GameUtils.doConfig( this, rowid, GameConfig.class );
+                    GameUtils.doConfig( this, m_rowid, GameConfig.class );
                     break;
                 case R.id.list_item_rename:
-                    m_rowid = rowid;
                     showDialog( RENAME_GAME );
                     break;
 
                 case R.id.list_item_new_from:
-                    Runnable proc = new Runnable() {
-                            public void run() {
-                                long newid = 
-                                    GameUtils.dupeGame( GamesList.this, rowid );
-                                if ( null != m_adapter ) {
-                                    m_adapter.inval( newid );
-                                }
-                            }
-                        };
                     showNotAgainDlgThen( R.string.not_again_newfrom,
-                                         R.string.key_notagain_newfrom, proc );
+                                         R.string.key_notagain_newfrom, 
+                                         DUPE_GAME_ACTION );
                     break;
 
                 case R.id.list_item_copy:
-                    GameSummary summary = DBUtils.getSummary( this, rowid, true );
+                    GameSummary summary = DBUtils.getSummary( this, 
+                                                              m_rowid, true );
                     if ( summary.inNetworkGame() ) {
                         showOKOnlyDialog( R.string.no_copy_network );
                     } else {
-                        byte[] stream = GameUtils.savedGame( this, rowid );
+                        byte[] stream = GameUtils.savedGame( this, m_rowid );
                         GameUtils.GameLock lock = 
                             GameUtils.saveNewGame( this, stream );
                         DBUtils.saveSummary( this, lock, summary );
