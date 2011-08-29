@@ -2,12 +2,13 @@
 <!-- -*- compile-command: "cd ../../; ant install"; -*- -->
 
 <resources>
-  
+
     <!--
         ############################################################
         # Screens
         ############################################################ 
       -->
+
     <!--   
            ############################################################
            # Main screen (list of games)
@@ -17,6 +18,13 @@
 	<string name="title_games_list">Crosswords</string>   
     <!-- Text of button at bottom of main games-list screen -->
     <string name="button_new_game">Add game</string>
+    <!-- Used to format game name plus some other information as the
+         one-line summary for each game in the main screen.  The name
+         of the game is substituted for %1$s.  Something else --
+         language, player names, etc, is substituted for %2$s. This
+         does not require translation unless the parentheses or
+         ordering is wrong for your language.-->
+    <string name="str_game_namef">%1$s (%2$s)</string>
 
     <!--       
                ############################################################
@@ -26,12 +34,28 @@
     <!-- title of contextual menu.  Name of the selected game is
          substituted in. -->
     <string name="game_item_menu_titlef">\"%s\" actions:</string>
-    <!-- menu items -->
+    <!--          
+                  ############################################################
+                  # menu items 
+                  ############################################################
+      -->
+    <!-- pulls up dialog to configure the selected game -->
     <string name="list_item_config">Game settings...</string>
+    <!-- pulls up dialog to rename (change name of) the selected game -->
     <string name="list_item_rename">Rename...</string>
+    <!-- pulls up dialog to delete the selected game -->
     <string name="list_item_delete">Delete</string>
+    <!-- pulls up dialog to reset the selected game, that is to remove
+         all moves so that it's the same as a newly created game
+         except for any configuration. -->
 	<string name="list_item_reset">Reset</string>
+    <!-- creates a new game with all configuation copied from the
+         selected game -->
 	<string name="list_item_new_from">New from</string>
+    <!-- makes a copy of the selected game.  This is currently
+         disabled for networked games since there would be problems if
+         two identically configured games started trying to talk to a
+         remote game that expected there was only one of them. -->
 	<string name="list_item_copy">Copy</string>
     <!-- Title of dialog for renaming game (triggered by selecting
          list_item_rename) -->
@@ -42,11 +66,52 @@
 
     <!--   
            ############################################################
-           # Dictionaries screen (list of installed dictionaries
+           # Wordlists screen 
+           #
+           # list of installed wordlists (formerly called dictionaries)
            ############################################################ 
       -->
     <!-- window title -->
 	<string name="title_dicts_list">Installed Crosswords Wordlists</string>   
+
+    <!--       
+               ############################################################
+               # Wordlists screen menus
+               ############################################################ 
+      -->
+    <!-- title of contextual menu item.  If chosen it brings up a
+         dialog that offers to move the selected wordlist from its
+         current storage location to the other.  This menuitem is
+         hidden if the selected wordlist is built in or if there is
+         only one possible storage location, e.g. if the device has no
+         SD card slot. -->
+    <string name="dicts_item_move">Change storage location</string>
+
+    <!-- Title of contextual menu item.  If chosen it brings up a
+         dialog that sets the selected dictionary as a new-game
+         default for robots or human players or both. (See
+         key_default_dict and key_default_robodict.) -->
+    <string name="dicts_item_select">Make default</string>
+
+    <!-- Title of contextual menu item.  If chosen it does nothing,
+         but will eventually bring up a dialog giving additional
+         information about the selected wordlist, possibly including a
+         scrolling list of all its words. -->
+    <string name="dicts_item_details">Details</string>
+
+    <!--       
+               ############################################################
+               # Wordlists screen dialogs
+               ############################################################ 
+      -->
+
+    <!-- These three strings are the text for three buttons giving
+         choices in respose to the dialog launched in response to the
+         dicts_item_select menu (see dicts_item_select above.) -->
+    <string name="button_default_human">Human</string>
+    <string name="button_default_robot">Robot</string>
+    <string name="button_default_both">Both</string>
+
 
     <!--   
            ############################################################
@@ -115,6 +180,175 @@
          different wordlists per player) -->
     <string name="phonies_spinner_prompt">How to handle \"phonies\"
         (words not in dictionary)</string>
+
+
+    <!--     
+             ############################################################
+             # Player edit dialog
+             #
+             # This comes up when you tap on a player within the Game
+             # config screen
+             ############################################################
+             -->
+    <!-- dialog title -->
+    <string name="player_edit_title">Edit player</string>
+
+    <!-- checkbox determining of this player is on this device or
+         remote.  If remote, then the rest of the fields disappear
+         (since they will be set by the remote device.) -->
+    <string name="remote_label">Off-device player</string>
+
+    <!-- text of lable identifying the field in which player's name is
+         set/displayed -->
+    <string name="player_label">Name:</string>
+
+    <!-- label for dropdown by which wordlist is chosen that this
+         player will use.  The language the game will use (which
+         constrains the choice of wordlists) is substituted in for
+         "%s". -->
+    <string name="title_dicts_list">Wordlist (in %s)</string>
+
+    <!-- If the dropdown is selected, this is the title displayed
+         above the list of selectable items.  The language the game
+         will use is substituted in for "%s". -->
+    <string name="dicts_list_promptf">Installed wordlists (in %s)</string>
+
+    <!-- checkbox determining if player is robot/automated or human -->
+    <string name="robot_label">Robot player</string>
+
+    <!-- text of label identifying the field where human players can
+         enter an option password.  The label and field disappear when
+         the robot player checkbox is checked because it makes no
+         sense for a robot to have a password.  In fact, passwords
+         only make sense where there's more than one local human
+         player on a device, so they are infrequently used in network
+         games as well. -->
+    <string name="password_label">Password</string>
+
+
+    <!--   
+           ############################################################
+           # Board screen
+           #
+           #
+           # (an open game, with the 15x15 grid of # squares, letters
+           # played etc., is displayed here)
+           ############################################################
+      -->
+    <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Double-letter -->
+    <string name="bonus_l2x_summary">2L</string>
+    <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Double-word -->
+    <string name="bonus_w2x_summary">2W</string>
+    <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Triple-letter -->
+    <string name="bonus_l3x_summary">3L</string>
+    <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Triple-word -->
+    <string name="bonus_w3x_summary">3W</string>
+
+    <!-- If a networked game is opened and is not complete, i.e. if it
+         is listed as expecting remote players who have not yet shown
+         up, then the most likely explanation is that none has been
+         invited.  (It's also possible that an invitation has been
+         sent, but I have no way of knowing that.) So every time I
+         open such a game I give the user a chance to issue an
+         invititation while trying to warn him not to send duplicates.
+         The number of players missing is substituted for "%1$d". -->
+    <string name="invite_msgf">This game is missing %1$d remote
+      player[s].  Would you like to invite someone to join -- assuming
+      you haven\'t already?</string>
+
+    <!-- Most users create games with only two players, which is the
+         default, but Crosswords supports up to four.  When I'm using
+         the above string to encourage the opener of a game missing
+         players to invite, IF the number of missing players is
+         greater than one this text is appended to the above. -->
+    <string name="invite_multiple">\u0020(You are expecting multiple
+      remote players.  Be sure to address your invitation to
+      that many people.)</string>
+
+    <!--       
+               ############################################################
+               # Board info/error dialog messages
+               #
+
+               # The strings are used to create dialogs that appear
+               # during games while the Board screen is visible
+               ############################################################
+               -->
+
+    <!-- Notifies user of a normal robot move -->
+    <string name="str_robot_moved">The robot made this move: </string>
+    <!-- Notifies user of a robot trade move -->
+    <string name="strd_robot_traded">exchanged %d tiles.</string>
+    <!-- title for window you get when you select menu with text
+         board_menu_game_counts -->
+    <string name="strs_values_header">%s counts/values:\n</string>
+    <!-- Used in formatting game history and move summaries -->
+    <string name="strd_remaining_tiles_add">+ %d [all remaining tiles]</string>
+    <!-- Used in formatting game history and move summaries -->
+    <string name="strd_unused_tiles_sub">- %d [unused tiles]</string>
+    <!-- Used in formatting game history and move summaries -->
+    <string name="strs_new_tiles">New tiles: %s</string>
+    <!-- Used in formatting game history (not move summaries since
+         information about the current rack is hidden then) -->
+    <string name="strd_cumulative_score">Cumulative score: %d\n</string>
+    <!-- Used in formatting remote player move summaries -->
+    <string name="str_remote_movedf">Remote player %1$s made this move: </string>
+    <!-- I don't know how this is used. :-) -->
+    <string name="strd_time_penalty_sub"></string>
+    <!-- Used in formatting game history and move summaries -->
+    <string name="str_pass"> - %d [time]</string>
+    <!-- Used in formatting game history and move summaries -->
+    <string name="strs_move_across">move (from %s across)\n</string>
+    <!-- Used in formatting game history and move summaries -->
+    <string name="strs_move_down">move (from %s down)\n</string>
+    <!-- Used in formatting game history and move summaries -->
+    <string name="strs_tray_at_start">Rack at start: %s\n</string>
+    <!-- Used in formatting exchange move summaries -->
+    <string name="strss_traded_for">Exchanged %1$s for %2$s.</string>
+    <!-- Used to alert user to loss of turn when a move is made and
+         phonies is set to lose turn when word used not in wordlist
+         -->
+    <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
+    <!-- Used in formatting exchange move summaries: passed means the
+         user skipped his turn, or made a move involving 0 tiles for 0
+         points -->
+    <string name="str_passed">Passed</string>
+    <!-- formats tiles and score together, and probably doesn't need
+         translation unless the colon ':' needs to be replaced -->
+    <string name="strsd_summaryscored">%1$s:%2$d</string>
+    <!-- Used in formatting reports of trades (exchanges of tiles).
+         Number of tiles traded is substituted for %d-->
+    <string name="strd_traded">Traded %d</string>
+    <!-- Used in formatting history and move reports; means user
+         skipped a turn because of an attempted illegal move/play of a
+         phony -->
+    <string name="str_lostturn">Lost turn</string>
+    <!-- Beginning of the message presented to a user when asking him
+         to confirm committing the current turn-->
+    <string name="str_commit_confirm">Commit the current move?\n</string>
+    <!-- Used in substituting in a player name.  Probably does not
+         need translating (it's empty in English)-->
+    <string name="str_local_name">%s</string>
+    <!-- Used to stand in for a remote player whose name isn't
+         available or not yet to be displayed -->
+    <string name="str_nonlocal_name">(remote)</string>
+    <!-- Used, with remote player's name substituted for %s, to
+    indicate that the player is remote. -->
+    <string name="str_nonlocal_namef">%s (remote)</string>
+    <!-- Used to separate names of players when listing them on one
+    line in a game summary.  The \u0020 is a space in xml. -->
+    <string name="vs_join">\u0020vs.\u0020</string>
+
+    <!-- Used in formatting moves and history -->
+    <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
+    <!-- Used in formatting moves and history.  The total score for
+         one turn is substituted for %d.-->
+    <string name="strd_turn_score">Score for turn: %d\n</string>
+
 
 
     <!--   
@@ -254,6 +488,67 @@
     <!-- clarification of above -->
     <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
 
+    <!--           
+                   ############################################################
+                   # Individual Colors preferences (within Appearances)
+                   ############################################################
+      -->
+    <!-- title of this sub-preference -->
+    <string name="prefs_colors">Individual colors</string>
+    <!-- clarification of the above -->
+    <string name="prefs_colors_summary">Edit colors used on the board</string>
+
+    <!-- Names of the three colors by which colors can be edited in
+         the color preferences dialog -->
+	<string name="red">Red</string>
+	<string name="green">Green</string>
+	<string name="blue">Blue</string>
+
+    <!-- The remaining strings (down to the Behavior preference
+    dialog) are showns as the names of editable colors and as the the
+    title of the color editor that comes up when the name is
+    tapped. -->
+
+    <!-- First of four players (color for, that is ) -->
+    <string name="player0">First player</string>
+    <!-- Second of four players (color for, that is ) -->
+    <string name="player1">Second player</string>
+    <!-- Third of four players (color for, that is ) -->
+    <string name="player2">Third player</string>
+    <!-- Fourth of four players (color for, that is ) -->
+    <string name="player3">Fourth player</string>
+
+    <!-- (color for) double-letter bonus squares on the board -->
+    <string name="bonus_l2x">Double letter</string>
+    <!-- (color for) triple-letter bonus squares on the board -->
+    <string name="bonus_l3x">Triple letter</string>
+    <!-- (color for) double-word squares on the board -->
+    <string name="bonus_w2x">Double word</string>
+    <!-- (color for) triple-word squares on the board -->
+    <string name="bonus_w3x">Triple word</string>
+
+    <!-- color of the "crosshairs", lines drawn vertically and
+         horizontally through the square the user is currently
+         touching in order to guide the fat-fingered (most of us) in
+         operations that require accurately selecting a single square
+         on the board.-->
+    <string name="clr_crosshairs">Crosshairs color</string>
+
+    <!-- color of the tiles' background -->
+    <string name="tile_back">Tile background</string>
+
+    <!-- color of empty squares on the board (that are not bonus squares) -->
+    <string name="empty">Empty cell/background</string>
+
+    <!-- the background color of the area outside the board,
+         e.g. between entries in the scoreboard -->
+    <string name="background">Board background</string>
+
+    <!-- the color of text, e.g. "2L", shown on a bonus square on the
+         board -->
+    <string name="key_bonushint">In-square bonus hint</string>
+    
+
     <!--       
                ############################################################
                # Behavior
@@ -271,104 +566,157 @@
                ############################################################
       -->
 
-
-    <string name="prefs_colors">Individual colors</string>
-    <string name="prefs_colors_summary">Edit colors used on the board</string>
-    <string name="player0">First player</string>
-    <string name="player1">Second player</string>
-    <string name="player2">Third player</string>
-    <string name="player3">Fourth player</string>
-    <string name="bonus_l2x">Double letter</string>
-    <string name="bonus_l3x">Triple letter</string>
-    <string name="bonus_w2x">Double word</string>
-    <string name="bonus_w3x">Triple word</string>
-    <string name="bonus_l2x_summary">2L</string>
-    <string name="bonus_w2x_summary">2W</string>
-    <string name="bonus_l3x_summary">3L</string>
-    <string name="bonus_w3x_summary">3W</string>
-    <string name="clr_crosshairs">Crosshairs color</string>
-    <string name="tile_back">Tile background</string>
-    <string name="empty">Empty cell/background</string>
-    <string name="background">Board background</string>
-    <string name="key_bonushint">In-square bonus hint</string>
+    <!-- if this preference is checked, a dialog will be posted every
+         time a robot makes a move or a move is received from a remote
+         player. -->
     <string name="explain_robot">Explain other moves</string>
+    <!-- explanation of the above -->
     <string name="explain_robot_summary">Display score summary after
         every robot or remote turn</string>
+
+    <!-- If this preference is checked, the user will not be asked to
+         confirm after selecting the "Turn done" menu (or tapping the
+         points display at the right end of the tray) -->
     <string name="skip_confirm_turn">Skip confirming turn</string>
+    <!-- explanation of the above -->
     <string name="skip_confirm_turn_summary">Do NOT display score
         summary after every human turn</string>
+
+    <!-- If this preference is checked, tiles in the rack will be
+         re-ordered alphabetically whenever tiles are added,
+         i.e. after ever move.-->
     <string name="title_sort_tiles">Sort new tiles</string>
+    <!-- explanation of the above -->
     <string name="summary_sort_tiles">Sort racks whenever new tiles
       are added</string>
+
+    <!-- if this preference is checked, the hardware volume keys will
+         work to zoom the board in and out (and will not control
+         volume) This only applies when the Board screen is
+         frontmost. -->
     <string name="ringer_zoom">Volume keys zoom</string>
+    <!-- explanation of the above -->
     <string name="ringer_zoom_summary">Zoom board using volume keys</string>
+
     <string name="peek_other">View tiles out-of-turn</string>
+    <!-- explanation of the above -->
     <string name="peek_other_summary">Tapping on scoreboard name shows
         that player\'s tiles</string>
+
     <string name="network_behavior">Network game settings</string>
+    <!-- explanation of the above -->
     <string name="network_behavior_summary">Settings that apply to
         networked games</string>
+
     <string name="connect_frequency">Background move check</string>
 	<string name="notify_sound">Play sound</string>
 	<string name="notify_vibrate">Vibrate</string>
 	<string name="notify_other_summary">When opponent moves arrive</string>
 	<string name="git_rev_title">Source version id</string>
 
-    <!--
-        ############################################################
-        # Menus
-        ############################################################ 
+    <!--   
+           ############################################################
+           # New game screen
+           #
+           # This comes up when you tap the "new game" button on the
+           # main screen or the new game menuitem in the main screen's
+           # menu.  It has descriptions and buttons for creating the two
+           # types of supported games, standalone and networked.
+           ############################################################
       -->
-
-    <!--
-        ############################################################
-        # Dialogs
-        ############################################################ 
-      -->
-
-
-
-
-	
-	<string name="app_name">Crosswords</string>  
-
+    <!-- section separator (white-on-gray bar) for first section:
+         standalone games -->
     <string name="newgame_local_header">New Local-only game</string>
+
+    <!-- This is one of two descriptions on this screen.  It explains
+         what standalone games are and describes the two buttons used
+         to create them.  The name of the language of the default
+         wordlist is substituted in for %1$s. -->
     <string name="newgame_local_descf">Create a new game where all
       players will be on this device.  To play against a robot and
       with your default settings (in %1$s, etc.) just press \"Play
       now\".  To add players or change game settings, press
       \"Configure first\".</string>
+
+    <!-- Text of first of two buttons for new standalone games.  Tap
+         this and a new game will be created and opened.  If the first
+         player is a robot it will immediately take its turn.-->
+	<string name="newgame_local">Play now</string>
+
+    <!-- Text of second of two buttons for new standalone games.  Tap
+    this and you'll get taken to the "Game configure" screen -->
+	<string name="newgame_local_config">Configure first</string>
+
+    <!-- section separator (white-on-gray bar) for second section:
+         networked games -->
     <string name="newgame_networked_header">New Networked game</string>
+
+    <!-- This is the second of two descriptions on this screen.  It
+         explains what networked games are and describes the two
+         buttons used to create them. -->
     <string name="newgame_networked_desc">Create a game that will be
       played over the network.  The \"Invite now\" button starts a
       two-device game and helps you invite a friend to join it.  Or
       press \"Configure first\" to change some of the defaults before
       you start your networked game. (You\'ll have a chance to send
       invites later.)</string>
-	<string name="newgame_local">Play now</string>
-	<string name="newgame_local_config">Configure first</string>
+
+    <!-- Text of first of two buttons for new networked games.  Tap
+         this and a game will be created, but you probably won't see
+         it immediately because an email or messaging app will be
+         launched to send your invitation. -->
 	<string name="newgame_invite">Invite now</string>
+
+    <!-- Text of second of two buttons for new networked games.  Tap
+    this and you'll get taken to the "Game configure" screen -->
 	<string name="newgame_net_config">Configure first</string>
-    <string name="dup_game_queryf">You already have a game that seems
-      to have been created from the same invitation.  Are you sure you
-      want to open another?</string>
-	
-	<string name="button_ok">OK</string>  
-	<string name="button_cancel">Cancel</string>  
-	<string name="button_yes">Yes</string>  
-	<string name="button_no">No</string>  
-	<string name="button_save">Save</string>  
-	<string name="button_discard">Discard</string>  
-	<string name="button_retry">Retry</string>  
+
+    <!-- The invitation process beging with this query.  The choice is
+         between html and plaintext formatting but I also provide some
+         explanation/guidance. -->
+    <string name="text_or_html">Send invitation using plain text or
+      html?  Text links are harder to open but can be sent via SMS.
+      Most devices let you send html only via email.</string>
+
+    <!-- When an invitation is sent, the user gets to choose between
+    plaintext and html formatting.  These two strings are shown in the
+    two buttons in the dialog. -->
 	<string name="button_text">Text</string>  
 	<string name="button_html">Html</string>  
 
-    <string name="player_label">Name:</string>
-	<string name="dicts_list_promptf">Installed wordlists (in %s)</string>
+    <!-- This is the subject line of the email/text sent to invite
+         someone to join a game. -->
+    <string name="invite_subject">Let\'s play Crosswords</string>
 
-	<string name="info_title">FYI...</string>
-	<string name="newbie_title">New user info</string>
-	<string name="query_title">A question...</string>
+    <!-- This is the body of the html version of the invitation. A URL
+         is created with parameters describing the game and
+         substituted for "%1$s".  (The funky \u003c and friends are
+         encodings for the greater-than and less-than symbols which
+         are not legal in xml strings.)-->
+    <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap here to
+      accept\u003c/a\u003E my invitation and join this
+      game.\u003cbr\u003E \u003ca
+      href=\"http://eehouse.org/market.php\"\u003E
+      Tap here to install Crosswords\u003c/a\u003E if you haven\'t
+      already.</string>
+
+    <!-- This is the body of the text version of the invitation. A URL
+         is created with parameters describing the game and
+         substituted for "%1$s".-->
+    <string name="invite_txtf">Accept my invitation and join this
+      game: %1$s . (But install Crosswords first:
+      http://eehouse.org/market.php ).</string>
+
+    <!-- When I've created the invitation, in text or html, I ask
+         Android to launch an app that can send it, typically an email
+         or messaging app.  Android then asks the user to choose which
+         of the installed apps that can process the request he'd like
+         to have launched.  This string is passed to Android and used
+         as the title of the dialog that presents that choice. -->
+    <string name="invite_chooser">Send invitation via</string>
+
+
+
 	<string name="query_trade">Are you sure you want to exchange the selected tiles?</string>
 
 
@@ -378,53 +726,7 @@
     <string name="history_title">Game History</string>
     <string name="finalscores_title">Final scores</string>
 
-    <!-- system menu for main board view -->
-	<string name="board_menu_done">Turn done</string>
-	<string name="board_menu_trade">Exchange tiles</string>
-    <string name="board_menu_trade_commit">Exchange done</string>
-    <string name="board_menu_trade_cancel">Cancel exchange</string>
-	<string name="board_menu_tray">Hide rack</string>
-	<string name="board_menu_undo_last">Undo last</string>
-	<string name="board_menu_values">Show values</string>
-	<string name="board_submenu_game">Game</string>
-	<string name="board_menu_game_counts">Counts and values</string>
-	<string name="board_menu_game_left">Tiles remaining</string>
-	<string name="board_menu_game_history">Game history</string>
-	<string name="board_menu_game_final">Final scores</string>
-	<string name="board_menu_game_resend">Resend messages</string>
-	<string name="board_menu_file_about">About Crosswords</string>
 
-	<string name="gamel_menu_delete_all">Delete all</string>
-	<!-- <string name="gamel_menu_view_hidden">Hidden games</string> -->
-
-    <!-- returned by util_getUserString -->
-    <string name="strd_robot_traded">exchanged %d tiles.</string>
-    <string name="str_robot_moved">The robot made this move: </string>
-    <string name="strs_values_header">%s counts/values:\n</string>
-    <string name="strd_remaining_tiles_add">+ %d [all remaining tiles]</string>
-    <string name="strd_unused_tiles_sub">- %d [unused tiles]</string>
-    <string name="str_remote_movedf">Remote player %1$s made this move: </string>
-    <string name="strd_time_penalty_sub"></string>
-    <string name="str_pass"> - %d [time]</string>
-    <string name="strs_move_across">move (from %s across)\n</string>
-    <string name="strs_move_down">move (from %s down)\n</string>
-    <string name="strs_tray_at_start">Rack at start: %s\n</string>
-    <string name="strss_traded_for">Exchanged %1$s for %2$s.</string>
-    <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
-    <string name="strd_cumulative_score">Cumulative score: %d\n</string>
-    <string name="strs_new_tiles">New tiles: %s</string>
-    <string name="str_passed">Passed</string>
-    <string name="strsd_summaryscored">%1$s:%2$d</string>
-    <string name="strd_traded">Traded %d</string>
-    <string name="str_lostturn">Lost turn</string>
-    <string name="str_commit_confirm">Commit the current move?\n</string>
-    <string name="str_local_name">%s</string>
-    <string name="str_nonlocal_name">(remote)</string>
-    <string name="str_nonlocal_namef">%s (remote)</string>
-    <string name="vs_join">\u0020vs.\u0020</string>
-    <string name="str_game_namef">%1$s (%2$s)</string>
-    <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
-    <string name="strd_turn_score">Score for turn: %d\n</string>
 
     <!-- error messages -->
 	<string name="str_tiles_not_in_line">All tiles played must be in a line.</string>
@@ -445,31 +747,19 @@
 	  Guest wordlists; Host wins.</string>
 	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
 
-    <string name="remote_label">Off-device player</string>
-    <string name="robot_label">Robot player</string>
     <string name="robot_namef">%s (robot)</string>
     <string name="guest_name">(Off-device player)</string>
     <string name="missing_player">(not here yet...)</string>
-    <string name="password_label">Password</string>
-    <string name="player_edit_title">Edit player</string>
 
     <string name="players_label_standalone">Players</string>
     <string name="players_label_host">Players (%1$d local, %2$d
     off-device)</string>
 
-    <string name="dicts_item_move">Change storage location</string>
-    <string name="dicts_item_select">Make default</string>
-    <string name="dicts_item_details">Details</string>
     <string name="move_dictf">Move wordlist %1$s from %2$s to %3$s
       storage?</string>
     <string name="set_default_messagef">For what players should this
       wordlist be the default for new games? (The language %s will be
       the default for both.)</string>
-    <string name="button_default_human">Human</string>
-    <string name="button_default_robot">Robot</string>
-    <string name="button_default_both">Both</string>
-
-    <string name="dict_lang_labelf">Wordlist (in %s)</string>
 
     <string name="configure_rolef">Configure %s connection</string>
 
@@ -521,7 +811,6 @@
     <string name="robot_smarter">Smarter robot</string>
     <string name="robot_smartest">Smartest robot</string>
     
-    <string name="menu_prefs">Settings</string>
     <string name="gamel_menu_dicts">Wordlists</string>
     <string name="menu_revert_all">Restore all</string>
     <string name="menu_revert_colors">Restore colors</string>
@@ -578,12 +867,7 @@
     <string name="gameOver">Game over</string>
     <string name="movesf">%d moves played</string>
 
-    <!-- about dialog stuff -->
-    <string name="about_versf">Crosswords for Android, Version %1$s,
-    rev %2$s.</string>
-    <string name="about_copyright">Copyright (C) 1998-2011 by Eric
-    House. This free/open source software is released under the GNU Public
-    License.</string>
+
 
     <string name="about_web">For a manual or sourcecode see:
     http://xwords.sf.net.  To report bugs, suggest features, offer to
@@ -616,15 +900,12 @@
 
 	<string name="msg_ask_password">Password for \"%s\":</string>
 
-	<string name="red">Red</string>
-	<string name="green">Green</string>
-	<string name="blue">Blue</string>
-
+    <!-- used to create default names of games (when user has not
+         named them.) -->
 	<string name="gamef">Game %d</string>
+    <!-- used to create default player names -->
 	<string name="playerf">Player %d</string>
 
-    <string name="changes_title">Recent changes</string>
-    <string name="changes_button">Recent changes</string>
 
 	<string name="connect_never">Never check</string>
 	<string name="connect_five_mins">Every 5 minutes</string>
@@ -644,12 +925,10 @@
     <string name="chat_local_id">Me: </string>
     <string name="chat_other_id">Not me: </string>
     <string name="chat_send">Send</string>
-    <string name="chat_menu_clear">Clear history</string>
     <string name="chat_titlef">%s message history</string>
 
     <string name="notify_title">Moves made</string>
     <string name="notify_body">New game moves have arrived</string>
-    <string name="gamel_menu_checkmoves">Check relay</string>
 
     <string name="no_copy_network">Games that have already connected
       to the relay cannot be copied. Use \"New from\" for a
@@ -660,11 +939,6 @@
 
     <string name="msgs_progress">Checking relay for moves
       etc...</string>
-
-    <!-- Messages for a series of dialogs that offer newbie hints in
-         strategic places.  This set will be expanding for a
-         while. -->
-    <string name="button_notagain">Do not show again</string>
 
     <string name="not_again_sync">This action checks the relay for
       pending moves/messages for all networked games and flags those
@@ -770,37 +1044,168 @@
     <string name="empty_list_msg">Use the menu key to add a
       game.</string>
 
-    <string name="invite_msgf">This game is missing %1$d remote
-      player[s].  Would you like to invite someone to join -- assuming
-      you haven\'t already?</string>
-
-    <string name="invite_multiple">\u0020(You are expecting multiple
-      remote players.  Be sure to address your invitation to
-      that many people.)</string>
-
-    <string name="invite_subject">Let\'s play Crosswords</string>
-    <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap here to
-      accept\u003c/a\u003E my invitation and join this
-      game.\u003cbr\u003E \u003ca
-      href=\"http://eehouse.org/market.php\"\u003E
-      Tap here to install Crosswords\u003c/a\u003E if you haven\'t
-      already.</string>
-    <string name="invite_txtf">Accept my invitation and join this
-      game: %1$s . (But install Crosswords first:
-      http://eehouse.org/market.php ).</string>
-
-    <string name="text_or_html">Send invitation using plain text or
-      html?  Text links are harder to open but can be sent via SMS.
-      Most devices let you send html only via email.</string>
-    <string name="invite_chooser">Send invitation via</string>
-
     <string name="no_download_warning">Unable to download. Do you have
       a web browser installed?</string>
 
+
+    <!--
+        ############################################################
+        # Menus
+        ############################################################ 
+      -->
+
+    <!--    
+            ############################################################
+            # Main screen (Games list) menu
+            ############################################################ 
+      -->
+
+    <!--    
+            ############################################################
+            # Board menu
+             ############################################################ 
+      -->
+	<string name="board_menu_done">Turn done</string>
+	<string name="board_menu_trade">Exchange tiles</string>
+    <string name="board_menu_trade_commit">Exchange done</string>
+    <string name="board_menu_trade_cancel">Cancel exchange</string>
+	<string name="board_menu_tray">Hide rack</string>
+	<string name="board_menu_undo_last">Undo last</string>
+	<string name="board_menu_values">Show values</string>
+	<string name="board_submenu_game">Game</string>
+	<string name="board_menu_game_counts">Counts and values</string>
+	<string name="board_menu_game_left">Tiles remaining</string>
+	<string name="board_menu_game_history">Game history</string>
+	<string name="board_menu_game_final">Final scores</string>
+	<string name="board_menu_game_resend">Resend messages</string>
+
+    <!-- Brings up "About Crosswords" dialog -->
+	<string name="board_menu_file_about">About Crosswords</string>
+
+    <string name="gamel_menu_checkmoves">Check relay</string>
+
+    <!-- text of menu that brings up the Settings (preferences) dialog -->
+    <string name="menu_prefs">Settings</string>
+
+    <!--    
+            ############################################################
+            # Chat messages screen menu
+            ############################################################ 
+      -->
+
+    <string name="chat_menu_clear">Clear history</string>
+
+    <!--    
+            ############################################################
+            # Wordlists screen menu
+            ############################################################ 
+      -->
+    <!-- system menu for main board view -->
+
+	<string name="gamel_menu_delete_all">Delete all</string>
+
+gamel_menu_dicts"
+gamel_menu_delete_all"
+board_menu_file_about"
+menu_revert_colors"
+menu_revert_all"
+
+    <!--
+        ############################################################
+        # Dialogs
+        ############################################################ 
+      -->
+
+    <!-- Text for buttons at the bottom of dialogs.  These first are
+      in many places.-->
+	<string name="button_ok">OK</string>  
+	<string name="button_cancel">Cancel</string>  
+	<string name="button_yes">Yes</string>  
+	<string name="button_no">No</string>  
+
+    <!-- Used in Game config dialog to confirm saving changes that reset a game -->
+	<string name="button_save">Save</string>
+    <!-- Used for button in dialog put up with the relay says the
+         remote partner of this game has deleted it.  Ok, meaning
+         "don't discard", is the other option.  This same button is
+         used as an option in the Game config dialog, where "Save" is
+         the other option, for discarding changes that would otherwise
+         reset a game. -->
+	<string name="button_discard">Discard</string>
+
+    <!-- Used for a button when informing user that his attempt to
+         connect to the relay failed because the room named does not
+         exist.  (I believe this no longer occurs.) -->
+	<string name="button_retry">Retry</string>  
+
+    <!-- Shown in the main screen when you launch Crosswords from an
+         invitation (received in email or messaging app, say) and
+         there's already a game running that matches that invitation.
+         It's to prevent you from opening multiple games and getting
+         confused.  But some people who play together all the time use
+         the same room name over and over so they'll get this warning
+         and it's harmless to ignore it. -->
+    <string name="dup_game_queryf">You already have a game that seems
+      to have been created from the same invitation.  Are you sure you
+      want to open another?</string>
+
+    <!-- Title of generic dialog used to display information -->
+	<string name="info_title">FYI...</string>
+
+    <!-- Title of generic dialog used to display hints for new users
+         in strategic places.  This dialog always has a button with
+         the label just below-->
+	<string name="newbie_title">New user info</string>
+
+    <!-- Text for button in new-user-info dialog with title just above.
+      -->
+    <string name="button_notagain">Do not show again</string>
+
+    <!-- Title for generic dialog asking a question, usually in the
+         middle of a game, like "do you want to commit this move?"-->
+	<string name="query_title">A question...</string>
+	
+    <!--       
+               ###########################################################
+               # Welcome dialog
+               # 
+               # Shown the first time a user launches Crosswords (and
+               # again only if the preference for default first user
+               # name is cleared).  Its purpose is to encourage him to
+               # enter the name of the most common non-robot player on
+               # this device.
+               ###########################################################
+               -->
+    <!-- Welcome dialog title -->
     <string name="default_name_title">Welcome</string>
+    <!-- Welcome dialog text -->
     <string name="default_name_message">Thanks for installing
       Crosswords! Feel free to enter your name here. It will be used
       when creating new games.  (You can change it later in the \"New
       game default\" section of Settings.)</string>
+
+
+    <!--       
+               ###########################################################
+               # About dialog
+               #
+               # Dialog giving copyright and other basic info about
+               # the app
+               ###########################################################
+               -->
+    <!-- String giving version info, which is substituted in. -->
+    <string name="about_versf">Crosswords for Android, Version %1$s,
+    rev %2$s.</string>
+    <!-- copyright info -->
+    <string name="about_copyright">Copyright (C) 1998-2011 by Eric
+    House. This free/open source software is released under the GNU Public
+    License.</string>
+    <!-- text of dialog showing the set of changes made since the last
+    release -->
+    <string name="changes_title">Recent changes</string>
+    <!-- text of button in About Crosswords dialog summoning above
+         dialog -->
+    <string name="changes_button">Recent changes</string>
+
 
 </resources>
