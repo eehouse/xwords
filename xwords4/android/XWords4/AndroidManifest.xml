@@ -31,6 +31,8 @@
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
   <uses-permission android:name="android.permission.VIBRATE" />
+  <!-- <uses-permission android:name="android.permission.RECEIVE_SMS" /> -->
+  <!-- <uses-permission android:name="android.permission.SEND_SMS" /> -->
 
   <uses-sdk android:minSdkVersion="3" android:targetSdkVersion="4" />
 
@@ -121,6 +123,14 @@
               />
 
     <service android:name="RelayService"/>
+
+    <!-- <receiver android:name="NBSReceiver"> -->
+    <!--   <intent-filter android:priority="10"> -->
+    <!--     <action android:name="android.intent.action.DATA_SMS_RECEIVED" /> -->
+    <!--     <data android:scheme="sms" /> -->
+    <!--     <data android:port="50009" /> -->
+    <!--   </intent-filter> -->
+    <!-- </receiver> -->
 
   </application>
 </manifest>

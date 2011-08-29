@@ -22,14 +22,15 @@ package org.eehouse.android.xw4;
 
 import android.util.Log;
 import java.lang.Thread;
-import android.widget.Toast;
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.widget.CheckBox;
-import android.app.Activity;
-import android.app.Dialog;
+import android.widget.Toast;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.view.LayoutInflater;
@@ -103,6 +104,16 @@ public class Utils {
     {
         CharSequence text = "Feature coming soon";
         Toast.makeText( context, text, Toast.LENGTH_SHORT).show();
+    }
+
+    public static void setRemoveOnDismiss( final Activity activity, 
+                                           Dialog dialog, final int id )
+    {
+        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                public void onDismiss( DialogInterface di ) {
+                    activity.removeDialog( id );
+                }
+            } );
     }
 
     public static View inflate( Context context, int layoutId )

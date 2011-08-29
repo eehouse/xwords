@@ -85,11 +85,11 @@ public class Toolbar {
     }
 
     public void setListener( int index, final int msgID, final int prefsKey, 
-                             final Runnable proc )
+                             final int callback )
     {
         View.OnClickListener listener = new View.OnClickListener() {
                 public void onClick( View view ) {
-                    m_activity.showNotAgainDlgThen( msgID, prefsKey, proc );
+                    m_activity.showNotAgainDlgThen( msgID, prefsKey, callback );
                 }
             };
         setListener( index, listener );
