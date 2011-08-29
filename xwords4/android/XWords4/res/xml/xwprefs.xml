@@ -177,6 +177,13 @@
          android:title="@string/clr_crosshairs"
          android:defaultValue="0x7070FF"
          />
+
+      <org.eehouse.android.xw4.EditColorPreference
+         android:key="@string/key_clr_bonushint"
+         android:title="@string/key_bonushint"
+         android:defaultValue="0x7F7F7F"
+         />
+
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_tile_back"
          android:title="@string/tile_back"

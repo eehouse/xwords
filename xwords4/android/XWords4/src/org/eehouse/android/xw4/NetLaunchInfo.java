@@ -47,8 +47,6 @@ public class NetLaunchInfo {
         bundle.putString( ROOM, room );
         bundle.putInt( NPLAYERS, nPlayers );
         bundle.putBoolean( VALID, m_valid );
-        Utils.logf( "bundling NetLaunchInfo: %d, %s, %d, %b",
-                    lang, room, nPlayers, m_valid );
     }
 
     public NetLaunchInfo( Bundle bundle )
@@ -57,8 +55,6 @@ public class NetLaunchInfo {
         room = bundle.getString( ROOM );
         nPlayers = bundle.getInt( NPLAYERS  );
         m_valid = bundle.getBoolean( VALID  );
-        Utils.logf( "unbundled NetLaunchInfo: %d, %s, %d, %b",
-                    lang, room, nPlayers, m_valid );
     }
 
     public static Uri makeLaunchUri( Context context, String room,

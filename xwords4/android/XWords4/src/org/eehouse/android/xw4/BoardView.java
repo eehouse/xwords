@@ -119,7 +119,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int FRAME_GREY = 0xFF101010;
-    private static final int GREY = 0xFF7F7F7F;
     private int[] m_bonusColors;
     private int[] m_playerColors;
     private int[] m_otherColors;
@@ -506,7 +505,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                     m_origin.setBounds( rect );
                     m_origin.draw( m_canvas );
                 } else if ( null != bonusStr ) {
-                    m_fillPaint.setColor( GREY );
+                    m_fillPaint.
+                        setColor( m_otherColors[CommonPrefs.COLOR_BONUSHINT] );
                     Rect brect = new Rect( rect );
                     brect.inset( 0, brect.height()/10 );
                     drawCentered( bonusStr, brect, m_fontDims );
@@ -562,8 +562,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                     public void run() {
                         m_parent.
                             showNotAgainDlgThen( R.string.not_again_arrow, 
-                                                 R.string.key_notagain_arrow, 
-                                                 null );
+                                                 R.string.key_notagain_arrow );
                     }
                 } );
         }

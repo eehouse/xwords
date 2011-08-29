@@ -26,6 +26,7 @@
   <string name="key_empty">key_clr_empty</string>
   <string name="key_background">key_clr_background</string>
   <string name="key_clr_crosshairs">key_clr_crosshairs</string>
+  <string name="key_clr_bonushint">key_clr_bonushint</string>
 
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_redir_host">key_redir_host</string>

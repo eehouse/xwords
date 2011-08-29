@@ -13,6 +13,9 @@
   <li>Use the term "wordlist" instead of "dictionary" to not imply that 
   there are definitions provided.</li>
 
+  <li>Add color of bonus hints -- the 2L etc. that appear on the board 
+  -- to set of editable colors</li>
+  
   <li>Change how downloaded wordlists are opened to consume much less 
   Java memory.  Downside: wordlists on external storage are not 
   available when that storage is mounted on a computer over USB.</li>
@@ -33,6 +36,9 @@
   <li>Add icons to games list display so it's easier to tell networked 
   from standalone.  These are placeholders until I can get an artist 
   to help out. :-)</li>
+
+  <li>Fix a family of crashes that occurred when dialogs were up and 
+  memory got low: rare, but annoying.</li>
 
 </ul>
 

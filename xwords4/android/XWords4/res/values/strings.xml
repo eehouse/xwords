@@ -332,6 +332,7 @@
     <string name="empty">Empty cell/background</string>
     <string name="clr_crosshairs">Crosshairs color</string>
     <string name="background">Board background</string>
+    <string name="key_bonushint">In-square bonus hint</string>
 
     <string name="tab_relay">Internet/Relay</string>
     <string name="tab_sms">SMS (broken)</string>

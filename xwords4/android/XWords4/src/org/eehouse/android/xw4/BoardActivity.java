@@ -75,11 +75,22 @@ public class BoardActivity extends XWActivity
 
     private static final int UNDO_LAST_ACTION = 1;
     private static final int LAUNCH_INVITE_ACTION = 2;
+    private static final int SYNC_ACTION = 3;
+    private static final int COMMIT_ACTION = 4;
+    private static final int SHOW_EXPL_ACTION = 5;
+    private static final int PREV_HINT_ACTION = 6;
+    private static final int NEXT_HINT_ACTION = 7;
+    private static final int JUGGLE_ACTION = 8;
+    private static final int FLIP_ACTION = 9;
+    private static final int ZOOM_ACTION = 10;
+    private static final int UNDO_ACTION = 11;
+    private static final int CHAT_ACTION = 12;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
     private static final String DLG_BYTES = "DLG_BYTES";
     private static final String ROOM = "ROOM";
+    private static final String TOASTSTR = "TOASTSTR";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -114,6 +125,7 @@ public class BoardActivity extends XWActivity
     private boolean m_blockingDlgPosted = false;
 
     private String m_room;
+    private String m_toastStr;
     private int m_missing;
     private boolean m_haveInvited = false;
 
@@ -364,6 +376,7 @@ public class BoardActivity extends XWActivity
         outState.putString( DLG_TITLESTR, m_dlgTitleStr );
         outState.putString( DLG_BYTES, m_dlgBytes );
         outState.putString( ROOM, m_room );
+        outState.putString( TOASTSTR, m_toastStr );
     }
 
     private void getBundledData( Bundle bundle )
@@ -373,6 +386,7 @@ public class BoardActivity extends XWActivity
             m_dlgTitle = bundle.getInt( DLG_TITLE  );
             m_dlgBytes = bundle.getString( DLG_BYTES );
             m_room = bundle.getString( ROOM );
+            m_toastStr = bundle.getString( TOASTSTR );
         }
     }
 
@@ -481,13 +495,8 @@ public class BoardActivity extends XWActivity
         int id = item.getItemId();
         switch ( id ) {
         case R.id.board_menu_done:
-            proc = new Runnable() {
-                    public void run() {
-                        checkAndHandle( JNIThread.JNICmd.CMD_COMMIT );
-                    }
-                };
             showNotAgainDlgThen( R.string.not_again_done, 
-                                 R.string.key_notagain_done, proc );
+                                 R.string.key_notagain_done, COMMIT_ACTION );
             break;
         // case R.id.board_menu_juggle:
         //     cmd = JNIThread.JNICmd.CMD_JUGGLE;
@@ -541,7 +550,9 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.gamel_menu_checkmoves:
-            doSyncMenuitem();
+            showNotAgainDlgThen( R.string.not_again_sync,
+                                 R.string.key_notagain_sync,
+                                 SYNC_ACTION );
             break;
 
         case R.id.board_menu_file_prefs:
@@ -570,13 +581,7 @@ public class BoardActivity extends XWActivity
     @Override
     public void dlgButtonClicked( int id, int which )
     {
-        switch ( id ) {
-        case UNDO_LAST_ACTION:
-            if (  AlertDialog.BUTTON_POSITIVE == which ) {
-                m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_LAST );
-            }
-            break;
-        case LAUNCH_INVITE_ACTION:
+        if ( LAUNCH_INVITE_ACTION == id ) {
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
                 GameUtils.launchInviteActivity( BoardActivity.this,
                                                 DlgDelegate.TEXT_BTN == which,
@@ -584,9 +589,46 @@ public class BoardActivity extends XWActivity
                                                 m_gi.dictLang,
                                                 m_gi.nPlayers );
             }
-            break;
-        default:
-            Assert.fail();
+        } else if ( AlertDialog.BUTTON_POSITIVE == which ) {
+            switch ( id ) {
+            case UNDO_LAST_ACTION:
+                m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_LAST );
+                break;
+            case SYNC_ACTION:
+                doSyncMenuitem();
+                break;
+            case COMMIT_ACTION:
+                checkAndHandle( JNIThread.JNICmd.CMD_COMMIT );
+                break;
+            case SHOW_EXPL_ACTION:
+                Toast.makeText( BoardActivity.this, m_toastStr, 
+                                Toast.LENGTH_SHORT).show();
+                m_toastStr = null;
+                break;
+            case PREV_HINT_ACTION:
+                checkAndHandle( JNIThread.JNICmd.CMD_PREV_HINT );
+                break;
+            case NEXT_HINT_ACTION:
+                checkAndHandle( JNIThread.JNICmd.CMD_NEXT_HINT );
+                break;
+            case JUGGLE_ACTION:
+                checkAndHandle( JNIThread.JNICmd.CMD_JUGGLE );
+                break;
+            case FLIP_ACTION:
+                checkAndHandle( JNIThread.JNICmd.CMD_FLIP );
+                break;
+            case ZOOM_ACTION:
+                checkAndHandle( JNIThread.JNICmd.CMD_TOGGLEZOOM );
+                break;
+            case UNDO_ACTION:
+                checkAndHandle( JNIThread.JNICmd.CMD_UNDO_CUR );
+                break;
+            case CHAT_ACTION:
+                startChatActivity();
+                break;
+            default:
+                Assert.fail();
+            }
         }
     }
 
@@ -777,17 +819,12 @@ public class BoardActivity extends XWActivity
         }
 
         if ( null != str ) {
-            final String fstr = str;
-            Runnable proc = new Runnable() {
-                    public void run() {
-                        Toast.makeText( BoardActivity.this, fstr,
-                                        Toast.LENGTH_SHORT).show();
-                    }
-                };
+            m_toastStr = str;
             if ( naMsg == 0 ) {
-                proc.run();
+                dlgButtonClicked( SHOW_EXPL_ACTION, 
+                                  AlertDialog.BUTTON_POSITIVE );
             } else {
-                showNotAgainDlgThen( naMsg, naKey, proc );
+                showNotAgainDlgThen( naMsg, naKey, SHOW_EXPL_ACTION );
             }
         }
     } // handleConndMessage
@@ -894,8 +931,7 @@ public class BoardActivity extends XWActivity
             post( new Runnable() {
                     public void run() {
                         showNotAgainDlgThen( R.string.not_again_turnchanged, 
-                                             R.string.key_notagain_turnchanged,
-                                             null );
+                                             R.string.key_notagain_turnchanged );
                     }
                 } );
             m_jniThread.handle( JNIThread.JNICmd. CMD_ZOOM, -8 );
@@ -1165,71 +1201,31 @@ public class BoardActivity extends XWActivity
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
                                R.string.not_again_hintprev,
                                R.string.key_notagain_hintprev,
-                               new Runnable() {
-                                   public void run() {
-                                       checkAndHandle( JNIThread.JNICmd.
-                                                       CMD_PREV_HINT );
-                                   }
-                               } );
+                               PREV_HINT_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
                                R.string.not_again_hintnext,
                                R.string.key_notagain_hintnext,
-                               new Runnable() {
-                                   @Override
-                                   public void run() {
-                                       checkAndHandle( JNIThread.JNICmd
-                                                       .CMD_NEXT_HINT );
-                                   }
-                               } );
+                               NEXT_HINT_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
                                R.string.not_again_juggle,
                                R.string.key_notagain_juggle,
-                               new Runnable() {
-                                   @Override
-                                   public void run() {
-                                       checkAndHandle( JNIThread.JNICmd
-                                                       .CMD_JUGGLE );
-                                   }
-                               } );
+                               JUGGLE_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_FLIP,
                                R.string.not_again_flip,
                                R.string.key_notagain_flip,
-                               new Runnable() {
-                                   @Override
-                                   public void run() {
-                                       checkAndHandle( JNIThread.JNICmd
-                                                       .CMD_FLIP );
-                                   }
-                               } );
+                               FLIP_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
                                R.string.not_again_zoom,
                                R.string.key_notagain_zoom,
-                               new Runnable() {
-                                   @Override
-                                   public void run() {
-                                       checkAndHandle( JNIThread.JNICmd
-                                                       .CMD_TOGGLEZOOM );
-                                   }
-                               } );
+                               ZOOM_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_UNDO,
                                R.string.not_again_undo,
                                R.string.key_notagain_undo,
-                               new Runnable() {
-                                   @Override
-                                   public void run() {
-                                       checkAndHandle( JNIThread.JNICmd
-                                                       .CMD_UNDO_CUR );
-                                   }
-                               });
+                               UNDO_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_CHAT,
                                R.string.not_again_chat, 
                                R.string.key_notagain_chat,
-                               new Runnable() {
-                                   @Override
-                                   public void run() {
-                                       startChatActivity();
-                                   }
-                               });
+                               CHAT_ACTION );
     } // populateToolbar
 
     private OnDismissListener makeODLforBlocking( final int id )
