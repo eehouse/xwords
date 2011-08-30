@@ -63,6 +63,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent"
                     android:layout_weight="1"
+                    android:layout_marginRight="4dip"
                     /> <!-- end players column -->
 
       <!-- holds right column.  Could hold more... -->

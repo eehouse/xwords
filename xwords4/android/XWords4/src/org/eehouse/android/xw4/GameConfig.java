@@ -69,6 +69,7 @@ public class GameConfig extends XWActivity
     private static final int NO_NAME_FOUND = PLAYER_EDIT + 4;
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
+    private static final int LOCKED_CHANGE_ACTION = 1;
 
     private CheckBox m_joinPublicCheck;
     private CheckBox m_gameLockedCheck;
@@ -539,6 +540,20 @@ public class GameConfig extends XWActivity
         showDialog( NO_NAME_FOUND );
     }
 
+    @Override
+    public void dlgButtonClicked( int id, int button )
+    {
+        switch( id ) {
+        case LOCKED_CHANGE_ACTION:
+            if ( AlertDialog.BUTTON_POSITIVE == button ) {
+                handleLockedChange();
+            }
+            break;
+        default:
+            Assert.fail();
+        }
+    }
+
     public void onClick( View view ) 
     {
         if ( m_addPlayerButton == view ) {
@@ -555,11 +570,7 @@ public class GameConfig extends XWActivity
         } else if ( m_gameLockedCheck == view ) {
             showNotAgainDlgThen( R.string.not_again_unlock, 
                                  R.string.key_notagain_unlock,
-                                 new Runnable() {
-                                     public void run() {
-                                         handleLockedChange();
-                                     }
-                                 });
+                                 LOCKED_CHANGE_ACTION );
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
         } else if ( m_playButton == view ) {

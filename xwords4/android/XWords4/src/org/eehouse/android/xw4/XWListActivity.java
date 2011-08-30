@@ -112,14 +112,14 @@ public class XWListActivity extends ListActivity
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        Runnable proc )
+                                        int action )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, proc );
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
     protected void showNotAgainDlg( int msgID, int prefsKey )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, null );
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey );
     }
 
     protected void showOKOnlyDialog( int msgID )

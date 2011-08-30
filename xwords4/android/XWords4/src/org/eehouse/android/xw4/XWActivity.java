@@ -116,9 +116,14 @@ public class XWActivity extends Activity
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        Runnable proc )
+                                        int action )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, proc );
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
+    }
+
+    protected void showNotAgainDlgThen( int msgID, int prefsKey )
+    {
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey );
     }
 
     protected void showOKOnlyDialog( int msgID )

@@ -562,8 +562,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                     public void run() {
                         m_parent.
                             showNotAgainDlgThen( R.string.not_again_arrow, 
-                                                 R.string.key_notagain_arrow, 
-                                                 null );
+                                                 R.string.key_notagain_arrow );
                     }
                 } );
         }
