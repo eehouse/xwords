@@ -402,6 +402,7 @@ and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum,
     }
 }
 
+#ifdef XWFEATURE_MINIWIN
 static const XP_UCHAR* 
 and_draw_getMiniWText( DrawCtx* dctx, XWMiniTextType textHint )
 {
@@ -448,6 +449,7 @@ and_draw_drawMiniWindow( DrawCtx* dctx, const XP_UCHAR* text,
 
     (*env)->DeleteLocalRef( env, jstr );
 }
+#endif
 
 static XP_Bool
 draw_doNothing( DrawCtx* dctx, ... )
@@ -496,9 +498,11 @@ makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
     SET_PROC(objFinished);
     SET_PROC(dictChanged);
 
+#ifdef XWFEATURE_MINIWIN
     SET_PROC(getMiniWText);
     SET_PROC(measureMiniWText);
     SET_PROC(drawMiniWindow);
+#endif
 
 #undef SET_PROC
     return (DrawCtx*)draw;

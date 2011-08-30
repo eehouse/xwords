@@ -89,6 +89,7 @@ typedef struct _BdCursorLoc {
 } BdCursorLoc;
 #endif
 
+#ifdef XWFEATURE_MINIWIN
 /* We only need two of these, one for the value hint and the other for the
    trading window.  There's never more than of the former since it lives only
    as long as the pen is down.  There are, in theory, as many trading windows
@@ -101,6 +102,7 @@ typedef struct _MiniWindowStuff {
 
 enum { MINIWINDOW_VALHINT, MINIWINDOW_TRADING };
 typedef XP_U16 MiniWindowType; /* one of the two above */
+#endif
 
 typedef struct _PerTurnInfo {
 #ifdef KEYBOARD_NAV
@@ -213,8 +215,10 @@ struct BoardCtxt {
     XP_Bool scoreBoardInvalid;
     DragState dragState;
 
+#ifdef XWFEATURE_MINIWIN
     MiniWindowStuff miniWindowStuff[2];
     XP_Bool tradingMiniWindowInvalid;
+#endif
 
     TileBit trayInvalBits;
 #ifdef KEYBOARD_NAV
@@ -230,9 +234,10 @@ struct BoardCtxt {
 };
 
 #define CURSOR_LOC_REM 0
-
-#define valHintMiniWindowActive( board ) \
+#ifdef XWFEATURE_MINIWIN
+# define valHintMiniWindowActive( board ) \
      ((XP_Bool)((board)->miniWindowStuff[MINIWINDOW_VALHINT].text != NULL))
+#endif
 #define MY_TURN(b) ((b)->selPlayer == server_getCurrentTurn( (b)->server ))
 #define TRADE_IN_PROGRESS(b) ((b)->selInfo->tradeInProgress==XP_TRUE)
 
@@ -274,21 +279,27 @@ void invalRow( BoardCtxt* board, XP_U16 row );
 void invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex );
 void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
                             XP_U16 tileIndex2 );
+#ifdef XWFEATURE_MINIWIN
 void makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
                             MiniWindowType winType );
+void hideMiniWindow( BoardCtxt* board, XP_Bool destroy,
+                     MiniWindowType winType );
+
+void invalSelTradeWindow( BoardCtxt* board );
+#else
+# define invalSelTradeWindow(b)
+#endif
+
 XP_Bool getCellRect( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
                      XP_Rect* rect);
 void getDragCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                       XP_Rect* rectP );
-void invalSelTradeWindow( BoardCtxt* board );
 void invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect );
 
 #ifdef XWFEATURE_SEARCHLIMIT
 void invalCurHintRect( BoardCtxt* board, XP_U16 player );
 #endif
 
-void hideMiniWindow( BoardCtxt* board, XP_Bool destroy,
-                     MiniWindowType winType );
 
 void moveTileInTray( BoardCtxt* board, XP_U16 moveTo, XP_U16 moveFrom );
 XP_Bool handleTrayDuringTrade( BoardCtxt* board, XP_S16 index );

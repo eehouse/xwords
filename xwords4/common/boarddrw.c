@@ -76,7 +76,11 @@ static void scrollIfCan( BoardCtxt* board );
 #ifdef KEYBOARD_NAV
 static XP_Bool cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row );
 #endif
+#ifdef XWFEATURE_MINIWIN
 static void drawTradeWindowIf( BoardCtxt* board );
+#else
+# define drawTradeWindowIf( board )
+#endif
 
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -221,6 +225,7 @@ rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 )
              && rect1->left + rect1->width >= rect2->left + rect2->width );
 } /* rectContainsRect */
 
+#ifdef XWFEATURE_MINIWIN
 static void
 makeMiniWindowForTrade( BoardCtxt* board )
 {
@@ -230,6 +235,7 @@ makeMiniWindowForTrade( BoardCtxt* board )
 
     makeMiniWindowForText( board, text, MINIWINDOW_TRADING );
 } /* makeMiniWindowForTrade */
+#endif
 
 #ifdef XWFEATURE_CROSSHAIRS
 static CellFlags
@@ -591,6 +597,7 @@ scrollIfCan( BoardCtxt* board )
     }
 } /* scrollIfCan */
 
+#ifdef XWFEATURE_MINIWIN
 static void
 drawTradeWindowIf( BoardCtxt* board )
 {
@@ -607,6 +614,7 @@ drawTradeWindowIf( BoardCtxt* board )
         board->tradingMiniWindowInvalid = XP_FALSE;
     }
 } /* drawTradeWindowIf */
+#endif
 
 XP_Bool
 board_draw( BoardCtxt* board )

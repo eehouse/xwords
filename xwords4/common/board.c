@@ -95,7 +95,11 @@ static void setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col,
                          XP_U16 row );
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 
+#ifdef XWFEATURE_MINIWIN
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
+#else
+# define invalTradeWindow(b,t,r)
+#endif
 static XP_Bool invalCellsWithTiles( BoardCtxt* board );
 
 static void setTimerIf( BoardCtxt* board );
@@ -678,6 +682,7 @@ invalCursorCell( BoardCtxt* board )
 } /* invalCursorCell */
 #endif
 
+#ifdef XWFEATURE_MINIWIN
 static void
 invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw )
 {
@@ -711,6 +716,7 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
         stuff->text = (XP_UCHAR*)NULL;
     }
 } /* hideMiniWindow */
+#endif
 #endif
 
 static XP_Bool
@@ -904,6 +910,7 @@ board_resetEngine( BoardCtxt* board )
     server_resetEngine( board->server, board->selPlayer );
 } /* board_resetEngine */
 
+#ifdef XWFEATURE_MINIWIN
 /* Find a rectangle either centered on the board or pinned to the point at
  * which the mouse went down.
  */
@@ -929,6 +936,7 @@ positionMiniWRect( BoardCtxt* board, XP_Rect* rect, XP_Bool center )
     }
     forceRectToBoard( board, rect );
 } /*positionMiniWRect */
+#endif
 
 static XP_Bool
 timerFiredForPen( BoardCtxt* board ) 
@@ -954,7 +962,11 @@ timerFiredForPen( BoardCtxt* board )
                 bonus = util_getSquareBonus( board->util, board->model, 
                                              col, row );
                 if ( bonus != BONUS_NONE ) {
+#ifdef XWFEATURE_MINIWIN
                     text = draw_getMiniWText( board->draw, (XWMiniTextType)bonus );
+#else
+                    util_bonusSquareHeld( board->util, bonus );
+#endif
                 }
             }
             board->penTimerFired = XP_TRUE;
@@ -984,14 +996,18 @@ timerFiredForPen( BoardCtxt* board )
                 XP_ASSERT( XP_STRLEN(buf) + explLen < sizeof(buf) );
                 XP_STRCAT( buf, scoreExpl );
             }
-
+#ifdef XWFEATURE_MINIWIN
             text = buf;
+#else
+            util_playerScoreHeld( board->util, buf );
+#endif
         }
 
         board->penTimerFired = XP_TRUE;
     }
 
     if ( !!text ) {
+#ifdef XWFEATURE_MINIWIN
         MiniWindowStuff* stuff = &board->miniWindowStuff[MINIWINDOW_VALHINT];
         makeMiniWindowForText( board, text, MINIWINDOW_VALHINT );
         XP_ASSERT( stuff->text == text );
@@ -1002,6 +1018,7 @@ timerFiredForPen( BoardCtxt* board )
             dragDropEnd( board, board->penDownX, board->penDownY, &dragged );
             XP_ASSERT( !dragged );
         }
+#endif
     }
     return draw;
 } /* timerFiredForPen */
@@ -1123,7 +1140,9 @@ board_invalAllTiles( BoardCtxt* board )
     while ( lastRow-- ) {
         board->redrawFlags[lastRow] = ~0;
     }
+#ifdef XWFEATURE_MINIWIN
     board->tradingMiniWindowInvalid = XP_TRUE;
+#endif
 
     board->needsDrawing = XP_TRUE;
 } /* board_invalAllTiles */
@@ -1967,6 +1986,7 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
     XP_ASSERT( col < MAX_ROWS );
     XP_ASSERT( row < MAX_ROWS );
 
+#ifdef XWFEATURE_MINIWIN
     /* if the trade window is up and this cell intersects it, set up to draw
        it again */
     if ( (board->trayVisState != TRAY_HIDDEN) && TRADE_IN_PROGRESS(board) ) {
@@ -1978,6 +1998,7 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
             }
         }
     }
+#endif
     
     board->needsDrawing = XP_TRUE;
 } /* invalCell */
@@ -2030,6 +2051,7 @@ moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
 } /* moveTileToArrowLoc */
 #endif
 
+#ifdef XWFEATURE_MINIWIN
 void
 makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
                        MiniWindowType winType )
@@ -2044,6 +2066,7 @@ makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text,
     stuff->rect = rect;
     stuff->text = text;
 } /* makeMiniWindowForText */
+#endif
 
 XP_Bool
 board_beginTrade( BoardCtxt* board )
@@ -2059,7 +2082,11 @@ board_beginTrade( BoardCtxt* board )
         } else if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
             util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
+#ifdef XWFEATURE_MINIWIN
             board->tradingMiniWindowInvalid = XP_TRUE;
+#else
+            util_setInTrade( board->util, board->selPlayer, XP_TRUE );
+#endif
             board->needsDrawing = XP_TRUE;
             board->selInfo->tradeInProgress = XP_TRUE;
             setArrowVisible( board, XP_FALSE );
@@ -2077,6 +2104,9 @@ board_endTrade( BoardCtxt* board )
         PerTurnInfo* pti = board->selInfo;
         invalSelTradeWindow( board );
         pti->tradeInProgress = XP_FALSE;
+#ifndef XWFEATURE_MINIWIN
+        util_setInTrade( board->util, board->selPlayer, XP_FALSE );
+#endif
         pti->traySelBits = NO_TILES;
     }
     return result;
@@ -2084,12 +2114,16 @@ board_endTrade( BoardCtxt* board )
 
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
+# ifdef XWFEATURE_MINIWIN
 static XP_Bool
 ptOnTradeWindow( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
     XP_Rect* windowR = &board->miniWindowStuff[MINIWINDOW_TRADING].rect;
     return rectContainsPt( windowR, x, y );
 } /* ptOnTradeWindow */
+# else
+#  define ptOnTradeWindow(b,x,y) XP_FALSE
+# endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
 
@@ -2455,6 +2489,9 @@ exitTradeMode( BoardCtxt* board )
     PerTurnInfo* pti = board->selInfo;
     invalSelTradeWindow( board );
     pti->tradeInProgress = XP_FALSE;
+#ifndef XWFEATURE_MINIWIN
+    util_setInTrade( board->util, board->selPlayer, XP_FALSE );
+#endif
     board_invalTrayTiles( board, pti->traySelBits );
     pti->traySelBits = 0x00;
     return XP_TRUE;
@@ -2493,9 +2530,11 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
     if ( dragged ) {
         /* do nothing further */
     } else if ( board->penTimerFired ) {
+#ifdef XWFEATURE_MINIWIN
         if ( valHintMiniWindowActive( board ) ) {
             hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
         }
+#endif
         draw = XP_TRUE;         /* might have cancelled a drag */
         /* Need to clean up if there's been any dragging happening */
         board->penTimerFired = XP_FALSE;
