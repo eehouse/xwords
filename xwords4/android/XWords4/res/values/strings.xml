@@ -9,15 +9,19 @@
         ############################################################ 
       -->
 
-    <!--   
-           ############################################################
-           # Main screen (list of games)
-           ############################################################ 
+    <!--
+       ############################################################
+       # :Screens:
+       # Main screen (list of games)
+       ############################################################ 
       -->
     <!-- window title -->
 	<string name="title_games_list">Crosswords</string>   
-    <!-- Text of button at bottom of main games-list screen -->
+
+    <!-- Text of button at bottom of main games-list screen and of
+         menuitem in main games-list screen's menu -->
     <string name="button_new_game">Add game</string>
+
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
          of the game is substituted for %1$s.  Something else --
@@ -26,19 +30,55 @@
          ordering is wrong for your language.-->
     <string name="str_game_namef">%1$s (%2$s)</string>
 
-    <!--       
-               ############################################################
-               # Context menu for main games-list screen
-               ############################################################ 
+    <!-- Used to format robot player names in the lists of players
+         found in each game listing -->
+    <string name="robot_namef">%s (robot)</string>
+
+    <!-- Used as a substitute for the names of remote players when
+         they aren't available yet because the connection is not
+         complete.  Displayed in the lists of players found in each
+         game listing. -->
+    <string name="missing_player">(not here yet...)</string>
+
+    <!--    
+       ############################################################
+       # :Menus:
+       # Main screen (Games list) menu
+       #
+       # One menu is not listed here because it appears elsewhere
+       # and their text is reused: button_new_game.
+       ############################################################ 
+      -->
+
+    <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
+    <string name="gamel_menu_dicts">Wordlists</string>
+
+    <!-- text of menu that brings up the Settings (preferences) dialog -->
+    <string name="menu_prefs">Settings</string>
+
+    <!-- Regardless of the setting of the connect_frequency
+         preference, checks the relay immediately for any moves for
+         networked games on this device and posts a notification if
+         any is downloaded. -->
+    <string name="gamel_menu_checkmoves">Check relay</string>
+
+    <!-- Deletes all games on the device (after confirmation) -->
+	<string name="gamel_menu_delete_all">Delete all</string>
+
+    <!-- Brings up "About Crosswords" dialog -->
+	<string name="board_menu_file_about">About Crosswords</string>
+
+    <!-- 
+       ############################################################
+       # :Menus:
+       # Context menu for main games-list screen
+       ############################################################ 
       -->
     <!-- title of contextual menu.  Name of the selected game is
          substituted in. -->
     <string name="game_item_menu_titlef">\"%s\" actions:</string>
-    <!--          
-                  ############################################################
-                  # menu items 
-                  ############################################################
-      -->
+
+    <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
     <string name="list_item_config">Game settings...</string>
     <!-- pulls up dialog to rename (change name of) the selected game -->
@@ -64,20 +104,58 @@
          list_item_rename) -->
     <string name="rename_label">Change the name of this game to:</string>
 
-    <!--   
-           ############################################################
-           # Wordlists screen 
-           #
-           # list of installed wordlists (formerly called dictionaries)
-           ############################################################ 
+    <!-- Text of confirmation dialog posted when list_item_delete menu is
+         selected -->
+    <string name="confirm_delete">Are you sure you want to delete this
+      game?</string>
+
+    <!-- Text of confirmation dialog posted when list_item_reset menu
+         is selected -->
+    <string name="confirm_reset">Are you sure you want to reset this
+      game? Resetting erases all moves and any connection
+      information.</string>
+
+    <!-- Text of confirmation dialog posted when gamel_menu_delete_all
+         button is pressed -->
+    <string name="confirm_delete_all">Are you sure you want to delete
+      all games?</string>
+
+
+    <!--
+       ############################################################
+       # :Screens:
+       # Wordlists screen 
+       #
+       # list of installed wordlists (formerly called dictionaries)
+       ############################################################ 
       -->
     <!-- window title -->
 	<string name="title_dicts_list">Installed Crosswords Wordlists</string>   
 
-    <!--       
-               ############################################################
-               # Wordlists screen menus
-               ############################################################ 
+    <!-- text of button at the bottom of the screen.  It launches the
+         browser pointed at the site where additional wordlists can be
+         found. -->
+    <string name="download_dicts">Download more...</string>
+
+    <!-- One of the strings used in the right column of the list of
+         installed wordlists to describe those that are part of
+         Crosswords and that cannot be uninstalled or moved.
+         loc_internal and loc_external are the other possible strings
+         in this column. -->
+    <string name="loc_builtin">Built-in</string>
+
+    <!-- Used to describe wordlists that are in the Downloads
+         directory.  Currently I don't look there so this is unused,
+         but I will eventually do so.  This should be the same name as
+         the built-in Android web browser uses for the directory where
+         it saves files it downloads. -->
+    <string name="loc_downloads">Downloads</string>
+
+    <!--
+       ############################################################
+       # :Menus:
+       # Wordlists screen menus
+       ############################################################ 
       -->
     <!-- title of contextual menu item.  If chosen it brings up a
          dialog that offers to move the selected wordlist from its
@@ -99,11 +177,53 @@
          scrolling list of all its words. -->
     <string name="dicts_item_details">Details</string>
 
-    <!--       
-               ############################################################
-               # Wordlists screen dialogs
-               ############################################################ 
+    <!-- text of confirmation dialog posted when the delete 'X' button
+         beside the listing of a wordlist is tapped.  The name of the
+         wordlist is substituted for %s.  Sometimes one of the two
+         strings below is appended. -->
+    <string name="confirm_delete_dictf">Are you sure you want to
+    delete %s?</string>
+
+    <!-- Additional text appended to text confirm_delete_dictf in the
+         wordlist delete confiration dialog in the case where the
+         wordlist to be deleted is the last in its language.  The name
+         of the language is substituted for %s. -->
+    <string name="confirm_deleteonly_dictf">\u0020It is the only %s
+      wordlist installed. One or more games will be unopenable
+      without it.</string>
+    <!-- Additional text appended to text confirm_delete_dictf in the
+         wordlist delete confiration dialog in the case where the
+         wordlist to be deleted is NOT the last in its language. The
+         name of the language is substituted for %s. -->
+    <string name="confirm_deletemore_dictf">\u0020One game (at least)
+      is using it (but there is another %s wordlist installed that
+      can replace it.)</string>
+
+    <!-- Text of dialog brought up when user taps the download_dicts
+         button -->
+    <string name="storeWhereMsg">Store downloaded wordlists using
+      internal or external (SD card) memory? (You can always move them
+      later.)</string>
+    <!-- title of above -->
+    <string name="storeWhereTitle">Wordlist storage</string>
+    <!-- One of the buttons in the above dialog -->
+    <string name="button_internal">Internal</string>
+    <!-- The other button in the above dialog -->
+    <string name="button_sd">External</string>
+
+    <!--
+       ############################################################
+       # :Dialogs:
+       # Wordlists screen dialogs
+       ############################################################ 
       -->
+
+    <!-- Used as the text fo the confirming/querying dialog that goes
+         up when the dicts_item_select menuitem is chosen.  The
+         possible answers are the three button text strings below. -->
+    <string name="set_default_messagef">For what players should this
+      wordlist be the default for new games? (The language %s will be
+      the default for both.)</string>
 
     <!-- These three strings are the text for three buttons giving
          choices in respose to the dialog launched in response to the
@@ -112,11 +232,23 @@
     <string name="button_default_robot">Robot</string>
     <string name="button_default_both">Both</string>
 
+    <!-- When the dicts_item_move menu is chosen, this text is used in
+         the confirmation dialog.  The name of the selected wordlist
+         is substituted for %1$s.  The strings loc_internal and
+         loc_internal are substitued for %2$s and %3$s (or vice-versa,
+         depending on the current location of the wordlist.)-->
+    <string name="move_dictf">Move wordlist %1$s from %2$s to %3$s
+      storage?</string>
 
-    <!--   
-           ############################################################
-           # Game configure screen 
-           ############################################################ 
+    <!-- see move_dictf above -->
+    <string name="loc_internal">Internal</string>
+    <string name="loc_external">External</string>
+
+    <!-- 
+       ############################################################
+       # :Screens:
+       # Game configure screen 
+       ############################################################ 
       -->
     <!-- window title (game name substituted for %s) -->
 	<string name="title_game_configf">%s settings</string>  
@@ -131,6 +263,16 @@
     <!-- text of checkbox at top of dialog allowing to unlock in-play
     game to make changes -->
     <string name="game_locked">Lock settings</string>
+
+    <!-- text for separator above the list of players that's used for
+         non-networked games -->
+    <string name="players_label_standalone">Players</string>
+
+    <!-- text for separator above the list of players that's used for
+         networked games.  The numbers of local and non-local players
+         are substituted for %1$d and %2$d. -->
+    <string name="players_label_host">Players (%1$d local, %2$d
+      off-device)</string>
 
     <!-- text of button for adding new player to game -->
     <string name="button_add_player">Add player</string>
@@ -175,21 +317,56 @@
     robot player will be. -->
     <string name="robot_spinner_prompt">How smart is the robot player?</string>
 
+    <!-- Three possible choices presented in the popup above -->
+    <string name="robot_smart">Smart robot</string>
+    <string name="robot_smarter">Smarter robot</string>
+    <string name="robot_smartest">Smartest robot</string>
+
     <!-- title of popup used to determine how words are handled that
          are not in the wordlist used for the game (or player if using
          different wordlists per player) -->
     <string name="phonies_spinner_prompt">How to handle \"phonies\"
         (words not in dictionary)</string>
 
+    <!-- These are the three choices in the popup above whose text is
+         phonies_spinner_prompt -->
+    <!-- Don't care if words played are in the wordlist or not -->
+    <string name="phonies_ignore">Ignore phonies</string>
+    <!-- warn player when word played is not in the wordlist, but
+         allow him to play it. -->
+    <string name="phonies_warn">Warn if phonies</string>
+    <!-- Don't warn, but simply force to skip turn (give 0 points)
+         when user attempts to play word not in the wordlist. -->
+    <string name="phonies_disallow">Disallow phonies</string>
+
+    <!-- Shown when using the the Game configure screen to configure a
+         networked game and you try to make all players local. -->
+	<string name="str_reg_server_sans_remote">At least one player must
+         be marked \"Remote\" for a game started as Host.</string>
+
+    <!-- Used as the default name for remote players displayed within
+         the Game configure screen -->
+    <string name="guest_name">(Off-device player)</string>
+
+    <!-- title of confirmation dialog put up when user has unlocked an
+         in-progress game and wants to save changes (has hit the
+         play button). -->
+    <string name="confirm_save">This game is in play.  If you
+      save these changes it must be restarted.  Do you want to save
+      these changes?</string>
+    <!-- title of above confirmation dialog -->
+    <string name="confirm_save_title">Confirm save</string>
+
 
     <!--     
-             ############################################################
-             # Player edit dialog
-             #
-             # This comes up when you tap on a player within the Game
-             # config screen
-             ############################################################
-             -->
+       ############################################################
+       # :Dialogs:
+       # Player edit dialog
+       #
+       # This comes up when you tap on a player within the Game
+       # config screen
+       ############################################################
+      -->
     <!-- dialog title -->
     <string name="player_edit_title">Edit player</string>
 
@@ -226,14 +403,15 @@
     <string name="password_label">Password</string>
 
 
-    <!--   
-           ############################################################
-           # Board screen
-           #
-           #
-           # (an open game, with the 15x15 grid of # squares, letters
-           # played etc., is displayed here)
-           ############################################################
+    <!--
+       ############################################################
+       # :Screens:
+       # Board screen
+       #
+       #
+       # (an open game, with the 15x15 grid of # squares, letters
+       # played etc., is displayed here)
+       ############################################################
       -->
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter -->
@@ -269,15 +447,153 @@
       remote players.  Be sure to address your invitation to
       that many people.)</string>
 
-    <!--       
-               ############################################################
-               # Board info/error dialog messages
-               #
+    <!-- Short for "points", this is shown at the right end of the
+         tray in place of the first tile placed along with the points
+         the current move would earn if committed. -->
+    <string name="pts">pts</string>
 
-               # The strings are used to create dialogs that appear
-               # during games while the Board screen is visible
-               ############################################################
-               -->
+    <!-- Text of "toast" (mini window briefly displayed) shown when a
+         game first connects to the relay.  The three substitutions
+         are the device's order within the game (e.g. 2), the name of
+         the room, and how many additional players have not yet
+         registered with the relay in this game.  This should be seen
+         only once per game. -->
+    <string name="msg_relay_waiting">Device %1$d connected to relay in
+      room \"%2$s\". Waiting for %3$d player[s].</string>
+
+    <!-- Text of "toast" shown when a game is notified by the relay
+         that all expected players have registered.  At this point
+         play can begin. -->
+    <string name="msg_relay_all_heref">All players are here in room
+      \"%s\".</string>
+
+    <!-- Title of dialog used to alert players to relay-related
+         problems with the current game. -->
+    <string name="relay_alert">Connection problem</string>
+
+    <!-- (I believe this can no longer occur) -->
+    <string name="msg_too_many">You are providing more players than
+         the host expects.</string>
+    <!-- (I believe this can no longer occur) -->
+    <string name="msg_no_room">No host has registered a room by that name.</string>
+
+    <!-- (I believe this can no longer occur) -->
+    <string name="msg_dup_room">Another host has already registered a
+         room using that name.  Rename yours or retry later.</string>
+    <!-- (I believe this can no longer occur) -->
+    <string name="msg_lost_other">The relay has lost contact with
+         another device in this game.</string>
+
+    <!-- When a game has been connected and the relay is notified that
+         a device in the game has deleted its part of the game, this
+         message is posted when you connect your end of it to the
+         relay.  Once this happens there is no way to continue the
+         game so you might as well delete it (unless you're saving it
+         for its history etc.) -->
+    <string name="msg_dev_deleted">This game has been deleted on
+      another device. You will not be able to play any
+      further.</string>
+
+    <!-- Partial text of alert posted when phonies_warn or
+         phonies_disallow is the current setting and a "phony" is
+         played.  One of the two following strings will be appended
+         -->
+    <string name="ids_badwords">Word[s] %s not found in
+         wordlist.</string>
+
+    <!-- Appended to the above in the phonies_warn case.  User may
+         ignore the warning -->
+    <string name="badwords_accept">  Do you still want to accept this move?</string>
+    <!-- Appended to the above in the phonies_disallow case.  User has
+         lost his turn. -->
+    <string name="badwords_lost">  Turn lost.</string>
+
+    <!-- title of the dialog in which the above is posted. -->
+    <string name="badwords_title">Illegal word[s]</string>
+
+    <!--    
+       ############################################################
+       # :Menus:
+       # Board screen menu
+       ############################################################
+      -->
+
+    <!-- This menu commits the current move as it's been laid out on
+         the board -->
+	<string name="board_menu_done">Turn done</string>
+
+    <!-- This menu begins an exchange of tiles: puts the board into
+         trade mode. -->
+	<string name="board_menu_trade">Exchange tiles</string>
+
+    <!-- Text of a "mini-window" placed on the screen when the game is
+         in trade mode -->
+    <string name="trading_text">Select one or more tiles\nto exchange.</string>
+
+    <!-- This menu commits an exchange -->
+    <string name="board_menu_trade_commit">Commit exchange</string>
+
+    <!-- cancels an exchange: takes the board out of trade mode.  It
+         it still the same player's afterwards -->
+    <string name="board_menu_trade_cancel">Cancel exchange</string>
+
+    <!-- hide and shows the tray.  On devices where there is enough
+         room for the full board and tray to be shown then hiding the
+         tray just "turns it over", i.e. shows tiles with '?'
+         characters.-->
+	<string name="board_menu_tray">Hide rack</string>
+
+    <!-- Undos the last *committed* turn.  Note that this is different
+         from the undo button that undoes or redoes an in-progress
+         not-yet-committed turn.  This is disabled for networked
+         games.-->
+	<string name="board_menu_undo_last">Undo last</string>
+
+    <!-- Toggles the board between displaying tiles' letters and their
+         values.  This is intended to allow players to remind
+         themselves how much played tiles are worth while planning a
+         move. -->
+	<string name="board_menu_values">Show values</string>
+
+    <!-- Title of submenu -->
+	<string name="board_submenu_game">Game</string>
+
+    <!-- menu on Game submenu: brings up dialog listing all tiles in
+         the language of the game along with how many of each there
+         are and how many points each is worth.  This display is the
+         same throughout the game. -->
+	<string name="board_menu_game_counts">Counts and values</string>
+
+    <!-- menu on Game submenu: brings up dialog listing all tiles not
+         yet played and not in the rack of the player whose rack is
+         visible (whose turn it is, generally).  This display will
+         change as tiles are used and depending on what player is
+         asking. -->
+	<string name="board_menu_game_left">Tiles remaining</string>
+
+    <!-- Brings up listing of all moves played so far this game.  -->
+	<string name="board_menu_game_history">Game history</string>
+
+    <!-- Brings up explanation of the game's final score.  If the game
+         is not yet over, gives you a choice whether to end it now,
+         and if you decline does nothing. -->
+	<string name="board_menu_game_final">Final scores</string>
+
+    <!-- Meaningful only for networked games, this menu causes all
+         messages that have not yet been acknowledged by a remote
+         device in the game to be resent.  Eventually I hope to be
+         able to remove this from non-debug versions of the game
+         because users should not have to do do this EVER. -->
+	<string name="board_menu_game_resend">Resend messages</string>
+
+    <!--       
+       ############################################################
+       # Board info/error dialog messages
+       #
+       # These strings are used to create dialogs that appear during
+       # games while the Board screen is visible
+       ############################################################
+      -->
 
     <!-- Notifies user of a normal robot move -->
     <string name="str_robot_moved">The robot made this move: </string>
@@ -349,24 +665,51 @@
          one turn is substituted for %d.-->
     <string name="strd_turn_score">Score for turn: %d\n</string>
 
-
+    <!-- text of dialog shown when the menu item board_menu_undo_last
+         is chosen. -->
+    <string name="confirm_undo_last">Are you sure you want to undo the
+      last committed turn? (There is no redo option.)</string>
 
     <!--   
-           ############################################################
-           # Preferences screen(s)
-           #
-           # There are four screens plus one for debugging that isn't
-           # translated: New-game defaults, Appearances, Behavior, and
-           # Network Game settings
-           ############################################################
-           -->
+       ############################################################
+       # :Screens:
+       # Preferences screen(s)
+       #
+       # There are four screens plus one for debugging that isn't
+       # translated: New-game defaults, Appearances, Behavior, and
+       # Network Game settings
+       ############################################################
+      -->
     <!-- window title -->
 	<string name="title_prefs">Crosswords settings</string>  
 
+    <!--
+       ############################################################
+       # :Menus:
+       # Preferences screen menus
+       #
+       # There are two menuitems availble via the menu key from this
+       # screen
+       ############################################################
+      -->
+    <!-- text of first menu item.  Will revert all preferences to
+         their default/original values -->
+    <string name="menu_revert_all">Restore all</string>
+    <!-- Text of confirmation dialog for above -->
+    <string name="confirm_revert_colors">Are you sure you want to
+      restore all color settings to their original values?</string>
+    <!-- Second menu item.  Reverts only the colors to their
+         default/original values -->
+    <string name="menu_revert_colors">Restore colors</string>
+    <!-- Text of confirmation dialog for above -->
+    <string name="confirm_revert_all">Are you sure you want to restore
+      all settings to their original values?</string>
+
     <!--       
-               ############################################################
-               # New-game defaults
-               ############################################################
+       ############################################################
+       # :Screens:
+       # New-game defaults subscreen of Preferences screen
+       ############################################################
       -->
     <!-- title of this sub-preference -->
     <string name="prefs_defaults">New game defaults</string>
@@ -427,10 +770,11 @@
     <!-- preference for board size (15x15, 13x13 etc.) -->
     <string name="board_size">Board size</string>
 
-    <!--       
-               ############################################################
-               # Appearances
-               ############################################################
+    <!--
+       ############################################################
+       # :Screens:
+       # Appearances subscreen of Preferences screen
+       ############################################################
       -->
     <!-- title of this sub-preference -->
     <string name="prefs_appearance">Appearance</string>
@@ -488,27 +832,22 @@
     <!-- clarification of above -->
     <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
 
-    <!--           
-                   ############################################################
-                   # Individual Colors preferences (within Appearances)
-                   ############################################################
+    <!--
+       ############################################################
+       # :Screens:
+       # Individual Colors preference subscreen (within Appearances
+       # subscreen)
+       ############################################################
       -->
     <!-- title of this sub-preference -->
     <string name="prefs_colors">Individual colors</string>
     <!-- clarification of the above -->
     <string name="prefs_colors_summary">Edit colors used on the board</string>
 
-    <!-- Names of the three colors by which colors can be edited in
-         the color preferences dialog -->
-	<string name="red">Red</string>
-	<string name="green">Green</string>
-	<string name="blue">Blue</string>
-
-    <!-- The remaining strings (down to the Behavior preference
-    dialog) are showns as the names of editable colors and as the the
-    title of the color editor that comes up when the name is
-    tapped. -->
-
+    <!-- The remaining strings (down to the color edit dialog below)
+         are showns as the names of editable colors and as the the
+         title of the color editor that comes up when the name is
+         tapped. -->
     <!-- First of four players (color for, that is ) -->
     <string name="player0">First player</string>
     <!-- Second of four players (color for, that is ) -->
@@ -547,24 +886,34 @@
     <!-- the color of text, e.g. "2L", shown on a bonus square on the
          board -->
     <string name="key_bonushint">In-square bonus hint</string>
+
+    <!--       
+       ############################################################
+       # :Dialogs:
+       # Color edit dialog
+       # 
+       # A sub-sub preference, this is displayed each time the user
+       # wants to edit a color described by the strings above
+       ############################################################
+      -->
+    <!-- Names of the three colors by which colors can be edited in
+         the color preferences dialog -->
+	<string name="red">Red</string>
+	<string name="green">Green</string>
+	<string name="blue">Blue</string>
     
 
     <!--       
-               ############################################################
-               # Behavior
-               ############################################################
+       ############################################################
+       # :Screens:
+       # Behavior preference subscreen (within Preferences screen)
+       ############################################################
       -->
 
     <!-- title of this sub-preference -->
     <string name="prefs_behavior">Behavior</string>
     <!-- clarification of the above -->
     <string name="prefs_behavior_summary">Settings controlling app behavior</string>
-
-    <!--       
-               ############################################################
-               # Network game settings
-               ############################################################
-      -->
 
     <!-- if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
@@ -598,6 +947,14 @@
     <!-- explanation of the above -->
     <string name="ringer_zoom_summary">Zoom board using volume keys</string>
 
+    <!-- If this preference is checked, tapping on the scoreboard
+         entry for any player reveals that player's tiles and any
+         pending move (after asking for his password if one is set.)
+         This feature, which is disabled by default, is meant for the
+         case where serveral human players are sharing a device: it
+         might make sense for one to be able to study the board even
+         though it's not his turn e.g. while the player whose turn it
+         is is temporarily unable to play. -->
     <string name="peek_other">View tiles out-of-turn</string>
     <!-- explanation of the above -->
     <string name="peek_other_summary">Tapping on scoreboard name shows
@@ -608,21 +965,43 @@
     <string name="network_behavior_summary">Settings that apply to
         networked games</string>
 
-    <string name="connect_frequency">Background move check</string>
-	<string name="notify_sound">Play sound</string>
-	<string name="notify_vibrate">Vibrate</string>
-	<string name="notify_other_summary">When opponent moves arrive</string>
-	<string name="git_rev_title">Source version id</string>
+    <!--       
+       ############################################################
+       # :Screens:
+       # Network game settings preference subscreen (within
+       # Preferences screen)
+       ############################################################
+      -->
 
-    <!--   
-           ############################################################
-           # New game screen
-           #
-           # This comes up when you tap the "new game" button on the
-           # main screen or the new game menuitem in the main screen's
-           # menu.  It has descriptions and buttons for creating the two
-           # types of supported games, standalone and networked.
-           ############################################################
+    <!-- When there are networked games connecting using the relay,
+         Crosswords wakes up periodically to check if there are any
+         new moves available and fetches them.  This controls how
+         frequently that check is done. -->
+    <string name="connect_frequency">Background move check</string>
+
+    <!-- When one or more new moves is found, should I play a
+         notification sound -->
+	<string name="notify_sound">Play sound</string>
+
+    <!-- When one or more new moves is found, should I vibrate the
+         device -->
+	<string name="notify_vibrate">Vibrate</string>
+
+    <!-- This text is displayed as the "summary" for both of the
+         notify choices above, as extra information.  (There could be
+         different strings if it makes more sense in your language.)
+         -->
+	<string name="notify_other_summary">When opponent moves arrive</string>
+
+    <!-- ############################################################
+         # :Screens:
+         # New game screen
+         #
+         # This comes up when you tap the "new game" button on the
+         # main screen or the new game menuitem in the main screen's
+         # menu.  It has descriptions and buttons for creating the two
+         # types of supported games, standalone and networked.
+         ############################################################
       -->
     <!-- section separator (white-on-gray bar) for first section:
          standalone games -->
@@ -715,143 +1094,112 @@
          as the title of the dialog that presents that choice. -->
     <string name="invite_chooser">Send invitation via</string>
 
+    <!-- Text of dialog asking user to confirm a move that exchanges
+         tiles (instead of forming a new word to earn points) -->
+	<string name="query_trade">Are you sure you want to exchange the
+         selected tiles?</string>
 
+    <!-- 
+       error messages
+      -->
 
-	<string name="query_trade">Are you sure you want to exchange the selected tiles?</string>
+    <!-- Displayed when you try to commit a turn that is illegal
+         because the tiles placed are not all in the same row or
+         column. -->
+	<string name="str_tiles_not_in_line">All tiles played must be in a
+         line.</string>
 
+    <!-- Displayed when you try to commit a turn that is illegal
+         because there is empty space between some of the tiles
+         placed, i.e. they do not form a single word. -->
+	<string name="str_no_empties_in_turn">Empty squares cannot
+         separate tiles played.</string>
 
-    <string name="title_tile_picker">Letter for blank</string>
-    <string name="tiles_left_title">Remaining tiles</string>
-    <string name="counts_values_title">Tile Counts and Values</string>
-    <string name="history_title">Game History</string>
-    <string name="finalscores_title">Final scores</string>
+    <!-- Displayed when you try to commit the first move of the game
+         and are playing a single tile.  The first move must include
+         two or more tiles. -->
+	<string name="str_two_tiles_first_move">Must play two or more
+         pieces on the first move.</string>
 
+    <!-- Displayed when you try to commit a turn that is illegal
+         because tiles played do not touch other tiles already on the
+         board (or the middle/star square in the case of the initial
+         move.) -->
+	<string name="str_tiles_must_contact">New pieces must contact
+         others already in place (or the middle square on the first
+         move)</string>
 
+    <!-- Displyed when you try to commit a move and it's not your
+         turn. -->
+	<string name="str_not_your_turn">You can\'t do that; it\'s not
+         your turn!</string>
 
-    <!-- error messages -->
-	<string name="str_tiles_not_in_line">All tiles played must be in a line.</string>
-	<string name="str_no_empties_in_turn">Empty squares cannot separate tiles played.</string>
-	<string name="str_two_tiles_first_move">Must play two or more pieces on the first move.</string>
-	<string name="str_tiles_must_contact">New pieces must contact others already in place (or the middle square on the first move)</string>
-	<string name="str_not_your_turn">You can\'t do that; it\'s not your turn!</string>
-	<string name="str_no_peek_robot_tiles">No peeking at the robot\'s tiles!</string>
-	<string name="str_cant_trade_mid_move">Remove played tiles before exchanging.</string>
+    <!-- Displayed when you try to reveal a robot player's tiles,
+         either by tapping on its "hidden" rack (marked by "?"
+         characters) or by tapping on its scoreboard entry.  (The
+         ability to reveal another players tiles this way is
+         controlled by the peek_other preference and is disabled by
+         default.)-->
+	<string name="str_no_peek_robot_tiles">No peeking at the robot\'s
+         tiles!</string>
+
+    <!-- Same as above, but used when you try to show tiles belonging
+         to a player on another device (a remote player.) -->
+	<string name="str_no_peek_remote_tiles">No peeking at remote
+         players\' tiles!</string>
+
+    <!-- Displayed when you try to begin a trade when some of your
+         tiles have been moved from the rack to the board.  All tiles
+         must be in the rack to begin a trade. -->
+	<string name="str_cant_trade_mid_move">Remove played tiles before
+         exchanging.</string>
+
+    <!-- Displayed when you try to commit a trade but have no tiles
+         selected.  (The way to "pass", to commit a scoreless turn, is
+         to commit a normal move but without any tiles placed.) -->
     <string name="str_no_empty_trade">Trade cancelled because no tiles
       selected.  (It\'s still your turn.)</string>
-	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to exchange.</string>
-	<string name="str_cant_undo_tileassign">Tile assignment can\'t be undone.</string>
-	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Settings dialog.</string>
-	<string name="str_no_peek_remote_tiles">No peeking at remote players\' tiles!</string>
-	<string name="str_reg_unexpected_user">Refused attempt to register unexpected user[s]</string>
+
+    <!-- Displayed when you try to begin a trade but there are not
+         seven or more tiles in the pool.  The rules don't allow
+         trading in this case. -->
+	<string name="str_too_few_tiles_left_to_trade">Too few tiles left
+         to exchange.</string>
+
+    <!-- Displayed if you try to use the undo menuitem or button and
+         there are no tiles on the board (no move has yet been made.)
+         [If I'm being clever and disabling those features in this
+         case there may be no way to see this.] -->
+	<string name="str_cant_undo_tileassign">Tile assignment can\'t be
+         undone.</string>
+
+    <!-- Using the hint feature is cheating by some players, and it
+         can be disabled via the hints_allowed preference.  I should
+         be disabling the buttons in this case, but if I don't and you
+         try to get a hint you'll get this message instead.-->
+	<string name="str_cant_hint_while_disabled">The hint feature is
+         disabled for this game.  Enable it for a new game using the
+         Settings dialog.</string>
+
+    <!-- This error message is shown when a remote device tries to
+         join a game and is providing more players than that game
+         expects.  I do not believe it is possible to see this message
+         when playing via the relay because the relay is aware of how
+         many players are expected and only connects devices where the
+         numbers match. -->
+	<string name="str_reg_unexpected_user">Refused attempt to register
+         unexpected user[s]</string>
+
+    <!-- Shown when a remote device tries to join a game and wants to
+         play in a different language.  As with the above, this should
+         be impossible when connecting via the relay. -->
 	<string name="str_server_dict_wins">Conflict between Host and
 	  Guest wordlists; Host wins.</string>
-	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
-
-    <string name="robot_namef">%s (robot)</string>
-    <string name="guest_name">(Off-device player)</string>
-    <string name="missing_player">(not here yet...)</string>
-
-    <string name="players_label_standalone">Players</string>
-    <string name="players_label_host">Players (%1$d local, %2$d
-    off-device)</string>
-
-    <string name="move_dictf">Move wordlist %1$s from %2$s to %3$s
-      storage?</string>
-    <string name="set_default_messagef">For what players should this
-      wordlist be the default for new games? (The language %s will be
-      the default for both.)</string>
-
-    <string name="configure_rolef">Configure %s connection</string>
-
-    <string name="download_dicts">Download more...</string>
-    <string name="loc_builtin">Built-in</string>
-    <string name="loc_internal">Internal</string>
-    <string name="loc_external">External</string>
-    <string name="loc_downloads">Downloads</string>
-
-
-    <string name="confirm_save_title">Confirm save</string>
-    <string name="confirm_save">This game is in play.  If you
-      save these changes it must be restarted.  Do you want to save
-      these changes?</string>
-    <string name="confirm_delete">Are you sure you want to delete this
-      game?</string>
-    <string name="confirm_delete_all">Are you sure you want to delete
-      all games?</string>
-    <string name="confirm_reset">Are you sure you want to reset this
-      game? Resetting erases all moves and any connection
-      information.</string>
-    <string name="confirm_undo_last">Are you sure you want to undo the
-      last committed turn? (There is no redo option.)</string>
-      
-    <string name="confirm_delete_dictf">Are you sure you want to
-    delete %s?</string>
-    <string name="confirm_deleteonly_dictf">\u0020It is the only %s
-      wordlist installed. One or more games will be unopenable
-      without it.</string>
-    <string name="confirm_deletemore_dictf">\u0020One game (at least)
-      is using it (but there is another %s wordlist installed that
-      can replace it.)</string>
-    
-    <string name="progress_title">Searching for moves</string>
-    <string name="color_tiles">Color tiles</string>
-    <string name="color_tiles_summary">Draw tiles using color of
-    player who played them</string>
-
-    <string name="storeWhereTitle">Wordlist storage</string>
-    <string name="storeWhereMsg">Store downloaded wordlists using
-      internal or external (SD card) memory? (You can always move them
-      later.)</string>
-    <string name="button_internal">Internal</string>
-    <string name="button_sd">External</string>
-
-    <string name="phonies_ignore">Ignore phonies</string>
-    <string name="phonies_disallow">Disallow phonies</string>
-    <string name="robot_smart">Smart robot</string>
-    <string name="robot_smarter">Smarter robot</string>
-    <string name="robot_smartest">Smartest robot</string>
-    
-    <string name="gamel_menu_dicts">Wordlists</string>
-    <string name="menu_revert_all">Restore all</string>
-    <string name="menu_revert_colors">Restore colors</string>
-    <string name="confirm_revert_colors">Are you sure you want to
-      restore all color settings to their original values?</string>
-    <string name="confirm_revert_all">Are you sure you want to restore
-      all settings to their original values?</string>
 
 
 
 
     
-
-    <string name="pts">pts</string>
-    <string name="trading_text">Select one or more tiles\nto exchange.</string>
-
-    <string name="tab_relay">Internet/Relay</string>
-    <string name="tab_sms">SMS (broken)</string>
-    <string name="tab_bluetooth">Bluetooth (pending)</string>
-
-    <string name="msg_relay_waiting">Device %1$d connected to relay in
-      room \"%2$s\". Waiting for %3$d player[s].</string>
-    <string name="msg_relay_all_heref">All players are here in room
-      \"%s\".</string>
-
-    <string name="relay_alert">Connection problem</string>
-    <string name="msg_too_many">You are providing more players than the host expects.</string>
-    <string name="msg_no_room">No host has registered a room by that name.</string>
-    <string name="msg_dup_room">Another host has already registered a room using that name.  Rename yours or retry later.</string>
-    <string name="msg_lost_other">The relay has lost contact with another device in this game.</string>
-
-    <string name="msg_dev_deleted">This game has been deleted on
-      another device. You will not be able to play any
-      further.</string>
-
-    <string name="ids_badwords">Word[s] %s not found in wordlist.</string>
-    <string name="badwords_accept">  Do you still want to accept this move?</string>
-    <string name="badwords_lost">  Turn lost.</string>
-    <string name="badwords_title">Illegal word[s]</string>
-
-    <string name="ids_endnow">Are you sure you want to end the game now?</string>
 
     <string name="force_title">Off-device player[s]</string>
     <string name="force_expl">In a multi-device game there must be at
@@ -1054,38 +1402,8 @@
         ############################################################ 
       -->
 
-    <!--    
-            ############################################################
-            # Main screen (Games list) menu
-            ############################################################ 
-      -->
 
-    <!--    
-            ############################################################
-            # Board menu
-             ############################################################ 
-      -->
-	<string name="board_menu_done">Turn done</string>
-	<string name="board_menu_trade">Exchange tiles</string>
-    <string name="board_menu_trade_commit">Exchange done</string>
-    <string name="board_menu_trade_cancel">Cancel exchange</string>
-	<string name="board_menu_tray">Hide rack</string>
-	<string name="board_menu_undo_last">Undo last</string>
-	<string name="board_menu_values">Show values</string>
-	<string name="board_submenu_game">Game</string>
-	<string name="board_menu_game_counts">Counts and values</string>
-	<string name="board_menu_game_left">Tiles remaining</string>
-	<string name="board_menu_game_history">Game history</string>
-	<string name="board_menu_game_final">Final scores</string>
-	<string name="board_menu_game_resend">Resend messages</string>
 
-    <!-- Brings up "About Crosswords" dialog -->
-	<string name="board_menu_file_about">About Crosswords</string>
-
-    <string name="gamel_menu_checkmoves">Check relay</string>
-
-    <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">Settings</string>
 
     <!--    
             ############################################################
@@ -1102,9 +1420,7 @@
       -->
     <!-- system menu for main board view -->
 
-	<string name="gamel_menu_delete_all">Delete all</string>
 
-gamel_menu_dicts"
 gamel_menu_delete_all"
 board_menu_file_about"
 menu_revert_colors"
@@ -1156,6 +1472,42 @@ menu_revert_all"
          in strategic places.  This dialog always has a button with
          the label just below-->
 	<string name="newbie_title">New user info</string>
+
+    <!-- title of dialog allowing user to pick tiles "face up".  (This
+         feature is not yet supported on Android.) -->
+    <string name="title_tile_picker">Letter for blank</string>
+
+    <!-- title of dialog brought up in response to the
+         board_menu_game_left menu. The dialog lists all tiles
+         remaining in the pool, i.e. not on the board or in the rack
+         of the player whose turn it is. -->
+    <string name="tiles_left_title">Remaining tiles</string>
+
+    <!-- title of dialog brought up in response to the
+         board_menu_game_counts menu.  The dialog lists all tiles in
+         the language being used for the game together with how many
+         of each there are are and how many points each is worth. -->
+    <string name="counts_values_title">Tile Counts and Values</string>
+
+    <!-- title of dialog brought up in response to the
+         board_menu_game_history menu.  A full history of the game up
+         to the last turn is displayed, though details about what's in
+         players' racks is left out if the game is not yet over. -->
+    <string name="history_title">Game History</string>
+
+    <!-- title of dialog brought up in response to the
+         board_menu_game_final menu.  The dialog displays the final
+         score and an accounting of it (including subtractions for
+         running out the game timer if there is one.)
+     -->
+    <string name="finalscores_title">Final scores</string>
+
+    <!-- text of confirmation dialog shown when user chooses the menu
+         item with text board_menu_game_final and the game is not over
+         -->
+    <string name="ids_endnow">Are you sure you want to end the game now?</string>
+
+
 
     <!-- Text for button in new-user-info dialog with title just above.
       -->
