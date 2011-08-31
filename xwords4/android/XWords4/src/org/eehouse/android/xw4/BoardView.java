@@ -41,9 +41,6 @@ import junit.framework.Assert;
 
 public class BoardView extends View implements DrawCtx, BoardHandler,
                                                SyncedDraw {
-    private static final int k_miniTextSize = 24;
-    private static final int k_miniPaddingH = 2;
-    private static final int k_miniPaddingV = 2;
     private static final float MIN_FONT_DIPS = 14.0f;
 
     private static Bitmap s_bitmap;    // the board
@@ -66,6 +63,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Drawable m_rightArrow;
     private Drawable m_downArrow;
     private boolean m_blackArrow;
+    private boolean m_inTrade = false;
     // m_backgroundUsed: alpha not set ensures inequality
     private int m_backgroundUsed = 0x00000000;
     private boolean m_darkOnLight;
@@ -330,6 +328,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
+    public void setInTrade( boolean inTrade ) 
+    {
+        m_inTrade = inTrade;
+        m_jniThread.handle( JNIThread.JNICmd.CMD_INVALALL );
+    }
+
     // DrawCtxt interface implementation
     public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
                                int remCount, int dfs )
@@ -369,7 +373,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             : CommonPrefs.COLOR_TILE_BACK;
         fillRectOther( rOuter, indx );
 
-        m_fillPaint.setColor( BLACK );
+        m_fillPaint.setColor( adjustColor(BLACK) );
         drawCentered( m_remText, rInner, null );
     }
 
@@ -421,7 +425,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             fillRectOther( rOuter, CommonPrefs.COLOR_FOCUS );
         }
         String[] texts = m_scores[dsi.playerNum];
-        m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
+        m_fillPaint.setColor( adjustColor(m_playerColors[dsi.playerNum]) );
 
         Rect rect = new Rect( rOuter );
         int height = rect.height() / texts.length;
@@ -445,7 +449,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                          secondsLeft%60 );
 
             fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
-            m_fillPaint.setColor( m_playerColors[player] );
+            m_fillPaint.setColor( adjustColor(m_playerColors[player]) );
 
             Rect shorter = new Rect( rect );
             shorter.inset( 0, shorter.height() / 5 );
@@ -471,6 +475,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             boolean pending = 0 != (flags & CELL_HIGHLIGHT);
             String bonusStr = null;
 
+            if ( m_inTrade ) {
+                fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
+            }
 
             if ( owner < 0 ) {
                 owner = 0;
@@ -498,21 +505,21 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 backColor = m_otherColors[CommonPrefs.COLOR_TILE_BACK];
             }
 
-            fillRect( rect, backColor );
+            fillRect( rect, adjustColor( backColor ) );
 
             if ( empty ) {
                 if ( (CELL_ISSTAR & flags) != 0 ) {
                     m_origin.setBounds( rect );
                     m_origin.draw( m_canvas );
                 } else if ( null != bonusStr ) {
-                    m_fillPaint.
-                        setColor( m_otherColors[CommonPrefs.COLOR_BONUSHINT] );
+                    int color = m_otherColors[CommonPrefs.COLOR_BONUSHINT];
+                    m_fillPaint.setColor( adjustColor(color) );
                     Rect brect = new Rect( rect );
                     brect.inset( 0, brect.height()/10 );
                     drawCentered( bonusStr, brect, m_fontDims );
                 }
             } else {
-                m_fillPaint.setColor( foreColor );
+                m_fillPaint.setColor( adjustColor(foreColor) );
                 drawCentered( text, rect, m_fontDims );
             }
 
@@ -521,7 +528,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
 
             // frame the cell
-            m_strokePaint.setColor( FRAME_GREY );
+            m_strokePaint.setColor( adjustColor(FRAME_GREY) );
             m_canvas.drawRect( rect, m_strokePaint );
 
             drawCrosshairs( rect, flags );
@@ -622,84 +629,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         rect.offset( 0, rect.height() );
         drawCentered( getResources().getString( R.string.pts ), rect, null );
-    }
-
-    public String getMiniWText ( int textHint )
-    {
-        int id = 0;
-        switch( textHint ) {
-        case BONUS_DOUBLE_LETTER:
-            id = R.string.bonus_l2x;
-            break;
-        case BONUS_DOUBLE_WORD:
-            id = R.string.bonus_w2x;
-            break;
-        case BONUS_TRIPLE_LETTER:
-            id = R.string.bonus_l3x;
-            break;
-        case BONUS_TRIPLE_WORD:
-            id = R.string.bonus_w3x;
-            break;
-        case INTRADE_MW_TEXT:
-            id = R.string.trading_text;
-            break;
-        default:
-            Assert.fail();
-        }
-        return getResources().getString( id );
-    }
-
-    public void measureMiniWText( String str, int[] width, int[] height )
-    {
-        m_fillPaint.setTextSize( k_miniTextSize );
-        FontMetricsInt fmi = m_fillPaint.getFontMetricsInt();
-        int lineHeight = -fmi.top + fmi.leading;
-        
-        String[] lines = str.split("\n");
-        height[0] = (lines.length * lineHeight) + (2 * k_miniPaddingV);
-
-        int maxWidth = 0;
-        for ( String line : lines ) {
-            m_fillPaint.getTextBounds( line, 0, line.length(), m_boundsScratch );
-            int thisWidth = m_boundsScratch.width();
-            if ( maxWidth < thisWidth ) {
-                maxWidth = thisWidth;
-            }
-        }
-        width[0] = maxWidth + (k_miniPaddingH * 2);
-    }
-
-    public void drawMiniWindow( String text, Rect rect )
-    {
-        fillRect( rect, darkOnLight()? BLACK : WHITE );
-
-        m_fillPaint.setTextSize( k_miniTextSize );
-        m_fillPaint.setTextAlign( Paint.Align.CENTER );
-        m_fillPaint.setColor( darkOnLight()? WHITE : BLACK );
-
-        String[] lines = text.split("\n");
-        int lineHt = rect.height() / lines.length;
-        int bottom = rect.top + lineHt
-            - m_fillPaint.getFontMetricsInt().descent;
-        int center = rect.left + (rect.width() / 2);
-
-        for ( String line : lines ) {
-            m_canvas.drawText( line, center, bottom, m_fillPaint );
-            bottom += lineHt;
-        }
-
-        m_canvas.drawRect( rect, m_strokePaint );
-
-        // Unlike other draw methods, this one is usually called from
-        // outside board_draw and so doesn't benefit from the canvas
-        // getting moved to the board.  Set that up manually.  Sending
-        // DRAW cmd as I used to do draws *everything* and may well
-        // overwrite the miniwindow.
-        m_viewHandler.post( new Runnable() {
-                public void run() {
-                    BoardView.this.invalidate();
-                }
-            } );
     }
 
     public void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs )
@@ -992,5 +921,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
              arrow = new BitmapDrawable(bitmap); 
          }
          return arrow;
+    }
+
+    private int adjustColor( int color )
+    {
+        if ( m_inTrade ) {
+            color = color & 0x3FFFFFFF;
+        }
+        return color;
     }
 }

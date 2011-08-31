@@ -389,6 +389,34 @@ and_util_setIsServer(XW_UtilCtxt* uc, XP_Bool isServer )
     UTIL_CBK_TAIL();
 }
 
+#ifndef XWFEATURE_MINIWIN
+static void
+and_util_setInTrade( XW_UtilCtxt* uc, XP_U16 turn, XP_Bool entering )
+{
+    UTIL_CBK_HEADER("setInTrade", "(IZ)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, turn, entering );
+    UTIL_CBK_TAIL();
+}
+
+static void
+and_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
+{
+    UTIL_CBK_HEADER( "bonusSquareHeld", "(I)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, bonus );
+    UTIL_CBK_TAIL();
+}
+
+static void
+and_util_playerScoreHeld( XW_UtilCtxt* uc, const XP_UCHAR* txt )
+{
+    UTIL_CBK_HEADER( "playerScoreHeld", "(Ljava/lang/String;)V" );
+    jstring jmsg = (*env)->NewStringUTF( env, txt );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg );
+    (*env)->DeleteLocalRef( env, jmsg );
+    UTIL_CBK_TAIL();
+}
+#endif
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 and_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
@@ -472,6 +500,12 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(showChat);
     SET_PROC(remSelected);
     SET_PROC(setIsServer);
+
+#ifndef XWFEATURE_MINIWIN
+    SET_PROC(setInTrade);
+    SET_PROC(bonusSquareHeld);
+    SET_PROC(playerScoreHeld);
+#endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(addrChange);

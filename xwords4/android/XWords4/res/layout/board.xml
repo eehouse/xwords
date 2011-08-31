@@ -16,6 +16,25 @@
      android:longClickable="true"
      android:drawSelectorOnTop="false"/>
 
+  <LinearLayout android:id="@+id/exchange_buttons"
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                >
+    <Button android:id="@+id/exchange_commit"
+            android:layout_width="fill_parent" 
+            android:layout_weight="1" 
+            android:layout_height="wrap_content"
+            android:text="@string/button_trade_commit" 
+            />
+    <Button android:id="@+id/exchange_cancel"
+            android:layout_width="fill_parent" 
+            android:layout_weight="1" 
+            android:layout_height="wrap_content"
+            android:text="@string/button_trade_cancel" 
+            />
+  </LinearLayout>
+
   <LinearLayout android:id="@+id/toolbar_horizontal"
                 android:orientation="horizontal"
                 android:layout_width="fill_parent"

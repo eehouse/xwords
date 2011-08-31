@@ -85,8 +85,8 @@
     <!-- system menu for main board view -->
 	<string name="board_menu_done">Turn done</string>
 	<string name="board_menu_trade">Exchange tiles</string>
-    <string name="board_menu_trade_commit">Exchange done</string>
-    <string name="board_menu_trade_cancel">Cancel exchange</string>
+    <string name="button_trade_commit">Commit exchange</string>
+    <string name="button_trade_cancel">Cancel exchange</string>
 	<string name="board_menu_tray">Hide rack</string>
 	<string name="board_menu_undo_last">Undo last</string>
 	<string name="board_menu_values">Show values</string>
@@ -543,6 +543,14 @@
     <string name="not_again_newfrom">Create a new ready-to-play game
       using all the settings from this one.  That is, treat this game
       as a template.</string>
+
+    <string name="not_again_trading">You are entering tile-exchange
+      mode.  Tap tiles to add/remove from the set to be exchanged, and
+      use the menu to commit your turn or exit exchange mode.</string>
+
+    <string name="entering_trade">Entering trade mode; use menu to
+      exit</string>
+    <string name="exiting_trade">Exiting trade mode</string>
 
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>
