@@ -566,9 +566,11 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
             /* This is the first time we've moved!!!  Kill any future timers,
                and if there's a window up kill it.*/
             board->penTimerFired = XP_FALSE;
+#ifdef XWFEATURE_MINIWIN
             if ( valHintMiniWindowActive( board ) ) {
                 hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
             }
+#endif
             ds->didMove = XP_TRUE;
         }
     }

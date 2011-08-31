@@ -95,7 +95,11 @@ static void setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col,
                          XP_U16 row );
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 
+#ifdef XWFEATURE_MINIWIN
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
+#else
+# define invalTradeWindow(b,t,r)
+#endif
 static XP_Bool invalCellsWithTiles( BoardCtxt* board );
 
 static void setTimerIf( BoardCtxt* board );
@@ -197,13 +201,23 @@ board_destroy( BoardCtxt* board )
     XP_FREE( board->mpool, board );
 } /* board_destroy */
 
+static void
+setTradeInProgress( BoardCtxt* board, XP_U16 turn, XP_Bool inProgress )
+{
+    PerTurnInfo* pti = &board->pti[turn];
+    pti->tradeInProgress = inProgress;
+#ifndef XWFEATURE_MINIWIN
+    util_setInTrade( board->util, turn, inProgress );
+#endif
+}
+
 BoardCtxt* 
 board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
                       ServerCtxt* server, DrawCtx* draw, XW_UtilCtxt* util,
                       XP_U16 nPlayers )
 {
     BoardCtxt* board;
-    XP_U16 i;
+    XP_U16 ii;
     XP_U16 version = stream_getVersion( stream );
 
     board = board_make( MPPARM(mpool) model, server, draw, util );
@@ -233,8 +247,8 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 
     XP_ASSERT( !!server );
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        PerTurnInfo* pti = &board->pti[i];
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        PerTurnInfo* pti = &board->pti[ii];
         BoardArrow* arrow = &pti->boardArrow;
         arrow->col = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
         arrow->row = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
@@ -244,7 +258,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         pti->dividerLoc = (XP_U8)stream_getBits( stream, NTILES_NBITS );
         pti->traySelBits = (TileBit)stream_getBits( stream, 
                                                     MAX_TRAY_TILES );
-        pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
+        setTradeInProgress( board, ii, (XP_Bool)stream_getBits( stream, 1 ) );
 
         if ( version >= STREAM_VERS_KEYNAV ) {
 #ifdef KEYBOARD_NAV
@@ -345,16 +359,16 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
 void
 board_reset( BoardCtxt* board )
 {
-    XP_U16 i;
+    XP_U16 ii;
     XW_TrayVisState newState;
 
     XP_ASSERT( !!board->model );
 
     /* This is appropriate for a new game *ONLY*.  reset */
-    for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-        PerTurnInfo* pti = &board->pti[i];
+    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+        PerTurnInfo* pti = &board->pti[ii];
         pti->traySelBits = 0;
-        pti->tradeInProgress = XP_FALSE;
+        setTradeInProgress( board, ii, XP_FALSE );
         pti->dividerLoc = 0;
         XP_MEMSET( &pti->boardArrow, 0, sizeof(pti->boardArrow) );
     }
@@ -678,6 +692,7 @@ invalCursorCell( BoardCtxt* board )
 } /* invalCursorCell */
 #endif
 
+#ifdef XWFEATURE_MINIWIN
 static void
 invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw )
 {
@@ -711,6 +726,7 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
         stuff->text = (XP_UCHAR*)NULL;
     }
 } /* hideMiniWindow */
+#endif
 #endif
 
 static XP_Bool
@@ -850,7 +866,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
            there were plenty of tiles but now there aren't. */
         if ( newInfo->tradeInProgress && 
              server_countTilesInPool(board->server) < MIN_TRADE_TILES ) {
-            newInfo->tradeInProgress = XP_FALSE;
+            setTradeInProgress( board, newPlayer, XP_FALSE );
             newInfo->traySelBits = 0x00; /* clear any selected */
         }
 
@@ -904,6 +920,7 @@ board_resetEngine( BoardCtxt* board )
     server_resetEngine( board->server, board->selPlayer );
 } /* board_resetEngine */
 
+#ifdef XWFEATURE_MINIWIN
 /* Find a rectangle either centered on the board or pinned to the point at
  * which the mouse went down.
  */
@@ -929,6 +946,7 @@ positionMiniWRect( BoardCtxt* board, XP_Rect* rect, XP_Bool center )
     }
     forceRectToBoard( board, rect );
 } /*positionMiniWRect */
+#endif
 
 static XP_Bool
 timerFiredForPen( BoardCtxt* board ) 
@@ -954,7 +972,11 @@ timerFiredForPen( BoardCtxt* board )
                 bonus = util_getSquareBonus( board->util, board->model, 
                                              col, row );
                 if ( bonus != BONUS_NONE ) {
+#ifdef XWFEATURE_MINIWIN
                     text = draw_getMiniWText( board->draw, (XWMiniTextType)bonus );
+#else
+                    util_bonusSquareHeld( board->util, bonus );
+#endif
                 }
             }
             board->penTimerFired = XP_TRUE;
@@ -984,14 +1006,18 @@ timerFiredForPen( BoardCtxt* board )
                 XP_ASSERT( XP_STRLEN(buf) + explLen < sizeof(buf) );
                 XP_STRCAT( buf, scoreExpl );
             }
-
+#ifdef XWFEATURE_MINIWIN
             text = buf;
+#else
+            util_playerScoreHeld( board->util, buf );
+#endif
         }
 
         board->penTimerFired = XP_TRUE;
     }
 
     if ( !!text ) {
+#ifdef XWFEATURE_MINIWIN
         MiniWindowStuff* stuff = &board->miniWindowStuff[MINIWINDOW_VALHINT];
         makeMiniWindowForText( board, text, MINIWINDOW_VALHINT );
         XP_ASSERT( stuff->text == text );
@@ -1002,6 +1028,7 @@ timerFiredForPen( BoardCtxt* board )
             dragDropEnd( board, board->penDownX, board->penDownY, &dragged );
             XP_ASSERT( !dragged );
         }
+#endif
     }
     return draw;
 } /* timerFiredForPen */
@@ -1123,7 +1150,9 @@ board_invalAllTiles( BoardCtxt* board )
     while ( lastRow-- ) {
         board->redrawFlags[lastRow] = ~0;
     }
+#ifdef XWFEATURE_MINIWIN
     board->tradingMiniWindowInvalid = XP_TRUE;
+#endif
 
     board->needsDrawing = XP_TRUE;
 } /* board_invalAllTiles */
@@ -1967,6 +1996,7 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
     XP_ASSERT( col < MAX_ROWS );
     XP_ASSERT( row < MAX_ROWS );
 
+#ifdef XWFEATURE_MINIWIN
     /* if the trade window is up and this cell intersects it, set up to draw
        it again */
     if ( (board->trayVisState != TRAY_HIDDEN) && TRADE_IN_PROGRESS(board) ) {
@@ -1978,6 +2008,7 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
             }
         }
     }
+#endif
     
     board->needsDrawing = XP_TRUE;
 } /* invalCell */
@@ -2030,6 +2061,7 @@ moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
 } /* moveTileToArrowLoc */
 #endif
 
+#ifdef XWFEATURE_MINIWIN
 void
 makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
                        MiniWindowType winType )
@@ -2044,6 +2076,7 @@ makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text,
     stuff->rect = rect;
     stuff->text = text;
 } /* makeMiniWindowForText */
+#endif
 
 XP_Bool
 board_beginTrade( BoardCtxt* board )
@@ -2059,9 +2092,13 @@ board_beginTrade( BoardCtxt* board )
         } else if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
             util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
+#ifdef XWFEATURE_MINIWIN
             board->tradingMiniWindowInvalid = XP_TRUE;
+#else
+            util_setInTrade( board->util, board->selPlayer, XP_TRUE );
+#endif
             board->needsDrawing = XP_TRUE;
-            board->selInfo->tradeInProgress = XP_TRUE;
+            setTradeInProgress( board, board->selPlayer, XP_TRUE );
             setArrowVisible( board, XP_FALSE );
             result = XP_TRUE;
         }
@@ -2076,7 +2113,7 @@ board_endTrade( BoardCtxt* board )
     if ( result ) {
         PerTurnInfo* pti = board->selInfo;
         invalSelTradeWindow( board );
-        pti->tradeInProgress = XP_FALSE;
+        setTradeInProgress( board, board->selPlayer, XP_FALSE );
         pti->traySelBits = NO_TILES;
     }
     return result;
@@ -2084,12 +2121,16 @@ board_endTrade( BoardCtxt* board )
 
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
+# ifdef XWFEATURE_MINIWIN
 static XP_Bool
 ptOnTradeWindow( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
     XP_Rect* windowR = &board->miniWindowStuff[MINIWINDOW_TRADING].rect;
     return rectContainsPt( windowR, x, y );
 } /* ptOnTradeWindow */
+# else
+#  define ptOnTradeWindow(b,x,y) XP_FALSE
+# endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
 
@@ -2454,7 +2495,7 @@ exitTradeMode( BoardCtxt* board )
 {
     PerTurnInfo* pti = board->selInfo;
     invalSelTradeWindow( board );
-    pti->tradeInProgress = XP_FALSE;
+    setTradeInProgress( board, board->selPlayer, XP_FALSE );
     board_invalTrayTiles( board, pti->traySelBits );
     pti->traySelBits = 0x00;
     return XP_TRUE;
@@ -2493,9 +2534,11 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
     if ( dragged ) {
         /* do nothing further */
     } else if ( board->penTimerFired ) {
+#ifdef XWFEATURE_MINIWIN
         if ( valHintMiniWindowActive( board ) ) {
             hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
         }
+#endif
         draw = XP_TRUE;         /* might have cancelled a drag */
         /* Need to clean up if there's been any dragging happening */
         board->penTimerFired = XP_FALSE;
