@@ -39,6 +39,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.EditText;
@@ -54,7 +55,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
 public class BoardActivity extends XWActivity 
-    implements TransportProcs.TPMsgHandler {
+    implements TransportProcs.TPMsgHandler, View.OnClickListener {
 
     public static final String INTENT_KEY_ROWID = "rowid";
     public static final String INTENT_KEY_CHAT = "chat";
@@ -85,6 +86,7 @@ public class BoardActivity extends XWActivity
     private static final int ZOOM_ACTION = 10;
     private static final int UNDO_ACTION = 11;
     private static final int CHAT_ACTION = 12;
+    private static final int START_TRADE_ACTION = 13;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -102,6 +104,10 @@ public class BoardActivity extends XWActivity
     private Runnable m_screenTimer;
     private long m_rowid;
     private Toolbar m_toolbar;
+    private View m_tradeButtons;
+    private Button m_exchCommmitButton;
+    private Button m_exchCancelButton;
+
     private ArrayList<String> m_pendingChats = new ArrayList<String>();
 
     private String m_dlgBytes = null;
@@ -113,6 +119,7 @@ public class BoardActivity extends XWActivity
     private boolean m_firingPrefs;
     private JNIUtils m_jniu;
     private boolean m_volKeysZoom;
+    private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
 
     // call startActivityForResult synchronously
@@ -338,6 +345,11 @@ public class BoardActivity extends XWActivity
         m_gi = new CurGameInfo( this );
 
         m_view = (BoardView)findViewById( R.id.board_view );
+        m_tradeButtons = findViewById( R.id.exchange_buttons );
+        m_exchCommmitButton = (Button)findViewById( R.id.exchange_commit );
+        m_exchCommmitButton.setOnClickListener( this );
+        m_exchCancelButton = (Button)findViewById( R.id.exchange_cancel );
+        m_exchCancelButton.setOnClickListener( this );
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
 
         Intent intent = getIntent();
@@ -479,7 +491,6 @@ public class BoardActivity extends XWActivity
 
         if ( null != m_gsi ) {
             boolean inTrade = m_gsi.inTrade;
-            menu.setGroupVisible( R.id.group_intrade, inTrade ) ;
             menu.setGroupVisible( R.id.group_done, !inTrade );
         }
 
@@ -506,12 +517,6 @@ public class BoardActivity extends XWActivity
         //     break;
         case R.id.board_menu_trade:
             cmd = JNIThread.JNICmd.CMD_TRADE;
-            break;
-        case R.id.board_menu_trade_commit:
-            cmd = JNIThread.JNICmd.CMD_COMMIT;
-            break;
-        case R.id.board_menu_trade_cancel:
-            cmd = JNIThread.JNICmd.CMD_CANCELTRADE;
             break;
 
         case R.id.board_menu_tray:
@@ -626,9 +631,30 @@ public class BoardActivity extends XWActivity
             case CHAT_ACTION:
                 startChatActivity();
                 break;
+            case START_TRADE_ACTION:
+                m_view.setInTrade( m_inTrade );
+                Toast.makeText( this, getString( m_inTrade? 
+                                                 R.string.entering_trade
+                                                 : R.string.exiting_trade), 
+                                Toast.LENGTH_SHORT).show();
+
+                break;
             default:
                 Assert.fail();
             }
+        }
+    }
+
+    //////////////////////////////////////////////////
+    // View.OnClickListener interface
+    //////////////////////////////////////////////////
+    @Override
+    public void onClick( View view ) 
+    {
+        if ( view == m_exchCommmitButton ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_COMMIT );
+        } else if ( view == m_exchCancelButton ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_CANCELTRADE );
         }
     }
 
@@ -855,7 +881,6 @@ public class BoardActivity extends XWActivity
 
         public void setIsServer( boolean isServer )
         {
-            Utils.logf( "setIsServer(%b)", isServer );
             DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
                 : DeviceRole.SERVER_ISCLIENT;
             if ( newRole != m_gi.serverRole ) {
@@ -866,6 +891,70 @@ public class BoardActivity extends XWActivity
                     m_jniThread.handle( JNIThread.JNICmd.CMD_SWITCHCLIENT );
                 }
             }
+        }
+
+        @Override
+        public void setInTrade( int turn, final boolean entering )
+        {
+            if ( m_inTrade != entering ) {
+                m_inTrade = entering;
+                post( new Runnable() {
+                        public void run() {
+                            adjustTradeVisibility();
+                            if ( m_inTrade ) {
+                                showNotAgainDlgThen( R.string.not_again_trading, 
+                                                     R.string.key_notagain_trading,
+                                                     START_TRADE_ACTION );
+                            } else {
+                                dlgButtonClicked( START_TRADE_ACTION,
+                                                  AlertDialog.BUTTON_POSITIVE );
+                            }
+                        }
+                    } );
+            }
+        }
+
+        @Override
+        public void bonusSquareHeld( int bonus )
+        {
+            int id = 0;
+            switch( bonus ) {
+            case BONUS_DOUBLE_LETTER:
+                id = R.string.bonus_l2x;
+                break;
+            case BONUS_DOUBLE_WORD:
+                id = R.string.bonus_w2x;
+                break;
+            case BONUS_TRIPLE_LETTER:
+                id = R.string.bonus_l3x;
+                break;
+            case BONUS_TRIPLE_WORD:
+                id = R.string.bonus_w3x;
+                break;
+            default:
+                Assert.fail();
+            }
+
+            if ( 0 != id ) {
+                final String bonusStr = getString( id );
+                post( new Runnable() {
+                        public void run() {
+                            Toast.makeText( BoardActivity.this, bonusStr,
+                                            Toast.LENGTH_SHORT).show();
+                        }
+                    } );
+            }
+        }
+
+        @Override
+        public void playerScoreHeld( final String text )
+        {
+            post( new Runnable() {
+                    public void run() {
+                        Toast.makeText( BoardActivity.this, text,
+                                        Toast.LENGTH_SHORT).show();
+                    }
+                } );
         }
 
         public void setTimer( int why, int when, int handle )
@@ -1169,9 +1258,10 @@ public class BoardActivity extends XWActivity
                 if ( !CommonPrefs.getHideTitleBar( this ) ) {
                     setTitle( GameUtils.getName( this, m_rowid ) );
                 }
-                m_toolbar = new Toolbar( this );
+                m_toolbar = new Toolbar( this, R.id.toolbar_horizontal );
 
                 populateToolbar();
+                adjustTradeVisibility();
 
                 int flags = DBUtils.getMsgFlags( this, m_rowid );
                 if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
@@ -1351,6 +1441,12 @@ public class BoardActivity extends XWActivity
         m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.gameIsConnected );
+    }
+
+    private void adjustTradeVisibility()
+    {
+        m_toolbar.setVisibility( m_inTrade? View.GONE : View.VISIBLE );
+        m_tradeButtons.setVisibility( m_inTrade? View.VISIBLE : View.GONE );
     }
 
     private void setBackgroundColor()

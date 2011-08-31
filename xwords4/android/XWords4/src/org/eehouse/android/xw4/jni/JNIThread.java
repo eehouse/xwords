@@ -42,6 +42,7 @@ public class JNIThread extends Thread {
 
     public enum JNICmd { CMD_NONE,
             CMD_DRAW,
+            CMD_INVALALL,
             CMD_LAYOUT,
             CMD_START,
             CMD_SWITCHCLIENT,
@@ -304,6 +305,11 @@ public class JNIThread extends Thread {
                 if ( nextSame( JNICmd.CMD_DRAW ) ) {
                     continue;
                 }
+                draw = true;
+                break;
+
+            case CMD_INVALALL:
+                XwJNI.board_invalAll( m_jniGamePtr );
                 draw = true;
                 break;
 

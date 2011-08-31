@@ -65,6 +65,7 @@ public class Toolbar {
     };
 
     private XWActivity m_activity;
+    private View m_me;
 
     private enum ORIENTATION { ORIENT_UNKNOWN,
             ORIENT_PORTRAIT,
@@ -72,9 +73,15 @@ public class Toolbar {
             };
     private ORIENTATION m_curOrient = ORIENTATION.ORIENT_UNKNOWN;
 
-    public Toolbar( XWActivity activity )
+    public Toolbar( XWActivity activity, int id )
     {
         m_activity = activity;
+        m_me = activity.findViewById( id );
+    }
+
+    public void setVisibility( int vis )
+    {
+        m_me.setVisibility( vis );
     }
 
     public void setListener( int index, View.OnClickListener listener )

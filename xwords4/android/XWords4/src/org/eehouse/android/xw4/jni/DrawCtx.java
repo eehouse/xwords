@@ -71,9 +71,6 @@ public interface DrawCtx {
     public static final int BONUS_TRIPLE_LETTER = 3;
     public static final int BONUS_TRIPLE_WORD = 4;
     public static final int INTRADE_MW_TEXT = 5;
-    String getMiniWText ( int textHint );
-    void measureMiniWText( String text, int[] width, int[] height );
-    void drawMiniWindow( String text, Rect rect );
 
     void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs );
 

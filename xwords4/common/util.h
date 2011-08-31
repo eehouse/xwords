@@ -1,4 +1,4 @@
- /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
  * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -158,6 +158,12 @@ typedef struct UtilVtable {
 
     void (*m_util_remSelected)(XW_UtilCtxt* uc);
 
+#ifndef XWFEATURE_MINIWIN
+    void (*m_util_setInTrade)( XW_UtilCtxt* uc, XP_U16 turn, XP_Bool entering );
+    void (*m_util_bonusSquareHeld)( XW_UtilCtxt* uc, XWBonusType bonus );
+    void (*m_util_playerScoreHeld)( XW_UtilCtxt* uc, const XP_UCHAR* txt );
+#endif
+
 #ifndef XWFEATURE_STANDALONE_ONLY
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
@@ -257,6 +263,15 @@ struct XW_UtilCtxt {
 
 #define util_remSelected( uc )              \
          (uc)->vtable->m_util_remSelected((uc))
+
+#ifndef XWFEATURE_MINIWIN
+# define util_setInTrade( uc, t, e )                                    \
+         (uc)->vtable->m_util_setInTrade( (uc), (t), (e) )
+# define util_bonusSquareHeld( uc, b )                                  \
+         (uc)->vtable->m_util_bonusSquareHeld( (uc), (b) )
+# define util_playerScoreHeld( uc, txt )                                \
+         (uc)->vtable->m_util_playerScoreHeld( (uc), (txt) )
+#endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define util_addrChange( uc, addro, addrn ) \

@@ -127,14 +127,6 @@ gtkEraseRect( const GtkDrawCtx* dctx, const XP_Rect* rect )
                     rect->width, rect->height );
 } /* gtkEraseRect */
 
-static void
-frameRect( GtkDrawCtx* dctx, const XP_Rect* rect )
-{
-    draw_rectangle( dctx, DRAW_WHAT(dctx), dctx->drawGC, 
-                    FALSE, rect->left, rect->top, 
-                    rect->width, rect->height );
-} /* frameRect */
-
 #ifdef DRAW_WITH_PRIMITIVES
 
 static void
@@ -1149,9 +1141,18 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
                     &dctx->playerColors[playerNum], NULL );
 } /* gtk_draw_drawTimer */
 
-#define MINI_LINE_HT 12
-#define MINI_V_PADDING 6
-#define MINI_H_PADDING 8
+#ifdef XWFEATURE_MINIWIN
+# define MINI_LINE_HT 12
+# define MINI_V_PADDING 6
+# define MINI_H_PADDING 8
+
+static void
+frameRect( GtkDrawCtx* dctx, const XP_Rect* rect )
+{
+    draw_rectangle( dctx, DRAW_WHAT(dctx), dctx->drawGC, 
+                    FALSE, rect->left, rect->top, 
+                    rect->width, rect->height );
+} /* frameRect */
 
 static const XP_UCHAR*
 gtk_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), XWMiniTextType textHint )
@@ -1221,6 +1222,7 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
                     &localR, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
 } /* gtk_draw_drawMiniWindow */
+#endif
 
 #define SET_GDK_COLOR( c, r, g, b ) { \
      c.red = (r); \
@@ -1301,9 +1303,11 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTimer, gtk );
 
+#ifdef XWFEATURE_MINIWIN
     SET_VTABLE_ENTRY( dctx->vtable, draw_getMiniWText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, gtk );
+#endif
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, gtk );

@@ -13,15 +13,6 @@
           />
   </group>
 
-  <group android:id="@+id/group_intrade">
-    <item android:id="@+id/board_menu_trade_commit"
-          android:title="@string/board_menu_trade_commit"
-          />
-    <item android:id="@+id/board_menu_trade_cancel"
-          android:title="@string/board_menu_trade_cancel"
-          />
-  </group>
-
     <item android:id="@+id/board_menu_undo_last"
           android:title="@string/board_menu_undo_last"
           android:alphabeticShortcut="U"

@@ -83,6 +83,18 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "setIsServer" );
     }
 
+    public void setInTrade( int turn, boolean entering )
+    {
+    }
+
+    public void bonusSquareHeld( int bonus )
+    {
+    }
+
+    public void playerScoreHeld( String text )
+    {
+    }
+
     public String getUserString( int stringCode )
     {
         int id = 0;

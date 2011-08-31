@@ -397,16 +397,35 @@ curses_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
     globals->cGlobals.timerInfo[why].proc = NULL;
 }
 
+#ifdef USE_GLIBLOOP
+static gboolean
+onetime_idle( gpointer data )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    if ( server_do( globals->cGlobals.game.server ) ) {
+        if ( !!globals->cGlobals.game.board ) {
+            board_draw( globals->cGlobals.game.board );
+        }
+    }
+    return FALSE;
+}
+#endif 
+
 static void
 curses_util_requestTime( XW_UtilCtxt* uc ) 
 {
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+#ifdef USE_GLIBLOOP
+    (void)g_idle_add( onetime_idle, globals );
+#else
     /* I've created a pipe whose read-only end is plugged into the array of
        fds that my event loop polls so that I can write to it to simulate
        post-event on a more familiar system.  It works, so no complaints! */
-    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     if ( 1 != write( globals->timepipe[1], "!", 1 ) ) {
         XP_ASSERT(0);
     }
+#endif
 } /* curses_util_requestTime */
 
 static void
@@ -476,7 +495,11 @@ showStatus( CursesAppGlobals* globals )
 static XP_Bool
 handleQuit( CursesAppGlobals* globals )
 {
+#ifdef USE_GLIBLOOP
+    g_main_loop_quit( globals->loop );
+#else
     globals->timeToExit = XP_TRUE;
+#endif
     return XP_TRUE;
 } /* handleQuit */
 
@@ -867,8 +890,23 @@ SIGINTTERM_handler( int XP_UNUSED(signal) )
 }
 
 static void
-cursesListenOnSocket( CursesAppGlobals* globals, int newSock )
+cursesListenOnSocket( CursesAppGlobals* globals, int newSock
+#ifdef USE_GLIBLOOP
+                      , GIOFunc func 
+#endif
+)
 {
+#ifdef USE_GLIBLOOP
+    GIOChannel* channel = g_io_channel_unix_new( newSock );
+    guint watch = g_io_add_watch( channel, G_IO_IN | G_IO_OUT |G_IO_ERR,
+                                  func, globals );
+
+    SourceData* data = g_malloc( sizeof(*data) );
+    data->channel = channel;
+    data->watch = watch;
+    globals->sources = g_list_append( globals->sources, data );
+
+#else
     XP_ASSERT( globals->fdCount+1 < FD_MAX );
 
     XP_WARNF( "%s: setting fd[%d] to %d", __func__, globals->fdCount, newSock );
@@ -878,11 +916,27 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock )
     ++globals->fdCount;
     XP_LOGF( "%s: there are now %d sources to poll",
              __func__, globals->fdCount );
+#endif
 } /* cursesListenOnSocket */
 
 static void
 curses_stop_listening( CursesAppGlobals* globals, int sock )
 {
+#ifdef USE_GLIBLOOP
+    GList* sources = globals->sources;
+    while ( !!sources ) {
+        SourceData* data = sources->data;
+        gint fd = g_io_channel_unix_get_fd( data->channel );
+        if ( fd == sock ) {
+            g_io_channel_unref( data->channel );
+            g_free( data );
+            globals->sources = g_list_remove_link( globals->sources, sources );
+            break;
+        }
+        sources = sources->next;
+    }
+    
+#else
     int count = globals->fdCount;
     int i;
     bool found = false;
@@ -897,7 +951,71 @@ curses_stop_listening( CursesAppGlobals* globals, int sock )
 
     assert( found );
     --globals->fdCount;
+#endif
 } /* curses_stop_listening */
+
+#ifdef USE_GLIBLOOP
+static gboolean
+data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    if ( 0 != (G_IO_IN & condition) ) {
+        CursesAppGlobals* globals = (CursesAppGlobals*)data;
+        int fd = g_io_channel_unix_get_fd( source );
+        unsigned char buf[256];
+        int nBytes;
+        CommsAddrRec addrRec;
+        CommsAddrRec* addrp = NULL;
+
+        /* It's a normal data socket */
+        switch ( globals->cGlobals.params->conType ) {
+#ifdef XWFEATURE_RELAY
+        case COMMS_CONN_RELAY:
+            nBytes = linux_relay_receive( &globals->cGlobals, buf, 
+                                          sizeof(buf) );
+            break;
+#endif
+#ifdef XWFEATURE_SMS
+        case COMMS_CONN_SMS:
+            addrp = &addrRec;
+            nBytes = linux_sms_receive( &globals->cGlobals, fd,
+                                        buf, sizeof(buf), addrp );
+            break;
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+        case COMMS_CONN_BT:
+            nBytes = linux_bt_receive( fd, buf, sizeof(buf) );
+            break;
+#endif
+        default:
+            XP_ASSERT( 0 ); /* fired */
+        }
+
+        if ( nBytes != -1 ) {
+            XWStreamCtxt* inboundS;
+            XP_Bool redraw = XP_FALSE;
+
+            inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nBytes );
+            if ( !!inboundS ) {
+                if ( comms_checkIncomingStream( globals->cGlobals.game.comms,
+                                                inboundS, addrp ) ) {
+                    redraw = server_receiveMessage( globals->cGlobals.game.server, 
+                                                    inboundS );
+                }
+                stream_destroy( inboundS );
+            }
+                
+            /* if there's something to draw resulting from the
+               message, we need to give the main loop time to reflect
+               that on the screen before giving the server another
+               shot.  So just call the idle proc. */
+            if ( redraw ) {
+                curses_util_requestTime( globals->cGlobals.params->util );
+            }
+        }
+    }
+    return TRUE;
+}
+#endif
 
 static void
 curses_socket_changed( void* closure, int oldSock, int newSock,
@@ -908,13 +1026,32 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
         curses_stop_listening( globals, oldSock );
     }
     if ( newSock != -1 ) {
-        cursesListenOnSocket( globals, newSock );
+        cursesListenOnSocket( globals, newSock
+#ifdef USE_GLIBLOOP
+                              , data_socket_proc 
+#endif
+                              );
     }
 
 #ifdef XWFEATURE_RELAY
     globals->cGlobals.socket = newSock;
 #endif
 } /* curses_socket_changed */
+
+#ifdef USE_GLIBLOOP
+static gboolean
+fire_acceptor( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    if ( 0 != (G_IO_IN & condition) ) {
+        CursesAppGlobals* globals = (CursesAppGlobals*)data;
+
+        int fd = g_io_channel_unix_get_fd( source );
+        XP_ASSERT( fd == globals->csInfo.server.serverSocket );
+        (*globals->cGlobals.acceptor)( fd, globals );
+    }
+    return TRUE;
+}
+#endif
 
 static void
 curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
@@ -924,9 +1061,14 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
     XP_ASSERT( !cGlobals->acceptor || (func == cGlobals->acceptor) );
     cGlobals->acceptor = func;
     globals->csInfo.server.serverSocket = listener;
-    cursesListenOnSocket( globals, listener );
+    cursesListenOnSocket( globals, listener
+#ifdef USE_GLIBLOOP
+                          , fire_acceptor
+#endif
+                          );
 }
 
+#ifndef USE_GLIBLOOP
 #ifdef XWFEATURE_RELAY
 static int
 figureTimeout( CursesAppGlobals* globals )
@@ -990,10 +1132,12 @@ fireCursesTimer( CursesAppGlobals* globals )
     }
 } /* fireCursesTimer */
 #endif
+#endif
 
 /* 
  * Ok, so this doesn't block yet.... 
  */
+#ifndef USE_GLIBLOOP
 static XP_Bool
 blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 {
@@ -1122,6 +1266,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
     }
     return result;
 } /* blocking_gotEvent */
+#endif
 
 static void
 remapKey( int* kp )
@@ -1438,13 +1583,43 @@ relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED_DBG(relayErr) )
 #endif
 }
 
+#ifdef USE_GLIBLOOP
+static gboolean
+handle_stdin( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    if ( 0 != (G_IO_IN & condition) ) {
+        gint fd = g_io_channel_unix_get_fd( source );
+        XP_ASSERT( 0 == fd );
+        CursesAppGlobals* globals = (CursesAppGlobals*)data;
+        int ch = wgetch( globals->mainWin );
+        remapKey( &ch );
+        if (
+#ifdef CURSES_SMALL_SCREEN
+            handleKeyEvent( globals, g_rootMenuListShow, ch ) ||
+#endif
+            handleKeyEvent( globals, globals->menuList, ch )
+            || handleKeyEvent( globals, g_sharedMenuList, ch )
+            || passKeyToBoard( globals, ch ) ) {
+            if ( g_globals.doDraw ) {
+                board_draw( globals->cGlobals.game.board );
+                globals->doDraw = XP_FALSE;
+            }
+        }
+    }
+    return TRUE;
+}
+#endif
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
-    int piperesult;
     int width, height;
 
     memset( &g_globals, 0, sizeof(g_globals) );
+
+#ifdef USE_GLIBLOOP
+    g_globals.loop = g_main_loop_new( NULL, FALSE );
+#endif
 
     g_globals.amServer = isServer;
     g_globals.cGlobals.params = params;
@@ -1472,13 +1647,19 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             = params->connInfo.relay.relayName;
     }
 #endif
+
+#ifdef USE_GLIBLOOP
+    if ( params->quitAfter >= 0 ) {
+        cursesListenOnSocket( &g_globals, 0, handle_stdin ); /* stdin */
+    }
+#else
     cursesListenOnSocket( &g_globals, 0 ); /* stdin */
 
-    piperesult = pipe( g_globals.timepipe );
+    int piperesult = pipe( g_globals.timepipe );
     XP_ASSERT( piperesult == 0 );
-
     /* reader pipe */
     cursesListenOnSocket( &g_globals, g_globals.timepipe[0] );
+#endif
 
     struct sigaction act = { .sa_handler = SIGINTTERM_handler };
     sigaction( SIGINT, &act, NULL );
@@ -1595,6 +1776,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         drawMenuLargeOrSmall( &g_globals, g_boardMenuList ); 
         board_draw( g_globals.cGlobals.game.board );
 
+#ifdef USE_GLIBLOOP
+        g_main_loop_run( g_globals.loop );
+#else
         while ( !g_globals.timeToExit ) {
             int ch = 0;
             if ( blocking_gotEvent( &g_globals, &ch ) ) {
@@ -1613,7 +1797,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                 }
             }
         }
-
+#endif
     }
     if ( !!g_globals.cGlobals.params->fileName ) {
         XWStreamCtxt* outStream;
