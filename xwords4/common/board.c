@@ -201,13 +201,23 @@ board_destroy( BoardCtxt* board )
     XP_FREE( board->mpool, board );
 } /* board_destroy */
 
+static void
+setTradeInProgress( BoardCtxt* board, XP_U16 turn, XP_Bool inProgress )
+{
+    PerTurnInfo* pti = &board->pti[turn];
+    pti->tradeInProgress = inProgress;
+#ifndef XWFEATURE_MINIWIN
+    util_setInTrade( board->util, turn, inProgress );
+#endif
+}
+
 BoardCtxt* 
 board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
                       ServerCtxt* server, DrawCtx* draw, XW_UtilCtxt* util,
                       XP_U16 nPlayers )
 {
     BoardCtxt* board;
-    XP_U16 i;
+    XP_U16 ii;
     XP_U16 version = stream_getVersion( stream );
 
     board = board_make( MPPARM(mpool) model, server, draw, util );
@@ -237,8 +247,8 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 
     XP_ASSERT( !!server );
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        PerTurnInfo* pti = &board->pti[i];
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        PerTurnInfo* pti = &board->pti[ii];
         BoardArrow* arrow = &pti->boardArrow;
         arrow->col = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
         arrow->row = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
@@ -248,7 +258,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         pti->dividerLoc = (XP_U8)stream_getBits( stream, NTILES_NBITS );
         pti->traySelBits = (TileBit)stream_getBits( stream, 
                                                     MAX_TRAY_TILES );
-        pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
+        setTradeInProgress( board, ii, (XP_Bool)stream_getBits( stream, 1 ) );
 
         if ( version >= STREAM_VERS_KEYNAV ) {
 #ifdef KEYBOARD_NAV
@@ -349,16 +359,16 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
 void
 board_reset( BoardCtxt* board )
 {
-    XP_U16 i;
+    XP_U16 ii;
     XW_TrayVisState newState;
 
     XP_ASSERT( !!board->model );
 
     /* This is appropriate for a new game *ONLY*.  reset */
-    for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-        PerTurnInfo* pti = &board->pti[i];
+    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+        PerTurnInfo* pti = &board->pti[ii];
         pti->traySelBits = 0;
-        pti->tradeInProgress = XP_FALSE;
+        setTradeInProgress( board, ii, XP_FALSE );
         pti->dividerLoc = 0;
         XP_MEMSET( &pti->boardArrow, 0, sizeof(pti->boardArrow) );
     }
@@ -856,7 +866,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
            there were plenty of tiles but now there aren't. */
         if ( newInfo->tradeInProgress && 
              server_countTilesInPool(board->server) < MIN_TRADE_TILES ) {
-            newInfo->tradeInProgress = XP_FALSE;
+            setTradeInProgress( board, newPlayer, XP_FALSE );
             newInfo->traySelBits = 0x00; /* clear any selected */
         }
 
@@ -2088,7 +2098,7 @@ board_beginTrade( BoardCtxt* board )
             util_setInTrade( board->util, board->selPlayer, XP_TRUE );
 #endif
             board->needsDrawing = XP_TRUE;
-            board->selInfo->tradeInProgress = XP_TRUE;
+            setTradeInProgress( board, board->selPlayer, XP_TRUE );
             setArrowVisible( board, XP_FALSE );
             result = XP_TRUE;
         }
@@ -2103,10 +2113,7 @@ board_endTrade( BoardCtxt* board )
     if ( result ) {
         PerTurnInfo* pti = board->selInfo;
         invalSelTradeWindow( board );
-        pti->tradeInProgress = XP_FALSE;
-#ifndef XWFEATURE_MINIWIN
-        util_setInTrade( board->util, board->selPlayer, XP_FALSE );
-#endif
+        setTradeInProgress( board, board->selPlayer, XP_FALSE );
         pti->traySelBits = NO_TILES;
     }
     return result;
@@ -2488,10 +2495,7 @@ exitTradeMode( BoardCtxt* board )
 {
     PerTurnInfo* pti = board->selInfo;
     invalSelTradeWindow( board );
-    pti->tradeInProgress = XP_FALSE;
-#ifndef XWFEATURE_MINIWIN
-    util_setInTrade( board->util, board->selPlayer, XP_FALSE );
-#endif
+    setTradeInProgress( board, board->selPlayer, XP_FALSE );
     board_invalTrayTiles( board, pti->traySelBits );
     pti->traySelBits = 0x00;
     return XP_TRUE;
