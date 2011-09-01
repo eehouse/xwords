@@ -4,15 +4,11 @@
 <resources>
 
     <!--
-        ############################################################
-        # Screens
-        ############################################################ 
-      -->
-
-    <!--
        ############################################################
        # :Screens:
        # Main screen (list of games)
+       #
+       # This is the first screen you see when you launch Crosswords
        ############################################################ 
       -->
     <!-- window title -->
@@ -39,6 +35,32 @@
          complete.  Displayed in the lists of players found in each
          game listing. -->
     <string name="missing_player">(not here yet...)</string>
+
+    <!-- The display of each networked game includes one of three
+         states it can be in in the process of connecting to the
+         relay.  These next three strings are used to create those
+         three. -->
+    <!-- First state: is configured to use a room but has not yet
+         contacted the relay and been assigned that room. -->
+    <string name="summary_relay_conff">Configured for room
+      \"%s\"</string>
+    <!-- Second state: has been assigned to a room on the relay
+         (meaning the network is working) but there are not yet as
+         many players as expected: the game is not complete and play
+         cannot happen. -->
+    <string name="summary_relay_waitf">Waiting for players in room
+      \"%s\"</string>
+    <!-- Third state: enough devices have connected in the room to
+         form a complete game.  We'll be in this state as long as the
+         game exists. -->
+    <string name="summary_relay_connf">Game in play in room \"%s\"</string>
+
+    <!-- Games that have ended are listed with this string -->
+    <string name="gameOver">Game over</string>
+    <!-- Otherwise they're listed with this to give some indication of
+         how far along they are.  I may list "tiles left" someday
+         instead... -->
+    <string name="movesf">%d moves played</string>
 
     <!--    
        ############################################################
@@ -357,6 +379,31 @@
     <!-- title of above confirmation dialog -->
     <string name="confirm_save_title">Confirm save</string>
 
+
+    <!--     
+       ############################################################
+       # :Dialogs:
+       # Force remote dialog
+       #
+
+       # This alert dialog comes up when you're it the player edit
+       # dialog for a networked game and try to exit with none of the
+       # players configured as a remote player.  It forces you to mark
+       # one of them (or marks one itself if you cancel it.)
+       ############################################################
+       -->
+
+    <!-- title of this dialog -->
+    <string name="force_title">Off-device player[s]</string>
+    <!-- Explanatory text appears in the dialog -->
+    <string name="force_expl">In a multi-device game there must be at
+    least one player from and another not from this device.  Please
+    check off-device players.</string>
+    
+    <!-- Displayed as a "Toast" (mini window briefly displayed) if you
+       didn't choose a remote player and I was forced to pick one. I
+       always pick the first. -->
+    <string name="forced_consistent">Modified first player.</string>
 
     <!--     
        ############################################################
@@ -1099,6 +1146,42 @@
 	<string name="query_trade">Are you sure you want to exchange the
          selected tiles?</string>
 
+
+    <!-- ############################################################
+         # :Screens:
+         # Chat screen
+         #
+         # Shown when the chat button is pressed from the Board screen
+         # or when a chat message (as opposed to a move message) comes
+         # in from the relay.  It displays a history of messages with
+         # slightly different colored backgrounds and with prefixes to
+         # indicate whether they are local or remote in origin.
+         ############################################################
+      -->
+    <!-- title of the chat screen.  The name of the current game is
+         substituted for %s. -->
+    <string name="chat_titlef">%s message history</string>
+    <!-- Prefix for local messages -->
+    <string name="chat_local_id">Me: </string>
+    <!-- Prefix for remote messages -->
+    <string name="chat_other_id">Not me: </string>
+    <!-- Text on the button that causes the contents of the
+         message-composition field to be sent. -->
+    <string name="chat_send">Send</string>
+
+    <!--
+       ############################################################
+       # :Menus:
+       # Chat messages screen menu
+       ############################################################ 
+      -->
+
+    <!-- This is the only menu item in the chat screen.  Press it and
+         all the chat messages are erased.  There is no effect on
+         other devices in the game: no "clear chat" message is
+         transmitted. -->
+    <string name="chat_menu_clear">Clear history</string>
+
     <!-- 
        error messages
       -->
@@ -1199,22 +1282,6 @@
 
 
 
-    
-
-    <string name="force_title">Off-device player[s]</string>
-    <string name="force_expl">In a multi-device game there must be at
-    least one player from and another not from this device.  Please
-    check off-device players.</string>
-    <string name="forced_consistent">Modified first player.</string>
-
-    <string name="summary_relay_conff">Configured for room
-      \"%s\"</string>
-    <string name="summary_relay_waitf">Waiting for players in room
-      \"%s\"</string>
-    <string name="summary_relay_connf">Game in play in room \"%s\"</string>
-    <string name="gameOver">Game over</string>
-    <string name="movesf">%d moves played</string>
-
 
 
     <string name="about_web">For a manual or sourcecode see:
@@ -1270,11 +1337,6 @@
       %1$d-player games in %2$s. Try refreshing or creating your
       own.</string>
 
-    <string name="chat_local_id">Me: </string>
-    <string name="chat_other_id">Not me: </string>
-    <string name="chat_send">Send</string>
-    <string name="chat_titlef">%s message history</string>
-
     <string name="notify_title">Moves made</string>
     <string name="notify_body">New game moves have arrived</string>
 
@@ -1288,81 +1350,6 @@
     <string name="msgs_progress">Checking relay for moves
       etc...</string>
 
-    <string name="not_again_sync">This action checks the relay for
-      pending moves/messages for all networked games and flags those
-      with pending moves. When you open a flagged game it will connect
-      and sync. (In a later release these moves will be downloaded in
-      the background.)</string>
-
-    <string name="not_again_chat">This button opens the screen for
-      messaging between devices in this game.  Messages will be kept
-      until you delete the game that contains them.</string>
-
-    <string name="not_again_newgame">The new game you have created has
-      two players. Player 1 is a robot; Player 2 is you. Tap the game
-      to play; long-tap (hold your finger on the game) to change its
-      settings or for other options.</string>
-
-    <string name="not_again_hintprev">This button shows all possible
-      moves in ascending order (using tiles to the right of the rack
-      divider.)</string>
-    <string name="not_again_hintnext">This button shows all possible
-      moves in descending order (using tiles to the right of the rack
-      divider.)</string>
-    <string name="not_again_juggle">This button randomly rearranges
-      tiles in the rack.</string>
-    <string name="not_again_flip">This button flips the board across a
-      diagonal axis.</string>
-    <string name="not_again_zoom">This button toggles the board
-      between zoomed and regular size. Drag it when it is zoomed to
-      see parts that are hidden.</string>
-    <string name="not_again_undo">This button undos or redoes the
-      current turn.</string>
-
-    <string name="not_again_done">Tapping the \"pts\" counter that
-      appears at the right end of the rack is the easiest way to
-      commit a move. (There is no shortcut for ending a
-      trade.)</string>
-    <string name="not_again_unlock">This game is in play. Some
-      settings, e.g. the number of players, cannot be changed without
-      restarting it.  When you leave this page you will have a chance
-      to discard changes to avoid a restart.</string>
-
-    <string name="not_again_conndall">You have connected and joined a
-      game on the relay; the room is now full. The device that
-      created the room will now assign your initial tiles and play can
-      begin.</string>
-    <string name="not_again_conndfirst">You have connected and started
-      a game in a new room.  Once the remaining devices have joined
-      your room and Crosswords has assigned them tiles the game can
-      begin.</string>
-    <string name="not_again_conndmid">You have connected and joined a
-      game on the relay. You will be notified when the remaining
-      device[s] have joined your room and play can begin.</string>
-
-    <string name="not_again_dicts">Crosswords wordlists, which are
-      just compressed lists of words plus tile information, determine
-      what language a game is played in and how \"smart\" the robot
-      is.  You can download different sized wordlists in many
-      languages here.  Email me at eehouse@eehouse.org for information
-      on building and installing your own wordlists.</string>
-
-    <string name="not_again_arrow">Moving tiles to the board:\nYou can
-      drag tiles between the rack and the board, or you can tap an
-      empty square to place the board arrow. Rack tiles you tap will
-      replace the arrow (moving it one square in the direction it
-      points.)  Tap the arrow once to change its orientation; a second
-      time, to hide it. A checkbox in the Appearance section of
-      Settings will hide it permanently.</string>
-
-    <string name="not_again_turnchanged">The player whose turn it is
-      is drawn large in the scoreboard.  Hold your finger on a name in
-      the scoreboard to get details about that player\'s most recent
-      move.</string>
-
-    <string name="not_again_newfrom">Create a new ready-to-play game
-      using all the settings from this one.  That is, treat this game
-      as a template.</string>
 
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>
@@ -1394,37 +1381,6 @@
 
     <string name="no_download_warning">Unable to download. Do you have
       a web browser installed?</string>
-
-
-    <!--
-        ############################################################
-        # Menus
-        ############################################################ 
-      -->
-
-
-
-
-    <!--    
-            ############################################################
-            # Chat messages screen menu
-            ############################################################ 
-      -->
-
-    <string name="chat_menu_clear">Clear history</string>
-
-    <!--    
-            ############################################################
-            # Wordlists screen menu
-            ############################################################ 
-      -->
-    <!-- system menu for main board view -->
-
-
-gamel_menu_delete_all"
-board_menu_file_about"
-menu_revert_colors"
-menu_revert_all"
 
     <!--
         ############################################################
@@ -1468,11 +1424,6 @@ menu_revert_all"
     <!-- Title of generic dialog used to display information -->
 	<string name="info_title">FYI...</string>
 
-    <!-- Title of generic dialog used to display hints for new users
-         in strategic places.  This dialog always has a button with
-         the label just below-->
-	<string name="newbie_title">New user info</string>
-
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
     <string name="title_tile_picker">Letter for blank</string>
@@ -1507,27 +1458,164 @@ menu_revert_all"
          -->
     <string name="ids_endnow">Are you sure you want to end the game now?</string>
 
-
-
-    <!-- Text for button in new-user-info dialog with title just above.
-      -->
-    <string name="button_notagain">Do not show again</string>
-
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
 	<string name="query_title">A question...</string>
 	
-    <!--       
-               ###########################################################
-               # Welcome dialog
-               # 
-               # Shown the first time a user launches Crosswords (and
-               # again only if the preference for default first user
-               # name is cleared).  Its purpose is to encourage him to
-               # enter the name of the most common non-robot player on
-               # this device.
-               ###########################################################
-               -->
+    <!--
+       ###########################################################
+       # :Dialogs:
+       # New user info dialog
+       # 
+       # This dialog pops up in places I think new users need an
+       # explanation of something.  It always has a button allowing
+       # the user to say he doesn't need to see it again.
+       ########################################################### 
+      -->
+
+    <!-- Title of New user info dialog-->
+	<string name="newbie_title">New user info</string>
+
+    <!-- Text for button in new-user-info dialog with title just
+         above.  -->
+    <string name="button_notagain">Do not show again</string>
+
+    <!-- The following strings (all whose names start with
+         "not_again") appear in the New user info dialog.
+      -->
+
+    <!-- shown when user chooses the gamel_menu_checkmoves menu -->
+    <string name="not_again_sync">This action checks the relay for
+      pending moves/messages for all networked games and flags those
+      with pending moves. When you open a flagged game it will connect
+      and sync. (In a later release these moves will be downloaded in
+      the background.)</string>
+
+    <!-- Currently not used -->
+    <!-- <string name="not_again_newgame">The new game you have created has -->
+    <!--   two players. Player 1 is a robot; Player 2 is you. Tap the game -->
+    <!--   to play; long-tap (hold your finger on the game) to change its -->
+    <!--   settings or for other options.</string> -->
+
+    <!-- Shown when you tap the Previous Hint button on the toolbar of
+         the main Board screen -->
+    <string name="not_again_hintprev">This button shows all possible
+      moves in ascending order (using tiles to the right of the rack
+      divider.)</string>
+    <!-- Shown when you tap the next hint button on the toolbar of the
+         main Board screen -->
+    <string name="not_again_hintnext">This button shows all possible
+      moves in descending order (using tiles to the right of the rack
+      divider.)</string>
+    <!-- Shown when you tap the juggle button on the toolbar of the
+         main Board screen -->
+    <string name="not_again_juggle">This button randomly rearranges
+      tiles in the rack.</string>
+    <!-- Shown when you tap the flip button on the toolbar of the main
+         Board screen -->
+    <string name="not_again_flip">This button flips the board across a
+      diagonal axis.</string>
+    <!-- Shown when you tap the zoom (+/-) button on the toolbar of
+         the main Board screen -->
+    <string name="not_again_zoom">This button toggles the board
+      between zoomed and regular size. Drag it when it is zoomed to
+      see parts that are hidden.</string>
+    <!-- Shown when you tap the undo/redo button on the toolbar of the
+         main Board screen -->
+    <string name="not_again_undo">This button undos or redoes the
+      current turn.</string>
+    <!-- Shown when you tap the chat button on the toolbar of the
+         main Board screen -->
+    <string name="not_again_chat">This button opens the screen for
+      messaging between devices in this game.  Messages will be kept
+      until you delete the game that contains them.</string>
+
+
+    <!-- This is shown when you choose the board_menu_done menu item.
+         It's to let you know that there's a shortcut that does almost
+         the same thing. -->
+    <string name="not_again_done">Tapping the \"pts\" counter that
+      appears at the right end of the rack is the easiest way to
+      commit a move.</string>
+
+    <!-- Shown in the Game configure screen when the game_locked
+         checkbox is checked and you uncheck it.  -->
+    <string name="not_again_unlock">This game is in play. Some
+      settings, e.g. the number of players, cannot be changed without
+      restarting it.  When you leave this page you will have a chance
+      to discard changes to avoid a restart.</string>
+
+    <!-- This is shown in the Board screen when you successfully
+         connecting a game to the relay and are the first device in
+         the game to do so. -->
+    <string name="not_again_conndfirst">You have connected and started
+      a game in a new room.  Once the remaining devices have joined
+      your room and Crosswords has assigned them tiles the game can
+      begin.</string>
+
+    <!-- This is shown in the Board screen when you successfully
+         connecting a game to the relay and are not the first device
+         in the game but not the last either.  So it will only occur
+         for games with more than two devices, which are rare. -->
+    <string name="not_again_conndmid">You have connected and joined a
+      game on the relay. You will be notified when the remaining
+      device[s] have joined your room and play can begin.</string>
+
+    <!-- This is shown in the Board screen when you successfully
+         connecting a game to the relay and are the last device in the
+         game to do so, i.e. the game is now complete and you should
+         expect play to begin. -->
+    <string name="not_again_conndall">You have connected and joined a
+      game on the relay; the room is now full. The device that
+      created the room will now assign your initial tiles and play can
+      begin.</string>
+
+    <!-- This is not currently shown -->
+    <!-- <string name="not_again_dicts">Crosswords wordlists, which are -->
+    <!--   just compressed lists of words plus tile information, determine -->
+    <!--   what language a game is played in and how \"smart\" the robot -->
+    <!--   is.  You can download different sized wordlists in many -->
+    <!--   languages here.  Email me at eehouse@eehouse.org for information -->
+    <!--   on building and installing your own wordlists.</string> -->
+
+    <!-- Shown the first time the board arrow is drawn on the current
+         Board screen.  The idea is that you're tapping around
+         figuring out how to play and when you tap an empty cell the
+         arrow appears.  This explains it. -->
+    <string name="not_again_arrow">Moving tiles to the board:\nYou can
+      drag tiles between the rack and the board, or you can tap an
+      empty square to place the board arrow. Rack tiles you tap will
+      replace the arrow (moving it one square in the direction it
+      points.)  Tap the arrow once to change its orientation; a second
+      time, to hide it. A checkbox in the Appearance section of
+      Settings will hide it permanently.</string>
+
+    <!-- Shown when the board screen is visible and it's just become
+         another players turn. The idea is to give a hint about how to
+         find out about recent moves. -->
+    <string name="not_again_turnchanged">The player whose turn it is
+      is drawn large in the scoreboard.  Hold your finger on a name in
+      the scoreboard to get details about that player\'s most recent
+      move.</string>
+
+    <!-- Shown when you first pick the list_item_new_from menuitem -->
+    <string name="not_again_newfrom">Create a new ready-to-play game
+      using all the settings from this one.  That is, treat this game
+      as a template.</string>
+
+    <!--
+       ###########################################################
+       # :Dialogs:
+       # Welcome dialog
+       # 
+       # Shown the first time a user launches Crosswords (and
+       # again only if the preference for default first user
+       # name is cleared).  Its purpose is to encourage him to
+       # enter the name of the most common non-robot player on
+       # this device.
+       ###########################################################
+      -->
+
     <!-- Welcome dialog title -->
     <string name="default_name_title">Welcome</string>
     <!-- Welcome dialog text -->
@@ -1536,15 +1624,14 @@ menu_revert_all"
       when creating new games.  (You can change it later in the \"New
       game default\" section of Settings.)</string>
 
-
-    <!--       
-               ###########################################################
-               # About dialog
-               #
-               # Dialog giving copyright and other basic info about
-               # the app
-               ###########################################################
-               -->
+    <!-- 
+       ###########################################################
+       # :Dialogs:
+       # About dialog
+       #
+       # Dialog giving copyright and other basic info about # the app
+       ########################################################### 
+      -->
     <!-- String giving version info, which is substituted in. -->
     <string name="about_versf">Crosswords for Android, Version %1$s,
     rev %2$s.</string>
@@ -1553,7 +1640,7 @@ menu_revert_all"
     House. This free/open source software is released under the GNU Public
     License.</string>
     <!-- text of dialog showing the set of changes made since the last
-    release -->
+         release -->
     <string name="changes_title">Recent changes</string>
     <!-- text of button in About Crosswords dialog summoning above
          dialog -->
