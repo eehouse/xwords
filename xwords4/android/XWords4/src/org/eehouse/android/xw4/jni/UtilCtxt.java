@@ -47,6 +47,10 @@ public interface UtilCtxt {
     void remSelected();
     void setIsServer( boolean isServer );
 
+    void setInTrade( int turn, boolean entering );
+    void bonusSquareHeld( int bonus );
+    void playerScoreHeld( String text );
+
     static final int STRD_ROBOT_TRADED =                  1;
     static final int STR_ROBOT_MOVED =                    2;
     static final int STRS_VALUES_HEADER =                 3;

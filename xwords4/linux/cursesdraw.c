@@ -40,20 +40,6 @@ static void curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
 static void getTops( const XP_Rect* rect, int* toptop, int* topbot );
 
 static void
-drawRect( WINDOW* win, const XP_Rect* rect, char vert, char hor )
-{
-    wmove( win, rect->top-1, rect->left );
-    whline( win, hor, rect->width );
-    wmove( win, rect->top+rect->height, rect->left );
-    whline( win, hor, rect->width );
-
-    wmove( win, rect->top, rect->left-1 );
-    wvline( win, vert, rect->height );
-    wmove( win, rect->top, rect->left+rect->width );
-    wvline( win, vert, rect->height );
-} /* drawRect */
-
-static void
 eraseRect( CursesDrawCtx* dctx, const XP_Rect* rect )
 {
     int y, bottom = rect->top + rect->height;
@@ -484,6 +470,7 @@ curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
     eraseRect( dctx, &rect );
 } /* curses_draw_clearRect */
 
+#ifdef XWFEATURE_MINIWIN
 static const XP_UCHAR*
 curses_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), 
                           XWMiniTextType XP_UNUSED(textHint) )
@@ -498,6 +485,20 @@ curses_draw_measureMiniWText( DrawCtx* XP_UNUSED(p_dctx), const XP_UCHAR* str,
     *widthP = strlen(str) + 4;
     *heightP = 3;
 } /* curses_draw_measureMiniWText */
+
+static void
+drawRect( WINDOW* win, const XP_Rect* rect, char vert, char hor )
+{
+    wmove( win, rect->top-1, rect->left );
+    whline( win, hor, rect->width );
+    wmove( win, rect->top+rect->height, rect->left );
+    whline( win, hor, rect->width );
+
+    wmove( win, rect->top, rect->left-1 );
+    wvline( win, vert, rect->height );
+    wmove( win, rect->top, rect->left+rect->width );
+    wvline( win, vert, rect->height );
+} /* drawRect */
 
 static void
 curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
@@ -519,6 +520,7 @@ curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
     mvwprintw( dctx->boardWin, smallerR.top, smallerR.left, text, 
                strlen(text) );
 } /* curses_draw_drawMiniWindow */
+#endif
 
 #if 0
 static void
@@ -568,9 +570,11 @@ cursesDrawCtxtMake( WINDOW* boardWin )
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, curses );
 
+#ifdef XWFEATURE_MINIWIN
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_getMiniWText, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, curses );
+#endif
 
     dctx->boardWin = boardWin;
 

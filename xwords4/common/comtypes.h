@@ -217,6 +217,10 @@ typedef struct _PlayerDicts {
 #define LOG_RETURN_VOID() LOG_RETURNF("%s","void")
 #define XP_LOGLOC() XP_LOGF( "%s(), line %d", __func__, __LINE__ )
 
+#ifndef XP_USE
+# define XP_USE(v) v=v
+#endif
+
 #ifndef XP_UNUSED
 # if defined __GNUC__
 #  define XP_UNUSED(x) UNUSED__ ## x __attribute__((unused))

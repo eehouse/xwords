@@ -460,6 +460,12 @@
        # played etc., is displayed here)
        ############################################################
       -->
+
+    <!-- Buttons shown at bottom when board is in exchange mode,
+         i.e. after user has picked board_menu_trade menu item -->
+    <string name="button_trade_commit">Commit exchange</string>
+    <string name="button_trade_cancel">Cancel exchange</string>
+
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter -->
     <string name="bonus_l2x_summary">2L</string>
@@ -1350,6 +1356,14 @@
     <string name="msgs_progress">Checking relay for moves
       etc...</string>
 
+
+    <string name="not_again_trading">You are entering tile-exchange
+      mode.  Tap tiles to add/remove from the set to be exchanged, and
+      use the menu to commit your turn or exit exchange mode.</string>
+
+    <string name="entering_trade">Entering trade mode; use menu to
+      exit</string>
+    <string name="exiting_trade">Exiting trade mode</string>
 
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>

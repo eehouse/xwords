@@ -1,0 +1,113 @@
+# -*- coding: utf-8; mode: conf; -*-
+# Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:ja_JA
+CHARSET:utf-8
+
+
+D2DARGS: -r -term 0 -enc UTF-8
+# High bit means "official".  Next 7 bits are an enum where
+# Czech-ISO8859-2==0x11.  Low byte is padding.
+XLOC_HEADER:0x9000
+
+
+# There are too many ひらがあ for the current dawg format that limits
+# the number of tiles to 64.  Would have to change it again, and
+# Crosswords internals as well, to support Japanese.  But hey, this
+# could demo.  And leaving out letters selectively, say the が and ぱ
+# families, might make for a good-enough demo.  Need a word list first
+# though.
+
+<BEGIN_TILES>
+2			0		{"_"}
+2			1		'あ'
+2			1		'い'
+2			1		'う'
+2			1		'え'
+2			1		'お'
+2			1		'か'
+2			1		'き'
+2			1		'く'
+2			1		'け'
+2			1		'こ'
+2			1		'が'
+2			1		'ぎ'
+2			1		'ぐ'
+2			1		'げ'
+2			1		'ご'
+2			1		'さ'
+2			1		'し'
+2			1		'す'
+2			1		'せ'
+2			1		'そ'
+2			1		'ざ'
+2			1		'じ'
+2			1		'ず'
+2			1		'ぜ'
+2			1		'ぞ'
+2			1		'た'
+2			1		'ち'
+2			1		'つ'
+2			1		'て'
+2			1		'と'
+2			1		'だ'
+2			1		'ぢ'
+2			1		'づ'
+2			1		'で'
+2			1		'ど'
+2			1		'な'
+2			1		'に'
+2			1		'ぬ'
+2			1		'ね'
+2			1		'の'
+2			1		'は'
+2			1		'ひ'
+2			1		'ふ'
+2			1		'へ'
+2			1		'ほ'
+2			1		'ば'
+2			1		'び'
+2			1		'ぶ'
+2			1		'べ'
+2			1		'ぼ'
+2			1		'ぱ'
+2			1		'ぴ'
+2			1		'ぷ'
+2			1		'ぺ'
+2			1		'ぽ'
+<END_TILES>
+# 2			1		'ま'
+# 2			1		'み'
+# 2			1		'む'
+# 2			1		'め'
+# 2			1		'も'
+# 2			1		'や'
+# 2			1		'ゆ'
+# 2			1		'よ'
+# 2			1		'ゃ'
+# 2			1		'ゅ'
+# 2			1		'ょ'
+# 2			1		'ら'
+# 2			1		'り'
+# 2			1		'る'
+# 2			1		'れ'
+# 2			1		'ろ'
+# 2			1		'わ'
+# 2			1		'ゐ'
+# 2			1		'ゑ'
+# 2			1		'を'
+# 2			1		'ん'

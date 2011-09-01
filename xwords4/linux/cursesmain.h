@@ -65,7 +65,6 @@ struct CursesAppGlobals {
     WINDOW* menuWin;
     WINDOW* boardWin;
 
-    XP_Bool timeToExit;
     XP_Bool doDraw;
     const struct MenuList* menuList;
     XP_U16 nLinesMenu;
@@ -84,14 +83,25 @@ struct CursesAppGlobals {
     XWGameState state;
 
     struct sockaddr_in listenerSockAddr;
+#ifdef USE_GLIBLOOP
+    GMainLoop* loop;
+    GList* sources;
+#else
+    XP_Bool timeToExit;
     short fdCount;
     struct pollfd fdArray[FD_MAX]; /* one for stdio, one for listening socket */
-
     int timepipe[2];		/* for reading/writing "user events" */
+#endif
 
     XP_U32 nextTimer;
 };
 
+#ifdef USE_GLIBLOOP
+typedef struct _SourceData {
+    GIOChannel* channel;
+    gint watch;
+} SourceData;
+#endif
 
 DrawCtx* cursesDrawCtxtMake( WINDOW* boardWin );
 
