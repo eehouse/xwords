@@ -898,29 +898,6 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
-        public void setInTrade( int turn, final boolean entering )
-        {
-            if ( false ) {
-                if ( m_inTrade != entering ) {
-                    m_inTrade = entering;
-                    post( new Runnable() {
-                            public void run() {
-                                adjustTradeVisibility();
-                                if ( m_inTrade ) {
-                                    showNotAgainDlgThen( R.string.not_again_trading, 
-                                                         R.string.key_notagain_trading,
-                                                         START_TRADE_ACTION );
-                                } else {
-                                    dlgButtonClicked( START_TRADE_ACTION,
-                                                      AlertDialog.BUTTON_POSITIVE );
-                                }
-                            }
-                        } );
-                }
-            }
-        }
-
-        @Override
         public void bonusSquareHeld( int bonus )
         {
             int id = 0;
