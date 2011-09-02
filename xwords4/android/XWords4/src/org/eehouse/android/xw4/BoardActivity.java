@@ -516,7 +516,9 @@ public class BoardActivity extends XWActivity
         //     cmd = JNIThread.JNICmd.CMD_FLIP;
         //     break;
         case R.id.board_menu_trade:
-            cmd = JNIThread.JNICmd.CMD_TRADE;
+            showNotAgainDlgThen( R.string.not_again_trading, 
+                                 R.string.key_notagain_trading,
+                                 START_TRADE_ACTION );
             break;
 
         case R.id.board_menu_tray:
@@ -595,15 +597,16 @@ public class BoardActivity extends XWActivity
                                                 m_gi.nPlayers );
             }
         } else if ( AlertDialog.BUTTON_POSITIVE == which ) {
+            JNIThread.JNICmd cmd = JNIThread.JNICmd.CMD_NONE;
             switch ( id ) {
             case UNDO_LAST_ACTION:
-                m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_LAST );
+                cmd = JNIThread.JNICmd.CMD_UNDO_LAST;
                 break;
             case SYNC_ACTION:
                 doSyncMenuitem();
                 break;
             case COMMIT_ACTION:
-                checkAndHandle( JNIThread.JNICmd.CMD_COMMIT );
+                cmd = JNIThread.JNICmd.CMD_COMMIT;
                 break;
             case SHOW_EXPL_ACTION:
                 Toast.makeText( BoardActivity.this, m_toastStr, 
@@ -611,36 +614,37 @@ public class BoardActivity extends XWActivity
                 m_toastStr = null;
                 break;
             case PREV_HINT_ACTION:
-                checkAndHandle( JNIThread.JNICmd.CMD_PREV_HINT );
+                cmd = JNIThread.JNICmd.CMD_PREV_HINT;
                 break;
             case NEXT_HINT_ACTION:
-                checkAndHandle( JNIThread.JNICmd.CMD_NEXT_HINT );
+                cmd = JNIThread.JNICmd.CMD_NEXT_HINT;
                 break;
             case JUGGLE_ACTION:
-                checkAndHandle( JNIThread.JNICmd.CMD_JUGGLE );
+                cmd = JNIThread.JNICmd.CMD_JUGGLE;
                 break;
             case FLIP_ACTION:
-                checkAndHandle( JNIThread.JNICmd.CMD_FLIP );
+                cmd = JNIThread.JNICmd.CMD_FLIP;
                 break;
             case ZOOM_ACTION:
-                checkAndHandle( JNIThread.JNICmd.CMD_TOGGLEZOOM );
+                cmd = JNIThread.JNICmd.CMD_TOGGLEZOOM;
                 break;
             case UNDO_ACTION:
-                checkAndHandle( JNIThread.JNICmd.CMD_UNDO_CUR );
+                cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
                 break;
             case CHAT_ACTION:
                 startChatActivity();
                 break;
             case START_TRADE_ACTION:
-                m_view.setInTrade( m_inTrade );
-                Toast.makeText( this, getString( m_inTrade? 
-                                                 R.string.entering_trade
-                                                 : R.string.exiting_trade), 
+                Toast.makeText( this, R.string.entering_trade,
                                 Toast.LENGTH_SHORT).show();
-
+                cmd = JNIThread.JNICmd.CMD_TRADE;
                 break;
             default:
                 Assert.fail();
+            }
+
+            if ( JNIThread.JNICmd.CMD_NONE != cmd ) {
+                checkAndHandle( cmd );
             }
         }
     }
@@ -896,21 +900,23 @@ public class BoardActivity extends XWActivity
         @Override
         public void setInTrade( int turn, final boolean entering )
         {
-            if ( m_inTrade != entering ) {
-                m_inTrade = entering;
-                post( new Runnable() {
-                        public void run() {
-                            adjustTradeVisibility();
-                            if ( m_inTrade ) {
-                                showNotAgainDlgThen( R.string.not_again_trading, 
-                                                     R.string.key_notagain_trading,
-                                                     START_TRADE_ACTION );
-                            } else {
-                                dlgButtonClicked( START_TRADE_ACTION,
-                                                  AlertDialog.BUTTON_POSITIVE );
+            if ( false ) {
+                if ( m_inTrade != entering ) {
+                    m_inTrade = entering;
+                    post( new Runnable() {
+                            public void run() {
+                                adjustTradeVisibility();
+                                if ( m_inTrade ) {
+                                    showNotAgainDlgThen( R.string.not_again_trading, 
+                                                         R.string.key_notagain_trading,
+                                                         START_TRADE_ACTION );
+                                } else {
+                                    dlgButtonClicked( START_TRADE_ACTION,
+                                                      AlertDialog.BUTTON_POSITIVE );
+                                }
                             }
-                        }
-                    } );
+                        } );
+                }
             }
         }
 
@@ -1237,6 +1243,11 @@ public class BoardActivity extends XWActivity
                                     m_gsi = 
                                         m_jniThread.getGameStateInfo();
                                     updateToolbar();
+                                    if ( m_inTrade != m_gsi.inTrade ) {
+                                        m_inTrade = m_gsi.inTrade;
+                                        adjustTradeVisibility();
+                                        m_view.setInTrade( m_inTrade );
+                                    }
                                 }
                                 break;
                             }
