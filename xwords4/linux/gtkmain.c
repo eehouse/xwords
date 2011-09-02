@@ -1684,15 +1684,6 @@ gtk_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),
 
 #ifndef XWFEATURE_MINIWIN
 static void
-gtk_util_setInTrade( XW_UtilCtxt* uc, XP_U16 turn, XP_Bool entering )
-{
-    XP_LOGF( "%s(turn=%d; entering=%d)", __func__, turn, entering );
-    XP_USE( uc );
-    XP_USE( turn );
-    XP_USE( entering );
-}
-
-static void
 gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 {
     LOG_FUNC();
@@ -1928,7 +1919,6 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
 #endif
 
 #ifndef XWFEATURE_MINIWIN
-    util->vtable->m_util_setInTrade = gtk_util_setInTrade;
     util->vtable->m_util_bonusSquareHeld = gtk_util_bonusSquareHeld;
     util->vtable->m_util_playerScoreHeld = gtk_util_playerScoreHeld;
 #endif
