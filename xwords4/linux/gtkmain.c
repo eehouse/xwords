@@ -897,6 +897,15 @@ handle_trayEditToggle_off( GtkWidget* widget, GtkAppGlobals* globals )
 }
 #endif
 
+static void
+handle_trade_cancel( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    BoardCtxt* board = globals->cGlobals.game.board;
+    if ( board_endTrade( board ) ) {
+        board_draw( board );
+    }
+}
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 handle_resend( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
@@ -992,6 +1001,9 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
     (void)createAddItem( fileMenu, "Load dictionary", 
                          GTK_SIGNAL_FUNC(load_dictionary), globals );
 
+    (void)createAddItem( fileMenu, "Cancel trade", 
+                         GTK_SIGNAL_FUNC(handle_trade_cancel), globals );
+
     fileMenu = makeAddSubmenu( menubar, "Edit" );
 
     (void)createAddItem( fileMenu, "Undo", 
@@ -1005,7 +1017,6 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
     (void)createAddItem( fileMenu, "Dis-allow tray edit", 
                          GTK_SIGNAL_FUNC(handle_trayEditToggle_off), globals );
 #endif
-
     fileMenu = makeAddSubmenu( menubar, "Network" );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
