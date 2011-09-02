@@ -47,7 +47,6 @@ public interface UtilCtxt {
     void remSelected();
     void setIsServer( boolean isServer );
 
-    void setInTrade( int turn, boolean entering );
     void bonusSquareHeld( int bonus );
     void playerScoreHeld( String text );
 

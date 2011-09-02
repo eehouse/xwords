@@ -44,6 +44,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static final float MIN_FONT_DIPS = 14.0f;
 
     private static Bitmap s_bitmap;    // the board
+    private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
 
     private Context m_context;
     private Paint m_drawPaint;
@@ -425,7 +426,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             fillRectOther( rOuter, CommonPrefs.COLOR_FOCUS );
         }
         String[] texts = m_scores[dsi.playerNum];
-        m_fillPaint.setColor( adjustColor(m_playerColors[dsi.playerNum]) );
+        int color = m_playerColors[dsi.playerNum];
+        if ( !CommonPrefs.get(m_context).allowPeek ) {
+            color = adjustColor( color );
+        }
+        m_fillPaint.setColor( color );
 
         Rect rect = new Rect( rOuter );
         int height = rect.height() / texts.length;
@@ -510,6 +515,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             if ( empty ) {
                 if ( (CELL_ISSTAR & flags) != 0 ) {
                     m_origin.setBounds( rect );
+                    m_origin.setAlpha( m_inTrade? IN_TRADE_ALPHA >> 24 : 255 );
                     m_origin.draw( m_canvas );
                 } else if ( null != bonusStr ) {
                     int color = m_otherColors[CommonPrefs.COLOR_BONUSHINT];
@@ -926,7 +932,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int adjustColor( int color )
     {
         if ( m_inTrade ) {
-            color = color & 0x3FFFFFFF;
+            color = color & IN_TRADE_ALPHA;
         }
         return color;
     }

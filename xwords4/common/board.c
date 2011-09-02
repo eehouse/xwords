@@ -201,16 +201,6 @@ board_destroy( BoardCtxt* board )
     XP_FREE( board->mpool, board );
 } /* board_destroy */
 
-static void
-setTradeInProgress( BoardCtxt* board, XP_U16 turn, XP_Bool inProgress )
-{
-    PerTurnInfo* pti = &board->pti[turn];
-    pti->tradeInProgress = inProgress;
-#ifndef XWFEATURE_MINIWIN
-    util_setInTrade( board->util, turn, inProgress );
-#endif
-}
-
 BoardCtxt* 
 board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
                       ServerCtxt* server, DrawCtx* draw, XW_UtilCtxt* util,
@@ -258,7 +248,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         pti->dividerLoc = (XP_U8)stream_getBits( stream, NTILES_NBITS );
         pti->traySelBits = (TileBit)stream_getBits( stream, 
                                                     MAX_TRAY_TILES );
-        setTradeInProgress( board, ii, (XP_Bool)stream_getBits( stream, 1 ) );
+        pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
 
         if ( version >= STREAM_VERS_KEYNAV ) {
 #ifdef KEYBOARD_NAV
@@ -368,7 +358,7 @@ board_reset( BoardCtxt* board )
     for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         PerTurnInfo* pti = &board->pti[ii];
         pti->traySelBits = 0;
-        setTradeInProgress( board, ii, XP_FALSE );
+        pti->tradeInProgress = XP_FALSE;
         pti->dividerLoc = 0;
         XP_MEMSET( &pti->boardArrow, 0, sizeof(pti->boardArrow) );
     }
@@ -774,10 +764,12 @@ board_commitTurn( BoardCtxt* board )
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
             } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
                                         (XWStreamCtxt*)NULL ) ) {
-                result = server_commitTrade( board->server, 
-                                             pti->traySelBits );
+                TileBit traySelBits = pti->traySelBits;
+                /* server_commitTrade() changes selPlayer, so board_endTrade
+                   must be called first() */
+                (void)board_endTrade( board );
+                result = server_commitTrade( board->server, traySelBits );
             }
-            (void)board_endTrade( board );
         } else {
             XP_Bool warn, legal;
             WordNotifierInfo info;
@@ -866,7 +858,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
            there were plenty of tiles but now there aren't. */
         if ( newInfo->tradeInProgress && 
              server_countTilesInPool(board->server) < MIN_TRADE_TILES ) {
-            setTradeInProgress( board, newPlayer, XP_FALSE );
+            newInfo->tradeInProgress = XP_FALSE;
             newInfo->traySelBits = 0x00; /* clear any selected */
         }
 
@@ -2094,11 +2086,9 @@ board_beginTrade( BoardCtxt* board )
         } else {
 #ifdef XWFEATURE_MINIWIN
             board->tradingMiniWindowInvalid = XP_TRUE;
-#else
-            util_setInTrade( board->util, board->selPlayer, XP_TRUE );
 #endif
             board->needsDrawing = XP_TRUE;
-            setTradeInProgress( board, board->selPlayer, XP_TRUE );
+            board->selInfo->tradeInProgress = XP_TRUE;
             setArrowVisible( board, XP_FALSE );
             result = XP_TRUE;
         }
@@ -2113,7 +2103,7 @@ board_endTrade( BoardCtxt* board )
     if ( result ) {
         PerTurnInfo* pti = board->selInfo;
         invalSelTradeWindow( board );
-        setTradeInProgress( board, board->selPlayer, XP_FALSE );
+        pti->tradeInProgress = XP_FALSE;
         pti->traySelBits = NO_TILES;
     }
     return result;
@@ -2495,7 +2485,7 @@ exitTradeMode( BoardCtxt* board )
 {
     PerTurnInfo* pti = board->selInfo;
     invalSelTradeWindow( board );
-    setTradeInProgress( board, board->selPlayer, XP_FALSE );
+    pti->tradeInProgress = XP_FALSE;
     board_invalTrayTiles( board, pti->traySelBits );
     pti->traySelBits = 0x00;
     return XP_TRUE;
