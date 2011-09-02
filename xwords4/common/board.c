@@ -774,10 +774,10 @@ board_commitTurn( BoardCtxt* board )
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
             } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
                                         (XWStreamCtxt*)NULL ) ) {
+                (void)board_endTrade( board );
                 result = server_commitTrade( board->server, 
                                              pti->traySelBits );
             }
-            (void)board_endTrade( board );
         } else {
             XP_Bool warn, legal;
             WordNotifierInfo info;
