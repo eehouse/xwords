@@ -426,7 +426,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             fillRectOther( rOuter, CommonPrefs.COLOR_FOCUS );
         }
         String[] texts = m_scores[dsi.playerNum];
-        m_fillPaint.setColor( adjustColor(m_playerColors[dsi.playerNum]) );
+        int color = m_playerColors[dsi.playerNum];
+        if ( !CommonPrefs.get(m_context).allowPeek ) {
+            color = adjustColor( color );
+        }
+        m_fillPaint.setColor( color );
 
         Rect rect = new Rect( rOuter );
         int height = rect.height() / texts.length;
