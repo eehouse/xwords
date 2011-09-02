@@ -757,18 +757,18 @@ board_commitTurn( BoardCtxt* board )
            nothing */
     } else if ( checkRevealTray( board ) ) {
         if ( pti->tradeInProgress ) {
+            TileBit traySelBits = pti->traySelBits;
             result = XP_TRUE; /* there's at least the window to clean up
                                  after */
+            /* server_commitTrade() changes selPlayer, so board_endTrade
+               must be called first() */
+            (void)board_endTrade( board );
 
-            if ( NO_TILES == pti->traySelBits ) {
+            if ( NO_TILES == traySelBits ) {
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
             } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
                                         (XWStreamCtxt*)NULL ) ) {
-                TileBit traySelBits = pti->traySelBits;
-                /* server_commitTrade() changes selPlayer, so board_endTrade
-                   must be called first() */
-                (void)board_endTrade( board );
-                result = server_commitTrade( board->server, traySelBits );
+                (void)server_commitTrade( board->server, traySelBits );
             }
         } else {
             XP_Bool warn, legal;
@@ -2077,13 +2077,12 @@ board_beginTrade( BoardCtxt* board )
 
     result = preflight( board );
     if ( result ) {
-        /* check turn before tradeInProgress so I can't tell my opponent's in a
-           trade */
-        if ( 0 != model_getCurrentMoveCount( board->model, board->selPlayer )){
-            util_userError( board->util, ERR_CANT_TRADE_MID_MOVE );
-        } else if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
+        if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
             util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
+            model_resetCurrentTurn( board->model, board->selPlayer );
+            XP_ASSERT( 0 == model_getCurrentMoveCount( board->model, 
+                                                       board->selPlayer ) );
 #ifdef XWFEATURE_MINIWIN
             board->tradingMiniWindowInvalid = XP_TRUE;
 #endif
