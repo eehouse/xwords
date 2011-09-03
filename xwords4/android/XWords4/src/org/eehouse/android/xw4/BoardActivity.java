@@ -930,8 +930,13 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
-        public void playerScoreHeld( final String text )
+        public void playerScoreHeld( int player )
         {
+            String expl = XwJNI.model_getPlayersLastScore( m_jniGamePtr, 
+                                                            player );
+            String name = m_gi.players[player].name;
+            final String text = expl.length() > 0 ? 
+                String.format( "%s\n%s", name, expl ) : name;
             post( new Runnable() {
                     public void run() {
                         Toast.makeText( BoardActivity.this, text,
@@ -1071,9 +1076,6 @@ public class BoardActivity extends XWActivity
                 break;
             case UtilCtxt.ERR_NO_PEEK_ROBOT_TILES:
                 resid = R.string.str_no_peek_robot_tiles;
-                break;
-            case UtilCtxt.ERR_CANT_TRADE_MID_MOVE:
-                resid = R.string.str_cant_trade_mid_move;
                 break;
             case UtilCtxt.ERR_NO_EMPTY_TRADE:
                 resid = R.string.str_no_empty_trade;

@@ -1703,11 +1703,19 @@ gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 }
 
 static void
-gtk_util_playerScoreHeld( XW_UtilCtxt* uc, const XP_UCHAR* txt )
+gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 {
     LOG_FUNC();
-    XP_USE( uc );
-    XP_USE( txt );
+
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+
+    XP_UCHAR scoreExpl[48];
+    XP_U16 explLen = sizeof(scoreExpl);
+    
+    if ( model_getPlayersLastScore( globals->cGlobals.game.model,
+                                    player, scoreExpl, &explLen ) ) {
+        XP_LOGF( "got: %s", scoreExpl );
+    }
 }
 #endif
 

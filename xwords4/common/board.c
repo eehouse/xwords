@@ -945,7 +945,9 @@ timerFiredForPen( BoardCtxt* board )
 {
     XP_Bool draw = XP_FALSE;
     const XP_UCHAR* text = (XP_UCHAR*)NULL;
+#ifdef XWFEATURE_MINIWIN
     XP_UCHAR buf[80];
+#endif
 
     if ( board->penDownObject == OBJ_BOARD ) {
         if ( !dragDropInProgress( board ) || !dragDropHasMoved( board ) ) {
@@ -974,7 +976,6 @@ timerFiredForPen( BoardCtxt* board )
             board->penTimerFired = XP_TRUE;
         }
     } else if ( board->penDownObject == OBJ_SCORE ) {
-        LocalPlayer* lp;
         XP_S16 scoreIndex = figureScoreRectTapped( board, board->penDownX, 
                                                    board->penDownY );
         /* I've seen this assert fire on simulator.  No log is kept so I can't
@@ -982,11 +983,11 @@ timerFiredForPen( BoardCtxt* board )
         /* XP_ASSERT( player >= 0 ); */
         if ( scoreIndex > CURSOR_LOC_REM ) {
             XP_U16 player = scoreIndex - 1;
+#ifdef XWFEATURE_MINIWIN
             const XP_UCHAR* format;
             XP_UCHAR scoreExpl[48];
             XP_U16 explLen;
-
-            lp = &board->gi->players[player];
+            LocalPlayer* lp = &board->gi->players[player];
             format = util_getUserString( board->util, lp->isLocal? 
                                          STR_LOCAL_NAME: STR_NONLOCAL_NAME );
             XP_SNPRINTF( buf, sizeof(buf), format, emptyStringIfNull(lp->name) );
@@ -998,10 +999,9 @@ timerFiredForPen( BoardCtxt* board )
                 XP_ASSERT( XP_STRLEN(buf) + explLen < sizeof(buf) );
                 XP_STRCAT( buf, scoreExpl );
             }
-#ifdef XWFEATURE_MINIWIN
             text = buf;
 #else
-            util_playerScoreHeld( board->util, buf );
+            util_playerScoreHeld( board->util, player );
 #endif
         }
 

@@ -399,12 +399,10 @@ and_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 }
 
 static void
-and_util_playerScoreHeld( XW_UtilCtxt* uc, const XP_UCHAR* txt )
+and_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 {
-    UTIL_CBK_HEADER( "playerScoreHeld", "(Ljava/lang/String;)V" );
-    jstring jmsg = (*env)->NewStringUTF( env, txt );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg );
-    (*env)->DeleteLocalRef( env, jmsg );
+    UTIL_CBK_HEADER( "playerScoreHeld", "(I)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, player );
     UTIL_CBK_TAIL();
 }
 #endif
