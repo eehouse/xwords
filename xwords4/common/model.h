@@ -238,7 +238,8 @@ void model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
 
 /********************* scoring ********************/
 
-typedef XP_Bool (*WordNotifierProc)( XP_UCHAR* word, void* closure );
+typedef XP_Bool (*WordNotifierProc)( const XP_UCHAR* word, XP_Bool isLegal, 
+                                     void* closure );
 typedef struct WordNotifierInfo {
     WordNotifierProc proc;
     void* closure;
@@ -265,8 +266,7 @@ void model_figureFinalScores( ModelCtxt* model, ScoresArray* scores,
 /* figureMoveScore is meant only for the engine's use */
 XP_U16 figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* mvInfo, 
                         EngineCtxt* engine, XWStreamCtxt* stream, 
-                        WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord,
-                        XP_U16 mainWordLen );
+                        WordNotifierInfo* notifyInfo );
 
 /********************* persistence ********************/
 #ifdef INCLUDE_IO_SUPPORT

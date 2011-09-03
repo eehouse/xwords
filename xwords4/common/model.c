@@ -1933,6 +1933,23 @@ model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
     }
 } /* model_writeGameHistory */
 
+typedef struct _FirstWordData {
+    XP_UCHAR word[32];
+} FirstWordData;
+
+static XP_Bool
+getFirstWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
+{
+    LOG_FUNC();
+    if ( isLegal ) {
+        FirstWordData* data = (FirstWordData*)closure;
+        if ( '\0' == data->word[0] && '\0' != word[0] ) {
+            XP_STRCAT( data->word, word );
+        }
+    }
+    return XP_TRUE;
+}
+
 static void
 scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany, 
                XP_UCHAR* buf, XP_U16* bufLen )
@@ -1945,8 +1962,9 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
         XP_STRNCPY( buf, str, len + 1 );
     } else {
         XP_U16 score;
-        XP_UCHAR wordBuf[MAX_ROWS+1];
         const XP_UCHAR* format;
+        WordNotifierInfo notifyInfo;
+        FirstWordData data;
 
         ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
         XP_U16 turn;
@@ -1959,14 +1977,16 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
             XP_ASSERT( 0 );
         }
 
+        data.word[0] = '\0';
+        notifyInfo.proc = getFirstWord;
+        notifyInfo.closure = &data;
         score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL, 
-                                 (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL, 
-                                 wordBuf, VSIZE(wordBuf) );
+                                 (XWStreamCtxt*)NULL, &notifyInfo );
 
         model_destroy( tmpModel );
 
         format = util_getUserString( model->vol.util, STRSD_SUMMARYSCORED );
-        *bufLen = XP_SNPRINTF( buf, *bufLen, format, wordBuf, score );
+        *bufLen = XP_SNPRINTF( buf, *bufLen, format, data.word, score );
     }
 } /* scoreLastMove */
 

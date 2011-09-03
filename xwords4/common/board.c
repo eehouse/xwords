@@ -720,20 +720,21 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 #endif
 
 static XP_Bool
-warnBadWords( XP_UCHAR* word, void* closure )
+warnBadWords( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
 {
-    BadWordInfo bwi;
-    XP_Bool ok;
-    BoardCtxt* board = (BoardCtxt*)closure;
-    XP_S16 turn = server_getCurrentTurn( board->server );
+    XP_Bool ok = XP_TRUE;
+    if ( !isLegal ) {
+        BadWordInfo bwi;
+        BoardCtxt* board = (BoardCtxt*)closure;
+        XP_S16 turn = server_getCurrentTurn( board->server );
 
-    bwi.nWords = 1;
-    bwi.words[0] = word;
+        bwi.nWords = 1;
+        bwi.words[0] = word;
 
-    ok = !board->badWordRejected
-        && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
-    board->badWordRejected = !ok || board->badWordRejected;
-
+        ok = !board->badWordRejected
+            && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
+        board->badWordRejected = !ok || board->badWordRejected;
+    }
     return ok;
 } /* warnBadWords */
 
