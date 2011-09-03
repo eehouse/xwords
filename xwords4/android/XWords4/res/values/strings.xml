@@ -122,8 +122,6 @@
     <string name="strd_traded">Traded %d</string>
     <string name="str_lostturn">Lost turn</string>
     <string name="str_commit_confirm">Commit the current move?\n</string>
-    <string name="str_local_name">%s</string>
-    <string name="str_nonlocal_name">(remote)</string>
     <string name="str_nonlocal_namef">%s (remote)</string>
     <string name="vs_join">\u0020vs.\u0020</string>
     <string name="str_game_namef">%1$s (%2$s)</string>
@@ -137,7 +135,6 @@
 	<string name="str_tiles_must_contact">New pieces must contact others already in place (or the middle square on the first move)</string>
 	<string name="str_not_your_turn">You can\'t do that; it\'s not your turn!</string>
 	<string name="str_no_peek_robot_tiles">No peeking at the robot\'s tiles!</string>
-	<string name="str_cant_trade_mid_move">Remove played tiles before exchanging.</string>
     <string name="str_no_empty_trade">Trade cancelled because no tiles
       selected.  (It\'s still your turn.)</string>
 	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to exchange.</string>

@@ -98,8 +98,6 @@
     <string name="strsd_summaryscored"></string>
     <string name="str_lostturn">Torn perdut</string>
     <string name="str_commit_confirm">Voleu fer la jugada?\n</string>
-    <string name="str_local_name">%s</string>
-    <string name="str_nonlocal_namef">%s (remot)</string>
     <string name="str_bonus_all">Bonificació per usar totes les fitxes: 50\n</string>
     <string name="strd_turn_score">Puntuació del torn: %d\n</string>
 
@@ -110,7 +108,6 @@
     <string name="str_tiles_must_contact">Les fitxes noves han de tocar alguna de les que ja estan jugades al tauler (o la casella central en la primera jugada).</string>
     <string name="str_not_your_turn">No podeu fer això, no és el vostre torn!</string>
     <string name="str_no_peek_robot_tiles">No podeu mirar les fitxes del robot!</string>
-    <string name="str_cant_trade_mid_move">Recolliu les fitxes posades al tauler abans de canviar fitxer.</string>
     <string name="str_too_few_tiles_left_to_trade">Hi ha poques fitxes al saquet i ja no podeu canviar-les.</string>
     <string name="str_cant_undo_tileassign">L\'assignació de fitxers no es pot desfer.</string>
     <string name="str_cant_hint_while_disabled">Les pistes es troben inhabilitades per a aquesta partida. Habiliteu-les per a una partida nova al menú Preferències.</string>
