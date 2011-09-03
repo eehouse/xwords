@@ -498,7 +498,7 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo,
            crosscheck direction.  Score may still be 0 after the call to
            scoreWord above.  Keep trying to get some text in mainWord until
            something's been scored. */
-        if ( score > 0 ) {
+        if ( NULL != mainWord && score > 0 ) {
             mainWord = NULL;
         }
 
