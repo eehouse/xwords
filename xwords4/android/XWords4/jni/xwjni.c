@@ -908,6 +908,25 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getNMoves
 }
 
 JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
+(JNIEnv* env, jclass C, jint gamePtr, jint player )
+{
+    jstring result = NULL;
+    XWJNI_START();
+    XP_ASSERT( !!state->game.model );
+    XP_UCHAR buf[64];
+    XP_U16 buflen = sizeof(buf);
+    if ( !model_getPlayersLastScore( state->game.model, player, buf, 
+                                     &buflen ) ) {
+        buf[0] = '\0';
+    }
+    result = (*env)->NewStringUTF( env, buf );
+    (*env)->DeleteLocalRef( env, result );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
