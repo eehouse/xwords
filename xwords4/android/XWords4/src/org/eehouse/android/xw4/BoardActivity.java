@@ -934,9 +934,11 @@ public class BoardActivity extends XWActivity
         {
             String expl = XwJNI.model_getPlayersLastScore( m_jniGamePtr, 
                                                             player );
+            if ( expl.length() == 0 ) {
+                expl = getString( R.string.no_moves_made );
+            }
             String name = m_gi.players[player].name;
-            final String text = expl.length() > 0 ? 
-                String.format( "%s\n%s", name, expl ) : name;
+            final String text = String.format( "%s\n%s", name, expl );
             post( new Runnable() {
                     public void run() {
                         Toast.makeText( BoardActivity.this, text,
