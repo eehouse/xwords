@@ -167,7 +167,7 @@ public class GameConfig extends XWActivity
                                                 onClick( DialogInterface dlg, 
                                                                  int button ) {
                                                 getPlayerSettings( dlg );
-                                                loadPlayers();
+                                                loadPlayersList();
                                             }
                                         })
                     .setNegativeButton( R.string.button_cancel, null )
@@ -192,18 +192,19 @@ public class GameConfig extends XWActivity
                 //     break;
 
             case FORCE_REMOTE:
+                dlpos = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            loadPlayersList();
+                        }
+                    };
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.force_title )
                     .setView( Utils.inflate( this, layoutForDlg(id) ) )
-                    .setPositiveButton( R.string.button_ok,
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, 
-                                                                 int whichButton ) {
-                                                loadPlayers();
-                                            }
-                                        })
+                    .setPositiveButton( R.string.button_ok, dlpos )
                     .create();
-                dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                DialogInterface.OnDismissListener dismiss = 
+                    new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss( DialogInterface di ) 
                         {
@@ -211,10 +212,11 @@ public class GameConfig extends XWActivity
                                 Toast.makeText( GameConfig.this, 
                                                 R.string.forced_consistent,
                                                 Toast.LENGTH_SHORT).show();
-                                loadPlayers();
+                                loadPlayersList();
                             }
                         }
-                    });
+                    };
+                dialog.setOnDismissListener( dismiss );
                 break;
             case CONFIRM_CHANGE_PLAY:
             case CONFIRM_CHANGE:
@@ -495,7 +497,7 @@ public class GameConfig extends XWActivity
                     adjustConnectStuff();
                 }
 
-                loadPlayers();
+                loadPlayersList();
                 configLangSpinner();
 
                 m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
@@ -532,7 +534,7 @@ public class GameConfig extends XWActivity
     public void deleteCalled( int myPosition, final String name )
     {
         if ( m_gi.delete( myPosition ) ) {
-            loadPlayers();
+            loadPlayersList();
         }
     }
 
@@ -562,11 +564,11 @@ public class GameConfig extends XWActivity
             int curIndex = m_gi.nPlayers;
             if ( curIndex < CurGameInfo.MAX_NUM_PLAYERS ) {
                 m_gi.addPlayer(); // ups nPlayers
-                loadPlayers();
+                loadPlayersList();
             }
         } else if ( m_jugglePlayersButton == view ) {
             m_gi.juggle();
-            loadPlayers();
+            loadPlayersList();
         } else if ( m_joinPublicCheck == view ) {
             adjustConnectStuff();
         } else if ( m_gameLockedCheck == view ) {
@@ -619,7 +621,7 @@ public class GameConfig extends XWActivity
         return consumed || super.onKeyDown( keyCode, event );
     }
 
-    private void loadPlayers()
+    private void loadPlayersList()
     {
         m_playerLayout.removeAllViews();
 
@@ -669,7 +671,7 @@ public class GameConfig extends XWActivity
             showDialog( FORCE_REMOTE );
         }
         adjustPlayersLabel();
-    } // loadPlayers
+    } // loadPlayersList
 
     private String[] buildListWithBrowse( String[] input )
     {
