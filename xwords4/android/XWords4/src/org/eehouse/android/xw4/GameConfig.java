@@ -625,7 +625,7 @@ public class GameConfig extends XWActivity
     {
         m_playerLayout.removeAllViews();
 
-        String[] names = m_gi.visibleNames();
+        String[] names = m_gi.visibleNames( false );
         // only enable delete if one will remain (or two if networked)
         boolean canDelete = names.length > 2
             || (m_notNetworkedGame && names.length > 1);

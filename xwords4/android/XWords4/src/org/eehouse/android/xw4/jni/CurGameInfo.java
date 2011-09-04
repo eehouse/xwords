@@ -235,18 +235,22 @@ public class CurGameInfo {
         return !consistent;
     }
 
-    public String[] visibleNames()
+    public String[] visibleNames( boolean withDicts )
     {
+        String nameFmt = withDicts? m_context.getString( R.string.name_dict_fmt )
+            : "%s";
         String[] names = new String[nPlayers];
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             LocalPlayer lp = players[ii];
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
+                String name;
                 if ( lp.isRobot() ) {
                     String format = m_context.getString( R.string.robot_namef );
-                    names[ii] = String.format( format, lp.name );
+                    name = String.format( format, lp.name );
                 } else {
-                    names[ii] = lp.name;
+                    name = lp.name;
                 }
+                names[ii] = String.format( nameFmt, name, dictName(lp) );
             } else {
                 names[ii] = m_context.getString( R.string.guest_name );
             }

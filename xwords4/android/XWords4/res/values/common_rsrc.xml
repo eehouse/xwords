@@ -92,6 +92,7 @@
   <string name="logging_on">Enable logging</string>
   <string name="relay_port">Relay game port</string>
   <string name="proxy_port">Relay device port</string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
