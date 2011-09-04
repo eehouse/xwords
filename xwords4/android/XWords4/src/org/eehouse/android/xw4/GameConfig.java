@@ -457,7 +457,9 @@ public class GameConfig extends XWActivity
                     handleLockedChange();
                 }
 
-                m_gi = new CurGameInfo( this, m_giOrig );
+                if ( null == m_gi ) {
+                    m_gi = new CurGameInfo( this, m_giOrig );
+                }
 
                 m_carOrig = new CommsAddrRec( this );
                 if ( XwJNI.game_hasComms( gamePtr ) ) {
