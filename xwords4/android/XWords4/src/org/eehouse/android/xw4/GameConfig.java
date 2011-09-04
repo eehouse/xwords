@@ -348,9 +348,11 @@ public class GameConfig extends XWActivity
         Spinner spinner =
             (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
         int position = spinner.getSelectedItemPosition();
-        String[] dicts = DictLangCache.getHaveLang( this, m_gi.dictLang );
-        if ( position < dicts.length ) {
-            lp.dictName = dicts[position];
+        ArrayAdapter<String> adapter =
+            (ArrayAdapter<String>)spinner.getAdapter();
+
+        if ( position < adapter.getCount() ) {
+            lp.dictName = adapter.getItem(position);
         }
 
         lp.setIsRobot( Utils.getChecked( dialog, R.id.robot_check ) );
@@ -683,7 +685,7 @@ public class GameConfig extends XWActivity
         return result;
     }
 
-    private void configDictSpinner( final Dialog dialog, final LocalPlayer lp )
+    private void configDictSpinner( final Dialog dialog, LocalPlayer lp )
     {
         Spinner dictsSpinner = 
             (Spinner)dialog.findViewById( R.id.dict_spinner );
@@ -703,8 +705,6 @@ public class GameConfig extends XWActivity
                     if ( chosen.equals( m_browseText ) ) {
                         DictsActivity.launchAndDownload( GameConfig.this, 
                                                          m_gi.dictLang );
-                    } else {
-                        lp.dictName = chosen;
                     }
                 }
 
