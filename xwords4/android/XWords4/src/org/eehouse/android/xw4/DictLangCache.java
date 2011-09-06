@@ -95,7 +95,7 @@ public class DictLangCache {
     public static int getLangCount( Context context, int code )
     {
         int count = 0;
-        String[] dicts = GameUtils.dictList( context );
+        String[] dicts = DictUtils.dictList( context );
         for ( String dict : dicts ) {
             if ( code == getDictLangCode( context, dict ) ) {
                 ++count;
@@ -107,7 +107,7 @@ public class DictLangCache {
     private static DictInfo[] getInfosHaveLang( Context context, int code )
     {
         ArrayList<DictInfo> al = new ArrayList<DictInfo>();
-        String[] dicts = GameUtils.dictList( context );
+        String[] dicts = DictUtils.dictList( context );
         for ( String dict : dicts ) {
             DictInfo info = getInfo( context, dict );
             if ( code == info.langCode ) {
@@ -200,7 +200,7 @@ public class DictLangCache {
     public static void inval( final Context context, String name, 
                               boolean added )
     {
-        name = GameUtils.removeDictExtn( name );
+        name = DictUtils.removeDictExtn( name );
         s_nameToLang.remove( name );
         if ( added ) {
             getInfo( context, name );
@@ -226,7 +226,7 @@ public class DictLangCache {
 
     public static String[] listLangs( Context context )
     {
-        return listLangs( context, GameUtils.dictList( context ) );
+        return listLangs( context, DictUtils.dictList( context ) );
     }
 
     public static String[] listLangs( Context context, final String[] names )
@@ -315,8 +315,8 @@ public class DictLangCache {
         if ( s_nameToLang.containsKey( name ) ) {
             info = s_nameToLang.get( name );
         } else {
-            byte[] dict = GameUtils.openDict( context, name );
-            String path = GameUtils.getDictPath( context, name );
+            byte[] dict = DictUtils.openDict( context, name );
+            String path = DictUtils.getDictPath( context, name );
             info = new DictInfo();
             XwJNI.dict_getInfo( dict, path, JNIUtilsImpl.get(), info );
             info.name = name;

@@ -29,7 +29,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.DictUtils;
 
 public class CommonPrefs {
     public static final int COLOR_TILE_BACK = 0;
@@ -211,8 +211,8 @@ public class CommonPrefs {
     public static String getDefaultHumanDict( Context context )
     {
         String value = getString( context, R.string.key_default_dict );
-        if ( value.equals("") || !GameUtils.dictExists( context, value ) ) {
-            value = GameUtils.dictList( context )[0];
+        if ( value.equals("") || !DictUtils.dictExists( context, value ) ) {
+            value = DictUtils.dictList( context )[0];
         }
         return value;
     }
@@ -220,7 +220,7 @@ public class CommonPrefs {
     public static String getDefaultRobotDict( Context context )
     {
         String value = getString( context, R.string.key_default_robodict );
-        if ( value.equals("") || !GameUtils.dictExists( context, value ) ) {
+        if ( value.equals("") || !DictUtils.dictExists( context, value ) ) {
             value = getDefaultHumanDict( context );
         }
         return value;

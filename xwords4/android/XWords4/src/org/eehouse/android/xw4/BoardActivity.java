@@ -1170,7 +1170,7 @@ public class BoardActivity extends XWActivity
     {
         if ( 0 == m_jniGamePtr ) {
             String[] dictNames = GameUtils.dictNames( this, m_rowid );
-            GameUtils.DictPairs pairs = GameUtils.openDicts( this, dictNames );
+            DictUtils.DictPairs pairs = DictUtils.openDicts( this, dictNames );
 
             if ( pairs.anyMissing( dictNames ) ) {
                 showDictGoneFinish();

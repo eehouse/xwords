@@ -121,7 +121,7 @@ public class DictImportActivity extends XWActivity {
     private String saveDict( InputStream inputStream, String path )
     {
         String name = basename( path );
-        if ( GameUtils.saveDict( this, inputStream, name, s_useSD ) ) {
+        if ( DictUtils.saveDict( this, inputStream, name, s_useSD ) ) {
             return name;
         } else {
             return null;

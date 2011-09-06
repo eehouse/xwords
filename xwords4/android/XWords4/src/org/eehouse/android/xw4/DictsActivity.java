@@ -85,8 +85,8 @@ public class DictsActivity extends ExpandableListActivity
     private DictListAdapter m_adapter;
 
     private long m_packedPosition;
-    private GameUtils.DictLoc m_moveFromLoc;
-    private GameUtils.DictLoc m_moveToLoc;
+    private DictUtils.DictLoc m_moveFromLoc;
+    private DictUtils.DictLoc m_moveToLoc;
     private SDCardWatcher m_cardWatcher;
 
     private LayoutInflater m_factory;
@@ -133,7 +133,7 @@ public class DictsActivity extends ExpandableListActivity
                 boolean canDelete = false;
                 if ( null != dicts && childPosition < dicts.length ) {
                     text = dicts[childPosition];
-                    canDelete = !GameUtils.dictIsBuiltin( DictsActivity.this,
+                    canDelete = !DictUtils.dictIsBuiltin( DictsActivity.this,
                                                           text );
                 } else {
                     text = m_download;
@@ -144,8 +144,8 @@ public class DictsActivity extends ExpandableListActivity
                     view.setDeleteCallback( DictsActivity.this );
                 }
 
-                GameUtils.DictLoc loc = 
-                    GameUtils.getDictLoc( DictsActivity.this, text );
+                DictUtils.DictLoc loc = 
+                    DictUtils.getDictLoc( DictsActivity.this, text );
                 view.setComment( m_locNames[loc.ordinal()] );
                 view.cache( loc );
 
@@ -263,10 +263,10 @@ public class DictsActivity extends ExpandableListActivity
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         XWListItem rowView = m_adapter.getSelChildView();
-                        if ( GameUtils.moveDict( DictsActivity.this,
-                                                 rowView.getText(),
-                                                 m_moveFromLoc,
-                                                 m_moveToLoc ) ) {
+                        if (  DictUtils.moveDict( DictsActivity.this,
+                                                  rowView.getText(),
+                                                  m_moveFromLoc,
+                                                  m_moveToLoc ) ) {
                             rowView.
                                 setComment( m_locNames[m_moveToLoc.ordinal()]);
                             rowView.cache( m_moveToLoc );
@@ -408,11 +408,11 @@ public class DictsActivity extends ExpandableListActivity
 
             int tmp = savedInstanceState.getInt( MOVEFROMLOC, -1 );
             if ( -1 != tmp ) {
-                m_moveFromLoc = GameUtils.DictLoc.values()[tmp];
+                m_moveFromLoc = DictUtils.DictLoc.values()[tmp];
             }
             tmp = savedInstanceState.getInt( MOVETOLOC, -1 );
             if ( -1 != tmp ) {
-                m_moveToLoc = GameUtils.DictLoc.values()[tmp];
+                m_moveToLoc = DictUtils.DictLoc.values()[tmp];
             }
         }
     }
@@ -452,9 +452,9 @@ public class DictsActivity extends ExpandableListActivity
             inflater.inflate( R.menu.dicts_item_menu, menu );
             
             XWListItem row = (XWListItem)info.targetView;
-            GameUtils.DictLoc loc = (GameUtils.DictLoc)row.getCached();
-            if ( loc == GameUtils.DictLoc.BUILT_IN
-                 || ! GameUtils.haveWriteableSD() ) {
+            DictUtils.DictLoc loc = (DictUtils.DictLoc)row.getCached();
+            if ( loc == DictUtils.DictLoc.BUILT_IN
+                 || ! DictUtils.haveWriteableSD() ) {
                 menu.removeItem( R.id.dicts_item_move );
             }
 
@@ -510,11 +510,11 @@ public class DictsActivity extends ExpandableListActivity
     // options for YY?
     private void askMoveDict( XWListItem item )
     {
-        m_moveFromLoc = (GameUtils.DictLoc)item.getCached();
-        if ( m_moveFromLoc == GameUtils.DictLoc.INTERNAL ) {
-            m_moveToLoc = GameUtils.DictLoc.EXTERNAL;
+        m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
+        if ( m_moveFromLoc == DictUtils.DictLoc.INTERNAL ) {
+            m_moveToLoc = DictUtils.DictLoc.EXTERNAL;
         } else {
-            m_moveToLoc = GameUtils.DictLoc.INTERNAL;
+            m_moveToLoc = DictUtils.DictLoc.INTERNAL;
         }
 
         showDialog( MOVE_DICT );
@@ -566,14 +566,14 @@ public class DictsActivity extends ExpandableListActivity
 
     private void deleteDict( String dict )
     {
-        GameUtils.deleteDict( this, dict );
+        DictUtils.deleteDict( this, dict );
         DictLangCache.inval( this, dict, false );
         mkListAdapter();
     }
 
     private void askStartDownload( int lang, String name )
     {
-        if ( GameUtils.haveWriteableSD() ) {
+        if ( DictUtils.haveWriteableSD() ) {
             m_lang = lang;
             m_name = name;
             showDialog( PICK_STORAGE );
