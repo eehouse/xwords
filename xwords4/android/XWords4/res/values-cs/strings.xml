@@ -97,8 +97,6 @@
     <string name="strsd_summaryscored">%1$s:%2$d</string>
     <string name="str_lostturn">Tah byl ztracen</string>
     <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
-    <string name="str_local_name">%s</string>
-    <string name="str_nonlocal_namef">%s (vzdálený)</string>
     <string name="str_bonus_all">Bonus za využití všech kamenů: 50\n</string>
     <string name="strd_turn_score">Skóre za tah: %d\n</string>
 
@@ -109,7 +107,6 @@
 	<string name="str_tiles_must_contact">Nové kameny musí navazovat na již položené kameny (nebo se s nimi křížit).</string>
 	<string name="str_not_your_turn">To nemůžete udělat; není to váš tah!</string>
 	<string name="str_no_peek_robot_tiles">Nenakukujte na kameny robota!</string>
-	<string name="str_cant_trade_mid_move">Vzdálený hráč hrál s kameny před výměnou.</string>
 	<string name="str_too_few_tiles_left_to_trade">Zbývá příliš málo kamenů pro výměnu.</string>
 	<string name="str_cant_undo_tileassign">Přiřazení kamene nemůže být vráceno zpět.</string>
 	<string name="str_cant_hint_while_disabled">Pro tuto hru je zakázána nápověda. Pro novou hru ji můžete povolit v Předvolbách.</string>

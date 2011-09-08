@@ -14,11 +14,13 @@
       <org.eehouse.android.xw4.XWEditTextPreference 
 	     android:key="@string/key_player1_name"
 	     android:title="@string/pref_player1_name"
+         android:capitalize="words"
 	     android:defaultValue=""
 	     />
       <org.eehouse.android.xw4.XWEditTextPreference
 	     android:key="@string/key_player2_name"
 	     android:title="@string/pref_player2_name"
+         android:capitalize="words"
 	     android:defaultValue="ignored"
 	     android:summary="@string/tell_unused"
 	     android:enabled="false"
@@ -26,6 +28,7 @@
       <org.eehouse.android.xw4.XWEditTextPreference 
 	     android:key="@string/key_player3_name"
 	     android:title="@string/pref_player3_name"
+         android:capitalize="words"
 	     android:defaultValue=""
 	     android:summary="@string/tell_unused"
 	     android:enabled="false"
@@ -33,6 +36,7 @@
       <org.eehouse.android.xw4.XWEditTextPreference
 	     android:key="@string/key_player4_name"
 	     android:title="@string/pref_player4_name"
+         android:capitalize="words"
 	     android:defaultValue=""
 	     android:summary="@string/tell_unused"
 	     android:enabled="false"

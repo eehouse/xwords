@@ -201,16 +201,6 @@ board_destroy( BoardCtxt* board )
     XP_FREE( board->mpool, board );
 } /* board_destroy */
 
-static void
-setTradeInProgress( BoardCtxt* board, XP_U16 turn, XP_Bool inProgress )
-{
-    PerTurnInfo* pti = &board->pti[turn];
-    pti->tradeInProgress = inProgress;
-#ifndef XWFEATURE_MINIWIN
-    util_setInTrade( board->util, turn, inProgress );
-#endif
-}
-
 BoardCtxt* 
 board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
                       ServerCtxt* server, DrawCtx* draw, XW_UtilCtxt* util,
@@ -258,7 +248,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         pti->dividerLoc = (XP_U8)stream_getBits( stream, NTILES_NBITS );
         pti->traySelBits = (TileBit)stream_getBits( stream, 
                                                     MAX_TRAY_TILES );
-        setTradeInProgress( board, ii, (XP_Bool)stream_getBits( stream, 1 ) );
+        pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
 
         if ( version >= STREAM_VERS_KEYNAV ) {
 #ifdef KEYBOARD_NAV
@@ -368,7 +358,7 @@ board_reset( BoardCtxt* board )
     for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         PerTurnInfo* pti = &board->pti[ii];
         pti->traySelBits = 0;
-        setTradeInProgress( board, ii, XP_FALSE );
+        pti->tradeInProgress = XP_FALSE;
         pti->dividerLoc = 0;
         XP_MEMSET( &pti->boardArrow, 0, sizeof(pti->boardArrow) );
     }
@@ -730,20 +720,21 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 #endif
 
 static XP_Bool
-warnBadWords( XP_UCHAR* word, void* closure )
+warnBadWords( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
 {
-    BadWordInfo bwi;
-    XP_Bool ok;
-    BoardCtxt* board = (BoardCtxt*)closure;
-    XP_S16 turn = server_getCurrentTurn( board->server );
+    XP_Bool ok = XP_TRUE;
+    if ( !isLegal ) {
+        BadWordInfo bwi;
+        BoardCtxt* board = (BoardCtxt*)closure;
+        XP_S16 turn = server_getCurrentTurn( board->server );
 
-    bwi.nWords = 1;
-    bwi.words[0] = word;
+        bwi.nWords = 1;
+        bwi.words[0] = word;
 
-    ok = !board->badWordRejected
-        && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
-    board->badWordRejected = !ok || board->badWordRejected;
-
+        ok = !board->badWordRejected
+            && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
+        board->badWordRejected = !ok || board->badWordRejected;
+    }
     return ok;
 } /* warnBadWords */
 
@@ -767,17 +758,19 @@ board_commitTurn( BoardCtxt* board )
            nothing */
     } else if ( checkRevealTray( board ) ) {
         if ( pti->tradeInProgress ) {
+            TileBit traySelBits = pti->traySelBits;
             result = XP_TRUE; /* there's at least the window to clean up
                                  after */
+            /* server_commitTrade() changes selPlayer, so board_endTrade
+               must be called first() */
+            (void)board_endTrade( board );
 
-            if ( NO_TILES == pti->traySelBits ) {
+            if ( NO_TILES == traySelBits ) {
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
             } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
                                         (XWStreamCtxt*)NULL ) ) {
-                result = server_commitTrade( board->server, 
-                                             pti->traySelBits );
+                (void)server_commitTrade( board->server, traySelBits );
             }
-            (void)board_endTrade( board );
         } else {
             XP_Bool warn, legal;
             WordNotifierInfo info;
@@ -866,7 +859,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
            there were plenty of tiles but now there aren't. */
         if ( newInfo->tradeInProgress && 
              server_countTilesInPool(board->server) < MIN_TRADE_TILES ) {
-            setTradeInProgress( board, newPlayer, XP_FALSE );
+            newInfo->tradeInProgress = XP_FALSE;
             newInfo->traySelBits = 0x00; /* clear any selected */
         }
 
@@ -953,7 +946,9 @@ timerFiredForPen( BoardCtxt* board )
 {
     XP_Bool draw = XP_FALSE;
     const XP_UCHAR* text = (XP_UCHAR*)NULL;
+#ifdef XWFEATURE_MINIWIN
     XP_UCHAR buf[80];
+#endif
 
     if ( board->penDownObject == OBJ_BOARD ) {
         if ( !dragDropInProgress( board ) || !dragDropHasMoved( board ) ) {
@@ -982,7 +977,6 @@ timerFiredForPen( BoardCtxt* board )
             board->penTimerFired = XP_TRUE;
         }
     } else if ( board->penDownObject == OBJ_SCORE ) {
-        LocalPlayer* lp;
         XP_S16 scoreIndex = figureScoreRectTapped( board, board->penDownX, 
                                                    board->penDownY );
         /* I've seen this assert fire on simulator.  No log is kept so I can't
@@ -990,11 +984,11 @@ timerFiredForPen( BoardCtxt* board )
         /* XP_ASSERT( player >= 0 ); */
         if ( scoreIndex > CURSOR_LOC_REM ) {
             XP_U16 player = scoreIndex - 1;
+#ifdef XWFEATURE_MINIWIN
             const XP_UCHAR* format;
             XP_UCHAR scoreExpl[48];
             XP_U16 explLen;
-
-            lp = &board->gi->players[player];
+            LocalPlayer* lp = &board->gi->players[player];
             format = util_getUserString( board->util, lp->isLocal? 
                                          STR_LOCAL_NAME: STR_NONLOCAL_NAME );
             XP_SNPRINTF( buf, sizeof(buf), format, emptyStringIfNull(lp->name) );
@@ -1006,10 +1000,9 @@ timerFiredForPen( BoardCtxt* board )
                 XP_ASSERT( XP_STRLEN(buf) + explLen < sizeof(buf) );
                 XP_STRCAT( buf, scoreExpl );
             }
-#ifdef XWFEATURE_MINIWIN
             text = buf;
 #else
-            util_playerScoreHeld( board->util, buf );
+            util_playerScoreHeld( board->util, player );
 #endif
         }
 
@@ -2085,20 +2078,17 @@ board_beginTrade( BoardCtxt* board )
 
     result = preflight( board );
     if ( result ) {
-        /* check turn before tradeInProgress so I can't tell my opponent's in a
-           trade */
-        if ( 0 != model_getCurrentMoveCount( board->model, board->selPlayer )){
-            util_userError( board->util, ERR_CANT_TRADE_MID_MOVE );
-        } else if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
+        if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
             util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
+            model_resetCurrentTurn( board->model, board->selPlayer );
+            XP_ASSERT( 0 == model_getCurrentMoveCount( board->model, 
+                                                       board->selPlayer ) );
 #ifdef XWFEATURE_MINIWIN
             board->tradingMiniWindowInvalid = XP_TRUE;
-#else
-            util_setInTrade( board->util, board->selPlayer, XP_TRUE );
 #endif
             board->needsDrawing = XP_TRUE;
-            setTradeInProgress( board, board->selPlayer, XP_TRUE );
+            board->selInfo->tradeInProgress = XP_TRUE;
             setArrowVisible( board, XP_FALSE );
             result = XP_TRUE;
         }
@@ -2113,7 +2103,7 @@ board_endTrade( BoardCtxt* board )
     if ( result ) {
         PerTurnInfo* pti = board->selInfo;
         invalSelTradeWindow( board );
-        setTradeInProgress( board, board->selPlayer, XP_FALSE );
+        pti->tradeInProgress = XP_FALSE;
         pti->traySelBits = NO_TILES;
     }
     return result;
@@ -2495,7 +2485,7 @@ exitTradeMode( BoardCtxt* board )
 {
     PerTurnInfo* pti = board->selInfo;
     invalSelTradeWindow( board );
-    setTradeInProgress( board, board->selPlayer, XP_FALSE );
+    pti->tradeInProgress = XP_FALSE;
     board_invalTrayTiles( board, pti->traySelBits );
     pti->traySelBits = 0x00;
     return XP_TRUE;

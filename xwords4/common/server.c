@@ -1719,15 +1719,16 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
 } /* server_setGameOverListener */
 
 static XP_Bool
-storeBadWords( XP_UCHAR* word, void* closure )
+storeBadWords( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
 {
-    ServerCtxt* server = (ServerCtxt*)closure;
+    if ( !isLegal ) {
+        ServerCtxt* server = (ServerCtxt*)closure;
 
-    XP_STATUSF( "storeBadWords called with \"%s\"", word );
+        XP_STATUSF( "storeBadWords called with \"%s\"", word );
 
-    server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
-        = copyString( server->mpool, word );
-
+        server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
+            = copyString( server->mpool, word );
+    }
     return XP_TRUE;
 } /* storeBadWords */
 

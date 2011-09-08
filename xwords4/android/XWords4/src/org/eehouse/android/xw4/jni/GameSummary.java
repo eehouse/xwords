@@ -97,6 +97,33 @@ public class GameSummary {
         return result;
     }
 
+    public void readPlayers( String playersStr ) 
+    {
+        if ( null != playersStr ) {
+            players = new String[nPlayers];
+            String sep;
+            if ( playersStr.contains("\n") ) {
+                sep = "\n";
+            } else {
+                sep = m_context.getString( R.string.vs_join );
+            }
+
+            int ii, nxt;
+            for ( ii = 0, nxt = 0; ; ++ii ) {
+                int prev = nxt;
+                nxt = playersStr.indexOf( sep, nxt );
+                String name = -1 == nxt ?
+                    playersStr.substring( prev ) : 
+                    playersStr.substring( prev, nxt );
+                players[ii] = name;
+                if ( -1 == nxt ) {
+                    break;
+                }
+                nxt += sep.length();
+            }
+        }
+    }
+
     public void setPlayerSummary( String summary ) 
     {
         m_playersSummary = summary;
@@ -213,7 +240,7 @@ public class GameSummary {
     {
         String[] names = null;
         if ( null != m_gi ) {
-            names = m_gi.visibleNames();
+            names = m_gi.visibleNames( false );
         } else if ( null != m_playersSummary ) {
             names = TextUtils.split( m_playersSummary, "\n" );
         }
