@@ -332,10 +332,6 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         break;
 #endif
 
-    case ERR_CANT_TRADE_MID_MOVE:
-        message = "Remove played tiles before trading.";
-        break;
-
     case ERR_NO_EMPTY_TRADE:
         message = "No tiles selected; trade cancelled.";
         break;

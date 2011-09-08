@@ -52,7 +52,6 @@ typedef enum {
     ERR_REG_SERVER_SANS_REMOTE,
     STR_NEED_BT_HOST_ADDR,
 #endif
-    ERR_CANT_TRADE_MID_MOVE,
     ERR_NO_EMPTY_TRADE,
 /*     ERR_CANT_ENGINE_MID_MOVE, */
 /*     ERR_NOT_YOUR_TURN_TO_TRADE, */
@@ -160,7 +159,7 @@ typedef struct UtilVtable {
 
 #ifndef XWFEATURE_MINIWIN
     void (*m_util_bonusSquareHeld)( XW_UtilCtxt* uc, XWBonusType bonus );
-    void (*m_util_playerScoreHeld)( XW_UtilCtxt* uc, const XP_UCHAR* txt );
+    void (*m_util_playerScoreHeld)( XW_UtilCtxt* uc, XP_U16 player );
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -266,8 +265,8 @@ struct XW_UtilCtxt {
 #ifndef XWFEATURE_MINIWIN
 # define util_bonusSquareHeld( uc, b )                                  \
          (uc)->vtable->m_util_bonusSquareHeld( (uc), (b) )
-# define util_playerScoreHeld( uc, txt )                                \
-         (uc)->vtable->m_util_playerScoreHeld( (uc), (txt) )
+# define util_playerScoreHeld( uc, player )                                \
+         (uc)->vtable->m_util_playerScoreHeld( (uc), (player) )
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY

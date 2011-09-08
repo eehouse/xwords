@@ -460,6 +460,23 @@ public class GameUtils {
         }
     }
 
+    public static String[] dictNames( Context context, long rowid,
+                                      int[] missingLang ) 
+    {
+        byte[] stream = savedGame( context, rowid );
+        CurGameInfo gi = new CurGameInfo( context );
+        XwJNI.gi_from_stream( gi, stream );
+        if ( null != missingLang ) {
+            missingLang[0] = gi.dictLang;
+        }
+        return gi.dictNames();
+    }
+
+    public static String[] dictNames( Context context, long rowid ) 
+    {
+        return dictNames( context, rowid, null );
+    }
+    
     public static boolean gameDictsHere( Context context, long rowid )
     {
         return gameDictsHere( context, rowid, null, null );
@@ -471,16 +488,9 @@ public class GameUtils {
                                          String[][] missingNames, 
                                          int[] missingLang )
     {
-        byte[] stream = savedGame( context, rowid );
-        CurGameInfo gi = new CurGameInfo( context );
-        XwJNI.gi_from_stream( gi, stream );
-        final String[] dictNames = gi.dictNames();
+        String[] dictNames = dictNames( context, rowid, missingLang );
         HashSet<String> missingSet;
         String[] installed = dictList( context );
-
-        if ( null != missingLang ) {
-            missingLang[0] = gi.dictLang;
-        }
 
         missingSet = new HashSet<String>( Arrays.asList( dictNames ) );
         missingSet.remove( null );

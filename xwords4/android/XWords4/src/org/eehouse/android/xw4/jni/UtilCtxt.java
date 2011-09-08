@@ -48,7 +48,7 @@ public interface UtilCtxt {
     void setIsServer( boolean isServer );
 
     void bonusSquareHeld( int bonus );
-    void playerScoreHeld( String text );
+    void playerScoreHeld( int player );
 
     static final int STRD_ROBOT_TRADED =                  1;
     static final int STR_ROBOT_MOVED =                    2;
@@ -70,10 +70,8 @@ public interface UtilCtxt {
     static final int STRD_TRADED =                       18;
     static final int STR_LOSTTURN =                      19;
     static final int STR_COMMIT_CONFIRM =                20;
-    static final int STR_LOCAL_NAME =                    21;
-    static final int STR_NONLOCAL_NAME =                 22;
-    static final int STR_BONUS_ALL =                     23;
-    static final int STRD_TURN_SCORE =                   24;
+    static final int STR_BONUS_ALL =                     21;
+    static final int STRD_TURN_SCORE =                   22;
     String getUserString( int stringCode );
 
     static final int QUERY_COMMIT_TURN = 0;
@@ -97,11 +95,10 @@ public interface UtilCtxt {
     static final int ERR_REG_UNEXPECTED_USER = 10;
     static final int ERR_REG_SERVER_SANS_REMOTE = 11;
     static final int STR_NEED_BT_HOST_ADDR = 12;
-    static final int ERR_CANT_TRADE_MID_MOVE = 13;
-    static final int ERR_NO_EMPTY_TRADE = 14;
-    static final int ERR_CANT_UNDO_TILEASSIGN = 15;
-    static final int ERR_CANT_HINT_WHILE_DISABLED = 16;
-    static final int ERR_RELAY_BASE = 17;
+    static final int ERR_NO_EMPTY_TRADE = 13;
+    static final int ERR_CANT_UNDO_TILEASSIGN = 14;
+    static final int ERR_CANT_HINT_WHILE_DISABLED = 15;
+    static final int ERR_RELAY_BASE = 16;
     void userError( int id );
 
     void notifyGameOver();

@@ -342,8 +342,6 @@ public class BoardActivity extends XWActivity
         setContentView( R.layout.board );
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
-        m_gi = new CurGameInfo( this );
-
         m_view = (BoardView)findViewById( R.id.board_view );
         m_tradeButtons = findViewById( R.id.exchange_buttons );
         m_exchCommmitButton = (Button)findViewById( R.id.exchange_commit );
@@ -930,8 +928,15 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
-        public void playerScoreHeld( final String text )
+        public void playerScoreHeld( int player )
         {
+            String expl = XwJNI.model_getPlayersLastScore( m_jniGamePtr, 
+                                                            player );
+            if ( expl.length() == 0 ) {
+                expl = getString( R.string.no_moves_made );
+            }
+            String name = m_gi.players[player].name;
+            final String text = String.format( "%s\n%s", name, expl );
             post( new Runnable() {
                     public void run() {
                         Toast.makeText( BoardActivity.this, text,
@@ -1072,9 +1077,6 @@ public class BoardActivity extends XWActivity
             case UtilCtxt.ERR_NO_PEEK_ROBOT_TILES:
                 resid = R.string.str_no_peek_robot_tiles;
                 break;
-            case UtilCtxt.ERR_CANT_TRADE_MID_MOVE:
-                resid = R.string.str_cant_trade_mid_move;
-                break;
             case UtilCtxt.ERR_NO_EMPTY_TRADE:
                 resid = R.string.str_no_empty_trade;
                 break;
@@ -1167,20 +1169,19 @@ public class BoardActivity extends XWActivity
     private void loadGame()
     {
         if ( 0 == m_jniGamePtr ) {
-            String[] dictNames = m_gi.dictNames();
+            String[] dictNames = GameUtils.dictNames( this, m_rowid );
             GameUtils.DictPairs pairs = GameUtils.openDicts( this, dictNames );
 
             if ( pairs.anyMissing( dictNames ) ) {
                 showDictGoneFinish();
             } else {
-
-                String langName = m_gi.langName();
-
                 Assert.assertNull( m_gameLock );
                 m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
 
                 byte[] stream = GameUtils.savedGame( this, m_gameLock );
+                m_gi = new CurGameInfo( this );
                 XwJNI.gi_from_stream( m_gi, stream );
+                String langName = m_gi.langName();
 
                 m_jniGamePtr = XwJNI.initJNI();
 
@@ -1404,6 +1405,7 @@ public class BoardActivity extends XWActivity
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
+            m_gi = null;
 
             m_gameLock.unlock();
             m_gameLock = null;

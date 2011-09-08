@@ -897,6 +897,15 @@ handle_trayEditToggle_off( GtkWidget* widget, GtkAppGlobals* globals )
 }
 #endif
 
+static void
+handle_trade_cancel( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    BoardCtxt* board = globals->cGlobals.game.board;
+    if ( board_endTrade( board ) ) {
+        board_draw( board );
+    }
+}
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 handle_resend( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
@@ -992,6 +1001,9 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
     (void)createAddItem( fileMenu, "Load dictionary", 
                          GTK_SIGNAL_FUNC(load_dictionary), globals );
 
+    (void)createAddItem( fileMenu, "Cancel trade", 
+                         GTK_SIGNAL_FUNC(handle_trade_cancel), globals );
+
     fileMenu = makeAddSubmenu( menubar, "Edit" );
 
     (void)createAddItem( fileMenu, "Undo", 
@@ -1005,7 +1017,6 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
     (void)createAddItem( fileMenu, "Dis-allow tray edit", 
                          GTK_SIGNAL_FUNC(handle_trayEditToggle_off), globals );
 #endif
-
     fileMenu = makeAddSubmenu( menubar, "Network" );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -1684,15 +1695,6 @@ gtk_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),
 
 #ifndef XWFEATURE_MINIWIN
 static void
-gtk_util_setInTrade( XW_UtilCtxt* uc, XP_U16 turn, XP_Bool entering )
-{
-    XP_LOGF( "%s(turn=%d; entering=%d)", __func__, turn, entering );
-    XP_USE( uc );
-    XP_USE( turn );
-    XP_USE( entering );
-}
-
-static void
 gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 {
     LOG_FUNC();
@@ -1701,11 +1703,19 @@ gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 }
 
 static void
-gtk_util_playerScoreHeld( XW_UtilCtxt* uc, const XP_UCHAR* txt )
+gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 {
     LOG_FUNC();
-    XP_USE( uc );
-    XP_USE( txt );
+
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+
+    XP_UCHAR scoreExpl[48];
+    XP_U16 explLen = sizeof(scoreExpl);
+    
+    if ( model_getPlayersLastScore( globals->cGlobals.game.model,
+                                    player, scoreExpl, &explLen ) ) {
+        XP_LOGF( "got: %s", scoreExpl );
+    }
 }
 #endif
 
@@ -1928,7 +1938,6 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
 #endif
 
 #ifndef XWFEATURE_MINIWIN
-    util->vtable->m_util_setInTrade = gtk_util_setInTrade;
     util->vtable->m_util_bonusSquareHeld = gtk_util_bonusSquareHeld;
     util->vtable->m_util_playerScoreHeld = gtk_util_playerScoreHeld;
 #endif

@@ -479,6 +479,10 @@
          bonus square. Triple-word -->
     <string name="bonus_w3x_summary">3W</string>
 
+    <!-- displayed when you long-tap a scoreboard entry and there's no
+         most recent score to show -->
+    <string name="no_moves_made">(No moves yet)</string>
+
     <!-- If a networked game is opened and is not complete, i.e. if it
          is listed as expecting remote players who have not yet shown
          up, then the most likely explanation is that none has been
@@ -691,7 +695,7 @@
     <string name="strsd_summaryscored">%1$s:%2$d</string>
     <!-- Used in formatting reports of trades (exchanges of tiles).
          Number of tiles traded is substituted for %d-->
-    <string name="strd_traded">Traded %d</string>
+    <string name="strd_traded">Exchanged %d tiles</string>
     <!-- Used in formatting history and move reports; means user
          skipped a turn because of an attempted illegal move/play of a
          phony -->

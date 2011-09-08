@@ -128,11 +128,11 @@ public class DBUtils {
                     setGiFlags( cursor.getInt(cursor.
                                               getColumnIndex(DBHelper.GIFLAGS))
                                 );
-                summary.players = 
-                    parsePlayers( cursor.getString(cursor.
-                                                   getColumnIndex(DBHelper.
-                                                                  PLAYERS)),
-                                  summary.nPlayers );
+
+                String players = cursor.
+                    getString(cursor.getColumnIndex( DBHelper.PLAYERS ));
+                summary.readPlayers( players );
+
                 summary.dictLang = 
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.DICTLANG));
@@ -759,31 +759,6 @@ public class DBUtils {
                                     values, selection, null );
             db.close();
         }
-    }
-
-    private static String[] parsePlayers( final String players, int nPlayers ){
-        String[] result = null;
-        if ( null != players ) {
-            result = new String[nPlayers];
-            String sep = "vs. ";
-            if ( players.contains("\n") ) {
-                sep = "\n";
-            }
-
-            int ii, nxt;
-            for ( ii = 0, nxt = 0; ; ++ii ) {
-                int prev = nxt;
-                nxt = players.indexOf( sep, nxt );
-                String name = -1 == nxt ?
-                    players.substring( prev ) : players.substring( prev, nxt );
-                result[ii] = name;
-                if ( -1 == nxt ) {
-                    break;
-                }
-                nxt += sep.length();
-            }
-        }
-        return result;
     }
 
     private static void initDB( Context context )

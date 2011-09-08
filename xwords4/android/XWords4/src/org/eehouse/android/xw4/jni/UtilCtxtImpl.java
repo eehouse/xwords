@@ -87,7 +87,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     {
     }
 
-    public void playerScoreHeld( String text )
+    public void playerScoreHeld( int player )
     {
     }
 
@@ -154,12 +154,6 @@ public class UtilCtxtImpl implements UtilCtxt {
             break;
         case UtilCtxt.STR_COMMIT_CONFIRM:
             id = R.string.str_commit_confirm;
-            break;
-        case UtilCtxt.STR_LOCAL_NAME:
-            id = R.string.str_local_name;
-            break;
-        case UtilCtxt.STR_NONLOCAL_NAME:
-            id = R.string.str_nonlocal_name;
             break;
         case UtilCtxt.STR_BONUS_ALL:
             id = R.string.str_bonus_all;

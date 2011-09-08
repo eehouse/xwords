@@ -167,7 +167,7 @@ public class GameConfig extends XWActivity
                                                 onClick( DialogInterface dlg, 
                                                                  int button ) {
                                                 getPlayerSettings( dlg );
-                                                loadPlayers();
+                                                loadPlayersList();
                                             }
                                         })
                     .setNegativeButton( R.string.button_cancel, null )
@@ -192,18 +192,19 @@ public class GameConfig extends XWActivity
                 //     break;
 
             case FORCE_REMOTE:
+                dlpos = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            loadPlayersList();
+                        }
+                    };
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.force_title )
                     .setView( Utils.inflate( this, layoutForDlg(id) ) )
-                    .setPositiveButton( R.string.button_ok,
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick( DialogInterface dlg, 
-                                                                 int whichButton ) {
-                                                loadPlayers();
-                                            }
-                                        })
+                    .setPositiveButton( R.string.button_ok, dlpos )
                     .create();
-                dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                DialogInterface.OnDismissListener dismiss = 
+                    new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss( DialogInterface di ) 
                         {
@@ -211,10 +212,11 @@ public class GameConfig extends XWActivity
                                 Toast.makeText( GameConfig.this, 
                                                 R.string.forced_consistent,
                                                 Toast.LENGTH_SHORT).show();
-                                loadPlayers();
+                                loadPlayersList();
                             }
                         }
-                    });
+                    };
+                dialog.setOnDismissListener( dismiss );
                 break;
             case CONFIRM_CHANGE_PLAY:
             case CONFIRM_CHANGE:
@@ -348,9 +350,11 @@ public class GameConfig extends XWActivity
         Spinner spinner =
             (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
         int position = spinner.getSelectedItemPosition();
-        String[] dicts = DictLangCache.getHaveLang( this, m_gi.dictLang );
-        if ( position < dicts.length ) {
-            lp.dictName = dicts[position];
+        ArrayAdapter<String> adapter =
+            (ArrayAdapter<String>)spinner.getAdapter();
+
+        if ( position < adapter.getCount() ) {
+            lp.dictName = adapter.getItem(position);
         }
 
         lp.setIsRobot( Utils.getChecked( dialog, R.id.robot_check ) );
@@ -453,7 +457,9 @@ public class GameConfig extends XWActivity
                     handleLockedChange();
                 }
 
-                m_gi = new CurGameInfo( this, m_giOrig );
+                if ( null == m_gi ) {
+                    m_gi = new CurGameInfo( this, m_giOrig );
+                }
 
                 m_carOrig = new CommsAddrRec( this );
                 if ( XwJNI.game_hasComms( gamePtr ) ) {
@@ -493,7 +499,7 @@ public class GameConfig extends XWActivity
                     adjustConnectStuff();
                 }
 
-                loadPlayers();
+                loadPlayersList();
                 configLangSpinner();
 
                 m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
@@ -530,7 +536,7 @@ public class GameConfig extends XWActivity
     public void deleteCalled( int myPosition, final String name )
     {
         if ( m_gi.delete( myPosition ) ) {
-            loadPlayers();
+            loadPlayersList();
         }
     }
 
@@ -560,11 +566,11 @@ public class GameConfig extends XWActivity
             int curIndex = m_gi.nPlayers;
             if ( curIndex < CurGameInfo.MAX_NUM_PLAYERS ) {
                 m_gi.addPlayer(); // ups nPlayers
-                loadPlayers();
+                loadPlayersList();
             }
         } else if ( m_jugglePlayersButton == view ) {
             m_gi.juggle();
-            loadPlayers();
+            loadPlayersList();
         } else if ( m_joinPublicCheck == view ) {
             adjustConnectStuff();
         } else if ( m_gameLockedCheck == view ) {
@@ -617,11 +623,11 @@ public class GameConfig extends XWActivity
         return consumed || super.onKeyDown( keyCode, event );
     }
 
-    private void loadPlayers()
+    private void loadPlayersList()
     {
         m_playerLayout.removeAllViews();
 
-        String[] names = m_gi.visibleNames();
+        String[] names = m_gi.visibleNames( false );
         // only enable delete if one will remain (or two if networked)
         boolean canDelete = names.length > 2
             || (m_notNetworkedGame && names.length > 1);
@@ -667,7 +673,7 @@ public class GameConfig extends XWActivity
             showDialog( FORCE_REMOTE );
         }
         adjustPlayersLabel();
-    } // loadPlayers
+    } // loadPlayersList
 
     private String[] buildListWithBrowse( String[] input )
     {
@@ -683,7 +689,7 @@ public class GameConfig extends XWActivity
         return result;
     }
 
-    private void configDictSpinner( final Dialog dialog, final LocalPlayer lp )
+    private void configDictSpinner( final Dialog dialog, LocalPlayer lp )
     {
         Spinner dictsSpinner = 
             (Spinner)dialog.findViewById( R.id.dict_spinner );
@@ -703,8 +709,6 @@ public class GameConfig extends XWActivity
                     if ( chosen.equals( m_browseText ) ) {
                         DictsActivity.launchAndDownload( GameConfig.this, 
                                                          m_gi.dictLang );
-                    } else {
-                        lp.dictName = chosen;
                     }
                 }
 

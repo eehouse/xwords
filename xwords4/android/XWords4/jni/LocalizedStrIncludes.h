@@ -1,4 +1,4 @@
-/* Keep these in sync with the constants in XW_UtilCtxt.java */
+/* Keep these in sync with the constants in UtilCtxt.java */
 
 
 #ifndef _LOCALIZEDSTRINCLUDES_H_
@@ -24,10 +24,8 @@
 # define STRD_TRADED                       18
 # define STR_LOSTTURN                      19
 # define STR_COMMIT_CONFIRM                20
-# define STR_LOCAL_NAME                    21
-# define STR_NONLOCAL_NAME                 22
-# define STR_BONUS_ALL                     23
-# define STRD_TURN_SCORE                   24
+# define STR_BONUS_ALL                     21
+# define STRD_TURN_SCORE                   22
 
-# define N_AND_USER_STRINGS                24
+# define N_AND_USER_STRINGS                22
 #endif
