@@ -38,6 +38,8 @@ import org.eehouse.android.xw4.jni.*;
 
 public class DBUtils {
 
+    private static final String DICTS_SEP = ",";
+
     private static final String ROW_ID = "rowid";
     private static final String ROW_ID_FMT = "rowid=%d";
 
@@ -226,6 +228,7 @@ public class DBUtils {
                             summary.summarizePlayers() );
                 values.put( DBHelper.DICTLANG, summary.dictLang );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
+                values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
 
                 if ( null != summary.scores ) {
                     StringBuffer sb = new StringBuffer();
@@ -266,6 +269,28 @@ public class DBUtils {
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
 
+            result = cursor.getCount();
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static int countGamesUsingDict( Context context, String dict )
+    {
+        int result = 0;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String pattern = String.format( "%%%s%s%s%%", 
+                                            DICTS_SEP, dict, DICTS_SEP );
+            String selection = String.format( "%s LIKE '%s'", 
+                                              DBHelper.DICTLIST, pattern );
+            // null for columns will return whole rows: bad.  But
+            // might as well make it an int for speed
+            String[] columns = { DBHelper.DICTLANG }; 
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
             result = cursor.getCount();
             cursor.close();
             db.close();

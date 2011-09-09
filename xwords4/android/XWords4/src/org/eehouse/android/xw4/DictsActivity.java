@@ -524,21 +524,39 @@ public class DictsActivity extends ExpandableListActivity
     public void deleteCalled( XWListItem item )
     {
         String dict = item.getText();
-        int code = DictLangCache.getDictLangCode( this, dict );
-        int nGames = DBUtils.countGamesUsingLang( this, code );
         String msg = String.format( getString( R.string.confirm_delete_dictf ),
                                     dict );
 
         m_deleteDict = dict;
         m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
 
-        if ( nGames > 0 ) {
-            DictAndLoc[] dal = DictLangCache.getDALsHaveLang( this, code );
-            if ( 1 == dal.length ) {
-                Assert.assertTrue( dict.equals(dal[0].name) );
-                String fmt = getString( R.string.confirm_deleteonly_dictf );
+        // When and what to warn about.  First off, if there's another
+        // identical dict, simply confirm.  Or if nobody's using this
+        // dict *and* it's not the last of a language that somebody's
+        // using, simply confirm.  If somebody is using it, then we
+        // want different warnings depending on whether it's the last
+        // available dict in its language.
+
+        if ( 1 < DictLangCache.getDictCount( this, dict ) ) {
+            // there's another; do nothing
+        } else {
+            int fmtid = 0;
+            int langcode = DictLangCache.getDictLangCode( this, dict );
+            DictAndLoc[] langDals = DictLangCache.getDALsHaveLang( this, 
+                                                                   langcode );
+            int nUsingLang = DBUtils.countGamesUsingLang( this, langcode );
+
+            if ( 1 == langDals.length ) { // last in this language?
+                if ( 0 < nUsingLang ) {
+                    fmtid = R.string.confirm_deleteonly_dictf;
+                }
+            } else if ( 0 < DBUtils.countGamesUsingDict( this, dict ) ) {
+                fmtid = R.string.confirm_deletemore_dictf;
+            }
+            if ( 0 != fmtid ) {
+                String fmt = getString( fmtid );
                 msg += String.format( fmt, DictLangCache.
-                                      getLangName( this, code ) );
+                                       getLangName( this, langcode ) );
             }
         }
 

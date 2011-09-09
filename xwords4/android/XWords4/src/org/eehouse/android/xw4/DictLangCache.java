@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.Comparator;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
@@ -329,6 +330,18 @@ public class DictLangCache {
             s_langNames = res.getStringArray( R.array.language_names );
         }
         return s_langNames;
+    }
+
+    public static int getDictCount( Context context, String name )
+    {
+        int result = 0;
+        for ( DictAndLoc dal : DictUtils.dictList( context ) ) {
+            if ( name.equals( dal.name ) ) {
+                ++result;
+            }
+        }
+        Assert.assertTrue( result > 0 );
+        return result;
     }
 
     private static DictInfo getInfo( Context context, String name )
