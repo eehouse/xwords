@@ -27,7 +27,7 @@ import java.util.Arrays;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Utils;
-import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictLangCache;
 
@@ -403,7 +403,7 @@ public class CurGameInfo {
             DictLangCache.getBestDefault( m_context, dictLang, false );
 
         if ( null == dictName 
-             || ! GameUtils.dictExists( m_context, dictName ) 
+             || ! DictUtils.dictExists( m_context, dictName ) 
              || dictLang != DictLangCache.getDictLangCode( m_context, 
                                                            dictName ) ) {
             dictName = humanDict;

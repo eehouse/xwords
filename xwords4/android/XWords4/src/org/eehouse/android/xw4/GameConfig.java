@@ -533,9 +533,9 @@ public class GameConfig extends XWActivity
     }
 
     // DeleteCallback interface
-    public void deleteCalled( int myPosition, final String name )
+    public void deleteCalled( XWListItem item )
     {
-        if ( m_gi.delete( myPosition ) ) {
+        if ( m_gi.delete( item.getPosition() ) ) {
             loadPlayersList();
         }
     }

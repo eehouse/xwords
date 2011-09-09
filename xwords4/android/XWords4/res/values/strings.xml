@@ -216,8 +216,8 @@
       wordlist installed. One or more games will be unopenable
       without it.</string>
     <string name="confirm_deletemore_dictf">\u0020One game (at least)
-      is using it (but there is another %s wordlist installed that
-      can replace it.)</string>
+      is using it, but there is another %s wordlist installed that can
+      replace it.</string>
     
     <string name="hints_allowed">Allow hints</string>
     <string name="hints_allowed_sum">Enable the hint feature</string>

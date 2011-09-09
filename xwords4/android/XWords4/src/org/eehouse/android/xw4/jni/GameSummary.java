@@ -258,4 +258,14 @@ public class GameSummary {
         return indx == turn && isLocal(indx);
     }
 
+    public String dictNames( String separator ) 
+    {
+        String list = null;
+        if ( null != m_gi ) {
+            String[] names = m_gi.dictNames();
+            list = TextUtils.join( separator, names );
+        }
+        return String.format( "%s%s%s", separator, list, separator );
+    }
+
 }
