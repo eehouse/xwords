@@ -518,7 +518,7 @@ public class GamesList extends XWListActivity
         case R.id.gamel_menu_delete_all:
             if ( DBUtils.gamesList( this ).length > 0 ) {
                 showConfirmThen( R.string.confirm_delete_all, 
-                                 DELETE_ALL_ACTION );
+                                 R.string.button_delete, DELETE_ALL_ACTION );
             }
             handled = true;
             break;
@@ -561,12 +561,14 @@ public class GamesList extends XWListActivity
         m_rowid = DBUtils.gamesList( this )[position];
         
         if ( R.id.list_item_delete == menuID ) {
-            showConfirmThen( R.string.confirm_delete, DELETE_GAME_ACTION );
+            showConfirmThen( R.string.confirm_delete, R.string.button_delete, 
+                             DELETE_GAME_ACTION );
         } else {
             if ( checkWarnNoDict( m_rowid ) ) {
                 switch ( menuID ) {
                 case R.id.list_item_reset:
-                    showConfirmThen( R.string.confirm_reset, RESET_GAME_ACTION );
+                    showConfirmThen( R.string.confirm_reset, 
+                                     R.string.button_reset, RESET_GAME_ACTION );
                     break;
                 case R.id.list_item_config:
                     GameUtils.doConfig( this, m_rowid, GameConfig.class );

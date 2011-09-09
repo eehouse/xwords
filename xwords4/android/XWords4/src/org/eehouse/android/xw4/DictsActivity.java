@@ -560,7 +560,8 @@ public class DictsActivity extends ExpandableListActivity
             }
         }
 
-        m_delegate.showConfirmThen( msg, DELETE_DICT_ACTION );
+        m_delegate.showConfirmThen( msg, R.string.button_delete, 
+                                    DELETE_DICT_ACTION );
     }
 
     // SDCardWatcher.SDCardNotifiee interface
