@@ -212,7 +212,7 @@ public class CommonPrefs {
     {
         String value = getString( context, R.string.key_default_dict );
         if ( value.equals("") || !DictUtils.dictExists( context, value ) ) {
-            value = DictUtils.dictList( context )[0];
+            value = DictUtils.dictList( context )[0].name;
         }
         return value;
     }

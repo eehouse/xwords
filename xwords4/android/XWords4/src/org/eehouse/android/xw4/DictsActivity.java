@@ -50,6 +50,7 @@ import android.preference.PreferenceManager;
 import android.net.Uri;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -96,13 +97,12 @@ public class DictsActivity extends ExpandableListActivity
         private XWListItem[][] m_cache;
 
         public DictListAdapter( Context context ) {
-            //super( context, m_dicts.length );
             m_context = context;
         }
 
         public boolean areAllItemsEnabled() { return false; }
 
-        public Object getChild(int groupPosition, int childPosition)
+        public Object getChild( int groupPosition, int childPosition )
         {
             return null;
         }
@@ -127,27 +127,27 @@ public class DictsActivity extends ExpandableListActivity
             }
 
             if ( null == view ) {
-                int lang = (int)getGroupId( groupPosition );
-                String[] dicts = DictLangCache.getHaveLang( m_context, lang );
-                String text;
-                boolean canDelete = false;
-                if ( null != dicts && childPosition < dicts.length ) {
-                    text = dicts[childPosition];
-                    canDelete = !DictUtils.dictIsBuiltin( DictsActivity.this,
-                                                          text );
-                } else {
-                    text = m_download;
-                }
-                view = (XWListItem)m_factory.inflate( R.layout.list_item, null );
-                view.setText( text );
-                if ( canDelete ) {
-                    view.setDeleteCallback( DictsActivity.this );
-                }
+                view = (XWListItem)
+                    m_factory.inflate( R.layout.list_item, null );
 
-                DictUtils.DictLoc loc = 
-                    DictUtils.getDictLoc( DictsActivity.this, text );
-                view.setComment( m_locNames[loc.ordinal()] );
-                view.cache( loc );
+                int lang = (int)getGroupId( groupPosition );
+                DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, 
+                                                                   lang );
+
+                if ( null != dals && childPosition < dals.length ) {
+                    DictAndLoc dal;
+                    dal = dals[childPosition];
+                    view.setText( dal.name );
+
+                    DictUtils.DictLoc loc = dal.loc;
+                    view.setComment( m_locNames[loc.ordinal()] );
+                    view.cache( loc );
+                    if ( DictUtils.DictLoc.BUILT_IN != loc ) {
+                        view.setDeleteCallback( DictsActivity.this );
+                    }
+                } else {
+                    view.setText( m_download );
+                }
 
                 addToCache( groupPosition, childPosition, view );
             }
@@ -157,10 +157,10 @@ public class DictsActivity extends ExpandableListActivity
         public int getChildrenCount( int groupPosition )
         {
             int lang = (int)getGroupId( groupPosition );
-            String[] dicts = DictLangCache.getHaveLang( m_context, lang );
+            DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
             int result = 0; // 1;     // 1 for the download option
-            if ( null != dicts ) {
-                result += dicts.length;
+            if ( null != dals ) {
+                result += dals.length;
             }
             return result;
         }
@@ -263,10 +263,10 @@ public class DictsActivity extends ExpandableListActivity
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         XWListItem rowView = m_adapter.getSelChildView();
-                        if (  DictUtils.moveDict( DictsActivity.this,
-                                                  rowView.getText(),
-                                                  m_moveFromLoc,
-                                                  m_moveToLoc ) ) {
+                        if ( DictUtils.moveDict( DictsActivity.this,
+                                                 rowView.getText(),
+                                                 m_moveFromLoc,
+                                                 m_moveToLoc ) ) {
                             rowView.
                                 setComment( m_locNames[m_moveToLoc.ordinal()]);
                             rowView.cache( m_moveToLoc );
@@ -521,23 +521,25 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     // XWListItem.DeleteCallback interface
-    public void deleteCalled( int myPosition, String dict )
+    public void deleteCalled( XWListItem item )
     {
+        String dict = item.getText();
         int code = DictLangCache.getDictLangCode( this, dict );
-        String lang = DictLangCache.getLangName( this, code );
-        int nGames = DBUtils.countGamesUsing( this, code );
+        int nGames = DBUtils.countGamesUsingLang( this, code );
         String msg = String.format( getString( R.string.confirm_delete_dictf ),
                                     dict );
+
         m_deleteDict = dict;
+        m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
 
         if ( nGames > 0 ) {
-            int fmt;
-            if ( 1 == DictLangCache.getHaveLang( this, code ).length ) {
-                fmt = R.string.confirm_deleteonly_dictf;
-            } else {
-                fmt = R.string.confirm_deletemore_dictf;
+            DictAndLoc[] dal = DictLangCache.getDALsHaveLang( this, code );
+            if ( 1 == dal.length ) {
+                Assert.assertTrue( dict.equals(dal[0].name) );
+                String fmt = getString( R.string.confirm_deleteonly_dictf );
+                msg += String.format( fmt, DictLangCache.
+                                      getLangName( this, code ) );
             }
-            msg += String.format( getString(fmt), lang );
         }
 
         m_delegate.showConfirmThen( msg, DELETE_DICT_ACTION );
@@ -556,7 +558,7 @@ public class DictsActivity extends ExpandableListActivity
         switch( id ) {
         case DELETE_DICT_ACTION:
             if ( DialogInterface.BUTTON_POSITIVE == which ) {
-                deleteDict( m_deleteDict );
+                deleteDict( m_deleteDict, m_moveFromLoc );
             }
             break;
         default:
@@ -564,10 +566,10 @@ public class DictsActivity extends ExpandableListActivity
         }
     }
 
-    private void deleteDict( String dict )
+    private void deleteDict( String dict, DictUtils.DictLoc loc )
     {
-        DictUtils.deleteDict( this, dict );
-        DictLangCache.inval( this, dict, false );
+        DictUtils.deleteDict( this, dict, loc );
+        DictLangCache.inval( this, dict, loc, false );
         mkListAdapter();
     }
 

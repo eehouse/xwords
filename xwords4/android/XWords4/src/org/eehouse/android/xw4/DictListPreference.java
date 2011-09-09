@@ -32,13 +32,15 @@ public class DictListPreference extends XWListPreference {
     {
         super( context, attrs );
 
-        String[] dicts = DictUtils.dictList( context  );
-        String[] dictEntries = new String[dicts.length];
-        for ( int ii = 0; ii < dicts.length; ++ii ) {
+        DictUtils.DictAndLoc[] dals = DictUtils.dictList( context  );
+        String[] dictEntries = new String[dals.length];
+        String[] values = new String[dals.length];
+        for ( int ii = 0; ii < dals.length; ++ii ) {
+            values[ii] = dals[ii].name;
             dictEntries[ii] = 
-                DictLangCache.annotatedDictName( context, dicts[ii] );
+                DictLangCache.annotatedDictName( context, dals[ii] );
         }
         setEntries( dictEntries );
-        setEntryValues( dicts );
+        setEntryValues( values );
     }
 }

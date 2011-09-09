@@ -47,8 +47,11 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class DictUtils {
 
-    public enum DictLoc { BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
+    // keep in sync with loc_names string-array
+    public enum DictLoc { UNKNOWN, BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
     public static final String INVITED = "invited";
+
+    private static DictAndLoc[] s_dictListCache = null;
  
     public static class DictPairs {
         public byte[][] m_bytes;
@@ -74,33 +77,60 @@ public class DictUtils {
         }
     } // DictPairs
 
+    public static class DictAndLoc {
+        public DictAndLoc( String pname, DictLoc ploc ) {
+            name = removeDictExtn(pname); loc = ploc;
+        }
+        public String name;
+        public DictLoc loc;
+
+        @Override 
+        public boolean equals( Object obj ) 
+        {
+            boolean result = false;
+            if ( obj instanceof DictAndLoc ) {
+                DictAndLoc other = (DictAndLoc)obj;
+                
+                result = name.equals( other.name )
+                    && loc.equals( other.loc );
+            }
+            return result;
+        }
+    }
  
-    public static String[] dictList( Context context )
+    public static DictAndLoc[] dictList( Context context )
     {
-        ArrayList<String> al = new ArrayList<String>();
+        if ( null == s_dictListCache ) {
+            ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
 
-        for ( String file : getAssets( context ) ) {
-            if ( isDict( file ) ) {
-                al.add( removeDictExtn( file ) );
-            }
-        }
-
-        for ( String file : context.fileList() ) {
-            if ( isDict( file ) ) {
-                al.add( removeDictExtn( file ) );
-            }
-        }
-
-        File sdDir = getSDDir( context );
-        if ( null != sdDir ) {
-            for ( String file : sdDir.list() ) {
+            for ( String file : getAssets( context ) ) {
                 if ( isDict( file ) ) {
-                    al.add( removeDictExtn( file ) );
+                    al.add( new DictAndLoc( removeDictExtn( file ), 
+                                            DictLoc.BUILT_IN ) );
                 }
             }
-        }
 
-        return al.toArray( new String[al.size()] );
+            for ( String file : context.fileList() ) {
+                if ( isDict( file ) ) {
+                    al.add( new DictAndLoc( removeDictExtn( file ),
+                                            DictLoc.INTERNAL ) );
+                }
+            }
+
+            File sdDir = getSDDir( context );
+            if ( null != sdDir ) {
+                for ( String file : sdDir.list() ) {
+                    if ( isDict( file ) ) {
+                        al.add( new DictAndLoc( removeDictExtn( file ),
+                                                DictLoc.EXTERNAL ) );
+                    }
+                }
+            }
+
+            s_dictListCache = 
+                al.toArray( new DictUtils.DictAndLoc[al.size()] );
+        }
+        return s_dictListCache;
     }
 
     public static DictLoc getDictLoc( Context context, String name )
@@ -148,10 +178,18 @@ public class DictUtils {
     public static boolean moveDict( Context context, String name,
                                     DictLoc from, DictLoc to )
     {
+        boolean success;
         name = addDictExtn( name );
-        boolean success = copyDict( context, name, from, to );
-        if ( success ) {
-            deleteDict( context, name, from );
+
+        File toPath = getDictFile( context, name, to );
+        if ( null != toPath && toPath.exists() ) {
+            success = false;
+        } else {
+            success = copyDict( context, name, from, to );
+            if ( success ) {
+                deleteDict( context, name, from );
+                s_dictListCache = null;
+            }
         }
         return success;
     }
@@ -201,8 +239,9 @@ public class DictUtils {
         return success;
     } // copyDict
 
-    private static void deleteDict( Context context, String name, DictLoc loc )
+    public static void deleteDict( Context context, String name, DictLoc loc )
     {
+        name = addDictExtn( name );
         if ( DictLoc.EXTERNAL == loc ) {
             File onSD = getSDPathFor( context, name );
             if ( null != onSD ) {
@@ -212,49 +251,57 @@ public class DictUtils {
             Assert.assertTrue( DictLoc.INTERNAL == loc );
             context.deleteFile( name );
         }
+        s_dictListCache = null;
     }
 
     public static void deleteDict( Context context, String name )
     {
-        name = addDictExtn( name );
         deleteDict( context, name, getDictLoc( context, name ) );
     }
 
-    public static byte[] openDict( Context context, String name )
+    private static byte[] openDict( Context context, String name, DictLoc loc )
     {
         byte[] bytes = null;
 
         name = addDictExtn( name );
 
-        try {
-            AssetManager am = context.getAssets();
-            InputStream dict = am.open( name, 
-                                        android.content.res.AssetManager.ACCESS_RANDOM );
+        if ( loc == DictLoc.UNKNOWN || loc == DictLoc.BUILT_IN ) {
+            try {
+                AssetManager am = context.getAssets();
+                InputStream dict = am.open( name, android.content.res.
+                                            AssetManager.ACCESS_RANDOM );
 
-            int len = dict.available(); // this may not be the full length!
-            bytes = new byte[len];
-            int nRead = dict.read( bytes, 0, len );
-            if ( nRead != len ) {
-                Utils.logf( "**** warning ****; read only %d of %d bytes.",
-                            nRead, len );
+                int len = dict.available(); // this may not be the
+                                            // full length!
+                bytes = new byte[len];
+                int nRead = dict.read( bytes, 0, len );
+                if ( nRead != len ) {
+                    Utils.logf( "**** warning ****; read only %d of %d bytes.",
+                                nRead, len );
+                }
+                // check that with len bytes we've read the whole file
+                Assert.assertTrue( -1 == dict.read() );
+            } catch ( java.io.IOException ee ){
+                Utils.logf( "%s failed to open; likely not built-in", name );
             }
-            // check that with len bytes we've read the whole file
-            Assert.assertTrue( -1 == dict.read() );
-        } catch ( java.io.IOException ee ){
-            Utils.logf( "%s failed to open; likely not built-in", name );
         }
 
         // not an asset?  Try external and internal storage
         if ( null == bytes ) {
             try {
-                File sdFile = getSDPathFor( context, name );
-                FileInputStream fis;
-                if ( null != sdFile && sdFile.exists() ) {
-                    Utils.logf( "loading %s from SD", name );
-                    fis = new FileInputStream( sdFile );
-                } else {
-                    Utils.logf( "loading %s from private storage", name );
-                    fis = context.openFileInput( name );
+                FileInputStream fis = null;
+                if ( loc == DictLoc.UNKNOWN || loc == DictLoc.EXTERNAL ) {
+                    File sdFile = getSDPathFor( context, name );
+                    if ( null != sdFile && sdFile.exists() ) {
+                        Utils.logf( "loading %s from SD", name );
+                        fis = new FileInputStream( sdFile );
+                    }
+                }
+                if ( null == fis ) {
+                    if ( loc == DictLoc.UNKNOWN || loc == DictLoc.INTERNAL ) {
+                        Utils.logf( "loading %s from private storage", name );
+                        fis = context.openFileInput( name );
+                    }
                 }
                 int len = (int)fis.getChannel().size();
                 bytes = new byte[len];
@@ -269,9 +316,14 @@ public class DictUtils {
         }
         
         return bytes;
+    } // openDict
+
+    private static byte[] openDict( Context context, String name )
+    {
+        return openDict( context, name, DictLoc.UNKNOWN );
     }
 
-    public static String getDictPath( Context context, String name )
+    private static String getDictPath( Context context, String name )
     {
         name = addDictExtn( name );
 
@@ -283,6 +335,23 @@ public class DictUtils {
             }
         }
         String path = null == file? null : file.getPath();
+        return path;
+    }
+
+    private static File getDictFile( Context context, String name, DictLoc to )
+    {
+        File path;
+        switch ( to ) {
+        case EXTERNAL:
+            path = getSDPathFor( context, name );
+            break;
+        case INTERNAL:
+            path = context.getFileStreamPath( name );
+            break;
+        default:
+            Assert.fail();
+            path = null;
+        }
         return path;
     }
 
@@ -313,10 +382,11 @@ public class DictUtils {
     }
 
     public static boolean saveDict( Context context, InputStream in,
-                                    String name, boolean useSD )
+                                    String name, DictLoc loc )
     {
         boolean success = false;
         File sdFile = null;
+        boolean useSD = DictLoc.EXTERNAL == loc;
         if ( useSD ) {
             sdFile = getSDPathFor( context, name );
         }
@@ -335,6 +405,7 @@ public class DictUtils {
                     fos.write( buf, 0, nRead );
                 }
                 fos.close();
+                s_dictListCache = null;
                 success = true;
             } catch ( java.io.FileNotFoundException fnf ) {
                 Utils.logf( "saveDict: FileNotFoundException: %s", 

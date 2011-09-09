@@ -27,17 +27,19 @@ import android.widget.ArrayAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.DictInfo;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictLangCache {
-    private static final HashMap<String,DictInfo> s_nameToLang = 
-        new HashMap<String,DictInfo>();
+    private static final HashMap<DictAndLoc,DictInfo> s_nameToLang = 
+        new HashMap<DictAndLoc,DictInfo>();
     private static String[] s_langNames;
 
     private static int m_adaptedLang = -1;
@@ -59,17 +61,18 @@ public class DictLangCache {
             }
         };
 
-    public static String annotatedDictName( Context context, String name )
+    public static String annotatedDictName( Context context, DictAndLoc dal )
     {
-        DictInfo info = getInfo( context, name );
+        DictInfo info = getInfo( context, dal );
         int wordCount = info.wordCount;
             
-        String langName = getLangName( context, name );
+        String langName = getLangName( context, dal.name );
         String result;
         if ( 0 == wordCount ) {
-            result = String.format( "%s (%s)", name, langName );
+            result = String.format( "%s (%s)", dal.name, langName );
         } else {
-            result = String.format( "%s (%s/%d)", name, langName, wordCount );
+            result = String.format( "%s (%s/%d)", dal.name, langName, 
+                                    wordCount );
         }
 
         return result;
@@ -95,9 +98,9 @@ public class DictLangCache {
     public static int getLangCount( Context context, int code )
     {
         int count = 0;
-        String[] dicts = DictUtils.dictList( context );
-        for ( String dict : dicts ) {
-            if ( code == getDictLangCode( context, dict ) ) {
+        DictAndLoc[] dals = DictUtils.dictList( context );
+        for ( DictAndLoc dal : dals ) {
+            if ( code == getDictLangCode( context, dal ) ) {
                 ++count;
             }
         }
@@ -107,9 +110,9 @@ public class DictLangCache {
     private static DictInfo[] getInfosHaveLang( Context context, int code )
     {
         ArrayList<DictInfo> al = new ArrayList<DictInfo>();
-        String[] dicts = DictUtils.dictList( context );
-        for ( String dict : dicts ) {
-            DictInfo info = getInfo( context, dict );
+        DictAndLoc[] dals = DictUtils.dictList( context );
+        for ( DictAndLoc dal : dals ) {
+            DictInfo info = getInfo( context, dal );
             if ( code == info.langCode ) {
                 al.add( info );
             }
@@ -149,6 +152,20 @@ public class DictLangCache {
         return getHaveLang( context, code, null, false );
     }
 
+    public static DictAndLoc[] getDALsHaveLang( Context context, int code )
+    {
+        ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
+        DictAndLoc[] dals = DictUtils.dictList( context );
+        for ( DictAndLoc dal : dals ) {
+            DictInfo info = getInfo( context, dal );
+            if ( code == info.langCode ) {
+                al.add( dal );
+            }
+        }
+        DictAndLoc[] result = al.toArray( new DictAndLoc[al.size()] );
+        return result;
+    }
+
     private static Comparator<DictInfo> s_ByCount = 
         new Comparator<DictInfo>() {
             public int compare( DictInfo di1, DictInfo di2 )
@@ -171,6 +188,11 @@ public class DictLangCache {
     {
         int indx = nameWithCount.lastIndexOf( " (" );
         return nameWithCount.substring( 0, indx );
+    }
+
+    public static int getDictLangCode( Context context, DictAndLoc dal )
+    {
+        return getInfo( context, dal ).langCode;
     }
 
     public static int getDictLangCode( Context context, String dict )
@@ -197,13 +219,13 @@ public class DictLangCache {
         return getLangName( context, code );
     }
 
-    public static void inval( final Context context, String name, 
-                              boolean added )
+    public static void inval( final Context context, String name,
+                              DictUtils.DictLoc loc, boolean added )
     {
-        name = DictUtils.removeDictExtn( name );
-        s_nameToLang.remove( name );
+        DictAndLoc dal = new DictAndLoc( name, loc );
+        s_nameToLang.remove( dal );
         if ( added ) {
-            getInfo( context, name );
+            getInfo( context, dal );
         }
 
         if ( null != s_handler ) {
@@ -229,11 +251,11 @@ public class DictLangCache {
         return listLangs( context, DictUtils.dictList( context ) );
     }
 
-    public static String[] listLangs( Context context, final String[] names )
+    public static String[] listLangs( Context context, DictAndLoc[] dals )
     {
         HashSet<String> langs = new HashSet<String>();
-        for ( String name:names ) {
-            langs.add( getLangName( context, name ) );
+        for ( DictAndLoc dal : dals ) {
+            langs.add( getLangName( context, dal.name ) );
         }
         String[] result = new String[langs.size()];
         return langs.toArray( result );
@@ -311,16 +333,38 @@ public class DictLangCache {
 
     private static DictInfo getInfo( Context context, String name )
     {
+        DictInfo result = null;
+        Set<DictAndLoc> keys = s_nameToLang.keySet();
+        for ( DictAndLoc key : keys ) {
+            if ( key.name.equals(name) ) {
+                result = s_nameToLang.get( key );
+                break;
+            }
+        }
+
+        if ( null == result ) {
+            DictUtils.DictLoc loc = DictUtils.getDictLoc( context, name );
+            result = getInfo( context, new DictAndLoc( name, loc ) );
+        }
+        return result;
+    }
+
+    private static DictInfo getInfo( Context context, DictAndLoc dal )
+    {
         DictInfo info;
-        if ( s_nameToLang.containsKey( name ) ) {
-            info = s_nameToLang.get( name );
+        if ( s_nameToLang.containsKey( dal ) ) {
+            info = s_nameToLang.get( dal );
         } else {
-            byte[] dict = DictUtils.openDict( context, name );
-            String path = DictUtils.getDictPath( context, name );
+            String[] names = { dal.name };
+            DictUtils.DictPairs pairs = DictUtils.openDicts( context, names );
+
             info = new DictInfo();
-            XwJNI.dict_getInfo( dict, path, JNIUtilsImpl.get(), info );
-            info.name = name;
-            s_nameToLang.put( name, info );
+
+            XwJNI.dict_getInfo( pairs.m_bytes[0], pairs.m_paths[0], 
+                                JNIUtilsImpl.get(), info );
+
+            info.name = dal.name;
+            s_nameToLang.put( dal, info );
         }
         return info;
     }

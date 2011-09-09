@@ -253,7 +253,7 @@ public class DBUtils {
         }
     } // saveSummary
 
-    public static int countGamesUsing( Context context, int lang )
+    public static int countGamesUsingLang( Context context, int lang )
     {
         int result = 0;
         initDB( context );

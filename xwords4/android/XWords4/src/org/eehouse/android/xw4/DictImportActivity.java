@@ -36,11 +36,12 @@ import junit.framework.Assert;
 
 public class DictImportActivity extends XWActivity {
 
-    private static boolean s_useSD = false;
+    private static DictUtils.DictLoc s_saveWhere = DictUtils.DictLoc.INTERNAL;
 
     public static void setUseSD( boolean useSD ) 
     {
-        s_useSD = useSD;
+        s_saveWhere = useSD ?
+            DictUtils.DictLoc.EXTERNAL : DictUtils.DictLoc.INTERNAL;
     }
 
     private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> {
@@ -80,7 +81,8 @@ public class DictImportActivity extends XWActivity {
         {
             Utils.logf( "onPostExecute passed %d", result );
             if ( null != m_saved ) {
-                DictLangCache.inval( DictImportActivity.this, m_saved, true );
+                DictLangCache.inval( DictImportActivity.this, m_saved, 
+                                     s_saveWhere, true );
             }
             finish();
         }
@@ -121,7 +123,7 @@ public class DictImportActivity extends XWActivity {
     private String saveDict( InputStream inputStream, String path )
     {
         String name = basename( path );
-        if ( DictUtils.saveDict( this, inputStream, name, s_useSD ) ) {
+        if ( DictUtils.saveDict( this, inputStream, name, s_saveWhere ) ) {
             return name;
         } else {
             return null;

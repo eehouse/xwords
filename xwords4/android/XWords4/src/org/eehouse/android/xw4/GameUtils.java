@@ -465,11 +465,13 @@ public class GameUtils {
     {
         String[] dictNames = dictNames( context, rowid, missingLang );
         HashSet<String> missingSet;
-        String[] installed = DictUtils.dictList( context );
+        DictUtils.DictAndLoc[] installed = DictUtils.dictList( context );
 
         missingSet = new HashSet<String>( Arrays.asList( dictNames ) );
         missingSet.remove( null );
-        missingSet.removeAll( Arrays.asList(installed) );
+        for ( DictUtils.DictAndLoc dal : installed ) {
+            missingSet.remove( dal.name );
+        }
         boolean allHere = 0 == missingSet.size();
         if ( null != missingNames ) {
             missingNames[0] = 

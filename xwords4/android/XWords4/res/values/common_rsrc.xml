@@ -125,7 +125,9 @@
     <item>@string/connect_daily</item>
   </string-array>
 
+  <!-- Keep in sync with DictUtils.DictLoc enum -->
   <string-array name="loc_names">
+    <item></item>
     <item>@string/loc_builtin</item>
     <item>@string/loc_internal</item>
     <item>@string/loc_external</item>
