@@ -761,17 +761,15 @@ board_commitTurn( BoardCtxt* board )
             TileBit traySelBits = pti->traySelBits;
             result = XP_TRUE; /* there's at least the window to clean up
                                  after */
-            /* server_commitTrade() changes selPlayer, so board_endTrade
-               must be called first() */
 
             if ( NO_TILES == traySelBits ) {
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
-            } else {
+            } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
+                                        (XWStreamCtxt*)NULL ) ) {
+                /* server_commitTrade() changes selPlayer, so board_endTrade
+                   must be called first() */
                 (void)board_endTrade( board );
-                if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
-                                     (XWStreamCtxt*)NULL ) ) {
-                    (void)server_commitTrade( board->server, traySelBits );
-                }
+                (void)server_commitTrade( board->server, traySelBits );
             }
         } else {
             XP_Bool warn, legal;
