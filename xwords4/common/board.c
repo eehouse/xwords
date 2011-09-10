@@ -763,13 +763,15 @@ board_commitTurn( BoardCtxt* board )
                                  after */
             /* server_commitTrade() changes selPlayer, so board_endTrade
                must be called first() */
-            (void)board_endTrade( board );
 
             if ( NO_TILES == traySelBits ) {
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
-            } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
-                                        (XWStreamCtxt*)NULL ) ) {
-                (void)server_commitTrade( board->server, traySelBits );
+            } else {
+                (void)board_endTrade( board );
+                if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
+                                     (XWStreamCtxt*)NULL ) ) {
+                    (void)server_commitTrade( board->server, traySelBits );
+                }
             }
         } else {
             XP_Bool warn, legal;

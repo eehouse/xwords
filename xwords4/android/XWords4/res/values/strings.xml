@@ -135,8 +135,8 @@
 	<string name="str_tiles_must_contact">New pieces must contact others already in place (or the middle square on the first move)</string>
 	<string name="str_not_your_turn">You can\'t do that; it\'s not your turn!</string>
 	<string name="str_no_peek_robot_tiles">No peeking at the robot\'s tiles!</string>
-    <string name="str_no_empty_trade">Trade cancelled because no tiles
-      selected.  (It\'s still your turn.)</string>
+    <string name="str_no_empty_trade">Please tap to select tiles to be
+      exchanged.</string>
 	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to exchange.</string>
 	<string name="str_cant_undo_tileassign">Tile assignment can\'t be undone.</string>
 	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Settings dialog.</string>
