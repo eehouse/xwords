@@ -94,6 +94,7 @@ public class JNIThread extends Thread {
         public boolean canHint;
         public boolean canRedo;
         public boolean inTrade;
+        public boolean tradeTilesSelected;
         public boolean gameIsConnected;
         public boolean canShuffle;
         public GameStateInfo clone() {

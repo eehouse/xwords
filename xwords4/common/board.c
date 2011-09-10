@@ -1596,9 +1596,12 @@ board_flip( BoardCtxt* board )
 } /* board_flip */
 
 XP_Bool
-board_inTrade( const BoardCtxt* board )
+board_inTrade( const BoardCtxt* board, XP_Bool* anySelected )
 {
     const PerTurnInfo* pti = &board->pti[board->selPlayer];
+    if ( !!anySelected ) {
+        *anySelected = 0 != pti->traySelBits;
+    }
     return pti->tradeInProgress;
 }
 
@@ -2101,7 +2104,7 @@ board_beginTrade( BoardCtxt* board )
 XP_Bool
 board_endTrade( BoardCtxt* board )
 {
-    XP_Bool result = board_inTrade( board );
+    XP_Bool result = board_inTrade( board, NULL );
     if ( result ) {
         PerTurnInfo* pti = board->selInfo;
         invalSelTradeWindow( board );
