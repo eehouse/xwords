@@ -52,6 +52,15 @@ public class DictUtils {
     public static final String INVITED = "invited";
 
     private static DictAndLoc[] s_dictListCache = null;
+
+    static {
+        MountEventReceiver.register( new MountEventReceiver.SDCardNotifiee() {
+                public void cardMounted( boolean nowMounted )
+                {
+                    invalDictList();
+                }
+            } );
+    }
  
     public static class DictPairs {
         public byte[][] m_bytes;
@@ -98,6 +107,13 @@ public class DictUtils {
         }
     }
  
+    public static void invalDictList()
+    {
+        s_dictListCache = null;
+        // Should I have a list of folks who want to know when this
+        // changes?
+    }
+
     public static DictAndLoc[] dictList( Context context )
     {
         if ( null == s_dictListCache ) {
@@ -188,7 +204,7 @@ public class DictUtils {
             success = copyDict( context, name, from, to );
             if ( success ) {
                 deleteDict( context, name, from );
-                s_dictListCache = null;
+                invalDictList();
             }
         }
         return success;
@@ -251,7 +267,7 @@ public class DictUtils {
             Assert.assertTrue( DictLoc.INTERNAL == loc );
             context.deleteFile( name );
         }
-        s_dictListCache = null;
+        invalDictList();
     }
 
     public static void deleteDict( Context context, String name )
@@ -405,7 +421,7 @@ public class DictUtils {
                     fos.write( buf, 0, nRead );
                 }
                 fos.close();
-                s_dictListCache = null;
+                invalDictList();
                 success = true;
             } catch ( java.io.FileNotFoundException fnf ) {
                 Utils.logf( "saveDict: FileNotFoundException: %s", 
