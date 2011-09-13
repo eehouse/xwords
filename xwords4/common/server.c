@@ -2129,6 +2129,8 @@ server_commitTrade( ServerCtxt* server, TileBit selBits )
     pool_replaceTiles( server->pool, &oldTiles );
     model_makeTileTrade( server->vol.model, server->nv.currentTurn,
                          &oldTiles, &newTiles );
+    sortTilesIf( server, turn );
+
     nextTurn( server, PICK_NEXT );
     return XP_TRUE;
 } /* server_commitTrade */

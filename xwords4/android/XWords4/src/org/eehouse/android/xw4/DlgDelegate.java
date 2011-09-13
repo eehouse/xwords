@@ -54,6 +54,7 @@ public class DlgDelegate {
     private static final String CALLBACK = "callback";
     private static final String MSGID = "msgid";
     private static final String PREFSKEY = "prefskey";
+    private static final String POSBUTTON = "posbutton";
 
     // Cache a couple of callback implementations that never change:
     private DialogInterface.OnClickListener m_cbkOnClickLstnr = null;
@@ -64,6 +65,7 @@ public class DlgDelegate {
     }
 
     private int m_msgID;
+    private int m_posButton;
     private int m_cbckID = 0;   // if this can be set twice I have a
                                 // problem.  See asserts below.
     private String m_msg;
@@ -82,6 +84,7 @@ public class DlgDelegate {
             m_msg = bundle.getString( MSG );
             m_cbckID = bundle.getInt( CALLBACK );
             m_msgID = bundle.getInt( MSGID );
+            m_posButton = bundle.getInt( POSBUTTON );
             m_prefsKey = bundle.getInt( PREFSKEY );
         }
     }
@@ -91,6 +94,7 @@ public class DlgDelegate {
         outState.putString( MSG, m_msg );
         outState.putInt( CALLBACK, m_cbckID );
         outState.putInt( MSGID, m_msgID );
+        outState.putInt( POSBUTTON, m_posButton );
         outState.putInt( PREFSKEY, m_prefsKey );
     }
     
@@ -137,6 +141,8 @@ public class DlgDelegate {
             ad.setMessage( m_activity.getString(m_msgID) );
             break;
         case CONFIRM_THEN:
+            ad.getButton(AlertDialog.BUTTON_POSITIVE).
+                setText( m_activity.getString( m_posButton ) );
             ad.setMessage( m_msg );
             break;
         }
@@ -186,7 +192,13 @@ public class DlgDelegate {
 
     public void showConfirmThen( String msg, int callbackID )
     {
+        showConfirmThen( msg, R.string.button_ok, callbackID );
+    }
+
+    public void showConfirmThen( String msg, int posButton, int callbackID )
+    {
         m_msg = msg;
+        m_posButton = posButton;
         Assert.assertTrue( 0 != callbackID );
         Assert.assertTrue( 0 == m_cbckID );
         m_cbckID = callbackID;

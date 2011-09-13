@@ -513,7 +513,6 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname,
 
     /* copy the name */
     anddict->super.name = getStringCopy( MPPARM(mpool) env, jname );
-    XP_LOGF( "%s: setting dict name: %s", __func__, anddict->super.name );
     anddict->super.langName = getStringCopy( MPPARM(mpool) env, jlangname );
     
     return (DictionaryCtxt*)anddict;

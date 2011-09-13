@@ -22,7 +22,7 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4"
-          android:versionCode="26"
+          android:versionCode="27"
           android:versionName="@string/app_version"
           >
 
@@ -123,6 +123,18 @@
               />
 
     <service android:name="RelayService"/>
+
+    <receiver android:name=".MountEventReceiver">
+        <intent-filter>
+            <action android:name="android.intent.action.MEDIA_MOUNTED" />
+            <data android:scheme="file" />
+        </intent-filter>
+        <intent-filter>
+            <action android:name="android.intent.action.MEDIA_EJECT" />
+            <data android:scheme="file" />
+        </intent-filter>
+    </receiver>
+
 
     <!-- <receiver android:name="NBSReceiver"> -->
     <!--   <intent-filter android:priority="10"> -->

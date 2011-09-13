@@ -218,8 +218,8 @@
          wordlist to be deleted is NOT the last in its language. The
          name of the language is substituted for %s. -->
     <string name="confirm_deletemore_dictf">\u0020One game (at least)
-      is using it (but there is another %s wordlist installed that
-      can replace it.)</string>
+      is using it, but there is another %s wordlist installed that can
+      replace it.</string>
 
     <!-- Text of dialog brought up when user taps the download_dicts
          button -->
@@ -1366,7 +1366,7 @@
       exchanged.  Use the buttons to commit your turn or exit exchange
       mode.</string>
 
-    <string name="entering_trade">Entering exchange mode</string>
+    <string name="entering_trade">Tap to select tiles...</string>
 
     <string name="relay_game_explainf">To start a basic networked two-player
     game in %s:</string>
@@ -1663,5 +1663,8 @@
          dialog -->
     <string name="changes_button">Recent changes</string>
 
+
+    <string name="button_delete">Delete</string>
+    <string name="button_reset">Reset</string>
 
 </resources>

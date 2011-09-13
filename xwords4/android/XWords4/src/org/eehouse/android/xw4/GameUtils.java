@@ -47,7 +47,6 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameUtils {
 
-    public enum DictLoc { BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
     public static final String INVITED = "invited";
 
     // Implements read-locks and write-locks per game.  A read lock is
@@ -152,30 +151,6 @@ public class GameUtils {
         }
     }
 
-    public static class DictPairs {
-        public byte[][] m_bytes;
-        public String[] m_paths;
-        public DictPairs( byte[][] bytes, String[] paths ) {
-            m_bytes = bytes; m_paths = paths;
-        }
-
-        public boolean anyMissing( final String[] names )
-        {
-            boolean missing = false;
-            for ( int ii = 0; ii < m_paths.length; ++ii ) {
-                if ( names[ii] != null ) {
-                    // It's ok for there to be no dict IFF there's no
-                    // name.  That's a player using the default dict.
-                    if ( null == m_paths[ii] && null == m_bytes[ii] ) {
-                        missing = true;
-                        break;
-                    }
-                }
-            }
-            return missing;
-        }
-    } // DictPairs
-
     private static Object s_syncObj = new Object();
 
     public static byte[] savedGame( Context context, long rowid )
@@ -205,7 +180,7 @@ public class GameUtils {
         // as DeviceRole.SERVER_STANDALONE != gi.serverRole
         int gamePtr = loadMakeGame( context, gi, lockSrc );
         String[] dictNames = gi.dictNames();
-        DictPairs pairs = openDicts( context, dictNames );
+        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec( context );
@@ -333,7 +308,7 @@ public class GameUtils {
         byte[] stream = savedGame( context, lock );
         XwJNI.gi_from_stream( gi, stream );
         String[] dictNames = gi.dictNames();
-        DictPairs pairs = openDicts( context, dictNames );
+        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         if ( pairs.anyMissing( dictNames ) ) {
             Utils.logf( "loadMakeGame() failing: dict unavailable" );
         } else {
@@ -490,11 +465,13 @@ public class GameUtils {
     {
         String[] dictNames = dictNames( context, rowid, missingLang );
         HashSet<String> missingSet;
-        String[] installed = dictList( context );
+        DictUtils.DictAndLoc[] installed = DictUtils.dictList( context );
 
         missingSet = new HashSet<String>( Arrays.asList( dictNames ) );
         missingSet.remove( null );
-        missingSet.removeAll( Arrays.asList(installed) );
+        for ( DictUtils.DictAndLoc dal : installed ) {
+            missingSet.remove( dal.name );
+        }
         boolean allHere = 0 == missingSet.size();
         if ( null != missingNames ) {
             missingNames[0] = 
@@ -532,286 +509,9 @@ public class GameUtils {
         // return name;
     }
 
-    public static String[] dictList( Context context )
-    {
-        ArrayList<String> al = new ArrayList<String>();
-
-        for ( String file : getAssets( context ) ) {
-            if ( isDict( file ) ) {
-                al.add( removeDictExtn( file ) );
-            }
-        }
-
-        for ( String file : context.fileList() ) {
-            if ( isDict( file ) ) {
-                al.add( removeDictExtn( file ) );
-            }
-        }
-
-        File sdDir = getSDDir( context );
-        if ( null != sdDir ) {
-            for ( String file : sdDir.list() ) {
-                if ( isDict( file ) ) {
-                    al.add( removeDictExtn( file ) );
-                }
-            }
-        }
-
-        return al.toArray( new String[al.size()] );
-    }
-
-    public static DictLoc getDictLoc( Context context, String name )
-    {
-        DictLoc loc = null;
-        name = addDictExtn( name );
-
-        for ( String file : getAssets( context ) ) {
-            if ( file.equals( name ) ) {
-                loc = DictLoc.BUILT_IN;
-                break;
-            }
-        }
-
-        if ( null == loc ) {
-            try {
-                FileInputStream fis = context.openFileInput( name );
-                fis.close();
-                loc = DictLoc.INTERNAL;
-            } catch ( java.io.FileNotFoundException fnf ) {
-            } catch ( java.io.IOException ioe ) {
-            }
-        }
-
-        if ( null == loc ) {
-            File file = getSDPathFor( context, name );
-            if ( null != file && file.exists() ) {
-                loc = DictLoc.EXTERNAL;
-            }
-        }
-
-        return loc;
-    }
-
-    public static boolean dictExists( Context context, String name )
-    {
-        return null != getDictLoc( context, name );
-    }
-
-    public static boolean dictIsBuiltin( Context context, String name )
-    {
-        return DictLoc.BUILT_IN == getDictLoc( context, name );
-    }
-
-    public static boolean moveDict( Context context, String name,
-                                    DictLoc from, DictLoc to )
-    {
-        name = addDictExtn( name );
-        boolean success = copyDict( context, name, from, to );
-        if ( success ) {
-            deleteDict( context, name, from );
-        }
-        return success;
-    }
-
-    private static boolean copyDict( Context context, String name,
-                                     DictLoc from, DictLoc to )
-    {
-        boolean success = false;
-
-        File file = getSDPathFor( context, name );
-        if ( null != file ) {
-            FileChannel channelIn = null;
-            FileChannel channelOut = null;
-
-            try {
-                FileInputStream fis;
-                FileOutputStream fos;
-                if ( DictLoc.INTERNAL == from ) {
-                    fis = context.openFileInput( name );
-                    fos = new FileOutputStream( file );
-                } else {
-                    fis = new FileInputStream( file );
-                    fos = context.openFileOutput( name, Context.MODE_PRIVATE );
-                }
-
-                channelIn = fis.getChannel();
-                channelOut = fos.getChannel();
-
-                channelIn.transferTo( 0, channelIn.size(), channelOut );
-                success = true;
-
-            } catch ( java.io.FileNotFoundException fnfe ) {
-                Utils.logf( "%s", fnfe.toString() );
-            } catch ( java.io.IOException ioe ) {
-                Utils.logf( "%s", ioe.toString() );
-            } finally {
-                try {
-                    // Order should match assignment order to above in
-                    // case one or both null
-                    channelIn.close();
-                    channelOut.close();
-                } catch ( Exception e ) {
-                    Utils.logf( "%s", e.toString() );
-                }
-            }
-        }
-        return success;
-    } // copyDict
-
-    private static void deleteDict( Context context, String name, DictLoc loc )
-    {
-        if ( DictLoc.EXTERNAL == loc ) {
-            File onSD = getSDPathFor( context, name );
-            if ( null != onSD ) {
-                onSD.delete();
-            } // otherwise what?
-        } else {
-            Assert.assertTrue( DictLoc.INTERNAL == loc );
-            context.deleteFile( name );
-        }
-    }
-
-    public static void deleteDict( Context context, String name )
-    {
-        name = addDictExtn( name );
-        deleteDict( context, name, getDictLoc( context, name ) );
-    }
-
-    public static byte[] openDict( Context context, String name )
-    {
-        byte[] bytes = null;
-
-        name = addDictExtn( name );
-
-        try {
-            AssetManager am = context.getAssets();
-            InputStream dict = am.open( name, 
-                            android.content.res.AssetManager.ACCESS_RANDOM );
-
-            int len = dict.available(); // this may not be the full length!
-            bytes = new byte[len];
-            int nRead = dict.read( bytes, 0, len );
-            if ( nRead != len ) {
-                Utils.logf( "**** warning ****; read only %d of %d bytes.",
-                            nRead, len );
-            }
-            // check that with len bytes we've read the whole file
-            Assert.assertTrue( -1 == dict.read() );
-        } catch ( java.io.IOException ee ){
-            Utils.logf( "%s failed to open; likely not built-in", name );
-        }
-
-        // not an asset?  Try external and internal storage
-        if ( null == bytes ) {
-            try {
-                File sdFile = getSDPathFor( context, name );
-                FileInputStream fis;
-                if ( null != sdFile && sdFile.exists() ) {
-                    Utils.logf( "loading %s from SD", name );
-                    fis = new FileInputStream( sdFile );
-                } else {
-                    Utils.logf( "loading %s from private storage", name );
-                    fis = context.openFileInput( name );
-                }
-                int len = (int)fis.getChannel().size();
-                bytes = new byte[len];
-                fis.read( bytes, 0, len );
-                fis.close();
-                Utils.logf( "Successfully loaded %s", name );
-            } catch ( java.io.FileNotFoundException fnf ) {
-                Utils.logf( fnf.toString() );
-            } catch ( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
-            }
-        }
-        
-        return bytes;
-    }
-
-    public static String getDictPath( Context context, String name )
-    {
-        name = addDictExtn( name );
-
-        File file = context.getFileStreamPath( name );
-        if ( !file.exists() ) {
-            file = getSDPathFor( context, name );
-            if ( null != file && !file.exists() ) {
-                file = null;
-            }
-        }
-        String path = null == file? null : file.getPath();
-        return path;
-    }
-
-    public static DictPairs openDicts( Context context, String[] names )
-    {
-        byte[][] dictBytes = new byte[names.length][];
-        String[] dictPaths = new String[names.length];
-
-        HashMap<String,byte[]> seen = new HashMap<String,byte[]>();
-        for ( int ii = 0; ii < names.length; ++ii ) {
-            byte[] bytes = null;
-            String path = null;
-            String name = names[ii];
-            if ( null != name ) {
-                path = getDictPath( context, name );
-                if ( null == path ) {
-                    bytes = seen.get( name );
-                    if ( null == bytes ) {
-                        bytes = openDict( context, name );
-                        seen.put( name, bytes );
-                    }
-                }
-            }
-            dictBytes[ii] = bytes;
-            dictPaths[ii] = path;
-        }
-        return new DictPairs( dictBytes, dictPaths );
-    }
-
-    public static boolean saveDict( Context context, InputStream in,
-                                    String name, boolean useSD )
-    {
-        boolean success = false;
-        File sdFile = null;
-        if ( useSD ) {
-            sdFile = getSDPathFor( context, name );
-        }
-
-        if ( null != sdFile || !useSD ) {
-            try {
-                FileOutputStream fos;
-                if ( null != sdFile ) {
-                    fos = new FileOutputStream( sdFile );
-                } else {
-                    fos = context.openFileOutput( name, Context.MODE_PRIVATE );
-                }
-                byte[] buf = new byte[1024];
-                int nRead;
-                while( 0 <= (nRead = in.read( buf, 0, buf.length )) ) {
-                    fos.write( buf, 0, nRead );
-                }
-                fos.close();
-                success = true;
-            } catch ( java.io.FileNotFoundException fnf ) {
-                Utils.logf( "saveDict: FileNotFoundException: %s", 
-                            fnf.toString() );
-            } catch ( java.io.IOException ioe ) {
-                Utils.logf( "saveDict: IOException: %s", ioe.toString() );
-                deleteDict( context, name );
-            }
-        }
-        return success;
-    } 
-
     private static boolean isGame( String file )
     {
         return file.endsWith( XWConstants.GAME_EXTN );
-    }
-
-    private static boolean isDict( String file )
-    {
-        return file.endsWith( XWConstants.DICT_EXTN );
     }
 
     public static void launchGame( Activity activity, long rowid,
@@ -925,7 +625,7 @@ public class GameUtils {
         gi.replaceDicts( newDict );
 
         String[] dictNames = gi.dictNames();
-        DictPairs pairs = openDicts( context, dictNames );
+        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         
         int gamePtr = XwJNI.initJNI();
         XwJNI.game_makeFromStream( gamePtr, stream, JNIUtilsImpl.get(), gi,
@@ -950,7 +650,7 @@ public class GameUtils {
         // that don't reset the game, e.g. player name for standalone
         // games?
         String[] dictNames = gi.dictNames();
-        DictPairs pairs = openDicts( context, dictNames );
+        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         String langName = gi.langName();
         int gamePtr = XwJNI.initJNI();
         boolean madeGame = false;
@@ -996,34 +696,6 @@ public class GameUtils {
         activity.startActivity( intent );
     }
 
-    public static String removeDictExtn( String str )
-    {
-        if ( str.endsWith( XWConstants.DICT_EXTN ) ) {
-            int indx = str.lastIndexOf( XWConstants.DICT_EXTN );
-            str = str.substring( 0, indx );
-        }
-        return str;
-    }
-
-    private static String addDictExtn( String str ) 
-    {
-        if ( ! str.endsWith( XWConstants.DICT_EXTN ) ) {
-            str += XWConstants.DICT_EXTN;
-        }
-        return str;
-    }
-
-    private static String[] getAssets( Context context )
-    {
-        try {
-            AssetManager am = context.getAssets();
-            return am.list("");
-        } catch( java.io.IOException ioe ) {
-            Utils.logf( ioe.toString() );
-            return new String[0];
-        }
-    }
-    
     private static void tellRelayDied( Context context, GameLock lock,
                                        boolean informNow )
     {
@@ -1036,43 +708,5 @@ public class GameUtils {
         }
     }
 
-    public static boolean haveWriteableSD()
-    {
-        String state = Environment.getExternalStorageState();
-
-        return state.equals( Environment.MEDIA_MOUNTED );
-        // want this later? Environment.MEDIA_MOUNTED_READ_ONLY
-    }
-
-    private static File getSDDir( Context context )
-    {
-        File result = null;
-        if ( haveWriteableSD() ) {
-            File storage = Environment.getExternalStorageDirectory();
-            if ( null != storage ) {
-                String packdir = String.format( "Android/data/%s/files/",
-                                                context.getPackageName() );
-                result = new File( storage.getPath(), packdir );
-                if ( !result.exists() ) {
-                    result.mkdirs();
-                    if ( !result.exists() ) {
-                        Utils.logf( "unable to create sd dir %s", packdir );
-                        result = null;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    private static File getSDPathFor( Context context, String name )
-    {
-        File result = null;
-        File dir = getSDDir( context );
-        if ( dir != null ) {
-            result = new File( dir, name );
-        }
-        return result;
-    }
 
 }
