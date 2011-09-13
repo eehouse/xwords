@@ -20,8 +20,8 @@
 
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
-         of the game is substituted for %1$s.  Something else --
-         language, player names, etc, is substituted for %2$s. This
+         of the game is substituted for %1$s.  Something else
+         (language, player names, etc), is substituted for %2$s. This
          does not require translation unless the parentheses or
          ordering is wrong for your language.-->
     <string name="str_game_namef">%1$s (%2$s)</string>
