@@ -43,6 +43,9 @@ public class DBUtils {
     private static final String ROW_ID = "rowid";
     private static final String ROW_ID_FMT = "rowid=%d";
 
+    private static long s_cachedRowID = -1;
+    private static byte[] s_cachedBytes = null;
+
     public static interface DBChangeListener {
         public void gameSaved( long rowid );
     }
@@ -568,6 +571,8 @@ public class DBUtils {
             }
             db.close();
         }
+        setCached( rowid, null ); // force reread
+
         if ( -1 != rowid ) {
             notifyListeners( rowid );
         }
@@ -578,21 +583,24 @@ public class DBUtils {
     {
         long rowid = lock.getRowid();
         Assert.assertTrue( -1 != rowid );
-        byte[] result = null;
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+        byte[] result = getCached( rowid );
+        if ( null == result ) {
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-            String[] columns = { DBHelper.SNAPSHOT };
-            String selection = String.format( ROW_ID_FMT, rowid );
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                      selection, null, null, null, null );
-            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                result = cursor.getBlob( cursor
-                                         .getColumnIndex(DBHelper.SNAPSHOT));
+                String[] columns = { DBHelper.SNAPSHOT };
+                String selection = String.format( ROW_ID_FMT, rowid );
+                Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                          selection, null, null, null, null );
+                if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                    result = cursor.getBlob( cursor
+                                             .getColumnIndex(DBHelper.SNAPSHOT));
+                }
+                cursor.close();
+                db.close();
             }
-            cursor.close();
-            db.close();
+            setCached( rowid, result );
         }
         return result;
     }
@@ -801,6 +809,22 @@ public class DBUtils {
                 iter.next().gameSaved( rowid );
             }
         }
+    }
+
+    // Trivial one-item cache.  Typically bytes are read three times
+    // in a row, so this saves two DB accesses per game opened.  Could
+    // use a HashMap, but then lots of half-K byte[] chunks would fail
+    // to gc.  This is good enough.
+    private static byte[] getCached( long rowid )
+    {
+        byte[] result = s_cachedRowID == rowid ? s_cachedBytes : null;
+        return result;
+    }
+
+    private static void setCached( long rowid, byte[] bytes )
+    {
+        s_cachedRowID = rowid;
+        s_cachedBytes = bytes;
     }
 
 }
