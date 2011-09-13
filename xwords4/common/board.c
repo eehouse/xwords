@@ -748,11 +748,7 @@ board_commitTurn( BoardCtxt* board )
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
     } else if ( turn != board->selPlayer ) {
-        if ( board->selInfo->tradeInProgress ) {
-            result = exitTradeMode( board );
-        } else {
-            util_userError( board->util, ERR_NOT_YOUR_TURN );
-        }
+        util_userError( board->util, ERR_NOT_YOUR_TURN );
     } else if ( 0 == model_getNumTilesTotal( board->model, turn ) ) {
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
