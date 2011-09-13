@@ -27,6 +27,7 @@ import android.app.ListActivity;
 import android.app.ExpandableListActivity;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.AdapterView;
@@ -57,7 +58,7 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
-               SDCardWatcher.SDCardNotifiee, DlgDelegate.DlgClickNotify {
+               MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
@@ -88,7 +89,6 @@ public class DictsActivity extends ExpandableListActivity
     private long m_packedPosition;
     private DictUtils.DictLoc m_moveFromLoc;
     private DictUtils.DictLoc m_moveToLoc;
-    private SDCardWatcher m_cardWatcher;
 
     private LayoutInflater m_factory;
 
@@ -375,7 +375,8 @@ public class DictsActivity extends ExpandableListActivity
     protected void onResume()
     {
         super.onResume();
-        m_cardWatcher = new SDCardWatcher( this, this );
+        MountEventReceiver.register( this );
+
         mkListAdapter();
         expandGroups();
     }
@@ -418,10 +419,9 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     @Override
-    protected void onPause() {
-        m_cardWatcher.close();
-        m_cardWatcher = null;
-        super.onPause();
+    protected void onStop() {
+        MountEventReceiver.unregister( this );
+        super.onStop();
     }
 
     public void onClick( View v ) 
@@ -564,11 +564,18 @@ public class DictsActivity extends ExpandableListActivity
                                     DELETE_DICT_ACTION );
     }
 
-    // SDCardWatcher.SDCardNotifiee interface
-    public void cardMounted()
+    // MountEventReceiver.SDCardNotifiee interface
+    public void cardMounted( boolean nowMounted )
     {
-        mkListAdapter();
-        expandGroups();
+        Utils.logf( "DictsActivity.cardMounted(%b)", nowMounted );
+        // post so other SDCardNotifiee implementations get a chance
+        // to process first: avoid race conditions
+        new Handler().post( new Runnable() {
+                public void run() {
+                    mkListAdapter();
+                    expandGroups();
+                }
+            } );
     }
 
     // DlgDelegate.DlgClickNotify interface
