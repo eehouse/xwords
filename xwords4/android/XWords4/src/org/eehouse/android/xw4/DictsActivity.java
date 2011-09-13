@@ -597,6 +597,7 @@ public class DictsActivity extends ExpandableListActivity
         DictUtils.deleteDict( this, dict, loc );
         DictLangCache.inval( this, dict, loc, false );
         mkListAdapter();
+        expandGroups();
     }
 
     private void askStartDownload( int lang, String name )
