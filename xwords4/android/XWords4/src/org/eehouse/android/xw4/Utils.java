@@ -84,6 +84,13 @@ public class Utils {
         }
     } // logf
 
+    public static void showf( Context context, String format, Object... args )
+    {
+        Formatter formatter = new Formatter();
+        String msg = formatter.format( format, args ).toString();
+        Toast.makeText( context, msg, Toast.LENGTH_SHORT ).show();
+    } // showf
+
     public static void printStack( StackTraceElement[] trace )
     {
         if ( s_doLog ) {
