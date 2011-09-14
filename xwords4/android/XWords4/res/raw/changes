@@ -10,11 +10,13 @@
 
 <ul>
 
+<li>Don't ignore user's choice of wordlists.  THIS MEANS THAT 
+IN-PROGRESS GAMES NOT USING ENGLISH WILL BREAK. (But they were broken 
+anyway: using English when you didn't want them to.)</li>
+  
 <li>Vastly (IMO) improve exchanging tiles: when in exchange mode, draw 
 board disabled, and replace toolbar with buttons for commiting or 
 abandoning the exchange</li>
-  
-<li>Don't ignore user's choice of wordlists</li>
   
 <li>Stop getting confused when there are multiple wordlists with the 
 same name.  They'll all show up, and can be deleted.</li>
