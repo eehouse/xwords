@@ -62,6 +62,16 @@
          instead... -->
     <string name="movesf">%d moves played</string>
 
+    <!-- When you select the gamel_menu_delete_all menuitem or
+         list_item_delete contextual menu, you are asked to confirm.
+         This is the text of the first button ("Cancel" is the
+         second).  -->
+    <string name="button_delete">Delete</string>
+    <!-- When you select the list_item_reset contextual menu, you are
+          asked to confirm.  This is the text of the first button
+          ("Cancel" is the second).  -->
+    <string name="button_reset">Reset</string>
+
     <!--    
        ############################################################
        # :Menus:
@@ -1018,6 +1028,15 @@
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
     <string name="connect_frequency">Background move check</string>
+    <!-- These are the possible values for the connect_frequency
+         setting presented as a drop-down list. -->
+	<string name="connect_never">Never check</string>
+	<string name="connect_five_mins">Every 5 minutes</string>
+	<string name="connect_fifteen_mins">Every 15 minutes</string>
+	<string name="connect_thirty_mins">Every 30 minutes</string>
+	<string name="connect_one_hour">Every hour</string>
+	<string name="connect_six_hours">Every six hours</string>
+	<string name="connect_daily">Once every day</string>
 
     <!-- When one or more new moves is found, should I play a
          notification sound -->
@@ -1301,16 +1320,6 @@
 	<string name="gamef">Game %d</string>
     <!-- used to create default player names -->
 	<string name="playerf">Player %d</string>
-
-
-	<string name="connect_never">Never check</string>
-	<string name="connect_five_mins">Every 5 minutes</string>
-	<string name="connect_fifteen_mins">Every 15 minutes</string>
-	<string name="connect_thirty_mins">Every 30 minutes</string>
-	<string name="connect_one_hour">Every hour</string>
-	<string name="connect_six_hours">Every six hours</string>
-	<string name="connect_daily">Once every day</string>
-
 
     <string name="public_names_progress">Fetching public rooms for
       %1$d-player games in %2$s.</string>
@@ -1633,9 +1642,5 @@
     <!-- text of button in About Crosswords dialog summoning above
          dialog -->
     <string name="changes_button">Recent changes</string>
-
-
-    <string name="button_delete">Delete</string>
-    <string name="button_reset">Reset</string>
 
 </resources>
