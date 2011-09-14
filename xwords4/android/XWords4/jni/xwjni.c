@@ -1196,6 +1196,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
     setBool( env, jgsi, "canHint", info.canHint );
     setBool( env, jgsi, "canRedo", info.canRedo);
     setBool( env, jgsi, "inTrade", info.inTrade );
+    setBool( env, jgsi, "tradeTilesSelected", info.tradeTilesSelected );
     setBool( env, jgsi, "gameIsConnected", info.gameIsConnected );
     setBool( env, jgsi, "canShuffle", info.canShuffle );
 

@@ -23,13 +23,12 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ListActivity;
 import android.app.ExpandableListActivity;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.AdapterView;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -48,6 +47,7 @@ import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.Toast;
 import android.preference.PreferenceManager;
 import android.net.Uri;
+import java.util.HashMap;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
@@ -57,7 +57,7 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
-               SDCardWatcher.SDCardNotifiee, DlgDelegate.DlgClickNotify {
+               MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
@@ -68,6 +68,9 @@ public class DictsActivity extends ExpandableListActivity
     private static final String LANG = "lang";
     private static final String MOVEFROMLOC = "movefromloc";
     private static final String MOVETOLOC = "movetoloc";
+
+    private static HashMap<String,Boolean> s_openStates =
+        new HashMap<String,Boolean>();
 
     // For new callback alternative
     private static final int DELETE_DICT_ACTION = 1;
@@ -88,7 +91,6 @@ public class DictsActivity extends ExpandableListActivity
     private long m_packedPosition;
     private DictUtils.DictLoc m_moveFromLoc;
     private DictUtils.DictLoc m_moveToLoc;
-    private SDCardWatcher m_cardWatcher;
 
     private LayoutInflater m_factory;
 
@@ -207,8 +209,13 @@ public class DictsActivity extends ExpandableListActivity
         public boolean isChildSelectable( int groupPosition, 
                                           int childPosition ) { return true; }
         public boolean isEmpty() { return false; }
-        public void onGroupCollapsed(int groupPosition){}
-        public void onGroupExpanded(int groupPosition){}
+        public void onGroupCollapsed(int groupPosition)
+        {
+            s_openStates.put( m_langs[groupPosition], false );
+        }
+        public void onGroupExpanded(int groupPosition){
+            s_openStates.put( m_langs[groupPosition], true );
+        }
         public void registerDataSetObserver( DataSetObserver obs ){}
         public void unregisterDataSetObserver( DataSetObserver obs ){}
 
@@ -375,7 +382,8 @@ public class DictsActivity extends ExpandableListActivity
     protected void onResume()
     {
         super.onResume();
-        m_cardWatcher = new SDCardWatcher( this, this );
+        MountEventReceiver.register( this );
+
         mkListAdapter();
         expandGroups();
     }
@@ -418,10 +426,9 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     @Override
-    protected void onPause() {
-        m_cardWatcher.close();
-        m_cardWatcher = null;
-        super.onPause();
+    protected void onStop() {
+        MountEventReceiver.unregister( this );
+        super.onStop();
     }
 
     public void onClick( View v ) 
@@ -560,14 +567,22 @@ public class DictsActivity extends ExpandableListActivity
             }
         }
 
-        m_delegate.showConfirmThen( msg, DELETE_DICT_ACTION );
+        m_delegate.showConfirmThen( msg, R.string.button_delete, 
+                                    DELETE_DICT_ACTION );
     }
 
-    // SDCardWatcher.SDCardNotifiee interface
-    public void cardMounted()
+    // MountEventReceiver.SDCardNotifiee interface
+    public void cardMounted( boolean nowMounted )
     {
-        mkListAdapter();
-        expandGroups();
+        Utils.logf( "DictsActivity.cardMounted(%b)", nowMounted );
+        // post so other SDCardNotifiee implementations get a chance
+        // to process first: avoid race conditions
+        new Handler().post( new Runnable() {
+                public void run() {
+                    mkListAdapter();
+                    expandGroups();
+                }
+            } );
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -589,6 +604,7 @@ public class DictsActivity extends ExpandableListActivity
         DictUtils.deleteDict( this, dict, loc );
         DictLangCache.inval( this, dict, loc, false );
         mkListAdapter();
+        expandGroups();
     }
 
     private void askStartDownload( int lang, String name )
@@ -623,7 +639,14 @@ public class DictsActivity extends ExpandableListActivity
     private void expandGroups()
     {
         for ( int ii = 0; ii < m_langs.length; ++ii ) {
-            m_expView.expandGroup( ii );
+            boolean open = true;
+            String lang = m_langs[ii];
+            if ( s_openStates.containsKey( lang ) ) {
+                open = s_openStates.get( lang );
+            }
+            if ( open ) {
+                m_expView.expandGroup( ii );
+            }
         }
     }
 

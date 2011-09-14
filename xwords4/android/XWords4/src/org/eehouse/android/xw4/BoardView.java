@@ -454,7 +454,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                          secondsLeft%60 );
 
             fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
-            m_fillPaint.setColor( adjustColor(m_playerColors[player]) );
+            m_fillPaint.setColor( m_playerColors[player] );
 
             Rect shorter = new Rect( rect );
             shorter.inset( 0, shorter.height() / 5 );

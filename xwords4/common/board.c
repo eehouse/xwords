@@ -748,11 +748,7 @@ board_commitTurn( BoardCtxt* board )
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
     } else if ( turn != board->selPlayer ) {
-        if ( board->selInfo->tradeInProgress ) {
-            result = exitTradeMode( board );
-        } else {
-            util_userError( board->util, ERR_NOT_YOUR_TURN );
-        }
+        util_userError( board->util, ERR_NOT_YOUR_TURN );
     } else if ( 0 == model_getNumTilesTotal( board->model, turn ) ) {
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
@@ -761,14 +757,14 @@ board_commitTurn( BoardCtxt* board )
             TileBit traySelBits = pti->traySelBits;
             result = XP_TRUE; /* there's at least the window to clean up
                                  after */
-            /* server_commitTrade() changes selPlayer, so board_endTrade
-               must be called first() */
-            (void)board_endTrade( board );
 
             if ( NO_TILES == traySelBits ) {
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
             } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
                                         (XWStreamCtxt*)NULL ) ) {
+                /* server_commitTrade() changes selPlayer, so board_endTrade
+                   must be called first() */
+                (void)board_endTrade( board );
                 (void)server_commitTrade( board->server, traySelBits );
             }
         } else {
@@ -1594,9 +1590,12 @@ board_flip( BoardCtxt* board )
 } /* board_flip */
 
 XP_Bool
-board_inTrade( const BoardCtxt* board )
+board_inTrade( const BoardCtxt* board, XP_Bool* anySelected )
 {
     const PerTurnInfo* pti = &board->pti[board->selPlayer];
+    if ( !!anySelected ) {
+        *anySelected = 0 != pti->traySelBits;
+    }
     return pti->tradeInProgress;
 }
 
@@ -2099,7 +2098,7 @@ board_beginTrade( BoardCtxt* board )
 XP_Bool
 board_endTrade( BoardCtxt* board )
 {
-    XP_Bool result = board_inTrade( board );
+    XP_Bool result = board_inTrade( board, NULL );
     if ( result ) {
         PerTurnInfo* pti = board->selInfo;
         invalSelTradeWindow( board );

@@ -57,7 +57,6 @@
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
   <string name="key_notagain_relay">key_notagain_relay</string>
-  <string name="key_notagain_newgame">key_notagain_newgame</string>
   <string name="key_notagain_hintprev">key_notagain_hintprev</string>
   <string name="key_notagain_hintnext">key_notagain_hintnext</string>
   <string name="key_notagain_juggle">key_notagain_juggle</string>
@@ -69,7 +68,6 @@
   <string name="key_notagain_conndall">key_notagain_conndall</string>
   <string name="key_notagain_conndfirst">key_notagain_conndfirst</string>
   <string name="key_notagain_conndmid">key_notagain_conndmid</string>
-  <string name="key_notagain_dicts">key_notagain_dicts</string>
   <string name="key_notagain_arrow">key_notagain_arrow</string>
   <string name="key_notagain_turnchanged">key_notagain_turnchanged</string>
   <string name="key_notagain_newfrom">key_notagain_newfrom</string>
@@ -80,7 +78,7 @@
 
   <!-- <string name="default_host">10.0.2.2</string> -->
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
-  <string name="app_version">4.4 beta 33</string>
+  <string name="app_version">4.4 beta 34</string>
   <string name="game_url_pathf">//%1$s/redir.php</string>
 
   <!-- Debugging stuff. No point in localizing it. -->
@@ -90,6 +88,7 @@
   <string name="redir_host">Invite redirect host</string>
   <string name="dict_host">Wordlist download URL</string>
   <string name="logging_on">Enable logging</string>
+  <string name="git_rev_title">Source version id</string>
   <string name="relay_port">Relay game port</string>
   <string name="proxy_port">Relay device port</string>
   <string name="name_dict_fmt">%1$s/%2$s</string>

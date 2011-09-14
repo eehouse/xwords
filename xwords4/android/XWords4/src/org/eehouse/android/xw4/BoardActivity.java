@@ -1078,7 +1078,9 @@ public class BoardActivity extends XWActivity
                 resid = R.string.str_no_peek_robot_tiles;
                 break;
             case UtilCtxt.ERR_NO_EMPTY_TRADE:
-                resid = R.string.str_no_empty_trade;
+                // This should not be possible as the button's
+                // disabled when no tiles selected.
+                Assert.fail();
                 break;
             case UtilCtxt.ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
                 resid = R.string.str_too_few_tiles_left_to_trade;
@@ -1223,9 +1225,9 @@ public class BoardActivity extends XWActivity
                                     updateToolbar();
                                     if ( m_inTrade != m_gsi.inTrade ) {
                                         m_inTrade = m_gsi.inTrade;
-                                        adjustTradeVisibility();
                                         m_view.setInTrade( m_inTrade );
                                     }
+                                    adjustTradeVisibility();
                                 }
                                 break;
                             }
@@ -1437,6 +1439,9 @@ public class BoardActivity extends XWActivity
     {
         m_toolbar.setVisibility( m_inTrade? View.GONE : View.VISIBLE );
         m_tradeButtons.setVisibility( m_inTrade? View.VISIBLE : View.GONE );
+        if ( m_inTrade ) {
+            m_exchCommmitButton.setEnabled( m_gsi.tradeTilesSelected );
+        }
     }
 
     private void setBackgroundColor()

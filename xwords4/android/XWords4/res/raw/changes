@@ -6,39 +6,26 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 33 release</b>
+<b>Crosswords 4.4 beta 34 release</b>
 
 <ul>
 
-  <li>Use the term "wordlist" instead of "dictionary" to not imply that 
-  there are definitions provided.</li>
-
-  <li>Add color of bonus hints -- the 2L etc. that appear on the board 
-  -- to set of editable colors</li>
+<li>Don't ignore user's choice of wordlists.  THIS MEANS THAT 
+IN-PROGRESS GAMES NOT USING ENGLISH WILL BREAK. (But they were broken 
+anyway: using English when you didn't want them to.)</li>
   
-  <li>Change how downloaded wordlists are opened to consume much less 
-  Java memory.  Downside: wordlists on external storage are not 
-  available when that storage is mounted on a computer over USB.</li>
+<li>Vastly (IMO) improve exchanging tiles: when in exchange mode, draw 
+board disabled, and replace toolbar with buttons for commiting or 
+abandoning the exchange</li>
+  
+<li>Stop getting confused when there are multiple wordlists with the 
+same name.  They'll all show up, and can be deleted.</li>
 
-  <li>In the Wordlists screen, hide wordlists stored on external media 
-  when the media's not available.  Notice when it becomes available 
-  and redraw the list.</li>
+<li>Don't lose language choice for a game if user downloads a new wordlist</li>
 
-  <li>Make a game's language one of several configurable attributes 
-  that can be displayed along with the game</li>
-
-  <li>Display relay connection state as being in one of three phases: 
-  configured, connected, and with all players present.</li>
-
-  <li>Fix rename of games to work when keyboard opened while dialog 
-  up.</li>
-
-  <li>Add icons to games list display so it's easier to tell networked 
-  from standalone.  These are placeholders until I can get an artist 
-  to help out. :-)</li>
-
-  <li>Fix a family of crashes that occurred when dialogs were up and 
-  memory got low: rare, but annoying.</li>
+<li>Change how recent score and bonus value are shown after long-tap 
+on scoreboard entry or bonus square: use Android's Toast feature 
+instead of drawing directly on the board</li>
 
 </ul>
 

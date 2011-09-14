@@ -283,7 +283,7 @@ game_getState( const XWGame* game, GameStateInfo* gsi )
     gsi->visTileCount = board_visTileCount( game->board );
     gsi->canHint = board_canHint( game->board );
     gsi->canRedo = board_canTogglePending( game->board );
-    gsi->inTrade = board_inTrade( game->board );
+    gsi->inTrade = board_inTrade( game->board, &gsi->tradeTilesSelected );
     gsi->gameIsConnected = !!game->comms && comms_canChat( game->comms );
     gsi->canShuffle = board_canShuffle( game->board );
 }
