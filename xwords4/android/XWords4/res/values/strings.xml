@@ -348,7 +348,7 @@
          are not in the wordlist used for the game (or player if using
          different wordlists per player) -->
     <string name="phonies_spinner_prompt">How to handle \"phonies\"
-        (words not in dictionary)</string>
+        (words not in wordlist)</string>
 
     <!-- These are the three choices in the popup above whose text is
          phonies_spinner_prompt -->
@@ -1258,7 +1258,7 @@
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
 	<string name="str_server_dict_wins">Conflict between Host and
-	  Guest wordlists; Host wins.</string>
+      Guest wordlists; Host wins.</string>
 
 
 
