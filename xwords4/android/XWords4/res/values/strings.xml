@@ -192,7 +192,6 @@
     <string name="game_summary_field_language">Game language</string>
     <string name="game_summary_field_opponents">Opponent name[s]</string>
     <string name="game_summary_field_state">Game state</string>
-    <string name="game_summary_opponents_pending">Not here yet</string>
 
     <string name="confirm_save_title">Confirm save</string>
     <string name="confirm_save">This game is in play.  If you
@@ -221,11 +220,7 @@
     <string name="hints_allowed_sum">Enable the hint feature</string>
     <string name="init_autojuggle">Juggle players</string>
     <string name="init_autojuggle_sum">Randomly, for new games</string>
-    <string name="progress_title">Searching for moves</string>
     <string name="use_timer">Enable game timer</string>
-    <string name="color_tiles">Color tiles</string>
-    <string name="color_tiles_summary">Draw tiles using color of
-    player who played them</string>
     <string name="show_arrow">Show board arrow</string>
     <string name="show_arrow_summary">Tapped rack tiles land on this
       arrow when it is visible</string>
@@ -322,7 +317,6 @@
     <string name="bonus_l3x_summary">3L</string>
     <string name="bonus_w3x_summary">3W</string>
     <string name="pts">pts</string>
-    <string name="trading_text">Select one or more tiles\nto exchange.</string>
     <string name="tile_back">Tile background</string>
     <string name="empty">Empty cell/background</string>
     <string name="clr_crosshairs">Crosshairs color</string>
