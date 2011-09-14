@@ -12,7 +12,6 @@ usage() {
 }
 
 while [ $# -ge 1 ]; do
-    echo $1
     case $1 in
         --branch)
             shift
@@ -35,7 +34,6 @@ while [ $# -ge 1 ]; do
 done
 
 [ -n "$FILES" ] || usage
-echo "FILES: $FILES"
 
 if [ -n "$BRANCH" ]; then
     REV=$(git log $BRANCH | grep '^commit' | head -n 1 | awk '{print $2}')
