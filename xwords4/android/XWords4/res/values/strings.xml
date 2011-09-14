@@ -415,7 +415,6 @@
 	<string name="playerf">Player %d</string>
 	<string name="initial_player_minutes">Timer minutes per player</string>
 
-	<string name="git_rev_title">Source version id</string>
     <string name="changes_title">Recent changes</string>
     <string name="changes_button">Recent changes</string>
 
