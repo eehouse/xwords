@@ -430,7 +430,7 @@
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
          "%s". -->
-    <string name="title_dicts_list">Wordlist (in %s)</string>
+    <string name="dict_lang_labelf">Wordlist (in %s)</string>
 
     <!-- If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game
@@ -583,17 +583,6 @@
          trade mode. -->
 	<string name="board_menu_trade">Exchange tiles</string>
 
-    <!-- Text of a "mini-window" placed on the screen when the game is
-         in trade mode -->
-    <string name="trading_text">Select one or more tiles\nto exchange.</string>
-
-    <!-- This menu commits an exchange -->
-    <string name="board_menu_trade_commit">Commit exchange</string>
-
-    <!-- cancels an exchange: takes the board out of trade mode.  It
-         it still the same player's afterwards -->
-    <string name="board_menu_trade_cancel">Cancel exchange</string>
-
     <!-- hide and shows the tray.  On devices where there is enough
          room for the full board and tray to be shown then hiding the
          tray just "turns it over", i.e. shows tiles with '?'
@@ -703,12 +692,6 @@
     <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
     <string name="str_commit_confirm">Commit the current move?\n</string>
-    <!-- Used in substituting in a player name.  Probably does not
-         need translating (it's empty in English)-->
-    <string name="str_local_name">%s</string>
-    <!-- Used to stand in for a remote player whose name isn't
-         available or not yet to be displayed -->
-    <string name="str_nonlocal_name">(remote)</string>
     <!-- Used, with remote player's name substituted for %s, to
     indicate that the player is remote. -->
     <string name="str_nonlocal_namef">%s (remote)</string>
@@ -1240,18 +1223,6 @@
          to a player on another device (a remote player.) -->
 	<string name="str_no_peek_remote_tiles">No peeking at remote
          players\' tiles!</string>
-
-    <!-- Displayed when you try to begin a trade when some of your
-         tiles have been moved from the rack to the board.  All tiles
-         must be in the rack to begin a trade. -->
-	<string name="str_cant_trade_mid_move">Remove played tiles before
-         exchanging.</string>
-
-    <!-- Displayed when you try to commit a trade but have no tiles
-         selected.  (The way to "pass", to commit a scoreless turn, is
-         to commit a normal move but without any tiles placed.) -->
-    <string name="str_no_empty_trade">Trade cancelled because no tiles
-      selected.  (It\'s still your turn.)</string>
 
     <!-- Displayed when you try to begin a trade but there are not
          seven or more tiles in the pool.  The rules don't allow
