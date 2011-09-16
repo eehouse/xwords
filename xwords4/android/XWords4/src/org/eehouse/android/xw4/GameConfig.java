@@ -922,40 +922,40 @@ public class GameConfig extends XWActivity
         return 0;
     }
 
-    private int titleForDlg( int id ) 
-    {
-        switch( id ) {
-        // case ROLE_EDIT_RELAY:
-        //     return R.string.tab_relay;
-        // case ROLE_EDIT_SMS:
-        //     return R.string.tab_sms;
-        // case ROLE_EDIT_BT:
-        //     return R.string.tab_bluetooth;
-        }
-        Assert.fail();
-        return -1;
-    }
+    // private int titleForDlg( int id ) 
+    // {
+    //     switch( id ) {
+    //     // case ROLE_EDIT_RELAY:
+    //     //     return R.string.tab_relay;
+    //     // case ROLE_EDIT_SMS:
+    //     //     return R.string.tab_sms;
+    //     // case ROLE_EDIT_BT:
+    //     //     return R.string.tab_bluetooth;
+    //     }
+    //     Assert.fail();
+    //     return -1;
+    // }
 
-    private String[] makeXportStrings()
-    {
-        ArrayList<String> strings = new ArrayList<String>();
-        ArrayList<CommsAddrRec.CommsConnType> types
-            = new ArrayList<CommsAddrRec.CommsConnType>();
+    // private String[] makeXportStrings()
+    // {
+    //     ArrayList<String> strings = new ArrayList<String>();
+    //     ArrayList<CommsAddrRec.CommsConnType> types
+    //         = new ArrayList<CommsAddrRec.CommsConnType>();
 
-        strings.add( getString(R.string.tab_relay) );
-        types.add( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY );
+    //     strings.add( getString(R.string.tab_relay) );
+    //     types.add( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY );
 
-        if ( m_canDoSMS ) {
-            strings.add( getString(R.string.tab_sms) );
-            types.add( CommsAddrRec.CommsConnType.COMMS_CONN_SMS );
-        }
-        if ( m_canDoBT ) {
-            strings.add( getString(R.string.tab_bluetooth) );
-            types.add( CommsAddrRec.CommsConnType.COMMS_CONN_BT );
-        }
-        m_types = types.toArray( new CommsAddrRec.CommsConnType[types.size()] );
-        return strings.toArray( new String[strings.size()] );
-    }
+    //     if ( m_canDoSMS ) {
+    //         strings.add( getString(R.string.tab_sms) );
+    //         types.add( CommsAddrRec.CommsConnType.COMMS_CONN_SMS );
+    //     }
+    //     if ( m_canDoBT ) {
+    //         strings.add( getString(R.string.tab_bluetooth) );
+    //         types.add( CommsAddrRec.CommsConnType.COMMS_CONN_BT );
+    //     }
+    //     m_types = types.toArray( new CommsAddrRec.CommsConnType[types.size()] );
+    //     return strings.toArray( new String[strings.size()] );
+    // }
 
     private void saveChanges()
     {
