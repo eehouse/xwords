@@ -1764,5 +1764,8 @@
          dialog -->
     <string name="changes_button">Recent changes</string>
 
+
+    <string name="button_lookup">Lookup word</string>
+
 </resources>
 

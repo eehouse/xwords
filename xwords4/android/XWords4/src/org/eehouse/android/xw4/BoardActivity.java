@@ -48,6 +48,7 @@ import android.widget.Toast;
 import junit.framework.Assert;
 import android.content.res.Configuration;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -70,6 +71,7 @@ public class BoardActivity extends XWActivity
     private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
+    private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -208,6 +210,7 @@ public class BoardActivity extends XWActivity
 
             case QUERY_REQUEST_BLK:
             case QUERY_INFORM_BLK:
+            case DLG_SCORES_BLK:
                 ab = new AlertDialog.Builder( this )
                     .setMessage( m_dlgBytes );
                 if ( 0 != m_dlgTitle ) {
@@ -230,6 +233,14 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
+                } else if ( DLG_SCORES_BLK == id ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, 
+                                                 int whichButton ) {
+                                lookupRecent();
+                            }
+                        };
+                    ab.setNegativeButton( R.string.button_lookup, lstnr );
                 }
 
                 dialog = ab.create();
@@ -1032,7 +1043,8 @@ public class BoardActivity extends XWActivity
             case UtilCtxt.QUERY_ROBOT_TRADE:
                 m_dlgBytes = query;
                 m_dlgTitle = R.string.info_title;
-                waitBlockingDialog( QUERY_INFORM_BLK, 0 );
+                waitBlockingDialog( QUERY_ROBOT_MOVE == id ? 
+                                    DLG_SCORES_BLK : QUERY_INFORM_BLK, 0 );
                 result = true;
                 break;
 
@@ -1499,6 +1511,26 @@ public class BoardActivity extends XWActivity
         } else {
             Utils.logf( "removeCallbacks: dropping %h because handler null", 
                         which );
+        }
+    }
+
+    private void lookupRecent()
+    {
+        // String[] words = XwJNI.model_getLastTurnWords( m_jniGamePtr );
+        String[] words = { "mastodon", "elephant" };
+
+        String fmt = getString( R.string.word_lookupf );
+        String dict_url = String.format( fmt, words[0] );
+        Uri uri = Uri.parse( dict_url );
+        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        
+        try {
+            startActivity( intent );
+        } catch ( android.content.ActivityNotFoundException anfe ) {
+            Utils.logf( "%s", anfe.toString() );
+            // Toast.makeText( this, R.string.no_download_warning, 
+            //                 Toast.LENGTH_SHORT).show();
         }
     }
 } // class BoardActivity
