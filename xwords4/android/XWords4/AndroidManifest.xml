@@ -65,7 +65,7 @@
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
               >
-      <intent-filter android:label="@string/resolve_edit">
+      <intent-filter>
         <action android:name="android.intent.action.EDIT" />
       </intent-filter>
     </activity>
