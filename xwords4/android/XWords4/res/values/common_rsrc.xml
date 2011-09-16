@@ -73,6 +73,9 @@
   <string name="key_notagain_newfrom">key_notagain_newfrom</string>
   <string name="key_notagain_trading">key_notagain_trading</string>
 
+  <!-- Name is not localized -->
+  <string name="app_name">Crosswords</string>  
+
   <!-- other -->
   <string name="default_host">eehouse.org</string>
 
