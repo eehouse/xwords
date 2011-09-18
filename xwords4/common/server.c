@@ -841,14 +841,11 @@ showPrevScore( ServerCtxt* server )
         if ( !!server->nv.prevMoveStream ) {
             XWStreamCtxt* prevStream = server->nv.prevMoveStream;
             XP_U16 len = stream_getSize( prevStream );
-            XP_UCHAR* buf = XP_MALLOC( server->mpool, len );
 
-            stream_getBytes( prevStream, buf, len );
-            stream_destroy( prevStream );
             server->nv.prevMoveStream = NULL;
 
-            stream_putBytes( stream, buf, len );
-            XP_FREE( server->mpool, buf );
+            stream_putBytes( stream, stream_getPtr( prevStream ), len );
+            stream_destroy( prevStream );
         }
 
         (void)util_userQuery( util, QUERY_ROBOT_MOVE, stream );
