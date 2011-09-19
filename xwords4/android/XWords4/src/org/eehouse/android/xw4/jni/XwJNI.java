@@ -214,6 +214,8 @@ public class XwJNI {
     public static native void server_initClientConnection( int gamePtr );
     public static native void server_endGame( int gamePtr );
     public static native void server_sendChat( int gamePtr, String msg );
+    public static native String server_listWordsPlayed( int gamePtr, 
+                                                        int nMoves );
 
     // hybrid to save work
     public static native boolean board_server_prefsChanged( int gamePtr, 
