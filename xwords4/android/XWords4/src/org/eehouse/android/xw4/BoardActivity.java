@@ -40,10 +40,14 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import junit.framework.Assert;
@@ -316,15 +320,26 @@ public class BoardActivity extends XWActivity
                 }
                 break;
             case DLG_WORDPICK:
+                LinearLayout layout =
+                    (LinearLayout)Utils.inflate( this, R.layout.wordlist_view );
+                ListView list = (ListView)layout.findViewById( R.id.words );
+                ArrayAdapter<String> adapter = 
+                    new ArrayAdapter<String>( this,
+                                              android.R.layout.simple_list_item_1,
+                                              m_words ) ;
+                list.setAdapter( adapter );
+                OnItemClickListener oicl = new OnItemClickListener() {
+                        public void onItemClick(AdapterView<?> parent, 
+                                                View view, 
+                                                int position, long id ) {
+                            lookupWord( m_words[position] );
+                        }
+                    };
+                list.setOnItemClickListener( oicl );
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.title_lookup )
-                    .setItems( m_words, new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dialog, 
-                                                 int item ) {
-                                lookupWord( m_words[item] );
-                            }
-                        } )
-                    .setNegativeButton( R.string.button_cancel, null )
+                    .setView( layout )
+                    .setNegativeButton( R.string.button_done, null )
                     .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
