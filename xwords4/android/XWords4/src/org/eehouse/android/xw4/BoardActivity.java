@@ -242,13 +242,15 @@ public class BoardActivity extends XWActivity
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
                 } else if ( DLG_SCORES_BLK == id ) {
-                    lstnr = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dialog, 
-                                                 int whichButton ) {
-                                m_jniThread.handle( JNICmd.CMD_WORDS );
-                            }
-                        };
-                    ab.setNegativeButton( R.string.button_lookup, lstnr );
+                    if ( curLangSupported() ) {
+                        lstnr = new DialogInterface.OnClickListener() {
+                                public void onClick( DialogInterface dialog, 
+                                                     int whichButton ) {
+                                    m_jniThread.handle( JNICmd.CMD_WORDS );
+                                }
+                            };
+                        ab.setNegativeButton( R.string.button_lookup, lstnr );
+                    }
                 }
 
                 dialog = ab.create();
@@ -325,6 +327,7 @@ public class BoardActivity extends XWActivity
                 ListView list = (ListView)layout.findViewById( R.id.words );
                 ArrayAdapter<String> adapter = 
                     new ArrayAdapter<String>( this,
+                                              //android.R.layout.select_dialog_item,
                                               android.R.layout.simple_list_item_1,
                                               m_words ) ;
                 list.setAdapter( adapter );
@@ -1562,7 +1565,7 @@ public class BoardActivity extends XWActivity
     private void lookupWord( String word )
     {
         String fmt = getString( R.string.word_lookupf );
-        String dict_url = String.format( fmt, word );
+        String dict_url = String.format( fmt, curLangCode(), word );
         Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
         intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
@@ -1573,4 +1576,25 @@ public class BoardActivity extends XWActivity
             Utils.logf( "%s", anfe.toString() );
         }
     }
+
+    private String curLangCode()
+    {
+        // from string-array name="language_names" in common_rsrc.xml
+        switch( m_gi.dictLang ) {
+        case 1:
+            return "en";
+        case 2:
+            return "fr";
+        case 3:
+            return "de";
+        default:
+            return null;
+        }
+    }
+
+    private boolean curLangSupported()
+    {
+        return null != curLangCode();
+    }
+
 } // class BoardActivity
