@@ -64,12 +64,12 @@ static void makeTileTrade( ModelCtxt* model, XP_S16 player,
                            TrayTileSet* oldTiles, TrayTileSet* newTiles );
 static XP_S16 commitTurn( ModelCtxt* model, XP_S16 turn, 
                           TrayTileSet* newTiles, XWStreamCtxt* stream, 
-                          XP_Bool useStack );
+                          WordNotifierInfo* wni, XP_Bool useStack );
 static void buildModelFromStack( ModelCtxt* model, StackCtxt* stack, 
-                                 XWStreamCtxt* stream,
+                                 XP_Bool useStack, XP_U16 initial, 
+                                 XWStreamCtxt* stream, WordNotifierInfo* wni, 
                                  MovePrintFuncPre mpfpr, 
-                                 MovePrintFuncPost mpfpo,
-                                 void* closure );
+                                 MovePrintFuncPost mpfpo, void* closure );
 static void setPendingCounts( ModelCtxt* model, XP_S16 turn );
 static void loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version, 
                             PlayerCtxt* pc );
@@ -135,9 +135,9 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 
     stack_loadFromStream( model->vol.stack, stream );
 
-    buildModelFromStack( model, model->vol.stack, (XWStreamCtxt*)NULL,
-                         (MovePrintFuncPre)NULL,
-                         (MovePrintFuncPost)NULL, NULL );
+    buildModelFromStack( model, model->vol.stack, XP_FALSE, 0, 
+                         (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL,
+                         (MovePrintFuncPre)NULL, (MovePrintFuncPost)NULL, NULL );
 
     for ( i = 0; i < model->nPlayers; ++i ) {
         loadPlayerCtxt( stream, version, &model->players[i] );
@@ -244,19 +244,19 @@ model_destroy( ModelCtxt* model )
 } /* model_destroy */
 
 static void
-buildModelFromStack( ModelCtxt* model, StackCtxt* stack, 
-                     XWStreamCtxt* stream,
-                     MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
-                     void* closure )
+buildModelFromStack( ModelCtxt* model, StackCtxt* stack, XP_Bool useStack, 
+                     XP_U16 initial, XWStreamCtxt* stream, 
+                     WordNotifierInfo* wni, MovePrintFuncPre mpf_pre, 
+                     MovePrintFuncPost mpf_post, void* closure )
 {
     StackEntry entry;
-    XP_U16 i;
+    XP_U16 ii;
     XP_S16 moveScore = 0; /* keep compiler happy */
 
-    for ( i = 0; stack_getNthEntry( stack, i, &entry ); ++i ) {
+    for ( ii = initial; stack_getNthEntry( stack, ii, &entry ); ++ii ) {
 
         if ( !!mpf_pre ) {
-            (*mpf_pre)( model, i, &entry, closure );
+            (*mpf_pre)( model, ii, &entry, closure );
         }
 
         switch ( entry.moveType ) {
@@ -265,7 +265,8 @@ buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
             model_makeTurnFromMoveInfo( model, entry.playerNum,
                                         &entry.u.move.moveInfo);
             moveScore = commitTurn( model, entry.playerNum, 
-                                    &entry.u.move.newTiles, stream, XP_FALSE);
+                                    &entry.u.move.newTiles, 
+                                    stream, wni, useStack );
             break;
         case TRADE_TYPE:
             makeTileTrade( model, entry.playerNum, &entry.u.trade.oldTiles,
@@ -280,7 +281,7 @@ buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
                                         &entry.u.phony.moveInfo);
             /* do something here to cause it to print */
             (void)getCurrentMoveScoreIfLegal( model, entry.playerNum, stream,
-                                              &moveScore );
+                                              wni, &moveScore );
             moveScore = 0;
             model_resetCurrentTurn( model, entry.playerNum );
 
@@ -290,7 +291,7 @@ buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
         }
 
         if ( !!mpf_post ) {
-            (*mpf_post)( model, i, &entry, moveScore, closure );
+            (*mpf_post)( model, ii, &entry, moveScore, closure );
         }
     }
 } /* buildModelFromStack */
@@ -668,10 +669,10 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
     XP_U16 turn = 0;
     Tile blankTile = dict_getBlankTile( model_getDictionary(model) );
     XP_Bool success = XP_TRUE;
-    XP_S16 moveSought = *moveNumP;
+    XP_S16 moveSought = !!moveNumP ? *moveNumP : -1;
     XP_U16 nMovesUndone;
     XP_U16 nStackEntries;
-    
+
     nStackEntries = stack_getNEntries( stack );
     if ( nStackEntries < nMovesSought ) {
         return XP_FALSE;
@@ -772,10 +773,16 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
     }
 
     if ( success ) {
-        *turnP = turn;
-        *moveNumP = entry.moveNum;
+        if ( !!turnP ) {
+            *turnP = turn;
+        }
+        if ( !!moveNumP ) {
+            *moveNumP = entry.moveNum;
+        }
     } else {
         while ( nMovesUndone-- ) {
+            /* undo isn't enough here: pool's got tiles in it!! */
+            XP_ASSERT( 0 );
             stack_redo( stack );
         }
     }
@@ -873,11 +880,11 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 
 void
 model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
-                            MoveInfo* newMove )
+                            const MoveInfo* newMove )
 {
     XP_U16 col, row, i;
     XP_U16* other;
-    MoveInfoTile* tinfo;
+    const MoveInfoTile* tinfo;
     Tile blank;
     XP_U16 numTiles;
 
@@ -1389,7 +1396,7 @@ putBackOtherPlayersTiles( ModelCtxt* model, XP_U16 notMyTurn,
  */
 static XP_S16
 commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles, 
-            XWStreamCtxt* stream, XP_Bool useStack )
+            XWStreamCtxt* stream, WordNotifierInfo* wni, XP_Bool useStack )
 {
     XP_U16 ii;
     PlayerCtxt* player;
@@ -1403,7 +1410,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
 
 #ifdef DEBUG
     XP_ASSERT( getCurrentMoveScoreIfLegal( model, turn, (XWStreamCtxt*)NULL,
-                                           &score ) );
+                                           (WordNotifierInfo*)NULL, &score ) );
     invalidateScore( model, turn );
 #endif
 
@@ -1450,7 +1457,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
         ++model->vol.nTilesOnBoard;
     }
 
-    (void)getCurrentMoveScoreIfLegal( model, turn, stream, &score );
+    (void)getCurrentMoveScoreIfLegal( model, turn, stream, wni, &score );
     XP_ASSERT( score >= 0 );
     player->score += score;
 
@@ -1473,7 +1480,8 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
 void
 model_commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles )
 {
-    (void)commitTurn( model, turn, newTiles, (XWStreamCtxt*)NULL, XP_TRUE );
+    (void)commitTurn( model, turn, newTiles, (XWStreamCtxt*)NULL, 
+                      (WordNotifierInfo*)NULL, XP_TRUE );
 } /* model_commitTurn */
 
 /* Given a rack of new tiles and of old, remove all the old from the tray and
@@ -1904,8 +1912,8 @@ makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
                                       model_numRows(model));
     model_setNPlayers( tmpModel, model->nPlayers );
 
-    buildModelFromStack( tmpModel, model->vol.stack, stream, 
-                         mpf_pre, mpf_post, closure );
+    buildModelFromStack( tmpModel, model->vol.stack, XP_FALSE, 0, stream, 
+                         (WordNotifierInfo*)NULL, mpf_pre, mpf_post, closure );
     
     return tmpModel;
 } /* makeTmpModel */
@@ -2023,6 +2031,50 @@ model_recentPassCountOk( ModelCtxt* model )
     XP_U16 okCount = model->nPlayers * MAX_PASSES;
     XP_ASSERT( count <= okCount ); /* should never be more than 1 over */
     return count < okCount;
+}
+
+static XP_Bool
+recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
+{
+    XWStreamCtxt* stream = (XWStreamCtxt*)closure;
+    XP_ASSERT( isLegal );
+    XP_LOGF( "%s(%s)", __func__, word );
+    stream_catString( stream, word );
+    stream_putU8( stream, '\n' );
+    return XP_TRUE;
+}
+
+XP_Bool
+model_getWordsPlayed( ModelCtxt* model, PoolContext* pool,
+                      XP_U16 nTurns, XWStreamCtxt* stream )
+{
+    XP_ASSERT( !!stream );
+    StackCtxt* stack = model->vol.stack;
+    StackCtxt* tmpStack = stack_copy( stack );
+
+    XP_U16 nPlayers = model->nPlayers;
+    XP_U16 nEntries = stack_getNEntries( stack );
+    nEntries -= nPlayers; /* skip assignments */
+    if ( nTurns > nEntries ) {
+        nTurns = nEntries;
+    }
+
+    if ( model_undoLatestMoves( model, pool, nTurns, NULL, NULL ) ) {
+        WordNotifierInfo notifyInfo = { .proc = recordWord,
+                                        .closure = stream,
+        };
+
+        /* Now push the undone moves back into the model one at a time.
+           recordWord() will add each played word to the stream as it's
+           scored */
+        buildModelFromStack( model, tmpStack, XP_TRUE, 
+                             nEntries - nTurns + nPlayers,/* skip assignments */
+                             (XWStreamCtxt*)NULL, &notifyInfo, 
+                             (MovePrintFuncPre)NULL, (MovePrintFuncPost)NULL,
+                             NULL );
+    }
+    stack_destroy( tmpStack );
+    return XP_TRUE;
 }
 
 XP_Bool

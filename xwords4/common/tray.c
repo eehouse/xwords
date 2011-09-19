@@ -314,7 +314,9 @@ drawPendingScore( BoardCtxt* board, XP_Bool hasCursor )
         XP_Rect lastTileR;
 
         (void)getCurrentMoveScoreIfLegal( board->model, selPlayer,
-                                          (XWStreamCtxt*)NULL, &turnScore );
+                                          (XWStreamCtxt*)NULL, 
+                                          (WordNotifierInfo*)NULL, 
+                                          &turnScore );
         figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
         draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
                                  selPlayer, 

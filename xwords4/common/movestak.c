@@ -108,7 +108,7 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
 } /* stack_makeFromStream */
 
 void
-stack_writeToStream( StackCtxt* stack, XWStreamCtxt* stream )
+stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
 {
     XP_U16 nBytes;
     XWStreamCtxt* data = stack->data;
@@ -137,6 +137,21 @@ stack_writeToStream( StackCtxt* stack, XWStreamCtxt* stream )
         (void)stream_setPos( data, oldPos, POS_READ );
     }
 } /* stack_writeToStream */
+
+StackCtxt*
+stack_copy( const StackCtxt* stack )
+{
+    StackCtxt* newStack = NULL;
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(stack->mpool)
+                                            stack->vtmgr, NULL, 0, NULL );
+    stack_writeToStream( stack, stream );
+
+    newStack = stack_make( MPPARM(stack->mpool) stack->vtmgr );
+    stack_loadFromStream( newStack, stream );
+    stack_setBitsPerTile( newStack, stack->bitsPerTile );
+    stream_destroy( stream );
+    return newStack;
+}
 
 static void
 pushEntry( StackCtxt* stack, const StackEntry* entry )

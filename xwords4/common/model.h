@@ -197,7 +197,7 @@ void model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
 void model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                                XWStreamCtxt* stream );
 void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
-                                 MoveInfo* newMove );
+                                 const MoveInfo* newMove );
 
 void model_resetCurrentTurn( ModelCtxt* model, XP_S16 turn );
 XP_S16 model_getNMoves( const ModelCtxt* model );
@@ -246,11 +246,14 @@ typedef struct WordNotifierInfo {
 } WordNotifierInfo;
 
 XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn, 
-                                    XWStreamCtxt* stream, XP_S16* score );
+                                    XWStreamCtxt* stream, 
+                                    WordNotifierInfo* wni, XP_S16* score );
 XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
                                    XP_UCHAR* expl, XP_U16* explLen );
+XP_Bool model_getWordsPlayed( ModelCtxt* model, PoolContext* pool, 
+                              XP_U16 nTurns, XWStreamCtxt* stream );
 
 /* Have there been too many passes (so game should end)? */
 XP_Bool model_recentPassCountOk( ModelCtxt* model );
