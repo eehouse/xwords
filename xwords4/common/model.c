@@ -2033,14 +2033,22 @@ model_recentPassCountOk( ModelCtxt* model )
     return count < okCount;
 }
 
+typedef struct _RecordWordsInfo {
+    XWStreamCtxt* stream;
+    XP_U16 nWords;
+} RecordWordsInfo;
+
 static XP_Bool
 recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
 {
-    XWStreamCtxt* stream = (XWStreamCtxt*)closure;
+    RecordWordsInfo* info = (RecordWordsInfo*)closure;
+    XWStreamCtxt* stream = info->stream;
     XP_ASSERT( isLegal );
     XP_LOGF( "%s(%s)", __func__, word );
+    if ( 0 < info->nWords++ ) {
+        stream_putU8( stream, '\n' );
+    }
     stream_catString( stream, word );
-    stream_putU8( stream, '\n' );
     return XP_TRUE;
 }
 
@@ -2060,8 +2068,9 @@ model_getWordsPlayed( ModelCtxt* model, PoolContext* pool,
     }
 
     if ( model_undoLatestMoves( model, pool, nTurns, NULL, NULL ) ) {
+        RecordWordsInfo info = { .stream = stream, .nWords = 0 };
         WordNotifierInfo notifyInfo = { .proc = recordWord,
-                                        .closure = stream,
+                                        .closure = &info,
         };
 
         /* Now push the undone moves back into the model one at a time.
