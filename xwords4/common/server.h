@@ -124,7 +124,8 @@ void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
 void server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
                                   XP_S16 player );
 
-void server_listWordsPlayed( ServerCtxt* server, XWStreamCtxt* stream, XP_U16 nMoves );
+void server_listWordsPlayed( ServerCtxt* server, XWStreamCtxt* stream, 
+                             XP_U16 nMoves );
 
 void server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream );
 
