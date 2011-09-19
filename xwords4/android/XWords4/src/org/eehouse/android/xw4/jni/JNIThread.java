@@ -77,6 +77,7 @@ public class JNIThread extends Thread {
             CMD_RESEND,
             CMD_HISTORY,
             CMD_FINAL,
+            CMD_WORDS,
             CMD_ENDGAME,
             CMD_POST_OVER,
             CMD_SENDCHAT,
@@ -88,6 +89,7 @@ public class JNIThread extends Thread {
     public static final int DIALOG = 3;
     public static final int QUERY_ENDGAME = 4;
     public static final int TOOLBAR_STATES = 5;
+    public static final int GOT_WORDS = 6;
 
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
@@ -488,6 +490,11 @@ public class JNIThread extends Thread {
                 } else {
                     Message.obtain( m_handler, QUERY_ENDGAME ).sendToTarget();
                 }
+                break;
+
+            case CMD_WORDS:
+                String words = XwJNI.server_listWordsPlayed( m_jniGamePtr, 1 );
+                Message.obtain( m_handler, GOT_WORDS, words ).sendToTarget();
                 break;
 
             case CMD_ENDGAME:

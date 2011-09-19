@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -72,6 +73,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
+    private static final int DLG_WORDPICK = DLG_OKONLY + 11;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -95,6 +97,7 @@ public class BoardActivity extends XWActivity
     private static final String DLG_BYTES = "DLG_BYTES";
     private static final String ROOM = "ROOM";
     private static final String TOASTSTR = "TOASTSTR";
+    private static final String WORDS = "WORDS";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -135,6 +138,7 @@ public class BoardActivity extends XWActivity
 
     private String m_room;
     private String m_toastStr;
+    private String[] m_words;
     private int m_missing;
     private boolean m_haveInvited = false;
 
@@ -237,7 +241,7 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
-                                lookupRecent();
+                                m_jniThread.handle( JNICmd.CMD_WORDS );
                             }
                         };
                     ab.setNegativeButton( R.string.button_lookup, lstnr );
@@ -310,6 +314,19 @@ public class BoardActivity extends XWActivity
                         .setNegativeButton( R.string.button_no, null )
                         .create();
                 }
+                break;
+            case DLG_WORDPICK:
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.title_lookup )
+                    .setItems( m_words, new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, 
+                                                 int item ) {
+                                lookupWord( m_words[item] );
+                            }
+                        } )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .create();
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
             default:
                 // just drop it; super.onCreateDialog likely failed
@@ -398,6 +415,7 @@ public class BoardActivity extends XWActivity
         outState.putString( DLG_BYTES, m_dlgBytes );
         outState.putString( ROOM, m_room );
         outState.putString( TOASTSTR, m_toastStr );
+        outState.putStringArray( WORDS, m_words );
     }
 
     private void getBundledData( Bundle bundle )
@@ -408,6 +426,7 @@ public class BoardActivity extends XWActivity
             m_dlgBytes = bundle.getString( DLG_BYTES );
             m_room = bundle.getString( ROOM );
             m_toastStr = bundle.getString( TOASTSTR );
+            m_words = bundle.getStringArray( WORDS );
         }
     }
 
@@ -1242,6 +1261,17 @@ public class BoardActivity extends XWActivity
                                     adjustTradeVisibility();
                                 }
                                 break;
+                            case JNIThread.GOT_WORDS:
+                                m_words = 
+                                    TextUtils.split( (String)msg.obj, "\n" );
+                                if ( 0 == m_words.length ) {
+                                    // drop it
+                                } else if ( 1 == m_words.length ) {
+                                    lookupWord( m_words[0] );
+                                } else {
+                                    showDialog( DLG_WORDPICK );
+                                }
+                                break;
                             }
                         }
                     };
@@ -1514,13 +1544,10 @@ public class BoardActivity extends XWActivity
         }
     }
 
-    private void lookupRecent()
+    private void lookupWord( String word )
     {
-        // String[] words = XwJNI.model_getLastTurnWords( m_jniGamePtr );
-        String[] words = { "mastodon", "elephant" };
-
         String fmt = getString( R.string.word_lookupf );
-        String dict_url = String.format( fmt, words[0] );
+        String dict_url = String.format( fmt, word );
         Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
         intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
@@ -1529,8 +1556,6 @@ public class BoardActivity extends XWActivity
             startActivity( intent );
         } catch ( android.content.ActivityNotFoundException anfe ) {
             Utils.logf( "%s", anfe.toString() );
-            // Toast.makeText( this, R.string.no_download_warning, 
-            //                 Toast.LENGTH_SHORT).show();
         }
     }
 } // class BoardActivity
