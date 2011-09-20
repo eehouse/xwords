@@ -898,7 +898,7 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock
 {
 #ifdef USE_GLIBLOOP
     GIOChannel* channel = g_io_channel_unix_new( newSock );
-    guint watch = g_io_add_watch( channel, G_IO_IN | G_IO_OUT |G_IO_ERR,
+    guint watch = g_io_add_watch( channel, G_IO_IN | G_IO_ERR,
                                   func, globals );
 
     SourceData* data = g_malloc( sizeof(*data) );
@@ -1649,9 +1649,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 
 #ifdef USE_GLIBLOOP
-    if ( params->quitAfter >= 0 ) {
-        cursesListenOnSocket( &g_globals, 0, handle_stdin ); /* stdin */
-    }
+    cursesListenOnSocket( &g_globals, 0, handle_stdin );
 #else
     cursesListenOnSocket( &g_globals, 0 ); /* stdin */
 
