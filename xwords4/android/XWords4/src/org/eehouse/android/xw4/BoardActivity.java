@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,15 +40,20 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import junit.framework.Assert;
 import android.content.res.Configuration;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -70,6 +76,8 @@ public class BoardActivity extends XWActivity
     private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
+    private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
+    private static final int DLG_WORDPICK = DLG_OKONLY + 11;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -93,6 +101,7 @@ public class BoardActivity extends XWActivity
     private static final String DLG_BYTES = "DLG_BYTES";
     private static final String ROOM = "ROOM";
     private static final String TOASTSTR = "TOASTSTR";
+    private static final String WORDS = "WORDS";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -133,6 +142,7 @@ public class BoardActivity extends XWActivity
 
     private String m_room;
     private String m_toastStr;
+    private String[] m_words;
     private int m_missing;
     private boolean m_haveInvited = false;
 
@@ -208,6 +218,7 @@ public class BoardActivity extends XWActivity
 
             case QUERY_REQUEST_BLK:
             case QUERY_INFORM_BLK:
+            case DLG_SCORES_BLK:
                 ab = new AlertDialog.Builder( this )
                     .setMessage( m_dlgBytes );
                 if ( 0 != m_dlgTitle ) {
@@ -230,6 +241,16 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
+                } else if ( DLG_SCORES_BLK == id ) {
+                    if ( curLangSupported() ) {
+                        lstnr = new DialogInterface.OnClickListener() {
+                                public void onClick( DialogInterface dialog, 
+                                                     int whichButton ) {
+                                    m_jniThread.handle( JNICmd.CMD_WORDS );
+                                }
+                            };
+                        ab.setNegativeButton( R.string.button_lookup, lstnr );
+                    }
                 }
 
                 dialog = ab.create();
@@ -299,6 +320,31 @@ public class BoardActivity extends XWActivity
                         .setNegativeButton( R.string.button_no, null )
                         .create();
                 }
+                break;
+            case DLG_WORDPICK:
+                LinearLayout layout =
+                    (LinearLayout)Utils.inflate( this, R.layout.wordlist_view );
+                ListView list = (ListView)layout.findViewById( R.id.words );
+                ArrayAdapter<String> adapter = 
+                    new ArrayAdapter<String>( this,
+                                              //android.R.layout.select_dialog_item,
+                                              android.R.layout.simple_list_item_1,
+                                              m_words ) ;
+                list.setAdapter( adapter );
+                OnItemClickListener oicl = new OnItemClickListener() {
+                        public void onItemClick(AdapterView<?> parent, 
+                                                View view, 
+                                                int position, long id ) {
+                            lookupWord( m_words[position] );
+                        }
+                    };
+                list.setOnItemClickListener( oicl );
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.title_lookup )
+                    .setView( layout )
+                    .setNegativeButton( R.string.button_done, null )
+                    .create();
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
             default:
                 // just drop it; super.onCreateDialog likely failed
@@ -387,6 +433,7 @@ public class BoardActivity extends XWActivity
         outState.putString( DLG_BYTES, m_dlgBytes );
         outState.putString( ROOM, m_room );
         outState.putString( TOASTSTR, m_toastStr );
+        outState.putStringArray( WORDS, m_words );
     }
 
     private void getBundledData( Bundle bundle )
@@ -397,6 +444,7 @@ public class BoardActivity extends XWActivity
             m_dlgBytes = bundle.getString( DLG_BYTES );
             m_room = bundle.getString( ROOM );
             m_toastStr = bundle.getString( TOASTSTR );
+            m_words = bundle.getStringArray( WORDS );
         }
     }
 
@@ -1032,7 +1080,8 @@ public class BoardActivity extends XWActivity
             case UtilCtxt.QUERY_ROBOT_TRADE:
                 m_dlgBytes = query;
                 m_dlgTitle = R.string.info_title;
-                waitBlockingDialog( QUERY_INFORM_BLK, 0 );
+                waitBlockingDialog( QUERY_ROBOT_MOVE == id ? 
+                                    DLG_SCORES_BLK : QUERY_INFORM_BLK, 0 );
                 result = true;
                 break;
 
@@ -1228,6 +1277,17 @@ public class BoardActivity extends XWActivity
                                         m_view.setInTrade( m_inTrade );
                                     }
                                     adjustTradeVisibility();
+                                }
+                                break;
+                            case JNIThread.GOT_WORDS:
+                                m_words = 
+                                    TextUtils.split( (String)msg.obj, "\n" );
+                                if ( 0 == m_words.length ) {
+                                    // drop it
+                                } else if ( 1 == m_words.length ) {
+                                    lookupWord( m_words[0] );
+                                } else {
+                                    showDialog( DLG_WORDPICK );
                                 }
                                 break;
                             }
@@ -1501,4 +1561,40 @@ public class BoardActivity extends XWActivity
                         which );
         }
     }
+
+    private void lookupWord( String word )
+    {
+        String fmt = getString( R.string.word_lookupf );
+        String dict_url = String.format( fmt, curLangCode(), word );
+        Uri uri = Uri.parse( dict_url );
+        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        
+        try {
+            startActivity( intent );
+        } catch ( android.content.ActivityNotFoundException anfe ) {
+            Utils.logf( "%s", anfe.toString() );
+        }
+    }
+
+    private String curLangCode()
+    {
+        // from string-array name="language_names" in common_rsrc.xml
+        switch( m_gi.dictLang ) {
+        case 1:
+            return "en";
+        case 2:
+            return "fr";
+        case 3:
+            return "de";
+        default:
+            return null;
+        }
+    }
+
+    private boolean curLangSupported()
+    {
+        return null != curLangCode();
+    }
+
 } // class BoardActivity

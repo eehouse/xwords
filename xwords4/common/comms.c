@@ -2136,25 +2136,20 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         XP_U8* buf;
 
         len = stream_getSize( tmpStream );
-        buf = XP_MALLOC( comms->mpool, len );
-        if ( buf != NULL ) {
-            stream_getBytes( tmpStream, buf, len );
-        }
-        stream_destroy( tmpStream );
-        if ( buf != NULL ) {
+        if ( 0 < len ) {
             XP_U16 result;
             CommsAddrRec addr;
 
             comms_getAddr( comms, &addr );
             XP_LOGF( "%s: passing %d bytes to sendproc", __func__, len );
-            result = (*comms->procs.send)( buf, len, &addr, 
-                                           comms->procs.closure );
+            result = (*comms->procs.send)( stream_getPtr(tmpStream), len,
+                                           &addr, comms->procs.closure );
             success = result == len;
             if ( success ) {
                 setHeartbeatTimer( comms );
             }
         }
-        XP_FREE( comms->mpool, buf );
+        stream_destroy( tmpStream );
     }
     return success;
 } /* send_via_relay */

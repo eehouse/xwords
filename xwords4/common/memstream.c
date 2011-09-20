@@ -301,7 +301,7 @@ mem_stream_copyFromStream( XWStreamCtxt* p_sctx, XWStreamCtxt* src,
         if ( nBytes < len ) {
             len = nBytes;
         }
-        stream_getBytes( src, buf, len );
+        stream_getBytes( src, buf, len );// fix to use stream_getPtr()?
         stream_putBytes( p_sctx, buf, len );
         nBytes -= len;
     }
@@ -337,6 +337,13 @@ mem_stream_getSize( const XWStreamCtxt* p_sctx )
     XP_U16 size = stream->nBytesWritten - stream->curReadPos;
     return size;
 } /* mem_stream_getSize */
+
+static const XP_U8*
+mem_stream_getPtr( const XWStreamCtxt* p_sctx )
+{
+    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    return stream->buf;
+} /* mem_stream_getPtr */
 
 static XP_PlayerAddr
 mem_stream_getAddress( XWStreamCtxt* p_sctx )
@@ -451,6 +458,7 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_close, mem );
 
     SET_VTABLE_ENTRY( vtable, stream_getSize, mem );
+    SET_VTABLE_ENTRY( vtable, stream_getPtr, mem );
     SET_VTABLE_ENTRY( vtable, stream_getAddress, mem );
     SET_VTABLE_ENTRY( vtable, stream_setAddress, mem );
 

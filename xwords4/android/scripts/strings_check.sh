@@ -22,10 +22,9 @@ list_ids() {
 
 list_pairs() {
     XML_FILE=$1
-    #xmlstarlet sel -t -m "//string" -v @name -o ':' -v . -n $XML_FILE | tr -d '\n' | sed 's,  *, ,g'
     for NAME in $(list_ids $XML_FILE); do
-        xmlstarlet sel -t -m "//string[@name='$NAME']" -v @name -o ':' -v . $XML_FILE \
-            | tr -d '\n' | sed 's,  *, ,g'
+        xmlstarlet sel -t -m "//string[@name='$NAME']" -v @name -o ':' \
+            -v . $XML_FILE | tr -d '\n' | sed 's,  *, ,g'
         echo ""
     done
 }

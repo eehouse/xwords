@@ -55,6 +55,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Paint m_tileStrokePaint;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
+    private CommonPrefs m_prefs;
     private int m_layoutWidth;
     private int m_layoutHeight;
     private Canvas m_canvas;    // owns the bitmap
@@ -151,10 +152,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         m_boundsScratch = new Rect();
 
-        CommonPrefs prefs = CommonPrefs.get(context);
-        m_playerColors = prefs.playerColors;
-        m_bonusColors = prefs.bonusColors;
-        m_otherColors = prefs.otherColors;
+        m_prefs = CommonPrefs.get(context);
+        m_playerColors = m_prefs.playerColors;
+        m_bonusColors = m_prefs.bonusColors;
+        m_otherColors = m_prefs.otherColors;
 
         m_bonusSummaries = new String[5];
         int[] ids = { R.string.bonus_l2x_summary,
@@ -427,7 +428,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         String[] texts = m_scores[dsi.playerNum];
         int color = m_playerColors[dsi.playerNum];
-        if ( !CommonPrefs.get(m_context).allowPeek ) {
+        if ( !m_prefs.allowPeek ) {
             color = adjustColor( color );
         }
         m_fillPaint.setColor( color );

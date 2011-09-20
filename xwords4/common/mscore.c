@@ -75,7 +75,8 @@ static void formatSummary( XWStreamCtxt* stream, const ModelCtxt* model,
  * invalidate the score.
  */
 static void
-scoreCurrentMove( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream )
+scoreCurrentMove( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream,
+                  WordNotifierInfo* notifyInfo )
 {
     PlayerCtxt* player = &model->players[turn];
     XP_S16 score;
@@ -84,7 +85,7 @@ scoreCurrentMove( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream )
 
     /* recalc goes here */
     score = checkScoreMove( model, turn, (EngineCtxt*)NULL, stream,
-                            XP_TRUE, (WordNotifierInfo*)NULL );
+                            XP_TRUE, notifyInfo );
     XP_ASSERT( score >= 0 || score == ILLEGAL_MOVE_SCORE );
 
     player->curMoveScore = score;
@@ -127,11 +128,12 @@ invalidateScore( ModelCtxt* model, XP_S16 turn )
 
 XP_Bool
 getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn,
-                            XWStreamCtxt* stream, XP_S16* score )
+                            XWStreamCtxt* stream, 
+                            WordNotifierInfo* wni, XP_S16* score )
 {
     PlayerCtxt* player = &model->players[turn];
     if ( !player->curMoveValid ) {
-        scoreCurrentMove( model, turn, stream );
+        scoreCurrentMove( model, turn, stream, wni );
     }
 
     *score = player->curMoveScore;

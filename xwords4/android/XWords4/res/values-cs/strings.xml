@@ -18,28 +18,16 @@
     <string name="button_new_game">Přidat hru</string>
 
     <string name="list_item_config">Konfigurovat</string>
-    <string name="list_item_hide">Skrýt</string>
     <string name="list_item_delete">Vymazat</string>
 	<string name="list_item_copy">Kopírovat</string>
 	<string name="list_item_reset">Vynulovat</string>
 
 	<string name="list_item_new_from">Nová hra podle vzoru</string>
-	<string name="list_item_move_up">Přesunout výš</string>
-	<string name="list_item_move_down">Přesunout níž</string>
-	<string name="list_item_move_to_top">Přesunout nahoru</string>
-	<string name="list_item_move_to_bottom">Přesunout dolů</string>
-
-    <string name="resolve_edit">Upravit poznámku</string>
-
     <string name="play">Hrát hru</string>
-
 	<string name="title_games_list">Crosswords</string>   
 	<string name="title_dicts_list">Slovníky Crosswords</string>   
-	<string name="title_game">Hra</string>  
 	<string name="title_game_configf">Konfigurovat %s</string>  
 	<string name="title_prefs">Předvolby Crosswords</string>  
-	
-	<string name="app_name">Crosswords</string>  
 	
 	<string name="button_ok">OK</string>  
 	<string name="button_cancel">Zrušit</string>  
@@ -83,7 +71,6 @@
     <string name="strs_values_header">%s počet/hodnota:\n</string>
     <string name="strd_remaining_tiles_add">+ %d [všechny zbývající kameny]</string>
     <string name="strd_unused_tiles_sub">- %d [nepoužité kameny]</string>
-    <string name="str_remote_moved">Vzdálený hráč provedl tento tah:</string>
     <string name="strd_time_penalty_sub"></string>
     <string name="str_pass"> - %d [čas]</string>
     <string name="strs_move_across">tah (od %s napříč)</string>
@@ -117,7 +104,6 @@
 
     <string name="remote_label">Hráč klient</string>
     <string name="robot_label">Hráč robot</string>
-    <string name="robot_name">(robot)</string>
     <string name="robot_namef">%s (robot)</string>
     <string name="guest_name">(hráč klient)</string>
     <string name="password_label">Heslo</string>
@@ -131,8 +117,6 @@
     <string name="dicts_item_select">Nastavit jako výchozí</string>
     <string name="dicts_item_details">Podrobnosti</string>
 
-    <string name="configure_role">Konfigurovat připojení</string>
-    <string name="configure_rolef">Konfigurovat %s připojení</string>
     <string name="settings_label">Nastavení hry</string>
     <string name="minutes_label">Minut ve hře</string>
 
@@ -146,8 +130,6 @@
     
     <string name="hints_allowed">Povolit nápovědu</string>
     <string name="use_timer">Povolit časovač</string>
-    <string name="color_tiles">Barvy kamenů</string>
-    <string name="color_tiles_summary">Obarvit kameny barvou hráče, který s nimi hrál</string>
     <string name="show_arrow">Ukázat šipku</string>
     <string name="show_arrow_summary">Slovo se začne psát ve směru šipky a od jejího umístění</string>
     <string name="explain_robot">Vysvětlit tahy robota</string>
@@ -178,7 +160,6 @@
     <string name="bonus_l3x">Trojitá hodnota písmene</string>
     <string name="bonus_w2x">Dvojitá hodnota slova</string>
     <string name="bonus_w3x">Trojitá hodnota slova</string>
-    <string name="trading_text">Výměna kamenů. Zvolte\n\'Ukončit tah\' až budete hotovi.</string>
     <string name="tile_back">Pozadí kamenů</string>
     <string name="empty">Prázdné pole/pozadí</string>
     <string name="advanced">Rozšířené</string>
@@ -186,11 +167,6 @@
     <string name="relay_host">Relay adresa</string>
     <string name="dict_host">URL adresa pro nahrávání slovníků</string>
     <string name="relay_port">Relay port</string>
-
-    <string name="key_player">key_player</string>
-    <string name="tab_relay">Internet/Relay</string>
-    <string name="tab_sms">SMS (nefunkční)</string>
-    <string name="tab_bluetooth">Bluetooth (připravuje se)</string>
 
     <string name="msg_relay_waiting">Připojen na relay. Čekám na %d hráče.</string>
 
@@ -211,7 +187,6 @@
     <string name="force_expl">Jako Server vyberte jedoho nebo více hráčů kteří se budou moct
     připojit jako Klient.</string>
 
-    <string name="summary_fmt_relay">%1$s přes Relay, místnost \"%2$s\"</string>
     <string name="gameOver">Hra skončena</string>
     <string name="movesf">Bylo zahráno %d tahů</string>
 

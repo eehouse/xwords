@@ -72,7 +72,8 @@ void stack_init( StackCtxt* stack );
 void stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile );
 
 void stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream );
-void stack_writeToStream( StackCtxt* stack, XWStreamCtxt* stream );
+void stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream );
+StackCtxt* stack_copy( const StackCtxt* stack );
 
 void stack_addMove( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo, 
                     TrayTileSet* newTiles );

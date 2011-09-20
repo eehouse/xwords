@@ -73,13 +73,19 @@
   <string name="key_notagain_newfrom">key_notagain_newfrom</string>
   <string name="key_notagain_trading">key_notagain_trading</string>
 
+  <!-- Name is not localized -->
+  <string name="app_name">Crosswords</string>  
+
   <!-- other -->
   <string name="default_host">eehouse.org</string>
 
   <!-- <string name="default_host">10.0.2.2</string> -->
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
   <string name="app_version">4.4 beta 34</string>
-  <string name="game_url_pathf">//%1$s/redir.php</string>
+  <string name="game_url_pathf">//%1$s/newgame.php</string>
+
+  <!-- <string name="word_lookupf">http://dictionary.com/browse/%s</string> -->
+  <string name="word_lookupf">http://%1$s.thefreedictionary.com/_/dict.aspx?word=%2$s</string>
 
   <!-- Debugging stuff. No point in localizing it. -->
   <string name="advanced">For debugging</string>

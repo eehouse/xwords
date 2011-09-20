@@ -69,6 +69,8 @@ typedef struct StreamCtxVTable {
     void (*m_stream_close)( XWStreamCtxt* dctx );
 
     XP_U16 (*m_stream_getSize)( const XWStreamCtxt* dctx );
+    
+    const XP_U8* (*m_stream_getPtr)( const XWStreamCtxt* dctx );
 
 /*     void (*m_stream_makeReturnAddr)( XWStreamCtxt* dctx, XP_PlayerAddr* addr, */
 /*                                      XP_U16* addrLen ); */
@@ -142,6 +144,9 @@ struct XWStreamCtxt {
 
 #define stream_getSize(sc) \
          (sc)->vtable->m_stream_getSize((sc))
+
+#define stream_getPtr(sc) \
+         (sc)->vtable->m_stream_getPtr((sc))
 
 #define stream_makeReturnAddr(sc,addr,len) \
          (sc)->vtable->m_stream_makeReturnAddr((sc),(addr),(len))

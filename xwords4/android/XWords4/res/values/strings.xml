@@ -12,11 +12,27 @@
        ############################################################ 
       -->
     <!-- window title -->
-	<string name="title_games_list">Crosswords</string>   
+	<string name="title_games_list">Crosswords</string>
+
+    <!-- These two messages appear at the top of the list of games
+         (unless the hide_intro preferences checkbox is checked.)-->
+    <string name="empty_games_list">Use the button below to create a
+      game. Tap an existing game to play it or long-tap it for other
+      options.</string>
+    <string name="empty_games_list2">You can hide this and the button
+      below in the Appearance section of Settings (accessed via your
+      device\'s menu key).</string>
 
     <!-- Text of button at bottom of main games-list screen and of
-         menuitem in main games-list screen's menu -->
+         menuitem in main games-list screen's menu.  (The botton can
+         be hidden in the same way as the above text.) -->
     <string name="button_new_game">Add game</string>
+
+    <!-- When the game list is empty and the above messages and button
+         are hidden via preferences, this text is shown -->
+    <string name="empty_list_msg">Use the menu key to add a
+      game.</string>
+
 
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
@@ -94,6 +110,15 @@
          any is downloaded. -->
     <string name="gamel_menu_checkmoves">Check relay</string>
 
+    <!-- Text of progress indicator shown while check is being conducted -->
+    <string name="msgs_progress">Checking relay for moves
+      etc...</string>
+
+    <!-- If you choose the above option and have no networked games
+         you get this error message -->
+    <string name="no_games_to_refresh">No games found that connect via
+      the relay.</string>
+
     <!-- Deletes all games on the device (after confirmation) -->
 	<string name="gamel_menu_delete_all">Delete all</string>
 
@@ -131,6 +156,13 @@
 	<string name="list_item_copy">Copy</string>
     <!-- Title of dialog for renaming game (triggered by selecting
          list_item_rename) -->
+
+    <!-- If you try to copy a networked game you get this error
+    message. -->
+    <string name="no_copy_network">Games that have already connected
+      to the relay cannot be copied. Use \"New from\" for a
+      ready-to-play copy with all the same settings.</string>
+
     <string name="game_rename_title">Rename game</string>
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
@@ -182,6 +214,13 @@
          the built-in Android web browser uses for the directory where
          it saves files it downloads. -->
     <string name="loc_downloads">Downloads</string>
+
+    <!-- If you tap the download_dicts button and Android fails to
+         find and launch an app that's registered to handle http
+         downloads a Toast is posted with this message. -->
+    <string name="no_download_warning">Unable to download. Do you have
+      a web browser installed?</string>
+
 
     <!--
        ############################################################
@@ -331,6 +370,20 @@
     <!-- title for popup of public rooms found on server -->
     <string name="room_public_prompt">Select public room</string>
 
+    <!-- If you check the join_room checkbox Crosswords queries the
+    relay.  This is the text of the progress indicator displayed what
+    that's going on.  (It's often visible for only a very short
+    time.)-->
+    <string name="public_names_progress">Fetching public rooms for
+      %1$d-player games in %2$s.</string>
+
+    <!-- If the query returns no rooms, this message is displayed,
+    with the number of players in the game and its language
+    substituted. -->
+    <string name="no_name_found_f">No public rooms found for
+      %1$d-player games in %2$s. Try refreshing or creating your
+      own.</string>
+
     <!-- text of separator marking out other-setting area of the dialog -->
     <string name="settings_label">Other settings</string>
 
@@ -389,6 +442,9 @@
     <!-- title of above confirmation dialog -->
     <string name="confirm_save_title">Confirm save</string>
 
+    <!-- Text of button at bottom.  Press it and you exit this
+         configure screen and open the game into the Board screen -->
+    <string name="play">Play game</string>
 
     <!--     
        ############################################################
@@ -475,6 +531,10 @@
          i.e. after user has picked board_menu_trade menu item -->
     <string name="button_trade_commit">Commit exchange</string>
     <string name="button_trade_cancel">Cancel exchange</string>
+
+    <string name="entering_trade">Tap to select tiles...</string>
+
+
 
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter -->
@@ -837,7 +897,7 @@
          e.g., if the option is "Game Language", "English" in the
          listing "Game 2 (English)"
          
-         The following strings beginning with "game_summary_field" are
+         The following strings beginning with "game_summary_field_" are
          possible values -->
     <string name="summary_field">Include in game listing</string>
 
@@ -1134,7 +1194,7 @@
     <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap here to
       accept\u003c/a\u003E my invitation and join this
       game.\u003cbr\u003E \u003ca
-      href=\"http://eehouse.org/market.php\"\u003E
+      href=\"http://eehouse.org/market_redir.php\"\u003E
       Tap here to install Crosswords\u003c/a\u003E if you haven\'t
       already.</string>
 
@@ -1143,7 +1203,7 @@
          substituted for "%1$s".-->
     <string name="invite_txtf">Accept my invitation and join this
       game: %1$s . (But install Crosswords first:
-      http://eehouse.org/market.php ).</string>
+      http://eehouse.org/market_redir.php ).</string>
 
     <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
@@ -1193,6 +1253,55 @@
          other devices in the game: no "clear chat" message is
          transmitted. -->
     <string name="chat_menu_clear">Clear history</string>
+
+    <!-- ############################################################
+         # :Screens:
+         # RelayGameActivity screen
+         #
+         # This screen is a simple alternative to the Game Configure
+         # screen.  You'll get it when you choose the list_item_config
+         # on certain unconfigured simple relay games (currently simple
+         # means they have 2 players.  These days about the only way to
+         # get this screen is to create a relay game manually and to
+         # abort after making the room name empty.  That is, this is
+         # left over from an older way of helping people connect, from
+         # before invitations.
+
+         # The dialog has a list of instructions, two text fields for
+         # room name and local player name, and two buttons.
+         ############################################################
+         -->
+
+    <!-- This is the heading above the list of steps.  The default
+         language is substituted for %s. -->
+    <string name="relay_game_explainf">To start a basic networked two-player
+        game in %s:</string>
+
+    <!-- These four strings are displayed as step-by-step
+         instructions-->
+    <string name="explain_b1">• Agree on a room name with the other
+      player.</string>
+    <string name="explain_b2">• Enter the room name in the first box
+      below. The room names on your two phones must be
+      identical.</string>
+    <string name="explain_b3">• Optionally, enter player names in the
+      second box (one per phone)</string>
+    <string name="explain_b4">• Press the \"Play game\" button on both
+      phones to start the game.</string>
+
+    <!-- This is the "hint" printed in light text in the empty player
+         name field -->
+    <string name="local_name_hint">Player name</string>
+
+    <!-- This button takes you to the normal Game Configure screen -->
+    <string name="advanced_config">Advanced game settings</string>
+
+    <!-- If you click on the Play button without having entered a room
+         name you get an alert with this error message. -->
+    <string name="no_empty_rooms">This game cannot connect without a
+        room name.</string>
+
+
 
     <!-- 
        error messages
@@ -1281,103 +1390,92 @@
 
 
 
-
-
-
-    <string name="about_web">For a manual or sourcecode see:
-    http://xwords.sf.net.  To report bugs, suggest features, offer to
-    help, etc., please email: eehouse@eehouse.org.</string>
-    <!-- fill this in other than in English -->
-    <string name="xlator"></string>
-
-    <string name="about_credits">Toolbar icons by Sarah Chu; other
-    credits pending permission.</string>
-
     <string name="downloading_dictf">Downloading Crosswords
       wordlist %s...</string>
-    <string name="no_dict_title">Wordlist not found</string>
-    <string name="button_download">Download</string>
-    <string name="subst_dict_title">Substitute wordlist (wordcount)</string>
-    <string name="button_substdict">Substitute</string>
 
-    <string name="button_close_game">Close game</string>
+    <!-- 
+       ############################################################
+       # :Dialogs:
+       # Missing wordlist alert
+       # 
+       # This alert is displayed when you try to open a game whose
+       # wordlist cannot be found.
+       ############################################################
+      -->
+
+    <!-- title of alert -->
+    <string name="no_dict_title">Wordlist not found</string>
+
+    <!-- If the wordlist disappears mid-game there are no choices,
+         just an explanation and this button, after which the game
+         closes. -->
     <string name="no_dict_finish">A wordlist this game is using has
       disappeared. (Usually this means it\'s on an external card that
       is no longer available.)</string>
+
+    <!-- The only button available when the above message is displayed -->
+    <string name="button_close_game">Close game</string>
+
+    <!-- If the missing wordlist is discovered when trying to open the
+         game, we have more options.  If there's another wordlist in
+         the same language, we can offer to substitute without needing
+         to download.  Otherwise the user must choose between
+         downloading and not opening the game.  This first message
+         takes wordlist name and language substituted in for %1$ and
+         %2$ -->
     <string name="no_dictf">Unable to open game \"%1$s\" because no
       %2$s wordlist found. (It may have been deleted, or stored on
       an external card that is no longer available.)</string>
+
+    <!-- This is an alternative message presented when there's also
+         the option of downloading another wordlist.  Game name,
+         wordlist name and language are substituted in. -->
     <string name="no_dict_substf">Unable to open game \"%1$s\" because
       wordlist %2$s not found. (It may have been deleted, or stored
       on an external card that is no longer available.) You can
       download a replacement or substitute another %3$s
       wordlist.</string>
 
+    <!-- Text of button displayed when downloading is an option -->
+    <string name="button_download">Download</string>
+
+    <!-- Text of button allowing user to choose to open with a
+         different (but same-language wordlist) -->
+    <string name="button_substdict">Substitute</string>
+
+    <!-- If substituting an existing same-language wordlist by
+         choosing button_substdict user gets to choose from a list of
+         wordlists.  This is the title of that list. -->
+    <string name="subst_dict_title">Substitute wordlist (wordcount)</string>
+
+    <!-- 
+       ############################################################
+       # :Dialogs:
+       # Password dialog
+       # 
+
+       # This alert is displayed when a local player has set a
+       # password and is trying to see his tiles
+       ############################################################
+       -->
+
+    <!-- Text of dialog.  Player name is substituted -->
 	<string name="msg_ask_password">Password for \"%s\":</string>
 
     <!-- used to create default names of games (when user has not
          named them.) -->
 	<string name="gamef">Game %d</string>
-    <!-- used to create default player names -->
+
+    <!-- used to create default player names.  Number between 1 and 4
+         is substituted -->
 	<string name="playerf">Player %d</string>
 
-    <string name="public_names_progress">Fetching public rooms for
-      %1$d-player games in %2$s.</string>
-    <string name="no_name_found_f">No public rooms found for
-      %1$d-player games in %2$s. Try refreshing or creating your
-      own.</string>
-
+    <!-- When a move is fetched from the relay a Notification is
+    posted.  These are its title, which appears in the top bar of the
+    device, and the body that appears when you pull the notifications
+    down. -->
     <string name="notify_title">Moves made</string>
     <string name="notify_body">New game moves have arrived</string>
-
-    <string name="no_copy_network">Games that have already connected
-      to the relay cannot be copied. Use \"New from\" for a
-      ready-to-play copy with all the same settings.</string>
-
-    <string name="no_games_to_refresh">No games found that connect via
-      the relay.</string>
-
-    <string name="msgs_progress">Checking relay for moves
-      etc...</string>
-
-
-    <string name="not_again_trading">You are entering tile-exchange
-      mode.  Tap tiles to add/remove them from the set to be
-      exchanged.  Use the buttons to commit your turn or exit exchange
-      mode.</string>
-
-    <string name="entering_trade">Tap to select tiles...</string>
-
-    <string name="relay_game_explainf">To start a basic networked two-player
-    game in %s:</string>
-
-    <string name="explain_b1">• Agree on a room name with the other
-      player.</string>
-    <string name="explain_b2">• Enter the room name in the first box
-      below. The room names on your two phones must be
-      identical.</string>
-    <string name="explain_b3">• Optionally, enter player names in the
-      second box (one per phone)</string>
-    <string name="explain_b4">• Press the \"Play game\" button on both
-      phones to start the game.</string>
-
-    <string name="advanced_config">Advanced game settings</string>
-
-    <string name="local_name_hint">Player name</string>
-    <string name="no_empty_rooms">This game cannot connect without a
-      room name.</string>
-
-    <string name="empty_games_list">Use the button below to create a
-      game. Tap an existing game to play it or long-tap it for other
-      options.</string>
-    <string name="empty_games_list2">You can hide this and the button
-      below in the Appearance section of Settings (accessed via your
-      device\'s menu key).</string>
-    <string name="empty_list_msg">Use the menu key to add a
-      game.</string>
-
-    <string name="no_download_warning">Unable to download. Do you have
-      a web browser installed?</string>
 
     <!--
         ############################################################
@@ -1487,6 +1585,12 @@
       with pending moves. When you open a flagged game it will connect
       and sync. (In a later release these moves will be downloaded in
       the background.)</string>
+
+    <!-- Shown when the user chooses the "board_menu_trade" menu -->
+    <string name="not_again_trading">You are entering tile-exchange
+      mode.  Tap tiles to add/remove them from the set to be
+      exchanged.  Use the buttons to commit your turn or exit exchange
+      mode.</string>
 
     <!-- Currently not used -->
     <!-- <string name="not_again_newgame">The new game you have created has -->
@@ -1631,11 +1735,28 @@
       -->
     <!-- String giving version info, which is substituted in. -->
     <string name="about_versf">Crosswords for Android, Version %1$s,
-    rev %2$s.</string>
+        rev %2$s.</string>
     <!-- copyright info -->
     <string name="about_copyright">Copyright (C) 1998-2011 by Eric
-    House. This free/open source software is released under the GNU Public
-    License.</string>
+        House. This free/open source software is released under the GNU Public
+        License.</string>
+
+    <!-- Another paragraph in the about dialog -->
+    <string name="about_web">For a manual or sourcecode see:
+        http://xwords.sf.net.  To report bugs, suggest features, offer to
+        help, etc., please email: eehouse@eehouse.org.</string>
+
+    <!-- Empty in English, this should contain the name of the
+         translator/creator of the strings.xml file for this
+         language-->
+    <string name="xlator"></string>
+
+    <!-- Another paragraph giving credit for work done other than by
+         Eric House and translators -->
+    <string name="about_credits">Toolbar icons by Sarah Chu; other
+        credits pending permission.</string>
+
+
     <!-- text of dialog showing the set of changes made since the last
          release -->
     <string name="changes_title">Recent changes</string>
@@ -1643,4 +1764,10 @@
          dialog -->
     <string name="changes_button">Recent changes</string>
 
+
+    <string name="button_lookup">Lookup word</string>
+    <string name="title_lookup">Tap to lookup</string>
+    <string name="button_done">Done</string>
+
 </resources>
+
