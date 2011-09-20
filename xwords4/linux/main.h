@@ -138,7 +138,11 @@ typedef struct LinSMSData LinSMSData;
 typedef struct _TimerInfo {
     XWTimerProc proc;
     void* closure;
+#ifdef USE_GLIBLOOP
+    struct CommonGlobals* globals;
+#else
     XP_U32 when;                /* used only for ncurses */
+#endif
 } TimerInfo;
 
 struct CommonGlobals {

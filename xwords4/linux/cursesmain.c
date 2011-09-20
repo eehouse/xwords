@@ -373,21 +373,37 @@ curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
     return XP_TRUE;
 } /* curses_util_engineProgressCallback */
 
+#ifdef USE_GLIBLOOP
+static gboolean
+timerFired( gpointer data )
+{
+    TimerInfo* ti = (TimerInfo*)data;
+    CommonGlobals* globals = ti->globals;
+    XWTimerReason why = ti - globals->timerInfo;
+    if ( linuxFireTimer( globals, why ) ) {
+        board_draw( globals->game.board );
+    }
+
+    return FALSE;
+}
+#endif
+
 static void
 curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                       XWTimerProc proc, void* closure )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    XP_U32 nextTimer;
+    TimerInfo* ti = &globals->cGlobals.timerInfo[why];
 
-    globals->cGlobals.timerInfo[why].proc = proc;
-    globals->cGlobals.timerInfo[why].closure = closure;
+    ti->proc = proc;
+    ti->closure = closure;
 
-    nextTimer = util_getCurSeconds(uc) + when;
-    globals->cGlobals.timerInfo[why].when = nextTimer;
-    if ( globals->nextTimer > nextTimer ) {
-        globals->nextTimer = nextTimer;
-    }
+#ifdef USE_GLIBLOOP
+    ti->globals = &globals->cGlobals;
+    (void)g_timeout_add_seconds( when, timerFired, ti );
+#else
+    ti->when = util_getCurSeconds(uc) + when;
+#endif
 } /* curses_util_setTimer */
 
 static void
