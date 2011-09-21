@@ -48,10 +48,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import junit.framework.Assert;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 
@@ -143,6 +145,10 @@ public class BoardActivity extends XWActivity
     private String m_room;
     private String m_toastStr;
     private String[] m_words;
+    private String[] m_langCodes;
+    private String[] m_lookupUrls;
+    private String[] m_lookupNames;
+
     private int m_missing;
     private boolean m_haveInvited = false;
 
@@ -242,15 +248,13 @@ public class BoardActivity extends XWActivity
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
                 } else if ( DLG_SCORES_BLK == id ) {
-                    if ( curLangSupported() ) {
-                        lstnr = new DialogInterface.OnClickListener() {
-                                public void onClick( DialogInterface dialog, 
-                                                     int whichButton ) {
-                                    m_jniThread.handle( JNICmd.CMD_WORDS );
-                                }
-                            };
-                        ab.setNegativeButton( R.string.button_lookup, lstnr );
-                    }
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, 
+                                                 int whichButton ) {
+                                m_jniThread.handle( JNICmd.CMD_WORDS );
+                            }
+                        };
+                    ab.setNegativeButton( R.string.button_lookup, lstnr );
                 }
 
                 dialog = ab.create();
@@ -322,26 +326,9 @@ public class BoardActivity extends XWActivity
                 }
                 break;
             case DLG_WORDPICK:
-                LinearLayout layout =
-                    (LinearLayout)Utils.inflate( this, R.layout.wordlist_view );
-                ListView list = (ListView)layout.findViewById( R.id.words );
-                ArrayAdapter<String> adapter = 
-                    new ArrayAdapter<String>( this,
-                                              //android.R.layout.select_dialog_item,
-                                              android.R.layout.simple_list_item_1,
-                                              m_words ) ;
-                list.setAdapter( adapter );
-                OnItemClickListener oicl = new OnItemClickListener() {
-                        public void onItemClick(AdapterView<?> parent, 
-                                                View view, 
-                                                int position, long id ) {
-                            lookupWord( m_words[position] );
-                        }
-                    };
-                list.setOnItemClickListener( oicl );
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.title_lookup )
-                    .setView( layout )
+                    .setView( buildLookupDlg() )
                     .setNegativeButton( R.string.button_done, null )
                     .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
@@ -1284,8 +1271,8 @@ public class BoardActivity extends XWActivity
                                     TextUtils.split( (String)msg.obj, "\n" );
                                 if ( 0 == m_words.length ) {
                                     // drop it
-                                } else if ( 1 == m_words.length ) {
-                                    lookupWord( m_words[0] );
+                                // } else if ( 1 == m_words.length ) {
+                                //     lookupWord( m_words[0] );
                                 } else {
                                     showDialog( DLG_WORDPICK );
                                 }
@@ -1562,9 +1549,41 @@ public class BoardActivity extends XWActivity
         }
     }
 
-    private void lookupWord( String word )
+    private View buildLookupDlg()
     {
-        String fmt = getString( R.string.word_lookupf );
+        init_lookup();
+
+        LinearLayout layout =
+            (LinearLayout)Utils.inflate( this, R.layout.wordlist_view );
+
+        final Spinner spinner = 
+            (Spinner)layout.findViewById( R.id.site_spinner );
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                                           android.R.layout.simple_spinner_item,
+                                           m_lookupNames );
+        spinner.setAdapter( adapter );
+
+        ListView list = (ListView)layout.findViewById( R.id.words );
+        adapter = new ArrayAdapter<String>( this,
+                                            //android.R.layout.select_dialog_item,
+                                            android.R.layout.simple_list_item_1,
+                                            m_words ) ;
+        list.setAdapter( adapter );
+        OnItemClickListener oicl = new OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, 
+                                        View view, 
+                                        int position, long id ) {
+                    int urlPos = spinner.getSelectedItemPosition();
+                    lookupWord( m_words[position], m_lookupUrls[urlPos] );
+                }
+            };
+        list.setOnItemClickListener( oicl );
+
+        return layout;
+    }
+
+    private void lookupWord( String word, String fmt )
+    {
         String dict_url = String.format( fmt, curLangCode(), word );
         Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
@@ -1579,22 +1598,31 @@ public class BoardActivity extends XWActivity
 
     private String curLangCode()
     {
-        // from string-array name="language_names" in common_rsrc.xml
-        switch( m_gi.dictLang ) {
-        case 1:
-            return "en";
-        case 2:
-            return "fr";
-        case 3:
-            return "de";
-        default:
-            return null;
-        }
+        init_lookup();
+        return m_langCodes[m_gi.dictLang];
     }
-
-    private boolean curLangSupported()
+    
+    private void init_lookup()
     {
-        return null != curLangCode();
+        if ( null == m_langCodes ) {
+            Resources res = getResources();
+            m_langCodes = res.getStringArray( R.array.language_codes );
+
+            String[] urls = res.getStringArray( R.array.lookup_urls );
+            ArrayList<String> tmpUrls = new ArrayList<String>();
+            ArrayList<String> tmpNames = new ArrayList<String>();
+            String langCode = 
+                String.format( ":%s:", m_langCodes[m_gi.dictLang] );
+            for ( int ii = 0; ii < urls.length; ii += 3 ) {
+                String codes = urls[ii+1];
+                if ( 0 == codes.length() || codes.contains( langCode ) ) {
+                    tmpNames.add( urls[ii] );
+                    tmpUrls.add( urls[ii+2] );
+                }
+            }
+            m_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
+            m_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
+        }
     }
 
 } // class BoardActivity
