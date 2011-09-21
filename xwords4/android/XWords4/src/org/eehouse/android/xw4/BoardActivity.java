@@ -1551,7 +1551,7 @@ public class BoardActivity extends XWActivity
 
     private View buildLookupDlg()
     {
-        init_lookup();
+        initLookup();
 
         LinearLayout layout =
             (LinearLayout)Utils.inflate( this, R.layout.wordlist_view );
@@ -1566,7 +1566,8 @@ public class BoardActivity extends XWActivity
         ListView list = (ListView)layout.findViewById( R.id.words );
         adapter = new ArrayAdapter<String>( this,
                                             //android.R.layout.select_dialog_item,
-                                            android.R.layout.simple_list_item_1,
+                                            // android.R.layout.simple_list_item_1,
+                                            android.R.layout.select_dialog_item,
                                             m_words ) ;
         list.setAdapter( adapter );
         OnItemClickListener oicl = new OnItemClickListener() {
@@ -1598,11 +1599,11 @@ public class BoardActivity extends XWActivity
 
     private String curLangCode()
     {
-        init_lookup();
+        initLookup();
         return m_langCodes[m_gi.dictLang];
     }
     
-    private void init_lookup()
+    private void initLookup()
     {
         if ( null == m_langCodes ) {
             Resources res = getResources();
