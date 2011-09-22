@@ -1617,40 +1617,6 @@ public class BoardActivity extends XWActivity
         }
     }
 
-    private View buildLookupDlg()
-    {
-        initLookup();
-
-        LinearLayout layout =
-            (LinearLayout)Utils.inflate( this, R.layout.wordlist_view );
-
-        final Spinner spinner = 
-            (Spinner)layout.findViewById( R.id.site_spinner );
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                                           android.R.layout.simple_spinner_item,
-                                           m_lookupNames );
-        spinner.setAdapter( adapter );
-
-        ListView list = (ListView)layout.findViewById( R.id.words );
-        adapter = new ArrayAdapter<String>( this,
-                                            //android.R.layout.select_dialog_item,
-                                            // android.R.layout.simple_list_item_1,
-                                            android.R.layout.select_dialog_item,
-                                            m_words ) ;
-        list.setAdapter( adapter );
-        OnItemClickListener oicl = new OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, 
-                                        View view, 
-                                        int position, long id ) {
-                    int urlPos = spinner.getSelectedItemPosition();
-                    lookupWord( m_words[position], m_lookupUrls[urlPos] );
-                }
-            };
-        list.setOnItemClickListener( oicl );
-
-        return layout;
-    }
-
     private void lookupWord()
     {
         if ( null == m_words || 0 == m_words.length ) {
@@ -1677,7 +1643,8 @@ public class BoardActivity extends XWActivity
         if ( false ) {
             Utils.logf( "skipping lookupWord(%s)", word );
         } else {
-            String dict_url = String.format( fmt, curLangCode(), word );
+            String langCode = m_langCodes[m_gi.dictLang];
+            String dict_url = String.format( fmt, langCode, word );
             Uri uri = Uri.parse( dict_url );
             Intent intent = new Intent( Intent.ACTION_VIEW, uri );
             intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
@@ -1688,12 +1655,6 @@ public class BoardActivity extends XWActivity
                 Utils.logf( "%s", anfe.toString() );
             }
         }
-    }
-
-    private String curLangCode()
-    {
-        initLookup();
-        return m_langCodes[m_gi.dictLang];
     }
     
     private void initLookup()
