@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -35,6 +35,13 @@ struct PoolContext {
 #endif
     MPSLOT
 };
+
+#ifdef DEBUG
+static void checkTilesLeft( const PoolContext* pool );
+#else
+# define checkTilesLeft( pool )
+#endif
+
 
 PoolContext*
 pool_make( MPFORMAL_NOCOMMA )
@@ -247,5 +254,18 @@ pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict )
         pool->blankIndex = -1;
     }
 #endif
+    checkTilesLeft( pool );
 } /* pool_initFromDict */
+
+#ifdef DEBUG
+static void
+checkTilesLeft( const PoolContext* pool )
+{
+    XP_U16 ii, count;
+    for ( count = 0, ii = 0; ii < pool->numFaces; ++ii ) {
+        count += pool->lettersLeft[ii];
+    }
+    XP_ASSERT( count == pool->numTilesLeft );
+}
+#endif
 

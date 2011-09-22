@@ -2052,9 +2052,8 @@ recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
     return XP_TRUE;
 }
 
-XP_Bool
-model_getWordsPlayed( ModelCtxt* model, PoolContext* pool,
-                      XP_U16 nTurns, XWStreamCtxt* stream )
+void
+model_getWordsPlayed( ModelCtxt* model, XP_U16 nTurns, XWStreamCtxt* stream )
 {
     XP_ASSERT( !!stream );
     StackCtxt* stack = model->vol.stack;
@@ -2067,7 +2066,7 @@ model_getWordsPlayed( ModelCtxt* model, PoolContext* pool,
         nTurns = nEntries;
     }
 
-    if ( model_undoLatestMoves( model, pool, nTurns, NULL, NULL ) ) {
+    if ( model_undoLatestMoves( model, NULL, nTurns, NULL, NULL ) ) {
         RecordWordsInfo info = { .stream = stream, .nWords = 0 };
         WordNotifierInfo notifyInfo = { .proc = recordWord,
                                         .closure = &info,
@@ -2083,7 +2082,6 @@ model_getWordsPlayed( ModelCtxt* model, PoolContext* pool,
                              NULL );
     }
     stack_destroy( tmpStack );
-    return XP_TRUE;
 }
 
 XP_Bool
