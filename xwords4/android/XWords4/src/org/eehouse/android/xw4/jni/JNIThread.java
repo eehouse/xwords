@@ -493,7 +493,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_WORDS:
-                String words = XwJNI.server_listWordsPlayed( m_jniGamePtr, 1 );
+                String words = XwJNI.model_getWordsPlayed( m_jniGamePtr, 1 );
                 Message.obtain( m_handler, GOT_WORDS, words ).sendToTarget();
                 break;
 

@@ -202,7 +202,10 @@ public class XwJNI {
     public static native String model_writeGameHistory( int gamePtr, 
                                                         boolean gameOver );
     public static native int model_getNMoves( int gamePtr );
-    public static native String model_getPlayersLastScore( int gamePtr, int player );
+    public static native String model_getPlayersLastScore( int gamePtr, 
+                                                           int player );
+    public static native String model_getWordsPlayed( int gamePtr, 
+                                                      int nTurns );
 
     // Server
     public static native void server_reset( int gamePtr );
@@ -214,8 +217,6 @@ public class XwJNI {
     public static native void server_initClientConnection( int gamePtr );
     public static native void server_endGame( int gamePtr );
     public static native void server_sendChat( int gamePtr, String msg );
-    public static native String server_listWordsPlayed( int gamePtr, 
-                                                        int nMoves );
 
     // hybrid to save work
     public static native boolean board_server_prefsChanged( int gamePtr, 
