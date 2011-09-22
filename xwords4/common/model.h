@@ -252,8 +252,8 @@ XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
                                    XP_UCHAR* expl, XP_U16* explLen );
-XP_Bool model_getWordsPlayed( ModelCtxt* model, PoolContext* pool, 
-                              XP_U16 nTurns, XWStreamCtxt* stream );
+void model_getWordsPlayed( ModelCtxt* model, XP_U16 nTurns, 
+                           XWStreamCtxt* stream );
 
 /* Have there been too many passes (so game should end)? */
 XP_Bool model_recentPassCountOk( ModelCtxt* model );
