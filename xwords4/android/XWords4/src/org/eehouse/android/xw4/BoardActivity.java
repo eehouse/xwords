@@ -40,6 +40,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
+import android.content.DialogInterface.OnCancelListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -80,6 +81,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
     private static final int DLG_WORDPICK = DLG_OKONLY + 11;
+    private static final int DLG_URLPICK = DLG_OKONLY + 12;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -104,6 +106,7 @@ public class BoardActivity extends XWActivity
     private static final String ROOM = "ROOM";
     private static final String TOASTSTR = "TOASTSTR";
     private static final String WORDS = "WORDS";
+    private static final String LOOKUPITEM = "LOOKUPITEM";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -145,6 +148,7 @@ public class BoardActivity extends XWActivity
     private String m_room;
     private String m_toastStr;
     private String[] m_words;
+    private String m_word;
     private String[] m_langCodes;
     private String[] m_lookupUrls;
     private String[] m_lookupNames;
@@ -176,6 +180,7 @@ public class BoardActivity extends XWActivity
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
+            DialogInterface.OnClickListener doneLstnr;
             AlertDialog.Builder ab;
 
             switch ( id ) {
@@ -251,7 +256,7 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
-                                m_jniThread.handle( JNICmd.CMD_WORDS );
+                                m_jniThread.handle( JNICmd.CMD_WORDS, 1 );
                             }
                         };
                     ab.setNegativeButton( R.string.button_lookup, lstnr );
@@ -326,13 +331,66 @@ public class BoardActivity extends XWActivity
                 }
                 break;
             case DLG_WORDPICK:
+                initLookup();
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            lookupWord( m_words[item] );
+                        }
+                    };
+                doneLstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int item ) {
+                            wordPickDone();
+                        }
+                    };
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.title_lookup )
-                    .setView( buildLookupDlg() )
-                    .setNegativeButton( R.string.button_done, null )
+                    .setItems( m_words, lstnr )
+                    .setNegativeButton( R.string.button_done, doneLstnr )
+                    .setOnCancelListener( new OnCancelListener() {
+                            public void onCancel( DialogInterface dialog ) {
+                                wordPickDone();
+                            }
+                        } )
                     .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
+
+            case DLG_URLPICK:
+                DialogInterface.OnClickListener itemLstnr = 
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            lookupWord( m_word, m_lookupUrls[item] );
+                            post( new Runnable() {
+                                    public void run() {
+                                        showDialog( DLG_URLPICK );
+                                    }
+                                } );
+                        }
+                    };
+                doneLstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            urlPickDone();
+                        }
+                    };
+                String fmt = getString( R.string.pick_url_titlef );
+                String title = String.format( fmt, m_word );
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( title )
+                    .setItems( m_lookupNames, itemLstnr )
+                    .setNegativeButton( R.string.button_done, doneLstnr )
+                    .setOnCancelListener( new OnCancelListener() {
+                            public void onCancel( DialogInterface dialog ) {
+                                urlPickDone();
+                            }
+                        } )
+                    .create();
+                Utils.setRemoveOnDismiss( this, dialog, id );
+                break;
+
             default:
                 // just drop it; super.onCreateDialog likely failed
                 break;
@@ -421,6 +479,7 @@ public class BoardActivity extends XWActivity
         outState.putString( ROOM, m_room );
         outState.putString( TOASTSTR, m_toastStr );
         outState.putStringArray( WORDS, m_words );
+        outState.putString( LOOKUPITEM, m_word );
     }
 
     private void getBundledData( Bundle bundle )
@@ -432,6 +491,7 @@ public class BoardActivity extends XWActivity
             m_room = bundle.getString( ROOM );
             m_toastStr = bundle.getString( TOASTSTR );
             m_words = bundle.getStringArray( WORDS );
+            m_word = bundle.getString( LOOKUPITEM );
         }
     }
 
@@ -463,6 +523,8 @@ public class BoardActivity extends XWActivity
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
+            } else {
+                lookupWord();
             }
         }
     }
@@ -565,6 +627,9 @@ public class BoardActivity extends XWActivity
             break;
         case R.id.board_menu_values:
             cmd = JNIThread.JNICmd.CMD_VALUES;
+            break;
+        case R.id.board_menu_lookup:
+            m_jniThread.handle( JNICmd.CMD_WORDS, 10000 );
             break;
 
         case R.id.board_menu_game_counts:
@@ -1267,15 +1332,18 @@ public class BoardActivity extends XWActivity
                                 }
                                 break;
                             case JNIThread.GOT_WORDS:
-                                m_words = 
+                                String[] tmp = 
                                     TextUtils.split( (String)msg.obj, "\n" );
-                                if ( 0 == m_words.length ) {
-                                    // drop it
-                                // } else if ( 1 == m_words.length ) {
-                                //     lookupWord( m_words[0] );
-                                } else {
-                                    showDialog( DLG_WORDPICK );
+                                m_words = new String[tmp.length];
+                                for ( int ii = 0, jj = tmp.length; 
+                                      ii < tmp.length; ++ii, --jj ) {
+                                    m_words[ii] = tmp[jj-1];
                                 }
+                                if ( 1 == m_words.length ) {
+                                    m_word = m_words[0];
+                                }
+                                initLookup();
+                                lookupWord();
                                 break;
                             }
                         }
@@ -1583,17 +1651,42 @@ public class BoardActivity extends XWActivity
         return layout;
     }
 
+    private void lookupWord()
+    {
+        if ( null == m_words || 0 == m_words.length ) {
+            // drop it
+        } else if ( null != m_word ) {
+            lookupWord( m_word );
+        } else {
+            showDialog( DLG_WORDPICK );
+        }
+    }
+
+    private void lookupWord( String word )
+    {
+        m_word = word;
+        if ( 1 == m_lookupUrls.length ) {
+            lookupWord( word, m_lookupUrls[0] );
+        } else {
+            showDialog( DLG_URLPICK );
+        }
+    }
+
     private void lookupWord( String word, String fmt )
     {
-        String dict_url = String.format( fmt, curLangCode(), word );
-        Uri uri = Uri.parse( dict_url );
-        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        if ( false ) {
+            Utils.logf( "skipping lookupWord(%s)", word );
+        } else {
+            String dict_url = String.format( fmt, curLangCode(), word );
+            Uri uri = Uri.parse( dict_url );
+            Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+            intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
         
-        try {
-            startActivity( intent );
-        } catch ( android.content.ActivityNotFoundException anfe ) {
-            Utils.logf( "%s", anfe.toString() );
+            try {
+                startActivity( intent );
+            } catch ( android.content.ActivityNotFoundException anfe ) {
+                Utils.logf( "%s", anfe.toString() );
+            }
         }
     }
 
@@ -1624,6 +1717,17 @@ public class BoardActivity extends XWActivity
             m_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
             m_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
         }
+    }
+
+    private void urlPickDone() {
+        m_word = null;
+        if ( 1 >= m_words.length ) {
+            m_words = null;
+        }
+    }
+
+    private void wordPickDone() {
+        m_words = null;
     }
 
 } // class BoardActivity

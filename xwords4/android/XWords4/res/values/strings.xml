@@ -1765,13 +1765,13 @@
     <string name="changes_button">Recent changes</string>
 
 
-    <string name="button_lookup">Lookup word</string>
-    <string name="title_lookup">Tap to lookup</string>
+    <string name="button_lookup">Look up words</string>
+    <string name="title_lookup">Tap to look up</string>
     <string name="button_done">Done</string>
 
     <string name="site_spinner_label">Pick a site</string>
     <string name="site_spinner_prompt">Pick a site</string>
     <string name="word_list_label">Tap word to search</string>
-
+    <string name="pick_url_titlef">Look up %s at</string>
 </resources>
 
