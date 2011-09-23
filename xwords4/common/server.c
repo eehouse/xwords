@@ -2637,12 +2637,6 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
     }
 } /* server_formatRemainingTiles */
 
-void
-server_listWordsPlayed( ServerCtxt* server, XWStreamCtxt* stream, XP_U16 nMoves )
-{
-    (void)model_getWordsPlayed( server->vol.model, server->pool, nMoves, stream );
-}
-
 #define IMPOSSIBLY_LOW_SCORE -1000
 void
 server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )

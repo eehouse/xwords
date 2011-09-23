@@ -84,9 +84,6 @@
   <string name="app_version">4.4 beta 34</string>
   <string name="game_url_pathf">//%1$s/newgame.php</string>
 
-  <!-- <string name="word_lookupf">http://dictionary.com/browse/%s</string> -->
-  <string name="word_lookupf">http://%1$s.thefreedictionary.com/_/dict.aspx?word=%2$s</string>
-
   <!-- Debugging stuff. No point in localizing it. -->
   <string name="advanced">For debugging</string>
   <string name="advanced_summary">You should never need these...</string>
@@ -152,25 +149,64 @@
 
   <string-array name="language_names">
     <item></item> <!-- Unknown -->
-    <item>English</item>
-    <item>French</item>
-    <item>German</item>
-    <item>Turkish</item>
-    <item>Arabic</item>
-    <item>Spanish</item>
-    <item>Swedish</item>
-    <item>Polish</item>
-    <item>Danish</item>
-    <item>Italian</item>
-    <item>Dutch</item>
-    <item>Catalan</item>
-    <item>Portuguese</item>
+    <item>English</item> <!-- 1 -->
+    <item>French</item>  <!-- 2 -->
+    <item>German</item>  <!-- 3 -->
+    <item>Turkish</item> <!-- 4 -->
+    <item>Arabic</item>  <!-- 5 -->
+    <item>Spanish</item> <!-- 6 -->
+    <item>Swedish</item> <!-- 7 -->
+    <item>Polish</item>  <!-- 8 -->
+    <item>Danish</item>  <!-- 9 -->
+    <item>Italian</item> <!-- A -->
+    <item>Dutch</item>   <!-- B -->
+    <item>Catalan</item> <!-- C -->
+    <item>Portuguese</item> <!-- D -->
     <item></item> <!-- E -->
     <item>Russian</item>
     <item></item> <!-- 10 -->
     <item>Czech</item>
     <item>Greek</item>
     <item>Slovak</item>
+  </string-array>
+
+  <string-array name="language_codes">
+    <item></item>
+    <item>en</item>
+    <item>fr</item>
+    <item>de</item>
+    <item></item>
+    <item></item>
+    <item>es</item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item>it</item>
+    <item></item>
+    <item>ca</item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+  </string-array>
+
+  <!-- Triples of Name, supported codes, and URL format string -->
+  <string-array name="lookup_urls">
+    <!--  -->
+    <item>Dictionary.com</item>
+    <item>:en:</item> <!-- means all supported -->
+    <item>http://dictionary.com/browse/%2$s</item> -->
+    <!--  -->
+    <item>TheFreeDictionary.com</item>
+    <item>:en:es:</item> <!-- means all supported -->
+    <item>http://%1$s.thefreedictionary.com/_/dict.aspx?word=%2$s</item>
+    <!--  -->
+    <item>Google</item>
+    <item></item> <!-- means all supported -->
+    <item>http://www.google.com/search?nl=%1$s\u0026q=%2$s</item>
   </string-array>
 
   <string-array name="game_summary_values">

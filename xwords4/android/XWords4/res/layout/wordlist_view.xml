@@ -5,6 +5,21 @@
               android:layout_height="wrap_content"
               android:orientation="vertical">
 
+  <TextView style="@style/config_separator"
+            android:text="@string/site_spinner_label"
+            />
+
+  <Spinner android:id="@+id/site_spinner"
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:drawSelectorOnTop="true"
+           android:prompt="@string/site_spinner_prompt"
+           />
+
+  <TextView style="@style/config_separator"
+            android:text="@string/word_list_label"
+            />
+
   <ListView android:id="@+id/words"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
