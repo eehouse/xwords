@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -419,7 +419,7 @@ onetime_idle( gpointer data )
 {
     LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
-    if ( server_do( globals->cGlobals.game.server ) ) {
+    if ( server_do( globals->cGlobals.game.server, NULL ) ) {
         if ( !!globals->cGlobals.game.board ) {
             board_draw( globals->cGlobals.game.board );
         }
