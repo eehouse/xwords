@@ -419,7 +419,7 @@ onetime_idle( gpointer data )
 {
     LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
-    if ( server_do( globals->cGlobals.game.server ) ) {
+    if ( server_do( globals->cGlobals.game.server, NULL ) ) {
         if ( !!globals->cGlobals.game.board ) {
             board_draw( globals->cGlobals.game.board );
         }

@@ -298,7 +298,7 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
 #ifdef COMMS_XPORT_FLAGSPROC
         result->xportFlags = (*result->procs.getFlags)(result->procs.closure);
 #else
-        result->xportFlags = result.procs.flags;
+        result->xportFlags = result->procs.flags;
 #endif
     }
     result->util = util;
@@ -2133,7 +2133,6 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
     if ( tmpStream != NULL ) {
         XP_U16 len = 0;
-        XP_U8* buf;
 
         len = stream_getSize( tmpStream );
         if ( 0 < len ) {
