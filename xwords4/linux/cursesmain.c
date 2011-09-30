@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -52,6 +52,7 @@
 #include "xwproto.h"
 #include "xwstream.h"
 #include "xwstate.h"
+#include "strutils.h"
 #include "server.h"
 #include "memstream.h"
 #include "util.h"
@@ -1575,6 +1576,53 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     board_invalAll( board );
 } /* positionSizeStuff */
 
+static XP_Bool 
+relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
+                         const XP_UCHAR* relayID, void* closure )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    int fd = cGlobals->nbsFD;
+    XP_Bool success = 0 <= fd;
+    if ( success ) {
+        XP_LOGF( "%s: given %d bytes for %s", __func__, len, relayID );
+
+        // format: total msg lenth: 2
+        //         number-of-relayIDs: 2
+        //         for-each-relayid: relayid + '\n': varies
+        //                           message count: 1
+        //                           for-each-message: length: 2
+        //                                             message: varies
+
+        XWStreamCtxt* stream = 
+            mem_stream_make( MPPARM(globals->cGlobals.params->util->mpool)
+                             globals->cGlobals.params->vtMgr,
+                             globals, CHANNEL_NONE, NULL );
+        stream_putU16( stream, 1 ); /* number of relayIDs */
+        stream_catString( stream, relayID );
+        stream_putU8( stream, '\n' );
+        stream_putU16( stream, 1 ); /* message count */
+        stream_putU16( stream, len );
+        stream_putBytes( stream, msg, len );
+
+        XP_U16 siz = stream_getSize( stream );
+        XP_U8 buf[siz];
+        stream_getBytes( stream, buf, siz );
+        XP_U16 tmp = XP_HTONS( siz );
+        ssize_t nwritten = write( fd, &tmp, sizeof(tmp) );
+        XP_ASSERT( nwritten == sizeof(tmp) );
+        nwritten = write( fd, buf/*stream_getPtr( stream )*/, siz );
+        log_hex( buf/*stream_getPtr( stream )*/, siz, __func__ );
+        XP_ASSERT( nwritten == siz );
+        stream_destroy( stream );
+    } else {
+        XP_LOGF( "%s: nbsFD=%d", __func__, fd );
+    }
+    LOG_RETURNF( "%d", success );
+    return success;
+} /* relay_sendNoConn_curses */
+
 static void
 relay_status_curses( void* XP_UNUSED(closure), 
                      CommsRelayState XP_UNUSED_DBG(state) )
@@ -1654,6 +1702,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
     g_globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
 #endif
+    g_globals.cGlobals.nbsFD = -1;
 
     setupCursesUtilCallbacks( &g_globals, params->util );
 
@@ -1681,8 +1730,26 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     struct sigaction act2 = { .sa_handler = SIGWINCH_handler };
     sigaction( SIGWINCH, &act2, NULL );
 
+    TransportProcs procs = {
+        .closure = &g_globals,
+        .send = LINUX_SEND,
+#ifdef COMMS_HEARTBEAT
+        .reset = linux_reset,
+#endif
+#ifdef XWFEATURE_RELAY
+        .rstatus = relay_status_curses,
+        .rconnd = relay_connd_curses,
+        .rerror = relay_error_curses,
+        .sendNoConn = relay_sendNoConn_curses,
+        .flags = COMMS_XPORT_FLAGS_HASNOCONN,
+#endif
+    };
+
+
     if ( !!params->pipe && !!params->fileName ) {
-        read_pipe_then_close( &g_globals.cGlobals );
+        read_pipe_then_close( &g_globals.cGlobals, &procs );
+    } else if ( !!params->nbs && !!params->fileName ) {
+        do_nbs_then_close( &g_globals.cGlobals, &procs );
     } else {
 
         initCurses( &g_globals );
@@ -1690,19 +1757,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
         g_globals.draw = (struct CursesDrawCtx*)
             cursesDrawCtxtMake( g_globals.boardWin );
-
-        TransportProcs procs = {
-            .closure = &g_globals,
-            .send = LINUX_SEND,
-#ifdef COMMS_HEARTBEAT
-            .reset = linux_reset,
-#endif
-#ifdef XWFEATURE_RELAY
-            .rstatus = relay_status_curses,
-            .rconnd = relay_connd_curses,
-            .rerror = relay_error_curses,
-#endif
-        };
 
         if ( !!params->fileName && file_exists( params->fileName ) ) {
             XWStreamCtxt* stream;

@@ -50,6 +50,7 @@ typedef struct LaunchParams {
     PlayerDicts dicts;
     char* fileName;
     char* pipe;
+    char* nbs;
     char* bonusFile;
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
@@ -161,6 +162,7 @@ struct CommonGlobals {
      * polling mechanism.*/
     AddAcceptorFunc addAcceptor;
     Acceptor acceptor;
+    int nbsFD;
 
 #ifdef XWFEATURE_RELAY
     int socket;                 /* relay */
