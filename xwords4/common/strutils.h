@@ -92,7 +92,7 @@ XP_Bool smsToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen )
 #endif
 
 #ifdef DEBUG
-void log_hex(  const XP_U8*memp, XP_U16 len, const char* tag );
+void log_hex( const XP_U8* memp, XP_U16 len, const char* tag );
 # define LOG_HEX(m,l,t) log_hex((const XP_U8*)(m),(l),(t))
 #else
 # define LOG_HEX(m,l,t)

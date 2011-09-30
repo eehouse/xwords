@@ -2344,7 +2344,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 			   );
 
     if ( !!params->pipe && !!params->fileName ) {
-        read_pipe_then_close( &globals.cGlobals );
+        read_pipe_then_close( &globals.cGlobals, NULL );
     } else {
         gtk_widget_show( window );
 
