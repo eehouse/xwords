@@ -191,6 +191,7 @@ parseRelayID( unsigned char** const inp, const unsigned char* const end,
     if ( ok ) {
         strncpy( buf, (char*)*inp, connNameLen );
         buf[connNameLen] = '\0';
+        logf( XW_LOGINFO, "%s=>%s", __func__, buf );
         *hid = atoi( hidp+1 );
         char* endptr;
         *hid = strtol( hidp + 1, &endptr, 10 );
@@ -206,11 +207,11 @@ static bool
 getNetShort( unsigned char** bufpp, const unsigned char* end, 
              unsigned short* out )
 {
-    bool ok = *bufpp + 2 <= end;
+    unsigned short tmp;
+    bool ok = *bufpp + sizeof(tmp) <= end;
     if ( ok ) {
-        unsigned short tmp;
-        memcpy( &tmp, *bufpp, 2 );
-        *bufpp += 2;
+        memcpy( &tmp, *bufpp, sizeof(tmp) );
+        *bufpp += sizeof(tmp);
         *out = ntohs( tmp );
     }
     return ok;
@@ -742,6 +743,7 @@ static void
 handleMsgsMsg( int sock, bool sendFull,
                unsigned char* bufp, const unsigned char* end )
 {
+    logf( XW_LOGINFO, "%s()", __func__ );
     unsigned short nameCount;
     int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
@@ -782,6 +784,7 @@ handleMsgsMsg( int sock, bool sendFull,
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
         ssize_t nwritten = write( sock, &out[0], out.size() );
+        logf( XW_LOGINFO, "%s: wrote %d bytes", __func__, nwritten );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
             dbmgr->RemoveStoredMessages( &msgIDs[0], msgIDs.size() );
@@ -789,10 +792,57 @@ handleMsgsMsg( int sock, bool sendFull,
     }
 } // handleMsgsMsg
 
+#define NUM_PER_LINE 8
+void
+log_hex( const unsigned char* memp, int len, const char* tag )
+{
+    const char* hex = "0123456789ABCDEF";
+    int i, j;
+    int offset = 0;
+
+    while ( offset < len ) {
+        char buf[128];
+        unsigned char vals[NUM_PER_LINE*3];
+        unsigned char* valsp = vals;
+        unsigned char chars[NUM_PER_LINE+1];
+        unsigned char* charsp = chars;
+        int oldOffset = offset;
+
+        for ( i = 0; i < NUM_PER_LINE && offset < len; ++i ) {
+            unsigned char byte = memp[offset];
+            for ( j = 0; j < 2; ++j ) {
+                *valsp++ = hex[(byte & 0xF0) >> 4];
+                byte <<= 4;
+            }
+            *valsp++ = ':';
+
+            byte = memp[offset];
+            if ( (byte >= 'A' && byte <= 'Z')
+                 || (byte >= 'a' && byte <= 'z')
+                 || (byte >= '0' && byte <= '9') ) {
+                /* keep it */
+            } else {
+                byte = '.';
+            }
+            *charsp++ = byte;
+            ++offset;
+        }
+        *(valsp-1) = '\0';      /* -1 to overwrite ':' */
+        *charsp = '\0';
+
+        if ( (NULL == tag) || (strlen(tag) + sizeof(vals) >= sizeof(buf)) ) {
+            tag = "<tag>";
+        }
+        snprintf( buf, sizeof(buf), "%s[%d]: %s %s", tag, oldOffset, 
+                  vals, chars );
+        fprintf( stderr, "%s\n", buf );
+    }
+} // log_hex
+
 static void
 handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
+    log_hex( bufp, end-bufp, __func__ );
     unsigned short nameCount;
     int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
@@ -847,6 +897,7 @@ handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
 void
 handle_proxy_packet( unsigned char* buf, int len, int sock )
 {
+    logf( XW_LOGINFO, "%s()", __func__ );
     if ( len > 0 ) {
         unsigned char* bufp = buf;
         unsigned char* end = bufp + len;
@@ -910,6 +961,9 @@ handle_proxy_packet( unsigned char* buf, int len, int sock )
                 len = 0;        /* return a 0-length message */
                 write( sock, &len, sizeof(len) );
                 break;          /* PRX_DEVICE_GONE */
+            default:
+                logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
+                break;
             }
         }
     }
