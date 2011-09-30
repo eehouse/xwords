@@ -337,6 +337,7 @@ do_nbs_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
     addr.sun_family = AF_UNIX;
     strcpy( addr.sun_path, cGlobals->params->nbs );
 
+    unlink( cGlobals->params->nbs );
     int err = bind( sockfd, (struct sockaddr*)&addr, sizeof(addr) );
     if ( 0 != err ) {
         XP_LOGF( "%s: bind=>%s", __func__, strerror( errno ) );
