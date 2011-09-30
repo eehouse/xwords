@@ -44,8 +44,7 @@ while :; do
             ../relay/rq -f $RELAYID -b $NBS
 
             sleep 2
-            kill $PID1 || true
-            wait $PID1
+            kill $PID1 && wait $PID1 || true
         else
             echo "$MSG_COUNT messages for $RELAYID"
         fi
