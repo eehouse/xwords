@@ -1714,7 +1714,7 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
     XWStreamCtxt* stream = 
         mem_stream_make( MEMPOOL globals->cGlobals.params->vtMgr, globals, 
                          CHANNEL_NONE, catOnClose );
-    server_listWordsPlayed( globals->cGlobals.game.server, stream, 1000 );
+    (void)model_getWordsPlayed( globals->cGlobals.game.model, 1000, stream );
     stream_destroy( stream );
 #else
 

@@ -1256,21 +1256,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
 }
 
 JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_server_1listWordsPlayed
+Java_org_eehouse_android_xw4_jni_XwJNI_model_1getWordsPlayed
 ( JNIEnv* env, jclass C, jint gamePtr, jint nMoves )
 {
     jstring result;
     XWJNI_START_GLOBALS();
-    XP_ASSERT( !!state->game.server );
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
-    server_listWordsPlayed( state->game.server, stream, nMoves );
+    model_getWordsPlayed( state->game.model, nMoves, stream );
     result = streamToJString( MPPARM(mpool) env, stream );
     (*env)->DeleteLocalRef( env, result );
     stream_destroy( stream );
     XWJNI_END();
     return result;
 }
-
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat

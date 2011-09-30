@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2001-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -2170,12 +2170,10 @@ sendNoConn( CommsCtxt* comms, const MsgQueueElem* elem, XWHostID destID )
                            destID, elem->msg, elem->len );
         if ( NULL != stream ) {
             XP_U16 len = stream_getSize( stream );
-            XP_U8* buf = XP_MALLOC( comms->mpool, len );
-            if ( buf != NULL ) {
-                stream_getBytes( stream, buf, len );
-                success = (*comms->procs.sendNoConn)( buf, len, relayID,
+            if ( 0 < len ) {
+                success = (*comms->procs.sendNoConn)( stream_getPtr( stream ), 
+                                                      len, relayID,
                                                       comms->procs.closure );
-                XP_FREE( comms->mpool, buf );
             }
             stream_destroy( stream );
         }
