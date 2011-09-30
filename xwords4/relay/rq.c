@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
+#include <linux/un.h>
 
 #include "xwrelay.h"
 
@@ -41,6 +42,9 @@
 #endif
 
 #define MAX_CONN_NAMES 128
+
+static const char* g_host = DEFAULT_HOST;
+static int g_port = DEFAULT_PORT;
 
 /* 
  * Query:
@@ -61,11 +65,59 @@ usage( const char * const argv0 )
     fprintf( stderr, "\t[-l <n>]        # language for rooms "
              "(1=English default) \\\n" );
     fprintf( stderr, "\t[-n <n>]        # number of players (2 default) \\\n" );
+    fprintf( stderr, "\t[-b <path>]*    # nbs socket to be used for -f \\\n" );
     fprintf( stderr, "\t[-o <path>]*    # file to be used for -f "
              "(- = stdout, the default) \\\n" );
     fprintf( stderr, "\t[-m <connName/devid>    # list msg count \\\n" );
     fprintf( stderr, "\t[-d <connName/devid/seed>    # delete game \\\n" );
     exit( 1 );
+}
+
+#define NUM_PER_LINE 8
+void
+log_hex( const unsigned char* memp, int len, const char* tag )
+{
+    const char* hex = "0123456789ABCDEF";
+    int i, j;
+    int offset = 0;
+
+    while ( offset < len ) {
+        char buf[128];
+        unsigned char vals[NUM_PER_LINE*3];
+        unsigned char* valsp = vals;
+        unsigned char chars[NUM_PER_LINE+1];
+        unsigned char* charsp = chars;
+        int oldOffset = offset;
+
+        for ( i = 0; i < NUM_PER_LINE && offset < len; ++i ) {
+            unsigned char byte = memp[offset];
+            for ( j = 0; j < 2; ++j ) {
+                *valsp++ = hex[(byte & 0xF0) >> 4];
+                byte <<= 4;
+            }
+            *valsp++ = ':';
+
+            byte = memp[offset];
+            if ( (byte >= 'A' && byte <= 'Z')
+                 || (byte >= 'a' && byte <= 'z')
+                 || (byte >= '0' && byte <= '9') ) {
+                /* keep it */
+            } else {
+                byte = '.';
+            }
+            *charsp++ = byte;
+            ++offset;
+        }
+        *(valsp-1) = '\0';      /* -1 to overwrite ':' */
+        *charsp = '\0';
+
+        if ( (NULL == tag) || (strlen(tag) + sizeof(vals) >= sizeof(buf)) ) {
+            tag = "<tag>";
+        }
+        snprintf( buf, sizeof(buf), "%s[%d]: %s %s", tag, oldOffset, 
+                  vals, chars );
+        fprintf( stderr, "%s\n", buf );
+    }
 }
 
 int
@@ -173,9 +225,53 @@ do_msgs( int sockfd, const char** connNames, int nConnNames )
     }
 } /* do_msgs */
 
+static int
+connect_socket( void )
+{
+    int sockfd = socket( AF_INET, SOCK_STREAM, 0 );
+    struct sockaddr_in to_sock;
+    memset( &to_sock, 0, sizeof(to_sock) );
+    to_sock.sin_family = AF_INET;
+    to_sock.sin_port = htons( g_port );
+
+    struct hostent* hostip;
+    hostip = gethostbyname( g_host );
+    memcpy( &(to_sock.sin_addr.s_addr), hostip->h_addr_list[0],  
+            sizeof(hostip->h_addr_list[0] ) );
+    
+    if ( 0 != connect( sockfd, (const struct sockaddr*)&to_sock, 
+                       sizeof(to_sock) ) ) {
+        fprintf( stderr, "connect failed: %d (%s)\n", errno, strerror(errno) );
+        exit( 1 );
+    }
+    return sockfd;
+}
+
+/* This comes in already formatted (see relay_sendNoConn_curses).  So all we
+   need to do is open a socket and send it to the relay.  Later we can
+   coalesce, though that should happen in the (linux) client. */
+static void
+send_msg( const unsigned char* buf, int len )
+{
+    log_hex( buf, len, __func__ );
+    int sock = connect_socket();
+    assert( 0 <= sock );
+    fprintf( stderr, "%s(len=%d)\n", __func__, len );
+
+    unsigned char hdr[] = { 0, PRX_PUT_MSGS };
+    unsigned short netlen = htons( sizeof(hdr) + len );
+    ssize_t nwritten = write( sock, &netlen, sizeof(netlen) );
+    assert( nwritten == sizeof(netlen) );
+    nwritten = write( sock, hdr, sizeof(hdr) );
+    assert( nwritten == sizeof(hdr) );
+    nwritten = write( sock, buf, len );
+    assert( nwritten == len );
+    fprintf( stderr, "%s done\n", __func__ );
+}
+
 static void
 do_fetch( int sockfd, const char** connNames, int nConnNames, 
-          const char** pipes, int nPipes )
+          const char** pipes, int nPipes, const char* nbs )
 {
     write_connnames( sockfd, PRX_GET_MSGS, connNames, nConnNames );
 
@@ -201,39 +297,89 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
 
         for ( int ii = 0; ii < count && bufp < end; ++ii ) {
             int fd = STDOUT_FILENO;
+            int nbsfd = -1;
             unsigned short countPerDev;
             memcpy( &countPerDev, bufp, sizeof( countPerDev ) );
             bufp += sizeof( countPerDev );
             countPerDev = ntohs( countPerDev );
 
             if ( ii < nPipes && 0 != strcmp( pipes[ii], "-" ) ) {
-                fd = open( pipes[ii], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
+                fd = open( pipes[ii], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR );
                 if ( fd < 0 ) {
-                    fprintf( stderr, "open(%s) failed: %s\n", pipes[ii], strerror(errno) );
+                    fprintf( stderr, "open(%s) failed: %s\n", pipes[ii], 
+                             strerror(errno) );
                     exit( 1 );
                 }
+            } else if ( NULL != nbs ) {
+                nbsfd = socket( AF_UNIX, SOCK_STREAM, 0 );
+                assert( 0 <= nbsfd );
+                struct sockaddr_un addr;
+                addr.sun_family = AF_UNIX;
+                strcpy( addr.sun_path, nbs );
+                                            
+                int err = connect( nbsfd, (struct sockaddr*)&addr,
+                                   sizeof(addr) );
+                if ( 0 != err ) {
+                    fprintf( stderr, "%s: connect()=>%s\n", __func__,
+                             strerror(errno) );
+                    assert( false );
+                }
+                fd = nbsfd;
             }
 
+            unsigned short len;
+            ssize_t nwritten;
             while ( bufp < end && countPerDev-- > 0 ) {
-                unsigned short len;
                 memcpy( &len, bufp, sizeof( len ) );
                 len = ntohs( len ) + sizeof( len );
                 if ( bufp + len > end ) {
                     break;
                 }
-                fprintf( stderr, "writing %d bytes to fd %d\n", len, fd );
-                write( fd, bufp, len );
+                fprintf( stderr, "%s: writing %d bytes to fd %d\n", __func__,
+                         len, fd );
+                nwritten = write( fd, bufp, len );
+                assert( nwritten == len );
                 bufp += len;
             }
+            assert( bufp == end );
+            len = 0;
+            nwritten = write( fd, &len, sizeof(len) );
+            assert( nwritten == sizeof(len) );
+
+            fprintf( stderr, "%s: reading from pipe...\n", __func__ );
+            int ii;
+            for ( ii = 0; -1 != nbsfd; ++ii ) {
+                short len;
+                fprintf( stderr, "%s: pass %d: calling read...\n", __func__, ii );
+                ssize_t nRead = read( nbsfd, &len, sizeof(len) );
+                fprintf( stderr, "%s: read=>%d\n", __func__, nRead );
+                if ( sizeof(len) != nRead ) {
+                    break;
+                } else if ( 0 == len ) {
+                    fprintf( stderr, "%s: read 0; done\n", __func__ );
+                    break;
+                }
+                len = ntohs( len );
+                fprintf( stderr, "%s: read size of %d\n", __func__, len );
+                unsigned char buf[len];
+                if ( len != read( nbsfd, buf, len ) ) {
+                    break;
+                }
+                fprintf( stderr, "%s: read %d bytes\n", __func__, len );
+                send_msg( buf, len );
+            }
+            fprintf( stderr, "%s: DONE reading from pipe\n", __func__ );
+
             if ( fd != STDOUT_FILENO ) {
                 close( fd );
             }
         }
+
         if ( bufp != end ) {
             fprintf( stderr, "error: message not internally as expected\n" );
         }
     }
-}
+} /* do_fetch */
 
 static void
 do_deletes( int sockfd, const char** connNames, int nConnNames )
@@ -284,7 +430,7 @@ do_deletes( int sockfd, const char** connNames, int nConnNames )
 int
 main( int argc, char * const argv[] )
 {
-    int port = DEFAULT_PORT;
+    fprintf( stderr, "rq called\n" );
     int lang = 1;
     int nPlayers = 2;
     int doWhat = 0;
@@ -292,20 +438,23 @@ main( int argc, char * const argv[] )
     const int doMgs = 2;
     const int doDeletes = 4;
     const int doFetch = 8;
-    const char* host = DEFAULT_HOST;
     char const* connNames[MAX_CONN_NAMES];
     int nConnNames = 0;
     const char* pipes[MAX_CONN_NAMES];
     int nPipes = 0;
+    const char* nbs = NULL;
 
     for ( ; ; ) {
-        int opt = getopt( argc, argv, "a:d:f:p:rl:n:m:o:" );
+        int opt = getopt( argc, argv, "a:b:d:f:p:rl:n:m:o:" );
         if ( opt < 0 ) {
             break;
         }
         switch ( opt ) {
         case 'a':
-            host = optarg;
+            g_host = optarg;
+            break;
+        case 'b':
+            nbs = optarg;
             break;
         case 'd':
             assert( nConnNames < MAX_CONN_NAMES - 1 );
@@ -332,7 +481,7 @@ main( int argc, char * const argv[] )
             pipes[nPipes++] = optarg;
             break;
         case 'p':
-            port = atoi(optarg);
+            g_port = atoi(optarg);
             break;
         case 'r':
             doWhat |= doRooms;
@@ -343,24 +492,9 @@ main( int argc, char * const argv[] )
         }
     }
 
-    fprintf( stderr, "got port %d, host %s\n", port, host );
+    fprintf( stderr, "got port %d, host %s\n", g_port, g_host );
 
-    int sockfd = socket( AF_INET, SOCK_STREAM, 0 );
-    struct sockaddr_in to_sock;
-    memset( &to_sock, 0, sizeof(to_sock) );
-    to_sock.sin_family = AF_INET;
-    to_sock.sin_port = htons( port );
-
-    struct hostent* hostip;
-    hostip = gethostbyname( host );
-    memcpy( &(to_sock.sin_addr.s_addr), hostip->h_addr_list[0],  
-            sizeof(hostip->h_addr_list[0] ) );
-
-    if ( 0 != connect( sockfd, (const struct sockaddr*)&to_sock, 
-                       sizeof(to_sock) ) ) {
-        fprintf( stderr, "connect failed: %d (%s)\n", errno, strerror(errno) );
-        exit( 1 );
-    }
+    int sockfd = connect_socket();
 
     switch ( doWhat ) {
     case 0:
@@ -377,7 +511,7 @@ main( int argc, char * const argv[] )
         do_deletes( sockfd, connNames, nConnNames );
         break;
     case doFetch:
-        do_fetch( sockfd, connNames, nConnNames, pipes, nPipes );
+        do_fetch( sockfd, connNames, nConnNames, pipes, nPipes, nbs );
         break;
     default:
         fprintf( stderr, "conflicting options given\n" );
