@@ -4,7 +4,9 @@
 set -e -u
 
 PID=$$
+echo "**********************************************************************"
 echo "pid: $PID"
+echo "**********************************************************************"
 
 ROOM=ROOM_$PID
 DIR=$(basename $0)_$PID
@@ -27,28 +29,31 @@ done
 
 # run apps until done
 NBS=$DIR/nbs
-while :; do
+ZERO_COUNT=0
+while [ $ZERO_COUNT -lt 5 ]; do
+    WORK_DONE=""
     for NUM in $(seq 1 2); do
-        echo "running for $NUM"
         LOG=$DIR/game_${NUM}.log
         RELAYID=$(./scripts/relayID.sh --short $LOG)
         MSG_COUNT=$(../relay/rq -m $RELAYID 2>/dev/null | sed 's,^.*-- ,,')
         if [ "$MSG_COUNT" -gt 0 ]; then
-            echo "calling $APP"
+            WORK_DONE=true
+
             $APP $COMMON_ARGS --file $DIR/game_${NUM}.xwg \
                 --with-nbs $NBS > /dev/null &
             PID1=$!
 
             sleep 1             # let server get ready
-            echo "calling rq"
+
             ../relay/rq -f $RELAYID -b $NBS
 
             sleep 2
             kill $PID1 && wait $PID1 || true
         else
-            echo "$MSG_COUNT messages for $RELAYID"
+            sleep 1
         fi
     done
+    [ -z "$WORK_DONE" ] && ZERO_COUNT=$((ZERO_COUNT+1))
 done
 
 echo "$0 done (pid: $PID)"
