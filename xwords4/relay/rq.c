@@ -253,10 +253,9 @@ connect_socket( void )
 static void
 send_msg( const unsigned char* buf, int len )
 {
-    log_hex( buf, len, __func__ );
+    // log_hex( buf, len, __func__ );
     int sock = connect_socket();
     assert( 0 <= sock );
-    fprintf( stderr, "%s(len=%d)\n", __func__, len );
 
     unsigned char hdr[] = { 0, PRX_PUT_MSGS };
     unsigned short netlen = htons( sizeof(hdr) + len );
@@ -266,7 +265,6 @@ send_msg( const unsigned char* buf, int len )
     assert( nwritten == sizeof(hdr) );
     nwritten = write( sock, buf, len );
     assert( nwritten == len );
-    fprintf( stderr, "%s done\n", __func__ );
 }
 
 static void
@@ -275,7 +273,6 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
 {
     write_connnames( sockfd, PRX_GET_MSGS, connNames, nConnNames );
 
-    fprintf( stderr, "Waiting for response....\n" );
     unsigned char reply[1024];
     int nRead = read_packet( sockfd, reply, sizeof(reply) );
     if ( nRead > 2 ) {
@@ -287,7 +284,6 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
         bufp += sizeof( count );
         count = ntohs( count );
         assert( count <= nConnNames );
-        fprintf( stderr, "got count: %d\n", count );
 
         /* Now we have an array of <countPerDev> <len><len bytes> pairs.  Just
            write em as long as it makes sense.  countPerDev makes no sense as
@@ -346,29 +342,26 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
             nwritten = write( fd, &len, sizeof(len) );
             assert( nwritten == sizeof(len) );
 
-            fprintf( stderr, "%s: reading from pipe...\n", __func__ );
             int ii;
             for ( ii = 0; -1 != nbsfd; ++ii ) {
                 short len;
-                fprintf( stderr, "%s: pass %d: calling read...\n", __func__, ii );
                 ssize_t nRead = read( nbsfd, &len, sizeof(len) );
-                fprintf( stderr, "%s: read=>%d\n", __func__, nRead );
                 if ( sizeof(len) != nRead ) {
                     break;
                 } else if ( 0 == len ) {
-                    fprintf( stderr, "%s: read 0; done\n", __func__ );
+                    // fprintf( stderr, "%s: read 0; done\n", __func__ );
                     break;
                 }
                 len = ntohs( len );
-                fprintf( stderr, "%s: read size of %d\n", __func__, len );
+                // fprintf( stderr, "%s: read size of %d\n", __func__, len );
                 unsigned char buf[len];
                 if ( len != read( nbsfd, buf, len ) ) {
                     break;
                 }
-                fprintf( stderr, "%s: read %d bytes\n", __func__, len );
+                // fprintf( stderr, "%s: read %d bytes\n", __func__, len );
                 send_msg( buf, len );
             }
-            fprintf( stderr, "%s: DONE reading from pipe\n", __func__ );
+            // fprintf( stderr, "%s: DONE reading from pipe\n", __func__ );
 
             if ( fd != STDOUT_FILENO ) {
                 close( fd );
@@ -430,7 +423,7 @@ do_deletes( int sockfd, const char** connNames, int nConnNames )
 int
 main( int argc, char * const argv[] )
 {
-    fprintf( stderr, "rq called\n" );
+    // fprintf( stderr, "rq called\n" );
     int lang = 1;
     int nPlayers = 2;
     int doWhat = 0;
@@ -492,7 +485,7 @@ main( int argc, char * const argv[] )
         }
     }
 
-    fprintf( stderr, "got port %d, host %s\n", g_port, g_host );
+    // fprintf( stderr, "got port %d, host %s\n", g_port, g_host );
 
     int sockfd = connect_socket();
 

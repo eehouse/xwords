@@ -842,7 +842,7 @@ log_hex( const unsigned char* memp, int len, const char* tag )
 static void
 handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
 {
-    log_hex( bufp, end-bufp, __func__ );
+    // log_hex( bufp, end-bufp, __func__ );
     unsigned short nameCount;
     int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
