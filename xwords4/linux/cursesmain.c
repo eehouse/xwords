@@ -1580,7 +1580,6 @@ static XP_Bool
 relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
                          const XP_UCHAR* relayID, void* closure )
 {
-    LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
     int fd = cGlobals->nbsFD;
@@ -1613,13 +1612,11 @@ relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
         ssize_t nwritten = write( fd, &tmp, sizeof(tmp) );
         XP_ASSERT( nwritten == sizeof(tmp) );
         nwritten = write( fd, buf/*stream_getPtr( stream )*/, siz );
-        log_hex( buf/*stream_getPtr( stream )*/, siz, __func__ );
         XP_ASSERT( nwritten == siz );
         stream_destroy( stream );
     } else {
         XP_LOGF( "%s: nbsFD=%d", __func__, fd );
     }
-    LOG_RETURNF( "%d", success );
     return success;
 } /* relay_sendNoConn_curses */
 
