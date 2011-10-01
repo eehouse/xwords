@@ -400,24 +400,24 @@ void
 DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
 {
     if ( nMsgIDs > 0 ) {
-        stringstream buf;
-        buf << "SELECT connname, hid, sum(msglen) FROM " MSGS_TABLE 
-            " WHERE id IN (";
-
+        char buf[1024];
+        unsigned int offset = 0;
+        offset = snprintf( buf, sizeof(buf), "SELECT connname,hid,sum(msglen)"
+                           " FROM " MSGS_TABLE " WHERE id IN (" );
         for ( int ii = 0; ; ) {
-            buf << msgIDs[ii];
+            offset += snprintf( &buf[offset], sizeof(buf) - offset, "%d,",
+                                msgIDs[ii] );
+            assert( offset < sizeof(buf) );
             if ( ++ii == nMsgIDs ) {
+                --offset;       /* back over comma */
                 break;
             }
-            buf << ',';
         }
-        buf << ") GROUP BY connname,hid";
+        offset += snprintf( &buf[offset], sizeof(buf) - offset, 
+                            ") GROUP BY connname,hid" );
 
-        const char* query = buf.str().c_str();
-        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
-
-        PGresult* result = PQexec( getThreadConn(), query );
-        if ( PGRES_COMMAND_OK == PQresultStatus( result ) ) {
+        PGresult* result = PQexec( getThreadConn(), buf );
+        if ( PGRES_TUPLES_OK == PQresultStatus( result ) ) {
             int ntuples = PQntuples( result );
             for ( int ii = 0; ii < ntuples; ++ii ) {
                 RecordSent( PQgetvalue( result, ii, 0 ),
