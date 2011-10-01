@@ -1948,7 +1948,6 @@ typedef struct _FirstWordData {
 static XP_Bool
 getFirstWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
 {
-    LOG_FUNC();
     if ( isLegal ) {
         FirstWordData* data = (FirstWordData*)closure;
         if ( '\0' == data->word[0] && '\0' != word[0] ) {
