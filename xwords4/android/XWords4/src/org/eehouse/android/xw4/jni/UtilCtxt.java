@@ -76,8 +76,7 @@ public interface UtilCtxt {
 
     static final int QUERY_COMMIT_TURN = 0;
     static final int QUERY_COMMIT_TRADE = 1;
-    static final int QUERY_ROBOT_MOVE = 2;
-    static final int QUERY_ROBOT_TRADE = 3;
+    static final int QUERY_ROBOT_TRADE = 2;
     boolean userQuery( int id, String query );
 
 
@@ -100,6 +99,8 @@ public interface UtilCtxt {
     static final int ERR_CANT_HINT_WHILE_DISABLED = 15;
     static final int ERR_RELAY_BASE = 16;
     void userError( int id );
+
+    void informMove( String expl, String words, int wordCount );
 
     void notifyGameOver();
     // Don't need this unless we have a scroll thumb to indicate position

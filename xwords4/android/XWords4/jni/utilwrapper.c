@@ -216,6 +216,19 @@ and_util_turnChanged(XW_UtilCtxt* uc)
 #endif
 
 static void
+and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
+                     XWStreamCtxt* words, XP_U16 wordCount )
+{
+    UTIL_CBK_HEADER( "informMove", "(Ljava/lang/String;Ljava/lang/String;I)V" );
+    jstring jexpl = streamToJString( MPPARM(util->util.mpool) env, expl );
+    jstring jwords = streamToJString( MPPARM(util->util.mpool) env, words );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jexpl, jwords, wordCount );
+    (*env)->DeleteLocalRef( env, jexpl );
+    (*env)->DeleteLocalRef( env, jwords );
+    UTIL_CBK_TAIL();
+}
+
+static void
 and_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
@@ -476,6 +489,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     SET_PROC(    turnChanged);
 #endif
+    SET_PROC(informMove);
     SET_PROC(notifyGameOver);
     SET_PROC(hiliteCell);
     SET_PROC(engineProgressCallback);

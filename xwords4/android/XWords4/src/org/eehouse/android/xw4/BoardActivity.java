@@ -1128,12 +1128,10 @@ public class BoardActivity extends XWActivity
                 // if the player after this one is also a robot and we
                 // don't block then a second dialog will replace this one.
                 // So block.  Yuck.
-            case UtilCtxt.QUERY_ROBOT_MOVE:
             case UtilCtxt.QUERY_ROBOT_TRADE:
                 m_dlgBytes = query;
                 m_dlgTitle = R.string.info_title;
-                waitBlockingDialog( QUERY_ROBOT_MOVE == id ? 
-                                    DLG_SCORES_BLK : QUERY_INFORM_BLK, 0 );
+                waitBlockingDialog( QUERY_INFORM_BLK, 0 );
                 result = true;
                 break;
 
@@ -1210,6 +1208,13 @@ public class BoardActivity extends XWActivity
                 nonBlockingDialog( DLG_OKONLY, getString( resid ) );
             }
         } // userError
+
+        public void informMove( String expl, String words, int wordCount )
+        {
+            m_dlgBytes = expl;
+            m_dlgTitle = R.string.info_title;
+            waitBlockingDialog( DLG_SCORES_BLK, 0 );
+        }
 
         public void notifyGameOver()
         {
