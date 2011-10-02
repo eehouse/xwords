@@ -66,7 +66,6 @@ typedef enum {
 typedef enum {
     QUERY_COMMIT_TURN, /* 0 means cancel; 1 means commit */
     QUERY_COMMIT_TRADE,
-    QUERY_ROBOT_MOVE,
     QUERY_ROBOT_TRADE,
 
     QUERY_LAST_COMMON
@@ -131,6 +130,8 @@ typedef struct UtilVtable {
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     void (*m_util_turnChanged)(XW_UtilCtxt* uc);
 #endif
+    void (*m_util_informMove)( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
+                               XWStreamCtxt* words, XP_U16 wordCount );
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc );
 
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row );
@@ -227,6 +228,8 @@ struct XW_UtilCtxt {
 # define util_turnChanged( uc )
 #endif
 
+#define util_informMove(uc,e,w,wc) \
+         (uc)->vtable->m_util_informMove( (uc),(e),(w),(wc) )
 #define util_notifyGameOver( uc ) \
          (uc)->vtable->m_util_notifyGameOver((uc))
 

@@ -271,6 +271,10 @@ XP_U16 figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* mvInfo,
                         EngineCtxt* engine, XWStreamCtxt* stream, 
                         WordNotifierInfo* notifyInfo );
 
+/* tap into internal WordNotifierInfo */
+WordNotifierInfo* model_initWordCounter( ModelCtxt* model, XWStreamCtxt* stream, 
+                                         XP_U16* nWords );
+
 /********************* persistence ********************/
 #ifdef INCLUDE_IO_SUPPORT
 void model_load( ModelCtxt* model, XP_Stream* inStream );

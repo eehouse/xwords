@@ -43,6 +43,12 @@ typedef struct PlayerCtxt {
     PendingTile pendingTiles[MAX_TRAY_TILES];
 } PlayerCtxt;
 
+typedef struct _RecordWordsInfo {
+    XWStreamCtxt* stream;
+    XP_U16* nWordsP;
+    XP_U16 nWords;
+} RecordWordsInfo;
+
 typedef struct ModelVolatiles {
     XW_UtilCtxt* util;
     struct CurGameInfo* gi;
@@ -55,6 +61,8 @@ typedef struct ModelVolatiles {
     void* trayListenerData;
     DictListener dictListenerFunc;
     void* dictListenerData;
+    RecordWordsInfo rwi;
+    WordNotifierInfo wni; 
     XP_U16 nTilesOnBoard;
     MPSLOT
 } ModelVolatiles;
