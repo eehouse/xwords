@@ -148,6 +148,7 @@ public class BoardActivity extends XWActivity
     private String m_room;
     private String m_toastStr;
     private String[] m_words;
+    private String[] m_wordsWaiting;
     private String m_word;
     private String[] m_langCodes;
     private String[] m_lookupUrls;
@@ -239,6 +240,8 @@ public class BoardActivity extends XWActivity
                         public void onClick( DialogInterface dialog, 
                                              int whichButton ) {
                             m_resultCode = 1;
+                            m_words = null; // in case it's DLG_SCORES_BLK
+                            m_wordsWaiting = null;
                         }
                     };
                 ab.setPositiveButton( QUERY_REQUEST_BLK == id ?
@@ -253,13 +256,24 @@ public class BoardActivity extends XWActivity
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
                 } else if ( DLG_SCORES_BLK == id ) {
-                    lstnr = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dialog, 
-                                                 int whichButton ) {
-                                m_jniThread.handle( JNICmd.CMD_WORDS, 1 );
-                            }
-                        };
-                    ab.setNegativeButton( R.string.button_lookup, lstnr );
+                    m_words = m_wordsWaiting;
+                    if ( null != m_words && m_words.length > 0 ) {
+                        String buttonTxt;
+                        if ( m_words.length == 1 ) {
+                            buttonTxt = Utils.format( this, 
+                                                      R.string.button_lookupf,
+                                                      m_words[0] );
+                        } else {
+                            buttonTxt = getString( R.string.button_lookup );
+                        }
+                        lstnr = new DialogInterface.OnClickListener() {
+                                public void onClick( DialogInterface dialog, 
+                                                     int whichButton ) {
+                                    lookupWord();
+                                }
+                            };
+                        ab.setNegativeButton( buttonTxt, lstnr );
+                    }
                 }
 
                 dialog = ab.create();
@@ -478,7 +492,7 @@ public class BoardActivity extends XWActivity
         outState.putString( DLG_BYTES, m_dlgBytes );
         outState.putString( ROOM, m_room );
         outState.putString( TOASTSTR, m_toastStr );
-        outState.putStringArray( WORDS, m_words );
+        outState.putStringArray( WORDS, m_wordsWaiting );
         outState.putString( LOOKUPITEM, m_word );
     }
 
@@ -490,7 +504,7 @@ public class BoardActivity extends XWActivity
             m_dlgBytes = bundle.getString( DLG_BYTES );
             m_room = bundle.getString( ROOM );
             m_toastStr = bundle.getString( TOASTSTR );
-            m_words = bundle.getStringArray( WORDS );
+            m_wordsWaiting = bundle.getStringArray( WORDS );
             m_word = bundle.getString( LOOKUPITEM );
         }
     }
@@ -1213,6 +1227,8 @@ public class BoardActivity extends XWActivity
         {
             m_dlgBytes = expl;
             m_dlgTitle = R.string.info_title;
+            m_wordsWaiting = wordsToMWords( words );
+            Assert.assertTrue( wordCount == m_wordsWaiting.length );
             waitBlockingDialog( DLG_SCORES_BLK, 0 );
         }
 
@@ -1337,17 +1353,7 @@ public class BoardActivity extends XWActivity
                                 }
                                 break;
                             case JNIThread.GOT_WORDS:
-                                String[] tmp = 
-                                    TextUtils.split( (String)msg.obj, "\n" );
-                                m_words = new String[tmp.length];
-                                for ( int ii = 0, jj = tmp.length; 
-                                      ii < tmp.length; ++ii, --jj ) {
-                                    m_words[ii] = tmp[jj-1];
-                                }
-                                if ( 1 == m_words.length ) {
-                                    m_word = m_words[0];
-                                }
-                                initLookup();
+                                m_words = wordsToMWords( (String)msg.obj );
                                 lookupWord();
                                 break;
                             }
@@ -1624,6 +1630,7 @@ public class BoardActivity extends XWActivity
 
     private void lookupWord()
     {
+        initLookup();
         if ( null == m_words || 0 == m_words.length ) {
             // drop it
         } else if ( null != m_word ) {
@@ -1660,7 +1667,7 @@ public class BoardActivity extends XWActivity
                 Utils.logf( "%s", anfe.toString() );
             }
         }
-    }
+    } // lookupWord
     
     private void initLookup()
     {
@@ -1683,17 +1690,32 @@ public class BoardActivity extends XWActivity
             m_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
             m_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
         }
-    }
+    } // initLookup
 
     private void urlPickDone() {
         m_word = null;
-        if ( 1 >= m_words.length ) {
+        if ( null != m_words && 1 >= m_words.length ) {
             m_words = null;
+            m_wordsWaiting = null;
         }
     }
 
     private void wordPickDone() {
         m_words = null;
+        m_wordsWaiting = null;
+    }
+
+    private String[] wordsToMWords( String words )
+    {
+        String[] tmp = TextUtils.split( words, "\n" );
+        String[] wordsArray = new String[tmp.length];
+        for ( int ii = 0, jj = tmp.length; ii < tmp.length; ++ii, --jj ) {
+            wordsArray[ii] = tmp[jj-1];
+        }
+        if ( 1 == wordsArray.length ) {
+            m_word = wordsArray[0];
+        }
+        return wordsArray;
     }
 
 } // class BoardActivity
