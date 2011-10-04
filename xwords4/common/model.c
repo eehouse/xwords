@@ -75,7 +75,7 @@ static void loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version,
                             PlayerCtxt* pc );
 static void writePlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
-
+static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* clsur );
 
 /*****************************************************************************
  *
@@ -91,6 +91,8 @@ model_make( MPFORMAL DictionaryCtxt* dict,
         MPASSIGN(result->vol.mpool, mpool);
 
         result->vol.util = util;
+        result->vol.wni.proc = recordWord;
+        result->vol.wni.closure = &result->vol.rwi;
 
         model_init( result, nCols, nRows );
 
@@ -216,7 +218,7 @@ model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
 void
 model_init( ModelCtxt* model, XP_U16 nCols, XP_U16 nRows )
 {
-    ModelVolatiles vol = model->vol;
+    ModelVolatiles vol = model->vol; /* save vol so we don't wipe it out */
 
     XP_ASSERT( model != NULL );
     XP_MEMSET( model, 0, sizeof( *model ) );
@@ -2053,8 +2055,8 @@ recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
 WordNotifierInfo* 
 model_initWordCounter( ModelCtxt* model, XWStreamCtxt* stream, XP_U16* nWords )
 {
-    model->vol.wni.proc = recordWord;
-    model->vol.wni.closure = &model->vol.rwi;
+    XP_ASSERT( model->vol.wni.proc == recordWord );
+    XP_ASSERT( model->vol.wni.closure == &model->vol.rwi );
     model->vol.rwi.stream = stream;
     model->vol.rwi.nWordsP = nWords;
     model->vol.rwi.nWords = 0;
