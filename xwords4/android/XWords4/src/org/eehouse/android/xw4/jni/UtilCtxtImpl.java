@@ -185,6 +185,11 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "userError" );
     }
 
+    public void informMove( String expl, String words )
+    {
+        subclassOverride( "informMove" );
+    }
+
     // Probably want to cache the fact that the game over notification
     // showed up and then display it next time game's opened.
     public void notifyGameOver()

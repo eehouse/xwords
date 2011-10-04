@@ -75,7 +75,7 @@ static void loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version,
                             PlayerCtxt* pc );
 static void writePlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
-
+static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* clsur );
 
 /*****************************************************************************
  *
@@ -91,6 +91,8 @@ model_make( MPFORMAL DictionaryCtxt* dict,
         MPASSIGN(result->vol.mpool, mpool);
 
         result->vol.util = util;
+        result->vol.wni.proc = recordWord;
+        result->vol.wni.closure = &result->vol.rwi;
 
         model_init( result, nCols, nRows );
 
@@ -216,7 +218,7 @@ model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
 void
 model_init( ModelCtxt* model, XP_U16 nCols, XP_U16 nRows )
 {
-    ModelVolatiles vol = model->vol;
+    ModelVolatiles vol = model->vol; /* save vol so we don't wipe it out */
 
     XP_ASSERT( model != NULL );
     XP_MEMSET( model, 0, sizeof( *model ) );
@@ -2032,11 +2034,6 @@ model_recentPassCountOk( ModelCtxt* model )
     return count < okCount;
 }
 
-typedef struct _RecordWordsInfo {
-    XWStreamCtxt* stream;
-    XP_U16 nWords;
-} RecordWordsInfo;
-
 static XP_Bool
 recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
 {
@@ -2048,7 +2045,21 @@ recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
         stream_putU8( stream, '\n' );
     }
     stream_catString( stream, word );
+    if ( NULL != info->nWordsP ) {
+        *info->nWordsP = info->nWords;
+    }
     return XP_TRUE;
+}
+
+WordNotifierInfo* 
+model_initWordCounter( ModelCtxt* model, XWStreamCtxt* stream, XP_U16* nWords )
+{
+    XP_ASSERT( model->vol.wni.proc == recordWord );
+    XP_ASSERT( model->vol.wni.closure == &model->vol.rwi );
+    model->vol.rwi.stream = stream;
+    model->vol.rwi.nWordsP = nWords;
+    model->vol.rwi.nWords = 0;
+    return &model->vol.wni;
 }
 
 void
@@ -2066,19 +2077,14 @@ model_getWordsPlayed( ModelCtxt* model, XP_U16 nTurns, XWStreamCtxt* stream )
     }
 
     if ( model_undoLatestMoves( model, NULL, nTurns, NULL, NULL ) ) {
-        RecordWordsInfo info = { .stream = stream, .nWords = 0 };
-        WordNotifierInfo notifyInfo = { .proc = recordWord,
-                                        .closure = &info,
-        };
-
+        WordNotifierInfo* ni = model_initWordCounter( model, stream, NULL );
         /* Now push the undone moves back into the model one at a time.
            recordWord() will add each played word to the stream as it's
            scored */
         buildModelFromStack( model, tmpStack, XP_TRUE, 
                              nEntries - nTurns + nPlayers,/* skip assignments */
-                             (XWStreamCtxt*)NULL, &notifyInfo, 
-                             (MovePrintFuncPre)NULL, (MovePrintFuncPost)NULL,
-                             NULL );
+                             (XWStreamCtxt*)NULL, ni, (MovePrintFuncPre)NULL, 
+                             (MovePrintFuncPost)NULL, NULL );
     }
     stack_destroy( tmpStack );
 }

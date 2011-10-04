@@ -1387,6 +1387,16 @@ gtkShowFinalScores( const CommonGlobals* cGlobals )
 } /* gtkShowFinalScores */
 
 static void
+gtk_util_informMove( XW_UtilCtxt* XP_UNUSED(uc), XWStreamCtxt* XP_UNUSED(expl), 
+                     XWStreamCtxt* words, XP_U16 wordCount )
+{
+    XP_LOGF( "%s(wordCount=%d)", __func__, wordCount );
+    char* question = strFromStream( words/*expl*/ );
+    (void)gtkask( question, GTK_BUTTONS_OK );
+    free( question );
+}
+
+static void
 gtk_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
@@ -1763,7 +1773,6 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
     case QUERY_COMMIT_TRADE:
         question = "Are you sure you want to trade the selected tiles?";
         break;
-    case QUERY_ROBOT_MOVE:
     case QUERY_ROBOT_TRADE:
         question = strFromStream( stream );
         freeMe = XP_TRUE;
@@ -1927,6 +1936,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_askPassword = gtk_util_askPassword;
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
     util->vtable->m_util_yOffsetChange = gtk_util_yOffsetChange;
+    util->vtable->m_util_informMove = gtk_util_informMove;
     util->vtable->m_util_notifyGameOver = gtk_util_notifyGameOver;
     util->vtable->m_util_hiliteCell = gtk_util_hiliteCell;
     util->vtable->m_util_altKeyDown = gtk_util_altKeyDown;

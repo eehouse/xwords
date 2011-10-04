@@ -283,7 +283,6 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         answers[numAnswers++] = "Cancel";
         answers[numAnswers++] = "Ok";
         break;
-    case QUERY_ROBOT_MOVE:
     case QUERY_ROBOT_TRADE:
         question = strFromStream( stream );
         freeMe = XP_TRUE;
@@ -332,6 +331,17 @@ cursesShowFinalScores( CursesAppGlobals* globals )
     free( text );
     stream_destroy( stream );
 } /* cursesShowFinalScores */
+
+static void
+curses_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
+                        XWStreamCtxt* XP_UNUSED(words), 
+                        XP_U16 XP_UNUSED(wordCount) )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    char* question = strFromStream( expl );
+    (void)cursesask( globals, question, 1, "Ok" );
+    free( question );
+}
 
 static void
 curses_util_notifyGameOver( XW_UtilCtxt* uc )
@@ -1466,6 +1476,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_userQuery = curses_util_userQuery;
     util->vtable->m_util_userPickTile = curses_util_userPickTile;
     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange;
+    util->vtable->m_util_informMove = curses_util_informMove;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
     util->vtable->m_util_engineProgressCallback = 

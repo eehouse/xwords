@@ -212,4 +212,10 @@ public class Utils {
             return 0;
         }
     }
+
+    public static String format( Context context, int id, Object... args )
+    {
+        String fmt = context.getString( id );
+        return String.format( fmt, args );
+    }
 }

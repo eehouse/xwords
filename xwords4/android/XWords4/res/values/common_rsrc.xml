@@ -175,22 +175,22 @@
     <item>en</item>
     <item>fr</item>
     <item>de</item>
-    <item></item>
-    <item></item>
+    <item>tr</item>
+    <item>ar</item>
     <item>es</item>
-    <item></item>
-    <item></item>
-    <item></item>
+    <item>sv</item>
+    <item>pl</item>
+    <item>da</item>
     <item>it</item>
-    <item></item>
+    <item>nl</item>
     <item>ca</item>
+    <item>pt</item>
     <item></item>
+    <item>ru</item>
     <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
+    <item>cs</item>
+    <item>el</item>
+    <item>sk</item>
   </string-array>
 
   <!-- Triples of Name, supported codes, and URL format string -->

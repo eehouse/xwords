@@ -92,6 +92,8 @@ typedef struct ServerNonvolatiles {
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
     XWStreamCtxt* prevMoveStream;     /* save it to print later */
+    XWStreamCtxt* prevWordsStream;
+    XP_U16        prevWordCount;
 } ServerNonvolatiles;
 
 struct ServerCtxt {
@@ -174,7 +176,8 @@ getStateStr( XW_State st )
 }
 #endif
 
-#ifdef DEBUG
+#if 0 
+//def DEBUG
 static void
 logNewState( XW_State old, XW_State newst )
 {
@@ -304,6 +307,26 @@ putNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     }
 } /* putNV */
 
+static XWStreamCtxt*
+readStreamIf( ServerCtxt* server, XWStreamCtxt* in )
+{
+    XWStreamCtxt* result = NULL;
+    XP_U16 len = stream_getU16( in );
+    if ( 0 < len ) {
+        result = mkServerStream( server );
+        stream_copyFromStream( in, result, len );
+    }
+    return result;
+}
+
+static void
+writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
+{
+    XP_U16 len = !!src ? stream_getSize( src ) : 0;
+    stream_putU16( dest, len );
+    stream_copyFromStream( dest, src, len );
+}
+
 ServerCtxt*
 server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model, 
                        CommsCtxt* comms, XW_UtilCtxt* util, XP_U16 nPlayers )
@@ -339,15 +362,11 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     }
 
     if ( version >= STREAM_SAVE_PREVMOVE ) {
-        XP_U16 nBytes = stream_getU16( stream );
-        if ( nBytes > 0 ) {
-            XP_ASSERT( !server->nv.prevMoveStream );
-            server->nv.prevMoveStream = mkServerStream( server );
-            stream_copyFromStream( server->nv.prevMoveStream, 
-                                   stream, nBytes );
-        }
+        server->nv.prevMoveStream = readStreamIf( server, stream );
     }
-
+    if ( version >= STREAM_SAVE_PREVWORDS ) {
+        server->nv.prevWordsStream = readStreamIf( server, stream );
+    }
     XP_ASSERT( stream_getU32( stream ) == sEND );
 
     return server;
@@ -358,7 +377,6 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_U16 i;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
-    XP_U16 nBytes;
 
     putNV( stream, &server->nv, nPlayers );
 
@@ -384,12 +402,8 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
     stream_putBits( stream, 2, 0 );
 #endif
 
-    nBytes = !!server->nv.prevMoveStream ? 
-        stream_getSize( server->nv.prevMoveStream ) : 0;
-    stream_putU16( stream, nBytes );
-    if ( nBytes > 0 ) {
-        stream_copyFromStream( stream, server->nv.prevMoveStream, nBytes );
-    }
+    writeStreamIf( stream, server->nv.prevMoveStream );
+    writeStreamIf( stream, server->nv.prevWordsStream );
 
 #ifdef DEBUG
     stream_putU32( stream, sEND );
@@ -416,6 +430,9 @@ cleanupServer( ServerCtxt* server )
 
     if ( !!server->nv.prevMoveStream ) {
         stream_destroy( server->nv.prevMoveStream );
+    }
+    if ( !!server->nv.prevWordsStream ) {
+        stream_destroy( server->nv.prevWordsStream );
     }
 
     XP_MEMSET( &server->nv, 0, sizeof(server->nv) );
@@ -739,9 +756,14 @@ makeRobotMove( ServerCtxt* server )
                 model_makeTurnFromMoveInfo( model, turn, &newMove );
 
                 if ( !!stream ) {
-                    (void)model_checkMoveLegal( model, turn, stream, NULL );
+                    XWStreamCtxt* wordsStream = mkServerStream( server );
+                    WordNotifierInfo* ni = 
+                        model_initWordCounter( model, wordsStream, 
+                                               &server->nv.prevWordCount );
+                    (void)model_checkMoveLegal( model, turn, stream, ni );
                     XP_ASSERT( !server->nv.prevMoveStream );
                     server->nv.prevMoveStream = stream;
+                    server->nv.prevWordsStream = wordsStream;
                 }
                 result = server_commitMove( server );
             } else {
@@ -848,8 +870,11 @@ showPrevScore( ServerCtxt* server )
             stream_destroy( prevStream );
         }
 
-        (void)util_userQuery( util, QUERY_ROBOT_MOVE, stream );
+        util_informMove( util, stream, server->nv.prevWordsStream,
+                         server->nv.prevWordCount );
         stream_destroy( stream );
+        stream_destroy( server->nv.prevWordsStream );
+        server->nv.prevWordsStream = NULL;
     }
     SETSTATE( server, server->nv.stateAfterShow );
 } /* showPrevScore */
@@ -1853,14 +1878,17 @@ makeTradeReportIf( ServerCtxt* server, const TrayTileSet* tradedTiles )
 } /* makeTradeReportIf */
 
 static XWStreamCtxt*
-makeMoveReportIf( ServerCtxt* server )
+makeMoveReportIf( ServerCtxt* server, XWStreamCtxt** wordsStream )
 {
     XWStreamCtxt* stream = NULL;
     if ( server->nv.showRobotScores ) {
+        ModelCtxt* model = server->vol.model;
         stream = mkServerStream( server );
-        (void)model_checkMoveLegal( server->vol.model, 
-                                    server->nv.currentTurn, stream,
-                                    NULL );
+        *wordsStream = mkServerStream( server );
+        WordNotifierInfo* ni = 
+            model_initWordCounter( model, *wordsStream, 
+                                   &server->nv.prevWordCount );
+        (void)model_checkMoveLegal( model, server->nv.currentTurn, stream, ni );
     }
     return stream;
 } /* makeMoveReportIf */
@@ -1885,6 +1913,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
     XP_U16 sourceClientIndex = 
         getIndexForDevice( server, stream_getAddress( stream ) );
     XWStreamCtxt* mvStream = NULL;
+    XWStreamCtxt* wordsStream = NULL;
 
     XP_ASSERT( gi->serverRole == SERVER_ISSERVER );
 
@@ -1917,7 +1946,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
                                  (TrayTileSet*)NULL, sourceClientIndex );
 
         server->vol.showPrevMove = XP_TRUE;
-        mvStream = makeMoveReportIf( server );
+        mvStream = makeMoveReportIf( server, &wordsStream );
 
         model_commitTurn( model, whoMoved, &newTiles );
         resetEngines( server );
@@ -1940,8 +1969,9 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
         if ( !!mvStream ) {
             XP_ASSERT( !server->nv.prevMoveStream );
             server->nv.prevMoveStream = mvStream;
+            XP_ASSERT( !server->nv.prevWordsStream );
+            server->nv.prevWordsStream = wordsStream;
         }
-
     } else {
         /* The client from which the move came still needs to be told.  But we
            can't send a message now since we're burried in a message handler.
@@ -1970,6 +2000,7 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     TrayTileSet tradedTiles;
     ModelCtxt* model = server->vol.model;
     XWStreamCtxt* mvStream = NULL;
+    XWStreamCtxt* wordsStream = NULL;
 
     moveOk = XWSTATE_INTURN == server->nv.gameState;
     XP_ASSERT( moveOk );  /* message permanently lost if dropped here! */
@@ -1985,13 +2016,15 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
             mvStream = makeTradeReportIf( server, &tradedTiles );
         } else {
             server->vol.showPrevMove = XP_TRUE;
-            mvStream = makeMoveReportIf( server );
+            mvStream = makeMoveReportIf( server, &wordsStream );
             model_commitTurn( model, whoMoved, &newTiles );
         }
 
         if ( !!mvStream ) {
             XP_ASSERT( !server->nv.prevMoveStream );
             server->nv.prevMoveStream = mvStream;
+            XP_ASSERT( !server->nv.prevWordsStream );
+            server->nv.prevWordsStream = wordsStream;
         }
 
         resetEngines( server );
