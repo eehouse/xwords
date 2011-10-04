@@ -100,7 +100,7 @@ public interface UtilCtxt {
     static final int ERR_RELAY_BASE = 16;
     void userError( int id );
 
-    void informMove( String expl, String words, int wordCount );
+    void informMove( String expl, String words );
 
     void notifyGameOver();
     // Don't need this unless we have a scroll thumb to indicate position

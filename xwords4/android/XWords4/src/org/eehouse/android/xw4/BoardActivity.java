@@ -1223,13 +1223,12 @@ public class BoardActivity extends XWActivity
             }
         } // userError
 
-        public void informMove( String expl, String words, int wordCount )
+        public void informMove( String expl, String words )
         {
             m_dlgBytes = expl;
             m_dlgTitle = R.string.info_title;
             m_wordsWaiting = wordsToMWords( words );
             Assert.assertNull( m_words );
-            Assert.assertTrue( wordCount == m_wordsWaiting.length );
             waitBlockingDialog( DLG_SCORES_BLK, 0 );
         }
 

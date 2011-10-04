@@ -185,7 +185,7 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "userError" );
     }
 
-    public void informMove( String expl, String words, int wordCount )
+    public void informMove( String expl, String words )
     {
         subclassOverride( "informMove" );
     }
