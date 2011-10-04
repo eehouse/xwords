@@ -221,10 +221,15 @@ and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl,
 {
     UTIL_CBK_HEADER( "informMove", "(Ljava/lang/String;Ljava/lang/String;I)V" );
     jstring jexpl = streamToJString( MPPARM(util->util.mpool) env, expl );
-    jstring jwords = streamToJString( MPPARM(util->util.mpool) env, words );
+    jstring jwords = !!words ? 
+        streamToJString( MPPARM(util->util.mpool) env, words ) : NULL;
     (*env)->CallVoidMethod( env, util->jutil, mid, jexpl, jwords, wordCount );
     (*env)->DeleteLocalRef( env, jexpl );
-    (*env)->DeleteLocalRef( env, jwords );
+    if ( !!jwords ) {
+        (*env)->DeleteLocalRef( env, jwords );
+    } else {
+        XP_ASSERT( 0 == wordCount );
+    }
     UTIL_CBK_TAIL();
 }
 
