@@ -256,19 +256,19 @@ public class BoardActivity extends XWActivity
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
                 } else if ( DLG_SCORES_BLK == id ) {
-                    m_words = m_wordsWaiting;
-                    if ( null != m_words && m_words.length > 0 ) {
+                    if ( null != m_wordsWaiting && m_wordsWaiting.length > 0 ) {
                         String buttonTxt;
-                        if ( m_words.length == 1 ) {
+                        if ( m_wordsWaiting.length == 1 ) {
                             buttonTxt = Utils.format( this, 
                                                       R.string.button_lookupf,
-                                                      m_words[0] );
+                                                      m_wordsWaiting[0] );
                         } else {
                             buttonTxt = getString( R.string.button_lookup );
                         }
                         lstnr = new DialogInterface.OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
+                                    m_words = m_wordsWaiting;
                                     lookupWord();
                                 }
                             };
@@ -1228,6 +1228,7 @@ public class BoardActivity extends XWActivity
             m_dlgBytes = expl;
             m_dlgTitle = R.string.info_title;
             m_wordsWaiting = wordsToMWords( words );
+            Assert.assertNull( m_words );
             Assert.assertTrue( wordCount == m_wordsWaiting.length );
             waitBlockingDialog( DLG_SCORES_BLK, 0 );
         }
