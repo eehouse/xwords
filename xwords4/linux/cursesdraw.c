@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -91,6 +91,7 @@ static XP_Bool
 curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx), 
                        const XP_Rect* XP_UNUSED(rect), 
                        XP_U16 XP_UNUSED(owner), 
+                       XP_S16 XP_UNUSED(score), 
                        DrawFocusState XP_UNUSED(dfs) )
 {
     return XP_TRUE;

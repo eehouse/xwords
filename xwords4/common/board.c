@@ -541,6 +541,12 @@ board_getYOffset( const BoardCtxt* board )
     return vsd->offset;
 } /* board_getYOffset */
 
+XP_Bool
+board_curTurnSelected( const BoardCtxt* board )
+{
+    return MY_TURN( board );
+}
+
 XP_U16
 board_visTileCount( const BoardCtxt* board )
 {

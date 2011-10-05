@@ -334,8 +334,7 @@ cursesShowFinalScores( CursesAppGlobals* globals )
 
 static void
 curses_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
-                        XWStreamCtxt* XP_UNUSED(words), 
-                        XP_U16 XP_UNUSED(wordCount) )
+                        XWStreamCtxt* XP_UNUSED(words))
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char* question = strFromStream( expl );

@@ -93,7 +93,6 @@ typedef struct ServerNonvolatiles {
     RemoteAddress addresses[MAX_NUM_PLAYERS];
     XWStreamCtxt* prevMoveStream;     /* save it to print later */
     XWStreamCtxt* prevWordsStream;
-    XP_U16        prevWordCount;
 } ServerNonvolatiles;
 
 struct ServerCtxt {
@@ -758,8 +757,7 @@ makeRobotMove( ServerCtxt* server )
                 if ( !!stream ) {
                     XWStreamCtxt* wordsStream = mkServerStream( server );
                     WordNotifierInfo* ni = 
-                        model_initWordCounter( model, wordsStream, 
-                                               &server->nv.prevWordCount );
+                        model_initWordCounter( model, wordsStream );
                     (void)model_checkMoveLegal( model, turn, stream, ni );
                     XP_ASSERT( !server->nv.prevMoveStream );
                     server->nv.prevMoveStream = stream;
@@ -870,8 +868,7 @@ showPrevScore( ServerCtxt* server )
             stream_destroy( prevStream );
         }
 
-        util_informMove( util, stream, server->nv.prevWordsStream,
-                         server->nv.prevWordCount );
+        util_informMove( util, stream, server->nv.prevWordsStream );
         stream_destroy( stream );
         stream_destroy( server->nv.prevWordsStream );
         server->nv.prevWordsStream = NULL;
@@ -1885,9 +1882,7 @@ makeMoveReportIf( ServerCtxt* server, XWStreamCtxt** wordsStream )
         ModelCtxt* model = server->vol.model;
         stream = mkServerStream( server );
         *wordsStream = mkServerStream( server );
-        WordNotifierInfo* ni = 
-            model_initWordCounter( model, *wordsStream, 
-                                   &server->nv.prevWordCount );
+        WordNotifierInfo* ni = model_initWordCounter( model, *wordsStream );
         (void)model_checkMoveLegal( model, server->nv.currentTurn, stream, ni );
     }
     return stream;

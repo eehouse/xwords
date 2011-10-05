@@ -45,7 +45,6 @@ typedef struct PlayerCtxt {
 
 typedef struct _RecordWordsInfo {
     XWStreamCtxt* stream;
-    XP_U16* nWordsP;
     XP_U16 nWords;
 } RecordWordsInfo;
 

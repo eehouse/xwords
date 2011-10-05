@@ -597,10 +597,23 @@ public class BoardActivity extends XWActivity
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
         super.onPrepareOptionsMenu( menu );
+        boolean inTrade = false;
 
         if ( null != m_gsi ) {
-            boolean inTrade = m_gsi.inTrade;
+            inTrade = m_gsi.inTrade;
             menu.setGroupVisible( R.id.group_done, !inTrade );
+        }
+
+        if ( !inTrade ) {
+            MenuItem item = menu.findItem( R.id.board_menu_done );
+            int strId;
+            if ( 0 >= m_view.curPending() ) {
+                strId = R.string.board_menu_pass;
+            } else {
+                strId = R.string.board_menu_done;
+            }
+            item.setTitle( strId );
+            item.setEnabled( null == m_gsi || m_gsi.curTurnSelected );
         }
 
         return true;

@@ -1,6 +1,6 @@
-/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -29,7 +29,9 @@ extern "C" {
 #endif
 
 /****************************** prototypes ******************************/
-static void drawPendingScore( BoardCtxt* board, XP_Bool hasCursor );
+static void drawPendingScore( BoardCtxt* board, XP_S16 turnScore, 
+                              XP_Bool hasCursor );
+static XP_S16 figurePendingScore( const BoardCtxt* board );
 static XP_U16 countTilesToShow( BoardCtxt* board );
 static void figureDividerRect( BoardCtxt* board, XP_Rect* rect );
 
@@ -130,8 +132,10 @@ drawTray( BoardCtxt* board )
         const XP_S16 turn = board->selPlayer;
         PerTurnInfo* pti = board->selInfo;
 
+        XP_S16 turnScore = figurePendingScore( board );
+
         if ( draw_trayBegin( board->draw, &board->trayBounds, turn,
-                             dfsFor( board, OBJ_TRAY ) ) ) {
+                             turnScore, dfsFor( board, OBJ_TRAY ) ) ) {
             DictionaryCtxt* dictionary = model_getDictionary( board->model );
             XP_S16 cursorBits = 0;
             XP_Bool cursorOnDivider = XP_FALSE;
@@ -242,8 +246,7 @@ drawTray( BoardCtxt* board )
                     draw_drawTrayDivider( board->draw, &divider, flags );
                     board->dividerInvalid = XP_FALSE;
                 }
-
-                drawPendingScore( board, 
+                drawPendingScore( board, turnScore,
                                   (cursorBits & (1<<(MAX_TRAY_TILES-1))) != 0);
             }
 
@@ -304,19 +307,25 @@ countTilesToShow( BoardCtxt* board )
     return numToShow;
 } /* countTilesToShow */
 
+static XP_S16
+figurePendingScore( const BoardCtxt* board )
+{
+    XP_S16 turnScore;
+    (void)getCurrentMoveScoreIfLegal( board->model, board->selPlayer,
+                                      (XWStreamCtxt*)NULL, 
+                                      (WordNotifierInfo*)NULL, 
+                                      &turnScore );
+    return turnScore;
+}
+
 static void
-drawPendingScore( BoardCtxt* board, XP_Bool hasCursor )
+drawPendingScore( BoardCtxt* board, XP_S16 turnScore, XP_Bool hasCursor )
 {
     /* Draw the pending score down in the last tray's rect */
     if ( countTilesToShow( board ) < MAX_TRAY_TILES ) {
         XP_U16 selPlayer = board->selPlayer;
-        XP_S16 turnScore = 0;
         XP_Rect lastTileR;
 
-        (void)getCurrentMoveScoreIfLegal( board->model, selPlayer,
-                                          (XWStreamCtxt*)NULL, 
-                                          (WordNotifierInfo*)NULL, 
-                                          &turnScore );
         figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
         draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
                                  selPlayer, 

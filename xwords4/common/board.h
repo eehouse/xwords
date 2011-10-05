@@ -78,6 +78,7 @@ void board_reset( BoardCtxt* board );
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
 XP_U16 board_getYOffset( const BoardCtxt* board );
 
+XP_Bool board_curTurnSelected( const BoardCtxt* board );
 XP_U16 board_visTileCount( const BoardCtxt* board );
 XP_Bool board_canShuffle( const BoardCtxt* board );
 XP_Bool board_canTogglePending( const BoardCtxt* board );

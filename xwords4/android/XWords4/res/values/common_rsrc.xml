@@ -197,12 +197,20 @@
   <string-array name="lookup_urls">
     <!--  -->
     <item>Dictionary.com</item>
-    <item>:en:</item> <!-- means all supported -->
+    <item>:en:</item>
     <item>http://dictionary.com/browse/%2$s</item> -->
     <!--  -->
     <item>TheFreeDictionary.com</item>
-    <item>:en:es:</item> <!-- means all supported -->
+    <item>:en:es:</item>
     <item>http://%1$s.thefreedictionary.com/_/dict.aspx?word=%2$s</item>
+    <!--  -->
+    <item>Larousse.com</item>
+    <item>:fr:</item>
+    <item>http://www.larousse.com/%1$s/dictionaries/french/%2$s</item>
+    <!--  -->
+    <item>Littre.reverso.net</item>
+    <item>:fr:</item>
+    <item>http://littre.reverso.net/dictionnaire-francais/definition/%2$s</item>
     <!--  -->
     <item>Google</item>
     <item></item> <!-- means all supported -->

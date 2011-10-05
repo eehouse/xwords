@@ -3,8 +3,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
   <group android:id="@+id/group_done">
+    <!-- title set in BoardActivity -->
     <item android:id="@+id/board_menu_done"
-          android:title="@string/board_menu_done"
           android:alphabeticShortcut="D"
           />
     <item android:id="@+id/board_menu_trade"

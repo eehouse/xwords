@@ -2045,19 +2045,15 @@ recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
         stream_putU8( stream, '\n' );
     }
     stream_catString( stream, word );
-    if ( NULL != info->nWordsP ) {
-        *info->nWordsP = info->nWords;
-    }
     return XP_TRUE;
 }
 
 WordNotifierInfo* 
-model_initWordCounter( ModelCtxt* model, XWStreamCtxt* stream, XP_U16* nWords )
+model_initWordCounter( ModelCtxt* model, XWStreamCtxt* stream )
 {
     XP_ASSERT( model->vol.wni.proc == recordWord );
     XP_ASSERT( model->vol.wni.closure == &model->vol.rwi );
     model->vol.rwi.stream = stream;
-    model->vol.rwi.nWordsP = nWords;
     model->vol.rwi.nWords = 0;
     return &model->vol.wni;
 }
@@ -2077,7 +2073,7 @@ model_getWordsPlayed( ModelCtxt* model, XP_U16 nTurns, XWStreamCtxt* stream )
     }
 
     if ( model_undoLatestMoves( model, NULL, nTurns, NULL, NULL ) ) {
-        WordNotifierInfo* ni = model_initWordCounter( model, stream, NULL );
+        WordNotifierInfo* ni = model_initWordCounter( model, stream );
         /* Now push the undone moves back into the model one at a time.
            recordWord() will add each played word to the stream as it's
            scored */

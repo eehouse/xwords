@@ -129,7 +129,7 @@ typedef struct DrawCtxVTable {
                                                XP_S16 dist, DrawFocusState dfs );
 
     XP_Bool DRAW_VTABLE_NAME(trayBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                          XP_U16 owner, 
+                                          XP_U16 owner, XP_S16 score,
                                           DrawFocusState dfs );
     void DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, const XP_Rect* r, 
                                             XP_S16 nTilesLeft, 
@@ -257,8 +257,10 @@ struct DrawCtx {
 #define draw_dictChanged( dc, n, d ) CALL_DRAW_NAME2(dictChanged, (dc), (n), (d))
 #define draw_boardBegin( dc,r,h,v,f ) CALL_DRAW_NAME4(boardBegin, (dc),\
                                                       (r),(h),(v),(f))
-#define draw_objFinished( dc, t, r, d ) CALL_DRAW_NAME3(objFinished, (dc), (t), (r), (d))
-#define draw_trayBegin( dc, r, o, f ) CALL_DRAW_NAME3(trayBegin,dc, r, o, f)
+#define draw_objFinished( dc, t, r, d ) \
+    CALL_DRAW_NAME3(objFinished, (dc), (t), (r), (d))
+#define draw_trayBegin( dc, r, o, s, f ) \
+    CALL_DRAW_NAME4(trayBegin, dc, r, o, s, f)
 #define draw_vertScrollBoard( dc, r, d, f ) \
     CALL_DRAW_NAME3(vertScrollBoard, (dc),(r),(d),(f))
 #define draw_scoreBegin( dc, r, t, s, c, f ) \

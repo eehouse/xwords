@@ -99,6 +99,7 @@ public class JNIThread extends Thread {
         public boolean tradeTilesSelected;
         public boolean gameIsConnected;
         public boolean canShuffle;
+        public boolean curTurnSelected;
         public GameStateInfo clone() {
             GameStateInfo obj = null;
             try {

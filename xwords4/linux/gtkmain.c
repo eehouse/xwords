@@ -1388,9 +1388,8 @@ gtkShowFinalScores( const CommonGlobals* cGlobals )
 
 static void
 gtk_util_informMove( XW_UtilCtxt* XP_UNUSED(uc), XWStreamCtxt* XP_UNUSED(expl), 
-                     XWStreamCtxt* words, XP_U16 wordCount )
+                     XWStreamCtxt* words )
 {
-    XP_LOGF( "%s(wordCount=%d)", __func__, wordCount );
     char* question = strFromStream( words/*expl*/ );
     (void)gtkask( question, GTK_BUTTONS_OK );
     free( question );

@@ -216,8 +216,7 @@ and_util_turnChanged(XW_UtilCtxt* uc)
 #endif
 
 static void
-and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
-                     XWStreamCtxt* words, XP_U16 wordCount )
+and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, XWStreamCtxt* words )
 {
     UTIL_CBK_HEADER( "informMove", "(Ljava/lang/String;Ljava/lang/String;)V" );
     jstring jexpl = streamToJString( MPPARM(util->util.mpool) env, expl );
@@ -227,8 +226,6 @@ and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl,
     (*env)->DeleteLocalRef( env, jexpl );
     if ( !!jwords ) {
         (*env)->DeleteLocalRef( env, jwords );
-    } else {
-        XP_ASSERT( 0 == wordCount );
     }
     UTIL_CBK_TAIL();
 }
