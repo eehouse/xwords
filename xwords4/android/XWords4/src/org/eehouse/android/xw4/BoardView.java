@@ -345,7 +345,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     // DrawCtxt interface implementation
     public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
-                               int remCount, int dfs )
+                               int remCount )
     {
         fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
         m_canvas.save( Canvas.CLIP_SAVE_FLAG );
@@ -472,8 +472,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    public boolean boardBegin( Rect rect, int cellWidth, int cellHeight, 
-                               int dfs )
+    public boolean boardBegin( Rect rect, int cellWidth, int cellHeight )
     {
         return true;
     }
@@ -589,7 +588,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    public boolean trayBegin ( Rect rect, int owner, int score, int dfs ) 
+    public boolean trayBegin ( Rect rect, int owner, int score ) 
     {
         m_trayOwner = owner;
         m_pendingScore = score;
@@ -646,7 +645,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         drawCentered( getResources().getString( R.string.pts ), rect, null );
     }
 
-    public void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs )
+    public void objFinished( /*BoardObjectType*/int typ, Rect rect )
     {
         if ( DrawCtx.OBJ_SCORE == typ ) {
             m_canvas.restoreToCount(1); // in case new canvas...

@@ -43,21 +43,19 @@ public interface DrawCtx {
     static final int OBJ_TRAY = 3;
 
 
-    boolean scoreBegin( Rect rect, int numPlayers, int[] scores, int remCount,
-                        int dfs );
+    boolean scoreBegin( Rect rect, int numPlayers, int[] scores, int remCount );
     void measureRemText( Rect r, int nTilesLeft, int[] width, int[] height );
     void measureScoreText( Rect r, DrawScoreInfo dsi, int[] width, int[] height );
     void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, boolean focussed );
     void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi );
     void drawTimer( Rect rect, int player, int secondsLeft );
-    boolean boardBegin( Rect rect, int cellWidth, int cellHeight, 
-                        int dfs );
+    boolean boardBegin( Rect rect, int cellWidth, int cellHeight );
 
     boolean drawCell( Rect rect, String text, int tile, 
                       int owner, int bonus, int hintAtts, int flags );
     void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
                           int flags );
-    boolean trayBegin ( Rect rect, int owner, int score, int dfs );
+    boolean trayBegin ( Rect rect, int owner, int score );
     void drawTile( Rect rect, String text, int val, int flags );
     void drawTileMidDrag ( Rect rect, String text, int val, int owner, 
                            int flags );
@@ -72,7 +70,7 @@ public interface DrawCtx {
     public static final int BONUS_TRIPLE_WORD = 4;
     public static final int INTRADE_MW_TEXT = 5;
 
-    void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs );
+    void objFinished( /*BoardObjectType*/int typ, Rect rect );
 
     void dictChanged( int dictPtr );
 
