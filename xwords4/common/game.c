@@ -280,6 +280,7 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
 void
 game_getState( const XWGame* game, GameStateInfo* gsi )
 {
+    gsi->curTurnSelected = board_curTurnSelected( game->board );
     gsi->visTileCount = board_visTileCount( game->board );
     gsi->canHint = board_canHint( game->board );
     gsi->canRedo = board_canTogglePending( game->board );

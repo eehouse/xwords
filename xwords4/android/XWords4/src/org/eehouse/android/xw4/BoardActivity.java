@@ -613,6 +613,7 @@ public class BoardActivity extends XWActivity
                 strId = R.string.board_menu_done;
             }
             item.setTitle( strId );
+            item.setEnabled( null == m_gsi || m_gsi.curTurnSelected );
         }
 
         return true;

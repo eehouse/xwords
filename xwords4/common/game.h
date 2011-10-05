@@ -97,6 +97,7 @@ typedef struct _GameStateInfo {
     XP_Bool tradeTilesSelected;
     XP_Bool gameIsConnected;
     XP_Bool canShuffle;
+    XP_Bool curTurnSelected;
 } GameStateInfo;
 
 typedef struct XWGame {
