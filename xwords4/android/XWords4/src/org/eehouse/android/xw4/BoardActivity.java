@@ -144,7 +144,6 @@ public class BoardActivity extends XWActivity
     private JNIThread m_jniThread;
     private JNIThread.GameStateInfo m_gsi;
     private boolean m_blockingDlgPosted = false;
-    private String m_doneOrigTitle = null;
 
     private String m_room;
     private String m_toastStr;
@@ -607,16 +606,13 @@ public class BoardActivity extends XWActivity
 
         if ( !inTrade ) {
             MenuItem item = menu.findItem( R.id.board_menu_done );
-            if ( null == m_doneOrigTitle ) {
-                m_doneOrigTitle = item.getTitle().toString();
-            }
-            String title;
+            int strId;
             if ( 0 >= m_view.curPending() ) {
-                title = getString( R.string.pass );
+                strId = R.string.board_menu_pass;
             } else {
-                title = m_doneOrigTitle;
+                strId = R.string.board_menu_done;
             }
-            item.setTitle( title );
+            item.setTitle( strId );
         }
 
         return true;

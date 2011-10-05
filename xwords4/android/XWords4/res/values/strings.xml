@@ -1775,6 +1775,6 @@
     <string name="word_list_label">Tap word to search</string>
     <string name="pick_url_titlef">Look up %s at</string>
 
-    <string name="pass">Pass</string>
+    <string name="board_menu_pass">Pass</string>
 </resources>
 
