@@ -281,15 +281,15 @@ and_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XP_Rect* XP_UNUSED(rect),
 
 static XP_Bool
 and_draw_trayBegin( DrawCtx* dctx, const XP_Rect* rect, XP_U16 owner, 
-                    DrawFocusState dfs )
+                    XP_S16 score, DrawFocusState dfs )
 {
-    DRAW_CBK_HEADER( "trayBegin", "(Landroid/graphics/Rect;II)Z" );
+    DRAW_CBK_HEADER( "trayBegin", "(Landroid/graphics/Rect;III)Z" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
     jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
-                                                 jrect, owner, (jint)dfs );
-
+                                                 jrect, owner, score, 
+                                                 (jint)dfs );
     return result;
 }
 

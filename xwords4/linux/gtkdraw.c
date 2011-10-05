@@ -1,6 +1,6 @@
-/* -*- mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */ 
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */ 
 /* 
- * Copyright 1997-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -634,7 +634,8 @@ gtk_draw_invertCell( DrawCtx* XP_UNUSED(p_dctx),
 
 static XP_Bool
 gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
-                    XP_U16 owner, DrawFocusState XP_UNUSED(dfs) )
+                    XP_U16 owner, XP_S16 XP_UNUSED(owner), 
+                    DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     dctx->trayOwner = owner;
@@ -729,7 +730,7 @@ gtk_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect,
                           const XP_UCHAR* textP, const XP_Bitmaps* bitmaps, 
                           XP_U16 val, XP_U16 owner, CellFlags flags )
 {
-    gtk_draw_trayBegin( p_dctx, rect, owner, DFS_NONE );
+    gtk_draw_trayBegin( p_dctx, rect, owner, 0, DFS_NONE );
     gtkDrawTileImpl( p_dctx, rect, textP, bitmaps, val, 
                      flags | CELL_HIGHLIGHT, XP_FALSE );
 }

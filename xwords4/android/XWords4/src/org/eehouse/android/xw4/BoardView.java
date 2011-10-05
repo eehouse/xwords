@@ -80,6 +80,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_dictPtr = 0;
     private int m_lastSecsLeft;
     private int m_lastTimerPlayer;
+    private int m_pendingScore;
     private Handler m_viewHandler;
 
     // FontDims: exists to translate space available to the largest
@@ -169,6 +170,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_viewHandler = new Handler();
     }
 
+    @Override
     public boolean onTouchEvent( MotionEvent event ) 
     {
         int action = event.getAction();
@@ -334,6 +336,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         m_inTrade = inTrade;
         m_jniThread.handle( JNIThread.JNICmd.CMD_INVALALL );
+    }
+
+    public int curPending() 
+    {
+        return m_pendingScore;
     }
 
     // DrawCtxt interface implementation
@@ -582,9 +589,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    public boolean trayBegin ( Rect rect, int owner, int dfs ) 
+    public boolean trayBegin ( Rect rect, int owner, int score, int dfs ) 
     {
         m_trayOwner = owner;
+        m_pendingScore = score;
         return true;
     }
 
