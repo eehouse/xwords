@@ -45,6 +45,7 @@ public class LookupActivity extends XWListActivity
     private static String[] s_langCodes;
     private static String[] s_lookupNames;
     private static String[] s_lookupUrls;
+    private static ArrayAdapter<String> s_urlsAdapter;
     private static final int LIST_LAYOUT = 
         // android.R.layout.simple_spinner_item;
         // android.R.layout.select_dialog_item
@@ -59,7 +60,6 @@ public class LookupActivity extends XWListActivity
     private int m_urlIndex = 0;
     private int m_state;
     private ArrayAdapter<String> m_wordsAdapter;
-    private ArrayAdapter<String> m_urlsAdapter;
     private ArrayAdapter<String> m_shown;
     private Button m_doneButton;
 
@@ -78,8 +78,6 @@ public class LookupActivity extends XWListActivity
 
         m_wordsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT, 
                                                    m_words );
-        m_urlsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT, 
-                                                  s_lookupNames );
         getListView().setOnItemClickListener( this );
 
         m_doneButton = (Button)findViewById( R.id.button_done );
@@ -112,7 +110,7 @@ public class LookupActivity extends XWListActivity
         if ( m_shown == m_wordsAdapter ) {
             m_wordIndex = position;
             Utils.logf( "%s selected", m_words[position] );
-        } else if ( m_shown == m_urlsAdapter ) {
+        } else if ( m_shown == s_urlsAdapter ) {
             m_urlIndex = position;
             Utils.logf( "%s selected", s_lookupUrls[position] );
         } else {
@@ -145,8 +143,8 @@ public class LookupActivity extends XWListActivity
                 }
             case 1:
                 if ( 1 < s_lookupUrls.length ) {
-                    m_shown = m_urlsAdapter;
-                    getListView().setAdapter( m_urlsAdapter );
+                    m_shown = s_urlsAdapter;
+                    getListView().setAdapter( s_urlsAdapter );
                     setTitle( m_words[m_wordIndex] );
                     String txt = Utils.format( this, R.string.button_donef,
                                                m_words[m_wordIndex] );
@@ -202,6 +200,8 @@ public class LookupActivity extends XWListActivity
             }
             s_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
             s_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
+            s_urlsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT, 
+                                                      s_lookupNames );
 
             s_lang = lang;
         } // initLookup
