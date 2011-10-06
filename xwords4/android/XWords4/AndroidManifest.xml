@@ -83,6 +83,11 @@
               >
     </activity>
 
+    <!-- android:theme="@android:style/Theme.Dialog" -->
+    <activity android:name="LookupActivity"
+              android:configChanges="keyboardHidden|orientation"
+              />
+
     <receiver android:name="RelayReceiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>

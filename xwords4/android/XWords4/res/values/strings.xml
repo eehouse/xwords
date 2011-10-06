@@ -1769,6 +1769,7 @@
     <string name="button_lookupf">Look up %s</string>
     <string name="title_lookup">Tap to look up</string>
     <string name="button_done">Done</string>
+    <string name="button_donef">Done with %s</string>
 
     <string name="site_spinner_label">Pick a site</string>
     <string name="site_spinner_prompt">Pick a site</string>
