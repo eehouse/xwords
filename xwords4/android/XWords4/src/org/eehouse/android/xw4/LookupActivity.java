@@ -33,6 +33,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.app.AlertDialog;
 import java.util.ArrayList;
 
 import junit.framework.Assert;
@@ -51,6 +52,8 @@ public class LookupActivity extends XWListActivity
     private static final int STATE_WORDS = 1;
     private static final int STATE_URLS = 2;
     private static final int STATE_LOOKUP = 3;
+
+    private static final int LOOKUP_ACTION = 1;
 
     private static String[] s_langCodes;
     private static String[] s_lookupNames;
@@ -125,6 +128,19 @@ public class LookupActivity extends XWListActivity
         outState.putInt( URLINDEX, m_urlIndex );
     }
 
+    //////////////////////////////////////////////////
+    // DlgDelegate.DlgClickNotify interface
+    //////////////////////////////////////////////////
+    @Override
+    public void dlgButtonClicked( int id, int which )
+    {
+        if ( LOOKUP_ACTION == id 
+             && AlertDialog.BUTTON_POSITIVE == which ) {
+            lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
+            switchState( -1 );
+        }
+    }
+
     private void getBundledData( Bundle bundle )
     {
         if ( null == bundle ) {
@@ -179,8 +195,13 @@ public class LookupActivity extends XWListActivity
             m_doneButton.setText( txt );
             break;
         case STATE_LOOKUP:
-            lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
-            switchState( -1 );
+            if ( 1 >= s_lookupUrls.length ) {
+                showNotAgainDlgThen( R.string.not_again_needUrlsForLang, 
+                                     R.string.key_na_needUrlsForLang,
+                                     LOOKUP_ACTION );
+            } else {
+                dlgButtonClicked( LOOKUP_ACTION, AlertDialog.BUTTON_POSITIVE );
+            }
             break;
         default:
             Assert.fail();

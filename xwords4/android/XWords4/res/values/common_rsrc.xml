@@ -72,6 +72,7 @@
   <string name="key_notagain_turnchanged">key_notagain_turnchanged</string>
   <string name="key_notagain_newfrom">key_notagain_newfrom</string>
   <string name="key_notagain_trading">key_notagain_trading</string>
+  <string name="key_na_needUrlsForLang">key_na_needUrlsForLang</string>
 
   <!-- Name is not localized -->
   <string name="app_name">Crosswords</string>  

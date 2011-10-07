@@ -1777,5 +1777,10 @@
     <string name="pick_url_titlef">Look up %s at</string>
 
     <string name="board_menu_pass">Pass</string>
+
+    <string name="not_again_needUrlsForLang">Google is the only word
+      lookup site I have for this language.  If you have suggestions
+      for word-lookup sites please email eehouse@eehouse.org
+      .</string>
 </resources>
 
