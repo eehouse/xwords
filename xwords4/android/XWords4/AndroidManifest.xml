@@ -83,9 +83,9 @@
               >
     </activity>
 
-    <!-- android:theme="@android:style/Theme.Dialog" -->
     <activity android:name="LookupActivity"
               android:configChanges="keyboardHidden|orientation"
+              android:theme="@android:style/Theme.Dialog"
               />
 
     <receiver android:name="RelayReceiver">
