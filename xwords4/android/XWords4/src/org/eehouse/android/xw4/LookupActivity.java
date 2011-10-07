@@ -27,10 +27,12 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import java.util.ArrayList;
 
 import junit.framework.Assert;
@@ -41,6 +43,11 @@ public class LookupActivity extends XWListActivity
 
     public static final String WORDS = "WORDS";
     public static final String LANG = "LANG";
+
+    private static final int STATE_DONE = 0;
+    private static final int STATE_WORDS = 1;
+    private static final int STATE_URLS = 2;
+    private static final int STATE_LOOKUP = 3;
 
     private static String[] s_langCodes;
     private static String[] s_lookupNames;
@@ -60,14 +67,16 @@ public class LookupActivity extends XWListActivity
     private int m_urlIndex = 0;
     private int m_state;
     private ArrayAdapter<String> m_wordsAdapter;
-    private ArrayAdapter<String> m_shown;
     private Button m_doneButton;
+    private TextView m_summary;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
         getBundledData( savedInstanceState );
+
+        requestWindowFeature( Window.FEATURE_NO_TITLE );
 
         Intent intent = getIntent();
         m_words = intent.getStringArrayExtra( WORDS );
@@ -82,9 +91,10 @@ public class LookupActivity extends XWListActivity
 
         m_doneButton = (Button)findViewById( R.id.button_done );
         m_doneButton.setOnClickListener( this );
+        m_summary = (TextView)findViewById( R.id.summary );
 
-        m_state = 0;
-        adjustForState();
+        m_state = STATE_DONE;
+        adjustState( 1 );
     }
 
     @Override
@@ -99,25 +109,23 @@ public class LookupActivity extends XWListActivity
     /* View.OnClickListener -- just the Done button */
     public void onClick( View view ) 
     {
-        --m_state;
-        adjustForState();
+        adjustState( -1 );
     }
 
     /* AdapterView.OnItemClickListener */
     public void onItemClick( AdapterView<?> parent, View view, 
                              int position, long id )
     {
-        if ( m_shown == m_wordsAdapter ) {
+        if ( STATE_WORDS == m_state ) {
             m_wordIndex = position;
             Utils.logf( "%s selected", m_words[position] );
-        } else if ( m_shown == s_urlsAdapter ) {
+        } else if ( STATE_URLS == m_state ) {
             m_urlIndex = position;
             Utils.logf( "%s selected", s_lookupUrls[position] );
         } else {
             Assert.fail();
         }
-        ++m_state;
-        adjustForState();
+        adjustState( 1 );
     }
 
     private void getBundledData( Bundle bundle )
@@ -127,37 +135,42 @@ public class LookupActivity extends XWListActivity
         // }
     }
 
-    private void adjustForState()
+    private void adjustState( int incr )
     {
-        if ( 0 > m_state ) {
+        m_state += incr;
+        if ( 1 >= m_words.length ) {
+            m_state += incr;
+        }
+        if ( 1 >= s_lookupUrls.length ) {
+            m_state += incr;
+        }
+
+        switch( m_state ) {
+        case STATE_DONE:
             finish();
-        } else { 
-            switch( m_state ) {
-            case 0:
-                if ( 1 < m_words.length ) {
-                    m_shown = m_wordsAdapter;
-                    getListView().setAdapter( m_wordsAdapter );
-                    setTitle( R.string.title_lookup );
-                    m_doneButton.setText( R.string.button_done );
-                    break;
-                }
-            case 1:
-                if ( 1 < s_lookupUrls.length ) {
-                    m_shown = s_urlsAdapter;
-                    getListView().setAdapter( s_urlsAdapter );
-                    setTitle( m_words[m_wordIndex] );
-                    String txt = Utils.format( this, R.string.button_donef,
-                                               m_words[m_wordIndex] );
-                    m_doneButton.setText( txt );
-                    break;
-                }
-            case 2:
-                lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
-                if ( 0 >= --m_state ) {
-                    finish();
-                }
-                break;
-            }
+            break;
+        case STATE_WORDS:
+            Assert.assertTrue( 1 < m_words.length );
+            getListView().setAdapter( m_wordsAdapter );
+            setSummary( R.string.title_lookup );
+            m_doneButton.setText( R.string.button_done );
+            break;
+        case STATE_URLS:
+            Assert.assertTrue( 1 < s_lookupUrls.length );
+            getListView().setAdapter( s_urlsAdapter );
+            setSummary( m_words[m_wordIndex] );
+            String txt = Utils.format( this, R.string.button_donef,
+                                       m_words[m_wordIndex] );
+            m_doneButton.setText( txt );
+            break;
+        case STATE_LOOKUP:
+            lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
+            adjustState( -1 );
+            break;
+        default:
+            Utils.logf( "unexpected state %d", m_state );
+            Assert.fail();
+            break;
         }
     }
 
@@ -207,10 +220,15 @@ public class LookupActivity extends XWListActivity
         } // initLookup
     }
 
-    private void setTitle( String word )
+    private void setSummary( int id )
+    {
+        m_summary.setText( getString( id ) );
+    }
+
+    private void setSummary( String word )
     {
         String title = Utils.format( this, R.string.pick_url_titlef, word );
-        super.setTitle( title );
+        m_summary.setText( title );
     }
 
 }
