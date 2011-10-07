@@ -43,6 +43,9 @@ public class LookupActivity extends XWListActivity
 
     public static final String WORDS = "WORDS";
     public static final String LANG = "LANG";
+    public static final String STATE = "STATE";
+    public static final String WORDINDEX = "WORDINDEX";
+    public static final String URLINDEX = "URLINDEX";
 
     private static final int STATE_DONE = 0;
     private static final int STATE_WORDS = 1;
@@ -74,7 +77,6 @@ public class LookupActivity extends XWListActivity
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
-        getBundledData( savedInstanceState );
 
         requestWindowFeature( Window.FEATURE_NO_TITLE );
 
@@ -82,6 +84,8 @@ public class LookupActivity extends XWListActivity
         m_words = intent.getStringArrayExtra( WORDS );
         m_lang = intent.getIntExtra( LANG, -1 );
         setLang( m_lang );
+
+        getBundledData( savedInstanceState );
 
         setContentView( R.layout.lookup );
 
@@ -93,23 +97,13 @@ public class LookupActivity extends XWListActivity
         m_doneButton.setOnClickListener( this );
         m_summary = (TextView)findViewById( R.id.summary );
 
-        m_state = STATE_DONE;
-        adjustState( 1 );
-    }
-
-    @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        // if ( null != m_words ) {
-        //     outState.putStringArray( WORDS, m_words );
-        // }
+        switchState();
     }
 
     /* View.OnClickListener -- just the Done button */
     public void onClick( View view ) 
     {
-        adjustState( -1 );
+        switchState( -1 );
     }
 
     /* AdapterView.OnItemClickListener */
@@ -125,14 +119,28 @@ public class LookupActivity extends XWListActivity
         } else {
             Assert.fail();
         }
-        adjustState( 1 );
+        switchState( 1 );
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        outState.putInt( STATE, m_state );
+        outState.putInt( WORDINDEX, m_wordIndex );
+        outState.putInt( URLINDEX, m_urlIndex );
     }
 
     private void getBundledData( Bundle bundle )
     {
-        // if ( null != bundle ) {
-        //     m_words = bundle.getStringArray( WORDS );
-        // }
+        if ( null == bundle ) {
+            m_state = STATE_DONE;
+            adjustState( 1 );
+        } else {
+            m_state = bundle.getInt( STATE );
+            m_wordIndex = bundle.getInt( WORDINDEX );
+            m_urlIndex = bundle.getInt( URLINDEX );
+        }
     }
 
     private void adjustState( int incr )
@@ -144,7 +152,16 @@ public class LookupActivity extends XWListActivity
         if ( 1 >= s_lookupUrls.length ) {
             m_state += incr;
         }
+    }
 
+    private void switchState( int incr )
+    {
+        adjustState( incr );
+        switchState();
+    }
+
+    private void switchState()
+    {
         switch( m_state ) {
         case STATE_DONE:
             finish();
@@ -165,14 +182,14 @@ public class LookupActivity extends XWListActivity
             break;
         case STATE_LOOKUP:
             lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
-            adjustState( -1 );
+            switchState( -1 );
             break;
         default:
             Utils.logf( "unexpected state %d", m_state );
             Assert.fail();
             break;
         }
-    }
+    } // adjustState
 
     private void lookupWord( String word, String fmt )
     {
