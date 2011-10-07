@@ -56,11 +56,7 @@ public class LookupActivity extends XWListActivity
     private static String[] s_lookupNames;
     private static String[] s_lookupUrls;
     private static ArrayAdapter<String> s_urlsAdapter;
-    private static final int LIST_LAYOUT = 
-        // android.R.layout.simple_spinner_item;
-        // android.R.layout.select_dialog_item
-        android.R.layout.simple_list_item_1
-        ;
+    private static final int LIST_LAYOUT = android.R.layout.simple_list_item_1;
 
     private static int s_lang = -1;
 
@@ -112,10 +108,8 @@ public class LookupActivity extends XWListActivity
     {
         if ( STATE_WORDS == m_state ) {
             m_wordIndex = position;
-            Utils.logf( "%s selected", m_words[position] );
         } else if ( STATE_URLS == m_state ) {
             m_urlIndex = position;
-            Utils.logf( "%s selected", s_lookupUrls[position] );
         } else {
             Assert.fail();
         }
@@ -146,11 +140,17 @@ public class LookupActivity extends XWListActivity
     private void adjustState( int incr )
     {
         m_state += incr;
-        if ( 1 >= m_words.length ) {
-            m_state += incr;
-        }
-        if ( 1 >= s_lookupUrls.length ) {
-            m_state += incr;
+        for ( ; ; ) {
+            int curState = m_state;
+            if ( STATE_WORDS == m_state && 1 >= m_words.length ) {
+                m_state += incr;
+            }
+            if ( STATE_URLS == m_state && 1 >= s_lookupUrls.length ) {
+                m_state += incr;
+            }
+            if ( m_state == curState ) {
+                break;
+            }
         }
     }
 
@@ -167,13 +167,11 @@ public class LookupActivity extends XWListActivity
             finish();
             break;
         case STATE_WORDS:
-            Assert.assertTrue( 1 < m_words.length );
             getListView().setAdapter( m_wordsAdapter );
             setSummary( R.string.title_lookup );
             m_doneButton.setText( R.string.button_done );
             break;
         case STATE_URLS:
-            Assert.assertTrue( 1 < s_lookupUrls.length );
             getListView().setAdapter( s_urlsAdapter );
             setSummary( m_words[m_wordIndex] );
             String txt = Utils.format( this, R.string.button_donef,
@@ -185,7 +183,6 @@ public class LookupActivity extends XWListActivity
             switchState( -1 );
             break;
         default:
-            Utils.logf( "unexpected state %d", m_state );
             Assert.fail();
             break;
         }
@@ -232,7 +229,6 @@ public class LookupActivity extends XWListActivity
             s_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
             s_urlsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT, 
                                                       s_lookupNames );
-
             s_lang = lang;
         } // initLookup
     }
