@@ -27,10 +27,13 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.app.AlertDialog;
 import java.util.ArrayList;
 
 import junit.framework.Assert;
@@ -41,16 +44,22 @@ public class LookupActivity extends XWListActivity
 
     public static final String WORDS = "WORDS";
     public static final String LANG = "LANG";
+    public static final String STATE = "STATE";
+    public static final String WORDINDEX = "WORDINDEX";
+    public static final String URLINDEX = "URLINDEX";
+
+    private static final int STATE_DONE = 0;
+    private static final int STATE_WORDS = 1;
+    private static final int STATE_URLS = 2;
+    private static final int STATE_LOOKUP = 3;
+
+    private static final int LOOKUP_ACTION = 1;
 
     private static String[] s_langCodes;
     private static String[] s_lookupNames;
     private static String[] s_lookupUrls;
     private static ArrayAdapter<String> s_urlsAdapter;
-    private static final int LIST_LAYOUT = 
-        // android.R.layout.simple_spinner_item;
-        // android.R.layout.select_dialog_item
-        android.R.layout.simple_list_item_1
-        ;
+    private static final int LIST_LAYOUT = android.R.layout.simple_list_item_1;
 
     private static int s_lang = -1;
 
@@ -60,19 +69,22 @@ public class LookupActivity extends XWListActivity
     private int m_urlIndex = 0;
     private int m_state;
     private ArrayAdapter<String> m_wordsAdapter;
-    private ArrayAdapter<String> m_shown;
     private Button m_doneButton;
+    private TextView m_summary;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
-        getBundledData( savedInstanceState );
+
+        requestWindowFeature( Window.FEATURE_NO_TITLE );
 
         Intent intent = getIntent();
         m_words = intent.getStringArrayExtra( WORDS );
         m_lang = intent.getIntExtra( LANG, -1 );
         setLang( m_lang );
+
+        getBundledData( savedInstanceState );
 
         setContentView( R.layout.lookup );
 
@@ -82,84 +94,120 @@ public class LookupActivity extends XWListActivity
 
         m_doneButton = (Button)findViewById( R.id.button_done );
         m_doneButton.setOnClickListener( this );
+        m_summary = (TextView)findViewById( R.id.summary );
 
-        m_state = 0;
-        adjustForState();
-    }
-
-    @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        // if ( null != m_words ) {
-        //     outState.putStringArray( WORDS, m_words );
-        // }
+        switchState();
     }
 
     /* View.OnClickListener -- just the Done button */
     public void onClick( View view ) 
     {
-        --m_state;
-        adjustForState();
+        switchState( -1 );
     }
 
     /* AdapterView.OnItemClickListener */
     public void onItemClick( AdapterView<?> parent, View view, 
                              int position, long id )
     {
-        if ( m_shown == m_wordsAdapter ) {
+        if ( STATE_WORDS == m_state ) {
             m_wordIndex = position;
-            Utils.logf( "%s selected", m_words[position] );
-        } else if ( m_shown == s_urlsAdapter ) {
+        } else if ( STATE_URLS == m_state ) {
             m_urlIndex = position;
-            Utils.logf( "%s selected", s_lookupUrls[position] );
         } else {
             Assert.fail();
         }
-        ++m_state;
-        adjustForState();
+        switchState( 1 );
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        outState.putInt( STATE, m_state );
+        outState.putInt( WORDINDEX, m_wordIndex );
+        outState.putInt( URLINDEX, m_urlIndex );
+    }
+
+    //////////////////////////////////////////////////
+    // DlgDelegate.DlgClickNotify interface
+    //////////////////////////////////////////////////
+    @Override
+    public void dlgButtonClicked( int id, int which )
+    {
+        if ( LOOKUP_ACTION == id 
+             && AlertDialog.BUTTON_POSITIVE == which ) {
+            lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
+            switchState( -1 );
+        }
     }
 
     private void getBundledData( Bundle bundle )
     {
-        // if ( null != bundle ) {
-        //     m_words = bundle.getStringArray( WORDS );
-        // }
+        if ( null == bundle ) {
+            m_state = STATE_DONE;
+            adjustState( 1 );
+        } else {
+            m_state = bundle.getInt( STATE );
+            m_wordIndex = bundle.getInt( WORDINDEX );
+            m_urlIndex = bundle.getInt( URLINDEX );
+        }
     }
 
-    private void adjustForState()
+    private void adjustState( int incr )
     {
-        if ( 0 > m_state ) {
-            finish();
-        } else { 
-            switch( m_state ) {
-            case 0:
-                if ( 1 < m_words.length ) {
-                    m_shown = m_wordsAdapter;
-                    getListView().setAdapter( m_wordsAdapter );
-                    setTitle( R.string.title_lookup );
-                    m_doneButton.setText( R.string.button_done );
-                    break;
-                }
-            case 1:
-                if ( 1 < s_lookupUrls.length ) {
-                    m_shown = s_urlsAdapter;
-                    getListView().setAdapter( s_urlsAdapter );
-                    setTitle( m_words[m_wordIndex] );
-                    String txt = Utils.format( this, R.string.button_donef,
-                                               m_words[m_wordIndex] );
-                    m_doneButton.setText( txt );
-                    break;
-                }
-            case 2:
-                lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
-                if ( 0 >= --m_state ) {
-                    finish();
-                }
+        m_state += incr;
+        for ( ; ; ) {
+            int curState = m_state;
+            if ( STATE_WORDS == m_state && 1 >= m_words.length ) {
+                m_state += incr;
+            }
+            if ( STATE_URLS == m_state && 1 >= s_lookupUrls.length ) {
+                m_state += incr;
+            }
+            if ( m_state == curState ) {
                 break;
             }
         }
     }
+
+    private void switchState( int incr )
+    {
+        adjustState( incr );
+        switchState();
+    }
+
+    private void switchState()
+    {
+        switch( m_state ) {
+        case STATE_DONE:
+            finish();
+            break;
+        case STATE_WORDS:
+            getListView().setAdapter( m_wordsAdapter );
+            setSummary( R.string.title_lookup );
+            m_doneButton.setText( R.string.button_done );
+            break;
+        case STATE_URLS:
+            getListView().setAdapter( s_urlsAdapter );
+            setSummary( m_words[m_wordIndex] );
+            String txt = Utils.format( this, R.string.button_donef,
+                                       m_words[m_wordIndex] );
+            m_doneButton.setText( txt );
+            break;
+        case STATE_LOOKUP:
+            if ( 1 >= s_lookupUrls.length ) {
+                showNotAgainDlgThen( R.string.not_again_needUrlsForLang, 
+                                     R.string.key_na_needUrlsForLang,
+                                     LOOKUP_ACTION );
+            } else {
+                dlgButtonClicked( LOOKUP_ACTION, AlertDialog.BUTTON_POSITIVE );
+            }
+            break;
+        default:
+            Assert.fail();
+            break;
+        }
+    } // adjustState
 
     private void lookupWord( String word, String fmt )
     {
@@ -202,15 +250,19 @@ public class LookupActivity extends XWListActivity
             s_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
             s_urlsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT, 
                                                       s_lookupNames );
-
             s_lang = lang;
         } // initLookup
     }
 
-    private void setTitle( String word )
+    private void setSummary( int id )
+    {
+        m_summary.setText( getString( id ) );
+    }
+
+    private void setSummary( String word )
     {
         String title = Utils.format( this, R.string.pick_url_titlef, word );
-        super.setTitle( title );
+        m_summary.setText( title );
     }
 
 }
