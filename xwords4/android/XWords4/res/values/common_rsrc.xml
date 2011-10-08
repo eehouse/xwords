@@ -3,6 +3,8 @@
 <!-- Resources in this file do not require localization -->
 <resources>
 
+  <string name="app_version">4.4 beta 35</string>
+
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
   <string name="key_show_arrow">key_show_arrow</string>
@@ -82,7 +84,6 @@
 
   <!-- <string name="default_host">10.0.2.2</string> -->
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
-  <string name="app_version">4.4 beta 34</string>
   <string name="game_url_pathf">//%1$s/newgame.php</string>
 
   <!-- Debugging stuff. No point in localizing it. -->
