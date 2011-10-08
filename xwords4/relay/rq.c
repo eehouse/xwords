@@ -312,13 +312,22 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
                 struct sockaddr_un addr;
                 addr.sun_family = AF_UNIX;
                 strcpy( addr.sun_path, nbs );
-                                            
-                int err = connect( nbsfd, (struct sockaddr*)&addr,
-                                   sizeof(addr) );
-                if ( 0 != err ) {
-                    fprintf( stderr, "%s: connect()=>%s\n", __func__,
-                             strerror(errno) );
-                    assert( false );
+
+                for ( ; ; ) {
+                    if ( 0 == connect( nbsfd, (struct sockaddr*)&addr, 
+                                       sizeof(addr) ) ) {
+                        break;
+                    }
+                    switch( errno ) {
+                    case ECONNREFUSED:
+                    case ENOENT:
+                        usleep( 250000 );
+                        break;
+                    default:
+                        fprintf( stderr, "%s: connect()=>%d (%s)\n", __func__,
+                                 errno, strerror(errno) );
+                        assert( false );
+                    }
                 }
                 fd = nbsfd;
             }
