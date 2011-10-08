@@ -507,7 +507,8 @@ public class BoardActivity extends XWActivity
 
         // For now undo-last can crash the app or break a game in
         // networked case.  Disable until this is fixed.
-        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+        if ( null != m_gi
+             && m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
             menu.removeItem( R.id.board_menu_undo_last );
         }
         return true;
