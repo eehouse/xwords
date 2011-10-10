@@ -40,21 +40,15 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
-import android.content.DialogInterface.OnCancelListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import junit.framework.Assert;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -102,7 +96,6 @@ public class BoardActivity extends XWActivity
     private static final String ROOM = "ROOM";
     private static final String TOASTSTR = "TOASTSTR";
     private static final String WORDS = "WORDS";
-    private static final String LOOKUPITEM = "LOOKUPITEM";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -172,7 +165,6 @@ public class BoardActivity extends XWActivity
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
-            DialogInterface.OnClickListener doneLstnr;
             AlertDialog.Builder ab;
 
             switch ( id ) {
