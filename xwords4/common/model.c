@@ -2040,7 +2040,6 @@ recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
 {
     RecordWordsInfo* info = (RecordWordsInfo*)closure;
     XWStreamCtxt* stream = info->stream;
-    XP_ASSERT( isLegal );
     XP_LOGF( "%s(%s)", __func__, word );
     if ( 0 < info->nWords++ ) {
         stream_putU8( stream, '\n' );
