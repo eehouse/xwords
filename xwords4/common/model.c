@@ -2035,7 +2035,7 @@ model_recentPassCountOk( ModelCtxt* model )
 }
 
 static XP_Bool
-recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
+recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), void* closure )
 {
     RecordWordsInfo* info = (RecordWordsInfo*)closure;
     XWStreamCtxt* stream = info->stream;
