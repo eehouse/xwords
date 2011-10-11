@@ -40,21 +40,15 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
-import android.content.DialogInterface.OnCancelListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import junit.framework.Assert;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -95,6 +89,7 @@ public class BoardActivity extends XWActivity
     private static final int UNDO_ACTION = 11;
     private static final int CHAT_ACTION = 12;
     private static final int START_TRADE_ACTION = 13;
+    private static final int LOOKUP_ACTION = 14;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -102,7 +97,6 @@ public class BoardActivity extends XWActivity
     private static final String ROOM = "ROOM";
     private static final String TOASTSTR = "TOASTSTR";
     private static final String WORDS = "WORDS";
-    private static final String LOOKUPITEM = "LOOKUPITEM";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -172,7 +166,6 @@ public class BoardActivity extends XWActivity
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
-            DialogInterface.OnClickListener doneLstnr;
             AlertDialog.Builder ab;
 
             switch ( id ) {
@@ -253,7 +246,11 @@ public class BoardActivity extends XWActivity
                         lstnr = new DialogInterface.OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
-                                    launchLookup( m_words );
+                                    showNotAgainDlgThen( R.string.
+                                                         not_again_lookup, 
+                                                         R.string.
+                                                         key_na_lookup, 
+                                                         LOOKUP_ACTION );
                                 }
                             };
                         ab.setNegativeButton( buttonTxt, lstnr );
@@ -507,7 +504,8 @@ public class BoardActivity extends XWActivity
 
         // For now undo-last can crash the app or break a game in
         // networked case.  Disable until this is fixed.
-        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+        if ( null != m_gi
+             && m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
             menu.removeItem( R.id.board_menu_undo_last );
         }
         return true;
@@ -683,6 +681,9 @@ public class BoardActivity extends XWActivity
                 Toast.makeText( this, R.string.entering_trade,
                                 Toast.LENGTH_SHORT).show();
                 cmd = JNIThread.JNICmd.CMD_TRADE;
+                break;
+            case LOOKUP_ACTION:
+                launchLookup( m_words );
                 break;
             default:
                 Assert.fail();
