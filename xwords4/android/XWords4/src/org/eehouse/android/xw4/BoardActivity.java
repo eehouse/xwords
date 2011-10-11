@@ -89,6 +89,7 @@ public class BoardActivity extends XWActivity
     private static final int UNDO_ACTION = 11;
     private static final int CHAT_ACTION = 12;
     private static final int START_TRADE_ACTION = 13;
+    private static final int LOOKUP_ACTION = 14;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -245,7 +246,11 @@ public class BoardActivity extends XWActivity
                         lstnr = new DialogInterface.OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
-                                    launchLookup( m_words );
+                                    showNotAgainDlgThen( R.string.
+                                                         not_again_lookup, 
+                                                         R.string.
+                                                         key_na_lookup, 
+                                                         LOOKUP_ACTION );
                                 }
                             };
                         ab.setNegativeButton( buttonTxt, lstnr );
@@ -676,6 +681,9 @@ public class BoardActivity extends XWActivity
                 Toast.makeText( this, R.string.entering_trade,
                                 Toast.LENGTH_SHORT).show();
                 cmd = JNIThread.JNICmd.CMD_TRADE;
+                break;
+            case LOOKUP_ACTION:
+                launchLookup( m_words );
                 break;
             default:
                 Assert.fail();
