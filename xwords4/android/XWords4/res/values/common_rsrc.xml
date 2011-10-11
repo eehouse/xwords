@@ -3,7 +3,7 @@
 <!-- Resources in this file do not require localization -->
 <resources>
 
-  <string name="app_version">4.4 beta 35</string>
+  <string name="app_version">4.4 beta 36</string>
 
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
