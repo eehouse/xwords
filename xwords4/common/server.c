@@ -313,7 +313,7 @@ readStreamIf( ServerCtxt* server, XWStreamCtxt* in )
     XP_U16 len = stream_getU16( in );
     if ( 0 < len ) {
         result = mkServerStream( server );
-        stream_copyFromStream( in, result, len );
+        stream_copyFromStream( result, in, len );
     }
     return result;
 }
@@ -323,7 +323,9 @@ writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
 {
     XP_U16 len = !!src ? stream_getSize( src ) : 0;
     stream_putU16( dest, len );
-    stream_copyFromStream( dest, src, len );
+    if ( 0 < len ) {
+        stream_copyFromStream( dest, src, len );
+    }
 }
 
 ServerCtxt*
