@@ -1477,22 +1477,15 @@ cancelTimer( GtkAppGlobals* globals, XWTimerReason why )
 } /* cancelTimer */
 
 static gint
-pentimer_idle_func( gpointer data )
+pen_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
-    struct timeval tv;
-    XP_Bool callAgain = XP_TRUE;
 
-    gettimeofday( &tv, NULL );
+    if ( linuxFireTimer( &globals->cGlobals, TIMER_PENDOWN ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
 
-    if ( (tv.tv_usec - globals->penTv.tv_usec) >= globals->penTimerInterval) {
-        if ( linuxFireTimer( &globals->cGlobals, TIMER_PENDOWN ) ) {
-            board_draw( globals->cGlobals.game.board );
-        }
-        callAgain = XP_FALSE;
-    } 
-
-    return callAgain;
+    return XP_FALSE;
 } /* pentimer_idle_func */
 
 static gint
@@ -1546,11 +1539,10 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     cancelTimer( globals, why );
 
     if ( why == TIMER_PENDOWN ) {
-        /* half a second */
-        globals->penTimerInterval = 50 * 10000;
-
-        (void)gettimeofday( &globals->penTv, NULL );
-        newSrc = g_idle_add( pentimer_idle_func, globals );
+        if ( 0 != globals->timerSources[why-1] ) {
+            g_source_remove( globals->timerSources[why-1] );
+        }
+        newSrc = g_timeout_add( 1000, pen_timer_func, globals );
     } else if ( why == TIMER_TIMERTICK ) {
         /* one second */
         globals->scoreTimerInterval = 100 * 10000;

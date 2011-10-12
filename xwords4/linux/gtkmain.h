@@ -106,8 +106,6 @@ typedef struct GtkAppGlobals {
 
     guint idleID;
 
-    struct timeval penTv;		/* for timer */
-    XP_U32 penTimerInterval;
     struct timeval scoreTv;		/* for timer */
     XP_U32 scoreTimerInterval;
 
