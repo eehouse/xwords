@@ -91,6 +91,10 @@ public class UtilCtxtImpl implements UtilCtxt {
     {
     }
 
+    public void cellSquareHeld( String words )
+    {
+    }
+
     public String getUserString( int stringCode )
     {
         int id = 0;

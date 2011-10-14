@@ -1730,6 +1730,15 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 }
 #endif
 
+#ifdef XWFEATURE_BOARDWORDS
+static void
+gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
+{
+    XP_USE( uc );
+    XP_USE( words );
+}
+#endif
+
 static void
 gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
@@ -1951,6 +1960,9 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
 #ifndef XWFEATURE_MINIWIN
     util->vtable->m_util_bonusSquareHeld = gtk_util_bonusSquareHeld;
     util->vtable->m_util_playerScoreHeld = gtk_util_playerScoreHeld;
+#endif
+#ifdef XWFEATURE_BOARDWORDS
+    util->vtable->m_util_cellSquareHeld = gtk_util_cellSquareHeld;
 #endif
 
     util->closure = globals;

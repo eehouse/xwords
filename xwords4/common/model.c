@@ -75,7 +75,11 @@ static void loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version,
                             PlayerCtxt* pc );
 static void writePlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
-static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, void* clsur );
+static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
+#ifdef XWFEATURE_BOARDWORDS
+                           const MoveInfo* movei, XP_U16 start, XP_U16 end,
+#endif
+                           void* clsur );
 
 /*****************************************************************************
  *
@@ -1948,7 +1952,11 @@ typedef struct _FirstWordData {
 } FirstWordData;
 
 static XP_Bool
-getFirstWord( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
+getFirstWord( const XP_UCHAR* word, XP_Bool isLegal, 
+#ifdef XWFEATURE_BOARDWORDS
+              const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), XP_U16 XP_UNUSED(end),
+#endif
+              void* closure )
 {
     LOG_FUNC();
     if ( isLegal ) {
@@ -2035,16 +2043,26 @@ model_recentPassCountOk( ModelCtxt* model )
     return count < okCount;
 }
 
-static XP_Bool
-recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), void* closure )
+static void
+appendWithCR( XWStreamCtxt* stream, const XP_UCHAR* word, XP_U16* counter )
 {
-    RecordWordsInfo* info = (RecordWordsInfo*)closure;
-    XWStreamCtxt* stream = info->stream;
-    XP_LOGF( "%s(%s)", __func__, word );
-    if ( 0 < info->nWords++ ) {
+    if ( 0 < (*counter)++ ) {
         stream_putU8( stream, '\n' );
     }
     stream_catString( stream, word );
+}
+
+static XP_Bool 
+recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
+#ifdef XWFEATURE_BOARDWORDS
+            const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
+            XP_U16 XP_UNUSED(end),
+#endif
+            void* closure )
+
+{
+    RecordWordsInfo* info = (RecordWordsInfo*)closure;
+    appendWithCR( info->stream, word, &info->nWords );
     return XP_TRUE;
 }
 
@@ -2084,6 +2102,65 @@ model_getWordsPlayed( ModelCtxt* model, XP_U16 nTurns, XWStreamCtxt* stream )
     }
     stack_destroy( tmpStack );
 }
+
+#ifdef XWFEATURE_BOARDWORDS
+
+typedef struct _ListWordsThroughInfo {
+    XWStreamCtxt* stream;
+    XP_U16 col, row;
+    XP_U16 nWords;
+} ListWordsThroughInfo;
+
+static XP_Bool
+listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
+                  const MoveInfo* movei, XP_U16 start, XP_U16 end, 
+                  void* closure )
+{
+    ListWordsThroughInfo* info = (ListWordsThroughInfo*)closure;
+
+    XP_Bool contained = XP_FALSE;
+    if ( movei->isHorizontal && movei->commonCoord == info->row ) {
+        contained = start <= info->col && end >= info->col;
+    } else if ( !movei->isHorizontal && movei->commonCoord == info->col ) {
+        contained = start <= info->row && end >= info->row;
+    }
+
+    if ( contained ) {
+        appendWithCR( info->stream, word, &info->nWords );
+    }
+
+    return XP_TRUE;
+}
+
+/* List every word played that includes the tile on {col,row}.
+ *
+ * How?   Undo backwards until we find the move that placed that tile.*/
+void
+model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row, 
+                        XWStreamCtxt* stream )
+{
+    XP_ASSERT( !!stream );
+    StackCtxt* stack = model->vol.stack;
+    StackCtxt* tmpStack = stack_copy( stack );
+
+    XP_U16 nPlayers = model->nPlayers;
+    XP_U16 nEntries = stack_getNEntries( stack ) - nPlayers; /* skip assignments */
+
+    if ( model_undoLatestMoves( model, NULL, nEntries, NULL, NULL ) ) {
+        ListWordsThroughInfo lwtInfo = { .stream = stream, .col = col,
+                                         .row = row, .nWords = 0,
+        };
+        WordNotifierInfo ni = { .proc = listWordsThrough, .closure = &lwtInfo };
+        /* Now push the undone moves back into the model one at a time.
+           recordWord() will add each played word to the stream as it's
+           scored */
+        buildModelFromStack( model, tmpStack, XP_TRUE, nPlayers,
+                             (XWStreamCtxt*)NULL, &ni, (MovePrintFuncPre)NULL, 
+                             (MovePrintFuncPost)NULL, NULL );
+    }
+    stack_destroy( tmpStack );
+}
+#endif
 
 XP_Bool
 model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,

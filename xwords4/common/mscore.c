@@ -40,9 +40,9 @@ static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 static XP_S16 checkScoreMove( ModelCtxt* model, XP_S16 turn, 
                               EngineCtxt* engine, XWStreamCtxt* stream, 
                               XP_Bool silent, WordNotifierInfo* notifyInfo );
-static XP_U16 scoreWord( const ModelCtxt* model, XP_U16 turn, MoveInfo* movei,
-                         EngineCtxt* engine, XWStreamCtxt* stream, 
-                         WordNotifierInfo* notifyInfo );
+static XP_U16 scoreWord( const ModelCtxt* model, XP_U16 turn, 
+                         const MoveInfo* movei, EngineCtxt* engine, 
+                         XWStreamCtxt* stream, WordNotifierInfo* notifyInfo );
 
 /* for formatting when caller wants an explanation of the score.  These live
    in separate function called only when stream != NULL so that they'll have
@@ -553,7 +553,7 @@ tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 
 static XP_U16
 scoreWord( const ModelCtxt* model, XP_U16 turn,
-           MoveInfo* movei, /* new tiles */
+           const MoveInfo* movei, /* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
            WordNotifierInfo* notifyInfo )
@@ -567,7 +567,7 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
     XP_U16 start, end;
     XP_U16* incr;
     XP_U16 col, row;
-    MoveInfoTile* tiles = movei->tiles;
+    const MoveInfoTile* tiles = movei->tiles;
     XP_U16 firstCoord = tiles->varCoord;
     DictionaryCtxt* dict = model_getPlayerDict( model, turn );
 
@@ -671,7 +671,11 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
                 XP_UCHAR buf[(MAX_ROWS*2)+1];
                 dict_tilesToString( dict, checkWordBuf, len, buf, 
                                     sizeof(buf) );
-                (void)(*notifyInfo->proc)( buf, legal, notifyInfo->closure );
+                (void)(*notifyInfo->proc)( buf, legal,
+#ifdef XWFEATURE_BOARDWORDS
+                                           movei, start, end, 
+#endif
+                                           notifyInfo->closure );
             }
 
             if ( !!stream ) {

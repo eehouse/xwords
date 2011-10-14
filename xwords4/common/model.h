@@ -239,6 +239,10 @@ void model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
 /********************* scoring ********************/
 
 typedef XP_Bool (*WordNotifierProc)( const XP_UCHAR* word, XP_Bool isLegal, 
+#ifdef XWFEATURE_BOARDWORDS
+                                     const MoveInfo* movei, XP_U16 start, 
+                                     XP_U16 end,
+#endif
                                      void* closure );
 typedef struct WordNotifierInfo {
     WordNotifierProc proc;
@@ -254,6 +258,10 @@ XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
                                    XP_UCHAR* expl, XP_U16* explLen );
 void model_getWordsPlayed( ModelCtxt* model, XP_U16 nTurns, 
                            XWStreamCtxt* stream );
+#ifdef XWFEATURE_BOARDWORDS
+void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
+                             XWStreamCtxt* stream );
+#endif
 
 /* Have there been too many passes (so game should end)? */
 XP_Bool model_recentPassCountOk( ModelCtxt* model );

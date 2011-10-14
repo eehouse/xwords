@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -989,6 +989,16 @@ public class BoardActivity extends XWActivity
                     public void run() {
                         Toast.makeText( BoardActivity.this, text,
                                         Toast.LENGTH_SHORT).show();
+                    }
+                } );
+        }
+
+        @Override
+        public void cellSquareHeld( final String words )
+        {
+            post( new Runnable() {
+                    public void run() {
+                        launchLookup( wordsToArray( words ) );
                     }
                 } );
         }

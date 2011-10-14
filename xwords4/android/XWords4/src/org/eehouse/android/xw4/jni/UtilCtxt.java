@@ -49,6 +49,7 @@ public interface UtilCtxt {
 
     void bonusSquareHeld( int bonus );
     void playerScoreHeld( int player );
+    void cellSquareHeld( String words );
 
     static final int STRD_ROBOT_TRADED =                  1;
     static final int STR_ROBOT_MOVED =                    2;
