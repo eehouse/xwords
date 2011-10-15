@@ -6,7 +6,7 @@
 <!--             android:orientation="vertical" -->
 <!--             > -->
 
-    <org.eehouse.android.xw4.LookupActivity
+    <org.eehouse.android.xw4.LookupView
          xmlns:android="http://schemas.android.com/apk/res/android"
          android:orientation="vertical"
          android:layout_width="fill_parent" 
@@ -33,5 +33,5 @@
                 />
                 <!-- android:text="@string/button_done"  -->
 
-    </org.eehouse.android.xw4.LookupActivity>
+    </org.eehouse.android.xw4.LookupView>
 <!-- </ScrollView> -->

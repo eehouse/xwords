@@ -328,7 +328,7 @@ public class BoardActivity extends XWActivity
                 break;
 
             case DLG_LOOKUP:
-                LookupActivity view = (LookupActivity)Utils.inflate( this, R.layout.lookup );
+                LookupView view = (LookupView)Utils.inflate( this, R.layout.lookup );
                 dialog = new AlertDialog.Builder( this )
                     .setView( view )
                     .create();
