@@ -162,6 +162,9 @@ typedef struct UtilVtable {
     void (*m_util_bonusSquareHeld)( XW_UtilCtxt* uc, XWBonusType bonus );
     void (*m_util_playerScoreHeld)( XW_UtilCtxt* uc, XP_U16 player );
 #endif
+#ifdef XWFEATURE_BOARDWORDS
+    void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWStreamCtxt* words );
+#endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
@@ -271,7 +274,10 @@ struct XW_UtilCtxt {
 # define util_playerScoreHeld( uc, player )                                \
          (uc)->vtable->m_util_playerScoreHeld( (uc), (player) )
 #endif
-
+#ifdef XWFEATURE_BOARDWORDS
+#define util_cellSquareHeld(uc, s)                      \
+    (uc)->vtable->m_util_cellSquareHeld( (uc), (s) )
+#endif
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define util_addrChange( uc, addro, addrn ) \
          (uc)->vtable->m_util_addrChange((uc), (addro), (addrn))

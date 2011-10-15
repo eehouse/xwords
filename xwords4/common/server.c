@@ -1740,7 +1740,12 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
 } /* server_setGameOverListener */
 
 static XP_Bool
-storeBadWords( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
+storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
+#ifdef XWFEATURE_BOARDWORDS
+               const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
+               XP_U16 XP_UNUSED(end), 
+#endif
+               void* closure )
 {
     if ( !isLegal ) {
         ServerCtxt* server = (ServerCtxt*)closure;

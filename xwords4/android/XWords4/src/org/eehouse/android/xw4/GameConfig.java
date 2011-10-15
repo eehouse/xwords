@@ -632,24 +632,27 @@ public class GameConfig extends XWActivity
         boolean canDelete = names.length > 2
             || (m_notNetworkedGame && names.length > 1);
         LayoutInflater factory = LayoutInflater.from(this);
+        View.OnClickListener lstnr = new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    m_whichPlayer = ((XWListItem)view).getPosition();
+                    showDialog( PLAYER_EDIT );
+                }
+            };
+ 
         for ( int ii = 0; ii < names.length; ++ii ) {
-
             final XWListItem view
                 = (XWListItem)factory.inflate( R.layout.list_item, null );
             view.setPosition( ii );
             view.setText( names[ii] );
-            view.setGravity( Gravity.CENTER );
+            if ( m_gi.players[ii].isLocal ) {
+                view.setComment( m_gi.dictName(ii) );
+            }
             if ( canDelete ) {
                 view.setDeleteCallback( this );
             }
 
-            view.setOnClickListener( new View.OnClickListener() {
-                    @Override
-                    public void onClick( View view ) {
-                        m_whichPlayer = ((XWListItem)view).getPosition();
-                        showDialog( PLAYER_EDIT );
-                    }
-                } );
+            view.setOnClickListener( lstnr );
             m_playerLayout.addView( view );
             view.setEnabled( !m_isLocked );
 
@@ -674,20 +677,6 @@ public class GameConfig extends XWActivity
         }
         adjustPlayersLabel();
     } // loadPlayersList
-
-    private String[] buildListWithBrowse( String[] input )
-    {
-        Arrays.sort( input );
-        int browsePosn = input.length;
-        String[] result = new String[browsePosn+1];
-        result[browsePosn] = getString( R.string.download_dicts );
-        
-        for ( int ii = 0; ii < browsePosn; ++ii ) {
-            String lang = input[ii];
-            result[ii] = lang;
-        }
-        return result;
-    }
 
     private void configDictSpinner( final Dialog dialog, LocalPlayer lp )
     {
@@ -738,6 +727,7 @@ public class GameConfig extends XWActivity
                         m_gi.setLang( DictLangCache.
                                       getLangLangCode( GameConfig.this, 
                                                        chosen ) );
+                        loadPlayersList();
                     }
                 }
 

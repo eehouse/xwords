@@ -30,8 +30,6 @@
 
     <item android:title="@string/board_submenu_game">
       <menu>
-        <item android:id="@+id/board_menu_lookup"
-              android:title="@string/button_lookup" />
         <item android:id="@+id/board_menu_game_counts"
               android:title="@string/board_menu_game_counts" />
         <item android:id="@+id/board_menu_game_left"

@@ -303,6 +303,12 @@ public class CurGameInfo {
         return dname;
     }
 
+    public String dictName( int indx )
+    {
+        LocalPlayer lp = players[indx];
+        return dictName( lp );
+    }
+
     public boolean addPlayer() 
     {
         boolean added = nPlayers < MAX_NUM_PLAYERS;

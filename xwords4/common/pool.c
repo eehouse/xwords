@@ -212,6 +212,7 @@ pool_removeTiles( PoolContext* pool, TrayTileSet* tiles )
         --pool->lettersLeft[tile];
         --pool->numTilesLeft;
     }
+    XP_LOGF( "%s: %d tiles left in pool", __func__, pool->numTilesLeft );
 } /* pool_removeTiles */
 
 XP_U16

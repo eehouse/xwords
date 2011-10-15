@@ -422,6 +422,21 @@ and_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 }
 #endif
 
+#ifdef XWFEATURE_BOARDWORDS
+static void
+and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
+{
+    if ( NULL != words ) {
+        UTIL_CBK_HEADER( "cellSquareHeld", "(Ljava/lang/String;)V" );
+        jstring jwords = 
+            streamToJString( MPPARM(util->util.mpool) env, words );
+        (*env)->CallVoidMethod( env, util->jutil, mid, jwords );
+        (*env)->DeleteLocalRef( env, jwords );
+        UTIL_CBK_TAIL();
+    }
+}
+#endif
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 and_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
@@ -510,6 +525,10 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
 #ifndef XWFEATURE_MINIWIN
     SET_PROC(bonusSquareHeld);
     SET_PROC(playerScoreHeld);
+#endif
+
+#ifdef XWFEATURE_BOARDWORDS
+    SET_PROC(cellSquareHeld);
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY

@@ -726,7 +726,12 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 #endif
 
 static XP_Bool
-warnBadWords( const XP_UCHAR* word, XP_Bool isLegal, void* closure )
+warnBadWords( const XP_UCHAR* word, XP_Bool isLegal, 
+#ifdef XWFEATURE_BOARDWORDS
+              const MoveInfo* XP_UNUSED(movei), 
+              XP_U16 XP_UNUSED(start), XP_U16 XP_UNUSED(end),
+#endif
+              void* closure )
 {
     XP_Bool ok = XP_TRUE;
     if ( !isLegal ) {
@@ -965,15 +970,37 @@ timerFiredForPen( BoardCtxt* board )
                 draw = dragDropSetAdd( board );
 #endif
             } else {
-                XWBonusType bonus;
-                bonus = util_getSquareBonus( board->util, board->model, 
-                                             col, row );
-                if ( bonus != BONUS_NONE ) {
-#ifdef XWFEATURE_MINIWIN
-                    text = draw_getMiniWText( board->draw, (XWMiniTextType)bonus );
-#else
-                    util_bonusSquareHeld( board->util, bonus );
+                XP_Bool listWords = XP_FALSE;
+#ifdef XWFEATURE_BOARDWORDS
+                XP_U16 modelCol, modelRow;
+                flipIf( board, col, row, &modelCol, &modelRow );
+                listWords = model_getTile( board->model, modelCol, modelRow, 
+                                           XP_TRUE, board->selPlayer, NULL, 
+                                           NULL, NULL, NULL );
+                if ( listWords ) {
+                    XWStreamCtxt* stream = 
+                        mem_stream_make( MPPARM(board->mpool) 
+                                         util_getVTManager(board->util), NULL,
+                                         CHANNEL_NONE,
+                                         (MemStreamCloseCallback)NULL );
+                    model_listWordsThrough( board->model, modelCol, modelRow, 
+                                            stream );
+                    util_cellSquareHeld( board->util, stream );
+                    stream_destroy( stream );
+                }
 #endif
+                if ( !listWords ) {
+                    XWBonusType bonus;
+                    bonus = util_getSquareBonus( board->util, board->model, 
+                                                 col, row );
+                    if ( bonus != BONUS_NONE ) {
+#ifdef XWFEATURE_MINIWIN
+                        text = draw_getMiniWText( board->draw, 
+                                                  (XWMiniTextType)bonus );
+#else
+                        util_bonusSquareHeld( board->util, bonus );
+#endif
+                    }
                 }
             }
             board->penTimerFired = XP_TRUE;

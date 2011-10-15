@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -72,6 +72,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
+    private static final int DLG_LOOKUP = DLG_OKONLY + 11;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -95,6 +96,7 @@ public class BoardActivity extends XWActivity
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
     private static final String DLG_BYTES = "DLG_BYTES";
     private static final String ROOM = "ROOM";
+    private static final String PWDNAME = "PWDNAME";
     private static final String TOASTSTR = "TOASTSTR";
     private static final String WORDS = "WORDS";
 
@@ -138,6 +140,7 @@ public class BoardActivity extends XWActivity
     private String m_room;
     private String m_toastStr;
     private String[] m_words;
+    private String m_pwdName;
 
     private int m_missing;
     private boolean m_haveInvited = false;
@@ -277,6 +280,9 @@ public class BoardActivity extends XWActivity
                 break;
 
             case ASK_PASSWORD_BLK:
+                if ( null == m_passwdLyt ) {
+                    setupPasswdVars();
+                }
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitleStr )
@@ -324,6 +330,15 @@ public class BoardActivity extends XWActivity
                         .setNegativeButton( R.string.button_no, null )
                         .create();
                 }
+                break;
+
+            case DLG_LOOKUP:
+                LookupView view = (LookupView)Utils.inflate( this, R.layout.lookup );
+                dialog = new AlertDialog.Builder( this )
+                    .setView( view )
+                    .create();
+                view.setDialog( dialog, DLG_LOOKUP );
+                view.setWords( m_words, m_gi.dictLang );
                 break;
 
             default:
@@ -414,6 +429,7 @@ public class BoardActivity extends XWActivity
         outState.putString( ROOM, m_room );
         outState.putString( TOASTSTR, m_toastStr );
         outState.putStringArray( WORDS, m_words );
+        outState.putString( PWDNAME, m_pwdName );
     }
 
     private void getBundledData( Bundle bundle )
@@ -425,6 +441,7 @@ public class BoardActivity extends XWActivity
             m_room = bundle.getString( ROOM );
             m_toastStr = bundle.getString( TOASTSTR );
             m_words = bundle.getStringArray( WORDS );
+            m_pwdName = bundle.getString( PWDNAME );
         }
     }
 
@@ -573,10 +590,6 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_values:
             cmd = JNIThread.JNICmd.CMD_VALUES;
             break;
-        case R.id.board_menu_lookup:
-            m_jniThread.handle( JNICmd.CMD_WORDS, 10000 );
-            break;
-
         case R.id.board_menu_game_counts:
             m_jniThread.handle( JNIThread.JNICmd.CMD_COUNTS_VALUES,
                                 R.string.counts_values_title );
@@ -993,6 +1006,16 @@ public class BoardActivity extends XWActivity
                 } );
         }
 
+        @Override
+        public void cellSquareHeld( final String words )
+        {
+            post( new Runnable() {
+                    public void run() {
+                        launchLookup( wordsToArray( words ) );
+                    }
+                } );
+        }
+
         public void setTimer( int why, int when, int handle )
         {
             if ( null != m_timers[why] ) {
@@ -1033,15 +1056,11 @@ public class BoardActivity extends XWActivity
 
         public String askPassword( String name )
         {
-            String fmt = getString( R.string.msg_ask_password );
-            m_dlgTitleStr = String.format( fmt, name );
+            // call this each time dlg created or will get exception
+            // for reusing m_passwdLyt
+            m_pwdName = name;
+            setupPasswdVars();  
 
-            if ( null == m_passwdEdit ) {
-                m_passwdLyt = 
-                    (LinearLayout)Utils.inflate( BoardActivity.this,
-                                                  R.layout.passwd_view );
-                m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
-            }
             waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
 
             String result = null;      // means cancelled
@@ -1572,11 +1591,17 @@ public class BoardActivity extends XWActivity
 
     private void launchLookup( String[] words )
     {
-        Intent intent = new Intent( this, LookupActivity.class );
-        intent.putExtra( LookupActivity.WORDS, words );
-        intent.putExtra( LookupActivity.LANG, m_gi.dictLang );
+        m_words = words;
+        showDialog( DLG_LOOKUP );
+    }
 
-        startActivity( intent );
+    private void setupPasswdVars()
+    {
+        String fmt = getString( R.string.msg_ask_password );
+        m_dlgTitleStr = String.format( fmt, m_pwdName );
+        m_passwdLyt = (LinearLayout)Utils.inflate( BoardActivity.this,
+                                                   R.layout.passwd_view );
+        m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
     }
 
 } // class BoardActivity

@@ -47,6 +47,18 @@
                   android:layout_height="fill_parent"
                   android:orientation="vertical">
 
+
+      <TextView style="@style/config_separator"
+                android:text="@string/lang_label"
+                />
+
+      <Spinner android:id="@+id/lang_spinner"
+               android:layout_width="fill_parent"
+               android:layout_height="wrap_content"
+               android:drawSelectorOnTop="true"
+               android:prompt="@string/title_langs_list"
+               />
+
       <!-- players -->
       <TextView style="@style/config_separator"
                 android:id="@+id/players_label"
@@ -76,17 +88,6 @@
                 android:text="@string/button_juggle_players" 
                 />
       </LinearLayout>
-
-      <TextView style="@style/config_separator"
-                android:text="@string/lang_label"
-                />
-
-      <Spinner android:id="@+id/lang_spinner"
-               android:layout_width="fill_parent"
-               android:layout_height="wrap_content"
-               android:drawSelectorOnTop="true"
-               android:prompt="@string/title_langs_list"
-               />
 
       <LinearLayout android:id="@+id/connect_set"
                     android:layout_width="fill_parent"
