@@ -6,11 +6,12 @@
 <!--             android:orientation="vertical" -->
 <!--             > -->
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:orientation="vertical"
-                  android:layout_width="fill_parent" 
-                  android:layout_height="fill_parent"
-                  >
+    <org.eehouse.android.xw4.LookupActivity
+         xmlns:android="http://schemas.android.com/apk/res/android"
+         android:orientation="vertical"
+         android:layout_width="fill_parent" 
+         android:layout_height="fill_parent"
+         >
 
         <TextView android:id="@+id/summary"
                   android:layout_height="wrap_content"
@@ -19,7 +20,7 @@
                   android:gravity="center"                  
                   />
 
-        <ListView android:id="@+id/android:list"
+        <ListView android:id="@+id/list"
                   android:layout_width="fill_parent"
                   android:layout_height="fill_parent"
                   android:drawSelectorOnTop="false"
@@ -32,5 +33,5 @@
                 />
                 <!-- android:text="@string/button_done"  -->
 
-    </LinearLayout>
+    </org.eehouse.android.xw4.LookupActivity>
 <!-- </ScrollView> -->

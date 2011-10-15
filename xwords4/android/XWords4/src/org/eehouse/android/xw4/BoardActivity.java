@@ -72,6 +72,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
+    private static final int DLG_LOOKUP = DLG_OKONLY + 11;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -324,6 +325,15 @@ public class BoardActivity extends XWActivity
                         .setNegativeButton( R.string.button_no, null )
                         .create();
                 }
+                break;
+
+            case DLG_LOOKUP:
+                LookupActivity view = (LookupActivity)Utils.inflate( this, R.layout.lookup );
+                dialog = new AlertDialog.Builder( this )
+                    .setView( view )
+                    .create();
+                view.setDialog( dialog, DLG_LOOKUP );
+                view.setWords( m_words, m_gi.dictLang );
                 break;
 
             default:
@@ -1049,7 +1059,7 @@ public class BoardActivity extends XWActivity
             if ( null == m_passwdEdit ) {
                 m_passwdLyt = 
                     (LinearLayout)Utils.inflate( BoardActivity.this,
-                                                  R.layout.passwd_view );
+                                                 R.layout.passwd_view );
                 m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
             }
             waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
@@ -1582,11 +1592,8 @@ public class BoardActivity extends XWActivity
 
     private void launchLookup( String[] words )
     {
-        Intent intent = new Intent( this, LookupActivity.class );
-        intent.putExtra( LookupActivity.WORDS, words );
-        intent.putExtra( LookupActivity.LANG, m_gi.dictLang );
-
-        startActivity( intent );
+        m_words = words;
+        showDialog( DLG_LOOKUP );
     }
 
 } // class BoardActivity
