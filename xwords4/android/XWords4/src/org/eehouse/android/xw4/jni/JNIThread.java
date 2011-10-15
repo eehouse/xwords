@@ -77,7 +77,6 @@ public class JNIThread extends Thread {
             CMD_RESEND,
             CMD_HISTORY,
             CMD_FINAL,
-            CMD_WORDS,
             CMD_ENDGAME,
             CMD_POST_OVER,
             CMD_SENDCHAT,
@@ -491,13 +490,6 @@ public class JNIThread extends Thread {
                 } else {
                     Message.obtain( m_handler, QUERY_ENDGAME ).sendToTarget();
                 }
-                break;
-
-            case CMD_WORDS:
-                int nMoves = ((Integer)args[0]).intValue();
-                String words = XwJNI.model_getWordsPlayed( m_jniGamePtr, 
-                                                           nMoves );
-                Message.obtain( m_handler, GOT_WORDS, words ).sendToTarget();
                 break;
 
             case CMD_ENDGAME:

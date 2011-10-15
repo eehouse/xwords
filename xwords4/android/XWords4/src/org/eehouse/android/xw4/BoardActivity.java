@@ -590,10 +590,6 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_values:
             cmd = JNIThread.JNICmd.CMD_VALUES;
             break;
-        case R.id.board_menu_lookup:
-            m_jniThread.handle( JNICmd.CMD_WORDS, 10000 );
-            break;
-
         case R.id.board_menu_game_counts:
             m_jniThread.handle( JNIThread.JNICmd.CMD_COUNTS_VALUES,
                                 R.string.counts_values_title );

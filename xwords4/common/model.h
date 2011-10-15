@@ -256,8 +256,6 @@ XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
                                    XP_UCHAR* expl, XP_U16* explLen );
-void model_getWordsPlayed( ModelCtxt* model, XP_U16 nTurns, 
-                           XWStreamCtxt* stream );
 #ifdef XWFEATURE_BOARDWORDS
 void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
                              XWStreamCtxt* stream );

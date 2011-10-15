@@ -1710,15 +1710,6 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
 
-#if 1
-    XP_USE( player );
-    XWStreamCtxt* stream = 
-        mem_stream_make( MEMPOOL globals->cGlobals.params->vtMgr, globals, 
-                         CHANNEL_NONE, catOnClose );
-    (void)model_getWordsPlayed( globals->cGlobals.game.model, 1000, stream );
-    stream_destroy( stream );
-#else
-
     XP_UCHAR scoreExpl[48];
     XP_U16 explLen = sizeof(scoreExpl);
     
@@ -1726,7 +1717,6 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
                                     player, scoreExpl, &explLen ) ) {
         XP_LOGF( "got: %s", scoreExpl );
     }
-#endif
 }
 #endif
 

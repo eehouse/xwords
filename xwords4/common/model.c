@@ -2076,35 +2076,7 @@ model_initWordCounter( ModelCtxt* model, XWStreamCtxt* stream )
     return &model->vol.wni;
 }
 
-void
-model_getWordsPlayed( ModelCtxt* model, XP_U16 nTurns, XWStreamCtxt* stream )
-{
-    XP_ASSERT( !!stream );
-    StackCtxt* stack = model->vol.stack;
-    StackCtxt* tmpStack = stack_copy( stack );
-
-    XP_U16 nPlayers = model->nPlayers;
-    XP_U16 nEntries = stack_getNEntries( stack );
-    nEntries -= nPlayers; /* skip assignments */
-    if ( nTurns > nEntries ) {
-        nTurns = nEntries;
-    }
-
-    if ( model_undoLatestMoves( model, NULL, nTurns, NULL, NULL ) ) {
-        WordNotifierInfo* ni = model_initWordCounter( model, stream );
-        /* Now push the undone moves back into the model one at a time.
-           recordWord() will add each played word to the stream as it's
-           scored */
-        buildModelFromStack( model, tmpStack, XP_TRUE, 
-                             nEntries - nTurns + nPlayers,/* skip assignments */
-                             (XWStreamCtxt*)NULL, ni, (MovePrintFuncPre)NULL, 
-                             (MovePrintFuncPost)NULL, NULL );
-    }
-    stack_destroy( tmpStack );
-}
-
 #ifdef XWFEATURE_BOARDWORDS
-
 typedef struct _ListWordsThroughInfo {
     XWStreamCtxt* stream;
     XP_U16 col, row;
