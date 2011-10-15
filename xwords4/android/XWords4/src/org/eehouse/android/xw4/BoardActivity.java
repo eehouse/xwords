@@ -96,6 +96,7 @@ public class BoardActivity extends XWActivity
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
     private static final String DLG_BYTES = "DLG_BYTES";
     private static final String ROOM = "ROOM";
+    private static final String PWDNAME = "PWDNAME";
     private static final String TOASTSTR = "TOASTSTR";
     private static final String WORDS = "WORDS";
 
@@ -139,6 +140,7 @@ public class BoardActivity extends XWActivity
     private String m_room;
     private String m_toastStr;
     private String[] m_words;
+    private String m_pwdName;
 
     private int m_missing;
     private boolean m_haveInvited = false;
@@ -278,6 +280,9 @@ public class BoardActivity extends XWActivity
                 break;
 
             case ASK_PASSWORD_BLK:
+                if ( null == m_passwdLyt ) {
+                    setupPasswdVars();
+                }
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitleStr )
@@ -424,6 +429,7 @@ public class BoardActivity extends XWActivity
         outState.putString( ROOM, m_room );
         outState.putString( TOASTSTR, m_toastStr );
         outState.putStringArray( WORDS, m_words );
+        outState.putString( PWDNAME, m_pwdName );
     }
 
     private void getBundledData( Bundle bundle )
@@ -435,6 +441,7 @@ public class BoardActivity extends XWActivity
             m_room = bundle.getString( ROOM );
             m_toastStr = bundle.getString( TOASTSTR );
             m_words = bundle.getStringArray( WORDS );
+            m_pwdName = bundle.getString( PWDNAME );
         }
     }
 
@@ -1053,15 +1060,11 @@ public class BoardActivity extends XWActivity
 
         public String askPassword( String name )
         {
-            String fmt = getString( R.string.msg_ask_password );
-            m_dlgTitleStr = String.format( fmt, name );
+            // call this each time dlg created or will get exception
+            // for reusing m_passwdLyt
+            m_pwdName = name;
+            setupPasswdVars();  
 
-            if ( null == m_passwdEdit ) {
-                m_passwdLyt = 
-                    (LinearLayout)Utils.inflate( BoardActivity.this,
-                                                 R.layout.passwd_view );
-                m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
-            }
             waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
 
             String result = null;      // means cancelled
@@ -1594,6 +1597,15 @@ public class BoardActivity extends XWActivity
     {
         m_words = words;
         showDialog( DLG_LOOKUP );
+    }
+
+    private void setupPasswdVars()
+    {
+        String fmt = getString( R.string.msg_ask_password );
+        m_dlgTitleStr = String.format( fmt, m_pwdName );
+        m_passwdLyt = (LinearLayout)Utils.inflate( BoardActivity.this,
+                                                   R.layout.passwd_view );
+        m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
     }
 
 } // class BoardActivity
