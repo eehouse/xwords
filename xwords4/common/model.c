@@ -2114,11 +2114,21 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
     XP_ASSERT( !!stream );
     StackCtxt* stack = model->vol.stack;
     StackCtxt* tmpStack = stack_copy( stack );
+    XP_U16 nEntries = stack_getNEntries( stack );
+    XP_U16 nUndone;
 
-    XP_U16 nPlayers = model->nPlayers;
-    XP_U16 nEntries = stack_getNEntries( stack ) - nPlayers; /* skip assignments */
+    /* Loop until */
+    for ( nUndone = 0; ; ) {
+        if ( !model_undoLatestMoves( model, NULL, 1, NULL, NULL ) ) {
+            break;
+        }
+        ++nUndone;
+        if ( 0 != (TILE_EMPTY_BIT & getModelTileRaw( model, col, row ) ) ) {
+            break;
+        }
+    }
 
-    if ( model_undoLatestMoves( model, NULL, nEntries, NULL, NULL ) ) {
+    if ( 0 < nUndone ) {
         ListWordsThroughInfo lwtInfo = { .stream = stream, .col = col,
                                          .row = row, .nWords = 0,
         };
@@ -2126,7 +2136,7 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
         /* Now push the undone moves back into the model one at a time.
            recordWord() will add each played word to the stream as it's
            scored */
-        buildModelFromStack( model, tmpStack, XP_TRUE, nPlayers,
+        buildModelFromStack( model, tmpStack, XP_TRUE, nEntries - nUndone,
                              (XWStreamCtxt*)NULL, &ni, (MovePrintFuncPre)NULL, 
                              (MovePrintFuncPost)NULL, NULL );
     }
