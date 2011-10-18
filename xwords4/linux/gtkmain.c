@@ -1725,7 +1725,8 @@ static void
 gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 {
     XP_USE( uc );
-    XP_USE( words );
+    catOnClose( words, NULL );
+    fprintf( stderr, "\n" );
 }
 #endif
 

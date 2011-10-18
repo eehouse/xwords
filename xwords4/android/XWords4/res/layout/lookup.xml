@@ -1,37 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" -->
-<!--             android:layout_width="fill_parent" -->
-<!--             android:layout_height="fill_parent" -->
-<!--             android:orientation="vertical" -->
-<!--             > -->
+<org.eehouse.android.xw4.LookupView
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   android:orientation="vertical"
+   android:layout_width="fill_parent" 
+   android:layout_height="fill_parent"
+   >
 
-    <org.eehouse.android.xw4.LookupView
-         xmlns:android="http://schemas.android.com/apk/res/android"
-         android:orientation="vertical"
-         android:layout_width="fill_parent" 
-         android:layout_height="fill_parent"
-         >
+  <TextView android:id="@+id/summary"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="center"                  
+            android:textColor="#FFFFFFFF"
+            />
 
-        <TextView android:id="@+id/summary"
-                  android:layout_height="wrap_content"
-                  android:layout_width="fill_parent"
-                  android:textAppearance="?android:attr/textAppearanceMedium"
-                  android:gravity="center"                  
-                  />
+  <ListView android:id="@+id/list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:drawSelectorOnTop="false"
+            android:layout_weight="1"
+            />
 
-        <ListView android:id="@+id/list"
-                  android:layout_width="fill_parent"
-                  android:layout_height="fill_parent"
-                  android:drawSelectorOnTop="false"
-                  android:layout_weight="1"
-                  />
+  <Button android:id="@+id/button_done"
+          android:layout_width="fill_parent" 
+          android:layout_height="wrap_content"
+          />
 
-        <Button android:id="@+id/button_done"
-                android:layout_width="fill_parent" 
-                android:layout_height="wrap_content"
-                />
-                <!-- android:text="@string/button_done"  -->
-
-    </org.eehouse.android.xw4.LookupView>
-<!-- </ScrollView> -->
+</org.eehouse.android.xw4.LookupView>

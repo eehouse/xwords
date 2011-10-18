@@ -75,8 +75,8 @@ void stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream );
 void stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream );
 StackCtxt* stack_copy( const StackCtxt* stack );
 
-void stack_addMove( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo, 
-                    TrayTileSet* newTiles );
+void stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo, 
+                    const TrayTileSet* newTiles );
 void stack_addPhony( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo );
 void stack_addTrade( StackCtxt* stack, XP_U16 turn, 
                      TrayTileSet* oldTiles, TrayTileSet* newTiles );
@@ -88,8 +88,8 @@ XP_U16 stack_getNEntries( StackCtxt* stack );
 XP_Bool stack_getNthEntry( StackCtxt* stack, XP_U16 n, StackEntry* entry );
 
 XP_Bool stack_popEntry( StackCtxt* stack, StackEntry* entry );
-void stack_redo( StackCtxt* stack );
-
+XP_Bool stack_redo( StackCtxt* stack, StackEntry* entry );
+    
 #ifdef CPLUS
 }
 #endif

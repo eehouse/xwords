@@ -6,19 +6,17 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 36 release</b>
-<p><em>(There was no beta 35)</em></p>
+<b>Crosswords 4.4 beta 37 release</b>
 <ul>
 
-    <li>Add ability to look up words played by opponents via online 
-        dictionary sites.  The list of sites is hard-coded, and I don't have 
-        them for most languages.  Suggestions welcomed (including improvements 
-        for English)!
-    </li>
+  <li>Extend ability to look up words to include those already on the 
+  board.  Hold your finger on any played tile to look up any of the 
+  words that use it.  </li>
 
-    <li>Rename 'Turn done' menuitem to 'Pass' when no points will be 
-        scored
-    </li>
+  <li>Fix password dialog crashes</li>
+
+  <li>Show wordlist along with player name in Game Config screen, and 
+  move below Language since it changes when language changes.</li>
 
 </ul>
 

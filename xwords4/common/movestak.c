@@ -265,8 +265,8 @@ readEntry( StackCtxt* stack, StackEntry* entry )
 } /* readEntry */
 
 void
-stack_addMove( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo, 
-               TrayTileSet* newTiles )
+stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo, 
+               const TrayTileSet* newTiles )
 {
     StackEntry move;
 
@@ -387,14 +387,19 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
     return found;
 } /* stack_popEntry */
 
-void
-stack_redo( StackCtxt* stack )
+XP_Bool
+stack_redo( StackCtxt* stack, StackEntry* entry )
 {
-    if( (stack->nEntries + 1) <= stack->highWaterMark ) {
+    XP_Bool canRedo = (stack->nEntries + 1) <= stack->highWaterMark;
+    if ( canRedo ) {
         ++stack->nEntries;
+        if ( NULL != entry ) {
+            stack_getNthEntry( stack, stack->nEntries-1, entry );
+        }
         setCacheReadyFor( stack, stack->nEntries );
         stack->top = stack->cachedPos;
     }
+    return canRedo;
 } /* stack_redo */
 
 #ifdef CPLUS

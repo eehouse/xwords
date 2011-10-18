@@ -2381,11 +2381,11 @@ sendUndoToClientsExcept( ServerCtxt* server, XP_U16 skip,
     }
 } /* sendUndoToClientsExcept */
 
+/* This is unused on Android where I've disabled undo in networked games. */
 static XP_Bool
 reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 {
     XP_U16 nUndone, lastUndone;
-    XP_S16 moveNum;
     XP_U16 turn;
     ModelCtxt* model = server->vol.model;
     XP_Bool success = XP_TRUE;
@@ -2393,13 +2393,9 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
     nUndone = stream_getU16( stream );
     lastUndone = stream_getU16( stream );
 
-    moveNum = lastUndone + nUndone - 1;
-
-    success = model_undoLatestMoves(model, server->pool, nUndone, &turn, 
-                                    &moveNum);
-
+    success = model_undoLatestMoves( model, server->pool, nUndone, &turn, 
+                                     NULL );
     if ( success ) {
-        XP_ASSERT( moveNum == lastUndone );
 
         if ( code == XWPROTO_UNDO_INFO_CLIENT ) { /* need to inform */
             XP_U16 sourceClientIndex = 

@@ -169,6 +169,12 @@ public class Utils {
         setText( activity, id, str );
     }
 
+    public static void setEnabled( Dialog dialog, int id, boolean enabled )
+    {
+        View view = dialog.findViewById( id );
+        view.setEnabled( enabled );
+    }
+
     public static boolean getChecked( Activity activity, int id )
     {
         CheckBox cbx = (CheckBox)activity.findViewById( id );

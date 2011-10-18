@@ -55,8 +55,10 @@ public class LookupView extends LinearLayout
     private static String[] s_lookupNames;
     private static String[] s_lookupUrls;
     private static ArrayAdapter<String> s_urlsAdapter;
-    private static final int LIST_LAYOUT = android.R.layout.simple_list_item_1;
-
+    private static final int LIST_LAYOUT = // android.R.layout.simple_list_item_1;
+        // android.R.layout.select_dialog_item;
+        R.layout.select_dialog_item;
+    
     private static int s_lang = -1;
 
     private String[] m_words;

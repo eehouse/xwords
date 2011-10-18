@@ -1778,11 +1778,6 @@
 
     <string name="board_menu_pass">Pass</string>
 
-    <string name="not_again_needUrlsForLang">Google is the only word
-      lookup site I have for this language.  If you have suggestions
-      for word-lookup sites please email eehouse@eehouse.org
-      .</string>
-
     <string name="not_again_lookup">This button lets you look up the
       words just played online.  (Note that not all languages are
       supported yet.)</string>
