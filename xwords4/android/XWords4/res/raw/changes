@@ -15,6 +15,9 @@
 
   <li>Fix password dialog crashes</li>
 
+  <li>Show wordlist along with player name in Game Config screen, and 
+  move below Language since it changes when language changes.</li>
+
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
