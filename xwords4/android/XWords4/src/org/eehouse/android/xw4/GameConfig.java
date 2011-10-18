@@ -292,8 +292,16 @@ public class GameConfig extends XWActivity
 
     private void setPlayerSettings( final Dialog dialog )
     {
-        // Hide remote option if in standalone mode...
         boolean isServer = !m_notNetworkedGame;
+
+        // Independent of other hide/show logic, these guys are
+        // information-only if the game's locked.  (Except that in a
+        // local game you can always toggle a player's robot state.)
+        Utils.setEnabled( dialog, R.id.remote_check, !m_isLocked );
+        Utils.setEnabled( dialog, R.id.player_name_edit, !m_isLocked );
+        Utils.setEnabled( dialog, R.id.robot_check, !m_isLocked || !isServer );
+
+        // Hide remote option if in standalone mode...
         LocalPlayer lp = m_gi.players[m_whichPlayer];
         Utils.setText( dialog, R.id.player_name_edit, lp.name );
         Utils.setText( dialog, R.id.password_edit, lp.password );
@@ -654,10 +662,8 @@ public class GameConfig extends XWActivity
 
             view.setOnClickListener( lstnr );
             m_playerLayout.addView( view );
-            view.setEnabled( !m_isLocked );
 
             View divider = factory.inflate( R.layout.divider_view, null );
-            divider.setVisibility( View.VISIBLE );
             m_playerLayout.addView( divider );
         }
 
@@ -874,12 +880,6 @@ public class GameConfig extends XWActivity
         for ( int id : s_disabledWhenLocked ) {
             View view = findViewById( id );
             view.setEnabled( !m_isLocked );
-        }
-        if ( null != m_playerLayout ) {
-            for ( int ii = m_playerLayout.getChildCount()-1; ii >= 0; --ii ) {
-                View view = m_playerLayout.getChildAt( ii );
-                view.setEnabled( !m_isLocked );
-            }
         }
     }
     
