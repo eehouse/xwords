@@ -2125,21 +2125,19 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 {
     XP_ASSERT( !!stream );
     StackCtxt* stack = model->vol.stack;
-    XP_U16 nEntries = stack_getNEntries( stack );
-    XP_U16 nUndone;
+    XP_U16 nEntriesBefore = stack_getNEntries( stack );
+    XP_U16 nEntriesAfter;
 
-    /* Loop until */
-    for ( nUndone = 0; ; ) {
-        if ( !model_undoLatestMoves( model, NULL, 1, NULL, NULL ) ) {
-            break;
-        }
-        ++nUndone;
+    /* Loop until we undo the move that placed the tile. */
+    while ( model_undoLatestMoves( model, NULL, 1, NULL, NULL ) ) {
         if ( 0 != (TILE_EMPTY_BIT & getModelTileRaw( model, col, row ) ) ) {
             break;
         }
     }
 
-    if ( 0 < nUndone ) {
+    nEntriesAfter = stack_getNEntries( stack );
+    XP_ASSERT( nEntriesAfter < nEntriesBefore );
+    if ( nEntriesAfter < nEntriesBefore ) {
         ListWordsThroughInfo lwtInfo = { .stream = stream, .col = col,
                                          .row = row, .nWords = 0,
         };
@@ -2147,13 +2145,13 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
         /* Now push the undone moves back into the model one at a time.
            recordWord() will add each played word to the stream as it's
            scored */
-        while ( nUndone-- > 0 ) {
+        while ( nEntriesAfter < nEntriesBefore ) {
             StackEntry entry;
             if ( ! stack_redo( stack, &entry ) ) {
                 XP_ASSERT( 0 );
                 break;
             }
-            modelAddEntry( model, nEntries - nUndone, &entry, XP_FALSE, NULL, &ni,
+            modelAddEntry( model, nEntriesAfter++, &entry, XP_FALSE, NULL, &ni,
                            NULL, NULL, NULL );
         }
     }
