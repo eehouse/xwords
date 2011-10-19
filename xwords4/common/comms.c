@@ -31,7 +31,6 @@
 #include "xwrelay.h"
 #include "strutils.h"
 
-#define cEND 0x65454e44
 #define HEARTBEAT_NONE 0
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -606,10 +605,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         prevsQueueNext = &msg->next;
     }
 
-#ifdef DEBUG
-    XP_ASSERT( stream_getU32( stream ) == cEND );
-#endif
-
     return comms;
 } /* comms_makeFromStream */
 
@@ -770,9 +765,6 @@ comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putBytes( stream, msg->msg, msg->len );
     }
 
-#ifdef DEBUG
-    stream_putU32( stream, cEND );
-#endif
 } /* comms_writeToStream */
 
 void

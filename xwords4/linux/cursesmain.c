@@ -1611,11 +1611,14 @@ relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED_DBG(relayErr) )
 
 #ifdef USE_GLIBLOOP
 static gboolean
-handle_stdin( GIOChannel* source, GIOCondition condition, gpointer data )
+handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition, 
+              gpointer data )
 {
     if ( 0 != (G_IO_IN & condition) ) {
+#ifdef DEBUG
         gint fd = g_io_channel_unix_get_fd( source );
         XP_ASSERT( 0 == fd );
+#endif
         CursesAppGlobals* globals = (CursesAppGlobals*)data;
         int ch = wgetch( globals->mainWin );
         remapKey( &ch );

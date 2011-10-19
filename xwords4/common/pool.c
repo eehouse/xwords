@@ -22,8 +22,6 @@
 #include "dictnry.h"
 #include "xwstream.h"
 
-#define pEND 0x70454e44
-
 // #define BLANKS_FIRST 1
 
 struct PoolContext {
@@ -67,9 +65,6 @@ pool_writeToStream( PoolContext* pool, XWStreamCtxt* stream )
     stream_putU16( stream, pool->numFaces );
     stream_putBytes( stream, pool->lettersLeft, 
                      (XP_U16)(pool->numFaces * sizeof(pool->lettersLeft[0])) );
-#ifdef DEBUG
-    stream_putU32( stream, pEND );
-#endif
 } /* pool_writeToStream */
 
 PoolContext*
@@ -83,8 +78,6 @@ pool_makeFromStream( MPFORMAL XWStreamCtxt* stream )
         XP_MALLOC( mpool, pool->numFaces * sizeof(pool->lettersLeft[0]) );
     stream_getBytes( stream, pool->lettersLeft, 
                      (XP_U16)(pool->numFaces * sizeof(pool->lettersLeft[0])) );
-
-    XP_ASSERT( stream_getU32( stream ) == pEND );
 
     return pool;
 } /* pool_makeFromStream */

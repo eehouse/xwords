@@ -41,8 +41,6 @@
 extern "C" {
 #endif
 
-#define sEND 0x73454e44
-
 #define LOCAL_ADDR NULL
 
 enum {
@@ -368,7 +366,6 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     if ( version >= STREAM_SAVE_PREVWORDS ) {
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
-    XP_ASSERT( stream_getU32( stream ) == sEND );
 
     return server;
 } /* server_makeFromStream */
@@ -405,10 +402,6 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
 
     writeStreamIf( stream, server->nv.prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
-
-#ifdef DEBUG
-    stream_putU32( stream, sEND );
-#endif
 
 } /* server_writeToStream */
 

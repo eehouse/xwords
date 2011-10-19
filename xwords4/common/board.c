@@ -65,8 +65,6 @@
 #include "dragdrpp.h"
 #include "dbgutil.h"
 
-#define bEND 0x62454e44
-
 #ifndef MAX_BOARD_ZOOM
 /* too big looks bad */
 # define MAX_BOARD_ZOOM 4
@@ -280,7 +278,6 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     board->selInfo = &board->pti[board->selPlayer];
     board->trayVisState = (XW_TrayVisState)stream_getBits( stream, 2 );
 
-    XP_ASSERT( stream_getU32( stream ) == bEND );
     return board;
 } /* board_makeFromStream */
 
@@ -340,10 +337,6 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
 
     stream_putBits( stream, PLAYERNUM_NBITS, board->selPlayer );
     stream_putBits( stream, 2, board->trayVisState );
-
-#ifdef DEBUG
-    stream_putU32( stream, bEND );
-#endif
 } /* board_writeToStream */
 
 void

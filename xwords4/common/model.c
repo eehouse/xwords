@@ -33,8 +33,6 @@
 extern "C" {
 #endif
 
-#define mEND 0x6d454e44
-
 #define MAX_PASSES 2 /* how many times can all players pass? */
 
 /****************************** prototypes ******************************/
@@ -153,8 +151,6 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
         invalidateScore( model, i );
     }
 
-    XP_ASSERT( stream_getU32( stream ) == mEND );
-
     return model;
 } /* model_makeFromStream */
 
@@ -174,10 +170,6 @@ model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
     for ( i = 0; i < model->nPlayers; ++i ) {
         writePlayerCtxt( stream, &model->players[i] );
     }
-
-#ifdef DEBUG
-    stream_putU32( stream, mEND );
-#endif
 } /* model_writeToStream */
 
 #ifdef TEXT_MODEL
