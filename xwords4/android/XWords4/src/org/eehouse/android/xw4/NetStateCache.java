@@ -100,7 +100,7 @@ public class NetStateCache {
 
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-                Utils.logf( "CommsTransport::onReceive: %s", 
+                Utils.logf( "CommsBroadcastReceiver.onReceive: %s", 
                             ni.getState().toString() );
 
                 boolean netAvail;

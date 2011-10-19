@@ -31,7 +31,6 @@
 #include "xwrelay.h"
 #include "strutils.h"
 
-#define cEND 0x65454e44
 #define HEARTBEAT_NONE 0
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -62,10 +61,6 @@ typedef struct MsgQueueElem {
 typedef struct AddressRecord {
     struct AddressRecord* next;
     CommsAddrRec addr;
-#ifdef DEBUG
-    XP_U16 lastACK;
-    XP_U16 nUniqueBytes;
-#endif
     MsgID nextMsgID;        /* on a per-channel basis */
     MsgID lastMsgRcd;        /* on a per-channel basis */
     /* only used if COMMS_HEARTBEAT set except for serialization (to_stream) */
@@ -137,9 +132,6 @@ struct CommsCtxt {
     } r;
 
     XP_Bool isServer;
-#ifdef DEBUG
-    XP_U16 nUniqueBytes;
-#endif
     MPSLOT
 };
 
@@ -563,9 +555,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
                               sizeof(comms->r.connName) );
     }
 
-#ifdef DEBUG
-    comms->nUniqueBytes = stream_getU16( stream );
-#endif
     comms->queueLen = stream_getU8( stream );
 
     nAddrRecs = stream_getU8( stream );
@@ -582,11 +571,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         if ( rec->addr.conType == COMMS_CONN_RELAY ) {
             rec->r.hostID = stream_getU8( stream );
         }
-
-#ifdef DEBUG
-        rec->lastACK = stream_getU16( stream );
-        rec->nUniqueBytes = stream_getU16( stream );
-#endif
 
         *prevsAddrNext = rec;
         prevsAddrNext = &rec->next;
@@ -613,10 +597,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         comms->msgQueueTail = msg;
         prevsQueueNext = &msg->next;
     }
-
-#ifdef DEBUG
-    XP_ASSERT( stream_getU32( stream ) == cEND );
-#endif
 
     return comms;
 } /* comms_makeFromStream */
@@ -743,10 +723,6 @@ comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
         stringToStream( stream, comms->r.connName );
     }
 
-#ifdef DEBUG
-    stream_putU16( stream, comms->nUniqueBytes );
-#endif
-
     XP_ASSERT( comms->queueLen <= 255 );
     stream_putU8( stream, (XP_U8)comms->queueLen );
 
@@ -764,10 +740,6 @@ comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
         if ( rec->addr.conType == COMMS_CONN_RELAY ) {
             stream_putU8( stream, rec->r.hostID ); /* unneeded unless RELAY */
         }
-#ifdef DEBUG
-        stream_putU16( stream, rec->lastACK );
-        stream_putU16( stream, rec->nUniqueBytes );
-#endif
     }
 
     for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
@@ -778,9 +750,6 @@ comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putBytes( stream, msg->msg, msg->len );
     }
 
-#ifdef DEBUG
-    stream_putU32( stream, cEND );
-#endif
 } /* comms_writeToStream */
 
 void
@@ -905,14 +874,6 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     MsgID lastMsgRcd = (!!rec)? rec->lastMsgRcd : 0;
     MsgQueueElem* newMsgElem;
     XWStreamCtxt* msgStream;
-
-#ifdef DEBUG
-    if ( !!rec ) {
-        rec->nUniqueBytes += streamSize;
-    } else {
-        comms->nUniqueBytes += streamSize;
-    }
-#endif
 
     newMsgElem = (MsgQueueElem*)XP_MALLOC( comms->mpool, 
                                            sizeof( *newMsgElem ) );
@@ -1643,9 +1604,6 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
         removeFromQueue( comms, channelNo, lastMsgRcd );
         if ( msgID == rec->lastMsgRcd + 1 ) {
             updateChannelAddress( rec, addr );
-#ifdef DEBUG
-            rec->lastACK = (XP_U16)lastMsgRcd;
-#endif
         } else {
             XP_LOGF( "%s: expected %ld, got %ld", __func__, 
                      rec->lastMsgRcd + 1, msgID );
@@ -1919,11 +1877,6 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_catString( stream, buf );
     }
 
-    XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                 (XP_UCHAR*)"channel-less bytes sent: %d\n", 
-                 comms->nUniqueBytes );
-    stream_catString( stream, buf );
-
     now = util_getCurSeconds( comms->util );
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
@@ -1937,17 +1890,8 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Unique bytes sent: %d\n", 
-                     rec->nUniqueBytes );
-        stream_catString( stream, buf );
-
-        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                      (XP_UCHAR*)"Last message received: %ld\n", 
                      rec->lastMsgRcd );
-        stream_catString( stream, buf );
-        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Last message acknowledged: %d\n", 
-                     rec->lastACK );
         stream_catString( stream, buf );
     }
 } /* comms_getStats */

@@ -27,8 +27,6 @@
 extern "C" {
 #endif
 
-#define eEND 0x63454e44
-
 typedef XP_U8 Engine_rack[MAX_UNIQUE_TILES+1];
 
 #ifndef NUM_SAVED_ENGINE_MOVES
@@ -219,16 +217,13 @@ engine_make( MPFORMAL XW_UtilCtxt* util )
 
 void
 engine_writeToStream( EngineCtxt* XP_UNUSED(ctxt), 
-                      XWStreamCtxt* XP_UNUSED_DBG(stream) )
+                      XWStreamCtxt* XP_UNUSED(stream) )
 {
     /* nothing to save; see comment below */
-#ifdef DEBUG
-    stream_putU32( stream, eEND );
-#endif
 } /* engine_writeToStream */
 
 EngineCtxt* 
-engine_makeFromStream( MPFORMAL XWStreamCtxt* XP_UNUSED_DBG(stream), 
+engine_makeFromStream( MPFORMAL XWStreamCtxt* XP_UNUSED(stream), 
                        XW_UtilCtxt* util )
 {
     EngineCtxt* engine = engine_make( MPPARM(mpool) util );
@@ -236,8 +231,6 @@ engine_makeFromStream( MPFORMAL XWStreamCtxt* XP_UNUSED_DBG(stream),
     /* All the engine's data seems to be used only in the process of finding a
        move.  So if we're willing to have the set of moves found lost across
        a save, there's nothing to do! */
-
-    XP_ASSERT( stream_getU32( stream ) == eEND );
 
     return engine;
 } /* engine_makeFromStream */

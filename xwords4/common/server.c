@@ -41,8 +41,6 @@
 extern "C" {
 #endif
 
-#define sEND 0x73454e44
-
 #define LOCAL_ADDR NULL
 
 enum {
@@ -368,7 +366,6 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     if ( version >= STREAM_SAVE_PREVWORDS ) {
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
-    XP_ASSERT( stream_getU32( stream ) == sEND );
 
     return server;
 } /* server_makeFromStream */
@@ -405,10 +402,6 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
 
     writeStreamIf( stream, server->nv.prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
-
-#ifdef DEBUG
-    stream_putU32( stream, sEND );
-#endif
 
 } /* server_writeToStream */
 
@@ -872,8 +865,11 @@ showPrevScore( ServerCtxt* server )
 
         util_informMove( util, stream, server->nv.prevWordsStream );
         stream_destroy( stream );
-        stream_destroy( server->nv.prevWordsStream );
-        server->nv.prevWordsStream = NULL;
+
+        if ( !!server->nv.prevWordsStream ) {
+            stream_destroy( server->nv.prevWordsStream );
+            server->nv.prevWordsStream = NULL;
+        }
     }
     SETSTATE( server, server->nv.stateAfterShow );
 } /* showPrevScore */
@@ -882,82 +878,85 @@ XP_Bool
 server_do( ServerCtxt* server, XP_Bool* moreToDoP )
 {
     XP_Bool result = XP_TRUE;
-    XP_Bool moreToDo = XP_FALSE;
 
     if ( server->serverDoing ) {
-        return XP_FALSE;
-    }
-    server->serverDoing = XP_TRUE;
+        result = XP_FALSE;
+    } else {
+        XP_Bool moreToDo = XP_FALSE;
+        server->serverDoing = XP_TRUE;
 
-    switch( server->nv.gameState ) {
-    case XWSTATE_BEGIN:
-        if ( server->nv.pendingRegistrations == 0 ) { /* all players on device */
-            assignTilesToAll( server );
+        switch( server->nv.gameState ) {
+        case XWSTATE_BEGIN:
+            if ( server->nv.pendingRegistrations == 0 ) { /* all players on
+                                                             device */
+                assignTilesToAll( server );
+                SETSTATE( server, XWSTATE_INTURN );
+                setTurn( server, 0 );
+                moreToDo = XP_TRUE;
+            }
+            break;
+
+        case XWSTATE_NEEDSEND_BADWORD_INFO:
+            XP_ASSERT( server->vol.gi->serverRole == SERVER_ISSERVER );
+            badWordMoveUndoAndTellUser( server, &server->illegalWordInfo );
+#ifndef XWFEATURE_STANDALONE_ONLY
+            sendBadWordMsgs( server );
+#endif
+            nextTurn( server, PICK_NEXT ); /* sets server->nv.gameState */
+            //moreToDo = XP_TRUE;   /* why? */
+            break;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+        case XWSTATE_RECEIVED_ALL_REG:
+            server_sendInitialMessage( server ); 
+            /* PENDING isn't INTURN_OFFDEVICE possible too?  Or just
+               INTURN?  */
             SETSTATE( server, XWSTATE_INTURN );
             setTurn( server, 0 );
             moreToDo = XP_TRUE;
-        }
-        break;
+            break;
 
-    case XWSTATE_NEEDSEND_BADWORD_INFO:
-        XP_ASSERT( server->vol.gi->serverRole == SERVER_ISSERVER );
-        badWordMoveUndoAndTellUser( server, &server->illegalWordInfo );
-#ifndef XWFEATURE_STANDALONE_ONLY
-        sendBadWordMsgs( server );
-#endif
-        nextTurn( server, PICK_NEXT ); /* sets server->nv.gameState */
-        //moreToDo = XP_TRUE;   /* why? */
-        break;
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-    case XWSTATE_RECEIVED_ALL_REG:
-        server_sendInitialMessage( server ); 
-        /* PENDING isn't INTURN_OFFDEVICE possible too?  Or just INTURN?  */
-        SETSTATE( server, XWSTATE_INTURN );
-        setTurn( server, 0 );
-        moreToDo = XP_TRUE;
-        break;
-
-    case XWSTATE_MOVE_CONFIRM_MUSTSEND:
-        XP_ASSERT( server->vol.gi->serverRole == SERVER_ISSERVER );
-        tellMoveWasLegal( server );
-        nextTurn( server, PICK_NEXT );
-        break;
+        case XWSTATE_MOVE_CONFIRM_MUSTSEND:
+            XP_ASSERT( server->vol.gi->serverRole == SERVER_ISSERVER );
+            tellMoveWasLegal( server );
+            nextTurn( server, PICK_NEXT );
+            break;
 
 #endif /* XWFEATURE_STANDALONE_ONLY */
 
-    case XWSTATE_NEEDSEND_ENDGAME:
-        endGameInternal( server, END_REASON_OUT_OF_TILES );
-        break;
+        case XWSTATE_NEEDSEND_ENDGAME:
+            endGameInternal( server, END_REASON_OUT_OF_TILES );
+            break;
 
-    case XWSTATE_NEED_SHOWSCORE:
-        showPrevScore( server );
-        /* state better have changed or we'll infinite loop... */
-        XP_ASSERT( XWSTATE_NEED_SHOWSCORE != server->nv.gameState );
-        /* either process turn or end game should come next... */
-        moreToDo = XWSTATE_NEED_SHOWSCORE != server->nv.gameState;
-        break;
-    case XWSTATE_INTURN:
-        if ( robotMovePending( server ) && !ROBOTWAITING(server) ) {
-            result = makeRobotMove( server );
-            /* if robot was interrupted, we need to schedule again */
-            moreToDo = !result || 
-                (robotMovePending( server ) && !POSTPONEROBOTMOVE(server));
+        case XWSTATE_NEED_SHOWSCORE:
+            showPrevScore( server );
+            /* state better have changed or we'll infinite loop... */
+            XP_ASSERT( XWSTATE_NEED_SHOWSCORE != server->nv.gameState );
+            /* either process turn or end game should come next... */
+            moreToDo = XWSTATE_NEED_SHOWSCORE != server->nv.gameState;
+            break;
+        case XWSTATE_INTURN:
+            if ( robotMovePending( server ) && !ROBOTWAITING(server) ) {
+                result = makeRobotMove( server );
+                /* if robot was interrupted, we need to schedule again */
+                moreToDo = !result || 
+                    (robotMovePending( server ) && !POSTPONEROBOTMOVE(server));
+            }
+            break;
+
+        default:
+            result = XP_FALSE;
+            break;
+        } /* switch */
+
+        if ( NULL != moreToDoP ) {
+            *moreToDoP = moreToDo;
+        } else if ( moreToDo ) {
+            util_requestTime( server->vol.util );
         }
-        break;
 
-    default:
-        result = XP_FALSE;
-        break;
+        server->serverDoing = XP_FALSE;
     }
-
-    if ( NULL != moreToDoP ) {
-        *moreToDoP = moreToDo;
-    } else if ( moreToDo ) {
-        util_requestTime( server->vol.util );
-    }
-
-    server->serverDoing = XP_FALSE;
     return result;
 } /* server_do */
 
