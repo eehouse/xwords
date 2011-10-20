@@ -184,6 +184,12 @@ public class UtilCtxtImpl implements UtilCtxt {
         return false;
     }
 
+    public boolean confirmTrade( String[] tiles )
+    {
+        subclassOverride( "confirmTrade" );
+        return false;
+    }
+
     public void userError( int id )
     {
         subclassOverride( "userError" );

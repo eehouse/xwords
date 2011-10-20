@@ -132,6 +132,18 @@ and_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
     return result;
 }
 
+static XP_Bool
+and_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
+{
+    XP_Bool result = XP_FALSE;
+    UTIL_CBK_HEADER("confirmTrade", "([Ljava/lang/String;)Z" );
+    jobjectArray jtiles = makeStringArray( env, nTiles, tiles );
+    result = (*env)->CallBooleanMethod( env, util->jutil, mid, jtiles );
+    (*env)->DeleteLocalRef( env, jtiles );
+    UTIL_CBK_TAIL();
+    return result;
+}
+
 static XP_S16
 and_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                        XP_U16 playerNum, const XP_UCHAR** texts, XP_U16 nTiles )
@@ -498,6 +510,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(getSquareBonus);
     SET_PROC(userError);
     SET_PROC(userQuery);
+    SET_PROC(confirmTrade);
     SET_PROC(userPickTile);
     SET_PROC(askPassword);
     SET_PROC(trayHiddenChange);

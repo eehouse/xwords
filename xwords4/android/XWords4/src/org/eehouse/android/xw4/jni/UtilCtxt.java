@@ -76,10 +76,10 @@ public interface UtilCtxt {
     String getUserString( int stringCode );
 
     static final int QUERY_COMMIT_TURN = 0;
-    static final int QUERY_COMMIT_TRADE = 1;
-    static final int QUERY_ROBOT_TRADE = 2;
+    static final int QUERY_ROBOT_TRADE = 1;
     boolean userQuery( int id, String query );
 
+    boolean confirmTrade( String[] tiles );
 
     // These oughtto be an enum but then I'd have to cons one up in C.
     static final int ERR_NONE = 0;

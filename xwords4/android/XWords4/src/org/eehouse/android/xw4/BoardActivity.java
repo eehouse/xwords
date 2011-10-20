@@ -925,6 +925,7 @@ public class BoardActivity extends XWActivity
             super( BoardActivity.this );
         }
 
+        @Override
         public void requestTime() 
         {
             post( new Runnable() {
@@ -936,12 +937,14 @@ public class BoardActivity extends XWActivity
                 } );
         }
 
+        @Override
         public void remSelected() 
         {
             m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
                                 R.string.tiles_left_title );
         }
 
+        @Override
         public void setIsServer( boolean isServer )
         {
             DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
@@ -1016,6 +1019,7 @@ public class BoardActivity extends XWActivity
                 } );
         }
 
+        @Override
         public void setTimer( int why, int when, int handle )
         {
             if ( null != m_timers[why] ) {
@@ -1038,6 +1042,7 @@ public class BoardActivity extends XWActivity
             postDelayed( m_timers[why], inHowLong );
         }
 
+        @Override
         public void clearTimer( int why ) 
         {
             if ( null != m_timers[why] ) {
@@ -1047,6 +1052,7 @@ public class BoardActivity extends XWActivity
         }
 
         // This is supposed to be called from the jni thread
+        @Override
         public int userPickTile( int playerNum, String[] texts )
         {
             m_texts = texts;
@@ -1054,6 +1060,7 @@ public class BoardActivity extends XWActivity
             return m_resultCode;
         }
 
+        @Override
         public String askPassword( String name )
         {
             // call this each time dlg created or will get exception
@@ -1070,6 +1077,7 @@ public class BoardActivity extends XWActivity
             return result;
         }
 
+        @Override
         public void turnChanged()
         {
             post( new Runnable() {
@@ -1081,11 +1089,13 @@ public class BoardActivity extends XWActivity
             m_jniThread.handle( JNIThread.JNICmd. CMD_ZOOM, -8 );
         }
 
+        @Override
         public boolean engineProgressCallback()
         {
             return ! m_jniThread.busy();
         }
 
+        @Override
         public boolean userQuery( int id, String query )
         {
             boolean result;
@@ -1103,13 +1113,8 @@ public class BoardActivity extends XWActivity
                 break;
 
                 // These *are* blocking dialogs
-            case UtilCtxt.QUERY_COMMIT_TRADE:
             case UtilCtxt.QUERY_COMMIT_TURN:
-                if ( UtilCtxt.QUERY_COMMIT_TRADE == id ) {
-                    m_dlgBytes = getString( R.string.query_trade );
-                } else {
-                    m_dlgBytes = query;
-                }
+                m_dlgBytes = query;
                 m_dlgTitle = R.string.query_title;
                 result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
                 break;
@@ -1121,6 +1126,17 @@ public class BoardActivity extends XWActivity
             return result;
         }
 
+        @Override
+        public boolean confirmTrade( String[] tiles )
+        {
+            m_dlgTitle = R.string.info_title;
+            m_dlgBytes = 
+                Utils.format( BoardActivity.this, R.string.query_tradef, 
+                              TextUtils.join( ", ", tiles ) );
+            return 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
+        }
+
+        @Override
         public void userError( int code )
         {
             int resid = 0;
@@ -1176,6 +1192,7 @@ public class BoardActivity extends XWActivity
             }
         } // userError
 
+        @Override
         public void informMove( String expl, String words )
         {
             m_dlgBytes = expl;
@@ -1184,6 +1201,7 @@ public class BoardActivity extends XWActivity
             waitBlockingDialog( DLG_SCORES_BLK, 0 );
         }
 
+        @Override
         public void notifyGameOver()
         {
             m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
@@ -1194,7 +1212,7 @@ public class BoardActivity extends XWActivity
         //     Utils.logf( "yOffsetChange(maxOffset=%d)", maxOffset );
         //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
         // }
-
+        @Override
         public boolean warnIllegalWord( String[] words, int turn, 
                                         boolean turnLost )
         {
@@ -1230,6 +1248,7 @@ public class BoardActivity extends XWActivity
         // we don't block the jni thread will continue processing messages
         // and may stack dialogs on top of this one.  Including later
         // chat-messages.
+        @Override
         public void showChat( final String msg )
         {
             post( new Runnable() {

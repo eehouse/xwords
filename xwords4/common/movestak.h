@@ -79,7 +79,8 @@ void stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo,
                     const TrayTileSet* newTiles );
 void stack_addPhony( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo );
 void stack_addTrade( StackCtxt* stack, XP_U16 turn, 
-                     TrayTileSet* oldTiles, TrayTileSet* newTiles );
+                     const TrayTileSet* oldTiles, 
+                     const TrayTileSet* newTiles );
 void stack_addAssign( StackCtxt* stack, XP_U16 turn, 
                       const TrayTileSet* tiles );
 

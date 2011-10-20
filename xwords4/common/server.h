@@ -101,7 +101,7 @@ XP_S16 server_countTilesInPool( ServerCtxt* server );
 XP_Bool server_do( ServerCtxt* server );
 
 XP_Bool server_commitMove( ServerCtxt* server );
-XP_Bool server_commitTrade( ServerCtxt* server, TileBit bits );
+XP_Bool server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles );
 
 /* call this when user wants to end the game */
 void server_endGame( ServerCtxt* server );

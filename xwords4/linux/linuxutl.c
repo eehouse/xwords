@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -406,6 +406,27 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 
     return (XP_UCHAR*)message;
 } /* linux_getErrString */
+
+void
+formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, 
+                    char* buf, XP_U16 buflen )
+{
+    char tileBuf[128];
+    int offset = 0;
+    int ii;
+
+    XP_ASSERT( nTiles > 0 );
+    for ( ii = 0; ii < nTiles; ++ii ) {
+        offset += snprintf( &tileBuf[offset], sizeof(tileBuf) - offset, 
+                            "%s, ", tiles[ii] );
+        XP_ASSERT( offset < sizeof(tileBuf) );
+    }
+    tileBuf[offset-2] = '\0';
+
+    snprintf( buf, buflen,
+              "Are you sure you want to trade the selected tiles (%s)?",
+              tileBuf );
+}
 
 #ifdef TEXT_MODEL
 /* This is broken for UTF-8, even Spanish */

@@ -137,7 +137,7 @@ XP_U16 model_getCellOwner( ModelCtxt* model, XP_U16 col, XP_U16 row );
 
 void model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
                               const TrayTileSet* tiles );
-Tile model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
+Tile model_getPlayerTile( const ModelCtxt* model, XP_S16 turn, XP_S16 index );
 
 Tile model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 void model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index,
@@ -182,7 +182,8 @@ void model_commitTurn( ModelCtxt* model, XP_S16 player,
                        TrayTileSet* newTiles );
 void model_commitRejectedPhony( ModelCtxt* model, XP_S16 player );
 void model_makeTileTrade( ModelCtxt* model, XP_S16 player,
-                          TrayTileSet* oldTiles, TrayTileSet* newTiles );
+                          const TrayTileSet* oldTiles, 
+                          const TrayTileSet* newTiles );
 
 XP_Bool model_undoLatestMoves( ModelCtxt* model, PoolContext* pool, 
                                XP_U16 nMovesSought, XP_U16* turn, 

@@ -65,7 +65,6 @@ typedef enum {
 
 typedef enum {
     QUERY_COMMIT_TURN, /* 0 means cancel; 1 means commit */
-    QUERY_COMMIT_TRADE,
     QUERY_ROBOT_TRADE,
 
     QUERY_LAST_COMMON
@@ -113,7 +112,8 @@ typedef struct UtilVtable {
 
     XP_Bool (*m_util_userQuery)( XW_UtilCtxt* uc, UtilQueryID id,
                                  XWStreamCtxt* stream );
-
+    XP_Bool (*m_util_confirmTrade)( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
+                                    XP_U16 nTiles );
     /* return of < 0 means computer should pick */
     XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, const PickInfo* pi, 
                                    XP_U16 playerNum,
@@ -212,6 +212,9 @@ struct XW_UtilCtxt {
 
 #define util_userQuery(uc,qcode,str) \
          (uc)->vtable->m_util_userQuery((uc),(qcode),(str))
+
+#define util_confirmTrade( uc, tx, nt )                 \
+         (uc)->vtable->m_util_confirmTrade((uc),(tx),(nt))
 
 #define util_userPickTile( uc, w, n, tx, nt ) \
          (uc)->vtable->m_util_userPickTile( (uc), (w), (n), (tx), (nt) )

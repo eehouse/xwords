@@ -1518,7 +1518,7 @@ makeTileTrade( ModelCtxt* model, XP_S16 player, const TrayTileSet* oldTiles,
 
 void
 model_makeTileTrade( ModelCtxt* model, XP_S16 player,
-                     TrayTileSet* oldTiles, TrayTileSet* newTiles )
+                     const TrayTileSet* oldTiles, const TrayTileSet* newTiles )
 {
     stack_addTrade( model->vol.stack, player, oldTiles, newTiles );
 
@@ -1526,9 +1526,9 @@ model_makeTileTrade( ModelCtxt* model, XP_S16 player,
 } /* model_makeTileTrade */
 
 Tile
-model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
+model_getPlayerTile( const ModelCtxt* model, XP_S16 turn, XP_S16 index )
 {
-    PlayerCtxt* player;
+    const PlayerCtxt* player;
     XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
 

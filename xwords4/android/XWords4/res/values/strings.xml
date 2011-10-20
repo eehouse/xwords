@@ -1215,9 +1215,8 @@
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-	<string name="query_trade">Are you sure you want to exchange the
-         selected tiles?</string>
-
+	<string name="query_tradef">Are you sure you want to exchange the
+         selected tiles (%s)?</string>
 
     <!-- ############################################################
          # :Screens:
@@ -1764,7 +1763,8 @@
          dialog -->
     <string name="changes_button">Recent changes</string>
 
-
+    <!-- New strings that need to be documented and found a home
+         above. -->
     <string name="button_lookup">Look up words</string>
     <string name="button_lookupf">Look up %s</string>
     <string name="title_lookup">Tap to look up</string>

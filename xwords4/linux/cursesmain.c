@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -277,11 +277,6 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         answers[numAnswers++] = "Cancel";
         answers[numAnswers++] = "Ok";
         break;
-    case QUERY_COMMIT_TRADE:
-        question = "Commit trade?";
-        answers[numAnswers++] = "Cancel";
-        answers[numAnswers++] = "Ok";
-        break;
     case QUERY_ROBOT_TRADE:
         question = strFromStream( stream );
         freeMe = XP_TRUE;
@@ -303,6 +298,16 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 
     return result;
 } /* curses_util_userQuery */
+
+static XP_Bool
+curses_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
+                          XP_U16 nTiles )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    char question[256];
+    formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
+    return 1 == cursesask( globals, question, 2, "Cancel", "Ok" );
+}
 
 static void
 curses_util_trayHiddenChange( XW_UtilCtxt* XP_UNUSED(uc), 
@@ -1472,6 +1477,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr;
 #endif
     util->vtable->m_util_userQuery = curses_util_userQuery;
+    util->vtable->m_util_confirmTrade = curses_util_confirmTrade;
     util->vtable->m_util_userPickTile = curses_util_userPickTile;
     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange;
     util->vtable->m_util_informMove = curses_util_informMove;
