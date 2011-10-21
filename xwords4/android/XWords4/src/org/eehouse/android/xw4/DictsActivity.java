@@ -31,6 +31,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.content.SharedPreferences;
@@ -67,7 +68,6 @@ public class DictsActivity extends ExpandableListActivity
     private static final String NAME = "name";
     private static final String LANG = "lang";
     private static final String MOVEFROMLOC = "movefromloc";
-    private static final String MOVETOLOC = "movetoloc";
 
     private static HashMap<String,Boolean> s_openStates =
         new HashMap<String,Boolean>();
@@ -90,7 +90,8 @@ public class DictsActivity extends ExpandableListActivity
 
     private long m_packedPosition;
     private DictUtils.DictLoc m_moveFromLoc;
-    private DictUtils.DictLoc m_moveToLoc;
+    private int m_moveFromItem;
+    private int m_moveToItm;
 
     private LayoutInflater m_factory;
 
@@ -244,7 +245,7 @@ public class DictsActivity extends ExpandableListActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        DialogInterface.OnClickListener lstnr;
+        OnClickListener lstnr;
         Dialog dialog;
         String format;
         String message;
@@ -252,7 +253,7 @@ public class DictsActivity extends ExpandableListActivity
 
         switch( id ) {
         case PICK_STORAGE:
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         startDownload( m_lang, m_name, item != 
                                        DialogInterface.BUTTON_POSITIVE );
@@ -267,36 +268,58 @@ public class DictsActivity extends ExpandableListActivity
                 .create();
             break;
         case MOVE_DICT:
-            lstnr = new DialogInterface.OnClickListener() {
+            message = Utils.format( this, R.string.move_dictf,
+                                    m_adapter.getSelChildView().getText() );
+
+            String[] items = new String[3];
+            for ( int ii = 0; ii < 3; ++ii ) {
+                DictUtils.DictLoc loc = itemToRealLoc(ii);
+                if ( loc.equals( m_moveFromLoc ) ) {
+                    m_moveFromItem = ii;
+                }
+                items[ii] = m_locNames[loc.ordinal()];
+            }
+
+            OnClickListener newSelLstnr =
+                new OnClickListener() {
+                    public void onClick( DialogInterface dlgi, int item ) {
+                        m_moveToItm = item;
+                        AlertDialog dlg = (AlertDialog)dlgi;
+                        Button btn = 
+                            dlg.getButton( AlertDialog.BUTTON_POSITIVE ); 
+                        btn.setEnabled( m_moveToItm != m_moveFromItem );
+                    }
+                };
+
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         XWListItem rowView = m_adapter.getSelChildView();
+                        Assert.assertTrue( m_moveToItm != m_moveFromItem );
+                        DictUtils.DictLoc toLoc = itemToRealLoc( m_moveToItm );
                         if ( DictUtils.moveDict( DictsActivity.this,
                                                  rowView.getText(),
                                                  m_moveFromLoc,
-                                                 m_moveToLoc ) ) {
-                            rowView.
-                                setComment( m_locNames[m_moveToLoc.ordinal()]);
-                            rowView.cache( m_moveToLoc );
+                                                 toLoc ) ) {
+                            rowView.setComment( m_locNames[toLoc.ordinal()] );
+                            rowView.cache( toLoc );
                             rowView.invalidate();
                         } else {
-                            Utils.logf( "moveDict failed" );
+                            Utils.logf( "moveDict(%s) failed", 
+                                        rowView.getText() );
                         }
                     }
                 };
-            format = getString( R.string.move_dictf );
-            message = String.format( format, 
-                                     m_adapter.getSelChildView().getText(),
-                                     m_locNames[ m_moveFromLoc.ordinal() ],
-                                     m_locNames[ m_moveToLoc.ordinal() ] );
 
             dialog = new AlertDialog.Builder( this )
-                .setMessage( message )
-                .setPositiveButton( R.string.button_ok, lstnr )
+                .setTitle( message )
+                .setSingleChoiceItems( items, m_moveFromItem, newSelLstnr )
+                .setPositiveButton( R.string.button_move, lstnr )
                 .setNegativeButton( R.string.button_cancel, null )
                 .create();
             break;
+
         case SET_DEFAULT:
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
@@ -339,6 +362,14 @@ public class DictsActivity extends ExpandableListActivity
     {
         super.onPrepareDialog( id, dialog );
         m_delegate.onPrepareDialog( id, dialog );
+
+        if ( MOVE_DICT == id ) {
+            // The move button should always start out disabled
+            // because the selected location should be where it
+            // currently is.
+            ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
+                .setEnabled( false );
+        }
     }
 
     @Override
@@ -401,9 +432,6 @@ public class DictsActivity extends ExpandableListActivity
         if ( null != m_moveFromLoc ) {
             outState.putInt( MOVEFROMLOC, m_moveFromLoc.ordinal() );
         }
-        if ( null != m_moveToLoc ) {
-            outState.putInt( MOVETOLOC, m_moveToLoc.ordinal() );
-        }
     }
 
     private void getBundledData( Bundle savedInstanceState )
@@ -417,10 +445,6 @@ public class DictsActivity extends ExpandableListActivity
             int tmp = savedInstanceState.getInt( MOVEFROMLOC, -1 );
             if ( -1 != tmp ) {
                 m_moveFromLoc = DictUtils.DictLoc.values()[tmp];
-            }
-            tmp = savedInstanceState.getInt( MOVETOLOC, -1 );
-            if ( -1 != tmp ) {
-                m_moveToLoc = DictUtils.DictLoc.values()[tmp];
             }
         }
     }
@@ -518,12 +542,6 @@ public class DictsActivity extends ExpandableListActivity
     private void askMoveDict( XWListItem item )
     {
         m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
-        if ( m_moveFromLoc == DictUtils.DictLoc.INTERNAL ) {
-            m_moveToLoc = DictUtils.DictLoc.EXTERNAL;
-        } else {
-            m_moveToLoc = DictUtils.DictLoc.INTERNAL;
-        }
-
         showDialog( MOVE_DICT );
     }
 
@@ -597,6 +615,12 @@ public class DictsActivity extends ExpandableListActivity
         default:
             Assert.fail();
         }
+    }
+
+    private DictUtils.DictLoc itemToRealLoc( int item )
+    {
+        item += DictUtils.DictLoc.INTERNAL.ordinal();
+        return DictUtils.DictLoc.values()[item];
     }
 
     private void deleteDict( String dict, DictUtils.DictLoc loc )

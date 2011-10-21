@@ -1,7 +1,7 @@
 /* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -114,34 +114,42 @@ public class DictUtils {
         // changes?
     }
 
+    private static void tryDir( File dir, boolean strict, DictLoc loc, 
+                                ArrayList<DictAndLoc> al )
+    {
+        if ( null != dir ) {
+            String[] list = dir.list();
+            if ( null != list ) {
+                for ( String file : list ) {
+                    if ( isDict( file, strict ) ) {
+                        al.add( new DictAndLoc( removeDictExtn( file ), loc ) );
+                    }
+                }
+            }
+        }
+    }
+
     public static DictAndLoc[] dictList( Context context )
     {
         if ( null == s_dictListCache ) {
             ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
 
             for ( String file : getAssets( context ) ) {
-                if ( isDict( file ) ) {
+                if ( isDict( file, false ) ) {
                     al.add( new DictAndLoc( removeDictExtn( file ), 
                                             DictLoc.BUILT_IN ) );
                 }
             }
 
             for ( String file : context.fileList() ) {
-                if ( isDict( file ) ) {
+                if ( isDict( file, false ) ) {
                     al.add( new DictAndLoc( removeDictExtn( file ),
                                             DictLoc.INTERNAL ) );
                 }
             }
 
-            File sdDir = getSDDir( context );
-            if ( null != sdDir ) {
-                for ( String file : sdDir.list() ) {
-                    if ( isDict( file ) ) {
-                        al.add( new DictAndLoc( removeDictExtn( file ),
-                                                DictLoc.EXTERNAL ) );
-                    }
-                }
-            }
+            tryDir( getSDDir( context ), false, DictLoc.EXTERNAL, al );
+            tryDir( getDownloadDir(), true, DictLoc.DOWNLOAD, al );
 
             s_dictListCache = 
                 al.toArray( new DictUtils.DictAndLoc[al.size()] );
@@ -213,43 +221,38 @@ public class DictUtils {
     private static boolean copyDict( Context context, String name,
                                      DictLoc from, DictLoc to )
     {
+        Assert.assertFalse( from.equals(to) );
         boolean success = false;
 
-        File file = getSDPathFor( context, name );
-        if ( null != file ) {
-            FileChannel channelIn = null;
-            FileChannel channelOut = null;
+        FileChannel channelIn = null;
+        FileChannel channelOut = null;
 
+        try {
+            FileInputStream fis = DictLoc.INTERNAL == from 
+                ? context.openFileInput( name )
+                : new FileInputStream( getDictFile( context, name, from ) );
+
+            FileOutputStream fos = DictLoc.INTERNAL == to 
+                ? context.openFileOutput( name, Context.MODE_PRIVATE ) 
+                : new FileOutputStream( getDictFile( context, name, to ) );
+
+            channelIn = fis.getChannel();
+            channelOut = fos.getChannel();
+            channelIn.transferTo( 0, channelIn.size(), channelOut );
+            success = true;
+
+        } catch ( java.io.FileNotFoundException fnfe ) {
+            Utils.logf( "%s", fnfe.toString() );
+        } catch ( java.io.IOException ioe ) {
+            Utils.logf( "%s", ioe.toString() );
+        } finally {
             try {
-                FileInputStream fis;
-                FileOutputStream fos;
-                if ( DictLoc.INTERNAL == from ) {
-                    fis = context.openFileInput( name );
-                    fos = new FileOutputStream( file );
-                } else {
-                    fis = new FileInputStream( file );
-                    fos = context.openFileOutput( name, Context.MODE_PRIVATE );
-                }
-
-                channelIn = fis.getChannel();
-                channelOut = fos.getChannel();
-
-                channelIn.transferTo( 0, channelIn.size(), channelOut );
-                success = true;
-
-            } catch ( java.io.FileNotFoundException fnfe ) {
-                Utils.logf( "%s", fnfe.toString() );
-            } catch ( java.io.IOException ioe ) {
-                Utils.logf( "%s", ioe.toString() );
-            } finally {
-                try {
-                    // Order should match assignment order to above in
-                    // case one or both null
-                    channelIn.close();
-                    channelOut.close();
-                } catch ( Exception e ) {
-                    Utils.logf( "%s", e.toString() );
-                }
+                // Order should match assignment order to above in
+                // case one or both null
+                channelIn.close();
+                channelOut.close();
+            } catch ( Exception e ) {
+                Utils.logf( "%s", e.toString() );
             }
         }
         return success;
@@ -258,15 +261,25 @@ public class DictUtils {
     public static void deleteDict( Context context, String name, DictLoc loc )
     {
         name = addDictExtn( name );
-        if ( DictLoc.EXTERNAL == loc ) {
-            File onSD = getSDPathFor( context, name );
-            if ( null != onSD ) {
-                onSD.delete();
-            } // otherwise what?
-        } else {
-            Assert.assertTrue( DictLoc.INTERNAL == loc );
+        File path = null;
+        switch( loc ) {
+        case DOWNLOAD:
+            path = getDownloadsPathFor( name );
+            break;
+        case EXTERNAL:
+            path = getSDPathFor( context, name );
+            break;
+        case INTERNAL:
             context.deleteFile( name );
+            break;
+        default:
+            Assert.fail();
         }
+
+        if ( null != path ) {
+            path.delete();
+        }
+
         invalDictList();
     }
 
@@ -306,6 +319,15 @@ public class DictUtils {
         if ( null == bytes ) {
             try {
                 FileInputStream fis = null;
+                if ( null == fis ) {
+                    if ( loc == DictLoc.UNKNOWN || loc == DictLoc.DOWNLOAD ) {
+                        File path = getDownloadsPathFor( name );
+                        if ( null != path && path.exists() ) {
+                            Utils.logf( "loading %s from Download", name );
+                            fis = new FileInputStream( path );
+                        }
+                    }
+                }
                 if ( loc == DictLoc.UNKNOWN || loc == DictLoc.EXTERNAL ) {
                     File sdFile = getSDPathFor( context, name );
                     if ( null != sdFile && sdFile.exists() ) {
@@ -358,6 +380,9 @@ public class DictUtils {
     {
         File path;
         switch ( to ) {
+        case DOWNLOAD:
+            path = getDownloadsPathFor( name );
+            break;
         case EXTERNAL:
             path = getSDPathFor( context, name );
             break;
@@ -439,9 +464,13 @@ public class DictUtils {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
  
-    private static boolean isDict( String file )
+    private static boolean isDict( String file, boolean strictTest )
     {
-        return file.endsWith( XWConstants.DICT_EXTN );
+        boolean ok = file.endsWith( XWConstants.DICT_EXTN );
+        if ( ok && strictTest ) {
+            Utils.logf( "isDict: not really checking %s yet", file );
+        }
+        return ok;
     }
 
     public static String removeDictExtn( String str )
@@ -505,6 +534,31 @@ public class DictUtils {
     {
         File result = null;
         File dir = getSDDir( context );
+        if ( dir != null ) {
+            result = new File( dir, name );
+        }
+        return result;
+    }
+
+    private static File getDownloadDir()
+    {
+        File result = null;
+        if ( haveWriteableSD() ) {
+            File storage = Environment.getExternalStorageDirectory();
+            if ( null != storage ) {
+                result = new File( storage.getPath(), "download/" );
+                if ( !result.exists() ) {
+                    result = null;
+                }
+            }
+        }
+        return result;
+    }
+
+    private static File getDownloadsPathFor( String name )
+    {
+        File result = null;
+        File dir = getDownloadDir();
         if ( dir != null ) {
             result = new File( dir, name );
         }

@@ -308,8 +308,7 @@
          is substituted for %1$s.  The strings loc_internal and
          loc_internal are substitued for %2$s and %3$s (or vice-versa,
          depending on the current location of the wordlist.)-->
-    <string name="move_dictf">Move wordlist %1$s from %2$s to %3$s
-      storage?</string>
+    <string name="move_dictf">Location for wordlist %1$s</string>
 
     <!-- see move_dictf above -->
     <string name="loc_internal">Internal</string>
@@ -1781,6 +1780,8 @@
     <string name="not_again_lookup">This button lets you look up the
       words just played online.  (Note that not all languages are
       supported yet.)</string>
+
+    <string name="button_move">Move</string>
 
 </resources>
 
