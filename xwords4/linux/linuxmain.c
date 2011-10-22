@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1280,6 +1280,23 @@ main( int argc, char** argv )
     /*         mainParams.needsNewGame = XP_TRUE; */
     /*     }	     */
     /* } */
+
+#ifdef XWFEATURE_WALKDICT
+    /* This is just to test that the dict-iterating code works.  The words are
+       meant to be printed e.g. in a scrolling dialog on Android. */
+    DictWord word;
+    int jj;
+    XP_Bool gotOne;
+
+    for ( jj = 0, gotOne = dict_firstWord( mainParams.dict, &word );
+          gotOne;
+          ++jj, gotOne = dict_getNextWord( mainParams.dict, &word ) ) {
+        XP_UCHAR buf[64];
+        dict_wordToString( mainParams.dict, &word, buf, VSIZE(buf) );
+        fprintf( stderr, "%.6d: %s\n", jj, buf );
+    }
+    exit( 0 );
+#endif
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY

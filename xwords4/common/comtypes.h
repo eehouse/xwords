@@ -115,6 +115,13 @@ typedef enum {
 } XWTimerReason;
 
 #define MAX_NUM_PLAYERS 4
+#define MAX_ROWS 16
+#define MAX_COLS MAX_ROWS
+#ifdef EIGHT_TILES
+# define MAX_TRAY_TILES 8
+#else
+# define MAX_TRAY_TILES 7
+#endif
 #define PLAYERNUM_NBITS 2
 #define NDEVICES_NBITS 2        /* 1-4, but reduced by 1 fits in 2 bits */
 #define NPLAYERS_NBITS 3

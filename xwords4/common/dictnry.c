@@ -597,12 +597,51 @@ dict_super_getTopEdge( const DictionaryCtxt* dict )
     return dict->topEdge;
 } /* dict_super_getTopEdge */
 
+static unsigned long
+dict_super_index_from( const DictionaryCtxt* dict, array_edge* p_edge ) 
+{
+    unsigned long result;
+
+#ifdef NODE_CAN_4
+    array_edge_new* edge = (array_edge_new*)p_edge;
+    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
+
+    if ( dict->is_4_byte ) {
+        result |= ((XP_U32)edge->moreBits) << 16;
+    } else {
+        XP_ASSERT( dict->nodeSize == 3 );
+        if ( (edge->bits & EXTRABITMASK_NEW) != 0 ) { 
+            result |= 0x00010000; /* using | instead of + saves 4 bytes */
+        }
+    }
+#else
+    array_edge_old* edge = (array_edge_old*)p_edge;
+    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
+    if ( (edge->bits & EXTRABITMASK_OLD) != 0 ) { 
+        result |= 0x00010000; /* using | instead of + saves 4 bytes */
+    }
+#endif
+
+    return result;
+} /* dict_super_index_from */
+
+static array_edge*
+dict_super_follow( const DictionaryCtxt* dict, array_edge* in ) 
+{
+    XP_U32 index = dict_index_from( dict, in );
+    array_edge* result = index > 0? 
+        dict_edge_for_index( dict, index ): (array_edge*)NULL;
+    return result;
+} /* dict_super_follow */
+
 void
 dict_super_init( DictionaryCtxt* dict )
 {
     /* subclass may change these later.... */
     dict->func_edge_for_index = dict_super_edge_for_index;
     dict->func_dict_getTopEdge = dict_super_getTopEdge;
+    dict->func_dict_index_from = dict_super_index_from;
+    dict->func_dict_follow = dict_super_follow;
     dict->func_dict_getShortName = dict_getName;
 } /* dict_super_init */
 
@@ -611,6 +650,126 @@ dict_getLangName( const DictionaryCtxt* ctxt )
 {
     return ctxt->langName;
 }
+
+#ifdef XWFEATURE_WALKDICT
+static void
+edgesToIndices( const DictionaryCtxt* dict, XP_U16 nEdges,
+		array_edge** edges, DictWord* word )
+{
+    XP_U16 ii;
+
+    word->nTiles = nEdges;
+    for ( ii = 0; ii < nEdges; ++ii ) {
+	word->indices[ii] = edges[ii] - dict->base;
+    }
+}
+
+static void
+indicesToEdges( const DictionaryCtxt* dict, 
+		DictWord* word, array_edge** edges )
+{
+    XP_U16 nEdges = word->nTiles;
+    XP_U16 ii;
+    for ( ii = 0; ii < nEdges; ++ii ) {
+	edges[ii] = &dict->base[word->indices[ii]];
+    }
+}
+
+/* On entry and exit, edge at end of array should be ACCEPTING.  The job of
+ * this function is to iterate from one such edge to the next.  Steps are: 1)
+ * try to follow the edge, to expand to a longer word with the last one as a
+ * prefix.  2) If we're at the end of the array, back off the top tile (and
+ * repeat while at end of array); 3) Once the current top edge is not a
+ * LAST_EDGE, try with its next-letter neighbor.
+ */
+static XP_Bool
+nextWord( const DictionaryCtxt* dict, array_edge** edges, XP_U16* nTilesP )
+{
+    XP_U16 nTiles = *nTilesP;
+    XP_Bool success = XP_FALSE;
+    while ( 0 < nTiles && ! success ) {
+	array_edge* next = dict_follow( dict, edges[nTiles-1] );
+	if ( !!next ) {
+	    edges[nTiles++] = next;
+	    success = ISACCEPTING( dict, next );
+	    continue;		/* try with longer word */
+    	}
+
+	while ( IS_LAST_EDGE( dict, edges[nTiles-1] ) && 0 < --nTiles ) {
+	}
+
+	if ( 0 < nTiles ) {
+	    edges[nTiles-1] += dict->nodeSize;
+	    success = ISACCEPTING( dict, edges[nTiles-1] );
+	}
+    }
+
+    *nTilesP = nTiles;
+    return success;
+}
+
+XP_Bool
+dict_firstWord( const DictionaryCtxt* dict, DictWord* word )
+{
+    array_edge* edges[MAX_COLS];
+    XP_U16 nEdges = 0;
+    edges[nEdges++] = dict_getTopEdge( dict );
+
+    XP_Bool success = ISACCEPTING( dict, edges[0] ) /*  */
+	|| nextWord( dict, edges, &nEdges );
+    if ( success ) {
+	edgesToIndices( dict, nEdges, edges, word );
+    }
+
+    return success;
+}
+
+XP_Bool
+dict_getNextWord( const DictionaryCtxt* dict, DictWord* word )
+{
+    XP_U16 nTiles = word->nTiles;
+    array_edge* edges[MAX_COLS];
+    indicesToEdges( dict, word, edges );
+    XP_Bool success = nextWord( dict, edges, &nTiles );
+    if ( success ) {
+	edgesToIndices( dict, nTiles, edges, word );
+    }
+    return success;
+}
+
+XP_Bool
+dict_lastWord( const DictionaryCtxt* dict, DictWord* word )
+{
+    XP_ASSERT( 0 );
+    XP_USE( dict );
+    word->nTiles = 0;
+    return XP_FALSE;
+}
+
+XP_Bool
+dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word )
+{
+    XP_USE( dict );
+    XP_ASSERT( 0 );
+    return word->nTiles > 0;
+}
+
+void
+dict_wordToString( const DictionaryCtxt* dict, DictWord* word,
+		   XP_UCHAR* buf, XP_U16 buflen )
+{
+    XP_U16 ii;
+    array_edge* edges[MAX_COLS];
+    Tile tiles[MAX_COLS];
+
+    indicesToEdges( dict, word, edges );
+
+    for ( ii = 0; ii < word->nTiles; ++ii ) {
+	tiles[ii] = EDGETILE( dict, edges[ii] );
+    }
+    (void)dict_tilesToString( dict, tiles, word->nTiles, buf, buflen );
+}
+#endif /* XWFEATURE_WALKDICT */
 
 #ifdef CPLUS
 }

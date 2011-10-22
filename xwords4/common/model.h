@@ -29,16 +29,12 @@
 extern "C" {
 #endif
 
-#define MAX_ROWS 16
-#define MAX_COLS 16
 #define NUMCOLS_NBITS 4
 
 #ifdef EIGHT_TILES
-#define MAX_TRAY_TILES 8
-#define NTILES_NBITS 4
+# define NTILES_NBITS 4
 #else
-#define MAX_TRAY_TILES 7
-#define NTILES_NBITS 3
+# define NTILES_NBITS 3
 #endif
 
 /* Try making this 0, as some local rules, e.g. Spanish, allow.  Will need to
