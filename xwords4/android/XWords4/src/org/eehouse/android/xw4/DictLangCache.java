@@ -373,11 +373,15 @@ public class DictLangCache {
 
             info = new DictInfo();
 
-            XwJNI.dict_getInfo( pairs.m_bytes[0], pairs.m_paths[0], 
-                                JNIUtilsImpl.get(), info );
+            if ( XwJNI.dict_getInfo( pairs.m_bytes[0], pairs.m_paths[0], 
+                                     JNIUtilsImpl.get(), info ) ) {
 
-            info.name = dal.name;
-            s_nameToLang.put( dal, info );
+                info.name = dal.name;
+                s_nameToLang.put( dal, info );
+            } else {
+                info = null;
+                Utils.logf( "getInfo(): unable to open dict %s", dal.name );
+            }
         }
         return info;
     }

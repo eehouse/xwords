@@ -231,7 +231,7 @@ public class XwJNI {
     // Dicts
     public static native boolean dict_tilesAreSame( int dictPtr1, int dictPtr2 );
     public static native String[] dict_getChars( int dictPtr );
-    public static native void dict_getInfo( byte[] dict, String path, 
-                                            JNIUtils jniu, DictInfo info );
+    public static native boolean dict_getInfo( byte[] dict, String path, 
+                                               JNIUtils jniu, DictInfo info );
     public static native int dict_getTileValue( int dictPtr, int tile );
 }

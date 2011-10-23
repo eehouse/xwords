@@ -265,27 +265,30 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
     setJAddrRec( env, jaddr, &addr );
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 ( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, 
   jobject jniu, jobject jinfo )
 {
+    jboolean result = false;
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
                                      jDictBytes, jpath, NULL );
-    jint code = dict_getLangCode( dict );
-    jint nWords = dict_getWordCount( dict );
-    dict_destroy( dict );
+    if ( NULL != dict ) {
+        setInt( env, jinfo, "langCode", dict_getLangCode( dict ) );
+        setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
+        dict_destroy( dict );
+        result = true;
+    }
     destroyJNIUtil( &jniutil );
 
-    setInt( env, jinfo, "langCode", code );
-    setInt( env, jinfo, "wordCount", nWords );
 #ifdef MEM_DEBUG
     mpool_destroy( mpool );
 #endif
+    return result;
 }
 
 /* Dictionary methods: don't use gamePtr */
