@@ -118,9 +118,8 @@
     </activity>
 
     <activity android:name="RelayGameActivity"/>
-
-    <activity android:name="ChatActivity"
-              />
+    <activity android:name="DictBrowseActivity"/>
+    <activity android:name="ChatActivity"/>
 
     <service android:name="RelayService"/>
 
