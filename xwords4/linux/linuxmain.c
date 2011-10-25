@@ -892,6 +892,87 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
     LOG_FUNC();
 }
 
+#ifdef XWFEATURE_WALKDICT
+static void
+walk_dict_test( const DictionaryCtxt* dict )
+{
+    /* This is just to test that the dict-iterating code works.  The words are
+       meant to be printed e.g. in a scrolling dialog on Android. */
+    DictWord word;
+    long jj;
+    XP_Bool gotOne;
+
+    XP_U32 count = dict_getWordCount( dict );
+    XP_ASSERT( count > 0 );
+    char** words = g_malloc( count * sizeof(char*) );
+    XP_ASSERT( !!words );
+    // # define PRINT_ALL
+
+    /* if ( dict_firstWord( dict, &word ) */
+    /*      && dict_getNextWord( dict, &word ) */
+    /*      && dict_getPrevWord( dict, &word ) ) { */
+    /*     fprintf( stderr, "yay!: dict_getPrevWord returned\n" ); */
+    /* } */
+    /* exit( 0 ); */
+
+    for ( jj = 0, gotOne = dict_firstWord( dict, &word );
+          gotOne;
+          ++jj, gotOne = dict_getNextWord( dict, &word ) ) {
+        XP_ASSERT( word.index == jj );
+        XP_UCHAR buf[64];
+        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
+        dict_wordToString( dict, &word, buf, VSIZE(buf) );
+        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
+# ifdef PRINT_ALL
+        fprintf( stderr, "%.6ld: %s\n", jj, buf );
+# endif
+        if ( !!words ) {
+            words[jj] = g_strdup( buf );
+        }
+        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
+    }
+    XP_ASSERT( count == jj );
+
+    for ( jj = 0, gotOne = dict_lastWord( dict, &word );
+          gotOne;
+          ++jj, gotOne = dict_getPrevWord( dict, &word ) ) {
+        XP_ASSERT( word.index == count-jj-1 );
+        XP_UCHAR buf[64];
+        dict_wordToString( dict, &word, buf, VSIZE(buf) );
+# ifdef PRINT_ALL
+        fprintf( stderr, "%.6ld: %s\n", jj, buf );
+# endif
+        if ( !!words ) {
+            if ( strcmp( buf, words[count-jj-1] ) ) {
+                fprintf( stderr, "failure at %ld: %s going forward; %s "
+                         "going backward\n", jj, words[count-jj-1], buf );
+                break;
+            }
+        }
+    }
+    XP_ASSERT( count == jj );
+    fprintf( stderr, "finished comparing runs in both directions\n" );
+
+    fprintf( stderr, "testing getNth\n" );
+    int ii;
+    for ( ii = 0 ; ii < 1000; ++ii ) {
+        long index = XP_RANDOM() % count;
+        if ( dict_getNthWord( dict, &word, index ) ) {
+            XP_ASSERT( word.index == index );
+            XP_UCHAR buf[64];
+            dict_wordToString( dict, &word, buf, VSIZE(buf) );
+            XP_ASSERT( 0 == strcmp( buf, words[index] ) );
+        } else {
+            XP_ASSERT( 0 );
+        }
+    }
+
+    exit( 0 );
+}
+#else
+# define walk_dict_test(d)
+#endif
+
 int
 main( int argc, char** argv )
 {
@@ -1281,63 +1362,7 @@ main( int argc, char** argv )
     /*     }	     */
     /* } */
 
-#ifdef XWFEATURE_WALKDICT
-    /* This is just to test that the dict-iterating code works.  The words are
-       meant to be printed e.g. in a scrolling dialog on Android. */
-    DictWord word;
-    long jj;
-    XP_Bool gotOne;
-
-    XP_U32 count = dict_getWordCount( mainParams.dict );
-    XP_ASSERT( count > 0 );
-    char** words = g_malloc( count * sizeof(char*) );
-    XP_ASSERT( !!words );
-    // # define PRINT_ALL
-
-    /* if ( dict_firstWord( mainParams.dict, &word ) */
-    /*      && dict_getNextWord( mainParams.dict, &word ) */
-    /*      && dict_getPrevWord( mainParams.dict, &word ) ) { */
-    /*     fprintf( stderr, "yay!: dict_getPrevWord returned\n" ); */
-    /* } */
-    /* exit( 0 ); */
-
-    for ( jj = 0, gotOne = dict_firstWord( mainParams.dict, &word );
-          gotOne;
-          ++jj, gotOne = dict_getNextWord( mainParams.dict, &word ) ) {
-        XP_UCHAR buf[64];
-        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
-        dict_wordToString( mainParams.dict, &word, buf, VSIZE(buf) );
-        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
-# ifdef PRINT_ALL
-        fprintf( stderr, "%.6ld: %s\n", jj, buf );
-# endif
-        if ( !!words ) {
-            words[jj] = g_strdup( buf );
-        }
-        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
-    }
-    XP_ASSERT( count == jj );
-
-    for ( jj = 0, gotOne = dict_lastWord( mainParams.dict, &word );
-          gotOne;
-          ++jj, gotOne = dict_getPrevWord( mainParams.dict, &word ) ) {
-        XP_UCHAR buf[64];
-        dict_wordToString( mainParams.dict, &word, buf, VSIZE(buf) );
-# ifdef PRINT_ALL
-        fprintf( stderr, "%.6ld: %s\n", jj, buf );
-# endif
-        if ( !!words ) {
-            if ( strcmp( buf, words[count-jj-1] ) ) {
-                fprintf( stderr, "failure at %ld: %s going forward; %s "
-                         "going backward\n", jj, words[count-jj-1], buf );
-                break;
-            }
-        }
-    }
-    XP_ASSERT( count == jj );
-    fprintf( stderr, "finished comparing runs in both directions\n" );
-    exit( 0 );
-#endif
+    walk_dict_test( mainParams.dict );
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
