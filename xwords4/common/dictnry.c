@@ -812,7 +812,10 @@ dict_firstWord( const DictionaryCtxt* dict, DictWord* word )
     XP_Bool success = ISACCEPTING( dict, edges[0] )
         || nextWord( dict, edges, &nEdges );
     if ( success ) {
+        word->wordCount = dict_getWordCount( dict );
+
         edgesToIndices( dict, nEdges, edges, word );
+        word->index = 0;
     }
 
     return success;
@@ -821,7 +824,11 @@ dict_firstWord( const DictionaryCtxt* dict, DictWord* word )
 XP_Bool
 dict_getNextWord( const DictionaryCtxt* dict, DictWord* word )
 {
-    return dict_getWord( dict, word, nextWord );
+    XP_Bool success = dict_getWord( dict, word, nextWord );
+    if ( success ) {
+        ++word->index;
+    }
+    return success;
 }
 
 XP_Bool
@@ -833,7 +840,10 @@ dict_lastWord( const DictionaryCtxt* dict, DictWord* word )
 
     XP_Bool success = lastEdges( dict, edges, &nEdges );
     if ( success ) {
+        word->wordCount = dict_getWordCount( dict );
+
         edgesToIndices( dict, nEdges, edges, word );
+        word->index = word->wordCount - 1;
     }
 
     return success;
@@ -842,7 +852,67 @@ dict_lastWord( const DictionaryCtxt* dict, DictWord* word )
 XP_Bool
 dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word )
 {
-    return dict_getWord( dict, word, prevWord );
+    XP_Bool success = dict_getWord( dict, word, prevWord );
+    if ( success ) {
+        --word->index;
+    }
+    return success;
+}
+
+/* If we start without an initialized word, init it to be closer to what's
+   sought.  OR if we're father than necessary from what's sought, start over
+   at the closer end.  Then move as many steps as necessary to reach it. */
+XP_Bool
+dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn )
+{
+    XP_U32 wordCount;
+    XP_Bool validWord = 0 < word->nTiles;
+    XP_U32 ii;
+    if ( validWord ) {        /* uninitialized */
+        wordCount = word->wordCount;
+    } else {
+        wordCount = dict_getWordCount( dict );
+    }
+    XP_Bool success = nn < wordCount;
+    if ( success ) {
+        wordCount /= 2;             /* mid-point */
+
+        /* If word's inited but farther from target than either endpoint,
+           better to start with an endpoint */
+        if ( validWord && XP_ABS( nn - word->index ) > wordCount ) {
+            /* XP_LOGF( "%s: clearing word: nn=%ld; word->index=%ld", */
+            /*          __func__, nn, word->index ); */
+            validWord = XP_FALSE;
+        }
+
+        if ( !validWord ) {
+            if ( nn >= wordCount ) {
+                dict_lastWord( dict, word );
+            } else {
+                dict_firstWord( dict, word );
+            }
+        }
+
+        array_edge* edges[MAX_COLS];
+        XP_U16 nEdges = word->nTiles;
+        indicesToEdges( dict, word, edges );
+        if ( word->index < nn ) {
+            for ( ii = nn - word->index; ii > 0; --ii ) {
+                if ( !nextWord( dict, edges, &nEdges ) ) {
+                    XP_ASSERT( 0 );
+                }
+            }
+        } else if ( word->index > nn ) {
+            for ( ii = word->index - nn; ii > 0; --ii ) {
+                if ( !prevWord( dict, edges, &nEdges ) ) {
+                    XP_ASSERT( 0 );
+                }
+            }
+        }
+        edgesToIndices( dict, nEdges, edges, word );
+        word->index = nn;
+    }
+    return success;
 }
 
 void
