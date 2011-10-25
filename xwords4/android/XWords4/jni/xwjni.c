@@ -28,6 +28,7 @@
 #include "board.h"
 #include "mempool.h"
 #include "strutils.h"
+#include "dictnry.h"
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
@@ -1256,3 +1257,94 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
     (*env)->ReleaseStringUTFChars( env, jmsg, msg );
     XWJNI_END();
 }
+
+#ifdef XWFEATURE_WALKDICT
+////////////////////////////////////////////////////////////
+// Dict iterator
+////////////////////////////////////////////////////////////
+
+typedef struct _DictIterData {
+    JNIUtilCtxt* jniutil;
+    DictionaryCtxt* dict;
+    DictWord word;
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool;
+#endif
+} DictIterData;
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
+(JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, jobject jniu )
+{
+    jint closure = 0;
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = mpool_make();
+#endif
+    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
+                                     jDictBytes, jpath, NULL );
+    if ( !!dict ) {
+        DictIterData* data = XP_CALLOC( mpool, sizeof(*data) );
+        data->jniutil = jniutil;
+        data->dict = dict;
+#ifdef MEM_DEBUG
+        data->mpool = mpool;
+#endif
+        closure = (int)data;
+    } else {
+        destroyJNIUtil( &jniutil );
+#ifdef MEM_DEBUG
+        mpool_destroy( mpool );
+#endif
+    }
+    return closure;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
+( JNIEnv* env, jclass C, jint closure )
+{
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        dict_destroy( data->dict );
+        destroyJNIUtil( &data->jniutil );
+#ifdef MEM_DEBUG
+        MemPoolCtx* mpool = data->mpool;
+#endif
+        XP_FREE( mpool, data );
+#ifdef MEM_DEBUG
+        mpool_destroy( mpool );
+#endif
+    }
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
+( JNIEnv* env, jclass C, jint closure, jint nn )
+{
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        if ( dict_firstWord( data->dict, &data->word ) ) {
+            while ( nn > 0 && dict_getNextWord( data->dict, &data->word ) ) {
+                --nn;
+            }
+        }
+    }
+    return nn == 0;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1toText
+( JNIEnv* env, jclass C, jint closure )
+{
+    jstring result = NULL;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        XP_UCHAR buf[64];
+        dict_wordToString( data->dict, &data->word, buf, VSIZE(buf) );
+        result = (*env)->NewStringUTF( env, buf );
+        (*env)->DeleteLocalRef( env, result );
+    }
+    return result;
+}
+#endif  /* XWFEATURE_BOARDWORDS */

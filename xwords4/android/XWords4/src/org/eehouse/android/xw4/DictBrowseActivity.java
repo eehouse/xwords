@@ -20,32 +20,39 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
-import android.widget.ListAdapter;
-import android.widget.TextView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListAdapter;
+import android.widget.TextView;
+
+import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.jni.XwJNI;
 
 public class DictBrowseActivity extends XWListActivity {
 
     public static final String DICT_NAME = "DICT_NAME";
-    public static final String DICT_LOC = "DICT_LOC";
+
+    private int m_dictClosure = 0;
 
     private class DictListAdapter extends XWListAdapter {
 
         public DictListAdapter()
         {
-            // 510-528-3769
             super( DictBrowseActivity.this, 1000 );
         }
 
         public Object getItem( int position ) 
         {
-            String str = String.format( "Word %d", position );
-            Utils.logf( "returning %s", str );
             TextView text = new TextView( DictBrowseActivity.this );
-            text.setText( str );
+            if ( XwJNI.dict_iter_nthWord( m_dictClosure, position ) ) {
+                String str = 
+                    String.format( "%d %s", position,
+                                   XwJNI.dict_iter_toText( m_dictClosure ) );
+                text.setText( str );
+            }
             return text;
         }
 
@@ -62,6 +69,37 @@ public class DictBrowseActivity extends XWListActivity {
 
         setContentView( R.layout.dict_browser );
         setListAdapter( new DictListAdapter() );
+
+        Intent intent = getIntent();
+        String name = null == intent? null:intent.getStringExtra( DICT_NAME );
+        if ( null == name ) {
+            finish();
+        }
+        String[] names = { name };
+        DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
+        m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], pairs.m_paths[0],
+                                              JNIUtilsImpl.get() );
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        XwJNI.dict_iter_destroy( m_dictClosure );
+        m_dictClosure = 0;
+        super.onDestroy();
+    }
+
+
+    // Just in case onDestroy didn't get called....
+    @Override
+    public void finalize()
+    {
+        XwJNI.dict_iter_destroy( m_dictClosure );
+        try {
+            super.finalize();
+        } catch ( java.lang.Throwable err ){
+            Utils.logf( "%s", err.toString() );
+        }
     }
 
 }
