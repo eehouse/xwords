@@ -1285,16 +1285,57 @@ main( int argc, char** argv )
     /* This is just to test that the dict-iterating code works.  The words are
        meant to be printed e.g. in a scrolling dialog on Android. */
     DictWord word;
-    int jj;
+    long jj;
     XP_Bool gotOne;
+
+    XP_U32 count = dict_getWordCount( mainParams.dict );
+    XP_ASSERT( count > 0 );
+    char** words = g_malloc( count * sizeof(char*) );
+    XP_ASSERT( !!words );
+    // # define PRINT_ALL
+
+    /* if ( dict_firstWord( mainParams.dict, &word ) */
+    /*      && dict_getNextWord( mainParams.dict, &word ) */
+    /*      && dict_getPrevWord( mainParams.dict, &word ) ) { */
+    /*     fprintf( stderr, "yay!: dict_getPrevWord returned\n" ); */
+    /* } */
+    /* exit( 0 ); */
 
     for ( jj = 0, gotOne = dict_firstWord( mainParams.dict, &word );
           gotOne;
           ++jj, gotOne = dict_getNextWord( mainParams.dict, &word ) ) {
         XP_UCHAR buf[64];
+        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
         dict_wordToString( mainParams.dict, &word, buf, VSIZE(buf) );
-        fprintf( stderr, "%.6d: %s\n", jj, buf );
+        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
+# ifdef PRINT_ALL
+        fprintf( stderr, "%.6ld: %s\n", jj, buf );
+# endif
+        if ( !!words ) {
+            words[jj] = g_strdup( buf );
+        }
+        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
     }
+    XP_ASSERT( count == jj );
+
+    for ( jj = 0, gotOne = dict_lastWord( mainParams.dict, &word );
+          gotOne;
+          ++jj, gotOne = dict_getPrevWord( mainParams.dict, &word ) ) {
+        XP_UCHAR buf[64];
+        dict_wordToString( mainParams.dict, &word, buf, VSIZE(buf) );
+# ifdef PRINT_ALL
+        fprintf( stderr, "%.6ld: %s\n", jj, buf );
+# endif
+        if ( !!words ) {
+            if ( strcmp( buf, words[count-jj-1] ) ) {
+                fprintf( stderr, "failure at %ld: %s going forward; %s "
+                         "going backward\n", jj, words[count-jj-1], buf );
+                break;
+            }
+        }
+    }
+    XP_ASSERT( count == jj );
+    fprintf( stderr, "finished comparing runs in both directions\n" );
     exit( 0 );
 #endif
 

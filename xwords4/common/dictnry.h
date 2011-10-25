@@ -212,11 +212,12 @@ typedef struct _DictWord {
     XP_U32 indices[MAX_COLS];
 } DictWord;
 
+XP_U32 dict_countWords( const DictionaryCtxt* dict );
 XP_Bool dict_firstWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_lastWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getNextWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word );
-void dict_wordToString( const DictionaryCtxt* dict, DictWord* word,
+void dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
                         XP_UCHAR* buf, XP_U16 buflen );
 
 #endif
