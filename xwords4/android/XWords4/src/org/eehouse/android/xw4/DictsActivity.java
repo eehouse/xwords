@@ -520,8 +520,6 @@ public class DictsActivity extends ExpandableListActivity
             Intent intent = new Intent( this, DictBrowseActivity.class );
             XWListItem view = (XWListItem)info.targetView;
             intent.putExtra( DictBrowseActivity.DICT_NAME, view.getText() );
-            intent.putExtra( DictBrowseActivity.DICT_LOC,
-                             ((DictUtils.DictLoc)view.getCached()).ordinal() );
             startActivity( intent );
             break;
         }

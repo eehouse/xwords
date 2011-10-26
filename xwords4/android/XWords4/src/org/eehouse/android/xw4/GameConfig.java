@@ -121,7 +121,7 @@ public class GameConfig extends XWActivity
     };
 
     class RemoteChoices extends XWListAdapter {
-        public RemoteChoices() { super( GameConfig.this, m_gi.nPlayers ); }
+        public RemoteChoices() { super( m_gi.nPlayers ); }
 
         public Object getItem( int position) { return m_gi.players[position]; }
         public View getView( final int position, View convertView, 

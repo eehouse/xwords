@@ -239,6 +239,6 @@ public class XwJNI {
     public static native int dict_iter_init( byte[] dict, String path, 
                                              JNIUtils jniu );
     public static native void dict_iter_destroy( int closure );
-    public static native boolean dict_iter_nthWord( int closure, int nn );
-    public static native String dict_iter_toText( int closure );
+    public static native int dict_iter_wordCount( int closure );
+    public static native String dict_iter_nthWord( int closure, int nn );
 }

@@ -76,6 +76,7 @@ void and_freep( void** ptrp );
 
 #define XP_MIN(a,b) ((a)<(b)?(a):(b))
 #define XP_MAX(a,b) ((a)>(b)?(a):(b))
+#define XP_ABS(a)   ((a)>=0?(a):-(a))
 
 #ifdef DEBUG
 void and_assert( const char* test, int line, const char* file, const char* func );
@@ -117,4 +118,3 @@ extern "C" {
 #endif
 
 #endif
-

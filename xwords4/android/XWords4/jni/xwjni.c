@@ -1264,6 +1264,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
 ////////////////////////////////////////////////////////////
 
 typedef struct _DictIterData {
+    JNIEnv* env;
     JNIUtilCtxt* jniutil;
     DictionaryCtxt* dict;
     DictWord word;
@@ -1280,19 +1281,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
 #endif
-    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
+    DictIterData* data = XP_CALLOC( mpool, sizeof(*data) );
+    data->env = env;
+    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &data->env, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
                                      jDictBytes, jpath, NULL );
     if ( !!dict ) {
-        DictIterData* data = XP_CALLOC( mpool, sizeof(*data) );
         data->jniutil = jniutil;
         data->dict = dict;
 #ifdef MEM_DEBUG
         data->mpool = mpool;
 #endif
         closure = (int)data;
+
+        (void)dict_getNthWord( data->dict, &data->word, 0 );
     } else {
         destroyJNIUtil( &jniutil );
+        XP_FREE( mpool, data );
 #ifdef MEM_DEBUG
         mpool_destroy( mpool );
 #endif
@@ -1318,32 +1323,32 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
     }
 }
 
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
-( JNIEnv* env, jclass C, jint closure, jint nn )
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
+(JNIEnv* env, jclass C, jint closure )
 {
+    jint result = 0;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        if ( dict_firstWord( data->dict, &data->word ) ) {
-            while ( nn > 0 && dict_getNextWord( data->dict, &data->word ) ) {
-                --nn;
-            }
-        }
+        result = data->word.wordCount;
     }
-    return nn == 0;
+    LOG_RETURNF( "%d", result );
+    return result;
 }
 
 JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1toText
-( JNIEnv* env, jclass C, jint closure )
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
+( JNIEnv* env, jclass C, jint closure, jint nn)
 {
     jstring result = NULL;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        XP_UCHAR buf[64];
-        dict_wordToString( data->dict, &data->word, buf, VSIZE(buf) );
-        result = (*env)->NewStringUTF( env, buf );
-        (*env)->DeleteLocalRef( env, result );
+        if ( dict_getNthWord( data->dict, &data->word, nn ) ) {
+            XP_UCHAR buf[64];
+            dict_wordToString( data->dict, &data->word, buf, VSIZE(buf) );
+            result = (*env)->NewStringUTF( env, buf );
+            (*env)->DeleteLocalRef( env, result );
+        }
     }
     return result;
 }

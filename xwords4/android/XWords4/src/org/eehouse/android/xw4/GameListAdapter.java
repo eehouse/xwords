@@ -229,7 +229,7 @@ public class GameListAdapter extends XWListAdapter {
     } // class LoadItemTask
 
     public GameListAdapter( Context context, LoadItemCB cb ) {
-        super( context, DBUtils.gamesList(context).length );
+        super( DBUtils.gamesList(context).length );
         m_context = context;
         m_cb = cb;
         m_factory = LayoutInflater.from( context );

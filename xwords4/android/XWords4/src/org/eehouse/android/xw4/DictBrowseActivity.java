@@ -28,6 +28,8 @@ import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 
@@ -39,18 +41,12 @@ public class DictBrowseActivity extends XWListActivity {
 
     private class DictListAdapter extends XWListAdapter {
 
-        public DictListAdapter()
-        {
-            super( DictBrowseActivity.this, 1000 );
-        }
-
         public Object getItem( int position ) 
         {
             TextView text = new TextView( DictBrowseActivity.this );
-            if ( XwJNI.dict_iter_nthWord( m_dictClosure, position ) ) {
-                String str = 
-                    String.format( "%d %s", position,
-                                   XwJNI.dict_iter_toText( m_dictClosure ) );
+            String str = XwJNI.dict_iter_nthWord( m_dictClosure, position );
+            if ( null != str ) {
+                str = String.format( "%d %s", position, str );
                 text.setText( str );
             }
             return text;
@@ -60,15 +56,17 @@ public class DictBrowseActivity extends XWListActivity {
             return (View)getItem( position );
         }
 
+        public int getCount() { 
+            Assert.assertTrue( 0 != m_dictClosure );
+            return XwJNI.dict_iter_wordCount( m_dictClosure );
+        }
+
     }
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
-
-        setContentView( R.layout.dict_browser );
-        setListAdapter( new DictListAdapter() );
 
         Intent intent = getIntent();
         String name = null == intent? null:intent.getStringExtra( DICT_NAME );
@@ -79,6 +77,9 @@ public class DictBrowseActivity extends XWListActivity {
         DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
         m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], pairs.m_paths[0],
                                               JNIUtilsImpl.get() );
+
+        setContentView( R.layout.dict_browser );
+        setListAdapter( new DictListAdapter() );
     }
 
     @Override
