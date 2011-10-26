@@ -955,7 +955,7 @@ walk_dict_test( const DictionaryCtxt* dict )
 
     fprintf( stderr, "testing getNth\n" );
     int ii;
-    for ( ii = 0 ; ii < 1000; ++ii ) {
+    for ( ii = 0 ; ii < 100; ++ii ) {
         long index = XP_RANDOM() % count;
         if ( dict_getNthWord( dict, &word, index ) ) {
             XP_ASSERT( word.index == index );
@@ -964,6 +964,24 @@ walk_dict_test( const DictionaryCtxt* dict )
             XP_ASSERT( 0 == strcmp( buf, words[index] ) );
         } else {
             XP_ASSERT( 0 );
+        }
+    }
+
+    DictIndex indices[26];
+    dict_makeIndex( dict, 1, indices, VSIZE(indices) );
+    for ( ii = 0; ii < VSIZE(indices); ++ii ) {
+        DictIndex index = indices[ii];
+        if ( NO_INDEX == index ) {
+            continue;
+        } else if ( dict_getNthWord( dict, &word, indices[ii] ) ) {
+            XP_ASSERT( word.index == indices[ii] );
+            XP_UCHAR buf1[64];
+            dict_wordToString( dict, &word, buf1, VSIZE(buf1) );
+            XP_UCHAR buf2[64] = {0};
+            if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
+                dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
+            }
+            fprintf( stderr, "%d: index: %ld; word: %s (prev: %s)\n", ii, indices[ii], buf1, buf2 );
         }
     }
 

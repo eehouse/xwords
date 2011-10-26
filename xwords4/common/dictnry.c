@@ -639,6 +639,30 @@ dict_super_follow( const DictionaryCtxt* dict, array_edge* in )
     return result;
 } /* dict_super_follow */
 
+static array_edge*
+dict_super_edge_with_tile( const DictionaryCtxt* dict, array_edge* from, 
+                           Tile tile ) 
+{
+    for ( ; ; ) {
+        Tile candidate = EDGETILE(dict,from);
+        if ( candidate == tile ) {
+            break;
+        }
+
+        if ( IS_LAST_EDGE(dict, from ) ) {
+            from = NULL;
+            break;
+        }
+#ifdef NODE_CAN_4
+        from += dict->nodeSize;
+#else
+        from += 3;
+#endif
+    }
+
+    return from;
+} /* edge_with_tile */
+
 void
 dict_super_init( DictionaryCtxt* dict )
 {
@@ -647,6 +671,7 @@ dict_super_init( DictionaryCtxt* dict )
     dict->func_dict_getTopEdge = dict_super_getTopEdge;
     dict->func_dict_index_from = dict_super_index_from;
     dict->func_dict_follow = dict_super_follow;
+    dict->func_dict_edge_with_tile = dict_super_edge_with_tile;
     dict->func_dict_getShortName = dict_getName;
 } /* dict_super_init */
 
@@ -786,6 +811,40 @@ dict_getWord( const DictionaryCtxt* dict, DictWord* word, WordFinder finder )
     return success;
 }
 
+static XP_Bool
+findStartsWith( const DictionaryCtxt* dict, Tile* tiles, XP_U16 nTiles,
+                array_edge** edges, XP_U16* nEdgesP )
+{
+    XP_Bool success = XP_TRUE;
+    XP_U16 nEdges = 0;
+    array_edge* edge = dict_getTopEdge( dict );
+
+    while ( nTiles-- > 0 ) {
+        Tile tile = *tiles++;
+        edge = dict_edge_with_tile( dict, edge, tile );
+        if ( NULL == edge ) {
+            success = XP_FALSE;
+            break;
+        }
+        edges[nEdges++] = edge;
+        edge = dict_follow( dict, edge );
+    }
+    *nEdgesP = nEdges;
+    return success;
+}
+
+static XP_Bool
+wordsEqual( array_edge** edges1, XP_U16 nEdges1, 
+            array_edge** edges2, XP_U16 nEdges2 )
+{
+    XP_Bool success = nEdges1 == nEdges2;
+    if ( success ) {
+        success = 0 == memcmp( edges1, edges2, nEdges1 * sizeof(edges1[0]) );
+    }
+    return success;
+}
+
+
 XP_U32
 dict_countWords( const DictionaryCtxt* dict )
 {
@@ -800,6 +859,71 @@ dict_countWords( const DictionaryCtxt* dict )
         ++count;
     }
     return count;
+}
+
+void
+dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
+                DictIndex* indices, XP_U16 count )
+{
+    XP_USE( indices );
+    XP_ASSERT( depth == 1 );    /* so far */
+    XP_U16 ii, needCount;
+    XP_U16 nextIndex = 0;
+    XP_U16 nFaces = dict_numTileFaces( dict );
+    XP_Bool hasBlank = dict_hasBlankTile( dict );
+    if ( hasBlank ) {
+        --nFaces;
+    }
+    for ( ii = 1, needCount = nFaces; ii < depth; ++ii ) {
+        needCount *= nFaces;
+    }
+    XP_ASSERT( needCount <= count );
+
+    /* For each tile string implied by depth (A if depth == 1, AAA if == 3 ),
+     * find the first word starting with that IF EXISTS.  If it does, find its
+     * index.  As an optimization, find index starting with the previous word.
+     */
+    DictWord firstWord;
+    if ( dict_firstWord( dict, &firstWord ) ) {
+        array_edge* prevEdges[MAX_COLS];
+        indicesToEdges( dict, &firstWord, prevEdges );
+        XP_U16 prevNEdges = firstWord.nTiles;
+        DictIndex index = 0;
+
+        Tile tiles[1];
+        nFaces = dict_numTileFaces( dict );
+        for ( tiles[0] = 0; tiles[0] < nFaces; ++tiles[0] ) {
+            if ( hasBlank && tiles[0] == dict_getBlankTile( dict ) ) {
+                continue;
+            }
+
+            array_edge* curEdges[MAX_COLS];
+            XP_U16 curNEdges;
+            if ( !findStartsWith( dict, tiles, 1, curEdges, &curNEdges ) ) {
+                indices[nextIndex++] = NO_INDEX;
+            } else {
+                XP_ASSERT( curNEdges == depth );
+                if ( ! ISACCEPTING( dict, curEdges[curNEdges-1] ) ) {
+                    if ( !nextWord( dict, curEdges, &curNEdges ) ) {
+                        XP_ASSERT( 0 );
+                    }
+                }
+                if ( wordsEqual( curEdges, curNEdges, prevEdges, prevNEdges ) ) {
+                    XP_ASSERT( index == 0 );
+                } else {
+                    /* Walk the prev word forward until they're the same */
+                    while ( nextWord( dict, prevEdges, &prevNEdges ) ) {
+                        ++index;
+                        if ( wordsEqual( curEdges, curNEdges, prevEdges, prevNEdges ) ) {
+                            break;
+                        }
+                    }
+                }
+                indices[nextIndex++] = index;
+            }
+        }
+    }
+
 }
 
 XP_Bool
