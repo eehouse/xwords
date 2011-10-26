@@ -25,7 +25,9 @@ import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import junit.framework.Assert;
@@ -39,7 +41,15 @@ public class DictBrowseActivity extends XWListActivity {
 
     private int m_dictClosure = 0;
 
-    private class DictListAdapter extends XWListAdapter {
+
+// - Steps to reproduce the problem:
+// Create ListView, set custom adapter which implements ListAdapter and
+// SectionIndexer but do not extends BaseAdapter. Enable fast scroll in
+// layout. This will effect in ClassCastException.
+
+
+    private class DictListAdapter extends BaseAdapter
+        implements SectionIndexer {
 
         public Object getItem( int position ) 
         {
@@ -56,11 +66,32 @@ public class DictBrowseActivity extends XWListActivity {
             return (View)getItem( position );
         }
 
+        public long getItemId( int position ) { return position; }
+
         public int getCount() { 
             Assert.assertTrue( 0 != m_dictClosure );
             return XwJNI.dict_iter_wordCount( m_dictClosure );
         }
 
+        // SectionIndexer
+        public int getPositionForSection( int section )
+        {
+            Utils.logf( "DictBrowseActivity: getPositionForSection" );
+            return 0;
+        }
+        
+        public int getSectionForPosition( int position )
+        {
+            Utils.logf( "DictBrowseActivity: getSectionForPosition" );
+            return 0;
+        }
+        
+        public Object[] getSections() 
+        {
+            Utils.logf( "DictBrowseActivity: getSections" );
+            String[] sections = { "AA", "BB", "CC", "DD", "EE" };
+            return sections;
+        }
     }
 
     @Override
@@ -80,6 +111,7 @@ public class DictBrowseActivity extends XWListActivity {
 
         setContentView( R.layout.dict_browser );
         setListAdapter( new DictListAdapter() );
+        getListView().setFastScrollEnabled( true );
     }
 
     @Override
