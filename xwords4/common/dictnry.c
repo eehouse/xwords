@@ -862,9 +862,7 @@ indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles,
           XWStreamCtxt* stream, EdgeArray* prevEdges, DictIndex* prevIndex )
 {
     EdgeArray curEdges = { .nEdges = 0 };
-    if ( !findStartsWith( dict, tiles, depth, &curEdges ) ) {
-        indices[(*nextIndex)++] = NO_INDEX;
-    } else {
+    if ( findStartsWith( dict, tiles, depth, &curEdges ) ) {
         XP_ASSERT( curEdges.nEdges == depth );
         if ( ! ISACCEPTING( dict, curEdges.edges[curEdges.nEdges-1] ) ) {
             if ( !nextWord( dict, &curEdges ) ) {
@@ -883,14 +881,13 @@ indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles,
             }
         }
         indices[(*nextIndex)++] = *prevIndex;
+
         if ( NULL != stream ) {
             XP_UCHAR prefix[8];
             (void)dict_tilesToString( dict, tiles, depth, prefix, VSIZE(prefix) );
             stream_catString( stream, prefix );
+            stream_catString( stream, "\n" );
         }
-    }
-    if ( NULL != stream ) {
-        stream_catString( stream, "\n" );
     }
 }
 
@@ -906,7 +903,7 @@ doOneDepth( const DictionaryCtxt* dict,
         prefix[curDepth] = allTiles[ii];
         if ( curDepth + 1 == maxDepth ) {
             indexOne( dict, maxDepth, prefix, indices, nextEntry, 
-                      stream, prevEdges,  prevIndex);
+                      stream, prevEdges, prevIndex );
         } else {
             doOneDepth( dict, allTiles, nTiles, prefix, curDepth+1, maxDepth,
                         indices, nextEntry, stream, prevEdges, prevIndex );
