@@ -23,12 +23,14 @@ package org.eehouse.android.xw4;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
+import java.util.Arrays;
 
 import junit.framework.Assert;
 
@@ -50,6 +52,9 @@ public class DictBrowseActivity extends XWListActivity {
 
     private class DictListAdapter extends BaseAdapter
         implements SectionIndexer {
+
+        private String[] m_prefixes;
+        private int[] m_indices;
 
         public Object getItem( int position ) 
         {
@@ -76,21 +81,36 @@ public class DictBrowseActivity extends XWListActivity {
         // SectionIndexer
         public int getPositionForSection( int section )
         {
-            Utils.logf( "DictBrowseActivity: getPositionForSection" );
-            return 0;
+            return m_indices[section];
         }
         
         public int getSectionForPosition( int position )
         {
-            Utils.logf( "DictBrowseActivity: getSectionForPosition" );
-            return 0;
+            int section = Arrays.binarySearch( m_indices, position );
+            if ( section < 0 ) {
+                section *= -1;
+            }
+            if ( section >= m_indices.length ) {
+                section = m_indices.length - 1;
+            }
+            // for ( section = 0; section < m_indices.length - 1; ++section ) {
+            //     if ( position <= m_indices[section] ) {
+            //         break;
+            //     }
+            // }
+            // Utils.logf( "DictBrowseActivity: getSectionForPosition" );
+            return section;
         }
         
         public Object[] getSections() 
         {
-            Utils.logf( "DictBrowseActivity: getSections" );
-            String[] sections = { "AA", "BB", "CC", "DD", "EE" };
-            return sections;
+            String prefs = XwJNI.dict_iter_getPrefixes( m_dictClosure );
+            m_prefixes = TextUtils.split( prefs, "\n" );
+            m_indices = XwJNI.dict_iter_getIndices( m_dictClosure );
+            Utils.logf( "len(m_indices): %d; len(m_prefixes): %d",
+                        m_indices.length, m_prefixes.length );
+            Assert.assertTrue( m_indices.length == m_prefixes.length );
+            return m_prefixes;
         }
     }
 
@@ -108,6 +128,7 @@ public class DictBrowseActivity extends XWListActivity {
         DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
         m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], pairs.m_paths[0],
                                               JNIUtilsImpl.get() );
+        XwJNI.dict_iter_makeIndex( m_dictClosure );
 
         setContentView( R.layout.dict_browser );
         setListAdapter( new DictListAdapter() );
