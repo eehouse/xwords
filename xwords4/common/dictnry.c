@@ -880,14 +880,16 @@ indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles,
                 }
             }
         }
-        indices[(*nextIndex)++] = *prevIndex;
-
         if ( NULL != stream ) {
+            if ( 0 < *nextIndex ) {
+                stream_catString( stream, "\n" );
+            }
             XP_UCHAR prefix[8];
             (void)dict_tilesToString( dict, tiles, depth, prefix, VSIZE(prefix) );
             stream_catString( stream, prefix );
-            stream_catString( stream, "\n" );
         }
+
+        indices[(*nextIndex)++] = *prevIndex;
     }
 }
 
