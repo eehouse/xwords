@@ -1389,7 +1389,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
     if ( NULL != data ) {
         XP_ASSERT( !!data->indices );
         XP_ASSERT( sizeof(jint) == sizeof(data->indices[0]) );
-        jindices = makeIntArray( env, data->nIndices, data->indices );
+        jindices = makeIntArray( env, data->nIndices, (jint*)data->indices );
         (*env)->DeleteLocalRef( env, jindices );
     }
     return jindices;
