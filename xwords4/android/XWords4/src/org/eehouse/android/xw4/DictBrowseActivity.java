@@ -45,7 +45,7 @@ public class DictBrowseActivity extends XWListActivity
     public static final String DICT_NAME = "DICT_NAME";
 
     private int m_dictClosure = 0;
-
+    private int m_lang = 0;     // FIX ME
 
 // - Steps to reproduce the problem:
 // Create ListView, set custom adapter which implements ListAdapter and
@@ -167,8 +167,8 @@ public class DictBrowseActivity extends XWListActivity
     public void onClick( View view )
     {
         TextView text = (TextView)view;
-        String str = text.getText().toString();
-        Utils.showf( this, "Not yet ready to lookup word %s", str );
+        String[] words = { text.getText().toString() };
+        launchLookup( words, m_lang );
     }
 
     private void findButtonClicked()

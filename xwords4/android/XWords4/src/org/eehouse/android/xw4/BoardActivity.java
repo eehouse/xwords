@@ -72,7 +72,6 @@ public class BoardActivity extends XWActivity
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
-    private static final int DLG_LOOKUP = DLG_OKONLY + 11;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -330,15 +329,6 @@ public class BoardActivity extends XWActivity
                         .setNegativeButton( R.string.button_no, null )
                         .create();
                 }
-                break;
-
-            case DLG_LOOKUP:
-                LookupView view = (LookupView)Utils.inflate( this, R.layout.lookup );
-                dialog = new AlertDialog.Builder( this )
-                    .setView( view )
-                    .create();
-                view.setDialog( dialog, DLG_LOOKUP );
-                view.setWords( m_words, m_gi.dictLang );
                 break;
 
             default:
@@ -696,7 +686,7 @@ public class BoardActivity extends XWActivity
                 cmd = JNIThread.JNICmd.CMD_TRADE;
                 break;
             case LOOKUP_ACTION:
-                launchLookup( m_words );
+                launchLookup( m_words, m_gi.dictLang );
                 break;
             default:
                 Assert.fail();
@@ -1014,7 +1004,7 @@ public class BoardActivity extends XWActivity
         {
             post( new Runnable() {
                     public void run() {
-                        launchLookup( wordsToArray( words ) );
+                        launchLookup( wordsToArray( words ), m_gi.dictLang );
                     }
                 } );
         }
@@ -1324,7 +1314,8 @@ public class BoardActivity extends XWActivity
                                 }
                                 break;
                             case JNIThread.GOT_WORDS:
-                                launchLookup( wordsToArray((String)msg.obj) );
+                                launchLookup( wordsToArray((String)msg.obj), 
+                                              m_gi.dictLang );
                                 break;
                             }
                         }
@@ -1606,12 +1597,6 @@ public class BoardActivity extends XWActivity
             wordsArray[ii] = tmp[jj-1];
         }
         return wordsArray;
-    }
-
-    private void launchLookup( String[] words )
-    {
-        m_words = words;
-        showDialog( DLG_LOOKUP );
     }
 
     private void setupPasswdVars()

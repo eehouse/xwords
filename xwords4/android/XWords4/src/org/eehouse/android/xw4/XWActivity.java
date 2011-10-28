@@ -151,6 +151,11 @@ public class XWActivity extends Activity
         m_delegate.doSyncMenuitem();
     }
 
+    protected void launchLookup( String[] words, int lang )
+    {
+        m_delegate.launchLookup( words, lang );
+    }
+
     // DlgDelegate.DlgClickNotify interface
     public void dlgButtonClicked( int id, int which )
     {
