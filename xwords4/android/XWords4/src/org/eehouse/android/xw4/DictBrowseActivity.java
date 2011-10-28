@@ -64,8 +64,8 @@ public class DictBrowseActivity extends XWListActivity
             TextView text = new TextView( DictBrowseActivity.this );
             String str = XwJNI.dict_iter_nthWord( m_dictClosure, position );
             if ( null != str ) {
-                str = String.format( "%d %s", position, str );
                 text.setText( str );
+                text.setOnClickListener( DictBrowseActivity.this );
             }
             return text;
         }
@@ -131,7 +131,12 @@ public class DictBrowseActivity extends XWListActivity
         getListView().setFastScrollEnabled( true );
 
         Button button = (Button)findViewById( R.id.search_button );
-        button.setOnClickListener( this );
+        button.setOnClickListener( new View.OnClickListener() {
+                public void onClick( View view )
+                {
+                    findButtonClicked();
+                }
+            } );
     }
 
     @Override
@@ -160,6 +165,13 @@ public class DictBrowseActivity extends XWListActivity
     //////////////////////////////////////////////////
     @Override
     public void onClick( View view )
+    {
+        TextView text = (TextView)view;
+        String str = text.getText().toString();
+        Utils.showf( this, "Not yet ready to lookup word %s", str );
+    }
+
+    private void findButtonClicked()
     {
         EditText edit = (EditText)findViewById( R.id.word_edit );
         String text = edit.getText().toString();
