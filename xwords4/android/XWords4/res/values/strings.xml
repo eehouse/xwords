@@ -1783,5 +1783,8 @@
 
     <string name="button_move">Move</string>
 
+    <string name="button_search">Find</string>
+    <string name="word_search_hint">First letters</string>
+
 </resources>
 

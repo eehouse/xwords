@@ -27,6 +27,8 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
@@ -37,7 +39,8 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 
-public class DictBrowseActivity extends XWListActivity {
+public class DictBrowseActivity extends XWListActivity
+    implements View.OnClickListener {
 
     public static final String DICT_NAME = "DICT_NAME";
 
@@ -93,12 +96,6 @@ public class DictBrowseActivity extends XWListActivity {
             if ( section >= m_indices.length ) {
                 section = m_indices.length - 1;
             }
-            // for ( section = 0; section < m_indices.length - 1; ++section ) {
-            //     if ( position <= m_indices[section] ) {
-            //         break;
-            //     }
-            // }
-            // Utils.logf( "DictBrowseActivity: getSectionForPosition" );
             return section;
         }
         
@@ -107,9 +104,6 @@ public class DictBrowseActivity extends XWListActivity {
             String prefs = XwJNI.dict_iter_getPrefixes( m_dictClosure );
             m_prefixes = TextUtils.split( prefs, "\n" );
             m_indices = XwJNI.dict_iter_getIndices( m_dictClosure );
-            Utils.logf( "len(m_indices): %d; len(m_prefixes): %d",
-                        m_indices.length, m_prefixes.length );
-            Assert.assertTrue( m_indices.length == m_prefixes.length );
             return m_prefixes;
         }
     }
@@ -128,11 +122,16 @@ public class DictBrowseActivity extends XWListActivity {
         DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
         m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], pairs.m_paths[0],
                                               JNIUtilsImpl.get() );
+        Utils.logf( "calling makeIndex" );
         XwJNI.dict_iter_makeIndex( m_dictClosure );
+        Utils.logf( "makeIndex done" );
 
         setContentView( R.layout.dict_browser );
         setListAdapter( new DictListAdapter() );
         getListView().setFastScrollEnabled( true );
+
+        Button button = (Button)findViewById( R.id.search_button );
+        button.setOnClickListener( this );
     }
 
     @Override
@@ -156,4 +155,16 @@ public class DictBrowseActivity extends XWListActivity {
         }
     }
 
+    //////////////////////////////////////////////////
+    // View.OnClickListener interface
+    //////////////////////////////////////////////////
+    @Override
+    public void onClick( View view )
+    {
+        EditText edit = (EditText)findViewById( R.id.word_edit );
+        String text = edit.getText().toString();
+        if ( null != text && 0 < text.length() ) {
+            Utils.showf( this, "Not yet ready to search for %s", text );
+        }
+    }
 }
