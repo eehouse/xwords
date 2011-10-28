@@ -45,7 +45,7 @@ public class DictBrowseActivity extends XWListActivity
     public static final String DICT_NAME = "DICT_NAME";
 
     private int m_dictClosure = 0;
-    private int m_lang = 0;     // FIX ME
+    private int m_lang;
 
 // - Steps to reproduce the problem:
 // Create ListView, set custom adapter which implements ListAdapter and
@@ -117,26 +117,30 @@ public class DictBrowseActivity extends XWListActivity
         String name = null == intent? null:intent.getStringExtra( DICT_NAME );
         if ( null == name ) {
             finish();
+        } else {
+            m_lang = DictLangCache.getDictLangCode( this, name );
+
+            String[] names = { name };
+            DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
+            m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], 
+                                                  pairs.m_paths[0],
+                                                  JNIUtilsImpl.get() );
+            Utils.logf( "calling makeIndex" );
+            XwJNI.dict_iter_makeIndex( m_dictClosure );
+            Utils.logf( "makeIndex done" );
+
+            setContentView( R.layout.dict_browser );
+            setListAdapter( new DictListAdapter() );
+            getListView().setFastScrollEnabled( true );
+
+            Button button = (Button)findViewById( R.id.search_button );
+            button.setOnClickListener( new View.OnClickListener() {
+                    public void onClick( View view )
+                    {
+                        findButtonClicked();
+                    }
+                } );
         }
-        String[] names = { name };
-        DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
-        m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], pairs.m_paths[0],
-                                              JNIUtilsImpl.get() );
-        Utils.logf( "calling makeIndex" );
-        XwJNI.dict_iter_makeIndex( m_dictClosure );
-        Utils.logf( "makeIndex done" );
-
-        setContentView( R.layout.dict_browser );
-        setListAdapter( new DictListAdapter() );
-        getListView().setFastScrollEnabled( true );
-
-        Button button = (Button)findViewById( R.id.search_button );
-        button.setOnClickListener( new View.OnClickListener() {
-                public void onClick( View view )
-                {
-                    findButtonClicked();
-                }
-            } );
     }
 
     @Override
