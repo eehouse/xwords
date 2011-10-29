@@ -114,6 +114,7 @@ public class GameConfig extends XWActivity
                                                         ,R.id.room_spinner
                                                         ,R.id.refresh_button
                                                         ,R.id.hints_allowed
+                                                        ,R.id.pick_faceup
                                                         ,R.id.use_timer
                                                         ,R.id.timer_minutes_edit
                                                         ,R.id.smart_robot
@@ -514,7 +515,10 @@ public class GameConfig extends XWActivity
 
                 setSmartnessSpinner();
 
-                Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
+                Utils.setChecked( this, R.id.hints_allowed, 
+                                  !m_gi.hintsNotAllowed );
+                Utils.setChecked( this, R.id.pick_faceup, 
+                                  m_gi.allowPickTiles );
                 Utils.setInt( this, R.id.timer_minutes_edit, 
                               m_gi.gameSeconds/60/m_gi.nPlayers );
 
@@ -950,6 +954,7 @@ public class GameConfig extends XWActivity
     private void saveChanges()
     {
         m_gi.hintsNotAllowed = !Utils.getChecked( this, R.id.hints_allowed );
+        m_gi.allowPickTiles = Utils.getChecked( this, R.id.pick_faceup );
         m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
         m_gi.gameSeconds = 60 * m_gi.nPlayers *
             Utils.getInt(  this, R.id.timer_minutes_edit );
