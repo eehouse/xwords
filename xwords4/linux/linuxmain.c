@@ -894,8 +894,36 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
 
 #ifdef XWFEATURE_WALKDICT
 static void
-walk_dict_test( const DictionaryCtxt* dict )
+testGetNthWord( const DictionaryCtxt* dict, char** words,
+                XP_U16 depth, DictIndex* indices, 
+                Tile* prefixes, XP_U16 nIndices )
 {
+    XP_U32 half = dict_getWordCount( dict ) / 2;
+    XP_UCHAR buf[64];
+    XP_U32 ii, jj;
+    DictWord word = {.nTiles = 0};
+    XP_U32 interval = 100;
+
+    for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
+        if ( dict_getNthWord( dict, &word, ii, depth, indices, prefixes, nIndices ) ) {
+            dict_wordToString( dict, &word, buf, VSIZE(buf) );
+            XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
+        } else {
+            XP_ASSERT( 0 );
+        }
+        if ( dict_getNthWord( dict, &word, jj, depth, indices, prefixes, nIndices ) ) {
+            dict_wordToString( dict, &word, buf, VSIZE(buf) );
+            XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
+        } else {
+            XP_ASSERT( 0 );
+        }
+    }
+}
+
+static void
+walk_dict_test( const LaunchParams* params )
+{
+    const DictionaryCtxt* dict = params->dict;
     /* This is just to test that the dict-iterating code works.  The words are
        meant to be printed e.g. in a scrolling dialog on Android. */
     DictWord word;
@@ -951,22 +979,39 @@ walk_dict_test( const DictionaryCtxt* dict )
         }
     }
     XP_ASSERT( count == jj );
-    fprintf( stderr, "finished comparing runs in both directions\n" );
+    XP_LOGF( "finished comparing runs in both directions\n" );
 
-    fprintf( stderr, "testing getNth\n" );
-    int ii;
-    for ( ii = 0 ; ii < 1000; ++ii ) {
-        long index = XP_RANDOM() % count;
-        if ( dict_getNthWord( dict, &word, index ) ) {
-            XP_ASSERT( word.index == index );
-            XP_UCHAR buf[64];
-            dict_wordToString( dict, &word, buf, VSIZE(buf) );
-            XP_ASSERT( 0 == strcmp( buf, words[index] ) );
-        } else {
+    XP_LOGF( "testing getNth" );
+    testGetNthWord( dict, words, 0, NULL, NULL, 0 );
+
+    XP_U16 depth = 2;
+    DictIndex indices[26*26];   /* pow(26,depth) */
+    Tile prefixes[depth*26*26];
+    XP_U16 nIndices = dict_makeIndex( dict, depth, indices, 
+                                      prefixes, VSIZE(indices) );
+#if 0
+    for ( ii = 0; ii < nIndices; ++ii ) {
+        if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
             XP_ASSERT( 0 );
         }
+        XP_ASSERT( word.index == indices[ii] );
+        XP_UCHAR buf1[64];
+        dict_wordToString( dict, &word, buf1, VSIZE(buf1) );
+        XP_UCHAR buf2[64] = {0};
+        if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
+            dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
+        }
+        char prfx[8];
+        dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, VSIZE(prfx) );
+        fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
+                 ii, indices[ii], prfx, buf1, buf2 );
     }
+#endif
 
+    XP_LOGF( "testing getNth WITH INDEXING" );
+    testGetNthWord( dict, words, depth, indices, prefixes, nIndices );
+
+    XP_LOGF( "done" );
     exit( 0 );
 }
 #else
@@ -1362,7 +1407,7 @@ main( int argc, char** argv )
     /*     }	     */
     /* } */
 
-    walk_dict_test( mainParams.dict );
+    walk_dict_test( &mainParams );
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY

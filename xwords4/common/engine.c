@@ -121,8 +121,6 @@ struct EngineCtxt {
 static void findMovesOneRow( EngineCtxt* engine );
 static Tile localGetBoardTile( EngineCtxt* engine, XP_U16 col, 
                                XP_U16 row, XP_Bool substBlank );
-static array_edge* edge_with_tile( const DictionaryCtxt* dict, 
-                                   array_edge* from, Tile tile );
 static XP_Bool scoreQualifies( EngineCtxt* engine, XP_U16 score );
 static void findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor, 
                                 XP_U16 col, XP_U16 row ) ;
@@ -590,7 +588,7 @@ lookup( const DictionaryCtxt* dict, array_edge* edge, Tile* buf,
 {
     while ( edge != NULL ) {
         Tile targetTile = buf[tileIndex];
-        edge = edge_with_tile( dict, edge, targetTile );
+        edge = dict_edge_with_tile( dict, edge, targetTile );
         if ( edge == NULL ) { /* tile not available out of this node */
             return XP_FALSE;
         } else {
@@ -982,7 +980,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
             }
         }
 
-    } else if ( (edge = edge_with_tile( dict, edge, tile ) ) != NULL ) {
+    } else if ( (edge = dict_edge_with_tile( dict, edge, tile ) ) != NULL ) {
         accepting = ISACCEPTING( dict, edge );
         extendRight( engine, tiles, tileLength, dict_follow(dict, edge), 
                      accepting, firstCol, col+1, row );
@@ -1335,33 +1333,9 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
 } /* scoreQualifies */
 
 static array_edge*
-edge_with_tile( const DictionaryCtxt* dict, array_edge* from, Tile tile ) 
-{
-    for ( ; ; ) {
-        Tile candidate = EDGETILE(dict,from);
-        if ( candidate == tile ) {
-            break;
-        }
-
-        if ( IS_LAST_EDGE(dict, from ) ) {
-            from = NULL;
-            break;
-        }
-#ifdef NODE_CAN_4
-        from += dict->nodeSize;
-#else
-        from += 3;
-#endif
-
-    }
-
-    return from;
-} /* edge_with_tile */
-
-static array_edge*
 edge_from_tile( const DictionaryCtxt* dict, array_edge* from, Tile tile ) 
 {
-    array_edge* edge = edge_with_tile( dict, from, tile );
+    array_edge* edge = dict_edge_with_tile( dict, from, tile );
     if ( edge != NULL ) {
         edge = dict_follow( dict, edge );
     }

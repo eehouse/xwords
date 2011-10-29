@@ -73,6 +73,8 @@ struct DictionaryCtxt {
                                            array_edge* p_edge );
     array_edge* (*func_dict_follow)( const DictionaryCtxt* dict, 
                                      array_edge* in );
+    array_edge* (*func_dict_edge_with_tile)( const DictionaryCtxt* dict, 
+                                             array_edge* from, Tile tile );
     const XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
 
     array_edge* topEdge;
@@ -135,6 +137,7 @@ struct DictionaryCtxt {
 #define dict_getTopEdge(d)        (*((d)->func_dict_getTopEdge))(d)
 #define dict_index_from(d,e)        (*((d)->func_dict_index_from))(d,e)
 #define dict_follow(d,e)        (*((d)->func_dict_follow))(d,e)
+#define dict_edge_with_tile(d,e,t) (*((d)->func_dict_edge_with_tile))(d,e,t)
 #define dict_getShortName(d)      (*((d)->func_dict_getShortName))(d)
 
 #ifdef NODE_CAN_4
@@ -206,24 +209,28 @@ void dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
 #ifdef XWFEATURE_WALKDICT
 
 /* API for iterating over a dict */
+typedef XP_U32 DictIndex;
 typedef struct _DictWord {
     XP_U32 wordCount;
-    XP_U32 index;
+    DictIndex index;
     XP_U16 nTiles;
     XP_U32 indices[MAX_COLS];
 } DictWord;
 
 XP_U32 dict_countWords( const DictionaryCtxt* dict );
+XP_U16 dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
+                       DictIndex* indices, Tile* prefixes, XP_U16 count );
 XP_Bool dict_firstWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_lastWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getNextWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, 
-                         XP_U32 nn );
+XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn,
+                         XP_U16 depth, DictIndex* indices, 
+                         Tile* prefixes, XP_U16 count );
 void dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
                         XP_UCHAR* buf, XP_U16 buflen );
 
-#endif
+#endif  /* XWFEATURE_WALKDICT */
 
 #ifdef CPLUS
 }
