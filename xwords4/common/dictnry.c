@@ -464,7 +464,9 @@ dict_getWordCount( const DictionaryCtxt* dict )
 {
     XP_U32 nWords = dict->nWords;
 #ifdef XWFEATURE_WALKDICT
-    nWords = dict_countWords( dict );
+    if ( 0 == nWords ) {
+        nWords = dict_countWords( dict );
+    }
 #endif
     return nWords;
 }
@@ -731,7 +733,8 @@ nextWord( const DictionaryCtxt* dict, EdgeArray* edges )
             continue;		/* try with longer word */
     	}
 
-        while ( IS_LAST_EDGE( dict, edges->edges[nTiles-1] ) && 0 < --nTiles ) {
+        while ( IS_LAST_EDGE( dict, edges->edges[nTiles-1] )
+                && 0 < --nTiles ) {
         }
 
         if ( 0 < nTiles ) {
@@ -780,7 +783,8 @@ prevWord( const DictionaryCtxt* dict, EdgeArray* edges )
     while ( 0 < edges->nEdges && ! success ) {
         if ( isFirstEdge( dict, edges->edges[edges->nEdges-1] ) ) {
             --edges->nEdges;
-            success = 0 < edges->nEdges && ISACCEPTING( dict, edges->edges[edges->nEdges-1] );
+            success = 0 < edges->nEdges
+                && ISACCEPTING( dict, edges->edges[edges->nEdges-1] );
             continue;
         }
         edges->edges[edges->nEdges-1] -= dict->nodeSize;
@@ -812,10 +816,11 @@ dict_getWord( const DictionaryCtxt* dict, DictWord* word, WordFinder finder )
 }
 
 static XP_Bool
-findStartsWith( const DictionaryCtxt* dict, Tile* tiles, XP_U16 nTiles, EdgeArray* edges )
+findStartsWith( const DictionaryCtxt* dict, const Tile* tiles, XP_U16 nTiles, EdgeArray* edges )
 {
     XP_Bool success = XP_TRUE;
     array_edge* edge = dict_getTopEdge( dict );
+    edges->nEdges = 0;
 
     while ( nTiles-- > 0 ) {
         Tile tile = *tiles++;
@@ -856,10 +861,52 @@ dict_countWords( const DictionaryCtxt* dict )
     return count;
 }
 
+static DictIndex
+placeWordClose( const DictionaryCtxt* dict, DictIndex position, 
+                XP_U16 depth, const DictIndex* indices, const Tile* prefixes, 
+                XP_U16 count, EdgeArray* result )
+{
+    XP_S16 low = 0;
+    XP_S16 high = count - 1;
+    XP_S16 index = -1;
+    for ( ; ; ) {
+        if ( low > high ) {
+            break;
+        }
+        index = low + ( (high - low) / 2);
+        if ( position < indices[index] ) {
+            high = index - 1;
+        } else if ( indices[index+1] <= position) {
+            low = index + 1;
+        } else {
+            break;
+        }
+    }
+
+    /* DictIndex top = mid < count-1? indices[mid+1] : -1; */
+    /* XP_LOGF( "found %ld at %d, in range between %ld and %ld", position, */
+    /*          mid, indices[mid], top ); */
+
+    /* Now we have the index immediately below the position we want.  But we
+       may be better off starting with the next if it's closer.  The last
+       index is a special case since we use lastWord rather than a prefix to
+       init */
+    if ( ( index + 1 < count ) 
+         && (indices[index + 1] - position) < (position - indices[index]) ) {
+        ++index;
+    }
+    XP_Bool success = findStartsWith( dict, &prefixes[depth*index], depth, result )
+        && ( ISACCEPTING( dict, result->edges[result->nEdges-1] )
+             || nextWord( dict, result ) );
+    XP_ASSERT( success );
+
+    return indices[index];
+} /* placeWordClose */
+
 static void
 indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles, 
-          DictIndex* indices, XP_U16* nextIndex, 
-          XWStreamCtxt* stream, EdgeArray* prevEdges, DictIndex* prevIndex )
+          DictIndex* indices, Tile* prefixes, XP_U16* nextIndex, 
+          EdgeArray* prevEdges, DictIndex* prevIndex )
 {
     EdgeArray curEdges = { .nEdges = 0 };
     if ( findStartsWith( dict, tiles, depth, &curEdges ) ) {
@@ -880,16 +927,11 @@ indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles,
                 }
             }
         }
-        if ( NULL != stream ) {
-            if ( 0 < *nextIndex ) {
-                stream_catString( stream, "\n" );
-            }
-            XP_UCHAR prefix[8];
-            (void)dict_tilesToString( dict, tiles, depth, prefix, VSIZE(prefix) );
-            stream_catString( stream, prefix );
+        indices[*nextIndex] = *prevIndex;
+        if ( NULL != prefixes ) {
+            XP_MEMCPY( prefixes + (*nextIndex * depth), tiles, depth );
         }
-
-        indices[(*nextIndex)++] = *prevIndex;
+        ++*nextIndex;
     }
 }
 
@@ -897,25 +939,25 @@ static void
 doOneDepth( const DictionaryCtxt* dict, 
             const Tile* allTiles, XP_U16 nTiles, Tile* prefix, 
             XP_U16 curDepth, XP_U16 maxDepth,
-            DictIndex* indices, XP_U16* nextEntry, 
-            XWStreamCtxt* stream, EdgeArray* prevEdges, DictIndex* prevIndex )
+            DictIndex* indices, Tile* prefixes, XP_U16* nextEntry, 
+            EdgeArray* prevEdges, DictIndex* prevIndex )
 {
     XP_U16 ii;
     for ( ii = 0; ii < nTiles; ++ii ) {
         prefix[curDepth] = allTiles[ii];
         if ( curDepth + 1 == maxDepth ) {
-            indexOne( dict, maxDepth, prefix, indices, nextEntry, 
-                      stream, prevEdges, prevIndex );
+            indexOne( dict, maxDepth, prefix, indices, prefixes, 
+                      nextEntry, prevEdges,  prevIndex);
         } else {
             doOneDepth( dict, allTiles, nTiles, prefix, curDepth+1, maxDepth,
-                        indices, nextEntry, stream, prevEdges, prevIndex );
+                        indices, prefixes, nextEntry, prevEdges, prevIndex );
         }
     }
 }
 
 XP_U16
 dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
-                DictIndex* indices, XP_U16 count, XWStreamCtxt* stream )
+                DictIndex* indices, Tile* prefixes, XP_U16 count )
 {
     XP_ASSERT( depth < MAX_COLS );
     XP_U16 ii, needCount, nTiles;
@@ -951,10 +993,16 @@ dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth,
         indicesToEdges( dict, &firstWord, &prevEdges );
 
         doOneDepth( dict, allTiles, nFaces, prefix, 0, depth, 
-                    indices, &nextIndex, stream, &prevEdges, &prevIndex );
+                    indices, prefixes, &nextIndex, &prevEdges, &prevIndex );
 
     }
     return nextIndex;
+}
+
+static void
+initWord( const DictionaryCtxt* dict, DictWord* word )
+{
+    word->wordCount = dict_getWordCount( dict );
 }
 
 XP_Bool
@@ -966,8 +1014,7 @@ dict_firstWord( const DictionaryCtxt* dict, DictWord* word )
     XP_Bool success = ISACCEPTING( dict, edges.edges[0] )
         || nextWord( dict, &edges );
     if ( success ) {
-        word->wordCount = dict_getWordCount( dict );
-
+        initWord( dict, word );
         edgesToIndices( dict, &edges, word );
         word->index = 0;
     }
@@ -993,7 +1040,7 @@ dict_lastWord( const DictionaryCtxt* dict, DictWord* word )
 
     XP_Bool success = lastEdges( dict, &edges );
     if ( success ) {
-        word->wordCount = dict_getWordCount( dict );
+        initWord( dict, word );
 
         edgesToIndices( dict, &edges, word );
         word->index = word->wordCount - 1;
@@ -1016,56 +1063,85 @@ dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word )
    sought.  OR if we're father than necessary from what's sought, start over
    at the closer end.  Then move as many steps as necessary to reach it. */
 XP_Bool
-dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn )
+dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn,
+                 XP_U16 depth, DictIndex* indices, Tile* prefixes, 
+                 XP_U16 count )
 {
     XP_U32 wordCount;
     XP_Bool validWord = 0 < word->nTiles;
-    XP_U32 ii;
     if ( validWord ) {        /* uninitialized */
         wordCount = word->wordCount;
+        XP_ASSERT( wordCount == dict_getWordCount( dict ) );
     } else {
         wordCount = dict_getWordCount( dict );
     }
     XP_Bool success = nn < wordCount;
     if ( success ) {
-        wordCount /= 2;             /* mid-point */
-
-        /* If word's inited but farther from target than either endpoint,
-           better to start with an endpoint */
-        if ( validWord && XP_ABS( nn - word->index ) > wordCount ) {
-            /* XP_LOGF( "%s: clearing word: nn=%ld; word->index=%ld", */
-            /*          __func__, nn, word->index ); */
-            validWord = XP_FALSE;
+        /* super common cases first */
+        success = XP_FALSE;
+        if ( validWord ) {
+            if ( word->index == nn ) {
+                success = XP_TRUE;
+                /* do nothing; we're done */
+            } else if ( word->index == nn + 1 ) {
+                success = dict_getNextWord( dict, word );
+            } else if ( word->index == nn - 1 ) {
+                success = dict_getPrevWord( dict, word );
+            }
         }
 
-        if ( !validWord ) {
-            if ( nn >= wordCount ) {
-                dict_lastWord( dict, word );
+        if ( !success ) {
+            EdgeArray edges;
+            XP_U32 wordIndex;
+            if ( !!indices ) {
+                wordIndex = placeWordClose( dict, nn, depth, indices,
+                                            prefixes, count, &edges );
+                if ( !validWord ) {
+                    initWord( dict, word );
+                }
             } else {
-                dict_firstWord( dict, word );
-            }
-        }
+                wordCount /= 2;             /* mid-point */
 
-        EdgeArray edges;
-        indicesToEdges( dict, word, &edges );
-        if ( word->index < nn ) {
-            for ( ii = nn - word->index; ii > 0; --ii ) {
-                if ( !nextWord( dict, &edges ) ) {
-                    XP_ASSERT( 0 );
+                /* If word's inited but farther from target than either endpoint,
+                   better to start with an endpoint */
+                if ( validWord && XP_ABS( nn - word->index ) > wordCount ) {
+                    /* XP_LOGF( "%s: clearing word: nn=%ld; word->index=%ld", */
+                    /*          __func__, nn, word->index ); */
+                    validWord = XP_FALSE;
+                }
+
+                if ( !validWord ) {
+                    if ( nn >= wordCount ) {
+                        dict_lastWord( dict, word );
+                    } else {
+                        dict_firstWord( dict, word );
+                    }
+                }
+                indicesToEdges( dict, word, &edges );
+                wordIndex = word->index;
+            }
+
+            XP_U32 ii;
+            if ( wordIndex < nn ) {
+                for ( ii = nn - wordIndex; ii > 0; --ii ) {
+                    if ( !nextWord( dict, &edges ) ) {
+                        XP_ASSERT( 0 );
+                    }
+                }
+            } else if ( wordIndex > nn ) {
+                for ( ii = wordIndex - nn; ii > 0; --ii ) {
+                    if ( !prevWord( dict, &edges ) ) {
+                        XP_ASSERT( 0 );
+                    }
                 }
             }
-        } else if ( word->index > nn ) {
-            for ( ii = word->index - nn; ii > 0; --ii ) {
-                if ( !prevWord( dict, &edges ) ) {
-                    XP_ASSERT( 0 );
-                }
-            }
+            edgesToIndices( dict, &edges, word );
+            word->index = nn;
+            success = XP_TRUE;
         }
-        edgesToIndices( dict, &edges, word );
-        word->index = nn;
     }
     return success;
-}
+} /* dict_getNthWord */
 
 void
 dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,

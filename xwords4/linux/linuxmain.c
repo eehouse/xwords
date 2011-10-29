@@ -893,34 +893,32 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
 }
 
 #ifdef XWFEATURE_WALKDICT
-#if 0
-static char* 
-mkPrefix( const DictionaryCtxt* dict, int index, int depth, char* buf, int len )
+static void
+testGetNthWord( const DictionaryCtxt* dict, char** words,
+                XP_U16 depth, DictIndex* indices, 
+                Tile* prefixes, XP_U16 nIndices )
 {
-    Tile tiles[depth];
-    Tile blank;
-    XP_U16 nTiles = dict_numTileFaces( dict );
-    if ( dict_hasBlankTile( dict ) ) {
-        blank = dict_getBlankTile( dict );
-        --nTiles;
-    } else {
-        blank = -1;
-    }
-    int ii;
+    XP_U32 half = dict_getWordCount( dict ) / 2;
+    XP_UCHAR buf[64];
+    XP_U32 ii, jj;
+    DictWord word = {.nTiles = 0};
+    XP_U32 interval = 100;
 
-    for ( ii = depth-1; ii >= 0; --ii ) {
-        Tile tile = index % nTiles;
-        if ( -1 != blank && blank <= tile ) {
-            ++tile;
+    for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
+        if ( dict_getNthWord( dict, &word, ii, depth, indices, prefixes, nIndices ) ) {
+            dict_wordToString( dict, &word, buf, VSIZE(buf) );
+            XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
+        } else {
+            XP_ASSERT( 0 );
         }
-        tiles[ii] = tile;
-        index /= nTiles;
+        if ( dict_getNthWord( dict, &word, jj, depth, indices, prefixes, nIndices ) ) {
+            dict_wordToString( dict, &word, buf, VSIZE(buf) );
+            XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
+        } else {
+            XP_ASSERT( 0 );
+        }
     }
-
-    dict_tilesToString( dict, tiles, depth, buf, len );
-    return buf;
 }
-#endif
 
 static void
 walk_dict_test( const LaunchParams* params )
@@ -981,64 +979,39 @@ walk_dict_test( const LaunchParams* params )
         }
     }
     XP_ASSERT( count == jj );
-    fprintf( stderr, "finished comparing runs in both directions\n" );
+    XP_LOGF( "finished comparing runs in both directions\n" );
 
-    fprintf( stderr, "testing getNth\n" );
-    int ii;
-    for ( ii = 0 ; ii < 100; ++ii ) {
-        long index = XP_RANDOM() % count;
-        if ( dict_getNthWord( dict, &word, index ) ) {
-            XP_ASSERT( word.index == index );
-            XP_UCHAR buf[64];
-            dict_wordToString( dict, &word, buf, VSIZE(buf) );
-            XP_ASSERT( 0 == strcmp( buf, words[index] ) );
-        } else {
-            XP_ASSERT( 0 );
-        }
-    }
+    XP_LOGF( "testing getNth" );
+    testGetNthWord( dict, words, 0, NULL, NULL, 0 );
 
     XP_U16 depth = 2;
     DictIndex indices[26*26];   /* pow(26,depth) */
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->util->mpool)
-                                            params->vtMgr,
-                                            NULL, CHANNEL_NONE, NULL );
-    XP_U16 nIndices = dict_makeIndex( dict, depth, indices, VSIZE(indices), stream );
-    const char* ptr = (char*)stream_getPtr( stream );
+    Tile prefixes[depth*26*26];
+    XP_U16 nIndices = dict_makeIndex( dict, depth, indices, 
+                                      prefixes, VSIZE(indices) );
+#if 0
     for ( ii = 0; ii < nIndices; ++ii ) {
-        char* next = strstr( (char*)ptr, "\n" );
-        XP_ASSERT( !!next );
-        if ( next > ptr && indices[ii] != NO_INDEX ) {
-            if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
-                XP_ASSERT( 0 );
-            }
-            XP_ASSERT( word.index == indices[ii] );
-            XP_UCHAR buf1[64];
-            dict_wordToString( dict, &word, buf1, VSIZE(buf1) );
-            XP_UCHAR buf2[64] = {0};
-            if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
-                dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
-            }
-            char prfx[8];
-            snprintf( prfx, depth+1, "%s", ptr );
-            prfx[depth] = '\0';
-            fprintf( stderr, 
-                     "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
-                     ii, indices[ii], prfx, buf1, buf2 );
-        } else if ( next == ptr && indices[ii] == NO_INDEX ) {
-        } else { 
+        if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
             XP_ASSERT( 0 );
         }
-        ptr = next + 1;
+        XP_ASSERT( word.index == indices[ii] );
+        XP_UCHAR buf1[64];
+        dict_wordToString( dict, &word, buf1, VSIZE(buf1) );
+        XP_UCHAR buf2[64] = {0};
+        if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
+            dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
+        }
+        char prfx[8];
+        dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, VSIZE(prfx) );
+        fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
+                 ii, indices[ii], prfx, buf1, buf2 );
     }
+#endif
 
-    /* for ( ii = 0; ii < VSIZE(indices); ++ii ) { */
-    /*     DictIndex index = indices[ii]; */
-    /*     if ( NO_INDEX == index ) { */
-    /*         continue; */
-    /* } */
-    /* catOnClose( stream, NULL ); */
-    stream_destroy( stream );
+    XP_LOGF( "testing getNth WITH INDEXING" );
+    testGetNthWord( dict, words, depth, indices, prefixes, nIndices );
 
+    XP_LOGF( "done" );
     exit( 0 );
 }
 #else

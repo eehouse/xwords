@@ -210,7 +210,6 @@ void dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
 
 /* API for iterating over a dict */
 typedef XP_U32 DictIndex;
-#define NO_INDEX 0xFFFFFFFF
 typedef struct _DictWord {
     XP_U32 wordCount;
     DictIndex index;
@@ -220,14 +219,14 @@ typedef struct _DictWord {
 
 XP_U32 dict_countWords( const DictionaryCtxt* dict );
 XP_U16 dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
-                       DictIndex* indices, XP_U16 count,
-                       XWStreamCtxt* stream );
+                       DictIndex* indices, Tile* prefixes, XP_U16 count );
 XP_Bool dict_firstWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_lastWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getNextWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, 
-                         XP_U32 nn );
+XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn,
+                         XP_U16 depth, DictIndex* indices, 
+                         Tile* prefixes, XP_U16 count );
 void dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
                         XP_UCHAR* buf, XP_U16 buflen );
 
