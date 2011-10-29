@@ -27,8 +27,13 @@ public interface UtilCtxt {
     static final int BONUS_TRIPLE_LETTER = 3;
     static final int BONUS_TRIPLE_WORD = 4;
 
-    int userPickTile( /* PickInfo* pi, add once tile-picking is enabled */
-                     int playerNum, String[] texts );
+    // must match defns in util.h
+    public static final int PICKER_PICKALL = -1;
+    public static final int PICKER_BACKUP = -2;
+
+    int userPickTileBlank( int playerNum, String[] texts );
+    int userPickTileTray( int playerNum, String[] tiles, 
+                          String[] curTiles, int nPicked );
 
     String askPassword( String name );
     void turnChanged();

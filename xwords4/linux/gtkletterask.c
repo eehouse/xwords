@@ -42,7 +42,7 @@ abort_button_event( GtkWidget* XP_UNUSED(widget), gpointer XP_UNUSED(closure) )
 #define BUTTONS_PER_ROW 13
 
 XP_S16
-gtkletterask( const PickInfo* pi, const XP_UCHAR* name, 
+gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name, 
               XP_U16 nTiles, const XP_UCHAR** texts )
 {
     GtkWidget* dialog;
@@ -103,19 +103,18 @@ gtkletterask( const PickInfo* pi, const XP_UCHAR* name,
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
 
-    XP_Bool forBlank = PICK_FOR_BLANK == pi->why;
-    if ( forBlank ) {
-        txt = "Choose a letter for your blank.";
-    } else {
+    if ( forTray ) {
         char* fmt = "Choose a tile for %s.";
         XP_SNPRINTF( buf, sizeof(buf), fmt, name );
         txt = buf;
+    } else {
+        txt = "Choose a letter for your blank.";
     }
     label = gtk_label_new( txt );
     gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
                        label);
 
-    if ( !forBlank ) {
+    if ( forTray ) {
         char curTilesBuf[64];
         int len = snprintf( curTilesBuf, sizeof(curTilesBuf), "%s", 
                             "Tiles so far: " );

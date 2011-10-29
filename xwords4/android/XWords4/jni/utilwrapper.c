@@ -145,17 +145,13 @@ and_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
 }
 
 static XP_S16
-and_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
-                       XP_U16 playerNum, const XP_UCHAR** texts, XP_U16 nTiles )
+and_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, 
+                            const XP_UCHAR** tileFaces, XP_U16 nTiles )
 {
     XP_S16 result = -1;
-    UTIL_CBK_HEADER("userPickTile", "(I[Ljava/lang/String;)I" );
+    UTIL_CBK_HEADER("userPickTileBlank", "(I[Ljava/lang/String;)I" );
 
-#ifdef FEATURE_TRAY_EDIT
-    ++error;                       /* need to pass pi if this is on */
-#endif
-
-    jobject jtexts = makeStringArray( env, nTiles, texts );
+    jobject jtexts = makeStringArray( env, nTiles, tileFaces );
 
     result = (*env)->CallIntMethod( env, util->jutil, mid, 
                                     playerNum, jtexts );
@@ -163,8 +159,27 @@ and_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
     (*env)->DeleteLocalRef( env, jtexts );
     UTIL_CBK_TAIL();
     return result;
-} /* and_util_userPickTile */
+}
 
+static XP_S16
+and_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi, 
+                           XP_U16 playerNum, const XP_UCHAR** tileFaces, 
+                           XP_U16 nTiles )
+{
+    XP_S16 result = -1;
+    UTIL_CBK_HEADER("userPickTileTray", 
+                    "(I[Ljava/lang/String;[Ljava/lang/String;I)I" );
+    jobject jtexts = makeStringArray( env, nTiles, tileFaces );
+    jobject jcurtiles = makeStringArray( env, pi->nCurTiles, pi->curTiles );
+    result = (*env)->CallIntMethod( env, util->jutil, mid, 
+                                    playerNum, jtexts, jcurtiles, 
+                                    pi->thisPick );
+    (*env)->DeleteLocalRef( env, jtexts );
+    (*env)->DeleteLocalRef( env, jcurtiles );
+        
+    UTIL_CBK_TAIL();
+    return result;
+} /* and_util_userPickTile */
 
 static XP_Bool
 and_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
@@ -511,7 +526,8 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(userError);
     SET_PROC(userQuery);
     SET_PROC(confirmTrade);
-    SET_PROC(userPickTile);
+    SET_PROC(userPickTileBlank);
+    SET_PROC(userPickTileTray);
     SET_PROC(askPassword);
     SET_PROC(trayHiddenChange);
     SET_PROC(yOffsetChange);
