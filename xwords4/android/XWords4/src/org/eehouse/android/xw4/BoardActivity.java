@@ -65,13 +65,15 @@ public class BoardActivity extends XWActivity
     private static final int DLG_BADWORDS = DLG_OKONLY + 1;
     private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
     private static final int QUERY_INFORM_BLK = DLG_OKONLY + 3;
-    private static final int PICK_TILE_REQUEST_BLK = DLG_OKONLY + 4;
+    private static final int PICK_TILE_REQUESTBLANK_BLK = DLG_OKONLY + 4;
     private static final int ASK_PASSWORD_BLK = DLG_OKONLY + 5;
     private static final int DLG_RETRY = DLG_OKONLY + 6;
     private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
+    private static final int DLG_LOOKUP = DLG_OKONLY + 11;
+    private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 12;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -121,6 +123,8 @@ public class BoardActivity extends XWActivity
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
+    private String m_curTiles;
+    private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
     private JNIUtils m_jniu;
     private boolean m_volKeysZoom;
@@ -163,7 +167,7 @@ public class BoardActivity extends XWActivity
     } 
 
     @Override
-    protected Dialog onCreateDialog( int id )
+    protected Dialog onCreateDialog( final int id )
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
@@ -263,9 +267,9 @@ public class BoardActivity extends XWActivity
                 dialog.setOnDismissListener( makeODLforBlocking( id ) );
                 break;
 
-            case PICK_TILE_REQUEST_BLK:
-                ab = new AlertDialog.Builder( this )
-                    .setTitle( R.string.title_tile_picker );
+            case PICK_TILE_REQUESTBLANK_BLK:
+            case PICK_TILE_REQUESTTRAY_BLK:
+                ab = new AlertDialog.Builder( this );
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
@@ -273,6 +277,34 @@ public class BoardActivity extends XWActivity
                         }
                     };
                 ab.setItems( m_texts, lstnr );
+
+                if ( PICK_TILE_REQUESTBLANK_BLK == id ) {
+                    ab.setTitle( R.string.title_tile_picker );
+                } else {
+                    ab.setTitle( Utils.format( this, R.string.cur_tilesf,
+                                               m_curTiles ) );
+                    if ( m_canUndoTiles ) {
+                        DialogInterface.OnClickListener undoClicked =
+                            new DialogInterface.OnClickListener() {
+                                public void onClick( DialogInterface dialog, 
+                                                     int whichButton ) {
+                                    m_resultCode = UtilCtxt.PICKER_BACKUP;
+                                    removeDialog( id );
+                                }
+                            };
+                        ab.setPositiveButton( R.string.tilepick_undo, 
+                                              undoClicked );
+                    }
+                    DialogInterface.OnClickListener doAllClicked =
+                        new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, 
+                                                 int whichButton ) {
+                                m_resultCode = UtilCtxt.PICKER_PICKALL;
+                                removeDialog( id );
+                            }
+                        };
+                    ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
+                }
 
                 dialog = ab.create();
                 dialog.setOnDismissListener( makeODLforBlocking( id ) );
@@ -1043,10 +1075,22 @@ public class BoardActivity extends XWActivity
 
         // This is supposed to be called from the jni thread
         @Override
-        public int userPickTile( int playerNum, String[] texts )
+        public int userPickTileBlank( int playerNum, String[] texts)
         {
             m_texts = texts;
-            waitBlockingDialog( PICK_TILE_REQUEST_BLK, 0 );
+            waitBlockingDialog( PICK_TILE_REQUESTBLANK_BLK, 0 );
+            return m_resultCode;
+        }
+
+        @Override
+        public int userPickTileTray( int playerNum, String[] texts, 
+                                     String[] curTiles, int nPicked )
+        {
+            m_texts = texts;
+            m_curTiles = TextUtils.join( ", ", curTiles );
+            m_canUndoTiles = 0 < nPicked;
+            waitBlockingDialog( PICK_TILE_REQUESTTRAY_BLK, 
+                                UtilCtxt.PICKER_PICKALL );
             return m_resultCode;
         }
 

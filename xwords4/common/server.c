@@ -1547,7 +1547,6 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 
     oneTile.nTiles = 1;
 
-    pi.why = PICK_FOR_CHEAT;
     pi.nTotal = nToFetch;
     pi.thisPick = 0;
     pi.curTiles = curTray;
@@ -1565,8 +1564,8 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
         model_packTilesUtil( server->vol.model, pool,
                              XP_TRUE, &nUsed, texts, tiles );
 
-        chosen = util_userPickTile( server->vol.util, &pi, playerNum,
-                                    texts, nUsed );
+        chosen = util_userPickTileTray( server->vol.util, &pi, playerNum,
+                                        texts, nUsed );
 
         if ( chosen == PICKER_PICKALL ) {
             ask = XP_FALSE;

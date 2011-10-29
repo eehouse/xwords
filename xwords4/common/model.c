@@ -1095,17 +1095,11 @@ askBlankTile( ModelCtxt* model, XP_U16 turn )
     XP_S16 chosen;
     const XP_UCHAR* tfaces[MAX_UNIQUE_TILES];
     Tile tiles[MAX_UNIQUE_TILES];
-    PickInfo pi;
-
-    pi.why = PICK_FOR_BLANK;
-    pi.nTotal = 1;
-    pi.thisPick = 1;
 
     model_packTilesUtil( model, NULL, XP_FALSE,
                          &nUsed, tfaces, tiles );
 
-    chosen = util_userPickTile( model->vol.util, &pi,
-                                turn, tfaces, nUsed );
+    chosen = util_userPickTileBlank( model->vol.util, turn, tfaces, nUsed );
 
     if ( chosen < 0 ) {
         chosen = 0;

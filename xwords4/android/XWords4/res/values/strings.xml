@@ -1785,6 +1785,10 @@
 
     <string name="button_search">Find</string>
     <string name="word_search_hint">First letters</string>
+    <string name="tilepick_undo">Undo last</string>
+    <string name="tilepick_all">Pick for me</string>
+    <string name="cur_tilesf">Tile picker\n(so far: %s)</string>
+    <string name="pick_faceup">Pick tiles face-up</string>
 
 </resources>
 

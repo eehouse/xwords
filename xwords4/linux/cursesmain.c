@@ -228,9 +228,26 @@ cursesUserError( CursesAppGlobals* globals, const char* format, ... )
 } /* cursesUserError */
 
 static XP_S16 
-curses_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi), 
-                          XP_U16 playerNum, const XP_UCHAR** texts, 
-                          XP_U16 nTiles )
+curses_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, 
+                               const XP_UCHAR** texts, XP_U16 nTiles )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    char query[128];
+    XP_S16 index;
+    char* playerName = globals->cGlobals.params->gi.players[playerNum].name;
+
+    snprintf( query, sizeof(query), 
+              "Pick tile for %s! (Tab or type letter to select "
+              "then hit <cr>.)", playerName );
+
+    index = curses_askLetter( globals, query, texts, nTiles );
+    return index;
+} /* util_userPickTile */
+
+static XP_S16 
+curses_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi), 
+                              XP_U16 playerNum, const XP_UCHAR** texts, 
+                              XP_U16 nTiles )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
@@ -1478,7 +1495,8 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 #endif
     util->vtable->m_util_userQuery = curses_util_userQuery;
     util->vtable->m_util_confirmTrade = curses_util_confirmTrade;
-    util->vtable->m_util_userPickTile = curses_util_userPickTile;
+    util->vtable->m_util_userPickTileBlank = curses_util_userPickTileBlank;
+    util->vtable->m_util_userPickTileTray = curses_util_userPickTileTray;
     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange;
     util->vtable->m_util_informMove = curses_util_informMove;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
