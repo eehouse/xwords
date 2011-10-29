@@ -783,7 +783,8 @@ prevWord( const DictionaryCtxt* dict, EdgeArray* edges )
     while ( 0 < edges->nEdges && ! success ) {
         if ( isFirstEdge( dict, edges->edges[edges->nEdges-1] ) ) {
             --edges->nEdges;
-            success = 0 < edges->nEdges && ISACCEPTING( dict, edges->edges[edges->nEdges-1] );
+            success = 0 < edges->nEdges
+                && ISACCEPTING( dict, edges->edges[edges->nEdges-1] );
             continue;
         }
         edges->edges[edges->nEdges-1] -= dict->nodeSize;
