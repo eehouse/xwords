@@ -252,7 +252,7 @@ typedef enum {
     ,CMD_SEED
     ,CMD_GAMESEED
     ,CMD_GAMEFILE
-    ,CMD_MMAP
+    ,CMD_NOMMAP
     ,CMD_PRINTHISORY
     ,CMD_SKIPWARNINGS
     ,CMD_LOCALPWD
@@ -326,7 +326,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SEED, true, "seed", "random seed" }
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
-    ,{ CMD_MMAP, false, "use-mmap", "mmap dicts rather than copy them to memory" }
+    ,{ CMD_NOMMAP, false, "no-mmap", "copy dicts to memory rather than mmap them" }
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
     ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
     ,{ CMD_LOCALPWD, true, "password", "password for user (in sequence)" }
@@ -1105,6 +1105,7 @@ main( int argc, char** argv )
     mainParams.showColors = XP_TRUE;
     mainParams.allowPeek = XP_TRUE;
     mainParams.showRobotScores = XP_FALSE;
+    mainParams.useMmap = XP_TRUE;
     
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
@@ -1160,8 +1161,8 @@ main( int argc, char** argv )
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;
             break;
-	case CMD_MMAP:
-            mainParams.useMmap = true;
+        case CMD_NOMMAP:
+            mainParams.useMmap = false;
             break;
         case CMD_PRINTHISORY:
             mainParams.printHistory = 1;
