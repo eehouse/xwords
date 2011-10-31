@@ -217,16 +217,21 @@ typedef struct _DictWord {
     XP_U32 indices[MAX_COLS];
 } DictWord;
 
+typedef struct _IndexData {
+    DictIndex* indices;
+    Tile* prefixes;
+    XP_U16 count;    /* in-out: must indicate others are large enough */
+} IndexData;
+
 XP_U32 dict_countWords( const DictionaryCtxt* dict );
-XP_U16 dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
-                       DictIndex* indices, Tile* prefixes, XP_U16 count );
+void dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
+                     IndexData* data );
 XP_Bool dict_firstWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_lastWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getNextWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn,
-                         XP_U16 depth, DictIndex* indices, 
-                         Tile* prefixes, XP_U16 count );
+                         XP_U16 depth, IndexData* data );
 void dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
                         XP_UCHAR* buf, XP_U16 buflen );
 

@@ -863,20 +863,19 @@ dict_countWords( const DictionaryCtxt* dict )
 
 static DictIndex
 placeWordClose( const DictionaryCtxt* dict, DictIndex position, 
-                XP_U16 depth, const DictIndex* indices, const Tile* prefixes, 
-                XP_U16 count, EdgeArray* result )
+                XP_U16 depth, IndexData* data, EdgeArray* result )
 {
     XP_S16 low = 0;
-    XP_S16 high = count - 1;
+    XP_S16 high = data->count - 1;
     XP_S16 index = -1;
     for ( ; ; ) {
         if ( low > high ) {
             break;
         }
         index = low + ( (high - low) / 2);
-        if ( position < indices[index] ) {
+        if ( position < data->indices[index] ) {
             high = index - 1;
-        } else if ( indices[index+1] <= position) {
+        } else if ( data->indices[index+1] <= position) {
             low = index + 1;
         } else {
             break;
@@ -891,22 +890,23 @@ placeWordClose( const DictionaryCtxt* dict, DictIndex position,
        may be better off starting with the next if it's closer.  The last
        index is a special case since we use lastWord rather than a prefix to
        init */
-    if ( ( index + 1 < count ) 
-         && (indices[index + 1] - position) < (position - indices[index]) ) {
+    if ( ( index + 1 < data->count ) 
+         && (data->indices[index + 1] - position) 
+         < (position - data->indices[index]) ) {
         ++index;
     }
-    XP_Bool success = findStartsWith( dict, &prefixes[depth*index], depth, result )
+    XP_Bool success = findStartsWith( dict, &data->prefixes[depth*index], 
+                                      depth, result )
         && ( ISACCEPTING( dict, result->edges[result->nEdges-1] )
              || nextWord( dict, result ) );
     XP_ASSERT( success );
 
-    return indices[index];
+    return data->indices[index];
 } /* placeWordClose */
 
 static void
 indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles, 
-          DictIndex* indices, Tile* prefixes, XP_U16* nextIndex, 
-          EdgeArray* prevEdges, DictIndex* prevIndex )
+          IndexData* data, EdgeArray* prevEdges, DictIndex* prevIndex )
 {
     EdgeArray curEdges = { .nEdges = 0 };
     if ( findStartsWith( dict, tiles, depth, &curEdges ) ) {
@@ -927,37 +927,34 @@ indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles,
                 }
             }
         }
-        indices[*nextIndex] = *prevIndex;
-        if ( NULL != prefixes ) {
-            XP_MEMCPY( prefixes + (*nextIndex * depth), tiles, depth );
+        data->indices[data->count] = *prevIndex;
+        if ( NULL != data->prefixes ) {
+            XP_MEMCPY( data->prefixes + (data->count * depth), tiles, depth );
         }
-        ++*nextIndex;
+        ++data->count;
     }
 }
 
 static void
 doOneDepth( const DictionaryCtxt* dict, 
             const Tile* allTiles, XP_U16 nTiles, Tile* prefix, 
-            XP_U16 curDepth, XP_U16 maxDepth,
-            DictIndex* indices, Tile* prefixes, XP_U16* nextEntry, 
+            XP_U16 curDepth, XP_U16 maxDepth, IndexData* data, 
             EdgeArray* prevEdges, DictIndex* prevIndex )
 {
     XP_U16 ii;
     for ( ii = 0; ii < nTiles; ++ii ) {
         prefix[curDepth] = allTiles[ii];
         if ( curDepth + 1 == maxDepth ) {
-            indexOne( dict, maxDepth, prefix, indices, prefixes, 
-                      nextEntry, prevEdges,  prevIndex);
+            indexOne( dict, maxDepth, prefix, data, prevEdges, prevIndex );
         } else {
             doOneDepth( dict, allTiles, nTiles, prefix, curDepth+1, maxDepth,
-                        indices, prefixes, nextEntry, prevEdges, prevIndex );
+                        data, prevEdges, prevIndex );
         }
     }
 }
 
-XP_U16
-dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
-                DictIndex* indices, Tile* prefixes, XP_U16 count )
+void
+dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, IndexData* data )
 {
     XP_ASSERT( depth < MAX_COLS );
     XP_U16 ii, needCount, nTiles;
@@ -969,7 +966,7 @@ dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth,
     for ( ii = 1, needCount = nFaces; ii < depth; ++ii ) {
         needCount *= nFaces;
     }
-    XP_ASSERT( needCount <= count );
+    XP_ASSERT( needCount <= data->count );
 
     Tile allTiles[nFaces];
     nTiles = 0;
@@ -984,7 +981,7 @@ dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth,
      * find the first word starting with that IF EXISTS.  If it does, find its
      * index.  As an optimization, find index starting with the previous word.
      */
-    XP_U16 nextIndex = 0;
+    data->count = 0;
     DictWord firstWord;
     if ( dict_firstWord( dict, &firstWord ) ) {
         EdgeArray prevEdges;
@@ -993,10 +990,9 @@ dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth,
         indicesToEdges( dict, &firstWord, &prevEdges );
 
         doOneDepth( dict, allTiles, nFaces, prefix, 0, depth, 
-                    indices, prefixes, &nextIndex, &prevEdges, &prevIndex );
+                    data, &prevEdges, &prevIndex );
 
     }
-    return nextIndex;
 }
 
 static void
@@ -1064,8 +1060,7 @@ dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word )
    at the closer end.  Then move as many steps as necessary to reach it. */
 XP_Bool
 dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn,
-                 XP_U16 depth, DictIndex* indices, Tile* prefixes, 
-                 XP_U16 count )
+                 XP_U16 depth, IndexData* data )
 {
     XP_U32 wordCount;
     XP_Bool validWord = 0 < word->nTiles;
@@ -1093,9 +1088,8 @@ dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn,
         if ( !success ) {
             EdgeArray edges;
             XP_U32 wordIndex;
-            if ( !!indices ) {
-                wordIndex = placeWordClose( dict, nn, depth, indices,
-                                            prefixes, count, &edges );
+            if ( !!data ) {
+                wordIndex = placeWordClose( dict, nn, depth, data, &edges );
                 if ( !validWord ) {
                     initWord( dict, word );
                 }
