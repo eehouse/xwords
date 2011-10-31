@@ -906,8 +906,7 @@ placeWordClose( const DictionaryCtxt* dict, DictIndex position,
 
 static void
 indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles, 
-          IndexData* data, XP_U16* nextIndex, 
-          EdgeArray* prevEdges, DictIndex* prevIndex )
+          IndexData* data, EdgeArray* prevEdges, DictIndex* prevIndex )
 {
     EdgeArray curEdges = { .nEdges = 0 };
     if ( findStartsWith( dict, tiles, depth, &curEdges ) ) {
@@ -928,11 +927,11 @@ indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles,
                 }
             }
         }
-        data->indices[*nextIndex] = *prevIndex;
+        data->indices[data->count] = *prevIndex;
         if ( NULL != data->prefixes ) {
-            XP_MEMCPY( data->prefixes + (*nextIndex * depth), tiles, depth );
+            XP_MEMCPY( data->prefixes + (data->count * depth), tiles, depth );
         }
-        ++*nextIndex;
+        ++data->count;
     }
 }
 
@@ -940,17 +939,16 @@ static void
 doOneDepth( const DictionaryCtxt* dict, 
             const Tile* allTiles, XP_U16 nTiles, Tile* prefix, 
             XP_U16 curDepth, XP_U16 maxDepth, IndexData* data, 
-            XP_U16* nextEntry, EdgeArray* prevEdges, DictIndex* prevIndex )
+            EdgeArray* prevEdges, DictIndex* prevIndex )
 {
     XP_U16 ii;
     for ( ii = 0; ii < nTiles; ++ii ) {
         prefix[curDepth] = allTiles[ii];
         if ( curDepth + 1 == maxDepth ) {
-            indexOne( dict, maxDepth, prefix, data, nextEntry, prevEdges,
-                      prevIndex );
+            indexOne( dict, maxDepth, prefix, data, prevEdges, prevIndex );
         } else {
             doOneDepth( dict, allTiles, nTiles, prefix, curDepth+1, maxDepth,
-                        data, nextEntry, prevEdges, prevIndex );
+                        data, prevEdges, prevIndex );
         }
     }
 }
@@ -983,7 +981,7 @@ dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, IndexData* data )
      * find the first word starting with that IF EXISTS.  If it does, find its
      * index.  As an optimization, find index starting with the previous word.
      */
-    XP_U16 nextIndex = 0;
+    data->count = 0;
     DictWord firstWord;
     if ( dict_firstWord( dict, &firstWord ) ) {
         EdgeArray prevEdges;
@@ -992,10 +990,9 @@ dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, IndexData* data )
         indicesToEdges( dict, &firstWord, &prevEdges );
 
         doOneDepth( dict, allTiles, nFaces, prefix, 0, depth, 
-                    data, &nextIndex, &prevEdges, &prevIndex );
+                    data, &prevEdges, &prevIndex );
 
     }
-    data->count = nextIndex;
 }
 
 static void
