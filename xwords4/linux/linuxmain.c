@@ -895,8 +895,7 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
 #ifdef XWFEATURE_WALKDICT
 static void
 testGetNthWord( const DictionaryCtxt* dict, char** words,
-                XP_U16 depth, DictIndex* indices, 
-                Tile* prefixes, XP_U16 nIndices )
+                XP_U16 depth, IndexData* data )
 {
     XP_U32 half = dict_getWordCount( dict ) / 2;
     XP_UCHAR buf[64];
@@ -905,13 +904,13 @@ testGetNthWord( const DictionaryCtxt* dict, char** words,
     XP_U32 interval = 100;
 
     for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
-        if ( dict_getNthWord( dict, &word, ii, depth, indices, prefixes, nIndices ) ) {
+        if ( dict_getNthWord( dict, &word, ii, depth, data ) ) {
             dict_wordToString( dict, &word, buf, VSIZE(buf) );
             XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
         } else {
             XP_ASSERT( 0 );
         }
-        if ( dict_getNthWord( dict, &word, jj, depth, indices, prefixes, nIndices ) ) {
+        if ( dict_getNthWord( dict, &word, jj, depth, data ) ) {
             dict_wordToString( dict, &word, buf, VSIZE(buf) );
             XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
         } else {
@@ -979,16 +978,20 @@ walk_dict_test( const LaunchParams* params )
         }
     }
     XP_ASSERT( count == jj );
-    XP_LOGF( "finished comparing runs in both directions\n" );
+    XP_LOGF( "finished comparing runs in both directions" );
 
     XP_LOGF( "testing getNth" );
-    testGetNthWord( dict, words, 0, NULL, NULL, 0 );
+    testGetNthWord( dict, words, 0, NULL );
 
     XP_U16 depth = 2;
     DictIndex indices[26*26];   /* pow(26,depth) */
     Tile prefixes[depth*26*26];
-    XP_U16 nIndices = dict_makeIndex( dict, depth, indices, 
-                                      prefixes, VSIZE(indices) );
+    IndexData data = { .indices = indices,
+                       .prefixes = prefixes,
+                       .count = VSIZE(indices)
+    };
+    dict_makeIndex( dict, depth, &data );
+
 #if 0
     for ( ii = 0; ii < nIndices; ++ii ) {
         if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
@@ -1009,7 +1012,7 @@ walk_dict_test( const LaunchParams* params )
 #endif
 
     XP_LOGF( "testing getNth WITH INDEXING" );
-    testGetNthWord( dict, words, depth, indices, prefixes, nIndices );
+    testGetNthWord( dict, words, depth, &data );
 
     XP_LOGF( "done" );
     exit( 0 );
