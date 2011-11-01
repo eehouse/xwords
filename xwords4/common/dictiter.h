@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -35,16 +35,16 @@ extern "C" {
 
 
 /* API for iterating over a dict */
-typedef XP_U32 DictIndex;
+typedef XP_S32 DictPosition;
 typedef struct _DictWord {
     XP_U32 wordCount;
-    DictIndex index;
+    DictPosition position;
     XP_U16 nTiles;
     XP_U32 indices[MAX_COLS];
 } DictWord;
 
 typedef struct _IndexData {
-    DictIndex* indices;
+    DictPosition* indices;
     Tile* prefixes;
     XP_U16 count;    /* in-out: must indicate others are large enough */
 } IndexData;
@@ -56,12 +56,14 @@ XP_Bool dict_firstWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_lastWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getNextWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn,
-                         XP_U16 depth, IndexData* data );
+XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word,
+                         DictPosition position, XP_U16 depth, 
+                         IndexData* data );
 void dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
                         XP_UCHAR* buf, XP_U16 buflen );
-
-
+DictPosition dict_getStartsWith( const DictionaryCtxt* dict, 
+                                 const IndexData* data, 
+                                 Tile* prefix, XP_U16 len );
 #ifdef CPLUS
 }
 #endif
