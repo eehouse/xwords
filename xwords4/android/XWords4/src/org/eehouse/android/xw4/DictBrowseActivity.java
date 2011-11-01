@@ -101,8 +101,7 @@ public class DictBrowseActivity extends XWListActivity
         
         public Object[] getSections() 
         {
-            String prefs = XwJNI.dict_iter_getPrefixes( m_dictClosure );
-            m_prefixes = TextUtils.split( prefs, "\n" );
+            m_prefixes = XwJNI.dict_iter_getPrefixes( m_dictClosure );
             m_indices = XwJNI.dict_iter_getIndices( m_dictClosure );
             return m_prefixes;
         }

@@ -1269,9 +1269,8 @@ typedef struct _DictIterData {
     VTableMgr* vtMgr;
     DictionaryCtxt* dict;
     DictWord word;
-    XWStreamCtxt* prefixStream;
-    DictIndex* indices;
-    XP_U16 nIndices;
+    IndexData idata;
+    XP_U16 depth;
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool;
 #endif
@@ -1299,7 +1298,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 #endif
         closure = (int)data;
 
-        (void)dict_getNthWord( data->dict, &data->word, 0 );
+        (void)dict_firstWord( data->dict, &data->word );
     } else {
         destroyJNIUtil( &jniutil );
         XP_FREE( mpool, data );
@@ -1318,11 +1317,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
     if ( NULL != data ) {
         dict_destroy( data->dict );
         destroyJNIUtil( &data->jniutil );
-        if ( NULL != data->prefixStream ) {
-            stream_destroy( data->prefixStream );
+        if ( !!data->idata.indices ) {
+            XP_FREE( data->mpool, data->idata.indices );
         }
-        if ( !!data->indices ) {
-            XP_FREE( data->mpool, data->indices );
+        if ( !!data->idata.prefixes ) {
+            XP_FREE( data->mpool, data->idata.prefixes );
         }
         vtmgr_destroy( MPPARM(data->mpool) data->vtMgr );
 #ifdef MEM_DEBUG
@@ -1353,28 +1352,48 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1makeIndex
 {
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        XP_U16 depth = 2;
-        DictIndex indices[depth*32*32];
-        XWStreamCtxt* stream = mem_stream_make( MPPARM(data->mpool) data->vtMgr,
-                                                NULL, 0, NULL );
-        XP_U16 nIndices = dict_makeIndex( data->dict, depth, indices, VSIZE(indices),
-                                          stream );
+        data->depth = 2;        /* for now */
+        DictIndex indices[32*32];
+        Tile prefixes[data->depth*32*32];
+        IndexData idata = { .indices = indices,
+                            .prefixes = prefixes,
+                            .count = VSIZE(indices) };
+
+        dict_makeIndex( data->dict, data->depth, &idata );
         
-        data->indices = XP_MALLOC( data->mpool, nIndices * sizeof(*data->indices) );
-        XP_MEMCPY( data->indices, indices, nIndices * sizeof(*data->indices) );
-        data->nIndices = nIndices;
-        data->prefixStream = stream;
+        data->idata.indices = XP_MALLOC( data->mpool, 
+                                         idata.count * 
+                                         sizeof(*data->idata.indices) );
+        XP_MEMCPY( data->idata.indices, idata.indices, 
+                   idata.count * sizeof(*data->idata.indices) );
+        data->idata.prefixes = XP_MALLOC( data->mpool, 
+                                          idata.count * data->depth *
+                                          sizeof(*data->idata.indices) );
+        XP_MEMCPY( data->idata.prefixes, idata.prefixes,
+                   idata.count * data->depth * sizeof(*data->idata.prefixes) );
     }
 }
 
-JNIEXPORT jstring JNICALL
+JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
 ( JNIEnv* env, jclass C, jint closure )
 {
-    jstring result = NULL;
+    jobjectArray result = NULL;
     DictIterData* data = (DictIterData*)closure;
-    if ( NULL != data && NULL != data->prefixStream ) {
-        result = streamToJString( MPPARM(data->mpool) env, data->prefixStream );
+    if ( NULL != data && NULL != data->idata.prefixes ) {
+        result = makeStringArray( env, data->idata.count, NULL );
+
+        int ii;
+        XP_U16 depth = data->depth;
+        for ( ii = 0; ii < data->idata.count; ++ii ) {
+            XP_UCHAR buf[16];
+            (void)dict_tilesToString( data->dict, 
+                                      &data->idata.prefixes[depth*ii], 
+                                      depth, buf, VSIZE(buf) );
+            jstring jstr = (*env)->NewStringUTF( env, buf );
+            (*env)->SetObjectArrayElement( env, result, ii, jstr );
+            (*env)->DeleteLocalRef( env, jstr );
+        }
         (*env)->DeleteLocalRef( env, result );
     }
     return result;
@@ -1387,9 +1406,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
     jintArray jindices = NULL;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        XP_ASSERT( !!data->indices );
-        XP_ASSERT( sizeof(jint) == sizeof(data->indices[0]) );
-        jindices = makeIntArray( env, data->nIndices, (jint*)data->indices );
+        XP_ASSERT( !!data->idata.indices );
+        XP_ASSERT( sizeof(jint) == sizeof(data->idata.indices[0]) );
+        jindices = makeIntArray( env, data->idata.count, 
+                                 (jint*)data->idata.indices );
         (*env)->DeleteLocalRef( env, jindices );
     }
     return jindices;
@@ -1402,7 +1422,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
     jstring result = NULL;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        if ( dict_getNthWord( data->dict, &data->word, nn ) ) {
+        if ( dict_getNthWord( data->dict, &data->word, nn, data->depth,
+                              &data->idata ) ) {
             XP_UCHAR buf[64];
             dict_wordToString( data->dict, &data->word, buf, VSIZE(buf) );
             result = (*env)->NewStringUTF( env, buf );

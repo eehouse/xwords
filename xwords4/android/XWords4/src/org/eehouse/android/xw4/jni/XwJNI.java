@@ -242,6 +242,6 @@ public class XwJNI {
     public static native int dict_iter_wordCount( int closure );
     public static native String dict_iter_nthWord( int closure, int nn );
     public static native void dict_iter_makeIndex( int closure );
-    public static native String dict_iter_getPrefixes( int closure );
+    public static native String[] dict_iter_getPrefixes( int closure );
     public static native int[] dict_iter_getIndices( int closure );
 }

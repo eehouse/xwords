@@ -280,7 +280,7 @@ makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
     (*env)->DeleteLocalRef( env, empty );
 
     int ii;
-    for ( ii = 0; ii < siz; ++ii ) {    
+    for ( ii = 0; !!vals && ii < siz; ++ii ) {    
         jstring jstr = (*env)->NewStringUTF( env, vals[ii] );
         (*env)->SetObjectArrayElement( env, jarray, ii, jstr );
         (*env)->DeleteLocalRef( env, jstr );
