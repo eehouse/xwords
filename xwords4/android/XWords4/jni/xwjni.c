@@ -29,6 +29,7 @@
 #include "mempool.h"
 #include "strutils.h"
 #include "dictnry.h"
+#include "dictiter.h"
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
@@ -1353,7 +1354,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1makeIndex
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
         data->depth = 2;        /* for now */
-        DictIndex indices[32*32];
+        DictPosition indices[32*32];
         Tile prefixes[data->depth*32*32];
         IndexData idata = { .indices = indices,
                             .prefixes = prefixes,
