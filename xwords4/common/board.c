@@ -3242,8 +3242,8 @@ keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
         XP_UCHAR buf[2] = { key, '\0' };
 
         /* Figure out if we have the tile in the tray  */
-        tile = dict_tileForString( dict, buf );
-        if ( tile != EMPTY_TILE ) { /* in dict? */
+        XP_U16 nTiles = 1;
+        if ( dict_tilesForString( dict, buf, &tile, &nTiles ) ) { /* in dict? */
             XP_S16 turn = board->selPlayer;
             tileIndex = model_trayContains( model, turn, tile );
             if ( tileIndex < 0 ) {

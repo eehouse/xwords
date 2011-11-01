@@ -174,7 +174,8 @@ const XP_UCHAR* dict_getLangName(const DictionaryCtxt* ctxt );
 
 XP_Bool dict_isUTF8( const DictionaryCtxt* ctxt );
 
-Tile dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key );
+XP_Bool dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* key,
+                             Tile* tiles, XP_U16* nTiles );
 
 XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
 void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, 

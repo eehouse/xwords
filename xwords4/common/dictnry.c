@@ -25,6 +25,7 @@
 
 #include "comtypes.h"
 #include "dictnryp.h"
+#include "dictiter.h"
 #include "xwstream.h"
 #include "strutils.h"
 #include "dictiter.h"
@@ -152,27 +153,41 @@ dict_tilesToString( const DictionaryCtxt* dict, const Tile* tiles,
     return result;
 } /* dict_tilesToString */
 
-/* dict_tileForString: used to map user keys to tiles in the tray.  Returns
- * EMPTY_TILE if no match found.
+/* Convert str to an array of tiles, continuing until we fail to match or we
+ * run out of room in which to return tiles.  Failure to match means return of
+ * XP_FALSE, but if we run out of room before failing we return XP_TRUE.
  */
-Tile
-dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key )
+XP_Bool
+dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* str,
+                     Tile* tiles, XP_U16* nTilesP )
 {
     XP_U16 nFaces = dict_numTileFaces( dict );
-    Tile tile = EMPTY_TILE;
-    XP_U16 ii;
+    XP_U16 nTiles = 0;
+    XP_Bool success = XP_TRUE;
+    XP_ASSERT( 0 < *nTilesP );
 
-    for ( ii = 0; ii < nFaces; ++ii ) {
-        if ( ii != dict->blankTile ) {
-            const XP_UCHAR* facep = dict_getTileString( dict, ii );
-            if ( 0 == XP_STRCMP( facep, key ) ) {
-                tile = (Tile)ii;
-                break;
+    while ( str[0] != '\0' && success && nTiles < *nTilesP ) {
+        Tile tile;
+        const XP_UCHAR* prevstr = str;
+        for ( tile = 0; tile < nFaces; ++tile ) {
+            if ( tile != dict->blankTile ) {
+                const XP_UCHAR* facep = dict_getTileString( dict, tile );
+                XP_U16 faceLen = XP_STRLEN( facep );
+                if ( 0 == XP_STRNCMP( facep, str, faceLen ) ) {
+                    tiles[nTiles++] = tile;
+                    str += faceLen;
+                    if ( nTiles == *nTilesP ) {
+                        break;
+                    }
+                }
             }
         }
+        success = str > prevstr;
     }
-    return tile;
-} /* dict_tileForChar */
+    XP_ASSERT( nTiles <= *nTilesP );
+    *nTilesP = nTiles;
+    return success;
+} /* dict_tilesForString */
 
 XP_Bool
 dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
