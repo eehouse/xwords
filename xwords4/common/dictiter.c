@@ -500,7 +500,7 @@ dict_getNthWord( const DictionaryCtxt* dict, DictWord* word,
                 wordIndex = word->position;
             }
 
-            WordFinder finder;
+            WordFinder finder = NULL; /* stupid compiler */
             XP_U32 repeats = 0;
             if ( wordIndex < position ) {
                 finder = nextWord;
