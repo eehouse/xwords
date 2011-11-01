@@ -174,7 +174,8 @@ const XP_UCHAR* dict_getLangName(const DictionaryCtxt* ctxt );
 
 XP_Bool dict_isUTF8( const DictionaryCtxt* ctxt );
 
-Tile dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key );
+XP_Bool dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* key,
+                             Tile* tiles, XP_U16* nTiles );
 
 XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
 void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, 
@@ -205,37 +206,6 @@ void dict_super_init( DictionaryCtxt* ctxt );
 /* Must be implemented by subclass */
 void dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes, 
                       XP_U16 nBytes, XP_U16 nFaces );
-
-#ifdef XWFEATURE_WALKDICT
-
-/* API for iterating over a dict */
-typedef XP_U32 DictIndex;
-typedef struct _DictWord {
-    XP_U32 wordCount;
-    DictIndex index;
-    XP_U16 nTiles;
-    XP_U32 indices[MAX_COLS];
-} DictWord;
-
-typedef struct _IndexData {
-    DictIndex* indices;
-    Tile* prefixes;
-    XP_U16 count;    /* in-out: must indicate others are large enough */
-} IndexData;
-
-XP_U32 dict_countWords( const DictionaryCtxt* dict );
-void dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
-                     IndexData* data );
-XP_Bool dict_firstWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_lastWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getNextWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, XP_U32 nn,
-                         XP_U16 depth, IndexData* data );
-void dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
-                        XP_UCHAR* buf, XP_U16 buflen );
-
-#endif  /* XWFEATURE_WALKDICT */
 
 #ifdef CPLUS
 }
