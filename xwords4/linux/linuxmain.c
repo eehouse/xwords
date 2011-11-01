@@ -59,6 +59,7 @@
 #include "model.h"
 #include "util.h"
 #include "strutils.h"
+#include "dictiter.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
 #include "memstream.h"
