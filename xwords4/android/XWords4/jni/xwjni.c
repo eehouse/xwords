@@ -1455,4 +1455,26 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
     }
     return result;
 }
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
+( JNIEnv* env, jclass C, jint closure, jstring jprefix )
+{
+    jint result = -1;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        Tile tiles[MAX_COLS];
+        XP_U16 nTiles = VSIZE(tiles);
+        const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
+        if ( dict_tilesForString( data->dict, prefix, tiles, &nTiles ) ) {
+            IndexData* idata = NULL;
+            DictPosition pos = dict_getStartsWith( data->dict, idata, tiles, 
+                                                   nTiles );
+            result = pos;
+        }
+        (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
+    }
+    return result;
+}
+
 #endif  /* XWFEATURE_BOARDWORDS */
