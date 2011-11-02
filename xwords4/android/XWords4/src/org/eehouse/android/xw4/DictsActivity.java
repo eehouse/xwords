@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -153,6 +153,7 @@ public class DictsActivity extends ExpandableListActivity
                 }
 
                 addToCache( groupPosition, childPosition, view );
+                view.setOnClickListener( DictsActivity.this );
             }
             return view;
         }
@@ -455,9 +456,16 @@ public class DictsActivity extends ExpandableListActivity
         super.onStop();
     }
 
-    public void onClick( View v ) 
+    public void onClick( View view ) 
     {
-        askStartDownload( 0, null );
+        if ( view instanceof Button ) {
+            askStartDownload( 0, null );
+        } else {
+            XWListItem item = (XWListItem)view;
+            Intent intent = new Intent( this, DictBrowseActivity.class );
+            intent.putExtra( DictBrowseActivity.DICT_NAME, item.getText() );
+            startActivity( intent );
+        }
     }
 
     @Override
@@ -515,12 +523,6 @@ public class DictsActivity extends ExpandableListActivity
             break;
         case R.id.dicts_item_select:
             showDialog( SET_DEFAULT );
-            break;
-        case R.id.dicts_item_details:
-            Intent intent = new Intent( this, DictBrowseActivity.class );
-            XWListItem view = (XWListItem)info.targetView;
-            intent.putExtra( DictBrowseActivity.DICT_NAME, view.getText() );
-            startActivity( intent );
             break;
         }
 

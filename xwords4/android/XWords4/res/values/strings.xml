@@ -242,10 +242,6 @@
          key_default_dict and key_default_robodict.) -->
     <string name="dicts_item_select">Make default</string>
 
-    <!-- Title of contextual menu item.  If chosen brings up a
-         scrolling list of all the selected wordlists's words. -->
-    <string name="dicts_item_details">Browse</string>
-
     <!-- text of confirmation dialog posted when the delete 'X' button
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %s.  Sometimes one of the two
