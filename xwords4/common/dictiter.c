@@ -231,7 +231,7 @@ dict_countWords( const DictionaryCtxt* dict )
 
 static DictPosition
 placeWordClose( const DictionaryCtxt* dict, DictPosition position, 
-                XP_U16 depth, IndexData* data, EdgeArray* result )
+                XP_U16 depth, const IndexData* data, EdgeArray* result )
 {
     XP_S16 low = 0;
     XP_S16 high = data->count - 1;
@@ -446,7 +446,7 @@ dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word )
    at the closer end.  Then move as many steps as necessary to reach it. */
 XP_Bool
 dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, 
-                 DictPosition position, XP_U16 depth, IndexData* data )
+                 DictPosition position, XP_U16 depth, const IndexData* data )
 {
     XP_U32 wordCount;
     XP_Bool validWord = 0 < word->nTiles;
@@ -474,7 +474,7 @@ dict_getNthWord( const DictionaryCtxt* dict, DictWord* word,
         if ( !success ) {
             EdgeArray edges;
             XP_U32 wordIndex;
-            if ( !!data ) {
+            if ( !!data && !!data->prefixes && !!data->indices ) {
                 wordIndex = placeWordClose( dict, position, depth, data, &edges );
                 if ( !validWord ) {
                     initWord( dict, word );

@@ -58,7 +58,7 @@ XP_Bool dict_getNextWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word );
 XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word,
                          DictPosition position, XP_U16 depth, 
-                         IndexData* data );
+                         const IndexData* data );
 void dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
                         XP_UCHAR* buf, XP_U16 buflen );
 DictPosition dict_getStartsWith( const DictionaryCtxt* dict, 
