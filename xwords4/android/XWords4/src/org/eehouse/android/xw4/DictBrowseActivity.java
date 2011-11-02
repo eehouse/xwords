@@ -68,6 +68,7 @@ public class DictBrowseActivity extends XWListActivity
             if ( null != str ) {
                 text.setText( str );
                 text.setOnClickListener( DictBrowseActivity.this );
+                text.setTextSize( text.getTextSize() + 2.0f );
             }
             return text;
         }
