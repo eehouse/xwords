@@ -1316,18 +1316,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 {
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        dict_destroy( data->dict );
-        destroyJNIUtil( &data->jniutil );
-        if ( !!data->idata.indices ) {
-            XP_FREE( data->mpool, data->idata.indices );
-        }
-        if ( !!data->idata.prefixes ) {
-            XP_FREE( data->mpool, data->idata.prefixes );
-        }
-        vtmgr_destroy( MPPARM(data->mpool) data->vtMgr );
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = data->mpool;
 #endif
+        dict_destroy( data->dict );
+        destroyJNIUtil( &data->jniutil );
+        if ( !!data->idata.indices ) {
+            XP_FREE( mpool, data->idata.indices );
+        }
+        if ( !!data->idata.prefixes ) {
+            XP_FREE( mpool, data->idata.prefixes );
+        }
+        vtmgr_destroy( MPPARM(mpool) data->vtMgr );
         XP_FREE( mpool, data );
 #ifdef MEM_DEBUG
         mpool_destroy( mpool );
@@ -1354,24 +1354,46 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1makeIndex
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
         data->depth = 2;        /* for now */
-        DictPosition indices[32*32];
-        Tile prefixes[data->depth*32*32];
-        IndexData idata = { .indices = indices,
-                            .prefixes = prefixes,
-                            .count = VSIZE(indices) };
+        XP_U16 nFaces = dict_numTileFaces( data->dict );
+        XP_U16 ii;
+        XP_U16 count;
+        for ( count = 1, ii = 0; ii < data->depth; ++ii ) {
+            count *= nFaces;
+        }
 
-        dict_makeIndex( data->dict, data->depth, &idata );
+        IndexData* idata = &data->idata;
+        XP_ASSERT( !idata->prefixes );
+        idata->prefixes = XP_MALLOC( data->mpool, count * data->depth 
+                                     * sizeof(*idata->prefixes) );
+        XP_ASSERT( !idata->indices );
+        idata->indices = XP_MALLOC( data->mpool, 
+                                    count * sizeof(*idata->indices) );
+        idata->count = count;
+
+        dict_makeIndex( data->dict, data->depth, idata );
         
-        data->idata.indices = XP_MALLOC( data->mpool, 
-                                         idata.count * 
-                                         sizeof(*data->idata.indices) );
-        XP_MEMCPY( data->idata.indices, idata.indices, 
-                   idata.count * sizeof(*data->idata.indices) );
-        data->idata.prefixes = XP_MALLOC( data->mpool, 
-                                          idata.count * data->depth *
-                                          sizeof(*data->idata.indices) );
-        XP_MEMCPY( data->idata.prefixes, idata.prefixes,
-                   idata.count * data->depth * sizeof(*data->idata.prefixes) );
+        Tile* tmp1 = idata->prefixes;
+        idata->prefixes = XP_MALLOC( data->mpool, 
+                                     idata->count * data->depth * 
+                                     sizeof(*idata->prefixes) );
+        XP_MEMCPY( idata->prefixes, tmp1, idata->count * data->depth * 
+                   sizeof(*idata->prefixes) );
+        XP_FREE( data->mpool, tmp1 );
+
+        /* XP_REALLOC is broken, causes crashes when passed to XP_FREE in the
+           destructor below.  Fix or remove.  */
+        /* idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes, */
+        /*                               idata->count * data->depth *  */
+        /*                               sizeof(*idata->prefixes) ); */
+
+        DictPosition* tmp2 = idata->indices;
+        idata->indices = XP_MALLOC( data->mpool, 
+                                    idata->count * sizeof(*idata->indices) );
+        XP_MEMCPY( idata->indices, tmp2, 
+                   idata->count * sizeof(*idata->indices) );
+        XP_FREE( data->mpool, tmp2 );
+        /* idata->indices = XP_REALLOC( data->mpool, idata->indices, */
+        /*                              idata->count * sizeof(*idata->indices) ); */
     }
 }
 
