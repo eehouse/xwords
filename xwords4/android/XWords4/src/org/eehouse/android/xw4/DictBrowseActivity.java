@@ -46,6 +46,8 @@ public class DictBrowseActivity extends XWListActivity
 
     private int m_dictClosure = 0;
     private int m_lang;
+    private String m_name;
+    private int m_nWords;
 
 // - Steps to reproduce the problem:
 // Create ListView, set custom adapter which implements ListAdapter and
@@ -78,7 +80,7 @@ public class DictBrowseActivity extends XWListActivity
 
         public int getCount() { 
             Assert.assertTrue( 0 != m_dictClosure );
-            return XwJNI.dict_iter_wordCount( m_dictClosure );
+            return m_nWords;
         }
 
         // SectionIndexer
@@ -117,6 +119,7 @@ public class DictBrowseActivity extends XWListActivity
         if ( null == name ) {
             finish();
         } else {
+            m_name = name;
             m_lang = DictLangCache.getDictLangCode( this, name );
 
             String[] names = { name };
@@ -124,6 +127,11 @@ public class DictBrowseActivity extends XWListActivity
             m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], 
                                                   pairs.m_paths[0],
                                                   JNIUtilsImpl.get() );
+            m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
+
+            setTitle( Utils.format( this, R.string.dict_browse_titlef,
+                                    name, m_nWords ) );
+
             Utils.logf( "calling makeIndex" );
             XwJNI.dict_iter_makeIndex( m_dictClosure );
             Utils.logf( "makeIndex done" );
@@ -179,7 +187,13 @@ public class DictBrowseActivity extends XWListActivity
         EditText edit = (EditText)findViewById( R.id.word_edit );
         String text = edit.getText().toString();
         if ( null != text && 0 < text.length() ) {
-            Utils.showf( this, "Not yet ready to search for %s", text );
+            int pos = XwJNI.dict_iter_getStartsWith( m_dictClosure, text );
+            if ( 0 <= pos ) {
+                getListView().setSelection( pos );
+            } else {
+                Utils.showf( this, R.string.dict_browse_nowordsf, 
+                             m_name, text );
+            }
         }
     }
 }

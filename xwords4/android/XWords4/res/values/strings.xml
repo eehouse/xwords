@@ -242,11 +242,9 @@
          key_default_dict and key_default_robodict.) -->
     <string name="dicts_item_select">Make default</string>
 
-    <!-- Title of contextual menu item.  If chosen it does nothing,
-         but will eventually bring up a dialog giving additional
-         information about the selected wordlist, possibly including a
-         scrolling list of all its words. -->
-    <string name="dicts_item_details">Details</string>
+    <!-- Title of contextual menu item.  If chosen brings up a
+         scrolling list of all the selected wordlists's words. -->
+    <string name="dicts_item_details">Browse</string>
 
     <!-- text of confirmation dialog posted when the delete 'X' button
          beside the listing of a wordlist is tapped.  The name of the
@@ -1789,6 +1787,10 @@
     <string name="tilepick_all">Pick for me</string>
     <string name="cur_tilesf">Tile picker\n(so far: %s)</string>
     <string name="pick_faceup">Pick tiles face-up</string>
+
+    <string name="dict_browse_titlef">%1$s (%2$d words)</string>
+    <string name="dict_browse_nowordsf">No word in %1$s starts with
+      %2$s.</string>
 
 </resources>
 

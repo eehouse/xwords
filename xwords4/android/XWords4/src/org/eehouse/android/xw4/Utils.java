@@ -91,6 +91,11 @@ public class Utils {
         Toast.makeText( context, msg, Toast.LENGTH_SHORT ).show();
     } // showf
 
+    public static void showf( Context context, int formatid, Object... args )
+    {
+        showf( context, context.getString( formatid ), args );
+    } // showf
+
     public static void printStack( StackTraceElement[] trace )
     {
         if ( s_doLog ) {
