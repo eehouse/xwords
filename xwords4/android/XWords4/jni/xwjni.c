@@ -1,7 +1,7 @@
 /* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 /*
- * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright © 2009 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -1372,28 +1372,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1makeIndex
 
         dict_makeIndex( data->dict, data->depth, idata );
         
-        Tile* tmp1 = idata->prefixes;
-        idata->prefixes = XP_MALLOC( data->mpool, 
-                                     idata->count * data->depth * 
-                                     sizeof(*idata->prefixes) );
-        XP_MEMCPY( idata->prefixes, tmp1, idata->count * data->depth * 
-                   sizeof(*idata->prefixes) );
-        XP_FREE( data->mpool, tmp1 );
-
-        /* XP_REALLOC is broken, causes crashes when passed to XP_FREE in the
-           destructor below.  Fix or remove.  */
-        /* idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes, */
-        /*                               idata->count * data->depth *  */
-        /*                               sizeof(*idata->prefixes) ); */
-
-        DictPosition* tmp2 = idata->indices;
-        idata->indices = XP_MALLOC( data->mpool, 
-                                    idata->count * sizeof(*idata->indices) );
-        XP_MEMCPY( idata->indices, tmp2, 
-                   idata->count * sizeof(*idata->indices) );
-        XP_FREE( data->mpool, tmp2 );
-        /* idata->indices = XP_REALLOC( data->mpool, idata->indices, */
-        /*                              idata->count * sizeof(*idata->indices) ); */
+        idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
+                                      idata->count * data->depth *
+                                      sizeof(*idata->prefixes) );
+        idata->indices = XP_REALLOC( data->mpool, idata->indices,
+                                     idata->count * sizeof(*idata->indices) );
     }
 }
 
