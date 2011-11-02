@@ -930,7 +930,8 @@ testGetNthWord( const DictionaryCtxt* dict, char** words,
 }
 
 static void
-walk_dict_test( const DictionaryCtxt* dict, GSList* testPrefixes )
+walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict, 
+                GSList* testPrefixes )
 {
     /* This is just to test that the dict-iterating code works.  The words are
        meant to be printed e.g. in a scrolling dialog on Android. */
@@ -993,16 +994,22 @@ walk_dict_test( const DictionaryCtxt* dict, GSList* testPrefixes )
     testGetNthWord( dict, words, 0, NULL );
 
     XP_U16 depth = 2;
-    DictPosition indices[26*26];   /* pow(26,depth) */
-    Tile prefixes[depth*26*26];
-    IndexData data = { .indices = indices,
-                       .prefixes = prefixes,
-                       .count = VSIZE(indices)
+    XP_U16 maxCount = dict_numTileFaces( dict );
+    IndexData data = {
+        .count = maxCount * maxCount,
+        .indices = XP_MALLOC( params->util->mpool, 
+                              data.count * depth * sizeof(data.indices[0]) ),
+        .prefixes = XP_MALLOC( params->util->mpool, 
+                               depth * data.count * sizeof(data.prefixes[0]) ),
     };
     XP_LOGF( "making index..." );
     dict_makeIndex( dict, depth, &data );
     XP_LOGF( "DONE making index" );
 
+    data.indices = XP_REALLOC( params->util->mpool, data.indices, 
+                               data.count * depth * sizeof(*data.indices) );
+    data.prefixes = XP_REALLOC( params->util->mpool, data.prefixes,
+                               depth * data.count * sizeof(*data.prefixes) );
 #if 0
     for ( ii = 0; ii < nIndices; ++ii ) {
         if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
@@ -1045,13 +1052,15 @@ walk_dict_test( const DictionaryCtxt* dict, GSList* testPrefixes )
                     dict_wordToString( dict, &word, buf, VSIZE(buf) );
                     XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
                     if ( pos > 0 ) {
-                        if ( !dict_getNthWord( dict, &word, pos - 1, depth, &data ) ) {
+                        if ( !dict_getNthWord( dict, &word, pos - 1, depth, 
+                                               &data ) ) {
                             XP_ASSERT( 0 );
                         }
                         dict_wordToString( dict, &word, bufPrev, VSIZE(bufPrev) );
                         XP_ASSERT( 0 == strcmp( bufPrev, words[pos-1] ) );
                     }
-                    XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", prefix, buf, bufPrev );
+                    XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", 
+                             prefix, buf, bufPrev );
                 } else {
                     XP_LOGF( "nothing starts with %s", prefix );
                 }
@@ -1060,10 +1069,14 @@ walk_dict_test( const DictionaryCtxt* dict, GSList* testPrefixes )
 
         XP_LOGF( "done" );
     }
+
+    XP_FREE( params->util->mpool, data.indices );
+    XP_FREE( params->util->mpool, data.prefixes );
 }
 
 static void
-walk_dict_test_all( const LaunchParams* params, GSList* testDicts, GSList* testPrefixes )
+walk_dict_test_all( const LaunchParams* params, GSList* testDicts, 
+                    GSList* testPrefixes )
 {
     int ii;
     guint count = g_slist_length( testDicts );
@@ -1073,7 +1086,7 @@ walk_dict_test_all( const LaunchParams* params, GSList* testDicts, GSList* testP
             linux_dictionary_make( MPPARM(params->util->mpool) name,
                                    params->useMmap );
         XP_LOGF( "walk_dict_test(%s)", name );
-        walk_dict_test( dict, testPrefixes );
+        walk_dict_test( params, dict, testPrefixes );
         dict_destroy( dict );
     }
 }
