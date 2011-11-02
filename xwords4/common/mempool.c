@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -206,6 +206,7 @@ mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file,
         entry->fileName = file;
         entry->func = func;
         entry->lineNo = lineNo;
+        entry->size = newsize;
     }
     return entry->ptr;
 } /* mpool_realloc */
