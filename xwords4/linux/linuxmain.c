@@ -945,6 +945,7 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
 
     XP_U32 count = dict_getWordCount( dict );
     XP_ASSERT( count > 0 );
+    XP_ASSERT( count == dict_countWords( dict ) );
     char** words = g_malloc( count * sizeof(char*) );
     XP_ASSERT( !!words );
     // # define PRINT_ALL
@@ -1071,7 +1072,7 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
 
     XP_FREE( params->util->mpool, data.indices );
     XP_FREE( params->util->mpool, data.prefixes );
-}
+} /* walk_dict_test */
 
 static void
 walk_dict_test_all( const LaunchParams* params, GSList* testDicts, 
