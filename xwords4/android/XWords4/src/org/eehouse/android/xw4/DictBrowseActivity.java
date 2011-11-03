@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
@@ -199,5 +200,12 @@ public class DictBrowseActivity extends XWListActivity
                              m_name, text );
             }
         }
+    }
+
+    public static void launch( Context caller, String name )
+    {
+        Intent intent = new Intent( caller, DictBrowseActivity.class );
+        intent.putExtra( DICT_NAME, name );
+        caller.startActivity( intent );
     }
 }

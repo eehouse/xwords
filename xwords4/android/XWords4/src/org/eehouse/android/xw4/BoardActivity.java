@@ -620,6 +620,12 @@ public class BoardActivity extends XWActivity
             m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
                                 R.string.tiles_left_title );
             break;
+
+        case R.id.board_menu_browse_dict:
+            String dictName = m_gi.dictName( m_view.getCurPlayer() );
+            DictBrowseActivity.launch( this, dictName );
+            break;
+
         case R.id.board_menu_game_history:
             m_jniThread.handle( JNIThread.JNICmd.CMD_HISTORY,
                                 R.string.history_title );

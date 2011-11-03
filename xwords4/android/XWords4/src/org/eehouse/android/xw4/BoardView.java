@@ -338,6 +338,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_jniThread.handle( JNIThread.JNICmd.CMD_INVALALL );
     }
 
+    public int getCurPlayer()
+    {
+        return m_trayOwner;
+    }
+
     public int curPending() 
     {
         return m_pendingScore;
