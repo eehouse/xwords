@@ -1269,7 +1269,7 @@ typedef struct _DictIterData {
     JNIUtilCtxt* jniutil;
     VTableMgr* vtMgr;
     DictionaryCtxt* dict;
-    DictWord word;
+    DictIter iter;
     IndexData idata;
     XP_U16 depth;
 #ifdef MEM_DEBUG
@@ -1299,7 +1299,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 #endif
         closure = (int)data;
 
-        (void)dict_firstWord( data->dict, &data->word );
+        dict_initIter( data->dict, &data->iter );
+        (void)dict_firstWord( &data->iter );
     } else {
         destroyJNIUtil( &jniutil );
         XP_FREE( mpool, data );
@@ -1342,7 +1343,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
     jint result = 0;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        result = data->word.wordCount;
+        result = data->iter.nWords;
     }
     return result;
 }
@@ -1370,7 +1371,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1makeIndex
                                     count * sizeof(*idata->indices) );
         idata->count = count;
 
-        dict_makeIndex( data->dict, data->depth, idata );
+        dict_makeIndex( &data->iter, data->depth, idata );
         
         idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
                                       idata->count * data->depth *
@@ -1428,10 +1429,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
     jstring result = NULL;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        if ( dict_getNthWord( data->dict, &data->word, nn, data->depth,
-                              &data->idata ) ) {
+        if ( dict_getNthWord( &data->iter, nn, data->depth, &data->idata ) ) {
             XP_UCHAR buf[64];
-            dict_wordToString( data->dict, &data->word, buf, VSIZE(buf) );
+            dict_wordToString( &data->iter, buf, VSIZE(buf) );
             result = (*env)->NewStringUTF( env, buf );
             (*env)->DeleteLocalRef( env, result );
         }
@@ -1451,8 +1451,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
         const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
         if ( dict_tilesForString( data->dict, prefix, tiles, &nTiles ) ) {
             IndexData* idata = NULL;
-            DictPosition pos = dict_getStartsWith( data->dict, idata, tiles, 
-                                                   nTiles );
+            DictPosition pos = dict_findStartsWith( &data->iter, idata, tiles, 
+                                                    nTiles );
             result = pos;
         }
         (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
