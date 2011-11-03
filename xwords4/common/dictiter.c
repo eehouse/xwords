@@ -42,30 +42,6 @@ typedef struct _EdgeArray {
     XP_U16 nEdges;
 } EdgeArray;
 
-static void
-edgesToIndices( const DictionaryCtxt* dict, const EdgeArray* edges, 
-                DictWord* word )
-{
-    XP_U16 ii;
-
-    word->nTiles = edges->nEdges;
-    for ( ii = 0; ii < edges->nEdges; ++ii ) {
-        word->indices[ii] = edges->edges[ii] - dict->base;
-    }
-}
-
-static void
-indicesToEdges( const DictionaryCtxt* dict, 
-                const DictWord* word, EdgeArray* edges )
-{
-    XP_U16 nEdges = word->nTiles;
-    XP_U16 ii;
-    for ( ii = 0; ii < nEdges; ++ii ) {
-        edges->edges[ii] = &dict->base[word->indices[ii]];
-    }
-    edges->nEdges = nEdges;
-}
-
 /* On entry and exit, edge at end of array should be ACCEPTING.  The job of
  * this function is to iterate from one such edge to the next.  Steps are: 1)
  * try to follow the edge, to expand to a longer word with the last one as a
@@ -74,29 +50,30 @@ indicesToEdges( const DictionaryCtxt* dict,
  * LAST_EDGE, try with its next-letter neighbor.
  */
 static XP_Bool
-nextWord( const DictionaryCtxt* dict, EdgeArray* edges )
+nextWord( DictIter* iter )
 {
-    XP_U16 nEdges = edges->nEdges;
+    const DictionaryCtxt* dict = iter->dict;
+    XP_U16 nEdges = iter->nEdges;
     XP_Bool success = XP_FALSE;
     while ( 0 < nEdges && ! success ) {
-        array_edge* next = dict_follow( dict, edges->edges[nEdges-1] );
+        array_edge* next = dict_follow( dict, iter->edges[nEdges-1] );
         if ( !!next ) {
-            edges->edges[nEdges++] = next;
+            iter->edges[nEdges++] = next;
             success = ISACCEPTING( dict, next );
             continue;		/* try with longer word */
     	}
 
-        while ( IS_LAST_EDGE( dict, edges->edges[nEdges-1] )
+        while ( IS_LAST_EDGE( dict, iter->edges[nEdges-1] )
                 && 0 < --nEdges ) {
         }
 
         if ( 0 < nEdges ) {
-            edges->edges[nEdges-1] += dict->nodeSize;
-            success = ISACCEPTING( dict, edges->edges[nEdges-1] );
+            iter->edges[nEdges-1] += dict->nodeSize;
+            success = ISACCEPTING( dict, iter->edges[nEdges-1] );
         }
     }
 
-    edges->nEdges = nEdges;
+    iter->nEdges = nEdges;
     return success;
 }
 
@@ -111,70 +88,58 @@ isFirstEdge( const DictionaryCtxt* dict, array_edge* edge )
 }
 
 static XP_Bool
-lastEdges( const DictionaryCtxt* dict, EdgeArray* edges )
+lastEdges( DictIter* iter )
 {
-    array_edge* edge = edges->edges[edges->nEdges-1];
+    const DictionaryCtxt* dict = iter->dict;
+    array_edge* edge = iter->edges[iter->nEdges-1];
     for ( ; ; ) {
         while ( !IS_LAST_EDGE( dict, edge ) ) {
             edge += dict->nodeSize;
         }
-        edges->edges[edges->nEdges-1] = edge;
+        iter->edges[iter->nEdges-1] = edge;
 
         edge = dict_follow( dict, edge );
         if ( NULL == edge ) {
             break;
         }
-        ++edges->nEdges;
+        ++iter->nEdges;
     }
-    return ISACCEPTING( dict, edges->edges[edges->nEdges-1] );
+    return ISACCEPTING( dict, iter->edges[iter->nEdges-1] );
 }
 
 static XP_Bool
-prevWord( const DictionaryCtxt* dict, EdgeArray* edges )
+prevWord( DictIter* iter )
 {
+    const DictionaryCtxt* dict = iter->dict;
     XP_Bool success = XP_FALSE;
-    while ( 0 < edges->nEdges && ! success ) {
-        if ( isFirstEdge( dict, edges->edges[edges->nEdges-1] ) ) {
-            --edges->nEdges;
-            success = 0 < edges->nEdges
-                && ISACCEPTING( dict, edges->edges[edges->nEdges-1] );
+    while ( 0 < iter->nEdges && ! success ) {
+        if ( isFirstEdge( dict, iter->edges[iter->nEdges-1] ) ) {
+            --iter->nEdges;
+            success = 0 < iter->nEdges
+                && ISACCEPTING( dict, iter->edges[iter->nEdges-1] );
             continue;
         }
-        edges->edges[edges->nEdges-1] -= dict->nodeSize;
-        array_edge* next = dict_follow( dict, edges->edges[edges->nEdges-1] );
+        iter->edges[iter->nEdges-1] -= dict->nodeSize;
+        array_edge* next = dict_follow( dict, iter->edges[iter->nEdges-1] );
         if ( NULL != next ) {
-            edges->edges[edges->nEdges++] = next;
-            success = lastEdges( dict, edges );
+            iter->edges[iter->nEdges++] = next;
+            success = lastEdges( iter );
             if ( success ) {
                 continue;
             }
         }
-        success = ISACCEPTING( dict, edges->edges[edges->nEdges-1] );
-    }
-    return success;
-}
-
-typedef XP_Bool (*WordFinder)(const DictionaryCtxt* dict, EdgeArray* edges );
-
-static XP_Bool
-dict_getWord( const DictionaryCtxt* dict, DictWord* word, WordFinder finder )
-{
-    EdgeArray edges;
-    indicesToEdges( dict, word, &edges );
-    XP_Bool success = (*finder)( dict, &edges );
-    if ( success ) {
-        edgesToIndices( dict, &edges, word );
+        success = ISACCEPTING( dict, iter->edges[iter->nEdges-1] );
     }
     return success;
 }
 
 static XP_Bool
-findStartsWith( const DictionaryCtxt* dict, const Tile* tiles,
-                XP_U16 nTiles, EdgeArray* edges )
+findStartsWith( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
 {
+    const DictionaryCtxt* dict = iter->dict;
     XP_Bool success = XP_TRUE;
     array_edge* edge = dict_getTopEdge( dict );
-    edges->nEdges = 0;
+    iter->nEdges = 0;
 
     while ( nTiles-- > 0 ) {
         Tile tile = *tiles++;
@@ -183,28 +148,27 @@ findStartsWith( const DictionaryCtxt* dict, const Tile* tiles,
             success = XP_FALSE;
             break;
         }
-        edges->edges[edges->nEdges++] = edge;
+        iter->edges[iter->nEdges++] = edge;
         edge = dict_follow( dict, edge );
     }
     return success;
 }
 
 static XP_Bool
-findWordStartsWith( const DictionaryCtxt* dict, const Tile* tiles,
-                    XP_U16 nTiles, EdgeArray* edges )
+findWordStartsWith( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
 {
     XP_Bool found = XP_FALSE;
-    if ( findStartsWith( dict, tiles, nTiles, edges ) ) {
-        found = ISACCEPTING( dict, edges->edges[edges->nEdges-1] );
+    if ( findStartsWith( iter, tiles, nTiles ) ) {
+        found = ISACCEPTING( iter->dict, iter->edges[iter->nEdges-1] );
         if ( !found ) {
-            found = nextWord( dict, edges );
+            found = nextWord( iter );
         }
     }
     return found;
 }
 
 static XP_Bool
-wordsEqual( const EdgeArray* word1, const EdgeArray* word2 )
+wordsEqual( const DictIter* word1, const DictIter* word2 )
 {
     XP_Bool success = word1->nEdges == word2->nEdges;
     if ( success ) {
@@ -217,21 +181,43 @@ wordsEqual( const EdgeArray* word1, const EdgeArray* word2 )
 XP_U32
 dict_countWords( const DictionaryCtxt* dict )
 {
-    EdgeArray edges = { .nEdges = 1 };
+    DictIter iter;
+    dict_initIter( dict, &iter );
     XP_U32 count = 0;
-    edges.edges[0] = dict_getTopEdge( dict );
-    if ( ISACCEPTING( dict, edges.edges[0] ) ) {
+    iter.nEdges = 1;
+    iter.edges[0] = dict_getTopEdge( dict );
+    if ( ISACCEPTING( dict, iter.edges[0] ) ) {
         ++count;
     }
-    while ( nextWord( dict, &edges ) ) {
+    while ( nextWord( &iter ) ) {
         ++count;
     }
     return count;
 }
 
+#define GUARD_VALUE 0x12345678
+#define ASSERT_INITED( iter ) XP_ASSERT( (iter)->guard == GUARD_VALUE )
+void 
+dict_initIter( const DictionaryCtxt* dict, DictIter* iter )
+{
+    XP_MEMSET( iter, 0, sizeof(*iter) );
+    iter->dict = dict;
+#ifdef DEBUG
+    iter->guard = GUARD_VALUE;
+#endif
+}
+
+static void
+copyIter( DictIter* dest, const DictIter* src )
+{
+    XP_U16 nEdges = src->nEdges;
+    dest->nEdges = nEdges;
+    XP_MEMCPY( dest->edges, src->edges, nEdges * sizeof(dest->edges[0]) );
+}
+
 static DictPosition
-placeWordClose( const DictionaryCtxt* dict, DictPosition position, 
-                XP_U16 depth, const IndexData* data, EdgeArray* result )
+placeWordClose( DictIter* iter, DictPosition position, XP_U16 depth,
+                const IndexData* data )
 {
     XP_S16 low = 0;
     XP_S16 high = data->count - 1;
@@ -259,45 +245,44 @@ placeWordClose( const DictionaryCtxt* dict, DictPosition position,
          < (position - data->indices[index]) ) {
         ++index;
     }
-    if ( !findWordStartsWith( dict, &data->prefixes[depth*index], 
-                              depth, result ) ) {
+    if ( !findWordStartsWith( iter, &data->prefixes[depth*index], depth ) ) {
         XP_ASSERT(0);
     }
     return data->indices[index];
 } /* placeWordClose */
 
 static void
-edgesToString( const DictionaryCtxt* dict, const EdgeArray* edges, 
-               XP_UCHAR* buf, XP_U16 buflen )
+iterToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen )
 {
     XP_U16 ii;
-    XP_U16 nEdges = edges->nEdges;
+    XP_U16 nEdges = iter->nEdges;
     Tile tiles[nEdges];
     for ( ii = 0; ii < nEdges; ++ii ) {
-        tiles[ii] = EDGETILE( dict, edges->edges[ii] );
+        tiles[ii] = EDGETILE( iter->dict, iter->edges[ii] );
     }
-    (void)dict_tilesToString( dict, tiles, nEdges, buf, buflen );
+    (void)dict_tilesToString( iter->dict, tiles, nEdges, buf, buflen );
 }
 
 #if 0
 static void
-printEdges( const DictionaryCtxt* dict, EdgeArray* edges, char* comment )
+printEdges( DictIter* iter, char* comment )
 {
     XP_UCHAR buf[32];
-    edgesToString( dict, edges, buf, VSIZE(buf) );
+    iterToString( dict, edges, buf, VSIZE(buf) );
     XP_LOGF( "%s: %s", comment, buf );
 }
 #endif
 
 static void
-indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles, 
-          IndexData* data, EdgeArray* prevEdges, DictPosition* prevIndex )
+indexOne( XP_U16 depth, Tile* tiles, IndexData* data, DictIter* prevIter, 
+          DictPosition* prevIndex )
 {
-    EdgeArray curEdges;
-    if ( findWordStartsWith( dict, tiles, depth, &curEdges ) ) {
-        while ( !wordsEqual( &curEdges, prevEdges ) ) {
+    DictIter curIter;
+    dict_initIter( prevIter->dict, &curIter );
+    if ( findWordStartsWith( &curIter, tiles, depth ) ) {
+        while ( !wordsEqual( &curIter, prevIter ) ) {
             ++*prevIndex;
-            if ( !nextWord( dict, prevEdges ) ) {
+            if ( !nextWord( prevIter ) ) {
                 XP_ASSERT( 0 );
             }
         }
@@ -313,34 +298,35 @@ indexOne( const DictionaryCtxt* dict, XP_U16 depth, Tile* tiles,
 }
 
 static void
-doOneDepth( const DictionaryCtxt* dict, 
-            const Tile* allTiles, XP_U16 nTiles, Tile* prefix, 
+doOneDepth( const Tile* allTiles, XP_U16 nTiles, Tile* prefix, 
             XP_U16 curDepth, XP_U16 maxDepth, IndexData* data, 
-            EdgeArray* prevEdges, DictPosition* prevIndex )
+            DictIter* prevIter, DictPosition* prevIndex )
 {
     XP_U16 ii;
     for ( ii = 0; ii < nTiles; ++ii ) {
         prefix[curDepth] = allTiles[ii];
         if ( curDepth + 1 == maxDepth ) {
-            indexOne( dict, maxDepth, prefix, data, prevEdges, prevIndex );
+            indexOne( maxDepth, prefix, data, prevIter, prevIndex );
         } else {
-            doOneDepth( dict, allTiles, nTiles, prefix, curDepth+1, maxDepth,
-                        data, prevEdges, prevIndex );
+            doOneDepth( allTiles, nTiles, prefix, curDepth+1, maxDepth,
+                        data, prevIter, prevIndex );
         }
     }
 }
 
 static XP_Bool
-firstWord( const DictionaryCtxt* dict, EdgeArray* edges )
+firstWord( DictIter* iter )
 {
-    edges->nEdges = 1;
-    edges->edges[0] = dict_getTopEdge( dict );
-    return ISACCEPTING( dict, edges->edges[0] ) || nextWord( dict, edges );
+    iter->nEdges = 1;
+    iter->edges[0] = dict_getTopEdge( iter->dict );
+    return ISACCEPTING( iter->dict, iter->edges[0] ) || nextWord( iter );
 }
 
 void
-dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, IndexData* data )
+dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
 {
+    ASSERT_INITED( iter );
+    const DictionaryCtxt* dict = iter->dict;
     XP_ASSERT( depth < MAX_COLS );
     XP_U16 ii, needCount;
     const XP_U16 nFaces = dict_numTileFaces( dict );
@@ -368,12 +354,13 @@ dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, IndexData* data )
      * index.  As an optimization, find index starting with the previous word.
      */
     data->count = 0;
-    EdgeArray prevEdges;
-    if ( firstWord( dict, &prevEdges ) ) {
+    DictIter prevIter;
+    dict_initIter( dict, &prevIter );
+    if ( firstWord( &prevIter ) ) {
         DictPosition prevIndex = 0;
         Tile prefix[depth];
-        doOneDepth( dict, allTiles, nNonBlankFaces, prefix, 0, depth, 
-                    data, &prevEdges, &prevIndex );
+        doOneDepth( allTiles, nNonBlankFaces, prefix, 0, depth, 
+                    data, &prevIter, &prevIndex );
     }
 
 #ifdef DEBUG
@@ -385,58 +372,58 @@ dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, IndexData* data )
 } /* dict_makeIndex */
 
 static void
-initWord( const DictionaryCtxt* dict, DictWord* word )
+initWord( DictIter* iter )
 {
-    word->wordCount = dict_getWordCount( dict );
+    iter->nWords = dict_getWordCount( iter->dict );
 }
 
 XP_Bool
-dict_firstWord( const DictionaryCtxt* dict, DictWord* word )
+dict_firstWord( DictIter* iter )
 {
-    EdgeArray edges;
-    XP_Bool success = firstWord( dict, &edges );
+    ASSERT_INITED( iter );
+    XP_Bool success = firstWord( iter );
     if ( success ) {
-        initWord( dict, word );
-        edgesToIndices( dict, &edges, word );
-        word->position = 0;
+        initWord( iter );
+        iter->position = 0;
     }
 
     return success;
 }
 
 XP_Bool
-dict_getNextWord( const DictionaryCtxt* dict, DictWord* word )
+dict_getNextWord( DictIter* iter )
 {
-    XP_Bool success = dict_getWord( dict, word, nextWord );
+    ASSERT_INITED( iter );
+    XP_Bool success = nextWord( iter );
     if ( success ) {
-        ++word->position;
+        ++iter->position;
     }
     return success;
 }
 
 XP_Bool
-dict_lastWord( const DictionaryCtxt* dict, DictWord* word )
+dict_lastWord( DictIter* iter )
 {
-    EdgeArray edges = { .nEdges = 0 };
-    edges.edges[edges.nEdges++] = dict_getTopEdge( dict );
+    ASSERT_INITED( iter );
+    iter->nEdges = 1;
+    iter->edges[0] = dict_getTopEdge( iter->dict );
 
-    XP_Bool success = lastEdges( dict, &edges );
+    XP_Bool success = lastEdges( iter );
     if ( success ) {
-        initWord( dict, word );
-
-        edgesToIndices( dict, &edges, word );
-        word->position = word->wordCount - 1;
+        initWord( iter );
+        iter->position = iter->nWords - 1;
     }
 
     return success;
 }
 
 XP_Bool
-dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word )
+dict_getPrevWord( DictIter* iter )
 {
-    XP_Bool success = dict_getWord( dict, word, prevWord );
+    ASSERT_INITED( iter );
+    XP_Bool success = prevWord( iter );
     if ( success ) {
-        --word->position;
+        --iter->position;
     }
     return success;
 }
@@ -445,13 +432,15 @@ dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word )
    sought.  OR if we're father than necessary from what's sought, start over
    at the closer end.  Then move as many steps as necessary to reach it. */
 XP_Bool
-dict_getNthWord( const DictionaryCtxt* dict, DictWord* word, 
-                 DictPosition position, XP_U16 depth, const IndexData* data )
+dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth, 
+                 const IndexData* data )
 {
+    ASSERT_INITED( iter );
+    const DictionaryCtxt* dict = iter->dict;
     XP_U32 wordCount;
-    XP_Bool validWord = 0 < word->nTiles;
+    XP_Bool validWord = 0 < iter->nEdges;
     if ( validWord ) {        /* uninitialized */
-        wordCount = word->wordCount;
+        wordCount = iter->nWords;
         XP_ASSERT( wordCount == dict_getWordCount( dict ) );
     } else {
         wordCount = dict_getWordCount( dict );
@@ -461,23 +450,22 @@ dict_getNthWord( const DictionaryCtxt* dict, DictWord* word,
         /* super common cases first */
         success = XP_FALSE;
         if ( validWord ) {
-            if ( word->position == position ) {
+            if ( iter->position == position ) {
                 success = XP_TRUE;
                 /* do nothing; we're done */
-            } else if ( word->position == position - 1 ) {
-                success = dict_getNextWord( dict, word );
-            } else if ( word->position == position + 1 ) {
-                success = dict_getPrevWord( dict, word );
+            } else if ( iter->position == position - 1 ) {
+                success = dict_getNextWord( iter );
+            } else if ( iter->position == position + 1 ) {
+                success = dict_getPrevWord( iter );
             }
         }
 
         if ( !success ) {
-            EdgeArray edges;
             XP_U32 wordIndex;
             if ( !!data && !!data->prefixes && !!data->indices ) {
-                wordIndex = placeWordClose( dict, position, depth, data, &edges );
+                wordIndex = placeWordClose( iter, position, depth, data );
                 if ( !validWord ) {
-                    initWord( dict, word );
+                    initWord( iter );
                 }
             } else {
                 wordCount /= 2;             /* mid-point */
@@ -485,22 +473,21 @@ dict_getNthWord( const DictionaryCtxt* dict, DictWord* word,
                 /* If word's inited but farther from target than either
                    endpoint, better to start with an endpoint */
                 if ( validWord && 
-                     XP_ABS( position - word->position ) > wordCount ) {
+                     XP_ABS( position - iter->position ) > wordCount ) {
                     validWord = XP_FALSE;
                 }
 
                 if ( !validWord ) {
                     if ( position >= wordCount ) {
-                        dict_lastWord( dict, word );
+                        dict_lastWord( iter );
                     } else {
-                        dict_firstWord( dict, word );
+                        dict_firstWord( iter );
                     }
                 }
-                indicesToEdges( dict, word, &edges );
-                wordIndex = word->position;
+                wordIndex = iter->position;
             }
 
-            WordFinder finder = NULL; /* stupid compiler */
+            XP_Bool (*finder)( DictIter* iter ) = NULL;/* stupid compiler */
             XP_U32 repeats = 0;
             if ( wordIndex < position ) {
                 finder = nextWord;
@@ -510,50 +497,63 @@ dict_getNthWord( const DictionaryCtxt* dict, DictWord* word,
                 repeats = wordIndex - position;
             }
             while ( repeats-- ) {
-                if ( !(*finder)( dict, &edges ) ) {
+                if ( !(*finder)( iter ) ) {
                     XP_ASSERT(0);
                 }
             }
 
-            edgesToIndices( dict, &edges, word );
-            word->position = position;
+            iter->position = position;
             success = XP_TRUE;
         }
     }
     return success;
 } /* dict_getNthWord */
 
-DictPosition
-dict_getStartsWith( const DictionaryCtxt* dict, const IndexData* data, 
-                    Tile* prefix, XP_U16 len )
+XP_Bool 
+dict_findStartsWith( DictIter* iter, const IndexData* data, 
+                     const Tile* prefix, XP_U16 len )
 {
+    XP_Bool success = XP_FALSE;
+    ASSERT_INITED( iter );
     XP_USE(data);
     XP_LOGF( "%s: not using data", __func__ );
-    DictPosition result = -1;
-    EdgeArray curEdges = { .nEdges = 0 };
-    if ( findWordStartsWith( dict, prefix, len, &curEdges ) ) {
-        EdgeArray knownEdges;
-        if ( !firstWord( dict, &knownEdges ) ) {
+
+    DictIter targetIter;
+    dict_initIter( iter->dict, &targetIter );
+    if ( findWordStartsWith( &targetIter, prefix, len ) ) {
+
+        DictPosition result = 0;
+        DictIter iterZero;
+        dict_initIter( iter->dict, &iterZero );
+        if ( !firstWord( &iterZero ) ) {
             XP_ASSERT( 0 );
         }
-        result = 0;
-        while ( ! wordsEqual( &curEdges, &knownEdges ) ) {
+
+        while ( ! wordsEqual( &iterZero, &targetIter ) ) {
             ++result;
-            if ( !nextWord( dict, &knownEdges ) ) {
+            if ( !nextWord( &iterZero ) ) {
                 XP_ASSERT( 0 );
             }
         }
+        copyIter( iter, &iterZero );
+        iter->position = result;
+        success = XP_TRUE;
     }
-    return result;
+    return success;
 }
 
 void
-dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
-                   XP_UCHAR* buf, XP_U16 buflen )
+dict_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen )
 {
-    EdgeArray edges;
-    indicesToEdges( dict, word, &edges );
-    edgesToString( dict, &edges, buf, buflen );
+    ASSERT_INITED( iter );
+    iterToString( iter, buf, buflen );
+}
+
+DictPosition
+dict_getPosition( const DictIter* iter )
+{
+    ASSERT_INITED( iter );
+    return iter->position;
 }
 
 #ifdef CPLUS

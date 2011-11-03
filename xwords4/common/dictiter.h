@@ -36,12 +36,17 @@ extern "C" {
 
 /* API for iterating over a dict */
 typedef XP_S32 DictPosition;
-typedef struct _DictWord {
-    XP_U32 wordCount;
+typedef struct _DictIter {
+#ifdef DEBUG
+    XP_U32 guard;
+#endif
+    const DictionaryCtxt* dict;
+    XP_U32 nWords;
+
     DictPosition position;
-    XP_U16 nTiles;
-    XP_U32 indices[MAX_COLS];
-} DictWord;
+    XP_U16 nEdges;
+    array_edge* edges[MAX_COLS];
+} DictIter;
 
 typedef struct _IndexData {
     DictPosition* indices;
@@ -50,20 +55,18 @@ typedef struct _IndexData {
 } IndexData;
 
 XP_U32 dict_countWords( const DictionaryCtxt* dict );
-void dict_makeIndex( const DictionaryCtxt* dict, XP_U16 depth, 
-                     IndexData* data );
-XP_Bool dict_firstWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_lastWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getNextWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getPrevWord( const DictionaryCtxt* dict, DictWord* word );
-XP_Bool dict_getNthWord( const DictionaryCtxt* dict, DictWord* word,
-                         DictPosition position, XP_U16 depth, 
+void dict_initIter( const DictionaryCtxt* dict, DictIter* iter );
+void dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data );
+XP_Bool dict_firstWord( DictIter* iter );
+XP_Bool dict_lastWord( DictIter* iter );
+XP_Bool dict_getNextWord( DictIter* iter );
+XP_Bool dict_getPrevWord( DictIter* iter );
+XP_Bool dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth, 
                          const IndexData* data );
-void dict_wordToString( const DictionaryCtxt* dict, const DictWord* word,
-                        XP_UCHAR* buf, XP_U16 buflen );
-DictPosition dict_getStartsWith( const DictionaryCtxt* dict, 
-                                 const IndexData* data, 
-                                 Tile* prefix, XP_U16 len );
+void dict_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen );
+XP_Bool dict_findStartsWith( DictIter* iter, const IndexData* data, 
+                             const Tile* prefix, XP_U16 len );
+DictPosition dict_getPosition( const DictIter* iter );
 #ifdef CPLUS
 }
 #endif

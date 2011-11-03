@@ -910,19 +910,23 @@ testGetNthWord( const DictionaryCtxt* dict, char** words,
     XP_U32 half = dict_getWordCount( dict ) / 2;
     XP_UCHAR buf[64];
     XP_U32 ii, jj;
-    DictWord word = {.nTiles = 0};
+    DictIter iter;
     XP_U32 interval = 1000;
 
+    dict_initIter( dict, &iter );
+
     for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
-        if ( dict_getNthWord( dict, &word, ii, depth, data ) ) {
-            dict_wordToString( dict, &word, buf, VSIZE(buf) );
+        if ( dict_getNthWord( &iter, ii, depth, data ) ) {
+            dict_wordToString( &iter, buf, VSIZE(buf) );
             XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
+            // XP_LOGF( "%s: word[%ld]: %s", __func__, ii, buf );
         } else {
             XP_ASSERT( 0 );
         }
-        if ( dict_getNthWord( dict, &word, jj, depth, data ) ) {
-            dict_wordToString( dict, &word, buf, VSIZE(buf) );
+        if ( dict_getNthWord( &iter, jj, depth, data ) ) {
+            dict_wordToString( &iter, buf, VSIZE(buf) );
             XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
+            // XP_LOGF( "%s: word[%ld]: %s", __func__, jj, buf );
         } else {
             XP_ASSERT( 0 );
         }
@@ -935,7 +939,7 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
 {
     /* This is just to test that the dict-iterating code works.  The words are
        meant to be printed e.g. in a scrolling dialog on Android. */
-    DictWord word;
+    DictIter iter;
     long jj;
     XP_Bool gotOne;
 
@@ -952,30 +956,28 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
     /* } */
     /* exit( 0 ); */
 
-    for ( jj = 0, gotOne = dict_firstWord( dict, &word );
+    dict_initIter( dict, &iter );
+    for ( jj = 0, gotOne = dict_firstWord( &iter );
           gotOne;
-          ++jj, gotOne = dict_getNextWord( dict, &word ) ) {
-        XP_ASSERT( word.position == jj );
+          ++jj, gotOne = dict_getNextWord( &iter ) ) {
+        XP_ASSERT( dict_getPosition( &iter ) == jj );
         XP_UCHAR buf[64];
-        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
-        dict_wordToString( dict, &word, buf, VSIZE(buf) );
-        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
+        dict_wordToString( &iter, buf, VSIZE(buf) );
 # ifdef PRINT_ALL
         fprintf( stderr, "%.6ld: %s\n", jj, buf );
 # endif
         if ( !!words ) {
             words[jj] = g_strdup( buf );
         }
-        XP_ASSERT( word.nTiles < VSIZE(word.indices) );
     }
     XP_ASSERT( count == jj );
 
-    for ( jj = 0, gotOne = dict_lastWord( dict, &word );
+    for ( jj = 0, gotOne = dict_lastWord( &iter );
           gotOne;
-          ++jj, gotOne = dict_getPrevWord( dict, &word ) ) {
-        XP_ASSERT( word.position == count-jj-1 );
+          ++jj, gotOne = dict_getPrevWord( &iter ) ) {
+        XP_ASSERT( dict_getPosition(&iter) == count-jj-1 );
         XP_UCHAR buf[64];
-        dict_wordToString( dict, &word, buf, VSIZE(buf) );
+        dict_wordToString( &iter, buf, VSIZE(buf) );
 # ifdef PRINT_ALL
         fprintf( stderr, "%.6ld: %s\n", jj, buf );
 # endif
@@ -995,15 +997,15 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
 
     XP_U16 depth = 2;
     XP_U16 maxCount = dict_numTileFaces( dict );
-    IndexData data = {
-        .count = maxCount * maxCount,
-        .indices = XP_MALLOC( params->util->mpool, 
-                              data.count * depth * sizeof(data.indices[0]) ),
-        .prefixes = XP_MALLOC( params->util->mpool, 
-                               depth * data.count * sizeof(data.prefixes[0]) ),
-    };
+    IndexData data;
+    data.count = maxCount * maxCount;
+    data.indices = XP_MALLOC( params->util->mpool, 
+                              data.count * depth * sizeof(data.indices[0]) );
+    data.prefixes = XP_MALLOC( params->util->mpool, 
+                               depth * data.count * sizeof(data.prefixes[0]) );
+
     XP_LOGF( "making index..." );
-    dict_makeIndex( dict, depth, &data );
+    dict_makeIndex( &iter, depth, &data );
     XP_LOGF( "DONE making index" );
 
     data.indices = XP_REALLOC( params->util->mpool, data.indices, 
@@ -1037,26 +1039,23 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
         guint count = g_slist_length( testPrefixes );
         for ( ii = 0; ii < count; ++ii ) {
             gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
-            Tile tiles[depth];
+            Tile tiles[MAX_COLS];
             XP_U16 nTiles = VSIZE(tiles);
             if ( dict_tilesForString( dict, prefix, tiles, &nTiles ) ) {
-                DictPosition pos = dict_getStartsWith( dict, NULL, tiles, nTiles );
-                if ( 0 <= pos ) {
-                    DictWord word;
-                    (void)dict_firstWord( dict, &word ); /* init the thing */
-                    if ( !dict_getNthWord( dict, &word, pos, depth, &data ) ) {
-                        XP_ASSERT( 0 );
-                    }
+                if ( dict_findStartsWith( &iter, NULL, tiles, nTiles ) ) {
                     XP_UCHAR buf[32];
                     XP_UCHAR bufPrev[32] = {0};
-                    dict_wordToString( dict, &word, buf, VSIZE(buf) );
+                    dict_wordToString( &iter, buf, VSIZE(buf) );
+
+                    XP_ASSERT( 0 == strncmp( buf, prefix, strlen(prefix) ) );
+
+                    DictPosition pos = dict_getPosition( &iter );
                     XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
                     if ( pos > 0 ) {
-                        if ( !dict_getNthWord( dict, &word, pos - 1, depth, 
-                                               &data ) ) {
+                         if ( !dict_getNthWord( &iter, pos-1, depth, &data ) ) {
                             XP_ASSERT( 0 );
                         }
-                        dict_wordToString( dict, &word, bufPrev, VSIZE(bufPrev) );
+                        dict_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
                         XP_ASSERT( 0 == strcmp( bufPrev, words[pos-1] ) );
                     }
                     XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", 
@@ -1067,8 +1066,8 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
             }
         }
 
-        XP_LOGF( "done" );
     }
+    XP_LOGF( "done" );
 
     XP_FREE( params->util->mpool, data.indices );
     XP_FREE( params->util->mpool, data.prefixes );
