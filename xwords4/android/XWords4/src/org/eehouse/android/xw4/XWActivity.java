@@ -153,7 +153,7 @@ public class XWActivity extends Activity
 
     protected void launchLookup( String[] words, int lang )
     {
-        m_delegate.launchLookup( words, lang );
+        m_delegate.launchLookup( words, lang, false );
     }
 
     // DlgDelegate.DlgClickNotify interface

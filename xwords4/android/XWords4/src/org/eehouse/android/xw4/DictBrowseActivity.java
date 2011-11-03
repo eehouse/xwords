@@ -180,7 +180,7 @@ public class DictBrowseActivity extends XWListActivity
     {
         TextView text = (TextView)view;
         String[] words = { text.getText().toString() };
-        launchLookup( words, m_lang );
+        launchLookup( words, m_lang, true );
     }
 
     private void findButtonClicked()

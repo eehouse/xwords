@@ -58,6 +58,7 @@ public class DlgDelegate {
     private static final String POSBUTTON = "posbutton";
     private static final String WORDS = "words";
     private static final String LANG = "lang";
+    private static final String FORCELIST = "forcelist";
 
     // Cache a couple of callback implementations that never change:
     private DialogInterface.OnClickListener m_cbkOnClickLstnr = null;
@@ -78,6 +79,7 @@ public class DlgDelegate {
     private String m_dictName = null;
     private String[] m_words = null;
     private int m_wordsLang = -1;
+    private boolean m_forceList = false;
 
     public DlgDelegate( Activity activity, DlgClickNotify callback,
                         Bundle bundle ) 
@@ -93,6 +95,7 @@ public class DlgDelegate {
             m_prefsKey = bundle.getInt( PREFSKEY );
             m_words = bundle.getStringArray( WORDS );
             m_wordsLang = bundle.getInt( LANG );
+            m_forceList = bundle.getBoolean( FORCELIST );
         }
     }
 
@@ -105,6 +108,7 @@ public class DlgDelegate {
         outState.putInt( PREFSKEY, m_prefsKey );
         outState.putStringArray( WORDS, m_words );
         outState.putInt( LANG, m_wordsLang );
+        outState.putBoolean( FORCELIST, m_forceList );
     }
     
     public Dialog onCreateDialog( int id )
@@ -130,12 +134,13 @@ public class DlgDelegate {
             dialog = createDictGoneDialog();
             break;
         case DLG_LOOKUP:
-            LookupView view = (LookupView)Utils.inflate( m_activity, R.layout.lookup );
+            LookupView view = (LookupView)Utils.inflate( m_activity, 
+                                                         R.layout.lookup );
             dialog = new AlertDialog.Builder( m_activity )
                 .setView( view )
                 .create();
             view.setDialog( dialog, DLG_LOOKUP );
-            view.setWords( m_words, m_wordsLang );
+            view.setWords( m_words, m_wordsLang, m_forceList );
             break;
         }
         return dialog;
@@ -242,10 +247,11 @@ public class DlgDelegate {
         }
     }
 
-    public void launchLookup( String[] words, int lang )
+    public void launchLookup( String[] words, int lang, boolean forceList )
     {
         m_words = words;
         m_wordsLang = lang;
+        m_forceList = forceList;
         m_activity.showDialog( DLG_LOOKUP );
     }
 
