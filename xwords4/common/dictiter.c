@@ -178,18 +178,23 @@ wordsEqual( const DictIter* word1, const DictIter* word2 )
     return success;
 }
 
+static XP_Bool
+firstWord( DictIter* iter )
+{
+    iter->nEdges = 1;
+    iter->edges[0] = dict_getTopEdge( iter->dict );
+    return ISACCEPTING( iter->dict, iter->edges[0] ) || nextWord( iter );
+}
+
 XP_U32
 dict_countWords( const DictionaryCtxt* dict )
 {
+    XP_U32 count = 0;
     DictIter iter;
     dict_initIter( dict, &iter );
-    XP_U32 count = 0;
-    iter.nEdges = 1;
-    iter.edges[0] = dict_getTopEdge( dict );
-    if ( ISACCEPTING( dict, iter.edges[0] ) ) {
-        ++count;
-    }
-    while ( nextWord( &iter ) ) {
+
+    XP_Bool ok;
+    for ( ok = firstWord( &iter ); ok; ok = nextWord( &iter ) ) {
         ++count;
     }
     return count;
@@ -312,14 +317,6 @@ doOneDepth( const Tile* allTiles, XP_U16 nTiles, Tile* prefix,
                         data, prevIter, prevIndex );
         }
     }
-}
-
-static XP_Bool
-firstWord( DictIter* iter )
-{
-    iter->nEdges = 1;
-    iter->edges[0] = dict_getTopEdge( iter->dict );
-    return ISACCEPTING( iter->dict, iter->edges[0] ) || nextWord( iter );
 }
 
 void
