@@ -118,7 +118,9 @@
     </activity>
 
     <activity android:name="RelayGameActivity"/>
-    <activity android:name="DictBrowseActivity"/>
+    <activity android:name="DictBrowseActivity"
+              android:configChanges="keyboardHidden|orientation"
+              />
     <activity android:name="ChatActivity"/>
 
     <service android:name="RelayService"/>
