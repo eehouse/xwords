@@ -35,4 +35,32 @@
             android:drawSelectorOnTop="false"
             />
 
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent" 
+                android:layout_height="wrap_content"
+                >
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              android:text="@string/min_len" 
+              />
+    <Spinner android:id="@+id/wordlen_min"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:entries="@array/minmax_values"
+             android:drawSelectorOnTop="true"
+             android:prompt="@string/prompt_min_len"
+             />
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              android:text="@string/max_len"
+              />
+    <Spinner android:id="@+id/wordlen_max"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:entries="@array/minmax_values"
+             android:drawSelectorOnTop="true"
+             android:prompt="@string/prompt_max_len"
+             />
+  </LinearLayout>
+
 </LinearLayout>

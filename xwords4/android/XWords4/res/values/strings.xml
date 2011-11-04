@@ -1790,4 +1790,9 @@
     <string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>
 
+    <string name="min_len">Min len</string>
+    <string name="max_len">Max len</string>
+    <string name="prompt_min_len">Words no shorter than</string>
+    <string name="prompt_max_len">Words no longer than</string>
+
 </resources>

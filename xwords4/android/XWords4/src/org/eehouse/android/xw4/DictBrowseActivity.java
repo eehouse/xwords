@@ -32,7 +32,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.SectionIndexer;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import java.util.Arrays;
 
 import junit.framework.Assert;
@@ -41,15 +44,22 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class DictBrowseActivity extends XWListActivity
-    implements View.OnClickListener {
+    implements View.OnClickListener, OnItemSelectedListener {
 
     public static final String DICT_NAME = "DICT_NAME";
+
+    private static final int MIN_LEN = 2;
 
     private int m_dictClosure = 0;
     private int m_lang;
     private String m_name;
     private int m_nWords;
     private float m_textSize;
+    private Spinner m_minSpinner;
+    private Spinner m_maxSpinner;
+    private int m_min = MIN_LEN;
+    private int m_max;
+
 
 // - Steps to reproduce the problem:
 // Create ListView, set custom adapter which implements ListAdapter and
@@ -137,13 +147,9 @@ public class DictBrowseActivity extends XWListActivity
             setTitle( Utils.format( this, R.string.dict_browse_titlef,
                                     name, m_nWords ) );
 
-            Utils.logf( "calling makeIndex" );
             XwJNI.dict_iter_makeIndex( m_dictClosure );
-            Utils.logf( "makeIndex done" );
 
             setContentView( R.layout.dict_browser );
-            setListAdapter( new DictListAdapter() );
-            getListView().setFastScrollEnabled( true );
 
             Button button = (Button)findViewById( R.id.search_button );
             button.setOnClickListener( new View.OnClickListener() {
@@ -152,6 +158,17 @@ public class DictBrowseActivity extends XWListActivity
                         findButtonClicked();
                     }
                 } );
+
+            m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
+            m_minSpinner.setOnItemSelectedListener( this );
+            m_minSpinner.setSelection( 0 );
+            m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
+            m_maxSpinner.setOnItemSelectedListener( this );
+            m_max = m_maxSpinner.getCount() + MIN_LEN - 1;
+            m_maxSpinner.setSelection( m_max - MIN_LEN );
+
+            setListAdapter( new DictListAdapter() );
+            getListView().setFastScrollEnabled( true );
         }
     }
 
@@ -187,6 +204,25 @@ public class DictBrowseActivity extends XWListActivity
         launchLookup( words, m_lang, true );
     }
 
+
+    //////////////////////////////////////////////////
+    // AdapterView.OnItemSelectedListener interface
+    //////////////////////////////////////////////////
+    public void onItemSelected( AdapterView<?> parent, View view, 
+                                int position, long id )
+    {
+        int newval = position + MIN_LEN;
+        if ( parent == m_minSpinner ) {
+            setMinMax( newval, m_max );
+        } else if ( parent == m_maxSpinner ) {
+            setMinMax( m_min, newval );
+        }
+    }
+
+    public void onNothingSelected( AdapterView<?> parent )
+    {
+    }
+
     private void findButtonClicked()
     {
         EditText edit = (EditText)findViewById( R.id.word_edit );
@@ -199,6 +235,16 @@ public class DictBrowseActivity extends XWListActivity
                 Utils.showf( this, R.string.dict_browse_nowordsf, 
                              m_name, text );
             }
+        }
+    }
+
+    private void setMinMax( int min, int max )
+    {
+        if ( m_min != min || m_max != max ) {
+            m_min = min;
+            m_max = max;
+            setListAdapter( new DictListAdapter() );
+            Utils.logf( "setMinMax(%d,%d)", min, max );
         }
     }
 
