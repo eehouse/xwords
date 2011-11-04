@@ -6,17 +6,29 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 37 release</b>
+<b>Crosswords 4.4 beta 38 release</b>
 <ul>
+    <li>Added a wordlist browser, which you can get to by tapping a 
+        wordlist in the Wordlist screen, or by using the wordlist 
+        button at the bottom of the game board.  Eventually you'll be 
+        able to filter based on length, chosen tiles, etc.  Right now 
+        you can scroll through all the words (even 2.7 million of them 
+        if you're playing in Polish.)</li>
 
-  <li>Extend ability to look up words to include those already on the 
-  board.  Hold your finger on any played tile to look up any of the 
-  words that use it.  </li>
+    <li>Added the "download directory" to locations I search for
+        wordlists.  This means that if you're using a browser like
+        Opera that doesn't respect apps' registering for certain types
+        of data you can still use a wordlist you've downloaded.</li>
 
-  <li>Fix password dialog crashes</li>
+    <li>Added "Pick tiles face up" option, settable when you create a 
+        game.  This is primarily useful if you want to populate a 
+        board to match a game that already exists, say in a newspaper 
+        puzzle or online wordgame.</li>
 
-  <li>Show wordlist along with player name in Game Config screen, and 
-  move below Language since it changes when language changes.</li>
+<!--
+    TODO: test various bogus dicts in downloads/
+          test that opera-downloaded dicts openable/moveable
+-->
 
 </ul>
 
