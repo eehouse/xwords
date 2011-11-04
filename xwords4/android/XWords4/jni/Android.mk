@@ -30,6 +30,8 @@ local_DEFINES += \
 	-DRELAY_ROOM_DEFAULT=\"\"\
 	-D__LITTLE_ENDIAN \
 
+#	-DXWFEATURE_WALKDICT_FILTER \
+
 local_SRC_FILES +=         \
 	xwjni.c                \
 	utilwrapper.c          \
