@@ -48,6 +48,7 @@ import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.Toast;
 import android.preference.PreferenceManager;
 import android.net.Uri;
+import java.util.Arrays;
 import java.util.HashMap;
 import junit.framework.Assert;
 
@@ -659,6 +660,7 @@ public class DictsActivity extends ExpandableListActivity
     private void mkListAdapter()
     {
         m_langs = DictLangCache.listLangs( this );
+        Arrays.sort( m_langs );
         m_adapter = new DictListAdapter( this );
         setListAdapter( m_adapter );
     }
