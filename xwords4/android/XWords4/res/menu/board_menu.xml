@@ -34,8 +34,6 @@
               android:title="@string/board_menu_game_counts" />
         <item android:id="@+id/board_menu_game_left"
               android:title="@string/board_menu_game_left" />
-        <item android:id="@+id/board_menu_browse_dict"
-              android:title="@string/board_menu_browse_dict" />
         <item android:id="@+id/board_menu_game_history"
               android:title="@string/board_menu_game_history" />
         <item android:id="@+id/board_menu_game_final"
