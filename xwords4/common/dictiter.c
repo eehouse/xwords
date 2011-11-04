@@ -44,7 +44,6 @@ typedef struct _EdgeArray {
 
 static XP_Bool prevWord( DictIter* iter );
 
-// #define XWFEATURE_WALKDICT_FILTER
 #ifdef XWFEATURE_WALKDICT_FILTER
 static XP_Bool
 isAccepting( DictIter* iter )
@@ -211,7 +210,13 @@ wordsEqual( const DictIter* word1, const DictIter* word2 )
 static void 
 dict_initIterFrom( DictIter* dest, const DictIter* src )
 {
-    dict_initIter( dest, src->dict, src->min, src->max );
+    dict_initIter( dest, src->dict,
+#ifdef XWFEATURE_WALKDICT_FILTER
+                   src->min, src->max 
+#else
+                   0, 0
+#endif
+                   );
 }
 
 static XP_Bool
@@ -249,8 +254,13 @@ dict_initIter( DictIter* iter, const DictionaryCtxt* dict,
 #ifdef DEBUG
     iter->guard = GUARD_VALUE;
 #endif
+#ifdef XWFEATURE_WALKDICT_FILTER
     iter->min = min;
     iter->max = max;
+#else
+    XP_USE( min );
+    XP_USE( max );
+#endif
 }
 
 static void

@@ -39,8 +39,10 @@ typedef XP_S32 DictPosition;
 typedef struct _DictIter {
     XP_U16 nEdges;
     array_edge* edges[MAX_COLS];
+#ifdef XWFEATURE_WALKDICT_FILTER
     XP_U16 min;
     XP_U16 max;
+#endif
 #ifdef DEBUG
     XP_U32 guard;
 #endif
