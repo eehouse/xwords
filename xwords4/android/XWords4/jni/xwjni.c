@@ -1299,7 +1299,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 #endif
         closure = (int)data;
 
-        dict_initIter( data->dict, &data->iter );
+        dict_initIter( &data->iter, data->dict, 0, MAX_COLS-1 );
         (void)dict_firstWord( &data->iter );
     } else {
         destroyJNIUtil( &jniutil );
