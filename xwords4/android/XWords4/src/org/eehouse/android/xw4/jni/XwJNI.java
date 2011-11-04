@@ -238,10 +238,11 @@ public class XwJNI {
     // Dict iterator
     public static native int dict_iter_init( byte[] dict, String path, 
                                              JNIUtils jniu );
+    public static native void dict_iter_setMinMax( int closure,
+                                                   int min, int max );
     public static native void dict_iter_destroy( int closure );
     public static native int dict_iter_wordCount( int closure );
     public static native String dict_iter_nthWord( int closure, int nn );
-    public static native void dict_iter_makeIndex( int closure );
     public static native String[] dict_iter_getPrefixes( int closure );
     public static native int[] dict_iter_getIndices( int closure );
     public static native int dict_iter_getStartsWith( int closure, 

@@ -53,7 +53,6 @@ public class DictBrowseActivity extends XWListActivity
     private int m_dictClosure = 0;
     private int m_lang;
     private String m_name;
-    private int m_nWords;
     private float m_textSize;
     private Spinner m_minSpinner;
     private Spinner m_maxSpinner;
@@ -72,6 +71,18 @@ public class DictBrowseActivity extends XWListActivity
 
         private String[] m_prefixes;
         private int[] m_indices;
+        private int m_nWords;
+
+        public DictListAdapter()
+        {
+            super();
+
+            XwJNI.dict_iter_setMinMax( m_dictClosure, m_min, m_max );
+            m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
+            setTitle( Utils.format( DictBrowseActivity.this, 
+                                    R.string.dict_browse_titlef,
+                                    m_name, m_nWords ) );
+        }
 
         public Object getItem( int position ) 
         {
@@ -142,12 +153,6 @@ public class DictBrowseActivity extends XWListActivity
             m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], 
                                                   pairs.m_paths[0],
                                                   JNIUtilsImpl.get() );
-            m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
-
-            setTitle( Utils.format( this, R.string.dict_browse_titlef,
-                                    name, m_nWords ) );
-
-            XwJNI.dict_iter_makeIndex( m_dictClosure );
 
             setContentView( R.layout.dict_browser );
 
