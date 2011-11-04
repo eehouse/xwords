@@ -253,6 +253,7 @@ typedef enum {
 #ifdef XWFEATURE_WALKDICT
     ,CMD_TESTDICT
     ,CMD_TESTPRFX
+    ,CMD_TESTMINMAX
 #endif
     ,CMD_PLAYERDICT
     ,CMD_SEED
@@ -331,6 +332,7 @@ static CmdInfoRec CmdInfoRecs[] = {
 #ifdef XWFEATURE_WALKDICT
     ,{ CMD_TESTDICT, true, "test-dict", "dictionary to be used for iterator test" }
     ,{ CMD_TESTPRFX, true, "test-prefix", "list first word starting with this" }
+    ,{ CMD_TESTMINMAX, true, "test-minmax", "M:M -- include only words whose len in range" }
 #endif
     ,{ CMD_PLAYERDICT, true, "player-dict", "dictionary name for player (in sequence)" }
     ,{ CMD_SEED, true, "seed", "random seed" }
@@ -903,30 +905,36 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
 }
 
 #ifdef XWFEATURE_WALKDICT
+// # define PRINT_ALL
+
 static void
 testGetNthWord( const DictionaryCtxt* dict, char** words,
-                XP_U16 depth, IndexData* data )
+                XP_U16 depth, IndexData* data, XP_U16 min, XP_U16 max )
 {
-    XP_U32 half = dict_getWordCount( dict ) / 2;
     XP_UCHAR buf[64];
     XP_U32 ii, jj;
     DictIter iter;
-    XP_U32 interval = 1000;
 
-    dict_initIter( dict, &iter );
+    dict_initIter( &iter, dict, min, max );
+    XP_U32 half = dict_countWords( &iter ) / 2;
+    XP_U32 interval = half / 50;
 
     for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
         if ( dict_getNthWord( &iter, ii, depth, data ) ) {
             dict_wordToString( &iter, buf, VSIZE(buf) );
             XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
-            // XP_LOGF( "%s: word[%ld]: %s", __func__, ii, buf );
+# ifdef PRINT_ALL
+            XP_LOGF( "%s: word[%ld]: %s", __func__, ii, buf );
+# endif
         } else {
             XP_ASSERT( 0 );
         }
         if ( dict_getNthWord( &iter, jj, depth, data ) ) {
             dict_wordToString( &iter, buf, VSIZE(buf) );
             XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
-            // XP_LOGF( "%s: word[%ld]: %s", __func__, jj, buf );
+# ifdef PRINT_ALL
+            XP_LOGF( "%s: word[%ld]: %s", __func__, jj, buf );
+# endif
         } else {
             XP_ASSERT( 0 );
         }
@@ -935,7 +943,7 @@ testGetNthWord( const DictionaryCtxt* dict, char** words,
 
 static void
 walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict, 
-                GSList* testPrefixes )
+                GSList* testPrefixes, const char* testMinMax )
 {
     /* This is just to test that the dict-iterating code works.  The words are
        meant to be printed e.g. in a scrolling dialog on Android. */
@@ -943,139 +951,157 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
     long jj;
     XP_Bool gotOne;
 
-    XP_U32 count = dict_getWordCount( dict );
-    XP_ASSERT( count > 0 );
-    char** words = g_malloc( count * sizeof(char*) );
-    XP_ASSERT( !!words );
-    // # define PRINT_ALL
+    /* XP_U32 count = dict_getWordCount( dict ); */
+    /* XP_ASSERT( count > 0 ); */
+    /* char** words = g_malloc( count * sizeof(char*) ); */
+    /* XP_ASSERT( !!words ); */
+    /* // # define PRINT_ALL */
 
-    /* if ( dict_firstWord( dict, &word ) */
-    /*      && dict_getNextWord( dict, &word ) */
-    /*      && dict_getPrevWord( dict, &word ) ) { */
-    /*     fprintf( stderr, "yay!: dict_getPrevWord returned\n" ); */
-    /* } */
-    /* exit( 0 ); */
+    /* /\* if ( dict_firstWord( dict, &word ) *\/ */
+    /* /\*      && dict_getNextWord( dict, &word ) *\/ */
+    /* /\*      && dict_getPrevWord( dict, &word ) ) { *\/ */
+    /* /\*     fprintf( stderr, "yay!: dict_getPrevWord returned\n" ); *\/ */
+    /* /\* } *\/ */
+    /* /\* exit( 0 ); *\/ */
 
-    dict_initIter( dict, &iter );
-    for ( jj = 0, gotOne = dict_firstWord( &iter );
-          gotOne;
-          ++jj, gotOne = dict_getNextWord( &iter ) ) {
-        XP_ASSERT( dict_getPosition( &iter ) == jj );
-        XP_UCHAR buf[64];
-        dict_wordToString( &iter, buf, VSIZE(buf) );
-# ifdef PRINT_ALL
-        fprintf( stderr, "%.6ld: %s\n", jj, buf );
-# endif
-        if ( !!words ) {
-            words[jj] = g_strdup( buf );
-        }
+    /* dict_initIter( dict, &iter ); */
+    /* for ( jj = 0, gotOne = dict_firstWord( &iter ); */
+    /*       gotOne; */
+    /*       ++jj, gotOne = dict_getNextWord( &iter ) ) { */
+    /*     XP_ASSERT( dict_getPosition( &iter ) == jj ); */
+    /*     XP_UCHAR buf[64]; */
+    /*     dict_wordToString( &iter, buf, VSIZE(buf) ); */
+    XP_U16 min, max;
+    if ( !testMinMax || !parsePair( testMinMax, &min, &max ) ) {
+        min = 0;
+        max = MAX_COLS;
     }
-    XP_ASSERT( count == jj );
 
-    for ( jj = 0, gotOne = dict_lastWord( &iter );
-          gotOne;
-          ++jj, gotOne = dict_getPrevWord( &iter ) ) {
-        XP_ASSERT( dict_getPosition(&iter) == count-jj-1 );
-        XP_UCHAR buf[64];
-        dict_wordToString( &iter, buf, VSIZE(buf) );
+    dict_initIter( &iter, dict, min, max  );
+    XP_U32 count = dict_countWords( &iter );
+    if ( count > 0 ) {
+        char** words = g_malloc( count * sizeof(char*) );
+        XP_ASSERT( !!words );
+
+        for ( jj = 0, gotOne = dict_firstWord( &iter );
+              gotOne;
+              ++jj, gotOne = dict_getNextWord( &iter ) ) {
+            XP_ASSERT( dict_getPosition( &iter ) == jj );
+            XP_UCHAR buf[64];
+            dict_wordToString( &iter, buf, VSIZE(buf) );
 # ifdef PRINT_ALL
-        fprintf( stderr, "%.6ld: %s\n", jj, buf );
+            fprintf( stderr, "%.6ld: %s\n", jj, buf );
 # endif
-        if ( !!words ) {
-            if ( strcmp( buf, words[count-jj-1] ) ) {
-                fprintf( stderr, "failure at %ld: %s going forward; %s "
-                         "going backward\n", jj, words[count-jj-1], buf );
-                break;
+            if ( !!words ) {
+                words[jj] = g_strdup( buf );
             }
         }
-    }
-    XP_ASSERT( count == jj );
-    XP_LOGF( "finished comparing runs in both directions" );
+        XP_ASSERT( count == jj );
 
-    XP_LOGF( "testing getNth" );
-    testGetNthWord( dict, words, 0, NULL );
-
-    XP_U16 depth = 2;
-    XP_U16 maxCount = dict_numTileFaces( dict );
-    IndexData data;
-    data.count = maxCount * maxCount;
-    data.indices = XP_MALLOC( params->util->mpool, 
-                              data.count * depth * sizeof(data.indices[0]) );
-    data.prefixes = XP_MALLOC( params->util->mpool, 
-                               depth * data.count * sizeof(data.prefixes[0]) );
-
-    XP_LOGF( "making index..." );
-    dict_makeIndex( &iter, depth, &data );
-    XP_LOGF( "DONE making index" );
-
-    data.indices = XP_REALLOC( params->util->mpool, data.indices, 
-                               data.count * depth * sizeof(*data.indices) );
-    data.prefixes = XP_REALLOC( params->util->mpool, data.prefixes,
-                               depth * data.count * sizeof(*data.prefixes) );
-#if 0
-    for ( ii = 0; ii < nIndices; ++ii ) {
-        if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
-            XP_ASSERT( 0 );
-        }
-        XP_ASSERT( word.index == indices[ii] );
-        XP_UCHAR buf1[64];
-        dict_wordToString( dict, &word, buf1, VSIZE(buf1) );
-        XP_UCHAR buf2[64] = {0};
-        if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
-            dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
-        }
-        char prfx[8];
-        dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, VSIZE(prfx) );
-        fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
-                 ii, indices[ii], prfx, buf1, buf2 );
-    }
-#endif
-
-    XP_LOGF( "testing getNth WITH INDEXING" );
-    testGetNthWord( dict, words, depth, &data );
-
-    if ( !!testPrefixes ) {
-        int ii;
-        guint count = g_slist_length( testPrefixes );
-        for ( ii = 0; ii < count; ++ii ) {
-            gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
-            Tile tiles[MAX_COLS];
-            XP_U16 nTiles = VSIZE(tiles);
-            if ( dict_tilesForString( dict, prefix, tiles, &nTiles ) ) {
-                if ( dict_findStartsWith( &iter, NULL, tiles, nTiles ) ) {
-                    XP_UCHAR buf[32];
-                    XP_UCHAR bufPrev[32] = {0};
-                    dict_wordToString( &iter, buf, VSIZE(buf) );
-
-                    XP_ASSERT( 0 == strncmp( buf, prefix, strlen(prefix) ) );
-
-                    DictPosition pos = dict_getPosition( &iter );
-                    XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
-                    if ( pos > 0 ) {
-                         if ( !dict_getNthWord( &iter, pos-1, depth, &data ) ) {
-                            XP_ASSERT( 0 );
-                        }
-                        dict_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
-                        XP_ASSERT( 0 == strcmp( bufPrev, words[pos-1] ) );
-                    }
-                    XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", 
-                             prefix, buf, bufPrev );
-                } else {
-                    XP_LOGF( "nothing starts with %s", prefix );
+        for ( jj = 0, gotOne = dict_lastWord( &iter );
+              gotOne;
+              ++jj, gotOne = dict_getPrevWord( &iter ) ) {
+            XP_ASSERT( dict_getPosition(&iter) == count-jj-1 );
+            XP_UCHAR buf[64];
+            dict_wordToString( &iter, buf, VSIZE(buf) );
+# ifdef PRINT_ALL
+            fprintf( stderr, "%.6ld: %s\n", jj, buf );
+# endif
+            if ( !!words ) {
+                if ( strcmp( buf, words[count-jj-1] ) ) {
+                    fprintf( stderr, "failure at %ld: %s going forward; %s "
+                             "going backward\n", jj, words[count-jj-1], buf );
+                    break;
                 }
             }
         }
+        XP_ASSERT( count == jj );
+        XP_LOGF( "finished comparing runs in both directions" );
 
+        XP_LOGF( "testing getNth" );
+        testGetNthWord( dict, words, 0, NULL, min, max );
+
+        XP_U16 depth = 2;
+        XP_U16 maxCount = dict_numTileFaces( dict );
+        IndexData data;
+        data.count = maxCount * maxCount;
+        data.indices = XP_MALLOC( params->util->mpool, 
+                                  data.count * depth * sizeof(data.indices[0]) );
+        data.prefixes = XP_MALLOC( params->util->mpool, 
+                                   depth * data.count * sizeof(data.prefixes[0]) );
+
+        XP_LOGF( "making index..." );
+        dict_makeIndex( &iter, depth, &data );
+        XP_LOGF( "DONE making index" );
+
+        data.indices = XP_REALLOC( params->util->mpool, data.indices, 
+                                   data.count * depth * sizeof(*data.indices) );
+        data.prefixes = XP_REALLOC( params->util->mpool, data.prefixes,
+                                    depth * data.count * sizeof(*data.prefixes) );
+#if 0
+        for ( ii = 0; ii < nIndices; ++ii ) {
+            if ( !dict_getNthWord( dict, &word, indices[ii] ) ) {
+                XP_ASSERT( 0 );
+            }
+            XP_ASSERT( word.index == indices[ii] );
+            XP_UCHAR buf1[64];
+            dict_wordToString( dict, &word, buf1, VSIZE(buf1) );
+            XP_UCHAR buf2[64] = {0};
+            if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
+                dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
+            }
+            char prfx[8];
+            dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, VSIZE(prfx) );
+            fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
+                     ii, indices[ii], prfx, buf1, buf2 );
+        }
+#endif
+
+        XP_LOGF( "testing getNth WITH INDEXING" );
+        testGetNthWord( dict, words, depth, &data, min, max );
+
+        if ( !!testPrefixes ) {
+            int ii;
+            guint count = g_slist_length( testPrefixes );
+            for ( ii = 0; ii < count; ++ii ) {
+                gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
+                Tile tiles[MAX_COLS];
+                XP_U16 nTiles = VSIZE(tiles);
+                if ( dict_tilesForString( dict, prefix, tiles, &nTiles ) ) {
+                    if ( dict_findStartsWith( &iter, NULL, tiles, nTiles ) ) {
+                        XP_UCHAR buf[32];
+                        XP_UCHAR bufPrev[32] = {0};
+                        dict_wordToString( &iter, buf, VSIZE(buf) );
+
+                        XP_ASSERT( 0 == strncmp( buf, prefix, strlen(prefix) ) );
+
+                        DictPosition pos = dict_getPosition( &iter );
+                        XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
+                        if ( pos > 0 ) {
+                            if ( !dict_getNthWord( &iter, pos-1, depth, &data ) ) {
+                                XP_ASSERT( 0 );
+                            }
+                            dict_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
+                            XP_ASSERT( 0 == strcmp( bufPrev, words[pos-1] ) );
+                        }
+                        XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", 
+                                 prefix, buf, bufPrev );
+                    } else {
+                        XP_LOGF( "nothing starts with %s", prefix );
+                    }
+                }
+            }
+
+        }
+        XP_FREE( params->util->mpool, data.indices );
+        XP_FREE( params->util->mpool, data.prefixes );
     }
     XP_LOGF( "done" );
-
-    XP_FREE( params->util->mpool, data.indices );
-    XP_FREE( params->util->mpool, data.prefixes );
 }
 
 static void
 walk_dict_test_all( const LaunchParams* params, GSList* testDicts, 
-                    GSList* testPrefixes )
+                    GSList* testPrefixes, const char* testMinMax )
 {
     int ii;
     guint count = g_slist_length( testDicts );
@@ -1085,7 +1111,7 @@ walk_dict_test_all( const LaunchParams* params, GSList* testDicts,
             linux_dictionary_make( MPPARM(params->util->mpool) name,
                                    params->useMmap );
         XP_LOGF( "walk_dict_test(%s)", name );
-        walk_dict_test( params, dict, testPrefixes );
+        walk_dict_test( params, dict, testPrefixes, testMinMax );
         dict_destroy( dict );
     }
 }
@@ -1109,6 +1135,7 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_WALKDICT
     GSList* testDicts = NULL;
     GSList* testPrefixes = NULL;
+    char* testMinMax = NULL;
 #endif
 
     /* install a no-op signal handler.  Later curses- or gtk-specific code
@@ -1232,6 +1259,9 @@ main( int argc, char** argv )
             break;
         case CMD_TESTPRFX:
             testPrefixes = g_slist_prepend( testPrefixes, g_strdup(optarg) );
+            break;
+        case CMD_TESTMINMAX:
+            testMinMax = optarg;
             break;
 #endif
         case CMD_PLAYERDICT:
@@ -1495,7 +1525,7 @@ main( int argc, char** argv )
     /* } */
 #ifdef XWFEATURE_WALKDICT
     if ( !!testDicts ) {
-        walk_dict_test_all( &mainParams, testDicts, testPrefixes );
+        walk_dict_test_all( &mainParams, testDicts, testPrefixes, testMinMax );
         exit( 0 );
     }
 #endif

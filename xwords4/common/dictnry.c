@@ -481,7 +481,9 @@ dict_getWordCount( const DictionaryCtxt* dict )
     XP_U32 nWords = dict->nWords;
 #ifdef XWFEATURE_WALKDICT
     if ( 0 == nWords ) {
-        nWords = dict_countWords( dict );
+        DictIter iter;
+        dict_initIter( &iter, dict, 0, MAX_COLS );
+        nWords = dict_countWords( &iter );
     }
 #endif
     return nWords;

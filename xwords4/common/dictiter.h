@@ -37,6 +37,10 @@ extern "C" {
 /* API for iterating over a dict */
 typedef XP_S32 DictPosition;
 typedef struct _DictIter {
+    XP_U16 nEdges;
+    array_edge* edges[MAX_COLS];
+    XP_U16 min;
+    XP_U16 max;
 #ifdef DEBUG
     XP_U32 guard;
 #endif
@@ -44,8 +48,6 @@ typedef struct _DictIter {
     XP_U32 nWords;
 
     DictPosition position;
-    XP_U16 nEdges;
-    array_edge* edges[MAX_COLS];
 } DictIter;
 
 typedef struct _IndexData {
@@ -54,8 +56,9 @@ typedef struct _IndexData {
     XP_U16 count;    /* in-out: must indicate others are large enough */
 } IndexData;
 
-XP_U32 dict_countWords( const DictionaryCtxt* dict );
-void dict_initIter( const DictionaryCtxt* dict, DictIter* iter );
+void dict_initIter( DictIter* iter, const DictionaryCtxt* dict, 
+                    XP_U16 min, XP_U16 max );
+XP_U32 dict_countWords( const DictIter* iter );
 void dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data );
 XP_Bool dict_firstWord( DictIter* iter );
 XP_Bool dict_lastWord( DictIter* iter );
