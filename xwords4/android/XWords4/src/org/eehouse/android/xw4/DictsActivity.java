@@ -462,9 +462,7 @@ public class DictsActivity extends ExpandableListActivity
             askStartDownload( 0, null );
         } else {
             XWListItem item = (XWListItem)view;
-            Intent intent = new Intent( this, DictBrowseActivity.class );
-            intent.putExtra( DictBrowseActivity.DICT_NAME, item.getText() );
-            startActivity( intent );
+            DictBrowseActivity.launch( this, item.getText() );
         }
     }
 

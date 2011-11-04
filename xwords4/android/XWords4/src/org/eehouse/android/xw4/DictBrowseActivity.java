@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
@@ -48,6 +49,7 @@ public class DictBrowseActivity extends XWListActivity
     private int m_lang;
     private String m_name;
     private int m_nWords;
+    private float m_textSize;
 
 // - Steps to reproduce the problem:
 // Create ListView, set custom adapter which implements ListAdapter and
@@ -68,7 +70,7 @@ public class DictBrowseActivity extends XWListActivity
             if ( null != str ) {
                 text.setText( str );
                 text.setOnClickListener( DictBrowseActivity.this );
-                text.setTextSize( text.getTextSize() + 2.0f );
+                text.setTextSize( m_textSize );
             }
             return text;
         }
@@ -122,6 +124,8 @@ public class DictBrowseActivity extends XWListActivity
         } else {
             m_name = name;
             m_lang = DictLangCache.getDictLangCode( this, name );
+
+            m_textSize = 2.0f + new TextView( this ).getTextSize();
 
             String[] names = { name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
@@ -196,5 +200,12 @@ public class DictBrowseActivity extends XWListActivity
                              m_name, text );
             }
         }
+    }
+
+    public static void launch( Context caller, String name )
+    {
+        Intent intent = new Intent( caller, DictBrowseActivity.class );
+        intent.putExtra( DICT_NAME, name );
+        caller.startActivity( intent );
     }
 }

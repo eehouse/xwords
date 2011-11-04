@@ -92,6 +92,7 @@ public class BoardActivity extends XWActivity
     private static final int CHAT_ACTION = 12;
     private static final int START_TRADE_ACTION = 13;
     private static final int LOOKUP_ACTION = 14;
+    private static final int BUTTON_BROWSE_ACTION = 15;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -620,6 +621,7 @@ public class BoardActivity extends XWActivity
             m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
                                 R.string.tiles_left_title );
             break;
+
         case R.id.board_menu_game_history:
             m_jniThread.handle( JNIThread.JNICmd.CMD_HISTORY,
                                 R.string.history_title );
@@ -690,6 +692,10 @@ public class BoardActivity extends XWActivity
                 Toast.makeText( BoardActivity.this, m_toastStr, 
                                 Toast.LENGTH_SHORT).show();
                 m_toastStr = null;
+                break;
+            case BUTTON_BROWSE_ACTION:
+                String dictName = m_gi.dictName( m_view.getCurPlayer() );
+                DictBrowseActivity.launch( this, dictName );
                 break;
             case PREV_HINT_ACTION:
                 cmd = JNIThread.JNICmd.CMD_PREV_HINT;
@@ -1410,6 +1416,10 @@ public class BoardActivity extends XWActivity
 
     private void populateToolbar()
     {
+        m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
+                               R.string.not_again_browse,
+                               R.string.key_na_browse,
+                               BUTTON_BROWSE_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
                                R.string.not_again_hintprev,
                                R.string.key_notagain_hintprev,

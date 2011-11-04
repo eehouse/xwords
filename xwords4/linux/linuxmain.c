@@ -951,26 +951,6 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
     long jj;
     XP_Bool gotOne;
 
-    /* XP_U32 count = dict_getWordCount( dict ); */
-    /* XP_ASSERT( count > 0 ); */
-    /* char** words = g_malloc( count * sizeof(char*) ); */
-    /* XP_ASSERT( !!words ); */
-    /* // # define PRINT_ALL */
-
-    /* /\* if ( dict_firstWord( dict, &word ) *\/ */
-    /* /\*      && dict_getNextWord( dict, &word ) *\/ */
-    /* /\*      && dict_getPrevWord( dict, &word ) ) { *\/ */
-    /* /\*     fprintf( stderr, "yay!: dict_getPrevWord returned\n" ); *\/ */
-    /* /\* } *\/ */
-    /* /\* exit( 0 ); *\/ */
-
-    /* dict_initIter( dict, &iter ); */
-    /* for ( jj = 0, gotOne = dict_firstWord( &iter ); */
-    /*       gotOne; */
-    /*       ++jj, gotOne = dict_getNextWord( &iter ) ) { */
-    /*     XP_ASSERT( dict_getPosition( &iter ) == jj ); */
-    /*     XP_UCHAR buf[64]; */
-    /*     dict_wordToString( &iter, buf, VSIZE(buf) ); */
     XP_U16 min, max;
     if ( !testMinMax || !parsePair( testMinMax, &min, &max ) ) {
         min = 0;

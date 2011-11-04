@@ -1450,10 +1450,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
         XP_U16 nTiles = VSIZE(tiles);
         const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
         if ( dict_tilesForString( data->dict, prefix, tiles, &nTiles ) ) {
-            IndexData* idata = NULL;
-            DictPosition pos = dict_findStartsWith( &data->iter, idata, tiles, 
-                                                    nTiles );
-            result = pos;
+            if ( dict_findStartsWith( &data->iter, NULL, tiles, nTiles ) ) {
+                result = dict_getPosition( &data->iter );
+            }
         }
         (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
     }
