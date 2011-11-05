@@ -44,10 +44,6 @@
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   >
-   	  <ImageButton android:id="@+id/dictlist_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/dicticon"
-                   />
    	  <ImageButton android:id="@+id/prevhint_button_horizontal"
                    style="@style/toolbar_button"
     	           android:src="@drawable/prev_hint"
@@ -60,10 +56,6 @@
                    style="@style/toolbar_button"
     	           android:src="@drawable/shuffle"
                    />
-   	  <ImageButton android:id="@+id/flip_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/flip"
-                   />
    	  <ImageButton android:id="@+id/zoom_button_horizontal"
                    style="@style/toolbar_button"
     	           android:src="@drawable/zoom"
@@ -71,6 +63,14 @@
    	  <ImageButton android:id="@+id/undo_button_horizontal"
                    style="@style/toolbar_button"
     	           android:src="@drawable/undo"
+                   />
+   	  <ImageButton android:id="@+id/flip_button_horizontal"
+                   style="@style/toolbar_button"
+    	           android:src="@drawable/flip"
+                   />
+   	  <ImageButton android:id="@+id/dictlist_button_horizontal"
+                   style="@style/toolbar_button"
+    	           android:src="@drawable/dicticon"
                    />
    	  <ImageButton android:id="@+id/chat_button_horizontal"
                    style="@style/toolbar_button"
