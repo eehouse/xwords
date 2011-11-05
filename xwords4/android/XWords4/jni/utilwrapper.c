@@ -287,11 +287,17 @@ and_util_engineProgressCallback( XW_UtilCtxt* uc )
 bool
 utilTimerFired( XW_UtilCtxt* uc, XWTimerReason why, int handle )
 {
+    bool handled;
     AndUtil* util = (AndUtil*)uc;
     TimerStorage* timerStorage = &util->timerStorage[why];
-    XP_ASSERT( handle == (int)timerStorage );
-    return (handle == (int)timerStorage)
-        && (*timerStorage->proc)( timerStorage->closure, why );
+    if ( handle == (int)timerStorage ) {
+        handled = (*timerStorage->proc)( timerStorage->closure, why );
+    } else {
+        XP_LOGF( "%s: mismatch: handle=%d; timerStorage=%d", __func__,
+                 handle, (int)timerStorage );
+        handled = false;
+    }
+    return handled;
 }
 
 static void

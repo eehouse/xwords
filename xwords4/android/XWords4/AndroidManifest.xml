@@ -121,7 +121,9 @@
     <activity android:name="DictBrowseActivity"
               android:configChanges="keyboardHidden|orientation"
               />
-    <activity android:name="ChatActivity"/>
+    <activity android:name="ChatActivity"
+              android:configChanges="keyboardHidden|orientation"
+              />
 
     <service android:name="RelayService"/>
 
