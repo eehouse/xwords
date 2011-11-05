@@ -363,7 +363,10 @@ public class GameConfig extends XWActivity
             (ArrayAdapter<String>)spinner.getAdapter();
 
         if ( position < adapter.getCount() ) {
-            lp.dictName = adapter.getItem(position);
+            String name = adapter.getItem(position);
+            if ( ! name.equals( m_browseText ) ) {
+                lp.dictName = name;
+            }
         }
 
         lp.setIsRobot( Utils.getChecked( dialog, R.id.robot_check ) );
