@@ -917,7 +917,10 @@ testGetNthWord( const DictionaryCtxt* dict, char** words,
 
     dict_initIter( &iter, dict, min, max );
     XP_U32 half = dict_countWords( &iter ) / 2;
-    XP_U32 interval = half / 50;
+    XP_U32 interval = half / 100;
+    if ( interval == 0 ) {
+        ++interval;
+    }
 
     for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
         if ( dict_getNthWord( &iter, ii, depth, data ) ) {
@@ -965,7 +968,7 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
 
         for ( jj = 0, gotOne = dict_firstWord( &iter );
               gotOne;
-              ++jj, gotOne = dict_getNextWord( &iter ) ) {
+              gotOne = dict_getNextWord( &iter ) ) {
             XP_ASSERT( dict_getPosition( &iter ) == jj );
             XP_UCHAR buf[64];
             dict_wordToString( &iter, buf, VSIZE(buf) );
@@ -975,6 +978,7 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
             if ( !!words ) {
                 words[jj] = g_strdup( buf );
             }
+            ++jj;
         }
         XP_ASSERT( count == jj );
 
