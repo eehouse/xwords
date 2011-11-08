@@ -139,7 +139,7 @@ build_cmds() {
             CMD="./obj_linux_memdbg/xwords --room $ROOM"
             CMD="$CMD --robot ${NAMES[$DEV]} --robot-iq $((1 + (RANDOM%100))) "
             CMD="$CMD $OTHERS --game-dict $DICT --port $PORT --host $HOST "
-            CMD="$CMD --file $FILE --slow-robot 1:3 --skip-confirm --use-mmap"
+            CMD="$CMD --file $FILE --slow-robot 1:3 --skip-confirm"
             CMD="$CMD --drop-nth-packet $DROP_N $PLAT_PARMS"
 
             CMD="$CMD $PUBLIC"
