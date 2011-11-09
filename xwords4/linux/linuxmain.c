@@ -903,6 +903,7 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
 }
 
 #ifdef XWFEATURE_WALKDICT
+//# define PRINT_ALL
 static void
 testGetNthWord( const DictionaryCtxt* dict, char** words,
                 XP_U16 depth, IndexData* data )
@@ -948,7 +949,6 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
     XP_ASSERT( count == dict_countWords( dict ) );
     char** words = g_malloc( count * sizeof(char*) );
     XP_ASSERT( !!words );
-    // # define PRINT_ALL
 
     /* if ( dict_firstWord( dict, &word ) */
     /*      && dict_getNextWord( dict, &word ) */
@@ -1085,9 +1085,11 @@ walk_dict_test_all( const LaunchParams* params, GSList* testDicts,
         DictionaryCtxt* dict = 
             linux_dictionary_make( MPPARM(params->util->mpool) name,
                                    params->useMmap );
-        XP_LOGF( "walk_dict_test(%s)", name );
-        walk_dict_test( params, dict, testPrefixes );
-        dict_destroy( dict );
+        if ( NULL != dict ) {
+            XP_LOGF( "walk_dict_test(%s)", name );
+            walk_dict_test( params, dict, testPrefixes );
+            dict_destroy( dict );
+        }
     }
 }
 #endif

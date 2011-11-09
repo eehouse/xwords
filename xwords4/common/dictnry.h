@@ -207,6 +207,8 @@ void dict_super_init( DictionaryCtxt* ctxt );
 void dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes, 
                       XP_U16 nBytes, XP_U16 nFaces );
 
+XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
+
 #ifdef CPLUS
 }
 #endif
