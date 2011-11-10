@@ -835,7 +835,7 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
         stream_putBits( stream, NUMCOLS_NBITS, row );
         stream_putBits( stream, 1, isBlank );
     }
-} /* model_turnToStream */
+} /* model_currentMoveToStream */
 
 /* Take stream as the source of info about what tiles to move from tray to
  * board.  Undo any current move first -- a player on this device might be
@@ -877,15 +877,15 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 
         foundAt = model_trayContains( model, playerNum, moveTile );
         if ( foundAt == -1 ) {
-            XP_ASSERT( EMPTY_TILE==model_getPlayerTile(model, playerNum, 0));
+            XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum, 0));
 
             (void)model_removePlayerTile( model, playerNum, -1 );
             model_addPlayerTile( model, playerNum, -1, moveTile );
         }
 
-        model_moveTrayToBoard( model, playerNum, col, row, foundAt, tileFace);
+        model_moveTrayToBoard( model, playerNum, col, row, foundAt, tileFace );
     }
-} /* model_makeMoveFromStream */
+} /* model_makeTurnFromStream */
 
 void
 model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
@@ -1546,7 +1546,7 @@ model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn )
 } /* model_getPlayerTile */
 
 static void
-addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, Tile tile )
+addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, const Tile tile )
 {
     PlayerCtxt* player;
     short ii;
@@ -1892,19 +1892,6 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
     printString( stream, (XP_UCHAR*)XP_CR );
 } /* printMovePost */
 
-static void
-copyStack( ModelCtxt* model, StackCtxt* destStack, const StackCtxt* srcStack )
-{
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(model->vol.mpool) 
-                                            util_getVTManager(model->vol.util),
-                                            NULL, 0, NULL );
-
-    stack_writeToStream( (StackCtxt*)srcStack, stream );
-    stack_loadFromStream( destStack, stream );
-
-    stream_destroy( stream );
-} /* copyStack */
-
 static ModelCtxt*
 makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
               MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
@@ -1952,11 +1939,11 @@ typedef struct _FirstWordData {
 static XP_Bool
 getFirstWord( const XP_UCHAR* word, XP_Bool isLegal, 
 #ifdef XWFEATURE_BOARDWORDS
-              const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), XP_U16 XP_UNUSED(end),
+              const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
+              XP_U16 XP_UNUSED(end),
 #endif
               void* closure )
 {
-    LOG_FUNC();
     if ( isLegal ) {
         FirstWordData* data = (FirstWordData*)closure;
         if ( '\0' == data->word[0] && '\0' != word[0] ) {
@@ -1964,6 +1951,21 @@ getFirstWord( const XP_UCHAR* word, XP_Bool isLegal,
         }
     }
     return XP_TRUE;
+}
+
+static void
+redoEntries( ModelCtxt* model, StackCtxt* stack, XP_U16 nBefore,
+             XP_U16 nAfter, WordNotifierInfo* ni )
+{
+    while ( nAfter < nBefore ) {
+        StackEntry entry;
+        if ( ! stack_redo( stack, &entry ) ) {
+            XP_ASSERT( 0 );
+            break;
+        }
+        modelAddEntry( model, nAfter++, &entry, XP_FALSE, NULL, ni,
+                       NULL, NULL, NULL );
+    }
 }
 
 static void
@@ -1981,28 +1983,29 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
         const XP_UCHAR* format;
         WordNotifierInfo notifyInfo;
         FirstWordData data;
-
-        ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+        StackCtxt* stack = model->vol.stack;
+        XP_U16 nEntriesBefore = stack_getNEntries( stack );
+        XP_U16 nEntriesAfter;
         XP_U16 turn;
         XP_S16 moveNum = -1;
         
-        copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
-        if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn, 
-                                     &moveNum ) ) {
+        if ( !model_undoLatestMoves( model, NULL, howMany, 
+                                     &turn, &moveNum ) ) {
             XP_ASSERT( 0 );
         }
+        nEntriesAfter = stack_getNEntries( stack );
 
         data.word[0] = '\0';
         notifyInfo.proc = getFirstWord;
         notifyInfo.closure = &data;
-        score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL, 
+        score = figureMoveScore( model, turn, moveInfo, (EngineCtxt*)NULL, 
                                  (XWStreamCtxt*)NULL, &notifyInfo );
-
-        model_destroy( tmpModel );
 
         format = util_getUserString( model->vol.util, STRSD_SUMMARYSCORED );
         *bufLen = XP_SNPRINTF( buf, *bufLen, format, data.word, score );
+
+        redoEntries( model, stack, nEntriesBefore, nEntriesAfter, NULL );
     }
 } /* scoreLastMove */
 
@@ -2131,15 +2134,7 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
         /* Now push the undone moves back into the model one at a time.
            recordWord() will add each played word to the stream as it's
            scored */
-        while ( nEntriesAfter < nEntriesBefore ) {
-            StackEntry entry;
-            if ( ! stack_redo( stack, &entry ) ) {
-                XP_ASSERT( 0 );
-                break;
-            }
-            modelAddEntry( model, nEntriesAfter++, &entry, XP_FALSE, NULL, &ni,
-                           NULL, NULL, NULL );
-        }
+        redoEntries( model, stack, nEntriesBefore, nEntriesAfter, &ni );
     }
 } /* model_listWordsThrough */
 #endif
