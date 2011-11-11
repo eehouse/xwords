@@ -564,7 +564,7 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname,
     XP_U32 numEdges;
     XP_Bool parses = parseDict( anddict, (XP_U8*)anddict->bytes, 
                                 len, &numEdges );
-    if ( !parses || (check && !checkSanity( anddict, numEdges ) ) ) {
+    if ( !parses || (check && !checkSanity( &anddict->super, numEdges ) ) ) {
         and_dictionary_destroy( (DictionaryCtxt*)anddict );
         anddict = NULL;
     }
