@@ -121,7 +121,7 @@ public class DictUtils {
             String[] list = dir.list();
             if ( null != list ) {
                 for ( String file : list ) {
-                    if ( isDict( file, strict ) ) {
+                    if ( isDict( file, strict? dir : null ) ) {
                         al.add( new DictAndLoc( removeDictExtn( file ), loc ) );
                     }
                 }
@@ -135,14 +135,14 @@ public class DictUtils {
             ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
 
             for ( String file : getAssets( context ) ) {
-                if ( isDict( file, false ) ) {
+                if ( isDict( file, null ) ) {
                     al.add( new DictAndLoc( removeDictExtn( file ), 
                                             DictLoc.BUILT_IN ) );
                 }
             }
 
             for ( String file : context.fileList() ) {
-                if ( isDict( file, false ) ) {
+                if ( isDict( file, null ) ) {
                     al.add( new DictAndLoc( removeDictExtn( file ),
                                             DictLoc.INTERNAL ) );
                 }
@@ -464,11 +464,13 @@ public class DictUtils {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
  
-    private static boolean isDict( String file, boolean strictTest )
+    private static boolean isDict( String file, File dir )
     {
         boolean ok = file.endsWith( XWConstants.DICT_EXTN );
-        if ( ok && strictTest ) {
-            Utils.logf( "isDict: not really checking %s yet", file );
+        if ( ok && null != dir ) {
+            String fullPath = new File( dir, file ).getPath();
+            ok = XwJNI.dict_getInfo( null, fullPath, JNIUtilsImpl.get(), 
+                                     true, null );
         }
         return ok;
     }
