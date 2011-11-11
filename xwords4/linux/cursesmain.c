@@ -448,7 +448,6 @@ curses_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 static gboolean
 onetime_idle( gpointer data )
 {
-    LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
     if ( server_do( globals->cGlobals.game.server ) ) {
         if ( !!globals->cGlobals.game.board ) {
@@ -464,7 +463,12 @@ curses_util_requestTime( XW_UtilCtxt* uc )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
 #ifdef USE_GLIBLOOP
+# if 0
     (void)g_idle_add( onetime_idle, globals );
+# else
+    (void)g_timeout_add( 1,// interval,
+                         onetime_idle, globals );
+# endif
 #else
     /* I've created a pipe whose read-only end is plugged into the array of
        fds that my event loop polls so that I can write to it to simulate
@@ -1061,7 +1065,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
         }
     }
     return TRUE;
-}
+} /* data_socket_proc */
 #endif
 
 static void

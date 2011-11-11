@@ -150,6 +150,8 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
                            XP_U16 col, XP_U16 row )
 {
     static XWBonusType* parsedFile = NULL;
+    XWBonusType result = EM;
+
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     XP_U16 nCols = model_numCols( model );
     if ( NULL == parsedFile && NULL != cGlobals->params->bonusFile ) {
@@ -158,34 +160,42 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
         }
     }
     if ( NULL != parsedFile ) {
-        return parsedFile[(row*nCols) + col];
+        result = parsedFile[(row*nCols) + col];
     } else {
-        XP_U16 index;
+        XP_U16 index, ii;
         /* This must be static or won't compile under multilink (for Palm).
            Fix! */
         static char scrabbleBoard[8*8] = { 
-            TW,EM,EM,DL,EM,EM,EM,TW,
-            EM,DW,EM,EM,EM,TL,EM,EM,
+            TW,//EM,EM,DL,EM,EM,EM,TW,
+            EM,DW,//EM,EM,EM,TL,EM,EM,
 
-            EM,EM,DW,EM,EM,EM,DL,EM,
-            DL,EM,EM,DW,EM,EM,EM,DL,
+            EM,EM,DW,//EM,EM,EM,DL,EM,
+            DL,EM,EM,DW,//EM,EM,EM,DL,
                             
-            EM,EM,EM,EM,DW,EM,EM,EM,
-            EM,TL,EM,EM,EM,TL,EM,EM,
+            EM,EM,EM,EM,DW,//EM,EM,EM,
+            EM,TL,EM,EM,EM,TL,//EM,EM,
                             
-            EM,EM,DL,EM,EM,EM,DL,EM,
+            EM,EM,DL,EM,EM,EM,DL,//EM,
             TW,EM,EM,DL,EM,EM,EM,DW,
         }; /* scrabbleBoard */
 
         if ( col > 7 ) col = 14 - col;
         if ( row > 7 ) row = 14 - row;
-        index = (row*8) + col;
-        if ( index >= 8*8 ) {
-            return (XWBonusType)EM;
-        } else {
-            return (XWBonusType)scrabbleBoard[index];
+        if ( col > row ) {
+            XP_U16 tmp = col;
+            col = row;
+            row = tmp;
+        }
+        index = col;
+        for ( ii = 1; ii <= row; ++ii ) {
+            index += ii;
+        }
+
+        if ( index < VSIZE(scrabbleBoard) ) {
+            result = (XWBonusType)scrabbleBoard[index];
         }
     }
+    return result;
 } /* linux_util_getSquareBonus */
 
 static XP_U32

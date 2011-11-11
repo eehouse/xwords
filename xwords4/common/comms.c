@@ -1628,7 +1628,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                      __func__, channelNo & CHANNEL_MASK, channelNo, 
                      msgID, lastMsgRcd );
 
-            payloadSize = stream_getSize( stream ) > 0; /* anything left? */
+            payloadSize = stream_getSize( stream ); /* anything left? */
 
             if ( connID == CONN_ID_NONE ) {
                 /* special case: initial message from client or server */
@@ -1642,8 +1642,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             messageValid = (NULL != rec)
                 && (0 == rec->lastMsgRcd || rec->lastMsgRcd <= msgID);
             if ( messageValid ) {
-                XP_LOGF( "got channelNo=%d;msgID=%ld", 
-                         channelNo & CHANNEL_MASK, msgID );
+                XP_LOGF( "%s: got channelNo=%d;msgID=%ld;len=%d", __func__, 
+                         channelNo & CHANNEL_MASK, msgID, payloadSize );
                 rec->lastMsgRcd = msgID;
                 stream_setAddress( stream, channelNo );
                 messageValid = payloadSize > 0;

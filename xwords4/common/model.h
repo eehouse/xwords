@@ -145,6 +145,10 @@ void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
    player.  Don't even think about modifying the array!!!! */
 const TrayTileSet* model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn );
 
+#ifdef DEBUG
+XP_UCHAR* formatTileSet( const TrayTileSet* tiles, XP_UCHAR* buf, XP_U16 len );
+#endif
+
 void model_sortTiles( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn );

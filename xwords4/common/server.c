@@ -727,8 +727,9 @@ makeRobotMove( ServerCtxt* server )
 
         /* trade if unable to find a move */
         if ( trade ) {
-            result = server_commitTrade( server, 
-                                         model_getPlayerTiles( model, turn ) );
+            TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
+            XP_LOGF( "%s: robot trading %d tiles", __func__, oldTiles.nTiles );
+            result = server_commitTrade( server, &oldTiles );
 
             /* Quick hack to fix gremlin bug where all-robot game seen none
                able to trade for tiles to move and blowing the undo stack.
@@ -749,6 +750,7 @@ makeRobotMove( ServerCtxt* server )
 
             if ( canMove || NPASSES_OK(server) ) {
                 model_makeTurnFromMoveInfo( model, turn, &newMove );
+                XP_LOGF( "%s: robot making %d tile move", __func__, newMove.nTiles );
 
                 if ( !!stream ) {
                     XWStreamCtxt* wordsStream = mkServerStream( server );
@@ -1829,6 +1831,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 
     if ( isTrade ) {
         traySetFromStream( stream, tradedTiles );
+        XP_LOGF( "%s: got trade of %d tiles", __func__, tradedTiles->nTiles );
     } else {
         legalMove = stream_getBits( stream, 1 );
         model_makeTurnFromStream( server->vol.model, whoMoved, stream );
@@ -2136,8 +2139,8 @@ server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles )
 #endif
 
     pool_replaceTiles( server->pool, oldTiles );
-    model_makeTileTrade( server->vol.model, server->nv.currentTurn,
-                         oldTiles, &newTiles );
+    XP_ASSERT( turn == server->nv.currentTurn );
+    model_makeTileTrade( server->vol.model, turn, oldTiles, &newTiles );
     sortTilesIf( server, turn );
 
     nextTurn( server, PICK_NEXT );
@@ -2499,6 +2502,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             break;
 
         case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
+            XP_ASSERT( SERVER_ISCLIENT == server->vol.gi->serverRole );
             accepted = reflectMove( server, incoming );
             if ( accepted ) {
                 nextTurn( server, PICK_NEXT );

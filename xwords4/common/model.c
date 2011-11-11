@@ -835,7 +835,7 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
         stream_putBits( stream, NUMCOLS_NBITS, row );
         stream_putBits( stream, 1, isBlank );
     }
-} /* model_turnToStream */
+} /* model_currentMoveToStream */
 
 /* Take stream as the source of info about what tiles to move from tray to
  * board.  Undo any current move first -- a player on this device might be
@@ -877,15 +877,15 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 
         foundAt = model_trayContains( model, playerNum, moveTile );
         if ( foundAt == -1 ) {
-            XP_ASSERT( EMPTY_TILE==model_getPlayerTile(model, playerNum, 0));
+            XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum, 0));
 
             (void)model_removePlayerTile( model, playerNum, -1 );
             model_addPlayerTile( model, playerNum, -1, moveTile );
         }
 
-        model_moveTrayToBoard( model, playerNum, col, row, foundAt, tileFace);
+        model_moveTrayToBoard( model, playerNum, col, row, foundAt, tileFace );
     }
-} /* model_makeMoveFromStream */
+} /* model_makeTurnFromStream */
 
 void
 model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
@@ -1495,18 +1495,19 @@ static void
 makeTileTrade( ModelCtxt* model, XP_S16 player, const TrayTileSet* oldTiles, 
                const TrayTileSet* newTiles )
 {
-    XP_U16 i;
+    XP_U16 ii;
     XP_U16 nTiles;
 
     XP_ASSERT( newTiles->nTiles == oldTiles->nTiles );
+    XP_ASSERT( oldTiles != &model->players[player].trayTiles );
 
-    for ( nTiles = newTiles->nTiles, i = 0; i < nTiles; ++i ) {
-        Tile oldTile = oldTiles->tiles[i];
+    for ( nTiles = newTiles->nTiles, ii = 0; ii < nTiles; ++ii ) {
+        Tile oldTile = oldTiles->tiles[ii];
 
         XP_S16 tileIndex = model_trayContains( model, player, oldTile );
         XP_ASSERT( tileIndex >= 0 );
         model_removePlayerTile( model, player, tileIndex );
-        model_addPlayerTile( model, player, tileIndex, newTiles->tiles[i] );
+        model_addPlayerTile( model, player, tileIndex, newTiles->tiles[ii] );
     }
 } /* makeTileTrade */
 
@@ -1545,8 +1546,23 @@ model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn )
     return (const TrayTileSet*)&player->trayTiles;
 } /* model_getPlayerTile */
 
+#ifdef DEBUG
+XP_UCHAR*
+formatTileSet( const TrayTileSet* tiles, XP_UCHAR* buf, XP_U16 len )
+{
+    XP_U16 ii, used;
+    for ( ii = 0, used = 0; ii < tiles->nTiles && used < len; ++ii ) {
+        used += XP_SNPRINTF( &buf[used], len - used, "%d,", tiles->tiles[ii] );
+    }
+    if ( used > len ) {
+        buf[len-1] = '\0';
+    }
+    return buf;
+}
+#endif
+
 static void
-addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, Tile tile )
+addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, const Tile tile )
 {
     PlayerCtxt* player;
     short ii;
@@ -1895,7 +1911,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
 static void
 copyStack( ModelCtxt* model, StackCtxt* destStack, const StackCtxt* srcStack )
 {
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(model->vol.mpool) 
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(model->vol.mpool)
                                             util_getVTManager(model->vol.util),
                                             NULL, 0, NULL );
 
@@ -1952,11 +1968,11 @@ typedef struct _FirstWordData {
 static XP_Bool
 getFirstWord( const XP_UCHAR* word, XP_Bool isLegal, 
 #ifdef XWFEATURE_BOARDWORDS
-              const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), XP_U16 XP_UNUSED(end),
+              const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
+              XP_U16 XP_UNUSED(end),
 #endif
               void* closure )
 {
-    LOG_FUNC();
     if ( isLegal ) {
         FirstWordData* data = (FirstWordData*)closure;
         if ( '\0' == data->word[0] && '\0' != word[0] ) {
@@ -1985,10 +2001,10 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
         ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
         XP_U16 turn;
         XP_S16 moveNum = -1;
-        
+
         copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
-        if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn, 
+        if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn,
                                      &moveNum ) ) {
             XP_ASSERT( 0 );
         }
@@ -1996,7 +2012,7 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
         data.word[0] = '\0';
         notifyInfo.proc = getFirstWord;
         notifyInfo.closure = &data;
-        score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL, 
+        score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
                                  (XWStreamCtxt*)NULL, &notifyInfo );
 
         model_destroy( tmpModel );

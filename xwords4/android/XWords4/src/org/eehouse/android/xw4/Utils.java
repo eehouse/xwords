@@ -62,7 +62,7 @@ public class Utils {
         SharedPreferences sp
             = PreferenceManager.getDefaultSharedPreferences( context );
         String key = context.getString( R.string.key_logging_on );
-        boolean on = true;//sp.getBoolean( key, false );
+        boolean on = sp.getBoolean( key, false );
         logEnable( on );
     }
 
