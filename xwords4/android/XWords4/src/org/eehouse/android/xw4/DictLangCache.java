@@ -374,7 +374,9 @@ public class DictLangCache {
             info = new DictInfo();
 
             if ( XwJNI.dict_getInfo( pairs.m_bytes[0], pairs.m_paths[0], 
-                                     JNIUtilsImpl.get(), info ) ) {
+                                     JNIUtilsImpl.get(), 
+                                     DictUtils.DictLoc.DOWNLOAD == dal.loc,
+                                     info ) ) {
 
                 info.name = dal.name;
                 s_nameToLang.put( dal, info );

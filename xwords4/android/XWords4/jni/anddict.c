@@ -266,7 +266,8 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
 } /* splitFaces_via_java */
 
 static XP_Bool
-parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength )
+parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
+           XP_U32* numEdges )
 {
     XP_Bool success = XP_TRUE;
     XP_ASSERT( !!ptr );
@@ -377,14 +378,13 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength )
         dictLength -= sizeof(offset);
 #ifdef NODE_CAN_4
         XP_ASSERT( dictLength % ctxt->super.nodeSize == 0 );
-# ifdef DEBUG
-        ctxt->super.numEdges = dictLength / ctxt->super.nodeSize;
-# endif
+        *numEdges = dictLength / ctxt->super.nodeSize;
 #else
         XP_ASSERT( dictLength % 3 == 0 );
-# ifdef DEBUG
-        ctxt->super.numEdges = dictLength / 3;
-# endif
+        *numEdges = dictLength / 3;
+#endif
+#ifdef DEBUG
+        ctxt->super.numEdges = *numEdges;
 #endif
     } else {
         offset = 0;
@@ -502,7 +502,7 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil,
             if ( NULL != jdict || NULL != jpath ) { 
                 jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
                 dict = makeDict( MPPARM(mpool) env, jniutil, jname, jdict, 
-                                 jpath, jlang );
+                                 jpath, jlang, false );
                 XP_ASSERT( !!dict );
                 (*env)->DeleteLocalRef( env, jdict );
                 (*env)->DeleteLocalRef( env, jname );
@@ -522,7 +522,7 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil,
 
 DictionaryCtxt* 
 makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname, 
-          jbyteArray jbytes, jstring jpath, jstring jlangname )
+          jbyteArray jbytes, jstring jpath, jstring jlangname, jboolean check )
 {
     AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)
         and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
@@ -561,7 +561,10 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname,
     anddict->super.name = getStringCopy( MPPARM(mpool) env, jname );
     anddict->super.langName = getStringCopy( MPPARM(mpool) env, jlangname );
 
-    if ( !parseDict( anddict, (XP_U8*)anddict->bytes, len ) ) {
+    XP_U32 numEdges;
+    XP_Bool parses = parseDict( anddict, (XP_U8*)anddict->bytes, 
+                                len, &numEdges );
+    if ( !parses || (check && !checkSanity( anddict, numEdges ) ) ) {
         and_dictionary_destroy( (DictionaryCtxt*)anddict );
         anddict = NULL;
     }

@@ -270,7 +270,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 ( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, 
-  jobject jniu, jobject jinfo )
+  jobject jniu, jboolean check, jobject jinfo )
 {
     jboolean result = false;
 #ifdef MEM_DEBUG
@@ -278,7 +278,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 #endif
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
-                                     jDictBytes, jpath, NULL );
+                                     jDictBytes, jpath, NULL, check );
     if ( NULL != dict ) {
         setInt( env, jinfo, "langCode", dict_getLangCode( dict ) );
         setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
@@ -1289,7 +1289,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
     data->env = env;
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &data->env, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
-                                     jDictBytes, jpath, NULL );
+                                     jDictBytes, jpath, NULL, false );
     if ( !!dict ) {
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
         data->jniutil = jniutil;
