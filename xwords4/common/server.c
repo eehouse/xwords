@@ -728,6 +728,7 @@ makeRobotMove( ServerCtxt* server )
         /* trade if unable to find a move */
         if ( trade ) {
             TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
+            XP_LOGF( "%s: robot trading %d tiles", __func__, oldTiles.nTiles );
             result = server_commitTrade( server, &oldTiles );
 
             /* Quick hack to fix gremlin bug where all-robot game seen none
@@ -749,6 +750,7 @@ makeRobotMove( ServerCtxt* server )
 
             if ( canMove || NPASSES_OK(server) ) {
                 model_makeTurnFromMoveInfo( model, turn, &newMove );
+                XP_LOGF( "%s: robot making %d tile move", __func__, newMove.nTiles );
 
                 if ( !!stream ) {
                     XWStreamCtxt* wordsStream = mkServerStream( server );
@@ -1829,6 +1831,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 
     if ( isTrade ) {
         traySetFromStream( stream, tradedTiles );
+        XP_LOGF( "%s: got trade of %d tiles", __func__, tradedTiles->nTiles );
     } else {
         legalMove = stream_getBits( stream, 1 );
         model_makeTurnFromStream( server->vol.model, whoMoved, stream );

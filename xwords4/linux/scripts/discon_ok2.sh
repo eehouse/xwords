@@ -279,14 +279,14 @@ check_game() {
     fi
 
     if [ -n "$OTHERS" ]; then
-        echo -n "Closing $CONNNAME: "
+        echo -n "Closing $CONNNAME [$(date)]: "
         # kill_from_logs $OTHERS $KEY
         for ID in $OTHERS $KEY; do
             echo -n "${LOGS[$ID]}, "
             kill_from_log ${LOGS[$ID]} || true
             close_device $ID $DONEDIR "game over"
         done
-        date
+        echo ""
         # XWRELAY_ERROR_DELETED may be old
     elif grep -q 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
