@@ -64,18 +64,19 @@ public class DictLangCache {
 
     public static String annotatedDictName( Context context, DictAndLoc dal )
     {
+        String result = null;
         DictInfo info = getInfo( context, dal );
-        int wordCount = info.wordCount;
+        if ( null != info ) {
+            int wordCount = info.wordCount;
             
-        String langName = getLangName( context, dal.name );
-        String result;
-        if ( 0 == wordCount ) {
-            result = String.format( "%s (%s)", dal.name, langName );
-        } else {
-            result = String.format( "%s (%s/%d)", dal.name, langName, 
-                                    wordCount );
+            String langName = getLangName( context, dal.name );
+            if ( 0 == wordCount ) {
+                result = String.format( "%s (%s)", dal.name, langName );
+            } else {
+                result = String.format( "%s (%s/%d)", dal.name, langName, 
+                                        wordCount );
+            }
         }
-
         return result;
     }
 
@@ -114,7 +115,7 @@ public class DictLangCache {
         DictAndLoc[] dals = DictUtils.dictList( context );
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
-            if ( code == info.langCode ) {
+            if ( null != info && code == info.langCode ) {
                 al.add( info );
             }
         }
@@ -159,7 +160,7 @@ public class DictLangCache {
         DictAndLoc[] dals = DictUtils.dictList( context );
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
-            if ( code == info.langCode ) {
+            if ( null != info && code == info.langCode ) {
                 al.add( dal );
             }
         }
@@ -373,6 +374,12 @@ public class DictLangCache {
 
             info = new DictInfo();
 
+            // It should not be possible for dict_getInfo to fail
+            // unless DictUtils.dictList() isn't doing its job and
+            // puts unchecked dicts on the list.  Should probably
+            // assert that this returns true.  Open question: do I
+            // always trust dicts in the BUILTIN and INTERNAL
+            // locations?  Files can get damaged....
             if ( XwJNI.dict_getInfo( pairs.m_bytes[0], pairs.m_paths[0], 
                                      JNIUtilsImpl.get(), 
                                      DictUtils.DictLoc.DOWNLOAD == dal.loc,
