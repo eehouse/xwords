@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -219,7 +219,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     const XP_U8* ptr;
 
     struct stat statbuf;
-    if ( 0 != stat( fileName, &statbuf ) ) {
+    if ( 0 != stat( fileName, &statbuf ) || 0 == statbuf.st_size ) {
         goto closeAndExit;
     }
     dctx->dictLength = statbuf.st_size;
