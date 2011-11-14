@@ -727,7 +727,9 @@ makeRobotMove( ServerCtxt* server )
 
         /* trade if unable to find a move */
         if ( trade ) {
-            result = server_commitTrade( server, ALLTILES );
+            TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
+            XP_LOGF( "%s: robot trading %d tiles", __func__, oldTiles.nTiles );
+            result = server_commitTrade( server, &oldTiles );
 
             /* Quick hack to fix gremlin bug where all-robot game seen none
                able to trade for tiles to move and blowing the undo stack.
@@ -748,6 +750,7 @@ makeRobotMove( ServerCtxt* server )
 
             if ( canMove || NPASSES_OK(server) ) {
                 model_makeTurnFromMoveInfo( model, turn, &newMove );
+                XP_LOGF( "%s: robot making %d tile move", __func__, newMove.nTiles );
 
                 if ( !!stream ) {
                     XWStreamCtxt* wordsStream = mkServerStream( server );
@@ -1552,7 +1555,6 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 
     oneTile.nTiles = 1;
 
-    pi.why = PICK_FOR_CHEAT;
     pi.nTotal = nToFetch;
     pi.thisPick = 0;
     pi.curTiles = curTray;
@@ -1570,8 +1572,8 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
         model_packTilesUtil( server->vol.model, pool,
                              XP_TRUE, &nUsed, texts, tiles );
 
-        chosen = util_userPickTile( server->vol.util, &pi, playerNum,
-                                    texts, nUsed );
+        chosen = util_userPickTileTray( server->vol.util, &pi, playerNum,
+                                        texts, nUsed );
 
         if ( chosen == PICKER_PICKALL ) {
             ask = XP_FALSE;
@@ -1778,7 +1780,7 @@ checkMoveAllowed( ServerCtxt* server, XP_U16 playerNum )
 static void
 sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
             XP_Bool legal, TrayTileSet* newTiles, 
-            TrayTileSet* tradedTiles ) /* null if a move, set if a trade */
+            const TrayTileSet* tradedTiles ) /* null if a move, set if a trade */
 {
     XWStreamCtxt* stream;
     XP_Bool isTrade = !!tradedTiles;
@@ -1835,6 +1837,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 
     if ( isTrade ) {
         traySetFromStream( stream, tradedTiles );
+        XP_LOGF( "%s: got trade of %d tiles", __func__, tradedTiles->nTiles );
     } else {
         legalMove = stream_getBits( stream, 1 );
         model_makeTurnFromStream( server->vol.model, whoMoved, stream );
@@ -1851,7 +1854,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 
 static void
 sendMoveToClientsExcept( ServerCtxt* server, XP_U16 whoMoved, XP_Bool legal,
-                         TrayTileSet* newTiles, TrayTileSet* tradedTiles,
+                         TrayTileSet* newTiles, const TrayTileSet* tradedTiles,
                          XP_U16 skip )
 {
     XP_U16 devIndex;
@@ -2123,49 +2126,27 @@ server_commitMove( ServerCtxt* server )
     return XP_TRUE;
 } /* server_commitMove */
 
-static void
-removeTradedTiles( ServerCtxt* server, TileBit selBits, TrayTileSet* tiles )
-{
-    XP_U8 nTiles = 0;
-    XP_S16 index;
-    XP_S16 turn = server->nv.currentTurn;
-
-    /* selBits: It's gross that server knows this much about tray's
-       implementation.  PENDING(ehouse) */
-
-    for ( index = 0; selBits != 0; selBits >>= 1, ++index ) {
-        if ( (selBits & 0x01) != 0 ) {
-            Tile tile = model_getPlayerTile( server->vol.model, turn, index );
-            tiles->tiles[nTiles++] = tile;
-        }
-    }
-    tiles->nTiles = nTiles;
-} /* saveTradedTiles */
-
 XP_Bool
-server_commitTrade( ServerCtxt* server, TileBit selBits )
+server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles )
 {
-    TrayTileSet oldTiles;
     TrayTileSet newTiles;
     XP_U16 turn = server->nv.currentTurn;
 
-    removeTradedTiles( server, selBits, &oldTiles );
-
-    fetchTiles( server, turn, oldTiles.nTiles, &oldTiles, &newTiles );
+    fetchTiles( server, turn, oldTiles->nTiles, oldTiles, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         /* just send to server */
-        sendMoveTo(server, SERVER_DEVICE, turn, XP_TRUE, &newTiles, &oldTiles);
+        sendMoveTo(server, SERVER_DEVICE, turn, XP_TRUE, &newTiles, oldTiles);
     } else {
-        sendMoveToClientsExcept( server, turn, XP_TRUE, &newTiles, &oldTiles, 
+        sendMoveToClientsExcept( server, turn, XP_TRUE, &newTiles, oldTiles, 
                                  SERVER_DEVICE );
     }
 #endif
 
-    pool_replaceTiles( server->pool, &oldTiles );
-    model_makeTileTrade( server->vol.model, server->nv.currentTurn,
-                         &oldTiles, &newTiles );
+    pool_replaceTiles( server->pool, oldTiles );
+    XP_ASSERT( turn == server->nv.currentTurn );
+    model_makeTileTrade( server->vol.model, turn, oldTiles, &newTiles );
     sortTilesIf( server, turn );
 
     nextTurn( server, PICK_NEXT );
@@ -2527,6 +2508,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             break;
 
         case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
+            XP_ASSERT( SERVER_ISCLIENT == server->vol.gi->serverRole );
             accepted = reflectMove( server, incoming );
             if ( accepted ) {
                 nextTurn( server, PICK_NEXT );

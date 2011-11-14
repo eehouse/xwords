@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -24,11 +24,10 @@
 #include "gtkask.h"
 
 static void
-button_event( GtkWidget* XP_UNUSED(widget), gpointer closure )
+set_bool_and_quit( GtkWidget* XP_UNUSED(widget), gpointer closure )
 {
     XP_Bool* whichSet = (XP_Bool*)closure;
-    *whichSet = 1;
-
+    *whichSet = XP_TRUE;
     gtk_main_quit();
 } /* button_event */
 
@@ -43,7 +42,7 @@ abort_button_event( GtkWidget* XP_UNUSED(widget), gpointer XP_UNUSED(closure) )
 #define BUTTONS_PER_ROW 13
 
 XP_S16
-gtkletterask( const PickInfo* pi, const XP_UCHAR* name, 
+gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name, 
               XP_U16 nTiles, const XP_UCHAR** texts )
 {
     GtkWidget* dialog;
@@ -55,8 +54,9 @@ gtkletterask( const PickInfo* pi, const XP_UCHAR* name,
     XP_S16 ii;
     GtkWidget* button;	
     XP_UCHAR buf[64];
+    XP_Bool backedUp = XP_FALSE;
 
-    XP_MEMSET( results, 0, sizeof(results) );
+    XP_MEMSET( results, XP_FALSE, sizeof(results) );
 
     vbox = gtk_vbox_new( FALSE, 0 );
 
@@ -69,7 +69,7 @@ gtkletterask( const PickInfo* pi, const XP_UCHAR* name,
 
         gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
         g_signal_connect( GTK_OBJECT(button), "clicked", 
-                          G_CALLBACK(button_event), &results[ii] );
+                          G_CALLBACK(set_bool_and_quit), &results[ii] );
         gtk_widget_show( button );
 
         if ( ii+1 == nTiles || (ii % BUTTONS_PER_ROW == 0) ) {
@@ -79,12 +79,20 @@ gtkletterask( const PickInfo* pi, const XP_UCHAR* name,
     }
 
 #ifdef FEATURE_TRAY_EDIT
-    button = gtk_button_new_with_label( "Just pick em!" );
     hbox = gtk_hbox_new( FALSE, 0 );
+
+    button = gtk_button_new_with_label( "Just pick em!" );
     g_signal_connect( GTK_OBJECT(button), "clicked", 
                       G_CALLBACK(abort_button_event), NULL );
     gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
     gtk_widget_show( button );
+
+    button = gtk_button_new_with_label( "Back up" );
+    g_signal_connect( GTK_OBJECT(button), "clicked", 
+                      G_CALLBACK(set_bool_and_quit), &backedUp );
+    gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
+    gtk_widget_show( button );
+
     gtk_widget_show( hbox );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 #endif
@@ -95,19 +103,18 @@ gtkletterask( const PickInfo* pi, const XP_UCHAR* name,
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
 
-    XP_Bool forBlank = PICK_FOR_BLANK == pi->why;
-    if ( forBlank ) {
-        txt = "Choose a letter for your blank.";
-    } else {
+    if ( forTray ) {
         char* fmt = "Choose a tile for %s.";
         XP_SNPRINTF( buf, sizeof(buf), fmt, name );
         txt = buf;
+    } else {
+        txt = "Choose a letter for your blank.";
     }
     label = gtk_label_new( txt );
     gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
                        label);
 
-    if ( !forBlank ) {
+    if ( forTray ) {
         char curTilesBuf[64];
         int len = snprintf( curTilesBuf, sizeof(curTilesBuf), "%s", 
                             "Tiles so far: " );
@@ -128,13 +135,17 @@ gtkletterask( const PickInfo* pi, const XP_UCHAR* name,
 
     gtk_widget_destroy( dialog );
 
-    for ( ii = 0; ii < nTiles; ++ii ) {
-        if ( results[ii] ) {
-            break;
+    if ( backedUp ) {
+        ii = PICKER_BACKUP;
+    } else {
+        for ( ii = 0; ii < nTiles; ++ii ) {
+            if ( results[ii] ) {
+                break;
+            }
         }
-    }
-    if ( ii == nTiles ) {
-        ii = -1;
+        if ( ii == nTiles ) {
+            ii = PICKER_PICKALL;
+        }
     }
 
     return ii;

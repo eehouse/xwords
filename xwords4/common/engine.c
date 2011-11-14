@@ -121,8 +121,6 @@ struct EngineCtxt {
 static void findMovesOneRow( EngineCtxt* engine );
 static Tile localGetBoardTile( EngineCtxt* engine, XP_U16 col, 
                                XP_U16 row, XP_Bool substBlank );
-static array_edge* edge_with_tile( const DictionaryCtxt* dict, 
-                                   array_edge* from, Tile tile );
 static XP_Bool scoreQualifies( EngineCtxt* engine, XP_U16 score );
 static void findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor, 
                                 XP_U16 col, XP_U16 row ) ;
@@ -130,7 +128,6 @@ static void figureCrosschecks( EngineCtxt* engine, XP_U16 col,
                                XP_U16 row, XP_U16* scoreP,
                                Crosscheck* check );
 static XP_Bool isAnchorSquare( EngineCtxt* engine, XP_U16 col, XP_U16 row );
-static array_edge* follow( const DictionaryCtxt* dict, array_edge* in );
 static array_edge* edge_from_tile( const DictionaryCtxt* dict, 
                                    array_edge* from, Tile tile );
 static void leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength, 
@@ -164,23 +161,6 @@ static XP_S16 cmpMoves( PossibleMove* m1, PossibleMove* m2 );
 # define CMPMOVES( m1, m2 )    XP_MEMCMP( m1, m2, sizeof(*(m1)))
 #else
     error: need to pick one!!!
-#endif
-
-#ifdef NODE_CAN_4
-# define ISACCEPTING(d,e) \
-    ((ACCEPTINGMASK_NEW & ((array_edge_old*)(e))->bits) != 0)
-# define IS_LAST_EDGE(d,e) \
-    ((LASTEDGEMASK_NEW & ((array_edge_old*)(e))->bits) != 0)
-# define EDGETILE(e,edge) \
-    ((Tile)(((array_edge_old*)(edge))->bits & \
-            ((e)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
-#else
-# define ISACCEPTING(d,e) \
-    ((ACCEPTINGMASK_OLD & ((array_edge_old*)(e))->bits) != 0)
-# define IS_LAST_EDGE(d,e) \
-    ((LASTEDGEMASK_OLD & ((array_edge_old*)(e))->bits) != 0)
-# define EDGETILE(d,edge) \
-    ((Tile)(((array_edge_old*)(edge))->bits & LETTERMASK_OLD))
 #endif
 
 /* #define CROSSCHECK_CONTAINS(chk,tile) (((chk) & (1L<<(tile))) != 0) */
@@ -608,14 +588,14 @@ lookup( const DictionaryCtxt* dict, array_edge* edge, Tile* buf,
 {
     while ( edge != NULL ) {
         Tile targetTile = buf[tileIndex];
-        edge = edge_with_tile( dict, edge, targetTile );
+        edge = dict_edge_with_tile( dict, edge, targetTile );
         if ( edge == NULL ) { /* tile not available out of this node */
             return XP_FALSE;
         } else {
             if ( ++tileIndex == length ) { /* is this the last tile? */
                 return ISACCEPTING(dict, edge);
             } else {
-                edge = follow( dict, edge );
+                edge = dict_follow( dict, edge );
                 continue;
             }
         }
@@ -915,7 +895,7 @@ leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                     if ( rack_remove( engine, tile, &isBlank ) ) {
                         tiles[tileLength] = tile;
                         leftPart( engine, tiles, tileLength+1, 
-                                  follow( engine->dict, edge ), 
+                                  dict_follow( engine->dict, edge ), 
                                   limit-1, firstCol-1, anchorCol, row );
                         rack_replace( engine, tile, isBlank );
                     }
@@ -1000,9 +980,9 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
             }
         }
 
-    } else if ( (edge = edge_with_tile( dict, edge, tile ) ) != NULL ) {
+    } else if ( (edge = dict_edge_with_tile( dict, edge, tile ) ) != NULL ) {
         accepting = ISACCEPTING( dict, edge );
-        extendRight( engine, tiles, tileLength, follow(dict, edge), 
+        extendRight( engine, tiles, tileLength, dict_follow(dict, edge), 
                      accepting, firstCol, col+1, row );
         goto no_check; /* don't do the check at the end */
     } else {
@@ -1353,72 +1333,11 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
 } /* scoreQualifies */
 
 static array_edge*
-edge_with_tile( const DictionaryCtxt* dict, array_edge* from, Tile tile ) 
-{
-    for ( ; ; ) {
-        Tile candidate = EDGETILE(dict,from);
-        if ( candidate == tile ) {
-            break;
-        }
-
-        if ( IS_LAST_EDGE(dict, from ) ) {
-            from = NULL;
-            break;
-        }
-#ifdef NODE_CAN_4
-        from += dict->nodeSize;
-#else
-        from += 3;
-#endif
-
-    }
-
-    return from;
-} /* edge_with_tile */
-
-static unsigned long
-index_from( const DictionaryCtxt* dict, array_edge* p_edge ) 
-{
-    unsigned long result;
-
-#ifdef NODE_CAN_4
-    array_edge_new* edge = (array_edge_new*)p_edge;
-    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
-
-    if ( dict->is_4_byte ) {
-        result |= ((XP_U32)edge->moreBits) << 16;
-    } else {
-        XP_ASSERT( dict->nodeSize == 3 );
-        if ( (edge->bits & EXTRABITMASK_NEW) != 0 ) { 
-            result |= 0x00010000; /* using | instead of + saves 4 bytes */
-        }
-    }
-#else
-    array_edge_old* edge = (array_edge_old*)p_edge;
-    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
-    if ( (edge->bits & EXTRABITMASK_OLD) != 0 ) { 
-        result |= 0x00010000; /* using | instead of + saves 4 bytes */
-    }
-#endif
-
-    return result;
-} /* index_from */
-
-static array_edge*
-follow( const DictionaryCtxt* dict, array_edge* in ) 
-{
-    XP_U32 index = index_from( dict, in );
-    array_edge* result = index > 0? 
-        dict_edge_for_index( dict, index ): (array_edge*)NULL;
-    return result;
-} /* follow */
-
-static array_edge*
 edge_from_tile( const DictionaryCtxt* dict, array_edge* from, Tile tile ) 
 {
-    array_edge* edge = edge_with_tile( dict, from, tile );
+    array_edge* edge = dict_edge_with_tile( dict, from, tile );
     if ( edge != NULL ) {
-        edge = follow( dict, edge );
+        edge = dict_follow( dict, edge );
     }
     return edge;
 } /* edge_from_tile */

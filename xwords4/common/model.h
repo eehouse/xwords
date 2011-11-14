@@ -29,16 +29,12 @@
 extern "C" {
 #endif
 
-#define MAX_ROWS 16
-#define MAX_COLS 16
 #define NUMCOLS_NBITS 4
 
 #ifdef EIGHT_TILES
-#define MAX_TRAY_TILES 8
-#define NTILES_NBITS 4
+# define NTILES_NBITS 4
 #else
-#define MAX_TRAY_TILES 7
-#define NTILES_NBITS 3
+# define NTILES_NBITS 3
 #endif
 
 /* Try making this 0, as some local rules, e.g. Spanish, allow.  Will need to
@@ -137,7 +133,7 @@ XP_U16 model_getCellOwner( ModelCtxt* model, XP_U16 col, XP_U16 row );
 
 void model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
                               const TrayTileSet* tiles );
-Tile model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
+Tile model_getPlayerTile( const ModelCtxt* model, XP_S16 turn, XP_S16 index );
 
 Tile model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 void model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index,
@@ -148,6 +144,10 @@ void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
 /* As an optimization, return a pointer to the model's array of tiles for a
    player.  Don't even think about modifying the array!!!! */
 const TrayTileSet* model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn );
+
+#ifdef DEBUG
+XP_UCHAR* formatTileSet( const TrayTileSet* tiles, XP_UCHAR* buf, XP_U16 len );
+#endif
 
 void model_sortTiles( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn );
@@ -182,7 +182,8 @@ void model_commitTurn( ModelCtxt* model, XP_S16 player,
                        TrayTileSet* newTiles );
 void model_commitRejectedPhony( ModelCtxt* model, XP_S16 player );
 void model_makeTileTrade( ModelCtxt* model, XP_S16 player,
-                          TrayTileSet* oldTiles, TrayTileSet* newTiles );
+                          const TrayTileSet* oldTiles, 
+                          const TrayTileSet* newTiles );
 
 XP_Bool model_undoLatestMoves( ModelCtxt* model, PoolContext* pool, 
                                XP_U16 nMovesSought, XP_U16* turn, 

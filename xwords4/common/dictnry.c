@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997-2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,8 +25,10 @@
 
 #include "comtypes.h"
 #include "dictnryp.h"
+#include "dictiter.h"
 #include "xwstream.h"
 #include "strutils.h"
+#include "dictiter.h"
 #include "game.h"
 
 #ifdef CPLUS
@@ -150,27 +153,41 @@ dict_tilesToString( const DictionaryCtxt* dict, const Tile* tiles,
     return result;
 } /* dict_tilesToString */
 
-/* dict_tileForString: used to map user keys to tiles in the tray.  Returns
- * EMPTY_TILE if no match found.
+/* Convert str to an array of tiles, continuing until we fail to match or we
+ * run out of room in which to return tiles.  Failure to match means return of
+ * XP_FALSE, but if we run out of room before failing we return XP_TRUE.
  */
-Tile
-dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key )
+XP_Bool
+dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* str,
+                     Tile* tiles, XP_U16* nTilesP )
 {
     XP_U16 nFaces = dict_numTileFaces( dict );
-    Tile tile = EMPTY_TILE;
-    XP_U16 ii;
+    XP_U16 nTiles = 0;
+    XP_Bool success = XP_TRUE;
+    XP_ASSERT( 0 < *nTilesP );
 
-    for ( ii = 0; ii < nFaces; ++ii ) {
-        if ( ii != dict->blankTile ) {
-            const XP_UCHAR* facep = dict_getTileString( dict, ii );
-            if ( 0 == XP_STRCMP( facep, key ) ) {
-                tile = (Tile)ii;
-                break;
+    while ( str[0] != '\0' && success && nTiles < *nTilesP ) {
+        Tile tile;
+        const XP_UCHAR* prevstr = str;
+        for ( tile = 0; tile < nFaces; ++tile ) {
+            if ( tile != dict->blankTile ) {
+                const XP_UCHAR* facep = dict_getTileString( dict, tile );
+                XP_U16 faceLen = XP_STRLEN( facep );
+                if ( 0 == XP_STRNCMP( facep, str, faceLen ) ) {
+                    tiles[nTiles++] = tile;
+                    str += faceLen;
+                    if ( nTiles == *nTilesP ) {
+                        break;
+                    }
+                }
             }
         }
+        success = str > prevstr;
     }
-    return tile;
-} /* dict_tileForChar */
+    XP_ASSERT( nTiles <= *nTilesP );
+    *nTilesP = nTiles;
+    return success;
+} /* dict_tilesForString */
 
 XP_Bool
 dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
@@ -461,7 +478,13 @@ dict_getLangCode( const DictionaryCtxt* dict )
 XP_U32
 dict_getWordCount( const DictionaryCtxt* dict )
 {
-    return dict->nWords;
+    XP_U32 nWords = dict->nWords;
+#ifdef XWFEATURE_WALKDICT
+    if ( 0 == nWords ) {
+        nWords = dict_countWords( dict );
+    }
+#endif
+    return nWords;
 }
 
 #ifdef STUBBED_DICT
@@ -597,12 +620,76 @@ dict_super_getTopEdge( const DictionaryCtxt* dict )
     return dict->topEdge;
 } /* dict_super_getTopEdge */
 
+static unsigned long
+dict_super_index_from( const DictionaryCtxt* dict, array_edge* p_edge ) 
+{
+    unsigned long result;
+
+#ifdef NODE_CAN_4
+    array_edge_new* edge = (array_edge_new*)p_edge;
+    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
+
+    if ( dict->is_4_byte ) {
+        result |= ((XP_U32)edge->moreBits) << 16;
+    } else {
+        XP_ASSERT( dict->nodeSize == 3 );
+        if ( (edge->bits & EXTRABITMASK_NEW) != 0 ) { 
+            result |= 0x00010000; /* using | instead of + saves 4 bytes */
+        }
+    }
+#else
+    array_edge_old* edge = (array_edge_old*)p_edge;
+    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
+    if ( (edge->bits & EXTRABITMASK_OLD) != 0 ) { 
+        result |= 0x00010000; /* using | instead of + saves 4 bytes */
+    }
+#endif
+
+    return result;
+} /* dict_super_index_from */
+
+static array_edge*
+dict_super_follow( const DictionaryCtxt* dict, array_edge* in ) 
+{
+    XP_U32 index = dict_index_from( dict, in );
+    array_edge* result = index > 0? 
+        dict_edge_for_index( dict, index ): (array_edge*)NULL;
+    return result;
+} /* dict_super_follow */
+
+static array_edge*
+dict_super_edge_with_tile( const DictionaryCtxt* dict, array_edge* from, 
+                           Tile tile ) 
+{
+    for ( ; ; ) {
+        Tile candidate = EDGETILE(dict,from);
+        if ( candidate == tile ) {
+            break;
+        }
+
+        if ( IS_LAST_EDGE(dict, from ) ) {
+            from = NULL;
+            break;
+        }
+#ifdef NODE_CAN_4
+        from += dict->nodeSize;
+#else
+        from += 3;
+#endif
+    }
+
+    return from;
+} /* edge_with_tile */
+
 void
 dict_super_init( DictionaryCtxt* dict )
 {
     /* subclass may change these later.... */
     dict->func_edge_for_index = dict_super_edge_for_index;
     dict->func_dict_getTopEdge = dict_super_getTopEdge;
+    dict->func_dict_index_from = dict_super_index_from;
+    dict->func_dict_follow = dict_super_follow;
+    dict->func_dict_edge_with_tile = dict_super_edge_with_tile;
     dict->func_dict_getShortName = dict_getName;
 } /* dict_super_init */
 
@@ -611,6 +698,49 @@ dict_getLangName( const DictionaryCtxt* ctxt )
 {
     return ctxt->langName;
 }
+
+#ifdef XWFEATURE_DICTSANITY
+XP_Bool
+checkSanity( DictionaryCtxt* dict, const XP_U32 numEdges )
+{
+    XP_U32 ii;
+    XP_Bool passed = XP_TRUE;
+    XP_U16 nFaces = dict_numTileFaces( dict );
+
+    array_edge* edge = dict->base;
+    Tile prevTile = 0;
+    for ( ii = 0; ii < numEdges && passed; ++ii ) {
+        Tile tile = EDGETILE( dict, edge );
+        if ( tile < prevTile || tile >= nFaces ) {
+            XP_LOGF( "%s: node %ld (out of %ld) has too-large or "
+                     "out-of-order tile", __func__, ii, numEdges );
+            passed = XP_FALSE;
+            break;
+        }
+        prevTile = tile;
+
+        unsigned long index = dict_index_from( dict, edge );
+        if ( index >= numEdges ) {
+            XP_LOGF( "%s: node %ld (out of %ld) has too-high index %ld", __func__,
+                     ii, numEdges, index );
+            passed = XP_FALSE;
+            break;
+        }
+
+        if ( IS_LAST_EDGE( dict, edge ) ) {
+            prevTile = 0;
+        }
+        edge += dict->nodeSize;
+    }
+
+    if ( passed ) {
+        passed = 0 == prevTile; /* last edge seen was a LAST_EDGE */
+    }
+
+    XP_LOGF( "%s(numEdges=%ld)=>%d", __func__, numEdges, passed );
+    return passed;
+} /* checkSanity */
+#endif
 
 #ifdef CPLUS
 }

@@ -39,15 +39,18 @@ public class Toolbar {
         public int m_id;
     }
 
-    public static final int BUTTON_HINT_PREV = 0;
-    public static final int BUTTON_HINT_NEXT = 1;
-    public static final int BUTTON_FLIP = 2;
-    public static final int BUTTON_JUGGLE = 3;
-    public static final int BUTTON_ZOOM = 4;
-    public static final int BUTTON_UNDO = 5;
-    public static final int BUTTON_CHAT = 6;
+    public static final int BUTTON_BROWSE_DICT = 0;
+    public static final int BUTTON_HINT_PREV = 1;
+    public static final int BUTTON_HINT_NEXT = 2;
+    public static final int BUTTON_FLIP = 3;
+    public static final int BUTTON_JUGGLE = 4;
+    public static final int BUTTON_ZOOM = 5;
+    public static final int BUTTON_UNDO = 6;
+    public static final int BUTTON_CHAT = 7;
 
     private static TBButtonInfo[] s_buttonInfo = {
+        // BUTTON_BROWSE_DICT
+        new TBButtonInfo(R.id.dictlist_button_horizontal ),
         // BUTTON_HINT_PREV
         new TBButtonInfo(R.id.prevhint_button_horizontal ),
         // BUTTON_HINT_NEXT

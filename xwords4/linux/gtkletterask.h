@@ -26,7 +26,8 @@
 
 #include "gtkmain.h"
 
-XP_S16 gtkletterask( const PickInfo* pi, const XP_UCHAR* name, 
+XP_S16 gtkletterask( const PickInfo* pi, XP_Bool forTray, 
+                     const XP_UCHAR* name, 
                      XP_U16 nTiles, const XP_UCHAR** texts );
 
 

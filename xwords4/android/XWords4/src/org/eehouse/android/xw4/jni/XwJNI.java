@@ -238,7 +238,20 @@ public class XwJNI {
     // Dicts
     public static native boolean dict_tilesAreSame( int dictPtr1, int dictPtr2 );
     public static native String[] dict_getChars( int dictPtr );
-    public static native void dict_getInfo( byte[] dict, String path, 
-                                            JNIUtils jniu, DictInfo info );
+    public static native boolean dict_getInfo( byte[] dict, String path, 
+                                               JNIUtils jniu, boolean check,
+                                               DictInfo info );
     public static native int dict_getTileValue( int dictPtr, int tile );
+
+    // Dict iterator
+    public static native int dict_iter_init( byte[] dict, String path, 
+                                             JNIUtils jniu );
+    public static native void dict_iter_destroy( int closure );
+    public static native int dict_iter_wordCount( int closure );
+    public static native String dict_iter_nthWord( int closure, int nn );
+    public static native void dict_iter_makeIndex( int closure );
+    public static native String[] dict_iter_getPrefixes( int closure );
+    public static native int[] dict_iter_getIndices( int closure );
+    public static native int dict_iter_getStartsWith( int closure, 
+                                                      String prefix );
 }

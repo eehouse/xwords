@@ -153,4 +153,14 @@ public class XWListActivity extends ListActivity
         Assert.fail();
     }
 
+    protected void launchLookup( String[] words, int lang )
+    {
+        m_delegate.launchLookup( words, lang, false );
+    }
+
+    protected void launchLookup( String[] words, int lang, boolean forceList )
+    {
+        m_delegate.launchLookup( words, lang, forceList );
+    }
+
 }

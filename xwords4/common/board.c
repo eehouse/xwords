@@ -742,6 +742,20 @@ warnBadWords( const XP_UCHAR* word, XP_Bool isLegal,
     return ok;
 } /* warnBadWords */
 
+static XP_Bool
+boardConfirmTrade( BoardCtxt* board, const TrayTileSet* tiles )
+{
+    const XP_UCHAR* tfaces[MAX_TRAY_TILES];
+    XP_U16 ii;
+    DictionaryCtxt* dict = model_getDictionary( board->model );
+
+    for ( ii = 0; ii < tiles->nTiles; ++ii ) {
+        tfaces[ii] = dict_getTileString( dict, tiles->tiles[ii] );
+    }
+
+    return util_confirmTrade( board->util, tfaces, tiles->nTiles );
+}
+
 XP_Bool
 board_commitTurn( BoardCtxt* board ) 
 {
@@ -764,12 +778,16 @@ board_commitTurn( BoardCtxt* board )
 
             if ( NO_TILES == traySelBits ) {
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
-            } else if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
-                                        (XWStreamCtxt*)NULL ) ) {
-                /* server_commitTrade() changes selPlayer, so board_endTrade
-                   must be called first() */
-                (void)board_endTrade( board );
-                (void)server_commitTrade( board->server, traySelBits );
+            } else {
+                TrayTileSet selTiles;
+                getSelTiles( board, traySelBits, &selTiles );
+                if ( boardConfirmTrade( board, &selTiles ) ) {
+                    /* server_commitTrade() changes selPlayer, so board_endTrade
+                       must be called first() */
+                    (void)board_endTrade( board );
+
+                    (void)server_commitTrade( board->server, &selTiles );
+                }
             }
         } else {
             XP_Bool warn, legal;
@@ -3224,8 +3242,8 @@ keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
         XP_UCHAR buf[2] = { key, '\0' };
 
         /* Figure out if we have the tile in the tray  */
-        tile = dict_tileForString( dict, buf );
-        if ( tile != EMPTY_TILE ) { /* in dict? */
+        XP_U16 nTiles = 1;
+        if ( dict_tilesForString( dict, buf, &tile, &nTiles ) ) { /* in dict? */
             XP_S16 turn = board->selPlayer;
             tileIndex = model_trayContains( model, turn, tile );
             if ( tileIndex < 0 ) {

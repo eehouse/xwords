@@ -38,7 +38,7 @@
     </style>
 
     <style name="toolbar_button">
-      <item name="android:layout_width">48dp</item>
+      <item name="android:layout_width">58dp</item>
       <item name="android:layout_height">48dp</item>
       <item name="android:layout_weight">1</item>
     </style>

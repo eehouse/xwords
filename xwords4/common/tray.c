@@ -379,6 +379,24 @@ handleTrayDuringTrade( BoardCtxt* board, XP_S16 index )
     return XP_TRUE;
 } /* handleTrayDuringTrade */
 
+void
+getSelTiles( const BoardCtxt* board, TileBit selBits, TrayTileSet* selTiles )
+{
+    XP_U16 nTiles = 0;
+    XP_S16 index;
+    XP_S16 turn = board->selPlayer;
+    const ModelCtxt* model = board->model;
+
+    for ( index = 0; selBits != 0; selBits >>= 1, ++index ) {
+        if ( 0 != (selBits & 0x01) ) {
+            Tile tile = model_getPlayerTile( model, turn, index );
+            XP_ASSERT( nTiles < VSIZE(selTiles->tiles) );
+            selTiles->tiles[nTiles++] = tile;
+        }
+    }
+    selTiles->nTiles = nTiles;
+}
+
 static XP_Bool
 handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
 {

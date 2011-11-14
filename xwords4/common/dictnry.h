@@ -66,8 +66,15 @@ typedef struct _XP_Bitmaps {
 struct DictionaryCtxt {
     void (*destructor)( DictionaryCtxt* dict );
 
-    array_edge* (*func_edge_for_index)( const DictionaryCtxt* dict, XP_U32 index );
+    array_edge* (*func_edge_for_index)( const DictionaryCtxt* dict, 
+                                        XP_U32 index );
     array_edge* (*func_dict_getTopEdge)( const DictionaryCtxt* dict );
+    unsigned long (*func_dict_index_from)( const DictionaryCtxt* dict, 
+                                           array_edge* p_edge );
+    array_edge* (*func_dict_follow)( const DictionaryCtxt* dict, 
+                                     array_edge* in );
+    array_edge* (*func_dict_edge_with_tile)( const DictionaryCtxt* dict, 
+                                             array_edge* from, Tile tile );
     const XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
 
     array_edge* topEdge;
@@ -128,8 +135,27 @@ struct DictionaryCtxt {
 #define dict_destroy(d) (*((d)->destructor))(d)
 #define dict_edge_for_index(d, i) (*((d)->func_edge_for_index))((d), (i))
 #define dict_getTopEdge(d)        (*((d)->func_dict_getTopEdge))(d)
+#define dict_index_from(d,e)        (*((d)->func_dict_index_from))(d,e)
+#define dict_follow(d,e)        (*((d)->func_dict_follow))(d,e)
+#define dict_edge_with_tile(d,e,t) (*((d)->func_dict_edge_with_tile))(d,e,t)
 #define dict_getShortName(d)      (*((d)->func_dict_getShortName))(d)
 
+#ifdef NODE_CAN_4
+# define ISACCEPTING(d,e) \
+    ((ACCEPTINGMASK_NEW & ((array_edge_old*)(e))->bits) != 0)
+# define IS_LAST_EDGE(d,e) \
+    ((LASTEDGEMASK_NEW & ((array_edge_old*)(e))->bits) != 0)
+# define EDGETILE(d,edge) \
+    ((Tile)(((array_edge_old*)(edge))->bits & \
+            ((d)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
+#else
+# define ISACCEPTING(d,e) \
+    ((ACCEPTINGMASK_OLD & ((array_edge_old*)(e))->bits) != 0)
+# define IS_LAST_EDGE(d,e) \
+    ((LASTEDGEMASK_OLD & ((array_edge_old*)(e))->bits) != 0)
+# define EDGETILE(d,edge) \
+    ((Tile)(((array_edge_old*)(edge))->bits & LETTERMASK_OLD))
+#endif
 
 XP_Bool dict_tilesAreSame( const DictionaryCtxt* dict1, 
                            const DictionaryCtxt* dict2 );
@@ -148,7 +174,8 @@ const XP_UCHAR* dict_getLangName(const DictionaryCtxt* ctxt );
 
 XP_Bool dict_isUTF8( const DictionaryCtxt* ctxt );
 
-Tile dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key );
+XP_Bool dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* key,
+                             Tile* tiles, XP_U16* nTiles );
 
 XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
 void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, 
@@ -179,6 +206,8 @@ void dict_super_init( DictionaryCtxt* ctxt );
 /* Must be implemented by subclass */
 void dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes, 
                       XP_U16 nBytes, XP_U16 nFaces );
+
+XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
 
 #ifdef CPLUS
 }

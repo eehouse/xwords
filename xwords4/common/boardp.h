@@ -303,6 +303,7 @@ void invalCurHintRect( BoardCtxt* board, XP_U16 player );
 
 void moveTileInTray( BoardCtxt* board, XP_U16 moveTo, XP_U16 moveFrom );
 XP_Bool handleTrayDuringTrade( BoardCtxt* board, XP_S16 index );
+void getSelTiles( const BoardCtxt* board, TileBit selBits, TrayTileSet* selTiles );
 
 const XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile, 
                                  XP_Bool isBlank, XP_Bitmaps* bitmaps, 

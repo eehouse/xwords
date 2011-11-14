@@ -114,6 +114,7 @@ public class GameConfig extends XWActivity
                                                         ,R.id.room_spinner
                                                         ,R.id.refresh_button
                                                         ,R.id.hints_allowed
+                                                        ,R.id.pick_faceup
                                                         ,R.id.use_timer
                                                         ,R.id.timer_minutes_edit
                                                         ,R.id.smart_robot
@@ -121,7 +122,7 @@ public class GameConfig extends XWActivity
     };
 
     class RemoteChoices extends XWListAdapter {
-        public RemoteChoices() { super( GameConfig.this, m_gi.nPlayers ); }
+        public RemoteChoices() { super( m_gi.nPlayers ); }
 
         public Object getItem( int position) { return m_gi.players[position]; }
         public View getView( final int position, View convertView, 
@@ -362,7 +363,10 @@ public class GameConfig extends XWActivity
             (ArrayAdapter<String>)spinner.getAdapter();
 
         if ( position < adapter.getCount() ) {
-            lp.dictName = adapter.getItem(position);
+            String name = adapter.getItem(position);
+            if ( ! name.equals( m_browseText ) ) {
+                lp.dictName = name;
+            }
         }
 
         lp.setIsRobot( Utils.getChecked( dialog, R.id.robot_check ) );
@@ -514,7 +518,10 @@ public class GameConfig extends XWActivity
 
                 setSmartnessSpinner();
 
-                Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
+                Utils.setChecked( this, R.id.hints_allowed, 
+                                  !m_gi.hintsNotAllowed );
+                Utils.setChecked( this, R.id.pick_faceup, 
+                                  m_gi.allowPickTiles );
                 Utils.setInt( this, R.id.timer_minutes_edit, 
                               m_gi.gameSeconds/60/m_gi.nPlayers );
 
@@ -950,6 +957,7 @@ public class GameConfig extends XWActivity
     private void saveChanges()
     {
         m_gi.hintsNotAllowed = !Utils.getChecked( this, R.id.hints_allowed );
+        m_gi.allowPickTiles = Utils.getChecked( this, R.id.pick_faceup );
         m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
         m_gi.gameSeconds = 60 * m_gi.nPlayers *
             Utils.getInt(  this, R.id.timer_minutes_edit );

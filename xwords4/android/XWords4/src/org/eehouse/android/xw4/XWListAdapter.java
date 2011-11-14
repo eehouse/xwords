@@ -31,7 +31,10 @@ import android.database.DataSetObserver;
 public abstract class XWListAdapter implements ListAdapter {
     private int m_count;
 
-    public XWListAdapter( Context context, int count ) {
+    public XWListAdapter( ) {
+        this( 0 );
+    }
+    public XWListAdapter( int count ) {
         m_count = count;
     }
 

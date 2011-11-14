@@ -65,7 +65,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_BADWORDS = DLG_OKONLY + 1;
     private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
     private static final int QUERY_INFORM_BLK = DLG_OKONLY + 3;
-    private static final int PICK_TILE_REQUEST_BLK = DLG_OKONLY + 4;
+    private static final int PICK_TILE_REQUESTBLANK_BLK = DLG_OKONLY + 4;
     private static final int ASK_PASSWORD_BLK = DLG_OKONLY + 5;
     private static final int DLG_RETRY = DLG_OKONLY + 6;
     private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
@@ -73,6 +73,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
     private static final int DLG_LOOKUP = DLG_OKONLY + 11;
+    private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 12;
 
     private static final int CHAT_REQUEST = 1;
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -91,6 +92,7 @@ public class BoardActivity extends XWActivity
     private static final int CHAT_ACTION = 12;
     private static final int START_TRADE_ACTION = 13;
     private static final int LOOKUP_ACTION = 14;
+    private static final int BUTTON_BROWSE_ACTION = 15;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -122,6 +124,8 @@ public class BoardActivity extends XWActivity
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
+    private String m_curTiles;
+    private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
     private JNIUtils m_jniu;
     private boolean m_volKeysZoom;
@@ -164,7 +168,7 @@ public class BoardActivity extends XWActivity
     } 
 
     @Override
-    protected Dialog onCreateDialog( int id )
+    protected Dialog onCreateDialog( final int id )
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
@@ -264,9 +268,9 @@ public class BoardActivity extends XWActivity
                 dialog.setOnDismissListener( makeODLforBlocking( id ) );
                 break;
 
-            case PICK_TILE_REQUEST_BLK:
-                ab = new AlertDialog.Builder( this )
-                    .setTitle( R.string.title_tile_picker );
+            case PICK_TILE_REQUESTBLANK_BLK:
+            case PICK_TILE_REQUESTTRAY_BLK:
+                ab = new AlertDialog.Builder( this );
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
@@ -274,6 +278,34 @@ public class BoardActivity extends XWActivity
                         }
                     };
                 ab.setItems( m_texts, lstnr );
+
+                if ( PICK_TILE_REQUESTBLANK_BLK == id ) {
+                    ab.setTitle( R.string.title_tile_picker );
+                } else {
+                    ab.setTitle( Utils.format( this, R.string.cur_tilesf,
+                                               m_curTiles ) );
+                    if ( m_canUndoTiles ) {
+                        DialogInterface.OnClickListener undoClicked =
+                            new DialogInterface.OnClickListener() {
+                                public void onClick( DialogInterface dialog, 
+                                                     int whichButton ) {
+                                    m_resultCode = UtilCtxt.PICKER_BACKUP;
+                                    removeDialog( id );
+                                }
+                            };
+                        ab.setPositiveButton( R.string.tilepick_undo, 
+                                              undoClicked );
+                    }
+                    DialogInterface.OnClickListener doAllClicked =
+                        new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, 
+                                                 int whichButton ) {
+                                m_resultCode = UtilCtxt.PICKER_PICKALL;
+                                removeDialog( id );
+                            }
+                        };
+                    ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
+                }
 
                 dialog = ab.create();
                 dialog.setOnDismissListener( makeODLforBlocking( id ) );
@@ -330,15 +362,6 @@ public class BoardActivity extends XWActivity
                         .setNegativeButton( R.string.button_no, null )
                         .create();
                 }
-                break;
-
-            case DLG_LOOKUP:
-                LookupView view = (LookupView)Utils.inflate( this, R.layout.lookup );
-                dialog = new AlertDialog.Builder( this )
-                    .setView( view )
-                    .create();
-                view.setDialog( dialog, DLG_LOOKUP );
-                view.setWords( m_words, m_gi.dictLang );
                 break;
 
             default:
@@ -598,6 +621,7 @@ public class BoardActivity extends XWActivity
             m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
                                 R.string.tiles_left_title );
             break;
+
         case R.id.board_menu_game_history:
             m_jniThread.handle( JNIThread.JNICmd.CMD_HISTORY,
                                 R.string.history_title );
@@ -669,6 +693,10 @@ public class BoardActivity extends XWActivity
                                 Toast.LENGTH_SHORT).show();
                 m_toastStr = null;
                 break;
+            case BUTTON_BROWSE_ACTION:
+                String dictName = m_gi.dictName( m_view.getCurPlayer() );
+                DictBrowseActivity.launch( this, dictName );
+                break;
             case PREV_HINT_ACTION:
                 cmd = JNIThread.JNICmd.CMD_PREV_HINT;
                 break;
@@ -696,7 +724,7 @@ public class BoardActivity extends XWActivity
                 cmd = JNIThread.JNICmd.CMD_TRADE;
                 break;
             case LOOKUP_ACTION:
-                launchLookup( m_words );
+                launchLookup( m_words, m_gi.dictLang );
                 break;
             default:
                 Assert.fail();
@@ -925,6 +953,7 @@ public class BoardActivity extends XWActivity
             super( BoardActivity.this );
         }
 
+        @Override
         public void requestTime() 
         {
             post( new Runnable() {
@@ -936,12 +965,14 @@ public class BoardActivity extends XWActivity
                 } );
         }
 
+        @Override
         public void remSelected() 
         {
             m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
                                 R.string.tiles_left_title );
         }
 
+        @Override
         public void setIsServer( boolean isServer )
         {
             DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
@@ -1011,11 +1042,12 @@ public class BoardActivity extends XWActivity
         {
             post( new Runnable() {
                     public void run() {
-                        launchLookup( wordsToArray( words ) );
+                        launchLookup( wordsToArray( words ), m_gi.dictLang );
                     }
                 } );
         }
 
+        @Override
         public void setTimer( int why, int when, int handle )
         {
             if ( null != m_timers[why] ) {
@@ -1038,6 +1070,7 @@ public class BoardActivity extends XWActivity
             postDelayed( m_timers[why], inHowLong );
         }
 
+        @Override
         public void clearTimer( int why ) 
         {
             if ( null != m_timers[why] ) {
@@ -1047,13 +1080,27 @@ public class BoardActivity extends XWActivity
         }
 
         // This is supposed to be called from the jni thread
-        public int userPickTile( int playerNum, String[] texts )
+        @Override
+        public int userPickTileBlank( int playerNum, String[] texts)
         {
             m_texts = texts;
-            waitBlockingDialog( PICK_TILE_REQUEST_BLK, 0 );
+            waitBlockingDialog( PICK_TILE_REQUESTBLANK_BLK, 0 );
             return m_resultCode;
         }
 
+        @Override
+        public int userPickTileTray( int playerNum, String[] texts, 
+                                     String[] curTiles, int nPicked )
+        {
+            m_texts = texts;
+            m_curTiles = TextUtils.join( ", ", curTiles );
+            m_canUndoTiles = 0 < nPicked;
+            waitBlockingDialog( PICK_TILE_REQUESTTRAY_BLK, 
+                                UtilCtxt.PICKER_PICKALL );
+            return m_resultCode;
+        }
+
+        @Override
         public String askPassword( String name )
         {
             // call this each time dlg created or will get exception
@@ -1070,6 +1117,7 @@ public class BoardActivity extends XWActivity
             return result;
         }
 
+        @Override
         public void turnChanged()
         {
             post( new Runnable() {
@@ -1081,11 +1129,13 @@ public class BoardActivity extends XWActivity
             m_jniThread.handle( JNIThread.JNICmd. CMD_ZOOM, -8 );
         }
 
+        @Override
         public boolean engineProgressCallback()
         {
             return ! m_jniThread.busy();
         }
 
+        @Override
         public boolean userQuery( int id, String query )
         {
             boolean result;
@@ -1103,13 +1153,8 @@ public class BoardActivity extends XWActivity
                 break;
 
                 // These *are* blocking dialogs
-            case UtilCtxt.QUERY_COMMIT_TRADE:
             case UtilCtxt.QUERY_COMMIT_TURN:
-                if ( UtilCtxt.QUERY_COMMIT_TRADE == id ) {
-                    m_dlgBytes = getString( R.string.query_trade );
-                } else {
-                    m_dlgBytes = query;
-                }
+                m_dlgBytes = query;
                 m_dlgTitle = R.string.query_title;
                 result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
                 break;
@@ -1121,6 +1166,17 @@ public class BoardActivity extends XWActivity
             return result;
         }
 
+        @Override
+        public boolean confirmTrade( String[] tiles )
+        {
+            m_dlgTitle = R.string.info_title;
+            m_dlgBytes = 
+                Utils.format( BoardActivity.this, R.string.query_tradef, 
+                              TextUtils.join( ", ", tiles ) );
+            return 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
+        }
+
+        @Override
         public void userError( int code )
         {
             int resid = 0;
@@ -1176,6 +1232,7 @@ public class BoardActivity extends XWActivity
             }
         } // userError
 
+        @Override
         public void informMove( String expl, String words )
         {
             m_dlgBytes = expl;
@@ -1184,6 +1241,7 @@ public class BoardActivity extends XWActivity
             waitBlockingDialog( DLG_SCORES_BLK, 0 );
         }
 
+        @Override
         public void notifyGameOver()
         {
             m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
@@ -1194,7 +1252,7 @@ public class BoardActivity extends XWActivity
         //     Utils.logf( "yOffsetChange(maxOffset=%d)", maxOffset );
         //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
         // }
-
+        @Override
         public boolean warnIllegalWord( String[] words, int turn, 
                                         boolean turnLost )
         {
@@ -1230,6 +1288,7 @@ public class BoardActivity extends XWActivity
         // we don't block the jni thread will continue processing messages
         // and may stack dialogs on top of this one.  Including later
         // chat-messages.
+        @Override
         public void showChat( final String msg )
         {
             post( new Runnable() {
@@ -1305,7 +1364,8 @@ public class BoardActivity extends XWActivity
                                 }
                                 break;
                             case JNIThread.GOT_WORDS:
-                                launchLookup( wordsToArray((String)msg.obj) );
+                                launchLookup( wordsToArray((String)msg.obj), 
+                                              m_gi.dictLang );
                                 break;
                             }
                         }
@@ -1356,6 +1416,10 @@ public class BoardActivity extends XWActivity
 
     private void populateToolbar()
     {
+        m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
+                               R.string.not_again_browse,
+                               R.string.key_na_browse,
+                               BUTTON_BROWSE_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
                                R.string.not_again_hintprev,
                                R.string.key_notagain_hintprev,
@@ -1587,12 +1651,6 @@ public class BoardActivity extends XWActivity
             wordsArray[ii] = tmp[jj-1];
         }
         return wordsArray;
-    }
-
-    private void launchLookup( String[] words )
-    {
-        m_words = words;
-        showDialog( DLG_LOOKUP );
     }
 
     private void setupPasswdVars()

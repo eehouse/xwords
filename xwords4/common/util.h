@@ -65,16 +65,10 @@ typedef enum {
 
 typedef enum {
     QUERY_COMMIT_TURN, /* 0 means cancel; 1 means commit */
-    QUERY_COMMIT_TRADE,
     QUERY_ROBOT_TRADE,
 
     QUERY_LAST_COMMON
 } UtilQueryID;
-
-typedef enum {
-    PICK_FOR_BLANK
-    , PICK_FOR_CHEAT
-} PICK_WHY;
 
 #define PICKER_PICKALL -1
 #define PICKER_BACKUP -2
@@ -84,7 +78,6 @@ typedef struct PickInfo {
     XP_U16 nCurTiles;
     XP_U16 nTotal;              /* count to fetch for turn, <= MAX_TRAY_TILES */
     XP_U16 thisPick;            /* <= nTotal */
-    PICK_WHY why;
 } PickInfo;
 
 typedef struct BadWordInfo {
@@ -113,11 +106,15 @@ typedef struct UtilVtable {
 
     XP_Bool (*m_util_userQuery)( XW_UtilCtxt* uc, UtilQueryID id,
                                  XWStreamCtxt* stream );
-
+    XP_Bool (*m_util_confirmTrade)( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
+                                    XP_U16 nTiles );
     /* return of < 0 means computer should pick */
-    XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, const PickInfo* pi, 
-                                   XP_U16 playerNum,
-                                   const XP_UCHAR** texts, XP_U16 nTiles );
+    XP_S16 (*m_util_userPickTileBlank)( XW_UtilCtxt* uc, XP_U16 playerNum,
+                                        const XP_UCHAR** tileFaces, 
+                                        XP_U16 nTiles );
+    XP_S16 (*m_util_userPickTileTray)( XW_UtilCtxt* uc, const PickInfo* pi, 
+                                        XP_U16 playerNum,
+                                        const XP_UCHAR** texts, XP_U16 nTiles );
 
     XP_Bool (*m_util_askPassword)( XW_UtilCtxt* uc, const XP_UCHAR* name,
                                    XP_UCHAR* buf, XP_U16* len );
@@ -213,8 +210,13 @@ struct XW_UtilCtxt {
 #define util_userQuery(uc,qcode,str) \
          (uc)->vtable->m_util_userQuery((uc),(qcode),(str))
 
-#define util_userPickTile( uc, w, n, tx, nt ) \
-         (uc)->vtable->m_util_userPickTile( (uc), (w), (n), (tx), (nt) )
+#define util_confirmTrade( uc, tx, nt )                 \
+         (uc)->vtable->m_util_confirmTrade((uc),(tx),(nt))
+
+#define util_userPickTileBlank( uc, n, tx, nt ) \
+         (uc)->vtable->m_util_userPickTileBlank( (uc), (n), (tx), (nt) )
+#define util_userPickTileTray( uc, w, n, tx, nt ) \
+         (uc)->vtable->m_util_userPickTileTray( (uc), (w), (n), (tx), (nt) )
 #define util_askPassword( uc, n, b, lp ) \
          (uc)->vtable->m_util_askPassword( (uc), (n), (b), (lp) )
 

@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -219,23 +219,25 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     const XP_U8* ptr;
 
     struct stat statbuf;
-    if ( 0 != stat( fileName, &statbuf ) ) {
+    if ( 0 != stat( fileName, &statbuf ) || 0 == statbuf.st_size ) {
         goto closeAndExit;
     }
     dctx->dictLength = statbuf.st_size;
 
     {
-	FILE* dictF = fopen( fileName, "r" );
-	XP_ASSERT( !!dictF );
-	if ( dctx->useMMap ) {
-	    dctx->dictBase = mmap( NULL, dctx->dictLength, PROT_READ, MAP_PRIVATE, fileno(dictF), 0 );
-	} else {
-	    dctx->dictBase = XP_MALLOC( dctx->super.mpool, dctx->dictLength );
-	    if ( dctx->dictLength != fread( dctx->dictBase, 1, dctx->dictLength, dictF ) ) {
-		XP_ASSERT( 0 );
-	    }
-	}
-	fclose( dictF );
+        FILE* dictF = fopen( fileName, "r" );
+        XP_ASSERT( !!dictF );
+        if ( dctx->useMMap ) {
+            dctx->dictBase = mmap( NULL, dctx->dictLength, PROT_READ, 
+                                   MAP_PRIVATE, fileno(dictF), 0 );
+        } else {
+            dctx->dictBase = XP_MALLOC( dctx->super.mpool, dctx->dictLength );
+            if ( dctx->dictLength != fread( dctx->dictBase, 1, 
+                                            dctx->dictLength, dictF ) ) {
+                XP_ASSERT( 0 );
+            }
+        }
+        fclose( dictF );
     }
 
     ptr = dctx->dictBase;
@@ -247,65 +249,65 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     XP_DEBUGF( "flags=0X%X", flags );
     hasHeader = 0 != (DICT_HEADER_MASK & flags);
     if ( hasHeader ) {
-	flags &= ~DICT_HEADER_MASK;
-	XP_DEBUGF( "has header!" );
+        flags &= ~DICT_HEADER_MASK;
+        XP_DEBUGF( "has header!" );
     }
 #ifdef NODE_CAN_4
     if ( flags == 0x0001 ) {
-	dctx->super.nodeSize = 3;
-	charSize = 1;
-	dctx->super.is_4_byte = XP_FALSE;
+        dctx->super.nodeSize = 3;
+        charSize = 1;
+        dctx->super.is_4_byte = XP_FALSE;
     } else if ( flags == 0x0002 ) {
-	dctx->super.nodeSize = 3;
-	charSize = 2;
-	dctx->super.is_4_byte = XP_FALSE;
+        dctx->super.nodeSize = 3;
+        charSize = 2;
+        dctx->super.is_4_byte = XP_FALSE;
     } else if ( flags == 0x0003 ) {
-	dctx->super.nodeSize = 4;
-	charSize = 2;
-	dctx->super.is_4_byte = XP_TRUE;
+        dctx->super.nodeSize = 4;
+        charSize = 2;
+        dctx->super.is_4_byte = XP_TRUE;
     } else if ( flags == 0x0004 ) {
-	dctx->super.nodeSize = 3;
-	dctx->super.isUTF8 = XP_TRUE;
-	isUTF8 = XP_TRUE;
-	dctx->super.is_4_byte = XP_FALSE;
+        dctx->super.nodeSize = 3;
+        dctx->super.isUTF8 = XP_TRUE;
+        isUTF8 = XP_TRUE;
+        dctx->super.is_4_byte = XP_FALSE;
     } else if ( flags == 0x0005 ) {
-	dctx->super.nodeSize = 4;
-	dctx->super.isUTF8 = XP_TRUE;
-	isUTF8 = XP_TRUE;
-	dctx->super.is_4_byte = XP_TRUE;
+        dctx->super.nodeSize = 4;
+        dctx->super.isUTF8 = XP_TRUE;
+        isUTF8 = XP_TRUE;
+        dctx->super.is_4_byte = XP_TRUE;
     } else {
-	/* case I don't know how to deal with */
-	formatOk = XP_FALSE;
-	XP_ASSERT(0);
+        /* case I don't know how to deal with */
+        formatOk = XP_FALSE;
+        XP_ASSERT(0);
     }
 
 #else
-XP_ASSERT( flags == 0x0001 );
+    XP_ASSERT( flags == 0x0001 );
 #endif
 
     if ( formatOk ) {
-	XP_U8 numFaceBytes, numFaces;
+        XP_U8 numFaceBytes, numFaces;
 
         if ( hasHeader ) {
             XP_U16 headerLen;
             XP_U32 wordCount;
 
-	    memcpy( &headerLen, ptr, sizeof(headerLen) );
-	    ptr += sizeof(headerLen);
+            memcpy( &headerLen, ptr, sizeof(headerLen) );
+            ptr += sizeof(headerLen);
             headerLen = ntohs( headerLen );
             if ( headerLen != sizeof(wordCount) ) { /* the only case we know right now */
                 goto closeAndExit;
             }
-	    memcpy( &wordCount, ptr, sizeof(wordCount) );
-	    ptr += sizeof(wordCount);
+            memcpy( &wordCount, ptr, sizeof(wordCount) );
+            ptr += sizeof(wordCount);
             dctx->super.nWords = ntohl( wordCount );
             XP_DEBUGF( "dict contains %ld words", dctx->super.nWords );
         }
 
         if ( isUTF8 ) {
-	    numFaceBytes = *ptr++;
+            numFaceBytes = *ptr++;
         }
-	numFaces = *ptr++;
+        numFaces = *ptr++;
         if ( !isUTF8 ) {
             numFaceBytes = numFaces * charSize;
         }
@@ -320,42 +322,47 @@ XP_ASSERT( flags == 0x0001 );
         }
 
         XP_U8 tmp[numFaceBytes];
-	memcpy( tmp, ptr, numFaceBytes );
-	ptr += numFaceBytes;
+        memcpy( tmp, ptr, numFaceBytes );
+        ptr += numFaceBytes;
 
         dict_splitFaces( &dctx->super, tmp, numFaceBytes, numFaces );
 
-	memcpy( &xloc, ptr, sizeof(xloc) );
-	ptr += sizeof(xloc);
-	memcpy( dctx->super.countsAndValues, ptr, numFaces*2 );
-	ptr += numFaces*2;
+        memcpy( &xloc, ptr, sizeof(xloc) );
+        ptr += sizeof(xloc);
+        memcpy( dctx->super.countsAndValues, ptr, numFaces*2 );
+        ptr += numFaces*2;
     }
     
     dctx->super.langCode = xloc & 0x7F;
 
     if ( formatOk ) {
+        XP_U32 numEdges;
         skipBitmaps( dctx, &ptr );
 
         curPos = ptr - dctx->dictBase;
         dictLength = dctx->dictLength - curPos;
 
         if ( dictLength > 0 ) {
-	    memcpy( &topOffset, ptr, sizeof(topOffset) );
+            memcpy( &topOffset, ptr, sizeof(topOffset) );
             /* it's in big-endian order */
             topOffset = ntohl(topOffset);
             dictLength -= sizeof(topOffset); /* first four bytes are offset */
-	    ptr += sizeof(topOffset);
+            ptr += sizeof(topOffset);
         }
 
         if ( dictLength > 0 ) {
+# ifdef NODE_CAN_4
+            numEdges = dictLength / dctx->super.nodeSize;
+# else
+            numEdges = dictLength / 3;
+# endif
 #ifdef DEBUG
 # ifdef NODE_CAN_4
-            dctx->super.numEdges = dictLength / dctx->super.nodeSize;
             XP_ASSERT( (dictLength % dctx->super.nodeSize) == 0 );
 # else
-            dctx->super.numEdges = dictLength / 3;
             XP_ASSERT( (dictLength % 3) == 0 );
 # endif
+            dctx->super.numEdges = numEdges;
 #endif
             dctx->super.base = (array_edge*)ptr;
 
@@ -366,6 +373,10 @@ XP_ASSERT( flags == 0x0001 );
         }
 
         dctx->super.name = copyString( dctx->super.mpool, fileName );
+
+        if ( ! checkSanity( &dctx->super, numEdges ) ) {
+            goto closeAndExit;
+        }
     }
     goto ok;
 

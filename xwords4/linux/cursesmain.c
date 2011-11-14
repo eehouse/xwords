@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -229,9 +229,26 @@ cursesUserError( CursesAppGlobals* globals, const char* format, ... )
 } /* cursesUserError */
 
 static XP_S16 
-curses_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi), 
-                          XP_U16 playerNum, const XP_UCHAR** texts, 
-                          XP_U16 nTiles )
+curses_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, 
+                               const XP_UCHAR** texts, XP_U16 nTiles )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    char query[128];
+    XP_S16 index;
+    char* playerName = globals->cGlobals.params->gi.players[playerNum].name;
+
+    snprintf( query, sizeof(query), 
+              "Pick tile for %s! (Tab or type letter to select "
+              "then hit <cr>.)", playerName );
+
+    index = curses_askLetter( globals, query, texts, nTiles );
+    return index;
+} /* util_userPickTile */
+
+static XP_S16 
+curses_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi), 
+                              XP_U16 playerNum, const XP_UCHAR** texts, 
+                              XP_U16 nTiles )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
@@ -278,11 +295,6 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         answers[numAnswers++] = "Cancel";
         answers[numAnswers++] = "Ok";
         break;
-    case QUERY_COMMIT_TRADE:
-        question = "Commit trade?";
-        answers[numAnswers++] = "Cancel";
-        answers[numAnswers++] = "Ok";
-        break;
     case QUERY_ROBOT_TRADE:
         question = strFromStream( stream );
         freeMe = XP_TRUE;
@@ -304,6 +316,16 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 
     return result;
 } /* curses_util_userQuery */
+
+static XP_Bool
+curses_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
+                          XP_U16 nTiles )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    char question[256];
+    formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
+    return 1 == cursesask( globals, question, 2, "Cancel", "Ok" );
+}
 
 static void
 curses_util_trayHiddenChange( XW_UtilCtxt* XP_UNUSED(uc), 
@@ -427,7 +449,6 @@ curses_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 static gboolean
 onetime_idle( gpointer data )
 {
-    LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
     if ( server_do( globals->cGlobals.game.server, NULL ) ) {
         if ( !!globals->cGlobals.game.board ) {
@@ -443,7 +464,12 @@ curses_util_requestTime( XW_UtilCtxt* uc )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
 #ifdef USE_GLIBLOOP
+# if 0
     (void)g_idle_add( onetime_idle, globals );
+# else
+    (void)g_timeout_add( 1,// interval,
+                         onetime_idle, globals );
+# endif
 #else
     /* I've created a pipe whose read-only end is plugged into the array of
        fds that my event loop polls so that I can write to it to simulate
@@ -1040,7 +1066,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
         }
     }
     return TRUE;
-}
+} /* data_socket_proc */
 #endif
 
 static void
@@ -1473,7 +1499,9 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr;
 #endif
     util->vtable->m_util_userQuery = curses_util_userQuery;
-    util->vtable->m_util_userPickTile = curses_util_userPickTile;
+    util->vtable->m_util_confirmTrade = curses_util_confirmTrade;
+    util->vtable->m_util_userPickTileBlank = curses_util_userPickTileBlank;
+    util->vtable->m_util_userPickTileTray = curses_util_userPickTileTray;
     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange;
     util->vtable->m_util_informMove = curses_util_informMove;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;

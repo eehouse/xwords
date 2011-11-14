@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -150,6 +150,8 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
                            XP_U16 col, XP_U16 row )
 {
     static XWBonusType* parsedFile = NULL;
+    XWBonusType result = EM;
+
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     XP_U16 nCols = model_numCols( model );
     if ( NULL == parsedFile && NULL != cGlobals->params->bonusFile ) {
@@ -158,34 +160,42 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
         }
     }
     if ( NULL != parsedFile ) {
-        return parsedFile[(row*nCols) + col];
+        result = parsedFile[(row*nCols) + col];
     } else {
-        XP_U16 index;
+        XP_U16 index, ii;
         /* This must be static or won't compile under multilink (for Palm).
            Fix! */
         static char scrabbleBoard[8*8] = { 
-            TW,EM,EM,DL,EM,EM,EM,TW,
-            EM,DW,EM,EM,EM,TL,EM,EM,
+            TW,//EM,EM,DL,EM,EM,EM,TW,
+            EM,DW,//EM,EM,EM,TL,EM,EM,
 
-            EM,EM,DW,EM,EM,EM,DL,EM,
-            DL,EM,EM,DW,EM,EM,EM,DL,
+            EM,EM,DW,//EM,EM,EM,DL,EM,
+            DL,EM,EM,DW,//EM,EM,EM,DL,
                             
-            EM,EM,EM,EM,DW,EM,EM,EM,
-            EM,TL,EM,EM,EM,TL,EM,EM,
+            EM,EM,EM,EM,DW,//EM,EM,EM,
+            EM,TL,EM,EM,EM,TL,//EM,EM,
                             
-            EM,EM,DL,EM,EM,EM,DL,EM,
+            EM,EM,DL,EM,EM,EM,DL,//EM,
             TW,EM,EM,DL,EM,EM,EM,DW,
         }; /* scrabbleBoard */
 
         if ( col > 7 ) col = 14 - col;
         if ( row > 7 ) row = 14 - row;
-        index = (row*8) + col;
-        if ( index >= 8*8 ) {
-            return (XWBonusType)EM;
-        } else {
-            return (XWBonusType)scrabbleBoard[index];
+        if ( col > row ) {
+            XP_U16 tmp = col;
+            col = row;
+            row = tmp;
+        }
+        index = col;
+        for ( ii = 1; ii <= row; ++ii ) {
+            index += ii;
+        }
+
+        if ( index < VSIZE(scrabbleBoard) ) {
+            result = (XWBonusType)scrabbleBoard[index];
         }
     }
+    return result;
 } /* linux_util_getSquareBonus */
 
 static XP_U32
@@ -406,6 +416,27 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 
     return (XP_UCHAR*)message;
 } /* linux_getErrString */
+
+void
+formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, 
+                    char* buf, XP_U16 buflen )
+{
+    char tileBuf[128];
+    int offset = 0;
+    int ii;
+
+    XP_ASSERT( nTiles > 0 );
+    for ( ii = 0; ii < nTiles; ++ii ) {
+        offset += snprintf( &tileBuf[offset], sizeof(tileBuf) - offset, 
+                            "%s, ", tiles[ii] );
+        XP_ASSERT( offset < sizeof(tileBuf) );
+    }
+    tileBuf[offset-2] = '\0';
+
+    snprintf( buf, buflen,
+              "Are you sure you want to trade the selected tiles (%s)?",
+              tileBuf );
+}
 
 #ifdef TEXT_MODEL
 /* This is broken for UTF-8, even Spanish */

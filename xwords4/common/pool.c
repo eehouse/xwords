@@ -171,10 +171,10 @@ pool_requestTiles( PoolContext* pool, Tile* tiles, XP_U8* maxNum )
 } /* pool_requestTiles */
 
 void
-pool_replaceTiles( PoolContext* pool, TrayTileSet* tiles )
+pool_replaceTiles( PoolContext* pool, const TrayTileSet* tiles )
 {
     XP_U16 nTiles = tiles->nTiles;
-    Tile* tilesP = tiles->tiles;
+    const Tile* tilesP = tiles->tiles;
 
     while ( nTiles-- ) {
         Tile tile = *tilesP++; /* do I need to filter off high bits? */
@@ -188,10 +188,10 @@ pool_replaceTiles( PoolContext* pool, TrayTileSet* tiles )
 } /* pool_replaceTiles */
 
 void
-pool_removeTiles( PoolContext* pool, TrayTileSet* tiles )
+pool_removeTiles( PoolContext* pool, const TrayTileSet* tiles )
 {
     XP_U16 nTiles = tiles->nTiles;
-    Tile* tilesP = tiles->tiles;
+    const Tile* tilesP = tiles->tiles;
 
     XP_ASSERT( nTiles <= MAX_TRAY_TILES );
 

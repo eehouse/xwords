@@ -62,6 +62,7 @@ public class LookupView extends LinearLayout
     private static int s_lang = -1;
 
     private String[] m_words;
+    private boolean m_forceList;
     private static int m_lang;
     private int m_wordIndex = 0;
     private int m_urlIndex = 0;
@@ -79,9 +80,10 @@ public class LookupView extends LinearLayout
         m_context = cx;
     }
 
-    public void setWords( String[] words, int lang ) 
+    public void setWords( String[] words, int lang, boolean forceList ) 
     {
         m_words = words;
+        m_forceList = forceList;
         setLang( lang );
 
         m_state = STATE_DONE;
@@ -140,7 +142,8 @@ public class LookupView extends LinearLayout
             if ( STATE_WORDS == m_state && 1 >= m_words.length ) {
                 m_state += incr;
             }
-            if ( STATE_URLS == m_state && 1 >= s_lookupUrls.length ) {
+            if ( STATE_URLS == m_state &&
+                ( 1 >= s_lookupUrls.length && !m_forceList ) ) {
                 m_state += incr;
             }
             if ( m_state == curState ) {

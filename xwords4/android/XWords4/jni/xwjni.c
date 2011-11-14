@@ -1,7 +1,7 @@
 /* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 /*
- * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright © 2009 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -28,6 +28,8 @@
 #include "board.h"
 #include "mempool.h"
 #include "strutils.h"
+#include "dictnry.h"
+#include "dictiter.h"
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
@@ -265,27 +267,32 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
     setJAddrRec( env, jaddr, &addr );
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 ( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, 
-  jobject jniu, jobject jinfo )
+  jobject jniu, jboolean check, jobject jinfo )
 {
+    jboolean result = false;
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
-                                     jDictBytes, jpath, NULL );
-    jint code = dict_getLangCode( dict );
-    jint nWords = dict_getWordCount( dict );
-    dict_destroy( dict );
+                                     jDictBytes, jpath, NULL, check );
+    if ( NULL != dict ) {
+        if ( NULL != jinfo ) {
+            setInt( env, jinfo, "langCode", dict_getLangCode( dict ) );
+            setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
+        }
+        dict_destroy( dict );
+        result = true;
+    }
     destroyJNIUtil( &jniutil );
 
-    setInt( env, jinfo, "langCode", code );
-    setInt( env, jinfo, "wordCount", nWords );
 #ifdef MEM_DEBUG
     mpool_destroy( mpool );
 #endif
+    return result;
 }
 
 /* Dictionary methods: don't use gamePtr */
@@ -1267,3 +1274,205 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
     (*env)->ReleaseStringUTFChars( env, jmsg, msg );
     XWJNI_END();
 }
+
+#ifdef XWFEATURE_WALKDICT
+////////////////////////////////////////////////////////////
+// Dict iterator
+////////////////////////////////////////////////////////////
+
+typedef struct _DictIterData {
+    JNIEnv* env;
+    JNIUtilCtxt* jniutil;
+    VTableMgr* vtMgr;
+    DictionaryCtxt* dict;
+    DictIter iter;
+    IndexData idata;
+    XP_U16 depth;
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool;
+#endif
+} DictIterData;
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
+(JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, jobject jniu )
+{
+    jint closure = 0;
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = mpool_make();
+#endif
+    DictIterData* data = XP_CALLOC( mpool, sizeof(*data) );
+    data->env = env;
+    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &data->env, jniu );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
+                                     jDictBytes, jpath, NULL, false );
+    if ( !!dict ) {
+        data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
+        data->jniutil = jniutil;
+        data->dict = dict;
+#ifdef MEM_DEBUG
+        data->mpool = mpool;
+#endif
+        closure = (int)data;
+
+        dict_initIter( data->dict, &data->iter );
+        (void)dict_firstWord( &data->iter );
+    } else {
+        destroyJNIUtil( &jniutil );
+        XP_FREE( mpool, data );
+#ifdef MEM_DEBUG
+        mpool_destroy( mpool );
+#endif
+    }
+    return closure;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
+( JNIEnv* env, jclass C, jint closure )
+{
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+#ifdef MEM_DEBUG
+        MemPoolCtx* mpool = data->mpool;
+#endif
+        dict_destroy( data->dict );
+        destroyJNIUtil( &data->jniutil );
+        if ( !!data->idata.indices ) {
+            XP_FREE( mpool, data->idata.indices );
+        }
+        if ( !!data->idata.prefixes ) {
+            XP_FREE( mpool, data->idata.prefixes );
+        }
+        vtmgr_destroy( MPPARM(mpool) data->vtMgr );
+        XP_FREE( mpool, data );
+#ifdef MEM_DEBUG
+        mpool_destroy( mpool );
+#endif
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
+(JNIEnv* env, jclass C, jint closure )
+{
+    jint result = 0;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        result = data->iter.nWords;
+    }
+    return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1makeIndex
+( JNIEnv* env, jclass C, jint closure )
+{
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        data->depth = 2;        /* for now */
+        XP_U16 nFaces = dict_numTileFaces( data->dict );
+        XP_U16 ii;
+        XP_U16 count;
+        for ( count = 1, ii = 0; ii < data->depth; ++ii ) {
+            count *= nFaces;
+        }
+
+        IndexData* idata = &data->idata;
+        XP_ASSERT( !idata->prefixes );
+        idata->prefixes = XP_MALLOC( data->mpool, count * data->depth 
+                                     * sizeof(*idata->prefixes) );
+        XP_ASSERT( !idata->indices );
+        idata->indices = XP_MALLOC( data->mpool, 
+                                    count * sizeof(*idata->indices) );
+        idata->count = count;
+
+        dict_makeIndex( &data->iter, data->depth, idata );
+        
+        idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
+                                      idata->count * data->depth *
+                                      sizeof(*idata->prefixes) );
+        idata->indices = XP_REALLOC( data->mpool, idata->indices,
+                                     idata->count * sizeof(*idata->indices) );
+    }
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
+( JNIEnv* env, jclass C, jint closure )
+{
+    jobjectArray result = NULL;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data && NULL != data->idata.prefixes ) {
+        result = makeStringArray( env, data->idata.count, NULL );
+
+        int ii;
+        XP_U16 depth = data->depth;
+        for ( ii = 0; ii < data->idata.count; ++ii ) {
+            XP_UCHAR buf[16];
+            (void)dict_tilesToString( data->dict, 
+                                      &data->idata.prefixes[depth*ii], 
+                                      depth, buf, VSIZE(buf) );
+            jstring jstr = (*env)->NewStringUTF( env, buf );
+            (*env)->SetObjectArrayElement( env, result, ii, jstr );
+            (*env)->DeleteLocalRef( env, jstr );
+        }
+        (*env)->DeleteLocalRef( env, result );
+    }
+    return result;
+}
+
+JNIEXPORT jintArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
+( JNIEnv* env, jclass C , jint closure )
+{
+    jintArray jindices = NULL;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        XP_ASSERT( !!data->idata.indices );
+        XP_ASSERT( sizeof(jint) == sizeof(data->idata.indices[0]) );
+        jindices = makeIntArray( env, data->idata.count, 
+                                 (jint*)data->idata.indices );
+        (*env)->DeleteLocalRef( env, jindices );
+    }
+    return jindices;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
+( JNIEnv* env, jclass C, jint closure, jint nn)
+{
+    jstring result = NULL;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        if ( dict_getNthWord( &data->iter, nn, data->depth, &data->idata ) ) {
+            XP_UCHAR buf[64];
+            dict_wordToString( &data->iter, buf, VSIZE(buf) );
+            result = (*env)->NewStringUTF( env, buf );
+            (*env)->DeleteLocalRef( env, result );
+        }
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
+( JNIEnv* env, jclass C, jint closure, jstring jprefix )
+{
+    jint result = -1;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        Tile tiles[MAX_COLS];
+        XP_U16 nTiles = VSIZE(tiles);
+        const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
+        if ( dict_tilesForString( data->dict, prefix, tiles, &nTiles ) ) {
+            if ( dict_findStartsWith( &data->iter, NULL, tiles, nTiles ) ) {
+                result = dict_getPosition( &data->iter );
+            }
+        }
+        (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
+    }
+    return result;
+}
+
+#endif  /* XWFEATURE_BOARDWORDS */

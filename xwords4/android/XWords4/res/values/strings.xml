@@ -242,12 +242,6 @@
          key_default_dict and key_default_robodict.) -->
     <string name="dicts_item_select">Make default</string>
 
-    <!-- Title of contextual menu item.  If chosen it does nothing,
-         but will eventually bring up a dialog giving additional
-         information about the selected wordlist, possibly including a
-         scrolling list of all its words. -->
-    <string name="dicts_item_details">Details</string>
-
     <!-- text of confirmation dialog posted when the delete 'X' button
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %s.  Sometimes one of the two
@@ -308,8 +302,7 @@
          is substituted for %1$s.  The strings loc_internal and
          loc_internal are substitued for %2$s and %3$s (or vice-versa,
          depending on the current location of the wordlist.)-->
-    <string name="move_dictf">Move wordlist %1$s from %2$s to %3$s
-      storage?</string>
+    <string name="move_dictf">Location for wordlist %1$s</string>
 
     <!-- see move_dictf above -->
     <string name="loc_internal">Internal</string>
@@ -1215,9 +1208,8 @@
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-	<string name="query_trade">Are you sure you want to exchange the
-         selected tiles?</string>
-
+	<string name="query_tradef">Are you sure you want to exchange the
+         selected tiles (%s)?</string>
 
     <!-- ############################################################
          # :Screens:
@@ -1764,7 +1756,8 @@
          dialog -->
     <string name="changes_button">Recent changes</string>
 
-
+    <!-- New strings that need to be documented and found a home
+         above. -->
     <string name="button_lookup">Look up words</string>
     <string name="button_lookupf">Look up %s</string>
     <string name="title_lookup">Tap to look up</string>
@@ -1782,5 +1775,19 @@
       words just played online.  (Note that not all languages are
       supported yet.)</string>
 
-</resources>
+    <string name="button_move">Move</string>
 
+    <string name="button_search">Find</string>
+    <string name="word_search_hint">First letters</string>
+    <string name="tilepick_undo">Undo last</string>
+    <string name="tilepick_all">Pick for me</string>
+    <string name="cur_tilesf">Tile picker\n(so far: %s)</string>
+    <string name="pick_faceup">Pick tiles face-up</string>
+
+    <string name="dict_browse_titlef">%1$s (%2$d words)</string>
+    <string name="dict_browse_nowordsf">No word in %1$s starts with
+      %2$s.</string>
+    <string name="not_again_browse">This button opens the wordlist
+      browser on the current player\'s wordlist.</string>
+
+</resources>

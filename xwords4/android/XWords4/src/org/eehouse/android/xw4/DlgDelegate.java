@@ -43,7 +43,8 @@ public class DlgDelegate {
     public static final int CONFIRM_THEN = 4;
     public static final int TEXT_OR_HTML_THEN = 5;
     public static final int DLG_DICTGONE = 6;
-    public static final int DIALOG_LAST = DLG_DICTGONE;
+    public static final int DLG_LOOKUP = 7;
+    public static final int DIALOG_LAST = DLG_LOOKUP;
 
     public static final int TEXT_BTN = AlertDialog.BUTTON_POSITIVE;
     public static final int HTML_BTN = AlertDialog.BUTTON_NEGATIVE;
@@ -55,6 +56,9 @@ public class DlgDelegate {
     private static final String MSGID = "msgid";
     private static final String PREFSKEY = "prefskey";
     private static final String POSBUTTON = "posbutton";
+    private static final String WORDS = "words";
+    private static final String LANG = "lang";
+    private static final String FORCELIST = "forcelist";
 
     // Cache a couple of callback implementations that never change:
     private DialogInterface.OnClickListener m_cbkOnClickLstnr = null;
@@ -73,6 +77,9 @@ public class DlgDelegate {
     private Activity m_activity;
     private DlgClickNotify m_clickCallback;
     private String m_dictName = null;
+    private String[] m_words = null;
+    private int m_wordsLang = -1;
+    private boolean m_forceList = false;
 
     public DlgDelegate( Activity activity, DlgClickNotify callback,
                         Bundle bundle ) 
@@ -86,6 +93,9 @@ public class DlgDelegate {
             m_msgID = bundle.getInt( MSGID );
             m_posButton = bundle.getInt( POSBUTTON );
             m_prefsKey = bundle.getInt( PREFSKEY );
+            m_words = bundle.getStringArray( WORDS );
+            m_wordsLang = bundle.getInt( LANG );
+            m_forceList = bundle.getBoolean( FORCELIST );
         }
     }
 
@@ -96,6 +106,9 @@ public class DlgDelegate {
         outState.putInt( MSGID, m_msgID );
         outState.putInt( POSBUTTON, m_posButton );
         outState.putInt( PREFSKEY, m_prefsKey );
+        outState.putStringArray( WORDS, m_words );
+        outState.putInt( LANG, m_wordsLang );
+        outState.putBoolean( FORCELIST, m_forceList );
     }
     
     public Dialog onCreateDialog( int id )
@@ -119,6 +132,15 @@ public class DlgDelegate {
             break;
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
+            break;
+        case DLG_LOOKUP:
+            LookupView view = (LookupView)Utils.inflate( m_activity, 
+                                                         R.layout.lookup );
+            dialog = new AlertDialog.Builder( m_activity )
+                .setView( view )
+                .create();
+            view.setDialog( dialog, DLG_LOOKUP );
+            view.setWords( m_words, m_wordsLang, m_forceList );
             break;
         }
         return dialog;
@@ -223,6 +245,14 @@ public class DlgDelegate {
                             m_activity.getString( R.string.msgs_progress ),
                             Toast.LENGTH_LONG ).show();
         }
+    }
+
+    public void launchLookup( String[] words, int lang, boolean forceList )
+    {
+        m_words = words;
+        m_wordsLang = lang;
+        m_forceList = forceList;
+        m_activity.showDialog( DLG_LOOKUP );
     }
 
     private Dialog createAboutDialog()

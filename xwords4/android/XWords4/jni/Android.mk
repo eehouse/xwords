@@ -25,6 +25,9 @@ local_DEFINES += \
 	-DDISABLE_EMPTYTRAY_UNDO \
 	-DDISABLE_TILE_SEL \
 	-DXWFEATURE_BOARDWORDS \
+	-DXWFEATURE_WALKDICT \
+	-DXWFEATURE_DICTSANITY \
+	-DFEATURE_TRAY_EDIT \
 	-DNODE_CAN_4 \
 	-DRELAY_ROOM_DEFAULT=\"\"\
 	-D__LITTLE_ENDIAN \
@@ -47,6 +50,7 @@ common_SRC_FILES +=        \
 	$(COMMON_PATH)/pool.c       \
 	$(COMMON_PATH)/tray.c       \
 	$(COMMON_PATH)/dictnry.c    \
+	$(COMMON_PATH)/dictiter.c   \
 	$(COMMON_PATH)/mscore.c     \
 	$(COMMON_PATH)/vtabmgr.c    \
 	$(COMMON_PATH)/strutils.c   \

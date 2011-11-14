@@ -1300,15 +1300,27 @@ gtk_util_getVTManager(XW_UtilCtxt* uc)
 } /* linux_util_getVTManager */
 
 static XP_S16
-gtk_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
-                       XP_U16 playerNum, const XP_UCHAR** texts, 
-                       XP_U16 nTiles )
+gtk_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, 
+                            const XP_UCHAR** texts, XP_U16 nTiles )
 {
     XP_S16 chosen;
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
 	XP_UCHAR* name = globals->cGlobals.params->gi.players[playerNum].name;
 
-    chosen = gtkletterask( pi, name, nTiles, texts );
+    chosen = gtkletterask( NULL, XP_FALSE, name, nTiles, texts );
+    return chosen;
+}
+
+static XP_S16
+gtk_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi,
+                           XP_U16 playerNum, const XP_UCHAR** texts, 
+                           XP_U16 nTiles )
+{
+    XP_S16 chosen;
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+	XP_UCHAR* name = globals->cGlobals.params->gi.players[playerNum].name;
+
+    chosen = gtkletterask( pi, XP_TRUE, name, nTiles, texts );
     return chosen;
 } /* gtk_util_userPickTile */
 
@@ -1761,9 +1773,6 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
         question = strFromStream( stream );
         freeMe = XP_TRUE;
         break;
-    case QUERY_COMMIT_TRADE:
-        question = "Are you sure you want to trade the selected tiles?";
-        break;
     case QUERY_ROBOT_TRADE:
         question = strFromStream( stream );
         freeMe = XP_TRUE;
@@ -1783,6 +1792,15 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
 
     return result;
 } /* gtk_util_userQuery */
+
+static XP_Bool
+gtk_util_confirmTrade( XW_UtilCtxt* XP_UNUSED(uc), 
+                       const XP_UCHAR** tiles, XP_U16 nTiles )
+{
+    char question[256];
+    formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
+    return gtkask( question, GTK_BUTTONS_YES_NO );
+}
 
 static GtkWidget*
 makeShowButtonFromBitmap( void* closure, const gchar* filename, 
@@ -1922,8 +1940,10 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
 {
     util->vtable->m_util_userError = gtk_util_userError;
     util->vtable->m_util_userQuery = gtk_util_userQuery;
+    util->vtable->m_util_confirmTrade = gtk_util_confirmTrade;
     util->vtable->m_util_getVTManager = gtk_util_getVTManager;
-    util->vtable->m_util_userPickTile = gtk_util_userPickTile;
+    util->vtable->m_util_userPickTileBlank = gtk_util_userPickTileBlank;
+    util->vtable->m_util_userPickTileTray = gtk_util_userPickTileTray;
     util->vtable->m_util_askPassword = gtk_util_askPassword;
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
     util->vtable->m_util_yOffsetChange = gtk_util_yOffsetChange;
