@@ -299,11 +299,11 @@ drawBoard( BoardCtxt* board )
         
         nVisCols = model_numCols( model ) - board->zoomCount;
         for ( row = vsd->offset; row <= vsd->lastVisible; ++row ) {
-            XP_U16 rowFlags = board->redrawFlags[row];
+            RowFlags rowFlags = board->redrawFlags[row];
             if ( rowFlags != 0 ) {
-                XP_U16 failedBits = 0;
+                RowFlags failedBits = 0;
                 for ( col = 0; col < nVisCols; ++col ) {
-                    XP_U16 colMask = 1 << (col + hsd->offset);
+                    RowFlags colMask = 1 << (col + hsd->offset);
                     if ( 0 != (rowFlags & colMask) ) {
                         if ( !drawCell( board, col + hsd->offset,
                                         row, XP_TRUE )) {

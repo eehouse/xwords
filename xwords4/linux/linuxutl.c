@@ -179,8 +179,9 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
             TW,EM,EM,DL,EM,EM,EM,DW,
         }; /* scrabbleBoard */
 
-        if ( col > 7 ) col = 14 - col;
-        if ( row > 7 ) row = 14 - row;
+        XP_U16 nCols = model_numCols( model );
+        if ( col > (nCols/2) ) col = nCols - 1 - col;
+        if ( row > (nCols/2) ) row = nCols - 1 - row;
         if ( col > row ) {
             XP_U16 tmp = col;
             col = row;

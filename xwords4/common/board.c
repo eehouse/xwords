@@ -1198,7 +1198,7 @@ invalPerimeter( BoardCtxt* board )
     ScrollData* hsd = &board->sd[SCROLL_H];
     XP_U16 firstCol = hsd->offset;
     XP_U16 lastCol = hsd->lastVisible;
-    XP_U16 firstAndLast = (1 << lastCol) | (1 << firstCol);
+    RowFlags firstAndLast = (1 << lastCol) | (1 << firstCol);
     ScrollData* vsd = &board->sd[SCROLL_V];
     XP_U16 firstRow = vsd->offset;
     XP_U16 lastRow = vsd->lastVisible;
@@ -1588,7 +1588,7 @@ invalReflection( BoardCtxt* board )
 
     while ( nRows-- ) {
         XP_U16 nCols;
-        XP_U16 redrawFlag = board->redrawFlags[nRows];
+        RowFlags redrawFlag = board->redrawFlags[nRows];
         if ( !redrawFlag ) {
             continue;           /* nothing set this row */
         }

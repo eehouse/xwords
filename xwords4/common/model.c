@@ -119,11 +119,14 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
     XP_Bool hasDict;
     XP_U16 nPlayers;
     XP_U16 version = stream_getVersion( stream );
+    XP_U16 nColsNBits = 
+        STREAM_VERS_BIGBOARD > version ? 4 : 
+        NUMCOLS_NBITS;
 
     XP_ASSERT( !!dict || !!dicts );
 
-    nCols = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
-    nRows = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
+    nCols = (XP_U16)stream_getBits( stream, nColsNBits );
+    nRows = (XP_U16)stream_getBits( stream, nColsNBits );
 
     hasDict = (version >= STREAM_VERS_MODEL_NO_DICT)
         ? XP_FALSE : stream_getBits( stream, 1 );
@@ -849,6 +852,9 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 {
     XP_U16 numTiles;
     Tile blank = dict_getBlankTile( model_getDictionary(model) );
+    XP_U16 nColsNBits = 
+        STREAM_VERS_BIGBOARD > stream_getVersion( stream ) ? 4 : 
+        NUMCOLS_NBITS;
 
     model_resetCurrentTurn( model, playerNum );
 
@@ -860,8 +866,8 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
         XP_S16 foundAt;
         Tile moveTile;
         Tile tileFace = (Tile)stream_getBits( stream, TILE_NBITS );
-        XP_U16 col = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
-        XP_U16 row = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
+        XP_U16 col = (XP_U16)stream_getBits( stream, nColsNBits );
+        XP_U16 row = (XP_U16)stream_getBits( stream, nColsNBits );
         XP_Bool isBlank = stream_getBits( stream, 1 );
 
         /* This code gets called both for the server, which has all the
@@ -2215,6 +2221,9 @@ loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version, PlayerCtxt* pc )
 {
     PendingTile* pt;
     XP_U16 nTiles;
+    XP_U16 nColsNBits = 
+        STREAM_VERS_BIGBOARD > stream_getVersion( stream ) ? 4 : 
+        NUMCOLS_NBITS;
 
     pc->curMoveValid = stream_getBits( stream, 1 );
 
@@ -2230,8 +2239,8 @@ loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version, PlayerCtxt* pc )
     nTiles = pc->nPending + pc->nUndone;
     for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
         XP_U16 nBits;
-        pt->col = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
-        pt->row = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
+        pt->col = (XP_U8)stream_getBits( stream, nColsNBits );
+        pt->row = (XP_U8)stream_getBits( stream, nColsNBits );
 
         nBits = (version <= STREAM_VERS_RELAY) ? 6 : 7;
         pt->tile = (Tile)stream_getBits( stream, nBits );
