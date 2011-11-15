@@ -145,6 +145,7 @@ static void sendBadWordMsgs( ServerCtxt* server );
 static XP_Bool handleIllegalWord( ServerCtxt* server, 
                                   XWStreamCtxt* incoming );
 static void tellMoveWasLegal( ServerCtxt* server );
+static void writeProto( XWStreamCtxt* stream, XW_Proto proto );
 #endif
 
 #define PICK_NEXT -1
@@ -515,7 +516,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
     if ( server->nv.gameState == XWSTATE_NONE ) {
         stream_open( stream );
 
-        stream_putBits( stream, XWPROTO_NBITS, XWPROTO_DEVICE_REGISTRATION );
+        writeProto( stream, XWPROTO_DEVICE_REGISTRATION );
 
         nPlayers = gi->nPlayers;
         XP_ASSERT( nPlayers > 0 );
@@ -1095,8 +1096,10 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         PoolContext* pool;
 
         /* version; any dependencies here? */
-        XP_U8 streamVersion = stream_getU8( stream );
-        stream_setVersion( stream, streamVersion );
+        if ( STREAM_SAVE_PREVWORDS >= stream_getVersion( stream ) ) {
+            XP_U8 streamVersion = stream_getU8( stream );
+            stream_setVersion( stream, streamVersion );
+        }
 
         gameID = stream_getU32( stream );
         XP_LOGF( "read gameID of %lx; calling comms_setConnID", gameID );
@@ -1234,11 +1237,7 @@ server_sendInitialMessage( ServerCtxt* server )
         DictionaryCtxt* dict = model_getDictionary(model);
         XP_ASSERT( !!stream );
         stream_open( stream );
-        stream_putBits( stream, XWPROTO_NBITS, XWPROTO_CLIENT_SETUP );
-
-        /* write version for server's benefit; use old version until format
-           changes */
-        stream_putU8( stream, CUR_STREAM_VERS );
+        writeProto( stream, XWPROTO_CLIENT_SETUP );
 
         XP_LOGF( "putting gameID %lx into msg", gameID );
         stream_putU32( stream, gameID );
@@ -1323,6 +1322,7 @@ printCode(char* intro, XW_Proto code)
         caseStr( str, XWPROTO_MOVE_CONFIRM );
         caseStr( str, XWPROTO_CLIENT_REQ_END_GAME );
         caseStr( str, XWPROTO_END_GAME );
+        caseStr( str, XWPROTO_NEW_PROTO );
     }
 
     XP_STATUSF( "\t%s for %s", intro, str );
@@ -1343,7 +1343,7 @@ messageStreamWithHeader( ServerCtxt* server, XP_U16 devIndex, XW_Proto code )
     stream = util_makeStreamFromAddr( server->vol.util, channelNo );
 
     stream_open( stream );
-    stream_putBits( stream, XWPROTO_NBITS, code );
+    writeProto( stream, code );
 
     return stream;
 } /* messageStreamWithHeader */
@@ -2440,15 +2440,34 @@ server_handleUndo( ServerCtxt* server )
 } /* server_handleUndo */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+static void
+writeProto( XWStreamCtxt* stream, XW_Proto proto )
+{
+    stream_putBits( stream, XWPROTO_NBITS, XWPROTO_NEW_PROTO );
+    stream_putBits( stream, XWPROTO_NBITS, proto );
+    stream_putU8( stream, CUR_STREAM_VERS );
+}
+
+static XW_Proto
+readProto( XWStreamCtxt* stream )
+{
+    XP_U8 version = STREAM_SAVE_PREVWORDS; /* version prior to fmt change */
+    XW_Proto proto = (XW_Proto)stream_getBits( stream, XWPROTO_NBITS );
+    if ( XWPROTO_NEW_PROTO == proto ) {
+        proto = (XW_Proto)stream_getBits( stream, XWPROTO_NBITS );
+        version = stream_getU8( stream );
+    }
+    stream_setVersion( stream, version );
+    return proto;
+}
+
 XP_Bool
 server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 {
-    XW_Proto code;
     XP_Bool accepted = XP_FALSE;
+    XW_Proto code = readProto( incoming );
 
-    code = (XW_Proto)stream_getBits( incoming, XWPROTO_NBITS );
-
-    printCode("Receiving", code);
+    printCode( "Receiving", code );
 
     if ( code == XWPROTO_DEVICE_REGISTRATION ) {
         /* This message is special: doesn't have the header that's possible

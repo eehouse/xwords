@@ -850,11 +850,10 @@ void
 model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                           XWStreamCtxt* stream )
 {
-    XP_U16 numTiles;
+    XP_U16 numTiles, ii;
     Tile blank = dict_getBlankTile( model_getDictionary(model) );
-    XP_U16 nColsNBits = 
-        STREAM_VERS_BIGBOARD > stream_getVersion( stream ) ? 4 : 
-        NUMCOLS_NBITS;
+    XP_U16 version = stream_getVersion( stream );
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
 
     model_resetCurrentTurn( model, playerNum );
 
@@ -862,7 +861,7 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 
     XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
 
-    while ( numTiles-- ) {
+    for ( ii = 0; ii < numTiles; ++ii ) {
         XP_S16 foundAt;
         Tile moveTile;
         Tile tileFace = (Tile)stream_getBits( stream, TILE_NBITS );

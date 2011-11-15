@@ -44,6 +44,8 @@ typedef enum {
     //XWPROTO_MOVEMADE_INFO,       /* info about tiles placed and received */
     ,XWPROTO_CLIENT_REQ_END_GAME   /* non-server wants to end the game */
     ,XWPROTO_END_GAME               /* server says to end game */
+
+    ,XWPROTO_NEW_PROTO
 } XW_Proto;
 
 #define XWPROTO_NBITS 4
