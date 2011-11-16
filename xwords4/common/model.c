@@ -118,10 +118,13 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
     short i;
     XP_Bool hasDict;
     XP_U16 nPlayers;
+    XP_U16 nColsNBits;
     XP_U16 version = stream_getVersion( stream );
-    XP_U16 nColsNBits = 
-        STREAM_VERS_BIGBOARD > version ? 4 : 
-        NUMCOLS_NBITS;
+#ifdef STREAM_VERS_BIGBOARD
+    nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
+#else
+    nColsNBits = NUMCOLS_NBITS;
+#endif
 
     XP_ASSERT( !!dict || !!dicts );
 
@@ -818,6 +821,12 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
 {
     PlayerCtxt* player;
     XP_S16 numTiles;
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 version = stream_getVersion( stream );
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
 
     XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
@@ -834,8 +843,8 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
                                   &col, &row, &isBlank );
         XP_ASSERT( numTiles >= 0 );
         stream_putBits( stream, TILE_NBITS, tile );
-        stream_putBits( stream, NUMCOLS_NBITS, col );
-        stream_putBits( stream, NUMCOLS_NBITS, row );
+        stream_putBits( stream, nColsNBits, col );
+        stream_putBits( stream, nColsNBits, row );
         stream_putBits( stream, 1, isBlank );
     }
 } /* model_currentMoveToStream */
@@ -852,8 +861,13 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 {
     XP_U16 numTiles, ii;
     Tile blank = dict_getBlankTile( model_getDictionary(model) );
+#ifdef STREAM_VERS_BIGBOARD
     XP_U16 version = stream_getVersion( stream );
     XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
+
 
     model_resetCurrentTurn( model, playerNum );
 
@@ -2220,9 +2234,11 @@ loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version, PlayerCtxt* pc )
 {
     PendingTile* pt;
     XP_U16 nTiles;
-    XP_U16 nColsNBits = 
-        STREAM_VERS_BIGBOARD > stream_getVersion( stream ) ? 4 : 
-        NUMCOLS_NBITS;
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
 
     pc->curMoveValid = stream_getBits( stream, 1 );
 

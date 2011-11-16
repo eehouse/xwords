@@ -426,16 +426,18 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     XP_U16 ii;
     XP_UCHAR* str;
     XP_U16 strVersion = stream_getVersion( stream );
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
 
     str = stringFromStream( mpool, stream );
     replaceStringIfDifferent( mpool, &gi->dictName, str );
     XP_FREEP( mpool, &str );
 
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
-    gi->boardSize = 
-        (XP_U8)stream_getBits( stream, 
-                               strVersion < STREAM_VERS_BIGBOARD? 4 : 
-                               NUMCOLS_NBITS );
+    gi->boardSize = (XP_U8)stream_getBits( stream, nColsNBits );
     gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
     if ( strVersion < STREAM_VERS_ROBOTIQ ) {
