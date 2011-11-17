@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -331,7 +331,7 @@ drawBoard( BoardCtxt* board )
                 XWBonusType bonus;
                 HintAtts hintAtts;
                 CellFlags flags = CELL_NONE;
-                bonus = util_getSquareBonus( board->util, model, col, row );
+                bonus = model_getSquareBonus( model, col, row );
                 hintAtts = figureHintAtts( board, col, row );
 #ifdef KEYBOARD_NAV
                 if ( cellFocused( board, col, row ) ) {
@@ -436,7 +436,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                     textP = dict_getTileString( dict, tile );
                 }
             }
-            bonus = util_getSquareBonus( board->util, model, col, row );
+            bonus = model_getSquareBonus( model, col, row );
             hintAtts = figureHintAtts( board, col, row );
 
             if ( (col==board->star_row) && (row==board->star_row) ) {

@@ -486,6 +486,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
         }
 #endif
         model_setDictionary( globals->cGlobals.game.model, params->dict );
+        setSquareBonuses( &globals->cGlobals );
         model_setPlayerDicts( globals->cGlobals.game.model, &params->dicts );
 
 #ifdef XWFEATURE_SEARCHLIMIT

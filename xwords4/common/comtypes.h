@@ -137,6 +137,16 @@ typedef XP_U32 RowFlags;
     error
 #endif
 
+typedef enum {
+    BONUS_NONE,
+    BONUS_DOUBLE_LETTER,
+    BONUS_DOUBLE_WORD,
+    BONUS_TRIPLE_LETTER,
+    BONUS_TRIPLE_WORD,
+
+    BONUS_LAST
+} XWBonusType;
+
 /* I need a way to communiate prefs to common/ code.  For now, though, I'll
  * leave storage of these values up to the platforms.  First, because I don't
  * want to deal with versioning in the common code.  Second, becuase they

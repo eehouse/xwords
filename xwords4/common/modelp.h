@@ -76,6 +76,8 @@ struct ModelCtxt {
     XP_U16 nPlayers;
     XP_U16 nCols;
     XP_U16 nRows;
+    XP_U16 nBonuses;
+    XWBonusType* bonuses;
 };
 
 void invalidateScore( ModelCtxt* model, XP_S16 player );

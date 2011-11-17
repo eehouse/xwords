@@ -526,7 +526,7 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo,
 static XP_U16
 word_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
-    XWBonusType bonus = util_getSquareBonus( model->vol.util, model, col, row );
+    XWBonusType bonus = model_getSquareBonus( model, col, row );
     switch ( bonus ) {
     case BONUS_DOUBLE_WORD:
         return 2;
@@ -540,8 +540,7 @@ word_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 static XP_U16
 tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
-    XWBonusType bonus = util_getSquareBonus( model->vol.util, model,
-                                             col, row );
+    XWBonusType bonus = model_getSquareBonus( model, col, row );
     switch ( bonus ) {
     case BONUS_DOUBLE_LETTER:
         return 2;

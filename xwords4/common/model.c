@@ -115,7 +115,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 {
     ModelCtxt* model;
     XP_U16 nCols, nRows;
-    short i;
+    XP_U16 ii;
     XP_Bool hasDict;
     XP_U16 nPlayers;
     XP_U16 nColsNBits;
@@ -144,6 +144,20 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
     model = model_make( MPPARM(mpool) dict, dicts, util, nCols, nRows );
     model->nPlayers = nPlayers;
 
+#ifdef STREAM_VERS_BIGBOARD
+    if ( STREAM_VERS_BIGBOARD <= version ) {
+        model->nBonuses = stream_getBits( stream, 7 );
+        if ( 0 < model->nBonuses ) {
+            model->bonuses = 
+                XP_MALLOC( model->vol.mpool,
+                           model->nBonuses * sizeof( model->bonuses[0] ) );
+            for ( ii = 0; ii < model->nBonuses; ++ii ) {
+                model->bonuses[ii] = stream_getBits( stream, 4 );
+            }
+        }
+    }
+#endif
+
     stack_loadFromStream( model->vol.stack, stream );
 
     buildModelFromStack( model, model->vol.stack, XP_FALSE, 0, 
@@ -151,10 +165,10 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
                          (MovePrintFuncPre)NULL, (MovePrintFuncPost)NULL, 
                          NULL );
 
-    for ( i = 0; i < model->nPlayers; ++i ) {
-        loadPlayerCtxt( stream, version, &model->players[i] );
-        setPendingCounts( model, i );
-        invalidateScore( model, i );
+    for ( ii = 0; ii < model->nPlayers; ++ii ) {
+        loadPlayerCtxt( stream, version, &model->players[ii] );
+        setPendingCounts( model, ii );
+        invalidateScore( model, ii );
     }
 
     return model;
@@ -163,7 +177,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 void
 model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
 {
-    short i;
+    XP_U16 ii;
 
     stream_putBits( stream, NUMCOLS_NBITS, model->nCols );
     stream_putBits( stream, NUMCOLS_NBITS, model->nRows );
@@ -171,10 +185,17 @@ model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
     /* we have two bits for nPlayers, so range must be 0..3, not 1..4 */
     stream_putBits( stream, NPLAYERS_NBITS, model->nPlayers );
 
+#ifdef STREAM_VERS_BIGBOARD
+    stream_putBits( stream, 7, model->nBonuses );
+    for ( ii = 0; ii < model->nBonuses; ++ii ) {
+        stream_putBits( stream, 4, model->bonuses[ii] );
+    }
+#endif
+
     stack_writeToStream( model->vol.stack, stream );
 
-    for ( i = 0; i < model->nPlayers; ++i ) {
-        writePlayerCtxt( stream, &model->players[i] );
+    for ( ii = 0; ii < model->nPlayers; ++ii ) {
+        writePlayerCtxt( stream, &model->players[ii] );
     }
 } /* model_writeToStream */
 
@@ -246,8 +267,89 @@ model_destroy( ModelCtxt* model )
 {
     stack_destroy( model->vol.stack );
     /* is this it!? */
+    if ( !!model->bonuses ) {
+        XP_FREE( model->vol.mpool, model->bonuses );
+    }
     XP_FREE( model->vol.mpool, model );
 } /* model_destroy */
+
+#ifdef STREAM_VERS_BIGBOARD
+void
+model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, XP_U16 nBonuses )
+{
+#ifdef DEBUG
+    XP_U16 nCols = (1 + model_numCols( model )) / 2;
+    XP_ASSERT( 0 < nCols );
+    XP_U16 wantLen = 0;
+    while ( nCols > 0 ) {
+        wantLen += nCols--;
+    }
+    XP_ASSERT( wantLen == nBonuses );
+#endif
+
+    if ( !!model->bonuses ) {
+        XP_FREE( model->vol.mpool, model->bonuses );
+    }
+    model->bonuses = XP_MALLOC( model->vol.mpool, 
+                                nBonuses * sizeof(model->bonuses[0]) );
+    XP_MEMCPY( model->bonuses, bonuses, nBonuses * sizeof(model->bonuses[0]) );
+    model->nBonuses = nBonuses;
+}
+
+static void
+borrowSquareBonuses( ModelCtxt* dest, const ModelCtxt* src )
+{
+    XP_ASSERT( !dest->bonuses );
+    dest->bonuses = src->bonuses;
+    dest->nBonuses = src->nBonuses;
+}
+
+static void
+returnSquareBonuses( ModelCtxt* dest )
+{
+    dest->bonuses = NULL;
+    dest->nBonuses = 0;
+}
+#else
+# define borrowSquareBonuses(d,s)
+# define returnSquareBonuses(d)
+#endif
+
+XWBonusType
+model_getSquareBonus( const ModelCtxt* model, XP_U16 col, XP_U16 row )
+{
+    XWBonusType result = BONUS_NONE;
+
+    if ( 0 ) {
+#ifdef STREAM_VERS_BIGBOARD
+    } else if ( !!model->bonuses ) {
+        XP_U16 nCols = model_numCols( model );
+        XP_U16 ii;
+        if ( col > (nCols/2) ) {
+            col = nCols - 1 - col;
+        }
+        if ( row > (nCols/2) ) {
+            row = nCols - 1 - row;
+        }
+        if ( col > row ) {
+            XP_U16 tmp = col;
+            col = row;
+            row = tmp;
+        }
+        for ( ii = 1; ii <= row; ++ii ) {
+            col += ii;
+        }
+
+        if ( col < model->nBonuses ) {
+            result = model->bonuses[col];
+        }
+#endif
+    } else {
+        result = util_getSquareBonus( model->vol.util, model_numRows(model), 
+                                      col, row );
+    }
+    return result;
+}
 
 static void
 modelAddEntry( ModelCtxt* model, XP_U16 indx, const StackEntry* entry, 
@@ -1950,6 +2052,7 @@ makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
                                       model->vol.util, model_numCols(model),
                                       model_numRows(model));
     model_setNPlayers( tmpModel, model->nPlayers );
+    borrowSquareBonuses( tmpModel, model );
 
     buildModelFromStack( tmpModel, model->vol.stack, XP_FALSE, 0, stream, 
                          (WordNotifierInfo*)NULL, mpf_pre, mpf_post, closure );
@@ -1971,6 +2074,7 @@ model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
 
     tmpModel = makeTmpModel( model, stream, printMovePre, printMovePost, 
                              &closure );
+    returnSquareBonuses( tmpModel );
     model_destroy( tmpModel );
 
     if ( gameOver ) {

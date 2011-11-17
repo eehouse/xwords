@@ -1807,7 +1807,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 
         model_setDictionary( g_globals.cGlobals.game.model, params->dict );
-
+        setSquareBonuses( &g_globals.cGlobals );
         positionSizeStuff( &g_globals, width, height );
 
 #ifndef XWFEATURE_STANDALONE_ONLY

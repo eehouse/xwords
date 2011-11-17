@@ -1002,8 +1002,7 @@ timerFiredForPen( BoardCtxt* board )
 #endif
                 if ( !listWords ) {
                     XWBonusType bonus;
-                    bonus = util_getSquareBonus( board->util, board->model, 
-                                                 col, row );
+                    bonus = model_getSquareBonus( board->model, col, row );
                     if ( bonus != BONUS_NONE ) {
 #ifdef XWFEATURE_MINIWIN
                         text = draw_getMiniWText( board->draw, 

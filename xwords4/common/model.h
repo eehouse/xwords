@@ -269,6 +269,11 @@ void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 /* Have there been too many passes (so game should end)? */
 XP_Bool model_recentPassCountOk( ModelCtxt* model );
 
+XWBonusType model_getSquareBonus( const ModelCtxt* model,
+                                  XP_U16 col, XP_U16 row );
+void model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, 
+                             XP_U16 nBonuses );
+                                  
 XP_Bool model_checkMoveLegal( ModelCtxt* model, XP_S16 player, 
                               XWStreamCtxt* stream,
                               WordNotifierInfo* notifyInfo );
