@@ -1343,7 +1343,7 @@ makeIndex( DictIterData* data )
     idata->count = count;
 
     dict_makeIndex( &data->iter, data->depth, idata );
-    if ( 0 < count ) {
+    if ( 0 < idata->count ) {
         idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
                                       idata->count * data->depth *
                                       sizeof(*idata->prefixes) );
@@ -1352,7 +1352,7 @@ makeIndex( DictIterData* data )
     } else {
         freeIndices( data );
     }
-}
+} /* makeIndex */
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1setMinMax
