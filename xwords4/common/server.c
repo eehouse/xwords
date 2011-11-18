@@ -60,6 +60,9 @@ typedef struct ServerPlayer {
 
 typedef struct RemoteAddress {
     XP_PlayerAddr channelNo;
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U8 streamVersion;
+#endif
 } RemoteAddress;
 
 /* These are the parts of the server's state that needs to be preserved
@@ -84,6 +87,9 @@ typedef struct ServerNonvolatiles {
     XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
     XP_Bool sortNewTiles;
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U8 streamVersion;
+#endif
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16 robotThinkMin, robotThinkMax;   /* not saved (yet) */
 #endif
@@ -139,12 +145,14 @@ static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server,
                                               XP_U16 devIndex, XW_Proto code );
 static XP_Bool handleRegistrationMsg( ServerCtxt* server, 
                                       XWStreamCtxt* stream );
-static void registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream );
+static XP_S8 registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream );
 static void server_sendInitialMessage( ServerCtxt* server );
 static void sendBadWordMsgs( ServerCtxt* server );
 static XP_Bool handleIllegalWord( ServerCtxt* server, 
                                   XWStreamCtxt* incoming );
 static void tellMoveWasLegal( ServerCtxt* server );
+static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream, 
+                        XW_Proto proto );
 #endif
 
 #define PICK_NEXT -1
@@ -230,6 +238,9 @@ initServer( ServerCtxt* server )
     syncPlayers( server );
 
     server->nv.nDevices = 1; /* local device (0) is always there */
+#ifdef STREAM_VERS_BIGBOARD
+    server->nv.streamVersion = STREAM_SAVE_PREVWORDS; /* default to old */
+#endif
 } /* initServer */
 
 ServerCtxt* 
@@ -280,7 +291,18 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     for ( ii = 0; ii < nPlayers; ++ii ) {
         nv->addresses[ii].channelNo =
             (XP_PlayerAddr)stream_getBits( stream, 16 );
+#ifdef STREAM_VERS_BIGBOARD
+        if ( STREAM_VERS_BIGBOARD <= version ) {
+            nv->addresses[ii].streamVersion = stream_getBits( stream, 8 );
+        }
+#endif
     }
+#ifdef STREAM_VERS_BIGBOARD
+    if ( STREAM_SAVE_PREVWORDS < version ) {
+        nv->streamVersion = stream_getU8 ( stream );
+    }
+    XP_LOGF( "%s: read streamVersion: 0x%x", __func__, nv->streamVersion );
+#endif
 } /* getNV */
 
 static void
@@ -301,7 +323,14 @@ putNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
         stream_putBits( stream, 16, nv->addresses[ii].channelNo );
+#ifdef STREAM_VERS_BIGBOARD
+        stream_putBits( stream, 8, nv->addresses[ii].streamVersion );
+#endif
     }
+#ifdef STREAM_VERS_BIGBOARD
+    stream_putU8( stream, nv->streamVersion );
+    XP_LOGF( "%s: wrote streamVersion: 0x%x", __func__, nv->streamVersion );
+#endif
 } /* putNV */
 
 static XWStreamCtxt*
@@ -515,7 +544,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
     if ( server->nv.gameState == XWSTATE_NONE ) {
         stream_open( stream );
 
-        stream_putBits( stream, XWPROTO_NBITS, XWPROTO_DEVICE_REGISTRATION );
+        writeProto( server, stream, XWPROTO_DEVICE_REGISTRATION );
 
         nPlayers = gi->nPlayers;
         XP_ASSERT( nPlayers > 0 );
@@ -531,8 +560,8 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
                 continue;
             }
 
-            stream_putBits( stream, 1, LP_IS_ROBOT(lp) ); /* better not to send this */
-
+            stream_putBits( stream, 1, LP_IS_ROBOT(lp) ); /* better not to
+                                                             send this */
             /* The first nPlayers players are the ones we'll use.  The local flag
                doesn't matter when for SERVER_ISCLIENT. */
             name = emptyStringIfNull(lp->name);
@@ -543,6 +572,10 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
             stream_putBits( stream, NAME_LEN_NBITS, len );
             stream_putBytes( stream, name, len );
         }
+#ifdef STREAM_VERS_BIGBOARD
+        stream_putU8( stream, CUR_STREAM_VERS );
+#endif
+
     } else {
         XP_LOGF( "%s: wierd state %s; dropping message", __func__,
                  getStateStr(server->nv.gameState) );
@@ -593,11 +626,32 @@ callTurnChangeListener( ServerCtxt* server )
 } /* callTurnChangeListener */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+# ifdef STREAM_VERS_BIGBOARD
+static void
+setStreamVersion( ServerCtxt* server )
+{
+    XP_U16 devIndex;
+    XP_U8 streamVersion = CUR_STREAM_VERS;
+    for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
+        XP_U8 devVersion = server->nv.addresses[devIndex].streamVersion;
+        if ( devVersion < streamVersion ) {
+            streamVersion = devVersion;
+        }
+    }
+    XP_LOGF( "%s: setting streamVersion: %d", __func__, streamVersion );
+    server->nv.streamVersion = streamVersion;
+}
+# else
+#  define setStreamVersion(s)
+# endif
+
 static XP_Bool
 handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_Bool success = XP_TRUE;
-    XP_U16 playersInMsg, i;
+    XP_U16 playersInMsg;
+    XP_S8 clientIndex;
+    XP_U16 ii = 0;
     LOG_FUNC();
 
     /* code will have already been consumed */
@@ -608,21 +662,41 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
         util_userError( server->vol.util, ERR_REG_UNEXPECTED_USER );
         success = XP_FALSE;
     } else {
-        for ( i = 0; i < playersInMsg; ++i ) {
-            registerRemotePlayer( server, stream );
+        XP_S8 prevIndex = -1;
+        for ( ; ii < playersInMsg; ++ii ) {
+            clientIndex = registerRemotePlayer( server, stream );
 
             /* This is abusing the semantics of turn change -- at least in the
                case where there is another device yet to register -- but we
                need to let the board know to redraw the scoreboard with more
                players there. */
             callTurnChangeListener( server );
+            XP_ASSERT( ii == 0 || prevIndex == clientIndex );
+            prevIndex = clientIndex;
         }
 
-        if ( server->nv.pendingRegistrations == 0 ) {
-            assignTilesToAll( server );
-            SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
+    }
+
+#ifdef STREAM_VERS_BIGBOARD
+    if ( 0 < stream_getSize(stream) ) {
+        XP_U8 streamVersion = stream_getU8( stream );
+        if ( streamVersion >= STREAM_VERS_BIGBOARD ) {
+            XP_LOGF( "%s: upping device %d streamVersion to %d",
+                     __func__, clientIndex, streamVersion );
+            server->nv.addresses[clientIndex].streamVersion = streamVersion;
         }
     }
+#endif
+
+    if ( server->nv.pendingRegistrations == 0 ) {
+        XP_ASSERT( ii == playersInMsg ); /* otherwise malformed */
+        setStreamVersion( server );
+        assignTilesToAll( server );
+        SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
+    }
+/*     now set server's streamVersion if all remote players have the higher one. */
+/* But first need to pass it in the strramx */
+
     return success;
 } /* handleRegistrationMsg */
 #endif
@@ -999,7 +1073,7 @@ findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
     return lp;
 } /* findFirstPending */
 
-static void
+static XP_S8
 registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_S8 deviceIndex;
@@ -1039,10 +1113,13 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
 
         XP_ASSERT( channelNo != 0 );
         addr->channelNo = channelNo;
+#ifdef STREAM_VERS_BIGBOARD
+        addr->streamVersion = STREAM_SAVE_PREVWORDS;
+#endif
     }
 
     player->deviceIndex = deviceIndex;
-
+    return deviceIndex;
 } /* registerRemotePlayer */
 
 static void
@@ -1096,6 +1173,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
         /* version; any dependencies here? */
         XP_U8 streamVersion = stream_getU8( stream );
+        XP_LOGF( "%s: set streamVersion to %d", __func__, streamVersion );
         stream_setVersion( stream, streamVersion );
 
         gameID = stream_getU32( stream );
@@ -1234,10 +1312,8 @@ server_sendInitialMessage( ServerCtxt* server )
         DictionaryCtxt* dict = model_getDictionary(model);
         XP_ASSERT( !!stream );
         stream_open( stream );
-        stream_putBits( stream, XWPROTO_NBITS, XWPROTO_CLIENT_SETUP );
+        writeProto( server, stream, XWPROTO_CLIENT_SETUP );
 
-        /* write version for server's benefit; use old version until format
-           changes */
         stream_putU8( stream, CUR_STREAM_VERS );
 
         XP_LOGF( "putting gameID %lx into msg", gameID );
@@ -1323,6 +1399,7 @@ printCode(char* intro, XW_Proto code)
         caseStr( str, XWPROTO_MOVE_CONFIRM );
         caseStr( str, XWPROTO_CLIENT_REQ_END_GAME );
         caseStr( str, XWPROTO_END_GAME );
+        caseStr( str, XWPROTO_NEW_PROTO );
     }
 
     XP_STATUSF( "\t%s for %s", intro, str );
@@ -1341,9 +1418,11 @@ messageStreamWithHeader( ServerCtxt* server, XP_U16 devIndex, XW_Proto code )
     printCode("making", code);
 
     stream = util_makeStreamFromAddr( server->vol.util, channelNo );
-
+#ifdef STREAM_VERS_BIGBOARD
+    stream_setVersion( stream, server->nv.streamVersion );
+#endif
     stream_open( stream );
-    stream_putBits( stream, XWPROTO_NBITS, code );
+    writeProto( server, stream, code );
 
     return stream;
 } /* messageStreamWithHeader */
@@ -2440,15 +2519,46 @@ server_handleUndo( ServerCtxt* server )
 } /* server_handleUndo */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+static void
+writeProto( const ServerCtxt* server, XWStreamCtxt* stream, XW_Proto proto )
+{
+#ifdef STREAM_VERS_BIGBOARD
+    XP_ASSERT( server->nv.streamVersion > 0 );
+    if ( STREAM_SAVE_PREVWORDS < server->nv.streamVersion ) {
+        stream_putBits( stream, XWPROTO_NBITS, XWPROTO_NEW_PROTO );
+        stream_putBits( stream, 8, CUR_STREAM_VERS );
+    }
+#else
+    XP_USE(server);
+#endif
+    stream_putBits( stream, XWPROTO_NBITS, proto );
+}
+
+static XW_Proto
+readProto( ServerCtxt* server, XWStreamCtxt* stream )
+{
+    XW_Proto proto = (XW_Proto)stream_getBits( stream, XWPROTO_NBITS );
+    XP_U8 version = STREAM_SAVE_PREVWORDS; /* version prior to fmt change */
+#ifdef STREAM_VERS_BIGBOARD
+    if ( XWPROTO_NEW_PROTO == proto ) {
+        version = stream_getBits( stream, 8 );
+        proto = (XW_Proto)stream_getBits( stream, XWPROTO_NBITS );
+    }
+    server->nv.streamVersion = version;
+#else
+    XP_USE(server);
+#endif
+    stream_setVersion( stream, version );
+    return proto;
+}
+
 XP_Bool
 server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 {
-    XW_Proto code;
     XP_Bool accepted = XP_FALSE;
+    XW_Proto code = readProto( server, incoming );
 
-    code = (XW_Proto)stream_getBits( incoming, XWPROTO_NBITS );
-
-    printCode("Receiving", code);
+    printCode( "Receiving", code );
 
     if ( code == XWPROTO_DEVICE_REGISTRATION ) {
         /* This message is special: doesn't have the header that's possible
@@ -2535,7 +2645,8 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             accepted = XP_TRUE;
             break;
         default:
-            XP_WARNF( "Unknown code on incoming message: %d\n", code );
+            XP_WARNF( "%s: Unknown code on incoming message: %d\n", 
+                      __func__, code );
             break;
         } /* switch */
     }

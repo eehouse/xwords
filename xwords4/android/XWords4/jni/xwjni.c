@@ -280,8 +280,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
                                      jDictBytes, jpath, NULL, check );
     if ( NULL != dict ) {
-        setInt( env, jinfo, "langCode", dict_getLangCode( dict ) );
-        setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
+        if ( NULL != jinfo ) {
+            setInt( env, jinfo, "langCode", dict_getLangCode( dict ) );
+            setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
+        }
         dict_destroy( dict );
         result = true;
     }

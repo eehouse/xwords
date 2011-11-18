@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -25,6 +25,7 @@
 #include "xptypes.h"
 #include "dictnry.h"
 #include "util.h"
+#include "main.h"
 
 #ifdef DEBUG
 void linux_debugf(const char*, ...)
@@ -40,5 +41,11 @@ const XP_UCHAR* linux_getErrString( UtilErrID id, XP_Bool* silent );
 
 void formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, char* buf, 
                          XP_U16 buflen );
+
+#ifdef STREAM_VERS_BIGBOARD
+void setSquareBonuses( const CommonGlobals* cGlobals );
+#else
+# define setSquareBonuses( cg )
+#endif
 
 #endif

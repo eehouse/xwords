@@ -115,7 +115,9 @@ typedef enum {
 } XWTimerReason;
 
 #define MAX_NUM_PLAYERS 4
-#define MAX_ROWS 16
+#ifndef MAX_ROWS
+# define MAX_ROWS 16
+#endif
 #define MAX_COLS MAX_ROWS
 #ifdef EIGHT_TILES
 # define MAX_TRAY_TILES 8
@@ -126,6 +128,24 @@ typedef enum {
 #define NDEVICES_NBITS 2        /* 1-4, but reduced by 1 fits in 2 bits */
 #define NPLAYERS_NBITS 3
 #define EMPTIED_TRAY_BONUS 50
+
+#if MAX_ROWS <= 16
+typedef XP_U16 RowFlags;
+#elif MAX_ROWS <= 32
+typedef XP_U32 RowFlags;
+#else
+    error
+#endif
+
+typedef enum {
+    BONUS_NONE,
+    BONUS_DOUBLE_LETTER,
+    BONUS_DOUBLE_WORD,
+    BONUS_TRIPLE_LETTER,
+    BONUS_TRIPLE_WORD,
+
+    BONUS_LAST
+} XWBonusType;
 
 /* I need a way to communiate prefs to common/ code.  For now, though, I'll
  * leave storage of these values up to the platforms.  First, because I don't

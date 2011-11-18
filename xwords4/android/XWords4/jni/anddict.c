@@ -439,9 +439,9 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
 
-    XP_FREE( ctxt->super.mpool, ctxt->super.faces );
-    XP_FREE( ctxt->super.mpool, ctxt->super.facePtrs );
-    XP_FREE( ctxt->super.mpool, ctxt->super.countsAndValues );
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.faces );
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.facePtrs );
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.countsAndValues );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.name );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.langName );
 
@@ -456,7 +456,7 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         (*env)->DeleteGlobalRef( env, ctxt->byteArray );
     }
     XP_FREE( ctxt->super.mpool, ctxt );
-}
+} /* and_dictionary_destroy */
 
 jobject
 and_dictionary_getChars( JNIEnv* env, DictionaryCtxt* dict )
@@ -524,49 +524,54 @@ DictionaryCtxt*
 makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname, 
           jbyteArray jbytes, jstring jpath, jstring jlangname, jboolean check )
 {
-    AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)
-        and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
-
-    jsize len = 0;
+    jbyte* bytes = NULL;
+    jbyteArray byteArray = NULL;
+    off_t bytesSize = 0;
 
     if ( NULL == jpath ) {
-        len = (*env)->GetArrayLength( env, jbytes );
-        anddict->byteArray = (*env)->NewGlobalRef( env, jbytes );
-        anddict->bytes =
-            (*env)->GetByteArrayElements( env, anddict->byteArray, NULL );
+        bytesSize = (*env)->GetArrayLength( env, jbytes );
+        byteArray = (*env)->NewGlobalRef( env, jbytes );
+        bytes = (*env)->GetByteArrayElements( env, byteArray, NULL );
     } else {
-        XP_ASSERT( NULL == anddict->byteArray );
         const char* path = (*env)->GetStringUTFChars( env, jpath, NULL );
 
         struct stat statbuf;
-        if ( 0 == stat( path, &statbuf ) ) {
-            int fd = open( path,  O_RDONLY );
+        if ( 0 == stat( path, &statbuf ) && 0 < statbuf.st_size ) {
+            int fd = open( path, O_RDONLY );
             if ( fd >= 0 ) {
-                anddict->bytes = mmap( NULL, statbuf.st_size,
-                                       PROT_READ, MAP_PRIVATE,
-                                       fd, 0 );
+                void* ptr = mmap( NULL, statbuf.st_size, PROT_READ, 
+                                  MAP_PRIVATE, fd, 0 );
                 close( fd );
-
-                anddict->bytesSize = statbuf.st_size;
-                len = statbuf.st_size;
-                XP_ASSERT( MAP_FAILED != anddict->bytes );
+                if ( MAP_FAILED != ptr ) {
+                    bytes = ptr;
+                    bytesSize = statbuf.st_size;
+                }
             }
         }
         (*env)->ReleaseStringUTFChars( env, jpath, path );
     }
 
-    anddict->super.destructor = and_dictionary_destroy;
+    AndDictionaryCtxt* anddict = NULL;
+    if ( NULL != bytes ) {
+        anddict = (AndDictionaryCtxt*)
+            and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
+        anddict->bytes = bytes;
+        anddict->byteArray = byteArray;
+        anddict->bytesSize = bytesSize;
 
-    /* copy the name */
-    anddict->super.name = getStringCopy( MPPARM(mpool) env, jname );
-    anddict->super.langName = getStringCopy( MPPARM(mpool) env, jlangname );
+        anddict->super.destructor = and_dictionary_destroy;
 
-    XP_U32 numEdges;
-    XP_Bool parses = parseDict( anddict, (XP_U8*)anddict->bytes, 
-                                len, &numEdges );
-    if ( !parses || (check && !checkSanity( &anddict->super, numEdges ) ) ) {
-        and_dictionary_destroy( (DictionaryCtxt*)anddict );
-        anddict = NULL;
+        /* copy the name */
+        anddict->super.name = getStringCopy( MPPARM(mpool) env, jname );
+        anddict->super.langName = getStringCopy( MPPARM(mpool) env, jlangname );
+
+        XP_U32 numEdges;
+        XP_Bool parses = parseDict( anddict, (XP_U8*)anddict->bytes, 
+                                    bytesSize, &numEdges );
+        if ( !parses || (check && !checkSanity( &anddict->super, numEdges ) ) ) {
+            and_dictionary_destroy( (DictionaryCtxt*)anddict );
+            anddict = NULL;
+        }
     }
     
     return (DictionaryCtxt*)anddict;

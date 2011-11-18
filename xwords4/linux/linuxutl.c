@@ -81,6 +81,63 @@ linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx) )
 #define TW BONUS_TRIPLE_WORD
 
 static XWBonusType*
+bonusesFor( XP_U16 boardSize, XP_U16* len )
+{
+    static XWBonusType scrabbleBoard[] = { 
+        TW,//EM,EM,DL,EM,EM,EM,TW,
+        EM,DW,//EM,EM,EM,TL,EM,EM,
+
+        EM,EM,DW,//EM,EM,EM,DL,EM,
+        DL,EM,EM,DW,//EM,EM,EM,DL,
+                            
+        EM,EM,EM,EM,DW,//EM,EM,EM,
+        EM,TL,EM,EM,EM,TL,//EM,EM,
+                            
+        EM,EM,DL,EM,EM,EM,DL,//EM,
+        TW,EM,EM,DL,EM,EM,EM,DW,
+    }; /* scrabbleBoard */
+
+    static XWBonusType seventeen[] = { 
+        TW,//EM,EM,DL,EM,EM,EM,TW,
+        EM,DW,//EM,EM,EM,TL,EM,EM,
+
+        EM,EM,DW,//EM,EM,EM,DL,EM,
+        DL,EM,EM,DW,//EM,EM,EM,DL,
+                            
+        EM,EM,EM,EM,DW,//EM,EM,EM,
+        EM,TL,EM,EM,EM,TL,//EM,EM,
+                            
+        EM,EM,DL,EM,EM,EM,DL,//EM,
+        TW,EM,EM,DL,EM,EM,EM,DW,
+        TW,EM,EM,DL,EM,EM,EM,DW,DW,
+    }; /* scrabbleBoard */
+
+    XWBonusType* result = NULL;
+    if ( boardSize == 15 ) {
+        result = scrabbleBoard;
+        *len = VSIZE(scrabbleBoard);
+    } else if ( boardSize == 17 ) {
+        result = seventeen;
+        *len = VSIZE(seventeen);
+    }
+
+    return result;
+}
+
+#ifdef STREAM_VERS_BIGBOARD
+void
+setSquareBonuses( const CommonGlobals* cGlobals )
+{
+    XP_U16 nBonuses;
+    XWBonusType* bonuses = 
+        bonusesFor( cGlobals->params->gi.boardSize, &nBonuses );
+    if ( !!bonuses ) {
+        model_setSquareBonuses( cGlobals->game.model, bonuses, nBonuses );
+    }
+}
+#endif
+
+static XWBonusType*
 parseBonusFile( XP_U16 nCols, const char* bonusFile )
 {
     XWBonusType* result = NULL;
@@ -146,14 +203,13 @@ parseBonusFile( XP_U16 nCols, const char* bonusFile )
 }
 
 static XWBonusType
-linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
+linux_util_getSquareBonus( XW_UtilCtxt* uc, XP_U16 nCols,
                            XP_U16 col, XP_U16 row )
 {
     static XWBonusType* parsedFile = NULL;
     XWBonusType result = EM;
 
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    XP_U16 nCols = model_numCols( model );
     if ( NULL == parsedFile && NULL != cGlobals->params->bonusFile ) {
         if ( !parsedFile ) {
             parsedFile = parseBonusFile( nCols, cGlobals->params->bonusFile );
@@ -162,25 +218,12 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
     if ( NULL != parsedFile ) {
         result = parsedFile[(row*nCols) + col];
     } else {
+        XP_U16 nEntries;
+        XWBonusType* scrabbleBoard = bonusesFor( 15, &nEntries );
+
         XP_U16 index, ii;
-        /* This must be static or won't compile under multilink (for Palm).
-           Fix! */
-        static char scrabbleBoard[8*8] = { 
-            TW,//EM,EM,DL,EM,EM,EM,TW,
-            EM,DW,//EM,EM,EM,TL,EM,EM,
-
-            EM,EM,DW,//EM,EM,EM,DL,EM,
-            DL,EM,EM,DW,//EM,EM,EM,DL,
-                            
-            EM,EM,EM,EM,DW,//EM,EM,EM,
-            EM,TL,EM,EM,EM,TL,//EM,EM,
-                            
-            EM,EM,DL,EM,EM,EM,DL,//EM,
-            TW,EM,EM,DL,EM,EM,EM,DW,
-        }; /* scrabbleBoard */
-
-        if ( col > 7 ) col = 14 - col;
-        if ( row > 7 ) row = 14 - row;
+        if ( col > (nCols/2) ) col = nCols - 1 - col;
+        if ( row > (nCols/2) ) row = nCols - 1 - row;
         if ( col > row ) {
             XP_U16 tmp = col;
             col = row;
@@ -191,8 +234,8 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
             index += ii;
         }
 
-        if ( index < VSIZE(scrabbleBoard) ) {
-            result = (XWBonusType)scrabbleBoard[index];
+        if ( index < nEntries) {
+            result = scrabbleBoard[index];
         }
     }
     return result;

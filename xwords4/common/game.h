@@ -31,6 +31,9 @@
 extern "C" {
 #endif
 
+#if MAX_COLS > 16
+# define STREAM_VERS_BIGBOARD 0x12
+#endif
 #define STREAM_SAVE_PREVWORDS 0x11
 #define STREAM_VERS_SERVER_SAVES_TOSHOW 0x10
 #define STREAM_VERS_PLAYERDICTS 0x0F
@@ -53,7 +56,11 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_SAVE_PREVWORDS
+#if MAX_COLS > 16
+# define CUR_STREAM_VERS STREAM_VERS_BIGBOARD
+#else
+# define CUR_STREAM_VERS STREAM_SAVE_PREVWORDS
+#endif
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;

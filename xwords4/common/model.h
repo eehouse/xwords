@@ -29,7 +29,11 @@
 extern "C" {
 #endif
 
-#define NUMCOLS_NBITS 4
+#if MAX_COLS <= 16
+# define NUMCOLS_NBITS 4
+#elif MAX_COLS <= 32
+# define NUMCOLS_NBITS 5
+#endif
 
 #ifdef EIGHT_TILES
 # define NTILES_NBITS 4
@@ -265,6 +269,11 @@ void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 /* Have there been too many passes (so game should end)? */
 XP_Bool model_recentPassCountOk( ModelCtxt* model );
 
+XWBonusType model_getSquareBonus( const ModelCtxt* model,
+                                  XP_U16 col, XP_U16 row );
+void model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, 
+                             XP_U16 nBonuses );
+                                  
 XP_Bool model_checkMoveLegal( ModelCtxt* model, XP_S16 player, 
                               XWStreamCtxt* stream,
                               WordNotifierInfo* notifyInfo );
