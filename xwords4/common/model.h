@@ -271,8 +271,10 @@ XP_Bool model_recentPassCountOk( ModelCtxt* model );
 
 XWBonusType model_getSquareBonus( const ModelCtxt* model,
                                   XP_U16 col, XP_U16 row );
+#ifdef STREAM_VERS_BIGBOARD
 void model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, 
                              XP_U16 nBonuses );
+#endif
                                   
 XP_Bool model_checkMoveLegal( ModelCtxt* model, XP_S16 player, 
                               XWStreamCtxt* stream,
