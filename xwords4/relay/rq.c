@@ -265,6 +265,7 @@ send_msg( const unsigned char* buf, int len )
     assert( nwritten == sizeof(hdr) );
     nwritten = write( sock, buf, len );
     assert( nwritten == len );
+    close( sock );
 }
 
 static void
@@ -340,8 +341,6 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
                 if ( bufp + len > end ) {
                     break;
                 }
-                fprintf( stderr, "%s: writing %d bytes to fd %d\n", __func__,
-                         len, fd );
                 nwritten = write( fd, bufp, len );
                 assert( nwritten == len );
                 bufp += len;
