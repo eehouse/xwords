@@ -1619,43 +1619,7 @@ relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
                          const XP_UCHAR* relayID, void* closure )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
-    CommonGlobals* cGlobals = &globals->cGlobals;
-    int fd = cGlobals->nbsFD;
-    XP_Bool success = 0 <= fd;
-    if ( success ) {
-        XP_LOGF( "%s: given %d bytes for %s", __func__, len, relayID );
-
-        // format: total msg lenth: 2
-        //         number-of-relayIDs: 2
-        //         for-each-relayid: relayid + '\n': varies
-        //                           message count: 1
-        //                           for-each-message: length: 2
-        //                                             message: varies
-
-        XWStreamCtxt* stream = 
-            mem_stream_make( MPPARM(globals->cGlobals.params->util->mpool)
-                             globals->cGlobals.params->vtMgr,
-                             globals, CHANNEL_NONE, NULL );
-        stream_putU16( stream, 1 ); /* number of relayIDs */
-        stream_catString( stream, relayID );
-        stream_putU8( stream, '\n' );
-        stream_putU16( stream, 1 ); /* message count */
-        stream_putU16( stream, len );
-        stream_putBytes( stream, msg, len );
-
-        XP_U16 siz = stream_getSize( stream );
-        XP_U8 buf[siz];
-        stream_getBytes( stream, buf, siz );
-        XP_U16 tmp = XP_HTONS( siz );
-        ssize_t nwritten = write( fd, &tmp, sizeof(tmp) );
-        XP_ASSERT( nwritten == sizeof(tmp) );
-        nwritten = write( fd, buf/*stream_getPtr( stream )*/, siz );
-        XP_ASSERT( nwritten == siz );
-        stream_destroy( stream );
-    } else {
-        XP_LOGF( "%s: nbsFD=%d", __func__, fd );
-    }
-    return success;
+    return storeNoConnMsg( &globals->cGlobals, msg, len, relayID );
 } /* relay_sendNoConn_curses */
 
 static void
@@ -1740,7 +1704,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
     g_globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
 #endif
-    g_globals.cGlobals.nbsFD = -1;
 
     setupCursesUtilCallbacks( &g_globals, params->util );
 

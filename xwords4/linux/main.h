@@ -162,7 +162,8 @@ struct CommonGlobals {
      * polling mechanism.*/
     AddAcceptorFunc addAcceptor;
     Acceptor acceptor;
-    int nbsFD;
+
+    GSList* noConnMsgs;
 
 #ifdef XWFEATURE_RELAY
     int socket;                 /* relay */

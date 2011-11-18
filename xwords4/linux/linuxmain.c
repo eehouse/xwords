@@ -357,9 +357,9 @@ do_nbs_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
     assert( 0 <= fd );
 
     /* do stuff here */
-    cGlobals->nbsFD = fd;
+    initNoConnStorage( cGlobals );
     handle_messages_from( cGlobals, procs, fd );
-    cGlobals->nbsFD = -1;
+    writeNoConnMsgs( cGlobals, fd );
 
     /* Do I need this?  Will reader get err if I close? */
     unsigned short len = 0;

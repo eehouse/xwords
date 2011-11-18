@@ -438,6 +438,83 @@ formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles,
               tileBuf );
 }
 
+typedef struct _MsgRec {
+    XP_U8* msg;
+    XP_U16 len;
+    gchar* relayID;
+} MsgRec;
+
+void
+initNoConnStorage( CommonGlobals* cGlobals )
+{
+    XP_ASSERT( NULL == cGlobals->noConnMsgs );
+    cGlobals->noConnMsgs = (GSList*)-1;  /* -1 is flag meaning "use me" */
+}
+
+XP_Bool
+storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 len, 
+                const XP_UCHAR* relayID )
+{
+    XP_Bool inUse =  NULL != cGlobals->noConnMsgs;
+    if ( inUse ) {
+        if ( (GSList*)-1 == cGlobals->noConnMsgs ) {
+            cGlobals->noConnMsgs = NULL;
+        }
+        MsgRec* msgrec = g_malloc( sizeof(*msgrec) );
+        msgrec->msg = g_malloc( len );
+        XP_MEMCPY( msgrec->msg, msg, len );
+        msgrec->len = len;
+        msgrec->relayID = g_strdup( relayID );
+        cGlobals->noConnMsgs = g_slist_append( cGlobals->noConnMsgs, msgrec );
+    }
+    return inUse;
+}
+
+void
+writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
+{
+    guint nMsgs = (GSList*)-1 == cGlobals->noConnMsgs ? 
+        0 : g_slist_length( cGlobals->noConnMsgs );
+    if ( 0 < nMsgs ) {
+        gchar relayID[128] = {0};
+
+        strcpy( relayID, ((MsgRec*)(cGlobals->noConnMsgs->data))->relayID );
+
+        XWStreamCtxt* stream = 
+            mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+                             cGlobals->params->vtMgr,
+                             cGlobals, CHANNEL_NONE, NULL );
+        stream_putU16( stream, 1 ); /* number of relayIDs */
+        stream_catString( stream, relayID );
+        stream_putU8( stream, '\n' );
+        stream_putU16( stream, nMsgs );
+
+        int ii;
+        for ( ii = 0; ii < nMsgs; ++ii ) {
+            MsgRec* rec = g_slist_nth_data( cGlobals->noConnMsgs, ii );
+            stream_putU16( stream, rec->len );
+            stream_putBytes( stream, rec->msg, rec->len );
+
+            g_free( rec->msg );
+            XP_ASSERT( 0 == strcmp( relayID, rec->relayID ) );
+            g_free( rec->relayID );
+            g_free( rec );
+        }
+        g_slist_free( cGlobals->noConnMsgs );
+        cGlobals->noConnMsgs = NULL;
+
+        XP_U16 siz = stream_getSize( stream );
+        /* XP_U8 buf[siz]; */
+        /* stream_getBytes( stream, buf, siz ); */
+        XP_U16 tmp = XP_HTONS( siz );
+        ssize_t nwritten = write( fd, &tmp, sizeof(tmp) );
+        XP_ASSERT( nwritten == sizeof(tmp) );
+        nwritten = write( fd, stream_getPtr( stream ), siz );
+        XP_ASSERT( nwritten == siz );
+        stream_destroy( stream );
+    }
+} /* writeNoConnMsgs */
+
 #ifdef TEXT_MODEL
 /* This is broken for UTF-8, even Spanish */
 void
