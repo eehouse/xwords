@@ -496,10 +496,19 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     const LocalPlayer* pl;
     XP_U16 ii;
 
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 strVersion = stream_getVersion( stream );
+    XP_ASSERT( STREAM_SAVE_PREVWORDS <= strVersion );
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
+
+
     stringToStream( stream, gi->dictName );
 
     stream_putBits( stream, NPLAYERS_NBITS, gi->nPlayers );
-    stream_putBits( stream, NUMCOLS_NBITS, gi->boardSize );
+    stream_putBits( stream, nColsNBits, gi->boardSize );
     stream_putBits( stream, 2, gi->serverRole );
     stream_putBits( stream, 1, gi->hintsNotAllowed );
     stream_putBits( stream, 2, gi->phoniesAction );
