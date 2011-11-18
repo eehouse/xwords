@@ -244,16 +244,24 @@ firstWord( DictIter* iter )
 }
 
 XP_U32
-dict_countWords( const DictIter* iter )
+dict_countWords( const DictIter* iter, LengthsArray* lens )
 {
     DictIter counter;
     dict_initIterFrom( &counter, iter );
+
+    if ( NULL != lens ) {
+        XP_MEMSET( lens, 0, sizeof(*lens) );
+    }
 
     XP_U32 count;
     XP_Bool ok;
     for ( count = 0, ok = firstWord( &counter ); 
           ok; ok = nextWord( &counter) ) {
         ++count;
+
+        if ( NULL != lens ) {
+            ++lens->lens[counter.nEdges];
+        }
     }
     return count;
 }
@@ -438,7 +446,7 @@ dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
 static void
 initWord( DictIter* iter )
 {
-    iter->nWords = dict_countWords( iter );
+    iter->nWords = dict_countWords( iter, NULL );
 }
 
 XP_Bool
@@ -505,7 +513,7 @@ dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
     XP_Bool validWord = 0 < iter->nEdges;
     if ( validWord ) {        /* uninitialized */
         wordCount = iter->nWords;
-        XP_ASSERT( wordCount == dict_countWords( iter ) );
+        XP_ASSERT( wordCount == dict_countWords( iter, NULL ) );
     } else {
         wordCount = dict_getWordCount( dict );
     }

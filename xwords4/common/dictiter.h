@@ -59,9 +59,13 @@ typedef struct _IndexData {
     XP_U16 count;    /* in-out: must indicate others are large enough */
 } IndexData;
 
+typedef struct _LengthsArray {
+    XP_U32 lens[MAX_COLS_DICT];
+} LengthsArray;
+
 void dict_initIter( DictIter* iter, const DictionaryCtxt* dict, 
                     XP_U16 min, XP_U16 max );
-XP_U32 dict_countWords( const DictIter* iter );
+XP_U32 dict_countWords( const DictIter* iter, LengthsArray* lens );
 void dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data );
 XP_Bool dict_firstWord( DictIter* iter );
 XP_Bool dict_lastWord( DictIter* iter );

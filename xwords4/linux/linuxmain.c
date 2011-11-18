@@ -915,7 +915,7 @@ testGetNthWord( const DictionaryCtxt* dict, char** words,
     DictIter iter;
 
     dict_initIter( &iter, dict, min, max );
-    XP_U32 half = dict_countWords( &iter ) / 2;
+    XP_U32 half = dict_countWords( &iter, NULL ) / 2;
     XP_U32 interval = half / 100;
     if ( interval == 0 ) {
         ++interval;
@@ -960,7 +960,16 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
     }
 
     dict_initIter( &iter, dict, min, max  );
-    XP_U32 count = dict_countWords( &iter );
+    LengthsArray lens;
+    XP_U32 count = dict_countWords( &iter, &lens );
+
+    XP_U32 sum = 0;
+    for ( jj = 0; jj < VSIZE(lens.lens); ++jj ) {
+        sum += lens.lens[jj];
+        XP_LOGF( "%ld words of length %ld", lens.lens[jj], jj );
+    }
+    XP_ASSERT( sum == count );
+
     if ( count > 0 ) {
         char** words = g_malloc( count * sizeof(char*) );
         XP_ASSERT( !!words );
