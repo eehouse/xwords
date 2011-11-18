@@ -38,7 +38,7 @@ extern "C" {
 #endif
 
 typedef struct _EdgeArray {
-    array_edge* edges[MAX_COLS];
+    array_edge* edges[MAX_COLS_DICT];
     XP_U16 nEdges;
 } EdgeArray;
 
@@ -391,7 +391,7 @@ dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
 {
     ASSERT_INITED( iter );
     const DictionaryCtxt* dict = iter->dict;
-    XP_ASSERT( depth < MAX_COLS );
+    XP_ASSERT( depth < MAX_COLS_DICT );
     XP_U16 ii, needCount;
     const XP_U16 nFaces = dict_numTileFaces( dict );
     XP_U16 nNonBlankFaces = nFaces;

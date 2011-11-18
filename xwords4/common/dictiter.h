@@ -33,12 +33,13 @@
 extern "C" {
 #endif
 
+#define MAX_COLS_DICT 15
 
 /* API for iterating over a dict */
 typedef XP_S32 DictPosition;
 typedef struct _DictIter {
     XP_U16 nEdges;
-    array_edge* edges[MAX_COLS];
+    array_edge* edges[MAX_COLS_DICT];
 #ifdef XWFEATURE_WALKDICT_FILTER
     XP_U16 min;
     XP_U16 max;

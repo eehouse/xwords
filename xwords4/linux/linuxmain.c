@@ -956,7 +956,7 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
     XP_U16 min, max;
     if ( !testMinMax || !parsePair( testMinMax, &min, &max ) ) {
         min = 0;
-        max = MAX_COLS;
+        max = MAX_COLS_DICT;
     }
 
     dict_initIter( &iter, dict, min, max  );
@@ -1048,7 +1048,7 @@ walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict,
             guint count = g_slist_length( testPrefixes );
             for ( ii = 0; ii < count; ++ii ) {
                 gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
-                Tile tiles[MAX_COLS];
+                Tile tiles[MAX_COLS_DICT];
                 XP_U16 nTiles = VSIZE(tiles);
                 if ( dict_tilesForString( dict, prefix, tiles, &nTiles ) ) {
                     if ( dict_findStartsWith( &iter, NULL, tiles, nTiles ) ) {
