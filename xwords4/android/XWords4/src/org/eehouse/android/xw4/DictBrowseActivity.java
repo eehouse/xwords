@@ -47,6 +47,8 @@ public class DictBrowseActivity extends XWListActivity
     implements View.OnClickListener, OnItemSelectedListener {
 
     public static final String DICT_NAME = "DICT_NAME";
+    public static final String DICT_MIN = "DICT_MIN";
+    public static final String DICT_MAX = "DICT_MAX";
 
     private static final int MIN_LEN = 2;
 
@@ -56,7 +58,7 @@ public class DictBrowseActivity extends XWListActivity
     private float m_textSize;
     private Spinner m_minSpinner;
     private Spinner m_maxSpinner;
-    private int m_min = MIN_LEN;
+    private int m_min;
     private int m_max;
 
 
@@ -164,12 +166,15 @@ public class DictBrowseActivity extends XWListActivity
                     }
                 } );
 
+            m_min = intent.getIntExtra( DICT_MIN, MIN_LEN );
+
             m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
             m_minSpinner.setOnItemSelectedListener( this );
-            m_minSpinner.setSelection( 0 );
+            m_minSpinner.setSelection( m_min - MIN_LEN );
             m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
             m_maxSpinner.setOnItemSelectedListener( this );
             m_max = m_maxSpinner.getCount() + MIN_LEN - 1;
+            m_max = intent.getIntExtra( DICT_MAX, m_max );
             m_maxSpinner.setSelection( m_max - MIN_LEN );
 
             setListAdapter( new DictListAdapter() );
@@ -245,11 +250,18 @@ public class DictBrowseActivity extends XWListActivity
 
     private void setMinMax( int min, int max )
     {
+        // I can't make a second call to setListAdapter() work, nor
+        // does notifyDataSetChanged do anything toward refreshing the
+        // adapter/making it recognized a changed dataset.  So, as a
+        // workaround, relaunch the activity with different
+        // parameters.
         if ( m_min != min || m_max != max ) {
-            m_min = min;
-            m_max = max;
-            setListAdapter( new DictListAdapter() );
-            Utils.logf( "setMinMax(%d,%d)", min, max );
+            Intent intent = getIntent();
+            intent.putExtra( DICT_MIN, min );
+            intent.putExtra( DICT_MAX, max );
+            startActivity( intent );
+
+            finish();
         }
     }
 
