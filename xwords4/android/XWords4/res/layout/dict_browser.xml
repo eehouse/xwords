@@ -46,7 +46,6 @@
     <Spinner android:id="@+id/wordlen_min"
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
-             android:entries="@array/minmax_values"
              android:drawSelectorOnTop="true"
              android:prompt="@string/prompt_min_len"
              />
@@ -57,7 +56,6 @@
     <Spinner android:id="@+id/wordlen_max"
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
-             android:entries="@array/minmax_values"
              android:drawSelectorOnTop="true"
              android:prompt="@string/prompt_max_len"
              />

@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -49,6 +50,7 @@ public class DictBrowseActivity extends XWListActivity
     public static final String DICT_NAME = "DICT_NAME";
     public static final String DICT_MIN = "DICT_MIN";
     public static final String DICT_MAX = "DICT_MAX";
+    public static final String DICT_COUNTS = "DICT_COUNTS";
 
     private static final int MIN_LEN = 2;
 
@@ -58,8 +60,11 @@ public class DictBrowseActivity extends XWListActivity
     private float m_textSize;
     private Spinner m_minSpinner;
     private Spinner m_maxSpinner;
-    private int m_min;
-    private int m_max;
+    private int m_minShown;
+    private int m_maxShown;
+    private int m_minAvail;
+    private int m_maxAvail;
+    private int[] m_counts;
 
 
 // - Steps to reproduce the problem:
@@ -79,7 +84,7 @@ public class DictBrowseActivity extends XWListActivity
         {
             super();
 
-            XwJNI.dict_iter_setMinMax( m_dictClosure, m_min, m_max );
+            XwJNI.dict_iter_setMinMax( m_dictClosure, m_minShown, m_maxShown );
             m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
             setTitle( Utils.format( DictBrowseActivity.this, 
                                     R.string.dict_browse_titlef,
@@ -156,6 +161,12 @@ public class DictBrowseActivity extends XWListActivity
                                                   pairs.m_paths[0],
                                                   JNIUtilsImpl.get() );
 
+            m_counts = intent.getIntArrayExtra( DICT_COUNTS );
+            if ( null == m_counts ) {
+                m_counts = XwJNI.dict_iter_getCounts( m_dictClosure );
+            }
+            figureMinMax();
+
             setContentView( R.layout.dict_browser );
 
             Button button = (Button)findViewById( R.id.search_button );
@@ -166,16 +177,18 @@ public class DictBrowseActivity extends XWListActivity
                     }
                 } );
 
-            m_min = intent.getIntExtra( DICT_MIN, MIN_LEN );
+            m_minShown = intent.getIntExtra( DICT_MIN, MIN_LEN );
 
             m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
+            m_minSpinner.setAdapter( makeAdapter() );
             m_minSpinner.setOnItemSelectedListener( this );
-            m_minSpinner.setSelection( m_min - MIN_LEN );
+            m_minSpinner.setSelection( m_minShown - m_minAvail );
             m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
+            m_maxSpinner.setAdapter( makeAdapter() );
             m_maxSpinner.setOnItemSelectedListener( this );
-            m_max = m_maxSpinner.getCount() + MIN_LEN - 1;
-            m_max = intent.getIntExtra( DICT_MAX, m_max );
-            m_maxSpinner.setSelection( m_max - MIN_LEN );
+            m_maxShown = m_maxSpinner.getCount() + MIN_LEN - 1;
+            m_maxShown = intent.getIntExtra( DICT_MAX, m_maxShown );
+            m_maxSpinner.setSelection( m_maxShown - MIN_LEN );
 
             setListAdapter( new DictListAdapter() );
             getListView().setFastScrollEnabled( true );
@@ -223,9 +236,9 @@ public class DictBrowseActivity extends XWListActivity
     {
         int newval = position + MIN_LEN;
         if ( parent == m_minSpinner ) {
-            setMinMax( newval, m_max );
+            setMinMax( newval, m_maxShown );
         } else if ( parent == m_maxSpinner ) {
-            setMinMax( m_min, newval );
+            setMinMax( m_minShown, newval );
         }
     }
 
@@ -255,14 +268,44 @@ public class DictBrowseActivity extends XWListActivity
         // adapter/making it recognized a changed dataset.  So, as a
         // workaround, relaunch the activity with different
         // parameters.
-        if ( m_min != min || m_max != max ) {
+        if ( m_minShown != min || m_maxShown != max ) {
             Intent intent = getIntent();
             intent.putExtra( DICT_MIN, min );
             intent.putExtra( DICT_MAX, max );
+            intent.putExtra( DICT_COUNTS, m_counts );
             startActivity( intent );
 
             finish();
         }
+    }
+
+    private void figureMinMax()
+    {
+        Assert.assertTrue( m_counts.length == XwJNI.MAX_COLS_DICT + 1 );
+        m_minAvail = 0;
+        while ( 0 == m_counts[m_minAvail] ) {
+            ++m_minAvail;
+        }
+        m_maxAvail = XwJNI.MAX_COLS_DICT;
+        while ( 0 == m_counts[m_maxAvail] ) { // 
+            --m_maxAvail;
+        }
+    }
+
+    private ArrayAdapter<String> makeAdapter()
+    {
+        String[] nums = new String[m_maxAvail - m_minAvail + 1];
+        for ( int ii = m_minAvail; ii <= m_maxAvail; ++ii ) {
+            nums[ii-m_minAvail] = String.format( "%d", ii );
+        }
+        ArrayAdapter<String> adapter = new
+            ArrayAdapter<String>( this, 
+                                  //android.R.layout.simple_spinner_dropdown_item,
+                                  android.R.layout.simple_spinner_item,
+                                  nums );
+        adapter.setDropDownViewResource( android.R.layout.
+                                         simple_spinner_dropdown_item );
+        return adapter;
     }
 
     public static void launch( Context caller, String name )
