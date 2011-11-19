@@ -1,6 +1,7 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -88,7 +89,9 @@ model_make( MPFORMAL DictionaryCtxt* dict,
             const PlayerDicts* dicts, XW_UtilCtxt* util, XP_U16 nCols, 
             XP_U16 nRows )
 {
-    ModelCtxt* result = (ModelCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
+    ModelCtxt* result;
+    XP_U16 size = sizeof(*result) + TILES_SIZE(result, nCols);
+    result = (ModelCtxt*)XP_MALLOC( mpool, size );
     if ( result != NULL ) {
         XP_MEMSET( result, 0, sizeof(*result) );
         MPASSIGN(result->vol.mpool, mpool);
@@ -247,7 +250,7 @@ model_init( ModelCtxt* model, XP_U16 nCols, XP_U16 nRows )
 
     XP_ASSERT( model != NULL );
     XP_MEMSET( model, 0, sizeof( *model ) );
-    XP_MEMSET( &model->tiles, TILE_EMPTY_BIT, sizeof(model->tiles) );
+    XP_MEMSET( &model->tiles, TILE_EMPTY_BIT, TILES_SIZE(model, nCols) );
 
     model->nCols = nCols;
     model->nRows = nRows;
@@ -689,17 +692,23 @@ model_getCellOwner( ModelCtxt* model, XP_U16 col, XP_U16 row )
 static void
 setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, CellTile tile )
 {
-    XP_ASSERT( col < MAX_COLS );
-    XP_ASSERT( row < MAX_ROWS );
-    model->tiles[col][row] = tile;
+    XP_ASSERT( col < model->nCols );
+    XP_ASSERT( row < model->nRows );
+    model->tiles[(row*model->nCols) + col] = tile;
 } /* model_setTile */
 
 static CellTile 
 getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
-    XP_ASSERT( col < MAX_COLS );
-    XP_ASSERT( row < MAX_ROWS );
-    return model->tiles[col][row];
+    CellTile tile;
+    XP_U16 nCols = model->nCols;
+    XP_ASSERT( model->nRows == nCols );
+    if ( col < nCols && row < nCols ) {
+        tile = model->tiles[(row*nCols) + col];
+    } else {
+        tile = TILE_EMPTY_BIT;
+    }
+    return tile;
 } /* getModelTileRaw */
 
 static void
