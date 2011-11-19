@@ -1400,6 +1400,26 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
     return result;
 }
 
+JNIEXPORT jintArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
+(JNIEnv* env, jclass C, jint closure )
+{
+    jintArray result = NULL;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        DictIter iter;
+        dict_initIter( &iter, data->dict, 0, MAX_COLS_DICT );
+
+        LengthsArray lens;
+        if ( 0 < dict_countWords( &iter, &lens ) ) {
+            XP_ASSERT( sizeof(jint) == sizeof(lens.lens[0]) );
+            result = makeIntArray( env, VSIZE(lens.lens), (jint*)&lens.lens );
+            (*env)->DeleteLocalRef( env, result );
+        }
+    }
+    return result;
+}
+
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
 ( JNIEnv* env, jclass C, jint closure )

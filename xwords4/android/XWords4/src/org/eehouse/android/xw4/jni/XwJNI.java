@@ -237,12 +237,14 @@ public class XwJNI {
     public static native int dict_getTileValue( int dictPtr, int tile );
 
     // Dict iterator
+    public final static int MAX_COLS_DICT = 15; // from dictiter.h
     public static native int dict_iter_init( byte[] dict, String path, 
                                              JNIUtils jniu );
     public static native void dict_iter_setMinMax( int closure,
                                                    int min, int max );
     public static native void dict_iter_destroy( int closure );
     public static native int dict_iter_wordCount( int closure );
+    public static native int[] dict_iter_getCounts( int closure );
     public static native String dict_iter_nthWord( int closure, int nn );
     public static native String[] dict_iter_getPrefixes( int closure );
     public static native int[] dict_iter_getIndices( int closure );
