@@ -60,7 +60,7 @@ typedef struct _IndexData {
 } IndexData;
 
 typedef struct _LengthsArray {
-    XP_U32 lens[MAX_COLS_DICT];
+    XP_U32 lens[MAX_COLS_DICT+1];
 } LengthsArray;
 
 void dict_initIter( DictIter* iter, const DictionaryCtxt* dict, 
