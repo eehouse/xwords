@@ -1,15 +1,19 @@
 Here's how I'm building crosswords for Android.
 
-First, my working directory is XWords within this (android/)
-directory.  And note that local.properties, also there, needs to be
-edited so that sdk.dir points to where your sdk is installed.
+First, the build process requires a file called local.properties that
+must be generated locally.  Generate it before your first build by
+running ./scripts/setup_local_props.sh.
+
+The working directory is XWords4 within this (android/) directory.
+Run the following commands from there.
 
 Build the jni library (the cross-platform code):
 # ../scripts/ndkbuild.sh 
 
-Then build the app for the emulator
-# ant install
+Then build the app for the emulator (assuming it's running)
+# ant debug install
 
 Build for a device (requires you've set up your keys.  I did this too
 long ago to remember how but the info's easy to find):
 # ant release
+(The above command not yet verified for new SDK I installed on 11/19/11)
