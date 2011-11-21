@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -57,7 +57,6 @@ public class DictBrowseActivity extends XWListActivity
     private int m_dictClosure = 0;
     private int m_lang;
     private String m_name;
-    private float m_textSize;
     private Spinner m_minSpinner;
     private Spinner m_maxSpinner;
     private int m_minShown;
@@ -93,12 +92,13 @@ public class DictBrowseActivity extends XWListActivity
 
         public Object getItem( int position ) 
         {
-            TextView text = new TextView( DictBrowseActivity.this );
+            TextView text =
+                (TextView)Utils.inflate( DictBrowseActivity.this,
+                                         android.R.layout.simple_list_item_1 );
             String str = XwJNI.dict_iter_nthWord( m_dictClosure, position );
             if ( null != str ) {
                 text.setText( str );
                 text.setOnClickListener( DictBrowseActivity.this );
-                text.setTextSize( m_textSize );
             }
             return text;
         }
@@ -152,8 +152,6 @@ public class DictBrowseActivity extends XWListActivity
         } else {
             m_name = name;
             m_lang = DictLangCache.getDictLangCode( this, name );
-
-            m_textSize = 2.0f + new TextView( this ).getTextSize();
 
             String[] names = { name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
