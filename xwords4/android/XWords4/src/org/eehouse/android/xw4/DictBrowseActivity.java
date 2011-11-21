@@ -85,9 +85,11 @@ public class DictBrowseActivity extends XWListActivity
 
             XwJNI.dict_iter_setMinMax( m_dictClosure, m_minShown, m_maxShown );
             m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
-            setTitle( Utils.format( DictBrowseActivity.this, 
-                                    R.string.dict_browse_titlef,
-                                    m_name, m_nWords ) );
+
+            int format = m_minShown == m_maxShown ?
+                R.string.dict_browse_title1f : R.string.dict_browse_titlef;
+            setTitle( Utils.format( DictBrowseActivity.this, format,
+                                    m_name, m_nWords, m_minShown, m_maxShown ));
         }
 
         public Object getItem( int position ) 
@@ -175,18 +177,9 @@ public class DictBrowseActivity extends XWListActivity
                     }
                 } );
 
-            m_minShown = intent.getIntExtra( DICT_MIN, MIN_LEN );
-
-            m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
-            m_minSpinner.setAdapter( makeAdapter() );
-            m_minSpinner.setOnItemSelectedListener( this );
-            m_minSpinner.setSelection( m_minShown - m_minAvail );
-            m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
-            m_maxSpinner.setAdapter( makeAdapter() );
-            m_maxSpinner.setOnItemSelectedListener( this );
-            m_maxShown = m_maxSpinner.getCount() + MIN_LEN - 1;
-            m_maxShown = intent.getIntExtra( DICT_MAX, m_maxShown );
-            m_maxSpinner.setSelection( m_maxShown - MIN_LEN );
+            m_minShown = intent.getIntExtra( DICT_MIN, m_minAvail );
+            m_maxShown = intent.getIntExtra( DICT_MAX, m_maxAvail );
+            setUpSpinners();
 
             setListAdapter( new DictListAdapter() );
             getListView().setFastScrollEnabled( true );
@@ -232,7 +225,8 @@ public class DictBrowseActivity extends XWListActivity
     public void onItemSelected( AdapterView<?> parent, View view, 
                                 int position, long id )
     {
-        int newval = position + MIN_LEN;
+        TextView text = (TextView)view;
+        int newval = Integer.parseInt( text.getText().toString() );
         if ( parent == m_minSpinner ) {
             setMinMax( newval, m_maxShown );
         } else if ( parent == m_maxSpinner ) {
@@ -290,11 +284,16 @@ public class DictBrowseActivity extends XWListActivity
         }
     }
 
-    private ArrayAdapter<String> makeAdapter()
+    private void makeAdapter( Spinner spinner, int min, int max, int cur )
     {
-        String[] nums = new String[m_maxAvail - m_minAvail + 1];
-        for ( int ii = m_minAvail; ii <= m_maxAvail; ++ii ) {
-            nums[ii-m_minAvail] = String.format( "%d", ii );
+        int sel = -1;
+        String[] nums = new String[max - min + 1];
+        for ( int ii = 0; ii < nums.length; ++ii ) {
+            int val = min + ii;
+            if ( val == cur ) {
+                sel = ii;
+            }
+            nums[ii] = String.format( "%d", min + ii );
         }
         ArrayAdapter<String> adapter = new
             ArrayAdapter<String>( this, 
@@ -303,8 +302,25 @@ public class DictBrowseActivity extends XWListActivity
                                   nums );
         adapter.setDropDownViewResource( android.R.layout.
                                          simple_spinner_dropdown_item );
-        return adapter;
+        spinner.setAdapter( adapter );
+        spinner.setSelection( sel );
     }
+
+    private void setUpSpinners()
+    {
+        // Min and max-length spinners.  To avoid empty lists,
+        // don't allow min to exceed max.  Do that by making the
+        // current max the largest min allowed, and the current
+        // min the smallest max allowed.
+        m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
+        makeAdapter( m_minSpinner, m_minAvail, m_maxShown, m_minShown );
+        m_minSpinner.setOnItemSelectedListener( this );
+
+        m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
+        makeAdapter( m_maxSpinner, m_minShown, m_maxAvail, m_maxShown );
+        m_maxSpinner.setOnItemSelectedListener( this );
+    }
+
 
     public static void launch( Context caller, String name )
     {
