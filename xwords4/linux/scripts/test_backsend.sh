@@ -5,6 +5,7 @@ set -e -u
 
 SEED=""
 RELAY_LOG="../relay/xwrelay.log"
+NDEVS=${NDEVS:-2}
 
 usage() {
     echo "usage: $(basename $0) [--seed RANDOM_SEED]"
@@ -50,7 +51,7 @@ else
 fi
 
 # Run once to connect each with the relay
-for NUM in $(seq 1 2); do
+for NUM in $(seq 0 $((NDEVS-1))); do
     LOG="$(logname $NUM)"
     ARGS=$COMMON_ARGS
     if [ -n "$SEED" ]; then
@@ -68,7 +69,7 @@ NBS=$DIR/nbs
 ZERO_COUNT=0
 while [ $ZERO_COUNT -lt 2 ]; do
     WORK_DONE=""
-    for NUM in $(seq 1 2); do
+    for NUM in $(seq 0 $((NDEVS-1))); do
         LOG="$(logname $NUM)"
         RELAYID=$(./scripts/relayID.sh --short $LOG)
         MSG_COUNT=$(../relay/rq -m $RELAYID 2>/dev/null | sed 's,^.*-- ,,')
@@ -98,7 +99,7 @@ done
 # the game's over.  Strictly speaking we need to get beyond that, but
 # reaching it is the first step.  Debug failure to get that far first.
 ENDED=""
-for NUM in $(seq 1 2); do
+for NUM in $(seq 0 $((NDEVS-1))); do
     LOG="$(logname $NUM)"
     if grep -q 'waiting for server to end game' $LOG; then
         ENDED=1
@@ -107,7 +108,7 @@ for NUM in $(seq 1 2); do
 done
 
 if [ -z "$ENDED" ]; then
-    for NUM in $(seq 1 2); do
+    for NUM in $(seq 0 $((NDEVS-1))); do
         LOG="$(logname $NUM)"
         if ! grep -q 'all remaining tiles' $LOG; then
             echo "$LOG didn't seem to end correctly"
