@@ -160,7 +160,7 @@ public class DlgDelegate {
             // showNotAgainDlgThen() is called
             // FALLTHRU
         case DIALOG_OKONLY:
-            ad.setMessage( m_activity.getString(m_msgID) );
+            ad.setMessage( m_msg );
             break;
         case CONFIRM_THEN:
             ad.getButton(AlertDialog.BUTTON_POSITIVE).
@@ -170,10 +170,19 @@ public class DlgDelegate {
         }
     }
 
+    public void showOKOnlyDialog( String msg, int callbackID )
+    {
+        m_msg = msg;
+        if ( 0 != callbackID ) {
+            Assert.assertTrue( 0 == m_cbckID );
+            m_cbckID = callbackID;
+        }
+        m_activity.showDialog( DIALOG_OKONLY );
+    }
+
     public void showOKOnlyDialog( int msgID )
     {
-        m_msgID = msgID;
-        m_activity.showDialog( DIALOG_OKONLY );
+        showOKOnlyDialog( m_activity.getString( msgID ), 0 );
     }
 
     public void showDictGoneFinish()
@@ -289,11 +298,15 @@ public class DlgDelegate {
 
     private Dialog createOKDialog()
     {
-        return new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.info_title )
-            .setMessage( m_msgID )
+            .setMessage( m_msg )
             .setPositiveButton( R.string.button_ok, null )
             .create();
+        if ( 0 != m_cbckID ) {
+            dialog = setCallbackDismissListener( dialog );
+        }
+        return dialog;
     }
 
     private Dialog createNotAgainDialog()

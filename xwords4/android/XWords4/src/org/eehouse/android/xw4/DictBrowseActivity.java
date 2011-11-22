@@ -53,6 +53,7 @@ public class DictBrowseActivity extends XWListActivity
     public static final String DICT_COUNTS = "DICT_COUNTS";
 
     private static final int MIN_LEN = 2;
+    private static final int FINISH_ACTION = 1;
 
     private int m_dictClosure = 0;
     private int m_lang;
@@ -165,24 +166,34 @@ public class DictBrowseActivity extends XWListActivity
             if ( null == m_counts ) {
                 m_counts = XwJNI.dict_iter_getCounts( m_dictClosure );
             }
-            figureMinMax();
+            if ( null == m_counts ) {
+                // empty dict?  Just close down for now.  Later if
+                // this is extended to include tile info -- it should
+                // be -- then use an empty list elem and disable
+                // search/minmax stuff.
+                String msg = Utils.format( this, R.string.alert_empty_dictf,
+                                           name );
+                showOKOnlyDialogThen( msg, FINISH_ACTION );
+            } else {
+                figureMinMax();
 
-            setContentView( R.layout.dict_browser );
+                setContentView( R.layout.dict_browser );
 
-            Button button = (Button)findViewById( R.id.search_button );
-            button.setOnClickListener( new View.OnClickListener() {
-                    public void onClick( View view )
-                    {
-                        findButtonClicked();
-                    }
-                } );
+                Button button = (Button)findViewById( R.id.search_button );
+                button.setOnClickListener( new View.OnClickListener() {
+                        public void onClick( View view )
+                        {
+                            findButtonClicked();
+                        }
+                    } );
 
-            m_minShown = intent.getIntExtra( DICT_MIN, m_minAvail );
-            m_maxShown = intent.getIntExtra( DICT_MAX, m_maxAvail );
-            setUpSpinners();
+                m_minShown = intent.getIntExtra( DICT_MIN, m_minAvail );
+                m_maxShown = intent.getIntExtra( DICT_MAX, m_maxAvail );
+                setUpSpinners();
 
-            setListAdapter( new DictListAdapter() );
-            getListView().setFastScrollEnabled( true );
+                setListAdapter( new DictListAdapter() );
+                getListView().setFastScrollEnabled( true );
+            }
         }
     }
 
@@ -236,6 +247,16 @@ public class DictBrowseActivity extends XWListActivity
 
     public void onNothingSelected( AdapterView<?> parent )
     {
+    }
+
+    //////////////////////////////////////////////////
+    // DlgDelegate.DlgClickNotify interface
+    //////////////////////////////////////////////////
+    @Override
+    public void dlgButtonClicked( int id, int which )
+    {
+        Assert.assertTrue( FINISH_ACTION == id ); 
+        finish();
     }
 
     private void findButtonClicked()
