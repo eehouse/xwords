@@ -370,6 +370,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         } else {
             dctx->super.base = NULL;
             dctx->super.topEdge = NULL;
+            numEdges = 0;
         }
 
         dctx->super.name = copyString( dctx->super.mpool, fileName );

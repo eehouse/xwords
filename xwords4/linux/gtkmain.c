@@ -486,6 +486,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
         }
 #endif
         model_setDictionary( globals->cGlobals.game.model, params->dict );
+        setSquareBonuses( &globals->cGlobals );
         model_setPlayerDicts( globals->cGlobals.game.model, &params->dicts );
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -528,6 +529,8 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     gint trayTop;
     gint boardTop = 0;
     XP_U16 netStatWidth = 0;
+    gint nCols = globals->cGlobals.params->gi.boardSize;
+    gint nRows = nCols;
 
     if ( globals->draw == NULL ) {
         createOrLoadObjects( globals );
@@ -541,25 +544,23 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     bdHeight = widget->allocation.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
         - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
 
-    hscale = bdWidth / GTK_NUM_COLS;
+    hscale = bdWidth / nCols;
     if ( 0 != globals->cGlobals.params->nHidden ) {
         vscale = hscale;
     } else {
-        vscale = (bdHeight / (GTK_NUM_ROWS + GTK_TRAY_HT_ROWS)); /* makd tray
-                                                                    height 3x cell
-                                                                    height */
+        vscale = (bdHeight / (nCols + GTK_TRAY_HT_ROWS)); /* makd tray height
+                                                             3x cell height */
     }
 
     if ( !globals->cGlobals.params->verticalScore ) {
         boardTop += GTK_HOR_SCORE_HEIGHT;
     }
 
-    trayTop = boardTop + (vscale * GTK_NUM_ROWS);
+    trayTop = boardTop + (vscale * nRows);
     /* move tray up if part of board's meant to be hidden */
     trayTop -= vscale * globals->cGlobals.params->nHidden;
     board_setPos( globals->cGlobals.game.board, GTK_BOARD_LEFT, boardTop,
-                  hscale*GTK_NUM_COLS, vscale * GTK_NUM_ROWS,
-                  hscale * 2, XP_FALSE );
+                  hscale * nCols, vscale * nRows, hscale * 2, XP_FALSE );
     /* board_setScale( globals->cGlobals.game.board, hscale, vscale ); */
     globals->gridOn = XP_TRUE;
 
@@ -569,16 +570,16 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
 
     timerTop = GTK_TIMER_TOP;
     if ( globals->cGlobals.params->verticalScore ) {
-        timerLeft = GTK_BOARD_LEFT + (hscale*GTK_NUM_COLS) + 1;
+        timerLeft = GTK_BOARD_LEFT + (hscale*nCols) + 1;
         board_setScoreboardLoc( globals->cGlobals.game.board, 
                                 timerLeft,
                                 GTK_VERT_SCORE_TOP,
                                 GTK_VERT_SCORE_WIDTH, 
-                                vscale*GTK_NUM_COLS,
+                                vscale*nCols,
                                 XP_FALSE );
 
     } else {
-        timerLeft = GTK_BOARD_LEFT + (hscale*GTK_NUM_COLS)
+        timerLeft = GTK_BOARD_LEFT + (hscale*nCols)
             - GTK_TIMER_WIDTH - netStatWidth;
         board_setScoreboardLoc( globals->cGlobals.game.board, 
                                 GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP,
@@ -598,7 +599,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                        GTK_TIMER_WIDTH, GTK_HOR_SCORE_HEIGHT );
 
     board_setTrayLoc( globals->cGlobals.game.board, GTK_TRAY_LEFT, trayTop, 
-                      hscale * GTK_NUM_COLS, vscale * GTK_TRAY_HT_ROWS + 10, 
+                      hscale * nCols, vscale * GTK_TRAY_HT_ROWS + 10, 
                       GTK_DIVIDER_WIDTH );
 
     setCtrlsForTray( globals );
@@ -1251,7 +1252,8 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     XP_Bool draw = XP_FALSE;
 
     if ( globals->cGlobals.params->nHidden > 0 ) {
-        globals->adjustment->page_size = GTK_NUM_ROWS;
+        gint nRows = globals->cGlobals.params->gi.boardSize;
+        globals->adjustment->page_size = nRows;
         globals->adjustment->value = 0.0;
 
         gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
@@ -1341,7 +1343,7 @@ setCtrlsForTray( GtkAppGlobals* XP_UNUSED(globals) )
     XP_S16 nHidden = globals->cGlobals.params->nHidden;
 
     if ( nHidden != 0 ) {
-        XP_U16 pageSize = GTK_NUM_ROWS;
+        XP_U16 pageSize = nRows;
 
         if ( state == TRAY_HIDDEN ) { /* we recover what tray covers */
             nHidden -= GTK_TRAY_HT_ROWS;
@@ -1373,7 +1375,8 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     if ( !!globals->adjustment ) {
-        globals->adjustment->page_size = GTK_NUM_ROWS - maxOffset;
+        gint nRows = globals->cGlobals.params->gi.boardSize;
+        globals->adjustment->page_size = nRows - maxOffset;
         globals->adjustment->value = newOffset;
         gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
     }
@@ -2317,9 +2320,10 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     /* install scrollbar even if not needed -- since zooming can make it
        needed later */
     GtkWidget* vscrollbar;
+    gint nRows = globals.cGlobals.params->gi.boardSize;
     globals.adjustment = (GtkAdjustment*)
-        gtk_adjustment_new( 0, 0, GTK_NUM_ROWS, 1, 2, 
-                            GTK_NUM_ROWS-globals.cGlobals.params->nHidden );
+        gtk_adjustment_new( 0, 0, nRows, 1, 2, 
+                            nRows - globals.cGlobals.params->nHidden );
     vscrollbar = gtk_vscrollbar_new( globals.adjustment );
     g_signal_connect( GTK_OBJECT(globals.adjustment), "value_changed",
                       G_CALLBACK(scroll_value_changed), &globals );

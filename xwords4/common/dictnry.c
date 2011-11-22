@@ -481,7 +481,9 @@ dict_getWordCount( const DictionaryCtxt* dict )
     XP_U32 nWords = dict->nWords;
 #ifdef XWFEATURE_WALKDICT
     if ( 0 == nWords ) {
-        nWords = dict_countWords( dict );
+        DictIter iter;
+        dict_initIter( &iter, dict, 0, MAX_COLS_DICT );
+        nWords = dict_countWords( &iter, NULL );
     }
 #endif
     return nWords;
@@ -705,36 +707,38 @@ checkSanity( DictionaryCtxt* dict, const XP_U32 numEdges )
 {
     XP_U32 ii;
     XP_Bool passed = XP_TRUE;
-    XP_U16 nFaces = dict_numTileFaces( dict );
 
     array_edge* edge = dict->base;
-    Tile prevTile = 0;
-    for ( ii = 0; ii < numEdges && passed; ++ii ) {
-        Tile tile = EDGETILE( dict, edge );
-        if ( tile < prevTile || tile >= nFaces ) {
-            XP_LOGF( "%s: node %ld (out of %ld) has too-large or "
-                     "out-of-order tile", __func__, ii, numEdges );
-            passed = XP_FALSE;
-            break;
-        }
-        prevTile = tile;
+    if ( NULL != edge ) {       /* not empty dict */
+        XP_U16 nFaces = dict_numTileFaces( dict );
+        Tile prevTile = 0;
+        for ( ii = 0; ii < numEdges && passed; ++ii ) {
+            Tile tile = EDGETILE( dict, edge );
+            if ( tile < prevTile || tile >= nFaces ) {
+                XP_LOGF( "%s: node %ld (out of %ld) has too-large or "
+                         "out-of-order tile", __func__, ii, numEdges );
+                passed = XP_FALSE;
+                break;
+            }
+            prevTile = tile;
 
-        unsigned long index = dict_index_from( dict, edge );
-        if ( index >= numEdges ) {
-            XP_LOGF( "%s: node %ld (out of %ld) has too-high index %ld", __func__,
-                     ii, numEdges, index );
-            passed = XP_FALSE;
-            break;
+            unsigned long index = dict_index_from( dict, edge );
+            if ( index >= numEdges ) {
+                XP_LOGF( "%s: node %ld (out of %ld) has too-high index %ld",
+                         __func__, ii, numEdges, index );
+                passed = XP_FALSE;
+                break;
+            }
+
+            if ( IS_LAST_EDGE( dict, edge ) ) {
+                prevTile = 0;
+            }
+            edge += dict->nodeSize;
         }
 
-        if ( IS_LAST_EDGE( dict, edge ) ) {
-            prevTile = 0;
+        if ( passed ) {
+            passed = 0 == prevTile; /* last edge seen was a LAST_EDGE */
         }
-        edge += dict->nodeSize;
-    }
-
-    if ( passed ) {
-        passed = 0 == prevTile; /* last edge seen was a LAST_EDGE */
     }
 
     XP_LOGF( "%s(numEdges=%ld)=>%d", __func__, numEdges, passed );

@@ -77,10 +77,11 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
     }
     
 static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc), 
-                                            const ModelCtxt* XP_UNUSED(model),
+                                            XP_U16 boardSize,
                                             XP_U16 col, XP_U16 row )
 {
-    static const int s_buttsBoard[8][8] = {
+#define BONUS_DIM 8
+    static const int s_buttsBoard[BONUS_DIM][BONUS_DIM] = {
         { BONUS_TRIPLE_WORD,  BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_WORD },
         { BONUS_NONE,         BONUS_DOUBLE_WORD,  BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_TRIPLE_LETTER,BONUS_NONE,BONUS_NONE },
 
@@ -94,10 +95,12 @@ static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc),
         { BONUS_TRIPLE_WORD,  BONUS_NONE,         BONUS_NONE,BONUS_DOUBLE_LETTER,BONUS_NONE,BONUS_NONE,BONUS_NONE,BONUS_DOUBLE_WORD },
     }; /* buttsBoard */
 
-    int half = 15 / 2;          /* remove 15!!!! PENDING */
+    int half = boardSize / 2;
     if ( col > half ) { col = (half*2) - col; }
     if ( row > half ) { row = (half*2) - row; }
+    XP_ASSERT( col < BONUS_DIM && row < BONUS_DIM );
     return s_buttsBoard[row][col];
+#undef BONUS_DIM
 }
 
 static void

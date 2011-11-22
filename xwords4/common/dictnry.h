@@ -40,16 +40,6 @@ extern "C" {
 typedef XP_U8 XP_LangCode;
 
 typedef enum {
-    BONUS_NONE,
-    BONUS_DOUBLE_LETTER,
-    BONUS_DOUBLE_WORD,
-    BONUS_TRIPLE_LETTER,
-    BONUS_TRIPLE_WORD,
-
-    BONUS_LAST
-} XWBonusType;
-
-typedef enum {
     INTRADE_MW_TEXT = BONUS_LAST
 } XWMiniTextType;
 

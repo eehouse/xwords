@@ -1570,15 +1570,16 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
     BoardCtxt* board = globals->cGlobals.game.board;
     int remWidth = width;
+    int nRows = globals->cGlobals.params->gi.boardSize;
 
     cellWidth = CURSES_CELL_WIDTH;
     cellHt = CURSES_CELL_HT;
     board_setPos( board, BOARD_OFFSET, BOARD_OFFSET, 
-                  cellWidth * MAX_COLS, cellHt * MAX_ROWS, 
+                  cellWidth * nRows, cellHt * nRows, 
                   cellWidth, XP_FALSE );
     /* board_setScale( board, cellWidth, cellHt ); */
-    scoreLeft = (cellWidth * MAX_COLS);// + BOARD_SCORE_PADDING;
-    remWidth -= cellWidth * MAX_COLS;
+    scoreLeft = (cellWidth * nRows);// + BOARD_SCORE_PADDING;
+    remWidth -= cellWidth * nRows;
 
     /* If the scoreboard will right of the board, put it there.  Otherwise try
        to fit it below the boards. */
@@ -1592,8 +1593,9 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
         trayTop = 8;
     } else {
         trayLeft = BOARD_OFFSET;
-        trayTop = BOARD_OFFSET + (cellHt * MAX_ROWS);
+        trayTop = BOARD_OFFSET + (cellHt * nRows);
         if ( trayTop + trayHt > height ) {
+            XP_ASSERT( height > trayTop );
             trayHt = height - trayTop;
         }
     }
@@ -1819,7 +1821,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 
         model_setDictionary( g_globals.cGlobals.game.model, params->dict );
-
+        setSquareBonuses( &g_globals.cGlobals );
         positionSizeStuff( &g_globals, width, height );
 
 #ifndef XWFEATURE_STANDALONE_ONLY

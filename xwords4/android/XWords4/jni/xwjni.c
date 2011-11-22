@@ -1310,13 +1310,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
         data->jniutil = jniutil;
         data->dict = dict;
+        data->depth = 2;
 #ifdef MEM_DEBUG
         data->mpool = mpool;
 #endif
         closure = (int)data;
-
-        dict_initIter( data->dict, &data->iter );
-        (void)dict_firstWord( &data->iter );
     } else {
         destroyJNIUtil( &jniutil );
         XP_FREE( mpool, data );
@@ -1325,6 +1323,63 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 #endif
     }
     return closure;
+}
+
+static void
+freeIndices( DictIterData* data )
+{
+    IndexData* idata = &data->idata;
+    if ( !!idata->prefixes ) {
+        XP_FREE( data->mpool, idata->prefixes );
+        idata->prefixes = NULL;
+    }
+    if( !!idata->indices ) {
+        XP_FREE( data->mpool, idata->indices );
+        idata->indices = NULL;
+    }
+}
+
+static void
+makeIndex( DictIterData* data )
+{
+    XP_U16 nFaces = dict_numTileFaces( data->dict );
+    XP_U16 ii;
+    XP_U16 count;
+    for ( count = 1, ii = 0; ii < data->depth; ++ii ) {
+        count *= nFaces;
+    }
+
+    freeIndices( data );
+
+    IndexData* idata = &data->idata;
+    idata->prefixes = XP_MALLOC( data->mpool, count * data->depth 
+                                 * sizeof(*idata->prefixes) );
+    idata->indices = XP_MALLOC( data->mpool, 
+                                count * sizeof(*idata->indices) );
+    idata->count = count;
+
+    dict_makeIndex( &data->iter, data->depth, idata );
+    if ( 0 < idata->count ) {
+        idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
+                                      idata->count * data->depth *
+                                      sizeof(*idata->prefixes) );
+        idata->indices = XP_REALLOC( data->mpool, idata->indices,
+                                     idata->count * sizeof(*idata->indices) );
+    } else {
+        freeIndices( data );
+    }
+} /* makeIndex */
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1setMinMax
+( JNIEnv* env, jclass C, jint closure, jint min, jint max )
+{
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        dict_initIter( &data->iter, data->dict, min, max );
+        makeIndex( data );
+        (void)dict_firstWord( &data->iter );
+    }
 }
 
 JNIEXPORT void JNICALL
@@ -1338,12 +1393,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 #endif
         dict_destroy( data->dict );
         destroyJNIUtil( &data->jniutil );
-        if ( !!data->idata.indices ) {
-            XP_FREE( mpool, data->idata.indices );
-        }
-        if ( !!data->idata.prefixes ) {
-            XP_FREE( mpool, data->idata.prefixes );
-        }
+        freeIndices( data );
         vtmgr_destroy( MPPARM(mpool) data->vtMgr );
         XP_FREE( mpool, data );
 #ifdef MEM_DEBUG
@@ -1364,37 +1414,24 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
     return result;
 }
 
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1makeIndex
-( JNIEnv* env, jclass C, jint closure )
+JNIEXPORT jintArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
+(JNIEnv* env, jclass C, jint closure )
 {
+    jintArray result = NULL;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        data->depth = 2;        /* for now */
-        XP_U16 nFaces = dict_numTileFaces( data->dict );
-        XP_U16 ii;
-        XP_U16 count;
-        for ( count = 1, ii = 0; ii < data->depth; ++ii ) {
-            count *= nFaces;
+        DictIter iter;
+        dict_initIter( &iter, data->dict, 0, MAX_COLS_DICT );
+
+        LengthsArray lens;
+        if ( 0 < dict_countWords( &iter, &lens ) ) {
+            XP_ASSERT( sizeof(jint) == sizeof(lens.lens[0]) );
+            result = makeIntArray( env, VSIZE(lens.lens), (jint*)&lens.lens );
+            (*env)->DeleteLocalRef( env, result );
         }
-
-        IndexData* idata = &data->idata;
-        XP_ASSERT( !idata->prefixes );
-        idata->prefixes = XP_MALLOC( data->mpool, count * data->depth 
-                                     * sizeof(*idata->prefixes) );
-        XP_ASSERT( !idata->indices );
-        idata->indices = XP_MALLOC( data->mpool, 
-                                    count * sizeof(*idata->indices) );
-        idata->count = count;
-
-        dict_makeIndex( &data->iter, data->depth, idata );
-        
-        idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
-                                      idata->count * data->depth *
-                                      sizeof(*idata->prefixes) );
-        idata->indices = XP_REALLOC( data->mpool, idata->indices,
-                                     idata->count * sizeof(*idata->indices) );
     }
+    return result;
 }
 
 JNIEXPORT jobjectArray JNICALL

@@ -1784,10 +1784,20 @@
     <string name="cur_tilesf">Tile picker\n(so far: %s)</string>
     <string name="pick_faceup">Pick tiles face-up</string>
 
-    <string name="dict_browse_titlef">%1$s (%2$d words)</string>
+    <string name="dict_browse_titlef">%1$s (%2$d words using %3$d-%4$d
+      tiles)</string>
+    <string name="dict_browse_title1f">%1$s (%2$d words using %3$d
+      tiles)</string>
     <string name="dict_browse_nowordsf">No word in %1$s starts with
       %2$s.</string>
     <string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>
+    <string name="alert_empty_dictf">The wordlist %s contains only
+      tile information.  There are no words to browse.</string>
+
+    <string name="min_len">Min len</string>
+    <string name="max_len">Max len</string>
+    <string name="prompt_min_len">Words no shorter than</string>
+    <string name="prompt_max_len">Words no longer than</string>
 
 </resources>

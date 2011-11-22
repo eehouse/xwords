@@ -1,7 +1,7 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2010 - 2011 by Eric House (xwords@eehouse.org).  All
+ * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -120,6 +120,16 @@ public class XWListActivity extends ListActivity
     protected void showNotAgainDlg( int msgID, int prefsKey )
     {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey );
+    }
+
+    protected void showOKOnlyDialogThen( String msg, int action )
+    {
+        m_delegate.showOKOnlyDialog( msg, action );
+    }
+
+    protected void showOKOnlyDialog( String msg )
+    {
+        m_delegate.showOKOnlyDialog( msg, 0 );
     }
 
     protected void showOKOnlyDialog( int msgID )

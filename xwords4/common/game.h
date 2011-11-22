@@ -31,30 +31,6 @@
 extern "C" {
 #endif
 
-#define STREAM_SAVE_PREVWORDS 0x11
-#define STREAM_VERS_SERVER_SAVES_TOSHOW 0x10
-#define STREAM_VERS_PLAYERDICTS 0x0F
-#define STREAM_SAVE_PREVMOVE 0x0E /* server saves prev move explanation */
-#define STREAM_VERS_ROBOTIQ STREAM_SAVE_PREVMOVE /* robots have different smarts */
-#define STREAM_VERS_DICTLANG 0x0D /* save dict lang code in CurGameInfo */
-#define STREAM_VERS_NUNDONE 0x0C /* save undone tile in model */
-#define STREAM_VERS_GAMESECONDS 0x0B /* save gameSeconds whether or not
-                                        timer's enabled */
-#define STREAM_VERS_4YOFFSET 0x0A /* 4 bits for yOffset on board */
-#define STREAM_VERS_CHANNELSEED 0x09 /* new short in relay connect must be
-                                        saved in comms */
-#define STREAM_VERS_UTF8 0x08
-#define STREAM_VERS_ALWAYS_MULTI 0x07 /* stream format same for multi and
-                                         one-device game builds */
-#define STREAM_VERS_MODEL_NO_DICT 0x06
-#define STREAM_VERS_BLUETOOTH 0x05
-#define STREAM_VERS_KEYNAV 0x04
-#define STREAM_VERS_RELAY 0x03
-#define STREAM_VERS_41B4 0x02
-#define STREAM_VERS_405  0x01
-
-#define CUR_STREAM_VERS STREAM_SAVE_PREVWORDS
-
 typedef struct LocalPlayer {
     XP_UCHAR* name;
     XP_UCHAR* password;

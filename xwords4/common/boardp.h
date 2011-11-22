@@ -157,7 +157,7 @@ struct BoardCtxt {
     XP_S16 timerStoppedTurn;
 #endif
 
-    XP_U16 redrawFlags[MAX_ROWS];
+    RowFlags redrawFlags[MAX_ROWS];
 
     XP_Rect boardBounds;
     XP_U16 heightAsSet;

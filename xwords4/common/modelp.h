@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -70,13 +71,17 @@ struct ModelCtxt {
 
     ModelVolatiles vol;
 
-    CellTile tiles[MAX_COLS][MAX_ROWS];
-
     PlayerCtxt players[MAX_NUM_PLAYERS];
     XP_U16 nPlayers;
     XP_U16 nCols;
     XP_U16 nRows;
+    XP_U16 nBonuses;
+    XWBonusType* bonuses;
+
+    CellTile tiles[];
 };
+
+#define TILES_SIZE(m,nc) ((nc) * (nc) * sizeof((m)->tiles[0]))
 
 void invalidateScore( ModelCtxt* model, XP_S16 player );
 XP_Bool tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal );

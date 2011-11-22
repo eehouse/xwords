@@ -426,13 +426,18 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     XP_U16 ii;
     XP_UCHAR* str;
     XP_U16 strVersion = stream_getVersion( stream );
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
 
     str = stringFromStream( mpool, stream );
     replaceStringIfDifferent( mpool, &gi->dictName, str );
     XP_FREEP( mpool, &str );
 
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
-    gi->boardSize = (XP_U8)stream_getBits( stream, 4 );
+    gi->boardSize = (XP_U8)stream_getBits( stream, nColsNBits );
     gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
     if ( strVersion < STREAM_VERS_ROBOTIQ ) {
@@ -491,10 +496,19 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     const LocalPlayer* pl;
     XP_U16 ii;
 
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 strVersion = stream_getVersion( stream );
+    XP_ASSERT( STREAM_SAVE_PREVWORDS <= strVersion );
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
+
+
     stringToStream( stream, gi->dictName );
 
     stream_putBits( stream, NPLAYERS_NBITS, gi->nPlayers );
-    stream_putBits( stream, 4, gi->boardSize );
+    stream_putBits( stream, nColsNBits, gi->boardSize );
     stream_putBits( stream, 2, gi->serverRole );
     stream_putBits( stream, 1, gi->hintsNotAllowed );
     stream_putBits( stream, 2, gi->phoniesAction );

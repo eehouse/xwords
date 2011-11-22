@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -27,12 +27,16 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.SectionIndexer;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import java.util.Arrays;
 
 import junit.framework.Assert;
@@ -41,15 +45,27 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class DictBrowseActivity extends XWListActivity
-    implements View.OnClickListener {
+    implements View.OnClickListener, OnItemSelectedListener {
 
     public static final String DICT_NAME = "DICT_NAME";
+    public static final String DICT_MIN = "DICT_MIN";
+    public static final String DICT_MAX = "DICT_MAX";
+    public static final String DICT_COUNTS = "DICT_COUNTS";
+
+    private static final int MIN_LEN = 2;
+    private static final int FINISH_ACTION = 1;
 
     private int m_dictClosure = 0;
     private int m_lang;
     private String m_name;
-    private int m_nWords;
-    private float m_textSize;
+    private Spinner m_minSpinner;
+    private Spinner m_maxSpinner;
+    private int m_minShown;
+    private int m_maxShown;
+    private int m_minAvail;
+    private int m_maxAvail;
+    private int[] m_counts;
+
 
 // - Steps to reproduce the problem:
 // Create ListView, set custom adapter which implements ListAdapter and
@@ -62,15 +78,30 @@ public class DictBrowseActivity extends XWListActivity
 
         private String[] m_prefixes;
         private int[] m_indices;
+        private int m_nWords;
+
+        public DictListAdapter()
+        {
+            super();
+
+            XwJNI.dict_iter_setMinMax( m_dictClosure, m_minShown, m_maxShown );
+            m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
+
+            int format = m_minShown == m_maxShown ?
+                R.string.dict_browse_title1f : R.string.dict_browse_titlef;
+            setTitle( Utils.format( DictBrowseActivity.this, format,
+                                    m_name, m_nWords, m_minShown, m_maxShown ));
+        }
 
         public Object getItem( int position ) 
         {
-            TextView text = new TextView( DictBrowseActivity.this );
+            TextView text =
+                (TextView)Utils.inflate( DictBrowseActivity.this,
+                                         android.R.layout.simple_list_item_1 );
             String str = XwJNI.dict_iter_nthWord( m_dictClosure, position );
             if ( null != str ) {
                 text.setText( str );
                 text.setOnClickListener( DictBrowseActivity.this );
-                text.setTextSize( m_textSize );
             }
             return text;
         }
@@ -125,33 +156,44 @@ public class DictBrowseActivity extends XWListActivity
             m_name = name;
             m_lang = DictLangCache.getDictLangCode( this, name );
 
-            m_textSize = 2.0f + new TextView( this ).getTextSize();
-
             String[] names = { name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
             m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], 
                                                   pairs.m_paths[0],
                                                   JNIUtilsImpl.get() );
-            m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
 
-            setTitle( Utils.format( this, R.string.dict_browse_titlef,
-                                    name, m_nWords ) );
+            m_counts = intent.getIntArrayExtra( DICT_COUNTS );
+            if ( null == m_counts ) {
+                m_counts = XwJNI.dict_iter_getCounts( m_dictClosure );
+            }
+            if ( null == m_counts ) {
+                // empty dict?  Just close down for now.  Later if
+                // this is extended to include tile info -- it should
+                // be -- then use an empty list elem and disable
+                // search/minmax stuff.
+                String msg = Utils.format( this, R.string.alert_empty_dictf,
+                                           name );
+                showOKOnlyDialogThen( msg, FINISH_ACTION );
+            } else {
+                figureMinMax();
 
-            Utils.logf( "calling makeIndex" );
-            XwJNI.dict_iter_makeIndex( m_dictClosure );
-            Utils.logf( "makeIndex done" );
+                setContentView( R.layout.dict_browser );
 
-            setContentView( R.layout.dict_browser );
-            setListAdapter( new DictListAdapter() );
-            getListView().setFastScrollEnabled( true );
+                Button button = (Button)findViewById( R.id.search_button );
+                button.setOnClickListener( new View.OnClickListener() {
+                        public void onClick( View view )
+                        {
+                            findButtonClicked();
+                        }
+                    } );
 
-            Button button = (Button)findViewById( R.id.search_button );
-            button.setOnClickListener( new View.OnClickListener() {
-                    public void onClick( View view )
-                    {
-                        findButtonClicked();
-                    }
-                } );
+                m_minShown = intent.getIntExtra( DICT_MIN, m_minAvail );
+                m_maxShown = intent.getIntExtra( DICT_MAX, m_maxAvail );
+                setUpSpinners();
+
+                setListAdapter( new DictListAdapter() );
+                getListView().setFastScrollEnabled( true );
+            }
         }
     }
 
@@ -187,6 +229,36 @@ public class DictBrowseActivity extends XWListActivity
         launchLookup( words, m_lang, true );
     }
 
+
+    //////////////////////////////////////////////////
+    // AdapterView.OnItemSelectedListener interface
+    //////////////////////////////////////////////////
+    public void onItemSelected( AdapterView<?> parent, View view, 
+                                int position, long id )
+    {
+        TextView text = (TextView)view;
+        int newval = Integer.parseInt( text.getText().toString() );
+        if ( parent == m_minSpinner ) {
+            setMinMax( newval, m_maxShown );
+        } else if ( parent == m_maxSpinner ) {
+            setMinMax( m_minShown, newval );
+        }
+    }
+
+    public void onNothingSelected( AdapterView<?> parent )
+    {
+    }
+
+    //////////////////////////////////////////////////
+    // DlgDelegate.DlgClickNotify interface
+    //////////////////////////////////////////////////
+    @Override
+    public void dlgButtonClicked( int id, int which )
+    {
+        Assert.assertTrue( FINISH_ACTION == id ); 
+        finish();
+    }
+
     private void findButtonClicked()
     {
         EditText edit = (EditText)findViewById( R.id.word_edit );
@@ -201,6 +273,75 @@ public class DictBrowseActivity extends XWListActivity
             }
         }
     }
+
+    private void setMinMax( int min, int max )
+    {
+        // I can't make a second call to setListAdapter() work, nor
+        // does notifyDataSetChanged do anything toward refreshing the
+        // adapter/making it recognized a changed dataset.  So, as a
+        // workaround, relaunch the activity with different
+        // parameters.
+        if ( m_minShown != min || m_maxShown != max ) {
+            Intent intent = getIntent();
+            intent.putExtra( DICT_MIN, min );
+            intent.putExtra( DICT_MAX, max );
+            intent.putExtra( DICT_COUNTS, m_counts );
+            startActivity( intent );
+
+            finish();
+        }
+    }
+
+    private void figureMinMax()
+    {
+        Assert.assertTrue( m_counts.length == XwJNI.MAX_COLS_DICT + 1 );
+        m_minAvail = 0;
+        while ( 0 == m_counts[m_minAvail] ) {
+            ++m_minAvail;
+        }
+        m_maxAvail = XwJNI.MAX_COLS_DICT;
+        while ( 0 == m_counts[m_maxAvail] ) { // 
+            --m_maxAvail;
+        }
+    }
+
+    private void makeAdapter( Spinner spinner, int min, int max, int cur )
+    {
+        int sel = -1;
+        String[] nums = new String[max - min + 1];
+        for ( int ii = 0; ii < nums.length; ++ii ) {
+            int val = min + ii;
+            if ( val == cur ) {
+                sel = ii;
+            }
+            nums[ii] = String.format( "%d", min + ii );
+        }
+        ArrayAdapter<String> adapter = new
+            ArrayAdapter<String>( this, 
+                                  //android.R.layout.simple_spinner_dropdown_item,
+                                  android.R.layout.simple_spinner_item,
+                                  nums );
+        adapter.setDropDownViewResource( android.R.layout.
+                                         simple_spinner_dropdown_item );
+        spinner.setAdapter( adapter );
+        spinner.setSelection( sel );
+    }
+
+    private void setUpSpinners()
+    {
+        // Min and max-length spinners.  To avoid empty lists,
+        // don't allow min to exceed max.  Do that by making the
+        // current max the largest min allowed, and the current
+        // min the smallest max allowed.
+        m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
+        makeAdapter( m_minSpinner, m_minAvail, m_maxShown, m_minShown );
+        m_minSpinner.setOnItemSelectedListener( this );
+
+        m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
+        makeAdapter( m_maxSpinner, m_minShown, m_maxAvail, m_maxShown );
+        m_maxSpinner.setOnItemSelectedListener( this );
+    }
+
 
     public static void launch( Context caller, String name )
     {

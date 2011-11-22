@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -46,5 +46,11 @@ void initNoConnStorage( CommonGlobals* cGlobals );
 XP_Bool storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 len,
                         const XP_UCHAR* relayID );
 void writeNoConnMsgs( CommonGlobals* cGlobals, int fd );
+
+#ifdef STREAM_VERS_BIGBOARD
+void setSquareBonuses( const CommonGlobals* cGlobals );
+#else
+# define setSquareBonuses( cg )
+#endif
 
 #endif

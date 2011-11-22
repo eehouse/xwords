@@ -1,6 +1,7 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -88,7 +89,9 @@ model_make( MPFORMAL DictionaryCtxt* dict,
             const PlayerDicts* dicts, XW_UtilCtxt* util, XP_U16 nCols, 
             XP_U16 nRows )
 {
-    ModelCtxt* result = (ModelCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
+    ModelCtxt* result;
+    XP_U16 size = sizeof(*result) + TILES_SIZE(result, nCols);
+    result = (ModelCtxt*)XP_MALLOC( mpool, size );
     if ( result != NULL ) {
         XP_MEMSET( result, 0, sizeof(*result) );
         MPASSIGN(result->vol.mpool, mpool);
@@ -115,15 +118,21 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 {
     ModelCtxt* model;
     XP_U16 nCols, nRows;
-    short i;
+    XP_U16 ii;
     XP_Bool hasDict;
     XP_U16 nPlayers;
+    XP_U16 nColsNBits;
     XP_U16 version = stream_getVersion( stream );
+#ifdef STREAM_VERS_BIGBOARD
+    nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
+#else
+    nColsNBits = NUMCOLS_NBITS;
+#endif
 
     XP_ASSERT( !!dict || !!dicts );
 
-    nCols = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
-    nRows = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
+    nCols = (XP_U16)stream_getBits( stream, nColsNBits );
+    nRows = (XP_U16)stream_getBits( stream, nColsNBits );
 
     hasDict = (version >= STREAM_VERS_MODEL_NO_DICT)
         ? XP_FALSE : stream_getBits( stream, 1 );
@@ -138,6 +147,20 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
     model = model_make( MPPARM(mpool) dict, dicts, util, nCols, nRows );
     model->nPlayers = nPlayers;
 
+#ifdef STREAM_VERS_BIGBOARD
+    if ( STREAM_VERS_BIGBOARD <= version ) {
+        model->nBonuses = stream_getBits( stream, 7 );
+        if ( 0 < model->nBonuses ) {
+            model->bonuses = 
+                XP_MALLOC( model->vol.mpool,
+                           model->nBonuses * sizeof( model->bonuses[0] ) );
+            for ( ii = 0; ii < model->nBonuses; ++ii ) {
+                model->bonuses[ii] = stream_getBits( stream, 4 );
+            }
+        }
+    }
+#endif
+
     stack_loadFromStream( model->vol.stack, stream );
 
     buildModelFromStack( model, model->vol.stack, XP_FALSE, 0, 
@@ -145,10 +168,10 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
                          (MovePrintFuncPre)NULL, (MovePrintFuncPost)NULL, 
                          NULL );
 
-    for ( i = 0; i < model->nPlayers; ++i ) {
-        loadPlayerCtxt( stream, version, &model->players[i] );
-        setPendingCounts( model, i );
-        invalidateScore( model, i );
+    for ( ii = 0; ii < model->nPlayers; ++ii ) {
+        loadPlayerCtxt( stream, version, &model->players[ii] );
+        setPendingCounts( model, ii );
+        invalidateScore( model, ii );
     }
 
     return model;
@@ -157,7 +180,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 void
 model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
 {
-    short i;
+    XP_U16 ii;
 
     stream_putBits( stream, NUMCOLS_NBITS, model->nCols );
     stream_putBits( stream, NUMCOLS_NBITS, model->nRows );
@@ -165,10 +188,17 @@ model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
     /* we have two bits for nPlayers, so range must be 0..3, not 1..4 */
     stream_putBits( stream, NPLAYERS_NBITS, model->nPlayers );
 
+#ifdef STREAM_VERS_BIGBOARD
+    stream_putBits( stream, 7, model->nBonuses );
+    for ( ii = 0; ii < model->nBonuses; ++ii ) {
+        stream_putBits( stream, 4, model->bonuses[ii] );
+    }
+#endif
+
     stack_writeToStream( model->vol.stack, stream );
 
-    for ( i = 0; i < model->nPlayers; ++i ) {
-        writePlayerCtxt( stream, &model->players[i] );
+    for ( ii = 0; ii < model->nPlayers; ++ii ) {
+        writePlayerCtxt( stream, &model->players[ii] );
     }
 } /* model_writeToStream */
 
@@ -220,7 +250,7 @@ model_init( ModelCtxt* model, XP_U16 nCols, XP_U16 nRows )
 
     XP_ASSERT( model != NULL );
     XP_MEMSET( model, 0, sizeof( *model ) );
-    XP_MEMSET( &model->tiles, TILE_EMPTY_BIT, sizeof(model->tiles) );
+    XP_MEMSET( &model->tiles, TILE_EMPTY_BIT, TILES_SIZE(model, nCols) );
 
     model->nCols = nCols;
     model->nRows = nRows;
@@ -240,8 +270,89 @@ model_destroy( ModelCtxt* model )
 {
     stack_destroy( model->vol.stack );
     /* is this it!? */
+    if ( !!model->bonuses ) {
+        XP_FREE( model->vol.mpool, model->bonuses );
+    }
     XP_FREE( model->vol.mpool, model );
 } /* model_destroy */
+
+#ifdef STREAM_VERS_BIGBOARD
+void
+model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, XP_U16 nBonuses )
+{
+#ifdef DEBUG
+    XP_U16 nCols = (1 + model_numCols( model )) / 2;
+    XP_ASSERT( 0 < nCols );
+    XP_U16 wantLen = 0;
+    while ( nCols > 0 ) {
+        wantLen += nCols--;
+    }
+    XP_ASSERT( wantLen == nBonuses );
+#endif
+
+    if ( !!model->bonuses ) {
+        XP_FREE( model->vol.mpool, model->bonuses );
+    }
+    model->bonuses = XP_MALLOC( model->vol.mpool, 
+                                nBonuses * sizeof(model->bonuses[0]) );
+    XP_MEMCPY( model->bonuses, bonuses, nBonuses * sizeof(model->bonuses[0]) );
+    model->nBonuses = nBonuses;
+}
+
+static void
+borrowSquareBonuses( ModelCtxt* dest, const ModelCtxt* src )
+{
+    XP_ASSERT( !dest->bonuses );
+    dest->bonuses = src->bonuses;
+    dest->nBonuses = src->nBonuses;
+}
+
+static void
+returnSquareBonuses( ModelCtxt* dest )
+{
+    dest->bonuses = NULL;
+    dest->nBonuses = 0;
+}
+#else
+# define borrowSquareBonuses(d,s)
+# define returnSquareBonuses(d)
+#endif
+
+XWBonusType
+model_getSquareBonus( const ModelCtxt* model, XP_U16 col, XP_U16 row )
+{
+    XWBonusType result = BONUS_NONE;
+
+    if ( 0 ) {
+#ifdef STREAM_VERS_BIGBOARD
+    } else if ( !!model->bonuses ) {
+        XP_U16 nCols = model_numCols( model );
+        XP_U16 ii;
+        if ( col > (nCols/2) ) {
+            col = nCols - 1 - col;
+        }
+        if ( row > (nCols/2) ) {
+            row = nCols - 1 - row;
+        }
+        if ( col > row ) {
+            XP_U16 tmp = col;
+            col = row;
+            row = tmp;
+        }
+        for ( ii = 1; ii <= row; ++ii ) {
+            col += ii;
+        }
+
+        if ( col < model->nBonuses ) {
+            result = model->bonuses[col];
+        }
+#endif
+    } else {
+        result = util_getSquareBonus( model->vol.util, model_numRows(model), 
+                                      col, row );
+    }
+    return result;
+}
 
 static void
 modelAddEntry( ModelCtxt* model, XP_U16 indx, const StackEntry* entry, 
@@ -581,17 +692,23 @@ model_getCellOwner( ModelCtxt* model, XP_U16 col, XP_U16 row )
 static void
 setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, CellTile tile )
 {
-    XP_ASSERT( col < MAX_COLS );
-    XP_ASSERT( row < MAX_ROWS );
-    model->tiles[col][row] = tile;
+    XP_ASSERT( col < model->nCols );
+    XP_ASSERT( row < model->nRows );
+    model->tiles[(row*model->nCols) + col] = tile;
 } /* model_setTile */
 
 static CellTile 
 getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
-    XP_ASSERT( col < MAX_COLS );
-    XP_ASSERT( row < MAX_ROWS );
-    return model->tiles[col][row];
+    CellTile tile;
+    XP_U16 nCols = model->nCols;
+    XP_ASSERT( model->nRows == nCols );
+    if ( col < nCols && row < nCols ) {
+        tile = model->tiles[(row*nCols) + col];
+    } else {
+        tile = TILE_EMPTY_BIT;
+    }
+    return tile;
 } /* getModelTileRaw */
 
 static void
@@ -815,6 +932,12 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
 {
     PlayerCtxt* player;
     XP_S16 numTiles;
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 version = stream_getVersion( stream );
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
 
     XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
@@ -831,8 +954,8 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
                                   &col, &row, &isBlank );
         XP_ASSERT( numTiles >= 0 );
         stream_putBits( stream, TILE_NBITS, tile );
-        stream_putBits( stream, NUMCOLS_NBITS, col );
-        stream_putBits( stream, NUMCOLS_NBITS, row );
+        stream_putBits( stream, nColsNBits, col );
+        stream_putBits( stream, nColsNBits, row );
         stream_putBits( stream, 1, isBlank );
     }
 } /* model_currentMoveToStream */
@@ -847,8 +970,15 @@ void
 model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                           XWStreamCtxt* stream )
 {
-    XP_U16 numTiles;
+    XP_U16 numTiles, ii;
     Tile blank = dict_getBlankTile( model_getDictionary(model) );
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 version = stream_getVersion( stream );
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
+
 
     model_resetCurrentTurn( model, playerNum );
 
@@ -856,12 +986,12 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 
     XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
 
-    while ( numTiles-- ) {
+    for ( ii = 0; ii < numTiles; ++ii ) {
         XP_S16 foundAt;
         Tile moveTile;
         Tile tileFace = (Tile)stream_getBits( stream, TILE_NBITS );
-        XP_U16 col = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
-        XP_U16 row = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
+        XP_U16 col = (XP_U16)stream_getBits( stream, nColsNBits );
+        XP_U16 row = (XP_U16)stream_getBits( stream, nColsNBits );
         XP_Bool isBlank = stream_getBits( stream, 1 );
 
         /* This code gets called both for the server, which has all the
@@ -1931,6 +2061,7 @@ makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
                                       model->vol.util, model_numCols(model),
                                       model_numRows(model));
     model_setNPlayers( tmpModel, model->nPlayers );
+    borrowSquareBonuses( tmpModel, model );
 
     buildModelFromStack( tmpModel, model->vol.stack, XP_FALSE, 0, stream, 
                          (WordNotifierInfo*)NULL, mpf_pre, mpf_post, closure );
@@ -1952,6 +2083,7 @@ model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
 
     tmpModel = makeTmpModel( model, stream, printMovePre, printMovePost, 
                              &closure );
+    returnSquareBonuses( tmpModel );
     model_destroy( tmpModel );
 
     if ( gameOver ) {
@@ -2215,6 +2347,11 @@ loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version, PlayerCtxt* pc )
 {
     PendingTile* pt;
     XP_U16 nTiles;
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > version ? 4 : NUMCOLS_NBITS;
+#else
+    XP_U16 nColsNBits = NUMCOLS_NBITS;
+#endif
 
     pc->curMoveValid = stream_getBits( stream, 1 );
 
@@ -2230,8 +2367,8 @@ loadPlayerCtxt( XWStreamCtxt* stream, XP_U16 version, PlayerCtxt* pc )
     nTiles = pc->nPending + pc->nUndone;
     for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
         XP_U16 nBits;
-        pt->col = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
-        pt->row = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
+        pt->col = (XP_U8)stream_getBits( stream, nColsNBits );
+        pt->row = (XP_U8)stream_getBits( stream, nColsNBits );
 
         nBits = (version <= STREAM_VERS_RELAY) ? 6 : 7;
         pt->tile = (Tile)stream_getBits( stream, nBits );

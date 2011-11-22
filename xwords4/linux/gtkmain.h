@@ -132,8 +132,6 @@ typedef struct GtkAppGlobals {
 /* DictionaryCtxt* gtk_dictionary_make(); */
 int gtkmain( LaunchParams* params, int argc, char *argv[] );
 
-#define GTK_NUM_COLS 15
-#define GTK_NUM_ROWS 15
 #define GTK_MIN_SCALE 12		/* was 14 */
 
 #define GTK_MIN_TRAY_SCALEH 24
@@ -156,7 +154,7 @@ int gtkmain( LaunchParams* params, int argc, char *argv[] );
 #define GTK_TIMER_WIDTH 40
 #define GTK_NETSTAT_WIDTH 20
 #define GTK_TIMER_TOP GTK_HOR_SCORE_TOP
-#define GTK_HOR_SCORE_WIDTH ((GTK_MIN_SCALE*MAX_COLS)-GTK_TIMER_PAD)
+#define GTK_HOR_SCORE_WIDTH ((GTK_MIN_SCALE*20)-GTK_TIMER_PAD)
 #define GTK_VERT_SCORE_WIDTH 40
 
 #define GTK_BOARD_TOP (GTK_SCORE_TOP + GTK_SCORE_HEIGHT \
