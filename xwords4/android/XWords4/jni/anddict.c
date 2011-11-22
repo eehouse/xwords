@@ -1,7 +1,7 @@
-/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
+/* -*- compile-command: "../../scripts/ndkbuild.sh"; -*- */
 /*
- * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright © 2009 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -45,7 +45,7 @@ typedef struct _AndDictionaryCtxt {
 } AndDictionaryCtxt;
 
 #define CHECK_PTR(p,c,e)                                                \
-    if ( ((p)+(c)) >= (e) ) {                                           \
+    if ( ((p)+(c)) > (e) ) {                                            \
         XP_LOGF( "%s (line %d); out of bytes", __func__, __LINE__ );    \
         goto error;                                                     \
     }
@@ -568,14 +568,15 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname,
         XP_U32 numEdges;
         XP_Bool parses = parseDict( anddict, (XP_U8*)anddict->bytes, 
                                     bytesSize, &numEdges );
-        if ( !parses || (check && !checkSanity( &anddict->super, numEdges ) ) ) {
+        if ( !parses || (check && !checkSanity( &anddict->super, 
+                                                numEdges ) ) ) {
             and_dictionary_destroy( (DictionaryCtxt*)anddict );
             anddict = NULL;
         }
     }
     
     return (DictionaryCtxt*)anddict;
-}
+} /* makeDict */
 
 void
 destroyDicts( PlayerDicts* dicts )
