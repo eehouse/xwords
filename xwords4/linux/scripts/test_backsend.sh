@@ -39,7 +39,10 @@ DIR=$(basename $0)_$PID
 DICT=dict.xwd
 
 APP=./obj_linux_memdbg/xwords
-COMMON_ARGS="--room $ROOM --curses --robot Eric --remote-player --game-dict $DICT --quit-after 2"
+COMMON_ARGS="--room $ROOM --curses --robot Eric --game-dict $DICT --quit-after 2"
+for NUM in $(seq 2 $NDEVS); do
+    COMMON_ARGS="$COMMON_ARGS --remote-player"
+done
 
 mkdir -p $DIR
 
@@ -51,7 +54,7 @@ else
 fi
 
 # Run once to connect each with the relay
-for NUM in $(seq 0 $((NDEVS-1))); do
+for NUM in $(seq 1 $((NDEVS))); do
     LOG="$(logname $NUM)"
     ARGS=$COMMON_ARGS
     if [ -n "$SEED" ]; then
@@ -59,7 +62,7 @@ for NUM in $(seq 0 $((NDEVS-1))); do
     fi
     $APP $ARGS --file $DIR/game_${NUM}.xwg > /dev/null 2>>$LOG &
     PID1=$!
-    sleep 4
+    sleep 2
     kill $PID1
     wait $PID1
 done
@@ -69,7 +72,7 @@ NBS=$DIR/nbs
 ZERO_COUNT=0
 while [ $ZERO_COUNT -lt 2 ]; do
     WORK_DONE=""
-    for NUM in $(seq 0 $((NDEVS-1))); do
+    for NUM in $(seq 1 $((NDEVS))); do
         LOG="$(logname $NUM)"
         RELAYID=$(./scripts/relayID.sh --short $LOG)
         MSG_COUNT=$(../relay/rq -m $RELAYID 2>/dev/null | sed 's,^.*-- ,,')
@@ -80,7 +83,8 @@ while [ $ZERO_COUNT -lt 2 ]; do
             if [ -n "$SEED" ]; then
                 ARGS="$ARGS --seed $((SEED+NUM))"
             fi
-            $APP $ARGS --file $DIR/game_${NUM}.xwg --with-nbs $NBS > /dev/null 2>>$LOG &
+            $APP $ARGS --file $DIR/game_${NUM}.xwg --with-nbs $NBS \
+                > /dev/null 2>>$LOG &
             PID1=$!
 
             ../relay/rq -f $RELAYID -b $NBS
@@ -99,7 +103,7 @@ done
 # the game's over.  Strictly speaking we need to get beyond that, but
 # reaching it is the first step.  Debug failure to get that far first.
 ENDED=""
-for NUM in $(seq 0 $((NDEVS-1))); do
+for NUM in $(seq 1 $((NDEVS))); do
     LOG="$(logname $NUM)"
     if grep -q 'waiting for server to end game' $LOG; then
         ENDED=1
@@ -108,7 +112,7 @@ for NUM in $(seq 0 $((NDEVS-1))); do
 done
 
 if [ -z "$ENDED" ]; then
-    for NUM in $(seq 0 $((NDEVS-1))); do
+    for NUM in $(seq 1 $((NDEVS))); do
         LOG="$(logname $NUM)"
         if ! grep -q 'all remaining tiles' $LOG; then
             echo "$LOG didn't seem to end correctly"
