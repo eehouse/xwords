@@ -163,7 +163,8 @@ struct CommonGlobals {
     AddAcceptorFunc addAcceptor;
     Acceptor acceptor;
 
-    GSList* noConnMsgs;
+    /* hash by relayID of lists of messages */
+    GHashTable* noConnMsgs;
 
 #ifdef XWFEATURE_RELAY
     int socket;                 /* relay */

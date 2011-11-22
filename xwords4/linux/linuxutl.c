@@ -440,32 +440,35 @@ formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles,
 
 typedef struct _MsgRec {
     XP_U8* msg;
-    XP_U16 len;
-    gchar* relayID;
+    XP_U16 msglen;
 } MsgRec;
 
 void
 initNoConnStorage( CommonGlobals* cGlobals )
 {
     XP_ASSERT( NULL == cGlobals->noConnMsgs );
-    cGlobals->noConnMsgs = (GSList*)-1;  /* -1 is flag meaning "use me" */
+    cGlobals->noConnMsgs = g_hash_table_new( g_str_hash, g_str_equal );
 }
 
 XP_Bool
-storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 len, 
+storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 msglen, 
                 const XP_UCHAR* relayID )
 {
-    XP_Bool inUse =  NULL != cGlobals->noConnMsgs;
+    XP_ASSERT( 0 < msglen );
+    XP_Bool inUse = NULL != cGlobals->noConnMsgs;
     if ( inUse ) {
-        if ( (GSList*)-1 == cGlobals->noConnMsgs ) {
-            cGlobals->noConnMsgs = NULL;
-        }
+        GSList* list = g_hash_table_lookup( cGlobals->noConnMsgs, relayID );
+        gboolean missing = NULL == list;
+
         MsgRec* msgrec = g_malloc( sizeof(*msgrec) );
-        msgrec->msg = g_malloc( len );
-        XP_MEMCPY( msgrec->msg, msg, len );
-        msgrec->len = len;
-        msgrec->relayID = g_strdup( relayID );
-        cGlobals->noConnMsgs = g_slist_append( cGlobals->noConnMsgs, msgrec );
+        msgrec->msg = g_malloc( msglen );
+        XP_MEMCPY( msgrec->msg, msg, msglen );
+        msgrec->msglen = msglen;
+        list = g_slist_append( list, msgrec );
+        if ( missing ) {
+            gchar* key = g_strdup( relayID ); /* will leak */
+            g_hash_table_insert( cGlobals->noConnMsgs, key, list );
+        }
     }
     return inUse;
 }
@@ -473,12 +476,14 @@ storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 len,
 void
 writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
 {
-    guint nMsgs = (GSList*)-1 == cGlobals->noConnMsgs ? 
-        0 : g_slist_length( cGlobals->noConnMsgs );
-    if ( 0 < nMsgs ) {
-        gchar relayID[128] = {0};
-
-        strcpy( relayID, ((MsgRec*)(cGlobals->noConnMsgs->data))->relayID );
+    GHashTable* hash = cGlobals->noConnMsgs;
+    GList* keys = g_hash_table_get_keys( hash );
+    GList* iter;
+    for ( iter = keys; !!iter; iter = iter->next ) {
+        XP_UCHAR* relayID = (XP_UCHAR*)iter->data;
+        GSList* list = (GSList*)g_hash_table_lookup( hash, relayID );
+        guint nMsgs = g_slist_length( list );
+        XP_ASSERT( 0 < nMsgs );
 
         XWStreamCtxt* stream = 
             mem_stream_make( MPPARM(cGlobals->params->util->mpool)
@@ -491,17 +496,14 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
 
         int ii;
         for ( ii = 0; ii < nMsgs; ++ii ) {
-            MsgRec* rec = g_slist_nth_data( cGlobals->noConnMsgs, ii );
-            stream_putU16( stream, rec->len );
-            stream_putBytes( stream, rec->msg, rec->len );
+            MsgRec* rec = g_slist_nth_data( list, ii );
+            stream_putU16( stream, rec->msglen );
+            stream_putBytes( stream, rec->msg, rec->msglen );
 
             g_free( rec->msg );
-            XP_ASSERT( 0 == strcmp( relayID, rec->relayID ) );
-            g_free( rec->relayID );
             g_free( rec );
         }
-        g_slist_free( cGlobals->noConnMsgs );
-        cGlobals->noConnMsgs = NULL;
+        g_slist_free( list );
 
         XP_U16 siz = stream_getSize( stream );
         /* XP_U8 buf[siz]; */
@@ -513,6 +515,9 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
         XP_ASSERT( nwritten == siz );
         stream_destroy( stream );
     }
+    g_list_free( keys );
+    g_hash_table_unref( hash );
+    cGlobals->noConnMsgs = NULL;
 } /* writeNoConnMsgs */
 
 #ifdef TEXT_MODEL
