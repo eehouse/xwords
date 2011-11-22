@@ -238,9 +238,14 @@ dict_initIterFrom( DictIter* dest, const DictIter* src )
 static XP_Bool
 firstWord( DictIter* iter )
 {
-    iter->nEdges = 1;
-    iter->edges[0] = dict_getTopEdge( iter->dict );
-    return ACCEPT_ITER( iter, 1 ) || nextWord( iter );
+    array_edge* top = dict_getTopEdge( iter->dict );
+    XP_Bool success = !!top;
+    if ( success ) {
+        iter->nEdges = 1;
+        iter->edges[0] = top;
+        success = ACCEPT_ITER( iter, 1 ) || nextWord( iter );
+    }
+    return success;
 }
 
 XP_U32
