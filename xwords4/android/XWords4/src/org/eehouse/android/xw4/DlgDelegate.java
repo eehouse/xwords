@@ -53,7 +53,6 @@ public class DlgDelegate {
 
     private static final String MSG = "msg";
     private static final String CALLBACK = "callback";
-    private static final String MSGID = "msgid";
     private static final String PREFSKEY = "prefskey";
     private static final String POSBUTTON = "posbutton";
     private static final String WORDS = "words";
@@ -68,7 +67,6 @@ public class DlgDelegate {
         void dlgButtonClicked( int id, int button );
     }
 
-    private int m_msgID;
     private int m_posButton;
     private int m_cbckID = 0;   // if this can be set twice I have a
                                 // problem.  See asserts below.
@@ -90,7 +88,6 @@ public class DlgDelegate {
         if ( null != bundle ) {
             m_msg = bundle.getString( MSG );
             m_cbckID = bundle.getInt( CALLBACK );
-            m_msgID = bundle.getInt( MSGID );
             m_posButton = bundle.getInt( POSBUTTON );
             m_prefsKey = bundle.getInt( PREFSKEY );
             m_words = bundle.getStringArray( WORDS );
@@ -103,7 +100,6 @@ public class DlgDelegate {
     {
         outState.putString( MSG, m_msg );
         outState.putInt( CALLBACK, m_cbckID );
-        outState.putInt( MSGID, m_msgID );
         outState.putInt( POSBUTTON, m_posButton );
         outState.putInt( PREFSKEY, m_prefsKey );
         outState.putStringArray( WORDS, m_words );
@@ -207,7 +203,7 @@ public class DlgDelegate {
                                                   AlertDialog.BUTTON_POSITIVE );
             }
         } else {
-            m_msgID = msgID;
+            m_msg = m_activity.getString( msgID );
             Assert.assertTrue( 0 != callbackID );
             Assert.assertTrue( 0 == m_cbckID ); // fired
             m_cbckID = callbackID;
@@ -328,7 +324,7 @@ public class DlgDelegate {
 
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.newbie_title )
-            .setMessage( m_msgID )
+            .setMessage( m_msg )
             .setPositiveButton( R.string.button_ok, lstnr_p )
             .setNegativeButton( R.string.button_notagain, lstnr_n )
             .create();
