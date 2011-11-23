@@ -230,7 +230,8 @@ public class CommsTransport implements TransportProcs,
         Assert.assertEquals( netbuf.remaining(), 0 );
 
         if ( null != m_selector ) {
-            m_selector.wakeup();    // tell it it's got some writing to do
+            // tell it it's got some writing to do
+            m_selector.wakeup(); // getting NPE inside here -- see below
         }
     }
 
@@ -312,7 +313,7 @@ public class CommsTransport implements TransportProcs,
     {
         m_done = true;          // this is in a race!
         if ( null != m_selector ) {
-            m_selector.wakeup();
+            m_selector.wakeup(); // getting NPE inside here -- see below
         }
         if ( null != m_thread ) {     // synchronized this?  Or use Thread method
             try {
@@ -424,5 +425,15 @@ public class CommsTransport implements TransportProcs,
         Assert.fail();
         return false;
     }
+
+    /* NPEs in m_selector calls: sometimes my Moment gets into a state
+     * where after 15 or so seconds of Crosswords trying to connect to
+     * the relay I get a crash.  Logs show it's inside one or both of
+     * these Selector methods.  Rebooting the device gets it out of
+     * that state, so I suspect it's a but in 2.1 or Samsung's build
+     * of it.  Should watch crash reports at developer.android.com and
+     * perhaps catch NPEs here just to be safe.  But then do what?
+     * Tell user to restart device?
+     */
 
 }
