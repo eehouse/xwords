@@ -390,7 +390,8 @@ do_deletes( int sockfd, const char** connNames, int nConnNames )
     char buf[4096];
     int nused = 0;
     for ( ii = 0; ii < nConnNames; ++ii ) {
-        char tmp[32];
+        char tmp[128];
+        assert( strlen(connNames[ii]) < sizeof(tmp)-1 );
         strcpy( tmp, connNames[ii] );
         char* seedp = strrchr( tmp, '/' );
         assert( !!seedp );
