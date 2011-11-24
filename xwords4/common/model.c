@@ -90,7 +90,9 @@ model_make( MPFORMAL DictionaryCtxt* dict,
             XP_U16 nRows )
 {
     ModelCtxt* result;
-    XP_U16 size = sizeof(*result) + TILES_SIZE(result, nCols);
+    XP_U16 size;
+    XP_ASSERT( nCols == nRows && nCols <= MAX_COLS );
+    size = sizeof(*result) + TILES_SIZE(result, nCols);
     result = (ModelCtxt*)XP_MALLOC( mpool, size );
     if ( result != NULL ) {
         XP_MEMSET( result, 0, sizeof(*result) );
@@ -700,15 +702,11 @@ setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, CellTile tile )
 static CellTile 
 getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
-    CellTile tile;
     XP_U16 nCols = model->nCols;
     XP_ASSERT( model->nRows == nCols );
-    if ( col < nCols && row < nCols ) {
-        tile = model->tiles[(row*nCols) + col];
-    } else {
-        tile = TILE_EMPTY_BIT;
-    }
-    return tile;
+    XP_ASSERT( col < nCols );
+    XP_ASSERT( row < nCols );
+    return model->tiles[(row*nCols) + col];
 } /* getModelTileRaw */
 
 static void
