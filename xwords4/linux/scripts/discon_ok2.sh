@@ -15,6 +15,8 @@ DROP_N=${DROP_N:-0}
 MINRUN=2
 ONE_PER_ROOM=""
 ALL_VIA_RQ=${ALL_VIA_RQ:-FALSE}
+SEED=${SEED:-""}
+BOARD_SIZES=(15)
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -22,6 +24,7 @@ for DICT in $DICTS; do
 done
 
 NAMES=(UNUSED Brynn Ariela Kati Eric)
+[ -n "$SEED" ] && RANDOM=$SEED
 
 LOGDIR=$(basename $0)_logs
 RESUME=""
@@ -141,7 +144,8 @@ build_cmds() {
             CMD="$CMD $OTHERS --game-dict $DICT --port $PORT --host $HOST "
             CMD="$CMD --file $FILE --slow-robot 1:3 --skip-confirm"
             CMD="$CMD --drop-nth-packet $DROP_N $PLAT_PARMS"
-
+            [ -n "$SEED" ] && CMD="$CMD --seed $((SEED+DEV))"
+            CMD="$CMD --board-size ${BOARD_SIZES[$((RANDOM%${#BOARD_SIZES[*]}))]}"
             CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
             ROOMS[$COUNTER]=$ROOM
