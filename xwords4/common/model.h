@@ -29,10 +29,9 @@
 extern "C" {
 #endif
 
-#if MAX_COLS <= 16
-# define NUMCOLS_NBITS 4
-#elif MAX_COLS <= 32
-# define NUMCOLS_NBITS 5
+#define NUMCOLS_NBITS_4 4
+#if 16 < MAX_COLS && MAX_COLS <= 32
+# define NUMCOLS_NBITS_5 5
 #endif
 
 #ifdef EIGHT_TILES
@@ -101,7 +100,7 @@ typedef XP_U8 TileBit;    /* bits indicating selection of tiles in tray */
 
 
 ModelCtxt* model_make( MPFORMAL DictionaryCtxt* dict, const PlayerDicts* dicts,
-                       XW_UtilCtxt* util, XP_U16 nCols, XP_U16 nRows );
+                       XW_UtilCtxt* util, XP_U16 nCols );
 
 ModelCtxt* model_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  DictionaryCtxt* dict, const PlayerDicts* dicts,
@@ -113,7 +112,7 @@ void model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream );
 void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
 #endif
 
-void model_init( ModelCtxt* model, XP_U16 nCols, XP_U16 nRows );
+void model_setSize( ModelCtxt* model, XP_U16 boardSize );
 void model_destroy( ModelCtxt* model );
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
 XP_U16 model_getNPlayers( const ModelCtxt* model );
