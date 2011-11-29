@@ -20,7 +20,7 @@ ifeq ($(MEMDEBUG),TRUE)
 DEFINES = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DNUMBER_KEY_AS_INDEX 
 DEFINES += -DCOMMS_CHECKSUM
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
-CFLAGS += -DDEBUG_TS
+CFLAGS += -DDEBUG_TS -rdynamic 
 PLATFORM = obj_linux_memdbg
 else
 DEFINES =

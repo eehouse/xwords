@@ -25,6 +25,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>              /* BAD: use glib to support utf8 */
+#ifdef DEBUG
+# include <execinfo.h>          /* for backtrace */
+#endif
 
 #include "linuxutl.h"
 #include "main.h"
@@ -53,6 +56,21 @@ linux_debugf( const char* format, ... )
     va_end(ap);
     
     fprintf( stderr, "%s\n", buf );
+}
+
+void
+linux_backtrace( void )
+{
+    void* buffer[128];
+    int nFound = backtrace( buffer, VSIZE(buffer) );
+    XP_ASSERT( nFound < VSIZE(buffer) );
+    char** traces = backtrace_symbols( buffer, nFound );
+    
+    XP_U16 ii;
+    for ( ii = 0; ii < nFound; ++ii ) {
+        XP_LOGF( "trace[%.2d]: %s", ii, traces[ii] );
+    }
+    free( traces );
 }
 #endif
 
