@@ -797,13 +797,13 @@
       -->
     <!-- text of first menu item.  Will revert all preferences to
          their default/original values -->
-    <string name="menu_revert_all">Restore all</string>
+    <string name="button_revert_all">Restore all</string>
     <!-- Text of confirmation dialog for above -->
     <string name="confirm_revert_colors">Are you sure you want to
       restore all color settings to their original values?</string>
     <!-- Second menu item.  Reverts only the colors to their
          default/original values -->
-    <string name="menu_revert_colors">Restore colors</string>
+    <string name="button_revert_colors">Restore colors</string>
     <!-- Text of confirmation dialog for above -->
     <string name="confirm_revert_all">Are you sure you want to restore
       all settings to their original values?</string>

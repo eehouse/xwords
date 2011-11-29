@@ -15,6 +15,9 @@ DROP_N=${DROP_N:-0}
 MINRUN=2
 ONE_PER_ROOM=""
 ALL_VIA_RQ=${ALL_VIA_RQ:-FALSE}
+SEED=${SEED:-""}
+#BOARD_SIZES=(15 17)
+BOARD_SIZES=(15)
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -22,6 +25,7 @@ for DICT in $DICTS; do
 done
 
 NAMES=(UNUSED Brynn Ariela Kati Eric)
+[ -n "$SEED" ] && RANDOM=$SEED
 
 LOGDIR=$(basename $0)_logs
 RESUME=""
@@ -55,7 +59,8 @@ mkdir -p $DEADDIR
 USE_GTK=${USE_GTK:-FALSE}
 
 declare -A PIDS
-declare -A CMDS
+declare -A APPS
+declare -A ARGS
 declare -A ROOMS
 declare -A FILES
 declare -A LOGS
@@ -73,7 +78,8 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MINDEVS MAXDEVS RESIGN_RATIO DROP_N ALL_VIA_RQ; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD \
+        MINDEVS MAXDEVS RESIGN_RATIO DROP_N ALL_VIA_RQ SEED; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 1
@@ -136,21 +142,24 @@ build_cmds() {
             FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             touch $LOG          # so greps won't show errors
-            CMD="./obj_linux_memdbg/xwords --room $ROOM"
-            CMD="$CMD --robot ${NAMES[$DEV]} --robot-iq $((1 + (RANDOM%100))) "
-            CMD="$CMD $OTHERS --game-dict $DICT --port $PORT --host $HOST "
-            CMD="$CMD --file $FILE --slow-robot 1:3 --skip-confirm"
-            CMD="$CMD --drop-nth-packet $DROP_N $PLAT_PARMS"
-
-            CMD="$CMD $PUBLIC"
-            CMDS[$COUNTER]=$CMD
+            APPS[$COUNTER]=./obj_linux_memdbg/xwords
+            PARAMS="--room $ROOM"
+            PARAMS="$PARAMS --robot ${NAMES[$DEV]} --robot-iq $((1 + (RANDOM%100))) "
+            PARAMS="$PARAMS $OTHERS --game-dict $DICT --port $PORT --host $HOST "
+            PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
+            PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
+            [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
+            PARAMS="$PARAMS --board-size ${BOARD_SIZES[$((RANDOM%${#BOARD_SIZES[*]}))]}"
+            PARAMS="$PARAMS $PUBLIC"
+            ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM
             FILES[$COUNTER]=$FILE
             LOGS[$COUNTER]=$LOG
             PIDS[$COUNTER]=0
-            COUNTER=$((COUNTER+1))
 
-            echo "${CMD}" > $LOG
+            echo "${APPS[$COUNTER]} ${PARAMS}" > $LOG
+
+            COUNTER=$((COUNTER+1))
         done
     done
     echo "finished creating $COUNTER commands"
@@ -159,9 +168,11 @@ build_cmds() {
 read_resume_cmds() {
     COUNTER=0
     for LOG in $(ls $LOGDIR/*.txt); do
+        echo "need to parse cmd and deal with changes"
+        exit 1
         CMD=$(head -n 1 $LOG)
 
-        CMDS[$COUNTER]=$CMD
+        ARGS[$COUNTER]=$CMD
         LOGS[$COUNTER]=$LOG
         PIDS[$COUNTER]=0
 
@@ -186,8 +197,9 @@ read_resume_cmds() {
 
 launch() {
     LOG=${LOGS[$1]}
-    CMD="${CMDS[$1]}"
-    exec $CMD >/dev/null 2>>$LOG
+    APP="${APPS[$1]}"
+    PARAMS="${ARGS[$1]}"
+    exec $APP $PARAMS >/dev/null 2>>$LOG
 }
 
 # launch_via_rq() {
@@ -211,7 +223,7 @@ close_device() {
         [ ${ROOM_PIDS[$ROOM]} -eq $PID ] && ROOM_PIDS[$ROOM]=0
     fi
     unset PIDS[$ID]
-    unset CMDS[$ID]
+    unset ARGS[$ID]
     echo "closing game: $REASON" >> ${LOGS[$ID]}
     if [ -n "$MVTO" ]; then
         [ -f ${FILES[$ID]} ] && mv ${FILES[$ID]} $MVTO
@@ -223,6 +235,7 @@ close_device() {
     unset FILES[$ID]
     unset LOGS[$ID]
     unset ROOMS[$ID]
+    unset APPS[$ID]
 }
 
 OBITS=""
@@ -303,12 +316,12 @@ check_game() {
 
 increment_drop() {
     KEY=$1
-    CMD=${CMDS[$KEY]}
+    CMD=${ARGS[$KEY]}
     if [ "$CMD" != "${CMD/drop-nth-packet//}" ]; then
         DROP_N=$(echo $CMD | sed 's,^.*drop-nth-packet \(-*[0-9]*\) .*$,\1,')
         if [ $DROP_N -gt 0 ]; then
             NEXT_N=$((DROP_N+1))
-            CMDS[$KEY]=$(echo $CMD | sed "s,^\(.*drop-nth-packet \)$DROP_N\(.*\)$,\1$NEXT_N\2,")
+            ARGS[$KEY]=$(echo $CMD | sed "s,^\(.*drop-nth-packet \)$DROP_N\(.*\)$,\1$NEXT_N\2,")
         fi
     fi
 }
@@ -316,12 +329,13 @@ increment_drop() {
 run_cmds() {
     ENDTIME=$(($(date +%s) + TIMEOUT))
     while :; do
-        COUNT=${#CMDS[*]}
+        COUNT=${#ARGS[*]}
+        echo "COUNT: $COUNT"
         [ 0 -ge $COUNT ] && break
         NOW=$(date '+%s')
         [ $NOW -ge $ENDTIME ] && break
         INDX=$(($RANDOM%COUNT))
-        KEYS=( ${!CMDS[*]} )
+        KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
         ROOM=${ROOMS[$KEY]}
         if [ 0 -eq ${PIDS[$KEY]} ]; then
@@ -351,27 +365,15 @@ run_cmds() {
     if [ $COUNT -gt 0 ]; then
         mkdir -p ${LOGDIR}/not_done
         echo "processing unfinished games...."
-        for KEY in ${!CMDS[*]}; do
+        for KEY in ${!ARGS[*]}; do
             close_device $KEY ${LOGDIR}/not_done "unfinished game"
         done
     fi
 }
 
-# add_pipe() {
-#     KEY=$1
-#     CMD=${CMDS[$KEY]}
-#     LOG=${LOGS[$KEY]}
-#     PIPE=${LOG/LOG.txt/pipe}
-#     PIPES[$KEY]=$PIPE
-#     echo "mkfifo $PIPE"
-#     mkfifo $PIPE
-#     CMDS[$KEY]="$CMD --with-pipe $PIPE"
-#     echo ${CMDS[$KEY]}
-# }
-
 run_via_rq() {
     # launch then kill all games to give chance to hook up
-    for KEY in ${!CMDS[*]}; do
+    for KEY in ${!ARGS[*]}; do
         echo "launching $KEY"
         launch $KEY &
         PID=$!
@@ -384,13 +386,13 @@ run_via_rq() {
     echo "now running via rq"
     # then run them
     while :; do
-        COUNT=${#CMDS[*]}
+        COUNT=${#ARGS[*]}
         [ 0 -ge $COUNT ] && break
 
         INDX=$(($RANDOM%COUNT))
-        KEYS=( ${!CMDS[*]} )
+        KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
-        CMD=${CMDS[$KEY]}
+        CMD=${ARGS[$KEY]}
             
         RELAYID=$(./scripts/relayID.sh --short ${LOGS[$KEY]})
         MSG_COUNT=$(../relay/rq -a $HOST -m $RELAYID 2>/dev/null | sed 's,^.*-- ,,')

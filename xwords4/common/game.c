@@ -1,6 +1,6 @@
-/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -90,7 +90,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
     gi->gameID = gameID;
 
     game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, NULL, util, 
-                              gi->boardSize, gi->boardSize );
+                              gi->boardSize );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( gi->serverRole != SERVER_STANDALONE ) {
@@ -162,7 +162,7 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
 # endif
 #endif
 
-    model_init( game->model, gi->boardSize, gi->boardSize );
+    model_setSize( game->model, gi->boardSize );
     server_reset( game->server, 
 #ifndef XWFEATURE_STANDALONE_ONLY
                   game->comms
@@ -259,6 +259,7 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
                    XWStreamCtxt* stream )
 {
     stream_putU8( stream, CUR_STREAM_VERS );
+    stream_setVersion( stream, CUR_STREAM_VERS );
 
     gi_writeToStream( stream, gi );
 
@@ -426,10 +427,13 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     XP_U16 ii;
     XP_UCHAR* str;
     XP_U16 strVersion = stream_getVersion( stream );
+    XP_U16 nColsNBits;
+    XP_ASSERT( 0 < strVersion );
 #ifdef STREAM_VERS_BIGBOARD
-    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? 4 : NUMCOLS_NBITS;
+    nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? NUMCOLS_NBITS_4
+        : NUMCOLS_NBITS_5;
 #else
-    XP_U16 nColsNBits = NUMCOLS_NBITS;
+    nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
     str = stringFromStream( mpool, stream );
@@ -495,15 +499,15 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
 {
     const LocalPlayer* pl;
     XP_U16 ii;
-
+    XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
     XP_U16 strVersion = stream_getVersion( stream );
     XP_ASSERT( STREAM_SAVE_PREVWORDS <= strVersion );
-    XP_U16 nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? 4 : NUMCOLS_NBITS;
+    nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? NUMCOLS_NBITS_4
+        : NUMCOLS_NBITS_5;
 #else
-    XP_U16 nColsNBits = NUMCOLS_NBITS;
+    nColsNBits = NUMCOLS_NBITS_4;
 #endif
-
 
     stringToStream( stream, gi->dictName );
 

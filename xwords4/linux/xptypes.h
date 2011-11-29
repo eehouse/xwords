@@ -115,8 +115,11 @@ void linux_lowerstr( XP_UCHAR* str );
 
 #ifdef DEBUG
 # define XP_ASSERT(b) assert(b)
+void linux_backtrace( void );
+# define XP_BACKTRACE linux_backtrace
 #else
 # define XP_ASSERT(b)
+# define XP_BACKTRACE
 #endif
 
 #define DGRAM_TYPE SOCK_DGRAM

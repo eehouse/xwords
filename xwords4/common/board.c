@@ -207,6 +207,12 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     BoardCtxt* board;
     XP_U16 ii;
     XP_U16 version = stream_getVersion( stream );
+    XP_U16 nColsNBits;
+#ifdef STREAM_VERS_BIGBOARD
+    nColsNBits = 16 > model_numCols(model) ? NUMCOLS_NBITS_4 : NUMCOLS_NBITS_5;
+#else
+    nColsNBits = NUMCOLS_NBITS_4;
+#endif
 
     board = board_make( MPPARM(mpool) model, server, draw, util );
 
@@ -238,8 +244,8 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     for ( ii = 0; ii < nPlayers; ++ii ) {
         PerTurnInfo* pti = &board->pti[ii];
         BoardArrow* arrow = &pti->boardArrow;
-        arrow->col = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
-        arrow->row = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
+        arrow->col = (XP_U8)stream_getBits( stream, nColsNBits );
+        arrow->row = (XP_U8)stream_getBits( stream, nColsNBits );
         arrow->vert = (XP_Bool)stream_getBits( stream, 1 );
         arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
 
@@ -284,7 +290,15 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 void
 board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
 {
-    XP_U16 nPlayers, i;
+    XP_U16 nPlayers, ii;
+    XP_U16 nColsNBits;
+#ifdef STREAM_VERS_BIGBOARD
+    nColsNBits = 16 > model_numCols(board->model) ? NUMCOLS_NBITS_4
+        : NUMCOLS_NBITS_5;
+#else
+    nColsNBits = NUMCOLS_NBITS_4;
+#endif
+
     
     stream_putBits( stream, 4, board->sd[SCROLL_H].offset );
     stream_putBits( stream, 4, board->zoomCount );
@@ -304,11 +318,11 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
     XP_ASSERT( !!board->server );
     nPlayers = board->gi->nPlayers;
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        PerTurnInfo* pti = &board->pti[i];
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        PerTurnInfo* pti = &board->pti[ii];
         BoardArrow* arrow = &pti->boardArrow;
-        stream_putBits( stream, NUMCOLS_NBITS, arrow->col );
-        stream_putBits( stream, NUMCOLS_NBITS, arrow->row );
+        stream_putBits( stream, nColsNBits, arrow->col );
+        stream_putBits( stream, nColsNBits, arrow->row );
         stream_putBits( stream, 1, arrow->vert );
         stream_putBits( stream, 1, arrow->visible );
 
