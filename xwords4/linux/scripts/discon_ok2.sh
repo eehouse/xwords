@@ -16,6 +16,7 @@ MINRUN=2
 ONE_PER_ROOM=""
 ALL_VIA_RQ=${ALL_VIA_RQ:-FALSE}
 SEED=${SEED:-""}
+#BOARD_SIZES=(15 17)
 BOARD_SIZES=(15)
 
 declare -a DICTS_ARR
@@ -76,7 +77,8 @@ fi
 usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
-    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD MINDEVS MAXDEVS RESIGN_RATIO DROP_N ALL_VIA_RQ; do
+    for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD \
+        MINDEVS MAXDEVS RESIGN_RATIO DROP_N ALL_VIA_RQ SEED; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 1
@@ -144,7 +146,7 @@ build_cmds() {
             CMD="$CMD $OTHERS --game-dict $DICT --port $PORT --host $HOST "
             CMD="$CMD --file $FILE --slow-robot 1:3 --skip-confirm"
             CMD="$CMD --drop-nth-packet $DROP_N $PLAT_PARMS"
-            [ -n "$SEED" ] && CMD="$CMD --seed $((SEED+DEV))"
+            [ -n "$SEED" ] && CMD="$CMD --seed $RANDOM"
             CMD="$CMD --board-size ${BOARD_SIZES[$((RANDOM%${#BOARD_SIZES[*]}))]}"
             CMD="$CMD $PUBLIC"
             CMDS[$COUNTER]=$CMD
