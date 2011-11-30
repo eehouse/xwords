@@ -16,8 +16,12 @@ MINRUN=2
 ONE_PER_ROOM=""
 ALL_VIA_RQ=${ALL_VIA_RQ:-FALSE}
 SEED=${SEED:-""}
-#BOARD_SIZES=(15 17)
-BOARD_SIZES=(15)
+
+APP_NEW=${APP_NEW:-"./obj_linux_memdbg/xwords"}
+APP_OLD=${APP_OLD:-""}
+
+BOARD_SIZES_OLD=(15)
+BOARD_SIZES_NEW=(15 17)
 
 declare -a DICTS_ARR
 for DICT in $DICTS; do
@@ -79,7 +83,8 @@ usage() {
     echo "usage: [env=val *] $0" 1>&2
     echo " current env variables and their values: " 1>&2
     for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT DICTS SAVE_GOOD \
-        MINDEVS MAXDEVS RESIGN_RATIO DROP_N ALL_VIA_RQ SEED; do
+        MINDEVS MAXDEVS RESIGN_RATIO DROP_N ALL_VIA_RQ SEED \
+        APP_NEW APP_OLD; do
         echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
     done
     exit 1
@@ -120,6 +125,12 @@ check_room() {
     fi
 }
 
+print_cmdline() {
+    local COUNTER=$1
+    local LOG=${LOGS[$COUNTER]}
+    echo "New cmdline: ${APPS[$COUNTER]} ${ARGS[$COUNTER]}" >> $LOG
+}
+
 build_cmds() {
     COUNTER=0
     for GAME in $(seq 1 $NGAMES); do
@@ -141,15 +152,26 @@ build_cmds() {
         for DEV in $(seq $NDEVS); do
             FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
+            > $LOG # clear the log
             touch $LOG          # so greps won't show errors
-            APPS[$COUNTER]=./obj_linux_memdbg/xwords
+            APPS[$COUNTER]="$APP_NEW"
+            if [ -n "$APP_OLD" ]; then
+                # 50% chance of starting out with old app
+                if [ 0 -eq $((RANDOM%2)) ]; then
+                    APPS[$COUNTER]="$APP_OLD"
+                fi
+            fi
             PARAMS="--room $ROOM"
             PARAMS="$PARAMS --robot ${NAMES[$DEV]} --robot-iq $((1 + (RANDOM%100))) "
             PARAMS="$PARAMS $OTHERS --game-dict $DICT --port $PORT --host $HOST "
             PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
-            PARAMS="$PARAMS --board-size ${BOARD_SIZES[$((RANDOM%${#BOARD_SIZES[*]}))]}"
+            if [ -n "$APP_OLD" -a "${APPS[$COUNTER]}" = "$APP_OLD" ]; then
+                PARAMS="$PARAMS --board-size ${BOARD_SIZES_OLD[$((RANDOM%${#BOARD_SIZES_OLD[*]}))]}"
+            else
+                PARAMS="$PARAMS --board-size ${BOARD_SIZES_NEW[$((RANDOM%${#BOARD_SIZES_NEW[*]}))]}"
+            fi
             PARAMS="$PARAMS $PUBLIC"
             ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM
@@ -157,7 +179,7 @@ build_cmds() {
             LOGS[$COUNTER]=$LOG
             PIDS[$COUNTER]=0
 
-            echo "${APPS[$COUNTER]} ${PARAMS}" > $LOG
+            print_cmdline $COUNTER
 
             COUNTER=$((COUNTER+1))
         done
@@ -268,6 +290,19 @@ maybe_resign() {
     fi
 }
 
+try_upgrade() {
+    KEY=$1
+    if [ -n "$APP_OLD" ]; then
+        if [ $APP_OLD = ${APPS[$KEY]} ]; then
+            # one in five chance of upgrading
+            if [ 0 -eq $((RANDOM%5)) ]; then
+                APPS[$KEY]=$APP_NEW
+                print_cmdline $KEY
+            fi
+        fi
+    fi
+}
+
 check_game() {
     KEY=$1
     LOG=${LOGS[$KEY]}
@@ -330,7 +365,6 @@ run_cmds() {
     ENDTIME=$(($(date +%s) + TIMEOUT))
     while :; do
         COUNT=${#ARGS[*]}
-        echo "COUNT: $COUNT"
         [ 0 -ge $COUNT ] && break
         NOW=$(date '+%s')
         [ $NOW -ge $ENDTIME ] && break
@@ -342,6 +376,7 @@ run_cmds() {
             if [ -n "$ONE_PER_ROOM" -a 0 -ne ${ROOM_PIDS[$ROOM]} ]; then
                 continue
             fi
+            try_upgrade $KEY
             launch $KEY &
             PID=$!
             PIDS[$KEY]=$PID
