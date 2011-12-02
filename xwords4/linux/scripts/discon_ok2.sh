@@ -3,6 +3,7 @@ set -u -e
 
 APP_NEW=""
 NGAMES=""
+UPGRADE_ODDS=""
 NROOMS=""
 HOST=""
 PORT=""
@@ -233,7 +234,7 @@ try_upgrade() {
     if [ xx = "${APPS_OLD+xx}" ]; then
         if [ $APP_NEW != ${APPS[$KEY]} ]; then
             # one in five chance of upgrading
-            if [ 0 -eq $((RANDOM%5)) ]; then
+            if [ 0 -eq $((RANDOM % UPGRADE_ODDS)) ]; then
                 APPS[$KEY]=$APP_NEW
                 print_cmdline $KEY
             fi
@@ -382,7 +383,6 @@ run_via_rq() {
 } # run_via_rq
 
 function getArg() {
-    echo $* >&2
     [ 1 -lt "$#" ] || usage "$1 requires an argument"
     echo $2
 }
@@ -476,7 +476,9 @@ done
 [ -z "$RESIGN_RATIO" ] && RESIGN_RATIO=1000
 [ -z "$DROP_N" ] && DROP_N=0
 [ -z "$USE_GTK" ] && USE_GTK=FALSE
-
+[ -z "$UPGRADE_ODDS" ] && UPGRADE_ODDS=10
+#$((NGAMES/50))
+[ 0 -eq $UPGRADE_ODDS ] && UPGRADE_ODDS=1
 
 LOGDIR=$(basename $0)_logs
 RESUME=""
