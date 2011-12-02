@@ -146,7 +146,7 @@ public class PrefsActivity extends PreferenceActivity
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
         if ( key.equals( m_keyLogging ) ) {
-            Utils.logEnable( sp.getBoolean( key, false ) );
+            DbgUtils.logEnable( sp.getBoolean( key, false ) );
         }
     }
 

@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictLangCache;
@@ -216,7 +216,7 @@ public class CurGameInfo {
                 ++count;
             }
         }
-        Utils.logf( "remoteCount()=>%d", count );
+        DbgUtils.logf( "remoteCount()=>%d", count );
         return count;
     }
 

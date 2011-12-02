@@ -49,10 +49,10 @@ public class RelayReceiver extends BroadcastReceiver {
     {
         if ( null != intent && null != intent.getAction() 
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
-            Utils.logf( "launching timer on boot" );
+            DbgUtils.logf( "launching timer on boot" );
             RestartTimer( context );
         } else {
-            // Utils.logf( "RelayReceiver::onReceive()" );
+            // DbgUtils.logf( "RelayReceiver::onReceive()" );
             // if ( XWConstants.s_showProxyToast ) {
             //     Toast.makeText(context, "RelayReceiver: fired", 
             //                    Toast.LENGTH_SHORT).show();
@@ -83,7 +83,7 @@ public class RelayReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
         if ( interval_millis > 0 || force ) {
-            // Utils.logf( "setting alarm for %d millis", interval_millis );
+            // DbgUtils.logf( "setting alarm for %d millis", interval_millis );
             am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
                                     0, // first firing
                                     interval_millis, pi );

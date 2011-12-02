@@ -49,7 +49,7 @@ public class FirstRunDialog {
                 thisVersion = context.getPackageManager()
                     .getPackageInfo(context.getPackageName(), 0)
                     .versionCode;
-                Utils.logf( "versionCode: %d", thisVersion );
+                DbgUtils.logf( "versionCode: %d", thisVersion );
             } catch ( Exception e ) {
             }
         }
@@ -96,7 +96,7 @@ public class FirstRunDialog {
 			page = stringBuilder.toString();
 		}
 		catch ( IOException ioe ) {
-			Utils.logf( ioe.toString() );
+			DbgUtils.logf( ioe.toString() );
 		}
 		finally {
             // could just catch NPE....
@@ -104,7 +104,7 @@ public class FirstRunDialog {
 				try {
 					inputStream.close();
 				} catch ( IOException ioe ) {
-                    Utils.logf( ioe.toString() );
+                    DbgUtils.logf( ioe.toString() );
 				}
 			}
 		}

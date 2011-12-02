@@ -107,20 +107,20 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     // future wantHt by.  Ditto for the descent
     private class FontDims {
         FontDims( float askedHt, int topRow, int bottomRow, float width ) {
-            // Utils.logf( "FontDims(): askedHt=" + askedHt );
-            // Utils.logf( "FontDims(): topRow=" + topRow );
-            // Utils.logf( "FontDims(): bottomRow=" + bottomRow );
-            // Utils.logf( "FontDims(): width=" + width );
+            // DbgUtils.logf( "FontDims(): askedHt=" + askedHt );
+            // DbgUtils.logf( "FontDims(): topRow=" + topRow );
+            // DbgUtils.logf( "FontDims(): bottomRow=" + bottomRow );
+            // DbgUtils.logf( "FontDims(): width=" + width );
             float gotHt = bottomRow - topRow + 1;
             m_htProportion = gotHt / askedHt;
             Assert.assertTrue( (bottomRow+1) >= askedHt );
             float descent = (bottomRow+1) - askedHt;
-            // Utils.logf( "descent: " + descent );
+            // DbgUtils.logf( "descent: " + descent );
             m_descentProportion = descent / askedHt;
             Assert.assertTrue( m_descentProportion >= 0 );
             m_widthProportion = width / askedHt;
-            // Utils.logf( "m_htProportion: " + m_htProportion );
-            // Utils.logf( "m_descentProportion: " + m_descentProportion );
+            // DbgUtils.logf( "m_htProportion: " + m_htProportion );
+            // DbgUtils.logf( "m_descentProportion: " + m_descentProportion );
         }
         private float m_htProportion;
         private float m_descentProportion;
@@ -235,7 +235,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
             break;
         default:
-            Utils.logf( "unknown action: %d", action );
+            DbgUtils.logf( "unknown action: %d", action );
             break;
         }
 
@@ -360,7 +360,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             drew = XwJNI.board_draw( m_jniGamePtr );
         }
         if ( !drew ) {
-            Utils.logf( "draw not complete" );
+            DbgUtils.logf( "draw not complete" );
         }
     }
 
@@ -767,7 +767,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             int height = rect.height() - 4; // borders and padding, 2 each 
             descent = fontDims.descentFor( height );
             textSize = fontDims.heightFor( height );
-            // Utils.logf( "using descent: " + descent + " and textSize: " 
+            // DbgUtils.logf( "using descent: " + descent + " and textSize: " 
             //             + textSize + " in height " + height );
         }
         m_fillPaint.setTextSize( textSize );
@@ -876,13 +876,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             Canvas canvas = new Canvas( bitmap );
 
             // FontMetrics fmi = paint.getFontMetrics();
-            // Utils.logf( "ascent: " + fmi.ascent );
-            // Utils.logf( "bottom: " + fmi.bottom );
-            // Utils.logf( "descent: " + fmi.descent );
-            // Utils.logf( "leading: " + fmi.leading );
-            // Utils.logf( "top : " + fmi.top );
+            // DbgUtils.logf( "ascent: " + fmi.ascent );
+            // DbgUtils.logf( "bottom: " + fmi.bottom );
+            // DbgUtils.logf( "descent: " + fmi.descent );
+            // DbgUtils.logf( "leading: " + fmi.leading );
+            // DbgUtils.logf( "top : " + fmi.top );
 
-            // Utils.logf( "using as baseline: " + ht );
+            // DbgUtils.logf( "using as baseline: " + ht );
 
             Rect bounds = new Rect();
             int maxWidth = 0;
@@ -902,7 +902,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             //         int pixel = bitmap.getPixel( col, row );
             //         sb.append( pixel==0? "." : "X" );
             //     }
-            //     Utils.logf( sb.append(row).toString() );
+            //     DbgUtils.logf( sb.append(row).toString() );
             // }
 
             int topRow = 0;

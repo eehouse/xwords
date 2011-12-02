@@ -242,9 +242,9 @@ public class DictUtils {
             success = true;
 
         } catch ( java.io.FileNotFoundException fnfe ) {
-            Utils.logf( "%s", fnfe.toString() );
+            DbgUtils.logf( "%s", fnfe.toString() );
         } catch ( java.io.IOException ioe ) {
-            Utils.logf( "%s", ioe.toString() );
+            DbgUtils.logf( "%s", ioe.toString() );
         } finally {
             try {
                 // Order should match assignment order to above in
@@ -252,7 +252,7 @@ public class DictUtils {
                 channelIn.close();
                 channelOut.close();
             } catch ( Exception e ) {
-                Utils.logf( "%s", e.toString() );
+                DbgUtils.logf( "%s", e.toString() );
             }
         }
         return success;
@@ -305,13 +305,13 @@ public class DictUtils {
                 bytes = new byte[len];
                 int nRead = dict.read( bytes, 0, len );
                 if ( nRead != len ) {
-                    Utils.logf( "**** warning ****; read only %d of %d bytes.",
-                                nRead, len );
+                    DbgUtils.logf( "**** warning ****; read only %d of %d bytes.",
+                                   nRead, len );
                 }
                 // check that with len bytes we've read the whole file
                 Assert.assertTrue( -1 == dict.read() );
             } catch ( java.io.IOException ee ){
-                Utils.logf( "%s failed to open; likely not built-in", name );
+                DbgUtils.logf( "%s failed to open; likely not built-in", name );
             }
         }
 
@@ -323,7 +323,7 @@ public class DictUtils {
                     if ( loc == DictLoc.UNKNOWN || loc == DictLoc.DOWNLOAD ) {
                         File path = getDownloadsPathFor( name );
                         if ( null != path && path.exists() ) {
-                            Utils.logf( "loading %s from Download", name );
+                            DbgUtils.logf( "loading %s from Download", name );
                             fis = new FileInputStream( path );
                         }
                     }
@@ -331,13 +331,13 @@ public class DictUtils {
                 if ( loc == DictLoc.UNKNOWN || loc == DictLoc.EXTERNAL ) {
                     File sdFile = getSDPathFor( context, name );
                     if ( null != sdFile && sdFile.exists() ) {
-                        Utils.logf( "loading %s from SD", name );
+                        DbgUtils.logf( "loading %s from SD", name );
                         fis = new FileInputStream( sdFile );
                     }
                 }
                 if ( null == fis ) {
                     if ( loc == DictLoc.UNKNOWN || loc == DictLoc.INTERNAL ) {
-                        Utils.logf( "loading %s from private storage", name );
+                        DbgUtils.logf( "loading %s from private storage", name );
                         fis = context.openFileInput( name );
                     }
                 }
@@ -345,11 +345,11 @@ public class DictUtils {
                 bytes = new byte[len];
                 fis.read( bytes, 0, len );
                 fis.close();
-                Utils.logf( "Successfully loaded %s", name );
+                DbgUtils.logf( "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
-                Utils.logf( fnf.toString() );
+                DbgUtils.logf( fnf.toString() );
             } catch ( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
+                DbgUtils.logf( ioe.toString() );
             }
         }
         
@@ -449,10 +449,10 @@ public class DictUtils {
                 invalDictList();
                 success = true;
             } catch ( java.io.FileNotFoundException fnf ) {
-                Utils.logf( "saveDict: FileNotFoundException: %s", 
-                            fnf.toString() );
+                DbgUtils.logf( "saveDict: FileNotFoundException: %s", 
+                               fnf.toString() );
             } catch ( java.io.IOException ioe ) {
-                Utils.logf( "saveDict: IOException: %s", ioe.toString() );
+                DbgUtils.logf( "saveDict: IOException: %s", ioe.toString() );
                 deleteDict( context, name );
             }
         }
@@ -498,7 +498,7 @@ public class DictUtils {
             AssetManager am = context.getAssets();
             return am.list("");
         } catch( java.io.IOException ioe ) {
-            Utils.logf( ioe.toString() );
+            DbgUtils.logf( ioe.toString() );
             return new String[0];
         }
     }
@@ -523,7 +523,7 @@ public class DictUtils {
                 if ( !result.exists() ) {
                     result.mkdirs();
                     if ( !result.exists() ) {
-                        Utils.logf( "unable to create sd dir %s", packdir );
+                        DbgUtils.logf( "unable to create sd dir %s", packdir );
                         result = null;
                     }
                 }

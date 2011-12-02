@@ -389,7 +389,7 @@ public class DictLangCache {
                 s_nameToLang.put( dal, info );
             } else {
                 info = null;
-                Utils.logf( "getInfo(): unable to open dict %s", dal.name );
+                DbgUtils.logf( "getInfo(): unable to open dict %s", dal.name );
             }
         }
         return info;

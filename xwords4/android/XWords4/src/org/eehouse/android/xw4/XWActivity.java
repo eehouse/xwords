@@ -40,7 +40,7 @@ public class XWActivity extends Activity
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        Utils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
+        DbgUtils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
         super.onCreate( savedInstanceState );
         m_delegate = new DlgDelegate( this, this, savedInstanceState );
     }
@@ -48,7 +48,7 @@ public class XWActivity extends Activity
     @Override
     protected void onStart()
     {
-        Utils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
+        DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
         super.onStart();
         DispatchNotify.SetRunning( this );
     }
@@ -56,21 +56,21 @@ public class XWActivity extends Activity
     @Override
     protected void onResume()
     {
-        Utils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
+        DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
         super.onResume();
     }
 
     @Override
     protected void onPause()
     {
-        Utils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
+        DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
         super.onPause();
     }
 
     @Override
     protected void onStop()
     {
-        Utils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
+        DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
         DispatchNotify.ClearRunning( this );
         super.onStop();
     }
@@ -78,8 +78,8 @@ public class XWActivity extends Activity
     @Override
     protected void onDestroy()
     {
-        Utils.logf( "%s.onDestroy(this=%H); isFinishing=%b",
-                    getClass().getName(), this, isFinishing() );
+        DbgUtils.logf( "%s.onDestroy(this=%H); isFinishing=%b",
+                       getClass().getName(), this, isFinishing() );
         super.onDestroy();
     }
 
@@ -95,7 +95,7 @@ public class XWActivity extends Activity
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
-            Utils.logf( "%s.onCreateDialog() called", getClass().getName() );
+            DbgUtils.logf( "%s.onCreateDialog() called", getClass().getName() );
             dialog = m_delegate.onCreateDialog( id );
         }
         return dialog;

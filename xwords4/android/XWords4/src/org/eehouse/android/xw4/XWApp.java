@@ -27,8 +27,8 @@ public class XWApp extends Application {
     @Override
     public void onCreate()
     {
-        Utils.logEnable( this );
-        Utils.logf( "XWApp.onCreate(); svn_rev=%s", getString(R.string.git_rev_gen) );
+        DbgUtils.logEnable( this );
+        DbgUtils.logf( "XWApp.onCreate(); svn_rev=%s", getString(R.string.git_rev_gen) );
         super.onCreate();
     }
 }
