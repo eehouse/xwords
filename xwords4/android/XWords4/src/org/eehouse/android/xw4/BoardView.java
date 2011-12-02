@@ -262,7 +262,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         int nCells = gi.boardSize;
         int cellSize = width / nCells;
-        int maxCellSize = 3 * m_defaultFontHt;
+        int maxCellSize = 4 * m_defaultFontHt;
         if ( cellSize > maxCellSize ) {
             cellSize = maxCellSize;
 
