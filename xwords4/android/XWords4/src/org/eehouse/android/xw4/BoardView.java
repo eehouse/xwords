@@ -37,6 +37,7 @@ import android.graphics.Paint.FontMetricsInt;
 import android.os.Build;
 import android.os.Handler;
 import java.nio.IntBuffer;
+import android.util.FloatMath;
 
 import junit.framework.Assert;
 
@@ -185,7 +186,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         try {
             int sdk_int = Integer.decode( Build.VERSION.SDK );
             if ( sdk_int >= Build.VERSION_CODES.ECLAIR ) {
-                m_multiHandler = new BoardMultiHandler( PINCH_THRESHOLD );
+                m_multiHandler = new MultiHandler();
             } else {
                 Utils.logf( "OS version %d too old for multi-touch", sdk_int );
             }
@@ -995,4 +996,52 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         return color;
     }
+
+    private class MultiHandler implements MultiHandlerIface {
+        private static final int INACTIVE = -1;
+        private int m_lastSpacing = INACTIVE;
+
+        public boolean inactive()
+        {
+            return INACTIVE == m_lastSpacing;
+        }
+
+        public void activate( MotionEvent event )
+        {
+            m_lastSpacing = getSpacing( event );
+        }
+
+        public void deactivate()
+        {
+            m_lastSpacing = INACTIVE;
+        }
+
+        public int getSpacing( MotionEvent event ) 
+        {
+            int result;
+            if ( 1 == event.getPointerCount() ) {
+                result = INACTIVE;
+            } else {
+                float xx = event.getX( 0 ) - event.getX( 1 );
+                float yy = event.getY( 0 ) - event.getY( 1 );
+                result = (int)FloatMath.sqrt( (xx * xx) + (yy * yy) );
+            }
+            return result;
+        }
+
+        public int figureZoom( MotionEvent event )
+        {
+            int zoomDir = 0;
+            if ( ! inactive() ) {
+                int newSpacing = getSpacing( event );
+                int diff = Math.abs( newSpacing - m_lastSpacing );
+                if ( diff > PINCH_THRESHOLD ) {
+                    zoomDir = newSpacing < m_lastSpacing? -1 : 1;
+                    m_lastSpacing = newSpacing;
+                }
+            }
+            return zoomDir;
+        }
+    }
+
 }
