@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -56,7 +56,7 @@ public class JNIUtilsImpl implements JNIUtils {
         try {
             isr = new InputStreamReader( bais, isUTF8? "UTF8" : "ISO8859_1" );
         } catch( java.io.UnsupportedEncodingException uee ) {
-            Utils.logf( "splitFaces: %s", uee.toString() );
+            DbgUtils.logf( "splitFaces: %s", uee.toString() );
             isr = new InputStreamReader( bais );
         }
         
@@ -67,7 +67,7 @@ public class JNIUtilsImpl implements JNIUtils {
             try {
                 chr = isr.read();
             } catch ( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
+                DbgUtils.logf( ioe.toString() );
             }
             if ( -1 == chr ) {
                 break;

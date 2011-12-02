@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -19,19 +19,16 @@
  */
 
 package org.eehouse.android.xw4;
-import android.preference.PreferenceActivity;
-import android.app.Dialog;
 import android.app.AlertDialog;
-import android.content.Intent;
+import android.app.Dialog;
+import android.preference.PreferenceActivity;
 import android.content.DialogInterface;
-import android.os.Bundle;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.Preference;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
-import java.util.HashSet;
+import android.view.View;
+import android.widget.Button;
 
 public class PrefsActivity extends PreferenceActivity 
     implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -112,8 +109,22 @@ public class PrefsActivity extends PreferenceActivity
 
         // Load the preferences from an XML resource
         addPreferencesFromResource( R.xml.xwprefs );
+        setContentView( R.layout.prefs_w_buttons );
 
         m_keyLogging = getString( R.string.key_logging_on );
+
+        Button button = (Button)findViewById( R.id.revert_colors );
+        button.setOnClickListener( new View.OnClickListener() {
+                public void onClick( View v ) {
+                    showDialog( REVERT_COLORS );
+                }
+            } );
+        button = (Button)findViewById( R.id.revert_all );
+        button.setOnClickListener(new View.OnClickListener() {
+                public void onClick( View v ) {
+                    showDialog( REVERT_ALL );
+                }
+            } );
     }
     
     @Override
@@ -135,36 +146,8 @@ public class PrefsActivity extends PreferenceActivity
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
         if ( key.equals( m_keyLogging ) ) {
-            Utils.logEnable( sp.getBoolean( key, false ) );
+            DbgUtils.logEnable( sp.getBoolean( key, false ) );
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.prefs_menu, menu );
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected( MenuItem item )
-    {
-        int dlgID = 0;
-        switch ( item.getItemId() ) {
-        case R.id.menu_revert_all:
-            dlgID = REVERT_ALL;
-            break;
-        case R.id.menu_revert_colors:
-            dlgID = REVERT_COLORS;
-            break;
-        }
-
-        boolean handled = 0 != dlgID;
-        if ( handled ) {
-            showDialog( dlgID );
-        }
-        return handled;
     }
 
     private void relaunch()

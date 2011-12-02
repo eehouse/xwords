@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -613,7 +613,7 @@ public class GameConfig extends XWActivity
             }
 
         } else {
-            Utils.logf( "unknown v: " + view.toString() );
+            DbgUtils.logf( "unknown v: " + view.toString() );
         }
     } // onClick
 
@@ -793,8 +793,8 @@ public class GameConfig extends XWActivity
             setting = 2;
             break;
         default:
-            Utils.logf( "setSmartnessSpinner got %d from getRobotSmartness()", 
-                        m_gi.getRobotSmartness() );
+            DbgUtils.logf( "setSmartnessSpinner got %d from getRobotSmartness()", 
+                           m_gi.getRobotSmartness() );
             Assert.fail();
         }
         m_smartnessSpinner.setSelection( setting );
@@ -837,7 +837,7 @@ public class GameConfig extends XWActivity
 
     private void adjustPlayersLabel()
     {
-        Utils.logf( "adjustPlayersLabel()" );
+        DbgUtils.logf( "adjustPlayersLabel()" );
         String label;
         if ( m_notNetworkedGame ) {
             label = getString( R.string.players_label_standalone );
@@ -970,8 +970,8 @@ public class GameConfig extends XWActivity
 
         if ( !m_notNetworkedGame ) {
             m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
-            Utils.logf( "ip_relay_seeksPublicRoom: %b", 
-                        m_car.ip_relay_seeksPublicRoom );
+            DbgUtils.logf( "ip_relay_seeksPublicRoom: %b", 
+                           m_car.ip_relay_seeksPublicRoom );
             m_car.ip_relay_advertiseRoom = 
                 Utils.getChecked( this, R.id.advertise_new_room_check );
             if ( m_car.ip_relay_seeksPublicRoom ) {

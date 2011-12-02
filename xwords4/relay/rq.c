@@ -241,9 +241,9 @@ do_deletes( int sockfd, const char** connNames, int nConnNames )
     int ii;
 
     char buf[4096];
-    int nused = 0;
+    size_t nused = 0;
     for ( ii = 0; ii < nConnNames; ++ii ) {
-        char tmp[32];
+        char tmp[128];
         strcpy( tmp, connNames[ii] );
         char* seedp = strrchr( tmp, '/' );
         assert( !!seedp );
@@ -256,6 +256,7 @@ do_deletes( int sockfd, const char** connNames, int nConnNames )
         nused += sprintf( &buf[nused], "%s", tmp );
         buf[nused++] = '\n';
     }
+    assert( nused < sizeof(buf) );
 
     unsigned char hdr[] = { 0, PRX_DEVICE_GONE };
 

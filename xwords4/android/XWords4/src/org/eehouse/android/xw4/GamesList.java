@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -491,7 +491,7 @@ public class GamesList extends XWListActivity
         try {
             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         } catch (ClassCastException e) {
-            Utils.logf( "bad menuInfo: %s", e.toString() );
+            DbgUtils.logf( "bad menuInfo: %s", e.toString() );
             return false;
         }
 

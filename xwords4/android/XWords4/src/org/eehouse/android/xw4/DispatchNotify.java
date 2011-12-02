@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -64,7 +64,7 @@ public class DispatchNotify extends Activity {
         }
 
         if ( mustLaunch ) {
-            Utils.logf( "DispatchNotify: nothing running" );
+            DbgUtils.logf( "DispatchNotify: nothing running" );
             Intent intent = new Intent( this, GamesList.class );
 
             /* Flags.  Tried Intent.FLAG_ACTIVITY_NEW_TASK.  I don't

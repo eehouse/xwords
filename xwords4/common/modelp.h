@@ -64,6 +64,11 @@ typedef struct ModelVolatiles {
     RecordWordsInfo rwi;
     WordNotifierInfo wni; 
     XP_U16 nTilesOnBoard;
+    CellTile* tiles;
+
+    XP_U16 nBonuses;
+    XWBonusType* bonuses;
+
     MPSLOT
 } ModelVolatiles;
 
@@ -75,13 +80,11 @@ struct ModelCtxt {
     XP_U16 nPlayers;
     XP_U16 nCols;
     XP_U16 nRows;
-    XP_U16 nBonuses;
-    XWBonusType* bonuses;
 
-    CellTile tiles[];
+    const ModelCtxt* loaner;    /* allows sharing bonuses */
 };
 
-#define TILES_SIZE(m,nc) ((nc) * (nc) * sizeof((m)->tiles[0]))
+#define TILES_SIZE(m,nc) ((nc) * (nc) * sizeof((m)->vol.tiles[0]))
 
 void invalidateScore( ModelCtxt* model, XP_S16 player );
 XP_Bool tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal );

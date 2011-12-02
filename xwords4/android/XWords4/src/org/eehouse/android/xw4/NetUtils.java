@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -56,9 +56,9 @@ public class NetUtils {
             socket.setSoTimeout( timeoutMillis );
 
         } catch ( java.net.UnknownHostException uhe ) {
-            Utils.logf( uhe.toString() );
+            DbgUtils.logf( uhe.toString() );
         } catch( java.io.IOException ioe ) {
-            Utils.logf( ioe.toString() );
+            DbgUtils.logf( ioe.toString() );
         }
         return socket;
     }
@@ -105,7 +105,7 @@ public class NetUtils {
                         DBUtils.clearObits( m_context, m_obits );
                     }
                 } catch ( java.io.IOException ioe ) {
-                    Utils.logf( ioe.toString() );
+                    DbgUtils.logf( ioe.toString() );
                 }
             }
         }
@@ -190,11 +190,11 @@ public class NetUtils {
                 }
 
             } catch( java.net.UnknownHostException uhe ) {
-                Utils.logf( uhe.toString() );
+                DbgUtils.logf( uhe.toString() );
             } catch( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
+                DbgUtils.logf( ioe.toString() );
             } catch( NullPointerException npe ) {
-                Utils.logf( npe.toString() );
+                DbgUtils.logf( npe.toString() );
             }
         }
         return result;

@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -84,7 +84,7 @@ public class NetLaunchInfo {
                 nPlayers = Integer.decode( np );
                 m_valid = true;
             } catch ( Exception e ) {
-                Utils.logf( "unable to parse \"%s\"", data.toString() );
+                DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
             }
         }
     }

@@ -1199,8 +1199,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         XP_ASSERT( channelNo != 0 );
         server->nv.addresses[0].channelNo = channelNo;
 
-        /* PENDING init's a bit harsh for setting the size */
-        model_init( model, nCols, nCols );
+        model_setSize( model, nCols );
 
         nPlayers = localGI.nPlayers;
         XP_STATUSF( "reading in %d players", localGI.nPlayers );
@@ -1418,9 +1417,6 @@ messageStreamWithHeader( ServerCtxt* server, XP_U16 devIndex, XW_Proto code )
     printCode("making", code);
 
     stream = util_makeStreamFromAddr( server->vol.util, channelNo );
-#ifdef STREAM_VERS_BIGBOARD
-    stream_setVersion( stream, server->nv.streamVersion );
-#endif
     stream_open( stream );
     writeProto( server, stream, code );
 
@@ -2528,6 +2524,7 @@ writeProto( const ServerCtxt* server, XWStreamCtxt* stream, XW_Proto proto )
         stream_putBits( stream, XWPROTO_NBITS, XWPROTO_NEW_PROTO );
         stream_putBits( stream, 8, CUR_STREAM_VERS );
     }
+    stream_setVersion( stream, server->nv.streamVersion );
 #else
     XP_USE(server);
 #endif

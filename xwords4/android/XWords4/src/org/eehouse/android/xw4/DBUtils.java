@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -456,7 +456,7 @@ public class DBUtils {
                 long result = db.replaceOrThrow( DBHelper.TABLE_NAME_OBITS,
                                                  "", values );
             } catch ( Exception ex ) {
-                Utils.logf( "ex: %s", ex.toString() );
+                DbgUtils.logf( "ex: %s", ex.toString() );
             }
             db.close();
         }
@@ -566,7 +566,7 @@ public class DBUtils {
                 Assert.fail();
                 // values.put( DBHelper.FILE_NAME, path );
                 // rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
-                // Utils.logf( "insert=>%d", rowid );
+                // DbgUtils.logf( "insert=>%d", rowid );
                 // Assert.assertTrue( row >= 0 );
             }
             db.close();
@@ -688,7 +688,7 @@ public class DBUtils {
                                     values, selection, null );
             db.close();
             if ( 0 == result ) {
-                Utils.logf( "setName(%d,%s) failed", rowid, name );
+                DbgUtils.logf( "setName(%d,%s) failed", rowid, name );
             }
         }
     }

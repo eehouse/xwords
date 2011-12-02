@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -652,7 +652,7 @@ public class BoardActivity extends XWActivity
             break;
 
         default:
-            Utils.logf( "menuitem %d not handled", id );
+            DbgUtils.logf( "menuitem %d not handled", id );
             handled = false;
         }
 
@@ -978,8 +978,8 @@ public class BoardActivity extends XWActivity
             DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
                 : DeviceRole.SERVER_ISCLIENT;
             if ( newRole != m_gi.serverRole ) {
-                Utils.logf( "new role: %s; old role: %s", 
-                            newRole.toString(), m_gi.serverRole.toString() );
+                DbgUtils.logf( "new role: %s; old role: %s", 
+                               newRole.toString(), m_gi.serverRole.toString() );
                 m_gi.serverRole = newRole;
                 if ( !isServer ) {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_SWITCHCLIENT );
@@ -1249,14 +1249,14 @@ public class BoardActivity extends XWActivity
 
         // public void yOffsetChange( int maxOffset, int oldOffset, int newOffset )
         // {
-        //     Utils.logf( "yOffsetChange(maxOffset=%d)", maxOffset );
+        //     DbgUtils.logf( "yOffsetChange(maxOffset=%d)", maxOffset );
         //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
         // }
         @Override
         public boolean warnIllegalWord( String[] words, int turn, 
                                         boolean turnLost )
         {
-            Utils.logf( "warnIllegalWord" );
+            DbgUtils.logf( "warnIllegalWord" );
             boolean accept = turnLost;
 
             StringBuffer sb = new StringBuffer();
@@ -1280,7 +1280,7 @@ public class BoardActivity extends XWActivity
                 accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
             }
 
-            Utils.logf( "warnIllegalWord=>%b", accept );
+            DbgUtils.logf( "warnIllegalWord=>%b", accept );
             return accept;
         }
 
@@ -1464,7 +1464,7 @@ public class BoardActivity extends XWActivity
     {
         int result = cancelResult;
         if ( m_blockingDlgPosted ) { // this has been true; dunno why
-            Utils.logf( "waitBlockingDialog: dropping dlgID %d", dlgID );
+            DbgUtils.logf( "waitBlockingDialog: dropping dlgID %d", dlgID );
         } else {
             setBlockingThread();
             m_resultCode = cancelResult;
@@ -1480,7 +1480,7 @@ public class BoardActivity extends XWActivity
                     m_forResultWait.acquire();
                     m_blockingDlgPosted = false;
                 } catch ( java.lang.InterruptedException ie ) {
-                    Utils.logf( "waitBlockingDialog: got %s", ie.toString() );
+                    DbgUtils.logf( "waitBlockingDialog: got %s", ie.toString() );
                     if ( m_blockingDlgPosted ) {
                         dismissDialog( dlgID );
                         m_blockingDlgPosted = false;
@@ -1601,7 +1601,7 @@ public class BoardActivity extends XWActivity
             if ( null == m_screenTimer ) {
                 m_screenTimer = new Runnable() {
                         public void run() {
-                            Utils.logf( "run() called for setKeepScreenOn()" );
+                            DbgUtils.logf( "run() called for setKeepScreenOn()" );
                             if ( null != m_view ) {
                                 m_view.setKeepScreenOn( false );
                             }
@@ -1619,7 +1619,7 @@ public class BoardActivity extends XWActivity
         if ( canPost ) {
             m_handler.post( runnable );
         } else {
-            Utils.logf( "post: dropping because handler null" );
+            DbgUtils.logf( "post: dropping because handler null" );
         }
         return canPost;
     }
@@ -1629,7 +1629,7 @@ public class BoardActivity extends XWActivity
         if ( null != m_handler ) {
             m_handler.postDelayed( runnable, when );
         } else {
-            Utils.logf( "postDelayed: dropping %d because handler null", when );
+            DbgUtils.logf( "postDelayed: dropping %d because handler null", when );
         }
     }
 
@@ -1638,8 +1638,8 @@ public class BoardActivity extends XWActivity
         if ( null != m_handler ) {
             m_handler.removeCallbacks( which );
         } else {
-            Utils.logf( "removeCallbacks: dropping %h because handler null", 
-                        which );
+            DbgUtils.logf( "removeCallbacks: dropping %h because handler null", 
+                           which );
         }
     }
 

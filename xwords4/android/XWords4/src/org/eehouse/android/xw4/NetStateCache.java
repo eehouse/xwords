@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -100,8 +100,8 @@ public class NetStateCache {
 
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-                Utils.logf( "CommsBroadcastReceiver.onReceive: %s", 
-                            ni.getState().toString() );
+                DbgUtils.logf( "CommsBroadcastReceiver.onReceive: %s", 
+                               ni.getState().toString() );
 
                 boolean netAvail;
                 switch ( ni.getState() ) {

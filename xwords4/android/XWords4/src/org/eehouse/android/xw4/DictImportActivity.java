@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -56,7 +56,7 @@ public class DictImportActivity extends XWActivity {
             long totalSize = 0;
             for ( int ii = 0; ii < count; ii++ ) {
                 Uri uri = uris[ii];
-                Utils.logf( "trying %s", uri );
+                DbgUtils.logf( "trying %s", uri );
 
                 try {
                     URI jUri = new URI( uri.getScheme(), 
@@ -66,11 +66,11 @@ public class DictImportActivity extends XWActivity {
                     m_saved = saveDict( is, uri.getPath() );
                     is.close();
                 } catch ( java.net.URISyntaxException use ) {
-                    Utils.logf( "URISyntaxException: %s", use.toString() );
+                    DbgUtils.logf( "URISyntaxException: %s", use.toString() );
                 } catch ( java.net.MalformedURLException mue ) {
-                    Utils.logf( "MalformedURLException: %s", mue.toString() );
+                    DbgUtils.logf( "MalformedURLException: %s", mue.toString() );
                 } catch ( java.io.IOException ioe ) {
-                    Utils.logf( "IOException: %s", ioe.toString() );
+                    DbgUtils.logf( "IOException: %s", ioe.toString() );
                 }
             }
             return totalSize;
@@ -79,7 +79,7 @@ public class DictImportActivity extends XWActivity {
         @Override
         protected void onPostExecute( Long result )
         {
-            Utils.logf( "onPostExecute passed %d", result );
+            DbgUtils.logf( "onPostExecute passed %d", result );
             if ( null != m_saved ) {
                 DictLangCache.inval( DictImportActivity.this, m_saved, 
                                      s_saveWhere, true );
@@ -105,7 +105,7 @@ public class DictImportActivity extends XWActivity {
 		if ( null != uri) {
 			if ( null != intent.getType() 
                  && intent.getType().equals( "application/x-xwordsdict" ) ) {
-                Utils.logf( "based on MIME type" );
+                DbgUtils.logf( "based on MIME type" );
                 new DownloadFilesTask().execute( uri );
             } else if ( uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
                 String fmt = getString( R.string.downloading_dictf );
@@ -114,7 +114,7 @@ public class DictImportActivity extends XWActivity {
                 view.setText( txt );
                 new DownloadFilesTask().execute( uri );
 			} else {
-                Utils.logf( "bogus intent: %s/%s", intent.getType(), uri );
+                DbgUtils.logf( "bogus intent: %s/%s", intent.getType(), uri );
 				finish();
 			}
         }

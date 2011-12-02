@@ -42,6 +42,11 @@
 
 #define VSIZE(arr) (sizeof(arr)/sizeof(arr[0]))
 
+#ifndef MAX_ROWS
+# define MAX_ROWS 16
+#endif
+#define MAX_COLS MAX_ROWS
+
 #if MAX_COLS > 16
 # define STREAM_VERS_BIGBOARD 0x12
 #endif
@@ -146,10 +151,6 @@ typedef enum {
 } XWTimerReason;
 
 #define MAX_NUM_PLAYERS 4
-#ifndef MAX_ROWS
-# define MAX_ROWS 16
-#endif
-#define MAX_COLS MAX_ROWS
 #ifdef EIGHT_TILES
 # define MAX_TRAY_TILES 8
 #else

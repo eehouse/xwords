@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -29,7 +29,7 @@ public class StatusReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent ) 
     {
-        Utils.logf( "StatusReceiver.onReceive called: %s", intent.toString() );
+        DbgUtils.logf( "StatusReceiver.onReceive called: %s", intent.toString() );
     }
 
 }

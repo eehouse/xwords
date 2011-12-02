@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -37,7 +37,7 @@ public class MountEventReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        Utils.logf( "MountEventReceiver.onReceive(%s)", intent.getAction() );
+        DbgUtils.logf( "MountEventReceiver.onReceive(%s)", intent.getAction() );
         synchronized( s_procs ) {
             do {
                 if ( s_procs.isEmpty() ) {

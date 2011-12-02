@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -91,11 +91,11 @@ public class CommsTransport implements TransportProcs,
 
                 closeSocket();
             } catch ( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
+                DbgUtils.logf( ioe.toString() );
             } catch ( UnresolvedAddressException uae ) {
-                Utils.logf( "bad address: name: %s; port: %s; exception: %s",
-                            m_addr.ip_relay_hostName, m_addr.ip_relay_port, 
-                            uae.toString() );
+                DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
+                               m_addr.ip_relay_hostName, m_addr.ip_relay_port, 
+                               uae.toString() );
             }
 
             m_thread = null;
@@ -118,15 +118,15 @@ public class CommsTransport implements TransportProcs,
                             try {
                                 m_socketChannel = SocketChannel.open();
                                 m_socketChannel.configureBlocking( false );
-                                Utils.logf( "connecting to %s:%d",
-                                            m_addr.ip_relay_hostName, 
-                                            m_addr.ip_relay_port );
+                                DbgUtils.logf( "connecting to %s:%d",
+                                               m_addr.ip_relay_hostName, 
+                                               m_addr.ip_relay_port );
                                 InetSocketAddress isa = new 
                                     InetSocketAddress(m_addr.ip_relay_hostName,
                                                       m_addr.ip_relay_port );
                                 m_socketChannel.connect( isa );
                             } catch ( java.io.IOException ioe ) {
-                                Utils.logf( ioe.toString() );
+                                DbgUtils.logf( ioe.toString() );
                                 failed = true;
                                 break outer_loop;
                             }
@@ -134,7 +134,7 @@ public class CommsTransport implements TransportProcs,
 
                         if ( null != m_socketChannel ) {
                             int ops = figureOps();
-                            // Utils.logf( "calling with ops=%x", ops );
+                            // DbgUtils.logf( "calling with ops=%x", ops );
                             m_socketChannel.register( m_selector, ops );
                         }
                     }
@@ -143,14 +143,14 @@ public class CommsTransport implements TransportProcs,
                     // we get this when relay goes down.  Need to notify!
                     failed = true;
                     closeSocket();
-                    Utils.logf( "exiting: %s", cce.toString() );
+                    DbgUtils.logf( "exiting: %s", cce.toString() );
                     break;          // don't try again
                 } catch ( java.io.IOException ioe ) {
                     closeSocket();
-                    Utils.logf( "exiting: %s", ioe.toString() );
-                    Utils.logf( ioe.toString() );
+                    DbgUtils.logf( "exiting: %s", ioe.toString() );
+                    DbgUtils.logf( ioe.toString() );
                 } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
-                    Utils.logf( "%s", ncp.toString() );
+                    DbgUtils.logf( "%s", ncp.toString() );
                     closeSocket();
                     break;
                 }
@@ -168,7 +168,7 @@ public class CommsTransport implements TransportProcs,
                         }
                         if (key.isValid() && key.isReadable()) {
                             m_bytesIn.clear(); // will wipe any pending data!
-                            // Utils.logf( "socket is readable; buffer has space for "
+                            // DbgUtils.logf( "socket is readable; buffer has space for "
                             //             + m_bytesIn.remaining() );
                             int nRead = channel.read( m_bytesIn );
                             if ( nRead == -1 ) {
@@ -181,17 +181,17 @@ public class CommsTransport implements TransportProcs,
                             getOut();
                             if ( null != m_bytesOut ) {
                                 int nWritten = channel.write( m_bytesOut );
-                                //Utils.logf( "wrote " + nWritten + " bytes" );
+                                //DbgUtils.logf( "wrote " + nWritten + " bytes" );
                             }
                         }
                     } catch ( java.io.IOException ioe ) {
-                        Utils.logf( "%s: cancelling key", ioe.toString() );
+                        DbgUtils.logf( "%s: cancelling key", ioe.toString() );
                         key.cancel(); 
                         failed = true;
                         break outer_loop;
                     } catch ( java.nio.channels.
                               NoConnectionPendingException ncp ) {
-                        Utils.logf( "%s", ncp.toString() );
+                        DbgUtils.logf( "%s", ncp.toString() );
                         break outer_loop;
                     }
                 }
@@ -240,7 +240,7 @@ public class CommsTransport implements TransportProcs,
             try {
                 m_socketChannel.close();
             } catch ( Exception e ) {
-                Utils.logf( "closing socket: %s", e.toString() );
+                DbgUtils.logf( "closing socket: %s", e.toString() );
             }
             m_socketChannel = null;
         }
@@ -318,7 +318,7 @@ public class CommsTransport implements TransportProcs,
             try {
                 m_thread.join(100);   // wait up to 1/10 second
             } catch ( java.lang.InterruptedException ie ) {
-                Utils.logf( "got InterruptedException: %s", ie.toString() );
+                DbgUtils.logf( "got InterruptedException: %s", ie.toString() );
             }
             m_thread = null;
         }
@@ -327,7 +327,7 @@ public class CommsTransport implements TransportProcs,
     // TransportProcs interface
     public int transportSend( byte[] buf, final CommsAddrRec faddr )
     {
-        //Utils.logf( "CommsTransport::transportSend(nbytes=%d)", buf.length );
+        //DbgUtils.logf( "CommsTransport::transportSend(nbytes=%d)", buf.length );
         int nSent = -1;
 
         if ( null == m_addr ) {
@@ -358,7 +358,7 @@ public class CommsTransport implements TransportProcs,
             // to verify.  IFF the plan's to ship a version that
             // doesn't do SMS.
 
-            // Utils.logf( "sending via sms to  %s:%d", 
+            // DbgUtils.logf( "sending via sms to  %s:%d", 
             //             m_addr.sms_phone, m_addr.sms_port );
             // try {
             //     Intent intent = new Intent( m_context, StatusReceiver.class);
@@ -369,17 +369,17 @@ public class CommsTransport implements TransportProcs,
             //          SmsManager.getDefault().sendTextMessage( m_addr.sms_phone,
             //                                                   null, "Hello world",
             //                                                   pi, pi );
-            //         Utils.logf( "called sendTextMessage" );
+            //         DbgUtils.logf( "called sendTextMessage" );
             //     } else {
             //         SmsManager.getDefault().
             //             sendDataMessage( m_addr.sms_phone, (String)null,
             //                              (short)m_addr.sms_port, 
             //                              buf, pi, pi );
-            //         Utils.logf( "called sendDataMessage" );
+            //         DbgUtils.logf( "called sendDataMessage" );
             //     }
             //     nSent = buf.length;
             // } catch ( java.lang.IllegalArgumentException iae ) {
-            //     Utils.logf( iae.toString() );
+            //     DbgUtils.logf( iae.toString() );
             // }
             break;
         case COMMS_CONN_BT:
@@ -391,17 +391,17 @@ public class CommsTransport implements TransportProcs,
         // Keep this while debugging why the resend_all that gets
         // fired on reconnect doesn't unstall a game but a manual
         // resend does.
-        Utils.logf( "transportSend(%d)=>%d", buf.length, nSent );
+        DbgUtils.logf( "transportSend(%d)=>%d", buf.length, nSent );
         return nSent;
     } 
 
     public void relayStatus( CommsRelayState newState )
     {
-        //Utils.logf( "relayStatus called; state=%s", newState.toString() );
+        //DbgUtils.logf( "relayStatus called; state=%s", newState.toString() );
         if ( null != m_jniThread ) {
             m_jniThread.handle( JNICmd.CMD_DRAW_CONNS_STATUS, newState );
         } else {
-            Utils.logf( "can't draw status yet" );
+            DbgUtils.logf( "can't draw status yet" );
         }
     }
 

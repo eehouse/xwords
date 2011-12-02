@@ -214,7 +214,7 @@ public class DictBrowseActivity extends XWListActivity
         try {
             super.finalize();
         } catch ( java.lang.Throwable err ){
-            Utils.logf( "%s", err.toString() );
+            DbgUtils.logf( "%s", err.toString() );
         }
     }
 
@@ -268,8 +268,8 @@ public class DictBrowseActivity extends XWListActivity
             if ( 0 <= pos ) {
                 getListView().setSelection( pos );
             } else {
-                Utils.showf( this, R.string.dict_browse_nowordsf, 
-                             m_name, text );
+                DbgUtils.showf( this, R.string.dict_browse_nowordsf, 
+                                m_name, text );
             }
         }
     }

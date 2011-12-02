@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -21,7 +21,6 @@
 
 package org.eehouse.android.xw4.jni;
 
-import org.eehouse.android.xw4.Utils;
 import android.content.Context;
 import java.lang.InterruptedException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,6 +31,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.BoardDims;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.DBUtils;
@@ -163,7 +163,7 @@ public class JNIThread extends Thread {
             join();
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
-            Utils.logf( "JNIThread.waitToStop() got %s",  ie.toString() );
+            DbgUtils.logf( "JNIThread.waitToStop() got %s",  ie.toString() );
         }
     }
 
@@ -290,7 +290,7 @@ public class JNIThread extends Thread {
             try {
                 elem = m_queue.take();
             } catch ( InterruptedException ie ) {
-                Utils.logf( "interrupted; killing thread" );
+                DbgUtils.logf( "interrupted; killing thread" );
                 break;
             }
             boolean draw = false;
@@ -565,7 +565,7 @@ public class JNIThread extends Thread {
     public void handle( JNICmd cmd, boolean isUI, Object... args )
     {
         QueueElem elem = new QueueElem( cmd, isUI, args );
-        // Utils.logf( "adding: %s", cmd.toString() );
+        // DbgUtils.logf( "adding: %s", cmd.toString() );
         m_queue.add( elem );
     }
 

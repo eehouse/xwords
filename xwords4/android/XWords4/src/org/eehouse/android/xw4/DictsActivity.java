@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -306,8 +306,8 @@ public class DictsActivity extends ExpandableListActivity
                             rowView.cache( toLoc );
                             rowView.invalidate();
                         } else {
-                            Utils.logf( "moveDict(%s) failed", 
-                                        rowView.getText() );
+                            DbgUtils.logf( "moveDict(%s) failed", 
+                                           rowView.getText() );
                         }
                     }
                 };
@@ -480,7 +480,7 @@ public class DictsActivity extends ExpandableListActivity
             getPackedPositionChild( packedPosition );
         // int groupPosition = ExpandableListView.
         //     getPackedPositionGroup( packedPosition );
-        // Utils.logf( "onCreateContextMenu: group: %d; child: %d", 
+        // DbgUtils.logf( "onCreateContextMenu: group: %d; child: %d", 
         //             groupPosition, childPosition );
 
         // We don't have a menu yet for languages, just for their dict
@@ -509,7 +509,7 @@ public class DictsActivity extends ExpandableListActivity
         try {
             info = (ExpandableListContextMenuInfo)item.getMenuInfo();
         } catch (ClassCastException e) {
-            Utils.logf( "bad menuInfo: %s", e.toString() );
+            DbgUtils.logf( "bad menuInfo: %s", e.toString() );
             return false;
         }
         
@@ -596,7 +596,7 @@ public class DictsActivity extends ExpandableListActivity
     // MountEventReceiver.SDCardNotifiee interface
     public void cardMounted( boolean nowMounted )
     {
-        Utils.logf( "DictsActivity.cardMounted(%b)", nowMounted );
+        DbgUtils.logf( "DictsActivity.cardMounted(%b)", nowMounted );
         // post so other SDCardNotifiee implementations get a chance
         // to process first: avoid race conditions
         new Handler().post( new Runnable() {

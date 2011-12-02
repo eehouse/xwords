@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -164,7 +164,7 @@ public class CommonPrefs {
             result = Integer.parseInt( val );
         } catch ( Exception ex ) {
         } 
-        // Utils.logf( "getDefaultProxyPort=>%d", result );
+        // DbgUtils.logf( "getDefaultProxyPort=>%d", result );
         return result;
     }
 

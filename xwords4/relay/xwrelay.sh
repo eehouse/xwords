@@ -8,7 +8,6 @@ PIDFILE=${DIR}/xwrelay.pid
 CONFFILE=${DIR}/xwrelay.conf
 IDFILE=${DIR}/nextid.txt
 CSSFILE=${DIR}/xwrelay.css
-CONFFILE=${DIR}/xwrelay.conf
 
 LOGFILE=/tmp/xwrelay_log_$$.txt
 #LOGFILE=/dev/null
@@ -79,6 +78,10 @@ do_start() {
     elif pidof $XWRELAY >/dev/null; then
         echo "already running: pid($XWRELAY)=>$(pidof $XWRELAY)" | tee -a $LOGFILE
     else
+        if [ ! -e $CONFFILE ]; then
+            echo "unable to find $CONFFILE"
+            exit 1
+        fi
         echo "starting..." | tee -a $LOGFILE
         echo "running $XWRELAY $@ -f $CONFFILE -s $CSSFILE" | tee -a $LOGFILE
         $XWRELAY $@ -f $CONFFILE -i $IDFILE -s $CSSFILE &
