@@ -64,9 +64,9 @@ public class NetUtils {
             socket.setSoTimeout( timeoutMillis );
 
         } catch ( java.net.UnknownHostException uhe ) {
-            Utils.logf( uhe.toString() );
+            DbgUtils.logf( uhe.toString() );
         } catch( java.io.IOException ioe ) {
-            Utils.logf( ioe.toString() );
+            DbgUtils.logf( ioe.toString() );
         }
         return socket;
     }
@@ -113,7 +113,7 @@ public class NetUtils {
                         DBUtils.clearObits( m_context, m_obits );
                     }
                 } catch ( java.io.IOException ioe ) {
-                    Utils.logf( ioe.toString() );
+                    DbgUtils.logf( ioe.toString() );
                 }
             }
         }
@@ -176,16 +176,16 @@ public class NetUtils {
             }
             if ( 0 != dis.available() ) {
                 msgs = null;
-                Utils.logf( "format error: bytes left over in stream" );
+                DbgUtils.logf( "format error: bytes left over in stream" );
             }
             socket.close();
 
         } catch( java.net.UnknownHostException uhe ) {
-            Utils.logf( uhe.toString() );
+            DbgUtils.logf( uhe.toString() );
         } catch( java.io.IOException ioe ) {
-            Utils.logf( ioe.toString() );
+            DbgUtils.logf( ioe.toString() );
         } catch( NullPointerException npe ) {
-            Utils.logf( npe.toString() );
+            DbgUtils.logf( npe.toString() );
         }
         return msgs;
     } // queryRelay
@@ -202,7 +202,7 @@ public class NetUtils {
 
 
         if ( null != msgHash ) {
-            Utils.logf( "sendToRelay called" );
+            DbgUtils.logf( "sendToRelay called" );
             try {
                 // Build up a buffer containing everything but the total
                 // message length and number of relayIDs in the message.
@@ -215,7 +215,7 @@ public class NetUtils {
                 Iterator<String> iter = msgHash.keySet().iterator();
                 while ( iter.hasNext() ) {
                     String relayID = iter.next();
-                    Utils.logf( "sendToRelay: sending for %s", relayID );
+                    DbgUtils.logf( "sendToRelay: sending for %s", relayID );
                     int thisLen = 1 + relayID.length(); // string and '\n'
                     thisLen += 2;                        // message count
 
@@ -239,7 +239,7 @@ public class NetUtils {
                         outBuf.write( msg );
                     }
                     msgLen += thisLen;
-                    Utils.logf( "sendToRelay: %d bytes so far", msgLen );
+                    DbgUtils.logf( "sendToRelay: %d bytes so far", msgLen );
                 }
 
                 // Now open a real socket, write size and proto, and
@@ -254,12 +254,12 @@ public class NetUtils {
                 outStream.write( store.toByteArray() );
                 outStream.flush();
                 socket.close();
-                Utils.logf( "sendToRelay: done", msgLen );
+                DbgUtils.logf( "sendToRelay: done", msgLen );
             } catch ( java.io.IOException ioe ) {
-                Utils.logf( "%s", ioe.toString() );
+                DbgUtils.logf( "%s", ioe.toString() );
             }
         } else {
-            Utils.logf( "sendToRelay: null msgs" );
+            DbgUtils.logf( "sendToRelay: null msgs" );
         }
     } // sendToRelay
 

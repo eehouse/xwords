@@ -34,17 +34,29 @@ import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
 import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
+import android.os.Build;
 import android.os.Handler;
 import java.nio.IntBuffer;
+import android.util.FloatMath;
 
 import junit.framework.Assert;
 
 public class BoardView extends View implements DrawCtx, BoardHandler,
                                                SyncedDraw {
+
+    public interface MultiHandlerIface {
+        boolean inactive();
+        void activate( MotionEvent event );
+        void deactivate();
+        int figureZoom( MotionEvent event );
+        int getSpacing( MotionEvent event );
+    }
+
     private static final float MIN_FONT_DIPS = 14.0f;
 
     private static Bitmap s_bitmap;    // the board
     private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
+    private static final int PINCH_THRESHOLD = 40;
 
     private Context m_context;
     private Paint m_drawPaint;
@@ -83,6 +95,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_pendingScore;
     private Handler m_viewHandler;
 
+    private MultiHandlerIface m_multiHandler = null;
+
     // FontDims: exists to translate space available to the largest
     // font we can draw within that space taking advantage of our use
     // being limited to a known small subset of glyphs.  We need two
@@ -93,20 +107,20 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     // future wantHt by.  Ditto for the descent
     private class FontDims {
         FontDims( float askedHt, int topRow, int bottomRow, float width ) {
-            // Utils.logf( "FontDims(): askedHt=" + askedHt );
-            // Utils.logf( "FontDims(): topRow=" + topRow );
-            // Utils.logf( "FontDims(): bottomRow=" + bottomRow );
-            // Utils.logf( "FontDims(): width=" + width );
+            // DbgUtils.logf( "FontDims(): askedHt=" + askedHt );
+            // DbgUtils.logf( "FontDims(): topRow=" + topRow );
+            // DbgUtils.logf( "FontDims(): bottomRow=" + bottomRow );
+            // DbgUtils.logf( "FontDims(): width=" + width );
             float gotHt = bottomRow - topRow + 1;
             m_htProportion = gotHt / askedHt;
             Assert.assertTrue( (bottomRow+1) >= askedHt );
             float descent = (bottomRow+1) - askedHt;
-            // Utils.logf( "descent: " + descent );
+            // DbgUtils.logf( "descent: " + descent );
             m_descentProportion = descent / askedHt;
             Assert.assertTrue( m_descentProportion >= 0 );
             m_widthProportion = width / askedHt;
-            // Utils.logf( "m_htProportion: " + m_htProportion );
-            // Utils.logf( "m_descentProportion: " + m_descentProportion );
+            // DbgUtils.logf( "m_htProportion: " + m_htProportion );
+            // DbgUtils.logf( "m_descentProportion: " + m_descentProportion );
         }
         private float m_htProportion;
         private float m_descentProportion;
@@ -168,6 +182,15 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         m_viewHandler = new Handler();
+
+        try {
+            int sdk_int = Integer.decode( Build.VERSION.SDK );
+            if ( sdk_int >= Build.VERSION_CODES.ECLAIR ) {
+                m_multiHandler = new MultiHandler();
+            } else {
+                DbgUtils.logf( "OS version %d too old for multi-touch", sdk_int );
+            }
+        } catch ( Exception ex ) {}
     }
 
     @Override
@@ -179,17 +202,41 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
+            if ( null != m_multiHandler ) {
+                m_multiHandler.deactivate();
+            }
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
             break;
         case MotionEvent.ACTION_MOVE:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
+            if ( null == m_multiHandler || m_multiHandler.inactive() ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
+            } else {
+                int zoomBy = m_multiHandler.figureZoom( event );
+                if ( 0 != zoomBy ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
+                                        zoomBy < 0 ? -2 : 2 );
+                }
+            }
             break;
         case MotionEvent.ACTION_UP:
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
             break;
+        case MotionEvent.ACTION_POINTER_DOWN:
+        case MotionEvent.ACTION_POINTER_2_DOWN:
+            if ( null != m_multiHandler ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+                m_multiHandler.activate( event );
+            }
+            break;
+        case MotionEvent.ACTION_POINTER_UP:
+        case MotionEvent.ACTION_POINTER_2_UP:
+            if ( null != m_multiHandler ) {
+                m_multiHandler.deactivate();
+            }
+            break;
         default:
-            Utils.logf( "unknown action: %d", action );
-            Utils.logf( event.toString() );
+            DbgUtils.logf( "unknown action: %d", action );
+            break;
         }
 
         return true;             // required to get subsequent events
@@ -215,7 +262,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         int nCells = gi.boardSize;
         int cellSize = width / nCells;
-        int maxCellSize = 3 * m_defaultFontHt;
+        int maxCellSize = 4 * m_defaultFontHt;
         if ( cellSize > maxCellSize ) {
             cellSize = maxCellSize;
 
@@ -313,7 +360,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             drew = XwJNI.board_draw( m_jniGamePtr );
         }
         if ( !drew ) {
-            Utils.logf( "draw not complete" );
+            DbgUtils.logf( "draw not complete" );
         }
     }
 
@@ -720,7 +767,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             int height = rect.height() - 4; // borders and padding, 2 each 
             descent = fontDims.descentFor( height );
             textSize = fontDims.heightFor( height );
-            // Utils.logf( "using descent: " + descent + " and textSize: " 
+            // DbgUtils.logf( "using descent: " + descent + " and textSize: " 
             //             + textSize + " in height " + height );
         }
         m_fillPaint.setTextSize( textSize );
@@ -829,13 +876,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             Canvas canvas = new Canvas( bitmap );
 
             // FontMetrics fmi = paint.getFontMetrics();
-            // Utils.logf( "ascent: " + fmi.ascent );
-            // Utils.logf( "bottom: " + fmi.bottom );
-            // Utils.logf( "descent: " + fmi.descent );
-            // Utils.logf( "leading: " + fmi.leading );
-            // Utils.logf( "top : " + fmi.top );
+            // DbgUtils.logf( "ascent: " + fmi.ascent );
+            // DbgUtils.logf( "bottom: " + fmi.bottom );
+            // DbgUtils.logf( "descent: " + fmi.descent );
+            // DbgUtils.logf( "leading: " + fmi.leading );
+            // DbgUtils.logf( "top : " + fmi.top );
 
-            // Utils.logf( "using as baseline: " + ht );
+            // DbgUtils.logf( "using as baseline: " + ht );
 
             Rect bounds = new Rect();
             int maxWidth = 0;
@@ -855,7 +902,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             //         int pixel = bitmap.getPixel( col, row );
             //         sb.append( pixel==0? "." : "X" );
             //     }
-            //     Utils.logf( sb.append(row).toString() );
+            //     DbgUtils.logf( sb.append(row).toString() );
             // }
 
             int topRow = 0;
@@ -949,4 +996,52 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         return color;
     }
+
+    private class MultiHandler implements MultiHandlerIface {
+        private static final int INACTIVE = -1;
+        private int m_lastSpacing = INACTIVE;
+
+        public boolean inactive()
+        {
+            return INACTIVE == m_lastSpacing;
+        }
+
+        public void activate( MotionEvent event )
+        {
+            m_lastSpacing = getSpacing( event );
+        }
+
+        public void deactivate()
+        {
+            m_lastSpacing = INACTIVE;
+        }
+
+        public int getSpacing( MotionEvent event ) 
+        {
+            int result;
+            if ( 1 == event.getPointerCount() ) {
+                result = INACTIVE;
+            } else {
+                float xx = event.getX( 0 ) - event.getX( 1 );
+                float yy = event.getY( 0 ) - event.getY( 1 );
+                result = (int)FloatMath.sqrt( (xx * xx) + (yy * yy) );
+            }
+            return result;
+        }
+
+        public int figureZoom( MotionEvent event )
+        {
+            int zoomDir = 0;
+            if ( ! inactive() ) {
+                int newSpacing = getSpacing( event );
+                int diff = Math.abs( newSpacing - m_lastSpacing );
+                if ( diff > PINCH_THRESHOLD ) {
+                    zoomDir = newSpacing < m_lastSpacing? -1 : 1;
+                    m_lastSpacing = newSpacing;
+                }
+            }
+            return zoomDir;
+        }
+    }
+
 }

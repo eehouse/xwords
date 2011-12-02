@@ -292,9 +292,8 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
         nv->addresses[ii].channelNo =
             (XP_PlayerAddr)stream_getBits( stream, 16 );
 #ifdef STREAM_VERS_BIGBOARD
-        if ( STREAM_VERS_BIGBOARD <= version ) {
-            nv->addresses[ii].streamVersion = stream_getBits( stream, 8 );
-        }
+        nv->addresses[ii].streamVersion = STREAM_VERS_BIGBOARD <= version ?
+            stream_getBits( stream, 8 ) : STREAM_SAVE_PREVWORDS;
 #endif
     }
 #ifdef STREAM_VERS_BIGBOARD
@@ -641,8 +640,20 @@ setStreamVersion( ServerCtxt* server )
     XP_LOGF( "%s: setting streamVersion: %d", __func__, streamVersion );
     server->nv.streamVersion = streamVersion;
 }
+
+static void
+checkResizeBoard( ServerCtxt* server )
+{
+    CurGameInfo* gi = server->vol.gi;
+    if ( STREAM_VERS_BIGBOARD > server->nv.streamVersion && gi->boardSize > 15) {
+        XP_LOGF( "%s: dropping board size from %d to 15", __func__, gi->boardSize );
+        gi->boardSize = 15;
+        model_setSize( server->vol.model, 15 );
+    }
+}
 # else
 #  define setStreamVersion(s)
+#  define checkResizeBoard(s)
 # endif
 
 static XP_Bool
@@ -691,6 +702,7 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
     if ( server->nv.pendingRegistrations == 0 ) {
         XP_ASSERT( ii == playersInMsg ); /* otherwise malformed */
         setStreamVersion( server );
+        checkResizeBoard( server );
         assignTilesToAll( server );
         SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
     }
@@ -1170,7 +1182,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         DictionaryCtxt* curDict;
         XP_U16 nPlayers, nCols;
         XP_PlayerAddr channelNo;
-        short i;
+        XP_U16 ii;
         ModelCtxt* model = server->vol.model;
         CurGameInfo* gi = server->vol.gi;
         CurGameInfo localGI;
@@ -1181,6 +1193,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         XP_U8 streamVersion = stream_getU8( stream );
         XP_LOGF( "%s: set streamVersion to %d", __func__, streamVersion );
         stream_setVersion( stream, streamVersion );
+        // XP_ASSERT( streamVersion <= CUR_STREAM_VERS ); /* else do what? */
 
         gameID = stream_getU32( stream );
         XP_LOGF( "read gameID of %lx; calling comms_setConnID", gameID );
@@ -1237,21 +1250,21 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
         /* now read the assigned tiles for each player from the stream, and
            remove them from the newly-created local pool. */
-        for ( i = 0; i < nPlayers; ++i ) {
+        for ( ii = 0; ii < nPlayers; ++ii ) {
             TrayTileSet tiles;
 
             traySetFromStream( stream, &tiles );
             XP_ASSERT( tiles.nTiles <= MAX_TRAY_TILES );
 
-            XP_STATUSF( "got %d tiles for player %d", tiles.nTiles, i );
+            XP_LOGF( "%s: got %d tiles for player %d", __func__, tiles.nTiles, ii );
 
-            model_assignPlayerTiles( model, i, &tiles );
+            model_assignPlayerTiles( model, ii, &tiles );
 
             /* remove what the server's assigned so we won't conflict
                later. */
             pool_removeTiles( pool, &tiles );
 
-            sortTilesIf( server, i );
+            sortTilesIf( server, ii );
         }
 
         syncPlayers( server );
@@ -1283,25 +1296,25 @@ makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy,
 {
     XP_U16 nPlayers;
     LocalPlayer* clientPl;
-    XP_U16 i;
+    XP_U16 ii;
+
     XP_MEMCPY( giCopy, server->vol.gi, sizeof(*giCopy) );
 
     nPlayers = giCopy->nPlayers;
 
-    for ( clientPl = giCopy->players, i = 0;
-          i < nPlayers; ++clientPl, ++i ) {
+    for ( clientPl = giCopy->players, ii = 0;
+          ii < nPlayers; ++clientPl, ++ii ) {
         /* adjust isLocal to client's perspective */
-        clientPl->isLocal = server->players[i].deviceIndex == deviceIndex;
+        clientPl->isLocal = server->players[ii].deviceIndex == deviceIndex;
     }
 
-    giCopy->dictName = (XP_UCHAR*)NULL; /* so we don't sent the bytes; Isn't this
-                                           a leak? PENDING */
+    giCopy->dictName = (XP_UCHAR*)NULL; /* so we don't sent the bytes */
 } /* makeSendableGICopy */
 
 static void
 server_sendInitialMessage( ServerCtxt* server )
 {
-    short i;
+    XP_U16 ii;
     XP_U16 deviceIndex;
     ModelCtxt* model = server->vol.model;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
@@ -1319,7 +1332,12 @@ server_sendInitialMessage( ServerCtxt* server )
         stream_open( stream );
         writeProto( server, stream, XWPROTO_CLIENT_SETUP );
 
+#ifdef STREAM_VERS_BIGBOARD
+        XP_ASSERT( 0 < server->nv.streamVersion );
+        stream_putU8( stream, server->nv.streamVersion );
+#else
         stream_putU8( stream, CUR_STREAM_VERS );
+#endif
 
         XP_LOGF( "putting gameID %lx into msg", gameID );
         stream_putU32( stream, gameID );
@@ -1330,8 +1348,8 @@ server_sendInitialMessage( ServerCtxt* server )
         dict_writeToStream( dict, stream );
 
         /* send tiles currently in tray */
-        for ( i = 0; i < nPlayers; ++i ) {
-            model_trayToStream( model, i, stream );
+        for ( ii = 0; ii < nPlayers; ++ii ) {
+            model_trayToStream( model, ii, stream );
         }
 
         stream_destroy( stream );
@@ -1692,7 +1710,7 @@ static void
 assignTilesToAll( ServerCtxt* server )
 {
     XP_U16 numAssigned;
-    short i;
+    XP_U16 ii;
     ModelCtxt* model = server->vol.model;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
 
@@ -1712,11 +1730,11 @@ assignTilesToAll( ServerCtxt* server )
     if ( numAssigned > MAX_TRAY_TILES ) {
         numAssigned = MAX_TRAY_TILES;
     }
-    for ( i = 0; i < nPlayers; ++i ) {
+    for ( ii = 0; ii < nPlayers; ++ii ) {
         TrayTileSet newTiles;
-        fetchTiles( server, i, numAssigned, NULL, &newTiles );
-        model_assignPlayerTiles( model, i, &newTiles );
-        sortTilesIf( server, i );
+        fetchTiles( server, ii, numAssigned, NULL, &newTiles );
+        model_assignPlayerTiles( model, ii, &newTiles );
+        sortTilesIf( server, ii );
     }
 
 } /* assignTilesToAll */

@@ -65,7 +65,7 @@
 #include "dragdrpp.h"
 #include "dbgutil.h"
 
-#ifndef MAX_BOARD_ZOOM
+#ifndef MAX_BOARD_ZOOM          /* width in cells visible at max zoom */
 /* too big looks bad */
 # define MAX_BOARD_ZOOM 4
 #endif

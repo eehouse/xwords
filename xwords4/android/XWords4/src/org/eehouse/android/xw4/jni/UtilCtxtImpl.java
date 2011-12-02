@@ -22,7 +22,7 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 
-import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
 
 public class UtilCtxtImpl implements UtilCtxt {
@@ -173,7 +173,7 @@ public class UtilCtxtImpl implements UtilCtxt {
             id = R.string.strd_turn_score;
             break;
         default:
-            Utils.logf( "no such stringCode: %d", stringCode );
+            DbgUtils.logf( "no such stringCode: %d", stringCode );
         }
 
         String result;
@@ -227,7 +227,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     private void subclassOverride( String name ) {
-        Utils.logf( "%s::%s() called", getClass().getName(), name );
+        DbgUtils.logf( "%s::%s() called", getClass().getName(), name );
     }
 
 }

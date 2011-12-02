@@ -20,97 +20,26 @@
 
 package org.eehouse.android.xw4;
 
-import android.util.Log;
-import java.lang.Thread;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.widget.CheckBox;
 import android.widget.Toast;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.text.format.Time;
-import java.util.Formatter;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
 public class Utils {
-    static final String TAG = "XW4";
-
     static final String DB_PATH = "XW_GAMES";
 
-    static boolean s_doLog = true;
-
-    private static Time s_time = new Time();
 
     private Utils() {}
-
-    public static void logEnable( boolean enable )
-    {
-        s_doLog = enable;
-    }
-
-    public static void logEnable( Context context )
-    {
-        SharedPreferences sp
-            = PreferenceManager.getDefaultSharedPreferences( context );
-        String key = context.getString( R.string.key_logging_on );
-        boolean on = sp.getBoolean( key, false );
-        logEnable( on );
-    }
-
-    public static void logf( String msg ) 
-    {
-        if ( s_doLog ) {
-            s_time.setToNow();
-            String time = s_time.format("[%H:%M:%S]");
-            long id = Thread.currentThread().getId();
-            Log.d( TAG, time + "-" + id + "-" + msg );
-        }
-    } // logf
-
-    public static void logf( String format, Object... args )
-    {
-        if ( s_doLog ) {
-            Formatter formatter = new Formatter();
-            logf( formatter.format( format, args ).toString() );
-        }
-    } // logf
-
-    public static void showf( Context context, String format, Object... args )
-    {
-        Formatter formatter = new Formatter();
-        String msg = formatter.format( format, args ).toString();
-        Toast.makeText( context, msg, Toast.LENGTH_SHORT ).show();
-    } // showf
-
-    public static void showf( Context context, int formatid, Object... args )
-    {
-        showf( context, context.getString( formatid ), args );
-    } // showf
-
-    public static void printStack( StackTraceElement[] trace )
-    {
-        if ( s_doLog ) {
-            for ( int ii = 0; ii < trace.length; ++ii ) {
-                Utils.logf( "ste %d: %s", ii, trace[ii].toString() );
-            }
-        }
-    }
-
-    public static void printStack()
-    {
-        if ( s_doLog ) {
-            printStack( Thread.currentThread().getStackTrace() );
-        }
-    }
 
     public static void notImpl( Context context ) 
     {

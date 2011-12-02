@@ -109,7 +109,7 @@ public class GameListAdapter extends XWListAdapter {
         @Override
         protected Void doInBackground( Void... unused ) 
         {
-            // Utils.logf( "doInBackground(id=%d)", m_id );
+            // DbgUtils.logf( "doInBackground(id=%d)", m_id );
             View layout = m_factory.inflate( R.layout.game_list_item, null );
             boolean hideTitle = false;//CommonPrefs.getHideTitleBar(m_context);
             GameSummary summary = DBUtils.getSummary( m_context, m_rowid, false );
@@ -221,7 +221,7 @@ public class GameListAdapter extends XWListAdapter {
         @Override
         protected void onPostExecute( Void unused )
         {
-            // Utils.logf( "onPostExecute(id=%d)", m_id );
+            // DbgUtils.logf( "onPostExecute(id=%d)", m_id );
             if ( -1 != m_rowid ) {
                 m_cb.itemLoaded( m_rowid );
             }

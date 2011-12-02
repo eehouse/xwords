@@ -84,7 +84,7 @@ public class NetLaunchInfo {
                 nPlayers = Integer.decode( np );
                 m_valid = true;
             } catch ( Exception e ) {
-                Utils.logf( "unable to parse \"%s\"", data.toString() );
+                DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
             }
         }
     }

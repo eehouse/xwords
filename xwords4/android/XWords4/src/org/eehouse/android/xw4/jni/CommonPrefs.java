@@ -164,7 +164,7 @@ public class CommonPrefs {
             result = Integer.parseInt( val );
         } catch ( Exception ex ) {
         } 
-        // Utils.logf( "getDefaultProxyPort=>%d", result );
+        // DbgUtils.logf( "getDefaultProxyPort=>%d", result );
         return result;
     }
 

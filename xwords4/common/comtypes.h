@@ -52,6 +52,11 @@
 #endif
 #define STREAM_SAVE_PREVWORDS 0x11
 #define STREAM_VERS_SERVER_SAVES_TOSHOW 0x10
+/* STREAM_VERS_PLAYERDICTS affects stream sent between devices.  May not be
+   able to upgrade somebody who's this far back to something with
+   STREAM_VERS_BIGBOARD defined.  It was added in rev 3b7b4802, on 2011-04-01,
+   which makes it part of android_beta_25 (tag added Apr 29 2011).
+ */
 #define STREAM_VERS_PLAYERDICTS 0x0F
 #define STREAM_SAVE_PREVMOVE 0x0E /* server saves prev move explanation */
 #define STREAM_VERS_ROBOTIQ STREAM_SAVE_PREVMOVE /* robots have different smarts */

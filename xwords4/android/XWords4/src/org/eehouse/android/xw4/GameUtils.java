@@ -68,7 +68,7 @@ public class GameUtils {
             m_rowid = rowid;
             m_isForWrite = isForWrite;
             m_lockCount = 0;
-            // Utils.logf( "GameLock.GameLock(%s,%s) done", m_path, 
+            // DbgUtils.logf( "GameLock.GameLock(%s,%s) done", m_path, 
             //             m_isForWrite?"T":"F" );
         }
 
@@ -101,18 +101,18 @@ public class GameUtils {
         public GameLock lock()
         {
             long stopTime = System.currentTimeMillis() + 1000;
-            // Utils.logf( "GameLock.lock(%s)", m_path );
+            // DbgUtils.logf( "GameLock.lock(%s)", m_path );
             // Utils.printStack();
             for ( ; ; ) {
                 if ( tryLock() ) {
                     break;
                 }
-                // Utils.logf( "GameLock.lock() failed; sleeping" );
+                // DbgUtils.logf( "GameLock.lock() failed; sleeping" );
                 // Utils.printStack();
                 try {
                     Thread.sleep( 25 ); // milliseconds
                 } catch( InterruptedException ie ) {
-                    Utils.logf( "GameLock.lock(): %s", ie.toString() );
+                    DbgUtils.logf( "GameLock.lock(): %s", ie.toString() );
                     break;
                 }
                 if ( System.currentTimeMillis() >= stopTime ) {
@@ -120,13 +120,13 @@ public class GameUtils {
                     Assert.fail();
                 }
             }
-            // Utils.logf( "GameLock.lock(%s) done", m_path );
+            // DbgUtils.logf( "GameLock.lock(%s) done", m_path );
             return this;
         }
 
         public void unlock()
         {
-            // Utils.logf( "GameLock.unlock(%s)", m_path );
+            // DbgUtils.logf( "GameLock.unlock(%s)", m_path );
             synchronized( s_locks ) {
                 Assert.assertTrue( this == s_locks.get(m_rowid) );
                 if ( 1 == m_lockCount ) {
@@ -136,7 +136,7 @@ public class GameUtils {
                 }
                 --m_lockCount;
             }
-            // Utils.logf( "GameLock.unlock(%s) done", m_path );
+            // DbgUtils.logf( "GameLock.unlock(%s) done", m_path );
         }
 
         public long getRowid() 
@@ -311,7 +311,7 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         if ( pairs.anyMissing( dictNames ) ) {
-            Utils.logf( "loadMakeGame() failing: dict unavailable" );
+            DbgUtils.logf( "loadMakeGame() failing: dict unavailable" );
         } else {
             gamePtr = XwJNI.initJNI();
 
@@ -612,7 +612,7 @@ public class GameUtils {
                 lock.unlock();
             }
         }
-        Utils.logf( "feedMessages=>%b", draw );
+        DbgUtils.logf( "feedMessages=>%b", draw );
         return draw;
     } // feedMessages
 

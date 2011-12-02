@@ -31,7 +31,7 @@
 //     @Override
 //     public void onReceive( Context context, Intent intent )
 //     {
-//         Utils.logf( "NBSReceiver::onReceive(intent=%s)!!!!",
+//         DbgUtils.logf( "NBSReceiver::onReceive(intent=%s)!!!!",
 //                     intent.toString() );
 //     }
 
@@ -46,9 +46,9 @@
 //                                  data, null, null );
 //             // PendingIntent sentIntent, 
 //             // PendingIntent deliveryIntent );
-//             Utils.logf( "sendDataMessage finished" );
+//             DbgUtils.logf( "sendDataMessage finished" );
 //         } catch ( IllegalArgumentException iae ) {
-//             Utils.logf( "%s", iae.toString() );
+//             DbgUtils.logf( "%s", iae.toString() );
 //         }
 //     }
 // }

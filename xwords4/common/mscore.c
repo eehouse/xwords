@@ -318,10 +318,11 @@ static XP_Bool
 modelIsEmptyAt( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
     Tile tile;
-    XP_Bool found;
-
-    found = model_getTile( model, col, row, XP_FALSE, -1, &tile,
-                           NULL, NULL, NULL );
+    XP_U16 nCols = model_numCols( model );
+    XP_Bool found = col < nCols 
+        && row < nCols 
+        && model_getTile( model, col, row, XP_FALSE, -1, &tile, 
+                          NULL, NULL, NULL );
     return !found;
 } /* modelIsEmptyAt */
 
@@ -722,11 +723,12 @@ find_end( const ModelCtxt* model, XP_U16 col, XP_U16 row,
           XP_Bool isHorizontal ) 
 {
     XP_U16* incr = isHorizontal? &col: &row;
-    XP_U16 limit = isHorizontal? MAX_COLS-1:MAX_ROWS-1;
+    XP_U16 nCols = model_numCols( model );
+    XP_U16 limit = nCols - 1;
     XP_U16 lastGood = *incr;
 
-    XP_ASSERT( col < MAX_COLS );
-    XP_ASSERT( row < MAX_ROWS );
+    XP_ASSERT( col < nCols );
+    XP_ASSERT( row < nCols );
 
     for ( ; ; ) {
         XP_ASSERT( *incr <= limit );

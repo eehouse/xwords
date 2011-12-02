@@ -560,7 +560,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     /* move tray up if part of board's meant to be hidden */
     trayTop -= vscale * globals->cGlobals.params->nHidden;
     board_setPos( globals->cGlobals.game.board, GTK_BOARD_LEFT, boardTop,
-                  hscale * nCols, vscale * nRows, hscale * 2, XP_FALSE );
+                  hscale * nCols, vscale * nRows, hscale * 4, XP_FALSE );
     /* board_setScale( globals->cGlobals.game.board, hscale, vscale ); */
     globals->gridOn = XP_TRUE;
 
@@ -1056,9 +1056,11 @@ disenable_buttons( GtkAppGlobals* globals )
     gtk_widget_set_sensitive( globals->prevhint_button, canHing );
     gtk_widget_set_sensitive( globals->nexthint_button, canHing );
 
+#ifdef XWFEATURE_CHAT
     XP_Bool canChat = !!globals->cGlobals.game.comms
         && comms_canChat( globals->cGlobals.game.comms );
     gtk_widget_set_sensitive( globals->chat_button, canChat );
+#endif
 }
 
 static gboolean
@@ -1894,12 +1896,13 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
     button = makeShowButtonFromBitmap( globals, "../done.xpm", "-",
                                        G_CALLBACK(handle_zoomout_button) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 #ifdef XWFEATURE_CHAT
     button = makeShowButtonFromBitmap( globals, "", "chat",
                                        G_CALLBACK(handle_chat_button) );
     globals->chat_button = button;
-#endif
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+#endif
 
     gtk_widget_show( vbox );
     return vbox;
