@@ -188,7 +188,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             if ( sdk_int >= Build.VERSION_CODES.ECLAIR ) {
                 m_multiHandler = new MultiHandler();
             } else {
-                Utils.logf( "OS version %d too old for multi-touch", sdk_int );
+                DbgUtils.logf( "OS version %d too old for multi-touch", sdk_int );
             }
         } catch ( Exception ex ) {}
     }
