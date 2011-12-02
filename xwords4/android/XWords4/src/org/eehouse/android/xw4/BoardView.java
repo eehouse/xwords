@@ -34,6 +34,7 @@ import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
 import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
+import android.os.Build;
 import android.os.Handler;
 import java.nio.IntBuffer;
 
@@ -41,10 +42,20 @@ import junit.framework.Assert;
 
 public class BoardView extends View implements DrawCtx, BoardHandler,
                                                SyncedDraw {
+
+    public interface MultiHandlerIface {
+        boolean inactive();
+        void activate( MotionEvent event );
+        void deactivate();
+        int figureZoom( MotionEvent event );
+        int getSpacing( MotionEvent event );
+    }
+
     private static final float MIN_FONT_DIPS = 14.0f;
 
     private static Bitmap s_bitmap;    // the board
     private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
+    private static final int PINCH_THRESHOLD = 40;
 
     private Context m_context;
     private Paint m_drawPaint;
@@ -82,6 +93,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_lastTimerPlayer;
     private int m_pendingScore;
     private Handler m_viewHandler;
+
+    private MultiHandlerIface m_multiHandler = null;
 
     // FontDims: exists to translate space available to the largest
     // font we can draw within that space taking advantage of our use
@@ -168,6 +181,15 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         m_viewHandler = new Handler();
+
+        try {
+            int sdk_int = Integer.decode( Build.VERSION.SDK );
+            if ( sdk_int >= Build.VERSION_CODES.ECLAIR ) {
+                m_multiHandler = new BoardMultiHandler( PINCH_THRESHOLD );
+            } else {
+                Utils.logf( "OS version %d too old for multi-touch", sdk_int );
+            }
+        } catch ( Exception ex ) {}
     }
 
     @Override
@@ -179,17 +201,41 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
+            if ( null != m_multiHandler ) {
+                m_multiHandler.deactivate();
+            }
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
             break;
         case MotionEvent.ACTION_MOVE:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
+            if ( null == m_multiHandler || m_multiHandler.inactive() ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
+            } else {
+                int zoomBy = m_multiHandler.figureZoom( event );
+                if ( 0 != zoomBy ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
+                                        zoomBy < 0 ? -2 : 2 );
+                }
+            }
             break;
         case MotionEvent.ACTION_UP:
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
             break;
+        case MotionEvent.ACTION_POINTER_DOWN:
+        case MotionEvent.ACTION_POINTER_2_DOWN:
+            if ( null != m_multiHandler ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+                m_multiHandler.activate( event );
+            }
+            break;
+        case MotionEvent.ACTION_POINTER_UP:
+        case MotionEvent.ACTION_POINTER_2_UP:
+            if ( null != m_multiHandler ) {
+                m_multiHandler.deactivate();
+            }
+            break;
         default:
             Utils.logf( "unknown action: %d", action );
-            Utils.logf( event.toString() );
+            break;
         }
 
         return true;             // required to get subsequent events
