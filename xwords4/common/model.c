@@ -700,15 +700,11 @@ setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, CellTile tile )
 static CellTile 
 getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
-    CellTile tile;
     XP_U16 nCols = model->nCols;
     XP_ASSERT( model->nRows == nCols );
-    if ( col < nCols && row < nCols ) {
-        tile = model->vol.tiles[(row*nCols) + col];
-    } else {
-        tile = TILE_EMPTY_BIT;
-    }
-    return tile;
+    XP_ASSERT( col < nCols );
+    XP_ASSERT( row < nCols );
+    return model->vol.tiles[(row*nCols) + col];
 } /* getModelTileRaw */
 
 static void
