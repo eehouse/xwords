@@ -191,7 +191,6 @@ parseRelayID( unsigned char** const inp, const unsigned char* const end,
     if ( ok ) {
         strncpy( buf, (char*)*inp, connNameLen );
         buf[connNameLen] = '\0';
-        logf( XW_LOGINFO, "%s=>%s", __func__, buf );
         *hid = atoi( hidp+1 );
         char* endptr;
         *hid = strtol( hidp + 1, &endptr, 10 );
