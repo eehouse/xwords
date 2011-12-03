@@ -23,11 +23,6 @@
           android:alphabeticShortcut="H"
           />
 
-    <item android:id="@+id/board_menu_values"
-          android:title="@string/board_menu_values"
-          android:alphabeticShortcut="V"
-          />
-
     <item android:title="@string/board_submenu_game">
       <menu>
         <item android:id="@+id/board_menu_game_counts"

@@ -93,6 +93,7 @@ public class BoardActivity extends XWActivity
     private static final int START_TRADE_ACTION = 13;
     private static final int LOOKUP_ACTION = 14;
     private static final int BUTTON_BROWSE_ACTION = 15;
+    private static final int VALUES_ACTION = 16;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -610,9 +611,6 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_undo_last:
             showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
             break;
-        case R.id.board_menu_values:
-            cmd = JNIThread.JNICmd.CMD_VALUES;
-            break;
         case R.id.board_menu_game_counts:
             m_jniThread.handle( JNIThread.JNICmd.CMD_COUNTS_VALUES,
                                 R.string.counts_values_title );
@@ -714,6 +712,9 @@ public class BoardActivity extends XWActivity
                 break;
             case UNDO_ACTION:
                 cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
+                break;
+            case VALUES_ACTION:
+                cmd = JNIThread.JNICmd.CMD_VALUES;
                 break;
             case CHAT_ACTION:
                 startChatActivity();
@@ -1440,6 +1441,10 @@ public class BoardActivity extends XWActivity
                                R.string.not_again_zoom,
                                R.string.key_notagain_zoom,
                                ZOOM_ACTION );
+        m_toolbar.setListener( Toolbar.BUTTON_VALUES,
+                               R.string.not_again_values,
+                               R.string.key_na_values,
+                               VALUES_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_UNDO,
                                R.string.not_again_undo,
                                R.string.key_notagain_undo,
@@ -1568,7 +1573,8 @@ public class BoardActivity extends XWActivity
 
     private void updateToolbar()
     {
-        m_toolbar.update( Toolbar.BUTTON_FLIP, m_gsi.visTileCount > 1 );
+        m_toolbar.update( Toolbar.BUTTON_FLIP, m_gsi.visTileCount >= 1 );
+        m_toolbar.update( Toolbar.BUTTON_VALUES, m_gsi.visTileCount >= 1 );
         m_toolbar.update( Toolbar.BUTTON_JUGGLE, m_gsi.canShuffle );
         m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
         m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
