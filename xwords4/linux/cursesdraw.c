@@ -298,9 +298,9 @@ static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
                       const XP_UCHAR* letter, 
                       const XP_Bitmaps* XP_UNUSED(bitmaps),
-                      Tile XP_UNUSED(tile), XP_S16 XP_UNUSED(owner), 
-                      XWBonusType bonus, HintAtts XP_UNUSED(hintAtts), 
-                      CellFlags flags )
+                      Tile XP_UNUSED(tile), XP_U16 XP_UNUSED(value), 
+                      XP_S16 XP_UNUSED(owner), XWBonusType bonus, 
+                      HintAtts XP_UNUSED(hintAtts), CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Bool highlight = (flags & (CELL_HIGHLIGHT|CELL_ISCURSOR)) != 0;

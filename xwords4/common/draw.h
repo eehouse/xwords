@@ -165,7 +165,7 @@ typedef struct DrawCtxVTable {
                                             null */
                                          const XP_UCHAR* text, 
                                          const XP_Bitmaps* bitmaps,
-                                         Tile tile,
+                                         Tile tile, XP_U16 value,
                                          XP_S16 owner, /* -1 means don't use */
                                          XWBonusType bonus, HintAtts hintAtts,
                                          CellFlags flags );
@@ -229,6 +229,8 @@ struct DrawCtx {
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6))
 # define CALL_DRAW_NAME8(name,dc,p1,p2,p3,p4,p5,p6,p7,p8) \
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),(p8))
+# define CALL_DRAW_NAME9(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9)          \
+   linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),(p8),(p9))
 # define CALL_DRAW_NAME10(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10) \
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
    (p8),(p9),(p10))
@@ -246,8 +248,11 @@ struct DrawCtx {
 # define CALL_DRAW_NAME6(name,dc,p1,p2,p3,p4,p5,p6) \
    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6))
 # define CALL_DRAW_NAME8(name,dc,p1,p2,p3,p4,p5,p6,p7,p8) \
-   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
-   (p8))
+    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7), \
+                                  (p8))
+# define CALL_DRAW_NAME9(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9)             \
+    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7), \
+                                  (p8),(p9))
 # define CALL_DRAW_NAME10(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10) \
    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
    (p8),(p9),(p10))
@@ -277,8 +282,8 @@ struct DrawCtx {
     CALL_DRAW_NAME4(score_pendingScore,(dc), (r), (s), (p), (f))
 #define draw_drawTimer( dc, r, plyr, sec ) \
     CALL_DRAW_NAME3(drawTimer,(dc),(r),(plyr),(sec))
-#define draw_drawCell( dc, rect, txt, bmap, t, o, bon, hi, f ) \
-    CALL_DRAW_NAME8(drawCell,(dc),(rect),(txt),(bmap),(t),(o),(bon),(hi),\
+#define draw_drawCell( dc, rect, txt, bmap, t, v,o, bon, hi, f )        \
+    CALL_DRAW_NAME9(drawCell,(dc),(rect),(txt),(bmap),(t),(v),(o),(bon),(hi), \
     (f))
 #define draw_invertCell( dc, rect ) CALL_DRAW_NAME1(invertCell,(dc),(rect))
 #define draw_drawTile( dc, rect, text, bmp, val, hil ) \
