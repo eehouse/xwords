@@ -506,8 +506,8 @@ drawCrosshairs( GtkDrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 static XP_Bool
 gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                    const XP_Bitmaps* bitmaps, Tile XP_UNUSED(tile), 
-                   XP_S16 owner, XWBonusType bonus, HintAtts hintAtts, 
-                   CellFlags flags )
+                   XP_U16 XP_UNUSED(value), XP_S16 owner, XWBonusType bonus, 
+                   HintAtts hintAtts, CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect rectInset = *rect;

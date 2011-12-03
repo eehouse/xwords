@@ -397,6 +397,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
             XP_Bool isOrigin;
+            XP_U16 value = 0;
 
             isEmpty = !model_getTile( model, modelCol, modelRow, showPending,
                                         selPlayer, &tile, &isBlank,
@@ -416,6 +417,9 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             } else if ( isBlank && skipBlanks ) {
                 break;
             } else {
+                Tile valTile = isBlank? dict_getBlankTile( dict ) : tile;
+                value = dict_getTileValue( dict, valTile );
+
                 if ( board->showColors ) {
                     owner = (XP_S16)model_getCellOwner( model, modelCol, 
                                                         modelRow );
@@ -424,9 +428,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                 invert = showPending? pending : recent;
 
                 if ( board->showCellValues ) {
-                    Tile valTile = isBlank? dict_getBlankTile( dict ) : tile;
-                    XP_U16 val = dict_getTileValue( dict, valTile );
-                    XP_SNPRINTF( ch, VSIZE(ch), "%d", val );
+                    XP_SNPRINTF( ch, VSIZE(ch), "%d", value );
                     textP = ch;
                 } else {
                     if ( dict_faceIsBitmap( dict, tile ) ) {
@@ -458,7 +460,8 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
 #endif
 
             success = draw_drawCell( board->draw, &cellRect, textP, bptr,
-                                     tile, owner, bonus, hintAtts, flags );
+                                     tile, value, owner, bonus, hintAtts, 
+                                     flags );
             break;
         }
     }

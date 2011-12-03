@@ -47,6 +47,7 @@ public class Toolbar {
     public static final int BUTTON_ZOOM = 5;
     public static final int BUTTON_UNDO = 6;
     public static final int BUTTON_CHAT = 7;
+    public static final int BUTTON_VALUES = 8;
 
     private static TBButtonInfo[] s_buttonInfo = {
         // BUTTON_BROWSE_DICT
@@ -65,6 +66,8 @@ public class Toolbar {
         new TBButtonInfo( R.id.undo_button_horizontal ),
         // BUTTON_CHAT
         new TBButtonInfo( R.id.chat_button_horizontal ),
+        // BUTTON_VALUES
+        new TBButtonInfo( R.id.values_button_horizontal ),
     };
 
     private XWActivity m_activity;

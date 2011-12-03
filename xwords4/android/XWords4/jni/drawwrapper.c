@@ -232,11 +232,12 @@ and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect,
 
 static XP_Bool 
 and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text, 
-                   const XP_Bitmaps* bitmaps, Tile tile, XP_S16 owner,
-                   XWBonusType bonus, HintAtts hintAtts, CellFlags flags )
+                   const XP_Bitmaps* bitmaps, Tile tile, XP_U16 value,
+                   XP_S16 owner, XWBonusType bonus, HintAtts hintAtts, 
+                   CellFlags flags )
 {
     DRAW_CBK_HEADER("drawCell",
-                    "(Landroid/graphics/Rect;Ljava/lang/String;IIIII)Z" );
+                    "(Landroid/graphics/Rect;Ljava/lang/String;IIIIII)Z" );
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
     jstring jtext = NULL;
     if ( !!text ) {
@@ -247,7 +248,7 @@ and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
     }
 
     jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
-                                                 jrect, jtext, tile,
+                                                 jrect, jtext, tile, value,
                                                  owner, bonus, hintAtts, 
                                                  flags );
     if ( !!jtext ) {

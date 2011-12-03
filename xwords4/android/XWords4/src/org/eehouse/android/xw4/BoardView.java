@@ -529,8 +529,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;
     }
 
-    public boolean drawCell( final Rect rect, String text, int tile, int owner, 
-                             int bonus, int hintAtts, final int flags ) 
+    public boolean drawCell( final Rect rect, String text, int tile, int value,
+                             int owner, int bonus, int hintAtts, 
+                             final int flags ) 
     {
         boolean canDraw = figureFontDims();
         if ( canDraw ) {
@@ -819,7 +820,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
             if ( val >= 0 ) {
                 if ( null == m_valRect ) {
-                    m_valRect = new Rect( 0, 0, rect.width() / 4, rect.height() / 4 );
+                    m_valRect = new Rect( 0, 0, rect.width() / 4, 
+                                          rect.height() / 4 );
                     m_valRect.inset( 2, 2 );
                 }
                 m_valRect.offsetTo( rect.right - (rect.width() / 4),

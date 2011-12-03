@@ -658,12 +658,6 @@
          games.-->
 	<string name="board_menu_undo_last">Undo last</string>
 
-    <!-- Toggles the board between displaying tiles' letters and their
-         values.  This is intended to allow players to remind
-         themselves how much played tiles are worth while planning a
-         move. -->
-	<string name="board_menu_values">Show values</string>
-
     <!-- Title of submenu -->
 	<string name="board_submenu_game">Game</string>
 
@@ -1622,8 +1616,13 @@
     <string name="not_again_chat">This button opens the screen for
       messaging between devices in this game.  Messages will be kept
       until you delete the game that contains them.</string>
-
-
+    <!-- Shown when you tap the values button on the toolbar of the
+         main Board screen.  This is intended to allow players to
+         remind themselves how much played tiles are worth while
+         planning a move. -->
+    <string name="not_again_values">This button changes whether the
+        board shows letters on placed tiles or their point values.
+        Use it to remind yourself what a tile is worth.</string>
     <!-- This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. -->
