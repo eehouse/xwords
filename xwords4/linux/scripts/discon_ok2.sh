@@ -11,18 +11,17 @@ TIMEOUT=""
 SAVE_GOOD=""
 MINDEVS=""
 MAXDEVS=""
+ONEPER=""
 RESIGN_RATIO=""
 DROP_N=""
 MINRUN=2
-ONE_PER_ROOM=""
+ONE_PER_ROOM=""                 # don't run more than one device at a time per room
 USE_GTK=""
 ALL_VIA_RQ=${ALL_VIA_RQ:-FALSE}
 SEED=""
 BOARD_SIZES_OLD=(15)
 BOARD_SIZES_NEW=(15)
 NAMES=(UNUSED Brynn Ariela Kati Eric)
-[ -n "$SEED" ] && RANDOM=$SEED
-
 
 declare -A PIDS
 declare -A APPS
@@ -67,9 +66,62 @@ print_cmdline() {
     echo "New cmdline: ${APPS[$COUNTER]} ${ARGS[$COUNTER]}" >> $LOG
 }
 
+# Given a device count, figure out how many local players per device.
+# "1 1" would be a two-device game with 1 each.  "1 2 1" a
+# three-device game with four players total
+function figure_locals() {
+    local NDEVS=$1
+    local EXTRAS=0
+    if [ -z "$ONEPER" ]; then
+        EXTRAS=$((4 - $NDEVS))
+    fi
+
+    local LOCALS=""
+    for IGNORE in $(seq $NDEVS); do
+        COUNT=1
+        if [ $EXTRAS -gt 0 ]; then
+            local EXTRA=$((RANDOM % $((1 + EXTRAS))))
+            if [ $EXTRA -gt 0 ]; then
+                COUNT=$((COUNT + EXTRA))
+                EXTRAS=$((EXTRAS - EXTRA))
+            fi
+        fi
+        LOCALS="$LOCALS $COUNT"
+    done
+    echo "$LOCALS"
+}
+
+function player_params() {
+    local NLOCALS=$1
+    local NPLAYERS=$2
+    local NAME_INDX=$3
+    local NREMOTES=$((NPLAYERS - NLOCALS))
+    local PARAMS=""
+    while [ $NLOCALS -gt 0 -o $NREMOTES -gt 0 ]; do
+        if [ 0 -eq $((RANDOM%2)) -a 0 -lt $NLOCALS ]; then
+            PARAMS="$PARAMS --robot ${NAMES[$NAME_INDX]} --robot-iq $((1 + (RANDOM%100))) "
+            NLOCALS=$((NLOCALS-1))
+            NAME_INDX=$((NAME_INDX+1))
+        elif [ 0 -lt $NREMOTES ]; then
+            PARAMS="$PARAMS --remote-player"
+            NREMOTES=$((NREMOTES-1))
+        fi
+    done
+    echo "$PARAMS"
+}
+
+function sum() {
+    RESULT=0
+    while [ $# -gt 0 ]; do
+        RESULT=$((RESULT+$1))
+        shift
+    done
+    echo $RESULT
+}
+
 build_cmds() {
     COUNTER=0
-    PLAT_PARMS=""
+    local PLAT_PARMS=""
     if [ $USE_GTK = FALSE ]; then
         PLAT_PARMS="--curses --close-stdin"
     fi
@@ -79,23 +131,22 @@ build_cmds() {
         ROOM_PIDS[$ROOM]=0
         check_room $ROOM
         NDEVS=$(( $RANDOM % ($MAXDEVS-1) + 2 ))
+        LOCALS=( $(figure_locals $NDEVS) ) # as array
+        NPLAYERS=$(sum ${LOCALS[@]})
+        [ ${#LOCALS[*]} -eq $NDEVS ] || usage "problem with LOCALS"
         [ $NDEVS -lt $MINDEVS ] && NDEVS=$MINDEVS
         DICT=${DICTS[$((GAME%${#DICTS[*]}))]}
         # make one in three games public
-        PUBLIC=""
+        local PUBLIC=""
         [ $((RANDOM%3)) -eq 0 ] && PUBLIC="--make-public --join-public"
 
-        OTHERS=""
-        for II in $(seq 2 $NDEVS); do
-            OTHERS="--remote-player $OTHERS"
-        done
-
-        for DEV in $(seq $NDEVS); do
+        DEV=0
+        for NLOCALS in ${LOCALS[@]}; do
+            DEV=$((DEV + 1))
             FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             > $LOG # clear the log
-            touch $LOG          # so greps won't show errors
-            PARAMS=""
+
             APPS[$COUNTER]="$APP_NEW"
             BOARD_SIZE="--board-size ${BOARD_SIZES_NEW[$((RANDOM%${#BOARD_SIZES_NEW[*]}))]}"
             if [ xx = "${APPS_OLD+xx}" ]; then
@@ -105,9 +156,10 @@ build_cmds() {
                     BOARD_SIZE="--board-size ${BOARD_SIZES_OLD[$((RANDOM%${#BOARD_SIZES_OLD[*]}))]}"
                 fi
             fi
+
+            PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM"
-            PARAMS="$PARAMS --robot ${NAMES[$DEV]} --robot-iq $((1 + (RANDOM%100))) "
-            PARAMS="$PARAMS $OTHERS --game-dict $DICT --port $PORT --host $HOST "
+            PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
             PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
@@ -389,19 +441,19 @@ function getArg() {
 
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
-    echo "Usage: $(basename $0)                            \\" >&2
-    echo "    [--dict <path/to/dict>]*                     \\" >&2
-    echo "    [--old-app <path/to/app]*                    \\" >&2
-    echo "    [--new-app <path/to/app]                     \\" >&2
-    echo "    [--min-devs <int>]                           \\" >&2
-    echo "    [--max-devs <int>]                           \\" >&2
-    echo "    [--help]                                     \\" >&2
-    echo "    [--num-games <int>]                          \\" >&2
-    echo "    [--num-rooms <int>]                          \\" >&2
-    echo "    [--host <hostname>]                          \\" >&2
-    echo "    [--port <int>]                               \\" >&2
-    echo "    [--seed <int>]                               \\" >&2
-    echo "    [--help]                                     \\" >&2
+    echo "Usage: $(basename $0)                                       \\" >&2
+    echo "    [--dict <path/to/dict>]*                                \\" >&2
+    echo "    [--old-app <path/to/app]*                               \\" >&2
+    echo "    [--new-app <path/to/app]                                \\" >&2
+    echo "    [--min-devs <int>]                                      \\" >&2
+    echo "    [--max-devs <int>]                                      \\" >&2
+    echo "    [--one-per]              # force one player per device  \\" >&2
+    echo "    [--num-games <int>]                                     \\" >&2
+    echo "    [--num-rooms <int>]                                     \\" >&2
+    echo "    [--host <hostname>]                                     \\" >&2
+    echo "    [--port <int>]                                          \\" >&2
+    echo "    [--seed <int>]                                          \\" >&2
+    echo "    [--help]                                                \\" >&2
 
     exit 1
 }
@@ -438,6 +490,10 @@ while [ "$#" -gt 0 ]; do
             ;;
         --max-devs)
             MAXDEVS=$(getArg $*)
+            shift
+            ;;
+        --one-per)
+            ONEPER=TRUE
             shift
             ;;
         --host)
@@ -479,6 +535,8 @@ done
 [ -z "$UPGRADE_ODDS" ] && UPGRADE_ODDS=10
 #$((NGAMES/50))
 [ 0 -eq $UPGRADE_ODDS ] && UPGRADE_ODDS=1
+[ -n "$SEED" ] && RANDOM=$SEED
+[ -z "$ONEPER" -a $NROOMS -lt $NGAMES ] && usage "use --one-per if --num-rooms < --num-games"
 
 LOGDIR=$(basename $0)_logs
 RESUME=""
@@ -497,7 +555,7 @@ for FILE in $(ls $LOGDIR/*.{xwg,txt} 2>/dev/null); do
     break
 done
 
-if [ -z "$RESUME" -a -d $LOGDIR ];then
+if [ -z "$RESUME" -a -d $LOGDIR ]; then
     mv $LOGDIR /tmp/${LOGDIR}_$$
 fi
 mkdir -p $LOGDIR
@@ -510,7 +568,7 @@ DEADDIR=$LOGDIR/dead
 mkdir -p $DEADDIR
 
 for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT SAVE_GOOD \
-    MINDEVS MAXDEVS RESIGN_RATIO DROP_N ALL_VIA_RQ SEED \
+    MINDEVS MAXDEVS ONEPER RESIGN_RATIO DROP_N ALL_VIA_RQ SEED \
     APP_NEW; do
     echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
 done
