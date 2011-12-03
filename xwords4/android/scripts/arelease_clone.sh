@@ -49,6 +49,7 @@ cd $BUILDIR
 git clone $SRCDIR BUILD
 cd BUILD
 git checkout ${TAG}${BRANCH}
+./xwords4/android/scripts/setup_local_props.sh
 ./xwords4/android/scripts/arelease.sh
 cp *.apk /tmp
 
