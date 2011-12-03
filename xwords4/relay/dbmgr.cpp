@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make -k -j3"; -*- */
 
 /* 
  * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights reserved.
@@ -22,9 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <iostream>
-#include <sstream>
-#include <string>
 
 #include "dbmgr.h"
 #include "mlock.h"
@@ -643,20 +640,21 @@ void
 DBMgr::RemoveStoredMessages( const int* msgIDs, int nMsgIDs )
 {
     if ( nMsgIDs > 0 ) {
-        stringstream buf;
-
-        buf << "DELETE FROM " MSGS_TABLE " WHERE id IN (";
-
-        for ( int ii = 0; ; ) {
-            buf << msgIDs[ii];
+        char ids[1024];
+        size_t len = 0;
+        int ii;
+        for ( ii = 0; ; ) {
+            len += snprintf( ids + len, sizeof(ids) - len, "%d,", msgIDs[ii] );
+            assert( len < sizeof(ids) );
             if ( ++ii == nMsgIDs ) {
+                ids[len-1] = '\0';  /* overwrite last comma */
                 break;
             }
-            buf << ',';
         }
-        buf << ')';
 
-        const char* query = buf.str().c_str();
+        const char* fmt = "DELETE from " MSGS_TABLE " WHERE id in (%s)";
+        char query[1024];
+        snprintf( query, sizeof(query), fmt, ids );
         logf( XW_LOGINFO, "%s: query: %s", __func__, query );
         execSql( query );
     }
