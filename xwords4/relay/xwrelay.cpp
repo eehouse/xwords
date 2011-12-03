@@ -696,18 +696,27 @@ read_packet( int sock, unsigned char* buf, int buflen )
     ssize_t nread;
     unsigned short msgLen;
     nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
-    if ( nread == sizeof(msgLen) ) {
+    if ( 0 == nread ) {
+        logf( XW_LOGINFO, "%s: recv => 0: remote closed", __func__ );
+    } else if ( nread != sizeof(msgLen) ) {
+        logf( XW_LOGERROR, "%s: first recv => %d: %s", __func__, 
+              nread, strerror(errno) );
+    } else {
         msgLen = ntohs( msgLen );
-        if ( msgLen < buflen ) {
+        if ( msgLen >= buflen ) {
+            logf( XW_LOGERROR, "%s: buf too small; need %d but have %d", 
+                  __func__, msgLen, buflen );
+        } else {
             nread = recv( sock, buf, msgLen, MSG_WAITALL );
             if ( nread == msgLen ) {
                 result = nread;
+            } else {
+                logf( XW_LOGERROR, "%s: second recv failed: %s", __func__, 
+                      strerror(errno) );
             }
         }
     }
-    if ( -1 == result ) {
-        logf( XW_LOGERROR, "%s failed: %s", __func__, strerror(errno) );
-    }
+
     return result;
 } /* read_packet */
 
