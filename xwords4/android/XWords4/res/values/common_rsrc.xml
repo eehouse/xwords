@@ -82,6 +82,9 @@
   <!-- Name is not localized -->
   <string name="app_name">Crosswords</string>  
 
+  <!-- Nor is my email address -->
+  <string name="email_author_email">xwords@eehouse.org</string>
+
   <!-- other -->
   <string name="default_host">eehouse.org</string>
 

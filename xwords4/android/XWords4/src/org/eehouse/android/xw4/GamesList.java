@@ -543,6 +543,10 @@ public class GamesList extends XWListActivity
             showAboutDialog();
             break;
 
+        case R.id.gamel_menu_email:
+            Utils.emailAuthor( this );
+            break;
+
         // case R.id.gamel_menu_view_hidden:
         //     Utils.notImpl( this );
         //     break;

@@ -1811,4 +1811,7 @@
     <string name="prompt_min_len">Words no shorter than</string>
     <string name="prompt_max_len">Words no longer than</string>
 
+    <string name="board_menu_file_email">Email author</string>
+    <string name="email_author_subject">Comment about Crosswords</string>
+    <string name="email_author_chooser">Send comment via</string>
 </resources>
