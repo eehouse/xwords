@@ -7,13 +7,6 @@
    android:layout_height="fill_parent"
    >
 
-  <TextView android:id="@+id/summary"
-            android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:gravity="center"                  
-            />
-
   <ListView android:id="@+id/list"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"

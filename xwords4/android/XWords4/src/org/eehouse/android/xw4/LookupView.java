@@ -69,7 +69,6 @@ public class LookupView extends LinearLayout
     private int m_state;
     private ArrayAdapter<String> m_wordsAdapter;
     private Button m_doneButton;
-    private TextView m_summary;
     private Dialog m_dialog;
     private Context m_context;
     private int m_dlgId;
@@ -96,7 +95,6 @@ public class LookupView extends LinearLayout
 
         m_doneButton = (Button)findViewById( R.id.button_done );
         m_doneButton.setOnClickListener( this );
-        m_summary = (TextView)findViewById( R.id.summary );
 
         switchState();
     }
@@ -233,12 +231,12 @@ public class LookupView extends LinearLayout
 
     private void setSummary( int id )
     {
-        m_summary.setText( m_context.getString( id ) );
+        m_dialog.setTitle( m_context.getString( id ) );
     }
 
     private void setSummary( String word )
     {
         String title = Utils.format( m_context, R.string.pick_url_titlef, word );
-        m_summary.setText( title );
+        m_dialog.setTitle( title );
     }
 }
