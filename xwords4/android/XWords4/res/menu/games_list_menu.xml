@@ -23,7 +23,7 @@
 
     <item android:id="@+id/gamel_menu_email"
           android:title="@string/board_menu_file_email"
-          android:icon="@android:drawable/ic_dialog_email"
+          android:icon="@android:drawable/ic_menu_send"
           />
 
     <item android:id="@+id/gamel_menu_delete_all"
