@@ -227,7 +227,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     private void subclassOverride( String name ) {
-        DbgUtils.logf( "%s::%s() called", getClass().getName(), name );
+        // DbgUtils.logf( "%s::%s() called", getClass().getName(), name );
     }
 
 }
