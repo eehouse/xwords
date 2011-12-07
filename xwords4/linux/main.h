@@ -80,6 +80,10 @@ typedef struct LaunchParams {
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
 #endif
+#ifdef XWFEATURE_CROSSHAIRS
+    XP_Bool hideCrosshairs;
+#endif
+
 
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16 robotThinkMin, robotThinkMax;

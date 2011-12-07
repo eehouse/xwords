@@ -16,18 +16,23 @@
           android:title="@string/gamel_menu_dicts"
           android:icon="@drawable/dicticon"
           />
-    <item android:id="@+id/gamel_menu_checkmoves"
-          android:title="@string/gamel_menu_checkmoves"
-          android:icon="@drawable/stat_notify_sync"
+    <item android:id="@+id/gamel_menu_about"
+          android:title="@string/board_menu_file_about"
+          android:icon="@android:drawable/ic_menu_info_details"
           />
+
+    <item android:id="@+id/gamel_menu_email"
+          android:title="@string/board_menu_file_email"
+          android:icon="@android:drawable/ic_menu_send"
+          />
+
     <item android:id="@+id/gamel_menu_delete_all"
           android:title="@string/gamel_menu_delete_all"
           android:icon="@android:drawable/ic_menu_delete"
           />
-    <item android:id="@+id/gamel_menu_about"
-          android:title="@string/board_menu_file_about"
-          android:icon="@android:drawable/ic_menu_info_details"
-          android:alphabeticShortcut="A"
+    <item android:id="@+id/gamel_menu_checkmoves"
+          android:title="@string/gamel_menu_checkmoves"
+          android:icon="@drawable/stat_notify_sync"
           />
 
     <!-- ic_menu_archive.png -->

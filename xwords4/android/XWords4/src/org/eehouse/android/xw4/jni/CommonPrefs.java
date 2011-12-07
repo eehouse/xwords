@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -27,7 +27,6 @@ import android.graphics.Paint;
 import android.content.res.Resources;
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictUtils;
 
@@ -48,6 +47,7 @@ public class CommonPrefs {
     public boolean showColors;
     public boolean sortNewTiles;
     public boolean allowPeek;
+    public boolean hideCrosshairs;
 
     public int[] playerColors;
     public int[] bonusColors;
@@ -78,6 +78,7 @@ public class CommonPrefs {
         showColors = getBoolean( context, sp, R.string.key_color_tiles, true );
         sortNewTiles = getBoolean( context, sp, R.string.key_sort_tiles, true );
         allowPeek = getBoolean( context, sp, R.string.key_peek_other, false );
+        hideCrosshairs = getBoolean( context, sp, R.string.key_hide_crosshairs, false );
 
         int ids[] = { R.string.key_player0,
                       R.string.key_player1,
@@ -181,31 +182,37 @@ public class CommonPrefs {
     public static int getDefaultBoardSize( Context context )
     {
         String value = getString( context, R.string.key_board_size );
+        int result;
         try {
-            return Integer.parseInt( value.substring( 0, 2 ) );
+            result = Integer.parseInt( value.substring( 0, 2 ) );
         } catch ( Exception ex ) {
-            return 15;
+            result = 15;
         } 
+        return result;
     }
 
     public static int getDefaultPlayerMinutes( Context context )
     {
         String value = getString( context, R.string.key_initial_player_minutes );
+        int result;
         try {
-            return Integer.parseInt( value );
+            result = Integer.parseInt( value );
         } catch ( Exception ex ) {
-            return 25;
+            result = 25;
         }
+        return result;
     }
 
     public static long getProxyInterval( Context context )
     {
         String value = getString( context, R.string.key_connect_frequency );
+        long result;
         try {
-            return Long.parseLong( value );
+            result = Long.parseLong( value );
         } catch ( Exception ex ) {
-            return -1;
+            result = -1;
         }
+        return result;
     }
 
     public static String getDefaultHumanDict( Context context )

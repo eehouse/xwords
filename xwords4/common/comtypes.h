@@ -200,6 +200,9 @@ typedef struct CommonPrefs {
 #endif
     XP_Bool         showColors; /* applies to all games */
     XP_Bool         allowPeek;  /* applies to all games */
+#ifdef XWFEATURE_CROSSHAIRS
+    XP_Bool         hideCrosshairs;  /* applies to all games */
+#endif
 } CommonPrefs;
 
 typedef struct _PlayerDicts {

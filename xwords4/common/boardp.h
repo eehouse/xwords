@@ -176,6 +176,9 @@ struct BoardCtxt {
     XP_Bool hideValsInTray;
     XP_Bool skipCommitConfirm;
     XP_Bool allowPeek;          /* Can look at non-turn player's rack */
+#ifdef XWFEATURE_CROSSHAIRS
+    XP_Bool hideCrosshairs;
+#endif
 
     XP_Bool eraseTray;
     XP_Bool boardObscuresTray;

@@ -92,7 +92,11 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 
     found = coordToCell( board, xx, yy, &col, &row );
     XP_ASSERT( found );
-    (void)crosshairs_set( board, col, row );
+#ifdef XWFEATURE_CROSSHAIRS
+    if ( !board->hideCrosshairs ) {
+        (void)crosshairs_set( board, col, row );
+    }
+#endif
 
     trayVisible = board->trayVisState == TRAY_REVEALED;
     if ( trayVisible && holdsPendingTile( board, col, row ) ) {
@@ -481,8 +485,12 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     if ( newInfo.obj == OBJ_BOARD ) {
         (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
                            &newInfo.u.board.row );
-        draw = crosshairs_set( board, newInfo.u.board.col, 
-                               newInfo.u.board.row );
+#ifdef XWFEATURE_CROSSHAIRS
+        if ( !board->hideCrosshairs ) {
+            draw = crosshairs_set( board, newInfo.u.board.col, 
+                                   newInfo.u.board.row );
+        }
+#endif
     }
 
     if ( ds->dtype == DT_DIVIDER ) {

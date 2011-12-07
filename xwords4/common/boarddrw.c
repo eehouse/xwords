@@ -242,13 +242,15 @@ static CellFlags
 flagsForCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     CellFlags flags = 0;
-    XP_Bool inHor, inVert;
-    dragDropInCrosshairs( board, col, row, &inHor, &inVert );
-    if ( inHor ) {
-        flags |= CELL_CROSSHOR;
-    }
-    if ( inVert ) {
-        flags |= CELL_CROSSVERT;
+    if ( ! board->hideCrosshairs ) {
+        XP_Bool inHor, inVert;
+        dragDropInCrosshairs( board, col, row, &inHor, &inVert );
+        if ( inHor ) {
+            flags |= CELL_CROSSHOR;
+        }
+        if ( inVert ) {
+            flags |= CELL_CROSSVERT;
+        }
     }
     return flags;
 }

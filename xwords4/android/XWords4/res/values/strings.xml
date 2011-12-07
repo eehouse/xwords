@@ -1057,6 +1057,18 @@
     <string name="peek_other_summary">Tapping on scoreboard name shows
         that player\'s tiles</string>
 
+    
+    <!-- If this preference is checked the "crosshairs" (vertical and
+         horzontal lines through the cell your finger is on that help
+         you tell where the app thinks you're actually tapping) will
+         not be shown.  Some users have complained that this feature
+         is distracting, presumably because they're using tablets with
+         large enough screens that they always know where they're
+         tapping. -->
+    <string name="hide_crosshairs">Disable crosshairs</string>
+    <!-- explanation of the above -->
+    <string name="hide_crosshairs_summary">Do not visually indicate which board cell is touched</string>
+
     <string name="network_behavior">Network game settings</string>
     <!-- explanation of the above -->
     <string name="network_behavior_summary">Settings that apply to
@@ -1798,5 +1810,13 @@
     <string name="max_len">Max len</string>
     <string name="prompt_min_len">Words no shorter than</string>
     <string name="prompt_max_len">Words no longer than</string>
+
+    <string name="board_menu_file_email">Email author</string>
+    <string name="email_author_subject">Comment about Crosswords</string>
+    <string name="email_author_chooser">Send comment via</string>
+
+    <string name="email_body_revf">(If relevant, please include the
+      version: \"%s\"; and make/model of your phone or
+      tablet.)"</string>
 
 </resources>

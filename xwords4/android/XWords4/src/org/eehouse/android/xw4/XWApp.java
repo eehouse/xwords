@@ -30,6 +30,8 @@ public class XWApp extends Application {
         DbgUtils.logEnable( this );
         DbgUtils.logf( "XWApp.onCreate(); git_rev=%s", 
                        getString(R.string.git_rev) );
+
+        RelayReceiver.RestartTimer( this );
         super.onCreate();
     }
 }

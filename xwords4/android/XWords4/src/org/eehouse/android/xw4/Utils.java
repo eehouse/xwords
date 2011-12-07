@@ -57,6 +57,21 @@ public class Utils {
             } );
     }
 
+    public static void emailAuthor( Context context )
+    {
+        Intent intent = new Intent( Intent.ACTION_SEND );
+        intent.setType( "text/html" );
+        intent.putExtra( Intent.EXTRA_SUBJECT,
+                         context.getString( R.string.email_author_subject ) );
+        String[] addrs = { context.getString( R.string.email_author_email ) };
+        intent.putExtra( Intent.EXTRA_EMAIL, addrs );
+        String body = format( context, R.string.email_body_revf,
+                              GitVersion.VERS );
+        intent.putExtra( Intent.EXTRA_TEXT, body );
+        String chooserMsg = context.getString( R.string.email_author_chooser );
+        context.startActivity( Intent.createChooser( intent, chooserMsg ) );
+    }
+
     public static View inflate( Context context, int layoutId )
     {
         LayoutInflater factory = LayoutInflater.from( context );

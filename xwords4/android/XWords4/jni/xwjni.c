@@ -177,6 +177,9 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
     cp->showColors = getBool( env, j_cp, "showColors" );
     cp->sortNewTiles = getBool( env, j_cp, "sortNewTiles" );
     cp->allowPeek = getBool( env, j_cp, "allowPeek" );
+#ifdef XWFEATURE_CROSSHAIRS
+    cp->hideCrosshairs = getBool( env, j_cp, "hideCrosshairs" );
+#endif
 }
 
 static XWStreamCtxt*

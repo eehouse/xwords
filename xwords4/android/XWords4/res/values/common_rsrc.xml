@@ -12,6 +12,7 @@
   <string name="key_skip_confirm">key_skip_confirm</string>
   <string name="key_sort_tiles">key_sort_tiles</string>
   <string name="key_peek_other">key_peek_other</string>
+  <string name="key_hide_crosshairs">key_hide_crosshairs</string>
   <string name="key_hide_values">key_hide_values</string>
   <string name="key_ringer_zoom">key_ringer_zoom</string>
   <string name="key_hide_title">key_hide_title</string>
@@ -80,6 +81,9 @@
 
   <!-- Name is not localized -->
   <string name="app_name">Crosswords</string>  
+
+  <!-- Nor is my email address -->
+  <string name="email_author_email">xwords@eehouse.org</string>
 
   <!-- other -->
   <string name="default_host">eehouse.org</string>
