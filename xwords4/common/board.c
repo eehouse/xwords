@@ -435,6 +435,9 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     board->skipCommitConfirm = cp->skipCommitConfirm;
     board->showColors = cp->showColors;
     board->allowPeek = cp->allowPeek;
+#ifdef XWFEATURE_CROSSHAIRS
+    board->hideCrosshairs = cp->hideCrosshairs;
+#endif
 
     if ( showArrowChanged ) {
         showArrowChanged = setArrowVisible( board, XP_FALSE );
@@ -1413,6 +1416,9 @@ invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect )
 void
 invalCol( BoardCtxt* board, XP_U16 col )
 {
+#ifdef XWFEATURE_CROSSHAIRS
+    XP_ASSERT( !board->hideCrosshairs );
+#endif
     XP_U16 row;
     XP_U16 nCols = model_numCols(board->model);
     for ( row = 0; row < nCols; ++row ) {
@@ -1423,6 +1429,9 @@ invalCol( BoardCtxt* board, XP_U16 col )
 void
 invalRow( BoardCtxt* board, XP_U16 row )
 {
+#ifdef XWFEATURE_CROSSHAIRS
+    XP_ASSERT( !board->hideCrosshairs );
+#endif
     XP_U16 col;
     XP_U16 nCols = model_numCols(board->model);
     for ( col = 0; col < nCols; ++col ) {

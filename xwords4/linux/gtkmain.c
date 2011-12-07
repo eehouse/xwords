@@ -2269,6 +2269,9 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
     globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
 #endif
+#ifdef XWFEATURE_CROSSHAIRS
+    globals.cGlobals.cp.hideCrosshairs = params->hideCrosshairs;
+#endif
 
     setupGtkUtilCallbacks( &globals, params->util );
 

@@ -286,6 +286,9 @@ typedef enum {
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
     ,CMD_NOPEEK
+#ifdef XWFEATURE_CROSSHAIRS
+    ,CMD_NOCROSSHAIRS
+#endif
     ,CMD_ADDPIPE
 #ifdef XWFEATURE_SEARCHLIMIT
     ,CMD_HINTRECT
@@ -365,6 +368,9 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
+#ifdef XWFEATURE_CROSSHAIRS
+    ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", "don't show crosshairs on board" }
+#endif
     ,{ CMD_ADDPIPE, true, "with-pipe", "named pipe to listen on for relay msgs" }
 #ifdef XWFEATURE_SEARCHLIMIT
     ,{ CMD_HINTRECT, false, "hintrect", "enable draggable hint-limits rect" }
@@ -1204,7 +1210,7 @@ main( int argc, char** argv )
     mainParams.allowPeek = XP_TRUE;
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
-    
+
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
 #if defined PLATFORM_GTK
@@ -1419,6 +1425,12 @@ main( int argc, char** argv )
             break;
         case CMD_NOPEEK:
             mainParams.allowPeek = XP_FALSE;
+            break;
+#ifdef XWFEATURE_CROSSHAIRS
+        case CMD_NOCROSSHAIRS:
+            mainParams.hideCrosshairs = XP_TRUE;
+            break;
+#endif
         case CMD_ADDPIPE:
             mainParams.pipe = optarg;
             break;
