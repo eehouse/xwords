@@ -27,7 +27,6 @@ import android.graphics.Paint;
 import android.content.res.Resources;
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictUtils;
 
@@ -183,31 +182,37 @@ public class CommonPrefs {
     public static int getDefaultBoardSize( Context context )
     {
         String value = getString( context, R.string.key_board_size );
+        int result;
         try {
-            return Integer.parseInt( value.substring( 0, 2 ) );
+            result = Integer.parseInt( value.substring( 0, 2 ) );
         } catch ( Exception ex ) {
-            return 15;
+            result = 15;
         } 
+        return result;
     }
 
     public static int getDefaultPlayerMinutes( Context context )
     {
         String value = getString( context, R.string.key_initial_player_minutes );
+        int result;
         try {
-            return Integer.parseInt( value );
+            result = Integer.parseInt( value );
         } catch ( Exception ex ) {
-            return 25;
+            result = 25;
         }
+        return result;
     }
 
     public static long getProxyInterval( Context context )
     {
         String value = getString( context, R.string.key_connect_frequency );
+        long result;
         try {
-            return Long.parseLong( value );
+            result = Long.parseLong( value );
         } catch ( Exception ex ) {
-            return -1;
+            result = -1;
         }
+        return result;
     }
 
     public static String getDefaultHumanDict( Context context )
