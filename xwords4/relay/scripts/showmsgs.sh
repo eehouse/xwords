@@ -6,6 +6,7 @@ CONNNAME=""
 
 usage() {
     echo "usage: $0 [--connname <s>]"
+    exit 1
 }
 
 while [ $# -gt 0 ]; do

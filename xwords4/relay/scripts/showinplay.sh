@@ -6,6 +6,7 @@ LIMIT=10000
 
 usage() {
     echo "usage: $0 [--limit <n>]"
+    exit 1
 }
 
 while [ $# -gt 0 ]; do
