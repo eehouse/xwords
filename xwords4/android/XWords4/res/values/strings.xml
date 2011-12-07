@@ -1814,4 +1814,9 @@
     <string name="board_menu_file_email">Email author</string>
     <string name="email_author_subject">Comment about Crosswords</string>
     <string name="email_author_chooser">Send comment via</string>
+
+    <string name="email_body_revf">(If relevant, please include the
+      version: \"%s\"; and make/model of your phone or
+      tablet.)"</string>
+
 </resources>
