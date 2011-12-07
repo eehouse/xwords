@@ -28,7 +28,11 @@ public class XWApp extends Application {
     public void onCreate()
     {
         DbgUtils.logEnable( this );
-        DbgUtils.logf( "XWApp.onCreate(); svn_rev=%s", getString(R.string.git_rev_gen) );
+        DbgUtils.logf( "XWApp.onCreate(); svn_rev=%s", 
+                       getString(R.string.git_rev_gen) );
+
+        RelayReceiver.RestartTimer( this );
+
         super.onCreate();
     }
 }
