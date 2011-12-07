@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -48,6 +48,7 @@ public class CommonPrefs {
     public boolean showColors;
     public boolean sortNewTiles;
     public boolean allowPeek;
+    public boolean hideCrosshairs;
 
     public int[] playerColors;
     public int[] bonusColors;
@@ -78,6 +79,7 @@ public class CommonPrefs {
         showColors = getBoolean( context, sp, R.string.key_color_tiles, true );
         sortNewTiles = getBoolean( context, sp, R.string.key_sort_tiles, true );
         allowPeek = getBoolean( context, sp, R.string.key_peek_other, false );
+        hideCrosshairs = getBoolean( context, sp, R.string.key_hide_crosshairs, false );
 
         int ids[] = { R.string.key_player0,
                       R.string.key_player1,

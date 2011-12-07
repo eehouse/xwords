@@ -231,6 +231,11 @@
                         android:summary="@string/ringer_zoom_summary"
                         android:defaultValue="false"
                         />
+    <CheckBoxPreference android:key="@string/key_hide_crosshairs"
+                        android:title="@string/hide_crosshairs"
+                        android:summary="@string/hide_crosshairs_summary"
+                        android:defaultValue="false"
+                        />
     <CheckBoxPreference android:key="@string/key_peek_other"
                         android:title="@string/peek_other"
                         android:summary="@string/peek_other_summary"
