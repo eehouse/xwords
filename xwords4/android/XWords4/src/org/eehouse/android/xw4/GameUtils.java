@@ -202,15 +202,15 @@ public class GameUtils {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
 
-	if ( null == lockDest ) {
-	    long rowid = saveNewGame( context, gamePtr, gi );
-	    lockDest = new GameLock( rowid, true ).lock();
-	} else {
-	    saveGame( context, gamePtr, gi, lockDest, true );
-	}
-	summarizeAndClose( context, lockDest, gamePtr, gi );
+        if ( null == lockDest ) {
+            long rowid = saveNewGame( context, gamePtr, gi );
+            lockDest = new GameLock( rowid, true ).lock();
+        } else {
+            saveGame( context, gamePtr, gi, lockDest, true );
+        }
+        summarizeAndClose( context, lockDest, gamePtr, gi );
 
-	return lockDest;
+        return lockDest;
     } // resetGame
 
     public static void resetGame( Context context, long rowidIn )
@@ -316,16 +316,18 @@ public class GameUtils {
             gamePtr = XwJNI.initJNI();
 
             String langName = gi.langName();
-            boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, gi, 
-                                                          dictNames, pairs.m_bytes, 
-                                                          pairs.m_paths, langName,
-                                                          util, JNIUtilsImpl.get(), 
-                                                          CommonPrefs.get(context),
-                                                          tp);
+            boolean madeGame = 
+                XwJNI.game_makeFromStream( gamePtr, stream, gi, 
+                                           dictNames, pairs.m_bytes, 
+                                           pairs.m_paths, langName,
+                                           util, JNIUtilsImpl.get(), 
+                                           CommonPrefs.get(context),
+                                           tp);
             if ( !madeGame ) {
                 XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                         CommonPrefs.get(context), dictNames,
-                                        pairs.m_bytes, pairs.m_paths, langName );
+                                        pairs.m_bytes, pairs.m_paths, 
+                                        langName );
             }
         }
         return gamePtr;

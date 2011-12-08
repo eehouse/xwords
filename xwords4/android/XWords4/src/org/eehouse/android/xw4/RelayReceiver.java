@@ -33,6 +33,7 @@ import android.content.Intent;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.os.SystemClock;
 import java.net.Socket;
 import java.io.InputStream;
 import java.io.DataInputStream;
@@ -53,10 +54,8 @@ public class RelayReceiver extends BroadcastReceiver {
             RestartTimer( context );
         } else {
             // DbgUtils.logf( "RelayReceiver::onReceive()" );
-            // if ( XWConstants.s_showProxyToast ) {
-            //     Toast.makeText(context, "RelayReceiver: fired", 
-            //                    Toast.LENGTH_SHORT).show();
-            // }
+            // Toast.makeText(context, "RelayReceiver: fired", 
+            //                Toast.LENGTH_SHORT).show();
             Intent service = new Intent( context, RelayService.class );
             context.startService( service );
         }
@@ -83,7 +82,10 @@ public class RelayReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
         if ( force || interval_millis > 0 ) {
-            long first_millis = force ? 0 : interval_millis;
+            long first_millis = SystemClock.elapsedRealtime();
+            if ( !force ) {
+                first_millis += interval_millis;
+            }
             am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
                                     first_millis, // first firing
                                     interval_millis, pi );
