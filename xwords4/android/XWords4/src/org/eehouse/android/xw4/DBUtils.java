@@ -232,6 +232,7 @@ public class DBUtils {
                 values.put( DBHelper.DICTLANG, summary.dictLang );
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
                 values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
+                values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
 
                 if ( null != summary.scores ) {
                     StringBuffer sb = new StringBuffer();
