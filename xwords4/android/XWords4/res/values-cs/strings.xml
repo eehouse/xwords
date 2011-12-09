@@ -40,7 +40,6 @@
 
 	<string name="info_title">Pro vaši informaci...</string>
 	<string name="query_title">Dotaz...</string>
-	<string name="query_trade">Chcete určitě vyměnit vybrané kameny?</string>
 
 
     <string name="title_tile_picker">Písmeno za žolíka</string>
@@ -53,7 +52,6 @@
 	<string name="board_menu_done">Ukončit tah</string>
 	<string name="board_menu_trade">Vyměnit</string>
 	<string name="board_menu_tray">Skrýt/Ukázat</string>
-	<string name="board_menu_values">Ukaž hodnoty</string>
 	<string name="board_submenu_game">Hra</string>
 	<string name="board_menu_game_counts">Počty a hodnoty</string>
 	<string name="board_menu_game_left">Zbývající kameny</string>
@@ -115,7 +113,6 @@
     <string name="button_juggle_players">Přehodit hráče</string>
 
     <string name="dicts_item_select">Nastavit jako výchozí</string>
-    <string name="dicts_item_details">Podrobnosti</string>
 
     <string name="settings_label">Nastavení hry</string>
     <string name="minutes_label">Minut ve hře</string>

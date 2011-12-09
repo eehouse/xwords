@@ -1806,8 +1806,8 @@
     <string name="alert_empty_dictf">The wordlist %s contains only
       tile information.  There are no words to browse.</string>
 
-    <string name="min_len">Min len</string>
-    <string name="max_len">Max len</string>
+    <string name="min_len">Min length</string>
+    <string name="max_len">Max length</string>
     <string name="prompt_min_len">Words no shorter than</string>
     <string name="prompt_max_len">Words no longer than</string>
 
