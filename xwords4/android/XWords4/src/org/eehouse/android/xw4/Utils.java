@@ -60,7 +60,7 @@ public class Utils {
     public static void emailAuthor( Context context )
     {
         Intent intent = new Intent( Intent.ACTION_SEND );
-        intent.setType( "text/html" );
+        intent.setType( "message/rfc822" ); // force email
         intent.putExtra( Intent.EXTRA_SUBJECT,
                          context.getString( R.string.email_author_subject ) );
         String[] addrs = { context.getString( R.string.email_author_email ) };

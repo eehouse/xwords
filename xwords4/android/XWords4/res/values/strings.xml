@@ -1747,7 +1747,7 @@
     <!-- Another paragraph in the about dialog -->
     <string name="about_web">For a manual or sourcecode see:
         http://xwords.sf.net.  To report bugs, suggest features, offer to
-        help, etc., please email: eehouse@eehouse.org.</string>
+        help, etc., please email: xwords@eehouse.org.</string>
 
     <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
