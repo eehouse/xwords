@@ -143,7 +143,6 @@ loadStateFromCurPrefs( CEAppGlobals* XP_UNUSED_STANDALONE(globals),
                        const CurGameInfo* gi, CePrefsPrefs* prefsPrefs )
 {
     prefsPrefs->gp.hintsNotAllowed = gi->hintsNotAllowed;
-    prefsPrefs->gp.robotSmartness = gi->robotSmartness;
     prefsPrefs->gp.timerEnabled = gi->timerEnabled;
     prefsPrefs->gp.gameSeconds = gi->gameSeconds;
     prefsPrefs->gp.phoniesAction = gi->phoniesAction;
@@ -177,7 +176,6 @@ loadCurPrefsFromState( CEAppGlobals* XP_UNUSED_STANDALONE(globals),
                        CurGameInfo* gi, const CePrefsPrefs* prefsPrefs )
 {
     gi->hintsNotAllowed = prefsPrefs->gp.hintsNotAllowed;
-    gi->robotSmartness = prefsPrefs->gp.robotSmartness;
     gi->timerEnabled = prefsPrefs->gp.timerEnabled;
     gi->gameSeconds = prefsPrefs->gp.gameSeconds;
     gi->phoniesAction = prefsPrefs->gp.phoniesAction;

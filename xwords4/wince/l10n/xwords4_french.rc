@@ -907,7 +907,7 @@ BEGIN
     IDS_PHONY_REJECTED     "Mot refusé dans ce coup; tour perdu!" XP_CR
     IDS_ROBOT_TRADED       "Le robot a échangé %d lettre(s) durant ce tour."
     IDS_ROBOT_MOVED        "Le robot a joué ce coup:" XP_CR
-    IDS_REMOTE_MOVED       "Le joueur distant a joué ce coup:" XP_CR
+    IDS_REMOTE_MOVEDF      "Le joueur distant a joué ce coup:" XP_CR
     IDS_PASSED             "Passé"
     IDS_SUMMARYSCORED      "%s:%d"
     IDS_TRADED             "Echangé %d"
@@ -929,7 +929,6 @@ BEGIN
                            "recouvrir la case centrale du plateau lors du premier coup)."
     IDS_NOT_YOUR_TURN      "Vous ne pouvez pas faire cela, ce n'est pas votre tour!"
     IDS_NO_PEEK_ROBOT_TILES "Pas de coup d'oeil sur les lettres du robot!"
-    IDS_CANT_TRADE_MID_MOVE "Retirez les lettres placées avant d'échanger."
     IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Il reste trop peu de lettres pour l'échange."
     IDS_CANT_UNDO_TILEASSIGN "L'attribution des lettres ne peut ętre annulé."
     IDS_CANT_HINT_WHILE_DISABLED "Les conseils sont désactivés dans cette partie.  "\

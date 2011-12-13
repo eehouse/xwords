@@ -937,7 +937,7 @@ BEGIN
     IDS_PHONY_REJECTED     "Neplatné slovo v tahu. Tah ztracen!" XP_CR
     IDS_ROBOT_TRADED       "Robot tento tah směnil kameny %d."
     IDS_ROBOT_MOVED        "Robot hrál takto:" XP_CR
-    IDS_REMOTE_MOVED       "Vzdálený hráč hrál takto:" XP_CR
+    IDS_REMOTE_MOVEDF      "Vzdálený hráč hrál takto:" XP_CR
     IDS_PASSED             "Vynecháno"
     IDS_SUMMARYSCORED      "%s:%d"
     IDS_TRADED             "Směněno %d"
@@ -961,7 +961,6 @@ BEGIN
                            "nebo v prvním tahu procházet středovým políčkem ."
     IDS_NOT_YOUR_TURN      "Toto nelze, nejste na tahu!"
     IDS_NO_PEEK_ROBOT_TILES "Nelze prohlížet kameny robota"
-    IDS_CANT_TRADE_MID_MOVE "Odstraňta rozehrané kameny před směnou."
     IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Pro směnu je málo kamenů v zásobníku."
     IDS_CANT_UNDO_TILEASSIGN "Návrat zpět nelze provést."
     IDS_CANT_HINT_WHILE_DISABLED "Pro tuto hru je nápověda vypnuta."\

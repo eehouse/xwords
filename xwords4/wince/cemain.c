@@ -1,4 +1,4 @@
-/* -*- fill-column: 77; compile-command: "make -j2 TARGET_OS=wince DEBUG=TRUE" -*- */
+/* -*- fill-column: 77; compile-command: "make -j2 DEBUG=TRUE" -*- */
 /* 
  * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -85,10 +85,10 @@ static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len,
 static void ce_relay_status( void* closure, 
                              CommsRelayState newState );
 static void ce_relay_connd( void* closure, XP_UCHAR* const room,
-                            XP_U16 devOrder, XP_Bool allHere, 
-                            XP_U16 nMissing );
+                            XP_Bool reconnect,
+                            XP_U16 devOrder, /* 1 means created room, etc. */
+                            XP_Bool allHere, XP_U16 nMissing );
 static void ce_relay_error( void* closure, XWREASON relayErr );
-
 
 # ifdef COMMS_HEARTBEAT
 static void ce_reset_proc( void* closure );
@@ -99,12 +99,16 @@ static VTableMgr* ce_util_getVTManager( XW_UtilCtxt* uc );
 static void ce_util_userError( XW_UtilCtxt* uc, UtilErrID id );
 static XP_Bool ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
                                   XWStreamCtxt* stream );
-static XWBonusType ce_util_getSquareBonus( XW_UtilCtxt* uc, 
-                                           const ModelCtxt* model,
+static XP_Bool ce_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
+                                     XP_U16 nTiles );
+static XWBonusType ce_util_getSquareBonus( XW_UtilCtxt* uc, XP_U16 boardSize,
                                            XP_U16 col, XP_U16 row );
-static XP_S16 ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
-                                    XP_U16 playerNum,
-                                    const XP_UCHAR** texts, XP_U16 nTiles );
+static XP_S16 ce_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
+                                         const XP_UCHAR** tileFaces, 
+                                         XP_U16 nTiles );
+static XP_S16 ce_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi, 
+                                        XP_U16 playerNum,
+                                        const XP_UCHAR** texts, XP_U16 nTiles );
 static XP_Bool ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                     XP_UCHAR* buf, XP_U16* len );
 static void ce_util_trayHiddenChange( XW_UtilCtxt* uc, 
@@ -114,6 +118,9 @@ static void ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
                                    XP_U16 oldOffset, XP_U16 newOffset );
 static void ce_util_turnChanged( XW_UtilCtxt* uc );
 static void ce_util_notifyGameOver( XW_UtilCtxt* uc );
+static void ce_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
+                                XWStreamCtxt* words );
+
 static XP_Bool ce_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, 
                                    XP_U16 row );
 static XP_Bool ce_util_engineProgressCallback( XW_UtilCtxt* uc );
@@ -360,12 +367,15 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_userError = ce_util_userError;
     vtable->m_util_getSquareBonus = ce_util_getSquareBonus;
     vtable->m_util_userQuery = ce_util_userQuery;
-    vtable->m_util_userPickTile = ce_util_userPickTile;
+    vtable->m_util_confirmTrade = ce_util_confirmTrade;
+    vtable->m_util_userPickTileBlank = ce_util_userPickTileBlank;
+    vtable->m_util_userPickTileTray = ce_util_userPickTileTray;
     vtable->m_util_askPassword = ce_util_askPassword;
     vtable->m_util_trayHiddenChange = ce_util_trayHiddenChange;
     vtable->m_util_yOffsetChange = ce_util_yOffsetChange;
     vtable->m_util_turnChanged = ce_util_turnChanged;
     vtable->m_util_notifyGameOver = ce_util_notifyGameOver;
+    vtable->m_util_informMove = ce_util_informMove;
     vtable->m_util_hiliteCell = ce_util_hiliteCell;
     vtable->m_util_engineProgressCallback = ce_util_engineProgressCallback;
     vtable->m_util_setTimer = ce_util_setTimer;
@@ -1214,7 +1224,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
             XP_DEBUGF( "calling game_makeFromStream" ); 
             ceInitTProcs( globals, &procs );
             success = game_makeFromStream( MEMPOOL stream, &globals->game, 
-                                           &globals->gameInfo, dict, 
+                                           &globals->gameInfo, dict, NULL,
                                            &globals->util,
                                            (DrawCtx*)globals->draw,
                                            &globals->appPrefs.cp, &procs );
@@ -3182,9 +3192,9 @@ ce_relay_status( void* closure, CommsRelayState newState )
 
 static void
 ce_relay_connd( void* closure, XP_UCHAR* const XP_UNUSED(room),
+                XP_Bool XP_UNUSED(reconnect), 
                 XP_U16 XP_UNUSED(devOrder), /* 1 means created room, etc. */
-                XP_Bool allHere, 
-                XP_U16 nMissing )
+                XP_Bool allHere, XP_U16 nMissing )
 {
     CEAppGlobals* globals = (CEAppGlobals*)closure;
     XP_U16 strID = 0;
@@ -3334,11 +3344,11 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     case ERR_NO_PEEK_ROBOT_TILES:
         resID = IDS_NO_PEEK_ROBOT_TILES;
         break;
-    case ERR_CANT_TRADE_MID_MOVE:
-        resID = IDS_CANT_TRADE_MID_MOVE;
-        break;
     case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
         resID = IDS_TOO_FEW_TILES_LEFT_TO_TRADE;
+        break;
+    case ERR_NO_EMPTY_TRADE:
+        resID = IDS_NO_EMPTY_TRADE;
         break;
     case ERR_CANT_UNDO_TILEASSIGN:
         resID = IDS_CANT_UNDO_TILEASSIGN;
@@ -3410,22 +3420,21 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 static XP_Bool
 ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
-    const char* query = NULL;
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
 
     switch( id ) {
     case QUERY_COMMIT_TURN:
         return ceQueryFromStream( globals, stream );
 
-    case QUERY_COMMIT_TRADE:
-        query = ceGetResString( globals, IDS_QUERY_TRADE );
-        assertOnTop( globals->hWnd );
-        return queryBoxChar( globals, globals->hWnd, query );
+    /* case QUERY_COMMIT_TRADE: */
+    /*     query = ceGetResString( globals, IDS_QUERY_TRADE ); */
+    /*     assertOnTop( globals->hWnd ); */
+    /*     return queryBoxChar( globals, globals->hWnd, query ); */
 
-    case QUERY_ROBOT_MOVE:
-        return ceMsgFromStream( globals, stream, 
-                                ceGetResStringL( globals, IDS_FYI_L),
-                                MB_OK | MB_ICONINFORMATION, XP_FALSE );
+    /* case QUERY_ROBOT_MOVE: */
+    /*     return ceMsgFromStream( globals, stream,  */
+    /*                             ceGetResStringL( globals, IDS_FYI_L), */
+    /*                             MB_OK | MB_ICONINFORMATION, XP_FALSE ); */
 
     case QUERY_ROBOT_TRADE:
         messageBoxStream( globals, stream, 
@@ -3440,10 +3449,21 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
     return XP_FALSE;
 } /* ce_util_userQuery */
 
+static XP_Bool
+ce_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** XP_UNUSED(tiles), 
+                      XP_U16 XP_UNUSED(nTiles) )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    const XP_UCHAR* query = ceGetResString( globals, IDS_QUERY_TRADE );
+    assertOnTop( globals->hWnd );
+    return queryBoxChar( globals, globals->hWnd, query );
+}
+
 static XWBonusType
-ce_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* XP_UNUSED(model),
+ce_util_getSquareBonus( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(boardSize),
                         XP_U16 col, XP_U16 row )
 {
+    XWBonusType result = BONUS_NONE;
     XP_U16 index;
 
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
@@ -3473,23 +3493,30 @@ ce_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* XP_UNUSED(model),
 
     if ( !globals->bonusInfo || (index >= 8*8) ) {
         XP_ASSERT( 0 );
-        return (XWBonusType)BONUS_NONE;
     } else {
         /* This is probably a bit slow.  Consider caching the resource in
            memory with one bonus value per byte. */
         XP_U16 value = globals->bonusInfo[index/4];
         value >>= ((3 - (index % 4)) * 4);
-        return value & 0x0F;
+        result = value & 0x0F;
     }
+    return result;
 } /* ce_util_getSquareBonus */
 
 static XP_S16
-ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
-                      XP_U16 playerNum,
-                      const XP_UCHAR** texts, XP_U16 nTiles )
+ce_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
+                           const XP_UCHAR** tileFaces, XP_U16 nTiles )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-    return WrapBlankDlg( globals, pi, playerNum, texts, nTiles );
+    return WrapBlankDlg( globals, NULL, playerNum, tileFaces, nTiles );
+} /* ce_util_userPickTile */
+
+static XP_S16
+ce_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi, XP_U16 playerNum,
+                          const XP_UCHAR** tileFaces, XP_U16 nTiles )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    return WrapBlankDlg( globals, pi, playerNum, tileFaces, nTiles );
 } /* ce_util_userPickTile */
 
 static XP_Bool
@@ -3560,6 +3587,16 @@ ce_util_notifyGameOver( XW_UtilCtxt* uc )
 
     ceSetLeftSoftkey( globals, ID_FILE_NEWGAME );
 } /* ce_util_notifyGameOver */
+
+
+static void
+ce_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, XWStreamCtxt* words )
+{
+    XP_USE( uc );
+    XP_USE( expl );
+    XP_USE( words );
+    LOG_FUNC();
+}
 
 static XP_Bool
 ce_util_hiliteCell( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 XP_UNUSED(col), 
@@ -3740,8 +3777,9 @@ ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
     case STR_ROBOT_MOVED:
         resID = IDS_ROBOT_MOVED;
         break;
-    case STR_REMOTE_MOVED:
-        resID = IDS_REMOTE_MOVED;
+
+    case STRS_REMOTE_MOVED:
+        resID = IDS_REMOTE_MOVEDF;
         break;
 
     case STR_PASSED: 

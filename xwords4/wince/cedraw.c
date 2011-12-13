@@ -1200,9 +1200,9 @@ DLSTATIC XP_Bool
 DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                           const XP_UCHAR* letters, 
                           const XP_Bitmaps* bitmaps, 
-                          Tile XP_UNUSED(tile), XP_S16 owner, 
-                          XWBonusType bonus, HintAtts hintAtts,
-                          CellFlags flags )
+                          Tile XP_UNUSED(tile), XP_U16 XP_UNUSED(value), 
+                          XP_S16 owner, XWBonusType bonus,
+                          HintAtts hintAtts, CellFlags flags )
 {
 #ifndef NO_DRAW
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -1325,7 +1325,8 @@ logClipResult( int icrResult )
 
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(trayBegin)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
-                           XP_U16 owner, DrawFocusState dfs )
+                           XP_U16 owner, XP_S16 XP_UNUSED(score),
+                           DrawFocusState dfs )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -1468,7 +1469,7 @@ DRAW_FUNC_NAME(drawTileMidDrag)( DrawCtx* p_dctx, const XP_Rect* xprect,
                                  const XP_Bitmaps* bitmaps, XP_U16 val, 
                                  XP_U16 owner, CellFlags flags )
 {
-    if ( draw_trayBegin( p_dctx, xprect, owner, DFS_NONE ) ) {
+    if ( draw_trayBegin( p_dctx, xprect, owner, 0, DFS_NONE ) ) {
         drawDrawTileGuts( p_dctx, xprect, letters, bitmaps, val, flags );
     }
 } /* ce_draw_drawTile */
@@ -2100,7 +2101,8 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
 } /* ce_draw_destroyCtxt */
 
 DLSTATIC void
-DRAW_FUNC_NAME(dictChanged)( DrawCtx* p_dctx, const DictionaryCtxt* dict )
+DRAW_FUNC_NAME(dictChanged)( DrawCtx* p_dctx, XP_S16 XP_UNUSED(playerNum), 
+                             const DictionaryCtxt* dict )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     XP_ASSERT( !!dict );

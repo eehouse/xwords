@@ -66,10 +66,10 @@ loadLettersList( BlankDialogState* bState )
 static void
 showCurTray( HWND hDlg, BlankDialogState* bState )
 {
-    if ( bState->pi->why == PICK_FOR_CHEAT ) {
+    if ( NULL != bState->pi ) {
         const PickInfo* pi = bState->pi;
         XP_U16 lenSoFar = 0;
-        XP_U16 i;
+        XP_U16 ii;
         XP_UCHAR labelBuf[48];
         wchar_t widebuf[48];
         XP_UCHAR* name;
@@ -82,10 +82,10 @@ showCurTray( HWND hDlg, BlankDialogState* bState )
                                  "%d of %d for %s" XP_CR "Cur", 
                                  pi->thisPick + 1, pi->nTotal, name );
 
-        for ( i = 0; i < pi->nCurTiles; ++i ) {
+        for ( ii = 0; ii < pi->nCurTiles; ++ii ) {
             lenSoFar += XP_SNPRINTF( labelBuf+lenSoFar, 
                                      sizeof(labelBuf)-lenSoFar, "%s%s",
-                                     i==0?": ":", ", pi->curTiles[i] );
+                                     ii==0?": ":", ", pi->curTiles[ii] );
         }
 
         (void)MultiByteToWideChar( CP_UTF8, 0, labelBuf, lenSoFar + 1, widebuf, 
@@ -108,15 +108,14 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         bState = (BlankDialogState*)lParam;
 
 #ifdef FEATURE_TRAY_EDIT
-        if ( bState->pi->why == PICK_FOR_CHEAT ) {
+        if ( NULL != bState->pi ) {
             showCurTray( hDlg, bState );
             ceShowOrHide( hDlg, IDC_BPICK, XP_FALSE );
         } else {
-            XP_ASSERT( bState->pi->why == PICK_FOR_BLANK );
             ceShowOrHide( hDlg, IDC_CPICK, XP_FALSE );
             ceShowOrHide( hDlg, IDC_PICKMSG, XP_FALSE );
         }
-        bState->canBackup = (bState->pi->why == PICK_FOR_CHEAT)
+        bState->canBackup = (NULL != bState->pi)
             && (bState->pi->thisPick > 0);
         ceShowOrHide( hDlg, IDC_BACKUP, bState->canBackup );
 #endif
