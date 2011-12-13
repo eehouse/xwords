@@ -102,8 +102,13 @@ ce_dictionary_make( CEAppGlobals* globals, const char* dictName )
         void* mappedBase = (void*)ptr;
         XP_U8 nodeSize;
         XP_Bool isUTF8 = XP_FALSE;
+        XP_Bool hasHeader;
 
         flags = n_ptr_tohs( &ptr );
+        hasHeader = 0 != (DICT_HEADER_MASK & flags);
+        if ( hasHeader ) {
+            flags &= ~DICT_HEADER_MASK;
+        }
 
 #ifdef NODE_CAN_4
         if ( flags == 0x0002 ) {
@@ -124,6 +129,23 @@ ce_dictionary_make( CEAppGlobals* globals, const char* dictName )
             break;
         }
 #endif
+
+        XP_U32 wordCount = 0;
+        if ( hasHeader ) {
+            XP_U16 headerLen;
+
+            XP_MEMCPY( &headerLen, ptr, sizeof(headerLen) );
+            ptr += sizeof(headerLen);
+            headerLen = XP_NTOHS( headerLen );
+            if ( headerLen != sizeof(wordCount) ) { /* the only case we know right now */
+                XP_LOGF( "%s: bad header size %d", __func__, headerLen );
+                break;
+            }
+            XP_MEMCPY( &wordCount, ptr, sizeof(wordCount) );
+            ptr += sizeof(wordCount);
+            wordCount = XP_NTOHL( wordCount );
+        }
+
         if ( isUTF8 ) {
             numFaceBytes = (XP_U16)(*ptr++);
         }
@@ -137,6 +159,7 @@ ce_dictionary_make( CEAppGlobals* globals, const char* dictName )
         ctxt->mappedFile = mappedFile;
         ctxt->mappedBase = mappedBase;
         ctxt->super.nodeSize = nodeSize;
+        ctxt->super.nWords = wordCount;
         ctxt->super.destructor = ce_dict_destroy;
         ctxt->super.func_dict_getShortName = ce_dict_getShortName;
 
@@ -618,6 +641,7 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
             XP_U8* ptr = base;
         
             flags = n_ptr_tohs( &ptr );
+            flags &= ~DICT_HEADER_MASK;
             closeMappedFile( MPPARM(mpool) base, mappedFile );
 #ifdef NODE_CAN_4
             /* are the flags what we expect */
