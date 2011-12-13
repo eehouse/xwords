@@ -20,6 +20,7 @@
 
 // package org.eehouse.android.xw4;
 
+// import android.app.PendingIntent;
 // import android.content.BroadcastReceiver;
 // import android.content.Context;
 // import android.content.Intent;
@@ -35,15 +36,22 @@
 //                     intent.toString() );
 //     }
 
-//     static void tryNBSMessage()
+//     static void tryNBSMessage( Context context )
 //     {
 //         byte[] data = { 'a', 'b', 'c' };
 
 //         SmsManager mgr = SmsManager.getDefault();
 
 //         try {
+//             /* online comment says providing PendingIntents prevents 
+//                random crashes */
+//             PendingIntent sent = PendingIntent.getBroadcast( context,
+//                                                              0, new Intent(), 0 );
+//             PendingIntent dlvrd = PendingIntent.getBroadcast( context, 0, 
+//                                                               new Intent(), 0 );
+
 //             mgr.sendDataMessage( "123-456-7890", null, (short)50009, 
-//                                  data, null, null );
+//                                  data, sent, dlvrd );
 //             // PendingIntent sentIntent, 
 //             // PendingIntent deliveryIntent );
 //             DbgUtils.logf( "sendDataMessage finished" );
