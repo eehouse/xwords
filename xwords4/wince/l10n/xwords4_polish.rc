@@ -910,7 +910,7 @@ BEGIN
     IDS_PHONY_REJECTED     "niedozwolone słowo; kolejka stracona!" XP_CR
     IDS_ROBOT_TRADED       "Robot wymienił %d klocków."
     IDS_ROBOT_MOVED        "Robot wykonał ruch:" XP_CR
-    IDS_REMOTE_MOVED       "Zdalny gracz wykonał ruch:" XP_CR
+    IDS_REMOTE_MOVEDF      "Zdalny gracz wykonał ruch:" XP_CR
     IDS_PASSED             "spasował"
     IDS_SUMMARYSCORED      "%s:%d"
     IDS_TRADED             "wymienione %d"
@@ -932,7 +932,6 @@ BEGIN
                            "środkowego pola przy pierwszym ruchu)."
     IDS_NOT_YOUR_TURN      "Nie możesz tego zrobić; To nie Twoja kolejka!"
     IDS_NO_PEEK_ROBOT_TILES "Nie można podglądać klocków Robota!"
-    IDS_CANT_TRADE_MID_MOVE "Usuń klocki z planszy zanim je wymienisz."
     IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Zbyt mało klocków by dokonać wymiany."
     IDS_CANT_UNDO_TILEASSIGN "Nie można zmienić ułożenia klocków."
     IDS_CANT_HINT_WHILE_DISABLED "Podpowiedzi są wyłączone dla tej gry.  "\

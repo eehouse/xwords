@@ -46,8 +46,8 @@ public class DlgDelegate {
     public static final int DLG_LOOKUP = 7;
     public static final int DIALOG_LAST = DLG_LOOKUP;
 
-    public static final int TEXT_BTN = AlertDialog.BUTTON_POSITIVE;
-    public static final int HTML_BTN = AlertDialog.BUTTON_NEGATIVE;
+    public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
+    public static final int EMAIL_BTN = AlertDialog.BUTTON_NEGATIVE;
     public static final int DISMISS_BUTTON = 0;
     public static final int SKIP_CALLBACK = -1;
 
@@ -232,7 +232,7 @@ public class DlgDelegate {
         m_activity.showDialog( CONFIRM_THEN );
     }
 
-    public void showTextOrHtmlThen( int callbackID )
+    public void showEmailOrSMSThen( int callbackID )
     {
         Assert.assertTrue( 0 != callbackID );
         Assert.assertTrue( 0 == m_cbckID );
@@ -351,7 +351,7 @@ public class DlgDelegate {
         DialogInterface.OnClickListener lstnr = mkCallbackClickListener();
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
-            .setMessage( R.string.text_or_html )
+            .setMessage( R.string.sms_or_email )
             .setPositiveButton( R.string.button_text, lstnr )
             .setNegativeButton( R.string.button_html, lstnr )
             .create();

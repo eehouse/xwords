@@ -934,7 +934,7 @@ BEGIN
     IDS_PHONY_REJECTED     "Hi ha una o més paraules no vàlides a la jugada; torn perdut!" XP_CR
     IDS_ROBOT_TRADED       "El robot ha canviat %d fitxes al seu torn."
     IDS_ROBOT_MOVED        "El robot ha fet la seva jugada:" XP_CR
-    IDS_REMOTE_MOVED       "El jugador remot ha fet la seva jugada:" XP_CR
+    IDS_REMOTE_MOVEDF      "El jugador remot ha fet la seva jugada:" XP_CR
     IDS_PASSED             "Ha passat"
     IDS_SUMMARYSCORED      "%s:%d"
     IDS_TRADED             "N'ha canviat %d"
@@ -956,7 +956,6 @@ BEGIN
                            "la casella central en la primera jugada)."
     IDS_NOT_YOUR_TURN      "No podeu fer això, no és el vostre torn!"
     IDS_NO_PEEK_ROBOT_TILES "No podeu mirar les fitxes del robot!"
-    IDS_CANT_TRADE_MID_MOVE "Recolliu les fitxes posades al tauler abans de canviar fitxer."
     IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Hi ha poques fitxes al saquet i ja no podeu canviar-les."
     IDS_CANT_UNDO_TILEASSIGN "L'assignació de fitxers no es pot desfer."
     IDS_CANT_HINT_WHILE_DISABLED "Les pistes es troben inhabilitades per a aquesta partida. Habiliteu-les"\

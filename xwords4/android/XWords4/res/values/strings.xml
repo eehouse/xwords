@@ -1171,15 +1171,14 @@
     <!-- The invitation process beging with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
-    <string name="text_or_html">Send invitation using plain text or
-      html?  Text links are harder to open but can be sent via SMS.
-      Most devices let you send html only via email.</string>
+    <string name="sms_or_email">Send invitation using SMS (texting) or
+      email?</string>
 
     <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
-	<string name="button_text">Text</string>  
-	<string name="button_html">Html</string>  
+	<string name="button_text">SMS/Text</string>  
+	<string name="button_html">Email</string>  
 
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
@@ -1200,8 +1199,8 @@
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <string name="invite_txtf">Accept my invitation and join this
-      game: %1$s . (But install Crosswords first:
+    <string name="invite_txtf">Play Crosswords? Join this
+      game: %1$s . (But install Crosswords first if you haven\'t:
       http://eehouse.org/market_redir.php ).</string>
 
     <!-- When I've created the invitation, in text or html, I ask
@@ -1747,7 +1746,7 @@
     <!-- Another paragraph in the about dialog -->
     <string name="about_web">For a manual or sourcecode see:
         http://xwords.sf.net.  To report bugs, suggest features, offer to
-        help, etc., please email: eehouse@eehouse.org.</string>
+        help, etc., please email: xwords@eehouse.org.</string>
 
     <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
