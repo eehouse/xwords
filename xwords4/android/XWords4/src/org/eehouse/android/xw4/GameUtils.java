@@ -412,7 +412,7 @@ public class GameUtils {
     }
 
     public static void launchInviteActivity( Context context, 
-                                             boolean choseText,
+                                             boolean choseEmail,
                                              String room, 
                                              int lang, int nPlayers )
     {
@@ -421,16 +421,22 @@ public class GameUtils {
                                                    lang, nPlayers );
 
         if ( null != gameUri ) {
-            Intent intent = new Intent( Intent.ACTION_SEND );
-            intent.setType( choseText? "text/plain" : "text/html");
-            intent.putExtra( Intent.EXTRA_SUBJECT, 
-                             context.getString( R.string.invite_subject ) );
-
-            int fmtId = choseText? R.string.invite_txtf : R.string.invite_htmf;
+            int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
             String format = context.getString( fmtId );
             String message = String.format( format, gameUri.toString() );
-            intent.putExtra( Intent.EXTRA_TEXT, 
-                             choseText ? message : Html.fromHtml(message) );
+
+            Intent intent = new Intent();
+            if ( choseEmail ) {
+                intent.setAction( Intent.ACTION_SEND );
+                intent.setType( "message/rfc822");
+                intent.putExtra( Intent.EXTRA_SUBJECT, 
+                                 context.getString( R.string.invite_subject ) );
+                intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+            } else {
+                intent.setAction( Intent.ACTION_VIEW );
+                intent.setType( "vnd.android-dir/mms-sms" );
+                intent.putExtra( "sms_body", message );
+            }
 
             String chooserMsg = context.getString( R.string.invite_chooser );
             context.startActivity( Intent.createChooser( intent, chooserMsg ) );

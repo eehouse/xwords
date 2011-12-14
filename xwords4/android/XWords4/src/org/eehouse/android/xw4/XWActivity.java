@@ -141,9 +141,9 @@ public class XWActivity extends Activity
         m_delegate.showConfirmThen( getString(msgID), action );
     }
 
-    public void showTextOrHtmlThen( int action )
+    public void showEmailOrSMSThen( int action )
     {
-        m_delegate.showTextOrHtmlThen( action );
+        m_delegate.showEmailOrSMSThen( action );
     }
 
     protected void doSyncMenuitem()
