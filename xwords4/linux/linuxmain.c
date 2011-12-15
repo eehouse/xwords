@@ -913,7 +913,7 @@ tmp_noop_sigintterm( int XP_UNUSED(sig) )
 #ifdef XWFEATURE_WALKDICT
 //# define PRINT_ALL
 static void
-testGetNthWord( const DictionaryCtxt* dict, char** words,
+testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
                 XP_U16 depth, IndexData* data, XP_U16 min, XP_U16 max )
 {
     XP_UCHAR buf[64];
@@ -950,7 +950,7 @@ testGetNthWord( const DictionaryCtxt* dict, char** words,
 }
 
 static void
-walk_dict_test( const LaunchParams* params, const DictionaryCtxt* dict, 
+walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params), const DictionaryCtxt* dict, 
                 GSList* testPrefixes, const char* testMinMax )
 {
     /* This is just to test that the dict-iterating code works.  The words are
