@@ -685,7 +685,7 @@ public class GamesList extends XWListActivity
         long rowid = DBUtils.getRowIDForOpen( this, info.room, info.lang, 
                                               info.nPlayers );
 
-        if ( -1 != rowid ) {
+        if ( -1 == rowid ) {    // doesn't exist yet
             rowid = GameUtils.makeNewNetGame( this, info );
             GameUtils.launchGame( this, rowid, true );
         } else {
