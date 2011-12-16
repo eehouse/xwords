@@ -268,7 +268,7 @@ XWThreadPool::interrupt_poll()
 void*
 XWThreadPool::real_listener()
 {
-    int flags = POLLIN | POLLERR | POLLHUP;
+    int flags = POLLIN | POLLERR | POLLHUP | POLLRDHUP;
     TimerMgr* tmgr = TimerMgr::GetTimerMgr();
     int nSocketsAllocd = 1;
 
@@ -282,6 +282,7 @@ XWThreadPool::real_listener()
 
         pthread_rwlock_rdlock( &m_activeSocketsRWLock );
         int nSockets = m_activeSockets.size() + 1; /* for pipe */
+        logf( XW_LOGINFO, "%s: nSockets=%d", __func__, nSockets );
 #ifdef LOG_POLL
         int logCapacity = 4 * nSockets;
         int logLen = 0;
