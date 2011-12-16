@@ -1011,7 +1011,9 @@ assertQueueOk( const CommsCtxt* comms )
         }
     }
     XP_ASSERT( count == comms->queueLen );
-    XP_ASSERT( count < 10 );
+    if ( count >= 10 ) {
+        XP_LOGF( "%s: queueLen unexpectedly high: %d", __func__, count );
+    }
 }
 #endif
 
