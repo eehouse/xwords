@@ -942,7 +942,7 @@ BEGIN
     IDS_PHONY_REJECTED     "Illegal word in move; turn lost!" XP_CR
     IDS_ROBOT_TRADED       "Robot traded tiles %d this turn."
     IDS_ROBOT_MOVED        "The robot made this move:" XP_CR
-    IDS_REMOTE_MOVED       "Remote player made this move:" XP_CR
+    IDS_REMOTE_MOVEDF      "Remote player %s made this move:" XP_CR
     IDS_PASSED             "Passed"
     IDS_SUMMARYSCORED      "%s:%d"
     IDS_TRADED             "Traded %d"
@@ -964,9 +964,9 @@ BEGIN
                            "the middle square on the first move)."
     IDS_NOT_YOUR_TURN      "You can't do that; it's not your turn!"
     IDS_NO_PEEK_ROBOT_TILES "No peeking at the robot's tiles!"
-    IDS_CANT_TRADE_MID_MOVE "Remove played tiles before trading."
     IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Too few tiles left to trade."
     IDS_CANT_UNDO_TILEASSIGN "Tile assignment can't be undone."
+    IDS_NO_EMPTY_TRADE       "No tiles selected; trade cancelled."
     IDS_CANT_HINT_WHILE_DISABLED "The hint feature is disabled for this game.  Enable "\
                                  "it for a new game using the Preferences dialog."
 

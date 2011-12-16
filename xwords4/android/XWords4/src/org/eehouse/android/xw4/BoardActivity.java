@@ -353,7 +353,7 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int item ) {
-                                showTextOrHtmlThen( LAUNCH_INVITE_ACTION );
+                                showEmailOrSMSThen( LAUNCH_INVITE_ACTION );
                             }
                         };
                     dialog = new AlertDialog.Builder( this )
@@ -669,7 +669,7 @@ public class BoardActivity extends XWActivity
         if ( LAUNCH_INVITE_ACTION == id ) {
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
                 GameUtils.launchInviteActivity( BoardActivity.this,
-                                                DlgDelegate.TEXT_BTN == which,
+                                                DlgDelegate.EMAIL_BTN == which,
                                                 m_room,
                                                 m_gi.dictLang,
                                                 m_gi.nPlayers );

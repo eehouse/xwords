@@ -49,7 +49,7 @@
 #define IDS_PHONY_REJECTED                                           40031
 #define IDS_ROBOT_TRADED                                             40032
 #define IDS_ROBOT_MOVED                                              40033
-#define IDS_REMOTE_MOVED                                             40034
+#define IDS_REMOTE_MOVEDF                                            40034
 #define IDS_PASSED                                                   40035
 #define IDS_REMTILES_L                                               40036
 #define IDS_SUMMARYSCORED                                            40037
@@ -63,7 +63,7 @@
 #define IDS_TILES_MUST_CONTACT                                       40045
 #define IDS_NOT_YOUR_TURN                                            40046
 #define IDS_NO_PEEK_ROBOT_TILES                                      40047
-#define IDS_CANT_TRADE_MID_MOVE                                      40048
+#define IDS_NO_EMPTY_TRADE                                           40048
 #define IDS_TOO_FEW_TILES_LEFT_TO_TRADE                              40049
 #define IDS_CANT_UNDO_TILEASSIGN                                     40050
 #define IDS_CANT_HINT_WHILE_DISABLED                                 40051

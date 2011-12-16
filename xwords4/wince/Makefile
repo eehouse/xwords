@@ -1,7 +1,7 @@
-# -*- compile-command: "make -j3 TARGET_OS=wince DEBUG=TRUE"; -*-
-# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
-# reserved.
-
+# -*- compile-command: "make -j3 DEBUG=TRUE"; -*-
+# Copyright 2002 - 2011 by Eric House (xwords@eehouse.org).  All
+# rights reserved.
+#
 # This Makefile is meant to allow building Crosswords for PocketPC and
 # Windows using Linux.  As of March 2006, it compiles and runs on
 # PocketPC as well as when built with eVC.  Better, since bugs have
@@ -25,8 +25,6 @@ TARGET_OS ?= win32
 RELAY_NAME_DEFAULT ?= eehouse.org
 RELAY_PORT_DEFAULT ?= 10999
 
-NATIVE_CC = gcc
-STRIDS = strids
 #TARGET_OS = wince
 #NO_DRAW = -DNO_DRAW
 
@@ -99,7 +97,7 @@ WINDRES = i586-mingw32msvc-windres
 STRIP = i586-mingw32msvc-strip
 CELIBS += -lws2_32 
 
-CFLAGS += -DCANT_DO_CMDBAR -DDRAW_LINK_DIRECT -DXWFEATURE_TURNCHANGENOTIFY
+CFLAGS += -DCANT_DO_CMDBAR -DDRAW_LINK_DIRECT -DXWFEATURE_TURNCHANGENOTIFY -DXWFEATURE_MINIWIN
 # CFLAGS += -DFORCE_FONT="L\"Segoe Condensed\""
 #CFLAGS += -DFORCE_HEIGHT=240 -DFORCE_WIDTH=320
 endif
