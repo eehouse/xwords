@@ -6,27 +6,8 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 39 release</b>
+<b>Crosswords 4.4 beta 40 release</b>
 <ul>
-
-  <li>Add "email author" menuitem to Games List screen.  Please 
-  do!</li>
-  
-  <li>Enable pinch-to-zoom for board</li>
-
-  <li>Improve wordlist browser to filter by size, have larger 
-  text, and not barf when given empty wordlist</li>
-
-  <li>Add value/letter toggle button since space isn't so precious 
-  now (and remove menuitem)</li>
-
-  <li>Add Setting checkbox to disable crosshairs</li>
-
-  <li>Replace Restore menus in Settings with buttons</li>
-
-  <li>Fix problem with text color in word lookup dialog on HTC 
-  MyTouch</li>
-  
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
