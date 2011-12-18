@@ -79,7 +79,7 @@ public class DispatchNotify extends Activity {
             // instance.
 
             intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
-                             | Intent.FLAG_ACTIVITY_SINGLE_TOP );
+                             | Intent.FLAG_ACTIVITY_NEW_TASK );
             if ( null != relayIDs ) {
                 intent.putExtra( RELAYIDS_EXTRA, relayIDs );
             } else if ( null != data ) {
