@@ -125,7 +125,6 @@ public class DispatchNotify extends Activity {
                 }
             }
         }
-        DbgUtils.logf( "tryHandle(%s)=>%b", data.toString(), handled );
         return handled;
     }
 
@@ -146,7 +145,6 @@ public class DispatchNotify extends Activity {
                 }
             }
         }
-        DbgUtils.logf( "tryHandle(%s)=>%b", relayIDs.toString(), handled );
         return handled;
     }
 }
