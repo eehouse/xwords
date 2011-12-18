@@ -525,8 +525,7 @@
     <string name="button_trade_commit">Commit exchange</string>
     <string name="button_trade_cancel">Cancel exchange</string>
 
-    <string name="entering_trade">Tap to select tiles...</string>
-
+    <string name="entering_trade">Tap tiles to select...</string>
 
 
     <!-- Bonus value hint that's displayed in gray text in the colored
