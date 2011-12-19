@@ -1198,9 +1198,9 @@
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <string name="invite_txtf">Play Crosswords? Join this
-      game: %1$s . (But install Crosswords first if you haven\'t:
-      http://eehouse.org/market_redir.php ).</string>
+    <string name="invite_txtf">Play Crosswords? Join this game: %1$s
+      . (But install Crosswords http://eehouse.org/market_redir.php
+      first if you haven\'t.)</string>
 
     <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
