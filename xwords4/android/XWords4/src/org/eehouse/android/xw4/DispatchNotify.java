@@ -67,22 +67,19 @@ public class DispatchNotify extends Activity {
             DbgUtils.logf( "DispatchNotify: nothing running" );
             Intent intent = new Intent( this, GamesList.class );
 
-            /* Flags.  Tried Intent.FLAG_ACTIVITY_NEW_TASK.  I don't
-             * remember what it fixes, but what it breaks is easy to
-             * duplicate.  Launch Crosswords from the home screen making
-             * sure it's the only instance running.  Get a networked game
-             * going, and with BoardActivity frontmost check the relay and
-             * select a relay notification.  New BoardActivity will come
-             * up, but if you hit home button then Crosswords icon you're
-             * back to games list.  Hit back button and you're back to
-             * BoardActivity, and back from there back to GamesList.
-             * That's because a new activity came up from the activity
-             * below thanks to the flag.
-             */
+            // This combination of flags will bring an existing
+            // GamesList instance to the front, killing any children
+            // it has, or create a new one if none exists.  Coupled
+            // with a "standard" launchMode it seems to work, meaning
+            // both that the app preserves its stack in normal use
+            // (you can go to Home with a stack of activities and
+            // return to the top activity on that stack if you
+            // relaunch the app) and that when I launch from here the
+            // stack gets nuked and we don't get a second GamesList
+            // instance.
 
             intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
-                             // Intent.FLAG_ACTIVITY_NEW_TASK NO See above
-                             );
+                             | Intent.FLAG_ACTIVITY_NEW_TASK );
             if ( null != relayIDs ) {
                 intent.putExtra( RELAYIDS_EXTRA, relayIDs );
             } else if ( null != data ) {
