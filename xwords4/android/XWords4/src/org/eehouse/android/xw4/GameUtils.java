@@ -172,7 +172,7 @@ public class GameUtils {
      * basis for a new one.
      */
     public static GameLock resetGame( Context context, GameLock lockSrc, 
-                                      GameLock lockDest )
+                                      GameLock lockDest, boolean juggle )
     {
         CurGameInfo gi = new CurGameInfo( context );
         CommsAddrRec addr = null;
@@ -199,6 +199,10 @@ public class GameUtils {
                                 CommonPrefs.get( context ), dictNames,
                                 pairs.m_bytes,  pairs.m_paths, gi.langName() );
                                 
+        if ( juggle ) {
+            gi.juggle();
+        }
+
         if ( null != addr ) {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
@@ -218,7 +222,7 @@ public class GameUtils {
     {
         GameLock lock = new GameLock( rowidIn, true ).lock();
         tellRelayDied( context, lock, true );
-        resetGame( context, lock, lock );
+        resetGame( context, lock, lock, false );
         lock.unlock();
     }
 
@@ -265,8 +269,9 @@ public class GameUtils {
 
     public static long dupeGame( Context context, long rowidIn )
     {
+        boolean juggle = CommonPrefs.getAutoJuggle( context );
         GameLock lockSrc = new GameLock( rowidIn, false ).lock();
-        GameLock lockDest = resetGame( context, lockSrc, null );
+        GameLock lockDest = resetGame( context, lockSrc, null, juggle );
         long rowid = lockDest.getRowid();
         lockDest.unlock();
         lockSrc.unlock();
