@@ -41,7 +41,8 @@ public class DispatchNotify extends Activity {
         void HandleInvite( final Uri invite );
     }
 
-    private static HashSet<Activity> s_running = new HashSet<Activity>();
+    private static HashSet<HandleRelaysIface> s_running =
+        new HashSet<HandleRelaysIface>();
     private static HandleRelaysIface s_handler;
 
     @Override
@@ -95,12 +96,16 @@ public class DispatchNotify extends Activity {
 
     public static void SetRunning( Activity running )
     {
-        s_running.add( running );
+        if ( running instanceof HandleRelaysIface ) {
+            s_running.add( (HandleRelaysIface)running );
+        }
     }
 
     public static void ClearRunning( Activity running )
     {
-        s_running.remove( running );
+        if ( running instanceof HandleRelaysIface ) {
+            s_running.remove( (HandleRelaysIface)running );
+        }
     }
 
     public static void SetRelayIDsHandler( HandleRelaysIface iface )
@@ -116,13 +121,9 @@ public class DispatchNotify extends Activity {
             s_handler.HandleInvite( data );
             handled = true;
         } else {
-            for ( Activity activity : s_running ) {
-                if ( activity instanceof DispatchNotify.HandleRelaysIface ) {
-                    DispatchNotify.HandleRelaysIface iface =
-                        (DispatchNotify.HandleRelaysIface)activity;
-                    iface.HandleInvite( data );
-                    handled = true;
-                }
+            for ( HandleRelaysIface iface : s_running ) {
+                iface.HandleInvite( data );
+                handled = true;
             }
         }
         return handled;
@@ -136,13 +137,9 @@ public class DispatchNotify extends Activity {
             s_handler.HandleRelaysIDs( relayIDs );
             handled = true;
         } else {
-            for ( Activity activity : s_running ) {
-                if ( activity instanceof DispatchNotify.HandleRelaysIface ) {
-                    DispatchNotify.HandleRelaysIface iface =
-                        (DispatchNotify.HandleRelaysIface)activity;
-                    iface.HandleRelaysIDs( relayIDs );
-                    handled = true;
-                }
+            for ( HandleRelaysIface iface : s_running ) {
+                iface.HandleRelaysIDs( relayIDs );
+                handled = true;
             }
         }
         return handled;
