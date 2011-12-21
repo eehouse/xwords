@@ -29,7 +29,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 10;
+    private static final int DB_VERSION = 11;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -55,6 +55,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CONTYPE = "CONTYPE";
     public static final String SERVERROLE = "SERVERROLE";
     public static final String ROOMNAME = "ROOMNAME";
+    public static final String INVITEID = "INVITEID";
     public static final String RELAYID = "RELAYID";
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE";
@@ -85,6 +86,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + SERVERROLE + " INTEGER,"
                     + CONTYPE    + " INTEGER,"
                     + ROOMNAME   + " TEXT,"
+                    + INVITEID   + " TEXT,"
                     + RELAYID    + " TEXT,"
                     + SEED       + " INTEGER,"
                     + DICTLANG   + " INTEGER,"
@@ -147,6 +149,9 @@ public class DBHelper extends SQLiteOpenHelper {
             db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
                         " ADD COLUMN " + DICTLIST + " TEXT;" );
         case 10:
+            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
+                        " ADD COLUMN " + INVITEID + " TEXT;" );
+        case 11:
             // nothing yet
             break;
         default:
