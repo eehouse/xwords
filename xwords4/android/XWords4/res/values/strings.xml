@@ -525,8 +525,7 @@
     <string name="button_trade_commit">Commit exchange</string>
     <string name="button_trade_cancel">Cancel exchange</string>
 
-    <string name="entering_trade">Tap to select tiles...</string>
-
+    <string name="entering_trade">Tap tiles to select...</string>
 
 
     <!-- Bonus value hint that's displayed in gray text in the colored
@@ -1199,9 +1198,9 @@
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <string name="invite_txtf">Play Crosswords? Join this
-      game: %1$s . (But install Crosswords first if you haven\'t:
-      http://eehouse.org/market_redir.php ).</string>
+    <string name="invite_txtf">Play Crosswords? Join this game: %1$s
+      . (But install Crosswords http://eehouse.org/market_redir.php
+      first if you haven\'t.)</string>
 
     <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email

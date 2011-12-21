@@ -31,11 +31,13 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class NetLaunchInfo {
     public String room;
+    public String inviteID;
     public int lang;
     public int nPlayers;
 
     private static final String LANG = "netlaunchinfo_lang";
     private static final String ROOM = "netlaunchinfo_room";
+    private static final String INVITEID = "netlaunchinfo_inviteid";
     private static final String NPLAYERS = "netlaunchinfo_nplayers";
     private static final String VALID = "netlaunchinfo_valid";
 
@@ -45,6 +47,7 @@ public class NetLaunchInfo {
     {
         bundle.putInt( LANG, lang );
         bundle.putString( ROOM, room );
+        bundle.putString( INVITEID, inviteID );
         bundle.putInt( NPLAYERS, nPlayers );
         bundle.putBoolean( VALID, m_valid );
     }
@@ -53,12 +56,31 @@ public class NetLaunchInfo {
     {
         lang = bundle.getInt( LANG  );
         room = bundle.getString( ROOM );
+        inviteID = bundle.getString( INVITEID );
         nPlayers = bundle.getInt( NPLAYERS  );
         m_valid = bundle.getBoolean( VALID  );
     }
 
+    public NetLaunchInfo( Uri data )
+    {
+        m_valid = false;
+        if ( null != data ) {
+            try {
+                room = data.getQueryParameter( "room" );
+                inviteID = data.getQueryParameter( "id" );
+                String langStr = data.getQueryParameter( "lang" );
+                lang = Integer.decode( langStr );
+                String np = data.getQueryParameter( "np" );
+                nPlayers = Integer.decode( np );
+                m_valid = true;
+            } catch ( Exception e ) {
+                DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
+            }
+        }
+    }
+
     public static Uri makeLaunchUri( Context context, String room,
-                                        int lang, int nPlayers )
+                                     String inviteID, int lang, int nPlayers )
     {
         Builder ub = new Builder();
         ub.scheme( "http" );
@@ -69,24 +91,8 @@ public class NetLaunchInfo {
         ub.appendQueryParameter( "lang", String.format("%d", lang ) );
         ub.appendQueryParameter( "np", String.format( "%d", nPlayers ) );
         ub.appendQueryParameter( "room", room );
+        ub.appendQueryParameter( "id", inviteID );
         return ub.build();
-    }
-
-    public NetLaunchInfo( Uri data )
-    {
-        m_valid = false;
-        if ( null != data ) {
-            try {
-                room = data.getQueryParameter( "room" );
-                String langStr = data.getQueryParameter( "lang" );
-                lang = Integer.decode( langStr );
-                String np = data.getQueryParameter( "np" );
-                nPlayers = Integer.decode( np );
-                m_valid = true;
-            } catch ( Exception e ) {
-                DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
-            }
-        }
     }
 
     public boolean isValid()

@@ -24,6 +24,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
+import android.net.Uri;
 import java.util.StringTokenizer;
 import android.content.ContentValues;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import org.eehouse.android.xw4.jni.*;
 
 
 public class DBUtils {
+    public static final int ROWID_NOTFOUND = -1;
 
     private static final String DICTS_SEP = ",";
 
@@ -210,6 +212,12 @@ public class DBUtils {
     public static void saveSummary( Context context, GameUtils.GameLock lock,
                                     GameSummary summary )
     {
+        saveSummary( context, lock, summary, null );
+    }
+
+    public static void saveSummary( Context context, GameUtils.GameLock lock,
+                                    GameSummary summary, String inviteID )
+    {
         Assert.assertTrue( lock.canWrite() );
         long rowid = lock.getRowid();
         String selection = String.format( ROW_ID_FMT, rowid );
@@ -233,6 +241,9 @@ public class DBUtils {
                 values.put( DBHelper.GAME_OVER, summary.gameOver );
                 values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
                 values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
+                if ( null != inviteID ) {
+                    values.put( DBHelper.INVITEID, inviteID );
+                }
 
                 if ( null != summary.scores ) {
                     StringBuffer sb = new StringBuffer();
@@ -363,7 +374,7 @@ public class DBUtils {
 
     public static long getRowIDFor( Context context, String relayID )
     {
-        long result = -1;
+        long result = ROWID_NOTFOUND;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
@@ -380,18 +391,17 @@ public class DBUtils {
         return result;
     }
 
-    public static long getRowIDForOpen( Context context, String room,
-                                         int lang, int nPlayers )
+    public static long getRowIDForOpen( Context context, NetLaunchInfo nli )
     {
-        long result = -1;
+        long result = ROWID_NOTFOUND;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { ROW_ID };
-            String selection = DBHelper.ROOMNAME + "='" + room + "' AND "
-                // + DBHelper.INVITEID + "='" + inviteID + "' AND "
-                + DBHelper.DICTLANG + "=" + lang + " AND "
-                + DBHelper.NUM_PLAYERS + "=" + nPlayers;
+            String selection = DBHelper.ROOMNAME + "='" + nli.room + "' AND "
+                + DBHelper.INVITEID + "='" + nli.inviteID + "' AND "
+                + DBHelper.DICTLANG + "=" + nli.lang + " AND "
+                + DBHelper.NUM_PLAYERS + "=" + nli.nPlayers;
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -401,6 +411,12 @@ public class DBUtils {
             db.close();
         }
         return result;
+    }
+
+    public static boolean isNewInvite( Context context, Uri data )
+    {
+        NetLaunchInfo nli = new NetLaunchInfo( data );
+        return null != nli && -1 == getRowIDForOpen( context, nli );
     }
 
     public static String[] getRelayIDs( Context context, boolean noMsgs ) 

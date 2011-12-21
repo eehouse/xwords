@@ -9,6 +9,12 @@ $host = "10.0.2.2";
 $lang = $_REQUEST["lang"];
 $room = $_REQUEST["room"];
 $np = $_REQUEST["np"];
+$id = $_REQUEST["id"];
+
+$content = "0; url=$scheme://$host?room=$room&lang=$lang&np=$np";
+if ( $id != "" ) {
+    $content .= "&id=$id";
+}
 
 print <<<EOF
 
@@ -17,7 +23,7 @@ print <<<EOF
 <head>
 <title>Crosswords SMS redirect</title>
 <meta http-equiv="REFRESH"
-    content="0;url=$scheme://$host?room=$room&lang=$lang&np=$np">
+    content="$content">
 </head>
     <body>
 
