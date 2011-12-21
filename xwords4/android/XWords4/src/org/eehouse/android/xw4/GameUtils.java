@@ -48,6 +48,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameUtils {
 
     public static final String INVITED = "invited";
+    private static Random s_random = new Random();
 
     // Implements read-locks and write-locks per game.  A read lock is
     // obtainable when other read locks are granted but not when a
@@ -373,9 +374,9 @@ public class GameUtils {
         return rowid;
     }
 
-    public static long makeNewNetGame( Context context, String room, 
-                                        int[] lang, int nPlayersT, 
-                                        int nPlayersH )
+    public static long makeNewNetGame( Context context, String room,
+                                       String inviteID, int[] lang,
+                                       int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
         CommsAddrRec addr = new CommsAddrRec( context );
@@ -392,32 +393,35 @@ public class GameUtils {
         rowid = saveNew( context, gi );
 
         GameLock lock = new GameLock( rowid, true ).lock();
-        applyChanges( context, gi, addr, lock, false );
+        applyChanges( context, gi, addr, inviteID, lock, false );
         lock.unlock();
 
         return rowid;
     }
 
     public static long makeNewNetGame( Context context, String room, 
-				       int lang, int nPlayers )
+                                       String inviteID, int lang, int nPlayers )
     {
         int[] langarr = { lang };
-        return makeNewNetGame( context, room, langarr, nPlayers, 1 );
+        return makeNewNetGame( context, room, inviteID, langarr, nPlayers, 1 );
     }
 
     public static long makeNewNetGame( Context context, NetLaunchInfo info )
     {
-        return makeNewNetGame( context, info.room, info.lang, 
+        return makeNewNetGame( context, info.room, info.inviteID, info.lang, 
                                info.nPlayers );
     }
 
     public static void launchInviteActivity( Context context, 
                                              boolean choseEmail,
-                                             String room, 
+                                             String room, String inviteID,
                                              int lang, int nPlayers )
     {
         Random random = new Random();
-        Uri gameUri = NetLaunchInfo.makeLaunchUri( context, room,
+        if ( null == inviteID ) {
+            inviteID = makeRandomID();
+        }
+        Uri gameUri = NetLaunchInfo.makeLaunchUri( context, room, inviteID,
                                                    lang, nPlayers );
 
         if ( null != gameUri ) {
@@ -650,8 +654,15 @@ public class GameUtils {
     }
 
     public static void applyChanges( Context context, CurGameInfo gi, 
-                                     CommsAddrRec car, GameLock lock,
+                                     CommsAddrRec car, GameLock lock, 
                                      boolean forceNew )
+    {
+        applyChanges( context, gi, car, null, lock, forceNew );
+    }
+
+    public static void applyChanges( Context context, CurGameInfo gi, 
+                                     CommsAddrRec car, String inviteID, 
+                                     GameLock lock, boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
@@ -691,7 +702,7 @@ public class GameUtils {
 
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
-        DBUtils.saveSummary( context, lock, summary );
+        DBUtils.saveSummary( context, lock, summary, inviteID );
 
         XwJNI.game_dispose( gamePtr );
     } // applyChanges
@@ -702,6 +713,15 @@ public class GameUtils {
         intent.setAction( Intent.ACTION_EDIT );
         intent.putExtra( BoardActivity.INTENT_KEY_ROWID, rowid );
         activity.startActivity( intent );
+    }
+
+    public static String makeRandomID()
+    {
+        int rint = 0;
+        while ( 0 == rint ) {
+            rint = s_random.nextInt();
+        }
+        return String.format( "%X", rint ).substring( 0, 4 );
     }
 
     private static void tellRelayDied( Context context, GameLock lock,

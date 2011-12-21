@@ -670,7 +670,7 @@ public class BoardActivity extends XWActivity
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
                 GameUtils.launchInviteActivity( BoardActivity.this,
                                                 DlgDelegate.EMAIL_BTN == which,
-                                                m_room,
+                                                m_room, null,
                                                 m_gi.dictLang,
                                                 m_gi.nPlayers );
             }

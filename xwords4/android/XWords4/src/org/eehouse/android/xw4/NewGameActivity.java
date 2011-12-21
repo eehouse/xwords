@@ -116,14 +116,16 @@ public class NewGameActivity extends XWActivity {
                               boolean choseEmail )
     {
         String room = null;
+        String inviteID = null;
         long rowid;
         int[] lang = {0};
         final int nPlayers = 2; // hard-coded for no-configure case
 
         if ( networked ) {
-            Random random = new Random();
-            room = String.format( "%X", random.nextInt() ).substring( 0, 4 );
-            rowid = GameUtils.makeNewNetGame( this, room, lang, nPlayers, 1 );
+            room = GameUtils.makeRandomID();
+            inviteID = GameUtils.makeRandomID();
+            rowid = GameUtils.makeNewNetGame( this, room, inviteID, lang, 
+                                              nPlayers, 1 );
         } else {
             rowid = GameUtils.saveNew( this, new CurGameInfo( this ) );
         }
@@ -131,8 +133,8 @@ public class NewGameActivity extends XWActivity {
         if ( launch ) {
             GameUtils.launchGame( this, rowid, networked );
             if ( networked ) {
-                GameUtils.launchInviteActivity( this, choseEmail, room,
-                                                lang[0], nPlayers );
+                GameUtils.launchInviteActivity( this, choseEmail, room, 
+                                                inviteID, lang[0], nPlayers );
             }
         } else {
             GameUtils.doConfig( this, rowid, GameConfig.class );

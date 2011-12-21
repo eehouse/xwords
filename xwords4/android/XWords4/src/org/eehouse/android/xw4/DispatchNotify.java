@@ -58,9 +58,13 @@ public class DispatchNotify extends Activity {
             if ( !tryHandle( relayIDs ) ) {
                 mustLaunch = true;
             }
-        } else if ( null != data ) {
-            if ( !tryHandle( data ) ) {
-                mustLaunch = true;
+        } else if ( null != data  ) {
+            if ( DBUtils.isNewInvite( this, data ) ) {
+                if ( !tryHandle( data ) ) {
+                    mustLaunch = true;
+                }
+            } else {
+                DbgUtils.logf( "DispatchNotify: dropping duplicate invite" );
             }
         }
 

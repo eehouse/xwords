@@ -68,7 +68,7 @@ public class GamesList extends XWListActivity
     private static final int DELETE_GAME_ACTION = 3;
     private static final int DELETE_ALL_ACTION = 4;
     private static final int SYNC_MENU_ACTION = 5;
-    private static final int DUPE_GAME_ACTION = 6;
+    private static final int NEW_FROM_ACTION = 6;
 
     private GameListAdapter m_adapter;
     private String m_missingDict;
@@ -245,6 +245,9 @@ public class GamesList extends XWListActivity
     protected void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate( savedInstanceState );
+        // scary, but worth playing with:
+        // Assert.assertTrue( isTaskRoot() );
+
         getBundledData( savedInstanceState );
 
         m_handler = new Handler();
@@ -375,7 +378,7 @@ public class GamesList extends XWListActivity
             } );
     }
 
-    public void HandleInvite( final Uri invite )
+    public void HandleInvite( Uri invite )
     {
         final NetLaunchInfo nli = new NetLaunchInfo( invite );
         if ( nli.isValid() ) {
@@ -431,7 +434,7 @@ public class GamesList extends XWListActivity
             case SYNC_MENU_ACTION:
                 doSyncMenuitem();
                 break;
-            case DUPE_GAME_ACTION:
+            case NEW_FROM_ACTION:
                 long newid = GameUtils.dupeGame( GamesList.this, m_rowid );
                 if ( null != m_adapter ) {
                     m_adapter.inval( newid );
@@ -584,7 +587,7 @@ public class GamesList extends XWListActivity
                 case R.id.list_item_new_from:
                     showNotAgainDlgThen( R.string.not_again_newfrom,
                                          R.string.key_notagain_newfrom, 
-                                         DUPE_GAME_ACTION );
+                                         NEW_FROM_ACTION );
                     break;
 
                 case R.id.list_item_copy:
@@ -682,10 +685,9 @@ public class GamesList extends XWListActivity
 
     private void startNewNetGame( NetLaunchInfo info )
     {
-        long rowid = DBUtils.getRowIDForOpen( this, info.room, info.lang, 
-                                              info.nPlayers );
+        long rowid = DBUtils.getRowIDForOpen( this, info );
 
-        if ( -1 == rowid ) {    // doesn't exist yet
+        if ( DBUtils.ROWID_NOTFOUND == rowid ) {
             rowid = GameUtils.makeNewNetGame( this, info );
             GameUtils.launchGame( this, rowid, true );
         } else {
