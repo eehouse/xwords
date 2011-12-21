@@ -6,14 +6,12 @@
 </head>
 <body>
 
-<b>Crosswords 4.4 beta 40 release</b>
+<b>Crosswords 4.4 beta 41 release</b>
 <ul>
-  <li>Offer choice between SMS and email for sending invitations</li>
+  <li>One new game per invitation</li>
 
-  <li>Improve handling of invitations and move notifications received</li>
-
-  <li>Make undo button easier to get to</li>
-</ul>
+  <li>Honor "Juggle players" setting when creating "New from" 
+  game</li> </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
 eehouse@eehouse.org) what's broken and what features you'd most like 
