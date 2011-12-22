@@ -450,7 +450,7 @@ static gboolean
 onetime_idle( gpointer data )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
-    if ( server_do( globals->cGlobals.game.server, NULL ) ) {
+    if ( server_do( globals->cGlobals.game.server ) ) {
         if ( !!globals->cGlobals.game.board ) {
             board_draw( globals->cGlobals.game.board );
         }
@@ -1841,7 +1841,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 #endif
 
-        server_do( g_globals.cGlobals.game.server, NULL );
+        server_do( g_globals.cGlobals.game.server );
 
         g_globals.menuList = g_boardMenuList;
         drawMenuLargeOrSmall( &g_globals, g_boardMenuList ); 

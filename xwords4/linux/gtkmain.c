@@ -511,7 +511,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
         comms_start( globals->cGlobals.game.comms );
     }
 #endif
-    server_do( globals->cGlobals.game.server, NULL );
+    server_do( globals->cGlobals.game.server );
 
     disenable_buttons( globals );
 } /* createOrLoadObjects */
@@ -823,7 +823,7 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
                                          stream );
         }
 #endif
-        (void)server_do( globals->cGlobals.game.server, NULL ); /* assign tiles, etc. */
+        (void)server_do( globals->cGlobals.game.server ); /* assign tiles, etc. */
         board_invalAll( globals->cGlobals.game.board );
         board_draw( globals->cGlobals.game.board );
     }
@@ -845,7 +845,7 @@ game_info( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
        server_do in case one's become a robot. */
     if ( newGameDialog( globals, &addr, XP_FALSE, XP_FALSE ) ) {
-        if ( server_do( globals->cGlobals.game.server, NULL ) ) {
+        if ( server_do( globals->cGlobals.game.server ) ) {
             board_draw( globals->cGlobals.game.board );
         }
     }
@@ -1603,7 +1603,7 @@ idle_func( gpointer data )
        and bad things can happen.  So kill the idle proc asap. */
     gtk_idle_remove( globals->idleID );
 
-    if ( server_do( globals->cGlobals.game.server, NULL ) ) {
+    if ( server_do( globals->cGlobals.game.server ) ) {
         if ( !!globals->cGlobals.game.board ) {
             board_draw( globals->cGlobals.game.board );
         }
@@ -2059,7 +2059,7 @@ newConnectionInput( GIOChannel *source,
             if ( redraw ) {
                 gtk_util_requestTime( globals->cGlobals.params->util );
             } else {
-                redraw = server_do( globals->cGlobals.game.server, NULL );
+                redraw = server_do( globals->cGlobals.game.server );
             }
             if ( redraw ) {
                 board_draw( globals->cGlobals.game.board );

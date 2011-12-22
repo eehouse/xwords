@@ -240,13 +240,12 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
         if ( comms_checkIncomingStream( cGlobals->game.comms, 
                                         stream, NULL ) ) {
             ServerCtxt* server = cGlobals->game.server;
-            (void)server_do( server, NULL );
+            (void)server_do( server );
             handled = server_receiveMessage( server, stream ) || handled;
 
-            XP_Bool notDone;
             XP_U16 ii;
-            for ( ii = 0, notDone = XP_TRUE; notDone && ii < 5; ++ii ) {
-                (void)server_do( server, &notDone );
+            for ( ii = 0; ii < 5; ++ii ) {
+                (void)server_do( server );
             }
         }
         stream_destroy( stream );
@@ -305,13 +304,12 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
             if ( comms_checkIncomingStream( cGlobals->game.comms, 
                                             stream, NULL ) ) {
                 ServerCtxt* server = cGlobals->game.server;
-                (void)server_do( server, NULL );
+                (void)server_do( server );
                 handled = server_receiveMessage( server, stream ) || handled;
 
-                XP_Bool notDone;
                 XP_U16 ii;
-                for ( ii = 0, notDone = XP_TRUE; notDone && ii < 5; ++ii ) {
-                    (void)server_do( server, &notDone );
+                for ( ii = 0; ii < 5; ++ii ) {
+                    (void)server_do( server );
                 }
             }
             stream_destroy( stream );

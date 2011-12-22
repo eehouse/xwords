@@ -98,7 +98,7 @@ XP_U16 server_getMissingPlayers( const ServerCtxt* server );
 /* Signed in case no dictionary available */
 XP_S16 server_countTilesInPool( ServerCtxt* server );
 
-XP_Bool server_do( ServerCtxt* server, XP_Bool* moreToDoP );
+XP_Bool server_do( ServerCtxt* server );
 
 XP_Bool server_commitMove( ServerCtxt* server );
 XP_Bool server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles );

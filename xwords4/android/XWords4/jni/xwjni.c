@@ -798,7 +798,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1do
 {
     jboolean result;
     XWJNI_START();
-    result = server_do( state->game.server, NULL );
+    result = server_do( state->game.server );
     XWJNI_END();
     return result;
 }
@@ -1043,7 +1043,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
         /* XP_Bool notDone; */
         /* in case work's pending */
         /* for ( notDone = XP_TRUE; notDone; ) { */
-            (void)server_do( server, NULL );
+            (void)server_do( server );
         /* } */
         (void)server_receiveMessage( server, stream );
         /* in case MORE work's pending.  Multiple calls are required in at
@@ -1052,9 +1052,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
            robot move.  That's because comms can't detect a duplicate initial
            packet (in validateInitialMessage()). */
         int ii;
-        XP_Bool notDone;
-        for ( ii = 0, notDone = XP_TRUE; notDone && ii < 5; ++ii ) {
-            (void)server_do( server, &notDone );
+        for ( ii = 0; ii < 5; ++ii ) {
+            (void)server_do( server );
         }
     }
 

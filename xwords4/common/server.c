@@ -964,7 +964,7 @@ showPrevScore( ServerCtxt* server )
 } /* showPrevScore */
 
 XP_Bool
-server_do( ServerCtxt* server, XP_Bool* moreToDoP )
+server_do( ServerCtxt* server )
 {
     XP_Bool result = XP_TRUE;
 
@@ -1038,9 +1038,7 @@ server_do( ServerCtxt* server, XP_Bool* moreToDoP )
             break;
         } /* switch */
 
-        if ( NULL != moreToDoP ) {
-            *moreToDoP = moreToDo;
-        } else if ( moreToDo ) {
+        if ( moreToDo ) {
             util_requestTime( server->vol.util );
         }
 
