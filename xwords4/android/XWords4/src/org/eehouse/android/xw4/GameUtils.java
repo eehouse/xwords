@@ -303,11 +303,12 @@ public class GameUtils {
     public static int loadMakeGame( Context context, CurGameInfo gi, 
                                     GameLock lock )
     {
-        return loadMakeGame( context, gi, null, lock );
+        return loadMakeGame( context, gi, null, null, lock );
     }
 
     public static int loadMakeGame( Context context, CurGameInfo gi, 
-                                    UtilCtxt util, GameLock lock )
+                                    UtilCtxt util, TransportProcs tp, 
+                                    GameLock lock )
     {
         int gamePtr = 0;
 
@@ -322,12 +323,12 @@ public class GameUtils {
 
             String langName = gi.langName();
             boolean madeGame = 
-                XwJNI.game_makeFromStream( gamePtr, stream, 
-                                           JNIUtilsImpl.get(), gi, 
+                XwJNI.game_makeFromStream( gamePtr, stream, gi, 
                                            dictNames, pairs.m_bytes, 
                                            pairs.m_paths, langName,
-                                           util, 
-                                           CommonPrefs.get(context));
+                                           util, JNIUtilsImpl.get(), 
+                                           CommonPrefs.get(context),
+                                           tp);
             if ( !madeGame ) {
                 XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
                                         CommonPrefs.get(context), dictNames,
@@ -586,7 +587,7 @@ public class GameUtils {
     }
 
     public static boolean feedMessages( Context context, String relayID,
-                                        byte[][] msgs )
+                                        byte[][] msgs, RelayMsgSink sink )
     {
         boolean draw = false;
         long rowid = DBUtils.getRowIDFor( context, relayID );
@@ -595,10 +596,15 @@ public class GameUtils {
             FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
             GameLock lock = new GameLock( rowid, true );
             if ( lock.tryLock() ) {
-                int gamePtr = loadMakeGame( context, gi, feedImpl, lock );
+                int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+                    
+                XwJNI.comms_resendAll( gamePtr );
 
-                for ( byte[] msg : msgs ) {
-                    draw = XwJNI.game_receiveMessage( gamePtr, msg ) || draw;
+                if ( null != msgs ) {
+                    for ( byte[] msg : msgs ) {
+                        draw = XwJNI.game_receiveMessage( gamePtr, msg )
+                            || draw;
+                    }
                 }
 
                 // update gi to reflect changes due to messages
@@ -625,7 +631,7 @@ public class GameUtils {
         }
         DbgUtils.logf( "feedMessages=>%b", draw );
         return draw;
-    }
+    } // feedMessages
 
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new
@@ -645,9 +651,10 @@ public class GameUtils {
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         
         int gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeFromStream( gamePtr, stream, JNIUtilsImpl.get(), gi,
-                                   dictNames, pairs.m_bytes, pairs.m_paths,
-                                   gi.langName(), CommonPrefs.get( context ) );
+        XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
+                                   pairs.m_bytes, pairs.m_paths,
+                                   gi.langName(), JNIUtilsImpl.get(), 
+                                   CommonPrefs.get( context ) );
         // second time required as game_makeFromStream can overwrite
         gi.replaceDicts( newDict );
 
@@ -686,11 +693,10 @@ public class GameUtils {
             byte[] stream = savedGame( context, lock );
             // Will fail if there's nothing in the stream but a gi.
             madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
-                                                  JNIUtilsImpl.get(),
                                                   new CurGameInfo(context), 
                                                   dictNames, pairs.m_bytes,
-                                                  pairs.m_paths,
-                                                  langName, cp );
+                                                  pairs.m_paths, langName,
+                                                  JNIUtilsImpl.get(), cp );
         }
 
         if ( forceNew || !madeGame ) {

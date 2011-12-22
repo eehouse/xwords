@@ -48,13 +48,7 @@ public class RelayService extends Service {
         
         Thread thread = new Thread( null, new Runnable() {
                 public void run() {
-
-                    String[] relayIDs = NetUtils.QueryRelay( RelayService.this );
-                    if ( null != relayIDs ) {
-                        if ( !DispatchNotify.tryHandle( relayIDs ) ) {
-                            setupNotification( relayIDs );
-                        }
-                    }
+                    fetchAndProcess();
                     RelayService.this.stopSelf();
                 }
             }, getClass().getName() );
@@ -97,4 +91,51 @@ public class RelayService extends Service {
         nm.notify( R.string.notify_body, // unique id; any will do
                    notification );
     }
+
+    private String[] collectIDs( int[] nBytes )
+    {
+        String[] ids = DBUtils.getRelayIDs( this, false );
+        int len = 0;
+        if ( null != ids ) {
+            for ( String id : ids ) {
+                len += id.length();
+            }
+        }
+        nBytes[0] = len;
+        return ids;
+    }
+    
+    private void fetchAndProcess()
+    {
+        int[] nBytes = new int[1];
+        String[] ids = collectIDs( nBytes );
+        if ( null != ids && 0 < ids.length ) {
+            RelayMsgSink sink = new RelayMsgSink();
+            byte[][][] msgs =
+                NetUtils.queryRelay( this, ids, nBytes[0] );
+
+            int nameCount = ids.length;
+            if ( null != msgs ) {
+                ArrayList<String> idsWMsgs =
+                    new ArrayList<String>( nameCount );
+                for ( int ii = 0; ii < nameCount; ++ii ) {
+                    // if game has messages, open it and feed 'em
+                    // to it.
+                    if ( GameUtils.feedMessages( this, ids[ii], 
+                                                 msgs[ii], sink ) ) {
+                        idsWMsgs.add( ids[ii] );
+                    }
+                }
+                if ( 0 < idsWMsgs.size() ) {
+                    String[] relayIDs = new String[idsWMsgs.size()];
+                    idsWMsgs.toArray( relayIDs );
+                    if ( !DispatchNotify.tryHandle( relayIDs ) ) {
+                        setupNotification( relayIDs );
+                    }
+                }
+                sink.send( this );
+            }
+        }
+    }
+
 }

@@ -499,6 +499,88 @@ formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles,
               tileBuf );
 }
 
+typedef struct _MsgRec {
+    XP_U8* msg;
+    XP_U16 msglen;
+} MsgRec;
+
+void
+initNoConnStorage( CommonGlobals* cGlobals )
+{
+    XP_ASSERT( NULL == cGlobals->noConnMsgs );
+    cGlobals->noConnMsgs = g_hash_table_new( g_str_hash, g_str_equal );
+}
+
+XP_Bool
+storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 msglen, 
+                const XP_UCHAR* relayID )
+{
+    XP_ASSERT( 0 < msglen );
+    XP_Bool inUse = NULL != cGlobals->noConnMsgs;
+    if ( inUse ) {
+        GSList* list = g_hash_table_lookup( cGlobals->noConnMsgs, relayID );
+        gboolean missing = NULL == list;
+
+        MsgRec* msgrec = g_malloc( sizeof(*msgrec) );
+        msgrec->msg = g_malloc( msglen );
+        XP_MEMCPY( msgrec->msg, msg, msglen );
+        msgrec->msglen = msglen;
+        list = g_slist_append( list, msgrec );
+        if ( missing ) {
+            gchar* key = g_strdup( relayID ); /* will leak */
+            g_hash_table_insert( cGlobals->noConnMsgs, key, list );
+        }
+    }
+    return inUse;
+}
+
+void
+writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
+{
+    GHashTable* hash = cGlobals->noConnMsgs;
+    GList* keys = g_hash_table_get_keys( hash );
+    GList* iter;
+    for ( iter = keys; !!iter; iter = iter->next ) {
+        XP_UCHAR* relayID = (XP_UCHAR*)iter->data;
+        GSList* list = (GSList*)g_hash_table_lookup( hash, relayID );
+        guint nMsgs = g_slist_length( list );
+        XP_ASSERT( 0 < nMsgs );
+
+        XWStreamCtxt* stream = 
+            mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+                             cGlobals->params->vtMgr,
+                             cGlobals, CHANNEL_NONE, NULL );
+        stream_putU16( stream, 1 ); /* number of relayIDs */
+        stream_catString( stream, relayID );
+        stream_putU8( stream, '\n' );
+        stream_putU16( stream, nMsgs );
+
+        int ii;
+        for ( ii = 0; ii < nMsgs; ++ii ) {
+            MsgRec* rec = g_slist_nth_data( list, ii );
+            stream_putU16( stream, rec->msglen );
+            stream_putBytes( stream, rec->msg, rec->msglen );
+
+            g_free( rec->msg );
+            g_free( rec );
+        }
+        g_slist_free( list );
+
+        XP_U16 siz = stream_getSize( stream );
+        /* XP_U8 buf[siz]; */
+        /* stream_getBytes( stream, buf, siz ); */
+        XP_U16 tmp = XP_HTONS( siz );
+        ssize_t nwritten = write( fd, &tmp, sizeof(tmp) );
+        XP_ASSERT( nwritten == sizeof(tmp) );
+        nwritten = write( fd, stream_getPtr( stream ), siz );
+        XP_ASSERT( nwritten == siz );
+        stream_destroy( stream );
+    }
+    g_list_free( keys );
+    g_hash_table_unref( hash );
+    cGlobals->noConnMsgs = NULL;
+} /* writeNoConnMsgs */
+
 #ifdef TEXT_MODEL
 /* This is broken for UTF-8, even Spanish */
 void

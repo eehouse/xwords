@@ -64,6 +64,7 @@ class DBMgr {
     bool AddCID( const char* const connName, CookieID cid );
     void ClearCID( const char* connName );
     void RecordSent( const char* const connName, HostID hid, int nBytes );
+    void RecordSent( const int* msgID, int nMsgIDs );
     void GetPlayerCounts( const char* const connName, int* nTotal,
                           int* nHere );
 
@@ -91,7 +92,7 @@ class DBMgr {
 
  private:
     DBMgr();
-    bool execSql( const char* query ); /* no-results query */
+    bool execSql( const char* const query ); /* no-results query */
     void readArray( const char* const connName, int arr[] );
 
     PGconn* getThreadConn( void );

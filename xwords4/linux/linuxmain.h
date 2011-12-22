@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make -k";-*- */ 
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */ 
 /* 
- * Copyright 1997-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2011 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -74,6 +75,9 @@ XP_Bool linShiftFocus( CommonGlobals* cGlobals, XP_Key key,
                        BoardObjectType* nxtP );
 #endif
 
-void read_pipe_then_close( CommonGlobals* cGlobals );
+void read_pipe_then_close( CommonGlobals* cGlobals, 
+                           const TransportProcs* procs );
+void do_nbs_then_close( CommonGlobals* cGlobals, 
+                        const TransportProcs* procs );
 
 #endif

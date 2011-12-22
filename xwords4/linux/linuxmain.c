@@ -35,6 +35,7 @@
 #include <time.h>
 #include <syslog.h>
 #include <stdarg.h>
+#include <linux/un.h>
 
 #ifdef XWFEATURE_BLUETOOTH
 # include <bluetooth/bluetooth.h>
@@ -191,9 +192,11 @@ strFromStream( XWStreamCtxt* stream )
     return buf;
 } /* strFromStream */
 
-void
-read_pipe_then_close( CommonGlobals* cGlobals )
+static void
+handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
+                      int fdin )
 {
+    LOG_FUNC();
     LaunchParams* params = cGlobals->params;
     XWStreamCtxt* stream = 
         streamFromFile( cGlobals, params->fileName, cGlobals );
@@ -206,44 +209,165 @@ read_pipe_then_close( CommonGlobals* cGlobals )
                              &params->gi, params->dict, 
                              &params->dicts, params->util, 
                              NULL /*draw*/,
-                             &cGlobals->cp, NULL );
+                             &cGlobals->cp, procs );
     XP_ASSERT( opened );
     stream_destroy( stream );
 
     XP_Bool handled = XP_FALSE;
-    int fd = open( params->pipe, O_RDONLY );
-    while ( fd >= 0 ) {
-        unsigned short len;
-        ssize_t nRead = blocking_read( fd, (unsigned char*)&len, sizeof(len) );
-        if ( nRead != 2 ) {
+    unsigned short len;
+    for ( ; ; ) {
+        ssize_t nRead = blocking_read( fdin, (unsigned char*)&len, 
+                                       sizeof(len) );
+        if ( nRead != sizeof(len) ) {
+            XP_LOGF( "%s: 1: unexpected nRead: %d", __func__, nRead );
             break;
         }
         len = ntohs( len );
+        if ( 0 == len ) {
+            break;
+        }
         unsigned char buf[len];
-        nRead = blocking_read( fd, buf, len );
+        nRead = blocking_read( fdin, buf, len );
         if ( nRead != len ) {
+            XP_LOGF( "%s: 2: unexpected nRead: %d", __func__, nRead );
             break;
         }
         stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool) 
-                                  params->vtMgr, cGlobals, CHANNEL_NONE, NULL );
+                                  params->vtMgr, cGlobals, CHANNEL_NONE, 
+                                  NULL );
         stream_putBytes( stream, buf, len );
 
         if ( comms_checkIncomingStream( cGlobals->game.comms, 
                                         stream, NULL ) ) {
-            handled = server_receiveMessage( cGlobals->game.server,
-                                             stream ) || handled;
+            ServerCtxt* server = cGlobals->game.server;
+            (void)server_do( server );
+            handled = server_receiveMessage( server, stream ) || handled;
+
+            XP_U16 ii;
+            for ( ii = 0; ii < 5; ++ii ) {
+                (void)server_do( server );
+            }
         }
         stream_destroy( stream );
     }
-    LOG_RETURNF( "%d", handled );
 
-    /* Write it out */
-    /* stream = mem_stream_make( MEMPOOLCG(cGlobals) params->vtMgr,  */
-    /*                           cGlobals, 0, writeToFile ); */
-    /* stream_open( stream ); */
-    /* game_saveToStream( &cGlobals->game, &params->gi, stream ); */
-    /* stream_destroy( stream ); */
+    LOG_RETURN_VOID();
+} /* handle_messages_from */
+
+void
+read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
+{
+    LOG_FUNC();
+    LaunchParams* params = cGlobals->params;
+    XWStreamCtxt* stream = 
+        streamFromFile( cGlobals, params->fileName, cGlobals );
+
+#ifdef DEBUG
+    XP_Bool opened = 
+#endif
+        game_makeFromStream( MPPARM(cGlobals->params->util->mpool) 
+                             stream, &cGlobals->game, 
+                             &params->gi, params->dict, 
+                             &params->dicts, params->util, 
+                             NULL /*draw*/,
+                             &cGlobals->cp, procs );
+    XP_ASSERT( opened );
+    stream_destroy( stream );
+
+    XP_Bool handled = XP_FALSE;
+    int fd = open( params->pipe, O_RDWR );
+    XP_ASSERT( fd >= 0 );
+    if ( fd >= 0 ) {
+        unsigned short len;
+        for ( ; ; ) {
+            ssize_t nRead = blocking_read( fd, (unsigned char*)&len, 
+                                           sizeof(len) );
+            if ( nRead != sizeof(len) ) {
+                XP_LOGF( "%s: 1: unexpected nRead: %d", __func__, nRead );
+                break;
+            }
+            len = ntohs( len );
+            if ( 0 == len ) {
+                break;
+            }
+            unsigned char buf[len];
+            nRead = blocking_read( fd, buf, len );
+            if ( nRead != len ) {
+                XP_LOGF( "%s: 2: unexpected nRead: %d", __func__, nRead );
+                break;
+            }
+            stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool) 
+                                      params->vtMgr, cGlobals, CHANNEL_NONE, 
+                                      NULL );
+            stream_putBytes( stream, buf, len );
+
+            if ( comms_checkIncomingStream( cGlobals->game.comms, 
+                                            stream, NULL ) ) {
+                ServerCtxt* server = cGlobals->game.server;
+                (void)server_do( server );
+                handled = server_receiveMessage( server, stream ) || handled;
+
+                XP_U16 ii;
+                for ( ii = 0; ii < 5; ++ii ) {
+                    (void)server_do( server );
+                }
+            }
+            stream_destroy( stream );
+        }
+
+        /* 0-length packet closes it off */
+        XP_LOGF( "%s: writing 0-length packet", __func__ );
+        len = 0;
+        ssize_t nwritten = write( fd, &len, sizeof(len) );
+        XP_ASSERT( nwritten == sizeof(len) );
+
+        close( fd );
+    }
+
+    LOG_RETURN_VOID();
 } /* read_pipe_then_close */
+
+void
+do_nbs_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
+{
+    LOG_FUNC();
+    int sockfd = socket( AF_UNIX, SOCK_STREAM, 0 );
+
+    struct sockaddr_un addr;
+    addr.sun_family = AF_UNIX;
+    strcpy( addr.sun_path, cGlobals->params->nbs );
+
+    unlink( cGlobals->params->nbs );
+    int err = bind( sockfd, (struct sockaddr*)&addr, sizeof(addr) );
+    if ( 0 != err ) {
+        XP_LOGF( "%s: bind=>%s", __func__, strerror( errno ) );
+        XP_ASSERT( 0 );
+    }
+    XP_LOGF( "calling listen" );
+    err = listen( sockfd, 1 );
+    assert( 0 == err );
+
+    struct sockaddr remote;
+    socklen_t addrlen = sizeof(remote);
+    XP_LOGF( "calling accept" );
+    int fd = accept( sockfd, &remote, &addrlen );
+    XP_LOGF( "%s: accept=>%d", __func__, fd );
+    assert( 0 <= fd );
+
+    /* do stuff here */
+    initNoConnStorage( cGlobals );
+    handle_messages_from( cGlobals, procs, fd );
+    writeNoConnMsgs( cGlobals, fd );
+
+    /* Do I need this?  Will reader get err if I close? */
+    unsigned short len = 0;
+    ssize_t nwritten = write( fd, &len, sizeof(len) );
+    XP_ASSERT( nwritten == sizeof(len) );
+
+    close( fd );
+    close( sockfd );
+    LOG_RETURN_VOID();
+} /* do_nbs_then_close */
 
 typedef enum {
     CMD_SKIP_GAMEOVER
@@ -290,6 +414,7 @@ typedef enum {
     ,CMD_NOCROSSHAIRS
 #endif
     ,CMD_ADDPIPE
+    ,CMD_ADDNBS
 #ifdef XWFEATURE_SEARCHLIMIT
     ,CMD_HINTRECT
 #endif
@@ -372,6 +497,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", "don't show crosshairs on board" }
 #endif
     ,{ CMD_ADDPIPE, true, "with-pipe", "named pipe to listen on for relay msgs" }
+    ,{ CMD_ADDNBS, true, "with-nbs", 
+       "nbs socket to listen/reply on for relay msgs" }
 #ifdef XWFEATURE_SEARCHLIMIT
     ,{ CMD_HINTRECT, false, "hintrect", "enable draggable hint-limits rect" }
 #endif
@@ -677,14 +804,15 @@ blocking_read( int fd, unsigned char* buf, int len )
 {
     int nRead = 0;
     while ( nRead < len ) {
-       ssize_t siz = read( fd, buf + nRead, len - nRead );
-       if ( siz <= 0 ) {
-           XP_LOGF( "read => %d, errno=%d (\"%s\")", nRead, 
-                    errno, strerror(errno) );
-           nRead = -1;
-           break;
-       }
-       nRead += siz;
+        XP_LOGF( "%s: blocking for %d bytes", __func__, len );
+        ssize_t siz = read( fd, buf + nRead, len - nRead );
+        if ( siz <= 0 ) {
+            XP_LOGF( "read => %d, errno=%d (\"%s\")", nRead, 
+                     errno, strerror(errno) );
+            nRead = -1;
+            break;
+        }
+        nRead += siz;
     }
     return nRead;
 }
@@ -1434,6 +1562,9 @@ main( int argc, char** argv )
         case CMD_ADDPIPE:
             mainParams.pipe = optarg;
             break;
+        case CMD_ADDNBS:
+            mainParams.nbs = optarg;
+            break;
 #ifdef XWFEATURE_SLOW_ROBOT
         case CMD_SLOWROBOT:
             if ( !parsePair( optarg, &mainParams.robotThinkMin,
@@ -1651,7 +1782,7 @@ main( int argc, char** argv )
 
     free( mainParams.util );
 
-    XP_LOGF( "exiting main" );
+    XP_LOGF( "%s exiting main", argv[0] );
     return 0;
 } /* main */
 

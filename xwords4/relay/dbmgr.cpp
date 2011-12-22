@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make -k -j3"; -*- */
 
 /* 
  * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights reserved.
@@ -394,6 +394,39 @@ DBMgr::RecordSent( const char* const connName, HostID hid, int nBytes )
 }
 
 void
+DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
+{
+    if ( nMsgIDs > 0 ) {
+        char buf[1024];
+        unsigned int offset = 0;
+        offset = snprintf( buf, sizeof(buf), "SELECT connname,hid,sum(msglen)"
+                           " FROM " MSGS_TABLE " WHERE id IN (" );
+        for ( int ii = 0; ; ) {
+            offset += snprintf( &buf[offset], sizeof(buf) - offset, "%d,",
+                                msgIDs[ii] );
+            assert( offset < sizeof(buf) );
+            if ( ++ii == nMsgIDs ) {
+                --offset;       /* back over comma */
+                break;
+            }
+        }
+        offset += snprintf( &buf[offset], sizeof(buf) - offset, 
+                            ") GROUP BY connname,hid" );
+
+        PGresult* result = PQexec( getThreadConn(), buf );
+        if ( PGRES_TUPLES_OK == PQresultStatus( result ) ) {
+            int ntuples = PQntuples( result );
+            for ( int ii = 0; ii < ntuples; ++ii ) {
+                RecordSent( PQgetvalue( result, ii, 0 ),
+                            atoi( PQgetvalue( result, ii, 1 ) ),
+                            atoi( PQgetvalue( result, ii, 2 ) ) );
+            }
+        }
+        PQclear( result );
+    }
+}
+
+void
 DBMgr::GetPlayerCounts( const char* const connName, int* nTotal, int* nHere )
 {
     const char* fmt = "SELECT ntotal, sum_array(nperdevice) FROM " GAMES_TABLE
@@ -475,7 +508,7 @@ DBMgr::PendingMsgCount( const char* connName, int hid )
 }
 
 bool
-DBMgr::execSql( const char* query )
+DBMgr::execSql( const char* const query )
 {
     PGresult* result = PQexec( getThreadConn(), query );
     bool ok = PGRES_COMMAND_OK == PQresultStatus(result);
@@ -606,23 +639,25 @@ DBMgr::GetStoredMessage( const char* const connName, int hid,
 void
 DBMgr::RemoveStoredMessages( const int* msgIDs, int nMsgIDs )
 {
-    char ids[1024];
-    int len = 0;
-    int ii;
-    assert( nMsgIDs > 0 );
-    for ( ii = 0; ; ) {
-        len += snprintf( ids + len, sizeof(ids) - len, "%d,", msgIDs[ii] );
-        if ( ++ii == nMsgIDs ) {
-            ids[len-1] = '\0';  /* overwrite last comma */
-            break;
+    if ( nMsgIDs > 0 ) {
+        char ids[1024];
+        size_t len = 0;
+        int ii;
+        for ( ii = 0; ; ) {
+            len += snprintf( ids + len, sizeof(ids) - len, "%d,", msgIDs[ii] );
+            assert( len < sizeof(ids) );
+            if ( ++ii == nMsgIDs ) {
+                ids[len-1] = '\0';  /* overwrite last comma */
+                break;
+            }
         }
-    }
-    const char* fmt = "DELETE from " MSGS_TABLE " WHERE id in (%s)";
-    char query[1024];
-    snprintf( query, sizeof(query), fmt, ids );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
-    execSql( query );
+        const char* fmt = "DELETE from " MSGS_TABLE " WHERE id in (%s)";
+        char query[1024];
+        snprintf( query, sizeof(query), fmt, ids );
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+        execSql( query );
+    }
 }
 
 static void

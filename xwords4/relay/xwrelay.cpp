@@ -206,11 +206,11 @@ static bool
 getNetShort( unsigned char** bufpp, const unsigned char* end, 
              unsigned short* out )
 {
-    bool ok = *bufpp + 2 <= end;
+    unsigned short tmp;
+    bool ok = *bufpp + sizeof(tmp) <= end;
     if ( ok ) {
-        unsigned short tmp;
-        memcpy( &tmp, *bufpp, 2 );
-        *bufpp += 2;
+        memcpy( &tmp, *bufpp, sizeof(tmp) );
+        *bufpp += sizeof(tmp);
         *out = ntohs( tmp );
     }
     return ok;
@@ -696,18 +696,27 @@ read_packet( int sock, unsigned char* buf, int buflen )
     ssize_t nread;
     unsigned short msgLen;
     nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
-    if ( nread == sizeof(msgLen) ) {
+    if ( 0 == nread ) {
+        logf( XW_LOGINFO, "%s: recv => 0: remote closed", __func__ );
+    } else if ( nread != sizeof(msgLen) ) {
+        logf( XW_LOGERROR, "%s: first recv => %d: %s", __func__, 
+              nread, strerror(errno) );
+    } else {
         msgLen = ntohs( msgLen );
-        if ( msgLen < buflen ) {
+        if ( msgLen >= buflen ) {
+            logf( XW_LOGERROR, "%s: buf too small; need %d but have %d", 
+                  __func__, msgLen, buflen );
+        } else {
             nread = recv( sock, buf, msgLen, MSG_WAITALL );
             if ( nread == msgLen ) {
                 result = nread;
+            } else {
+                logf( XW_LOGERROR, "%s: second recv failed: %s", __func__, 
+                      strerror(errno) );
             }
         }
     }
-    if ( -1 == result ) {
-        logf( XW_LOGERROR, "%s failed: %s", __func__, strerror(errno) );
-    }
+
     return result;
 } /* read_packet */
 
@@ -720,19 +729,21 @@ pushShort( vector<unsigned char>& out, unsigned short num )
 
 static void
 pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName, 
-          HostID hid, int msgCount )
+          HostID hid, int msgCount, vector<int>& msgIDs )
 {
     int ii;
     for ( ii = 0; ii < msgCount; ++ii ) {
         unsigned char buf[1024];
         size_t buflen = sizeof(buf);
+        int msgID;
         if ( !dbmgr->GetNthStoredMessage( connName, hid, ii, buf, 
-                                          &buflen, NULL ) ) {
+                                          &buflen, &msgID ) ) {
             logf( XW_LOGERROR, "%s: %dth message not there", __func__, ii );
             break;
         }
         pushShort( out, buflen );
         out.insert( out.end(), buf, buf + buflen );
+        msgIDs.push_back( msgID );
     }
 }
 
@@ -740,12 +751,14 @@ static void
 handleMsgsMsg( int sock, bool sendFull,
                unsigned char* bufp, const unsigned char* end )
 {
+    logf( XW_LOGINFO, "%s()", __func__ );
     unsigned short nameCount;
     int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
         DBMgr* dbmgr = DBMgr::Get();
         vector<unsigned char> out(4); /* space for len and n_msgs */
         assert( out.size() == 4 );
+        vector<int> msgIDs;
         for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
 
             // See NetUtils.java for reply format
@@ -770,7 +783,7 @@ handleMsgsMsg( int sock, bool sendFull,
             int msgCount = dbmgr->PendingMsgCount( connName, hid );
             pushShort( out, msgCount );
             if ( sendFull ) {
-                pushMsgs( out, dbmgr, connName, hid, msgCount );
+                pushMsgs( out, dbmgr, connName, hid, msgCount, msgIDs );
             }
         }
 
@@ -778,13 +791,121 @@ handleMsgsMsg( int sock, bool sendFull,
         memcpy( &out[0], &tmp, sizeof(tmp) );
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
-        write( sock, &out[0], out.size() );
+        ssize_t nwritten = write( sock, &out[0], out.size() );
+        logf( XW_LOGINFO, "%s: wrote %d bytes", __func__, nwritten );
+        if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
+            dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
+            dbmgr->RemoveStoredMessages( &msgIDs[0], msgIDs.size() );
+        }
     }
-}
+} // handleMsgsMsg
+
+#define NUM_PER_LINE 8
+void
+log_hex( const unsigned char* memp, int len, const char* tag )
+{
+    const char* hex = "0123456789ABCDEF";
+    int i, j;
+    int offset = 0;
+
+    while ( offset < len ) {
+        char buf[128];
+        unsigned char vals[NUM_PER_LINE*3];
+        unsigned char* valsp = vals;
+        unsigned char chars[NUM_PER_LINE+1];
+        unsigned char* charsp = chars;
+        int oldOffset = offset;
+
+        for ( i = 0; i < NUM_PER_LINE && offset < len; ++i ) {
+            unsigned char byte = memp[offset];
+            for ( j = 0; j < 2; ++j ) {
+                *valsp++ = hex[(byte & 0xF0) >> 4];
+                byte <<= 4;
+            }
+            *valsp++ = ':';
+
+            byte = memp[offset];
+            if ( (byte >= 'A' && byte <= 'Z')
+                 || (byte >= 'a' && byte <= 'z')
+                 || (byte >= '0' && byte <= '9') ) {
+                /* keep it */
+            } else {
+                byte = '.';
+            }
+            *charsp++ = byte;
+            ++offset;
+        }
+        *(valsp-1) = '\0';      /* -1 to overwrite ':' */
+        *charsp = '\0';
+
+        if ( (NULL == tag) || (strlen(tag) + sizeof(vals) >= sizeof(buf)) ) {
+            tag = "<tag>";
+        }
+        snprintf( buf, sizeof(buf), "%s[%d]: %s %s", tag, oldOffset, 
+                  vals, chars );
+        fprintf( stderr, "%s\n", buf );
+    }
+} // log_hex
+
+static void
+handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
+{
+    // log_hex( bufp, end-bufp, __func__ );
+    unsigned short nameCount;
+    int ii;
+    if ( getNetShort( &bufp, end, &nameCount ) ) {
+        vector<unsigned char> out(4); /* space for len and n_msgs */
+        assert( out.size() == 4 );
+        for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
+
+            // See NetUtils.java for reply format
+            // message-length: 2
+            // nameCount: 2
+            // name count reps of:
+            //    counts-this-name: 2
+            //    counts-this-name reps of
+            //       len: 2
+            //       msg: <len>
+
+            // pack msgs for one game
+            HostID hid;
+            char connName[MAX_CONNNAME_LEN+1];
+            if ( !parseRelayID( &bufp, end, connName, sizeof(connName),
+                                &hid ) ) {
+                break;
+            }
+            unsigned short nMsgs;
+            if ( getNetShort( &bufp, end, &nMsgs ) ) {
+                SafeCref scr( connName );
+                while ( nMsgs-- > 0 ) {
+                    unsigned short len;
+                    HostID src;
+                    HostID dest;
+                    XWRELAY_Cmd cmd;
+                    if ( getNetShort( &bufp, end, &len ) ) {
+                        unsigned char* start = bufp;
+                        if ( getNetByte( &bufp, end, &cmd )
+                             && getNetByte( &bufp, end, &src )
+                             && getNetByte( &bufp, end, &dest ) ) {
+                            assert( cmd == XWRELAY_MSG_TORELAY_NOCONN );
+                            assert( hid == dest );
+                            scr.PutMsg( src, dest, start, len );
+                            bufp = start + len;
+                            continue;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        assert( bufp == end );  // don't ship with this!!!
+    }
+} // handleProxyMsgs
 
 void
 handle_proxy_packet( unsigned char* buf, int len, int sock )
 {
+    logf( XW_LOGINFO, "%s()", __func__ );
     if ( len > 0 ) {
         unsigned char* bufp = buf;
         unsigned char* end = bufp + len;
@@ -818,6 +939,10 @@ handle_proxy_packet( unsigned char* buf, int len, int sock )
                 }
                 break;          /* PRX_HAS_MSGS */
 
+            case PRX_PUT_MSGS:
+                handleProxyMsgs( sock, bufp, end );
+                break;
+
             case PRX_DEVICE_GONE:
                 logf( XW_LOGINFO, "%s: got PRX_DEVICE_GONE", __func__ );
                 if ( len >= 2 ) {
@@ -844,6 +969,9 @@ handle_proxy_packet( unsigned char* buf, int len, int sock )
                 len = 0;        /* return a 0-length message */
                 write( sock, &len, sizeof(len) );
                 break;          /* PRX_DEVICE_GONE */
+            default:
+                logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
+                break;
             }
         }
     }
@@ -872,6 +1000,38 @@ set_timeouts( int sock )
         logf( XW_LOGERROR, "setsockopt=>%d (%s)", errno, strerror(errno) );
         assert( 0 );
     }
+}
+
+static void
+enable_keepalive( int sock )
+{
+    int optval = 1;
+    if ( 0 > setsockopt( sock, SOL_SOCKET, SO_KEEPALIVE, 
+                         &optval, sizeof( optval ) ) ) {
+        logf( XW_LOGERROR, "setsockopt(SO_KEEPALIVE)=>%d (%s)", errno, 
+              strerror(errno) );
+        assert( 0 );
+    }
+    /*
+      The above will kill sockets, eventually, whose remote ends have died
+      without notifying us.  (Duplicate by pulling a phone's battery while it
+      has an open connection.)  It'll take nearly three hours, however.  The
+      info below appears to allow for significantly shortening the time,
+      though at the expense of greater network traffic.  I'm going to let it
+      run this way before bothering with anything more.
+
+      from http://tldp.org/HOWTO/html_single/TCP-Keepalive-HOWTO/
+
+      "There are also three other socket options you can set for keepalive
+      when you write your application. They all use the SOL_TCP level instead
+      of SOL_SOCKET, and they override system-wide variables only for the
+      current socket.  If you read without writing first, the current
+      system-wide parameters will be returned."
+
+      * TCP_KEEPCNT: overrides tcp_keepalive_probes
+      * TCP_KEEPIDLE: overrides tcp_keepalive_time
+      * TCP_KEEPINTVL: overrides tcp_keepalive_intvl
+      */
 }
 
 int
@@ -1184,6 +1344,8 @@ main( int argc, char** argv )
 
                         /* Set timeout so send and recv won't block forever */
                         set_timeouts( newSock );
+                        
+                        enable_keepalive( newSock );
 
                         logf( XW_LOGINFO, 
                               "accepting connection from %s on socket %d", 

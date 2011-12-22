@@ -21,6 +21,11 @@
 package org.eehouse.android.xw4.jni;
 
 public interface TransportProcs {
+
+    public static final int COMMS_XPORT_FLAGS_NONE = 0;
+    public static final int COMMS_XPORT_FLAGS_HASNOCONN = 1;
+    int getFlags();
+
     int transportSend( byte[] buf, final CommsAddrRec addr );
 
     enum CommsRelayState { COMMS_RELAYSTATE_UNCONNECTED
@@ -52,6 +57,8 @@ public interface TransportProcs {
             ,DEADGAME
     };
     void relayErrorProc( XWRELAY_ERROR relayErr );
+
+    boolean relayNoConnProc( byte[] buf, String relayID );
 
     public interface TPMsgHandler {
         public void tpmRelayConnd( String room, int devOrder, boolean allHere, 

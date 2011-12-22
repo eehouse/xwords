@@ -124,6 +124,7 @@ class CookieRef {
     bool _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                      int seed, bool gameDead );
     void _HandleAck( HostID hostID );
+    void _PutMsg( HostID srcID, HostID destID, unsigned char* buf, int buflen );
     void _Disconnect(int socket, HostID hostID );
     void _DeviceGone( HostID hostID, int seed );
     void _Shutdown();

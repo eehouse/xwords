@@ -90,13 +90,14 @@ public class XwJNI {
 
     public static boolean game_makeFromStream( int gamePtr,
                                                byte[] stream, 
-                                               JNIUtils jniu,
                                                CurGameInfo gi, 
                                                String[] dictNames,
                                                byte[][] dictBytes, 
-                                               String[] dictPaths,
+                                               String[] dictPaths, 
                                                String langName,
-                                               CommonPrefs cp ) {
+                                               JNIUtils jniu,
+                                               CommonPrefs cp
+                                               ) {
         return game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
                                     dictPaths, langName, (UtilCtxt)null, jniu,
                                     (DrawCtx)null, cp, (TransportProcs)null );
@@ -104,17 +105,19 @@ public class XwJNI {
 
     public static boolean game_makeFromStream( int gamePtr,
                                                byte[] stream, 
-                                               JNIUtils jniu,
                                                CurGameInfo gi, 
                                                String[] dictNames,
                                                byte[][] dictBytes, 
-                                               String[] dictPaths,
+                                               String[] dictPaths, 
                                                String langName,
-                                               UtilCtxt util,
-                                               CommonPrefs cp ) {
+                                               UtilCtxt util, 
+                                               JNIUtils jniu,
+                                               CommonPrefs cp,
+                                               TransportProcs procs
+                                               ) {
         return game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
                                     dictPaths, langName, util, jniu, 
-                                    (DrawCtx)null, cp, (TransportProcs)null );
+                                    (DrawCtx)null, cp, procs );
     }
 
     public static native boolean game_receiveMessage( int gamePtr, 

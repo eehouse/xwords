@@ -32,7 +32,6 @@ public class XWApp extends Application {
                        getString(R.string.git_rev) );
 
         RelayReceiver.RestartTimer( this );
-
         super.onCreate();
     }
 }

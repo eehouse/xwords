@@ -195,6 +195,15 @@ class SafeCref {
             return false;
         }
     }
+
+    void PutMsg( HostID srcID, HostID destID, unsigned char* buf, int buflen ) {
+        if ( IsValid() ) {
+            CookieRef* cref = m_cinfo->GetRef();
+            assert( 0 != cref->GetCid() );
+            cref->_PutMsg( srcID, destID, buf, buflen );
+        }
+    }
+
     bool Connect( int socket, int nPlayersH, int nPlayersS, int seed ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();

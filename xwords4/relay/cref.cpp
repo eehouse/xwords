@@ -242,6 +242,19 @@ CookieRef::_HandleAck( HostID hostID )
 }
 
 void
+CookieRef::_PutMsg( HostID srcID, HostID destID, unsigned char* buf, int buflen )
+{
+    CRefEvent evt( XWE_PROXYMSG );
+    evt.u.fwd.src = srcID;
+    evt.u.fwd.dest = destID;
+    evt.u.fwd.buf = buf;
+    evt.u.fwd.buflen = buflen;
+
+    m_eventQueue.push_back( evt );
+    handleEvents();
+}
+
+void
 CookieRef::_Disconnect( int socket, HostID hostID )
 {
     logf( XW_LOGINFO, "%s(socket=%d, hostID=%d)", __func__, socket, hostID );
@@ -659,6 +672,10 @@ CookieRef::handleEvents()
                 forward_or_store( &evt );
                 break;
 
+            case XWA_PROXYMSG:
+                forward_or_store/*_proxy*/( &evt );
+                break;
+
             case XWA_TIMERDISCONN:
                 disconnectSockets( XWRELAY_ERROR_TIMEOUT );
                 break;
@@ -1031,28 +1048,37 @@ void
 CookieRef::forward_or_store( const CRefEvent* evt )
 {
     unsigned char* buf = evt->u.fwd.buf;
-    int buflen = evt->u.fwd.buflen;
-    HostID dest = evt->u.fwd.dest;
+    do {
+        /* This is an ugly hack!!!! */
+        if ( *buf == XWRELAY_MSG_TORELAY ) {
+            *buf = XWRELAY_MSG_FROMRELAY;
+        } else if ( *buf == XWRELAY_MSG_TORELAY_NOCONN ) {
+            *buf = XWRELAY_MSG_FROMRELAY_NOCONN;
+        } else {
+            logf( XW_LOGERROR, "%s: got XWRELAY type of %d", __func__,
+                  *buf );
+            break;
+        }
 
-    int destSocket = SocketForHost( dest );
+        int buflen = evt->u.fwd.buflen;
+        HostID dest = evt->u.fwd.dest;
+        int destSocket = SocketForHost( dest );
 
-    /* This is an ugly hack!!!! */
-    *buf = XWRELAY_MSG_FROMRELAY;
+        if ( 0 < m_delayMicros && destSocket != -1 ) {
+            usleep( m_delayMicros );
+        }
 
-    if ( 0 < m_delayMicros && destSocket != -1 ) {
-        usleep( m_delayMicros );
-    }
+        if ( (destSocket == -1)
+             || !send_with_length( destSocket, buf, buflen, true ) ) {
+            store_message( dest, buf, buflen );
+        }
 
-    if ( (destSocket == -1)
-         || !send_with_length( destSocket, buf, buflen, true ) ) {
-        store_message( dest, buf, buflen );
-    }
-
-    /* also note that we've heard from src recently */
+        /* also note that we've heard from src recently */
 #ifdef RELAY_HEARTBEAT
-    HostID src = evt->u.fwd.src;
-    pushHeartbeatEvent( src, SocketForHost(src) );
+        HostID src = evt->u.fwd.src;
+        pushHeartbeatEvent( src, SocketForHost(src) );
 #endif
+    } while ( 0 );
 } /* forward_or_store */
 
 void

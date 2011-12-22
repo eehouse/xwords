@@ -49,6 +49,21 @@ makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
     return jaddr;
 }
 
+static XP_U32
+and_xport_getFlags( void* closure )
+{
+    jint result = 0;
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    if ( NULL != aprocs->jxport ) {
+        JNIEnv* env = *aprocs->envp;
+        const char* sig = "()I";
+        jmethodID mid = getMethodID( env, aprocs->jxport, "getFlags", sig );
+
+        result = (*env)->CallIntMethod( env, aprocs->jxport, mid );
+    }
+    return result;
+}
+
 static XP_S16
 and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
                 void* closure )
@@ -111,6 +126,28 @@ and_xport_relayConnd( void* closure, XP_UCHAR* const room, XP_Bool reconnect,
     }
 }
 
+static XP_Bool 
+and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
+                      const XP_UCHAR* relayID, void* closure )
+{
+    jboolean result = false;
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    if ( NULL != aprocs && NULL != aprocs->jxport ) {
+        JNIEnv* env = *aprocs->envp;
+
+        const char* sig = "([BLjava/lang/String;)Z";
+        jmethodID mid = getMethodID( env, aprocs->jxport, 
+                                     "relayNoConnProc", sig );
+        jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
+        jstring str = (*env)->NewStringUTF( env, relayID );
+        result = (*env)->CallBooleanMethod( env, aprocs->jxport, mid, 
+                                            jbytes, str );
+        (*env)->DeleteLocalRef( env, jbytes );
+        (*env)->DeleteLocalRef( env, str );
+    }
+    return result;
+}
+
 static void
 and_xport_relayError( void* closure, XWREASON relayErr )
 {
@@ -144,10 +181,14 @@ makeXportProcs( MPFORMAL JNIEnv** envp, jobject jxport )
     aprocs->envp = envp;
     MPASSIGN( aprocs->mpool, mpool );
 
+#ifdef COMMS_XPORT_FLAGSPROC
+    aprocs->tp.getFlags = and_xport_getFlags;
+#endif
     aprocs->tp.send = and_xport_send;
     aprocs->tp.rstatus = and_xport_relayStatus;
     aprocs->tp.rconnd = and_xport_relayConnd;
     aprocs->tp.rerror = and_xport_relayError;
+    aprocs->tp.sendNoConn = and_xport_sendNoConn;
     aprocs->tp.closure = aprocs;
 
     return (TransportProcs*)aprocs;

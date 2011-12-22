@@ -52,6 +52,7 @@
 #include "xwproto.h"
 #include "xwstream.h"
 #include "xwstate.h"
+#include "strutils.h"
 #include "server.h"
 #include "memstream.h"
 #include "util.h"
@@ -1308,7 +1309,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
             }
         }
 
-        redraw = server_do( globals->cGlobals.game.server ) || redraw;
+        redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw;
         if ( redraw ) {
             /* messages change a lot */
             board_invalAll( globals->cGlobals.game.board );
@@ -1615,6 +1616,14 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     board_invalAll( board );
 } /* positionSizeStuff */
 
+static XP_Bool 
+relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
+                         const XP_UCHAR* relayID, void* closure )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    return storeNoConnMsg( &globals->cGlobals, msg, len, relayID );
+} /* relay_sendNoConn_curses */
+
 static void
 relay_status_curses( void* XP_UNUSED(closure), 
                      CommsRelayState XP_UNUSED_DBG(state) )
@@ -1724,8 +1733,26 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     struct sigaction act2 = { .sa_handler = SIGWINCH_handler };
     sigaction( SIGWINCH, &act2, NULL );
 
+    TransportProcs procs = {
+        .closure = &g_globals,
+        .send = LINUX_SEND,
+#ifdef COMMS_HEARTBEAT
+        .reset = linux_reset,
+#endif
+#ifdef XWFEATURE_RELAY
+        .rstatus = relay_status_curses,
+        .rconnd = relay_connd_curses,
+        .rerror = relay_error_curses,
+        .sendNoConn = relay_sendNoConn_curses,
+        .flags = COMMS_XPORT_FLAGS_HASNOCONN,
+#endif
+    };
+
+
     if ( !!params->pipe && !!params->fileName ) {
-        read_pipe_then_close( &g_globals.cGlobals );
+        read_pipe_then_close( &g_globals.cGlobals, &procs );
+    } else if ( !!params->nbs && !!params->fileName ) {
+        do_nbs_then_close( &g_globals.cGlobals, &procs );
     } else {
 
         initCurses( &g_globals );
@@ -1733,19 +1760,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
         g_globals.draw = (struct CursesDrawCtx*)
             cursesDrawCtxtMake( g_globals.boardWin );
-
-        TransportProcs procs = {
-            .closure = &g_globals,
-            .send = LINUX_SEND,
-#ifdef COMMS_HEARTBEAT
-            .reset = linux_reset,
-#endif
-#ifdef XWFEATURE_RELAY
-            .rstatus = relay_status_curses,
-            .rconnd = relay_connd_curses,
-            .rerror = relay_error_curses,
-#endif
-        };
 
         if ( !!params->fileName && file_exists( params->fileName ) ) {
             XWStreamCtxt* stream;

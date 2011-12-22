@@ -2,6 +2,8 @@
 
 set -u -e
 
+CONNNAME=""
+
 usage() {
     echo "usage: %0 --long|--short logfile*"
     exit 1
