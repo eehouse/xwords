@@ -95,11 +95,8 @@ public class XwJNI {
                                                byte[][] dictBytes, 
                                                String[] dictPaths, 
                                                String langName,
-                                               // UtilCtxt util, 
                                                JNIUtils jniu,
-                                               // DrawCtx draw,
                                                CommonPrefs cp
-                                               // TransportProcs procs 
                                                ) {
         return game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
                                     dictPaths, langName, (UtilCtxt)null, jniu,
@@ -115,7 +112,6 @@ public class XwJNI {
                                                String langName,
                                                UtilCtxt util, 
                                                JNIUtils jniu,
-                                               // DrawCtx draw,
                                                CommonPrefs cp,
                                                TransportProcs procs
                                                ) {
