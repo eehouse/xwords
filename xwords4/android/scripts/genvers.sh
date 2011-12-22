@@ -13,7 +13,7 @@ cat <<EOF > android/XWords4/res/values/git_string.xml
 <!-- auto-generated; do not edit -->
 
 <resources>
-    <string name="git_rev_gen">$GITVERSION</string>
+    <string name="git_rev">$GITVERSION</string>
 </resources>
 EOF
 

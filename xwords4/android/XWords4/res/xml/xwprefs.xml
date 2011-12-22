@@ -303,7 +303,7 @@
 			            android:defaultValue="false"
 			            />
     <EditTextPreference android:title="@string/git_rev_title"
-			            android:summary="@string/git_rev_gen"
+			            android:summary="@string/git_rev"
 			            android:enabled="false"
 			            />
   </PreferenceScreen>
