@@ -1002,6 +1002,38 @@ set_timeouts( int sock )
     }
 }
 
+static void
+enable_keepalive( int sock )
+{
+    int optval = 1;
+    if ( 0 > setsockopt( sock, SOL_SOCKET, SO_KEEPALIVE, 
+                         &optval, sizeof( optval ) ) ) {
+        logf( XW_LOGERROR, "setsockopt(SO_KEEPALIVE)=>%d (%s)", errno, 
+              strerror(errno) );
+        assert( 0 );
+    }
+    /*
+      The above will kill sockets, eventually, whose remote ends have died
+      without notifying us.  (Duplicate by pulling a phone's battery while it
+      has an open connection.)  It'll take nearly three hours, however.  The
+      info below appears to allow for significantly shortening the time,
+      though at the expense of greater network traffic.  I'm going to let it
+      run this way before bothering with anything more.
+
+      from http://tldp.org/HOWTO/html_single/TCP-Keepalive-HOWTO/
+
+      "There are also three other socket options you can set for keepalive
+      when you write your application. They all use the SOL_TCP level instead
+      of SOL_SOCKET, and they override system-wide variables only for the
+      current socket.  If you read without writing first, the current
+      system-wide parameters will be returned."
+
+      * TCP_KEEPCNT: overrides tcp_keepalive_probes
+      * TCP_KEEPIDLE: overrides tcp_keepalive_time
+      * TCP_KEEPINTVL: overrides tcp_keepalive_intvl
+      */
+}
+
 int
 main( int argc, char** argv )
 {
@@ -1312,6 +1344,8 @@ main( int argc, char** argv )
 
                         /* Set timeout so send and recv won't block forever */
                         set_timeouts( newSock );
+                        
+                        enable_keepalive( newSock );
 
                         logf( XW_LOGINFO, 
                               "accepting connection from %s on socket %d", 
