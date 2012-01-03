@@ -4,6 +4,7 @@ set -u -e
 
 TAGNAME=""
 FILES=""
+XW_WWW_PATH=${XW_WWW_PATH:-""}
 
 usage() {
     echo "Error: $*"
@@ -15,7 +16,7 @@ do_build() {
     WD=$(pwd)
     cd $(dirname $0)/../XWords4/
     touch jni/Android.mk
-    ../scripts/ndkbuild.sh
+    ../scripts/ndkbuild.sh -j3
     rm -rf bin/ gen/
     ant release
     cd $WD
