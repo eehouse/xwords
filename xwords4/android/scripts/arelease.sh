@@ -1,5 +1,10 @@
 #!/bin/bash
 
+set -u -e
+
+TAGNAME=""
+FILES=""
+
 usage() {
     echo "Error: $*"
     echo "usage: $0 [--tag <name>] [<package-unsigned.apk>]" >&2
@@ -9,7 +14,6 @@ usage() {
 do_build() {
     WD=$(pwd)
     cd $(dirname $0)/../XWords4/
-    pwd
     touch jni/Android.mk
     ../scripts/ndkbuild.sh
     rm -rf bin/ gen/
@@ -17,7 +21,7 @@ do_build() {
     cd $WD
 }
 
-while [ -n "$1" ]; do
+while [ "$#" -gt 0 ]; do
     case $1 in
         --tag) TAGNAME=$2
             git describe $TAGNAME || usage "$TAGNAME not a valid git tag"
@@ -52,7 +56,6 @@ if [ -z "$FILES" ]; then
 fi
 
 for PACK_UNSIGNED in $FILES; do
-    echo $FILE
 
     PACK_SIGNED=$(basename $PACK_UNSIGNED)
     echo "base: $PACK_SIGNED"
