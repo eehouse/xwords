@@ -1814,7 +1814,6 @@ p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 static void
 setHeartbeatTimer( CommsCtxt* comms )
 {
-    LOG_FUNC();
     XP_ASSERT( !!comms );
 
     if ( comms->hbTimerPending ) {
