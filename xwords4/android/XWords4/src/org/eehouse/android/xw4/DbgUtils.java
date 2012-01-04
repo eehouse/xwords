@@ -31,8 +31,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class DbgUtils {
-    static final String TAG = "XW4";
-    static boolean s_doLog = true;
+    private static final String TAG = "XW4";
+    private static boolean s_doLog = true;
 
     private static Time s_time = new Time();
 
@@ -95,6 +95,4 @@ public class DbgUtils {
             printStack( Thread.currentThread().getStackTrace() );
         }
     }
-
-    private DbgUtils() {}
 }
