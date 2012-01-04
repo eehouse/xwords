@@ -5,3 +5,4 @@ bin
 gen
 libs
 proguard.cfg
+obj
