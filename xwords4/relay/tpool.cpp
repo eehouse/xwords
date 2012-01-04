@@ -282,7 +282,6 @@ XWThreadPool::real_listener()
 
         pthread_rwlock_rdlock( &m_activeSocketsRWLock );
         int nSockets = m_activeSockets.size() + 1; /* for pipe */
-        logf( XW_LOGINFO, "%s: nSockets=%d", __func__, nSockets );
 #ifdef LOG_POLL
         int logCapacity = 4 * nSockets;
         int logLen = 0;
