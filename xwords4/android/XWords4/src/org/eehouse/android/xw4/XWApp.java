@@ -27,11 +27,15 @@ public class XWApp extends Application {
     @Override
     public void onCreate()
     {
-        DbgUtils.logEnable( this );
+        super.onCreate();
+
+        // This one line should always get logged even if logging is
+        // off -- because logging is on by default until logEnable is
+        // called.
         DbgUtils.logf( "XWApp.onCreate(); git_rev=%s", 
-                       getString(R.string.git_rev) );
+                       getString( R.string.git_rev ) );
+        DbgUtils.logEnable( this );
 
         RelayReceiver.RestartTimer( this );
-        super.onCreate();
     }
 }
