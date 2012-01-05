@@ -1,7 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make -j3"; -*- */
 
 /* 
- * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005 - 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -180,7 +180,7 @@ CookieRef::Unlock() {
 
 bool
 CookieRef::_Connect( int socket, int nPlayersH, int nPlayersS, int seed, 
-                     bool seenSeed  )
+                     bool seenSeed, in_addr& addr )
 {
     bool connected = false;
     HostID prevHostID = HOST_ID_NONE;
@@ -199,7 +199,7 @@ CookieRef::_Connect( int socket, int nPlayersH, int nPlayersS, int seed,
     if ( !connected ) {
         set<int> sockets = GetSockets();
         if ( sockets.end() == sockets.find( socket ) ) {
-            pushConnectEvent( socket, nPlayersH, nPlayersS, seed );
+            pushConnectEvent( socket, nPlayersH, nPlayersS, seed, addr );
             handleEvents();
             connected = HasSocket_locked( socket );
         } else {
@@ -211,7 +211,7 @@ CookieRef::_Connect( int socket, int nPlayersH, int nPlayersS, int seed,
 
 bool
 CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
-                       int seed, bool gameDead )
+                       int seed, in_addr& addr, bool gameDead )
 {
     bool spotTaken = false;
     bool alreadyHere = AlreadyHere( hid, seed, socket, &spotTaken );
@@ -222,7 +222,7 @@ CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
             logf( XW_LOGINFO, "%s: dropping because already here",
                   __func__ );
         } else {
-            pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
+            pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed, addr );
         }
         if ( gameDead ) {
             pushGameDead( socket );
@@ -242,13 +242,14 @@ CookieRef::_HandleAck( HostID hostID )
 }
 
 void
-CookieRef::_PutMsg( HostID srcID, HostID destID, unsigned char* buf, int buflen )
+CookieRef::_PutMsg( HostID srcID,  in_addr& addr, HostID destID, unsigned char* buf, int buflen )
 {
     CRefEvent evt( XWE_PROXYMSG );
     evt.u.fwd.src = srcID;
     evt.u.fwd.dest = destID;
     evt.u.fwd.buf = buf;
     evt.u.fwd.buflen = buflen;
+    evt.u.fwd.addr = addr;
 
     m_eventQueue.push_back( evt );
     handleEvents();
@@ -496,9 +497,10 @@ CookieRef::_CheckHeartbeats( time_t now )
 #endif
 
 void
-CookieRef::_Forward( HostID src, HostID dest, unsigned char* buf, int buflen )
+CookieRef::_Forward( HostID src, in_addr& addr, HostID dest, unsigned char* buf,
+                     int buflen )
 {
-    pushForwardEvent( src, dest, buf, buflen );
+    pushForwardEvent( src, addr, dest, buf, buflen );
     handleEvents();
 } /* Forward */
 
@@ -511,7 +513,7 @@ CookieRef::_Remove( int socket )
 
 void 
 CookieRef::pushConnectEvent( int socket, int nPlayersH, int nPlayersS,
-                             int seed )
+                             int seed, in_addr& addr )
 {
     CRefEvent evt;
     evt.type = XWE_DEVCONNECT;
@@ -520,12 +522,13 @@ CookieRef::pushConnectEvent( int socket, int nPlayersH, int nPlayersS,
     evt.u.con.nPlayersH = nPlayersH;
     evt.u.con.nPlayersS = nPlayersS;
     evt.u.con.seed = seed;
+    evt.u.con.addr = addr;
     m_eventQueue.push_back( evt );
 } /* pushConnectEvent */
 
 void 
 CookieRef::pushReconnectEvent( int socket, HostID srcID, int nPlayersH,
-                               int nPlayersS, int seed )
+                               int nPlayersS, int seed, in_addr& addr )
 {
     CRefEvent evt( XWE_RECONNECT );
     evt.u.con.socket = socket;
@@ -533,6 +536,7 @@ CookieRef::pushReconnectEvent( int socket, HostID srcID, int nPlayersH,
     evt.u.con.nPlayersH = nPlayersH;
     evt.u.con.nPlayersS = nPlayersS;
     evt.u.con.seed = seed;
+    evt.u.con.addr = addr;
     m_eventQueue.push_back( evt );
 } /* pushReconnectEvent */
 
@@ -557,7 +561,7 @@ CookieRef::pushHeartFailedEvent( int socket )
 #endif
 
 void
-CookieRef::pushForwardEvent( HostID src, HostID dest, 
+CookieRef::pushForwardEvent( HostID src, in_addr& addr, HostID dest, 
                              unsigned char* buf, int buflen )
 {
     logf( XW_LOGVERBOSE1, "pushForwardEvent: %d -> %d", src, dest );
@@ -566,6 +570,7 @@ CookieRef::pushForwardEvent( HostID src, HostID dest,
     evt.u.fwd.dest = dest;
     evt.u.fwd.buf = buf;
     evt.u.fwd.buflen = buflen;
+    evt.u.fwd.addr = addr;
     m_eventQueue.push_back( evt );
 }
 
@@ -868,7 +873,8 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp )
     }
 
     evt->u.con.srcID = DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID,
-                                                nPlayersH, seed, reconn );
+                                                nPlayersH, seed, 
+                                                evt->u.con.addr, reconn );
 
     HostID hostid = evt->u.con.srcID;
     if ( NULL != hidp ) {
@@ -1074,8 +1080,9 @@ CookieRef::forward_or_store( const CRefEvent* evt )
         }
 
         /* also note that we've heard from src recently */
-#ifdef RELAY_HEARTBEAT
         HostID src = evt->u.fwd.src;
+        DBMgr::Get()->RecordAddress( ConnName(), src, evt->u.fwd.addr );
+#ifdef RELAY_HEARTBEAT
         pushHeartbeatEvent( src, SocketForHost(src) );
 #endif
     } while ( 0 );

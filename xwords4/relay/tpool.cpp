@@ -1,7 +1,7 @@
 /* -*- compile-command: "make -j3"; -*- */
 
 /* 
- * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005 - 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -106,18 +106,22 @@ XWThreadPool::Stop()
 
     int ii;
     for ( ii = 0; ii < m_nThreads; ++ii ) {
-        enqueue( 0, STYPE_UNKNOWN );
+        SockInfo si = { STYPE_UNKNOWN, {0} };
+        enqueue( 0, si );
     }
 
     interrupt_poll();
 }
 
 void
-XWThreadPool::AddSocket( int socket, SockType stype )
+XWThreadPool::AddSocket( int socket, SockType stype, in_addr& from )
 {
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
-        m_activeSockets.push_back( pair<int,SockType>(socket, stype) );
+        SockInfo si;
+        si.m_type = stype;
+        si.m_addr = from;
+        m_activeSockets.push_back( pair<int,SockInfo>(socket, si) );
     }
     interrupt_poll();
 }
@@ -129,7 +133,7 @@ XWThreadPool::RemoveSocket( int socket )
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
 
-        vector< pair<int,SockType> >::iterator iter = m_activeSockets.begin();
+        vector< pair<int,SockInfo> >::iterator iter = m_activeSockets.begin();
         while ( iter != m_activeSockets.end() ) {
             if ( iter->first == socket ) {
                 m_activeSockets.erase( iter );
@@ -173,11 +177,12 @@ void
 XWThreadPool::EnqueueKill( int socket, const char* const why )
 {
     logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, socket, why );
-    enqueue( socket, STYPE_UNKNOWN, Q_KILL );
+    SockInfo si = { STYPE_UNKNOWN, {0} };
+    enqueue( socket, si, Q_KILL );
 }
 
 bool
-XWThreadPool::get_process_packet( int socket, SockType stype )
+XWThreadPool::get_process_packet( int socket, SockType stype, in_addr& addr )
 {
     bool success = false;
     short packetSize;
@@ -189,10 +194,10 @@ XWThreadPool::get_process_packet( int socket, SockType stype )
         EnqueueKill( socket, "bad packet" );
     } else if ( STYPE_GAME == stype ) {
         logf( XW_LOGINFO, "calling m_pFunc" );
-        success = (*m_pFunc)( buf, nRead, socket );
+        success = (*m_pFunc)( buf, nRead, socket, addr );
     } else {
         buf[nRead] = '\0';
-        handle_proxy_packet( buf, nRead, socket );
+        handle_proxy_packet( buf, nRead, socket, addr );
         CloseSocket( socket );
     }
     return success;
@@ -236,8 +241,8 @@ XWThreadPool::real_tpool_main()
                   pr.m_socket );
             switch ( pr.m_act ) {
             case Q_READ:
-                if ( get_process_packet( pr.m_socket, pr.m_type ) ) {
-                    AddSocket( pr.m_socket, pr.m_type );
+                if ( get_process_packet( pr.m_socket, pr.m_info.m_type, pr.m_info.m_addr ) ) {
+                    AddSocket( pr.m_socket, pr.m_info.m_type, pr.m_info.m_addr );
                 }
                 break;
             case Q_KILL:
@@ -273,7 +278,7 @@ XWThreadPool::real_listener()
     int nSocketsAllocd = 1;
 
     struct pollfd* fds = (pollfd*)calloc( nSocketsAllocd, sizeof(fds[0]) );
-    SockType* stypes = (SockType*)calloc( nSocketsAllocd, sizeof(stypes[0]) );
+    SockInfo* sinfos = (SockInfo*)calloc( nSocketsAllocd, sizeof(sinfos[0]) );
 #ifdef LOG_POLL
     char* log = (char*)malloc( 4 * nSocketsAllocd );
 #endif
@@ -289,7 +294,7 @@ XWThreadPool::real_listener()
 
         if ( nSockets > nSocketsAllocd ) {
             fds = (struct pollfd*)realloc( fds, nSockets * sizeof(fds[0]) );
-            stypes = (SockType*)realloc( stypes, nSockets * sizeof(stypes[0]) );
+            sinfos = (SockInfo*)realloc( sinfos, nSockets * sizeof(sinfos[0]) );
 #ifdef LOG_POLL
             log = (char*)realloc( log, nSockets * 4 );
 #endif
@@ -305,11 +310,11 @@ XWThreadPool::real_listener()
 #endif
         ++curfd;
 
-        vector< pair<int,SockType> >::iterator iter;
+        vector< pair<int,SockInfo> >::iterator iter;
         for ( iter = m_activeSockets.begin(); iter != m_activeSockets.end(); 
               ++iter ) {
             fds[curfd].fd = iter->first;
-            stypes[curfd] = iter->second;
+            sinfos[curfd] = iter->second;
             fds[curfd].events = flags;
 #ifdef LOG_POLL
             if ( logCapacity > logLen ) {
@@ -369,7 +374,7 @@ XWThreadPool::real_listener()
                     }
 
                     if ( 0 != (fds[curfd].revents & (POLLIN | POLLPRI)) ) {
-                        enqueue( socket, stypes[curfd] );
+                        enqueue( socket, sinfos[curfd] );
                     } else {
                         logf( XW_LOGERROR, "odd revents: %x", 
                               fds[curfd].revents );
@@ -384,7 +389,7 @@ XWThreadPool::real_listener()
     }
 
     free( fds );
-    free( stypes );
+    free( sinfos );
 #ifdef LOG_POLL
     free( log );
 #endif
@@ -403,9 +408,9 @@ XWThreadPool::listener_main( void* closure )
 }
 
 void
-XWThreadPool::enqueue( int socket, SockType stype, QAction act ) 
+XWThreadPool::enqueue( int socket, SockInfo si, QAction act ) 
 {
-    QueuePr pr = { act, socket, stype };
+    QueuePr pr = { act, socket, si };
     MutexLock ml( &m_queueMutex );
     m_queue.push_back( pr );
 

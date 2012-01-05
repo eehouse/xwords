@@ -1,7 +1,8 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005 - 2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,9 +37,14 @@ class XWThreadPool {
 
  public:
     typedef enum { STYPE_UNKNOWN, STYPE_GAME, STYPE_PROXY } SockType;
+    typedef struct _SockInfo {
+        SockType m_type;
+        in_addr m_addr;
+    } SockInfo;
 
     static XWThreadPool* GetTPool();
-    typedef bool (*packet_func)( unsigned char* buf, int bufLen, int socket );
+    typedef bool (*packet_func)( unsigned char* buf, int bufLen, int socket,
+                                 in_addr& addr );
     typedef void (*kill_func)( int socket );
 
     XWThreadPool();
@@ -48,7 +54,7 @@ class XWThreadPool {
     void Stop();
 
     /* Add to set being listened on */
-    void AddSocket( int socket, SockType stype );
+    void AddSocket( int socket, SockType stype, in_addr& fromAddr );
     /* remove from tpool altogether, and close */
     void CloseSocket( int socket );
 
@@ -56,18 +62,18 @@ class XWThreadPool {
 
  private:
     typedef enum { Q_READ, Q_KILL } QAction;
-    typedef struct { QAction m_act; int m_socket; SockType m_type; } QueuePr;
+    typedef struct { QAction m_act; int m_socket; SockInfo m_info; } QueuePr;
 
     /* Remove from set being listened on */
     bool RemoveSocket( int socket );
 
     void enqueue( int socket, QAction act = Q_READ );
-    void enqueue( int socket, SockType stype, QAction act = Q_READ );
+    void enqueue( int socket, SockInfo si, QAction act = Q_READ );
     void release_socket_locked( int socket );
     void grab_elem_locked( QueuePr* qpp );
     void print_in_use( void );
 
-    bool get_process_packet( int socket, SockType stype );
+    bool get_process_packet( int socket, SockType stype, in_addr& addr );
     void interrupt_poll();
 
     void* real_tpool_main();
@@ -77,7 +83,7 @@ class XWThreadPool {
     static void* listener_main( void* closure );
 
     /* Sockets main thread listens on */
-    vector< pair<int,SockType> >m_activeSockets;
+    vector< pair<int,SockInfo> >m_activeSockets;
     pthread_rwlock_t m_activeSocketsRWLock;
 
     /* Sockets waiting for a thread to read 'em */

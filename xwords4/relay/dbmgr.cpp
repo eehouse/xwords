@@ -1,7 +1,8 @@
 /* -*- compile-command: "make -k -j3"; -*- */
 
 /* 
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2010-2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "dbmgr.h"
 #include "mlock.h"
@@ -71,8 +75,6 @@ DBMgr::DBMgr()
  
 DBMgr::~DBMgr()
 {
-    logf( XW_LOGINFO, "%s called", __func__ );
-
     assert( s_instance == this );
     s_instance = NULL;
 }
@@ -237,7 +239,7 @@ DBMgr::AllDevsAckd( const char* const connName )
 
 HostID
 DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd, 
-                  unsigned short seed, bool ackd )
+                  unsigned short seed, const in_addr& addr, bool ackd )
 {
     HostID newID = curID;
 
@@ -253,10 +255,11 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
     assert( newID <= 4 );
 
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
-        " seeds[%d] = %d, mtimes[%d]='now', ack[%d]=\'%c\'"
+        " seeds[%d] = %d, addrs[%d] = \'%s\', mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, newID, 
+    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, 
+              newID, inet_ntoa(addr), newID, 
               newID, ackd?'A':'a', connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
@@ -424,6 +427,19 @@ DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
         }
         PQclear( result );
     }
+}
+
+void
+DBMgr::RecordAddress( const char* const connName, HostID hid, const in_addr& addr )
+{
+    assert( hid >= 0 && hid <= 4 );
+    const char* fmt = "UPDATE " GAMES_TABLE " SET addrs[%d] = \'%s\'"
+        " WHERE connName = '%s'";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, hid, inet_ntoa(addr), connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    execSql( query );
 }
 
 void

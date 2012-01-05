@@ -1,7 +1,8 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,7 +56,7 @@ class DBMgr {
     bool AllDevsAckd( const char* const connName );
 
     HostID AddDevice( const char* const connName, HostID curID,
-                      int nToAdd, unsigned short seed, bool unAckd );
+                      int nToAdd, unsigned short seed, const in_addr& addr, bool unAckd );
     void NoteAckd( const char* const connName, HostID id );
     HostID HIDForSeed( const char* const connName, unsigned short seed );
     bool RmDeviceByHid( const char* const connName, HostID id );
@@ -65,6 +66,8 @@ class DBMgr {
     void ClearCID( const char* connName );
     void RecordSent( const char* const connName, HostID hid, int nBytes );
     void RecordSent( const int* msgID, int nMsgIDs );
+    void RecordAddress( const char* const connName, HostID hid, 
+                        const in_addr& addr );
     void GetPlayerCounts( const char* const connName, int* nTotal,
                           int* nHere );
 

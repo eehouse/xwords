@@ -56,6 +56,7 @@ cid integer
 ,nSent INTEGER DEFAULT 0
 ,ctime TIMESTAMP (0) DEFAULT CURRENT_TIMESTAMP
 ,mtimes TIMESTAMP(0)[]
+,addrs INET[]
 );
 EOF
 
