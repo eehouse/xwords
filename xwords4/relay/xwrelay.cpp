@@ -1,7 +1,7 @@
-/* -*- compile-command: "make"; -*- */
+/* -*- compile-command: "make -j3"; -*- */
 
 /* 
- * Copyright 2005-2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005 - 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -320,7 +320,7 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
  * game?
  */
 static bool
-processConnect( unsigned char* bufp, int bufLen, int socket )
+processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
 {
     char cookie[MAX_INVITE_LEN+1];
     unsigned char* end = bufp + bufLen;
@@ -358,7 +358,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
                           seed, langCode, wantsPublic, makePublic );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
-            success = scr.Connect( socket, nPlayersH, nPlayersT, seed );
+            success = scr.Connect( socket, nPlayersH, nPlayersT, seed, addr );
         } else {
             err = XWRELAY_ERROR_BADPROTO;
         }
@@ -371,12 +371,12 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
 } /* processConnect */
 
 static bool
-processReconnect( unsigned char* bufp, int bufLen, int socket )
+processReconnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
 {
     unsigned char* end = bufp + bufLen;
     bool success = false;
 
-    logf( XW_LOGINFO, "processReconnect" );
+    logf( XW_LOGINFO, "%s()", __func__ );
 
     unsigned char flags = *bufp++;
     XWREASON err = flagsOK( flags );
@@ -405,7 +405,7 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
                           nPlayersT, gameSeed, langCode,
                           wantsPublic, makePublic );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
-                                     gameSeed, &err );
+                                     gameSeed, addr, &err );
             if ( !success ) {
                 assert( err != XWRELAY_ERROR_NONE );
             }
@@ -488,7 +488,7 @@ GetNSpawns(void)
 /* forward the message.  Need only change the command after looking up the
  * socket and it's ready to go. */
 static bool
-forwardMessage( unsigned char* buf, int buflen, int srcSocket )
+forwardMessage( unsigned char* buf, int buflen, int srcSocket, in_addr& addr )
 {
     bool success = false;
     unsigned char* bufp = buf + 1; /* skip cmd */
@@ -504,17 +504,17 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
 
         if ( COOKIE_ID_NONE == cookieID ) {
             SafeCref scr( srcSocket );
-            success = scr.Forward( src, dest, buf, buflen );
+            success = scr.Forward( src, addr, dest, buf, buflen );
         } else {
             SafeCref scr( cookieID ); /* won't work if not allcon; will be 0 */
-            success = scr.Forward( src, dest, buf, buflen );
+            success = scr.Forward( src, addr, dest, buf, buflen );
         }
     }
     return success;
 } /* forwardMessage */
 
 static bool
-processMessage( unsigned char* buf, int bufLen, int socket )
+processMessage( unsigned char* buf, int bufLen, int socket, in_addr& addr )
 {
     bool success = false;            /* default is failure */
     XWRELAY_Cmd cmd = *buf;
@@ -523,10 +523,10 @@ processMessage( unsigned char* buf, int bufLen, int socket )
 
     switch( cmd ) {
     case XWRELAY_GAME_CONNECT: 
-        success = processConnect( buf+1, bufLen-1, socket );
+        success = processConnect( buf+1, bufLen-1, socket, addr );
         break;
     case XWRELAY_GAME_RECONNECT: 
-        success = processReconnect( buf+1, bufLen-1, socket );
+        success = processReconnect( buf+1, bufLen-1, socket, addr );
         break;
     case XWRELAY_ACK:
         success = processAck( buf+1, bufLen-1, socket );
@@ -540,7 +540,7 @@ processMessage( unsigned char* buf, int bufLen, int socket )
         break;
 #endif
     case XWRELAY_MSG_TORELAY:
-        success = forwardMessage( buf, bufLen, socket );
+        success = forwardMessage( buf, bufLen, socket, addr );
         break;
     default:
         logf( XW_LOGERROR, "%s bad: %d", __func__, cmd );
@@ -748,10 +748,9 @@ pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName,
 }
 
 static void
-handleMsgsMsg( int sock, bool sendFull,
+handleMsgsMsg( int sock, in_addr& addr, bool sendFull,
                unsigned char* bufp, const unsigned char* end )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
     unsigned short nameCount;
     int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
@@ -777,6 +776,8 @@ handleMsgsMsg( int sock, bool sendFull,
                                 &hid ) ) {
                 break;
             }
+
+            dbmgr->RecordAddress( connName, hid, addr );
 
             /* For each relayID, write the number of messages and then
                each message (in the getmsg case) */
@@ -848,7 +849,7 @@ log_hex( const unsigned char* memp, int len, const char* tag )
 } // log_hex
 
 static void
-handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
+handleProxyMsgs( int sock, in_addr& addr, unsigned char* bufp, unsigned char* end )
 {
     // log_hex( bufp, end-bufp, __func__ );
     unsigned short nameCount;
@@ -889,7 +890,7 @@ handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
                              && getNetByte( &bufp, end, &dest ) ) {
                             assert( cmd == XWRELAY_MSG_TORELAY_NOCONN );
                             assert( hid == dest );
-                            scr.PutMsg( src, dest, start, len );
+                            scr.PutMsg( src, addr, dest, start, len );
                             bufp = start + len;
                             continue;
                         }
@@ -903,7 +904,7 @@ handleProxyMsgs( int sock, unsigned char* bufp, unsigned char* end )
 } // handleProxyMsgs
 
 void
-handle_proxy_packet( unsigned char* buf, int len, int sock )
+handle_proxy_packet( unsigned char* buf, int len, int sock, in_addr& addr )
 {
     logf( XW_LOGINFO, "%s()", __func__ );
     if ( len > 0 ) {
@@ -935,12 +936,12 @@ handle_proxy_packet( unsigned char* buf, int len, int sock )
             case PRX_HAS_MSGS:
             case PRX_GET_MSGS:
                 if ( len >= 2 ) {
-                    handleMsgsMsg( sock, PRX_GET_MSGS == cmd, bufp, end );
+                    handleMsgsMsg( sock, addr, PRX_GET_MSGS == cmd, bufp, end );
                 }
                 break;          /* PRX_HAS_MSGS */
 
             case PRX_PUT_MSGS:
-                handleProxyMsgs( sock, bufp, end );
+                handleProxyMsgs( sock, addr, bufp, end );
                 break;
 
             case PRX_DEVICE_GONE:
@@ -1348,12 +1349,13 @@ main( int argc, char** argv )
                         enable_keepalive( newSock );
 
                         logf( XW_LOGINFO, 
-                              "accepting connection from %s on socket %d", 
-                              inet_ntoa(newaddr.sin_addr), newSock );
+                              "%s: accepting connection from %s on socket %d", 
+                              __func__, inet_ntoa(newaddr.sin_addr), newSock );
 
                         tPool->AddSocket( newSock,
                                           perGame ? XWThreadPool::STYPE_GAME 
-                                          : XWThreadPool::STYPE_PROXY );
+                                          : XWThreadPool::STYPE_PROXY,
+                                          newaddr.sin_addr );
                     }
                     --retval;
                 }

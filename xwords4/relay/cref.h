@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005-2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -120,17 +120,17 @@ class CookieRef {
     static void Delete( const char* name );
 
     bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed, 
-                   bool seenSeed );
+                   bool seenSeed, in_addr& addr );
     bool _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
-                     int seed, bool gameDead );
+                     int seed, in_addr& addr, bool gameDead );
     void _HandleAck( HostID hostID );
-    void _PutMsg( HostID srcID, HostID destID, unsigned char* buf, int buflen );
+    void _PutMsg( HostID srcID, in_addr& addr, HostID destID, unsigned char* buf, int buflen );
     void _Disconnect(int socket, HostID hostID );
     void _DeviceGone( HostID hostID, int seed );
     void _Shutdown();
     void _HandleHeartbeat( HostID id, int socket );
     void _CheckHeartbeats( time_t now );
-    void _Forward( HostID src, HostID dest, unsigned char* buf, int buflen );
+    void _Forward( HostID src, in_addr& addr, HostID dest, unsigned char* buf, int buflen );
     void _Remove( int socket );
     void _CheckAllConnected();
     void _CheckNotAcked( HostID hid );
@@ -151,6 +151,7 @@ class CookieRef {
                 HostID dest;
                 unsigned char* buf;
                 int buflen;
+                in_addr addr;
             } fwd;
             struct {
                 int socket;
@@ -158,6 +159,7 @@ class CookieRef {
                 int nPlayersS;
                 int seed;
                 HostID srcID;
+                in_addr addr;
             } con;
             struct {
                 HostID srcID;
@@ -192,14 +194,14 @@ class CookieRef {
     void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
                    bool cascade );
     void pushConnectEvent( int socket, int nPlayersH, int nPlayersS,
-                           int seed );
+                           int seed, in_addr& addr );
     void pushReconnectEvent( int socket, HostID srcID,
                              int nPlayersH, int nPlayersS,
-                             int seed );
+                             int seed, in_addr& addr );
     void pushHeartbeatEvent( HostID id, int socket );
     void pushHeartFailedEvent( int socket );
     
-    void pushForwardEvent( HostID src, HostID dest, unsigned char* buf, 
+    void pushForwardEvent( HostID src, in_addr& addr, HostID dest, unsigned char* buf, 
                            int buflen );
     void pushDestBadEvent();
     void pushLastSocketGoneEvent();

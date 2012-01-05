@@ -1,7 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005-2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -185,37 +185,38 @@ class SafeCref {
     /* SafeCref( CookieRef* cref ); */
     ~SafeCref();
 
-    bool Forward( HostID src, HostID dest, unsigned char* buf, int buflen ) {
+    bool Forward( HostID src, in_addr& addr, HostID dest, unsigned char* buf, int buflen ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            cref->_Forward( src, dest, buf, buflen );
+            cref->_Forward( src, addr, dest, buf, buflen );
             return true;
         } else {
             return false;
         }
     }
 
-    void PutMsg( HostID srcID, HostID destID, unsigned char* buf, int buflen ) {
+    void PutMsg( HostID srcID, in_addr& addr, HostID destID, unsigned char* buf,
+                 int buflen ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            cref->_PutMsg( srcID, destID, buf, buflen );
+            cref->_PutMsg( srcID, addr, destID, buf, buflen );
         }
     }
 
-    bool Connect( int socket, int nPlayersH, int nPlayersS, int seed ) {
+    bool Connect( int socket, int nPlayersH, int nPlayersS, int seed, in_addr& addr ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
             return cref->_Connect( socket, nPlayersH, nPlayersS, seed, 
-                                   m_seenSeed );
+                                   m_seenSeed, addr );
         } else {
             return false;
         }
     }
     bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
-                    int seed, XWREASON* errp ) {
+                    int seed, in_addr& addr, XWREASON* errp ) {
         bool success = false;
         *errp = XWRELAY_ERROR_NONE;
         if ( IsValid() ) {
@@ -225,7 +226,7 @@ class SafeCref {
                 *errp = XWRELAY_ERROR_DEADGAME;
             } else {
                 success = cref->_Reconnect( socket, srcID, nPlayersH, 
-                                            nPlayersS, seed, m_dead );
+                                            nPlayersS, seed, addr, m_dead );
             }
         }
         return success;
