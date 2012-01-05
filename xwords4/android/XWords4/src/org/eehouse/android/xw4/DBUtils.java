@@ -148,7 +148,7 @@ public class DBUtils {
                                    getColumnIndex(DBHelper.LASTPLAY_TIME));
                 int tmp = cursor.getInt(cursor.
                                         getColumnIndex(DBHelper.GAME_OVER));
-                summary.gameOver = tmp == 0 ? false : true;
+                summary.gameOver = tmp != 0;
 
                 String scoresStr = 
                     cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
@@ -238,7 +238,7 @@ public class DBUtils {
                 values.put( DBHelper.PLAYERS, 
                             summary.summarizePlayers() );
                 values.put( DBHelper.DICTLANG, summary.dictLang );
-                values.put( DBHelper.GAME_OVER, summary.gameOver );
+                values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
                 values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
                 values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
                 if ( null != inviteID ) {
