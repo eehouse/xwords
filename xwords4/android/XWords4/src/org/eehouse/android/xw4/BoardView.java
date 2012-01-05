@@ -235,7 +235,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
             break;
         default:
-            DbgUtils.logf( "unknown action: %d", action );
+            DbgUtils.logf( "onTouchEvent: unknown action: %d", action );
             break;
         }
 
@@ -360,7 +360,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             drew = XwJNI.board_draw( m_jniGamePtr );
         }
         if ( !drew ) {
-            DbgUtils.logf( "draw not complete" );
+            DbgUtils.logf( "doJNIDraw: draw not complete" );
         }
     }
 
