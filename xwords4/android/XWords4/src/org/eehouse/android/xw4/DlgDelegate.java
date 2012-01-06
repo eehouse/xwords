@@ -254,6 +254,7 @@ public class DlgDelegate {
 
     public void launchLookup( String[] words, int lang, boolean forceList )
     {
+        Assert.assertTrue( null != words && 0 < words.length );
         m_words = words;
         m_wordsLang = lang;
         m_forceList = forceList;
