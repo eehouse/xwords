@@ -70,6 +70,8 @@
          form a complete game.  We'll be in this state as long as the
          game exists. -->
     <string name="summary_relay_connf">Game in play in room \"%s\"</string>
+    <!-- Final state: game is over. -->
+    <string name="summary_relay_gameoverf">Game over in room \"%s\"</string>
 
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Game over</string>

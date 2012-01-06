@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -153,6 +153,8 @@ public class GameSummary {
                 fmtID = R.string.summary_relay_conff;
             } else if ( anyMissing() ) {
                 fmtID = R.string.summary_relay_waitf;
+            } else if ( gameOver ) {
+                fmtID = R.string.summary_relay_gameoverf;
             } else {
                 fmtID = R.string.summary_relay_connf;
             }
