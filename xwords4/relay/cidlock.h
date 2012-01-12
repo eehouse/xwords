@@ -34,7 +34,7 @@ class CidInfo {
     CidInfo( CookieID cid )
         :m_cid(cid),
         m_cref(NULL),
-        m_owner(NULL) {}
+        m_owner(0) {}
 
     CookieID GetCid( void ) { return m_cid; }
     CookieRef* GetRef( void ) { return m_cref; }
