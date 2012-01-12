@@ -360,7 +360,7 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
     *silent = XP_FALSE;
     const char* message = NULL;
 
-    switch( id ) {
+    switch( (int)id ) {
     case ERR_TILES_NOT_IN_LINE:
         message = "All tiles played must be in a line.";
         break;
