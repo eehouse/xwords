@@ -10,35 +10,31 @@ class Column {
     public $colname;
     private $isArray;
     private $converter;
+
     function __construct( $name, $converter, $isArray ) {
         $this->colname = $name;
         $this->isArray = $isArray;
         $this->converter = $converter;
     }
 
-    function printTD( $index, $row, $nrows, $colData ) {
-        if ( 0 < $index ) {
-            if ( !$this->isArray && 0 < $row ) {
-                /* do nothing */
-            } else if ( 0 == $row && !$this->isArray ) {
-                $td = call_user_func( $this->converter, $colData );
-                echo "<td rowspan=$nrows>$td</td>";
-            } else {
-                $td = call_user_func( $this->converter, $this->nth_elem( $colData, $row ) );
-                echo "<td>$td</td>";
-            }
+    function printTD( $row, $nrows, $colData ) {
+        if ( !$this->isArray && 0 < $row ) {
+            /* do nothing */
+        } else if ( 0 == $row && !$this->isArray ) {
+            $td = call_user_func( $this->converter, $colData );
+            echo "<td rowspan=$nrows>$td</td>";
+        } else {
+            $td = call_user_func( $this->converter, 
+                                  $this->nth_elem( $colData, $row ) );
+            echo "<td>$td</td>";
         }
-     }
+    }
 
-     function nth_elem( $arr, $nn ) {
+    function nth_elem( $arr, $nn ) {
         $arr = explode(',', trim($arr, '{}'));
         return $arr[$nn];
     }
-}
-
-function count_devs( $row ) {
-    return $row[0];
-}
+} /* class Column */
 
 function identity( $str ) {
     return $str;
@@ -69,11 +65,17 @@ function int_to_lang( $str ) {
 }
 
 function ip_to_host($ip) {
-    return gethostbyaddr($ip);
+    if ( 0 < strlen( $ip ) ) {
+        $ip = gethostbyaddr($ip);
+    }
+    return $ip;
 }
 
-$cols = array( new Column("array_upper(nperdevice,1)", null, false), 
-               new Column("dead", "identity", false ), 
+function strip_quotes($str) {
+    return trim( $str, '"');
+}
+
+$cols = array( new Column("dead", "identity", false ), 
                new Column("room", "identity", false ), 
                new Column("lang", "int_to_lang", false ), 
                new Column("ntotal", "identity", false ), 
@@ -81,15 +83,17 @@ $cols = array( new Column("array_upper(nperdevice,1)", null, false),
                new Column("ack", "identity", true ), 
                new Column("nsent", "identity", false ),
                new Column("addrs", "ip_to_host", true ), 
-               new Column("mtimes", "identity", true ), 
+               new Column("mtimes", "strip_quotes", true ), 
                );
 
 $colnames = array();
 foreach ( $cols as $index => $col ) {
     $colnames[] = $col->colname;
 }
-$sql = "SELECT " . join( ",", $colnames ) . " FROM games "
-    . "WHERE NOT -NTOTAL = sum_array(nperdevice) LIMIT 200;";
+$sql = "SELECT " . join( ",", $colnames ) . 
+    ", array_upper(nperdevice,1)" .
+    " FROM games" .
+    " WHERE NOT -NTOTAL = sum_array(nperdevice) LIMIT 200;";
 echo "<p>$sql</p>";
 
 echo "\n<table border=\"3\">\n";
@@ -98,9 +102,7 @@ echo "<tr>";
 /* index has no header */
 echo "<th>&nbsp;</th>";
 foreach ( $cols as $index => $col ) {
-    if ( 0 != $index ) {
-        echo "<th>$col->colname</th>";
-    }
+    echo "<th>$col->colname</th>";
 }
 echo "</tr>\n";
 
@@ -111,23 +113,25 @@ if (!$db) {
 }
 
  // execute query
-$result = pg_query($db, $sql);
-if (!$result) {
+$result = pg_query( $db, $sql );
+if ( !$result ) {
     die( "Error in SQL query: " . pg_last_error() );
 }
 
 // iterate over result set
 // print each row
 $count = 0;
+$countIndex = count($cols);
+// error_log( "countIndex = " . $countIndex );
 while ( $row = pg_fetch_array($result) ) {
-    $nrows = count_devs( $row );
+    $nrows = $row[$countIndex];
     for ( $devIndex = 0; $devIndex < $nrows; ++$devIndex ) {
         echo "<tr>";
         if ( 0 == $devIndex ) {
             echo "<td rowspan=$nrows>$count</td>";
         }
         foreach ( $cols as $index => $col ) {
-            $col->printTD( $index, $devIndex, $nrows, $row[$index] );
+            $col->printTD( $devIndex, $nrows, $row[$index] );
         }
         echo "</tr>\n";
     }
@@ -138,7 +142,7 @@ while ( $row = pg_fetch_array($result) ) {
 pg_free_result( $result );
 pg_close( $db );
 
-echo "</table>";
+echo "</table>\n";
 
 ?>
 
