@@ -1,18 +1,23 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
-<head></head>
+<head>
+<link rel="stylesheet" type="text/css" href="showgames.css" /> 
+</head>
 <body>
 
 <?php
 include "pwd.php";
+$limit = 10;
 
 class Column {
     public $colname;
+    public $headname;
     private $isArray;
     private $converter;
 
-    function __construct( $name, $converter, $isArray ) {
-        $this->colname = $name;
+    function __construct( $colname, $headname, $converter, $isArray ) {
+        $this->colname = $colname;
+        $this->headname = $headname;
         $this->isArray = $isArray;
         $this->converter = $converter;
     }
@@ -75,34 +80,38 @@ function strip_quotes($str) {
     return trim( $str, '"');
 }
 
-$cols = array( new Column("dead", "identity", false ), 
-               new Column("room", "identity", false ), 
-               new Column("lang", "int_to_lang", false ), 
-               new Column("ntotal", "identity", false ), 
-               new Column("nperdevice", "identity", true ), 
-               new Column("ack", "identity", true ), 
-               new Column("nsent", "identity", false ),
-               new Column("addrs", "ip_to_host", true ), 
-               new Column("mtimes", "strip_quotes", true ), 
+$cols = array( new Column("dead", "D", "identity", false ), 
+               new Column("room", "Room", "identity", false ), 
+               new Column("lang", "Lang", "int_to_lang", false ), 
+               new Column("ntotal", "Tot", "identity", false ), 
+               new Column("nperdevice", "NP", "identity", true ), 
+               new Column("ack", "A", "identity", true ), 
+               new Column("nsent", "Sent", "identity", false ),
+               new Column("addrs", "Dev. addr", "ip_to_host", true ), 
+               new Column("ctime", "Created", "strip_quotes", false ), 
+               new Column("mtimes", "Last contact", "strip_quotes", true ), 
                );
 
 $colnames = array();
 foreach ( $cols as $index => $col ) {
     $colnames[] = $col->colname;
 }
-$sql = "SELECT " . join( ",", $colnames ) . 
-    ", array_upper(nperdevice,1)" .
-    " FROM games" .
-    " WHERE NOT -NTOTAL = sum_array(nperdevice) LIMIT 200;";
-echo "<p>$sql</p>";
+$colnames = join( ",", $colnames );
+
+$sql = "SELECT $colnames , array_upper(nperdevice,1) FROM " .
+    " ( SELECT $colnames, unnest(mtimes) FROM games " .
+    " WHERE NOT -NTOTAL = sum_array(nperdevice) ) " .
+    " AS set GROUP BY $colnames ORDER BY max(unnest) DESC LIMIT $limit;";
+
+// echo "<p>$sql</p>";
 
 echo "\n<table border=\"3\">\n";
 
 echo "<tr>";
 /* index has no header */
 echo "<th>&nbsp;</th>";
-foreach ( $cols as $index => $col ) {
-    echo "<th>$col->colname</th>";
+foreach ( $cols as $col ) {
+    echo "<th>$col->headname</th>";
 }
 echo "</tr>\n";
 
@@ -126,7 +135,7 @@ $countIndex = count($cols);
 while ( $row = pg_fetch_array($result) ) {
     $nrows = $row[$countIndex];
     for ( $devIndex = 0; $devIndex < $nrows; ++$devIndex ) {
-        echo "<tr>";
+        echo "<tr class=\"" . ((0 == ($count % 2)) ? "even" : "odd") . "\">";
         if ( 0 == $devIndex ) {
             echo "<td rowspan=$nrows>$count</td>";
         }
