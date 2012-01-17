@@ -200,9 +200,7 @@ public class NetUtils {
         //                           for-each-message: length: 2
         //                                             message: varies
 
-
         if ( null != msgHash ) {
-            DbgUtils.logf( "sendToRelay called" );
             try {
                 // Build up a buffer containing everything but the total
                 // message length and number of relayIDs in the message.
@@ -215,7 +213,6 @@ public class NetUtils {
                 Iterator<String> iter = msgHash.keySet().iterator();
                 while ( iter.hasNext() ) {
                     String relayID = iter.next();
-                    DbgUtils.logf( "sendToRelay: sending for %s", relayID );
                     int thisLen = 1 + relayID.length(); // string and '\n'
                     thisLen += 2;                        // message count
 
@@ -239,7 +236,6 @@ public class NetUtils {
                         outBuf.write( msg );
                     }
                     msgLen += thisLen;
-                    DbgUtils.logf( "sendToRelay: %d bytes so far", msgLen );
                 }
 
                 // Now open a real socket, write size and proto, and
@@ -254,7 +250,6 @@ public class NetUtils {
                 outStream.write( store.toByteArray() );
                 outStream.flush();
                 socket.close();
-                DbgUtils.logf( "sendToRelay: done", msgLen );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.logf( "%s", ioe.toString() );
             }
