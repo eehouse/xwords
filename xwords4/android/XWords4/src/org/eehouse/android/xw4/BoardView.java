@@ -71,7 +71,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_layoutWidth;
     private int m_layoutHeight;
     private Canvas m_canvas;    // owns the bitmap
-    private int m_trayOwner;
+    private int m_trayOwner = -1;
     private Rect m_valRect;
     private Rect m_letterRect;
     private Drawable m_rightArrow;

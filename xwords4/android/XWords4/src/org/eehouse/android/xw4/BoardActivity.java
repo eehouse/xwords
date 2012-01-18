@@ -1580,6 +1580,8 @@ public class BoardActivity extends XWActivity
         m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.gameIsConnected );
+        m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
+                          null != m_gi.dictName( m_view.getCurPlayer() ) );
     }
 
     private void adjustTradeVisibility()
