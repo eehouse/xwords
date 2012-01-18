@@ -146,19 +146,19 @@ public class GameSummary {
         String result = null;
         if ( isRelayGame() ) {
             
-            Assert.assertTrue( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
-                               == conType );
-            int fmtID;
-            if ( null == relayID || 0 == relayID.length() ) {
-                fmtID = R.string.summary_relay_conff;
-            } else if ( anyMissing() ) {
-                fmtID = R.string.summary_relay_waitf;
-            } else if ( gameOver ) {
-                fmtID = R.string.summary_relay_gameoverf;
-            } else {
-                fmtID = R.string.summary_relay_connf;
+            if ( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY == conType ) {
+                int fmtID;
+                if ( null == relayID || 0 == relayID.length() ) {
+                    fmtID = R.string.summary_relay_conff;
+                } else if ( anyMissing() ) {
+                    fmtID = R.string.summary_relay_waitf;
+                } else if ( gameOver ) {
+                    fmtID = R.string.summary_relay_gameoverf;
+                } else {
+                    fmtID = R.string.summary_relay_connf;
+                }
+                result = String.format( m_context.getString(fmtID), roomName );
             }
-            result = String.format( m_context.getString(fmtID), roomName );
         }
         return result;
     }
