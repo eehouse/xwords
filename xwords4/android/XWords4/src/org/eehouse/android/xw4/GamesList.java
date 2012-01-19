@@ -514,6 +514,11 @@ public class GamesList extends XWListActivity
         Intent intent;
 
         switch (item.getItemId()) {
+            
+        case R.id.gamel_menu_btping:
+            BTConnection.ping( this );
+            break;
+
         case R.id.gamel_menu_newgame:
             startNewGameActivity();
             break;
