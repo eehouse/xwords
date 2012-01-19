@@ -31,6 +31,9 @@
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
   <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.BLUETOOTH" />
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
   <!-- <uses-permission android:name="android.permission.RECEIVE_SMS" /> -->
   <!-- <uses-permission android:name="android.permission.SEND_SMS" /> -->
 
@@ -136,6 +139,12 @@
             <action android:name="android.intent.action.MEDIA_EJECT" />
             <data android:scheme="file" />
         </intent-filter>
+    </receiver>
+
+    <receiver android:name=".BTConnection">
+      <intent-filter>
+        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />                                                                    
+      </intent-filter>
     </receiver>
 
 

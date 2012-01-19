@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Application;
+import java.util.UUID;
 
 public class XWApp extends Application {
 
@@ -38,4 +39,13 @@ public class XWApp extends Application {
 
         RelayReceiver.RestartTimer( this );
     }
+
+    public static UUID getAppUUID() {
+        return UUID.fromString( "d0837107-421f-11e1-b86c-0800200c9a66" );
+    }
+
+    public static String getAppName() {
+        return "Crosswords";
+    }
+
 }
