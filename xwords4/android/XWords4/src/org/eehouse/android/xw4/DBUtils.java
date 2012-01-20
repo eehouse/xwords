@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -105,7 +105,7 @@ public class DBUtils {
                                  DBHelper.CONTYPE, DBHelper.SERVERROLE,
                                  DBHelper.ROOMNAME, DBHelper.RELAYID, 
                                  DBHelper.SMSPHONE, DBHelper.SEED, 
-                                 DBHelper.DICTLANG, 
+                                 DBHelper.DICTLANG, DBHelper.GAMEID,
                                  DBHelper.SCORES, DBHelper.HASMSGS,
                                  DBHelper.LASTPLAY_TIME
             };
@@ -135,6 +135,8 @@ public class DBUtils {
                     setGiFlags( cursor.getInt(cursor.
                                               getColumnIndex(DBHelper.GIFLAGS))
                                 );
+                summary.gameID = 
+                    cursor.getInt(cursor.getColumnIndex(DBHelper.GAMEID) ); 
 
                 String players = cursor.
                     getString(cursor.getColumnIndex( DBHelper.PLAYERS ));
@@ -238,6 +240,7 @@ public class DBUtils {
                 values.put( DBHelper.PLAYERS, 
                             summary.summarizePlayers() );
                 values.put( DBHelper.DICTLANG, summary.dictLang );
+                values.put( DBHelper.GAMEID, summary.gameID );
                 values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
                 values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
                 values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );

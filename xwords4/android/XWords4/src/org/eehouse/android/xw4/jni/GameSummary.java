@@ -53,6 +53,7 @@ public class GameSummary {
     public int seed;
     public int pendingMsgLevel;
     public long modtime;
+    public int gameID;
 
     public int dictLang;
     public CurGameInfo.DeviceRole serverRole;
@@ -65,6 +66,7 @@ public class GameSummary {
     public GameSummary( Context context ) {
         m_context = context;
         pendingMsgLevel = 0;
+        gameID = 0;
     }
 
     public GameSummary( Context context, CurGameInfo gi )
@@ -73,6 +75,7 @@ public class GameSummary {
         nPlayers = gi.nPlayers;
         dictLang = gi.dictLang;
         serverRole = gi.serverRole;
+        gameID = gi.gameID;
         m_gi = gi;
     }
 
