@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
+/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh -j3"; -*- */
 /*
  * Copyright © 2009 - 2011 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -268,6 +268,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
     comms_getInitialAddr( &addr, chars, port );
     (*env)->ReleaseStringUTFChars( env, jname, chars );
     setJAddrRec( env, jaddr, &addr );
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
+( JNIEnv* env, jclass C )
+{
+    const char* uuid = XW_BT_UUID;
+    XP_LOGF( "uuid: %s", uuid );
+    jstring jstr = (*env)->NewStringUTF( env, uuid );
+    (*env)->DeleteLocalRef( env, jstr );
+    return jstr;
 }
 
 JNIEXPORT jboolean JNICALL

@@ -50,6 +50,7 @@ public class XwJNI {
     public static native void comms_getInitialAddr( CommsAddrRec addr,
                                                     String relayHost,
                                                     int relayPort );
+    public static native String comms_getUUID();
 
     // Game methods
     public static native int initJNI();

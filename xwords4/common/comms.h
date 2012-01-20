@@ -55,11 +55,7 @@ typedef enum {
     , COMMS_RELAYSTATE_ALLCONNECTED
 } CommsRelayState;
 
-
-/* WHAT SHOULD THIS BE?  Copied from Whiteboard....  PENDING */
-#define XW_BT_UUID \
-    { 0x83, 0xe0, 0x87, 0xae, 0x4e, 0x18, 0x46, 0xbe,  \
-      0x83, 0xe0, 0x7b, 0x3d, 0xe6, 0xa1, 0xc3, 0x3b } 
+#define XW_BT_UUID "7be0d084-ff89-4d6d-9c78-594773a6f963"
 
 #define XW_BT_NAME "Crosswords"
 

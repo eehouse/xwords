@@ -23,7 +23,11 @@ package org.eehouse.android.xw4;
 import android.app.Application;
 import java.util.UUID;
 
+import org.eehouse.android.xw4.jni.XwJNI;
+
 public class XWApp extends Application {
+
+    private static UUID s_UUID = null;
 
     @Override
     public void onCreate()
@@ -41,7 +45,10 @@ public class XWApp extends Application {
     }
 
     public static UUID getAppUUID() {
-        return UUID.fromString( "d0837107-421f-11e1-b86c-0800200c9a66" );
+        if ( null == s_UUID ) {
+            s_UUID = UUID.fromString( XwJNI.comms_getUUID() );
+        }
+        return s_UUID;
     }
 
     public static String getAppName() {
