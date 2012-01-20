@@ -48,8 +48,9 @@
 #define MAX_COLS MAX_ROWS
 
 #if MAX_COLS > 16
-# define STREAM_VERS_BIGBOARD 0x12
+# define STREAM_VERS_BIGBOARD 0x13
 #endif
+#define STREAM_VERS_BLUETOOTH2 0x12
 #define STREAM_SAVE_PREVWORDS 0x11
 #define STREAM_VERS_SERVER_SAVES_TOSHOW 0x10
 /* STREAM_VERS_PLAYERDICTS affects stream sent between devices.  May not be
@@ -80,7 +81,7 @@
 #if MAX_COLS > 16
 # define CUR_STREAM_VERS STREAM_VERS_BIGBOARD
 #else
-# define CUR_STREAM_VERS STREAM_SAVE_PREVWORDS
+# define CUR_STREAM_VERS STREAM_VERS_BLUETOOTH2
 #endif
 
 typedef struct XP_Rect {

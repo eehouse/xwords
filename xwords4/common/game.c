@@ -69,6 +69,17 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
     }
 } /* checkServerRole */
 
+static XP_U32
+makeGameID( XW_UtilCtxt* util )
+{
+    XP_U32 gameID = 0;
+    assertUtilOK( util );
+    while ( 0 == gameID ) {
+        gameID = util_getCurSeconds( util );
+    }
+    return gameID;
+}
+
 void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
@@ -78,16 +89,12 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 #endif
                   )
 {
-    XP_U16 gameID = 0;
     XP_U16 nPlayersHere, nPlayersTotal;
 
     assertUtilOK( util );
     checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
 
-    while ( 0 == gameID ) {
-        gameID = util_getCurSeconds( util );
-    }
-    gi->gameID = gameID;
+    gi->gameID = makeGameID( util );
 
     game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, NULL, util, 
                               gi->boardSize );
@@ -125,18 +132,14 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
             XW_UtilCtxt* XP_UNUSED_STANDALONE(util), 
             CommonPrefs* cp, const TransportProcs* procs )
 {
-    XP_U16 i;
+    XP_U16 ii;
     XP_U16 nPlayersHere, nPlayersTotal;
-    XP_U16 gameID = 0;
 
     XP_ASSERT( !!game->model );
     XP_ASSERT( !!gi );
 
     checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
-    while ( 0 == gameID ) {
-        gameID = util_getCurSeconds( util );
-    }
-    gi->gameID = gameID;
+    gi->gameID = makeGameID( util );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!game->comms ) {
@@ -172,8 +175,8 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
                   );
     board_reset( game->board );
 
-    for ( i = 0; i < gi->nPlayers; ++i ) {
-        gi->players[i].secondsUsed = 0;
+    for ( ii = 0; ii < gi->nPlayers; ++ii ) {
+        gi->players[ii].secondsUsed = 0;
     }
 
     server_prefsChanged( game->server, cp );
@@ -464,7 +467,8 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         gi->confirmBTConnect = XP_TRUE; /* safe given all the 650s out there. */
     }
 
-    gi->gameID = stream_getU16( stream );
+    gi->gameID = strVersion < STREAM_VERS_BLUETOOTH2 ? 
+        stream_getU16( stream ) : stream_getU32( stream );
     gi->dictLang =
         strVersion >= STREAM_VERS_DICTLANG ? stream_getU8( stream ) : 0;
     if ( gi->timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {
@@ -521,7 +525,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->allowHintRect );
     stream_putBits( stream, 1, gi->confirmBTConnect );
 
-    stream_putU16( stream, gi->gameID );
+    stream_putU32( stream, gi->gameID );
     stream_putU8( stream, gi->dictLang );
     stream_putU16( stream, gi->gameSeconds );
 

@@ -50,7 +50,7 @@ typedef struct LocalPlayer {
 typedef struct CurGameInfo {
     XP_UCHAR* dictName;
     LocalPlayer players[MAX_NUM_PLAYERS];
-    XP_U16 gameID;      /* uniquely identifies game */
+    XP_U32 gameID;      /* uniquely identifies game */
     XP_U16 gameSeconds; /* for timer */
     XP_LangCode dictLang;
     XP_U8 nPlayers;
