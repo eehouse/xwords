@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE";-*- */ 
+/* -*- Compile-command: "make MEMDEBUG=TRUE -j3";-*- */ 
 /* 
- * Copyright 2006-2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2006 - 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -41,6 +41,7 @@
 #include "linuxbt.h"
 #include "comms.h"
 #include "strutils.h"
+#include "uuidhack.h"
 
 #define MAX_CLIENTS 1
 
@@ -85,8 +86,6 @@ getL2Addr( const CommsAddrRec const* addrP, L2_RF_ADDR* const saddr )
     LOG_FUNC();
     L2_RF_ADDR* result = NULL;
 
-    uint8_t svc_uuid_int[] = XW_BT_UUID;
-
     int status;
     bdaddr_t target;
     uuid_t svc_uuid;
@@ -101,7 +100,9 @@ getL2Addr( const CommsAddrRec const* addrP, L2_RF_ADDR* const saddr )
     if ( NULL == session ) {
         XP_LOGF( "%s: sdp_connect->%s", __func__, strerror(errno) );
     } else {
-        sdp_uuid128_create( &svc_uuid, &svc_uuid_int );
+        str2uuid( XW_BT_UUID, &svc_uuid.value.uuid128, 
+                  sizeof(svc_uuid.value.uuid128) );
+        svc_uuid.type = SDP_UINT128;
         search_list = sdp_list_append( 0, &svc_uuid );
         attrid_list = sdp_list_append( 0, &range );
 
@@ -227,7 +228,6 @@ lbt_register( LinBtStuff* btStuff, unsigned short l2_psm,
 {
     LOG_FUNC();
     if ( NULL == btStuff->u.master.session ) {
-        uint8_t svc_uuid_int[] = XW_BT_UUID;
         const char *service_name = XW_BT_NAME;
         const char *svc_dsc = "An open source word game";
         const char *service_prov = "xwords.sf.net";
@@ -250,9 +250,10 @@ lbt_register( LinBtStuff* btStuff, unsigned short l2_psm,
         sdp_data_t *channel = 0;
 #endif
 
-
         // set the general service ID
-        sdp_uuid128_create( &svc_uuid, &svc_uuid_int );
+        str2uuid( XW_BT_UUID, &svc_uuid.value.uuid128, 
+                  sizeof(svc_uuid.value.uuid128) );
+        svc_uuid.type = SDP_UINT128;
         sdp_set_service_id( &record, svc_uuid );
 
         // set l2cap information

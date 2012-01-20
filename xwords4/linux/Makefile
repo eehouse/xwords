@@ -175,13 +175,14 @@ endif
 OBJ = \
 	$(PLATFORM)/filestream.o \
 	$(PLATFORM)/linuxbt.o \
+	$(PLATFORM)/uuidhack.o \
 	$(PLATFORM)/linuxudp.o \
 	$(PLATFORM)/linuxsms.o \
 	$(PLATFORM)/linuxdict.o \
 	$(PLATFORM)/linuxutl.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
-LIBS = -lm -lmcheck $(GPROFFLAG)
+LIBS = -lm -lmcheck -luuid $(GPROFFLAG)
 ifdef BLUETOOTH
 LIBS += -lbluetooth
 endif
