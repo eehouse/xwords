@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -31,6 +31,7 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -516,7 +517,18 @@ public class GamesList extends XWListActivity
         switch (item.getItemId()) {
             
         case R.id.gamel_menu_btping:
-            BTConnection.ping( this );
+            Handler handler = new Handler() {
+                    public void handleMessage( Message msg ) {
+                        switch( msg.what ) {
+                        case BTConnection.GOT_PONG:
+                            String name = (String)msg.obj;
+                            DbgUtils.showf( GamesList.this, "Pong from %s!!!",
+                                            name );
+                            break;
+                        }
+                    }
+                };
+            BTConnection.ping( handler );
             break;
 
         case R.id.gamel_menu_newgame:

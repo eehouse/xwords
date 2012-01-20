@@ -28,12 +28,15 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
 public class BTConnection extends BroadcastReceiver {
+    public static final int GOT_PONG = 1;
+
     private static final byte PING = 1;
     private static final byte PONG = 2;
 
@@ -134,6 +137,12 @@ public class BTConnection extends BroadcastReceiver {
     // Test whether there's another device running Crosswords and it
     // can respond.
     private static class PingThread extends Thread {
+        private Handler m_handler;
+
+        public PingThread( Handler handler ) {
+            m_handler = handler;
+        }
+
         public void run() {
             BluetoothDevice xwdev = null;
             UUID myUUID = XWApp.getAppUUID();
@@ -152,9 +161,16 @@ public class BTConnection extends BroadcastReceiver {
                     os.write( PING );
                     DbgUtils.logf( "PingThread: wrote" );
                     os.flush();
+
+                    InputStream is = socket.getInputStream();
+                    byte[] buffer = new byte[128];
+                    int nRead = is.read( buffer );
+                    if ( 1 == nRead && buffer[0] == PONG ) {
+                        m_handler.obtainMessage( GOT_PONG, dev.getName() )
+                            .sendToTarget();
+                    }
+
                     socket.close();
-                    DbgUtils.logf( "PingThread: closed" );
-                    break;
                 } catch ( java.io.IOException ioe ) {
                     DbgUtils.logf( "PingThread: %s", ioe.toString() );
                 }
@@ -162,8 +178,8 @@ public class BTConnection extends BroadcastReceiver {
         }
     }
 
-    public static void ping( Context context ) {
-        PingThread pt = new PingThread();
+    public static void ping( Handler handler ) {
+        PingThread pt = new PingThread( handler );
         pt.start();
     }
 
