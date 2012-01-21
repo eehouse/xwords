@@ -439,8 +439,9 @@ public class GameUtils {
             if ( choseEmail ) {
                 intent.setAction( Intent.ACTION_SEND );
                 intent.setType( "message/rfc822");
-                intent.putExtra( Intent.EXTRA_SUBJECT, 
-                                 context.getString( R.string.invite_subject ) );
+                String subject =
+                    Utils.format( context, R.string.invite_subjectf, room );
+                intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
             } else {
                 intent.setAction( Intent.ACTION_VIEW );
