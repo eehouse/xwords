@@ -1169,6 +1169,23 @@
     this and you'll get taken to the "Game configure" screen -->
 	<string name="newgame_net_config">Configure first</string>
 
+    <!-- section separator (white-on-gray bar) for third section:
+         bluetooth games -->
+    <string name="newgame_bt_header">New Bluetooth game</string>
+
+    <!-- EXPLAIN ME -->
+    <string name="bt_disabled">Bluetooth is not available.  This may
+      mean that your device doesn\'t support it, or that it\'s been
+      turned off.</string>
+
+    <!-- EXPLAIN ME -->
+    <string name="bt_networked_desc">Create a game that will be played
+      via Bluetooth with devices that are nearby and paired with
+      yours.  Both buttons will initiate a game with other devices
+      (one or more) that you choose (from paired devices that already
+      have Crosswords installed.)  The first uses defaults; the second
+      lets you change them before beginning the game.</string>
+
     <!-- The invitation process beging with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
@@ -1818,5 +1835,7 @@
     <string name="email_body_revf">(If relevant, please include the
       version: \"%s\"; and make/model of your phone or
       tablet.)"</string>
+
+    <string name="newgame_enable_bt">Turn Bluetooth on</string>
 
 </resources>

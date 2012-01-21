@@ -85,6 +85,34 @@ public class NewGameActivity extends XWActivity {
                 }
             } );
 
+        if ( BTConnection.BTDisabled() ) {
+            findViewById( R.id.bt_stuff ).setVisibility( View.GONE );
+            button = (Button)findViewById( R.id.newgame_enable_bt );
+            button.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View v ) {
+                        Utils.notImpl( NewGameActivity.this );
+                    }
+                } );
+        } else {
+            findViewById( R.id.bt_disabled ).setVisibility( View.GONE );
+
+            button = (Button)findViewById( R.id.newgame_invite_bt );
+            button.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View v ) {
+                        makeNewBTGame( true );
+                    }
+                } );
+            button = (Button)findViewById( R.id.newgame_bt_config );
+            button.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View v ) {
+                        makeNewBTGame( false );
+                    }
+                } );
+        }
+
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -141,6 +169,10 @@ public class NewGameActivity extends XWActivity {
         }
 
         finish();
+    }
+
+    private void makeNewBTGame( boolean useDefaults )
+    {
     }
 
 }
