@@ -183,10 +183,10 @@ public class BTConnection extends BroadcastReceiver {
         pt.start();
     }
 
-    public static boolean BTDisabled()
+    public static boolean BTEnabled()
     {
-        boolean disabled = null == s_btAdapter;
-        return disabled;
+        boolean enabled = null != s_btAdapter && s_btAdapter.isEnabled();
+        DbgUtils.logf( "BTEnabled=>%b", enabled );
+        return enabled;
     }
-
 }

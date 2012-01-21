@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -40,6 +41,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 public class NewGameActivity extends XWActivity {
 
     private static final int NEW_GAME_ACTION = 1;
+    private static final int REQUEST_ENABLE_BT = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -85,34 +87,7 @@ public class NewGameActivity extends XWActivity {
                 }
             } );
 
-        if ( BTConnection.BTDisabled() ) {
-            findViewById( R.id.bt_stuff ).setVisibility( View.GONE );
-            button = (Button)findViewById( R.id.newgame_enable_bt );
-            button.setOnClickListener( new View.OnClickListener() {
-                    @Override
-                    public void onClick( View v ) {
-                        Utils.notImpl( NewGameActivity.this );
-                    }
-                } );
-        } else {
-            findViewById( R.id.bt_disabled ).setVisibility( View.GONE );
-
-            button = (Button)findViewById( R.id.newgame_invite_bt );
-            button.setOnClickListener( new View.OnClickListener() {
-                    @Override
-                    public void onClick( View v ) {
-                        makeNewBTGame( true );
-                    }
-                } );
-            button = (Button)findViewById( R.id.newgame_bt_config );
-            button.setOnClickListener( new View.OnClickListener() {
-                    @Override
-                    public void onClick( View v ) {
-                        makeNewBTGame( false );
-                    }
-                } );
-        }
-
+        checkEnableBT();
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -128,6 +103,16 @@ public class NewGameActivity extends XWActivity {
         default:
             Assert.fail();
         }
+    }
+    
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent data ) 
+    {
+        if ( REQUEST_ENABLE_BT == requestCode ) {
+            checkEnableBT();
+        }
+        // TODO: should onActivityResult call super()?
     }
 
     private void makeNewGame( boolean networked, boolean launch )
@@ -173,6 +158,47 @@ public class NewGameActivity extends XWActivity {
 
     private void makeNewBTGame( boolean useDefaults )
     {
+        Utils.notImpl( this );
     }
 
+    private void checkEnableBT()
+    {
+        DbgUtils.logf( "checkEnableBT" );
+        boolean enabled = BTConnection.BTEnabled();
+
+        findViewById( R.id.bt_disabled ).
+            setVisibility( enabled ? View.GONE : View.VISIBLE  );
+        findViewById( R.id.bt_stuff ).
+            setVisibility( enabled ? View.VISIBLE : View.GONE  );
+
+        Button button;
+        if ( enabled ) {
+            button = (Button)findViewById( R.id.newgame_invite_bt );
+            button.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View v ) {
+                        makeNewBTGame( true );
+                    }
+                } );
+            button = (Button)findViewById( R.id.newgame_bt_config );
+            button.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View v ) {
+                        makeNewBTGame( false );
+                    }
+                } );
+        } else {
+            button = (Button)findViewById( R.id.newgame_enable_bt );
+            button.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View v ) {
+                        Intent enableBtIntent = 
+                            new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult( enableBtIntent, 
+                                                REQUEST_ENABLE_BT );
+                    }
+                } );
+        }
+
+    }
 }
