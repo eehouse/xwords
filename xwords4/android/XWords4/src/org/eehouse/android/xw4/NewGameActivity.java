@@ -170,12 +170,12 @@ public class NewGameActivity extends XWActivity
 
     private void makeNewBTGame( boolean useDefaults )
     {
-        Utils.notImpl( this );
+        GameUtils.makeNewBTGame( this, useDefaults );
+        finish();
     }
 
     private void checkEnableBT( boolean force )
     {
-        DbgUtils.logf( "checkEnableBT" );
         boolean enabled = BTConnection.BTEnabled();
 
         if ( force || enabled != m_showsOn ) {
@@ -191,14 +191,14 @@ public class NewGameActivity extends XWActivity
                 button = (Button)findViewById( R.id.newgame_invite_bt );
                 button.setOnClickListener( new View.OnClickListener() {
                         @Override
-                            public void onClick( View v ) {
+                        public void onClick( View v ) {
                             makeNewBTGame( true );
                         }
                     } );
                 button = (Button)findViewById( R.id.newgame_bt_config );
                 button.setOnClickListener( new View.OnClickListener() {
                         @Override
-                            public void onClick( View v ) {
+                        public void onClick( View v ) {
                             makeNewBTGame( false );
                         }
                     } );

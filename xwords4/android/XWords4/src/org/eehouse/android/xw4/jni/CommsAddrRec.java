@@ -48,17 +48,28 @@ public class CommsAddrRec {
     public boolean ip_relay_seeksPublicRoom;
     public boolean ip_relay_advertiseRoom;
 
+    // bt case
+    public String bt_hostName;
+    public byte[] bt_btAddr;    // array of 6 bytes on the C side
+
     // sms case
-    public String sms_phone;
-    public int sms_port;                   // NBS port, if they still use those
+    // public String sms_phone;
+    // public int sms_port;                // NBS port, if they still use those
+
+    public CommsAddrRec( Context context, CommsConnType cTyp ) 
+    {
+        conType = cTyp;
+        if ( CommsConnType.COMMS_CONN_RELAY == cTyp ) {
+            ip_relay_hostName = CommonPrefs.getDefaultRelayHost( context );
+            ip_relay_port = CommonPrefs.getDefaultRelayPort( context );
+            ip_relay_seeksPublicRoom = false;
+            ip_relay_advertiseRoom = false;
+        }
+    }
 
     public CommsAddrRec( Context context ) 
     {
-        conType = CommsConnType.COMMS_CONN_RELAY;
-        ip_relay_hostName = CommonPrefs.getDefaultRelayHost( context );
-        ip_relay_port = CommonPrefs.getDefaultRelayPort( context );
-        ip_relay_seeksPublicRoom = false;
-        ip_relay_advertiseRoom = false;
+        this( context, CommsConnType.COMMS_CONN_RELAY );
     }
 
     public CommsAddrRec( final CommsAddrRec src ) 

@@ -380,13 +380,11 @@ public class GameUtils {
         return rowid;
     }
 
-    public static long makeNewNetGame( Context context, String room,
-                                       String inviteID, int[] lang,
-                                       int nPlayersT, int nPlayersH )
+    private static long makeNewMultiGame( Context context, CommsAddrRec addr,
+                                          int[] lang, int nPlayersT, 
+                                          int nPlayersH, String inviteID )
     {
         long rowid = -1;
-        CommsAddrRec addr = new CommsAddrRec( context );
-        addr.ip_relay_invite = room;
 
         CurGameInfo gi = new CurGameInfo( context, true );
         gi.setLang( lang[0] );
@@ -405,6 +403,20 @@ public class GameUtils {
         return rowid;
     }
 
+    public static long makeNewNetGame( Context context, String room,
+                                       String inviteID, int[] lang,
+                                       int nPlayersT, int nPlayersH )
+    {
+        long rowid = -1;
+        CommsAddrRec addr = 
+            new CommsAddrRec( context, 
+                              CommsAddrRec.CommsConnType.COMMS_CONN_RELAY );
+        addr.ip_relay_invite = room;
+
+        return makeNewMultiGame( context, addr, lang, nPlayersT, 
+                                 nPlayersH, inviteID );
+    }
+
     public static long makeNewNetGame( Context context, String room, 
                                        String inviteID, int lang, int nPlayers )
     {
@@ -416,6 +428,17 @@ public class GameUtils {
     {
         return makeNewNetGame( context, info.room, info.inviteID, info.lang, 
                                info.nPlayers );
+    }
+
+    public static long makeNewBTGame( Context context, boolean fixme )
+    {
+        long rowid = -1;
+        CommsAddrRec addr = 
+            new CommsAddrRec( context, 
+                              CommsAddrRec.CommsConnType.COMMS_CONN_BT );
+
+        int[] lang = { 1 };     // English
+        return makeNewMultiGame( context, addr, lang, 2, 1, null );
     }
 
     public static void launchInviteActivity( Context context, 

@@ -147,7 +147,7 @@ public class GameSummary {
     public String summarizeRole()
     {
         String result = null;
-        if ( isRelayGame() ) {
+        if ( isMultiGame() ) {
             
             if ( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY == conType ) {
                 int fmtID;
@@ -166,7 +166,7 @@ public class GameSummary {
         return result;
     }
 
-    public boolean isRelayGame()
+    public boolean isMultiGame()
     {
         // This definition will expand as other transports are added
         return ( null != conType 

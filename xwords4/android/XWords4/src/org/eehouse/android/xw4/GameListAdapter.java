@@ -40,6 +40,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public class GameListAdapter extends XWListAdapter {
     private Context m_context;
@@ -173,7 +174,7 @@ public class GameListAdapter extends XWListAdapter {
                     view.setText( String.format( "  %d", summary.scores[ii] ) );
                     if ( summary.isNextToPlay( ii ) ) {
                         tmp.setBackgroundColor( TURN_COLOR );
-                        if ( summary.isRelayGame() ) {
+                        if ( summary.isMultiGame() ) {
                             haveNetTurn = true;
                         }
                     }
@@ -188,12 +189,15 @@ public class GameListAdapter extends XWListAdapter {
                 int iconID;
                 ImageView marker =
                     (ImageView)layout.findViewById( R.id.msg_marker );
-                if ( summary.isRelayGame() ) {
+                CommsConnType conType = summary.conType;
+                if ( CommsConnType.COMMS_CONN_RELAY == conType ) {
                     if ( summary.pendingMsgLevel != GameSummary.MSG_FLAGS_NONE ) {
                         iconID = R.drawable.ic_popup_sync_1;
                     } else {
                         iconID = R.drawable.relaygame;
                     }
+                } else if ( CommsConnType.COMMS_CONN_BT == conType ) {
+                    iconID = android.R.drawable.stat_sys_data_bluetooth;
                 } else {
                     iconID = R.drawable.sologame;
                 }
