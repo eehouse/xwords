@@ -485,7 +485,8 @@ public class GameConfig extends XWActivity
 
                 m_car = new CommsAddrRec( m_carOrig );
 
-                m_notNetworkedGame = DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
+                m_notNetworkedGame = 
+                    DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
                 setTitle();
 
                 if ( !m_notNetworkedGame ) {
