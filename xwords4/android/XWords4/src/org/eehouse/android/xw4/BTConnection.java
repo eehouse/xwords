@@ -37,6 +37,11 @@ import java.util.UUID;
 public class BTConnection extends BroadcastReceiver {
     public static final int GOT_PONG = 1;
 
+    public interface BTStateChangeListener {
+        public void stateChanged( boolean nowEnabled );
+    }
+    private static BTStateChangeListener s_stateChangeListener = null;
+
     private static final byte PING = 1;
     private static final byte PONG = 2;
 
@@ -110,6 +115,7 @@ public class BTConnection extends BroadcastReceiver {
             break;
         case BluetoothAdapter.STATE_OFF:
             asString = "STATE_OFF";
+            tellStateChanged( false );
             break;
         case BluetoothAdapter.STATE_TURNING_ON:
             asString = "STATE_TURNING_ON";
@@ -118,6 +124,7 @@ public class BTConnection extends BroadcastReceiver {
             asString = "STATE_ON";
             m_listener = new BTListener();
             m_listener.start();
+            tellStateChanged( true );
             break;
         case BluetoothAdapter.STATE_TURNING_OFF:
             asString = "STATE_TURNING_OFF";
@@ -188,5 +195,15 @@ public class BTConnection extends BroadcastReceiver {
         boolean enabled = null != s_btAdapter && s_btAdapter.isEnabled();
         DbgUtils.logf( "BTEnabled=>%b", enabled );
         return enabled;
+    }
+
+    public static void setBTStateChangeListener( BTStateChangeListener li ) {
+        s_stateChangeListener = li;
+    }
+
+    private void tellStateChanged( boolean nowOn ) {
+        if ( null != s_stateChangeListener ) {
+            s_stateChangeListener.stateChanged( nowOn );
+        }
     }
 }
