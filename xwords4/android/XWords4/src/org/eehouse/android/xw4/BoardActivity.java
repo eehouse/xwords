@@ -180,7 +180,7 @@ public class BoardActivity extends XWActivity
             case DLG_OKONLY:
             case DLG_BADWORDS:
             case DLG_RETRY:
-                ab = new AlertDialog.Builder( BoardActivity.this )
+                ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
                     .setPositiveButton( R.string.button_ok, null );
