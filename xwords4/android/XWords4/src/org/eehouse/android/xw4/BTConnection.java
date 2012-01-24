@@ -77,17 +77,18 @@ public class BTConnection extends BroadcastReceiver {
 
         @Override
         public void run() {
-            try {
-                s_serverSocket = s_btAdapter.
-                    listenUsingRfcommWithServiceRecord( XWApp.getAppName(),
-                                                        XWApp.getAppUUID() );
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "listenUsingRfcommWithServiceRecord=>%s", 
-                               ioe.toString() );
-                s_serverSocket = null;
-            }
+            for ( ; ; ) {
+                try {
+                    s_serverSocket = s_btAdapter.
+                        listenUsingRfcommWithServiceRecord( XWApp.getAppName(),
+                                                            XWApp.getAppUUID() );
+                } catch ( java.io.IOException ioe ) {
+                    DbgUtils.logf( "listenUsingRfcommWithServiceRecord=>%s", 
+                                   ioe.toString() );
+                    s_serverSocket = null;
+                    continue;
+                }
 
-            while ( null != s_serverSocket ) {
                 BluetoothSocket socket = null;
                 DataInputStream inStream = null;
                 int nRead = 0;
@@ -119,15 +120,15 @@ public class BTConnection extends BroadcastReceiver {
                     DbgUtils.logf( "trying again..." );
                     continue;
                 }
-            }
 
-            if ( null != s_serverSocket ) {
-                try {
-                    s_serverSocket.close();
-                } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( "close()=>%s", ioe.toString() );
+                if ( null != s_serverSocket ) {
+                    try {
+                        s_serverSocket.close();
+                    } catch ( java.io.IOException ioe ) {
+                        DbgUtils.logf( "close()=>%s", ioe.toString() );
+                    }
+                    s_serverSocket = null;
                 }
-                s_serverSocket = null;
             }
         }
     }
@@ -253,7 +254,7 @@ public class BTConnection extends BroadcastReceiver {
                 }
 
             }
-            m_handler.obtainMessage( result, m_gameID ).sendToTarget();
+            m_handler.obtainMessage( result, m_gameID, 0 ).sendToTarget();
         }
     }
 
