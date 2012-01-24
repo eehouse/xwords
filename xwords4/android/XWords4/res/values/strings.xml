@@ -1838,4 +1838,9 @@
 
     <string name="newgame_enable_bt">Turn Bluetooth on</string>
 
+    <string name="bt_pick_rescan_button">Rescan</string>
+    <string name="bt_pick_title">Opponent devices</string>
+
+    <string name="scan_progress">Scanning for Crosswords on paired devices</string>
+
 </resources>

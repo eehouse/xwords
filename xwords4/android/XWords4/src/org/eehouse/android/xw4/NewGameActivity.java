@@ -21,11 +21,16 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -42,9 +47,11 @@ public class NewGameActivity extends XWActivity
     implements BTConnection.BTStateChangeListener {
 
     private static final int NEW_GAME_ACTION = 1;
-    private static final int REQUEST_ENABLE_BT = 2;
+
+    private static final int PICK_BTDEV_DLG = DlgDelegate.DIALOG_LAST + 1;
 
     private boolean m_showsOn;
+    private Handler m_handler = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -91,6 +98,55 @@ public class NewGameActivity extends XWActivity
             } );
 
         checkEnableBT( true );
+    }
+
+    @Override
+    protected Dialog onCreateDialog( final int id )
+    {
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            AlertDialog.Builder ab;
+            DialogInterface.OnClickListener lstnr;
+
+            switch( id ) {
+            case PICK_BTDEV_DLG:
+                DialogInterface.OnClickListener scanLstnr =
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            BTConnection.rescan( NewGameActivity.this,
+                                                 getHandler() );
+                            dlg.dismiss();
+                        }
+                    };
+                ab = new AlertDialog.Builder( this )
+                    .setTitle( R.string.bt_pick_title )
+                    .setNegativeButton( R.string.bt_pick_rescan_button, 
+                                        scanLstnr );
+                final String[] btDevs = BTConnection.listPairedWithXwords();
+                if ( null != btDevs && 0 < btDevs.length ) {
+                    DialogInterface.OnClickListener devChosenLstnr =
+                        new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                if ( 0 <= whichButton && whichButton
+                                     < btDevs.length ) {
+                                    int gameID = GameUtils.newGameID();
+                                    BTConnection.
+                                        inviteRemote( btDevs[whichButton], 
+                                                      gameID,
+                                                      getHandler() );
+                                }
+                            }
+                        };
+                    ab.setItems( btDevs, devChosenLstnr );
+                }
+                dialog = ab.create();
+                Utils.setRemoveOnDismiss( this, dialog, PICK_BTDEV_DLG );
+                break;
+            }
+        }
+        return dialog;
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -170,8 +226,12 @@ public class NewGameActivity extends XWActivity
 
     private void makeNewBTGame( boolean useDefaults )
     {
-        GameUtils.makeNewBTGame( this, useDefaults );
-        finish();
+        int gameID = GameUtils.newGameID();
+        if ( useDefaults ) {
+            showDialog( PICK_BTDEV_DLG );
+        } else {
+            Utils.notImpl( this );
+        }
     }
 
     private void checkEnableBT( boolean force )
@@ -209,11 +269,34 @@ public class NewGameActivity extends XWActivity
                             public void onClick( View v ) {
                             Intent enableBtIntent = 
                                 new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                            startActivityForResult( enableBtIntent, 
-                                                    REQUEST_ENABLE_BT );
+                            startActivityForResult( enableBtIntent, 0 );
                         }
                     } );
             }
         }
+    }
+
+    private Handler getHandler()
+    {
+        if ( null == m_handler ) {
+            m_handler = new Handler() {
+                    public void handleMessage( Message msg ) {
+                        switch( msg.what ) {
+                        case BTConnection.CONNECT_ACCEPTED:
+                            GameUtils.makeNewBTGame( NewGameActivity.this,
+                                                     msg.arg1 );
+                            finish();
+                            break;
+                        case BTConnection.CONNECT_REFUSED:
+                        case BTConnection.CONNECT_FAILED:
+                            break;
+                        case BTConnection.SCAN_DONE:
+                            showDialog( PICK_BTDEV_DLG );
+                            break;
+                        }
+                    }
+                };
+        }
+        return m_handler;
     }
 }
