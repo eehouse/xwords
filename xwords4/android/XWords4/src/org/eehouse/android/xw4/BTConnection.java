@@ -223,8 +223,9 @@ public class BTConnection extends BroadcastReceiver {
     }
 
     // 
-    public static void enqueueFor( byte[] buf )
+    public static void enqueueFor( byte[] buf, String target )
     {
+        DbgUtils.logf( "got %d bytes for %s", buf.length, target );
     }
 
     private static class InviteThread extends Thread {
@@ -357,7 +358,8 @@ public class BTConnection extends BroadcastReceiver {
         int gameID = is.readInt();
         DbgUtils.logf( "receiveInvitation: got gameID of %d", gameID );
 
-        GameUtils.makeNewBTGame( context, gameID );
+        BluetoothDevice host = socket.getRemoteDevice();
+        GameUtils.makeNewBTGame( context, gameID, host.getName() );
 
         // Post notification that, when selected, will create a game
         // -- or ask if user wants to create one.

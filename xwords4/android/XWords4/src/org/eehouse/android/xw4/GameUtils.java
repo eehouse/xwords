@@ -383,7 +383,8 @@ public class GameUtils {
     private static long makeNewMultiGame( Context context, CommsAddrRec addr,
                                           int[] lang, 
                                           int nPlayersT, int nPlayersH, 
-                                          String inviteID, int gameID )
+                                          String inviteID, int gameID,
+                                          boolean isHost, String btHost )
     {
         long rowid = -1;
 
@@ -394,6 +395,11 @@ public class GameUtils {
         gi.juggle();
         if ( 0 != gameID ) {
             gi.gameID = gameID;
+        }
+        if ( isHost ) {
+            gi.serverRole = DeviceRole.SERVER_ISSERVER;
+        } else if ( null != btHost ) {
+            addr.bt_hostName = btHost;
         }
         // Will need to add a setNPlayers() method to gi to make this
         // work
@@ -418,7 +424,7 @@ public class GameUtils {
         addr.ip_relay_invite = room;
 
         return makeNewMultiGame( context, addr, lang, nPlayersT, 
-                                 nPlayersH, inviteID, 0 );
+                                 nPlayersH, inviteID, 0, false, null );
     }
 
     public static long makeNewNetGame( Context context, String room, 
@@ -434,7 +440,8 @@ public class GameUtils {
                                info.nPlayers );
     }
 
-    public static long makeNewBTGame( Context context, int gameID )
+    public static long makeNewBTGame( Context context, int gameID, 
+                                      String hostName )
     {
         long rowid = -1;
         CommsAddrRec addr = 
@@ -442,7 +449,8 @@ public class GameUtils {
                               CommsAddrRec.CommsConnType.COMMS_CONN_BT );
 
         int[] lang = { 1 };     // English
-        return makeNewMultiGame( context, addr, lang, 2, 1, null, gameID );
+        return makeNewMultiGame( context, addr, lang, 2, 1, 
+                                 null, gameID, null == hostName, hostName );
     }
 
     public static void launchInviteActivity( Context context, 

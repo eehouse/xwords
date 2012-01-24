@@ -284,7 +284,7 @@ public class NewGameActivity extends XWActivity
                         switch( msg.what ) {
                         case BTConnection.CONNECT_ACCEPTED:
                             GameUtils.makeNewBTGame( NewGameActivity.this,
-                                                     msg.arg1 );
+                                                     msg.arg1, null );
                             finish();
                             break;
                         case BTConnection.CONNECT_REFUSED:

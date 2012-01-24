@@ -38,6 +38,7 @@ import android.os.Message;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public class CommsTransport implements TransportProcs, 
                                        NetStateCache.StateChangedIf {
@@ -387,6 +388,8 @@ public class CommsTransport implements TransportProcs,
             // }
             break;
         case COMMS_CONN_BT:
+            BTConnection.enqueueFor( buf, m_addr.bt_hostName );
+            break;
         default:
             Assert.fail();
             break;
@@ -397,7 +400,7 @@ public class CommsTransport implements TransportProcs,
         // resend does.
         DbgUtils.logf( "transportSend(%d)=>%d", buf.length, nSent );
         return nSent;
-    } 
+    }
 
     public void relayStatus( CommsRelayState newState )
     {
