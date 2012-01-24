@@ -340,6 +340,8 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
         setInt( env, jaddr, "sms_port", addr->u.sms.port );
         break;
     case COMMS_CONN_BT:
+        setString( env, jaddr, "bt_hostName", addr->u.bt.hostName );
+        break;
     default:
         XP_ASSERT(0);
     }
@@ -374,6 +376,9 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
         addr->u.sms.port = getInt( env, jaddr, "sms_port" );
         break;
     case COMMS_CONN_BT:
+        getString( env, jaddr, "bt_hostName", addr->u.bt.hostName,
+                   VSIZE(addr->u.bt.hostName) );
+        break;
     default:
         XP_ASSERT(0);
     }
