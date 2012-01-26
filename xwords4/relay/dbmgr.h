@@ -99,6 +99,10 @@ class DBMgr {
     void readArray( const char* const connName, int arr[] );
 
     PGconn* getThreadConn( void );
+
+    void conn_key_alloc();
+    pthread_key_t m_conn_key;
+
 }; /* DBMgr */
 
 

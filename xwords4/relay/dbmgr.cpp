@@ -45,6 +45,7 @@ static void formatParams( char* paramValues[], int nParams, const char* fmt,
                           char* buf, int bufLen, ... );
 static int here_less_seed( const char* seeds, int perDeviceSum, 
                            unsigned short seed );
+static void destr_function( void* conn );
 
 /* static */ DBMgr*
 DBMgr::Get() 
@@ -58,6 +59,8 @@ DBMgr::Get()
 DBMgr::DBMgr()
 {
     logf( XW_LOGINFO, "%s called", __func__ );
+
+    pthread_key_create( &m_conn_key, destr_function );
 
     /* Now figure out what the largest cid currently is.  There must be a way
        to get postgres to do this for me.... */
@@ -77,6 +80,9 @@ DBMgr::~DBMgr()
 {
     assert( s_instance == this );
     s_instance = NULL;
+
+    int err = pthread_key_delete( m_conn_key );
+    logf( XW_LOGINFO, "%s: pthread_key_delete=>%d", __func__, err );
 }
 
 void
@@ -716,22 +722,10 @@ destr_function( void* conn )
     PQfinish( pgconn );
 }
 
-static pthread_key_t s_conn_key;
-
-static void conn_key_alloc()
-{
-    logf( XW_LOGINFO, "%s()", __func__ );
-    pthread_key_create( &s_conn_key, destr_function );
-}
-
 PGconn* 
 DBMgr::getThreadConn( void )
 {
-    PGconn* conn = NULL;
-    
-    static pthread_once_t key_once = PTHREAD_ONCE_INIT;
-    pthread_once( &key_once, conn_key_alloc );
-    conn = (PGconn*)pthread_getspecific( s_conn_key );
+    PGconn* conn = (PGconn*)pthread_getspecific( m_conn_key );
 
     if ( NULL == conn ) {
         char buf[128];
@@ -741,7 +735,7 @@ DBMgr::getThreadConn( void )
             assert( 0 );
         }
         conn = PQconnectdb( buf );
-        pthread_setspecific( s_conn_key, conn );
+        pthread_setspecific( m_conn_key, conn );
     }
     return conn;
 }
