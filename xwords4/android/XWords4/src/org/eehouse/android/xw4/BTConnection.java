@@ -25,7 +25,6 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.BluetoothDevice;
 
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -80,7 +79,6 @@ public class BTConnection extends BroadcastReceiver {
         byte[] m_msg;
         String m_recipient;
         Handler m_handler;
-        ProgressDialog m_progress;
         int m_gameID;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; }
@@ -93,10 +91,6 @@ public class BTConnection extends BroadcastReceiver {
         public BTQueueElem( BTCmd cmd, String dev, int gameID, 
                             Handler handler ) {
             m_cmd = cmd; m_recipient = dev; m_gameID = gameID; m_handler = handler;
-        }
-        public BTQueueElem( BTCmd cmd, ProgressDialog progress, 
-                            Handler handler ) {
-            m_cmd = cmd; m_progress = progress; m_handler = handler;
         }
     }
     private static LinkedBlockingQueue<BTQueueElem> s_queue;
@@ -279,14 +273,7 @@ public class BTConnection extends BroadcastReceiver {
 
     public static void rescan( Context context, Handler handler )
     {
-        // This is really gross!!!  But only the foreground thread can
-        // show/close a dialog so we have to pass it to the caller in
-        // the handler when done.  Maybe the caller should put it up
-        // before calling us????
-        String msg = context.getString( R.string.scan_progress );
-        ProgressDialog progress = ProgressDialog.show( context, msg, 
-                                                       null, true, true );
-        s_queue.add( new BTQueueElem( BTCmd.SCAN, progress, handler ) );
+        s_queue.add( new BTQueueElem( BTCmd.SCAN, handler ) );
     }
 
     public static String[] listPairedWithXwords()
@@ -482,8 +469,7 @@ public class BTConnection extends BroadcastReceiver {
     private static void doScan( BTQueueElem elem )
     {
         sendPings( null );
-        elem.m_handler.obtainMessage( SCAN_DONE, elem.m_progress )
-            .sendToTarget();
+        elem.m_handler.obtainMessage( SCAN_DONE ).sendToTarget();
     }
 
     private static void addAddr( BluetoothDevice dev )

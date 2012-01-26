@@ -53,6 +53,7 @@ public class NewGameActivity extends XWActivity
 
     private boolean m_showsOn;
     private Handler m_handler = null;
+    private ProgressDialog m_progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -115,6 +116,10 @@ public class NewGameActivity extends XWActivity
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
+                            String msg = getString( R.string.scan_progress );
+                            m_progress = 
+                                ProgressDialog.show( NewGameActivity.this, msg,
+                                                     null, true, true );
                             BTConnection.rescan( NewGameActivity.this,
                                                  getHandler() );
                             dlg.dismiss();
@@ -292,7 +297,10 @@ public class NewGameActivity extends XWActivity
                         case BTConnection.CONNECT_FAILED:
                             break;
                         case BTConnection.SCAN_DONE:
-                            ((ProgressDialog)msg.obj).cancel();
+                            if ( null != m_progress ) {
+                                m_progress.cancel();
+                                m_progress = null;
+                            }
                             showDialog( PICK_BTDEV_DLG );
                             break;
                         }
