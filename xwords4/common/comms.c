@@ -87,7 +87,7 @@ struct CommsCtxt {
     TransportProcs procs;
     XP_U32 xportFlags;
 #ifdef COMMS_HEARTBEAT
-    XP_U32  lastMsgRcd;
+    XP_U32 lastMsgRcd;
 #endif
     void* sendClosure;
 
@@ -451,6 +451,7 @@ void
 comms_setConnID( CommsCtxt* comms, XP_U32 connID )
 {
     XP_ASSERT( CONN_ID_NONE != connID );
+    XP_ASSERT( 0 == comms->connID || connID == comms->connID );
     comms->connID = connID;
     XP_STATUSF( "%s: set connID (gameID) to %lx", __func__, connID );
 } /* comms_setConnID */
@@ -1081,6 +1082,20 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 #endif
 } /* removeFromQueue */
 
+static XP_U32
+gameID( const CommsCtxt* comms )
+{
+    XP_U32 gameID = comms->connID;
+    if ( 0 == gameID ) {
+        gameID = comms->util->gameInfo->gameID;
+    }
+    XP_ASSERT( 0 == comms->connID
+               || comms->connID == comms->util->gameInfo->gameID );
+    /* Most of the time these will be the same, but early in a game they won't
+       be.  Would be nice not to have to use gameID. */
+    return gameID;
+}
+
 static XP_S16
 sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 {
@@ -1122,7 +1137,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 
         XP_ASSERT( !!comms->procs.send );
         result = (*comms->procs.send)( elem->msg, elem->len, addr,
-                                       comms->procs.closure );
+                                       gameID(comms), comms->procs.closure );
     }
     
     if ( result == elem->len ) {
@@ -2087,7 +2102,8 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             comms_getAddr( comms, &addr );
             XP_LOGF( "%s: passing %d bytes to sendproc", __func__, len );
             result = (*comms->procs.send)( stream_getPtr(tmpStream), len,
-                                           &addr, comms->procs.closure );
+                                           &addr, gameID(comms), 
+                                           comms->procs.closure );
             success = result == len;
             if ( success ) {
                 setHeartbeatTimer( comms );
@@ -2167,7 +2183,8 @@ send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ, XP_PlayerAddr channelNo,
             XP_MEMCPY( &buf[1], data, dlen );
         }
 
-        nSent = (*comms->procs.send)( buf, dlen+1, addr, comms->procs.closure );
+        nSent = (*comms->procs.send)( buf, dlen+1, addr, gameID(comms),
+                                      comms->procs.closure );
         XP_FREE( comms->mpool, buf );
 
         setHeartbeatTimer( comms );

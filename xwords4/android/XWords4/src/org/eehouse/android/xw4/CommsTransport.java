@@ -330,7 +330,7 @@ public class CommsTransport implements TransportProcs,
 
     public int getFlags() { return COMMS_XPORT_FLAGS_NONE; }
 
-    public int transportSend( byte[] buf, final CommsAddrRec faddr )
+    public int transportSend( byte[] buf, final CommsAddrRec faddr, int gameID )
     {
         //DbgUtils.logf( "CommsTransport::transportSend(nbytes=%d)", buf.length );
         int nSent = -1;

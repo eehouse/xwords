@@ -108,7 +108,7 @@ typedef struct CommsAddrRec {
 
 typedef XP_S16 (*TransportSend)( const XP_U8* buf, XP_U16 len, 
                                  const CommsAddrRec* addr,
-                                 void* closure );
+                                 XP_U32 gameID, void* closure );
 #ifdef COMMS_HEARTBEAT
 typedef void (*TransportReset)( void* closure );
 #endif

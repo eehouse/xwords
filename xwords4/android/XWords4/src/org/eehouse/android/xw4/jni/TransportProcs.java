@@ -26,7 +26,7 @@ public interface TransportProcs {
     public static final int COMMS_XPORT_FLAGS_HASNOCONN = 1;
     int getFlags();
 
-    int transportSend( byte[] buf, final CommsAddrRec addr );
+    int transportSend( byte[] buf, final CommsAddrRec addr, int gameID );
 
     enum CommsRelayState { COMMS_RELAYSTATE_UNCONNECTED
             , COMMS_RELAYSTATE_DENIED

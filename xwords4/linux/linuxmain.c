@@ -730,7 +730,7 @@ linux_reset( void* closure )
 XP_S16
 linux_send( const XP_U8* buf, XP_U16 buflen, 
             const CommsAddrRec* addrRec, 
-            void* closure )
+            XP_U32 XP_UNUSED(gameID), void* closure )
 {
     XP_S16 nSent = -1;
     CommonGlobals* globals = (CommonGlobals*)closure;   

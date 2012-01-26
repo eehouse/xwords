@@ -41,7 +41,7 @@ public class RelayMsgSink implements TransportProcs {
 
     public int getFlags() { return COMMS_XPORT_FLAGS_HASNOCONN; }
 
-    public int transportSend( byte[] buf, final CommsAddrRec addr )
+    public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
     {
         Assert.fail();
         return -1;

@@ -66,21 +66,21 @@ and_xport_getFlags( void* closure )
 
 static XP_S16
 and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-                void* closure )
+                XP_U32 gameID, void* closure )
 {
     jint result = -1;
     LOG_FUNC();
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = *aprocs->envp;
-        const char* sig = "([BLorg/eehouse/android/xw4/jni/CommsAddrRec;)I";
+        const char* sig = "([BLorg/eehouse/android/xw4/jni/CommsAddrRec;I)I";
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSend", sig );
 
         jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
         jobject jaddr = makeJAddr( env, addr );
 
         result = (*env)->CallIntMethod( env, aprocs->jxport, mid, 
-                                        jbytes, jaddr );
+                                        jbytes, jaddr, gameID );
 
         if ( NULL != jaddr ) {
             (*env)->DeleteLocalRef( env, jaddr );
