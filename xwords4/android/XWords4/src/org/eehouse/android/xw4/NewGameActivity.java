@@ -27,6 +27,7 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -54,6 +55,7 @@ public class NewGameActivity extends XWActivity
     private boolean m_showsOn;
     private Handler m_handler = null;
     private ProgressDialog m_progress;
+    private int m_chosen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -108,12 +110,12 @@ public class NewGameActivity extends XWActivity
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             AlertDialog.Builder ab;
-            DialogInterface.OnClickListener lstnr;
+            OnClickListener lstnr;
 
             switch( id ) {
             case PICK_BTDEV_DLG:
-                DialogInterface.OnClickListener scanLstnr =
-                    new DialogInterface.OnClickListener() {
+                OnClickListener scanLstnr =
+                    new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
                             String msg = getString( R.string.scan_progress );
@@ -122,30 +124,45 @@ public class NewGameActivity extends XWActivity
                                                      null, true, true );
                             BTConnection.rescan( NewGameActivity.this,
                                                  getHandler() );
-                            dlg.dismiss();
+                        }
+                    };
+                final String[] btDevs = BTConnection.listPairedWithXwords();
+                OnClickListener okLstnr =
+                    new OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            if ( 0 <= m_chosen ) {
+                                if ( m_chosen < btDevs.length ) {
+                                    int gameID = GameUtils.newGameID();
+                                    BTConnection.
+                                        inviteRemote( btDevs[m_chosen],
+                                                      gameID, getHandler() );
+                                }
+                            }
                         }
                     };
                 ab = new AlertDialog.Builder( this )
                     .setTitle( R.string.bt_pick_title )
+                    .setPositiveButton( R.string.button_ok, okLstnr )
                     .setNegativeButton( R.string.bt_pick_rescan_button, 
                                         scanLstnr );
-                final String[] btDevs = BTConnection.listPairedWithXwords();
+
                 if ( null != btDevs && 0 < btDevs.length ) {
-                    DialogInterface.OnClickListener devChosenLstnr =
-                        new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dlg, 
+                    OnClickListener devChosenLstnr =
+                        new OnClickListener() {
+                            public void onClick( DialogInterface dlgi, 
                                                  int whichButton ) {
-                                if ( 0 <= whichButton && whichButton
-                                     < btDevs.length ) {
-                                    int gameID = GameUtils.newGameID();
-                                    BTConnection.
-                                        inviteRemote( btDevs[whichButton], 
-                                                      gameID,
-                                                      getHandler() );
-                                }
+                                AlertDialog dlg = (AlertDialog)dlgi;
+                                Button btn = 
+                                    dlg.getButton( AlertDialog.BUTTON_POSITIVE ); 
+                                btn.setEnabled( 0 <= whichButton );
+
+                                m_chosen = whichButton;
                             }
                         };
-                    ab.setItems( btDevs, devChosenLstnr );
+                    m_chosen = -1;
+                    ab.setSingleChoiceItems( btDevs, m_chosen, 
+                                             devChosenLstnr );
                 }
                 dialog = ab.create();
                 Utils.setRemoveOnDismiss( this, dialog, PICK_BTDEV_DLG );
@@ -153,6 +170,16 @@ public class NewGameActivity extends XWActivity
             }
         }
         return dialog;
+    }
+
+    @Override
+    protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        super.onPrepareDialog( id, dialog );
+        if ( PICK_BTDEV_DLG == id ) {
+            ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
+                .setEnabled( false );
+        }
     }
 
     // DlgDelegate.DlgClickNotify interface
