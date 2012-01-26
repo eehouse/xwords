@@ -208,37 +208,59 @@ public class BTConnection extends BroadcastReceiver {
 
     @Override
     public void onReceive( Context context, Intent intent ) {
-        int newState = intent.getIntExtra( BluetoothAdapter.EXTRA_STATE, -1 );
-        String asString = null;
-        switch ( newState ) {
-        case -1:
-            break;
-        case BluetoothAdapter.STATE_OFF:
-            asString = "STATE_OFF";
-            tellStateChanged( false );
-            break;
-        case BluetoothAdapter.STATE_TURNING_ON:
-            asString = "STATE_TURNING_ON";
-            break;
-        case BluetoothAdapter.STATE_ON:
-            asString = "STATE_ON";
+
+        String action = intent.getAction();
+        DbgUtils.logf( "BTConnection.onReceive(action=%s)", action );
+        if ( action.equals( BluetoothDevice.ACTION_ACL_CONNECTED ) ) {
             m_listener = new BTListener( context );
             m_listener.start();
-            tellStateChanged( true );
-            break;
-        case BluetoothAdapter.STATE_TURNING_OFF:
-            asString = "STATE_TURNING_OFF";
-            if ( null != m_listener ) {
-                m_listener.stop();
-                m_listener = null;
+            // BluetoothDevice device = 
+            //     intent.getParcelableExtra( BluetoothDevice.EXTRA_DEVICE );
+            // DbgUtils.logf( "onReceive: ACL_CONNECTED: device: %s",
+            //                device.getName() );
+        } else if ( action.equals( BluetoothDevice.
+                                   ACTION_ACL_DISCONNECT_REQUESTED ) ) {
+            // DbgUtils.logf( "onReceive: ACL_DISCONNECT_REQUESTED" );
+        } else if ( action.equals( BluetoothDevice.ACTION_ACL_DISCONNECTED ) ) {
+            // if ( null != m_listener ) {
+            //     m_listener.stop();
+            //     m_listener = null;
+            // }
+            // DbgUtils.logf( "onReceive: ACL_DISCONNECTED" );
+        } else if ( action.equals( BluetoothAdapter.ACTION_STATE_CHANGED ) ) {
+            int newState = 
+                intent.getIntExtra( BluetoothAdapter.EXTRA_STATE, -1 );
+            String asString = null;
+            switch ( newState ) {
+            case -1:
+                break;
+            case BluetoothAdapter.STATE_OFF:
+                asString = "STATE_OFF";
+                tellStateChanged( false );
+                break;
+            case BluetoothAdapter.STATE_TURNING_ON:
+                asString = "STATE_TURNING_ON";
+                break;
+            case BluetoothAdapter.STATE_ON:
+                asString = "STATE_ON";
+                if ( null == m_listener ) {
+                    m_listener = new BTListener( context );
+                    m_listener.start();
+                }
+                tellStateChanged( true );
+                break;
+            case BluetoothAdapter.STATE_TURNING_OFF:
+                asString = "STATE_TURNING_OFF";
+                if ( null != m_listener ) {
+                    m_listener.stop();
+                    m_listener = null;
+                }
+                break;
             }
-            break;
-        }
-
-        if ( null != asString ) {
-            DbgUtils.logf( "onReceive: new BT state = %s", asString );
-        }
-
+            if ( null != asString ) {
+                DbgUtils.logf( "onReceive: new BT state = %s", asString );
+            }
+        } // STATE_CHANGED
     } // onReceive
 
     public static void ping( Handler handler ) 
