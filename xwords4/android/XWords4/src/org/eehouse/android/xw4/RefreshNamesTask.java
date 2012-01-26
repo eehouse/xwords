@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -70,7 +70,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
         DbgUtils.logf( "doInBackground()" );
 
         try {
-            Socket socket = NetUtils.MakeProxySocket( m_context, 15000 );
+            Socket socket = NetUtils.makeProxySocket( m_context, 15000 );
             if ( null != socket ) {
                 DataOutputStream outStream = 
                     new DataOutputStream( socket.getOutputStream() );

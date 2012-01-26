@@ -55,7 +55,7 @@ class DBMgr {
                        char* connNameBuf, int bufLen, int* nPlayersHP );
     bool AllDevsAckd( const char* const connName );
 
-    HostID AddDevice( const char* const connName, HostID curID,
+    HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const in_addr& addr, bool unAckd );
     void NoteAckd( const char* const connName, HostID id );
     HostID HIDForSeed( const char* const connName, unsigned short seed );
@@ -99,6 +99,10 @@ class DBMgr {
     void readArray( const char* const connName, int arr[] );
 
     PGconn* getThreadConn( void );
+
+    void conn_key_alloc();
+    pthread_key_t m_conn_key;
+
 }; /* DBMgr */
 
 

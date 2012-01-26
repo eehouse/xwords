@@ -443,7 +443,7 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
-    echo "    [--dict <path/to/dict>]*                                \\" >&2
+    echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--old-app <path/to/app]*                               \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
     echo "    [--min-devs <int>]                                      \\" >&2

@@ -50,6 +50,7 @@ cid integer
 ,pub BOOLEAN
 ,connName VARCHAR(64) UNIQUE PRIMARY KEY
 ,nTotal INTEGER
+,clntVers INTEGER[]
 ,nPerDevice INTEGER[]
 ,seeds INTEGER[]
 ,ack VARCHAR(1)[]

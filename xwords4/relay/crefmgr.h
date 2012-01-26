@@ -171,12 +171,13 @@ class SafeCref {
 
  public:
     /* for connect */
-    SafeCref( const char* cookie, int socket, int nPlayersH, int nPlayersS, 
+    SafeCref( const char* cookie, int socket, int clientVersion, 
+              int nPlayersH, int nPlayersS, 
               unsigned short gameSeed, int langCode, bool wantsPublic, 
               bool makePublic );
     /* for reconnect */
     SafeCref( const char* connName, const char* cookie, HostID hid, 
-              int socket, int nPlayersH, int nPlayersS, 
+              int socket, int clientVersion, int nPlayersH, int nPlayersS, 
               unsigned short gameSeed, int langCode, 
               bool wantsPublic, bool makePublic );
     SafeCref( const char* const connName );
@@ -209,7 +210,7 @@ class SafeCref {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            return cref->_Connect( socket, nPlayersH, nPlayersS, seed, 
+            return cref->_Connect( socket, m_clientVersion, nPlayersH, nPlayersS, seed, 
                                    m_seenSeed, addr );
         } else {
             return false;
@@ -225,7 +226,7 @@ class SafeCref {
             if ( m_dead ) {
                 *errp = XWRELAY_ERROR_DEADGAME;
             } else {
-                success = cref->_Reconnect( socket, srcID, nPlayersH, 
+                success = cref->_Reconnect( socket, m_clientVersion, srcID, nPlayersH, 
                                             nPlayersS, seed, addr, m_dead );
             }
         }
@@ -385,6 +386,7 @@ class SafeCref {
  private:
     CidInfo* m_cinfo;
     CRefMgr* m_mgr;
+    int m_clientVersion;
     bool m_isValid;
     bool m_locked;
     bool m_dead;

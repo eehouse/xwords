@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2010 - 2011 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -114,8 +114,8 @@ public class RelayService extends Service {
             byte[][][] msgs =
                 NetUtils.queryRelay( this, ids, nBytes[0] );
 
-            int nameCount = ids.length;
             if ( null != msgs ) {
+                int nameCount = ids.length;
                 ArrayList<String> idsWMsgs =
                     new ArrayList<String>( nameCount );
                 for ( int ii = 0; ii < nameCount; ++ii ) {

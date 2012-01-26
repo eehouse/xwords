@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -50,7 +50,7 @@ public class NetUtils {
     public static byte PRX_GET_MSGS = 4;
     public static byte PRX_PUT_MSGS = 5;
     
-    public static Socket MakeProxySocket( Context context, 
+    public static Socket makeProxySocket( Context context, 
                                           int timeoutMillis )
     {
         Socket socket = null;
@@ -81,7 +81,7 @@ public class NetUtils {
         }
 
         public void run() {
-            Socket socket = MakeProxySocket( m_context, 10000 );
+            Socket socket = makeProxySocket( m_context, 10000 );
             if ( null != socket ) {
                 int strLens = 0;
                 for ( int ii = 0; ii < m_obits.length; ++ii ) {
@@ -133,52 +133,54 @@ public class NetUtils {
     {
         byte[][][] msgs = null;
         try {
-            Socket socket = MakeProxySocket( context, 8000 );
-            DataOutputStream outStream = 
-                new DataOutputStream( socket.getOutputStream() );
+            Socket socket = makeProxySocket( context, 8000 );
+            if ( null != socket ) {
+                DataOutputStream outStream = 
+                    new DataOutputStream( socket.getOutputStream() );
 
-            // total packet size
-            outStream.writeShort( 2 + nBytes + ids.length + 1 );
+                // total packet size
+                outStream.writeShort( 2 + nBytes + ids.length + 1 );
 
-            outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-            outStream.writeByte( NetUtils.PRX_GET_MSGS );
+                outStream.writeByte( NetUtils.PROTOCOL_VERSION );
+                outStream.writeByte( NetUtils.PRX_GET_MSGS );
 
-            // number of ids
-            outStream.writeShort( ids.length );
+                // number of ids
+                outStream.writeShort( ids.length );
 
-            for ( String id : ids ) {
-                outStream.writeBytes( id );
-                outStream.write( '\n' );
-            }
-            outStream.flush();
+                for ( String id : ids ) {
+                    outStream.writeBytes( id );
+                    outStream.write( '\n' );
+                }
+                outStream.flush();
 
-            DataInputStream dis = 
-                new DataInputStream(socket.getInputStream());
-            short resLen = dis.readShort();          // total message length
-            short nameCount = dis.readShort();
+                DataInputStream dis = 
+                    new DataInputStream(socket.getInputStream());
+                short resLen = dis.readShort();          // total message length
+                short nameCount = dis.readShort();
 
-            if ( nameCount == ids.length ) {
-                msgs = new byte[nameCount][][];
-                for ( int ii = 0; ii < nameCount; ++ii ) {
-                    short countsThisGame = dis.readShort();
-                    if ( countsThisGame > 0 ) {
-                        msgs[ii] = new byte[countsThisGame][];
-                        for ( int jj = 0; jj < countsThisGame; ++jj ) {
-                            short len = dis.readShort();
-                            if ( len > 0 ) {
-                                byte[] packet = new byte[len];
-                                dis.read( packet );
-                                msgs[ii][jj] = packet;
+                if ( nameCount == ids.length ) {
+                    msgs = new byte[nameCount][][];
+                    for ( int ii = 0; ii < nameCount; ++ii ) {
+                        short countsThisGame = dis.readShort();
+                        if ( countsThisGame > 0 ) {
+                            msgs[ii] = new byte[countsThisGame][];
+                            for ( int jj = 0; jj < countsThisGame; ++jj ) {
+                                short len = dis.readShort();
+                                if ( len > 0 ) {
+                                    byte[] packet = new byte[len];
+                                    dis.read( packet );
+                                    msgs[ii][jj] = packet;
+                                }
                             }
                         }
                     }
                 }
+                if ( 0 != dis.available() ) {
+                    msgs = null;
+                    DbgUtils.logf( "format error: bytes left over in stream" );
+                }
+                socket.close();
             }
-            if ( 0 != dis.available() ) {
-                msgs = null;
-                DbgUtils.logf( "format error: bytes left over in stream" );
-            }
-            socket.close();
 
         } catch( java.net.UnknownHostException uhe ) {
             DbgUtils.logf( uhe.toString() );
@@ -240,16 +242,18 @@ public class NetUtils {
 
                 // Now open a real socket, write size and proto, and
                 // copy in the formatted buffer
-                Socket socket = MakeProxySocket( context, 8000 );
-                DataOutputStream outStream = 
-                    new DataOutputStream( socket.getOutputStream() );
-                outStream.writeShort( msgLen );
-                outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-                outStream.writeByte( NetUtils.PRX_PUT_MSGS );
-                outStream.writeShort( nRelayIDs );
-                outStream.write( store.toByteArray() );
-                outStream.flush();
-                socket.close();
+                Socket socket = makeProxySocket( context, 8000 );
+                if ( null != socket ) {
+                    DataOutputStream outStream = 
+                        new DataOutputStream( socket.getOutputStream() );
+                    outStream.writeShort( msgLen );
+                    outStream.writeByte( NetUtils.PROTOCOL_VERSION );
+                    outStream.writeByte( NetUtils.PRX_PUT_MSGS );
+                    outStream.writeShort( nRelayIDs );
+                    outStream.write( store.toByteArray() );
+                    outStream.flush();
+                    socket.close();
+                }
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.logf( "%s", ioe.toString() );
             }
