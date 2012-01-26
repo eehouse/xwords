@@ -119,9 +119,10 @@ class CookieRef {
     static void Delete( CookieID cid );
     static void Delete( const char* name );
 
-    bool _Connect( int socket, int nPlayersH, int nPlayersS, int seed, 
-                   bool seenSeed, in_addr& addr );
-    bool _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
+    bool _Connect( int socket, int clientVersion, int nPlayersH, int nPlayersS,
+                   int seed, bool seenSeed, in_addr& addr );
+    bool _Reconnect( int socket, int clientVersion, HostID srcID, 
+                     int nPlayersH, int nPlayersS,
                      int seed, in_addr& addr, bool gameDead );
     void _HandleAck( HostID hostID );
     void _PutMsg( HostID srcID, in_addr& addr, HostID destID, unsigned char* buf, int buflen );
@@ -155,6 +156,7 @@ class CookieRef {
             } fwd;
             struct {
                 int socket;
+                int clientVersion;
                 int nPlayersH;
                 int nPlayersS;
                 int seed;
@@ -193,9 +195,9 @@ class CookieRef {
                            bool cascade );
     void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
                    bool cascade );
-    void pushConnectEvent( int socket, int nPlayersH, int nPlayersS,
+    void pushConnectEvent( int socket, int clientVersion, int nPlayersH, int nPlayersS,
                            int seed, in_addr& addr );
-    void pushReconnectEvent( int socket, HostID srcID,
+    void pushReconnectEvent( int socket, int clientVersion, HostID srcID,
                              int nPlayersH, int nPlayersS,
                              int seed, in_addr& addr );
     void pushHeartbeatEvent( HostID id, int socket );

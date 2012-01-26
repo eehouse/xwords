@@ -267,10 +267,27 @@ readStr( unsigned char** bufp, const unsigned char* end,
 } /* readStr */
 
 static XWREASON
-flagsOK( unsigned char flags )
+flagsOK( unsigned char** bufp, unsigned char const* end, 
+         unsigned short* clientVersion )
 {
-    return flags == XWRELAY_PROTO_VERSION ?
-        XWRELAY_ERROR_NONE : XWRELAY_ERROR_OLDFLAGS;
+    XWREASON err = XWRELAY_ERROR_OLDFLAGS;
+    unsigned char flags;
+    if ( getNetByte( bufp, end, &flags ) ) {
+        switch ( flags ) {
+        case XWRELAY_PROTO_VERSION_CLIENTVERS:
+            if ( getNetShort( bufp, end, clientVersion ) ) {
+                err = XWRELAY_ERROR_NONE;
+            }
+            break;
+        case XWRELAY_PROTO_VERSION_NOCLIENT:
+            *clientVersion = 0;
+            err = XWRELAY_ERROR_NONE;
+            break;
+        default:
+            break;
+        }
+    }
+    return err;
 } /* flagsOK */
 
 void
@@ -328,8 +345,8 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
 
     cookie[0] = '\0';
 
-    unsigned char flags = *bufp++;
-    XWREASON err = flagsOK( flags );
+    unsigned short clientVersion;
+    XWREASON err = flagsOK( &bufp, end, &clientVersion );
     if ( err == XWRELAY_ERROR_NONE ) {
         /* HostID srcID; */
         unsigned char nPlayersH;
@@ -354,7 +371,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
             static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
             MutexLock ml( &s_newCookieLock );
 
-            SafeCref scr( cookie, socket, nPlayersH, nPlayersT, 
+            SafeCref scr( cookie, socket, clientVersion, nPlayersH, nPlayersT, 
                           seed, langCode, wantsPublic, makePublic );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
@@ -378,8 +395,8 @@ processReconnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
 
     logf( XW_LOGINFO, "%s()", __func__ );
 
-    unsigned char flags = *bufp++;
-    XWREASON err = flagsOK( flags );
+    unsigned short clientVersion;
+    XWREASON err = flagsOK( &bufp, end, &clientVersion );
     if ( err == XWRELAY_ERROR_NONE ) {
         char cookie[MAX_INVITE_LEN+1];
         char connName[MAX_CONNNAME_LEN+1] = {0};
@@ -401,7 +418,7 @@ processReconnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
             SafeCref scr( connName[0]? connName : NULL, 
-                          cookie, srcID, socket, nPlayersH, 
+                          cookie, srcID, socket, clientVersion, nPlayersH, 
                           nPlayersT, gameSeed, langCode,
                           wantsPublic, makePublic );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 

@@ -238,7 +238,7 @@ DBMgr::AllDevsAckd( const char* const connName )
 }
 
 HostID
-DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd, 
+DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion, int nToAdd, 
                   unsigned short seed, const in_addr& addr, bool ackd )
 {
     HostID newID = curID;
@@ -255,11 +255,12 @@ DBMgr::AddDevice( const char* connName, HostID curID, int nToAdd,
     assert( newID <= 4 );
 
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
+        " clntVers[%d] = %d,"
         " seeds[%d] = %d, addrs[%d] = \'%s\', mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, seed, 
-              newID, inet_ntoa(addr), newID, 
+    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, clientVersion,
+              newID, seed, newID, inet_ntoa(addr), newID, 
               newID, ackd?'A':'a', connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 

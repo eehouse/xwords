@@ -35,6 +35,10 @@
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 
+#ifndef INITIAL_CLIENT_VERS
+# define INITIAL_CLIENT_VERS 1
+#endif
+
 #ifdef COMMS_HEARTBEAT
 /* It might make sense for this to be a parameter or somehow tied to the
    platform and transport.  But in that case it'd have to be passed across
@@ -2009,6 +2013,7 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             break;
         case XWRELAY_GAME_CONNECT:
             stream_putU8( stream, XWRELAY_PROTO_VERSION );
+            stream_putU16( stream, INITIAL_CLIENT_VERS );
             stringToStream( stream, addr.u.ip_relay.invite );
             stream_putU8( stream, addr.u.ip_relay.seeksPublicRoom );
             stream_putU8( stream, addr.u.ip_relay.advertiseRoom );
@@ -2027,6 +2032,7 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
         case XWRELAY_GAME_RECONNECT:
             stream_putU8( stream, XWRELAY_PROTO_VERSION );
+            stream_putU16( stream, INITIAL_CLIENT_VERS );
             stringToStream( stream, addr.u.ip_relay.invite );
             stream_putU8( stream, addr.u.ip_relay.seeksPublicRoom );
             stream_putU8( stream, addr.u.ip_relay.advertiseRoom );
