@@ -60,6 +60,7 @@ public class BTConnection extends BroadcastReceiver {
     private enum BTCmd { 
             PING,
             PONG,
+            SCAN,
             INVITE,
             INVITE_ACCPT,
             INVITE_DECL,
@@ -74,10 +75,12 @@ public class BTConnection extends BroadcastReceiver {
         new HashMap<String, String>();
 
     private static class BTQueueElem {
+        // These should perhaps be in some subclasses....
         BTCmd m_cmd;
         byte[] m_msg;
         String m_recipient;
         Handler m_handler;
+        ProgressDialog m_progress;
         int m_gameID;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; }
@@ -87,8 +90,13 @@ public class BTConnection extends BroadcastReceiver {
         public BTQueueElem( BTCmd cmd, byte[] buf, String target, int gameID ) {
             m_cmd = cmd; m_msg = buf; m_recipient = target; m_gameID = gameID;
         }
-        public BTQueueElem( BTCmd cmd, String dev, int gameID, Handler handler ) {
+        public BTQueueElem( BTCmd cmd, String dev, int gameID, 
+                            Handler handler ) {
             m_cmd = cmd; m_recipient = dev; m_gameID = gameID; m_handler = handler;
+        }
+        public BTQueueElem( BTCmd cmd, ProgressDialog progress, 
+                            Handler handler ) {
+            m_cmd = cmd; m_progress = progress; m_handler = handler;
         }
     }
     private static LinkedBlockingQueue<BTQueueElem> s_queue;
@@ -109,7 +117,10 @@ public class BTConnection extends BroadcastReceiver {
                 DbgUtils.logf( "run: got %s from queue", elem.m_cmd.toString() );
                 switch( elem.m_cmd ) {
                 case PING:
-                    sendPings( elem );
+                    sendPings( elem.m_handler );
+                    break;
+                case SCAN:
+                    doScan( elem );
                     break;
                 case INVITE:
                     sendInvite( elem );
@@ -266,39 +277,16 @@ public class BTConnection extends BroadcastReceiver {
         s_queue.add( new BTQueueElem( BTCmd.INVITE, devName, gameID, handler ) );
     }
 
-    private static class BTScanner extends AsyncTask<Void, Void, Void> {
-        private Handler m_handler;
-        private ProgressDialog m_progress;
-
-        public BTScanner( Context context, Handler handler ) {
-            super();
-            m_handler = handler;
-
-            String msg = context.getString( R.string.scan_progress );
-            m_progress = ProgressDialog.show( context, msg, null, true, true );
-        }
-
-        @Override
-        protected Void doInBackground( Void... unused )
-        {
-            synchronized( s_names ) {
-                s_names.clear();
-            }
-            // new PingThread( null ).run(); // same thread
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute( Void unused )
-        {
-            m_progress.cancel();
-            m_handler.obtainMessage( SCAN_DONE ).sendToTarget();
-        }
-    }
-
     public static void rescan( Context context, Handler handler )
     {
-        new BTScanner( context, handler ).execute();
+        // This is really gross!!!  But only the foreground thread can
+        // show/close a dialog so we have to pass it to the caller in
+        // the handler when done.  Maybe the caller should put it up
+        // before calling us????
+        String msg = context.getString( R.string.scan_progress );
+        ProgressDialog progress = ProgressDialog.show( context, msg, 
+                                                       null, true, true );
+        s_queue.add( new BTQueueElem( BTCmd.SCAN, progress, handler ) );
     }
 
     public static String[] listPairedWithXwords()
@@ -442,7 +430,7 @@ public class BTConnection extends BroadcastReceiver {
         }
     }
 
-    private static void sendPings( BTQueueElem elem )
+    private static void sendPings( Handler handler )
     {
         Set<BluetoothDevice> pairedDevs = s_btAdapter.getBondedDevices();
         DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
@@ -470,9 +458,8 @@ public class BTConnection extends BroadcastReceiver {
                     if ( success ) {
                         DbgUtils.logf( "got PONG from %s", dev.getName() );
                         addAddr( dev );
-                        if ( null != elem.m_handler ) {
-                            elem.m_handler
-                                .obtainMessage( GOT_PONG, dev.getName() )
+                        if ( null != handler ) {
+                            handler.obtainMessage( GOT_PONG, dev.getName() )
                                 .sendToTarget();
                         }
                     }
@@ -490,6 +477,13 @@ public class BTConnection extends BroadcastReceiver {
         DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
         os.writeByte( BTCmd.PONG.ordinal() );
         os.flush();
+    }
+
+    private static void doScan( BTQueueElem elem )
+    {
+        sendPings( null );
+        elem.m_handler.obtainMessage( SCAN_DONE, elem.m_progress )
+            .sendToTarget();
     }
 
     private static void addAddr( BluetoothDevice dev )

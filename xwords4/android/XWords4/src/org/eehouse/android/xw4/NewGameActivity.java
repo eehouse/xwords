@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -291,6 +292,7 @@ public class NewGameActivity extends XWActivity
                         case BTConnection.CONNECT_FAILED:
                             break;
                         case BTConnection.SCAN_DONE:
+                            ((ProgressDialog)msg.obj).cancel();
                             showDialog( PICK_BTDEV_DLG );
                             break;
                         }
