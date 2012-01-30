@@ -17,7 +17,7 @@ while [ $# -ge 1 ]; do
             [ $# -ge 1 ] || usage "-n requires a parameter"
             INDX=$1
             ;;
-        -g) PAT="D/XW4"
+        -g) PAT="D/XW4\|D/xw4"
             ;;
         *)
             usage
