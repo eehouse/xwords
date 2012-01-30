@@ -1039,7 +1039,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setAddr
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
-( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream )
+( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream, jobject jaddr )
 {
     jboolean result;
     XWJNI_START_GLOBALS();
@@ -1048,7 +1048,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
 
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, globals->vtMgr,
                                               jstream );
-    result = comms_checkIncomingStream( state->game.comms, stream, NULL );
+    CommsAddrRec* addrp = NULL;
+    CommsAddrRec addr;
+    if ( NULL != jaddr ) {
+        getJAddrRec( env, &addr, jaddr );
+        addrp = &addr;
+    }
+    result = comms_checkIncomingStream( state->game.comms, stream, addrp );
     if ( result ) {
         ServerCtxt* server = state->game.server;
         (void)server_do( server );

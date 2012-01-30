@@ -150,6 +150,44 @@ public class BoardActivity extends XWActivity
     private int m_missing;
     private boolean m_haveInvited = false;
 
+    private static BoardActivity s_this = null;
+    private static Object s_thisLocker = new Object();
+
+    public static boolean feedMessage( int gameID, byte[] msg, 
+                                       CommsAddrRec retAddr )
+    {
+        boolean delivered = false;
+        synchronized( s_thisLocker ) {
+            if ( null != s_this ) {
+                Assert.assertNotNull( s_this.m_gi );
+                Assert.assertNotNull( s_this.m_gameLock );
+                Assert.assertNotNull( s_this.m_jniThread );
+                if ( gameID == s_this.m_gi.gameID ) {
+                    s_this.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg,
+                                               retAddr );
+                    delivered = true;
+                }
+            }
+        }
+        return delivered;
+    }
+
+    private static void setThis( BoardActivity self )
+    {
+        synchronized( s_thisLocker ) {
+            Assert.assertNull( s_this );
+            s_this = self;
+        }
+    }
+
+    private static void clearThis()
+    {
+        synchronized( s_thisLocker ) {
+            Assert.assertNotNull( s_this );
+            s_this = null;
+        }
+    }
+
     public class TimerRunnable implements Runnable {
         private int m_why;
         private int m_when;
@@ -1319,6 +1357,8 @@ public class BoardActivity extends XWActivity
                 XwJNI.gi_from_stream( m_gi, stream );
                 String langName = m_gi.langName();
 
+                setThis( this );
+
                 m_jniGamePtr = XwJNI.initJNI();
 
                 if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
@@ -1550,6 +1590,8 @@ public class BoardActivity extends XWActivity
                 m_jniThread.waitToStop( save );
                 m_jniThread = null;
             }
+
+            clearThis();
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;

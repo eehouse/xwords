@@ -54,7 +54,8 @@ import org.eehouse.android.xw4.jni.*;
 public class GamesList extends XWListActivity 
     implements DispatchNotify.HandleRelaysIface,
                DBUtils.DBChangeListener,
-               GameListAdapter.LoadItemCB {
+               GameListAdapter.LoadItemCB,
+               BTService.BTEventListener { // for ping results
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -323,6 +324,18 @@ public class GamesList extends XWListActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        BTService.setBTEventListener( this );
+    }
+
+    @Override
+    protected void onPause() {
+        BTService.setBTEventListener( null );
+        super.onPause();
+    }
+
+    @Override
     protected void onStop()
     {
         // TelephonyManager mgr = 
@@ -407,6 +420,21 @@ public class GamesList extends XWListActivity
     public void itemLoaded( long rowid )
     {
         onContentChanged();
+    }
+
+    // BTService.BTEventListener interface
+    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    {
+        switch( event ) {
+        case HOST_PONGED:
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        DbgUtils.showf( GamesList.this,
+                                        "Pong from %s", args[0].toString() );
+                    } 
+                });
+            break;
+        }
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -517,18 +545,7 @@ public class GamesList extends XWListActivity
         switch (item.getItemId()) {
             
         case R.id.gamel_menu_btping:
-            Handler handler = new Handler() {
-                    public void handleMessage( Message msg ) {
-                        switch( msg.what ) {
-                        case BTConnection.GOT_PONG:
-                            String name = (String)msg.obj;
-                            DbgUtils.showf( GamesList.this, "Pong from %s!!!",
-                                            name );
-                            break;
-                        }
-                    }
-                };
-            BTConnection.ping( handler );
+            BTService.ping( this );
             break;
 
         case R.id.gamel_menu_newgame:

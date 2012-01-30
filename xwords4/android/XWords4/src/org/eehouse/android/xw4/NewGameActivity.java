@@ -46,21 +46,25 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 
 public class NewGameActivity extends XWActivity
-    implements BTConnection.BTStateChangeListener {
+    implements BTService.BTEventListener {
 
     private static final int NEW_GAME_ACTION = 1;
-
+    private static final String SAVE_DEVNAMES = "DEVNAMES";
     private static final int PICK_BTDEV_DLG = DlgDelegate.DIALOG_LAST + 1;
 
     private boolean m_showsOn;
     private Handler m_handler = null;
     private ProgressDialog m_progress;
     private int m_chosen;
+    private String[] m_btDevNames;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) 
+    protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
+        getBundledData( savedInstanceState );
+
+        m_handler = new Handler();
 
         setContentView( R.layout.new_game );
 
@@ -122,21 +126,20 @@ public class NewGameActivity extends XWActivity
                             m_progress = 
                                 ProgressDialog.show( NewGameActivity.this, msg,
                                                      null, true, true );
-                            BTConnection.rescan( NewGameActivity.this,
-                                                 getHandler() );
+                            BTService.rescan( NewGameActivity.this );
                         }
                     };
-                final String[] btDevs = BTConnection.listPairedWithXwords();
                 OnClickListener okLstnr =
                     new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
                             if ( 0 <= m_chosen ) {
-                                if ( m_chosen < btDevs.length ) {
+                                if ( m_chosen < m_btDevNames.length ) {
                                     int gameID = GameUtils.newGameID();
-                                    BTConnection.
-                                        inviteRemote( btDevs[m_chosen],
-                                                      gameID, getHandler() );
+                                    BTService.
+                                        inviteRemote( NewGameActivity.this,
+                                                      m_btDevNames[m_chosen],
+                                                      gameID );
                                 }
                             }
                         }
@@ -147,7 +150,7 @@ public class NewGameActivity extends XWActivity
                     .setNegativeButton( R.string.bt_pick_rescan_button, 
                                         scanLstnr );
 
-                if ( null != btDevs && 0 < btDevs.length ) {
+                if ( null != m_btDevNames && 0 < m_btDevNames.length ) {
                     OnClickListener devChosenLstnr =
                         new OnClickListener() {
                             public void onClick( DialogInterface dlgi, 
@@ -161,7 +164,7 @@ public class NewGameActivity extends XWActivity
                             }
                         };
                     m_chosen = -1;
-                    ab.setSingleChoiceItems( btDevs, m_chosen, 
+                    ab.setSingleChoiceItems( m_btDevNames, m_chosen, 
                                              devChosenLstnr );
                 }
                 dialog = ab.create();
@@ -201,19 +204,75 @@ public class NewGameActivity extends XWActivity
     protected void onResume() {
         super.onResume();
         checkEnableBT( false );
-        BTConnection.setBTStateChangeListener( this );
+        BTService.setBTEventListener( this );
     }
 
     @Override
     protected void onPause() {
-        BTConnection.setBTStateChangeListener( null );
+        BTService.setBTEventListener( null );
         super.onPause();
     }
 
-    // BTConnection.BTStateChangeListener
-    public void stateChanged( boolean nowEnabled )
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
     {
-        checkEnableBT( false );
+        super.onSaveInstanceState( outState );
+        outState.putStringArray( SAVE_DEVNAMES, m_btDevNames );
+    }
+
+    private void getBundledData( Bundle bundle )
+    {
+        if ( null != bundle ) {
+            m_btDevNames = bundle.getStringArray( SAVE_DEVNAMES );
+        }
+    }
+
+    // BTService.BTEventListener interface
+    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    {
+        switch( event ) {
+        case SCAN_DONE:
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        synchronized( NewGameActivity.this ) {
+                            if ( null != m_progress ) {
+                                m_progress.cancel();
+                                m_progress = null;
+                            }
+                            if ( 0 < args.length ) {
+                                m_btDevNames = (String[])(args[0]);
+                            }
+                            showDialog( PICK_BTDEV_DLG );
+                        }
+                    }
+                } );
+            break;
+        case BT_ENABLED:
+        case BT_DISABLED:
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        checkEnableBT( false );
+                    }
+                });
+            break;
+        case NEWGAME_FAILURE:
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        DbgUtils.showf( NewGameActivity.this,
+                                        "Remote failed to create game" );
+                    } 
+                });
+            break;
+        case NEWGAME_SUCCESS:
+            int gameID = (Integer)args[0];
+            GameUtils.makeNewBTGame( NewGameActivity.this, gameID, null );
+            finish();
+            break;
+        default:
+            DbgUtils.logf( "unexpected event %s", event.toString() );
+            Assert.fail();
+            break;
+        }
     }
 
     private void makeNewGame( boolean networked, boolean launch )
@@ -269,7 +328,7 @@ public class NewGameActivity extends XWActivity
 
     private void checkEnableBT( boolean force )
     {
-        boolean enabled = BTConnection.BTEnabled();
+        boolean enabled = BTService.BTEnabled();
 
         if ( force || enabled != m_showsOn ) {
             m_showsOn = enabled;
@@ -307,33 +366,5 @@ public class NewGameActivity extends XWActivity
                     } );
             }
         }
-    }
-
-    private Handler getHandler()
-    {
-        if ( null == m_handler ) {
-            m_handler = new Handler() {
-                    public void handleMessage( Message msg ) {
-                        switch( msg.what ) {
-                        case BTConnection.CONNECT_ACCEPTED:
-                            GameUtils.makeNewBTGame( NewGameActivity.this,
-                                                     msg.arg1, null );
-                            finish();
-                            break;
-                        case BTConnection.CONNECT_REFUSED:
-                        case BTConnection.CONNECT_FAILED:
-                            break;
-                        case BTConnection.SCAN_DONE:
-                            if ( null != m_progress ) {
-                                m_progress.cancel();
-                                m_progress = null;
-                            }
-                            showDialog( PICK_BTDEV_DLG );
-                            break;
-                        }
-                    }
-                };
-        }
-        return m_handler;
     }
 }

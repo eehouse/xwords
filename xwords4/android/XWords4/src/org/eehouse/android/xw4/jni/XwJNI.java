@@ -122,7 +122,8 @@ public class XwJNI {
     }
 
     public static native boolean game_receiveMessage( int gamePtr, 
-                                                      byte[] stream );
+                                                      byte[] stream,
+                                                      CommsAddrRec retAddr );
     public static native void game_summarize( int gamePtr, GameSummary summary );
     public static native byte[] game_saveToStream( int gamePtr,
                                                    CurGameInfo gi  );

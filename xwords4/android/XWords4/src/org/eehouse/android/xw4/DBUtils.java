@@ -394,6 +394,25 @@ public class DBUtils {
         return result;
     }
 
+    public static long getRowIDFor( Context context, int gameID )
+    {
+        long result = ROWID_NOTFOUND;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { ROW_ID };
+            String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
     public static long getRowIDForOpen( Context context, NetLaunchInfo nli )
     {
         long result = ROWID_NOTFOUND;

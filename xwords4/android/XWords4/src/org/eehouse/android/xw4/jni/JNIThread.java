@@ -349,7 +349,8 @@ public class JNIThread extends Thread {
 
             case CMD_RECEIVE:
                 draw = XwJNI.game_receiveMessage( m_jniGamePtr, 
-                                                  (byte[])args[0] );
+                                                  (byte[])args[0],
+                                                  (CommsAddrRec)args[1]);
                 handle( JNICmd.CMD_DO );
                 if ( draw ) {
                     handle( JNICmd.CMD_SAVE );

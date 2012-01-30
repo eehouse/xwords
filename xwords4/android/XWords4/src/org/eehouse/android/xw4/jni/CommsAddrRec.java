@@ -72,6 +72,12 @@ public class CommsAddrRec {
         this( context, CommsConnType.COMMS_CONN_RELAY );
     }
 
+    public CommsAddrRec( Context context, String btHost ) 
+    {
+        this( context, CommsConnType.COMMS_CONN_BT );
+        bt_hostName = btHost;
+    }
+
     public CommsAddrRec( final CommsAddrRec src ) 
     {
         this.copyFrom( src );
@@ -96,5 +102,7 @@ public class CommsAddrRec {
         ip_relay_port = src.ip_relay_port;
         ip_relay_seeksPublicRoom = src.ip_relay_seeksPublicRoom;
         ip_relay_advertiseRoom = src.ip_relay_advertiseRoom;
+
+        bt_hostName = src.bt_hostName;
     }
 }

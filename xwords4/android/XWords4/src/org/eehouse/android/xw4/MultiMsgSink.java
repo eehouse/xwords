@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -28,30 +28,34 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
-public class RelayMsgSink extends MultiMsgSink {
-
-    private HashMap<String,ArrayList<byte[]>> m_msgLists = null;
-
-    public void send( Context context )
-    {
-        NetUtils.sendToRelay( context, m_msgLists );
-    }
+public class MultiMsgSink implements TransportProcs {
 
     /***** TransportProcs interface *****/
 
-    public boolean relayNoConnProc( byte[] buf, String relayID )
+    public int getFlags() { return COMMS_XPORT_FLAGS_HASNOCONN; }
+
+    public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
     {
-        if ( null == m_msgLists ) {
-            m_msgLists = new HashMap<String,ArrayList<byte[]>>();
-        }
+        Assert.fail();
+        return -1;
+    }
 
-        ArrayList<byte[]> list = m_msgLists.get( relayID );
-        if ( list == null ) {
-            list = new ArrayList<byte[]>();
-            m_msgLists.put( relayID, list );
-        }
-        list.add( buf );
+    public void relayStatus( CommsRelayState newState )
+    {
+    }
 
-        return true;
+    public void relayErrorProc( XWRELAY_ERROR relayErr )
+    {
+    }
+
+    public void relayConnd( String room, int devOrder, boolean allHere, 
+                            int nMissing )
+    {
+    }
+
+    public boolean relayNoConnProc( byte[] buf, String relayID ) 
+    {
+        Assert.fail();
+        return false; 
     }
 }

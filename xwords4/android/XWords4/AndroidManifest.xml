@@ -141,16 +141,16 @@
         </intent-filter>
     </receiver>
 
-    <receiver android:name=".BTConnection">
-      <intent-filter>
-        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />                                                                    
-      </intent-filter>
-      <intent-filter>
-        <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
-        <action android:name="android.bluetooth.device.action.ACL_DISCONNECT_REQUESTED" />
-        <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
-      </intent-filter>
-    </receiver>
+    <!-- <receiver android:name=".BTConnection"> -->
+    <!--   <intent-filter> -->
+    <!--     <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />                                                                     -->
+    <!--   </intent-filter> -->
+    <!--   <intent-filter> -->
+    <!--     <action android:name="android.bluetooth.device.action.ACL_CONNECTED" /> -->
+    <!--     <action android:name="android.bluetooth.device.action.ACL_DISCONNECT_REQUESTED" /> -->
+    <!--     <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" /> -->
+    <!--   </intent-filter> -->
+    <!-- </receiver> -->
 
     <!-- <receiver android:name="NBSReceiver"> -->
     <!--   <intent-filter android:priority="10"> -->
@@ -159,6 +159,8 @@
     <!--     <data android:port="50009" /> -->
     <!--   </intent-filter> -->
     <!-- </receiver> -->
+
+    <service android:name="BTService"/>
 
   </application>
 </manifest>

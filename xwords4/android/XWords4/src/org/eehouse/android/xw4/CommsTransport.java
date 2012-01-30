@@ -303,7 +303,7 @@ public class CommsTransport implements TransportProcs,
                 m_haveLen += wantLen;
                 if ( m_haveLen == m_packetIn.length ) {
                     // send completed packet
-                    m_jniThread.handle( JNICmd.CMD_RECEIVE, m_packetIn );
+                    m_jniThread.handle( JNICmd.CMD_RECEIVE, m_packetIn, null );
                     m_packetIn = null;
                 }
             }
@@ -388,7 +388,9 @@ public class CommsTransport implements TransportProcs,
             // }
             break;
         case COMMS_CONN_BT:
-            nSent = BTConnection.enqueueFor( buf, m_addr.bt_hostName, gameID );
+            String hostName = m_addr.bt_hostName;
+            nSent = BTService.enqueueFor( m_context, buf, m_addr.bt_hostName, 
+                                          gameID );
             break;
         default:
             Assert.fail();

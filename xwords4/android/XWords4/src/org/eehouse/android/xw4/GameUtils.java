@@ -622,52 +622,77 @@ public class GameUtils {
         }
     }
 
-    public static boolean feedMessages( Context context, String relayID,
-                                        byte[][] msgs, RelayMsgSink sink )
+    private static boolean feedMessages( Context context, long rowid,
+                                         byte[][] msgs, CommsAddrRec ret,
+                                         MultiMsgSink sink )
     {
         boolean draw = false;
-        long rowid = DBUtils.getRowIDFor( context, relayID );
-        if ( -1 != rowid ) {
-            CurGameInfo gi = new CurGameInfo( context );
-            FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-            GameLock lock = new GameLock( rowid, true );
-            if ( lock.tryLock() ) {
-                int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+        Assert.assertTrue( -1 != rowid );
+        CurGameInfo gi = new CurGameInfo( context );
+        FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
+        GameLock lock = new GameLock( rowid, true );
+        if ( lock.tryLock() ) {
+            int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
                     
-                XwJNI.comms_resendAll( gamePtr );
+            XwJNI.comms_resendAll( gamePtr );
 
-                if ( null != msgs ) {
-                    for ( byte[] msg : msgs ) {
-                        draw = XwJNI.game_receiveMessage( gamePtr, msg )
-                            || draw;
-                    }
+            if ( null != msgs ) {
+                for ( byte[] msg : msgs ) {
+                    draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
+                        || draw;
                 }
-
-                // update gi to reflect changes due to messages
-                XwJNI.game_getGi( gamePtr, gi );
-                saveGame( context, gamePtr, gi, lock, false );
-                summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
-
-                int flags = GameSummary.MSG_FLAGS_NONE;
-                if ( feedImpl.m_gotChat ) {
-                    flags |= GameSummary.MSG_FLAGS_CHAT;
-                } 
-                if ( feedImpl.m_gotMsg ) {
-                    flags |= GameSummary.MSG_FLAGS_TURN;
-                }
-                if ( feedImpl.m_gameOver ) {
-                    flags |= GameSummary.MSG_FLAGS_GAMEOVER;
-                }
-                if ( GameSummary.MSG_FLAGS_NONE != flags ) {
-                    draw = true;
-                    DBUtils.setMsgFlags( rowid, flags );
-                }
-                lock.unlock();
             }
+
+            // update gi to reflect changes due to messages
+            XwJNI.game_getGi( gamePtr, gi );
+            saveGame( context, gamePtr, gi, lock, false );
+            summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+
+            int flags = GameSummary.MSG_FLAGS_NONE;
+            if ( feedImpl.m_gotChat ) {
+                flags |= GameSummary.MSG_FLAGS_CHAT;
+            } 
+            if ( feedImpl.m_gotMsg ) {
+                flags |= GameSummary.MSG_FLAGS_TURN;
+            }
+            if ( feedImpl.m_gameOver ) {
+                flags |= GameSummary.MSG_FLAGS_GAMEOVER;
+            }
+            if ( GameSummary.MSG_FLAGS_NONE != flags ) {
+                draw = true;
+                DBUtils.setMsgFlags( rowid, flags );
+            }
+            lock.unlock();
         }
         DbgUtils.logf( "feedMessages=>%b", draw );
         return draw;
     } // feedMessages
+
+    public static boolean feedMessage( Context context, int gameID, byte[] msg, 
+                                       CommsAddrRec ret, MultiMsgSink sink )
+    {
+        long rowid = DBUtils.getRowIDFor( context, gameID );
+        boolean draw = -1 != rowid;
+        if ( draw ) {
+            byte[][] msgs = new byte[1][];
+            msgs[0] = msg;
+            draw = feedMessages( context, rowid, msgs, ret, sink );
+        }
+        return draw;
+    }
+
+    // Current assumption: this is the relay case where return address
+    // can be null.
+    public static boolean feedMessages( Context context, String relayID,
+                                        byte[][] msgs, MultiMsgSink sink )
+    {
+        long rowid = DBUtils.getRowIDFor( context, relayID );
+        boolean draw = -1 != rowid;
+        if ( draw ) {
+            draw = feedMessages( context, rowid, msgs, null, sink );
+        }
+        return draw;
+    }
 
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new

@@ -42,6 +42,7 @@ public class XWApp extends Application {
         DbgUtils.logEnable( this );
 
         RelayReceiver.RestartTimer( this );
+        BTService.startService( this );
     }
 
     public static UUID getAppUUID() {
