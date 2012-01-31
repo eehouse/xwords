@@ -507,7 +507,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
         destroyDraw( &globals->dctx );
         destroyXportProcs( &globals->xportProcs );
         destroyDicts( &dicts );
-        dict_destroy( dict );
+        if ( NULL != dict ) {
+            dict_destroy( dict );
+        }
         destroyUtil( &globals->util );
         destroyJNIUtil( &globals->jniutil );
         destroyGI( MPPARM(mpool) &globals->gi );
