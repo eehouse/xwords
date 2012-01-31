@@ -116,7 +116,7 @@ public class BTService extends Service {
     }
 
     private BluetoothAdapter m_adapter;
-    private static LinkedBlockingQueue<BTQueueElem> m_queue;
+    private LinkedBlockingQueue<BTQueueElem> m_queue;
     private HashMap<String,String> m_names;
     private BTMsgSink m_btMsgSink;
 
