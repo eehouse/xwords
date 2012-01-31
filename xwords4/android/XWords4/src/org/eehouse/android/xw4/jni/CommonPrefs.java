@@ -29,6 +29,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictUtils;
+import org.eehouse.android.xw4.DbgUtils;
 
 public class CommonPrefs {
     public static final int COLOR_TILE_BACK = 0;
