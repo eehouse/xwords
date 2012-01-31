@@ -441,15 +441,16 @@ public class GameUtils {
     }
 
     public static long makeNewBTGame( Context context, int gameID, 
-                                      String hostName )
+                                      String hostName, int lang,
+                                      int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
         CommsAddrRec addr = 
             new CommsAddrRec( context, 
                               CommsAddrRec.CommsConnType.COMMS_CONN_BT );
 
-        int[] lang = { 1 };     // English
-        return makeNewMultiGame( context, addr, lang, 2, 1, 
+        int[] langa = { lang };
+        return makeNewMultiGame( context, addr, langa, nPlayersT, nPlayersH,
                                  null, gameID, null == hostName, hostName );
     }
 

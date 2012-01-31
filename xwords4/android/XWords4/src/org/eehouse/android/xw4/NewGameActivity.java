@@ -55,6 +55,7 @@ public class NewGameActivity extends XWActivity
     private Handler m_handler = null;
     private int m_chosen;
     private String[] m_btDevNames;
+    private int m_lang = 0;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
@@ -70,6 +71,7 @@ public class NewGameActivity extends XWActivity
         String fmt = getString( R.string.newgame_local_descf );
         String dict = CommonPrefs.getDefaultHumanDict( this );
         String lang = DictLangCache.getLangName( this, dict );
+        m_lang = DictLangCache.getLangLangCode( this, lang );
         desc.setText( String.format( fmt, lang ) );
         
         Button button = (Button)findViewById( R.id.newgame_local );
@@ -134,7 +136,7 @@ public class NewGameActivity extends XWActivity
                                     BTService.
                                         inviteRemote( NewGameActivity.this,
                                                       m_btDevNames[m_chosen],
-                                                      gameID );
+                                                      gameID, m_lang, 2, 1 );
                                     startProgress( R.string.invite_progress );
                                 }
                             }
@@ -249,18 +251,23 @@ public class NewGameActivity extends XWActivity
                 });
             break;
         case NEWGAME_FAILURE:
-            stopProgress();
             m_handler.post( new Runnable() {
                     public void run() {
+                        stopProgress();
                         DbgUtils.showf( NewGameActivity.this,
                                         "Remote failed to create game" );
                     } 
-                });
+                } );
             break;
         case NEWGAME_SUCCESS:
-            int gameID = (Integer)args[0];
-            GameUtils.makeNewBTGame( NewGameActivity.this, gameID, null );
-            finish();
+            final int gameID = (Integer)args[0];
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        GameUtils.makeNewBTGame( NewGameActivity.this, gameID, 
+                                                 null, m_lang, 2, 1 );
+                        finish();
+                    }
+                } );
             break;
         default:
             DbgUtils.logf( "unexpected event %s", event.toString() );
