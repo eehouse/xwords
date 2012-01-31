@@ -156,6 +156,16 @@ public class XWActivity extends Activity
         m_delegate.launchLookup( words, lang, false );
     }
 
+    protected void startProgress( int id )
+    {
+        m_delegate.startProgress( id );
+    }
+
+    protected void stopProgress()
+    {
+        m_delegate.stopProgress();
+    }
+
     // DlgDelegate.DlgClickNotify interface
     public void dlgButtonClicked( int id, int which )
     {

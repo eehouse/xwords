@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -54,7 +53,6 @@ public class NewGameActivity extends XWActivity
 
     private boolean m_showsOn;
     private Handler m_handler = null;
-    private ProgressDialog m_progress;
     private int m_chosen;
     private String[] m_btDevNames;
 
@@ -122,10 +120,7 @@ public class NewGameActivity extends XWActivity
                     new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
-                            String msg = getString( R.string.scan_progress );
-                            m_progress = 
-                                ProgressDialog.show( NewGameActivity.this, msg,
-                                                     null, true, true );
+                            startProgress( R.string.scan_progress );
                             BTService.rescan( NewGameActivity.this );
                         }
                     };
@@ -140,6 +135,7 @@ public class NewGameActivity extends XWActivity
                                         inviteRemote( NewGameActivity.this,
                                                       m_btDevNames[m_chosen],
                                                       gameID );
+                                    startProgress( R.string.invite_progress );
                                 }
                             }
                         }
@@ -235,10 +231,7 @@ public class NewGameActivity extends XWActivity
             m_handler.post( new Runnable() {
                     public void run() {
                         synchronized( NewGameActivity.this ) {
-                            if ( null != m_progress ) {
-                                m_progress.cancel();
-                                m_progress = null;
-                            }
+                            stopProgress();
                             if ( 0 < args.length ) {
                                 m_btDevNames = (String[])(args[0]);
                             }
@@ -256,6 +249,7 @@ public class NewGameActivity extends XWActivity
                 });
             break;
         case NEWGAME_FAILURE:
+            stopProgress();
             m_handler.post( new Runnable() {
                     public void run() {
                         DbgUtils.showf( NewGameActivity.this,

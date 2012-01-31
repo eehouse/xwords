@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -78,6 +79,7 @@ public class DlgDelegate {
     private String[] m_words = null;
     private int m_wordsLang = -1;
     private boolean m_forceList = false;
+    private ProgressDialog m_progress;
 
     public DlgDelegate( Activity activity, DlgClickNotify callback,
                         Bundle bundle ) 
@@ -259,6 +261,20 @@ public class DlgDelegate {
         m_wordsLang = lang;
         m_forceList = forceList;
         m_activity.showDialog( DLG_LOOKUP );
+    }
+
+    public void startProgress( int id )
+    {
+        String msg = m_activity.getString( id );
+        m_progress = ProgressDialog.show( m_activity, msg, null, true, true );
+    }
+
+    public void stopProgress()
+    {
+        if ( null != m_progress ) {
+            m_progress.cancel();
+            m_progress = null;
+        }
     }
 
     private Dialog createAboutDialog()

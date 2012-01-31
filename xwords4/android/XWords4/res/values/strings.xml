@@ -1842,5 +1842,6 @@
     <string name="bt_pick_title">Opponent devices</string>
 
     <string name="scan_progress">Scanning for Crosswords on paired devices</string>
+    <string name="invite_progress">Sending new game info...</string>
 
 </resources>
