@@ -27,9 +27,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.bluetooth.BluetoothDevice;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -186,6 +187,7 @@ public class BTService extends Service {
             new BTSenderThread().start();
         } else {
             DbgUtils.logf( "not starting threads: BT not available" );
+            stopSelf();
         }
     }
 
@@ -545,7 +547,8 @@ public class BTService extends Service {
                 os.flush();
                 socket.close();
 
-                CommsAddrRec addr = new CommsAddrRec( this, host.getName() );
+                CommsAddrRec addr = new CommsAddrRec( this, host.getName(), 
+                                                      host.getAddress() );
 
                 if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
                     DbgUtils.logf( "BoardActivity.feedMessage took it" );

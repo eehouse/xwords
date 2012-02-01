@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import android.content.Context;
 
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.DbgUtils;
 
 public class CommsAddrRec {
 
@@ -50,7 +51,7 @@ public class CommsAddrRec {
 
     // bt case
     public String bt_hostName;
-    public byte[] bt_btAddr;    // array of 6 bytes on the C side
+    public String bt_btAddr;
 
     // sms case
     // public String sms_phone;
@@ -72,10 +73,11 @@ public class CommsAddrRec {
         this( context, CommsConnType.COMMS_CONN_RELAY );
     }
 
-    public CommsAddrRec( Context context, String btHost ) 
+    public CommsAddrRec( Context context, String btHost, String btAddr ) 
     {
         this( context, CommsConnType.COMMS_CONN_BT );
         bt_hostName = btHost;
+        bt_btAddr = btAddr;
     }
 
     public CommsAddrRec( final CommsAddrRec src ) 
@@ -87,9 +89,17 @@ public class CommsAddrRec {
     {
         boolean matter = conType != other.conType;
         if ( !matter ) {
-            matter = ! ip_relay_invite.equals( other.ip_relay_invite )
-                || ! ip_relay_hostName.equals( other.ip_relay_hostName )
-                || ip_relay_port != other.ip_relay_port;
+            switch( conType ) {
+            case COMMS_CONN_RELAY:
+                matter = ! ip_relay_invite.equals( other.ip_relay_invite )
+                    || ! ip_relay_hostName.equals( other.ip_relay_hostName )
+                    || ip_relay_port != other.ip_relay_port;
+                break;
+            default:
+                DbgUtils.logf( "changesMatter: not handling case: %s", 
+                               conType.toString() );
+                break;
+            }
         }
         return matter;
     }
@@ -104,5 +114,6 @@ public class CommsAddrRec {
         ip_relay_advertiseRoom = src.ip_relay_advertiseRoom;
 
         bt_hostName = src.bt_hostName;
+        bt_btAddr = src.bt_btAddr;
     }
 }
