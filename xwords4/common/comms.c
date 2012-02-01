@@ -473,8 +473,8 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
     case COMMS_CONN_BT:
         stringFromStreamHere( stream, addr.u.bt.hostName,
                               sizeof(addr.u.bt.hostName) );
-        stream_getBytes( stream, &addr.u.bt.btAddr.bits, 
-                         sizeof(addr.u.bt.btAddr.bits) );
+        stringFromStreamHere( stream, addr.u.bt.btAddr.chars,
+                              sizeof(addr.u.bt.btAddr.chars) );
         break;
     case COMMS_CONN_IR:
         /* nothing to save */
@@ -677,8 +677,7 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
     case COMMS_CONN_BT:
         stringToStream( stream, addr.u.bt.hostName );
         /* sizeof(.bits) below defeats ARM's padding. */
-        stream_putBytes( stream, &addr.u.bt.btAddr.bits, 
-                         sizeof(addr.u.bt.btAddr.bits) );
+        stringToStream( stream, addr.u.bt.btAddr.chars );
         break;
     case COMMS_CONN_IR:
         /* nothing to save */

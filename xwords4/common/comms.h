@@ -97,7 +97,7 @@ typedef struct CommsAddrRec {
         struct {
             /* guests can browse for the host to connect to */
             XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
-            XP_BtAddr btAddr;
+            XP_BtAddrStr btAddr;
         } bt;
         struct {
             XP_UCHAR phone[MAX_PHONE_LEN + 1];
