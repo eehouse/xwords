@@ -56,6 +56,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public class GameConfig extends XWActivity 
     implements View.OnClickListener
@@ -77,12 +78,13 @@ public class GameConfig extends XWActivity
     private LinearLayout m_publicRoomsSet;
     private LinearLayout m_privateRoomsSet;
 
-    private boolean m_notNetworkedGame;
+    private CommsConnType m_conType;
     private Button m_addPlayerButton;
     private Button m_jugglePlayersButton;
     private Button m_playButton;
     private ImageButton m_refreshRoomsButton;
-    private View m_connectSet;  // really a LinearLayout
+    private View m_connectSetRelay;
+    private View m_connectSetBT;
     private Spinner m_roomChoose;
     // private Button m_configureButton;
     private long m_rowid;
@@ -103,7 +105,7 @@ public class GameConfig extends XWActivity
     private boolean m_canDoSMS = false;
     private boolean m_canDoBT = false;
     private boolean m_gameStarted = false;
-    private CommsAddrRec.CommsConnType[] m_types;
+    private CommsConnType[] m_types;
     private String[] m_connStrings;
     private static final int[] s_disabledWhenLocked = { R.id.juggle_players
                                                         ,R.id.add_player
@@ -293,7 +295,7 @@ public class GameConfig extends XWActivity
 
     private void setPlayerSettings( final Dialog dialog )
     {
-        boolean isServer = !m_notNetworkedGame;
+        boolean isServer = ! localOnlyGame();
 
         // Independent of other hide/show logic, these guys are
         // information-only if the game's locked.  (Except that in a
@@ -395,7 +397,9 @@ public class GameConfig extends XWActivity
 
         setContentView(R.layout.game_config);
 
-        m_connectSet = findViewById(R.id.connect_set);
+        m_connectSetRelay = findViewById(R.id.connect_set_relay);
+        m_connectSetBT = findViewById( R.id.connect_set_bt );
+
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
         m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
@@ -407,8 +411,6 @@ public class GameConfig extends XWActivity
         m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
-
-        setTitle();
     } // onCreate
 
     @Override
@@ -481,15 +483,14 @@ public class GameConfig extends XWActivity
                     int relayPort = CommonPrefs.getDefaultRelayPort( this );
                     XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
                 }
+                m_conType = m_carOrig.conType;
                 XwJNI.game_dispose( gamePtr );
 
                 m_car = new CommsAddrRec( m_carOrig );
 
-                m_notNetworkedGame = 
-                    DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
                 setTitle();
 
-                if ( !m_notNetworkedGame ) {
+                if ( m_conType.equals( CommsConnType.COMMS_CONN_RELAY ) ) {
                     m_joinPublicCheck = 
                         (CheckBox)findViewById(R.id.join_public_room_check);
                     m_joinPublicCheck.setOnClickListener( this );
@@ -605,8 +606,7 @@ public class GameConfig extends XWActivity
                 applyChanges( true );
                 launchGame();
             } else if ( m_giOrig.changesMatter(m_gi) 
-                        || (! m_notNetworkedGame
-                            && m_carOrig.changesMatter(m_car) ) ) {
+                        || m_carOrig.changesMatter(m_car) ) {
                 showDialog( CONFIRM_CHANGE_PLAY );
             } else {
                 applyChanges( false );
@@ -627,8 +627,7 @@ public class GameConfig extends XWActivity
             if ( !m_gameStarted ) { // no confirm needed 
                 applyChanges( true );
             } else if ( m_giOrig.changesMatter(m_gi) 
-                        || (! m_notNetworkedGame
-                            && m_carOrig.changesMatter(m_car) ) ) {
+                        || m_carOrig.changesMatter(m_car) ) {
                 showDialog( CONFIRM_CHANGE );
                 consumed = true; // don't dismiss activity yet!
             } else {
@@ -646,7 +645,7 @@ public class GameConfig extends XWActivity
         String[] names = m_gi.visibleNames( false );
         // only enable delete if one will remain (or two if networked)
         boolean canDelete = names.length > 2
-            || (m_notNetworkedGame && names.length > 1);
+            || (localOnlyGame() && names.length > 1);
         LayoutInflater factory = LayoutInflater.from(this);
         View.OnClickListener lstnr = new View.OnClickListener() {
                 @Override
@@ -681,10 +680,14 @@ public class GameConfig extends XWActivity
         m_jugglePlayersButton
             .setVisibility( names.length <= 1 ?
                             View.GONE : View.VISIBLE );
-        m_connectSet.setVisibility( m_notNetworkedGame?
-                                    View.GONE : View.VISIBLE );
+        
+        m_connectSetRelay.
+            setVisibility( m_conType == CommsConnType.COMMS_CONN_RELAY ?
+                           View.VISIBLE : View.GONE );
+        m_connectSetBT.setVisibility( m_conType == CommsConnType.COMMS_CONN_BT?
+                                      View.VISIBLE : View.GONE );
 
-        if ( ! m_notNetworkedGame
+        if ( ! localOnlyGame()
              && ((0 == m_gi.remoteCount() )
                  || (m_gi.nPlayers == m_gi.remoteCount()) ) ) {
             showDialog( FORCE_REMOTE );
@@ -840,7 +843,7 @@ public class GameConfig extends XWActivity
     {
         DbgUtils.logf( "adjustPlayersLabel()" );
         String label;
-        if ( m_notNetworkedGame ) {
+        if ( localOnlyGame() ) {
             label = getString( R.string.players_label_standalone );
         } else {
             String fmt = getString( R.string.players_label_host );
@@ -891,19 +894,6 @@ public class GameConfig extends XWActivity
         }
     }
     
-    private int connTypeToPos( CommsAddrRec.CommsConnType typ )
-    {
-        switch( typ ) {
-        case COMMS_CONN_RELAY:
-            return 0;
-        case COMMS_CONN_SMS:
-            return 1;
-        case COMMS_CONN_BT:
-            return 2;
-        }
-        return -1;
-    }
-
     private int layoutForDlg( int id ) 
     {
         switch( id ) {
@@ -969,7 +959,8 @@ public class GameConfig extends XWActivity
         position = m_smartnessSpinner.getSelectedItemPosition();
         m_gi.setRobotSmartness(position * 49 + 1);
 
-        if ( !m_notNetworkedGame ) {
+        switch( m_conType ) {
+        case COMMS_CONN_RELAY:
             m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
             DbgUtils.logf( "ip_relay_seeksPublicRoom: %b", 
                            m_car.ip_relay_seeksPublicRoom );
@@ -987,14 +978,14 @@ public class GameConfig extends XWActivity
                 m_car.ip_relay_invite = 
                     Utils.getText( this, R.id.room_edit ).trim();
             }
+            break;
+            // nothing to save for BT yet
         }
 
         // position = m_connectSpinner.getSelectedItemPosition();
         // m_car.conType = m_types[ position ];
 
-        m_car.conType = m_notNetworkedGame
-            ? CommsAddrRec.CommsConnType.COMMS_CONN_NONE
-            : CommsAddrRec.CommsConnType.COMMS_CONN_RELAY;
+        m_car.conType = m_conType;
     } // saveChanges
 
     private void applyChanges( boolean forceNew )
@@ -1004,12 +995,13 @@ public class GameConfig extends XWActivity
 
     private void launchGame()
     {
-        if ( m_notNetworkedGame || m_car.ip_relay_invite.length() > 0 ) {
+        if ( m_conType == CommsConnType.COMMS_CONN_RELAY 
+             && 0 == m_car.ip_relay_invite.length() ) {
+            showOKOnlyDialog( R.string.no_empty_rooms );            
+        } else {
             m_gameLock.unlock();
             m_gameLock = null;
             GameUtils.launchGameAndFinish( this, m_rowid );
-        } else {
-            showOKOnlyDialog( R.string.no_empty_rooms );            
         }
     }
 
@@ -1023,10 +1015,25 @@ public class GameConfig extends XWActivity
 
     private void setTitle()
     {
-        String fmt = getString( m_notNetworkedGame ?
-                                R.string.title_game_configf
-                                : R.string.title_gamenet_configf );
-        setTitle( String.format( fmt, GameUtils.getName( this, m_rowid ) ) );
+        int strID;
+        switch( m_conType ) {
+        case COMMS_CONN_RELAY:
+            strID = R.string.title_gamenet_configf;
+            break;
+        case COMMS_CONN_BT:
+            strID = R.string.title_gamebt_configf;
+            break;
+        default:
+            strID = R.string.title_game_configf;
+            break;
+        }
+        setTitle( Utils.format( this, strID, 
+                                GameUtils.getName( this, m_rowid ) ) );
+    }
+
+    private boolean localOnlyGame()
+    {
+        return m_conType == CommsConnType.COMMS_CONN_NONE;
     }
 
 }
