@@ -177,7 +177,7 @@ public class GameUtils {
         CurGameInfo gi = new CurGameInfo( context );
         CommsAddrRec addr = null;
 
-        // loadMakeGame, if makinga new game, will add comms as long
+        // loadMakeGame, if making a new game, will add comms as long
         // as DeviceRole.SERVER_STANDALONE != gi.serverRole
         int gamePtr = loadMakeGame( context, gi, lockSrc );
         String[] dictNames = gi.dictNames();
@@ -524,10 +524,13 @@ public class GameUtils {
 
         missingSet = new HashSet<String>( Arrays.asList( dictNames ) );
         missingSet.remove( null );
-        for ( DictUtils.DictAndLoc dal : installed ) {
-            missingSet.remove( dal.name );
+        boolean allHere = 0 != missingSet.size(); // need some non-null!
+        if ( allHere ) {
+            for ( DictUtils.DictAndLoc dal : installed ) {
+                missingSet.remove( dal.name );
+            }
+            allHere = 0 == missingSet.size();
         }
-        boolean allHere = 0 == missingSet.size();
         if ( null != missingNames ) {
             missingNames[0] = 
                 missingSet.toArray( new String[missingSet.size()] );
