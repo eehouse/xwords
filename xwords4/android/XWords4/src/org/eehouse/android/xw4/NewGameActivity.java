@@ -320,13 +320,16 @@ public class NewGameActivity extends XWActivity
     private void makeNewBTGame( boolean useDefaults )
     {
         int gameID = GameUtils.newGameID();
-        if ( null == m_btDevNames || 0 == m_btDevNames.length ) {
+        if ( !useDefaults ) {
+            DbgUtils.showf( this, "For debugging only..." );
+            GameUtils.makeNewBTGame( NewGameActivity.this, gameID, 
+                                     null, m_lang, 2, 1 );
+            finish();
+        } else if ( null == m_btDevNames || 0 == m_btDevNames.length ) {
             startProgress( R.string.scan_progress );
             BTService.rescan( this );
-        } else if ( useDefaults ) {
-            showDialog( PICK_BTDEV_DLG );
         } else {
-            Utils.notImpl( this );
+            showDialog( PICK_BTDEV_DLG );
         }
     }
 
