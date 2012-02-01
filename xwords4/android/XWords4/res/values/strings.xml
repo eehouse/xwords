@@ -322,6 +322,8 @@
     <!-- alternate window title used when game is networked -->
 	<string name="title_gamenet_configf">%s settings (networked)</string>  
 
+    <string name="title_gamebt_configf">%s settings (via Bluetooth)</string>
+
     <!-- title for popup list of langugages from which user picks -->
     <string name="title_langs_list">Languages (based on installed
       wordlists)</string>
@@ -350,7 +352,10 @@
     <string name="lang_label">Game language</string>
 
     <!-- text of separator marking out the connection area of the dialog -->
-    <string name="connect_label">Connection (via internet)</string>
+    <string name="connect_label_relay">Connection (via internet)</string>
+
+    <!-- text of separator marking out the connection area of the dialog -->
+    <string name="connect_label_bt">Connection (via Bluetooth)</string>
 
     <!-- text of checkbox asking if user wants to search for open
     public rooms -->

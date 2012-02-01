@@ -89,13 +89,13 @@
                 />
       </LinearLayout>
 
-      <LinearLayout android:id="@+id/connect_set"
+      <LinearLayout android:id="@+id/connect_set_relay"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     >
         <TextView style="@style/config_separator"
-                  android:text="@string/connect_label"
+                  android:text="@string/connect_label_relay"
                   />
 
         <!-- We'll use either the spinner or simple edit text
@@ -153,6 +153,16 @@
                        android:layout_weight="0"
                        />
         </LinearLayout>
+      </LinearLayout>
+
+      <LinearLayout android:id="@+id/connect_set_bt"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    >
+        <TextView style="@style/config_separator"
+                  android:text="@string/connect_label_bt"
+                  />
       </LinearLayout>
 
       <TextView style="@style/config_separator"
