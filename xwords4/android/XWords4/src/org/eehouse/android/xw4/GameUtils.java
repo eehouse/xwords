@@ -384,7 +384,7 @@ public class GameUtils {
                                           int[] lang, 
                                           int nPlayersT, int nPlayersH, 
                                           String inviteID, int gameID,
-                                          boolean isHost, String btHost )
+                                          boolean isHost )
     {
         long rowid = -1;
 
@@ -398,8 +398,6 @@ public class GameUtils {
         }
         if ( isHost ) {
             gi.serverRole = DeviceRole.SERVER_ISSERVER;
-        } else if ( null != btHost ) {
-            addr.bt_hostName = btHost;
         }
         // Will need to add a setNPlayers() method to gi to make this
         // work
@@ -424,7 +422,7 @@ public class GameUtils {
         addr.ip_relay_invite = room;
 
         return makeNewMultiGame( context, addr, lang, nPlayersT, 
-                                 nPlayersH, inviteID, 0, false, null );
+                                 nPlayersH, inviteID, 0, false );
     }
 
     public static long makeNewNetGame( Context context, String room, 
@@ -441,17 +439,14 @@ public class GameUtils {
     }
 
     public static long makeNewBTGame( Context context, int gameID, 
-                                      String hostName, int lang,
+                                      CommsAddrRec addr, int lang, 
                                       int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
-        CommsAddrRec addr = 
-            new CommsAddrRec( context, 
-                              CommsAddrRec.CommsConnType.COMMS_CONN_BT );
 
         int[] langa = { lang };
         return makeNewMultiGame( context, addr, langa, nPlayersT, nPlayersH,
-                                 null, gameID, null == hostName, hostName );
+                                 null, gameID, null == addr );
     }
 
     public static void launchInviteActivity( Context context, 

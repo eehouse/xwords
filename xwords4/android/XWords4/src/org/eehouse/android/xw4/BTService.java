@@ -68,6 +68,8 @@ public class BTService extends Service {
     private static final String CMD_STR = "CMD";
     private static final String MSG_STR = "MSG";
     private static final String TARGET_STR = "TRG";
+    private static final String ADDR_STR = "ADR";
+
     private static final String GAMEID_STR = "GMI";
 
     private static final String LANG_STR = "LNG";
@@ -94,19 +96,23 @@ public class BTService extends Service {
         BTCmd m_cmd;
         byte[] m_msg;
         String m_recipient;
+        String m_addr;
         int m_gameID;
         int m_lang;
         int m_nPlayersT;
         int m_nPlayersH;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; }
-        public BTQueueElem( BTCmd cmd, String target, int gameID,
-                            int lang, int nPlayersT, int nPlayersH ) {
-            this( cmd, null, target, gameID );
+        public BTQueueElem( BTCmd cmd, String targetName, String targetAddr,
+                            int gameID, int lang, int nPlayersT, 
+                            int nPlayersH ) {
+            this( cmd, null, targetName, targetAddr, gameID );
             m_lang = lang; m_nPlayersT = nPlayersT; m_nPlayersH = nPlayersH;
         }
-        public BTQueueElem( BTCmd cmd, byte[] buf, String target, int gameID ) {
-            m_cmd = cmd; m_msg = buf; m_recipient = target; m_gameID = gameID;
+        public BTQueueElem( BTCmd cmd, byte[] buf, String targetName, 
+                            String targetAddr, int gameID ) {
+            m_cmd = cmd; m_msg = buf; m_recipient = targetName; 
+            m_addr = targetAddr; m_gameID = gameID;
         }
 
     }
@@ -146,13 +152,14 @@ public class BTService extends Service {
         context.startService( intent );
     }
 
-    public static void inviteRemote( Context context, String host, int gameID,
-                                     int lang, int nPlayersT, int nPlayersH )
+    public static void inviteRemote( Context context, String hostName, 
+                                     int gameID, int lang, int nPlayersT, 
+                                     int nPlayersH )
     {
         Intent intent = new Intent( context, BTService.class );
         intent.putExtra( CMD_STR, INVITE );
         intent.putExtra( GAMEID_STR, gameID );
-        intent.putExtra( TARGET_STR, host );
+        intent.putExtra( TARGET_STR, hostName );
         intent.putExtra( LANG_STR, lang );
         intent.putExtra( NTO_STR, nPlayersT );
         intent.putExtra( NHE_STR, nPlayersH );
@@ -160,17 +167,19 @@ public class BTService extends Service {
         context.startService( intent );
     }
 
-    public static int enqueueFor( Context context, byte[] buf, String target, 
+    public static int enqueueFor( Context context, byte[] buf, 
+                                  String targetName, String targetAddr,
                                   int gameID )
     {
         Intent intent = new Intent( context, BTService.class );
         intent.putExtra( CMD_STR, SEND );
         intent.putExtra( MSG_STR, buf );
-        intent.putExtra( TARGET_STR, target );
+        intent.putExtra( TARGET_STR, targetName );
+        intent.putExtra( ADDR_STR, targetAddr );
         intent.putExtra( GAMEID_STR, gameID );
         context.startService( intent );
-        DbgUtils.logf( "got %d bytes for %s, gameID %d", buf.length, target, 
-                       gameID );
+        DbgUtils.logf( "got %d bytes for %s (%s), gameID %d", buf.length, 
+                       targetName, targetAddr, gameID );
         return buf.length;
     }
 
@@ -209,19 +218,22 @@ public class BTService extends Service {
             case INVITE:
                 int gameID = intent.getIntExtra( GAMEID_STR, -1 );
                 String target = intent.getStringExtra( TARGET_STR );
+                String addr = addrFor( target );
                 int lang = intent.getIntExtra( LANG_STR, -1 );
                 int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                 int nPlayersH = intent.getIntExtra( NHE_STR, -1 );
-                m_queue.add( new BTQueueElem( BTCmd.INVITE, target, gameID,
-                                              lang, nPlayersT, nPlayersH) );
+                m_queue.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
+                                              gameID, lang, 
+                                              nPlayersT, nPlayersH ) );
                 break;
             case SEND:
                 byte[] buf = intent.getByteArrayExtra( MSG_STR );
                 target = intent.getStringExtra( TARGET_STR );
+                addr = intent.getStringExtra( ADDR_STR );
                 gameID = intent.getIntExtra( GAMEID_STR, -1 );
                 if ( -1 != gameID ) {
                     m_queue.add( new BTQueueElem( BTCmd.MESG_SEND, buf, target, 
-                                                  gameID ) );
+                                                  addr, gameID ) );
                 }
                 break;
             default:
@@ -376,8 +388,7 @@ public class BTService extends Service {
     private void sendMsg( BTQueueElem elem )
     {
         try {
-            BluetoothDevice dev = 
-                m_adapter.getRemoteDevice( addrFor( elem.m_recipient ) );
+            BluetoothDevice dev = m_adapter.getRemoteDevice( elem.m_addr );
             BluetoothSocket socket = 
                 dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
             if ( null != socket ) {
@@ -510,7 +521,9 @@ public class BTService extends Service {
         int nPlayersH = is.readInt();
 
         BluetoothDevice host = socket.getRemoteDevice();
-        GameUtils.makeNewBTGame( context, gameID, host.getName(),
+        CommsAddrRec addr = new CommsAddrRec( context, host.getName(), 
+                                              host.getAddress() );
+        GameUtils.makeNewBTGame( context, gameID, addr,
                                  lang, nPlayersT, nPlayersH );
 
         addAddr( host );
@@ -585,8 +598,9 @@ public class BTService extends Service {
 
         public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
         {
-            String target = addr.bt_hostName;
-            m_queue.add( new BTQueueElem( BTCmd.MESG_SEND, buf, target, gameID ) );
+            m_queue.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
+                                          addr.bt_hostName, addr.bt_btAddr,
+                                          gameID ) );
             return buf.length;
         }
 

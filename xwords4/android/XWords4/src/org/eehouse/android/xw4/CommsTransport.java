@@ -390,7 +390,7 @@ public class CommsTransport implements TransportProcs,
         case COMMS_CONN_BT:
             String hostName = m_addr.bt_hostName;
             nSent = BTService.enqueueFor( m_context, buf, m_addr.bt_hostName, 
-                                          gameID );
+                                          m_addr.bt_btAddr, gameID );
             break;
         default:
             Assert.fail();
