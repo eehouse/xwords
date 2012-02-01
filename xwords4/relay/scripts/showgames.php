@@ -84,6 +84,7 @@ $cols = array( new Column("dead", "D", "identity", false ),
                new Column("room", "Room", "identity", false ), 
                new Column("lang", "Lang", "int_to_lang", false ), 
                new Column("ntotal", "Tot", "identity", false ), 
+               new Column("clntVers", "CV", "identity", true ), 
                new Column("nperdevice", "NP", "identity", true ), 
                new Column("ack", "A", "identity", true ), 
                new Column("nsent", "Sent", "identity", false ),
@@ -137,7 +138,8 @@ while ( $row = pg_fetch_array($result) ) {
     for ( $devIndex = 0; $devIndex < $nrows; ++$devIndex ) {
         echo "<tr class=\"" . ((0 == ($count % 2)) ? "even" : "odd") . "\">";
         if ( 0 == $devIndex ) {
-            echo "<td rowspan=$nrows>$count</td>";
+            $visCount = $count + 1;
+            echo "<td rowspan=$nrows>$visCount</td>";
         }
         foreach ( $cols as $index => $col ) {
             $col->printTD( $devIndex, $nrows, $row[$index] );
