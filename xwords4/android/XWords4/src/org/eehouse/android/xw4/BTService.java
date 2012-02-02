@@ -387,6 +387,7 @@ public class BTService extends Service {
 
     private void sendMsg( BTQueueElem elem )
     {
+        boolean success = false;
         try {
             BluetoothDevice dev = m_adapter.getRemoteDevice( elem.m_addr );
             BluetoothSocket socket = 
@@ -406,17 +407,18 @@ public class BTService extends Service {
 
                 DataInputStream inStream = 
                     new DataInputStream( socket.getInputStream() );
-                boolean success = 
+                success = 
                     BTCmd.MESG_ACCPT == BTCmd.values()[inStream.readByte()];
                 socket.close();
-
-                BTEvent evt = success ? BTEvent.MESSAGE_ACCEPTED
-                    : BTEvent.MESSAGE_REFUSED;
-                sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logf( "sendInvites: ioe: %s", ioe.toString() );
+            success = false;
         }
+
+        BTEvent evt = success ? BTEvent.MESSAGE_ACCEPTED
+            : BTEvent.MESSAGE_REFUSED;
+        sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
     }
 
     private void addAddr( BluetoothSocket socket )
