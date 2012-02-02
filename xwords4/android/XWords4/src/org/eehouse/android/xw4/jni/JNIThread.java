@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -37,6 +37,7 @@ import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.Toolbar;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import junit.framework.Assert;
 
 public class JNIThread extends Thread {
 
@@ -81,6 +82,7 @@ public class JNIThread extends Thread {
             CMD_POST_OVER,
             CMD_SENDCHAT,
             CMD_DRAW_CONNS_STATUS,
+            CMD_DRAW_BT_STATUS,
             };
 
     public static final int RUNNING = 1;
@@ -532,6 +534,13 @@ public class JNIThread extends Thread {
                     m_connsIconID = newID;
                 }
                 break;
+            
+            case CMD_DRAW_BT_STATUS:
+                boolean btWorking = ((Boolean)args[0]).booleanValue();
+                m_connsIconID = btWorking ? R.drawable.bluetooth_active 
+                    : R.drawable.bluetooth_disabled;
+                draw = true;
+                break;
 
             case CMD_TIMER_FIRED:
                 draw = XwJNI.timerFired( m_jniGamePtr, 
@@ -539,6 +548,12 @@ public class JNIThread extends Thread {
                                          ((Integer)args[1]).intValue(),
                                          ((Integer)args[2]).intValue() );
                 break;
+
+            case CMD_NONE:      // ignored
+                break;
+            default:
+                DbgUtils.logf( "dropping cmd: %s", elem.m_cmd.toString() );
+                Assert.fail();
             }
 
             if ( draw ) {
@@ -563,16 +578,17 @@ public class JNIThread extends Thread {
         }
     } // run
 
-    public void handle( JNICmd cmd, boolean isUI, Object... args )
+    public void handleBkgrnd( JNICmd cmd, Object... args )
     {
-        QueueElem elem = new QueueElem( cmd, isUI, args );
+        QueueElem elem = new QueueElem( cmd, false, args );
         // DbgUtils.logf( "adding: %s", cmd.toString() );
         m_queue.add( elem );
     }
 
     public void handle( JNICmd cmd, Object... args )
     {
-        handle( cmd, true, args );
+        QueueElem elem = new QueueElem( cmd, true, args );
+        m_queue.add( elem );
     }
 
 }

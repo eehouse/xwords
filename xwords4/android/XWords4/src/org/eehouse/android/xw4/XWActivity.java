@@ -33,7 +33,7 @@ import android.os.Bundle;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class XWActivity extends Activity
-    implements DlgDelegate.DlgClickNotify {
+    implements DlgDelegate.DlgClickNotify, BTService.BTEventListener {
 
     private DlgDelegate m_delegate;
 
@@ -57,6 +57,7 @@ public class XWActivity extends Activity
     protected void onResume()
     {
         DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
+        BTService.setBTEventListener( this );
         super.onResume();
     }
 
@@ -64,6 +65,7 @@ public class XWActivity extends Activity
     protected void onPause()
     {
         DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
+        BTService.setBTEventListener( null );
         super.onPause();
     }
 
@@ -170,6 +172,12 @@ public class XWActivity extends Activity
     public void dlgButtonClicked( int id, int which )
     {
         Assert.fail();
+    }
+
+    // BTService.BTEventListener interface
+    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    {
+        DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
     }
 
 }

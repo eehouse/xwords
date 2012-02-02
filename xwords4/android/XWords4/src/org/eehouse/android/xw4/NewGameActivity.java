@@ -44,8 +44,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 
-public class NewGameActivity extends XWActivity
-    implements BTService.BTEventListener {
+public class NewGameActivity extends XWActivity {
 
     private static final int NEW_GAME_ACTION = 1;
     private static final String SAVE_DEVNAMES = "DEVNAMES";
@@ -202,13 +201,6 @@ public class NewGameActivity extends XWActivity
     protected void onResume() {
         super.onResume();
         checkEnableBT( false );
-        BTService.setBTEventListener( this );
-    }
-
-    @Override
-    protected void onPause() {
-        BTService.setBTEventListener( null );
-        super.onPause();
     }
 
     @Override
@@ -226,6 +218,7 @@ public class NewGameActivity extends XWActivity
     }
 
     // BTService.BTEventListener interface
+    @Override
     public void eventOccurred( BTService.BTEvent event, final Object ... args )
     {
         switch( event ) {
@@ -271,7 +264,6 @@ public class NewGameActivity extends XWActivity
             break;
         default:
             DbgUtils.logf( "unexpected event %s", event.toString() );
-            Assert.fail();
             break;
         }
     }

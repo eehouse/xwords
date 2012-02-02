@@ -200,8 +200,8 @@ public class BoardActivity extends XWActivity
         public void run() {
             m_timers[m_why] = null;
             if ( null != m_jniThread ) {
-                m_jniThread.handle( JNICmd.CMD_TIMER_FIRED, false,
-                                    m_why, m_when, m_handle );
+                m_jniThread.handleBkgrnd( JNICmd.CMD_TIMER_FIRED, 
+                                          m_why, m_when, m_handle );
             }
         }
     } 
@@ -789,6 +789,25 @@ public class BoardActivity extends XWActivity
     }
 
     //////////////////////////////////////////////////
+    // BTService.BTEventListener interface
+    //////////////////////////////////////////////////
+    @Override
+    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    {
+        switch( event ) {
+        case MESSAGE_ACCEPTED:
+            m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, true );
+            break;
+        case MESSAGE_REFUSED:
+            m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, false );
+            break;
+        default:
+            super.eventOccurred( event, args );
+            break;
+        }
+    }
+
+    //////////////////////////////////////////////////
     // TransportProcs.TPMsgHandler interface
     //////////////////////////////////////////////////
 
@@ -998,7 +1017,7 @@ public class BoardActivity extends XWActivity
             post( new Runnable() {
                     public void run() {
                         if ( null != m_jniThread ) {
-                            m_jniThread.handle( JNIThread.JNICmd.CMD_DO, false );
+                            m_jniThread.handleBkgrnd( JNIThread.JNICmd.CMD_DO );
                         }
                     }
                 } );
@@ -1361,7 +1380,9 @@ public class BoardActivity extends XWActivity
 
                 m_jniGamePtr = XwJNI.initJNI();
 
-                if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                boolean standalone =
+                    m_gi.serverRole == DeviceRole.SERVER_STANDALONE;
+                if ( !standalone ) {
                     m_xport = new CommsTransport( m_jniGamePtr, this, this, 
                                                   m_gi.serverRole );
                 }
@@ -1443,7 +1464,10 @@ public class BoardActivity extends XWActivity
                     DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
                 }
 
-                trySendChats();
+                if ( !standalone ) {
+                    trySendChats();
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
+                }
             }
         }
     } // loadGame
