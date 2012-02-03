@@ -141,7 +141,7 @@ public class EditColorPreference extends DialogPreference {
         setOneByte( view, 1 );
         setOneByte( view, 2 );
 
-        View sample = (View)view.findViewById( R.id.color_edit_sample );
+        View sample = view.findViewById( R.id.color_edit_sample );
         sample.setBackgroundColor( m_curColor );
     }
     

@@ -123,6 +123,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     @Override
+    @SuppressWarnings("fallthrough")
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ) 
     {
         DbgUtils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );

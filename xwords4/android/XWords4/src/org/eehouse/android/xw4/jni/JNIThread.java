@@ -277,6 +277,7 @@ public class JNIThread extends Thread {
         DBUtils.saveSummary( m_context, m_lock, summary );
     }
 
+    @SuppressWarnings("fallthrough")
     public void run() 
     {
         boolean[] barr = new boolean[2]; // scratch boolean

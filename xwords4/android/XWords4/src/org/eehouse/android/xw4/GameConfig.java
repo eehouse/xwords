@@ -361,11 +361,10 @@ public class GameConfig extends XWActivity
         Spinner spinner =
             (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
         int position = spinner.getSelectedItemPosition();
-        ArrayAdapter<String> adapter =
-            (ArrayAdapter<String>)spinner.getAdapter();
+        SpinnerAdapter adapter = spinner.getAdapter();
 
         if ( position < adapter.getCount() ) {
-            String name = adapter.getItem(position);
+            String name = (String)adapter.getItem( position );
             if ( ! name.equals( m_browseText ) ) {
                 lp.dictName = name;
             }
