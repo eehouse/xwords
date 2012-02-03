@@ -22,6 +22,9 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
@@ -70,6 +73,35 @@ public class Utils {
         intent.putExtra( Intent.EXTRA_TEXT, body );
         String chooserMsg = context.getString( R.string.email_author_chooser );
         context.startActivity( Intent.createChooser( intent, chooserMsg ) );
+    }
+
+    public static void postNotification( Context context, Intent intent, 
+                                         int titleID, int bodyID )
+    {
+        PendingIntent pi = PendingIntent.
+            getActivity( context, 0, intent, 
+                         PendingIntent.FLAG_UPDATE_CURRENT );
+
+        String title = context.getString( titleID );
+        Notification notification = 
+            new Notification( R.drawable.icon48x48, title,
+                              System.currentTimeMillis() );
+
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        if ( CommonPrefs.getSoundNotify( context ) ) {
+            notification.defaults |= Notification.DEFAULT_SOUND;
+        }
+        if ( CommonPrefs.getVibrateNotify( context ) ) {
+            notification.defaults |= Notification.DEFAULT_VIBRATE;
+        }
+
+        notification.setLatestEventInfo( context, title, 
+                                         context.getString(bodyID), pi );
+
+        NotificationManager nm = (NotificationManager)
+            context.getSystemService( Context.NOTIFICATION_SERVICE );
+        nm.notify( bodyID, // unique id; any will do
+                   notification );
     }
 
     public static View inflate( Context context, int layoutId )

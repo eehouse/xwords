@@ -24,9 +24,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import javax.net.SocketFactory;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -66,30 +63,8 @@ public class RelayService extends Service {
         Intent intent = new Intent( this, DispatchNotify.class );
         intent.putExtra( DispatchNotify.RELAYIDS_EXTRA, relayIDs );
 
-        PendingIntent pi = PendingIntent.
-            getActivity( this, 0, intent, 
-                         PendingIntent.FLAG_UPDATE_CURRENT );
-        String title = getString(R.string.notify_title);
-        Notification notification = 
-            new Notification( R.drawable.icon48x48, title,
-                              System.currentTimeMillis() );
-
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
-        if ( CommonPrefs.getSoundNotify( this ) ) {
-            notification.defaults |= Notification.DEFAULT_SOUND;
-        }
-        if ( CommonPrefs.getVibrateNotify( this ) ) {
-            notification.defaults |= Notification.DEFAULT_VIBRATE;
-        }
-
-        notification.
-            setLatestEventInfo( this, title, 
-                                getString(R.string.notify_body), pi );
-
-        NotificationManager nm = (NotificationManager)
-            getSystemService( Context.NOTIFICATION_SERVICE );
-        nm.notify( R.string.notify_body, // unique id; any will do
-                   notification );
+        Utils.postNotification( this, intent, R.string.notify_title,
+                                R.string.notify_body );
     }
 
     private String[] collectIDs( int[] nBytes )
