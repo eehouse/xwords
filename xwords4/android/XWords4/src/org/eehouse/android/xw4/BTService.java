@@ -91,7 +91,7 @@ public class BTService extends Service {
             INVITE_DUPID,
             MESG_SEND,
             MESG_ACCPT,
-            MESG__DECL,
+            MESG_DECL,
             };
 
     private class BTQueueElem {
@@ -286,8 +286,8 @@ public class BTService extends Service {
                 DataInputStream inStream = null;
                 int nRead = 0;
                 try {
-                    DbgUtils.logf( "run: calling accept()" );
-                    socket = serverSocket.accept(); // blocks
+                    DbgUtils.logf( "run: calling accept(60000)" );
+                    socket = serverSocket.accept( 60000 ); // blocks
                     addAddr( socket );
                     DbgUtils.logf( "run: accept() returned" );
                     inStream = new DataInputStream( socket.getInputStream() );
