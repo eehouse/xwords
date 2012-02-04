@@ -158,7 +158,7 @@ public class CommsTransport implements TransportProcs,
 
                 Iterator<SelectionKey> iter = m_selector.selectedKeys().iterator();
                 while ( iter.hasNext() ) {
-                    SelectionKey key = (SelectionKey)iter.next();
+                    SelectionKey key = iter.next();
                     SocketChannel channel = (SocketChannel)key.channel();
                     iter.remove();
                     try { 
