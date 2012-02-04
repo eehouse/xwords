@@ -1098,6 +1098,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         intToJenumField( env, jsummary, addr.conType, "conType",
                          "org/eehouse/android/xw4/jni/"
                          "CommsAddrRec$CommsConnType" );
+        setInt( env, jsummary, "seed", comms_getChannelSeed( comms ) );
+        setInt( env, jsummary, "missingPlayers", 
+                server_getMissingPlayers( state->game.server ) );
         if ( COMMS_CONN_RELAY == addr.conType ) {
             XP_UCHAR buf[128];
             XP_U16 len = VSIZE(buf);
@@ -1106,11 +1109,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                 setString( env, jsummary, "relayID", buf );
             }
             setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
-            setInt( env, jsummary, "seed", comms_getChannelSeed( comms ) );
-            setInt( env, jsummary, "missingPlayers", 
-                    server_getMissingPlayers( state->game.server ) );
-        } else if ( COMMS_CONN_SMS == addr.conType ) {
-            setString( env, jsummary, "smsPhone", addr.u.sms.phone );
         }
     }
 
