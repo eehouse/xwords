@@ -64,11 +64,13 @@ public class BTService extends Service {
     private static final int SCAN = 1;
     private static final int INVITE = 2;
     private static final int SEND = 3;
+    private static final int RADIO = 4;
 
     private static final String CMD_STR = "CMD";
     private static final String MSG_STR = "MSG";
     private static final String TARGET_STR = "TRG";
     private static final String ADDR_STR = "ADR";
+    private static final String RADIO_STR = "RDO";
 
     private static final String GAMEID_STR = "GMI";
 
@@ -138,6 +140,14 @@ public class BTService extends Service {
         synchronized( s_syncObj ) {
             s_eventListener = li;
         }
+    }
+
+    public static void radioChanged( Context context, boolean cameOn )
+    {
+        Intent intent = new Intent( context, BTService.class );
+        intent.putExtra( CMD_STR, RADIO );
+        intent.putExtra( RADIO_STR, cameOn );
+        context.startService( intent );
     }
 
     public static void rescan( Context context ){
@@ -236,6 +246,11 @@ public class BTService extends Service {
                     m_queue.add( new BTQueueElem( BTCmd.MESG_SEND, buf, target, 
                                                   addr, gameID ) );
                 }
+                break;
+            case RADIO:
+                boolean cameOn = intent.getBooleanExtra( RADIO_STR, false );
+                BTEvent evt = cameOn? BTEvent.BT_ENABLED : BTEvent.BT_DISABLED;
+                sendResult( evt );
                 break;
             default:
                 Assert.fail();

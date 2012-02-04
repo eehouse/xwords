@@ -23,6 +23,8 @@ package org.eehouse.android.xw4;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 
 public class BTReceiver extends BroadcastReceiver {
 
@@ -30,5 +32,24 @@ public class BTReceiver extends BroadcastReceiver {
     public void onReceive( Context context, Intent intent )
     {
         DbgUtils.logf( "BTReceiver.onReceive()" );
+        String action = intent.getAction();
+        DbgUtils.logf( "BTReceiver.onReceive(action=%s)", action );
+        if ( action.equals( BluetoothDevice.ACTION_ACL_CONNECTED ) ) {
+            BTService.startService( context );
+        } else if ( action.equals( BluetoothAdapter.ACTION_STATE_CHANGED ) ) {
+            int newState = 
+                intent.getIntExtra( BluetoothAdapter.EXTRA_STATE, -1 );
+            switch ( newState ) {
+            case BluetoothAdapter.STATE_OFF:
+                BTService.radioChanged( context, false );
+                break;
+            case BluetoothAdapter.STATE_ON:
+                BTService.radioChanged( context, true );
+                break;
+            case BluetoothAdapter.STATE_TURNING_ON:
+            case BluetoothAdapter.STATE_TURNING_OFF:
+                break;
+            }
+        }
     }
 }
