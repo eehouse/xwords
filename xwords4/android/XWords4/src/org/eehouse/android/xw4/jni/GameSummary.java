@@ -25,6 +25,8 @@ import android.text.TextUtils;
 import junit.framework.Assert;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 
 /** Info we want to access when the game's closed that's not available
@@ -45,7 +47,7 @@ public class GameSummary {
     public int[] scores;
     public boolean gameOver;
     public String[] players;
-    public CommsAddrRec.CommsConnType conType;
+    public CommsConnType conType;
     public String smsPhone;
     // relay-related fields
     public String roomName;
@@ -148,9 +150,9 @@ public class GameSummary {
     {
         String result = null;
         if ( isMultiGame() ) {
-            
-            if ( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY == conType ) {
-                int fmtID;
+            int fmtID = 0;
+            switch ( conType ) {
+            case COMMS_CONN_RELAY:
                 if ( null == relayID || 0 == relayID.length() ) {
                     fmtID = R.string.summary_relay_conff;
                 } else if ( anyMissing() ) {
@@ -161,6 +163,17 @@ public class GameSummary {
                     fmtID = R.string.summary_relay_connf;
                 }
                 result = String.format( m_context.getString(fmtID), roomName );
+                break;
+            case COMMS_CONN_BT:
+                if ( anyMissing() ) {
+                    fmtID = R.string.summary_bt_wait;
+                } else if ( gameOver ) {
+                    fmtID = R.string.summary_bt_gameover;
+                } else {
+                    fmtID = R.string.summary_bt_conn;
+                }
+                result = m_context.getString( fmtID );
+                break;
             }
         }
         return result;

@@ -1849,4 +1849,8 @@
     <string name="scan_progress">Scanning for Crosswords on paired devices</string>
     <string name="invite_progress">Sending new game info...</string>
 
+    <string name="summary_bt_wait">Not yet connected</string>
+    <string name="summary_bt_gameover">Game over</string>
+    <string name="summary_bt_conn">Game in play</string>
+
 </resources>
