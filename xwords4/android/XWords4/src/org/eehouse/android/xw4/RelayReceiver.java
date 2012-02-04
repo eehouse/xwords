@@ -20,26 +20,13 @@
 
 package org.eehouse.android.xw4;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.BroadcastReceiver;
-import android.widget.Toast;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-
-import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.os.SystemClock;
-import java.net.Socket;
-import java.io.InputStream;
-import java.io.DataInputStream;
-import java.io.OutputStream;
-import java.io.DataOutputStream;
-import java.util.ArrayList;
+import android.widget.Toast;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
