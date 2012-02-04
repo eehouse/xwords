@@ -35,10 +35,12 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 public class DispatchNotify extends Activity {
 
     public static final String RELAYIDS_EXTRA = "relayids";
+    public static final String GAMEID_EXTRA = "gameid";
 
     public interface HandleRelaysIface {
-        void HandleRelaysIDs( final String[] relayIDs );
-        void HandleInvite( final Uri invite );
+        void handleRelaysIDs( final String[] relayIDs );
+        void handleInvite( final Uri invite );
+        void handleGameID( int gameID );
     }
 
     private static HashSet<HandleRelaysIface> s_running =
@@ -52,10 +54,15 @@ public class DispatchNotify extends Activity {
         super.onCreate( savedInstanceState );
 
         String[] relayIDs = getIntent().getStringArrayExtra( RELAYIDS_EXTRA );
+        int gameID = getIntent().getIntExtra( GAMEID_EXTRA, -1 );
         Uri data = getIntent().getData();
 
         if ( null != relayIDs ) {
             if ( !tryHandle( relayIDs ) ) {
+                mustLaunch = true;
+            }
+        } else if ( -1 != gameID ) {
+            if ( !tryHandle( gameID ) ) {
                 mustLaunch = true;
             }
         } else if ( null != data  ) {
@@ -87,6 +94,8 @@ public class DispatchNotify extends Activity {
                              | Intent.FLAG_ACTIVITY_NEW_TASK );
             if ( null != relayIDs ) {
                 intent.putExtra( RELAYIDS_EXTRA, relayIDs );
+            } else if ( -1 != gameID ) {
+                intent.putExtra( GAMEID_EXTRA, gameID );
             } else if ( null != data ) {
                 intent.setData( data );
             } else {
@@ -122,11 +131,11 @@ public class DispatchNotify extends Activity {
         boolean handled = false;
         if ( null != s_handler ) {
             // This means the GamesList activity is frontmost
-            s_handler.HandleInvite( data );
+            s_handler.handleInvite( data );
             handled = true;
         } else {
             for ( HandleRelaysIface iface : s_running ) {
-                iface.HandleInvite( data );
+                iface.handleInvite( data );
                 handled = true;
             }
         }
@@ -138,11 +147,27 @@ public class DispatchNotify extends Activity {
         boolean handled = false;
         if ( null != s_handler ) {
             // This means the GamesList activity is frontmost
-            s_handler.HandleRelaysIDs( relayIDs );
+            s_handler.handleRelaysIDs( relayIDs );
             handled = true;
         } else {
             for ( HandleRelaysIface iface : s_running ) {
-                iface.HandleRelaysIDs( relayIDs );
+                iface.handleRelaysIDs( relayIDs );
+                handled = true;
+            }
+        }
+        return handled;
+    }
+
+    public static boolean tryHandle( int gameID )
+    {
+        boolean handled = false;
+        if ( null != s_handler ) {
+            // This means the GamesList activity is frontmost
+            s_handler.handleGameID( gameID );
+            handled = true;
+        } else {
+            for ( HandleRelaysIface iface : s_running ) {
+                iface.handleGameID( gameID );
                 handled = true;
             }
         }

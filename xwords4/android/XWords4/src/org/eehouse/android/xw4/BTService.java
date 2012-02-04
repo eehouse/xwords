@@ -86,6 +86,7 @@ public class BTService extends Service {
             INVITE,
             INVITE_ACCPT,
             INVITE_DECL,
+            INVITE_DUPID,
             MESG_SEND,
             MESG_ACCPT,
             MESG__DECL,
@@ -516,6 +517,7 @@ public class BTService extends Service {
                                     BluetoothSocket socket )
         throws java.io.IOException
     {
+        BTCmd result;
         int gameID = is.readInt();
         DbgUtils.logf( "receiveInvitation: got gameID of %d", gameID );
         int lang = is.readInt();
@@ -523,18 +525,29 @@ public class BTService extends Service {
         int nPlayersH = is.readInt();
 
         BluetoothDevice host = socket.getRemoteDevice();
-        CommsAddrRec addr = new CommsAddrRec( context, host.getName(), 
-                                              host.getAddress() );
-        GameUtils.makeNewBTGame( context, gameID, addr,
-                                 lang, nPlayersT, nPlayersH );
-
         addAddr( host );
+
+        if ( DBUtils.ROWID_NOTFOUND == DBUtils.getRowIDFor( this, gameID ) ) {
+            String sender = host.getName();
+            CommsAddrRec addr = new CommsAddrRec( context, sender, 
+                                                  host.getAddress() );
+            GameUtils.makeNewBTGame( context, gameID, addr,
+                                     lang, nPlayersT, nPlayersH );
+            result = BTCmd.INVITE_ACCPT;
+
+            Intent intent = new Intent( this, DispatchNotify.class );
+            intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
+            String body = Utils.format( this, R.string.new_bt_bodyf, sender );
+            Utils.postNotification( this, intent, R.string.new_bt_title, body );
+        } else {
+            result = BTCmd.INVITE_DUPID;
+        }
 
         // Post notification that, when selected, will create a game
         // -- or ask if user wants to create one.
 
         DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
-        os.writeByte( BTCmd.INVITE_ACCPT.ordinal() );
+        os.writeByte( result.ordinal() );
         os.flush();
 
         socket.close();

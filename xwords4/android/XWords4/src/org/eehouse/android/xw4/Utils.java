@@ -78,6 +78,13 @@ public class Utils {
     public static void postNotification( Context context, Intent intent, 
                                          int titleID, int bodyID )
     {
+        postNotification( context, intent, titleID, 
+                          context.getString( bodyID ) );
+    }
+
+    public static void postNotification( Context context, Intent intent, 
+                                         int titleID, String body )
+    {
         PendingIntent pi = PendingIntent.
             getActivity( context, 0, intent, 
                          PendingIntent.FLAG_UPDATE_CURRENT );
@@ -95,12 +102,11 @@ public class Utils {
             notification.defaults |= Notification.DEFAULT_VIBRATE;
         }
 
-        notification.setLatestEventInfo( context, title, 
-                                         context.getString(bodyID), pi );
+        notification.setLatestEventInfo( context, title, body, pi );
 
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
-        nm.notify( bodyID, // unique id; any will do
+        nm.notify( titleID, // unique id; any will do
                    notification );
     }
 

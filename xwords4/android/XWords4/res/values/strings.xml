@@ -1852,5 +1852,8 @@
     <string name="summary_bt_wait">Not yet connected</string>
     <string name="summary_bt_gameover">Game over</string>
     <string name="summary_bt_conn">Game in play</string>
+    <string name="new_bt_title">New Bluetooth game</string>
+    <string name="new_bt_bodyf">Paired device %s has invited you to
+      play</string>
 
 </resources>

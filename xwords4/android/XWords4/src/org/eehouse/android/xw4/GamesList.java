@@ -297,6 +297,7 @@ public class GamesList extends XWListActivity
                        getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA ) );
         startFirstHasDict( intent );
         startNewNetGame( intent );
+        startHasGameID( intent );
     }
 
     @Override
@@ -382,7 +383,7 @@ public class GamesList extends XWListActivity
     }
 
     // DispatchNotify.HandleRelaysIface interface
-    public void HandleRelaysIDs( final String[] relayIDs )
+    public void handleRelaysIDs( final String[] relayIDs )
     {
         m_handler.post( new Runnable() {
                 public void run() {
@@ -392,7 +393,7 @@ public class GamesList extends XWListActivity
             } );
     }
 
-    public void HandleInvite( Uri invite )
+    public void handleInvite( Uri invite )
     {
         final NetLaunchInfo nli = new NetLaunchInfo( invite );
         if ( nli.isValid() ) {
@@ -403,6 +404,15 @@ public class GamesList extends XWListActivity
                     }
                 } );
         }
+    }
+
+    public void handleGameID( final int gameID )
+    {
+        m_handler.post( new Runnable() {
+                public void run() {
+                    startHasGameID( gameID );
+                }
+            } );
     }
 
     // DBUtils.DBChangeListener interface
@@ -742,6 +752,22 @@ public class GamesList extends XWListActivity
             }
         }
     } // startNewNetGame
+
+    private void startHasGameID( int gameID )
+    {
+        long rowid = DBUtils.getRowIDFor( this, gameID );
+        if ( DBUtils.ROWID_NOTFOUND != rowid ) {
+            GameUtils.launchGame( this, rowid );
+        }
+    }
+
+    private void startHasGameID( Intent intent )
+    {
+        int gameID = intent.getIntExtra( DispatchNotify.GAMEID_EXTRA, -1 );
+        if ( -1 != gameID ) {
+            startHasGameID( gameID );
+        }
+    }
 
     private void askDefaultNameIf()
     {
