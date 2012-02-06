@@ -256,8 +256,11 @@ public class NewGameActivity extends XWActivity {
             final int gameID = (Integer)args[0];
             m_handler.post( new Runnable() {
                     public void run() {
-                        GameUtils.makeNewBTGame( NewGameActivity.this, gameID, 
-                                                 null, m_lang, 2, 1 );
+                        long rowid = 
+                            GameUtils.makeNewBTGame( NewGameActivity.this, 
+                                                     gameID, null, m_lang, 
+                                                     2, 1 );
+                        GameUtils.launchGame( NewGameActivity.this, rowid );
                         finish();
                     }
                 } );
