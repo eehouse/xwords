@@ -282,7 +282,7 @@ public class GamesList extends XWListActivity
         Intent intent = getIntent();
         startFirstHasDict( intent );
         startNewNetGame( intent );
-
+        startHasGameID( intent );
         askDefaultNameIf();
     } // onCreate
 
