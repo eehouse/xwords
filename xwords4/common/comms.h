@@ -73,7 +73,7 @@ typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
 #define MAX_HOSTNAME_LEN 63
 #define MAX_PHONE_LEN    31
 
-typedef struct CommsAddrRec {
+typedef struct _CommsAddrRec {
     CommsConnType conType;
 
     union {
