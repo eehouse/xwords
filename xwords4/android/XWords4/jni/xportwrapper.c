@@ -177,7 +177,6 @@ makeXportProcs( MPFORMAL JNIEnv** envp, jobject jxport )
     if ( NULL != jxport ) {
         aprocs->jxport = (*env)->NewGlobalRef( env, jxport );
     }
-    XP_ASSERT( aprocs->jxport == jxport );
     aprocs->envp = envp;
     MPASSIGN( aprocs->mpool, mpool );
 
