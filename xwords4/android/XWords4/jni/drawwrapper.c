@@ -54,10 +54,10 @@ makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
                                   right, bottom );
                  
         (*env)->DeleteLocalRef( env, rclass );
-        draw->jCache[indx] = robj;
 
-        robj = (*env)->NewGlobalRef( env, robj );
         (*env)->DeleteLocalRef( env, robj );
+        robj = (*env)->NewGlobalRef( env, robj );
+        draw->jCache[indx] = robj;
     } else {
         setInt( env, robj, "left", rect->left );
         setInt( env, robj, "top", rect->top );
@@ -81,8 +81,8 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
         dsiobj = (*env)->NewObject( env, rclass, initId );
         (*env)->DeleteLocalRef( env, rclass );
 
-        dsiobj = (*env)->NewGlobalRef( env, dsiobj );
         (*env)->DeleteLocalRef( env, dsiobj );
+        dsiobj = (*env)->NewGlobalRef( env, dsiobj );
         draw->jCache[indx] = dsiobj;
     }
 

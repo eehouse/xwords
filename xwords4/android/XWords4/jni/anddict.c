@@ -140,8 +140,8 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
 
         JNIEnv* env = ctxt->env;
         bitmap = and_util_makeJBitmap( ctxt->jniutil, nCols, nRows, colors );
-        (void)(*env)->NewGlobalRef( env, bitmap );
         (*env)->DeleteLocalRef( env, bitmap );
+        bitmap = (*env)->NewGlobalRef( env, bitmap );
         XP_FREE( ctxt->super.mpool, colors );
 #endif
     }
