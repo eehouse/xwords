@@ -53,7 +53,7 @@ public class RelayGameActivity extends XWActivity
 
         setContentView( R.layout.relay_game_config );
 
-        m_rowid = getIntent().getLongExtra( BoardActivity.INTENT_KEY_ROWID, -1 );
+        m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
 
         m_playButton = (Button)findViewById( R.id.play_button );
         m_playButton.setOnClickListener( this );

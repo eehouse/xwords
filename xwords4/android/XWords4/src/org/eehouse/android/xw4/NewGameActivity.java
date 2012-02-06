@@ -49,12 +49,14 @@ public class NewGameActivity extends XWActivity {
     private static final int NEW_GAME_ACTION = 1;
     private static final String SAVE_DEVNAMES = "DEVNAMES";
     private static final int PICK_BTDEV_DLG = DlgDelegate.DIALOG_LAST + 1;
+    private static final int CONFIG_BT = 1;
 
     private boolean m_showsOn;
     private Handler m_handler = null;
     private int m_chosen;
     private String[] m_btDevNames;
     private int m_lang = 0;
+    private long m_btRowID = -1;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
@@ -204,6 +206,22 @@ public class NewGameActivity extends XWActivity {
     }
 
     @Override
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent data )
+    {
+        if ( CONFIG_BT == requestCode ) {
+            if ( Activity.RESULT_CANCELED == resultCode ) {
+                DBUtils.deleteGame( this, m_btRowID );
+            } else {
+                // We'll leave it up to BoardActivity to detect that
+                // it's not had any remote connections yet.
+                GameUtils.launchGame( this, m_btRowID );
+                finish();
+            }
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState( Bundle outState ) 
     {
         super.onSaveInstanceState( outState );
@@ -316,10 +334,14 @@ public class NewGameActivity extends XWActivity {
     {
         int gameID = GameUtils.newGameID();
         if ( !useDefaults ) {
-            DbgUtils.showf( this, "For debugging only..." );
-            GameUtils.makeNewBTGame( NewGameActivity.this, gameID, 
-                                     null, m_lang, 2, 1 );
-            finish();
+            m_btRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
+                                                 gameID, null, m_lang, 
+                                                 2, 1 );
+            Intent intent = new Intent( this, GameConfig.class );
+            intent.setAction( Intent.ACTION_EDIT );
+            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_btRowID );
+            intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
+            startActivityForResult( intent, CONFIG_BT );
         } else if ( null == m_btDevNames || 0 == m_btDevNames.length ) {
             startProgress( R.string.scan_progress );
             BTService.rescan( this );

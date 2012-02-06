@@ -644,6 +644,13 @@ public class DBUtils {
         return result;
     }
 
+    public static void deleteGame( Context context, long rowid )
+    {
+        GameUtils.GameLock lock = new GameUtils.GameLock( rowid, true ).lock();
+        deleteGame( context, lock );
+        lock.unlock();
+    }
+
     public static void deleteGame( Context context, GameUtils.GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );

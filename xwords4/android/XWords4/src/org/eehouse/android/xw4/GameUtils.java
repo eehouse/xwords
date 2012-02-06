@@ -48,6 +48,8 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameUtils {
 
     public static final String INVITED = "invited";
+    public static final String INTENT_KEY_ROWID = "rowid";
+    public static final String INTENT_FORRESULT_ROWID = "forresult";
     private static Random s_random = new Random();
 
     // Implements read-locks and write-locks per game.  A read lock is
@@ -575,7 +577,7 @@ public class GameUtils {
     {
         Intent intent = new Intent( activity, BoardActivity.class );
         intent.setAction( Intent.ACTION_EDIT );
-        intent.putExtra( BoardActivity.INTENT_KEY_ROWID, rowid );
+        intent.putExtra( INTENT_KEY_ROWID, rowid );
         if ( invited ) {
             intent.putExtra( INVITED, true );
         }
@@ -785,7 +787,7 @@ public class GameUtils {
     {
         Intent intent = new Intent( activity, clazz );
         intent.setAction( Intent.ACTION_EDIT );
-        intent.putExtra( BoardActivity.INTENT_KEY_ROWID, rowid );
+        intent.putExtra( INTENT_KEY_ROWID, rowid );
         activity.startActivity( intent );
     }
 

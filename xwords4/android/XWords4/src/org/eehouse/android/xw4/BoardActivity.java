@@ -58,7 +58,6 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class BoardActivity extends XWActivity 
     implements TransportProcs.TPMsgHandler, View.OnClickListener {
 
-    public static final String INTENT_KEY_ROWID = "rowid";
     public static final String INTENT_KEY_CHAT = "chat";
 
     private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
@@ -454,7 +453,7 @@ public class BoardActivity extends XWActivity
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
 
         Intent intent = getIntent();
-        m_rowid = intent.getLongExtra( INTENT_KEY_ROWID, -1 );
+        m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
 
         setBackgroundColor();
@@ -1596,7 +1595,7 @@ public class BoardActivity extends XWActivity
     private void startChatActivity()
     {
         Intent intent = new Intent( this, ChatActivity.class );
-        intent.putExtra( BoardActivity.INTENT_KEY_ROWID, m_rowid );
+        intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
         startActivityForResult( intent, CHAT_REQUEST );
     }
 

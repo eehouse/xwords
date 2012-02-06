@@ -44,7 +44,7 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
 
         setContentView( R.layout.chat );
 
-        m_rowid = getIntent().getLongExtra( BoardActivity.INTENT_KEY_ROWID, -1 );
+        m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
      
         DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( this, m_rowid );
         if ( null != pairs ) {

@@ -88,6 +88,7 @@ public class GameConfig extends XWActivity
     private Spinner m_roomChoose;
     // private Button m_configureButton;
     private long m_rowid;
+    private boolean m_forResult;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
     private GameUtils.GameLock m_gameLock;
@@ -392,7 +393,9 @@ public class GameConfig extends XWActivity
         m_cp = CommonPrefs.get( this );
 
         Intent intent = getIntent();
-        m_rowid = intent.getLongExtra( BoardActivity.INTENT_KEY_ROWID, -1 );
+        m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+        m_forResult = intent.getBooleanExtra( GameUtils.INTENT_FORRESULT_ROWID, 
+                                              false );
 
         setContentView(R.layout.game_config);
 
@@ -601,7 +604,11 @@ public class GameConfig extends XWActivity
             // from here if there's no confirmation needed, or launch
             // a new dialog whose OK button does the same thing.
             saveChanges();
-            if ( !m_gameStarted ) { // no confirm needed 
+            if ( m_forResult ) {
+                applyChanges( true );
+                setResult( Activity.RESULT_OK, null );
+                finish();
+            } else if ( !m_gameStarted ) { // no confirm needed 
                 applyChanges( true );
                 launchGame();
             } else if ( m_giOrig.changesMatter(m_gi) 
