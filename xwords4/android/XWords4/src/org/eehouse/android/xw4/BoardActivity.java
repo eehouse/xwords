@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1080,7 +1080,7 @@ public class BoardActivity extends XWActivity
         public void playerScoreHeld( int player )
         {
             String expl = XwJNI.model_getPlayersLastScore( m_jniGamePtr, 
-                                                            player );
+                                                           player );
             if ( expl.length() == 0 ) {
                 expl = getString( R.string.no_moves_made );
             }
@@ -1379,9 +1379,7 @@ public class BoardActivity extends XWActivity
 
                 m_jniGamePtr = XwJNI.initJNI();
 
-                boolean standalone =
-                    m_gi.serverRole == DeviceRole.SERVER_STANDALONE;
-                if ( !standalone ) {
+                if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                     m_xport = new CommsTransport( m_jniGamePtr, this, this, 
                                                   m_gi.serverRole );
                 }
@@ -1463,9 +1461,9 @@ public class BoardActivity extends XWActivity
                     DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
                 }
 
-                if ( !standalone ) {
+                if ( null != m_xport ) {
                     trySendChats();
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
+                    m_xport.tickle();
                 }
             }
         }

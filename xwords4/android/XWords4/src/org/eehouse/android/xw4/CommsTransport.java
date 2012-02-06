@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -218,6 +218,25 @@ public class CommsTransport implements TransportProcs,
         if ( !nowAvailable ) {
             waitToStopImpl();
             m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+        }
+    }
+
+    public void tickle()
+    {
+        CommsAddrRec addr = new CommsAddrRec( m_context );
+        XwJNI.comms_getAddr( m_jniGamePtr, addr );
+        switch( addr.conType ) {
+        case COMMS_CONN_RELAY:
+            // do nothing
+            break;
+        case COMMS_CONN_BT:
+            // Let other know I'm here
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
+            break;
+        default:
+            DbgUtils.logf( "tickle: unexpected type %s", 
+                           addr.conType.toString() );
+            Assert.fail();
         }
     }
 
