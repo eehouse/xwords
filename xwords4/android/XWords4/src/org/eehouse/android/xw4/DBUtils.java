@@ -437,6 +437,7 @@ public class DBUtils {
         String selection = DBHelper.GAMEID + "!=0";
         HashMap<String, HashSet<Integer> > map = 
             new HashMap<String, HashSet<Integer> >();
+        initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
