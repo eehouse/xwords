@@ -1083,7 +1083,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             XP_UCHAR buf[128];
             XP_U16 len = VSIZE(buf);
             if ( comms_getRelayID( comms, buf, &len ) ) {
-                buf[len] = '\0';
+                XP_ASSERT( '\0' == buf[len] );
                 setString( env, jsummary, "relayID", buf );
             }
             setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
