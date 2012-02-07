@@ -436,17 +436,9 @@ public class DBUtils {
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
 
-            if ( 0 < cursor.getCount() ) {
-                cursor.moveToFirst();
-                for ( ; ; ) {
-                    ids.add( cursor.
-                             getString( cursor.
-                                        getColumnIndex(DBHelper.RELAYID)) );
-                    if ( cursor.isLast() ) {
-                        break;
-                    }
-                    cursor.moveToNext();
-                }
+            while ( cursor.moveToNext() ) {
+                ids.add( cursor.getString( cursor.
+                                           getColumnIndex(DBHelper.RELAYID)) );
             }
             cursor.close();
             db.close();
@@ -491,17 +483,12 @@ public class DBUtils {
             Cursor cursor = db.query( DBHelper.TABLE_NAME_OBITS, columns, 
                                       null, null, null, null, null );
             if ( 0 < cursor.getCount() ) {
-                cursor.moveToFirst();
-                for ( ; ; ) {
-                    int index = cursor.getColumnIndex( DBHelper.RELAYID );
-                    String relayID = cursor.getString( index );
-                    index = cursor.getColumnIndex( DBHelper.SEED );
-                    int seed = cursor.getInt( index );
+                int idIndex = cursor.getColumnIndex( DBHelper.RELAYID );
+                int seedIndex = cursor.getColumnIndex( DBHelper.SEED );
+                while ( cursor.moveToNext() ) {
+                    String relayID = cursor.getString( idIndex );
+                    int seed = cursor.getInt( seedIndex );
                     al.add( new Obit( relayID, seed ) );
-                    if ( cursor.isLast() ) {
-                        break;
-                    }
-                    cursor.moveToNext();
                 }
             }
             cursor.close();
@@ -649,17 +636,9 @@ public class DBUtils {
                                       null, null, null, null, orderBy );
             int count = cursor.getCount();
             result = new long[count];
-            if ( 0 < count ) {
-                int index = cursor.getColumnIndex( ROW_ID );
-                cursor.moveToFirst();
-		
-                for ( int ii = 0; ; ++ii ) {
-                    result[ii] = cursor.getLong( index );
-                    if ( cursor.isLast() ) {
-                        break;
-                    }
-                    cursor.moveToNext();
-                }
+            int index = cursor.getColumnIndex( ROW_ID );
+            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                result[ii] = cursor.getLong( index );
             }
             cursor.close();
             db.close();
