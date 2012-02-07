@@ -29,7 +29,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 11;
+    private static final int DB_VERSION = 12;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -47,6 +47,7 @@ public class DBHelper extends SQLiteOpenHelper {
     // for which messages arrive.  Add now while changing the DB
     // format
     public static final String GAMEID = "GAMEID";
+    public static final String REMOTEDEVS = "REMOTEDEVS";
     public static final String DICTLANG = "DICTLANG";
     public static final String DICTLIST = "DICTLIST";
     public static final String HASMSGS = "HASMSGS";
@@ -96,6 +97,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + SCORES     + " TEXT,"
                     + CHAT_HISTORY   + " TEXT,"
                     + GAMEID     + " INTEGER,"
+                    + REMOTEDEVS + " TEXT,"
                     // HASMSGS: sqlite doesn't have bool; use 0 and 1
                     + HASMSGS    + " INTEGER DEFAULT 0,"
                     + CONTRACTED + " INTEGER DEFAULT 0,"
@@ -132,27 +134,21 @@ public class DBHelper extends SQLiteOpenHelper {
         case 5:
             onCreateObits(db);
         case 6:
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + TURN + " INTEGER;" );
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + GIFLAGS + " INTEGER;" );
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + CHAT_HISTORY + " TEXT;" );
+            addColumn( db, TURN, "INTEGER" );
+            addColumn( db, GIFLAGS, "INTEGER" );
+            addColumn( db, CHAT_HISTORY, "TEXT" );
         case 7:
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + MISSINGPLYRS + " INTEGER;" );
+            addColumn( db, MISSINGPLYRS, "INTEGER" );
         case 8:
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + GAME_NAME + " TEXT;" );
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + CONTRACTED + " INTEGER;" );
+            addColumn( db, GAME_NAME, "TEXT" );
+            addColumn( db, CONTRACTED, "INTEGER" );
         case 9:
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + DICTLIST + " TEXT;" );
+            addColumn( db, DICTLIST, "TEXT" );
         case 10:
-            db.execSQL( "ALTER TABLE " + TABLE_NAME_SUM  +
-                        " ADD COLUMN " + INVITEID + " TEXT;" );
+            addColumn( db, INVITEID, "TEXT" );
         case 11:
+            addColumn( db, REMOTEDEVS, "TEXT" );
+        case 12:
             // nothing yet
             break;
         default:
@@ -162,5 +158,12 @@ public class DBHelper extends SQLiteOpenHelper {
             }
             onCreate( db );
         }
+    }
+
+    public void addColumn( SQLiteDatabase db, String colName, String colType )
+    {
+        String cmd = String.format( "ALTER TABLE %s ADD COLUMN %s %s;",
+                                    TABLE_NAME_SUM, colName, colType );
+        db.execSQL( cmd );
     }
 }
