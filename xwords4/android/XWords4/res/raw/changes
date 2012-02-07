@@ -7,6 +7,7 @@
 <body>
 <b>Crosswords 4.4 beta 42 release</b>
 <ul>
+  <li>Fix nasty Ice Cream Sandwich crash -- my bad</li>
   <li>Improve network game startup</li>
   <li>Include room name in invitation email subject</li>
 </ul>
