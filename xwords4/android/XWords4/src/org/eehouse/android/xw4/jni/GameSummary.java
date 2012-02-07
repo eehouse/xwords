@@ -56,6 +56,7 @@ public class GameSummary {
     public int pendingMsgLevel;
     public long modtime;
     public int gameID;
+    public String[] remoteBTAddrs;
 
     public int dictLang;
     public CurGameInfo.DeviceRole serverRole;
@@ -100,6 +101,23 @@ public class GameSummary {
             m_playersSummary = result;
         }
         return result;
+    }
+
+    public String summarizeBTDevs()
+    {
+        String result = null;
+        if ( null != remoteBTAddrs ) {
+            result = TextUtils.join( "\n", remoteBTAddrs );
+        }
+        return result;
+    }
+
+    public void setRemoteBTAddrs( String asString )
+    {
+        DbgUtils.logf( "setRemoteBTAddrs(%s)", asString );
+        if ( null != asString ) {
+            remoteBTAddrs = TextUtils.split( asString, "\n" );
+        }
     }
 
     public void readPlayers( String playersStr ) 

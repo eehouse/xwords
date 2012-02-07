@@ -29,8 +29,11 @@ import java.util.StringTokenizer;
 import android.content.ContentValues;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
+import android.text.TextUtils;
 
 import junit.framework.Assert;
 
@@ -107,7 +110,7 @@ public class DBUtils {
                                  DBHelper.SMSPHONE, DBHelper.SEED, 
                                  DBHelper.DICTLANG, DBHelper.GAMEID,
                                  DBHelper.SCORES, DBHelper.HASMSGS,
-                                 DBHelper.LASTPLAY_TIME
+                                 DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
             };
             String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -173,21 +176,27 @@ public class DBUtils {
                 if ( col >= 0 ) {
                     tmp = cursor.getInt( col );
                     summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
-                    col = cursor.getColumnIndex( DBHelper.ROOMNAME );
-                    if ( col >= 0 ) {
-                        summary.roomName = cursor.getString( col );
-                    }
-                    col = cursor.getColumnIndex( DBHelper.RELAYID );
-                    if ( col >= 0 ) {
-                        summary.relayID = cursor.getString( col );
-                    }
                     col = cursor.getColumnIndex( DBHelper.SEED );
                     if ( col >= 0 ) {
                         summary.seed = cursor.getInt( col );
                     }
-                    col = cursor.getColumnIndex( DBHelper.SMSPHONE );
-                    if ( col >= 0 ) {
-                        summary.smsPhone = cursor.getString( col );
+                    switch ( summary.conType ) {
+                    case COMMS_CONN_RELAY:
+                        col = cursor.getColumnIndex( DBHelper.ROOMNAME );
+                        if ( col >= 0 ) {
+                            summary.roomName = cursor.getString( col );
+                        }
+                        col = cursor.getColumnIndex( DBHelper.RELAYID );
+                        if ( col >= 0 ) {
+                            summary.relayID = cursor.getString( col );
+                        }
+                        break;
+                    case COMMS_CONN_BT:
+                        col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
+                        if ( col >= 0 ) {
+                            summary.setRemoteBTAddrs( cursor.getString( col ) );
+                        }
+                        break;
                     }
                 }
 
@@ -258,10 +267,17 @@ public class DBUtils {
 
                 if ( null != summary.conType ) {
                     values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
-                    values.put( DBHelper.ROOMNAME, summary.roomName );
-                    values.put( DBHelper.RELAYID, summary.relayID );
                     values.put( DBHelper.SEED, summary.seed );
-                    values.put( DBHelper.SMSPHONE, summary.smsPhone );
+                    switch( summary.conType ) {
+                    case COMMS_CONN_RELAY:
+                        values.put( DBHelper.ROOMNAME, summary.roomName );
+                        values.put( DBHelper.RELAYID, summary.relayID );
+                        break;
+                    case COMMS_CONN_BT:
+                        values.put( DBHelper.REMOTEDEVS,
+                                    summary.summarizeBTDevs() );
+                        break;
+                    }
                 }
                 values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
 
@@ -411,6 +427,54 @@ public class DBUtils {
             db.close();
         }
         return result;
+    }
+
+    public static void listBTGames( Context context, 
+                                    HashMap<String, int[]> result )
+    {
+        HashSet<Integer> set;
+        String[] columns = { DBHelper.GAMEID, DBHelper.REMOTEDEVS };
+        String selection = DBHelper.GAMEID + "!=0";
+        HashMap<String, HashSet<Integer> > map = 
+            new HashMap<String, HashSet<Integer> >();
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            while ( cursor.moveToNext() ) {
+                int col = cursor.getColumnIndex( DBHelper.GAMEID );
+                int gameID = cursor.getInt( col );
+                col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
+                String devs = cursor.getString( col );
+                DbgUtils.logf( "gameid %d has remote[s] %s", gameID, devs );
+
+                if ( null != devs && 0 < devs.length() ) {
+                    for ( String dev : TextUtils.split( devs, "\n" ) ) {
+                        set = map.get( dev );
+                        if ( null == set ) {
+                            set = new HashSet<Integer>();
+                            map.put( dev, set );
+                        }
+                        set.add( new Integer(gameID) );
+                    }
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+
+        Set<String> devs = map.keySet();
+        Iterator<String> iter = devs.iterator();
+        while ( iter.hasNext() ) {
+            String dev = iter.next();
+            set = map.get( dev );
+            int[] gameIDs = new int[set.size()];
+            Iterator<Integer> idIter = set.iterator();
+            for ( int ii = 0; idIter.hasNext(); ++ii ) {
+                gameIDs[ii] = idIter.next();
+            }
+            result.put( dev, gameIDs );
+        }
     }
 
     public static long getRowIDForOpen( Context context, NetLaunchInfo nli )

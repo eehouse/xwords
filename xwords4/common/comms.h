@@ -209,6 +209,11 @@ XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 XP_Bool comms_canChat( const CommsCtxt* comms );
 XP_Bool comms_isConnected( const CommsCtxt* const comms );
 
+#ifdef XWFEATURE_BLUETOOTH
+void comms_getBTAddrs( const CommsCtxt* const comms, 
+                       XP_BtAddrStr* addrs, XP_U16* count );
+#endif
+
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
 const char* ConnType2Str( CommsConnType typ );

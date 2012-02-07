@@ -124,6 +124,7 @@ public class BTService extends Service {
     private LinkedBlockingQueue<BTQueueElem> m_queue;
     private static HashMap<String,String> s_names =
         new HashMap<String, String>();
+    private static HashMap<String,int[]> s_devGames;
     private BTMsgSink m_btMsgSink;
     private Thread m_listener;
     private Thread m_sender;
@@ -204,6 +205,7 @@ public class BTService extends Service {
         DbgUtils.logf( "BTService.onCreate()" );
         m_adapter = BluetoothAdapter.getDefaultAdapter();
         if ( null != m_adapter && m_adapter.isEnabled() ) {
+            listLocalBTGames( false );
             startListener();
             startSender();
         } else {
@@ -218,48 +220,55 @@ public class BTService extends Service {
         if ( null != intent ) {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             DbgUtils.logf( "BTService.onStartCommand; cmd=%d", cmd );
-            switch( cmd ) {
-            case -1:
-                break;
-            case PING:
-                m_queue.add( new BTQueueElem( BTCmd.PING ) );
-                break;
-            case SCAN:
-                m_queue.add( new BTQueueElem( BTCmd.SCAN ) );
-                break;
-            case INVITE:
-                int gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                String target = intent.getStringExtra( TARGET_STR );
-                String addr = addrFor( target );
-                int lang = intent.getIntExtra( LANG_STR, -1 );
-                int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
-                int nPlayersH = intent.getIntExtra( NHE_STR, -1 );
-                m_queue.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
-                                              gameID, lang, 
-                                              nPlayersT, nPlayersH ) );
-                break;
-            case SEND:
-                byte[] buf = intent.getByteArrayExtra( MSG_STR );
-                target = intent.getStringExtra( TARGET_STR );
-                addr = intent.getStringExtra( ADDR_STR );
-                gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                if ( -1 != gameID ) {
-                    m_queue.add( new BTQueueElem( BTCmd.MESG_SEND, buf, target, 
-                                                  addr, gameID ) );
+            if ( -1 == cmd ) {
+            } else if ( null == m_queue ) {
+                DbgUtils.logf( "exiting: m_queue is null" );
+                stopSelf();
+            } else {
+                switch( cmd ) {
+                case -1:
+                    break;
+                case PING:
+                    m_queue.add( new BTQueueElem( BTCmd.PING ) );
+                    break;
+                case SCAN:
+                    m_queue.add( new BTQueueElem( BTCmd.SCAN ) );
+                    break;
+                case INVITE:
+                    int gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    String target = intent.getStringExtra( TARGET_STR );
+                    String addr = addrFor( target );
+                    int lang = intent.getIntExtra( LANG_STR, -1 );
+                    int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
+                    int nPlayersH = intent.getIntExtra( NHE_STR, -1 );
+                    m_queue.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
+                                                  gameID, lang, 
+                                                  nPlayersT, nPlayersH ) );
+                    break;
+                case SEND:
+                    byte[] buf = intent.getByteArrayExtra( MSG_STR );
+                    target = intent.getStringExtra( TARGET_STR );
+                    addr = intent.getStringExtra( ADDR_STR );
+                    gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    if ( -1 != gameID ) {
+                        Assert.assertNotNull( m_queue );
+                        m_queue.add( new BTQueueElem( BTCmd.MESG_SEND, buf, target, 
+                                                      addr, gameID ) );
+                    }
+                    break;
+                case RADIO:
+                    boolean cameOn = intent.getBooleanExtra( RADIO_STR, false );
+                    BTEvent evt = cameOn? BTEvent.BT_ENABLED : BTEvent.BT_DISABLED;
+                    sendResult( evt );
+                    if ( !cameOn ) {
+                        stopListener();
+                        stopSender();
+                        stopSelf();
+                    }
+                    break;
+                default:
+                    Assert.fail();
                 }
-                break;
-            case RADIO:
-                boolean cameOn = intent.getBooleanExtra( RADIO_STR, false );
-                BTEvent evt = cameOn? BTEvent.BT_ENABLED : BTEvent.BT_DISABLED;
-                sendResult( evt );
-                if ( !cameOn ) {
-                    stopListener();
-                    stopSender();
-                    stopSelf();
-                }
-                break;
-            default:
-                Assert.fail();
             }
         }
         return Service.START_STICKY;
@@ -625,6 +634,20 @@ public class BTService extends Service {
         synchronized( s_syncObj ) {
             if ( null != s_eventListener ) {
                 s_eventListener.eventOccurred( event, args );
+            }
+        }
+    }
+
+    private void listLocalBTGames( boolean force )
+    {
+        if ( null == s_devGames ) {
+            force = true;
+            s_devGames = new HashMap<String, int[]>();
+        }
+        if ( force ) {
+            synchronized( s_devGames ) {
+                s_devGames.clear();
+                DBUtils.listBTGames( this, s_devGames );
             }
         }
     }

@@ -1109,6 +1109,22 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                 setString( env, jsummary, "relayID", buf );
             }
             setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
+        } else if ( COMMS_CONN_BT == addr.conType ) {
+            XP_BtAddrStr addrs[MAX_NUM_PLAYERS];
+            XP_U16 count = VSIZE(addrs);
+            comms_getBTAddrs( comms, addrs, &count );
+            
+            int ii;
+            XP_ASSERT( count < VSIZE(addrs) );
+            const XP_UCHAR* addrps[count];
+            for ( ii = 0; ii < count; ++ii ) {
+                addrps[ii] = (XP_UCHAR*)&addrs[ii];
+                XP_LOGF( "%s: adding btaddr %s", __func__, addrps[ii] );
+            }
+            jobjectArray jaddrs = makeStringArray( env, count, addrps );
+            setObject( env, jsummary, "remoteBTAddrs", "[Ljava/lang/String;", 
+                       jaddrs );
+            (*env)->DeleteLocalRef( env, jaddrs );
         }
     }
 
