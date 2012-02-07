@@ -69,9 +69,9 @@ public class RelayReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
         if ( force || interval_millis > 0 ) {
-            long first_millis = SystemClock.elapsedRealtime();
+            long first_millis = 0;
             if ( !force ) {
-                first_millis += interval_millis;
+                first_millis = SystemClock.elapsedRealtime() + interval_millis;
             }
             am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
                                     first_millis, // first firing
