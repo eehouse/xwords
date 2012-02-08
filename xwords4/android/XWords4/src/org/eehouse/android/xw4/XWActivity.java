@@ -177,7 +177,7 @@ public class XWActivity extends Activity
     // BTService.BTEventListener interface
     public void eventOccurred( BTService.BTEvent event, final Object ... args )
     {
-        DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
+        m_delegate.eventOccurred( event, args );
     }
 
 }

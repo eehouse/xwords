@@ -277,6 +277,19 @@ public class DlgDelegate {
         }
     }
 
+    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    {
+        switch( event ) {
+        case BAD_PROTO:
+            String msg = Utils.format( m_activity, R.string.bt_bad_protof,
+                                       (String)args[0] );
+            DbgUtils.showf( m_activity, msg );
+            break;
+        default:
+            DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
+        }
+    }
+
     private Dialog createAboutDialog()
     {
         final View view = Utils.inflate( m_activity, R.layout.about_dlg );

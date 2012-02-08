@@ -596,10 +596,8 @@ public class BTService extends Service {
                                      lang, nPlayersT, nPlayersH );
             result = BTCmd.INVITE_ACCPT;
 
-            Intent intent = new Intent( this, DispatchNotify.class );
-            intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
             String body = Utils.format( this, R.string.new_bt_bodyf, sender );
-            Utils.postNotification( this, intent, R.string.new_bt_title, body );
+            postNotification( gameID, R.string.new_bt_title, body );
         } else {
             result = BTCmd.INVITE_DUPID;
         }
@@ -642,6 +640,8 @@ public class BTService extends Service {
                 } else if ( GameUtils.feedMessage( this, gameID, buffer, 
                                                    addr, m_btMsgSink ) ) {
                     DbgUtils.logf( "GameUtils.feedMessage took it" );
+                    postNotification( gameID, R.string.new_btmove_title, 
+                                      R.string.new_btmove_body );
                     // do nothing
                 } else {
                     DbgUtils.logf( "nobody to take message for gameID", gameID );
@@ -739,6 +739,19 @@ public class BTService extends Service {
             dos = null;
         }
         return dos;
+    }
+
+    private void postNotification( int gameID, int title, int body )
+    {
+        postNotification( gameID, title, getString( body ) );
+    }
+
+    private void postNotification( int gameID, int title, String body )
+    {
+        Intent intent = new Intent( this, DispatchNotify.class );
+        intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
+        Utils.postNotification( this, intent, R.string.new_btmove_title, 
+                                body );
     }
 
     private Thread killSocketIn( final BluetoothSocket socket, int seconds )
