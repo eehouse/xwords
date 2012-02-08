@@ -139,7 +139,7 @@ struct CommsCtxt {
     MPSLOT
 };
 
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
 typedef enum {
     BTIPMSG_NONE = 0
     ,BTIPMSG_DATA
@@ -186,7 +186,7 @@ static void setHeartbeatTimer( CommsCtxt* comms );
 #else
 # define setHeartbeatTimer( comms )
 #endif
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
 static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ, 
                                  XP_PlayerAddr channelNo,
                                  void* data, int dlen );
@@ -647,7 +647,7 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
         }
         break;
 #endif
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
     case COMMS_CONN_BT:
     case COMMS_CONN_IP_DIRECT:
         /* This will only work on host side when there's a single guest! */
@@ -1126,7 +1126,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
             XP_LOGF( "%s: skipping message: not connected", __func__ );
         }
 #endif
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
     } else if ( conType == COMMS_CONN_BT || conType == COMMS_CONN_IP_DIRECT ) {
         result = send_via_bt_or_ip( comms, BTIPMSG_DATA, channelNo, 
                                     elem->msg, elem->len );
@@ -1415,7 +1415,7 @@ noteHBReceived( CommsCtxt* comms/* , const CommsAddrRec* addr */ )
 # define noteHBReceived(a)
 #endif
 
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
 static XP_Bool
 btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 {
@@ -1454,7 +1454,7 @@ preProcess( CommsCtxt* comms, XWStreamCtxt* stream,
         }
         break;
 #endif
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
     case COMMS_CONN_BT:
     case COMMS_CONN_IP_DIRECT:
         consumed = btIpPreProcess( comms, stream );
@@ -2187,7 +2187,7 @@ relayConnect( CommsCtxt* comms )
 } /* relayConnect */
 #endif
 
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
 static XP_S16
 send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ, XP_PlayerAddr channelNo,
                    void* data, int dlen )
