@@ -60,6 +60,8 @@ public class BTService extends Service {
         public void eventOccurred( BTEvent event, Object ... args );
     }
 
+    private static final int BT_PROTO = 0;
+
     private static final int PING = 0;
     private static final int SCAN = 1;
     private static final int INVITE = 2;
@@ -305,6 +307,8 @@ public class BTService extends Service {
                     DbgUtils.logf( "run: accept() returned" );
                     inStream = new DataInputStream( socket.getInputStream() );
 
+                    byte proto = inStream.readByte();
+                    Assert.assertTrue( proto == BT_PROTO );
                     byte msg = inStream.readByte();
                     BTCmd cmd = BTCmd.values()[msg];
                     switch( cmd ) {
@@ -721,6 +725,7 @@ public class BTService extends Service {
         try { 
             socket.connect();
             dos = new DataOutputStream( socket.getOutputStream() );
+            dos.writeByte( BT_PROTO );
             dos.writeByte( cmd.ordinal() );
             DbgUtils.logf( "connect successful" );
         } catch ( java.io.IOException ioe ) {
