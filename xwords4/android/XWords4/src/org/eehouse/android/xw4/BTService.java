@@ -121,13 +121,12 @@ public class BTService extends Service {
     }
 
     private BluetoothAdapter m_adapter;
-    private LinkedBlockingQueue<BTQueueElem> m_queue;
     private static HashMap<String,String> s_names =
         new HashMap<String, String>();
     private static HashMap<String,int[]> s_devGames;
     private BTMsgSink m_btMsgSink;
-    private Thread m_listener;
-    private Thread m_sender;
+    private BTListenerThread m_listener;
+    private BTSenderThread m_sender;
 
     public static boolean BTEnabled()
     {
@@ -221,7 +220,7 @@ public class BTService extends Service {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             DbgUtils.logf( "BTService.onStartCommand; cmd=%d", cmd );
             if ( -1 == cmd ) {
-            } else if ( null == m_queue ) {
+            } else if ( null == m_sender ) {
                 DbgUtils.logf( "exiting: m_queue is null" );
                 stopSelf();
             } else {
@@ -229,10 +228,10 @@ public class BTService extends Service {
                 case -1:
                     break;
                 case PING:
-                    m_queue.add( new BTQueueElem( BTCmd.PING ) );
+                    m_sender.add( new BTQueueElem( BTCmd.PING ) );
                     break;
                 case SCAN:
-                    m_queue.add( new BTQueueElem( BTCmd.SCAN ) );
+                    m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
                     break;
                 case INVITE:
                     int gameID = intent.getIntExtra( GAMEID_STR, -1 );
@@ -241,9 +240,9 @@ public class BTService extends Service {
                     int lang = intent.getIntExtra( LANG_STR, -1 );
                     int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                     int nPlayersH = intent.getIntExtra( NHE_STR, -1 );
-                    m_queue.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
-                                                  gameID, lang, 
-                                                  nPlayersT, nPlayersH ) );
+                    m_sender.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
+                                                   gameID, lang, 
+                                                   nPlayersT, nPlayersH ) );
                     break;
                 case SEND:
                     byte[] buf = intent.getByteArrayExtra( MSG_STR );
@@ -251,9 +250,8 @@ public class BTService extends Service {
                     addr = intent.getStringExtra( ADDR_STR );
                     gameID = intent.getIntExtra( GAMEID_STR, -1 );
                     if ( -1 != gameID ) {
-                        Assert.assertNotNull( m_queue );
-                        m_queue.add( new BTQueueElem( BTCmd.MESG_SEND, buf, target, 
-                                                      addr, gameID ) );
+                        m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, target, 
+                                                       addr, gameID ) );
                     }
                     break;
                 case RADIO:
@@ -281,28 +279,28 @@ public class BTService extends Service {
     }
 
     private class BTListenerThread extends Thread {
+        private BluetoothServerSocket m_serverSocket;
 
         @Override
         public void run() {
-            BluetoothServerSocket serverSocket;
-            while ( m_adapter.isEnabled() ) {
-                try {
-                    serverSocket = m_adapter.
-                        listenUsingRfcommWithServiceRecord( XWApp.getAppName(),
-                                                            XWApp.getAppUUID() );
-                } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( "listenUsingRfcommWithServiceRecord=>%s", 
-                                   ioe.toString() );
-                    serverSocket = null;
-                    continue;
-                }
+            try {
+                m_serverSocket = m_adapter.
+                    listenUsingRfcommWithServiceRecord( XWApp.getAppName(),
+                                                        XWApp.getAppUUID() );
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.logf( "listenUsingRfcommWithServiceRecord=>%s", 
+                               ioe.toString() );
+                m_serverSocket = null;
+            }
+
+            while ( null != m_serverSocket && m_adapter.isEnabled() ) {
 
                 BluetoothSocket socket = null;
                 DataInputStream inStream = null;
                 int nRead = 0;
                 try {
                     DbgUtils.logf( "run: calling accept(60000)" );
-                    socket = serverSocket.accept( 60000 ); // blocks
+                    socket = m_serverSocket.accept( 60000 ); // blocks
                     addAddr( socket );
                     DbgUtils.logf( "run: accept() returned" );
                     inStream = new DataInputStream( socket.getInputStream() );
@@ -329,16 +327,27 @@ public class BTService extends Service {
                     DbgUtils.logf( "trying again..." );
                     continue;
                 }
-
-                if ( null != serverSocket ) {
-                    try {
-                        serverSocket.close();
-                    } catch ( java.io.IOException ioe ) {
-                        DbgUtils.logf( "close()=>%s", ioe.toString() );
-                    }
-                    serverSocket = null;
-                }
             }
+
+            if ( null != m_serverSocket ) {
+                try {
+                    m_serverSocket.close();
+                } catch ( java.io.IOException ioe ) {
+                    DbgUtils.logf( "close()=>%s", ioe.toString() );
+                }
+                m_serverSocket = null;
+            }
+        } // run()
+
+        public void stopListening()
+        {
+            try {
+                m_serverSocket.close();
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.logf( "close()=>%s", ioe.toString() );
+            }
+            m_serverSocket = null;
+            interrupt();
         }
     }
 
@@ -347,38 +356,35 @@ public class BTService extends Service {
         Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
         DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
         for ( BluetoothDevice dev : pairedDevs ) {
+            boolean success = false;
             try {
                 DbgUtils.logf( "PingThread: got socket to device %s", 
                                dev.getName() );
                 BluetoothSocket socket =
                     dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
                 if ( null != socket ) {
-                    socket.connect();
+                    DataOutputStream os = connect( socket, BTCmd.PING );
+                    if ( null != os ) {
+                        os.flush();
+                        Thread killer = killSocketIn( socket, 10 );
 
-                    DbgUtils.logf( "sendPings: connected" );
-                    DataOutputStream os = 
-                        new DataOutputStream( socket.getOutputStream() );
-                    os.writeByte( BTCmd.PING.ordinal() );
-                    DbgUtils.logf( "sendPings: wrote" );
-                    os.flush();
-                    Thread killer = killSocketIn( socket, 10 );
-
-                    DataInputStream is = 
-                        new DataInputStream( socket.getInputStream() );
-                    boolean success = BTCmd.PONG == BTCmd.values()[is.readByte()];
-                    killer.interrupt();
-                    socket.close();
-
-                    if ( success ) {
-                        DbgUtils.logf( "got PONG from %s", dev.getName() );
-                        addAddr( dev );
-                        if ( null != event ) {
-                            sendResult( event, dev.getName() );
-                        }
+                        DataInputStream is = 
+                            new DataInputStream( socket.getInputStream() );
+                        success = BTCmd.PONG == BTCmd.values()[is.readByte()];
+                        killer.interrupt();
                     }
+                    socket.close();
                 }
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.logf( "sendPings: ioe: %s", ioe.toString() );
+            }
+
+            if ( success ) {
+                DbgUtils.logf( "got PONG from %s", dev.getName() );
+                addAddr( dev );
+                if ( null != event ) {
+                    sendResult( event, dev.getName() );
+                }
             }
         }
     }
@@ -391,22 +397,22 @@ public class BTService extends Service {
             BluetoothSocket socket = 
                 dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
             if ( null != socket ) {
-                socket.connect();
-                DataOutputStream outStream = 
-                    new DataOutputStream( socket.getOutputStream() );
-                outStream.writeByte( BTCmd.INVITE.ordinal() );
-                outStream.writeInt( elem.m_gameID );
-                outStream.writeInt( elem.m_lang );
-                outStream.writeInt( elem.m_nPlayersT );
-                outStream.writeInt( elem.m_nPlayersH );
-                outStream.flush();
+                boolean success = false;
+                DataOutputStream outStream = connect( socket, BTCmd.INVITE );
+                if ( null != outStream ) {
+                    outStream.writeInt( elem.m_gameID );
+                    outStream.writeInt( elem.m_lang );
+                    outStream.writeInt( elem.m_nPlayersT );
+                    outStream.writeInt( elem.m_nPlayersH );
+                    outStream.flush();
 
-                DataInputStream inStream = 
-                    new DataInputStream( socket.getInputStream() );
-                boolean success = 
-                    BTCmd.INVITE_ACCPT == BTCmd.values()[inStream.readByte()];
-                DbgUtils.logf( "sendInvite(): invite done: success=%b", 
-                               success );
+                    DataInputStream inStream = 
+                        new DataInputStream( socket.getInputStream() );
+                    success = BTCmd.INVITE_ACCPT
+                        == BTCmd.values()[inStream.readByte()];
+                    DbgUtils.logf( "sendInvite(): invite done: success=%b", 
+                                   success );
+                }
                 socket.close();
 
                 BTEvent evt = success ? BTEvent.NEWGAME_SUCCESS
@@ -426,24 +432,23 @@ public class BTService extends Service {
             BluetoothSocket socket = 
                 dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
             if ( null != socket ) {
-                socket.connect();
-                DataOutputStream outStream = 
-                    new DataOutputStream( socket.getOutputStream() );
-                outStream.writeByte( BTCmd.MESG_SEND.ordinal() );
-                outStream.writeInt( elem.m_gameID );
+                DataOutputStream outStream = connect( socket, BTCmd.MESG_SEND );
+                if ( null != outStream ) {
+                    outStream.writeInt( elem.m_gameID );
 
-                short len = (short)elem.m_msg.length;
-                outStream.writeShort( len );
-                outStream.write( elem.m_msg, 0, elem.m_msg.length );
+                    short len = (short)elem.m_msg.length;
+                    outStream.writeShort( len );
+                    outStream.write( elem.m_msg, 0, elem.m_msg.length );
 
-                outStream.flush();
-                Thread killer = killSocketIn( socket, 10 );
+                    outStream.flush();
+                    Thread killer = killSocketIn( socket, 10 );
 
-                DataInputStream inStream = 
-                    new DataInputStream( socket.getInputStream() );
-                success = 
-                    BTCmd.MESG_ACCPT == BTCmd.values()[inStream.readByte()];
-                killer.interrupt();
+                    DataInputStream inStream = 
+                        new DataInputStream( socket.getInputStream() );
+                    success = 
+                        BTCmd.MESG_ACCPT == BTCmd.values()[inStream.readByte()];
+                    killer.interrupt();
+                }
                 socket.close();
             }
         } catch ( java.io.IOException ioe ) {
@@ -497,6 +502,18 @@ public class BTService extends Service {
     }
 
     private class BTSenderThread extends Thread {
+        private LinkedBlockingQueue<BTQueueElem> m_queue;
+
+        public BTSenderThread( LinkedBlockingQueue<BTQueueElem> queue )
+        {
+            m_queue = queue;
+        }
+
+        public void add( BTQueueElem elem )
+        {
+            m_queue.add( elem );
+        }
+
         @Override
         public void run()
         {
@@ -661,15 +678,16 @@ public class BTService extends Service {
 
     private void startSender()
     {
-        m_queue = new LinkedBlockingQueue<BTQueueElem>();
-        m_sender = new BTSenderThread();
+        LinkedBlockingQueue<BTQueueElem> queue = 
+            new LinkedBlockingQueue<BTQueueElem>();
+        m_sender = new BTSenderThread( queue );
         m_sender.start();
     }
 
     private void stopListener()
     {
         DbgUtils.logf( "stopListener..." );
-        m_listener.interrupt();
+        m_listener.stopListening();
         try {
             m_listener.join( 100 );
         } catch ( InterruptedException ie ) {
@@ -690,6 +708,26 @@ public class BTService extends Service {
         }
         m_sender = null;
         DbgUtils.logf( "stopSender done" );
+    }
+
+    private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd )
+    {
+        DbgUtils.logf( "connecting to %s to send %s", 
+                       socket.getRemoteDevice().getName(), cmd.toString() );
+        // Docs say always call cancelDiscovery before trying to connect
+        m_adapter.cancelDiscovery();
+        
+        DataOutputStream dos;
+        try { 
+            socket.connect();
+            dos = new DataOutputStream( socket.getOutputStream() );
+            dos.writeByte( cmd.ordinal() );
+            DbgUtils.logf( "connect successful" );
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.logf( "connect()=>%s", ioe.toString() );
+            dos = null;
+        }
+        return dos;
     }
 
     private Thread killSocketIn( final BluetoothSocket socket, int seconds )
@@ -721,8 +759,7 @@ public class BTService extends Service {
         public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
         {
             Assert.assertNotNull( addr );
-            Assert.assertNotNull( m_queue );
-            m_queue.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
+            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
                                           addr.bt_hostName, addr.bt_btAddr,
                                           gameID ) );
             return buf.length;
