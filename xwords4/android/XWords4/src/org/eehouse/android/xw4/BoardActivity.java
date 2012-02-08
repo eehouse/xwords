@@ -800,6 +800,13 @@ public class BoardActivity extends XWActivity
         case MESSAGE_REFUSED:
             m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, false );
             break;
+        case MESSAGE_NOGAME:
+            post( new Runnable() {
+                    public void run() {
+                        showDialog( DLG_DELETED );
+                    }
+                } );
+            break;
         default:
             super.eventOccurred( event, args );
             break;

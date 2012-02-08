@@ -672,17 +672,13 @@ public class GameUtils {
         return draw;
     } // feedMessages
 
-    public static boolean feedMessage( Context context, int gameID, byte[] msg, 
+    public static boolean feedMessage( Context context, long rowid, byte[] msg,
                                        CommsAddrRec ret, MultiMsgSink sink )
     {
-        long rowid = DBUtils.getRowIDFor( context, gameID );
-        boolean draw = -1 != rowid;
-        if ( draw ) {
-            byte[][] msgs = new byte[1][];
-            msgs[0] = msg;
-            draw = feedMessages( context, rowid, msgs, ret, sink );
-        }
-        return draw;
+        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
+        byte[][] msgs = new byte[1][];
+        msgs[0] = msg;
+        return feedMessages( context, rowid, msgs, ret, sink );
     }
 
     // Current assumption: this is the relay case where return address

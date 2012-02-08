@@ -53,6 +53,7 @@ public class BTService extends Service {
                         , NEWGAME_FAILURE
                         , MESSAGE_ACCEPTED
                         , MESSAGE_REFUSED
+                        , MESSAGE_NOGAME
                         , BT_ENABLED
                         , BT_DISABLED
             };
@@ -95,6 +96,7 @@ public class BTService extends Service {
             MESG_SEND,
             MESG_ACCPT,
             MESG_DECL,
+            MESG_GAMEGONE,
             };
 
     private class BTQueueElem {
@@ -437,6 +439,7 @@ public class BTService extends Service {
     private void sendMsg( BTQueueElem elem )
     {
         boolean success = false;
+        BTEvent evt = BTEvent.MESSAGE_REFUSED;
         try {
             BluetoothDevice dev = m_adapter.getRemoteDevice( elem.m_addr );
             BluetoothSocket socket = 
@@ -455,9 +458,17 @@ public class BTService extends Service {
 
                     DataInputStream inStream = 
                         new DataInputStream( socket.getInputStream() );
-                    success = 
-                        BTCmd.MESG_ACCPT == BTCmd.values()[inStream.readByte()];
+                    BTCmd reply = BTCmd.values()[inStream.readByte()];
                     killer.interrupt();
+
+                    switch ( reply ) {
+                    case MESG_ACCPT:
+                        evt = BTEvent.MESSAGE_ACCEPTED;
+                        break;
+                    case MESG_GAMEGONE:
+                        evt = BTEvent.MESSAGE_NOGAME;
+                        break;
+                    }
                 }
                 socket.close();
             }
@@ -466,8 +477,6 @@ public class BTService extends Service {
             success = false;
         }
 
-        BTEvent evt = success ? BTEvent.MESSAGE_ACCEPTED
-            : BTEvent.MESSAGE_REFUSED;
         sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
     }
 
@@ -625,9 +634,15 @@ public class BTService extends Service {
                                + "gameID of %d", 
                                len, host.getName(), gameID );
 
+                // check if it's still here
+                long rowid = DBUtils.getRowIDFor( this, gameID );
+                boolean haveGame = DBUtils.ROWID_NOTFOUND != rowid;
+                BTCmd result = haveGame ? 
+                    BTCmd.MESG_ACCPT : BTCmd.MESG_GAMEGONE;
+
                 DataOutputStream os = 
                     new DataOutputStream( socket.getOutputStream() );
-                os.writeByte( BTCmd.MESG_ACCPT.ordinal() );
+                os.writeByte( result.ordinal() );
                 os.flush();
                 socket.close();
 
@@ -635,16 +650,15 @@ public class BTService extends Service {
                                                       host.getAddress() );
 
                 if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
-                    DbgUtils.logf( "BoardActivity.feedMessage took it" );
                     // do nothing
-                } else if ( GameUtils.feedMessage( this, gameID, buffer, 
+                } else if ( haveGame && 
+                            GameUtils.feedMessage( this, rowid, buffer, 
                                                    addr, m_btMsgSink ) ) {
-                    DbgUtils.logf( "GameUtils.feedMessage took it" );
                     postNotification( gameID, R.string.new_btmove_title, 
                                       R.string.new_btmove_body );
                     // do nothing
                 } else {
-                    DbgUtils.logf( "nobody to take message for gameID", gameID );
+                    DbgUtils.logf( "nobody took msg for gameID %d", gameID );
                 }
             } else {
                 DbgUtils.logf( "receiveMessages: read only %d of %d bytes",
