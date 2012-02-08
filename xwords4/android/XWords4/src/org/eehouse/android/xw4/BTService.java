@@ -46,7 +46,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class BTService extends Service {
 
-    public enum BTEvent { SCAN_DONE
+    public enum BTEvent { BAD_PROTO
+                        , SCAN_DONE
                         , HOST_PONGED
                         , NEWGAME_SUCCESS
                         , NEWGAME_FAILURE
@@ -308,23 +309,28 @@ public class BTService extends Service {
                     inStream = new DataInputStream( socket.getInputStream() );
 
                     byte proto = inStream.readByte();
-                    Assert.assertTrue( proto == BT_PROTO );
-                    byte msg = inStream.readByte();
-                    BTCmd cmd = BTCmd.values()[msg];
-                    switch( cmd ) {
-                    case PING:
-                        receivePing( socket );
-                        break;
-                    case INVITE:
-                        receiveInvitation( BTService.this, inStream, socket );
-                        break;
-                    case MESG_SEND:
-                        receiveMessage( inStream, socket );
-                        break;
+                    if ( proto != BT_PROTO ) {
+                        socket.close();
+                        sendResult( BTEvent.BAD_PROTO, 
+                                    socket.getRemoteDevice().getName() );
+                    } else {
+                        byte msg = inStream.readByte();
+                        BTCmd cmd = BTCmd.values()[msg];
+                        switch( cmd ) {
+                        case PING:
+                            receivePing( socket );
+                            break;
+                        case INVITE:
+                            receiveInvitation( BTService.this, inStream, socket );
+                            break;
+                        case MESG_SEND:
+                            receiveMessage( inStream, socket );
+                            break;
 
-                    default:
-                        DbgUtils.logf( "unexpected msg %d", msg );
-                        break;
+                        default:
+                            DbgUtils.logf( "unexpected msg %d", msg );
+                            break;
+                        }
                     }
                 } catch ( java.io.IOException ioe ) {
                     DbgUtils.logf( "accept=>%s", ioe.toString() );
