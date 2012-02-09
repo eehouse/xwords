@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent" 
+              android:layout_height="fill_parent"
+              >
+
+  <ListView android:id="@id/android:list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:drawSelectorOnTop="false"
+            android:layout_weight="1"
+            />
+
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent" 
+                android:layout_height="wrap_content"
+                >
+      <Button android:id="@+id/button_rescan"
+              android:text="@string/bt_pick_rescan_button"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_weight="1" 
+              />
+      <Button android:id="@+id/button_reconfigure"
+              android:text="@string/bt_pick_reconfig_button"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_weight="1" 
+              />
+  </LinearLayout>
+
+  <Button android:id="@+id/button_ok"
+          android:text="@string/button_ok"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          />
+
+</LinearLayout>
