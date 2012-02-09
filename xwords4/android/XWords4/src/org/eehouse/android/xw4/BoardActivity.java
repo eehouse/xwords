@@ -75,6 +75,8 @@ public class BoardActivity extends XWActivity
     private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 12;
 
     private static final int CHAT_REQUEST = 1;
+    private static final int BT_INVITE_RESULT = 2;
+
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
     private static final int UNDO_LAST_ACTION = 1;
@@ -93,6 +95,7 @@ public class BoardActivity extends XWActivity
     private static final int LOOKUP_ACTION = 14;
     private static final int BUTTON_BROWSE_ACTION = 15;
     private static final int VALUES_ACTION = 16;
+    private static final int BT_PICK_ACTION = 17;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -131,6 +134,8 @@ public class BoardActivity extends XWActivity
     private boolean m_volKeysZoom;
     private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
+    private int m_nMissingPlayers = -1;
+    private int m_invitesPending;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -510,12 +515,24 @@ public class BoardActivity extends XWActivity
     protected void onActivityResult( int requestCode, int resultCode, Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
-            if ( CHAT_REQUEST == requestCode ) {
+            switch ( requestCode ) {
+            case CHAT_REQUEST:
                 String msg = data.getStringExtra( INTENT_KEY_CHAT );
                 if ( null != msg && msg.length() > 0 ) {
                     m_pendingChats.add( msg );
                     trySendChats();
                 }
+                break;
+            case BT_INVITE_RESULT:
+                m_invitesPending = 0;
+                String[] devs = data.getStringArrayExtra( BTInviteActivity.DEVS );
+                for ( String dev : devs ) {
+                    BTService.inviteRemote( this, dev, m_gi.gameID, m_gi.dictLang,
+                                            m_gi.nPlayers, 1 );
+                    ++m_invitesPending;
+                }
+                startProgress( R.string.invite_progress );
+                break;
             }
         }
     }
@@ -720,6 +737,10 @@ public class BoardActivity extends XWActivity
             case SYNC_ACTION:
                 doSyncMenuitem();
                 break;
+            case BT_PICK_ACTION:
+                GameUtils.launchBTInviter( this, m_nMissingPlayers, 
+                                           BT_INVITE_RESULT );
+                break;
             case COMMIT_ACTION:
                 cmd = JNIThread.JNICmd.CMD_COMMIT;
                 break;
@@ -807,6 +828,18 @@ public class BoardActivity extends XWActivity
                     }
                 } );
             break;
+        case NEWGAME_FAILURE:
+            DbgUtils.logf( "failed to create game" );
+        case NEWGAME_SUCCESS:
+            if ( 0 == --m_invitesPending ) {
+                m_handler.post( new Runnable() {
+                        public void run() {
+                            stopProgress();
+                    }
+                } );
+            }
+            break;
+
         default:
             super.eventOccurred( event, args );
             break;
@@ -1295,6 +1328,26 @@ public class BoardActivity extends XWActivity
                 nonBlockingDialog( DLG_OKONLY, getString( resid ) );
             }
         } // userError
+
+        @Override
+        public void informMissing( boolean isServer, 
+                                   CommsAddrRec.CommsConnType connType,
+                                   final int nMissingPlayers )
+        {
+            if ( isServer &&
+                 CommsAddrRec.CommsConnType.COMMS_CONN_BT == connType ) {
+                post( new Runnable() {
+                        public void run() {
+                            DbgUtils.showf( BoardActivity.this, 
+                                            "%d players missing", 
+                                            nMissingPlayers );
+                            m_nMissingPlayers = nMissingPlayers;
+                            showConfirmThen( R.string.bt_devs_missing, 
+                                             BT_PICK_ACTION );
+                        }
+                    } );
+            }
+        }
 
         @Override
         public void informMove( String expl, String words )

@@ -454,6 +454,14 @@ public class GameUtils {
                                  null, gameID, isHost );
     }
 
+    public static void launchBTInviter( Activity activity, int nMissing, 
+                                        int replyCode )
+    {
+        Intent intent = new Intent( activity, BTInviteActivity.class );
+        intent.putExtra( BTInviteActivity.INTENT_KEY_NMISSING, nMissing );
+        activity.startActivityForResult( intent, replyCode );
+    }
+
     public static void launchInviteActivity( Context context, 
                                              boolean choseEmail,
                                              String room, String inviteID,

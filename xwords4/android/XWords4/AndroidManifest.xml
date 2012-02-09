@@ -63,6 +63,9 @@
     <activity android:name="NewGameActivity"
               android:theme="@android:style/Theme.NoTitleBar"
               />
+    <activity android:name="BTInviteActivity"
+              android:theme="@android:style/Theme.NoTitleBar"
+              />
 
     <activity android:name="GameConfig"
               android:screenOrientation="sensor"

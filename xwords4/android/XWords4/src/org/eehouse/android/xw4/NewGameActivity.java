@@ -48,13 +48,12 @@ public class NewGameActivity extends XWActivity {
 
     private static final int NEW_GAME_ACTION = 1;
     private static final String SAVE_DEVNAMES = "DEVNAMES";
-    private static final int PICK_BTDEV_DLG = DlgDelegate.DIALOG_LAST + 1;
-    private static final int CONFIG_BT = 1;
+    private static final int CONFIG_FOR_BT = 1;
+    private static final int INVITE_FOR_BT = 2;
 
     private boolean m_showsOn;
     private Handler m_handler = null;
     private int m_chosen;
-    private String[] m_btDevNames;
     private int m_lang = 0;
     private long m_btRowID = -1;
 
@@ -62,7 +61,6 @@ public class NewGameActivity extends XWActivity {
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
-        getBundledData( savedInstanceState );
 
         m_handler = new Handler();
 
@@ -109,81 +107,6 @@ public class NewGameActivity extends XWActivity {
         checkEnableBT( true );
     }
 
-    @Override
-    protected Dialog onCreateDialog( final int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            AlertDialog.Builder ab;
-            OnClickListener lstnr;
-
-            switch( id ) {
-            case PICK_BTDEV_DLG:
-                OnClickListener scanLstnr =
-                    new OnClickListener() {
-                        public void onClick( DialogInterface dlg, 
-                                             int whichButton ) {
-                            startProgress( R.string.scan_progress );
-                            BTService.rescan( NewGameActivity.this );
-                        }
-                    };
-                OnClickListener okLstnr =
-                    new OnClickListener() {
-                        public void onClick( DialogInterface dlg, 
-                                             int whichButton ) {
-                            if ( 0 <= m_chosen ) {
-                                if ( m_chosen < m_btDevNames.length ) {
-                                    int gameID = GameUtils.newGameID();
-                                    BTService.
-                                        inviteRemote( NewGameActivity.this,
-                                                      m_btDevNames[m_chosen],
-                                                      gameID, m_lang, 2, 1 );
-                                    startProgress( R.string.invite_progress );
-                                }
-                            }
-                        }
-                    };
-                ab = new AlertDialog.Builder( this )
-                    .setTitle( R.string.bt_pick_title )
-                    .setPositiveButton( R.string.button_ok, okLstnr )
-                    .setNegativeButton( R.string.bt_pick_rescan_button, 
-                                        scanLstnr );
-
-                if ( null != m_btDevNames && 0 < m_btDevNames.length ) {
-                    OnClickListener devChosenLstnr =
-                        new OnClickListener() {
-                            public void onClick( DialogInterface dlgi, 
-                                                 int whichButton ) {
-                                AlertDialog dlg = (AlertDialog)dlgi;
-                                Button btn = 
-                                    dlg.getButton( AlertDialog.BUTTON_POSITIVE ); 
-                                btn.setEnabled( 0 <= whichButton );
-
-                                m_chosen = whichButton;
-                            }
-                        };
-                    m_chosen = -1;
-                    ab.setSingleChoiceItems( m_btDevNames, m_chosen, 
-                                             devChosenLstnr );
-                }
-                dialog = ab.create();
-                Utils.setRemoveOnDismiss( this, dialog, PICK_BTDEV_DLG );
-                break;
-            }
-        }
-        return dialog;
-    }
-
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        if ( PICK_BTDEV_DLG == id ) {
-            ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
-                .setEnabled( false );
-        }
-    }
-
     // DlgDelegate.DlgClickNotify interface
     @Override
     public void dlgButtonClicked( int id, int which )
@@ -209,29 +132,30 @@ public class NewGameActivity extends XWActivity {
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data )
     {
-        if ( CONFIG_BT == requestCode ) {
-            if ( Activity.RESULT_CANCELED == resultCode ) {
-                DBUtils.deleteGame( this, m_btRowID );
-            } else {
-                // We'll leave it up to BoardActivity to detect that
-                // it's not had any remote connections yet.
-                GameUtils.launchGame( this, m_btRowID );
-                finish();
+        if ( Activity.RESULT_CANCELED != resultCode ) {
+            switch ( requestCode ) {
+            case CONFIG_FOR_BT:
+                if ( Activity.RESULT_CANCELED == resultCode ) {
+                    DBUtils.deleteGame( this, m_btRowID );
+                } else {
+                    // We'll leave it up to BoardActivity to detect that
+                    // it's not had any remote connections yet.
+                    GameUtils.launchGame( this, m_btRowID );
+                    finish();
+                }
+                break;
+            case INVITE_FOR_BT:     // user selected device 
+                if ( Activity.RESULT_CANCELED != resultCode ) {
+                    int gameID = GameUtils.newGameID();
+                    String[] remoteDevs =
+                        data.getStringArrayExtra( BTInviteActivity.DEVS );
+                    DbgUtils.logf( "got %s", remoteDevs[0] );
+                    BTService.inviteRemote( NewGameActivity.this, remoteDevs[0],
+                                            gameID, m_lang, 2, 1 );
+                    startProgress( R.string.invite_progress );
+                }
+                break;
             }
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        outState.putStringArray( SAVE_DEVNAMES, m_btDevNames );
-    }
-
-    private void getBundledData( Bundle bundle )
-    {
-        if ( null != bundle ) {
-            m_btDevNames = bundle.getStringArray( SAVE_DEVNAMES );
         }
     }
 
@@ -240,19 +164,6 @@ public class NewGameActivity extends XWActivity {
     public void eventOccurred( BTService.BTEvent event, final Object ... args )
     {
         switch( event ) {
-        case SCAN_DONE:
-            m_handler.post( new Runnable() {
-                    public void run() {
-                        synchronized( NewGameActivity.this ) {
-                            stopProgress();
-                            if ( 0 < args.length ) {
-                                m_btDevNames = (String[])(args[0]);
-                            }
-                            showDialog( PICK_BTDEV_DLG );
-                        }
-                    }
-                } );
-            break;
         case BT_ENABLED:
         case BT_DISABLED:
             m_handler.post( new Runnable() {
@@ -284,7 +195,7 @@ public class NewGameActivity extends XWActivity {
                 } );
             break;
         default:
-            DbgUtils.logf( "unexpected event %s", event.toString() );
+            super.eventOccurred( event, args );
             break;
         }
     }
@@ -341,12 +252,9 @@ public class NewGameActivity extends XWActivity {
             intent.setAction( Intent.ACTION_EDIT );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_btRowID );
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
-            startActivityForResult( intent, CONFIG_BT );
-        } else if ( null == m_btDevNames || 0 == m_btDevNames.length ) {
-            startProgress( R.string.scan_progress );
-            BTService.rescan( this );
+            startActivityForResult( intent, CONFIG_FOR_BT );
         } else {
-            showDialog( PICK_BTDEV_DLG );
+            GameUtils.launchBTInviter( this, 1, INVITE_FOR_BT );
         }
     }
 

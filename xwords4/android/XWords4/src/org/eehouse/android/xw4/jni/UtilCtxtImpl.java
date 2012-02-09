@@ -207,6 +207,13 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "informMove" );
     }
 
+    public void informMissing( boolean isServer, 
+                               CommsAddrRec.CommsConnType connType,
+                               int nMissingPlayers )
+    {
+        subclassOverride( "informMissing" );
+    }
+
     // Probably want to cache the fact that the game over notification
     // showed up and then display it next time game's opened.
     public void notifyGameOver()

@@ -429,16 +429,6 @@ and_util_remSelected(XW_UtilCtxt* uc)
     UTIL_CBK_TAIL();
 }
 
-static void
-and_util_setIsServer(XW_UtilCtxt* uc, XP_Bool isServer )
-{
-    /* Change both the C and Java structs, which need to stay in sync */
-    uc->gameInfo->serverRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
-    UTIL_CBK_HEADER("setIsServer", "(Z)V" );
-    (*env)->CallVoidMethod( env, util->jutil, mid, isServer );
-    UTIL_CBK_TAIL();
-}
-
 #ifndef XWFEATURE_MINIWIN
 static void
 and_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
@@ -473,6 +463,22 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+
+static void
+and_util_informMissing(XW_UtilCtxt* uc, XP_Bool isServer, 
+                       CommsConnType connType, XP_U16 nMissing )
+{
+    UTIL_CBK_HEADER( "informMissing",
+                     "(ZLorg/eehouse/android/xw4/jni/"
+                     "CommsAddrRec$CommsConnType;I)V" );
+    jobject jtyp = intToJEnum( env, connType,
+                               "org/eehouse/android/xw4/jni/"
+                               "CommsAddrRec$CommsConnType" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtyp, nMissing );
+    (*env)->DeleteLocalRef( env, jtyp );
+    UTIL_CBK_TAIL();
+}
+
 static void
 and_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                      const CommsAddrRec* newAddr )
@@ -480,6 +486,15 @@ and_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
     LOG_FUNC();
 }
 
+static void
+and_util_setIsServer(XW_UtilCtxt* uc, XP_Bool isServer )
+{
+    /* Change both the C and Java structs, which need to stay in sync */
+    uc->gameInfo->serverRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
+    UTIL_CBK_HEADER("setIsServer", "(Z)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, isServer );
+    UTIL_CBK_TAIL();
+}
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -557,7 +572,6 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(warnIllegalWord);
     SET_PROC(showChat);
     SET_PROC(remSelected);
-    SET_PROC(setIsServer);
 
 #ifndef XWFEATURE_MINIWIN
     SET_PROC(bonusSquareHeld);
@@ -569,7 +583,9 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    SET_PROC(informMissing);
     SET_PROC(addrChange);
+    SET_PROC(setIsServer);
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
     SET_PROC(getTraySearchLimits);

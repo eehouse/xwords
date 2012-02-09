@@ -30,7 +30,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class XWListActivity extends ListActivity 
-    implements DlgDelegate.DlgClickNotify {
+    implements DlgDelegate.DlgClickNotify, BTService.BTEventListener {
 
     private DlgDelegate m_delegate;
 
@@ -54,6 +54,7 @@ public class XWListActivity extends ListActivity
     protected void onResume()
     {
         DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
+        BTService.setBTEventListener( this );
         super.onResume();
     }
 
@@ -61,6 +62,7 @@ public class XWListActivity extends ListActivity
     protected void onPause()
     {
         DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
+        BTService.setBTEventListener( null );
         super.onPause();
     }
 
@@ -157,6 +159,16 @@ public class XWListActivity extends ListActivity
         m_delegate.doSyncMenuitem();
     }
 
+    protected void startProgress( int id )
+    {
+        m_delegate.startProgress( id );
+    }
+
+    protected void stopProgress()
+    {
+        m_delegate.stopProgress();
+    }
+
     // DlgDelegate.DlgClickNotify interface
     public void dlgButtonClicked( int id, int which )
     {
@@ -171,6 +183,12 @@ public class XWListActivity extends ListActivity
     protected void launchLookup( String[] words, int lang, boolean forceList )
     {
         m_delegate.launchLookup( words, lang, forceList );
+    }
+
+    // BTService.BTEventListener interface
+    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    {
+        m_delegate.eventOccurred( event, args );
     }
 
 }

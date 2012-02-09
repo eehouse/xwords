@@ -108,6 +108,9 @@ public interface UtilCtxt {
 
     void informMove( String expl, String words );
 
+    void informMissing( boolean isServer, CommsAddrRec.CommsConnType connType,
+                        int nMissingPlayers );
+
     void notifyGameOver();
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
