@@ -1844,6 +1844,7 @@
     <string name="newgame_enable_bt">Turn Bluetooth on</string>
 
     <string name="bt_pick_rescan_button">Rescan</string>
+    <string name="bt_pick_reconfig_button">Reconfigure</string>
     <string name="bt_pick_title">Opponent devices</string>
 
     <string name="scan_progress">Scanning for Crosswords on paired devices</string>
@@ -1862,5 +1863,7 @@
     <string name="new_btmove_title">New move via Bluetooth</string>
     <string name="new_btmove_body">One or more moves has arrived</string>
 
+    <string name="bt_devs_missing">Missing connections?  Invite BT devs?</string>
 
+    
 </resources>
