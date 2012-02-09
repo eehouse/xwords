@@ -52,7 +52,6 @@ public class CurGameInfo {
     public boolean allowPickTiles;
     public boolean allowHintRect;
     public XWPhoniesChoice phoniesAction;
-    public boolean confirmBTConnect;   /* only used for BT */
 
     // private int[] m_visiblePlayers;
     // private int m_nVisiblePlayers;
