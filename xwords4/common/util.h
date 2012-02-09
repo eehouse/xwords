@@ -163,6 +163,8 @@ typedef struct UtilVtable {
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    void (*m_util_informMissing)(XW_UtilCtxt* uc, XP_Bool isServer, 
+                                 CommsConnType connType, XP_U16 nMissing );
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
     void (*m_util_setIsServer)(XW_UtilCtxt* uc, XP_Bool isServer );
@@ -280,6 +282,8 @@ struct XW_UtilCtxt {
     (uc)->vtable->m_util_cellSquareHeld( (uc), (s) )
 #endif
 #ifndef XWFEATURE_STANDALONE_ONLY
+# define util_informMissing( uc, is, ct, nm )                \
+    (uc)->vtable->m_util_informMissing((uc), (is), (ct), (nm) )
 # define util_addrChange( uc, addro, addrn ) \
          (uc)->vtable->m_util_addrChange((uc), (addro), (addrn))
 # define util_setIsServer( uc, is ) \

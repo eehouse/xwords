@@ -216,6 +216,10 @@ syncPlayers( ServerCtxt* server )
         }
         player->deviceIndex = lp->isLocal? SERVER_DEVICE : UNKNOWN_DEVICE;
     }
+    util_informMissing( server->vol.util,
+                        server->vol.gi->serverRole == SERVER_ISSERVER,
+                        comms_getConType( server->vol.comms ),
+                        server->nv.pendingRegistrations );
 }
 #else
 # define syncPlayers( server )

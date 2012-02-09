@@ -924,6 +924,15 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
+linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), 
+                          XP_Bool isServer, CommsConnType conType,
+                          XP_U16 nMissing )
+{
+    XP_LOGF( "%s(isServer=%d, conType=%d, nMissing=%d)", 
+             __func__, isServer, conType, nMissing );
+}
+
+static void
 linux_util_addrChange( XW_UtilCtxt* uc, 
                        const CommsAddrRec* XP_UNUSED(oldAddr),
                        const CommsAddrRec* newAddr )
@@ -1732,6 +1741,7 @@ main( int argc, char** argv )
     linux_util_vt_init( MPPARM(mainParams.util->mpool) mainParams.util );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    mainParams.util->vtable->m_util_informMissing = linux_util_informMissing;
     mainParams.util->vtable->m_util_addrChange = linux_util_addrChange;
     mainParams.util->vtable->m_util_setIsServer = linux_util_setIsServer;
 #endif
