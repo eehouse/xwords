@@ -1109,15 +1109,19 @@ static void
 curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
                         void** XP_UNUSED(storage) )
 {
-    CursesAppGlobals* globals = (CursesAppGlobals*)cGlobals;
-    XP_ASSERT( !cGlobals->acceptor || (func == cGlobals->acceptor) );
-    cGlobals->acceptor = func;
-    globals->csInfo.server.serverSocket = listener;
-    cursesListenOnSocket( globals, listener
+    if ( -1 == listener ) {
+        XP_LOGF( "%s: removal of listener not implemented!!!!!", __func__ );
+    } else {
+        CursesAppGlobals* globals = (CursesAppGlobals*)cGlobals;
+        XP_ASSERT( !cGlobals->acceptor || (func == cGlobals->acceptor) );
+        cGlobals->acceptor = func;
+        globals->csInfo.server.serverSocket = listener;
+        cursesListenOnSocket( globals, listener
 #ifdef USE_GLIBLOOP
-                          , fire_acceptor
+                              , fire_acceptor
 #endif
-                          );
+                              );
+    }
 }
 
 #ifndef USE_GLIBLOOP
