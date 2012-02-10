@@ -45,7 +45,7 @@ public class CommsTransport implements TransportProcs,
     private Selector m_selector;
     private SocketChannel m_socketChannel;
     private int m_jniGamePtr;
-    private CommsAddrRec m_addr;
+    private CommsAddrRec m_relayAddr;
     private JNIThread m_jniThread;
     private CommsThread m_thread;
     private TransportProcs.TPMsgHandler m_handler;
@@ -95,7 +95,8 @@ public class CommsTransport implements TransportProcs,
                 DbgUtils.logf( ioe.toString() );
             } catch ( UnresolvedAddressException uae ) {
                 DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
-                               m_addr.ip_relay_hostName, m_addr.ip_relay_port, 
+                               m_relayAddr.ip_relay_hostName, 
+                               m_relayAddr.ip_relay_port, 
                                uae.toString() );
             }
 
@@ -120,11 +121,11 @@ public class CommsTransport implements TransportProcs,
                                 m_socketChannel = SocketChannel.open();
                                 m_socketChannel.configureBlocking( false );
                                 DbgUtils.logf( "connecting to %s:%d",
-                                               m_addr.ip_relay_hostName, 
-                                               m_addr.ip_relay_port );
+                                               m_relayAddr.ip_relay_hostName, 
+                                               m_relayAddr.ip_relay_port );
                                 InetSocketAddress isa = new 
-                                    InetSocketAddress(m_addr.ip_relay_hostName,
-                                                      m_addr.ip_relay_port );
+                                    InetSocketAddress(m_relayAddr.ip_relay_hostName,
+                                                      m_relayAddr.ip_relay_port );
                                 m_socketChannel.connect( isa );
                             } catch ( java.io.IOException ioe ) {
                                 DbgUtils.logf( ioe.toString() );
@@ -223,21 +224,22 @@ public class CommsTransport implements TransportProcs,
 
     public void tickle()
     {
-        CommsAddrRec addr = new CommsAddrRec( m_context );
-        XwJNI.comms_getAddr( m_jniGamePtr, addr );
-        switch( addr.conType ) {
-        case COMMS_CONN_RELAY:
-            // do nothing
-            break;
-        case COMMS_CONN_BT:
-            // Let other know I'm here
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
-            break;
-        default:
-            DbgUtils.logf( "tickle: unexpected type %s", 
-                           addr.conType.toString() );
-            Assert.fail();
-        }
+        m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
+        // CommsAddrRec addr = new CommsAddrRec( m_context );
+        // XwJNI.comms_getAddr( m_jniGamePtr, addr );
+        // switch( addr.conType ) {
+        // case COMMS_CONN_RELAY:
+        //     // do nothing
+        //     break;
+        // case COMMS_CONN_BT:
+        //     // Let other know I'm here
+        //     m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
+        //     break;
+        // default:
+        //     DbgUtils.logf( "tickle: unexpected type %s", 
+        //                    addr.conType.toString() );
+        //     Assert.fail();
+        // }
     }
 
     private synchronized void putOut( final byte[] buf )
@@ -351,19 +353,21 @@ public class CommsTransport implements TransportProcs,
 
     public int transportSend( byte[] buf, final CommsAddrRec faddr, int gameID )
     {
-        //DbgUtils.logf( "CommsTransport::transportSend(nbytes=%d)", buf.length );
         int nSent = -1;
-
-        if ( null == m_addr ) {
-            if ( null == faddr ) {
-                m_addr = new CommsAddrRec( m_context );
-                XwJNI.comms_getAddr( m_jniGamePtr, m_addr );
-            } else {
-                m_addr = new CommsAddrRec( faddr );
-            }
+        CommsAddrRec addr;
+        if ( null == faddr ) {
+            DbgUtils.logf( "Do this in the JNI!!" );
+            addr = new CommsAddrRec( m_context );
+            XwJNI.comms_getAddr( m_jniGamePtr, addr );
+        } else {
+            addr = faddr;
         }
 
-        switch ( m_addr.conType ) {
+        if ( null == m_relayAddr ) {
+            m_relayAddr = new CommsAddrRec( addr );
+        }
+
+        switch ( addr.conType ) {
         case COMMS_CONN_RELAY:
             if ( NetStateCache.netAvail( m_context ) ) {
                 putOut( buf );      // add to queue
@@ -407,9 +411,9 @@ public class CommsTransport implements TransportProcs,
             // }
             break;
         case COMMS_CONN_BT:
-            String hostName = m_addr.bt_hostName;
-            nSent = BTService.enqueueFor( m_context, buf, m_addr.bt_hostName, 
-                                          m_addr.bt_btAddr, gameID );
+            String hostName = addr.bt_hostName;
+            nSent = BTService.enqueueFor( m_context, buf, addr.bt_hostName, 
+                                          addr.bt_btAddr, gameID );
             break;
         default:
             Assert.fail();
