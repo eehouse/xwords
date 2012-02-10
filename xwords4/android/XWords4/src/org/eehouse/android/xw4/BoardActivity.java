@@ -1331,7 +1331,7 @@ public class BoardActivity extends XWActivity
                                    CommsAddrRec.CommsConnType connType,
                                    final int nMissingPlayers )
         {
-            if ( isServer && !m_haveAskedMissing
+            if ( 0 < nMissingPlayers && isServer && !m_haveAskedMissing
                  && CommsAddrRec.CommsConnType.COMMS_CONN_BT == connType ) {
                 m_haveAskedMissing = true;
                 post( new Runnable() {
