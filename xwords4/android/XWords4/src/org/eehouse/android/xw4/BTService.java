@@ -152,32 +152,26 @@ public class BTService extends Service {
 
     public static void radioChanged( Context context, boolean cameOn )
     {
-        Intent intent = new Intent( context, BTService.class );
-        intent.putExtra( CMD_STR, RADIO );
+        Intent intent = getIntentTo( context, RADIO );
         intent.putExtra( RADIO_STR, cameOn );
         context.startService( intent );
     }
 
     public static void rescan( Context context )
     {
-        Intent intent = new Intent( context, BTService.class );
-        intent.putExtra( CMD_STR, SCAN );
-        context.startService( intent );
+        context.startService( getIntentTo( context, SCAN ) );
     }
 
     public static void ping( Context context )
     {
-        Intent intent = new Intent( context, BTService.class );
-        intent.putExtra( CMD_STR, PING );
-        context.startService( intent );
+        context.startService( getIntentTo( context, PING ) );
     }
 
     public static void inviteRemote( Context context, String hostName, 
                                      int gameID, int lang, int nPlayersT, 
                                      int nPlayersH )
     {
-        Intent intent = new Intent( context, BTService.class );
-        intent.putExtra( CMD_STR, INVITE );
+        Intent intent = getIntentTo( context, INVITE );
         intent.putExtra( GAMEID_STR, gameID );
         intent.putExtra( TARGET_STR, hostName );
         intent.putExtra( LANG_STR, lang );
@@ -191,8 +185,7 @@ public class BTService extends Service {
                                   String targetName, String targetAddr,
                                   int gameID )
     {
-        Intent intent = new Intent( context, BTService.class );
-        intent.putExtra( CMD_STR, SEND );
+        Intent intent = getIntentTo( context, SEND );
         intent.putExtra( MSG_STR, buf );
         intent.putExtra( TARGET_STR, targetName );
         intent.putExtra( ADDR_STR, targetAddr );
@@ -203,12 +196,20 @@ public class BTService extends Service {
         return buf.length;
     }
 
+    private static Intent getIntentTo( Context context, int cmd )
+    {
+        Intent intent = new Intent( context, BTService.class );
+        intent.putExtra( CMD_STR, cmd );
+        return intent;
+    }
+
     @Override
     public void onCreate()
     {
-        DbgUtils.logf( "BTService.onCreate()" );
         m_adapter = BluetoothAdapter.getDefaultAdapter();
         if ( null != m_adapter && m_adapter.isEnabled() ) {
+            DbgUtils.logf( "BTService.onCreate(); bt name = %s", 
+                           m_adapter.getName() );
             listLocalBTGames( false );
             startListener();
             startSender();
@@ -255,8 +256,8 @@ public class BTService extends Service {
                     addr = intent.getStringExtra( ADDR_STR );
                     gameID = intent.getIntExtra( GAMEID_STR, -1 );
                     if ( -1 != gameID ) {
-                        m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, target, 
-                                                       addr, gameID ) );
+                        m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
+                                                       target, addr, gameID ) );
                     }
                     break;
                 case RADIO:
@@ -555,7 +556,7 @@ public class BTService extends Service {
                         s_names.clear();
                     }
                     sendPings( null );
-                    sendResult( BTEvent.SCAN_DONE, (Object)(names()) );
+                    sendNames( BTEvent.SCAN_DONE );
                     break;
                 case INVITE:
                     sendInvite( elem );
@@ -667,6 +668,11 @@ public class BTService extends Service {
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logf( "receiveMessages: ioe: %s", ioe.toString() );
         }
+    }
+
+    private void sendNames( BTEvent evt )
+    {
+        sendResult( evt, (Object)(names()) );
     }
 
     private void sendResult( BTEvent event, Object ... args )
