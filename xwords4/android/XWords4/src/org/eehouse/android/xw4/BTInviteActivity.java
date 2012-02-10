@@ -25,25 +25,16 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-// import android.content.res.Resources;
-// import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-// import android.view.Window;
 import android.widget.AdapterView;
-// import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.os.Handler;
-
-// import android.widget.TextView;
-// import android.app.AlertDialog;
-// import java.util.ArrayList;
-// import android.util.AttributeSet;
 
 import junit.framework.Assert;
 
@@ -71,8 +62,6 @@ public class BTInviteActivity extends XWListActivity
         m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
 
         setContentView( R.layout.btinviter );
-
-        // getListView().setOnItemClickListener( this );
 
         m_okButton = (Button)findViewById( R.id.button_ok );
         m_okButton.setOnClickListener( this );
