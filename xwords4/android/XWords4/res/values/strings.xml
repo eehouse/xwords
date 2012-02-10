@@ -1863,7 +1863,8 @@
     <string name="new_btmove_title">New move via Bluetooth</string>
     <string name="new_btmove_body">One or more moves has arrived</string>
 
-    <string name="bt_devs_missing">Missing connections?  Invite BT devs?</string>
+    <string name="bt_devs_missing">Missing connections?  Invite BT
+      devs?  (I won\'t ask again until you reopen this game.)</string>
 
     
 </resources>
