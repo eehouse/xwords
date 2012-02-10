@@ -127,6 +127,7 @@ public class BoardActivity extends XWActivity
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
+    private String[] m_btDevs;
     private String m_curTiles;
     private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
@@ -136,6 +137,7 @@ public class BoardActivity extends XWActivity
     private BoardUtilCtxt m_utils;
     private int m_nMissingPlayers = -1;
     private int m_invitesPending;
+    private boolean m_haveAskedMissing = false;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -524,14 +526,9 @@ public class BoardActivity extends XWActivity
                 }
                 break;
             case BT_INVITE_RESULT:
-                m_invitesPending = 0;
-                String[] devs = data.getStringArrayExtra( BTInviteActivity.DEVS );
-                for ( String dev : devs ) {
-                    BTService.inviteRemote( this, dev, m_gi.gameID, m_gi.dictLang,
-                                            m_gi.nPlayers, 1 );
-                    ++m_invitesPending;
-                }
-                startProgress( R.string.invite_progress );
+                // onActivityResult is called immediately *before*
+                // onResume -- meaning m_gi etc are still null.
+                m_btDevs = data.getStringArrayExtra( BTInviteActivity.DEVS );
                 break;
             }
         }
@@ -1334,8 +1331,9 @@ public class BoardActivity extends XWActivity
                                    CommsAddrRec.CommsConnType connType,
                                    final int nMissingPlayers )
         {
-            if ( isServer &&
-                 CommsAddrRec.CommsConnType.COMMS_CONN_BT == connType ) {
+            if ( isServer && !m_haveAskedMissing
+                 && CommsAddrRec.CommsConnType.COMMS_CONN_BT == connType ) {
+                m_haveAskedMissing = true;
                 post( new Runnable() {
                         public void run() {
                             DbgUtils.showf( BoardActivity.this, 
@@ -1524,6 +1522,7 @@ public class BoardActivity extends XWActivity
                 if ( null != m_xport ) {
                     trySendChats();
                     m_xport.tickle();
+                    tryBTInvites();
                 }
             }
         }
@@ -1691,6 +1690,19 @@ public class BoardActivity extends XWActivity
                 m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
             }
             m_pendingChats.clear();
+        }
+    }
+
+    private void tryBTInvites()
+    {
+        if ( null != m_btDevs ) {
+            m_invitesPending = m_btDevs.length;
+            for ( String dev : m_btDevs ) {
+                BTService.inviteRemote( this, dev, m_gi.gameID, m_gi.dictLang,
+                                        m_gi.nPlayers, 1 );
+            }
+            startProgress( R.string.invite_progress );
+            m_btDevs = null;
         }
     }
 
