@@ -455,11 +455,11 @@ public class GameUtils {
     }
 
     public static void launchBTInviter( Activity activity, int nMissing, 
-                                        int replyCode )
+                                        int requestCode )
     {
         Intent intent = new Intent( activity, BTInviteActivity.class );
         intent.putExtra( BTInviteActivity.INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, replyCode );
+        activity.startActivityForResult( intent, requestCode );
     }
 
     public static void launchInviteActivity( Context context, 
