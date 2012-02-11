@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.os.Handler;
 
 import junit.framework.Assert;
@@ -62,6 +63,9 @@ public class BTInviteActivity extends XWListActivity
         m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
 
         setContentView( R.layout.btinviter );
+
+        TextView desc = (TextView)findViewById( R.id.invite_desc );
+        desc.setText( Utils.format( this, R.string.invite_descf, m_nMissing ) );
 
         m_okButton = (Button)findViewById( R.id.button_ok );
         m_okButton.setOnClickListener( this );

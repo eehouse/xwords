@@ -1866,5 +1866,8 @@
     <string name="bt_devs_missing">Missing connections?  Invite BT
       devs?  (I won\'t ask again until you reopen this game.)</string>
 
+    <string name="invite_descf">Please select the %d device[s] you
+        want to include in this game.  Use the Rescan button if you
+        don\'t see a device you expect.</string>
     
 </resources>
