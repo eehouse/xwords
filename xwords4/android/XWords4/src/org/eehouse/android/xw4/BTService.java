@@ -73,6 +73,7 @@ public class BTService extends Service {
     private static final String CMD_STR = "CMD";
     private static final String MSG_STR = "MSG";
     private static final String TARGET_STR = "TRG";
+    private static final String GAMENAME_STR = "NAM";
     private static final String ADDR_STR = "ADR";
     private static final String RADIO_STR = "RDO";
 
@@ -93,6 +94,7 @@ public class BTService extends Service {
             INVITE_ACCPT,
             INVITE_DECL,
             INVITE_DUPID,
+            INVITE_FAILED,      // generic error
             MESG_SEND,
             MESG_ACCPT,
             MESG_DECL,
@@ -105,6 +107,7 @@ public class BTService extends Service {
         byte[] m_msg;
         String m_recipient;
         String m_addr;
+        String m_gameName;
         int m_gameID;
         int m_lang;
         int m_nPlayersT;
@@ -112,10 +115,11 @@ public class BTService extends Service {
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; }
         public BTQueueElem( BTCmd cmd, String targetName, String targetAddr,
-                            int gameID, int lang, int nPlayersT, 
-                            int nPlayersH ) {
+                            int gameID, String gameName, int lang, 
+                            int nPlayersT, int nPlayersH ) {
             this( cmd, null, targetName, targetAddr, gameID );
             m_lang = lang; m_nPlayersT = nPlayersT; m_nPlayersH = nPlayersH;
+            m_gameName = gameName;
         }
         public BTQueueElem( BTCmd cmd, byte[] buf, String targetName, 
                             String targetAddr, int gameID ) {
@@ -168,12 +172,15 @@ public class BTService extends Service {
     }
 
     public static void inviteRemote( Context context, String hostName, 
-                                     int gameID, int lang, int nPlayersT, 
+                                     int gameID, String initialName, 
+                                     int lang, int nPlayersT, 
                                      int nPlayersH )
     {
         Intent intent = getIntentTo( context, INVITE );
         intent.putExtra( GAMEID_STR, gameID );
         intent.putExtra( TARGET_STR, hostName );
+        Assert.assertNotNull( initialName );
+        intent.putExtra( GAMENAME_STR, initialName );
         intent.putExtra( LANG_STR, lang );
         intent.putExtra( NTO_STR, nPlayersT );
         intent.putExtra( NHE_STR, nPlayersH );
@@ -242,12 +249,13 @@ public class BTService extends Service {
                 case INVITE:
                     int gameID = intent.getIntExtra( GAMEID_STR, -1 );
                     String target = intent.getStringExtra( TARGET_STR );
+                    String gameName = intent.getStringExtra( GAMENAME_STR );
                     String addr = addrFor( target );
                     int lang = intent.getIntExtra( LANG_STR, -1 );
                     int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                     int nPlayersH = intent.getIntExtra( NHE_STR, -1 );
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
-                                                   gameID, lang, 
+                                                   gameID, gameName, lang, 
                                                    nPlayersT, nPlayersH ) );
                     break;
                 case SEND:
@@ -255,6 +263,7 @@ public class BTService extends Service {
                     target = intent.getStringExtra( TARGET_STR );
                     addr = intent.getStringExtra( ADDR_STR );
                     gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    addAddr( target, addr );
                     if ( -1 != gameID ) {
                         m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
                                                        target, addr, gameID ) );
@@ -414,6 +423,7 @@ public class BTService extends Service {
                 DataOutputStream outStream = connect( socket, BTCmd.INVITE );
                 if ( null != outStream ) {
                     outStream.writeInt( elem.m_gameID );
+                    outStream.writeUTF( elem.m_gameName );
                     outStream.writeInt( elem.m_lang );
                     outStream.writeInt( elem.m_nPlayersT );
                     outStream.writeInt( elem.m_nPlayersH );
@@ -488,8 +498,13 @@ public class BTService extends Service {
 
     private void addAddr( BluetoothDevice dev )
     {
+        addAddr( dev.getName(), dev.getAddress() );
+    }
+
+    private void addAddr( String name, String address )
+    {
         synchronized( s_names ) {
-            s_names.put( dev.getName(), dev.getAddress() );
+            s_names.put( name, address );
         }
     }
 
@@ -590,7 +605,7 @@ public class BTService extends Service {
     {
         BTCmd result;
         int gameID = is.readInt();
-        DbgUtils.logf( "receiveInvitation: got gameID of %d", gameID );
+        String gameName = is.readUTF();
         int lang = is.readInt();
         int nPlayersT = is.readInt();
         int nPlayersH = is.readInt();
@@ -602,12 +617,18 @@ public class BTService extends Service {
             String sender = host.getName();
             CommsAddrRec addr = new CommsAddrRec( context, sender, 
                                                   host.getAddress() );
-            GameUtils.makeNewBTGame( context, gameID, addr,
-                                     lang, nPlayersT, nPlayersH );
-            result = BTCmd.INVITE_ACCPT;
-
-            String body = Utils.format( this, R.string.new_bt_bodyf, sender );
-            postNotification( gameID, R.string.new_bt_title, body );
+            long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
+                                                  lang, nPlayersT, nPlayersH );
+            if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+                result = BTCmd.INVITE_FAILED;
+            } else {
+                if ( null != gameName && 0 < gameName.length() ) {
+                    DBUtils.setName( context, rowid, gameName );
+                }
+                result = BTCmd.INVITE_ACCPT;
+                String body = Utils.format( this, R.string.new_bt_bodyf, sender );
+                postNotification( gameID, R.string.new_bt_title, body );
+            }
         } else {
             result = BTCmd.INVITE_DUPID;
         }
@@ -804,8 +825,8 @@ public class BTService extends Service {
         {
             Assert.assertNotNull( addr );
             m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                          addr.bt_hostName, addr.bt_btAddr,
-                                          gameID ) );
+                                           addr.bt_hostName, addr.bt_btAddr,
+                                           gameID ) );
             return buf.length;
         }
 

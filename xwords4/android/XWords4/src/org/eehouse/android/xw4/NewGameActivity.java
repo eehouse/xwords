@@ -56,6 +56,7 @@ public class NewGameActivity extends XWActivity {
     private int m_chosen;
     private int m_lang = 0;
     private long m_btRowID = -1;
+    private String m_gameName;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
@@ -147,11 +148,14 @@ public class NewGameActivity extends XWActivity {
             case INVITE_FOR_BT:     // user selected device 
                 if ( Activity.RESULT_CANCELED != resultCode ) {
                     int gameID = GameUtils.newGameID();
+                    // TODO: get this from user.
+                    m_gameName = String.format( "BT Game %X", gameID );
                     String[] remoteDevs =
                         data.getStringArrayExtra( BTInviteActivity.DEVS );
                     DbgUtils.logf( "got %s", remoteDevs[0] );
+                    Assert.assertTrue( 1 == remoteDevs.length );
                     BTService.inviteRemote( NewGameActivity.this, remoteDevs[0],
-                                            gameID, m_lang, 2, 1 );
+                                            gameID, m_gameName, m_lang, 2, 1 );
                     startProgress( R.string.invite_progress );
                 }
                 break;
@@ -189,6 +193,8 @@ public class NewGameActivity extends XWActivity {
                             GameUtils.makeNewBTGame( NewGameActivity.this, 
                                                      gameID, null, m_lang, 
                                                      2, 1 );
+                        DBUtils.setName( NewGameActivity.this, 
+                                         rowid, m_gameName );
                         GameUtils.launchGame( NewGameActivity.this, rowid );
                         finish();
                     }
@@ -247,7 +253,7 @@ public class NewGameActivity extends XWActivity {
         if ( !useDefaults ) {
             m_btRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
                                                  gameID, null, m_lang, 
-                                                 2, 1 );
+                                                 2, 1 ); // initial defaults
             Intent intent = new Intent( this, GameConfig.class );
             intent.setAction( Intent.ACTION_EDIT );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_btRowID );

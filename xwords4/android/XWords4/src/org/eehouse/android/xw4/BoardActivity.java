@@ -1696,10 +1696,11 @@ public class BoardActivity extends XWActivity
     private void tryBTInvites()
     {
         if ( null != m_btDevs ) {
+            String gameName = DBUtils.getName( this, m_rowid );
             m_invitesPending = m_btDevs.length;
             for ( String dev : m_btDevs ) {
-                BTService.inviteRemote( this, dev, m_gi.gameID, m_gi.dictLang,
-                                        m_gi.nPlayers, 1 );
+                BTService.inviteRemote( this, dev, m_gi.gameID, gameName,
+                                        m_gi.dictLang, m_gi.nPlayers, 1 );
             }
             startProgress( R.string.invite_progress );
             m_btDevs = null;
