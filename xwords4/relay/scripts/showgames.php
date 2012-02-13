@@ -45,6 +45,10 @@ function identity( $str ) {
     return $str;
 }
 
+function capitalize( $str ) {
+    return strtoupper( $str );
+}
+
 function int_to_lang( $str ) {
     $lang = "unknown";
     switch ( $str ) {
@@ -80,7 +84,8 @@ function strip_quotes($str) {
     return trim( $str, '"');
 }
 
-$cols = array( new Column("dead", "D", "identity", false ), 
+$cols = array( new Column("dead", "D", "capitalize", false ), 
+               new Column("pub", "P", "capitalize", false ), 
                new Column("room", "Room", "identity", false ), 
                new Column("lang", "Lang", "int_to_lang", false ), 
                new Column("ntotal", "Tot", "identity", false ), 
