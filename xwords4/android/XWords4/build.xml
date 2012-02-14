@@ -53,7 +53,10 @@
         <exec dir="." executable="../scripts/ndkbuild.sh" >
             <arg value="-j3"/>
         </exec>
-        <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt" />
+        <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt">
+          <arg value="XWords4"/>
+          <arg value="xw4"/>
+        </exec>
     </target>
 <!--
     <target name="-pre-compile">

@@ -52,18 +52,24 @@
     <target name="-pre-build">
         <exec dir="." executable="../scripts/mkvariant.sh" output="/dev/null" >
             <arg value="--variant-name"/>
-            <arg value="xw4_dbg"/>
+            <arg value="xw4dbg"/>
             <arg value="--dest-dir"/>
             <arg value="./res"/>
             <arg value="--dest-dir"/>
             <arg value="./src"/>
             <arg value="--dest-dir"/>
             <arg value="./jni"/>
+            <arg value="--dest-dir"/>
+            <arg value="./assets"/>
         </exec>
         <exec dir="." executable="../scripts/ndkbuild.sh" >
             <arg value="-j3"/>
         </exec>
-        <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt" />
+        <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt">
+            <arg value="XWords4-dbg"/>
+            <arg value="xw4dbg"/>
+        </exec>
+
     </target>
 <!--
     <target name="-pre-compile">
