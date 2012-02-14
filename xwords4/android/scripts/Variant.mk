@@ -15,8 +15,13 @@ $(DEST_PATH)/%.xml : $(SRC_PATH)/%.xml
 		< $< > $@
 
 $(DEST_PATH)/%.h : $(SRC_PATH)/%.h
-	sed \
+	@sed \
 		-e "s,\(^.*org/eehouse/android/\)xw4\(.*$$\),\1$(VARIANT)\2," \
+		< $< > $@
+
+$(DEST_PATH)/%.c : $(SRC_PATH)/%.c
+	@sed \
+		-e "s,\(^.*Java_org_eehouse_android_\)xw4\(.*$$\),\1$(VARIANT)\2," \
 		< $< > $@
 
 $(DEST_PATH)/% : $(SRC_PATH)/%
