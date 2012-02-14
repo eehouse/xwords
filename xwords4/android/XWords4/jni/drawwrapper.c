@@ -20,6 +20,7 @@
 
 #include "drawwrapper.h"
 #include "andutils.h"
+#include "paths.h"
 
 enum { 
     JCACHE_RECT0
@@ -75,8 +76,7 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
     jobject dsiobj = draw->jCache[indx];
 
     if ( !dsiobj ) {
-        jclass rclass = (*env)->FindClass( env, "org/eehouse/android/"
-                                           "xw4/jni/DrawScoreInfo");
+        jclass rclass = (*env)->FindClass( env, PKG_PATH("jni/DrawScoreInfo") );
         jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", "()V" );
         dsiobj = (*env)->NewObject( env, rclass, initId );
         (*env)->DeleteLocalRef( env, rclass );
@@ -153,8 +153,8 @@ and_draw_measureScoreText( DrawCtx* dctx,
                            XP_U16* width, XP_U16* height )
 {
     DRAW_CBK_HEADER("measureScoreText", 
-                    "(Landroid/graphics/Rect;Lorg/eehouse/android/"
-                    "xw4/jni/DrawScoreInfo;[I[I)V" );
+                    "(Landroid/graphics/Rect;L"
+                    PKG_PATH("jni/DrawScoreInfo;[I[I)V") );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, r );
     jobject jdsi = makeDSI( draw, JCACHE_DSI, dsi );
@@ -192,7 +192,7 @@ and_draw_score_drawPlayer( DrawCtx* dctx,
 {
     DRAW_CBK_HEADER("score_drawPlayer", 
                     "(Landroid/graphics/Rect;Landroid/graphics/Rect;"
-                    "Lorg/eehouse/android/xw4/jni/DrawScoreInfo;)V" );
+                    "L" PKG_PATH("jni/DrawScoreInfo") ";)V" );
 
     jobject jrinner = makeJRect( draw, JCACHE_RECT0, rInner );
     jobject jrouter = makeJRect( draw, JCACHE_RECT1, rOuter );

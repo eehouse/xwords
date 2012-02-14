@@ -20,6 +20,7 @@
 
 #include "xportwrapper.h"
 #include "andutils.h"
+#include "paths.h"
 
 typedef struct _AndTransportProcs {
     TransportProcs tp;
@@ -34,7 +35,7 @@ makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
     jobject jaddr = NULL;
     if ( NULL != addr ) {
         jclass clazz
-            = (*env)->FindClass(env, "org/eehouse/android/xw4/jni/CommsAddrRec");
+            = (*env)->FindClass(env, PKG_PATH("jni/CommsAddrRec") );
         XP_ASSERT( !!clazz );
         jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
         XP_ASSERT( !!mid );
@@ -73,7 +74,7 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = *aprocs->envp;
-        const char* sig = "([BLorg/eehouse/android/xw4/jni/CommsAddrRec;)I";
+        const char* sig = "([BL" PKG_PATH("jni/CommsAddrRec") ";)I";
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSend", sig );
 
         jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
@@ -98,12 +99,11 @@ and_xport_relayStatus( void* closure, CommsRelayState newState )
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = *aprocs->envp;
-        const char* sig = "(Lorg/eehouse/android/xw4/jni/"
-            "TransportProcs$CommsRelayState;)V";
+        const char* sig = "(L" PKG_PATH("jni/TransportProcs$CommsRelayState") ";)V";
         jmethodID mid = getMethodID( env, aprocs->jxport, "relayStatus", sig );
 
-        jobject jenum = intToJEnum( env, newState, "org/eehouse/android/xw4/jni/"
-                                    "TransportProcs$CommsRelayState" );
+        jobject jenum = intToJEnum( env, newState, 
+                                    PKG_PATH("jni/TransportProcs$CommsRelayState") );
         (*env)->CallVoidMethod( env, aprocs->jxport, mid, jenum );
         (*env)->DeleteLocalRef( env, jenum );
     }
@@ -155,12 +155,12 @@ and_xport_relayError( void* closure, XWREASON relayErr )
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = *aprocs->envp;
         jmethodID mid;
-        const char* sig = "(Lorg/eehouse/android/xw4/jni/"
-            "TransportProcs$XWRELAY_ERROR;)V";
+        const char* sig = 
+            "(L" PKG_PATH("jni/TransportProcs$XWRELAY_ERROR") ";)V";
         mid = getMethodID( env, aprocs->jxport, "relayErrorProc", sig );
 
-        jobject jenum = intToJEnum( env, relayErr, "org/eehouse/android/xw4/jni/"
-                                    "TransportProcs$XWRELAY_ERROR" );
+        jobject jenum = intToJEnum( env, relayErr, 
+                                    PKG_PATH("jni/TransportProcs$XWRELAY_ERROR") );
         (*env)->CallVoidMethod( env, aprocs->jxport, mid, jenum );
 
         (*env)->DeleteLocalRef( env, jenum );

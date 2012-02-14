@@ -37,6 +37,7 @@
 #include "anddict.h"
 #include "andutils.h"
 #include "jniutlswrapper.h"
+#include "paths.h"
 
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
@@ -65,12 +66,12 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     gi->allowPickTiles = getBool( env, j_gi, "allowPickTiles" );
     gi->allowHintRect = getBool( env, j_gi, "allowHintRect" );
 
-    gi->phoniesAction = jenumFieldToInt( env, j_gi, "phoniesAction",
-                                         "org/eehouse/android/xw4/jni/"
-                                         "CurGameInfo$XWPhoniesChoice");
+    gi->phoniesAction = 
+        jenumFieldToInt( env, j_gi, "phoniesAction",
+                         PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
     gi->serverRole = 
-        jenumFieldToInt( env, j_gi, "serverRole",
-                         "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole");
+        jenumFieldToInt( env, j_gi, "serverRole", 
+                         PKG_PATH("jni/CurGameInfo$DeviceRole"));
 
     getString( env, j_gi, "dictName", buf, VSIZE(buf) );
     gi->dictName = copyString( mpool, buf );
@@ -78,8 +79,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
     jobject jplayers;
-    if ( getObject( env, j_gi, "players", 
-                    "[Lorg/eehouse/android/xw4/jni/LocalPlayer;",
+    if ( getObject( env, j_gi, "players", "[L" PKG_PATH("jni/LocalPlayer") ";",
                     &jplayers ) ) {
         int ii;
         for ( ii = 0; ii < gi->nPlayers; ++ii ) {
@@ -125,13 +125,13 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     setString( env, jgi, "dictName", gi->dictName );
 
     intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",
-                     "org/eehouse/android/xw4/jni/CurGameInfo$XWPhoniesChoice" );
+                     PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
     intToJenumField( env, jgi, gi->serverRole, "serverRole",
-                     "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole" );
+                     PKG_PATH("jni/CurGameInfo$DeviceRole") );
 
     jobject jplayers;
     if ( getObject( env, jgi, "players", 
-                    "[Lorg/eehouse/android/xw4/jni/LocalPlayer;",
+                    "[L" PKG_PATH("jni/LocalPlayer") ";",
                     &jplayers ) ) {
         int ii;
         for ( ii = 0; ii < gi->nPlayers; ++ii ) {
@@ -1077,8 +1077,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         CommsCtxt* comms = state->game.comms;
         comms_getAddr( comms, &addr );
         intToJenumField( env, jsummary, addr.conType, "conType",
-                         "org/eehouse/android/xw4/jni/"
-                         "CommsAddrRec$CommsConnType" );
+                         PKG_PATH("jni/CommsAddrRec$CommsConnType") );
         if ( COMMS_CONN_RELAY == addr.conType ) {
             XP_UCHAR buf[128];
             XP_U16 len = VSIZE(buf);
