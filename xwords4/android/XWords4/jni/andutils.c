@@ -22,6 +22,7 @@
 #include <time.h>
 
 #include "andutils.h"
+#include "paths.h"
 
 #include "comtypes.h"
 #include "xwstream.h"
@@ -320,7 +321,7 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!addr );
     intToJenumField( env, jaddr, addr->conType, "conType",
-                     "org/eehouse/android/xw4/jni/CommsAddrRec$CommsConnType" );
+                     PKG_PATH("jni/CommsAddrRec$CommsConnType") );
 
     switch ( addr->conType ) {
     case COMMS_CONN_NONE:
@@ -351,9 +352,9 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 void
 getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 {
-    addr->conType = jenumFieldToInt( env, jaddr, "conType",
-                                     "org/eehouse/android/xw4/jni/"
-                                     "CommsAddrRec$CommsConnType" );
+    addr->conType =
+        jenumFieldToInt( env, jaddr, "conType",
+                         PKG_PATH("jni/CommsAddrRec$CommsConnType") );
 
     switch ( addr->conType ) {
     case COMMS_CONN_NONE:

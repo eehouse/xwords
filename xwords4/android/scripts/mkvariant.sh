@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 set -u -e
 
-MAKEFILE=./Variant.mk
+MAKEFILE=$(dirname $0)/Variant.mk
 DIRS=""
 VARIANT=""
 
@@ -12,22 +12,35 @@ usage() {
     exit 1
 }
 
+add_to_gitignored() {
+    DIR=$1
+    FILE=$2
+    touch ${DIR}/.gitignore
+    grep -q "^${FILE}\$" ${DIR}/.gitignore || echo $FILE >> ${DIR}/.gitignore
+}
+
 do_dir() {
     local SRC_PATH=$1
     local DEST_PATH=$2
     local DIR=$3
 
     SRC_PATH=$SRC_PATH/$DIR
-
     [ -d $SRC_PATH ] || usage "$SRC_PATH not found"
+
     DEST_PATH=$DEST_PATH/$DIR
     mkdir -p $DEST_PATH
 
-    for FILE in $SRC_PATH; do
+    for FILE in $SRC_PATH/*; do
         if [ -d $FILE ]; then
-            do_dir $SRC_PATH $DEST_PATH $FILE
+            do_dir $SRC_PATH $DEST_PATH $(basename $FILE)
         else
-            make -f $MAKEFILE SRC_PATH=$SRC_PATH $DEST_PATH=$DEST_PATH make_file
+            FILE=${FILE/$SRC_PATH/$DEST_PATH}
+            if git ls-files $FILE --error-unmatch 2>/dev/null; then
+                echo "skipping $FILE; it's under version control within this variant"
+            else
+                make -f $MAKEFILE SRC_PATH=$SRC_PATH DEST_PATH=$DEST_PATH VARIANT=${VARIANT} $FILE
+                add_to_gitignored $DEST_PATH $(basename $FILE)
+            fi
         fi
     done
 }
@@ -56,3 +69,7 @@ done
 echo "$0 DIRS: $DIRS"
 
 [ -n "$VARIANT" ] || usage "--variant-name not supplied"
+
+for DIR in $DIRS; do
+    do_dir ../XWords4 . $DIR
+done
