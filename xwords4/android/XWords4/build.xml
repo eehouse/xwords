@@ -50,6 +50,9 @@
      in between standard targets -->
 
     <target name="-pre-build">
+        <exec dir="." executable="../scripts/ndkbuild.sh" >
+            <arg value="-j3"/>
+        </exec>
         <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt" />
     </target>
 <!--
