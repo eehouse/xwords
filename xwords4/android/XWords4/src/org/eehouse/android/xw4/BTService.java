@@ -21,28 +21,31 @@
 package org.eehouse.android.xw4;
 
 import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.IBinder;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.IBinder;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-
-import java.io.DataInputStream;
-import java.io.OutputStream;
-import java.io.DataOutputStream;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class BTService extends Service {
 
@@ -61,6 +64,8 @@ public class BTService extends Service {
     public interface BTEventListener {
         public void eventOccurred( BTEvent event, Object ... args );
     }
+
+    private static final long RESEND_TIMEOUT = 5; // seconds
 
     private static final int BT_PROTO = 0;
 
@@ -426,7 +431,7 @@ public class BTService extends Service {
 
             socket.close();
             DbgUtils.logf( "receiveInvitation done", gameID );
-        }
+        } // receiveInvitation
 
         private void receiveMessage( DataInputStream dis, BluetoothSocket socket )
         {
@@ -478,10 +483,8 @@ public class BTService extends Service {
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.logf( "receiveMessages: ioe: %s", ioe.toString() );
             }
-        }
-
-
-    }
+        } // receiveMessage
+    } // class BTListenerThread
 
     private void addAddr( BluetoothSocket socket )
     {
@@ -530,10 +533,12 @@ public class BTService extends Service {
 
     private class BTSenderThread extends Thread {
         private LinkedBlockingQueue<BTQueueElem> m_queue;
+        private HashMap<String,LinkedList<BTQueueElem> > m_resends;
 
         public BTSenderThread()
         {
             m_queue = new LinkedBlockingQueue<BTQueueElem>();
+            m_resends = new HashMap<String,LinkedList<BTQueueElem> >();
         }
 
         public void add( BTQueueElem elem )
@@ -546,34 +551,42 @@ public class BTService extends Service {
         {
             for ( ; ; ) {
                 BTQueueElem elem;
+                long timeout = haveResends() ? RESEND_TIMEOUT : Long.MAX_VALUE;
                 try {
-                    elem = m_queue.take();
+                    elem = m_queue.poll( timeout, TimeUnit.SECONDS );
                 } catch ( InterruptedException ie ) {
                     DbgUtils.logf( "interrupted; killing thread" );
                     break;
                 }
-                DbgUtils.logf( "run: got %s from queue", elem.m_cmd.toString() );
 
-                switch( elem.m_cmd ) {
-                case PING:
-                    sendPings( BTEvent.HOST_PONGED );
-                    break;
-                case SCAN:
-                    synchronized ( s_names ) {
-                        s_names.clear();
+                if ( null == elem ) {
+                    doAnyResends();
+                } else {
+                    DbgUtils.logf( "run: got %s from queue", elem.m_cmd.toString() );
+
+                    switch( elem.m_cmd ) {
+                    case PING:
+                        sendPings( BTEvent.HOST_PONGED );
+                        break;
+                    case SCAN:
+                        synchronized ( s_names ) {
+                            s_names.clear();
+                        }
+                        sendPings( null );
+                        sendNames( BTEvent.SCAN_DONE );
+                        break;
+                    case INVITE:
+                        sendInvite( elem );
+                        break;
+                    case MESG_SEND:
+                        if ( !doAnyResends( elem.m_addr ) || ! sendMsg( elem ) ) {
+                            addToResends( elem );
+                        }
+                        break;
+                    default:
+                        Assert.fail();
+                        break;
                     }
-                    sendPings( null );
-                    sendNames( BTEvent.SCAN_DONE );
-                    break;
-                case INVITE:
-                    sendInvite( elem );
-                    break;
-                case MESG_SEND:
-                    sendMsg( elem );
-                    break;
-                default:
-                    Assert.fail();
-                    break;
                 }
             }
         } // run
@@ -657,7 +670,7 @@ public class BTService extends Service {
             }
         } // sendInvite
 
-        private void sendMsg( BTQueueElem elem )
+        private boolean sendMsg( BTQueueElem elem )
         {
             boolean success = false;
             BTEvent evt = BTEvent.MESSAGE_REFUSED;
@@ -681,6 +694,7 @@ public class BTService extends Service {
                             new DataInputStream( socket.getInputStream() );
                         BTCmd reply = BTCmd.values()[inStream.readByte()];
                         killer.interrupt();
+                        success = true;
 
                         switch ( reply ) {
                         case MESG_ACCPT:
@@ -699,7 +713,67 @@ public class BTService extends Service {
             }
 
             sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
+            return success;
         } // sendMsg
+
+        private boolean doAnyResends( LinkedList<BTQueueElem> resends )
+        {
+            boolean success = null == resends || 0 == resends.size();
+            if ( !success ) {
+                success = true;
+                ListIterator<BTQueueElem> iter = resends.listIterator();
+                while ( iter.hasNext() ) {
+                    BTQueueElem elem = iter.next();
+                    if ( !sendMsg( elem ) ) {
+                        success = false;
+                        break;
+                    }
+                    iter.remove();
+                }
+                
+            }
+            DbgUtils.logf( "doAnyResends=>%b", success );
+            return success;
+        }
+
+        private boolean doAnyResends( String addr )
+        {
+            return doAnyResends( m_resends.get( addr ) );
+        }
+
+        private void doAnyResends()
+        {
+            Collection<LinkedList<BTQueueElem>> lists =  m_resends.values();
+            Iterator<LinkedList<BTQueueElem>> iter = lists.iterator();
+            while ( iter.hasNext() ) {
+                LinkedList<BTQueueElem> list = iter.next();
+                doAnyResends( list );
+            }
+        }
+
+        private void addToResends( BTQueueElem elem )
+        {
+            String addr = elem.m_addr;
+            LinkedList<BTQueueElem> resends = m_resends.get( addr );
+            if ( null == resends ) {
+                resends = new LinkedList<BTQueueElem>();
+                m_resends.put( addr, resends );
+            }
+            resends.add( elem );
+        }
+
+        private boolean haveResends()
+        {
+            boolean found = false;
+            Collection<LinkedList<BTQueueElem>> lists =  m_resends.values();
+            Iterator<LinkedList<BTQueueElem>> iter = lists.iterator();
+            while ( !found && iter.hasNext() ) {
+                LinkedList<BTQueueElem> list = iter.next();
+                found = 0 < list.size();
+            }
+            return found;
+        }
+
     } // class BTSenderThread
 
     private void sendResult( BTEvent event, Object ... args )
