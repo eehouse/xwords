@@ -371,124 +371,116 @@ public class BTService extends Service {
             m_serverSocket = null;
             interrupt();
         }
-    }
 
-    private void sendPings( BTEvent event )
-    {
-        Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
-        DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
-        for ( BluetoothDevice dev : pairedDevs ) {
-            boolean success = false;
-            try {
-                DbgUtils.logf( "PingThread: got socket to device %s", 
-                               dev.getName() );
-                BluetoothSocket socket =
-                    dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
-                if ( null != socket ) {
-                    DataOutputStream os = connect( socket, BTCmd.PING );
-                    if ( null != os ) {
-                        os.flush();
-                        Thread killer = killSocketIn( socket, 10 );
+        private void receivePing( BluetoothSocket socket )
+            throws java.io.IOException
+        {
+            DbgUtils.logf( "got PING!!!" );
+            DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
+            os.writeByte( BTCmd.PONG.ordinal() );
+            os.flush();
 
-                        DataInputStream is = 
-                            new DataInputStream( socket.getInputStream() );
-                        success = BTCmd.PONG == BTCmd.values()[is.readByte()];
-                        killer.interrupt();
+            socket.close();
+        }
+
+        private void receiveInvitation( Context context,
+                                        DataInputStream is,
+                                        BluetoothSocket socket )
+            throws java.io.IOException
+        {
+            BTCmd result;
+            int gameID = is.readInt();
+            String gameName = is.readUTF();
+            int lang = is.readInt();
+            int nPlayersT = is.readInt();
+            int nPlayersH = is.readInt();
+
+            BluetoothDevice host = socket.getRemoteDevice();
+            addAddr( host );
+
+            if ( DBUtils.ROWID_NOTFOUND == DBUtils.getRowIDFor( BTService.this,
+                                                                gameID ) ) {
+                String sender = host.getName();
+                CommsAddrRec addr = new CommsAddrRec( context, sender, 
+                                                      host.getAddress() );
+                long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
+                                                      lang, nPlayersT, nPlayersH );
+                if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+                    result = BTCmd.INVITE_FAILED;
+                } else {
+                    if ( null != gameName && 0 < gameName.length() ) {
+                        DBUtils.setName( context, rowid, gameName );
                     }
+                    result = BTCmd.INVITE_ACCPT;
+                    String body = Utils.format( BTService.this, 
+                                                R.string.new_bt_bodyf, sender );
+                    postNotification( gameID, R.string.new_bt_title, body );
+                }
+            } else {
+                result = BTCmd.INVITE_DUPID;
+            }
+
+            DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
+            os.writeByte( result.ordinal() );
+            os.flush();
+
+            socket.close();
+            DbgUtils.logf( "receiveInvitation done", gameID );
+        }
+
+        private void receiveMessage( DataInputStream dis, BluetoothSocket socket )
+        {
+            try {
+                int gameID = dis.readInt();
+                short len = dis.readShort();
+                byte[] buffer = new byte[len];
+                int nRead = dis.read( buffer, 0, len );
+                if ( nRead == len ) {
+                    BluetoothDevice host = socket.getRemoteDevice();
+                    addAddr( host );
+
+                    DbgUtils.logf( "receiveMessages: got %d bytes from %s for "
+                                   + "gameID of %d", 
+                                   len, host.getName(), gameID );
+
+                    // check if it's still here
+                    long rowid = DBUtils.getRowIDFor( BTService.this, gameID );
+                    boolean haveGame = DBUtils.ROWID_NOTFOUND != rowid;
+                    BTCmd result = haveGame ? 
+                        BTCmd.MESG_ACCPT : BTCmd.MESG_GAMEGONE;
+
+                    DataOutputStream os = 
+                        new DataOutputStream( socket.getOutputStream() );
+                    os.writeByte( result.ordinal() );
+                    os.flush();
                     socket.close();
+
+                    CommsAddrRec addr = new CommsAddrRec( BTService.this, 
+                                                          host.getName(), 
+                                                          host.getAddress() );
+
+                    if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
+                        // do nothing
+                    } else if ( haveGame && 
+                                GameUtils.feedMessage( BTService.this, rowid, 
+                                                       buffer, addr, 
+                                                       m_btMsgSink ) ) {
+                        postNotification( gameID, R.string.new_btmove_title, 
+                                          R.string.new_btmove_body );
+                        // do nothing
+                    } else {
+                        DbgUtils.logf( "nobody took msg for gameID %d", gameID );
+                    }
+                } else {
+                    DbgUtils.logf( "receiveMessages: read only %d of %d bytes",
+                                   nRead, len );
                 }
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "sendPings: ioe: %s", ioe.toString() );
-            }
-
-            if ( success ) {
-                DbgUtils.logf( "got PONG from %s", dev.getName() );
-                addAddr( dev );
-                if ( null != event ) {
-                    sendResult( event, dev.getName() );
-                }
+                DbgUtils.logf( "receiveMessages: ioe: %s", ioe.toString() );
             }
         }
-    }
 
-    private void sendInvite( BTQueueElem elem )
-    {
-        try {
-            BluetoothDevice dev = 
-                m_adapter.getRemoteDevice( addrFor( elem.m_recipient ) );
-            BluetoothSocket socket = 
-                dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
-            if ( null != socket ) {
-                boolean success = false;
-                DataOutputStream outStream = connect( socket, BTCmd.INVITE );
-                if ( null != outStream ) {
-                    outStream.writeInt( elem.m_gameID );
-                    outStream.writeUTF( elem.m_gameName );
-                    outStream.writeInt( elem.m_lang );
-                    outStream.writeInt( elem.m_nPlayersT );
-                    outStream.writeInt( elem.m_nPlayersH );
-                    outStream.flush();
 
-                    DataInputStream inStream = 
-                        new DataInputStream( socket.getInputStream() );
-                    success = BTCmd.INVITE_ACCPT
-                        == BTCmd.values()[inStream.readByte()];
-                    DbgUtils.logf( "sendInvite(): invite done: success=%b", 
-                                   success );
-                }
-                socket.close();
-
-                BTEvent evt = success ? BTEvent.NEWGAME_SUCCESS
-                    : BTEvent.NEWGAME_FAILURE;
-                sendResult( evt, elem.m_gameID );
-            }
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "sendInvite: ioe: %s", ioe.toString() );
-        }
-    }
-
-    private void sendMsg( BTQueueElem elem )
-    {
-        boolean success = false;
-        BTEvent evt = BTEvent.MESSAGE_REFUSED;
-        try {
-            BluetoothDevice dev = m_adapter.getRemoteDevice( elem.m_addr );
-            BluetoothSocket socket = 
-                dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
-            if ( null != socket ) {
-                DataOutputStream outStream = connect( socket, BTCmd.MESG_SEND );
-                if ( null != outStream ) {
-                    outStream.writeInt( elem.m_gameID );
-
-                    short len = (short)elem.m_msg.length;
-                    outStream.writeShort( len );
-                    outStream.write( elem.m_msg, 0, elem.m_msg.length );
-
-                    outStream.flush();
-                    Thread killer = killSocketIn( socket, 10 );
-
-                    DataInputStream inStream = 
-                        new DataInputStream( socket.getInputStream() );
-                    BTCmd reply = BTCmd.values()[inStream.readByte()];
-                    killer.interrupt();
-
-                    switch ( reply ) {
-                    case MESG_ACCPT:
-                        evt = BTEvent.MESSAGE_ACCEPTED;
-                        break;
-                    case MESG_GAMEGONE:
-                        evt = BTEvent.MESSAGE_NOGAME;
-                        break;
-                    }
-                }
-                socket.close();
-            }
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "sendMsg: ioe: %s", ioe.toString() );
-            success = false;
-        }
-
-        sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
     }
 
     private void addAddr( BluetoothSocket socket )
@@ -539,9 +531,9 @@ public class BTService extends Service {
     private class BTSenderThread extends Thread {
         private LinkedBlockingQueue<BTQueueElem> m_queue;
 
-        public BTSenderThread( LinkedBlockingQueue<BTQueueElem> queue )
+        public BTSenderThread()
         {
-            m_queue = queue;
+            m_queue = new LinkedBlockingQueue<BTQueueElem>();
         }
 
         public void add( BTQueueElem elem )
@@ -584,117 +576,131 @@ public class BTService extends Service {
                     break;
                 }
             }
+        } // run
+
+        private void sendNames( BTEvent evt )
+        {
+            sendResult( evt, (Object)(names()) );
         }
-    }
 
-    private void receivePing( BluetoothSocket socket )
-        throws java.io.IOException
-    {
-        DbgUtils.logf( "got PING!!!" );
-        DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
-        os.writeByte( BTCmd.PONG.ordinal() );
-        os.flush();
+        private void sendPings( BTEvent event )
+        {
+            Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
+            DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
+            for ( BluetoothDevice dev : pairedDevs ) {
+                boolean success = false;
+                try {
+                    DbgUtils.logf( "PingThread: got socket to device %s", 
+                                   dev.getName() );
+                    BluetoothSocket socket =
+                        dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
+                    if ( null != socket ) {
+                        DataOutputStream os = connect( socket, BTCmd.PING );
+                        if ( null != os ) {
+                            os.flush();
+                            Thread killer = killSocketIn( socket, 10 );
 
-        socket.close();
-    }
-
-    private void receiveInvitation( Context context,
-                                    DataInputStream is,
-                                    BluetoothSocket socket )
-        throws java.io.IOException
-    {
-        BTCmd result;
-        int gameID = is.readInt();
-        String gameName = is.readUTF();
-        int lang = is.readInt();
-        int nPlayersT = is.readInt();
-        int nPlayersH = is.readInt();
-
-        BluetoothDevice host = socket.getRemoteDevice();
-        addAddr( host );
-
-        if ( DBUtils.ROWID_NOTFOUND == DBUtils.getRowIDFor( this, gameID ) ) {
-            String sender = host.getName();
-            CommsAddrRec addr = new CommsAddrRec( context, sender, 
-                                                  host.getAddress() );
-            long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
-                                                  lang, nPlayersT, nPlayersH );
-            if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-                result = BTCmd.INVITE_FAILED;
-            } else {
-                if ( null != gameName && 0 < gameName.length() ) {
-                    DBUtils.setName( context, rowid, gameName );
+                            DataInputStream is = 
+                                new DataInputStream( socket.getInputStream() );
+                            success = BTCmd.PONG == BTCmd.values()[is.readByte()];
+                            killer.interrupt();
+                        }
+                        socket.close();
+                    }
+                } catch ( java.io.IOException ioe ) {
+                    DbgUtils.logf( "sendPings: ioe: %s", ioe.toString() );
                 }
-                result = BTCmd.INVITE_ACCPT;
-                String body = Utils.format( this, R.string.new_bt_bodyf, sender );
-                postNotification( gameID, R.string.new_bt_title, body );
-            }
-        } else {
-            result = BTCmd.INVITE_DUPID;
-        }
 
-        DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
-        os.writeByte( result.ordinal() );
-        os.flush();
-
-        socket.close();
-        DbgUtils.logf( "receiveInvitation done", gameID );
-    }
-
-    private void receiveMessage( DataInputStream dis, BluetoothSocket socket )
-    {
-        try {
-            int gameID = dis.readInt();
-            short len = dis.readShort();
-            byte[] buffer = new byte[len];
-            int nRead = dis.read( buffer, 0, len );
-            if ( nRead == len ) {
-                BluetoothDevice host = socket.getRemoteDevice();
-                addAddr( host );
-
-                DbgUtils.logf( "receiveMessages: got %d bytes from %s for "
-                               + "gameID of %d", 
-                               len, host.getName(), gameID );
-
-                // check if it's still here
-                long rowid = DBUtils.getRowIDFor( this, gameID );
-                boolean haveGame = DBUtils.ROWID_NOTFOUND != rowid;
-                BTCmd result = haveGame ? 
-                    BTCmd.MESG_ACCPT : BTCmd.MESG_GAMEGONE;
-
-                DataOutputStream os = 
-                    new DataOutputStream( socket.getOutputStream() );
-                os.writeByte( result.ordinal() );
-                os.flush();
-                socket.close();
-
-                CommsAddrRec addr = new CommsAddrRec( this, host.getName(), 
-                                                      host.getAddress() );
-
-                if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
-                    // do nothing
-                } else if ( haveGame && 
-                            GameUtils.feedMessage( this, rowid, buffer, 
-                                                   addr, m_btMsgSink ) ) {
-                    postNotification( gameID, R.string.new_btmove_title, 
-                                      R.string.new_btmove_body );
-                    // do nothing
-                } else {
-                    DbgUtils.logf( "nobody took msg for gameID %d", gameID );
+                if ( success ) {
+                    DbgUtils.logf( "got PONG from %s", dev.getName() );
+                    addAddr( dev );
+                    if ( null != event ) {
+                        sendResult( event, dev.getName() );
+                    }
                 }
-            } else {
-                DbgUtils.logf( "receiveMessages: read only %d of %d bytes",
-                               nRead, len );
             }
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "receiveMessages: ioe: %s", ioe.toString() );
-        }
-    }
+        } // sendPings
 
-    private void sendNames( BTEvent evt )
-    {
-        sendResult( evt, (Object)(names()) );
-    }
+        private void sendInvite( BTQueueElem elem )
+        {
+            try {
+                BluetoothDevice dev = 
+                    m_adapter.getRemoteDevice( addrFor( elem.m_recipient ) );
+                BluetoothSocket socket = 
+                    dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
+                if ( null != socket ) {
+                    boolean success = false;
+                    DataOutputStream outStream = connect( socket, BTCmd.INVITE );
+                    if ( null != outStream ) {
+                        outStream.writeInt( elem.m_gameID );
+                        outStream.writeUTF( elem.m_gameName );
+                        outStream.writeInt( elem.m_lang );
+                        outStream.writeInt( elem.m_nPlayersT );
+                        outStream.writeInt( elem.m_nPlayersH );
+                        outStream.flush();
+
+                        DataInputStream inStream = 
+                            new DataInputStream( socket.getInputStream() );
+                        success = BTCmd.INVITE_ACCPT
+                            == BTCmd.values()[inStream.readByte()];
+                        DbgUtils.logf( "sendInvite(): invite done: success=%b", 
+                                       success );
+                    }
+                    socket.close();
+
+                    BTEvent evt = success ? BTEvent.NEWGAME_SUCCESS
+                        : BTEvent.NEWGAME_FAILURE;
+                    sendResult( evt, elem.m_gameID );
+                }
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.logf( "sendInvite: ioe: %s", ioe.toString() );
+            }
+        } // sendInvite
+
+        private void sendMsg( BTQueueElem elem )
+        {
+            boolean success = false;
+            BTEvent evt = BTEvent.MESSAGE_REFUSED;
+            try {
+                BluetoothDevice dev = m_adapter.getRemoteDevice( elem.m_addr );
+                BluetoothSocket socket = 
+                    dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
+                if ( null != socket ) {
+                    DataOutputStream outStream = connect( socket, BTCmd.MESG_SEND );
+                    if ( null != outStream ) {
+                        outStream.writeInt( elem.m_gameID );
+
+                        short len = (short)elem.m_msg.length;
+                        outStream.writeShort( len );
+                        outStream.write( elem.m_msg, 0, elem.m_msg.length );
+
+                        outStream.flush();
+                        Thread killer = killSocketIn( socket, 10 );
+
+                        DataInputStream inStream = 
+                            new DataInputStream( socket.getInputStream() );
+                        BTCmd reply = BTCmd.values()[inStream.readByte()];
+                        killer.interrupt();
+
+                        switch ( reply ) {
+                        case MESG_ACCPT:
+                            evt = BTEvent.MESSAGE_ACCEPTED;
+                            break;
+                        case MESG_GAMEGONE:
+                            evt = BTEvent.MESSAGE_NOGAME;
+                            break;
+                        }
+                    }
+                    socket.close();
+                }
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.logf( "sendMsg: ioe: %s", ioe.toString() );
+                success = false;
+            }
+
+            sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
+        } // sendMsg
+    } // class BTSenderThread
 
     private void sendResult( BTEvent event, Object ... args )
     {
@@ -729,9 +735,7 @@ public class BTService extends Service {
 
     private void startSender()
     {
-        LinkedBlockingQueue<BTQueueElem> queue = 
-            new LinkedBlockingQueue<BTQueueElem>();
-        m_sender = new BTSenderThread( queue );
+        m_sender = new BTSenderThread();
         m_sender.start();
     }
 
