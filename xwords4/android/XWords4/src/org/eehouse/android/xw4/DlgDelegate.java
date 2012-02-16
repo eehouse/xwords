@@ -288,14 +288,27 @@ public class DlgDelegate {
 
     public void eventOccurred( BTService.BTEvent event, final Object ... args )
     {
+        String msg = null;
         switch( event ) {
         case BAD_PROTO:
-            String msg = Utils.format( m_activity, R.string.bt_bad_protof,
+            msg = Utils.format( m_activity, R.string.bt_bad_protof,
                                        (String)args[0] );
-            DbgUtils.showf( m_activity, msg );
+            break;
+        case MESSAGE_RESEND:
+            msg = Utils.format( m_activity, R.string.bt_resendf,
+                                (String)args[0], (Long)args[1] );
             break;
         default:
             DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
+        }
+
+        if ( null != msg ) {
+            final String fmsg = msg;
+            post( new Runnable() {
+                    public void run() {
+                        DbgUtils.showf( m_activity, fmsg );
+                    }
+                } );
         }
     }
 

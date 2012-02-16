@@ -57,6 +57,7 @@ public class BTService extends Service {
                         , MESSAGE_ACCEPTED
                         , MESSAGE_REFUSED
                         , MESSAGE_NOGAME
+                        , MESSAGE_RESEND
                         , BT_ENABLED
                         , BT_DISABLED
             };
@@ -713,6 +714,10 @@ public class BTService extends Service {
             }
 
             sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
+            if ( ! success ) {
+                sendResult( BTEvent.MESSAGE_RESEND, 
+                            elem.m_recipient, RESEND_TIMEOUT );
+            }
             return success;
         } // sendMsg
 

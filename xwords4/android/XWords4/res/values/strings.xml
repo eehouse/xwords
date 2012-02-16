@@ -1869,5 +1869,9 @@
     <string name="invite_descf">Please select the %d device[s] you
         want to include in this game.  Use the Rescan button if you
         don\'t see a device you expect.</string>
-    
+
+    <string name="bt_resendf">Bluetooth send to %1$s failed; retrying in
+        %2$d seconds.</string>
+
+
 </resources>
