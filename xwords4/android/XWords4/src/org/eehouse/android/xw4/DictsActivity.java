@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009 - 2011 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -24,32 +24,33 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
+import android.content.Context;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.DataSetObserver;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.widget.Button;
-import android.widget.TextView;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.Intent;
-import android.content.res.Resources;
-import android.content.SharedPreferences;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ContextMenu;
-import android.view.MenuItem;
+import android.preference.PreferenceManager;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
+import android.widget.ExpandableListView;
+import android.widget.TextView;
 import android.widget.Toast;
-import android.preference.PreferenceManager;
-import android.net.Uri;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
@@ -70,8 +71,7 @@ public class DictsActivity extends ExpandableListActivity
     private static final String LANG = "lang";
     private static final String MOVEFROMLOC = "movefromloc";
 
-    private static HashMap<String,Boolean> s_openStates =
-        new HashMap<String,Boolean>();
+    private HashSet<String> m_closedLangs;
 
     // For new callback alternative
     private static final int DELETE_DICT_ACTION = 1;
@@ -214,10 +214,12 @@ public class DictsActivity extends ExpandableListActivity
         public boolean isEmpty() { return false; }
         public void onGroupCollapsed(int groupPosition)
         {
-            s_openStates.put( m_langs[groupPosition], false );
+            m_closedLangs.add( m_langs[groupPosition] );
+            saveClosed();
         }
         public void onGroupExpanded(int groupPosition){
-            s_openStates.put( m_langs[groupPosition], true );
+            m_closedLangs.remove( m_langs[groupPosition] );
+            saveClosed();
         }
         public void registerDataSetObserver( DataSetObserver obs ){}
         public void unregisterDataSetObserver( DataSetObserver obs ){}
@@ -379,6 +381,14 @@ public class DictsActivity extends ExpandableListActivity
     {
         super.onCreate( savedInstanceState );
         getBundledData( savedInstanceState );
+
+        m_closedLangs = new HashSet<String>();
+        String[] closed = CommonPrefs.getClosedLangs( this );
+        if ( null != closed ) {
+            for ( String str : closed ) {
+                m_closedLangs.add( str );
+            }
+        }
 
         Resources res = getResources();
         m_locNames = res.getStringArray( R.array.loc_names );
@@ -670,13 +680,16 @@ public class DictsActivity extends ExpandableListActivity
         for ( int ii = 0; ii < m_langs.length; ++ii ) {
             boolean open = true;
             String lang = m_langs[ii];
-            if ( s_openStates.containsKey( lang ) ) {
-                open = s_openStates.get( lang );
-            }
-            if ( open ) {
+            if ( ! m_closedLangs.contains( lang ) ) {
                 m_expView.expandGroup( ii );
             }
         }
+    }
+
+    private void saveClosed()
+    {
+        String[] asArray = m_closedLangs.toArray( new String[m_closedLangs.size()] );
+        CommonPrefs.setClosedLangs( this, asArray );
     }
 
     private static Intent mkDownloadIntent( Context context,

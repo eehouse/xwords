@@ -57,6 +57,9 @@
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_summary_field">key_summary_field</string>
 
+  <!-- database keys whose entries aren't visible prefs -->
+  <string name="key_closed_langs">key_closed_langs</string>
+
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
   <string name="key_notagain_relay">key_notagain_relay</string>

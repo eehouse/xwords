@@ -76,6 +76,7 @@ static StateTable g_stateTable[] = {
 { XWS_ALLCONND,       XWE_GOTONEACK,    XWA_NONE,           XWS_ALLCONND },
 
 { XWS_EMPTY,          XWE_PROXYMSG,     XWA_PROXYMSG,       XWS_SAME },
+{ XWS_WAITMORE,       XWE_PROXYMSG,     XWA_PROXYMSG,       XWS_SAME },
 { XWS_ALLCONND,       XWE_PROXYMSG,     XWA_PROXYMSG,       XWS_SAME },
 
 /* { XWS_WAITMORE,       XWE_GAMEFULL,     XWA_SENDALLHERE,    XWS_ALLCONND }, */

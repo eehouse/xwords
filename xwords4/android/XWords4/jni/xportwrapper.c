@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
+/* -*-mode: C; compile-command: "cd ..; ../scripts/ndkbuild.sh -j3"; -*- */
 /* 
  * Copyright 2001-2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
