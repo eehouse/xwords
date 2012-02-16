@@ -52,7 +52,6 @@ public class NewGameActivity extends XWActivity {
     private static final int INVITE_FOR_BT = 2;
 
     private boolean m_showsOn;
-    private Handler m_handler = null;
     private int m_chosen;
     private int m_lang = 0;
     private long m_btRowID = -1;
@@ -62,8 +61,6 @@ public class NewGameActivity extends XWActivity {
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
-
-        m_handler = new Handler();
 
         setContentView( R.layout.new_game );
 
@@ -170,14 +167,14 @@ public class NewGameActivity extends XWActivity {
         switch( event ) {
         case BT_ENABLED:
         case BT_DISABLED:
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         checkEnableBT( false );
                     }
                 });
             break;
         case NEWGAME_FAILURE:
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         stopProgress();
                         DbgUtils.showf( NewGameActivity.this,
@@ -187,7 +184,7 @@ public class NewGameActivity extends XWActivity {
             break;
         case NEWGAME_SUCCESS:
             final int gameID = (Integer)args[0];
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         long rowid = 
                             GameUtils.makeNewBTGame( NewGameActivity.this, 

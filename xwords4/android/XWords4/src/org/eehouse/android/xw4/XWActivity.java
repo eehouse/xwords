@@ -21,14 +21,14 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import junit.framework.Assert;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-import android.app.AlertDialog;
-import android.os.Bundle;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
@@ -166,6 +166,11 @@ public class XWActivity extends Activity
     protected void stopProgress()
     {
         m_delegate.stopProgress();
+    }
+
+    protected boolean post( Runnable runnable )
+    {
+        return m_delegate.post( runnable );
     }
 
     // DlgDelegate.DlgClickNotify interface

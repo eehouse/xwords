@@ -1757,7 +1757,8 @@ public class BoardActivity extends XWActivity
         }
     }
 
-    private boolean post( Runnable runnable )
+    @Override
+    protected boolean post( Runnable runnable )
     {
         boolean canPost = null != m_handler;
         if ( canPost ) {

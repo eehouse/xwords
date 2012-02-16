@@ -169,6 +169,11 @@ public class XWListActivity extends ListActivity
         m_delegate.stopProgress();
     }
 
+    protected boolean post( Runnable runnable )
+    {
+        return m_delegate.post( runnable );
+    }
+
     // DlgDelegate.DlgClickNotify interface
     public void dlgButtonClicked( int id, int which )
     {

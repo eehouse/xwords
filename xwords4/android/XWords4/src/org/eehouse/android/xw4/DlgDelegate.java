@@ -27,6 +27,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -80,12 +81,14 @@ public class DlgDelegate {
     private int m_wordsLang = -1;
     private boolean m_forceList = false;
     private ProgressDialog m_progress;
+    private Handler m_handler;
 
     public DlgDelegate( Activity activity, DlgClickNotify callback,
                         Bundle bundle ) 
     {
         m_activity = activity;
         m_clickCallback = callback;
+        m_handler = new Handler();
 
         if ( null != bundle ) {
             m_msg = bundle.getString( MSG );
@@ -275,6 +278,12 @@ public class DlgDelegate {
             m_progress.cancel();
             m_progress = null;
         }
+    }
+
+    public boolean post( Runnable runnable )
+    {
+        m_handler.post( runnable );
+        return true;
     }
 
     public void eventOccurred( BTService.BTEvent event, final Object ... args )

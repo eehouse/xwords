@@ -51,7 +51,6 @@ public class BTInviteActivity extends XWListActivity
     private Button m_reconfigureButton;
     private String[] m_btDevNames;
     private int m_nMissing;
-    private Handler m_handler;
     private int m_checkCount = 0;
 
     @Override
@@ -73,8 +72,6 @@ public class BTInviteActivity extends XWListActivity
         m_rescanButton.setOnClickListener( this );
         m_reconfigureButton = (Button)findViewById( R.id.button_reconfigure );
         m_reconfigureButton.setOnClickListener( this );
-
-        m_handler = new Handler();
 
         m_checkCount = 0;
         tryEnable();
@@ -131,7 +128,7 @@ public class BTInviteActivity extends XWListActivity
     {
         switch( event ) {
         case SCAN_DONE:
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         synchronized( BTInviteActivity.this ) {
                             stopProgress();

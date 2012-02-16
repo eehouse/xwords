@@ -74,7 +74,6 @@ public class GamesList extends XWListActivity
 
     private GameListAdapter m_adapter;
     private String m_missingDict;
-    private Handler m_handler;
     private String[] m_missingDictNames;
     private long m_missingDictRowId;
     private String[] m_sameLangDicts;
@@ -252,8 +251,6 @@ public class GamesList extends XWListActivity
 
         getBundledData( savedInstanceState );
 
-        m_handler = new Handler();
-
         setContentView(R.layout.game_list);
         registerForContextMenu( getListView() );
         DBUtils.setDBChangeListener( this );
@@ -385,7 +382,7 @@ public class GamesList extends XWListActivity
     // DispatchNotify.HandleRelaysIface interface
     public void handleRelaysIDs( final String[] relayIDs )
     {
-        m_handler.post( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     invalRelayIDs( relayIDs );
                     startFirstHasDict( relayIDs );
@@ -397,7 +394,7 @@ public class GamesList extends XWListActivity
     {
         final NetLaunchInfo nli = new NetLaunchInfo( invite );
         if ( nli.isValid() ) {
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     @Override
                     public void run() {
                         startNewNetGame( nli );
@@ -408,7 +405,7 @@ public class GamesList extends XWListActivity
 
     public void handleGameID( final int gameID )
     {
-        m_handler.post( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     startHasGameID( gameID );
                 }
@@ -418,7 +415,7 @@ public class GamesList extends XWListActivity
     // DBUtils.DBChangeListener interface
     public void gameSaved( final long rowid )
     {
-        m_handler.post( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     m_adapter.inval( rowid );
                     onContentChanged();
@@ -437,7 +434,7 @@ public class GamesList extends XWListActivity
     {
         switch( event ) {
         case HOST_PONGED:
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         DbgUtils.showf( GamesList.this,
                                         "Pong from %s", args[0].toString() );
