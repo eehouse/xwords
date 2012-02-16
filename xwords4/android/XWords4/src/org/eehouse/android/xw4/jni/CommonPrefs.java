@@ -22,9 +22,10 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.graphics.Paint;
 import android.content.res.Resources;
+import android.graphics.Paint;
+import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
@@ -329,6 +330,19 @@ public class CommonPrefs {
     public static String getSummaryField( Context context )
     {
         return getString( context, R.string.key_summary_field );
+    }
+
+    public static void setClosedLangs( Context context, String[] langs )
+    {
+        setPrefsString( context, R.string.key_closed_langs, 
+                        TextUtils.join( "\n", langs ) );
+    }
+
+    public static String[] getClosedLangs( Context context )
+    {
+        String asStr = getString( context, R.string.key_closed_langs );
+        String[] result = null == asStr ? null : TextUtils.split( asStr, "\n" );
+        return result;
     }
 
     public static boolean getPrefsBoolean( Context context, int keyID,
