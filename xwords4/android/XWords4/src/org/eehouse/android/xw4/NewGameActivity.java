@@ -192,7 +192,8 @@ public class NewGameActivity extends XWActivity {
                                                      2, 1 );
                         DBUtils.setName( NewGameActivity.this, 
                                          rowid, m_gameName );
-                        GameUtils.launchGame( NewGameActivity.this, rowid );
+                        GameUtils.launchGame( NewGameActivity.this, 
+                                              rowid, true );
                         finish();
                     }
                 } );
@@ -201,7 +202,7 @@ public class NewGameActivity extends XWActivity {
             super.eventOccurred( event, args );
             break;
         }
-    }
+    } // BTService.BTEventListener.eventOccurred
 
     private void makeNewGame( boolean networked, boolean launch )
     {

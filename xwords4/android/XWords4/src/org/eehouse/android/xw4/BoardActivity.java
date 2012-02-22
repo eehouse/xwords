@@ -137,7 +137,6 @@ public class BoardActivity extends XWActivity
     private BoardUtilCtxt m_utils;
     private int m_nMissingPlayers = -1;
     private int m_invitesPending;
-    private boolean m_haveAskedMissing = false;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -1331,9 +1330,9 @@ public class BoardActivity extends XWActivity
                                    CommsAddrRec.CommsConnType connType,
                                    final int nMissingPlayers )
         {
-            if ( 0 < nMissingPlayers && isServer && !m_haveAskedMissing
+            if ( 0 < nMissingPlayers && isServer && !m_haveInvited
                  && CommsAddrRec.CommsConnType.COMMS_CONN_BT == connType ) {
-                m_haveAskedMissing = true;
+                m_haveInvited = true;
                 post( new Runnable() {
                         public void run() {
                             DbgUtils.showf( BoardActivity.this, 
