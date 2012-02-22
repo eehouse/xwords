@@ -30,7 +30,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
@@ -320,8 +319,9 @@ public class BTService extends Service {
         @Override
         public void run() {
             try {
+                String appName = XWApp.getAppName( BTService.this );
                 m_serverSocket = m_adapter.
-                    listenUsingRfcommWithServiceRecord( XWApp.getAppName(),
+                    listenUsingRfcommWithServiceRecord( appName,
                                                         XWApp.getAppUUID() );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.logf( "listenUsingRfcommWithServiceRecord=>%s", 
@@ -335,8 +335,8 @@ public class BTService extends Service {
                 DataInputStream inStream = null;
                 int nRead = 0;
                 try {
-                    DbgUtils.logf( "run: calling accept(60000)" );
-                    socket = m_serverSocket.accept( 60000 ); // blocks
+                    DbgUtils.logf( "run: calling accept()" );
+                    socket = m_serverSocket.accept(); // blocks
                     addAddr( socket );
                     DbgUtils.logf( "run: accept() returned" );
                     inStream = new DataInputStream( socket.getInputStream() );
@@ -384,12 +384,14 @@ public class BTService extends Service {
 
         public void stopListening()
         {
-            try {
-                m_serverSocket.close();
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "close()=>%s", ioe.toString() );
+            if ( null != m_serverSocket ) {
+                try {
+                    m_serverSocket.close();
+                } catch ( java.io.IOException ioe ) {
+                    DbgUtils.logf( "close()=>%s", ioe.toString() );
+                }
+                m_serverSocket = null;
             }
-            m_serverSocket = null;
             interrupt();
         }
 
@@ -490,7 +492,8 @@ public class BTService extends Service {
                                           R.string.new_btmove_body );
                         // do nothing
                     } else {
-                        DbgUtils.logf( "nobody took msg for gameID %d", gameID );
+                        DbgUtils.logf( "nobody took msg for gameID %X", 
+                                       gameID );
                     }
                 } else {
                     DbgUtils.logf( "receiveMessages: read only %d of %d bytes",
@@ -631,7 +634,7 @@ public class BTService extends Service {
                         DataOutputStream os = connect( socket, BTCmd.PING );
                         if ( null != os ) {
                             os.flush();
-                            Thread killer = killSocketIn( socket, 10 );
+                            Thread killer = killSocketIn( socket );
 
                             DataInputStream is = 
                                 new DataInputStream( socket.getInputStream() );
@@ -708,7 +711,7 @@ public class BTService extends Service {
                         outStream.write( elem.m_msg, 0, elem.m_msg.length );
 
                         outStream.flush();
-                        Thread killer = killSocketIn( socket, 10 );
+                        Thread killer = killSocketIn( socket );
 
                         DataInputStream inStream = 
                             new DataInputStream( socket.getInputStream() );
@@ -938,6 +941,11 @@ public class BTService extends Service {
         intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
         Utils.postNotification( this, intent, R.string.new_btmove_title, 
                                 body );
+    }
+
+    private Thread killSocketIn( final BluetoothSocket socket )
+    {
+        return killSocketIn( socket, 10 );
     }
 
     private Thread killSocketIn( final BluetoothSocket socket, int seconds )
