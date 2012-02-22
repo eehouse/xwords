@@ -1872,8 +1872,8 @@
 
     <string name="bt_resendf">Bluetooth send to %1$s failed; retry %3$d in
         %2$d seconds.</string>
-    <string name="bt_failf">Giving up on %1$s: Bluetooth send failed
-        too many times.</string>
+    <string name="bt_failf">Bluetooth sends to %1$s have failed too many
+        times. Re-open the game to try again.</string>
 	<string name="button_invite">Invite</string>
 
 

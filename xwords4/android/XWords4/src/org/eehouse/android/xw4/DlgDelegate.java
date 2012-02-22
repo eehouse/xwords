@@ -289,6 +289,7 @@ public class DlgDelegate {
     public void eventOccurred( BTService.BTEvent event, final Object ... args )
     {
         String msg = null;
+        boolean asToast = true;
         switch( event ) {
         case BAD_PROTO:
             msg = Utils.format( m_activity, R.string.bt_bad_protof,
@@ -301,6 +302,7 @@ public class DlgDelegate {
         case MESSAGE_FAILOUT:
             msg = Utils.format( m_activity, R.string.bt_failf, 
                                 (String)args[0] );
+            asToast = false;
             break;
         default:
             DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
@@ -308,9 +310,14 @@ public class DlgDelegate {
 
         if ( null != msg ) {
             final String fmsg = msg;
+            final boolean asDlg = !asToast;
             post( new Runnable() {
                     public void run() {
-                        DbgUtils.showf( m_activity, fmsg );
+                        if ( asDlg ) {
+                            showOKOnlyDialog( fmsg, 0 );
+                        } else {
+                            DbgUtils.showf( m_activity, fmsg );
+                        }
                     }
                 } );
         }
