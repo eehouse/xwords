@@ -54,8 +54,7 @@ import org.eehouse.android.xw4.jni.*;
 public class GamesList extends XWListActivity 
     implements DispatchNotify.HandleRelaysIface,
                DBUtils.DBChangeListener,
-               GameListAdapter.LoadItemCB,
-               BTService.BTEventListener { // for ping results
+               GameListAdapter.LoadItemCB {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -322,18 +321,6 @@ public class GamesList extends XWListActivity
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        BTService.setBTEventListener( this );
-    }
-
-    @Override
-    protected void onPause() {
-        BTService.setBTEventListener( null );
-        super.onPause();
-    }
-
-    @Override
     protected void onStop()
     {
         // TelephonyManager mgr = 
@@ -430,6 +417,7 @@ public class GamesList extends XWListActivity
     }
 
     // BTService.BTEventListener interface
+    @Override
     public void eventOccurred( BTService.BTEvent event, final Object ... args )
     {
         switch( event ) {
@@ -440,6 +428,9 @@ public class GamesList extends XWListActivity
                                         "Pong from %s", args[0].toString() );
                     } 
                 });
+            break;
+        default:
+            super.eventOccurred( event, args );
             break;
         }
     }
