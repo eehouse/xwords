@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Application;
+import android.content.Context;
 import java.util.UUID;
 
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -45,15 +46,17 @@ public class XWApp extends Application {
         BTService.startService( this );
     }
 
-    public static UUID getAppUUID() {
+    public static UUID getAppUUID()
+    {
         if ( null == s_UUID ) {
             s_UUID = UUID.fromString( XwJNI.comms_getUUID() );
         }
         return s_UUID;
     }
 
-    public static String getAppName() {
-        return "Crosswords";
+    public static String getAppName( Context context ) 
+    {
+        return context.getString( R.string.app_name );
     }
 
 }
