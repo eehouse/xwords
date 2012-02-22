@@ -968,11 +968,17 @@ public class BTService extends Service {
 
         public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
         {
-            Assert.assertNotNull( addr );
-            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                           addr.bt_hostName, addr.bt_btAddr,
-                                           gameID ) );
-            return buf.length;
+            int sent = -1;
+            if ( null != addr ) {
+                m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
+                                               addr.bt_hostName, 
+                                               addr.bt_btAddr, gameID ) );
+                sent = buf.length;
+            } else {
+                DbgUtils.logf( "BTMsgSink.transportSend: "
+                               + "addr null so not sending" );
+            }
+            return sent;
         }
 
         public boolean relayNoConnProc( byte[] buf, String relayID )
