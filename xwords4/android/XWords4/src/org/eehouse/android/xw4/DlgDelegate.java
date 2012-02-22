@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -296,7 +296,11 @@ public class DlgDelegate {
             break;
         case MESSAGE_RESEND:
             msg = Utils.format( m_activity, R.string.bt_resendf,
-                                (String)args[0], (Long)args[1] );
+                                (String)args[0], (Long)args[1], (Integer)args[2] );
+            break;
+        case MESSAGE_FAILOUT:
+            msg = Utils.format( m_activity, R.string.bt_failf, 
+                                (String)args[0] );
             break;
         default:
             DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );

@@ -48,7 +48,7 @@ public class BTInviteActivity extends XWListActivity
 
     private Button m_okButton;
     private Button m_rescanButton;
-    private Button m_reconfigureButton;
+    // private Button m_reconfigureButton;
     private String[] m_btDevNames;
     private int m_nMissing;
     private int m_checkCount = 0;
@@ -70,35 +70,34 @@ public class BTInviteActivity extends XWListActivity
         m_okButton.setOnClickListener( this );
         m_rescanButton = (Button)findViewById( R.id.button_rescan );
         m_rescanButton.setOnClickListener( this );
-        m_reconfigureButton = (Button)findViewById( R.id.button_reconfigure );
-        m_reconfigureButton.setOnClickListener( this );
+        // m_reconfigureButton = (Button)findViewById( R.id.button_reconfigure );
+        // m_reconfigureButton.setOnClickListener( this );
 
         m_checkCount = 0;
         tryEnable();
+        scan( false );
     }
 
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        if ( null == m_btDevNames ) {
-            rescan();
-        }
-    }
+    // @Override
+    // protected void onResume()
+    // {
+    //     super.onResume();
+    //     if ( null == m_btDevNames ) {
+    //         rescan();
+    //     }
+    // }
 
     public void onClick( View view ) 
     {
-        DbgUtils.logf( "onClick" );
         if ( m_okButton == view ) {
-            DbgUtils.logf( "OK BUTTON" );
             Intent intent = new Intent();
             String[] devs = listSelected();
             intent.putExtra( DEVS, devs );
             setResult( Activity.RESULT_OK, intent );
             finish();
         } else if ( m_rescanButton == view ) {
-            rescan();
-        } else if ( m_reconfigureButton == view ) {
+            scan( true );
+        // } else if ( m_reconfigureButton == view ) {
         }
     }
 
@@ -147,10 +146,12 @@ public class BTInviteActivity extends XWListActivity
         }
     }
 
-    private void rescan()
+    private void scan( boolean clearCache )
     {
-        startProgress( R.string.scan_progress );
-        BTService.rescan( this );
+        if ( clearCache ) {
+            startProgress( R.string.scan_progress );
+        }
+        BTService.scan( this, clearCache );
     }
 
     private String[] listSelected()

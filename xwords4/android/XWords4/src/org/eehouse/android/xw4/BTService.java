@@ -39,17 +39,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class BTService extends Service {
 
     public enum BTEvent { BAD_PROTO
+                        , BT_ENABLED
+                        , BT_DISABLED
                         , SCAN_DONE
                         , HOST_PONGED
                         , NEWGAME_SUCCESS
@@ -58,8 +62,7 @@ public class BTService extends Service {
                         , MESSAGE_REFUSED
                         , MESSAGE_NOGAME
                         , MESSAGE_RESEND
-                        , BT_ENABLED
-                        , BT_DISABLED
+                        , MESSAGE_FAILOUT
             };
 
     public interface BTEventListener {
@@ -67,6 +70,7 @@ public class BTService extends Service {
     }
 
     private static final long RESEND_TIMEOUT = 5; // seconds
+    private static final int MAX_SEND_FAIL = 3;
 
     private static final int BT_PROTO = 0;
 
@@ -82,6 +86,7 @@ public class BTService extends Service {
     private static final String GAMENAME_STR = "NAM";
     private static final String ADDR_STR = "ADR";
     private static final String RADIO_STR = "RDO";
+    private static final String CLEAR_STR = "CLR";
 
     private static final String GAMEID_STR = "GMI";
 
@@ -108,6 +113,7 @@ public class BTService extends Service {
             };
 
     private class BTQueueElem {
+        int m_failCount;
         // These should perhaps be in some subclasses....
         BTCmd m_cmd;
         byte[] m_msg;
@@ -119,7 +125,7 @@ public class BTService extends Service {
         int m_nPlayersT;
         int m_nPlayersH;
 
-        public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; }
+        public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
         public BTQueueElem( BTCmd cmd, String targetName, String targetAddr,
                             int gameID, String gameName, int lang, 
                             int nPlayersT, int nPlayersH ) {
@@ -129,15 +135,17 @@ public class BTService extends Service {
         }
         public BTQueueElem( BTCmd cmd, byte[] buf, String targetName, 
                             String targetAddr, int gameID ) {
-            m_cmd = cmd; m_msg = buf; m_recipient = targetName; 
+            this( cmd );
+            m_msg = buf; m_recipient = targetName; 
             m_addr = targetAddr; m_gameID = gameID;
         }
 
+        public int incrFailCount() { return ++m_failCount; }
+        public boolean failCountExceeded() { return m_failCount >= MAX_SEND_FAIL; }
     }
 
     private BluetoothAdapter m_adapter;
-    private static HashMap<String,String> s_names =
-        new HashMap<String, String>();
+    private HashMap<String,String> m_names;
     private static HashMap<String,int[]> s_devGames;
     private BTMsgSink m_btMsgSink;
     private BTListenerThread m_listener;
@@ -167,9 +175,11 @@ public class BTService extends Service {
         context.startService( intent );
     }
 
-    public static void rescan( Context context )
+    public static void scan( Context context, boolean clearCache )
     {
-        context.startService( getIntentTo( context, SCAN ) );
+        Intent intent = getIntentTo( context, SCAN );
+        intent.putExtra( CLEAR_STR, clearCache );
+        context.startService( intent );
     }
 
     public static void ping( Context context )
@@ -223,6 +233,7 @@ public class BTService extends Service {
         if ( null != m_adapter && m_adapter.isEnabled() ) {
             DbgUtils.logf( "BTService.onCreate(); bt name = %s", 
                            m_adapter.getName() );
+            initNames();
             listLocalBTGames( false );
             startListener();
             startSender();
@@ -250,7 +261,11 @@ public class BTService extends Service {
                     m_sender.add( new BTQueueElem( BTCmd.PING ) );
                     break;
                 case SCAN:
-                    m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
+                    if ( intent.getBooleanExtra( CLEAR_STR, false ) ) {
+                        m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
+                    } else {
+                        sendNames();
+                    }
                     break;
                 case INVITE:
                     int gameID = intent.getIntExtra( GAMEID_STR, -1 );
@@ -499,16 +514,24 @@ public class BTService extends Service {
 
     private void addAddr( String name, String address )
     {
-        synchronized( s_names ) {
-            s_names.put( name, address );
+        boolean save = false;
+        synchronized( m_names ) {
+            String current = m_names.get( name );
+            save = null == current || ! current.equals( address );
+            if ( save ) {
+                m_names.put( name, address );
+            }
+        }
+        if ( save ) {
+            saveNames();
         }
     }
 
     private String addrFor( String name )
     {
         String addr;
-        synchronized( s_names ) {
-            addr = s_names.get( name );
+        synchronized( m_names ) {
+            addr = m_names.get( name );
         }
         DbgUtils.logf( "addrFor(%s)=>%s", name, addr );
         Assert.assertNotNull( addr );
@@ -519,8 +542,8 @@ public class BTService extends Service {
     private String[] names()
     {
         Set<String> names = null;
-        synchronized( s_names ) {
-            names = s_names.keySet();
+        synchronized( m_names ) {
+            names = m_names.keySet();
         }
 
         String[] result = new String[names.size()];
@@ -570,11 +593,12 @@ public class BTService extends Service {
                         sendPings( BTEvent.HOST_PONGED );
                         break;
                     case SCAN:
-                        synchronized ( s_names ) {
-                            s_names.clear();
+                        synchronized ( m_names ) {
+                            m_names.clear();
                         }
                         sendPings( null );
-                        sendNames( BTEvent.SCAN_DONE );
+                        sendNames();
+                        saveNames();
                         break;
                     case INVITE:
                         sendInvite( elem );
@@ -591,11 +615,6 @@ public class BTService extends Service {
                 }
             }
         } // run
-
-        private void sendNames( BTEvent evt )
-        {
-            sendResult( evt, (Object)(names()) );
-        }
 
         private void sendPings( BTEvent event )
         {
@@ -715,8 +734,9 @@ public class BTService extends Service {
 
             sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
             if ( ! success ) {
-                sendResult( BTEvent.MESSAGE_RESEND, 
-                            elem.m_recipient, RESEND_TIMEOUT );
+                int failCount = elem.incrFailCount();
+                sendResult( BTEvent.MESSAGE_RESEND, elem.m_recipient,
+                            RESEND_TIMEOUT, failCount );
             }
             return success;
         } // sendMsg
@@ -727,17 +747,18 @@ public class BTService extends Service {
             if ( !success ) {
                 success = true;
                 ListIterator<BTQueueElem> iter = resends.listIterator();
-                while ( iter.hasNext() ) {
+                while ( iter.hasNext() && success ) {
                     BTQueueElem elem = iter.next();
-                    if ( !sendMsg( elem ) ) {
-                        success = false;
-                        break;
+                    success = sendMsg( elem );
+                    if ( success ) {
+                        iter.remove();
+                    } else if ( elem.failCountExceeded() ) {
+                        sendResult( BTEvent.MESSAGE_FAILOUT, elem.m_recipient );
+                        iter.remove();
                     }
-                    iter.remove();
                 }
                 
             }
-            DbgUtils.logf( "doAnyResends=>%b", success );
             return success;
         }
 
@@ -748,8 +769,8 @@ public class BTService extends Service {
 
         private void doAnyResends()
         {
-            Collection<LinkedList<BTQueueElem>> lists =  m_resends.values();
-            Iterator<LinkedList<BTQueueElem>> iter = lists.iterator();
+            Iterator<LinkedList<BTQueueElem>> iter =
+                m_resends.values().iterator();
             while ( iter.hasNext() ) {
                 LinkedList<BTQueueElem> list = iter.next();
                 doAnyResends( list );
@@ -770,8 +791,8 @@ public class BTService extends Service {
         private boolean haveResends()
         {
             boolean found = false;
-            Collection<LinkedList<BTQueueElem>> lists =  m_resends.values();
-            Iterator<LinkedList<BTQueueElem>> iter = lists.iterator();
+            Iterator<LinkedList<BTQueueElem>> iter =
+                m_resends.values().iterator();
             while ( !found && iter.hasNext() ) {
                 LinkedList<BTQueueElem> list = iter.next();
                 found = 0 < list.size();
@@ -780,6 +801,11 @@ public class BTService extends Service {
         }
 
     } // class BTSenderThread
+
+    private void sendNames()
+    {
+        sendResult( BTEvent.SCAN_DONE, (Object)(names()) );
+    }
 
     private void sendResult( BTEvent event, Object ... args )
     {
@@ -803,6 +829,42 @@ public class BTService extends Service {
                 DBUtils.listBTGames( this, s_devGames );
             }
         }
+    }
+
+    private void initNames()
+    {
+        m_names = new HashMap<String, String>();
+
+        String[] names = CommonPrefs.getBTNames( this );
+        if ( null != names ) {
+            String[] addrs = CommonPrefs.getBTAddresses( this );
+            if ( null != addrs && names.length == addrs.length ) {
+                for ( int ii = 0; ii < names.length; ++ii ) {
+                    m_names.put( names[ii], addrs[ii] );
+                }
+            }
+        }
+    }
+
+    private void saveNames()
+    {
+        Set<Entry<String,String>> entrySet;
+        synchronized( m_names ) {
+            entrySet = m_names.entrySet();
+        }
+        int count = entrySet.size();
+        String[] names = new String[count];
+        String[] addrs = new String[count];
+
+        Iterator<Entry<String,String>> iter = entrySet.iterator();
+        for ( int ii = 0; iter.hasNext(); ++ii ) {
+            Entry<String,String> entry = iter.next();
+            names[ii] = entry.getKey();
+            addrs[ii] = entry.getValue();
+        }
+
+        CommonPrefs.setBTNames( this, names );
+        CommonPrefs.setBTAddresses( this, addrs );
     }
 
     private void startListener()
