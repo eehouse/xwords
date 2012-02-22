@@ -808,14 +808,16 @@ public class BoardActivity extends XWActivity
     // BTService.BTEventListener interface
     //////////////////////////////////////////////////
     @Override
+    @SuppressWarnings("fallthrough")
     public void eventOccurred( BTService.BTEvent event, final Object ... args )
     {
         switch( event ) {
         case MESSAGE_ACCEPTED:
-            m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, true );
-            break;
         case MESSAGE_REFUSED:
-            m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, false );
+            if ( null != m_jniThread ) {
+                boolean accepted = BTService.BTEvent.MESSAGE_ACCEPTED == event;
+                m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, accepted );
+            }
             break;
         case MESSAGE_NOGAME:
             post( new Runnable() {
