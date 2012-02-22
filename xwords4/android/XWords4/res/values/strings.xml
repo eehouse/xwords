@@ -1874,6 +1874,7 @@
         %2$d seconds.</string>
     <string name="bt_failf">Giving up on %1$s: Bluetooth send failed
         too many times.</string>
+	<string name="button_invite">Invite</string>
 
 
 </resources>

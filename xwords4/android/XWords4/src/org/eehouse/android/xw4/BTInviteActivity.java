@@ -66,7 +66,7 @@ public class BTInviteActivity extends XWListActivity
         TextView desc = (TextView)findViewById( R.id.invite_desc );
         desc.setText( Utils.format( this, R.string.invite_descf, m_nMissing ) );
 
-        m_okButton = (Button)findViewById( R.id.button_ok );
+        m_okButton = (Button)findViewById( R.id.button_invite );
         m_okButton.setOnClickListener( this );
         m_rescanButton = (Button)findViewById( R.id.button_rescan );
         m_rescanButton.setOnClickListener( this );
