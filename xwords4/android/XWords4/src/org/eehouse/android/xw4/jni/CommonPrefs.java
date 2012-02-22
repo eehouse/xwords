@@ -340,9 +340,27 @@ public class CommonPrefs {
 
     public static String[] getClosedLangs( Context context )
     {
-        String asStr = getString( context, R.string.key_closed_langs );
-        String[] result = null == asStr ? null : TextUtils.split( asStr, "\n" );
-        return result;
+        return getPrefsStringArray( context, R.string.key_closed_langs );
+    }
+
+    public static void setBTNames( Context context, String[] names )
+    {
+        setPrefsStringArray( context, R.string.key_bt_names, names );
+    }
+
+    public static String[] getBTNames( Context context )
+    {
+        return getPrefsStringArray( context, R.string.key_bt_names );
+    }
+
+    public static void setBTAddresses( Context context, String[] addrs )
+    {
+        setPrefsStringArray( context, R.string.key_bt_addrs, addrs );
+    }
+
+    public static String[] getBTAddresses( Context context )
+    {
+        return getPrefsStringArray( context, R.string.key_bt_addrs );
     }
 
     public static boolean getPrefsBoolean( Context context, int keyID,
@@ -384,4 +402,17 @@ public class CommonPrefs {
         editor.commit();
     }
 
+
+    private static String[] getPrefsStringArray( Context context, int keyID )
+    {
+        String asStr = getString( context, keyID );
+        String[] result = null == asStr ? null : TextUtils.split( asStr, "\n" );
+        return result;
+    }
+
+    private static void setPrefsStringArray( Context context, int keyID, 
+                                             String[] value )
+    {
+        setPrefsString( context, keyID, TextUtils.join( "\n", value ) );
+    }
 }
