@@ -1695,7 +1695,7 @@ public class BoardActivity extends XWActivity
     private void tryBTInvites()
     {
         if ( null != m_btDevs ) {
-            String gameName = DBUtils.getName( this, m_rowid );
+            String gameName = GameUtils.getName( this, m_rowid );
             m_invitesPending = m_btDevs.length;
             for ( String dev : m_btDevs ) {
                 BTService.inviteRemote( this, dev, m_gi.gameID, gameName,
