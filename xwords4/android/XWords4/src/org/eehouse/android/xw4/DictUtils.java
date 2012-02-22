@@ -457,7 +457,40 @@ public class DictUtils {
             }
         }
         return success;
-    } 
+    }
+
+    /*
+    // The goal here was to attach intalled dicts to email to save
+    // folks having to download them, but there are too many problems
+    // to make me think I can create a good UE.  Chief is that the
+    // email clients are ignoring my mime type (though they require
+    // one in the Intent) because they think they know what an .xwd
+    // file is.  Without the right mime type I can't get Crosswords
+    // launched to receive the attachment on the other end.
+    // Additionally, gmail at least requires that the path start with
+    // /mnt/sdcard, and there's no failure notification so I get to
+    // warn users myself, or disable the share menuitem for dicts in
+    // internal storage.
+    public static void shareDict( Context context, String name )
+    {
+        Intent intent = new Intent( Intent.ACTION_SEND );
+        intent.setType( "application/x-xwordsdict" );
+
+        File dictFile = new File( getDictPath( context, name ) );
+        DbgUtils.logf( "path: %s", dictFile.getPath() );
+        Uri uri = Uri.fromFile( dictFile );
+        DbgUtils.logf( "uri: %s", uri.toString() );
+        intent.putExtra( Intent.EXTRA_STREAM, uri );
+
+        intent.putExtra( Intent.EXTRA_SUBJECT, 
+                         context.getString( R.string.share_subject ) );
+        intent.putExtra( Intent.EXTRA_TEXT, 
+                         Utils.format( context, R.string.share_bodyf, name ) );
+
+        String title = context.getString( R.string.share_chooser );
+        context.startActivity( Intent.createChooser( intent, title ) ); 
+    }
+     */
 
     private static boolean isGame( String file )
     {
