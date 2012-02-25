@@ -48,10 +48,10 @@ public class BTInviteActivity extends XWListActivity
 
     private Button m_okButton;
     private Button m_rescanButton;
-    // private Button m_reconfigureButton;
-    private String[] m_btDevNames;
+    private Button m_clearButton;
     private int m_nMissing;
     private int m_checkCount = 0;
+    private boolean m_firstScan;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -70,22 +70,15 @@ public class BTInviteActivity extends XWListActivity
         m_okButton.setOnClickListener( this );
         m_rescanButton = (Button)findViewById( R.id.button_rescan );
         m_rescanButton.setOnClickListener( this );
-        // m_reconfigureButton = (Button)findViewById( R.id.button_reconfigure );
-        // m_reconfigureButton.setOnClickListener( this );
+        m_clearButton = (Button)findViewById( R.id.button_clear );
+        m_clearButton.setOnClickListener( this );
 
         m_checkCount = 0;
         tryEnable();
-        scan( false );
-    }
 
-    // @Override
-    // protected void onResume()
-    // {
-    //     super.onResume();
-    //     if ( null == m_btDevNames ) {
-    //         rescan();
-    //     }
-    // }
+        m_firstScan = true;
+        BTService.clearDevices( this, null ); // will return names
+    }
 
     public void onClick( View view ) 
     {
@@ -96,8 +89,9 @@ public class BTInviteActivity extends XWListActivity
             setResult( Activity.RESULT_OK, intent );
             finish();
         } else if ( m_rescanButton == view ) {
-            scan( true );
-        // } else if ( m_reconfigureButton == view ) {
+            scan();
+        } else if ( m_clearButton == view ) {
+            BTService.clearDevices( this, listSelected() );
         }
     }
 
@@ -131,12 +125,23 @@ public class BTInviteActivity extends XWListActivity
                     public void run() {
                         synchronized( BTInviteActivity.this ) {
                             stopProgress();
+
+                            String[] btDevNames = null;
                             if ( 0 < args.length ) {
-                                m_btDevNames = (String[])(args[0]);
+                                btDevNames = (String[])(args[0]);
+                                if ( null != btDevNames
+                                     && 0 == btDevNames.length ) {
+                                    btDevNames = null;
+                                }
                             }
-                            setListAdapter( new BTDevsAdapter( m_btDevNames ) );
+
+                            if ( null == btDevNames && m_firstScan ) {
+                                BTService.scan( BTInviteActivity.this );
+                            }
+                            setListAdapter( new BTDevsAdapter( btDevNames ) );
                             m_checkCount = 0;
                             tryEnable();
+                            m_firstScan = false;
                         }
                     }
                 } );
@@ -146,12 +151,10 @@ public class BTInviteActivity extends XWListActivity
         }
     }
 
-    private void scan( boolean clearCache )
+    private void scan()
     {
-        if ( clearCache ) {
-            startProgress( R.string.scan_progress );
-        }
-        BTService.scan( this, clearCache );
+        startProgress( R.string.scan_progress );
+        BTService.scan( this );
     }
 
     private String[] listSelected()
@@ -172,8 +175,8 @@ public class BTInviteActivity extends XWListActivity
     private void tryEnable() 
     {
         m_okButton.setEnabled( m_checkCount == m_nMissing );
+        m_clearButton.setEnabled( 0 < m_checkCount );
     }
-
 
     private class BTDevsAdapter extends XWListAdapter {
         private String[] m_devs;

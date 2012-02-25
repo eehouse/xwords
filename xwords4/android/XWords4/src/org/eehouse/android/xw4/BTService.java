@@ -78,6 +78,7 @@ public class BTService extends Service {
     private static final int INVITE = 2;
     private static final int SEND = 3;
     private static final int RADIO = 4;
+    private static final int CLEAR = 5;
 
     private static final String CMD_STR = "CMD";
     private static final String MSG_STR = "MSG";
@@ -174,10 +175,16 @@ public class BTService extends Service {
         context.startService( intent );
     }
 
-    public static void scan( Context context, boolean clearCache )
+    public static void clearDevices( Context context, String[] names )
+    {
+        Intent intent = getIntentTo( context, CLEAR );
+        intent.putExtra( CLEAR_STR, names );
+        context.startService( intent );
+    }
+
+    public static void scan( Context context )
     {
         Intent intent = getIntentTo( context, SCAN );
-        intent.putExtra( CLEAR_STR, clearCache );
         context.startService( intent );
     }
 
@@ -259,12 +266,13 @@ public class BTService extends Service {
                 case PING:
                     m_sender.add( new BTQueueElem( BTCmd.PING ) );
                     break;
+                case CLEAR:
+                    String[] devs = intent.getStringArrayExtra( CLEAR_STR );
+                    clearDevs( devs );
+                    sendNames();
+                    break;
                 case SCAN:
-                    if ( intent.getBooleanExtra( CLEAR_STR, false ) ) {
-                        m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
-                    } else {
-                        sendNames();
-                    }
+                    m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
                     break;
                 case INVITE:
                     int gameID = intent.getIntExtra( GAMEID_STR, -1 );
@@ -537,8 +545,6 @@ public class BTService extends Service {
             addr = m_names.get( name );
         }
         DbgUtils.logf( "addrFor(%s)=>%s", name, addr );
-        Assert.assertNotNull( addr );
-
         return addr;
     }
 
@@ -556,6 +562,17 @@ public class BTService extends Service {
         }
 
         return result;
+    }
+
+    private void clearDevs( String[] devs )
+    {
+        if ( null != devs ) {
+            synchronized( m_names ) {
+                for ( String dev : devs ) {
+                    m_names.remove( dev );
+                }
+            }
+        }
     }
 
     private class BTSenderThread extends Thread {
@@ -596,9 +613,6 @@ public class BTService extends Service {
                         sendPings( BTEvent.HOST_PONGED );
                         break;
                     case SCAN:
-                        synchronized ( m_names ) {
-                            m_names.clear();
-                        }
                         sendPings( null );
                         sendNames();
                         saveNames();
@@ -624,6 +638,10 @@ public class BTService extends Service {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
             DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
             for ( BluetoothDevice dev : pairedDevs ) {
+                String name = dev.getName();
+                if ( null != addrFor( name ) ) {
+                    continue;
+                }
                 boolean success = false;
                 try {
                     DbgUtils.logf( "PingThread: got socket to device %s", 
