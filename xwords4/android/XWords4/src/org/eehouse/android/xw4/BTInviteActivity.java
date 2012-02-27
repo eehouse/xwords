@@ -182,7 +182,7 @@ public class BTInviteActivity extends XWListActivity
         private String[] m_devs;
         public BTDevsAdapter( String[] devs )
         {
-            super( devs.length );
+            super( null == devs? 0 : devs.length );
             m_devs = devs;
         }
 
