@@ -35,6 +35,7 @@ import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -62,6 +63,7 @@ public class BTService extends Service {
                         , MESSAGE_NOGAME
                         , MESSAGE_RESEND
                         , MESSAGE_FAILOUT
+                        , MESSAGE_DROPPED
             };
 
     public interface BTEventListener {
@@ -79,6 +81,7 @@ public class BTService extends Service {
     private static final int SEND = 3;
     private static final int RADIO = 4;
     private static final int CLEAR = 5;
+    private static final int REMOVE = 6;
 
     private static final String CMD_STR = "CMD";
     private static final String MSG_STR = "MSG";
@@ -110,6 +113,7 @@ public class BTService extends Service {
             MESG_ACCPT,
             MESG_DECL,
             MESG_GAMEGONE,
+            REMOVE_FOR,
             };
 
     private class BTQueueElem {
@@ -224,6 +228,13 @@ public class BTService extends Service {
                        targetName, targetAddr, gameID );
         return buf.length;
     }
+    
+    public static void gameDied( Context context, int gameID )
+    {
+        Intent intent = getIntentTo( context, REMOVE );
+        intent.putExtra( GAMEID_STR, gameID );
+        context.startService( intent );
+    }
 
     private static Intent getIntentTo( Context context, int cmd )
     {
@@ -305,6 +316,12 @@ public class BTService extends Service {
                         stopListener();
                         stopSender();
                         stopSelf();
+                    }
+                    break;
+                case REMOVE:
+                    gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    if ( -1 != gameID ) {
+                        m_sender.removeFor( gameID );
                     }
                     break;
                 default:
@@ -578,16 +595,25 @@ public class BTService extends Service {
     private class BTSenderThread extends Thread {
         private LinkedBlockingQueue<BTQueueElem> m_queue;
         private HashMap<String,LinkedList<BTQueueElem> > m_resends;
+        private HashSet<Integer> m_deadGames;
 
         public BTSenderThread()
         {
             m_queue = new LinkedBlockingQueue<BTQueueElem>();
             m_resends = new HashMap<String,LinkedList<BTQueueElem> >();
+            m_deadGames = new HashSet<Integer>();
         }
 
         public void add( BTQueueElem elem )
         {
             m_queue.add( elem );
+        }
+
+        public void removeFor( int gameID )
+        {
+            synchronized( m_deadGames ) {
+                m_deadGames.add( gameID );
+            }
         }
 
         @Override
@@ -713,44 +739,58 @@ public class BTService extends Service {
 
         private boolean sendMsg( BTQueueElem elem )
         {
-            boolean success = false;
-            BTEvent evt = BTEvent.MESSAGE_REFUSED;
-            try {
-                BluetoothDevice dev = m_adapter.getRemoteDevice( elem.m_addr );
-                BluetoothSocket socket = 
-                    dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
-                if ( null != socket ) {
-                    DataOutputStream outStream = connect( socket, BTCmd.MESG_SEND );
-                    if ( null != outStream ) {
-                        outStream.writeInt( elem.m_gameID );
+            boolean success;
+            synchronized( m_deadGames ) {
+                success = m_deadGames.contains( elem.m_gameID );
+            }
+            BTEvent evt;
+            if ( success ) {
+                evt = BTEvent.MESSAGE_DROPPED;
+                DbgUtils.logf( "dropping message because game %X dead", 
+                               elem.m_gameID );
+            } else {
+                evt = BTEvent.MESSAGE_REFUSED;
+            }
+            if ( !success ) {
+                try {
+                    BluetoothDevice dev = 
+                        m_adapter.getRemoteDevice( elem.m_addr );
+                    BluetoothSocket socket = dev.
+                        createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
+                    if ( null != socket ) {
+                        DataOutputStream outStream = 
+                            connect( socket, BTCmd.MESG_SEND );
+                        if ( null != outStream ) {
+                            outStream.writeInt( elem.m_gameID );
 
-                        short len = (short)elem.m_msg.length;
-                        outStream.writeShort( len );
-                        outStream.write( elem.m_msg, 0, elem.m_msg.length );
+                            short len = (short)elem.m_msg.length;
+                            outStream.writeShort( len );
+                            outStream.write( elem.m_msg, 0, elem.m_msg.length );
 
-                        outStream.flush();
-                        Thread killer = killSocketIn( socket );
+                            outStream.flush();
+                            Thread killer = killSocketIn( socket );
 
-                        DataInputStream inStream = 
-                            new DataInputStream( socket.getInputStream() );
-                        BTCmd reply = BTCmd.values()[inStream.readByte()];
-                        killer.interrupt();
-                        success = true;
+                            DataInputStream inStream = 
+                                new DataInputStream( socket.getInputStream() );
+                            BTCmd reply = BTCmd.values()[inStream.readByte()];
+                            killer.interrupt();
+                            success = true;
 
-                        switch ( reply ) {
-                        case MESG_ACCPT:
-                            evt = BTEvent.MESSAGE_ACCEPTED;
-                            break;
-                        case MESG_GAMEGONE:
-                            evt = BTEvent.MESSAGE_NOGAME;
-                            break;
+                            switch ( reply ) {
+                            case MESG_ACCPT:
+                                evt = BTEvent.MESSAGE_ACCEPTED;
+                                break;
+                            case MESG_GAMEGONE:
+                                evt = BTEvent.MESSAGE_NOGAME;
+                                break;
+                            }
                         }
+                        socket.close();
                     }
-                    socket.close();
+                } catch ( java.io.IOException ioe ) {
+                    DbgUtils.logf( "sendMsg: ioe: %s", ioe.toString() );
+                    success = false;
                 }
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "sendMsg: ioe: %s", ioe.toString() );
-                success = false;
             }
 
             sendResult( evt, elem.m_gameID, 0, elem.m_recipient );

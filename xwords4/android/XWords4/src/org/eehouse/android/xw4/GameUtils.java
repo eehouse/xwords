@@ -223,7 +223,7 @@ public class GameUtils {
     public static void resetGame( Context context, long rowidIn )
     {
         GameLock lock = new GameLock( rowidIn, true ).lock();
-        tellRelayDied( context, lock, true );
+        tellDied( context, lock, true );
         resetGame( context, lock, lock, false );
         lock.unlock();
     }
@@ -286,7 +286,7 @@ public class GameUtils {
         // does this need to be synchronized?
         GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
-            tellRelayDied( context, lock, informNow );
+            tellDied( context, lock, informNow );
             DBUtils.deleteGame( context, lock );
             lock.unlock();
         }
@@ -757,7 +757,7 @@ public class GameUtils {
         CommonPrefs cp = CommonPrefs.get( context );
 
         if ( forceNew ) {
-            tellRelayDied( context, lock, true );
+            tellDied( context, lock, true );
         } else {
             byte[] stream = savedGame( context, lock );
             // Will fail if there's nothing in the stream but a gi.
@@ -814,15 +814,24 @@ public class GameUtils {
         return rint;
     }
 
-    private static void tellRelayDied( Context context, GameLock lock,
-                                       boolean informNow )
+    private static void tellDied( Context context, GameLock lock, 
+                                  boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
         if ( null != summary.relayID ) {
-            DBUtils.addDeceased( context, summary.relayID, summary.seed );
-            if ( informNow ) {
-                NetUtils.informOfDeaths( context );
-            }
+            tellRelayDied( context, summary, informNow );
+        }
+        if ( 0 != summary.gameID ) {
+            BTService.gameDied( context, summary.gameID );
+        }
+    }
+
+    private static void tellRelayDied( Context context, GameSummary summary,
+                                       boolean informNow )
+    {
+        DBUtils.addDeceased( context, summary.relayID, summary.seed );
+        if ( informNow ) {
+            NetUtils.informOfDeaths( context );
         }
     }
 
