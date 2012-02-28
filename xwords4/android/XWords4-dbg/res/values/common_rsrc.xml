@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Resources in this file do not require localization -->
+<resources>
+
+  <string name="app_version">4.4 beta 42</string>
+
+  <!-- prefs keys -->
+  <string name="key_color_tiles">key_color_tiles</string>
+  <string name="key_show_arrow">key_show_arrow</string>
+  <string name="key_explain_robot">key_explain_robot</string>
+  <string name="key_skip_confirm">key_skip_confirm</string>
+  <string name="key_sort_tiles">key_sort_tiles</string>
+  <string name="key_peek_other">key_peek_other</string>
+  <string name="key_hide_crosshairs">key_hide_crosshairs</string>
+  <string name="key_hide_values">key_hide_values</string>
+  <string name="key_ringer_zoom">key_ringer_zoom</string>
+  <string name="key_hide_title">key_hide_title</string>
+
+  <string name="key_player0">key_clr_player0</string>
+  <string name="key_player1">key_clr_player1</string>
+  <string name="key_player2">key_clr_player2</string>
+  <string name="key_player3">key_clr_player3</string>
+  <string name="key_bonus_l2x">key_clr_bonus_l2x</string>
+  <string name="key_bonus_l3x">key_clr_bonus_l3x</string>
+  <string name="key_bonus_w2x">key_clr_bonus_w2x</string>
+  <string name="key_bonus_w3x">key_clr_bonus_w3x</string>
+  <string name="key_tile_back">key_clr_tile_back</string>
+  <string name="key_empty">key_clr_empty</string>
+  <string name="key_background">key_clr_background</string>
+  <string name="key_clr_crosshairs">key_clr_crosshairs</string>
+  <string name="key_clr_bonushint">key_clr_bonushint</string>
+
+  <string name="key_relay_host">key_relay_host</string>
+  <string name="key_redir_host">key_redir_host</string>
+  <string name="key_relay_port">key_relay_port2</string>
+  <string name="key_proxy_port">key_proxy_port</string>
+  <string name="key_sms_port">key_sms_port</string>
+  <string name="key_dict_host">key_dict_host3</string>
+  <string name="key_logging_on">key_logging_on</string>
+  <string name="key_init_hintsallowed">key_init_hintsallowed</string>
+  <string name="key_init_autojuggle">key_init_autojuggle</string>
+  <string name="key_board_size">key_board_size</string>
+  <string name="key_initial_player_minutes">key_initial_player_minutes</string>
+  <string name="key_default_dict">key_default_dict</string>
+  <string name="key_player1_name">key_player1_name</string>
+  <string name="key_player2_name">key_player2_name</string>
+  <string name="key_player3_name">key_player3_name</string>
+  <string name="key_player4_name">key_player4_name</string>
+  <string name="key_default_robodict">key_default_robodict</string>
+  <string name="key_default_phonies">key_default_phonies2</string>
+  <string name="key_default_timerenabled">key_default_timerenabled</string>
+  <string name="key_connect_frequency">key_connect_frequency</string>
+  <string name="key_notify_sound">key_notify_sound</string>
+  <string name="key_notify_vibrate">key_notify_vibrate</string>
+  <string name="key_hide_intro">key_hide_intro</string>
+  <string name="key_keep_screenon">key_keep_screenon</string>
+  <string name="key_summary_field">key_summary_field</string>
+
+  <!-- database keys whose entries aren't visible prefs -->
+  <string name="key_closed_langs">key_closed_langs</string>
+
+  <string name="key_notagain_sync">key_notagain_sync</string>
+  <string name="key_notagain_chat">key_notagain_chat</string>
+  <string name="key_notagain_relay">key_notagain_relay</string>
+  <string name="key_notagain_hintprev">key_notagain_hintprev</string>
+  <string name="key_notagain_hintnext">key_notagain_hintnext</string>
+  <string name="key_notagain_juggle">key_notagain_juggle</string>
+  <string name="key_notagain_flip">key_notagain_flip</string>
+  <string name="key_notagain_zoom">key_notagain_zoom</string>
+  <string name="key_notagain_undo">key_notagain_undo</string>
+  <string name="key_notagain_done">key_notagain_done</string>
+  <string name="key_notagain_unlock">key_notagain_unlock</string>
+  <string name="key_notagain_conndall">key_notagain_conndall</string>
+  <string name="key_notagain_conndfirst">key_notagain_conndfirst</string>
+  <string name="key_notagain_conndmid">key_notagain_conndmid</string>
+  <string name="key_notagain_arrow">key_notagain_arrow</string>
+  <string name="key_notagain_turnchanged">key_notagain_turnchanged</string>
+  <string name="key_notagain_newfrom">key_notagain_newfrom</string>
+  <string name="key_notagain_trading">key_notagain_trading</string>
+  <string name="key_na_lookup">key_na_lookup</string>
+  <string name="key_na_browse">key_na_browse</string>
+  <string name="key_na_values">key_na_values</string>
+
+  <!-- Name is not localized -->
+  <string name="app_name">CrossW-dbg</string>  
+
+  <!-- Nor is my email address -->
+  <string name="email_author_email">xwords@eehouse.org</string>
+
+  <!-- other -->
+  <string name="default_host">eehouse.org</string>
+
+  <!-- <string name="default_host">10.0.2.2</string> -->
+  <string name="dict_url">http://eehouse.org/and_wordlists</string>
+  <string name="game_url_pathf">//%1$s/newgame.php</string>
+
+  <!-- Debugging stuff. No point in localizing it. -->
+  <string name="advanced">For debugging</string>
+  <string name="advanced_summary">You should never need these...</string>
+  <string name="relay_host">Relay host</string>
+  <string name="redir_host">Invite redirect host</string>
+  <string name="dict_host">Wordlist download URL</string>
+  <string name="logging_on">Enable logging</string>
+  <string name="git_rev_title">Source version id</string>
+  <string name="relay_port">Relay game port</string>
+  <string name="proxy_port">Relay device port</string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+
+  <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
+
+  <string-array name="board_sizes">
+    <item>15x15</item>
+    <item>13x13</item>
+    <item>11x11</item>
+  </string-array>
+
+  <string-array name="phony_names">
+    <item>@string/phonies_ignore</item>
+    <item>@string/phonies_warn</item>
+    <item>@string/phonies_disallow</item>
+  </string-array>
+
+  <string-array name="robot_levels">
+    <item>@string/robot_smartest</item>
+    <item>@string/robot_smarter</item>
+    <item>@string/robot_smart</item>
+  </string-array>
+
+  <string-array name="connect_frequencies">
+    <item>@string/connect_never</item>
+    <!-- <item>@string/connect_thirty_seconds</item> -->
+    <item>@string/connect_five_mins</item>
+    <item>@string/connect_fifteen_mins</item>
+    <item>@string/connect_thirty_mins</item>
+    <item>@string/connect_one_hour</item>
+    <item>@string/connect_six_hours</item>
+    <item>@string/connect_daily</item>
+  </string-array>
+
+  <!-- Keep in sync with DictUtils.DictLoc enum -->
+  <string-array name="loc_names">
+    <item></item>
+    <item>@string/loc_builtin</item>
+    <item>@string/loc_internal</item>
+    <item>@string/loc_external</item>
+    <item>@string/loc_downloads</item>
+  </string-array>
+
+  <string-array name="connect_frequencies_values">
+    <item>-1</item>
+    <!-- <item>60</item> -->
+    <item>300</item>
+    <item>900</item>
+    <item>1800</item>
+    <item>3600</item>
+    <item>21600</item>
+    <item>86400</item>
+  </string-array>
+
+  <string-array name="language_names">
+    <item></item> <!-- Unknown -->
+    <item>English</item> <!-- 1 -->
+    <item>French</item>  <!-- 2 -->
+    <item>German</item>  <!-- 3 -->
+    <item>Turkish</item> <!-- 4 -->
+    <item>Arabic</item>  <!-- 5 -->
+    <item>Spanish</item> <!-- 6 -->
+    <item>Swedish</item> <!-- 7 -->
+    <item>Polish</item>  <!-- 8 -->
+    <item>Danish</item>  <!-- 9 -->
+    <item>Italian</item> <!-- A -->
+    <item>Dutch</item>   <!-- B -->
+    <item>Catalan</item> <!-- C -->
+    <item>Portuguese</item> <!-- D -->
+    <item></item> <!-- E -->
+    <item>Russian</item>
+    <item></item> <!-- 10 -->
+    <item>Czech</item>
+    <item>Greek</item>
+    <item>Slovak</item>
+  </string-array>
+
+  <string-array name="language_codes">
+    <item></item>
+    <item>en</item>
+    <item>fr</item>
+    <item>de</item>
+    <item>tr</item>
+    <item>ar</item>
+    <item>es</item>
+    <item>sv</item>
+    <item>pl</item>
+    <item>da</item>
+    <item>it</item>
+    <item>nl</item>
+    <item>ca</item>
+    <item>pt</item>
+    <item></item>
+    <item>ru</item>
+    <item></item>
+    <item>cs</item>
+    <item>el</item>
+    <item>sk</item>
+  </string-array>
+
+  <!-- Triples of Name, supported codes, and URL format string -->
+  <string-array name="lookup_urls">
+    <!--  -->
+    <item>Dictionary.com</item>
+    <item>:en:</item>
+    <item>http://dictionary.com/browse/%2$s</item> -->
+    <!--  -->
+    <item>TheFreeDictionary.com</item>
+    <item>:en:es:</item>
+    <item>http://%1$s.thefreedictionary.com/_/dict.aspx?word=%2$s</item>
+    <!--  -->
+    <item>Larousse.com</item>
+    <item>:fr:</item>
+    <item>http://www.larousse.com/%1$s/dictionaries/french/%2$s</item>
+    <!--  -->
+    <item>Littre.reverso.net</item>
+    <item>:fr:</item>
+    <item>http://littre.reverso.net/dictionnaire-francais/definition/%2$s</item>
+    <!--  -->
+    <item>Google</item>
+    <item></item> <!-- means all supported -->
+    <item>http://www.google.com/search?nl=%1$s\u0026q=%2$s</item>
+  </string-array>
+
+  <string-array name="game_summary_values">
+    <item>@string/game_summary_field_empty</item>
+    <item>@string/game_summary_field_language</item>
+    <item>@string/game_summary_field_opponents</item>
+    <item>@string/game_summary_field_state</item>
+  </string-array>
+
+</resources>
