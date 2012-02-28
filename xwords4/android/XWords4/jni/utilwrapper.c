@@ -25,6 +25,7 @@
 #include "utilwrapper.h"
 #include "anddict.h"
 #include "andutils.h"
+#include "paths.h"
 #include "LocalizedStrIncludes.h"
 
 typedef struct _TimerStorage {
@@ -469,11 +470,9 @@ and_util_informMissing(XW_UtilCtxt* uc, XP_Bool isServer,
                        CommsConnType connType, XP_U16 nMissing )
 {
     UTIL_CBK_HEADER( "informMissing",
-                     "(ZLorg/eehouse/android/xw4/jni/"
-                     "CommsAddrRec$CommsConnType;I)V" );
+                     "(ZL" PKG_PATH("jni/CommsAddrRec$CommsConnType") ";I)V" );
     jobject jtyp = intToJEnum( env, connType,
-                               "org/eehouse/android/xw4/jni/"
-                               "CommsAddrRec$CommsConnType" );
+                               PKG_PATH("jni/CommsAddrRec$CommsConnType") );
     (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtyp, nMissing );
     (*env)->DeleteLocalRef( env, jtyp );
     UTIL_CBK_TAIL();
