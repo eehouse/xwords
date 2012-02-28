@@ -11,9 +11,6 @@
        # This is the first screen you see when you launch Crosswords
        ############################################################ 
       -->
-    <!-- window title -->
-	<string name="title_games_list">Crosswords</string>
-
     <!-- These two messages appear at the top of the list of games
          (unless the hide_intro preferences checkbox is checked.)-->
     <string name="empty_games_list">Use the button below to create a

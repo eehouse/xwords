@@ -22,12 +22,16 @@ add_to_gitignored() {
 do_dir() {
     local SRC_PATH=$1
     local DEST_PATH=$2
-    local DIR=$3
+    local SRC_DIR=$3
+    local DEST_DIR=$SRC_DIR
+    if [ $SRC_DIR = "xw4" ]; then
+        DEST_DIR=$VARIANT
+    fi
 
-    SRC_PATH=$SRC_PATH/$DIR
+    SRC_PATH=$SRC_PATH/$SRC_DIR
     [ -d $SRC_PATH ] || usage "$SRC_PATH not found"
 
-    DEST_PATH=$DEST_PATH/$DIR
+    DEST_PATH=$DEST_PATH/$DEST_DIR
     mkdir -p $DEST_PATH
 
     for FILE in $SRC_PATH/*; do
@@ -38,7 +42,8 @@ do_dir() {
             if git ls-files $FILE --error-unmatch 2>/dev/null; then
                 echo "skipping $FILE; it's under version control within this variant"
             else
-                make -f $MAKEFILE SRC_PATH=$SRC_PATH DEST_PATH=$DEST_PATH VARIANT=${VARIANT} $FILE
+                make -f $MAKEFILE SRC_PATH=$SRC_PATH DEST_PATH=$DEST_PATH \
+                    VARIANT=${VARIANT} $FILE
                 add_to_gitignored $DEST_PATH $(basename $FILE)
             fi
         fi
