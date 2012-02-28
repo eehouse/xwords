@@ -55,9 +55,11 @@ typedef enum {
     , COMMS_RELAYSTATE_ALLCONNECTED
 } CommsRelayState;
 
-#define XW_BT_UUID "7be0d084-ff89-4d6d-9c78-594773a6f963"
+#ifdef XWFEATURE_BLUETOOTH
+# define XW_BT_UUID "7be0d084-ff89-4d6d-9c78-594773a6f963"
 
-#define XW_BT_NAME "Crosswords"
+# define XW_BT_NAME "Crosswords"
+#endif
 
 /* on Palm BtLibDeviceAddressType is a 48-bit quantity.  Linux's typeis the
    same size.  Goal is something all platforms support */
