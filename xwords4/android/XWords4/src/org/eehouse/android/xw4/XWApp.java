@@ -28,6 +28,8 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 public class XWApp extends Application {
 
+    public static final boolean BTSUPPORTED = true;
+
     private static UUID s_UUID = null;
 
     @Override

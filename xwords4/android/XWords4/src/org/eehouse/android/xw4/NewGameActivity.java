@@ -264,42 +264,47 @@ public class NewGameActivity extends XWActivity {
 
     private void checkEnableBT( boolean force )
     {
-        boolean enabled = BTService.BTEnabled();
+        if ( XWApp.BTSUPPORTED ) {
+            boolean enabled = BTService.BTEnabled();
 
-        if ( force || enabled != m_showsOn ) {
-            m_showsOn = enabled;
+            if ( force || enabled != m_showsOn ) {
+                m_showsOn = enabled;
 
-            findViewById( R.id.bt_disabled ).
-                setVisibility( enabled ? View.GONE : View.VISIBLE  );
-            findViewById( R.id.bt_stuff ).
-                setVisibility( enabled ? View.VISIBLE : View.GONE  );
+                findViewById( R.id.bt_separator ).setVisibility( View.VISIBLE );
 
-            Button button;
-            if ( enabled ) {
-                button = (Button)findViewById( R.id.newgame_invite_bt );
-                button.setOnClickListener( new View.OnClickListener() {
-                        @Override
-                        public void onClick( View v ) {
-                            makeNewBTGame( true );
-                        }
-                    } );
-                button = (Button)findViewById( R.id.newgame_bt_config );
-                button.setOnClickListener( new View.OnClickListener() {
-                        @Override
-                        public void onClick( View v ) {
-                            makeNewBTGame( false );
-                        }
-                    } );
-            } else {
-                button = (Button)findViewById( R.id.newgame_enable_bt );
-                button.setOnClickListener( new View.OnClickListener() {
-                        @Override
-                            public void onClick( View v ) {
-                            Intent enableBtIntent = 
-                                new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                            startActivityForResult( enableBtIntent, 0 );
-                        }
-                    } );
+                findViewById( R.id.bt_disabled ).
+                    setVisibility( enabled ? View.GONE : View.VISIBLE  );
+                findViewById( R.id.bt_stuff ).
+                    setVisibility( enabled ? View.VISIBLE : View.GONE  );
+
+                Button button;
+                if ( enabled ) {
+                    button = (Button)findViewById( R.id.newgame_invite_bt );
+                    button.setOnClickListener( new View.OnClickListener() {
+                            @Override
+                                public void onClick( View v ) {
+                                makeNewBTGame( true );
+                            }
+                        } );
+                    button = (Button)findViewById( R.id.newgame_bt_config );
+                    button.setOnClickListener( new View.OnClickListener() {
+                            @Override
+                                public void onClick( View v ) {
+                                makeNewBTGame( false );
+                            }
+                        } );
+                } else {
+                    button = (Button)findViewById( R.id.newgame_enable_bt );
+                    button.setOnClickListener( new View.OnClickListener() {
+                            @Override
+                                public void onClick( View v ) {
+                                Intent enableBtIntent = 
+                                    new Intent(BluetoothAdapter.
+                                               ACTION_REQUEST_ENABLE);
+                                startActivityForResult( enableBtIntent, 0 );
+                            }
+                        } );
+                }
             }
         }
     }

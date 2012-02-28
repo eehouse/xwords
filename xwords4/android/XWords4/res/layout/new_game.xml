@@ -106,17 +106,20 @@
     </LinearLayout>
 
     <!-- Bluetooth -->
-    <TextView style="@style/config_separator"
+    <TextView android:id="@+id/bt_separator"
+              style="@style/config_separator"
               android:layout_marginTop="10dip"
               android:textAppearance="?android:attr/textAppearanceMedium"
               android:text="@string/newgame_bt_header"
+              android:visibility="gone"
               />
 
     <LinearLayout android:id="@+id/bt_disabled"
                   android:orientation="vertical"
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
-                  >
+                  android:visibility="gone"
+              >
       <TextView android:text="@string/bt_disabled"
                 style="@style/relay_explain"
                 />
@@ -131,6 +134,7 @@
                   android:orientation="vertical"
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
+                  android:visibility="gone"
                   >
       <LinearLayout android:orientation="horizontal"
                     android:layout_width="fill_parent" 

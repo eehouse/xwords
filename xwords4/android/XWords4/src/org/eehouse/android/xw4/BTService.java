@@ -246,10 +246,12 @@ public class BTService extends Service {
     @Override
     public void onCreate()
     {
-        m_adapter = BluetoothAdapter.getDefaultAdapter();
-        if ( null != m_adapter && m_adapter.isEnabled() ) {
+        BluetoothAdapter adapter = XWApp.BTSUPPORTED
+            ? BluetoothAdapter.getDefaultAdapter() : null;
+        if ( null != adapter && adapter.isEnabled() ) {
+            m_adapter = adapter;
             DbgUtils.logf( "BTService.onCreate(); bt name = %s", 
-                           m_adapter.getName() );
+                           adapter.getName() );
             initNames();
             listLocalBTGames( false );
             startListener();
@@ -263,6 +265,7 @@ public class BTService extends Service {
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
+        Assert.assertTrue( XWApp.BTSUPPORTED );
         if ( null != intent ) {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             DbgUtils.logf( "BTService.onStartCommand; cmd=%d", cmd );
