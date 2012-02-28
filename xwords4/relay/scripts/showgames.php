@@ -84,6 +84,12 @@ function strip_quotes($str) {
     return trim( $str, '"');
 }
 
+function print_date( $str ) {
+    $str = strip_quotes( $str );
+    $time = strtotime( $str );
+    return strftime( "%x@%R", $time );
+}
+
 $cols = array( new Column("dead", "D", "capitalize", false ), 
                new Column("pub", "P", "capitalize", false ), 
                new Column("room", "Room", "identity", false ), 
@@ -94,8 +100,8 @@ $cols = array( new Column("dead", "D", "capitalize", false ),
                new Column("ack", "A", "identity", true ), 
                new Column("nsent", "Sent", "identity", false ),
                new Column("addrs", "Dev. addr", "ip_to_host", true ), 
-               new Column("ctime", "Created", "strip_quotes", false ), 
-               new Column("mtimes", "Last contact", "strip_quotes", true ), 
+               new Column("ctime", "Created", "print_date", false ), 
+               new Column("mtimes", "Last contact", "print_date", true ), 
                );
 
 $colnames = array();
