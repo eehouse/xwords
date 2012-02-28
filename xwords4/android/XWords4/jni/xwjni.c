@@ -270,6 +270,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
     setJAddrRec( env, jaddr, &addr );
 }
 
+#ifdef XWFEATURE_BLUETOOTH
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 ( JNIEnv* env, jclass C )
@@ -280,6 +281,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
     (*env)->DeleteLocalRef( env, jstr );
     return jstr;
 }
+#endif
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
@@ -1108,6 +1110,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                 setString( env, jsummary, "relayID", buf );
             }
             setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
+#ifdef XWFEATURE_BLUETOOTH
         } else if ( COMMS_CONN_BT == addr.conType ) {
             XP_BtAddrStr addrs[MAX_NUM_PLAYERS];
             XP_U16 count = VSIZE(addrs);
@@ -1124,6 +1127,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             setObject( env, jsummary, "remoteBTAddrs", "[Ljava/lang/String;", 
                        jaddrs );
             (*env)->DeleteLocalRef( env, jaddrs );
+#endif
         }
     }
 
