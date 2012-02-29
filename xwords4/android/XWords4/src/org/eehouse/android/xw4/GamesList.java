@@ -542,10 +542,6 @@ public class GamesList extends XWListActivity
 
         switch (item.getItemId()) {
             
-        case R.id.gamel_menu_btping:
-            BTService.ping( this );
-            break;
-
         case R.id.gamel_menu_newgame:
             startNewGameActivity();
             break;

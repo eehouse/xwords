@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- <item android:id="@+id/gamel_menu_view_hidden" -->
-    <!--       android:title="@string/gamel_menu_view_hidden" -->
-    <!--       /> -->
-    <item android:id="@+id/gamel_menu_btping"
-          android:title="bt ping"
-          />
     <item android:id="@+id/gamel_menu_newgame"
           android:title="@string/button_new_game"
           android:icon="@android:drawable/ic_menu_add"

@@ -75,7 +75,6 @@ public class BTService extends Service {
 
     private static final int BT_PROTO = 0;
 
-    private static final int PING = 0;
     private static final int SCAN = 1;
     private static final int INVITE = 2;
     private static final int SEND = 3;
@@ -194,11 +193,6 @@ public class BTService extends Service {
         context.startService( intent );
     }
 
-    public static void ping( Context context )
-    {
-        context.startService( getIntentTo( context, PING ) );
-    }
-
     public static void inviteRemote( Context context, String hostName, 
                                      int gameID, String initialName, 
                                      int lang, int nPlayersT, 
@@ -278,9 +272,6 @@ public class BTService extends Service {
             } else {
                 switch( cmd ) {
                 case -1:
-                    break;
-                case PING:
-                    m_sender.add( new BTQueueElem( BTCmd.PING ) );
                     break;
                 case CLEAR:
                     String[] devs = intent.getStringArrayExtra( CLEAR_STR );
