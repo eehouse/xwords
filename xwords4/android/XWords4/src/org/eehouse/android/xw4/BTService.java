@@ -163,7 +163,9 @@ public class BTService extends Service {
 
     public static void startService( Context context )
     {
-        context.startService( new Intent( context, BTService.class ) );
+        if ( XWApp.BTSUPPORTED ) {
+            context.startService( new Intent( context, BTService.class ) );
+        }
     }
 
     public static void setBTEventListener( BTEventListener li ) {
@@ -265,8 +267,8 @@ public class BTService extends Service {
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
-        Assert.assertTrue( XWApp.BTSUPPORTED );
-        if ( null != intent ) {
+        int result;
+        if ( XWApp.BTSUPPORTED && null != intent ) {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             DbgUtils.logf( "BTService.onStartCommand; cmd=%d", cmd );
             if ( -1 == cmd ) {
@@ -331,8 +333,11 @@ public class BTService extends Service {
                     Assert.fail();
                 }
             }
+            result = Service.START_STICKY;
+        } else {
+            result = Service.START_STICKY_COMPATIBILITY;
         }
-        return Service.START_STICKY;
+        return result;
     }
 
     @Override

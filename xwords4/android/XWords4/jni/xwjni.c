@@ -270,18 +270,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
     setJAddrRec( env, jaddr, &addr );
 }
 
-#ifdef XWFEATURE_BLUETOOTH
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 ( JNIEnv* env, jclass C )
 {
+    jstring jstr = NULL;
+#ifdef XWFEATURE_BLUETOOTH
     const char* uuid = XW_BT_UUID;
     XP_LOGF( "uuid: %s", uuid );
-    jstring jstr = (*env)->NewStringUTF( env, uuid );
+    jstr = (*env)->NewStringUTF( env, uuid );
     (*env)->DeleteLocalRef( env, jstr );
+#endif
     return jstr;
 }
-#endif
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
