@@ -31,8 +31,6 @@
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
   <uses-permission android:name="android.permission.VIBRATE" />
-  <uses-permission android:name="android.permission.BLUETOOTH" />
-  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
   <!-- <uses-permission android:name="android.permission.RECEIVE_SMS" /> -->
   <!-- <uses-permission android:name="android.permission.SEND_SMS" /> -->
@@ -62,9 +60,6 @@
     
     <activity android:name="NewGameActivity"
               android:theme="@android:style/Theme.NoTitleBar"
-              />
-    <activity android:name="BTInviteActivity"
-              android:theme="@android:style/Theme.Dialog"
               />
 
     <activity android:name="GameConfig"
@@ -144,26 +139,6 @@
         </intent-filter>
     </receiver>
 
-    <receiver android:name="BTReceiver">
-      <intent-filter>
-        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
-      </intent-filter>
-      <intent-filter>
-        <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
-      </intent-filter>
-    </receiver>
-
-    <!-- <receiver android:name=".BTConnection"> -->
-    <!--   <intent-filter> -->
-    <!--     <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />                                                                     -->
-    <!--   </intent-filter> -->
-    <!--   <intent-filter> -->
-    <!--     <action android:name="android.bluetooth.device.action.ACL_CONNECTED" /> -->
-    <!--     <action android:name="android.bluetooth.device.action.ACL_DISCONNECT_REQUESTED" /> -->
-    <!--     <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" /> -->
-    <!--   </intent-filter> -->
-    <!-- </receiver> -->
-
     <!-- <receiver android:name="NBSReceiver"> -->
     <!--   <intent-filter android:priority="10"> -->
     <!--     <action android:name="android.intent.action.DATA_SMS_RECEIVED" /> -->
@@ -171,8 +146,6 @@
     <!--     <data android:port="50009" /> -->
     <!--   </intent-filter> -->
     <!-- </receiver> -->
-
-    <service android:name="BTService"/>
 
   </application>
 </manifest>
