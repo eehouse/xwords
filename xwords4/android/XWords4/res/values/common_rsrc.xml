@@ -84,9 +84,6 @@
   <string name="key_na_browse">key_na_browse</string>
   <string name="key_na_values">key_na_values</string>
 
-  <!-- Name is not localized -->
-  <string name="app_name">Crosswords</string>  
-
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
 
