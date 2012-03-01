@@ -480,7 +480,7 @@ public class GameConfig extends XWActivity
                 m_carOrig = new CommsAddrRec( this );
                 if ( XwJNI.game_hasComms( gamePtr ) ) {
                     XwJNI.comms_getAddr( gamePtr, m_carOrig );
-                } else {
+                } else if (DeviceRole.SERVER_STANDALONE != m_giOrig.serverRole){
                     String relayName = CommonPrefs.getDefaultRelayHost( this );
                     int relayPort = CommonPrefs.getDefaultRelayPort( this );
                     XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );

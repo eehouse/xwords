@@ -70,7 +70,7 @@ public class CommsAddrRec {
 
     public CommsAddrRec( Context context ) 
     {
-        this( context, CommsConnType.COMMS_CONN_RELAY );
+        this( context, CommsConnType.COMMS_CONN_NONE );
     }
 
     public CommsAddrRec( Context context, String btHost, String btAddr ) 
