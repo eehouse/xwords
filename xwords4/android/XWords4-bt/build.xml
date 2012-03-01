@@ -50,7 +50,7 @@
      in between standard targets -->
 
     <target name="-pre-build">
-        <exec dir="." executable="../scripts/mkvariant.sh" >
+        <exec dir="." executable="../scripts/mkvariant.sh" output="/dev/null">
             <arg value="--variant-name"/>
             <arg value="xw4bt"/>
             <arg value="--dest-dir"/>
@@ -62,10 +62,10 @@
             <arg value="--dest-dir"/>
             <arg value="./assets"/>
         </exec>
-        <exec dir="." executable="../scripts/ndkbuild.sh" >
+        <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
             <arg value="-j3"/>
         </exec>
-        <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt">
+        <exec dir=".." executable="./scripts/genvers.sh" output="/dev/null">
             <arg value="XWords4-bt"/>
             <arg value="xw4bt"/>
         </exec>

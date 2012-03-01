@@ -47,3 +47,7 @@ XWListActivity.java
 XWListAdapter.java
 XWListItem.java
 XWListPreference.java
+BTInviteActivity.java
+BTReceiver.java
+BTService.java
+MultiMsgSink.java
