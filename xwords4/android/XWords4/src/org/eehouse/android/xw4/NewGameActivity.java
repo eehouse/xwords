@@ -47,20 +47,28 @@ import org.eehouse.android.xw4.jni.XwJNI;
 public class NewGameActivity extends XWActivity {
 
     private static final int NEW_GAME_ACTION = 1;
-    private static final String SAVE_DEVNAMES = "DEVNAMES";
+    // private static final String SAVE_DEVNAMES = "DEVNAMES";
+    private static final String SAVE_REMOTEGAME = "REMOTEGAME";
+    private static final String SAVE_GAMEID = "GAMEID";
     private static final int CONFIG_FOR_BT = 1;
     private static final int INVITE_FOR_BT = 2;
+
+    // Dialogs
+    private static final int NAME_GAME = DlgDelegate.DIALOG_LAST + 1;
 
     private boolean m_showsOn;
     private int m_chosen;
     private int m_lang = 0;
     private long m_btRowID = -1;
     private String m_gameName;
+    private int m_gameID;
+    private String m_remoteBTDev;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
+        getBundledData( savedInstanceState );
 
         setContentView( R.layout.new_game );
 
@@ -105,6 +113,22 @@ public class NewGameActivity extends XWActivity {
         checkEnableBT( true );
     }
 
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        outState.putString( SAVE_REMOTEGAME, m_remoteBTDev );
+        outState.putInt( SAVE_GAMEID, m_gameID );
+    }
+
+    private void getBundledData( Bundle bundle )
+    {
+        if ( null != bundle ) {
+            m_remoteBTDev = bundle.getString( SAVE_REMOTEGAME );
+            m_gameID = bundle.getInt( SAVE_GAMEID );
+        }
+    }
+
     // DlgDelegate.DlgClickNotify interface
     @Override
     public void dlgButtonClicked( int id, int which )
@@ -144,20 +168,57 @@ public class NewGameActivity extends XWActivity {
                 break;
             case INVITE_FOR_BT:     // user selected device 
                 if ( Activity.RESULT_CANCELED != resultCode ) {
-                    int gameID = GameUtils.newGameID();
-                    // TODO: get this from user.
-                    m_gameName = String.format( "BT Game %X", gameID );
                     String[] remoteDevs =
                         data.getStringArrayExtra( BTInviteActivity.DEVS );
-                    DbgUtils.logf( "got %s", remoteDevs[0] );
                     Assert.assertTrue( 1 == remoteDevs.length );
-                    BTService.inviteRemote( NewGameActivity.this, remoteDevs[0],
-                                            gameID, m_gameName, m_lang, 2, 1 );
-                    startProgress( R.string.invite_progress );
+                    m_remoteBTDev = remoteDevs[0];
+
+                    m_gameID = GameUtils.newGameID();
+                    m_gameName = Utils.format( this, R.string.dft_bt_namef, 
+                                               m_gameID & 0xFFFF );
+                    showDialog( NAME_GAME );
                 }
                 break;
             }
         }
+    }
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            switch( id ) {
+            case NAME_GAME:
+                final GameNamer namerView =
+                    (GameNamer)Utils.inflate( this, R.layout.rename_game );
+                namerView.setLabel( R.string.btname_label );
+                namerView.setName( m_gameName );
+
+                OnClickListener lstnr =
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int itm ) {
+                            m_gameName = namerView.getName();
+                            BTService.inviteRemote( NewGameActivity.this, 
+                                                    m_remoteBTDev,
+                                                    m_gameID, m_gameName, 
+                                                    m_lang, 2, 1 );
+                            startProgress( R.string.invite_progress );
+                        }
+                    };
+
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.game_btname_title )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setView( namerView )
+                    .create();
+                Utils.setRemoveOnDismiss( this, dialog, id );
+
+                break;
+            }
+        }
+        return dialog;
     }
 
     // BTService.BTEventListener interface

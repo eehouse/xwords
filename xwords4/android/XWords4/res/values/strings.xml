@@ -1873,5 +1873,8 @@
         times. Re-open the game to try again.</string>
 	<string name="button_invite">Invite selected</string>
 
+    <string name="btname_label">New Bluetooth game name</string>
+    <string name="game_btname_title">Bluetooth game name</string>
+    <string name="dft_bt_namef">Game %X</string>
 
 </resources>

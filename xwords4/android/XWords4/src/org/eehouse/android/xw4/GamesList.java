@@ -170,14 +170,13 @@ public class GamesList extends XWListActivity
                 break;
 
             case RENAME_GAME:
-                layout =
-                    (LinearLayout)Utils.inflate( this, R.layout.rename_game );
+                final GameNamer namerView =
+                    (GameNamer)Utils.inflate( this, R.layout.rename_game );
+                namerView.setName( GameUtils.getName( this, m_rowid ) );
+                namerView.setLabel( R.string.rename_label );
                 lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlgi, int item ) {
-                            Dialog dlg = (Dialog)dlgi;
-                            EditText txt = 
-                                (EditText)dlg.findViewById( R.id.name_edit );
-                            String name = txt.getText().toString();
+                        public void onClick( DialogInterface dlg, int item ) {
+                            String name = namerView.getName();
                             DBUtils.setName( GamesList.this, m_rowid, name );
                             m_adapter.inval( m_rowid );
                             onContentChanged();
@@ -187,8 +186,9 @@ public class GamesList extends XWListActivity
                     .setTitle( R.string.game_rename_title )
                     .setNegativeButton( R.string.button_cancel, null )
                     .setPositiveButton( R.string.button_ok, lstnr )
-                    .setView( layout )
+                    .setView( namerView )
                     .create();
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
 
             case GET_NAME:
@@ -225,21 +225,6 @@ public class GamesList extends XWListActivity
         }
         return dialog;
     } // onCreateDialog
-
-    @Override
-    public void onPrepareDialog( int id, Dialog dialog )
-    {
-        switch( id ) {
-        case RENAME_GAME:
-            String name = GameUtils.getName( this, m_rowid );
-            EditText txt = (EditText)dialog.findViewById( R.id.name_edit );
-            txt.setText( name );
-            break;
-        default:
-            super.onPrepareDialog( id, dialog );
-            break;
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
