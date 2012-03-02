@@ -797,20 +797,17 @@ public class GameUtils {
 
     public static String makeRandomID()
     {
-        int rint = 0;
-        while ( 0 == rint ) {
-            rint = s_random.nextInt();
-        }
+        int rint = newGameID();
         return String.format( "%X", rint ).substring( 0, 4 );
     }
 
     public static int newGameID()
     {
-        int rint = 0;
-        while ( 0 == rint ) {
+        int rint;
+        do {
             rint = s_random.nextInt();
-        }
-        DbgUtils.logf( "newGameID=>%d", rint );
+        } while ( 0 == rint );
+        DbgUtils.logf( "newGameID()=>%X", rint );
         return rint;
     }
 

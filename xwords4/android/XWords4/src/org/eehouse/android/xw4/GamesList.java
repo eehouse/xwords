@@ -732,8 +732,8 @@ public class GamesList extends XWListActivity
 
     private void startHasGameID( Intent intent )
     {
-        int gameID = intent.getIntExtra( DispatchNotify.GAMEID_EXTRA, -1 );
-        if ( -1 != gameID ) {
+        int gameID = intent.getIntExtra( DispatchNotify.GAMEID_EXTRA, 0 );
+        if ( 0 != gameID ) {
             startHasGameID( gameID );
         }
     }
