@@ -7,7 +7,7 @@
 
 <?php
 include "pwd.php";
-$limit = 10;
+$limit = 50;
 
 class Column {
     public $colname;
@@ -87,7 +87,7 @@ function strip_quotes($str) {
 function print_date( $str ) {
     $str = strip_quotes( $str );
     $time = strtotime( $str );
-    return strftime( "%x@%R", $time );
+    return strftime( "%y%m%d %R", $time );
 }
 
 $cols = array( new Column("dead", "D", "capitalize", false ), 
