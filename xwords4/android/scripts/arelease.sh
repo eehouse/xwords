@@ -16,9 +16,8 @@ usage() {
 do_build() {
     WD=$(pwd)
     cd $(dirname $0)/../${VARIANT}/
-    touch jni/Android.mk
     rm -rf bin/ gen/
-    ant release
+    ant clean release
     cd $WD
 }
 
