@@ -45,6 +45,11 @@
             unless="sdk.dir"
     />
 
+    <target name="-pre-clean">
+        <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
+            <arg value="clean"/>
+        </exec>
+    </target>
 
 <!-- extension targets. Uncomment the ones where you want to do custom work
      in between standard targets -->
