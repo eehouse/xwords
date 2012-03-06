@@ -4,28 +4,32 @@ set -u -e
 
 TAGNAME=""
 FILES=""
+VARIANT="XWords4"
 XW_WWW_PATH=${XW_WWW_PATH:-""}
 
 usage() {
     echo "Error: $*"
-    echo "usage: $0 [--tag <name>] [<package-unsigned.apk>]" >&2
+    echo "usage: $0 [--tag <name>] [--variant variant] [<package-unsigned.apk>]" >&2
     exit 1
 }
 
 do_build() {
     WD=$(pwd)
-    cd $(dirname $0)/../XWords4/
-    touch jni/Android.mk
-    ../scripts/ndkbuild.sh -j3
+    cd $(dirname $0)/../${VARIANT}/
     rm -rf bin/ gen/
-    ant release
+    ant clean release
     cd $WD
 }
 
 while [ "$#" -gt 0 ]; do
     case $1 in
-        --tag) TAGNAME=$2
+        --tag)
+            TAGNAME=$2
             git describe $TAGNAME || usage "$TAGNAME not a valid git tag"
+            shift
+            ;;
+        --variant)
+            VARIANT=$2
             shift
             ;;
         *)

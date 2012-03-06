@@ -49,6 +49,12 @@
 <!-- extension targets. Uncomment the ones where you want to do custom work
      in between standard targets -->
 
+    <target name="-pre-clean">
+        <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
+            <arg value="clean"/>
+        </exec>
+      </target>
+
     <target name="-pre-build">
         <exec dir="." executable="../scripts/ndkbuild.sh" >
             <arg value="-j3"/>
