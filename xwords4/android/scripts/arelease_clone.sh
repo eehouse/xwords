@@ -59,7 +59,7 @@ git checkout ${TAG}${BRANCH}
 cd ./xwords4/android/${VARIANT}
 ../scripts/setup_local_props.sh
 ../scripts/arelease.sh --variant ${VARIANT}
-mkdir /tmp/releases_${VARIANT}
+mkdir -p /tmp/releases_${VARIANT}
 cp *.apk /tmp/releases_${VARIANT}
 
 cd $CURDIR
