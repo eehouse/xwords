@@ -56,8 +56,8 @@ public class LookupView extends LinearLayout
     private static String[] s_lookupUrls;
     private static ArrayAdapter<String> s_urlsAdapter;
     private static final int LIST_LAYOUT = // android.R.layout.simple_list_item_1;
-        // android.R.layout.select_dialog_item;
-        R.layout.select_dialog_item;
+        android.R.layout.select_dialog_item;
+    //R.layout.select_dialog_item;
     
     private static int s_lang = -1;
 
@@ -90,7 +90,7 @@ public class LookupView extends LinearLayout
 
         m_wordsAdapter = new ArrayAdapter<String>( m_context, LIST_LAYOUT, 
                                                    m_words );
-        m_list = (ListView)findViewById( R.id.list );
+        m_list = (ListView)findViewById( R.id.lookup_list );
         m_list.setOnItemClickListener( this );
 
         m_doneButton = (Button)findViewById( R.id.button_done );
