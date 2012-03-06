@@ -1696,7 +1696,7 @@ public class BoardActivity extends XWActivity
 
     private void tryBTInvites()
     {
-        if ( null != m_btDevs ) {
+        if ( XWApp.BTSUPPORTED && null != m_btDevs ) {
             String gameName = GameUtils.getName( this, m_rowid );
             m_invitesPending = m_btDevs.length;
             for ( String dev : m_btDevs ) {
