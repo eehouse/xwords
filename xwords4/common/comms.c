@@ -858,8 +858,11 @@ comms_checkAddr( DeviceRole role, const CommsAddrRec* addr, XW_UtilCtxt* util )
 CommsConnType 
 comms_getConType( const CommsCtxt* comms )
 {
-    CommsConnType typ = !!comms ? comms->addr.conType : COMMS_CONN_NONE;
-    if ( !comms ) {
+    CommsConnType typ;
+    if ( !!comms ) {
+        typ = comms->addr.conType;
+    } else {
+        typ = COMMS_CONN_NONE;
         XP_LOGF( "%s: returning COMMS_CONN_NONE for null comms", __func__ );
     }
     return typ;

@@ -10,8 +10,6 @@ usage() {
     exit 1
 }
 
-[ -e $APK ] || usage "$APK not found"
-
 DEVICES=""
 
 while [ $# -ge 1 ]; do
@@ -33,6 +31,8 @@ while [ $# -ge 1 ]; do
     esac
     shift
 done
+
+[ -e $APK ] || usage "$APK not found"
 
 if [ -n "$DEVICES" ]; then
     echo "installing this binary.  Check the age..."
