@@ -155,16 +155,6 @@
         </LinearLayout>
       </LinearLayout>
 
-      <LinearLayout android:id="@+id/connect_set_bt"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
-        <TextView style="@style/config_separator"
-                  android:text="@string/connect_label_bt"
-                  />
-      </LinearLayout>
-
       <TextView style="@style/config_separator"
                 android:text="@string/settings_label"
                 />

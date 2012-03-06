@@ -84,7 +84,6 @@ public class GameConfig extends XWActivity
     private Button m_playButton;
     private ImageButton m_refreshRoomsButton;
     private View m_connectSetRelay;
-    private View m_connectSetBT;
     private Spinner m_roomChoose;
     // private Button m_configureButton;
     private long m_rowid;
@@ -400,7 +399,6 @@ public class GameConfig extends XWActivity
         setContentView(R.layout.game_config);
 
         m_connectSetRelay = findViewById(R.id.connect_set_relay);
-        m_connectSetBT = findViewById( R.id.connect_set_bt );
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
@@ -690,8 +688,6 @@ public class GameConfig extends XWActivity
         m_connectSetRelay.
             setVisibility( m_conType == CommsConnType.COMMS_CONN_RELAY ?
                            View.VISIBLE : View.GONE );
-        m_connectSetBT.setVisibility( m_conType == CommsConnType.COMMS_CONN_BT?
-                                      View.VISIBLE : View.GONE );
 
         if ( ! localOnlyGame()
              && ((0 == m_gi.remoteCount() )
