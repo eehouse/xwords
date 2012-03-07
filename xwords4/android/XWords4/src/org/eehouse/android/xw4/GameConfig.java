@@ -579,7 +579,9 @@ public class GameConfig extends XWActivity
 
     public void onClick( View view ) 
     {
-        if ( m_addPlayerButton == view ) {
+        if ( null == m_gameLock ) {
+            // do nothing; we're on the way out
+        } else if ( m_addPlayerButton == view ) {
             int curIndex = m_gi.nPlayers;
             if ( curIndex < CurGameInfo.MAX_NUM_PLAYERS ) {
                 m_gi.addPlayer(); // ups nPlayers
@@ -626,7 +628,9 @@ public class GameConfig extends XWActivity
     public boolean onKeyDown( int keyCode, KeyEvent event )
     {
         boolean consumed = false;
-        if ( keyCode == KeyEvent.KEYCODE_BACK ) {
+        if ( null == m_gameLock ) {
+            // Do nothing; we're on our way out
+        } else if ( keyCode == KeyEvent.KEYCODE_BACK ) {
             saveChanges();
             if ( !m_gameStarted ) { // no confirm needed 
                 applyChanges( true );
