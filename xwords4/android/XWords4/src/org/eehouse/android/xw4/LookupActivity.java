@@ -35,7 +35,7 @@ import java.util.ArrayList;
 
 import junit.framework.Assert;
 
-public class LookupView extends XWListActivity
+public class LookupActivity extends XWListActivity
     implements View.OnClickListener,
                AdapterView.OnItemClickListener {
 
