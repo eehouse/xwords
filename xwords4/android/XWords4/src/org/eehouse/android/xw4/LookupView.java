@@ -20,9 +20,7 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
@@ -32,19 +30,21 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.app.AlertDialog;
 import java.util.ArrayList;
-import android.util.AttributeSet;
 
 import junit.framework.Assert;
 
-public class LookupView extends LinearLayout
+public class LookupView extends XWListActivity
     implements View.OnClickListener,
-               AdapterView.OnItemClickListener,
-               DialogInterface.OnDismissListener {
+               AdapterView.OnItemClickListener {
+
+    public static final String WORDS = "WORDS";
+    public static final String LANG = "LANG";
+    public static final String FORCELIST = "FORCELIST";
+    private static final String STATE = "STATE";
+    private static final String WORDINDEX = "WORDINDEX";
+    private static final String URLINDEX = "URLINDEX";
 
     private static final int STATE_DONE = 0;
     private static final int STATE_WORDS = 1;
@@ -55,55 +55,66 @@ public class LookupView extends LinearLayout
     private static String[] s_lookupNames;
     private static String[] s_lookupUrls;
     private static ArrayAdapter<String> s_urlsAdapter;
-    private static final int LIST_LAYOUT = // android.R.layout.simple_list_item_1;
-        android.R.layout.select_dialog_item;
-    //R.layout.select_dialog_item;
+    private static final int LIST_LAYOUT = android.R.layout.simple_list_item_1;
+    // android.R.layout.select_dialog_item;
     
     private static int s_lang = -1;
 
     private String[] m_words;
     private boolean m_forceList;
-    private static int m_lang;
     private int m_wordIndex = 0;
     private int m_urlIndex = 0;
     private int m_state;
     private ArrayAdapter<String> m_wordsAdapter;
     private Button m_doneButton;
-    private Dialog m_dialog;
-    private Context m_context;
-    private int m_dlgId;
-    private ListView m_list;
+    private TextView m_summary;
 
-    public LookupView( Context cx, AttributeSet as ) {
-        super( cx, as );
-        m_context = cx;
-    }
-
-    public void setWords( String[] words, int lang, boolean forceList ) 
+    @Override
+    protected void onCreate( Bundle savedInstanceState )
     {
-        m_words = words;
-        m_forceList = forceList;
-        setLang( lang );
+        super.onCreate( savedInstanceState );
+        requestWindowFeature( Window.FEATURE_NO_TITLE );
+        setContentView( R.layout.lookup );
+
+        Intent intent = getIntent();
+        m_words = intent.getStringArrayExtra( WORDS );
+        setLang( intent.getIntExtra( LANG, -1 ) );
+        m_forceList = intent.getBooleanExtra( FORCELIST, false );
 
         m_state = STATE_DONE;
         adjustState( 1 );
 
-        m_wordsAdapter = new ArrayAdapter<String>( m_context, LIST_LAYOUT, 
+        m_wordsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT, 
                                                    m_words );
-        m_list = (ListView)findViewById( R.id.lookup_list );
-        m_list.setOnItemClickListener( this );
+        getListView().setOnItemClickListener( this );
 
         m_doneButton = (Button)findViewById( R.id.button_done );
         m_doneButton.setOnClickListener( this );
 
+        m_summary = (TextView)findViewById( R.id.summary );
+
         switchState();
     }
 
-    public void setDialog( Dialog dialog, int id )
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
     {
-        m_dialog = dialog;
-        m_dlgId = id;
-        m_dialog.setOnDismissListener( this );
+        super.onSaveInstanceState( outState );
+        outState.putInt( STATE, m_state );
+        outState.putInt( WORDINDEX, m_wordIndex );
+        outState.putInt( URLINDEX, m_urlIndex );
+    }
+
+    private void getBundledData( Bundle bundle )
+    {
+        if ( null == bundle ) {
+            m_state = STATE_DONE;
+            adjustState( 1 );
+        } else {
+            m_state = bundle.getInt( STATE );
+            m_wordIndex = bundle.getInt( WORDINDEX );
+            m_urlIndex = bundle.getInt( URLINDEX );
+        }
     }
 
     /* View.OnClickListener -- just the Done button */
@@ -124,12 +135,6 @@ public class LookupView extends LinearLayout
             Assert.fail();
         }
         switchState( 1 );
-    }
-
-    /* DialogInterface.OnDismissListener interface */
-    public void onDismiss( DialogInterface di ) 
-    {
-        m_dialog.getOwnerActivity().removeDialog( m_dlgId );
     }
 
     private void adjustState( int incr )
@@ -160,17 +165,17 @@ public class LookupView extends LinearLayout
     {
         switch( m_state ) {
         case STATE_DONE:
-            m_dialog.dismiss();
+            finish();
             break;
         case STATE_WORDS:
-            m_list.setAdapter( m_wordsAdapter );
+            getListView().setAdapter( m_wordsAdapter );
             setSummary( R.string.title_lookup );
             m_doneButton.setText( R.string.button_done );
             break;
         case STATE_URLS:
-            m_list.setAdapter( s_urlsAdapter );
+            getListView().setAdapter( s_urlsAdapter );
             setSummary( m_words[m_wordIndex] );
-            String txt = Utils.format( m_context, R.string.button_donef,
+            String txt = Utils.format( this, R.string.button_donef,
                                        m_words[m_wordIndex] );
             m_doneButton.setText( txt );
             break;
@@ -182,7 +187,7 @@ public class LookupView extends LinearLayout
             Assert.fail();
             break;
         }
-    } // adjustState
+    } // switchState
 
     private void lookupWord( String word, String fmt )
     {
@@ -196,14 +201,14 @@ public class LookupView extends LinearLayout
             intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
         
             try {
-                m_context.startActivity( intent );
+                startActivity( intent );
             } catch ( android.content.ActivityNotFoundException anfe ) {
                 DbgUtils.logf( "%s", anfe.toString() );
             }
         }
     } // lookupWord
 
-    public void setLang( int lang )
+    private void setLang( int lang )
     {
         if ( null == s_langCodes ) {
             s_langCodes = getResources().getStringArray( R.array.language_codes );
@@ -223,20 +228,20 @@ public class LookupView extends LinearLayout
             }
             s_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
             s_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
-            s_urlsAdapter = new ArrayAdapter<String>( m_context, LIST_LAYOUT, 
+            s_urlsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT, 
                                                       s_lookupNames );
             s_lang = lang;
-        } // initLookup
+        }
     }
 
     private void setSummary( int id )
     {
-        m_dialog.setTitle( m_context.getString( id ) );
+        m_summary.setText( getString( id ) );
     }
 
     private void setSummary( String word )
     {
-        String title = Utils.format( m_context, R.string.pick_url_titlef, word );
-        m_dialog.setTitle( title );
+        String title = Utils.format( this, R.string.pick_url_titlef, word );
+        m_summary.setText( title );
     }
 }
