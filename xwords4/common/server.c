@@ -339,7 +339,7 @@ readStreamIf( ServerCtxt* server, XWStreamCtxt* in )
     XP_U16 len = stream_getU16( in );
     if ( 0 < len ) {
         result = mkServerStream( server );
-        stream_copyFromStream( result, in, len );
+        stream_getFromStream( result, in, len );
     }
     return result;
 }
@@ -350,7 +350,9 @@ writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
     XP_U16 len = !!src ? stream_getSize( src ) : 0;
     stream_putU16( dest, len );
     if ( 0 < len ) {
-        stream_copyFromStream( dest, src, len );
+        XWStreamPos pos = stream_getPos( src, POS_READ );
+        stream_getFromStream( dest, src, len );
+        (void)stream_setPos( src, POS_READ, pos );
     }
 }
 
@@ -430,7 +432,6 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
 
     writeStreamIf( stream, server->nv.prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
-
 } /* server_writeToStream */
 
 static void

@@ -100,7 +100,7 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
                                        NULL, 0,
                                        (MemStreamCloseCallback)NULL );
 
-        stream_copyFromStream( stack->data, stream, nBytes );
+        stream_getFromStream( stack->data, stream, nBytes );
     } else {
         XP_ASSERT( stack->nEntries == 0 );
         XP_ASSERT( stack->top == 0 );
@@ -115,7 +115,7 @@ stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
     XWStreamPos oldPos = START_OF_STREAM;
 
     if ( !!data ) {
-        oldPos = stream_setPos( data, START_OF_STREAM, POS_READ );    
+        oldPos = stream_setPos( data, POS_READ, START_OF_STREAM );
         nBytes = stream_getSize( data );
     } else {
         nBytes = 0;
@@ -128,13 +128,13 @@ stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
         stream_putU16( stream, stack->nEntries );
         stream_putU32( stream, stack->top );
 
-        stream_setPos( data, START_OF_STREAM, POS_READ );
-        stream_copyFromStream( stream, data, nBytes );
+        stream_setPos( data, POS_READ, START_OF_STREAM );
+        stream_getFromStream( stream, data, nBytes );
     }
 
     if ( !!data ) {
         /* in case it'll be used further */
-        (void)stream_setPos( data, oldPos, POS_READ );
+        (void)stream_setPos( data, POS_READ, oldPos );
     }
 } /* stack_writeToStream */
 
@@ -167,7 +167,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
         stack->data = stream;
     }
 
-    oldLoc = stream_setPos( stream, stack->top, POS_WRITE );
+    oldLoc = stream_setPos( stream, POS_WRITE, stack->top );
 
     stream_putBits( stream, 2, entry->moveType );
     stream_putBits( stream, 2, entry->playerNum );
@@ -211,7 +211,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
 
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
-    stack->top = stream_setPos( stream, oldLoc, POS_WRITE );
+    stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
 } /* pushEntry */
 
 static void
@@ -327,7 +327,7 @@ setCacheReadyFor( StackCtxt* stack, XP_U16 n )
     StackEntry dummy;
     XP_U16 i;
     
-    stream_setPos( stack->data, START_OF_STREAM, POS_READ );
+    stream_setPos( stack->data, POS_READ, START_OF_STREAM );
     for ( i = 0; i < n; ++i ) {
         readEntry( stack, &dummy );
     }
@@ -360,13 +360,13 @@ stack_getNthEntry( StackCtxt* stack, XP_U16 n, StackEntry* entry )
     }
 
     if ( found ) {
-        XWStreamPos oldPos = stream_setPos( stack->data, stack->cachedPos, 
-                                            POS_READ );
+        XWStreamPos oldPos = stream_setPos( stack->data, POS_READ, 
+                                            stack->cachedPos );
 
         readEntry( stack, entry );
         entry->moveNum = (XP_U8)n;
 
-        stack->cachedPos = stream_setPos( stack->data, oldPos, POS_READ );
+        stack->cachedPos = stream_setPos( stack->data, POS_READ, oldPos );
         ++stack->cacheNext;
     }
 
