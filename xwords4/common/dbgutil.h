@@ -26,4 +26,12 @@ const char* XP_Key_2str( XP_Key key );
 const char* DrawFocusState_2str( DrawFocusState dfs );
 const char* BoardObjectType_2str( BoardObjectType dfs );
 
+# ifdef DEBUG
+void dbg_logstream( XWStreamCtxt* stream, const char* func, int line );
+# define XP_LOGSTREAM( s )                      \
+    dbg_logstream( s, __func__, __LINE__ )
+# else
+# define XP_LOGSTREAM( s )
+# endif
+
 #endif
