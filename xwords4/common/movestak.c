@@ -128,11 +128,7 @@ stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
         stream_putU16( stream, stack->nEntries );
         stream_putU32( stream, stack->top );
 
-        stream_setPos( data, POS_READ, START_OF_STREAM );
         stream_getFromStream( stream, data, nBytes );
-    }
-
-    if ( !!data ) {
         /* in case it'll be used further */
         (void)stream_setPos( data, POS_READ, oldPos );
     }
@@ -280,7 +276,7 @@ stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo,
 } /* stack_addMove */
 
 void
-stack_addPhony( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo )
+stack_addPhony( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo )
 {
     StackEntry move;
 
@@ -339,22 +335,22 @@ setCacheReadyFor( StackCtxt* stack, XP_U16 n )
 } /* setCacheReadyFor */
 
 XP_U16
-stack_getNEntries( StackCtxt* stack )
+stack_getNEntries( const StackCtxt* stack )
 {
     return stack->nEntries;
 } /* stack_getNEntries */
 
 XP_Bool
-stack_getNthEntry( StackCtxt* stack, XP_U16 n, StackEntry* entry )
+stack_getNthEntry( StackCtxt* stack, XP_U16 nn, StackEntry* entry )
 {
     XP_Bool found;
 
-    if ( n >= stack->nEntries ) {
+    if ( nn >= stack->nEntries ) {
         found = XP_FALSE;
-    } else if ( stack->cacheNext != n ) {
+    } else if ( stack->cacheNext != nn ) {
         XP_ASSERT( !!stack->data );
-        found = setCacheReadyFor( stack, n );
-        XP_ASSERT( stack->cacheNext == n );
+        found = setCacheReadyFor( stack, nn );
+        XP_ASSERT( stack->cacheNext == nn );
     } else {
         found = XP_TRUE;
     }
@@ -364,7 +360,7 @@ stack_getNthEntry( StackCtxt* stack, XP_U16 n, StackEntry* entry )
                                             stack->cachedPos );
 
         readEntry( stack, entry );
-        entry->moveNum = (XP_U8)n;
+        entry->moveNum = (XP_U8)nn;
 
         stack->cachedPos = stream_setPos( stack->data, POS_READ, oldPos );
         ++stack->cacheNext;
