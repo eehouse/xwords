@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<org.eehouse.android.xw4.LookupView
-   xmlns:android="http://schemas.android.com/apk/res/android"
-   android:orientation="vertical"
-   android:layout_width="fill_parent" 
-   android:layout_height="fill_parent"
-   >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent" 
+              android:layout_height="fill_parent"
+              >
 
-  <ListView android:id="@+id/lookup_list"
+  <TextView android:id="@+id/summary"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:paddingLeft="8dp"
+            />
+
+  <ListView android:id="@+id/android:list"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:drawSelectorOnTop="false"
@@ -19,4 +24,4 @@
           android:layout_height="wrap_content"
           />
 
-</org.eehouse.android.xw4.LookupView>
+</LinearLayout>

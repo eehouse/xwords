@@ -871,7 +871,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1formatRemainingTiles
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             NULL, 0, NULL );
     board_formatRemainingTiles( state->game.board, stream );
-    result = streamToJString( MPPARM(mpool) env, stream );
+    result = streamToJString( env, stream );
     stream_destroy( stream );
     (*env)->DeleteLocalRef( env, result );
 
@@ -887,7 +887,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
     XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_formatDictCounts( state->game.server, stream, nCols );
-    result = streamToJString( MPPARM(mpool) env, stream );
+    result = streamToJString( env, stream );
     stream_destroy( stream );
     (*env)->DeleteLocalRef( env, result );
     XWJNI_END();
@@ -914,7 +914,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     model_writeGameHistory( state->game.model, stream, state->game.server,
                             gameOver );
-    result = streamToJString( MPPARM(mpool) env, stream );
+    result = streamToJString( env, stream );
     (*env)->DeleteLocalRef( env, result );
     stream_destroy( stream );
     XWJNI_END();
@@ -960,7 +960,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
     XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_writeFinalScores( state->game.server, stream );
-    result = streamToJString( MPPARM(mpool) env, stream );
+    result = streamToJString( env, stream );
     (*env)->DeleteLocalRef( env, result );
     stream_destroy( stream );
     XWJNI_END();

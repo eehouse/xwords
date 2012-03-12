@@ -62,7 +62,7 @@ ServerCtxt* server_makeFromStream( MPFORMAL XWStreamCtxt* stream,
                                    ModelCtxt* model, CommsCtxt* comms,
                                    XW_UtilCtxt* util, XP_U16 nPlayers );
 
-void server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream );
+void server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream );
 
 void server_reset( ServerCtxt* server, CommsCtxt* comms );
 void server_destroy( ServerCtxt* server );

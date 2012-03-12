@@ -305,7 +305,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 } /* getNV */
 
 static void
-putNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
+putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
     XP_U16 ii;
 
@@ -339,7 +339,7 @@ readStreamIf( ServerCtxt* server, XWStreamCtxt* in )
     XP_U16 len = stream_getU16( in );
     if ( 0 < len ) {
         result = mkServerStream( server );
-        stream_copyFromStream( result, in, len );
+        stream_getFromStream( result, in, len );
     }
     return result;
 }
@@ -350,7 +350,9 @@ writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
     XP_U16 len = !!src ? stream_getSize( src ) : 0;
     stream_putU16( dest, len );
     if ( 0 < len ) {
-        stream_copyFromStream( dest, src, len );
+        XWStreamPos pos = stream_getPos( src, POS_READ );
+        stream_getFromStream( dest, src, len );
+        (void)stream_setPos( src, POS_READ, pos );
     }
 }
 
@@ -402,7 +404,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 } /* server_makeFromStream */
 
 void
-server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
+server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_U16 i;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
@@ -415,7 +417,7 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
     }
 
     for ( i = 0; i < nPlayers; ++i ) {
-        ServerPlayer* player = &server->players[i];
+        const ServerPlayer* player = &server->players[i];
 
         stream_putU8( stream, player->deviceIndex );
 
@@ -433,7 +435,6 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
 
     writeStreamIf( stream, server->nv.prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
-
 } /* server_writeToStream */
 
 static void

@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2006-2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -73,3 +74,22 @@ BoardObjectType_2str( BoardObjectType obj )
 
 #endif /* ENABLE_LOGGING */
 
+#ifdef DEBUG
+void
+dbg_logstream( XWStreamCtxt* stream, const char* func, int line )
+{
+    if ( !!stream ) {
+        XWStreamPos pos = stream_getPos( stream, POS_READ );
+        XP_U16 len = stream_getSize( stream );
+        XP_UCHAR buf[len+1];
+        stream_getBytes( stream, buf, len );
+        buf[len] = '\0';
+        XP_LOGF( "stream %p at pos %lx from line %d of func %s: \"%s\"", stream,
+                 pos, line, func, buf );
+        (void)stream_setPos( stream, POS_READ, pos );
+    } else {
+        XP_LOGF( "stream from line %d of func %s is null", 
+                 line, func );
+    }
+}
+#endif

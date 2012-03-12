@@ -67,7 +67,7 @@ BoardCtxt* board_makeFromStream( MPFORMAL XWStreamCtxt* stream,
 
 void board_destroy( BoardCtxt* board );
 
-void board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream );
+void board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream );
 
 void board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top, 
                    XP_U16 width, XP_U16 height, XP_U16 maxCellSize, 

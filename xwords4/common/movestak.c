@@ -100,7 +100,7 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
                                        NULL, 0,
                                        (MemStreamCloseCallback)NULL );
 
-        stream_copyFromStream( stack->data, stream, nBytes );
+        stream_getFromStream( stack->data, stream, nBytes );
     } else {
         XP_ASSERT( stack->nEntries == 0 );
         XP_ASSERT( stack->top == 0 );
@@ -115,7 +115,7 @@ stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
     XWStreamPos oldPos = START_OF_STREAM;
 
     if ( !!data ) {
-        oldPos = stream_setPos( data, START_OF_STREAM, POS_READ );    
+        oldPos = stream_setPos( data, POS_READ, START_OF_STREAM );
         nBytes = stream_getSize( data );
     } else {
         nBytes = 0;
@@ -128,13 +128,9 @@ stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
         stream_putU16( stream, stack->nEntries );
         stream_putU32( stream, stack->top );
 
-        stream_setPos( data, START_OF_STREAM, POS_READ );
-        stream_copyFromStream( stream, data, nBytes );
-    }
-
-    if ( !!data ) {
+        stream_getFromStream( stream, data, nBytes );
         /* in case it'll be used further */
-        (void)stream_setPos( data, oldPos, POS_READ );
+        (void)stream_setPos( data, POS_READ, oldPos );
     }
 } /* stack_writeToStream */
 
@@ -167,7 +163,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
         stack->data = stream;
     }
 
-    oldLoc = stream_setPos( stream, stack->top, POS_WRITE );
+    oldLoc = stream_setPos( stream, POS_WRITE, stack->top );
 
     stream_putBits( stream, 2, entry->moveType );
     stream_putBits( stream, 2, entry->playerNum );
@@ -211,7 +207,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
 
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
-    stack->top = stream_setPos( stream, oldLoc, POS_WRITE );
+    stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
 } /* pushEntry */
 
 static void
@@ -280,7 +276,7 @@ stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo,
 } /* stack_addMove */
 
 void
-stack_addPhony( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo )
+stack_addPhony( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo )
 {
     StackEntry move;
 
@@ -327,7 +323,7 @@ setCacheReadyFor( StackCtxt* stack, XP_U16 n )
     StackEntry dummy;
     XP_U16 i;
     
-    stream_setPos( stack->data, START_OF_STREAM, POS_READ );
+    stream_setPos( stack->data, POS_READ, START_OF_STREAM );
     for ( i = 0; i < n; ++i ) {
         readEntry( stack, &dummy );
     }
@@ -339,34 +335,34 @@ setCacheReadyFor( StackCtxt* stack, XP_U16 n )
 } /* setCacheReadyFor */
 
 XP_U16
-stack_getNEntries( StackCtxt* stack )
+stack_getNEntries( const StackCtxt* stack )
 {
     return stack->nEntries;
 } /* stack_getNEntries */
 
 XP_Bool
-stack_getNthEntry( StackCtxt* stack, XP_U16 n, StackEntry* entry )
+stack_getNthEntry( StackCtxt* stack, XP_U16 nn, StackEntry* entry )
 {
     XP_Bool found;
 
-    if ( n >= stack->nEntries ) {
+    if ( nn >= stack->nEntries ) {
         found = XP_FALSE;
-    } else if ( stack->cacheNext != n ) {
+    } else if ( stack->cacheNext != nn ) {
         XP_ASSERT( !!stack->data );
-        found = setCacheReadyFor( stack, n );
-        XP_ASSERT( stack->cacheNext == n );
+        found = setCacheReadyFor( stack, nn );
+        XP_ASSERT( stack->cacheNext == nn );
     } else {
         found = XP_TRUE;
     }
 
     if ( found ) {
-        XWStreamPos oldPos = stream_setPos( stack->data, stack->cachedPos, 
-                                            POS_READ );
+        XWStreamPos oldPos = stream_setPos( stack->data, POS_READ, 
+                                            stack->cachedPos );
 
         readEntry( stack, entry );
-        entry->moveNum = (XP_U8)n;
+        entry->moveNum = (XP_U8)nn;
 
-        stack->cachedPos = stream_setPos( stack->data, oldPos, POS_READ );
+        stack->cachedPos = stream_setPos( stack->data, POS_READ, oldPos );
         ++stack->cacheNext;
     }
 

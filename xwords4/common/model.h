@@ -106,7 +106,7 @@ ModelCtxt* model_makeFromStream( MPFORMAL XWStreamCtxt* stream,
                                  DictionaryCtxt* dict, const PlayerDicts* dicts,
                                  XW_UtilCtxt* util );
 
-void model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream );
+void model_writeToStream( const ModelCtxt* model, XWStreamCtxt* stream );
 
 #ifdef TEXT_MODEL
 void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );

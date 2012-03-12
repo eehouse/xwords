@@ -126,7 +126,7 @@ and_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 
     jstring jstr = NULL;
     if ( NULL != stream ) {
-        jstr = streamToJString( MPPARM(util->util.mpool) env, stream );
+        jstr = streamToJString( env, stream );
     }
     result = (*env)->CallBooleanMethod( env, util->jutil, mid, id, jstr );
     if ( NULL != jstr ) {
@@ -251,8 +251,8 @@ and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, XWStreamCtxt* words )
 {
     if ( !!words ) {
         UTIL_CBK_HEADER( "informMove", "(Ljava/lang/String;Ljava/lang/String;)V" );
-        jstring jexpl = streamToJString( MPPARM(util->util.mpool) env, expl );
-        jstring jwords = streamToJString( MPPARM(util->util.mpool) env, words );
+        jstring jexpl = streamToJString( env, expl );
+        jstring jwords = streamToJString( env, words );
         (*env)->CallVoidMethod( env, util->jutil, mid, jexpl, jwords );
         (*env)->DeleteLocalRef( env, jexpl );
         (*env)->DeleteLocalRef( env, jwords );
@@ -454,8 +454,7 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 {
     if ( NULL != words ) {
         UTIL_CBK_HEADER( "cellSquareHeld", "(Ljava/lang/String;)V" );
-        jstring jwords = 
-            streamToJString( MPPARM(util->util.mpool) env, words );
+        jstring jwords = streamToJString( env, words );
         (*env)->CallVoidMethod( env, util->jutil, mid, jwords );
         (*env)->DeleteLocalRef( env, jwords );
         UTIL_CBK_TAIL();

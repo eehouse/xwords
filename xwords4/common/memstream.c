@@ -292,8 +292,8 @@ mem_stream_putBits( XWStreamCtxt* p_sctx, XP_U16 nBits, XP_U32 data
 } /* mem_stream_putBits */
 
 static void
-mem_stream_copyFromStream( XWStreamCtxt* p_sctx, XWStreamCtxt* src, 
-                           XP_U16 nBytes )
+mem_stream_getFromStream( XWStreamCtxt* p_sctx, XWStreamCtxt* src, 
+                          XP_U16 nBytes )
 {
     while ( nBytes > 0 ) {
         XP_U8 buf[256];
@@ -305,7 +305,7 @@ mem_stream_copyFromStream( XWStreamCtxt* p_sctx, XWStreamCtxt* src,
         stream_putBytes( p_sctx, buf, len );
         nBytes -= len;
     }
-} /* mem_stream_copyFromStream */
+} /* mem_stream_getFromStream */
 
 static void
 mem_stream_open( XWStreamCtxt* p_sctx )
@@ -333,7 +333,7 @@ mem_stream_close( XWStreamCtxt* p_sctx )
 static XP_U16
 mem_stream_getSize( const XWStreamCtxt* p_sctx )
 {
-    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    const MemStreamCtxt* stream = (const MemStreamCtxt*)p_sctx;
     XP_U16 size = stream->nBytesWritten - stream->curReadPos;
     return size;
 } /* mem_stream_getSize */
@@ -341,14 +341,14 @@ mem_stream_getSize( const XWStreamCtxt* p_sctx )
 static const XP_U8*
 mem_stream_getPtr( const XWStreamCtxt* p_sctx )
 {
-    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    const MemStreamCtxt* stream = (const MemStreamCtxt*)p_sctx;
     return stream->buf;
 } /* mem_stream_getPtr */
 
 static XP_PlayerAddr
-mem_stream_getAddress( XWStreamCtxt* p_sctx )
+mem_stream_getAddress( const XWStreamCtxt* p_sctx )
 {
-    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    const MemStreamCtxt* stream = (const MemStreamCtxt*)p_sctx;
     return stream->channelNo;
 } /* mem_stream_getAddress */
 
@@ -357,7 +357,7 @@ mem_stream_setAddress( XWStreamCtxt* p_sctx, XP_PlayerAddr channelNo )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     stream->channelNo = channelNo;
-} /* mem_stream_getAddress */
+} /* mem_stream_setAddress */
 
 static void
 mem_stream_setVersion( XWStreamCtxt* p_sctx, XP_U16 vers )
@@ -367,9 +367,9 @@ mem_stream_setVersion( XWStreamCtxt* p_sctx, XP_U16 vers )
 } /* mem_stream_setVersion */
 
 static XP_U16
-mem_stream_getVersion( XWStreamCtxt* p_sctx )
+mem_stream_getVersion( const XWStreamCtxt* p_sctx )
 {
-    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    const MemStreamCtxt* stream = (const MemStreamCtxt*)p_sctx;
     return stream->version;
 } /* mem_stream_getVersion */
 
@@ -381,10 +381,10 @@ mem_stream_setOnCloseProc( XWStreamCtxt* p_sctx, MemStreamCloseCallback proc )
 }
 
 static XWStreamPos
-mem_stream_getPos( XWStreamCtxt* p_sctx, PosWhich which )
+mem_stream_getPos( const XWStreamCtxt* p_sctx, PosWhich which )
 {
     XWStreamPos result;
-    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    const MemStreamCtxt* stream = (const MemStreamCtxt*)p_sctx;
     
     if ( which == POS_WRITE ) {
         result = (stream->curWritePos << 3) | stream->nWriteBits;
@@ -396,8 +396,9 @@ mem_stream_getPos( XWStreamCtxt* p_sctx, PosWhich which )
 } /* mem_stream_getPos */
 
 static XWStreamPos
-mem_stream_setPos( XWStreamCtxt* p_sctx, XWStreamPos newpos, PosWhich which )
+mem_stream_setPos( XWStreamCtxt* p_sctx, PosWhich which, XWStreamPos newpos )
 {
+    XP_ASSERT( END_OF_STREAM != newpos ); /* not handling this yet */
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     XWStreamPos oldPos = mem_stream_getPos( p_sctx, which );
 
@@ -448,7 +449,7 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_putU32, mem );
     SET_VTABLE_ENTRY( vtable, stream_putBits, mem );
 
-    SET_VTABLE_ENTRY( vtable, stream_copyFromStream, mem );
+    SET_VTABLE_ENTRY( vtable, stream_getFromStream, mem );
 
     SET_VTABLE_ENTRY( vtable, stream_setPos, mem );
     SET_VTABLE_ENTRY( vtable, stream_getPos, mem );

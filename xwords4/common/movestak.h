@@ -77,14 +77,14 @@ StackCtxt* stack_copy( const StackCtxt* stack );
 
 void stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo, 
                     const TrayTileSet* newTiles );
-void stack_addPhony( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo );
+void stack_addPhony( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo );
 void stack_addTrade( StackCtxt* stack, XP_U16 turn, 
                      const TrayTileSet* oldTiles, 
                      const TrayTileSet* newTiles );
 void stack_addAssign( StackCtxt* stack, XP_U16 turn, 
                       const TrayTileSet* tiles );
 
-XP_U16 stack_getNEntries( StackCtxt* stack );
+XP_U16 stack_getNEntries( const StackCtxt* stack );
 
 XP_Bool stack_getNthEntry( StackCtxt* stack, XP_U16 n, StackEntry* entry );
 

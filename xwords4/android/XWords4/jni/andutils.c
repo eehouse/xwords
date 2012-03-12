@@ -291,16 +291,15 @@ makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
 }
 
 jstring
-streamToJString( MPFORMAL JNIEnv *env, XWStreamCtxt* stream )
+streamToJString( JNIEnv *env, XWStreamCtxt* stream )
 {
     int len = stream_getSize( stream );
-    XP_UCHAR* buf = XP_MALLOC( mpool, 1 + len );
+    XP_UCHAR buf[1 + len];
     stream_getBytes( stream, buf, len );
     buf[len] = '\0';
 
     jstring jstr = (*env)->NewStringUTF( env, buf );
 
-    XP_FREE( mpool, buf );
     return jstr;
 }
 

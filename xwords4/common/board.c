@@ -288,7 +288,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 } /* board_makeFromStream */
 
 void
-board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
+board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
 {
     XP_U16 nPlayers, ii;
     XP_U16 nColsNBits;
@@ -319,8 +319,8 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
     nPlayers = board->gi->nPlayers;
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
-        PerTurnInfo* pti = &board->pti[ii];
-        BoardArrow* arrow = &pti->boardArrow;
+        const PerTurnInfo* pti = &board->pti[ii];
+        const BoardArrow* arrow = &pti->boardArrow;
         stream_putBits( stream, nColsNBits, arrow->col );
         stream_putBits( stream, nColsNBits, arrow->row );
         stream_putBits( stream, 1, arrow->vert );

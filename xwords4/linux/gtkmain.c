@@ -1896,6 +1896,7 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
     button = makeShowButtonFromBitmap( globals, "../done.xpm", "-",
                                        G_CALLBACK(handle_zoomout_button) );
+    globals->zoomout_button = button;
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 #ifdef XWFEATURE_CHAT
     button = makeShowButtonFromBitmap( globals, "", "chat",
