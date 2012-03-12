@@ -74,7 +74,7 @@ static void setPendingCounts( ModelCtxt* model, XP_S16 turn );
 static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                             XP_U16 version, PlayerCtxt* pc );
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
-                             PlayerCtxt* pc );
+                             const PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
 static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
 #ifdef XWFEATURE_BOARDWORDS
@@ -179,7 +179,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 } /* model_makeFromStream */
 
 void
-model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
+model_writeToStream( const ModelCtxt* model, XWStreamCtxt* stream )
 {
     XP_U16 ii;
 #ifdef STREAM_VERS_BIGBOARD
@@ -2376,10 +2376,11 @@ loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, XP_U16 version,
 } /* loadPlayerCtxt */
 
 static void
-writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, PlayerCtxt* pc )
+writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
+                 const PlayerCtxt* pc )
 {
     XP_U16 nTiles;
-    PendingTile* pt;
+    const PendingTile* pt;
     XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
     nColsNBits = 16 <= model_numCols( model ) ? NUMCOLS_NBITS_5

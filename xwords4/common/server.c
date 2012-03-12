@@ -305,7 +305,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 } /* getNV */
 
 static void
-putNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
+putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
     XP_U16 ii;
 
@@ -401,7 +401,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 } /* server_makeFromStream */
 
 void
-server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
+server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_U16 i;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
@@ -414,7 +414,7 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
     }
 
     for ( i = 0; i < nPlayers; ++i ) {
-        ServerPlayer* player = &server->players[i];
+        const ServerPlayer* player = &server->players[i];
 
         stream_putU8( stream, player->deviceIndex );
 

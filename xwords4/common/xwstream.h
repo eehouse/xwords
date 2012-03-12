@@ -61,7 +61,7 @@ typedef struct StreamCtxVTable {
     void (*m_stream_getFromStream)( XWStreamCtxt* dctx, XWStreamCtxt* src,
                                      XP_U16 nBytes );
 
-    XWStreamPos (*m_stream_getPos)( XWStreamCtxt* dctx, PosWhich which );
+    XWStreamPos (*m_stream_getPos)( const XWStreamCtxt* dctx, PosWhich which );
     XWStreamPos (*m_stream_setPos)( XWStreamCtxt* dctx, PosWhich which, 
                                     XWStreamPos newpos );
 
@@ -75,11 +75,11 @@ typedef struct StreamCtxVTable {
 /*     void (*m_stream_makeReturnAddr)( XWStreamCtxt* dctx, XP_PlayerAddr* addr, */
 /*                                      XP_U16* addrLen ); */
 
-    XP_PlayerAddr (*m_stream_getAddress)( XWStreamCtxt* dctx );
+    XP_PlayerAddr (*m_stream_getAddress)( const XWStreamCtxt* dctx );
     void (*m_stream_setAddress)( XWStreamCtxt* dctx, XP_PlayerAddr channelNo );
 
     void (*m_stream_setVersion)( XWStreamCtxt* dctx, XP_U16 vers );
-    XP_U16  (*m_stream_getVersion)( XWStreamCtxt* dctx );
+    XP_U16  (*m_stream_getVersion)( const XWStreamCtxt* dctx );
 
     void  (*m_stream_setOnCloseProc)( XWStreamCtxt* dctx, 
                                       MemStreamCloseCallback proc );
