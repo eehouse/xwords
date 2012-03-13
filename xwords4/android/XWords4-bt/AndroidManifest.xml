@@ -22,7 +22,7 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4bt"
-          android:versionCode="34"
+          android:versionCode="35"
           android:versionName="@string/app_version"
           >
 
@@ -31,13 +31,12 @@
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
   <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.RECEIVE_SMS" /> 
+  <uses-permission android:name="android.permission.SEND_SMS" />
   <uses-permission android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
-  <!-- <uses-permission android:name="android.permission.RECEIVE_SMS" /> -->
-  <!-- <uses-permission android:name="android.permission.SEND_SMS" /> -->
-
-  <uses-sdk android:minSdkVersion="3" android:targetSdkVersion="5" />
+  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="7" />
 
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
@@ -88,6 +87,11 @@
               android:configChanges="keyboardHidden"
               >
     </activity>
+
+    <activity android:name="LookupActivity"
+              android:configChanges="keyboardHidden|orientation"
+              android:theme="@android:style/Theme.Dialog"
+              />
 
     <receiver android:name="RelayReceiver">
       <intent-filter>
@@ -153,26 +157,15 @@
       </intent-filter>
     </receiver>
 
-    <!-- <receiver android:name=".BTConnection"> -->
-    <!--   <intent-filter> -->
-    <!--     <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />                                                                     -->
-    <!--   </intent-filter> -->
-    <!--   <intent-filter> -->
-    <!--     <action android:name="android.bluetooth.device.action.ACL_CONNECTED" /> -->
-    <!--     <action android:name="android.bluetooth.device.action.ACL_DISCONNECT_REQUESTED" /> -->
-    <!--     <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" /> -->
-    <!--   </intent-filter> -->
-    <!-- </receiver> -->
-
-    <!-- <receiver android:name="NBSReceiver"> -->
-    <!--   <intent-filter android:priority="10"> -->
-    <!--     <action android:name="android.intent.action.DATA_SMS_RECEIVED" /> -->
-    <!--     <data android:scheme="sms" /> -->
-    <!--     <data android:port="50009" /> -->
-    <!--   </intent-filter> -->
-    <!-- </receiver> -->
-
     <service android:name="BTService"/>
+
+    <receiver android:name="NBSReceiver">
+      <intent-filter android:priority="10">
+        <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
+        <data android:scheme="sms" />
+        <data android:port="50009" />
+      </intent-filter>
+    </receiver>
 
   </application>
 </manifest>

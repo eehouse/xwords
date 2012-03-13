@@ -21,7 +21,6 @@ GameListAdapter.java
 GamesList.java
 GameUtils.java
 GitVersion.java
-LookupView.java
 MountEventReceiver.java
 NBSReceiver.java
 NetLaunchInfo.java
@@ -51,3 +50,5 @@ BTInviteActivity.java
 BTReceiver.java
 BTService.java
 MultiMsgSink.java
+GameNamer.java
+LookupActivity.java

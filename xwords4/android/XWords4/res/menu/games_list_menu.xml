@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/gamel_menu_trynbs"
+          android:title="try nbs"
+          />
     <item android:id="@+id/gamel_menu_newgame"
           android:title="@string/button_new_game"
           android:icon="@android:drawable/ic_menu_add"

@@ -24,7 +24,6 @@ GameListAdapter.java
 GamesList.java
 GameUtils.java
 GitVersion.java
-LookupView.java
 MountEventReceiver.java
 MultiMsgSink.java
 NBSReceiver.java
@@ -51,3 +50,4 @@ XWListAdapter.java
 XWListItem.java
 XWListPreference.java
 GameNamer.java
+LookupActivity.java

@@ -61,6 +61,7 @@ public class GamesList extends XWListActivity
     private static final int SHOW_SUBST        = WARN_NODICT + 2;
     private static final int GET_NAME          = WARN_NODICT + 3;
     private static final int RENAME_GAME       = WARN_NODICT + 4;
+    private static final int SEND_NBS          = WARN_NODICT + 5;
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
 
@@ -80,6 +81,7 @@ public class GamesList extends XWListActivity
     private long m_rowid;
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
+    private String m_nbsPhone;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -191,6 +193,29 @@ public class GamesList extends XWListActivity
                 Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
 
+                // THIS IS FOR TESTING ONLY; DON'T SHIP
+            case SEND_NBS:
+                Assert.assertTrue( XWApp.SMSSUPPORTED );
+                final GameNamer phoneNumView =
+                    (GameNamer)Utils.inflate( this, R.layout.rename_game );
+                phoneNumView.setName( m_nbsPhone );
+                phoneNumView.setLabel( "phone number" );
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            m_nbsPhone = phoneNumView.getName();
+                            NBSReceiver.tryNBSMessage( GamesList.this, 
+                                                       m_nbsPhone );
+                        }
+                    };
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( "phone number" )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setView( phoneNumView )
+                    .create();
+                Utils.setRemoveOnDismiss( this, dialog, id );
+                break;
+
             case GET_NAME:
                 layout = 
                     (LinearLayout)Utils.inflate( this, R.layout.dflt_name );
@@ -218,6 +243,7 @@ public class GamesList extends XWListActivity
                         }
                     });
                 break;
+
             default:
                 // just drop it; super.onCreateDialog likely failed
                 break;
@@ -526,7 +552,13 @@ public class GamesList extends XWListActivity
         Intent intent;
 
         switch (item.getItemId()) {
-            
+            // for testing only; don't ship
+        case R.id.gamel_menu_trynbs:
+            if ( XWApp.SMSSUPPORTED ) {
+                showDialog( SEND_NBS );
+            }
+            break;
+
         case R.id.gamel_menu_newgame:
             startNewGameActivity();
             break;

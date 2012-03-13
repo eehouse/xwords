@@ -37,10 +37,15 @@ public class GameNamer extends LinearLayout {
         m_context = cx;
     }
 
-    public void setLabel( int id )
+    public void setLabel( String label )
     {
         TextView view = (TextView)findViewById( R.id.name_label );
-        view.setText( m_context.getString( id ) );
+        view.setText( label );
+    }
+
+    public void setLabel( int id )
+    {
+        setLabel( m_context.getString( id ) );
     }
 
     public void setName( String text )
