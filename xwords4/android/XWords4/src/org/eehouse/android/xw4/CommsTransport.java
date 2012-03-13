@@ -380,12 +380,6 @@ public class CommsTransport implements TransportProcs,
             break;
         case COMMS_CONN_SMS:
             Assert.fail();
-            // This code can't be here, even if unreachable, unless
-            // app has permission to use SMS.  So put it in a separate
-            // module and catch the error that'll come when it fails
-            // to verify.  IFF the plan's to ship a version that
-            // doesn't do SMS.
-
             // DbgUtils.logf( "sending via sms to  %s:%d", 
             //             m_addr.sms_phone, m_addr.sms_port );
             // try {
