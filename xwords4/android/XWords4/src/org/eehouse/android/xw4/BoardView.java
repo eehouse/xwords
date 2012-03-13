@@ -46,13 +46,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public interface MultiHandlerIface {
         boolean inactive();
-        void activate( MotionEvent event );
-        void deactivate();
-        int figureZoom( MotionEvent event );
-        int getSpacing( MotionEvent event );
     }
 
     private static final float MIN_FONT_DIPS = 14.0f;
+    private static final int MULTI_INACTIVE = -1;
 
     private static Bitmap s_bitmap;    // the board
     private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
@@ -96,6 +93,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Handler m_viewHandler;
 
     private MultiHandlerIface m_multiHandler = null;
+    private int m_lastSpacing = MULTI_INACTIVE;
+
 
     // FontDims: exists to translate space available to the largest
     // font we can draw within that space taking advantage of our use
@@ -182,15 +181,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
 
         m_viewHandler = new Handler();
-
-        try {
-            int sdk_int = Integer.decode( Build.VERSION.SDK );
-            if ( sdk_int >= Build.VERSION_CODES.ECLAIR ) {
-                m_multiHandler = new MultiHandler();
-            } else {
-                DbgUtils.logf( "OS version %d too old for multi-touch", sdk_int );
-            }
-        } catch ( Exception ex ) {}
     }
 
     @Override
@@ -202,16 +192,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
-            if ( null != m_multiHandler ) {
-                m_multiHandler.deactivate();
-            }
+            m_lastSpacing = MULTI_INACTIVE;
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
             break;
         case MotionEvent.ACTION_MOVE:
-            if ( null == m_multiHandler || m_multiHandler.inactive() ) {
+            if ( MULTI_INACTIVE == m_lastSpacing ) {
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
             } else {
-                int zoomBy = m_multiHandler.figureZoom( event );
+                int zoomBy = figureZoom( event );
                 if ( 0 != zoomBy ) {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
                                         zoomBy < 0 ? -2 : 2 );
@@ -223,16 +211,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             break;
         case MotionEvent.ACTION_POINTER_DOWN:
         case MotionEvent.ACTION_POINTER_2_DOWN:
-            if ( null != m_multiHandler ) {
-                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
-                m_multiHandler.activate( event );
-            }
+            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+            m_lastSpacing = getSpacing( event );
             break;
         case MotionEvent.ACTION_POINTER_UP:
         case MotionEvent.ACTION_POINTER_2_UP:
-            if ( null != m_multiHandler ) {
-                m_multiHandler.deactivate();
-            }
+            m_lastSpacing = MULTI_INACTIVE;
             break;
         default:
             DbgUtils.logf( "onTouchEvent: unknown action: %d", action );
@@ -999,51 +983,31 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return color;
     }
 
-    private class MultiHandler implements MultiHandlerIface {
-        private static final int INACTIVE = -1;
-        private int m_lastSpacing = INACTIVE;
-
-        public boolean inactive()
-        {
-            return INACTIVE == m_lastSpacing;
+    private int getSpacing( MotionEvent event ) 
+    {
+        int result;
+        if ( 1 == event.getPointerCount() ) {
+            result = MULTI_INACTIVE;
+        } else {
+            float xx = event.getX( 0 ) - event.getX( 1 );
+            float yy = event.getY( 0 ) - event.getY( 1 );
+            result = (int)FloatMath.sqrt( (xx * xx) + (yy * yy) );
         }
+        return result;
+    }
 
-        public void activate( MotionEvent event )
-        {
-            m_lastSpacing = getSpacing( event );
-        }
-
-        public void deactivate()
-        {
-            m_lastSpacing = INACTIVE;
-        }
-
-        public int getSpacing( MotionEvent event ) 
-        {
-            int result;
-            if ( 1 == event.getPointerCount() ) {
-                result = INACTIVE;
-            } else {
-                float xx = event.getX( 0 ) - event.getX( 1 );
-                float yy = event.getY( 0 ) - event.getY( 1 );
-                result = (int)FloatMath.sqrt( (xx * xx) + (yy * yy) );
+    private int figureZoom( MotionEvent event )
+    {
+        int zoomDir = 0;
+        if ( MULTI_INACTIVE != m_lastSpacing ) {
+            int newSpacing = getSpacing( event );
+            int diff = Math.abs( newSpacing - m_lastSpacing );
+            if ( diff > PINCH_THRESHOLD ) {
+                zoomDir = newSpacing < m_lastSpacing? -1 : 1;
+                m_lastSpacing = newSpacing;
             }
-            return result;
         }
-
-        public int figureZoom( MotionEvent event )
-        {
-            int zoomDir = 0;
-            if ( ! inactive() ) {
-                int newSpacing = getSpacing( event );
-                int diff = Math.abs( newSpacing - m_lastSpacing );
-                if ( diff > PINCH_THRESHOLD ) {
-                    zoomDir = newSpacing < m_lastSpacing? -1 : 1;
-                    m_lastSpacing = newSpacing;
-                }
-            }
-            return zoomDir;
-        }
+        return zoomDir;
     }
 
 }

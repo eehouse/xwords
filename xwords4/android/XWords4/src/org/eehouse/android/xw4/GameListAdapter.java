@@ -240,11 +240,6 @@ public class GameListAdapter extends XWListAdapter {
         m_df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
                                                DateFormat.SHORT );
 
-        int sdk_int = 0;
-        try {
-            sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
-        } catch ( Exception ex ) {}
-
         m_viewsCache = new HashMap<Long,ViewInfo>();
     }
     
