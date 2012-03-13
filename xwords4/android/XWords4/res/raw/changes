@@ -9,7 +9,11 @@
 <ul>
   <li>Fix new crash drawing board on some versions of Android </li>
 
-  <li>in Wordlist screen remember which languages are expanded</li>
+  <li>In Wordlist screen remember which languages are expanded</li>
+
+  <li>In Word Lookup dialog fix contrast on some versions of Android</li>
+
+  <li>Fix old crash when two buttons pressed at about the same time</li>
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
