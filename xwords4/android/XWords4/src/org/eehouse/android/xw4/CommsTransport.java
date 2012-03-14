@@ -357,7 +357,7 @@ public class CommsTransport implements TransportProcs,
         CommsAddrRec addr;
         if ( null == faddr ) {
             DbgUtils.logf( "Do this in the JNI!!" );
-            addr = new CommsAddrRec( m_context );
+            addr = new CommsAddrRec();
             XwJNI.comms_getAddr( m_jniGamePtr, addr );
         } else {
             addr = faddr;

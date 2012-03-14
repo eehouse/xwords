@@ -186,7 +186,7 @@ public class GameUtils {
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         
         if ( XwJNI.game_hasComms( gamePtr ) ) {
-            addr = new CommsAddrRec( context );
+            addr = new CommsAddrRec();
             XwJNI.comms_getAddr( gamePtr, addr );
             if ( CommsAddrRec.CommsConnType.COMMS_CONN_NONE == addr.conType ) {
                 String relayName = CommonPrefs.getDefaultRelayHost( context );
@@ -418,9 +418,9 @@ public class GameUtils {
                                        int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
-        CommsAddrRec addr = 
-            new CommsAddrRec( context, 
-                              CommsAddrRec.CommsConnType.COMMS_CONN_RELAY );
+        String relayName = CommonPrefs.getDefaultRelayHost( context );
+        int relayPort = CommonPrefs.getDefaultRelayPort( context );
+        CommsAddrRec addr = new CommsAddrRec( relayName, relayPort );
         addr.ip_relay_invite = room;
 
         return makeNewMultiGame( context, addr, lang, nPlayersT, 
@@ -447,8 +447,8 @@ public class GameUtils {
         long rowid = -1;
         int[] langa = { lang };
         boolean isHost = null == addr;
-        if ( isHost ) {
-            addr = new CommsAddrRec( context, null, null );
+        if ( isHost ) { 
+            addr = new CommsAddrRec( null, null );
         }
         return makeNewMultiGame( context, addr, langa, nPlayersT, nPlayersH,
                                  null, gameID, isHost );
@@ -461,8 +461,7 @@ public class GameUtils {
         long rowid = -1;
         int[] langa = { lang };
         boolean isHost = null == addr;
-        if ( isHost ) {
-            addr = new CommsAddrRec( context, null, 0 );
+        if ( isHost ) { addr = new CommsAddrRec( null, 0 );
         }
         return makeNewMultiGame( context, addr, langa, nPlayersT, nPlayersH,
                                  null, gameID, isHost );

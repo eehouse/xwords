@@ -475,7 +475,7 @@ public class GameConfig extends XWActivity
                     m_gi = new CurGameInfo( this, m_giOrig );
                 }
 
-                m_carOrig = new CommsAddrRec( this );
+                m_carOrig = new CommsAddrRec();
                 if ( XwJNI.game_hasComms( gamePtr ) ) {
                     XwJNI.comms_getAddr( gamePtr, m_carOrig );
                 } else if (DeviceRole.SERVER_STANDALONE != m_giOrig.serverRole){

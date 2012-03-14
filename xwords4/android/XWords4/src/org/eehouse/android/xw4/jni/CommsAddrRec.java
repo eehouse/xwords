@@ -21,7 +21,6 @@
 package org.eehouse.android.xw4.jni;
 
 import java.net.InetAddress;
-import android.content.Context;
 
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.DbgUtils;
@@ -57,34 +56,36 @@ public class CommsAddrRec {
     public String sms_phone;
     public int sms_port;                // NBS port, if they still use those
 
-    public CommsAddrRec( Context context, CommsConnType cTyp ) 
+    public CommsAddrRec( CommsConnType cTyp ) 
     {
         conType = cTyp;
-        if ( CommsConnType.COMMS_CONN_RELAY == cTyp ) {
-            ip_relay_hostName = CommonPrefs.getDefaultRelayHost( context );
-            ip_relay_port = CommonPrefs.getDefaultRelayPort( context );
-            ip_relay_seeksPublicRoom = false;
-            ip_relay_advertiseRoom = false;
-        }
     }
 
-    public CommsAddrRec( Context context ) 
+    public CommsAddrRec() 
     {
-        this( context, CommsConnType.COMMS_CONN_NONE );
+        this( CommsConnType.COMMS_CONN_NONE );
     }
 
-    public CommsAddrRec( Context context, String btHost, String btAddr ) 
+    public CommsAddrRec( String host, int port ) 
     {
-        this( context, CommsConnType.COMMS_CONN_BT );
+        this( CommsConnType.COMMS_CONN_RELAY );
+        ip_relay_hostName = host;
+        ip_relay_port = port;
+        ip_relay_seeksPublicRoom = false;
+        ip_relay_advertiseRoom = false;
+    }
+
+    public CommsAddrRec( String btHost, String btAddr ) 
+    {
+        this( CommsConnType.COMMS_CONN_BT );
         bt_hostName = btHost;
         bt_btAddr = btAddr;
     }
 
-    public CommsAddrRec( Context context, String phone, int port ) 
+    public CommsAddrRec( String phone ) 
     {
-        this( context, CommsConnType.COMMS_CONN_SMS );
+        this( CommsConnType.COMMS_CONN_SMS );
         sms_phone = phone;
-        sms_port = port;
     }
 
     public CommsAddrRec( final CommsAddrRec src ) 

@@ -448,8 +448,7 @@ public class BTService extends Service {
             if ( DBUtils.ROWID_NOTFOUND == DBUtils.getRowIDFor( BTService.this,
                                                                 gameID ) ) {
                 String sender = host.getName();
-                CommsAddrRec addr = new CommsAddrRec( context, sender, 
-                                                      host.getAddress() );
+                CommsAddrRec addr = new CommsAddrRec( sender, host.getAddress() );
                 long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
                                                       lang, nPlayersT, nPlayersH );
                 if ( DBUtils.ROWID_NOTFOUND == rowid ) {
@@ -502,8 +501,7 @@ public class BTService extends Service {
                     os.flush();
                     socket.close();
 
-                    CommsAddrRec addr = new CommsAddrRec( BTService.this, 
-                                                          host.getName(), 
+                    CommsAddrRec addr = new CommsAddrRec( host.getName(), 
                                                           host.getAddress() );
 
                     if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
