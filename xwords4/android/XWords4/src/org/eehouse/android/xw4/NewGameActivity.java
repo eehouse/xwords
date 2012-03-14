@@ -51,7 +51,9 @@ public class NewGameActivity extends XWActivity {
     private static final String SAVE_REMOTEGAME = "REMOTEGAME";
     private static final String SAVE_GAMEID = "GAMEID";
     private static final int CONFIG_FOR_BT = 1;
-    private static final int INVITE_FOR_BT = 2;
+    private static final int CONFIG_FOR_NBS = 2;
+    private static final int INVITE_FOR_BT = 3;
+    private static final int INVITE_FOR_NBS = 4;
 
     // Dialogs
     private static final int NAME_GAME = DlgDelegate.DIALOG_LAST + 1;
@@ -59,10 +61,10 @@ public class NewGameActivity extends XWActivity {
     private boolean m_showsOn;
     private int m_chosen;
     private int m_lang = 0;
-    private long m_btRowID = -1;
+    private long m_newRowID = -1;
     private String m_gameName;
     private int m_gameID;
-    private String m_remoteBTDev;
+    private String m_remoteDev;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
@@ -111,20 +113,21 @@ public class NewGameActivity extends XWActivity {
             } );
 
         checkEnableBT( true );
+        checkEnableNBS();
     }
 
     @Override
     protected void onSaveInstanceState( Bundle outState ) 
     {
         super.onSaveInstanceState( outState );
-        outState.putString( SAVE_REMOTEGAME, m_remoteBTDev );
+        outState.putString( SAVE_REMOTEGAME, m_remoteDev );
         outState.putInt( SAVE_GAMEID, m_gameID );
     }
 
     private void getBundledData( Bundle bundle )
     {
         if ( null != bundle ) {
-            m_remoteBTDev = bundle.getString( SAVE_REMOTEGAME );
+            m_remoteDev = bundle.getString( SAVE_REMOTEGAME );
             m_gameID = bundle.getInt( SAVE_GAMEID );
         }
     }
@@ -157,12 +160,13 @@ public class NewGameActivity extends XWActivity {
         if ( Activity.RESULT_CANCELED != resultCode ) {
             switch ( requestCode ) {
             case CONFIG_FOR_BT:
+            case CONFIG_FOR_NBS:
                 if ( Activity.RESULT_CANCELED == resultCode ) {
-                    DBUtils.deleteGame( this, m_btRowID );
+                    DBUtils.deleteGame( this, m_newRowID );
                 } else {
                     // We'll leave it up to BoardActivity to detect that
                     // it's not had any remote connections yet.
-                    GameUtils.launchGame( this, m_btRowID );
+                    GameUtils.launchGame( this, m_newRowID );
                     finish();
                 }
                 break;
@@ -171,12 +175,33 @@ public class NewGameActivity extends XWActivity {
                     String[] remoteDevs =
                         data.getStringArrayExtra( BTInviteActivity.DEVS );
                     Assert.assertTrue( 1 == remoteDevs.length );
-                    m_remoteBTDev = remoteDevs[0];
+                    m_remoteDev = remoteDevs[0];
 
                     m_gameID = GameUtils.newGameID();
                     m_gameName = Utils.format( this, R.string.dft_bt_namef, 
                                                m_gameID & 0xFFFF );
                     showDialog( NAME_GAME );
+                }
+                break;
+
+            case INVITE_FOR_NBS:
+                if ( Activity.RESULT_CANCELED != resultCode ) {
+                    String[] phones =
+                        data.getStringArrayExtra( NBSInviteActivity.DEVS );
+                    Assert.assertTrue( 1 == phones.length );
+
+                    m_gameID = GameUtils.newGameID();
+                    m_gameName = Utils.format( this, R.string.dft_nbs_namef, 
+                                               m_gameID & 0xFFFF );
+                    NBSReceiver.inviteRemote( NewGameActivity.this, phones[0],
+                                              m_gameID, m_gameName, 
+                                              m_lang, 2, 1 );
+                    long rowid = 
+                        GameUtils.makeNewNBSGame( NewGameActivity.this, 
+                                                  m_gameID, null, m_lang, 
+                                                  2, 1 );
+                    GameUtils.launchGame( NewGameActivity.this, rowid, true );
+                    finish();
                 }
                 break;
             }
@@ -200,7 +225,7 @@ public class NewGameActivity extends XWActivity {
                         public void onClick( DialogInterface dlg, int itm ) {
                             m_gameName = namerView.getName();
                             BTService.inviteRemote( NewGameActivity.this, 
-                                                    m_remoteBTDev,
+                                                    m_remoteDev,
                                                     m_gameID, m_gameName, 
                                                     m_lang, 2, 1 );
                             startProgress( R.string.invite_progress );
@@ -310,16 +335,33 @@ public class NewGameActivity extends XWActivity {
     {
         int gameID = GameUtils.newGameID();
         if ( !useDefaults ) {
-            m_btRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
+            m_newRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
                                                  gameID, null, m_lang, 
                                                  2, 1 ); // initial defaults
             Intent intent = new Intent( this, GameConfig.class );
             intent.setAction( Intent.ACTION_EDIT );
-            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_btRowID );
+            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
             startActivityForResult( intent, CONFIG_FOR_BT );
         } else {
             GameUtils.launchBTInviter( this, 1, INVITE_FOR_BT );
+        }
+    }
+
+    private void makeNewNBSGame( boolean useDefaults )
+    {
+        int gameID = GameUtils.newGameID();
+        if ( !useDefaults ) {
+            m_newRowID = GameUtils.makeNewNBSGame( NewGameActivity.this, 
+                                                   gameID, null, m_lang, 
+                                                   2, 1 ); // initial defaults
+            Intent intent = new Intent( this, GameConfig.class );
+            intent.setAction( Intent.ACTION_EDIT );
+            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
+            intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
+            startActivityForResult( intent, CONFIG_FOR_NBS );
+        } else {
+            GameUtils.launchNBSInviter( this, 1, INVITE_FOR_NBS );
         }
     }
 
@@ -366,6 +408,45 @@ public class NewGameActivity extends XWActivity {
                             }
                         } );
                 }
+            }
+        }
+    }
+
+    private void checkEnableNBS()
+    { 
+        if ( XWApp.NBSSUPPORTED ) {
+            boolean enabled = true; // is the phone on
+            findViewById( R.id.nbs_separator ).setVisibility( View.VISIBLE );
+
+            findViewById( R.id.nbs_disabled ).
+                setVisibility( enabled ? View.GONE : View.VISIBLE  );
+            findViewById( R.id.nbs_stuff ).
+                setVisibility( enabled ? View.VISIBLE : View.GONE  );
+
+            Button button;
+            if ( enabled ) {
+                button = (Button)findViewById( R.id.newgame_invite_nbs );
+                button.setOnClickListener( new View.OnClickListener() {
+                        @Override
+                            public void onClick( View v ) {
+                            makeNewNBSGame( true );
+                        }
+                    } );
+                button = (Button)findViewById( R.id.newgame_nbs_config );
+                button.setOnClickListener( new View.OnClickListener() {
+                        @Override
+                            public void onClick( View v ) {
+                            makeNewNBSGame( false );
+                        }
+                    } );
+            } else {
+                button = (Button)findViewById( R.id.newgame_enable_nbs );
+                button.setOnClickListener( new View.OnClickListener() {
+                        @Override
+                            public void onClick( View v ) {
+                            Utils.notImpl( NewGameActivity.this );
+                        }
+                    } );
             }
         }
     }

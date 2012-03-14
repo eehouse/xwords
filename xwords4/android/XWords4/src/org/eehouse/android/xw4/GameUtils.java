@@ -454,11 +454,33 @@ public class GameUtils {
                                  null, gameID, isHost );
     }
 
+    public static long makeNewNBSGame( Context context, int gameID, 
+                                       CommsAddrRec addr, int lang, 
+                                       int nPlayersT, int nPlayersH )
+    {
+        long rowid = -1;
+        int[] langa = { lang };
+        boolean isHost = null == addr;
+        if ( isHost ) {
+            addr = new CommsAddrRec( context, null, 0 );
+        }
+        return makeNewMultiGame( context, addr, langa, nPlayersT, nPlayersH,
+                                 null, gameID, isHost );
+    }
+
     public static void launchBTInviter( Activity activity, int nMissing, 
                                         int requestCode )
     {
         Intent intent = new Intent( activity, BTInviteActivity.class );
         intent.putExtra( BTInviteActivity.INTENT_KEY_NMISSING, nMissing );
+        activity.startActivityForResult( intent, requestCode );
+    }
+
+    public static void launchNBSInviter( Activity activity, int nMissing, 
+                                        int requestCode )
+    {
+        Intent intent = new Intent( activity, NBSInviteActivity.class );
+        intent.putExtra( NBSInviteActivity.INTENT_KEY_NMISSING, nMissing );
         activity.startActivityForResult( intent, requestCode );
     }
 

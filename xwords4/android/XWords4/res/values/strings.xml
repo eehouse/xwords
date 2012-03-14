@@ -1874,4 +1874,15 @@
     <string name="game_btname_title">Bluetooth game name</string>
     <string name="dft_bt_namef">Game %X</string>
 
+    <string name="newgame_nbs_header">New SMS Game</string>
+    <string name="nbs_networked_desc">Create a game that will be
+    played via invisible text messages. !!!DO NOT DO THIS UNLESS YOU HAVE
+    AN UNLIMITED TEXT MESSAGING PLAN!!!</string>
+    <string name="nbs_disabled">nbs_disabled</string>
+    <string name="newgame_enable_nbs">newgame_enable_nbs</string>
+    <string name="err_no_phone">Phone number required</string>
+    <string name="dft_nbs_namef">SMS Game %X</string>    
+    <string name="nbs_devs_missing">Missing connections? Invite SMS
+      devs? (I won\'t ask again until you reopen this game.)</string>
+      
 </resources>

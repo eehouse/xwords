@@ -105,32 +105,32 @@
               />
     </LinearLayout>
 
-    <!-- Bluetooth -->
-    <TextView android:id="@+id/bt_separator"
+    <!-- NBS -->
+    <TextView android:id="@+id/nbs_separator"
               style="@style/config_separator"
               android:layout_marginTop="10dip"
               android:textAppearance="?android:attr/textAppearanceMedium"
-              android:text="@string/newgame_bt_header"
+              android:text="@string/newgame_nbs_header"
               android:visibility="gone"
               />
 
-    <LinearLayout android:id="@+id/bt_disabled"
+    <LinearLayout android:id="@+id/nbs_disabled"
                   android:orientation="vertical"
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
                   android:visibility="gone"
-              >
-      <TextView android:text="@string/bt_disabled"
+                  >
+      <TextView android:text="@string/nbs_disabled"
                 style="@style/relay_explain"
                 />
-      <Button android:id="@+id/newgame_enable_bt"
+      <Button android:id="@+id/newgame_enable_nbs"
               android:layout_width="fill_parent" 
               android:layout_height="wrap_content"
-              android:text="@string/newgame_enable_bt" 
+              android:text="@string/newgame_enable_nbs" 
               />
     </LinearLayout>
 
-    <LinearLayout android:id="@+id/bt_stuff"
+    <LinearLayout android:id="@+id/nbs_stuff"
                   android:orientation="vertical"
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
@@ -142,13 +142,13 @@
                     android:layout_marginTop="10dip"
                     android:layout_marginBottom="10dip"
                     >
-        <ImageView android:src="@android:drawable/stat_sys_data_bluetooth"
+        <ImageView android:src="@android:drawable/sym_action_chat"
                    android:layout_width="wrap_content"
-	               android:layout_height="wrap_content"
+                   android:layout_height="wrap_content"
                    android:layout_weight="0"
                    android:layout_gravity="center_vertical|center_horizontal"
                    />
-        <TextView android:text="@string/bt_networked_desc"
+        <TextView android:text="@string/nbs_networked_desc"
                   style="@style/relay_explain"
                   />
       </LinearLayout>
@@ -157,21 +157,88 @@
                     android:layout_width="fill_parent" 
                     android:layout_height="wrap_content"
                     >
-        <Button android:id="@+id/newgame_invite_bt"
+        <Button android:id="@+id/newgame_invite_nbs"
                 android:layout_width="fill_parent" 
                 android:layout_weight="1" 
                 android:layout_height="wrap_content"
                 android:text="@string/newgame_invite" 
                 />
 
-        <Button android:id="@+id/newgame_bt_config"
+        <Button android:id="@+id/newgame_nbs_config"
                 android:layout_width="fill_parent" 
                 android:layout_weight="1" 
                 android:layout_height="wrap_content"
                 android:text="@string/newgame_net_config" 
                 />
       </LinearLayout>
+
+      <!-- Bluetooth -->
+      <TextView android:id="@+id/bt_separator"
+                style="@style/config_separator"
+                android:layout_marginTop="10dip"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/newgame_bt_header"
+                android:visibility="gone"
+                />
+
+      <LinearLayout android:id="@+id/bt_disabled"
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent" 
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    >
+        <TextView android:text="@string/bt_disabled"
+                  style="@style/relay_explain"
+                  />
+        <Button android:id="@+id/newgame_enable_bt"
+                android:layout_width="fill_parent" 
+                android:layout_height="wrap_content"
+                android:text="@string/newgame_enable_bt" 
+                />
+      </LinearLayout>
+
+      <LinearLayout android:id="@+id/bt_stuff"
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent" 
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    >
+        <LinearLayout android:orientation="horizontal"
+                      android:layout_width="fill_parent" 
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="10dip"
+                      android:layout_marginBottom="10dip"
+                      >
+          <ImageView android:src="@android:drawable/stat_sys_data_bluetooth"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:layout_weight="0"
+                     android:layout_gravity="center_vertical|center_horizontal"
+                     />
+          <TextView android:text="@string/bt_networked_desc"
+                    style="@style/relay_explain"
+                    />
+        </LinearLayout>
+
+        <LinearLayout android:orientation="horizontal"
+                      android:layout_width="fill_parent" 
+                      android:layout_height="wrap_content"
+                      >
+          <Button android:id="@+id/newgame_invite_bt"
+                  android:layout_width="fill_parent" 
+                  android:layout_weight="1" 
+                  android:layout_height="wrap_content"
+                  android:text="@string/newgame_invite" 
+                  />
+
+          <Button android:id="@+id/newgame_bt_config"
+                  android:layout_width="fill_parent" 
+                  android:layout_weight="1" 
+                  android:layout_height="wrap_content"
+                  android:text="@string/newgame_net_config" 
+                  />
+        </LinearLayout>
+      </LinearLayout>
     </LinearLayout>
   </LinearLayout>
-
 </ScrollView>

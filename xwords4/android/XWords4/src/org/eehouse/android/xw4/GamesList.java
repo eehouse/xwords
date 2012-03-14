@@ -195,7 +195,7 @@ public class GamesList extends XWListActivity
 
                 // THIS IS FOR TESTING ONLY; DON'T SHIP
             case SEND_NBS:
-                Assert.assertTrue( XWApp.SMSSUPPORTED );
+                Assert.assertTrue( XWApp.NBSSUPPORTED );
                 final GameNamer phoneNumView =
                     (GameNamer)Utils.inflate( this, R.layout.rename_game );
                 phoneNumView.setName( m_nbsPhone );
@@ -554,7 +554,7 @@ public class GamesList extends XWListActivity
         switch (item.getItemId()) {
             // for testing only; don't ship
         case R.id.gamel_menu_trynbs:
-            if ( XWApp.SMSSUPPORTED ) {
+            if ( XWApp.NBSSUPPORTED ) {
                 showDialog( SEND_NBS );
             }
             break;

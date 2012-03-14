@@ -54,8 +54,8 @@ public class CommsAddrRec {
     public String bt_btAddr;
 
     // sms case
-    // public String sms_phone;
-    // public int sms_port;                // NBS port, if they still use those
+    public String sms_phone;
+    public int sms_port;                // NBS port, if they still use those
 
     public CommsAddrRec( Context context, CommsConnType cTyp ) 
     {
@@ -78,6 +78,13 @@ public class CommsAddrRec {
         this( context, CommsConnType.COMMS_CONN_BT );
         bt_hostName = btHost;
         bt_btAddr = btAddr;
+    }
+
+    public CommsAddrRec( Context context, String phone, int port ) 
+    {
+        this( context, CommsConnType.COMMS_CONN_SMS );
+        sms_phone = phone;
+        sms_port = port;
     }
 
     public CommsAddrRec( final CommsAddrRec src ) 
@@ -115,5 +122,8 @@ public class CommsAddrRec {
 
         bt_hostName = src.bt_hostName;
         bt_btAddr = src.bt_btAddr;
+
+        sms_phone = src.sms_phone;
+        sms_port = src.sms_port;
     }
 }

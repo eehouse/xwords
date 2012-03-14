@@ -198,6 +198,8 @@ public class GameListAdapter extends XWListAdapter {
                     }
                 } else if ( CommsConnType.COMMS_CONN_BT == conType ) {
                     iconID = android.R.drawable.stat_sys_data_bluetooth;
+                } else if ( CommsConnType.COMMS_CONN_SMS == conType ) {
+                    iconID = android.R.drawable.sym_action_chat;
                 } else {
                     iconID = R.drawable.sologame;
                 }

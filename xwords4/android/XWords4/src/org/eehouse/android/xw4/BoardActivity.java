@@ -76,6 +76,7 @@ public class BoardActivity extends XWActivity
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
+    private static final int NBS_INVITE_RESULT = 3;
 
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
@@ -96,6 +97,7 @@ public class BoardActivity extends XWActivity
     private static final int BUTTON_BROWSE_ACTION = 15;
     private static final int VALUES_ACTION = 16;
     private static final int BT_PICK_ACTION = 17;
+    private static final int NBS_PICK_ACTION = 18;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -127,7 +129,8 @@ public class BoardActivity extends XWActivity
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
-    private String[] m_btDevs;
+    private CommsAddrRec.CommsConnType m_missingType;
+    private String[] m_missingDevs;
     private String m_curTiles;
     private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
@@ -527,7 +530,12 @@ public class BoardActivity extends XWActivity
             case BT_INVITE_RESULT:
                 // onActivityResult is called immediately *before*
                 // onResume -- meaning m_gi etc are still null.
-                m_btDevs = data.getStringArrayExtra( BTInviteActivity.DEVS );
+                m_missingDevs = data.getStringArrayExtra( BTInviteActivity.DEVS );
+                break;
+            case NBS_INVITE_RESULT:
+                // onActivityResult is called immediately *before*
+                // onResume -- meaning m_gi etc are still null.
+                m_missingDevs = data.getStringArrayExtra( NBSInviteActivity.DEVS );
                 break;
             }
         }
@@ -736,6 +744,10 @@ public class BoardActivity extends XWActivity
             case BT_PICK_ACTION:
                 GameUtils.launchBTInviter( this, m_nMissingPlayers, 
                                            BT_INVITE_RESULT );
+                break;
+            case NBS_PICK_ACTION:
+                GameUtils.launchNBSInviter( this, m_nMissingPlayers, 
+                                            NBS_INVITE_RESULT );
                 break;
             case COMMIT_ACTION:
                 cmd = JNIThread.JNICmd.CMD_COMMIT;
@@ -1332,17 +1344,32 @@ public class BoardActivity extends XWActivity
                                    CommsAddrRec.CommsConnType connType,
                                    final int nMissingPlayers )
         {
-            if ( 0 < nMissingPlayers && isServer && !m_haveInvited
-                 && CommsAddrRec.CommsConnType.COMMS_CONN_BT == connType ) {
+            int msgID = 0;
+            int action = 0;
+            if ( 0 < nMissingPlayers && isServer && !m_haveInvited ) {
+                switch( connType ) {
+                case COMMS_CONN_BT:
+                    msgID = R.string.bt_devs_missing;
+                    action = BT_PICK_ACTION;
+                    break;
+                case COMMS_CONN_SMS:
+                    msgID = R.string.nbs_devs_missing;
+                    action = NBS_PICK_ACTION;
+                    break;
+                }
+            }
+            if ( 0 != action ) {
                 m_haveInvited = true;
+                m_missingType = connType;
+                final int faction = action;
+                final int fmsgID = msgID;
                 post( new Runnable() {
                         public void run() {
                             DbgUtils.showf( BoardActivity.this, 
                                             "%d players missing", 
                                             nMissingPlayers );
                             m_nMissingPlayers = nMissingPlayers;
-                            showConfirmThen( R.string.bt_devs_missing, 
-                                             BT_PICK_ACTION );
+                            showConfirmThen( fmsgID, faction );
                         }
                     } );
             }
@@ -1523,7 +1550,7 @@ public class BoardActivity extends XWActivity
                 if ( null != m_xport ) {
                     trySendChats();
                     m_xport.tickle();
-                    tryBTInvites();
+                    tryInvites();
                 }
             }
         }
@@ -1694,17 +1721,32 @@ public class BoardActivity extends XWActivity
         }
     }
 
-    private void tryBTInvites()
+    private void tryInvites()
     {
-        if ( XWApp.BTSUPPORTED && null != m_btDevs ) {
-            String gameName = GameUtils.getName( this, m_rowid );
-            m_invitesPending = m_btDevs.length;
-            for ( String dev : m_btDevs ) {
-                BTService.inviteRemote( this, dev, m_gi.gameID, gameName,
-                                        m_gi.dictLang, m_gi.nPlayers, 1 );
+        if ( XWApp.BTSUPPORTED || XWApp.NBSSUPPORTED ) {
+            if ( null != m_missingDevs ) {
+                String gameName = GameUtils.getName( this, m_rowid );
+                boolean doProgress = false;
+                m_invitesPending = m_missingDevs.length;
+                for ( String dev : m_missingDevs ) {
+                    switch( m_missingType ) {
+                    case COMMS_CONN_BT:
+                        BTService.inviteRemote( this, dev, m_gi.gameID, 
+                                                gameName, m_gi.dictLang, 
+                                                m_gi.nPlayers, 1 );
+                        break;
+                    case COMMS_CONN_SMS:
+                        NBSReceiver.inviteRemote( this, dev, m_gi.gameID, 
+                                                  gameName, m_gi.dictLang, 
+                                                  m_gi.nPlayers, 1 );
+                        break;
+                    }
+                }
+                if ( doProgress ) {
+                    startProgress( R.string.invite_progress );
+                }
+                m_missingDevs = null;
             }
-            startProgress( R.string.invite_progress );
-            m_btDevs = null;
         }
     }
 

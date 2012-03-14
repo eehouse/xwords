@@ -79,4 +79,13 @@ public class NBSReceiver extends BroadcastReceiver {
             DbgUtils.logf( "%s", iae.toString() );
         }
     }
+
+    public static void inviteRemote( Context context, String phone,
+                                     int gameID, String gameName, 
+                                     int lang, int nPlayersT, 
+                                     int nPlayersH )
+    {
+        DbgUtils.logf( "NBSReceiver.inviteRemote(phone=%s)", phone );
+    }
+
 }

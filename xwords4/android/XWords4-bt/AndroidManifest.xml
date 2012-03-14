@@ -65,6 +65,9 @@
     <activity android:name="BTInviteActivity"
               android:theme="@android:style/Theme.Dialog"
               />
+    <activity android:name="NBSInviteActivity"
+              android:theme="@android:style/Theme.Dialog"
+              />
 
     <activity android:name="GameConfig"
               android:screenOrientation="sensor"
