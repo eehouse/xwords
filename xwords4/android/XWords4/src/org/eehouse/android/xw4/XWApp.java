@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 import java.util.UUID;
 
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -32,6 +33,7 @@ public class XWApp extends Application {
     public static final boolean NBSSUPPORTED = false;
 
     private static UUID s_UUID = null;
+    private static Boolean s_onEmulator = null;
 
     @Override
     public void onCreate()
@@ -62,4 +64,11 @@ public class XWApp extends Application {
         return context.getString( R.string.app_name );
     }
 
+    public static boolean onEmulator()
+    {
+        if ( null == s_onEmulator ) {
+            s_onEmulator = new Boolean( "google_sdk".equals(Build.MODEL) );
+        }
+        return s_onEmulator;
+    }
 }

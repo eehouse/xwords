@@ -22,6 +22,7 @@ package org.eehouse.android.xw4bt;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 import java.util.UUID;
 
 import org.eehouse.android.xw4bt.jni.XwJNI;
@@ -32,6 +33,7 @@ public class XWApp extends Application {
     public static final boolean NBSSUPPORTED = true;
 
     private static UUID s_UUID = null;
+    private static Boolean s_onEmulator = null;
 
     @Override
     public void onCreate()
@@ -57,9 +59,20 @@ public class XWApp extends Application {
         return s_UUID;
     }
 
+    public static short getNBSPort() { return (short)50009; }
+
     public static String getAppName( Context context ) 
     {
         return context.getString( R.string.app_name );
+    }
+
+    public static boolean onEmulator()
+    {
+        if ( null == s_onEmulator ) {
+            DbgUtils.logf( "Build.MODEL: %s", Build.MODEL );
+            s_onEmulator = new Boolean( Build.MODEL.contains("sdk") );
+        }
+        return s_onEmulator;
     }
 
 }

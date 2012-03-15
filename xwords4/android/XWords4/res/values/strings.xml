@@ -1884,5 +1884,9 @@
     <string name="dft_nbs_namef">SMS Game %X</string>    
     <string name="nbs_devs_missing">Missing connections? Invite SMS
       devs? (I won\'t ask again until you reopen this game.)</string>
-      
+
+    <string name="new_nbs_title">New game via SMS</string>
+    <string name="new_nbs_bodyf">Phone with number %s has invited you to
+      play</string>
+      <string name="new_nbsmove_title">New move via SMS</string>
 </resources>

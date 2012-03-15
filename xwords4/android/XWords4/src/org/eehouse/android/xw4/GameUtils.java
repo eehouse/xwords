@@ -461,7 +461,8 @@ public class GameUtils {
         long rowid = -1;
         int[] langa = { lang };
         boolean isHost = null == addr;
-        if ( isHost ) { addr = new CommsAddrRec( null, 0 );
+        if ( isHost ) { 
+            addr = new CommsAddrRec(CommsAddrRec.CommsConnType.COMMS_CONN_SMS);
         }
         return makeNewMultiGame( context, addr, langa, nPlayersT, nPlayersH,
                                  null, gameID, isHost );
