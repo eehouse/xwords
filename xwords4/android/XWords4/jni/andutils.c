@@ -336,7 +336,6 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
         break;
     case COMMS_CONN_SMS:
         setString( env, jaddr, "sms_phone", addr->u.sms.phone );
-        XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
         setInt( env, jaddr, "sms_port", addr->u.sms.port );
         break;
     case COMMS_CONN_BT:
