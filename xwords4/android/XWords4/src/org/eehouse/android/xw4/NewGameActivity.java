@@ -193,9 +193,9 @@ public class NewGameActivity extends XWActivity {
                     m_gameID = GameUtils.newGameID();
                     m_gameName = Utils.format( this, R.string.dft_nbs_namef, 
                                                m_gameID & 0xFFFF );
-                    NBSReceiver.inviteRemote( NewGameActivity.this, phones[0],
-                                              m_gameID, m_gameName, 
-                                              m_lang, 2, 1 );
+                    NBSService.inviteRemote( NewGameActivity.this, phones[0],
+                                             m_gameID, m_gameName, 
+                                             m_lang, 2, 1 );
                     long rowid = 
                         GameUtils.makeNewNBSGame( NewGameActivity.this, 
                                                   m_gameID, null, m_lang, 
@@ -355,6 +355,10 @@ public class NewGameActivity extends XWActivity {
             m_newRowID = GameUtils.makeNewNBSGame( NewGameActivity.this, 
                                                    gameID, null, m_lang, 
                                                    2, 1 ); // initial defaults
+            String name = Utils.format( this, R.string.dft_nbs_namef, 
+                                        gameID & 0xFFFF );
+            DBUtils.setName( this, m_newRowID, name );
+
             Intent intent = new Intent( this, GameConfig.class );
             intent.setAction( Intent.ACTION_EDIT );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );

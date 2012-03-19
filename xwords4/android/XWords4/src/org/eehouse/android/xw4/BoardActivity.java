@@ -1736,9 +1736,9 @@ public class BoardActivity extends XWActivity
                                                 m_gi.nPlayers, 1 );
                         break;
                     case COMMS_CONN_SMS:
-                        NBSReceiver.inviteRemote( this, dev, m_gi.gameID, 
-                                                  gameName, m_gi.dictLang, 
-                                                  m_gi.nPlayers, 1 );
+                        NBSService.inviteRemote( this, dev, m_gi.gameID, 
+                                                 gameName, m_gi.dictLang, 
+                                                 m_gi.nPlayers, 1 );
                         break;
                     }
                 }

@@ -235,6 +235,7 @@ public class CommsTransport implements TransportProcs,
         //     // Let other know I'm here
         //     m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
         //     break;
+        // case COMMS_CONN_SMS:
         // default:
         //     DbgUtils.logf( "tickle: unexpected type %s", 
         //                    addr.conType.toString() );
@@ -379,33 +380,10 @@ public class CommsTransport implements TransportProcs,
             }
             break;
         case COMMS_CONN_SMS:
-            Assert.fail();
-            // DbgUtils.logf( "sending via sms to  %s:%d", 
-            //             m_addr.sms_phone, m_addr.sms_port );
-            // try {
-            //     Intent intent = new Intent( m_context, StatusReceiver.class);
-            //     PendingIntent pi
-            //         = PendingIntent.getBroadcast( m_context, 0,
-            //                                       intent, 0 );
-            //     if ( 0 == m_addr.sms_port ) {
-            //          SmsManager.getDefault().sendTextMessage( m_addr.sms_phone,
-            //                                                   null, "Hello world",
-            //                                                   pi, pi );
-            //         DbgUtils.logf( "called sendTextMessage" );
-            //     } else {
-            //         SmsManager.getDefault().
-            //             sendDataMessage( m_addr.sms_phone, (String)null,
-            //                              (short)m_addr.sms_port, 
-            //                              buf, pi, pi );
-            //         DbgUtils.logf( "called sendDataMessage" );
-            //     }
-            //     nSent = buf.length;
-            // } catch ( java.lang.IllegalArgumentException iae ) {
-            //     DbgUtils.logf( iae.toString() );
-            // }
+            nSent = NBSService.sendPacket( m_context, addr.sms_phone, 
+                                           gameID, buf );
             break;
         case COMMS_CONN_BT:
-            String hostName = addr.bt_hostName;
             nSent = BTService.enqueueFor( m_context, buf, addr.bt_hostName, 
                                           addr.bt_btAddr, gameID );
             break;

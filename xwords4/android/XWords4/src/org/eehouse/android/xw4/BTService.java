@@ -511,7 +511,7 @@ public class BTService extends Service {
                                                        buffer, addr, 
                                                        m_btMsgSink ) ) {
                         postNotification( gameID, R.string.new_btmove_title, 
-                                          R.string.new_btmove_body );
+                                          R.string.new_move_body );
                         // do nothing
                     } else {
                         DbgUtils.logf( "nobody took msg for gameID %X", 
