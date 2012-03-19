@@ -221,6 +221,12 @@ syncPlayers( ServerCtxt* server )
 # define syncPlayers( server )
 #endif
 
+static XP_Bool
+amServer( const ServerCtxt* server )
+{ 
+    return SERVER_ISSERVER == server->vol.gi->serverRole;
+}
+
 static void
 initServer( ServerCtxt* server )
 {
@@ -692,26 +698,26 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 
     }
 
+    if ( success ) {
 #ifdef STREAM_VERS_BIGBOARD
-    if ( 0 < stream_getSize(stream) ) {
-        XP_U8 streamVersion = stream_getU8( stream );
-        if ( streamVersion >= STREAM_VERS_BIGBOARD ) {
-            XP_LOGF( "%s: upping device %d streamVersion to %d",
-                     __func__, clientIndex, streamVersion );
-            server->nv.addresses[clientIndex].streamVersion = streamVersion;
+        if ( 0 < stream_getSize(stream) ) {
+            XP_U8 streamVersion = stream_getU8( stream );
+            if ( streamVersion >= STREAM_VERS_BIGBOARD ) {
+                XP_LOGF( "%s: upping device %d streamVersion to %d",
+                         __func__, clientIndex, streamVersion );
+                server->nv.addresses[clientIndex].streamVersion = streamVersion;
+            }
         }
-    }
 #endif
 
-    if ( server->nv.pendingRegistrations == 0 ) {
-        XP_ASSERT( ii == playersInMsg ); /* otherwise malformed */
-        setStreamVersion( server );
-        checkResizeBoard( server );
-        assignTilesToAll( server );
-        SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
+        if ( server->nv.pendingRegistrations == 0 ) {
+            XP_ASSERT( ii == playersInMsg ); /* otherwise malformed */
+            setStreamVersion( server );
+            checkResizeBoard( server );
+            assignTilesToAll( server );
+            SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
+        }
     }
-/*     now set server's streamVersion if all remote players have the higher one. */
-/* But first need to pass it in the strramx */
 
     return success;
 } /* handleRegistrationMsg */
@@ -2583,14 +2589,14 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 
     printCode( "Receiving", code );
 
-    if ( code == XWPROTO_DEVICE_REGISTRATION ) {
+    if ( code == XWPROTO_DEVICE_REGISTRATION && amServer(server) ) {
         /* This message is special: doesn't have the header that's possible
            once the game's in progress and communication's been
            established. */
         XP_LOGF( "%s: somebody's registering!!!", __func__ );
         accepted = handleRegistrationMsg( server, incoming );
 
-    } else if ( code == XWPROTO_CLIENT_SETUP ) {
+    } else if ( code == XWPROTO_CLIENT_SETUP && !amServer( server ) ) {
 
         XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
         XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
