@@ -448,6 +448,16 @@ and_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 }
 #endif
 
+#ifdef XWFEATURE_SMS
+static XP_Bool
+and_util_phoneNumbersSame( XW_UtilCtxt* uc, const XP_UCHAR* p1,
+                           const XP_UCHAR* p2 )
+{
+    XP_LOGF( "%s(%s,%s)", __func__, p1, p2 );
+    return XP_TRUE;
+}
+#endif
+
 #ifdef XWFEATURE_BOARDWORDS
 static void
 and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
@@ -574,6 +584,10 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
 #ifndef XWFEATURE_MINIWIN
     SET_PROC(bonusSquareHeld);
     SET_PROC(playerScoreHeld);
+#endif
+
+#ifdef XWFEATURE_SMS
+    SET_PROC(phoneNumbersSame);
 #endif
 
 #ifdef XWFEATURE_BOARDWORDS

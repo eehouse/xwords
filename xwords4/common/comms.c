@@ -1510,11 +1510,13 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
         case COMMS_CONN_IR:              /* no way to test */
             break;
         case COMMS_CONN_SMS:
-            if ( ( 0 == XP_MEMCMP( &addr->u.sms.phone, &rec->addr.u.sms.phone,
-                                   sizeof(addr->u.sms.phone) ) )
+#ifdef XWFEATURE_SMS
+            if ( util_phoneNumbersSame( comms->util, addr->u.sms.phone, 
+                                        rec->addr.u.sms.phone )
                  && addr->u.sms.port == rec->addr.u.sms.port ) {
                 matched = XP_TRUE;
             }
+#endif
             break;
         case COMMS_CONN_NONE:
             matched = channelNo == (rec->channelNo & mask);
@@ -2111,7 +2113,7 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         }
     }
     return stream;
-} /* format_message */
+} /* msg_to_stream */
 
 static XP_Bool
 send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID, 

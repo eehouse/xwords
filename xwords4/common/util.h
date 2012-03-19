@@ -162,6 +162,11 @@ typedef struct UtilVtable {
     void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWStreamCtxt* words );
 #endif
 
+#ifdef XWFEATURE_SMS
+    XP_Bool (*m_util_phoneNumbersSame)( XW_UtilCtxt* uc, const XP_UCHAR* p1,
+                                        const XP_UCHAR* p2 );
+#endif
+
 #ifndef XWFEATURE_STANDALONE_ONLY
     void (*m_util_informMissing)(XW_UtilCtxt* uc, XP_Bool isServer, 
                                  CommsConnType connType, XP_U16 nMissing );
@@ -281,6 +286,11 @@ struct XW_UtilCtxt {
 #define util_cellSquareHeld(uc, s)                      \
     (uc)->vtable->m_util_cellSquareHeld( (uc), (s) )
 #endif
+#ifdef XWFEATURE_SMS
+#define util_phoneNumbersSame(uc,p1,p2)                                 \
+    (uc)->vtable->m_util_phoneNumbersSame( (uc), (p1), (p2) )
+#endif
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define util_informMissing( uc, is, ct, nm )                \
     (uc)->vtable->m_util_informMissing((uc), (is), (ct), (nm) )
