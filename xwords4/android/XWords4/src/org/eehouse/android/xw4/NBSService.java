@@ -28,7 +28,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
-import android.util.Base64;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -43,7 +42,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class NBSService extends Service {
 
-    private static final int MAX_LEN_TEXT = 100;
+    private static final int MAX_LEN_BIN = 128;
     private static final int HANDLE = 1;
     private static final int INVITE = 2;
     private static final int SEND = 3;
@@ -57,8 +56,6 @@ public class NBSService extends Service {
     private static final String NPLAYERST = "NPLAYERST";
     private static final String NPLAYERSH = "NPLAYERSH";
 
-    // All messages are base64-encoded byte arrays.  The first byte is
-    // always one of these.  What follows depends.
     private enum NBS_CMD { NONE, INVITE, DATA, };
 
     private int m_nReceived = 0;
@@ -216,35 +213,42 @@ public class NBSService extends Service {
         das.write( data, 0, data.length );
         das.flush();
 
-        String as64 = Base64.encodeToString( bas.toByteArray(), Base64.NO_WRAP );
-        byte[][] msgs = breakAndEncode( as64 );
+        byte[][] msgs = breakAndEncode( bas.toByteArray() );
         return sendBuffers( msgs, phone );
     }
 
-    private byte[][] breakAndEncode( String msg ) 
+    private byte[][] breakAndEncode( byte[] msg )
         throws java.io.IOException 
     {
         // TODO: as optimization, truncate header when only one packet
         // required
-        Assert.assertFalse( msg.contains(":") );
-        int count = (msg.length() + (MAX_LEN_TEXT-1)) / MAX_LEN_TEXT;
+
+        int count = (msg.length + (MAX_LEN_BIN-1)) / MAX_LEN_BIN;
         byte[][] result = new byte[count][];
-        int msgID = ++s_nSent % 0x000000FF;
-        DbgUtils.logf( "preparing %d packets for msgid %x", count, msgID );
+        int msgID = ++s_nSent;
+        DbgUtils.logf( "preparing %d packets for msgid %x of length %d", 
+                       count, msgID, msg.length );
 
         int start = 0;
-        int end = 0;
         for ( int ii = 0; ii < count; ++ii ) {
-            int len = msg.length() - end;
-            if ( len > MAX_LEN_TEXT ) {
-                len = MAX_LEN_TEXT;
+            int len = msg.length - start;
+            if ( len > MAX_LEN_BIN ) {
+                len = MAX_LEN_BIN;
             }
-            end += len;
-            String out = String.format( "0:%X:%X:%X:%s", msgID, ii, count, 
-                                        msg.substring( start, end ) );
-            DbgUtils.logf( "fragment[%d]: %s", ii, out );
-            result[ii] = out.getBytes();
-            start = end;
+
+            ByteArrayOutputStream bas = 
+                new ByteArrayOutputStream( MAX_LEN_BIN + 16 ); // ~header size
+            DataOutputStream das = new DataOutputStream( bas );
+            das.writeByte( 0 );
+            das.writeShort( msgID );
+            das.writeByte( ii );
+            das.writeByte( count );
+            DbgUtils.logf( "copying %d bytes of msg from %d", 
+                           len, start );
+            das.write( msg, start, len );
+            das.flush();
+            result[ii] = bas.toByteArray();
+            start += len;
         }
         return result;
     }
@@ -287,30 +291,32 @@ public class NBSService extends Service {
         }
     }
 
-    private void receiveBuffer( byte[] as64, String senderPhone )
+    private void receiveBuffer( byte[] msg, String senderPhone )
     {
-        String asString = new String( as64 );
-        DbgUtils.logf( "receiveBuffer(%s)", asString );
-        String[] parts = asString.split( ":" );
-        DbgUtils.logf( "receiveBuffer: got %d parts", parts.length );
-        for ( String part : parts ) {
-            DbgUtils.logf( "part: %s", part );
-        }
-        Assert.assertTrue( 5 == parts.length );
-        if ( 5 == parts.length ) {
-            byte proto = Byte.valueOf( parts[0], 10 );
-            int id = Integer.valueOf( parts[1], 16 );
-            int index = Integer.valueOf( parts[2], 16 );
-            int count = Integer.valueOf( parts[3], 16 );
-            tryAssemble( senderPhone, id, index, count, parts[4] );
+        DataInputStream dis = 
+            new DataInputStream( new ByteArrayInputStream(msg) );
+        try {
+            byte proto = dis.readByte();
+            if ( 0 == proto ) {
+                int id = dis.readShort();
+                int index = dis.readByte();
+                int count = dis.readByte();
+                byte[] rest = new byte[dis.available()];
+                dis.read( rest );
+                tryAssemble( senderPhone, id, index, count, rest );
+            } else {
+                DbgUtils.logf( "receiveBuffer: bad proto", proto );
+            }
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.logf( "ioe: %s", ioe.toString() );
         }
     }
 
     private void tryAssemble( String senderPhone, int id, int index, 
-                              int count, String msg )
+                              int count, byte[] msg )
     {
         if ( index == 0 && count == 1 ) {
-            disAssemble( senderPhone, msg.getBytes() );
+            disAssemble( senderPhone, msg );
         } else {
             synchronized( s_partialMsgs ) {
                 HashMap <Integer, MsgStore> perPhone = 
@@ -321,7 +327,7 @@ public class NBSService extends Service {
                 }
                 MsgStore store = perPhone.get( id );
                 if ( null == store ) {
-                    store = new MsgStore( id, count );
+                    store = new MsgStore( count );
                     perPhone.put( id, store );
                 }
                 store.add( index, msg );
@@ -335,10 +341,9 @@ public class NBSService extends Service {
         }
     }
 
-    private void disAssemble( String senderPhone, byte[] fullMsg )
+    private void disAssemble( String senderPhone, byte[] data )
     {
         DbgUtils.logf( "disAssemble()" );
-        byte[] data = Base64.decode( fullMsg, Base64.NO_WRAP );
         DataInputStream dis = 
             new DataInputStream( new ByteArrayInputStream(data) );
         try {
@@ -438,7 +443,14 @@ public class NBSService extends Service {
         public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
         {
             DbgUtils.logf( "NBSMsgSink.transportSend()" );
-            return sendPacket( addr.sms_phone, gameID, buf );
+            int sent = -1;
+            if ( null != addr ) {
+                sent = sendPacket( addr.sms_phone, gameID, buf );
+            } else {
+                DbgUtils.logf( "NBSMsgSink.transportSend: "
+                               + "addr null so not sending" );
+            }
+            return sent;
         }
 
         public boolean relayNoConnProc( byte[] buf, String relayID )
@@ -449,23 +461,21 @@ public class NBSService extends Service {
     }
 
     private class MsgStore {
-        String[] m_msgs;
-        int m_msgID;
+        byte[][] m_msgs;
         int m_haveCount;
         int m_fullLength;
 
-        public MsgStore( int id, int count )
+        public MsgStore( int count )
         {
-            m_msgID = id;
-            m_msgs = new String[count];
+            m_msgs = new byte[count][];
             m_fullLength = 0;
         }
 
-        public void add( int index, String msg )
+        public void add( int index, byte[] msg )
         {
             if ( null == m_msgs[index] ) {
                 ++m_haveCount;
-                m_fullLength += msg.length();
+                m_fullLength += msg.length;
             }
             m_msgs[index] = msg;
         }
@@ -473,7 +483,6 @@ public class NBSService extends Service {
         public boolean isComplete()
         {
             boolean complete = m_msgs.length == m_haveCount;
-            DbgUtils.logf( "isComplete(msg %d)=>%b", m_msgID, complete );
             return complete;
         }
 
@@ -482,11 +491,12 @@ public class NBSService extends Service {
             byte[] result = new byte[m_fullLength];
             int offset = 0;
             for ( int ii = 0; ii < m_msgs.length; ++ii ) {
-                byte[] src = m_msgs[ii].getBytes();
-                System.arraycopy( src, 0, result, offset, src.length );
-                offset += src.length;
+                byte[] src = m_msgs[ii];
+                int len = src.length;
+                System.arraycopy( src, 0, result, offset, len );
+                offset += len;
             }
             return result;
         }
-    }
+    } // class MsgStore
 }
