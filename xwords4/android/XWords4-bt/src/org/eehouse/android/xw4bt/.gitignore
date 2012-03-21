@@ -53,3 +53,5 @@ GameNamer.java
 LookupActivity.java
 NBSInviteActivity.java
 NBSService.java
+InviteActivity.java
+NBSListItem.java

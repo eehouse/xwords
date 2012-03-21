@@ -35,6 +35,7 @@
   <uses-permission android:name="android.permission.SEND_SMS" />
   <uses-permission android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+  <uses-permission android:name="android.permission.READ_CONTACTS" />
 
   <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="8" />
 

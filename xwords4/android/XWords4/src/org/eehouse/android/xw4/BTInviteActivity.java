@@ -39,80 +39,20 @@ import android.os.Handler;
 
 import junit.framework.Assert;
 
-public class BTInviteActivity extends XWListActivity 
-    implements View.OnClickListener, 
-               CompoundButton.OnCheckedChangeListener {
+public class BTInviteActivity extends InviteActivity {
 
-    public static final String DEVS = "DEVS";
-    public static final String INTENT_KEY_NMISSING = "NMISSING";
-
-    private Button m_okButton;
-    private Button m_rescanButton;
-    private Button m_clearButton;
-    private int m_nMissing;
-    private int m_checkCount = 0;
     private boolean m_firstScan;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( savedInstanceState );
-
-        Intent intent = getIntent();
-        m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
-
-        setContentView( R.layout.btinviter );
-
-        TextView desc = (TextView)findViewById( R.id.invite_desc );
-        desc.setText( Utils.format( this, R.string.invite_descf, m_nMissing ) );
-
-        m_okButton = (Button)findViewById( R.id.button_invite );
-        m_okButton.setOnClickListener( this );
-        m_rescanButton = (Button)findViewById( R.id.button_rescan );
-        m_rescanButton.setOnClickListener( this );
-        m_clearButton = (Button)findViewById( R.id.button_clear );
-        m_clearButton.setOnClickListener( this );
-
-        m_checkCount = 0;
-        tryEnable();
+        super.onCreate( savedInstanceState, R.layout.btinviter,
+                        R.id.button_invite, R.id.button_rescan, 
+                        R.id.button_clear, R.id.invite_desc,
+                        R.string.invite_bt_descf );
 
         m_firstScan = true;
         BTService.clearDevices( this, null ); // will return names
-    }
-
-    public void onClick( View view ) 
-    {
-        if ( m_okButton == view ) {
-            Intent intent = new Intent();
-            String[] devs = listSelected();
-            intent.putExtra( DEVS, devs );
-            setResult( Activity.RESULT_OK, intent );
-            finish();
-        } else if ( m_rescanButton == view ) {
-            scan();
-        } else if ( m_clearButton == view ) {
-            BTService.clearDevices( this, listSelected() );
-        }
-    }
-
-    // /* AdapterView.OnItemClickListener */
-    // public void onItemClick( AdapterView<?> parent, View view, 
-    //                          int position, long id )
-    // {
-    //     DbgUtils.logf( "BTInviteActivity.onItemClick(position=%d)", position );
-    // }
-
-    public void onCheckedChanged( CompoundButton buttonView, 
-                                  boolean isChecked )
-    {
-        DbgUtils.logf( "BTInviteActivity.onCheckedChanged( isChecked=%b )",
-                       isChecked );
-        if ( isChecked ) {
-            ++m_checkCount;
-        } else {
-            --m_checkCount;
-        }
-        tryEnable();
     }
 
     // BTService.BTEventListener interface
@@ -151,13 +91,18 @@ public class BTInviteActivity extends XWListActivity
         }
     }
 
-    private void scan()
+    protected void scan()
     {
         startProgress( R.string.scan_progress );
         BTService.scan( this );
     }
 
-    private String[] listSelected()
+    protected void clearSelected()
+    {
+        BTService.clearDevices( this, listSelected() );
+    }
+
+    protected String[] listSelected()
     {
         ListView list = (ListView)findViewById( android.R.id.list );
         String[] result = new String[m_checkCount];
@@ -170,12 +115,6 @@ public class BTInviteActivity extends XWListActivity
             }
         }
         return result;
-    }
-
-    private void tryEnable() 
-    {
-        m_okButton.setEnabled( m_checkCount == m_nMissing );
-        m_clearButton.setEnabled( 0 < m_checkCount );
     }
 
     private class BTDevsAdapter extends XWListAdapter {
