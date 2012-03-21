@@ -28,12 +28,10 @@ import android.util.AttributeSet;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
 public class NBSListItem extends LinearLayout  {
-    private Context m_context;
         
     public NBSListItem( Context cx, AttributeSet as ) 
     {
         super( cx, as );
-        m_context = cx;
     }
 
     public void setContents( String name, String number )
@@ -59,9 +57,7 @@ public class NBSListItem extends LinearLayout  {
     public boolean isChecked()
     {
         CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
-        boolean isChecked = cb.isChecked();
-        DbgUtils.logf( "isChecked(%s)=>%b", getNumber(), isChecked );
-        return isChecked;
+        return cb.isChecked();
     }
 }
 

@@ -1,7 +1,7 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -98,7 +98,6 @@ public class NBSInviteActivity extends InviteActivity {
 
     protected void clearSelected()
     {
-        DbgUtils.logf( "NBSInviteActivity.clearSelected()" );
         ListView list = (ListView)findViewById( android.R.id.list );
         int count = list.getChildCount();
         for ( int ii = count - 1; ii >= 0; --ii ) {
@@ -110,17 +109,9 @@ public class NBSInviteActivity extends InviteActivity {
         }
         saveState();
         rebuildList();
-        // int index = m_phones.size();
-        // while ( index-- > 0 ) {
-        //     if ( m_adapter.isChecked( index ) ) {
-        //         m_phones.remove( index );
-        //         m_names.remove( index );
-        //     }
-        // }
     }
 
     protected String[] listSelected() {
-        DbgUtils.logf( "NBSInviteActivity.listSelected()" );
         ListView list = (ListView)findViewById( android.R.id.list );
         String[] result = new String[m_checkCount];
         int count = list.getChildCount();
@@ -205,7 +196,6 @@ public class NBSInviteActivity extends InviteActivity {
 
         public Object getItem( int position ) 
         { 
-            DbgUtils.logf( "getItem called (phone %s)", m_phones.get(position) );
             NBSListItem item = 
                 (NBSListItem)Utils.inflate( NBSInviteActivity.this,
                                             R.layout.nbsinviter_item );
@@ -223,8 +213,6 @@ public class NBSInviteActivity extends InviteActivity {
         public boolean isChecked( int index ) 
         {
             boolean checked = m_items[index].isChecked();
-            DbgUtils.logf( "item %d (for %s) checked: %b", 
-                           index, m_items[index].getNumber(), checked );
             return checked;
         }
     }
