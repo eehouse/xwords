@@ -119,7 +119,7 @@ public class NBSService extends Service {
     public int onStartCommand( Intent intent, int flags, int startId )
     {
         int result;
-        if ( XWApp.NBSSUPPORTED ) {
+        if ( XWApp.NBSSUPPORTED && null != intent ) {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             switch( cmd ) {
             case HANDLE:
