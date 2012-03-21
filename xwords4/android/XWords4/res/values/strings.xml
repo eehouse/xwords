@@ -1892,7 +1892,8 @@
 
     <string name="button_nbs_add">Add contact</string>
     <string name="invite_nbs_descf">Please select the %d phone numbers you
-        want to include in this game.  Use the Add contact button if you
+        want to invite to this game.  Use the Add contact button if you
         don\'t see a number you want.</string>
-
+    <string name="manual_number_hint">Other number</string>
+    <string name="manual_owner_name">(Entered manually)</string>
 </resources>

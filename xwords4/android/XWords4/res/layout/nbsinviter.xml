@@ -21,31 +21,29 @@
             android:padding="8dp"
             />
 
-  <!-- <LinearLayout android:orientation="horizontal" -->
-  <!--               android:layout_width="fill_parent"  -->
-  <!--               android:layout_height="wrap_content" -->
-  <!--               > -->
-  <!--   <EditText android:id="@+id/phone_edit" -->
-  <!--             android:layout_height="wrap_content" -->
-  <!--             android:layout_width="fill_parent" -->
-  <!--             android:layout_marginLeft="20dip" -->
-  <!--             android:layout_marginRight="20dip" -->
-  <!--             android:scrollHorizontally="true" -->
-  <!--             android:phoneNumber="true" -->
-  <!--             android:singleLine="true" -->
-  <!--             android:maxLength="15" -->
-  <!--             android:selectAllOnFocus="true" -->
-  <!--             android:textAppearance="?android:attr/textAppearanceMedium"  -->
-  <!--             android:layout_weight="1" -->
-  <!--             android:hint="new number" -->
-  <!--             /> -->
-  <!--   <Button android:id="@+id/button_insert" -->
-  <!--           android:text="Insert" -->
-  <!--           android:layout_width="fill_parent" -->
-  <!--           android:layout_height="wrap_content" -->
-  <!--           android:layout_weight="1"  -->
-  <!--           /> -->
-  <!-- </LinearLayout> -->
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                >
+    <EditText android:id="@+id/phone_edit"
+              android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:scrollHorizontally="true"
+              android:phoneNumber="true"
+              android:singleLine="true"
+              android:maxLength="15"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              android:layout_weight="1"
+              android:hint="@string/manual_number_hint"
+              />
+    <ImageButton android:id="@+id/manual_add_button"
+                 android:layout_width="wrap_content" 
+                 android:layout_height="wrap_content"
+                 android:src="@android:drawable/ic_input_add"
+                 android:gravity="right"
+                 android:layout_weight="0"
+                 />
+  </LinearLayout>
 
   <LinearLayout android:orientation="horizontal"
                 android:layout_width="fill_parent" 

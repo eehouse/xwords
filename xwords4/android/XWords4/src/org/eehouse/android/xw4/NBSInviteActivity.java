@@ -31,7 +31,7 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import java.util.ArrayList;
@@ -39,16 +39,14 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class NBSInviteActivity extends InviteActivity
-    implements View.OnClickListener {
-    public static final String DEVS = "DEVS";
-    public static final String INTENT_KEY_NMISSING = "NMISSING";
+public class NBSInviteActivity extends InviteActivity {
 
     private static final int GET_CONTACT = 1;
 
     private ArrayList<String> m_names;
     private ArrayList<String> m_phones;
     private NBSPhonesAdapter m_adapter;
+    private EditText m_manualField;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -57,6 +55,23 @@ public class NBSInviteActivity extends InviteActivity
                         R.id.button_invite, R.id.button_add, 
                         R.id.button_clear, R.id.invite_desc,
                         R.string.invite_nbs_descf );
+
+        m_manualField = (EditText)findViewById( R.id.phone_edit );
+        ImageButton button = (ImageButton)findViewById( R.id.manual_add_button );
+        button.setOnClickListener( new View.OnClickListener() {
+                public void onClick( View view )
+                {
+                    String number = m_manualField.getText().toString();
+                    if ( 0 < number.length() ) {
+                        m_manualField.setText("");
+                        m_phones.add( number );
+                        m_names.add( getString( R.string.manual_owner_name ) );
+                        saveState();
+                        rebuildList();
+                    }
+                }
+            } );
+
         getSavedState();
         rebuildList();
     }
