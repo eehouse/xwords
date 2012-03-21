@@ -61,6 +61,8 @@
   <string name="key_closed_langs">key_closed_langs</string>
   <string name="key_bt_names">key_bt_names</string>
   <string name="key_bt_addrs">key_bt_addrs</string>
+  <string name="key_nbs_names">key_nbs_names</string>
+  <string name="key_nbs_phones">key_nbs_phones</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>

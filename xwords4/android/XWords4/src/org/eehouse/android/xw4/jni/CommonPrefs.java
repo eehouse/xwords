@@ -26,6 +26,7 @@ import android.content.res.Resources;
 import android.graphics.Paint;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import java.util.ArrayList;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
@@ -348,9 +349,31 @@ public class CommonPrefs {
         setPrefsStringArray( context, R.string.key_bt_names, names );
     }
 
+    public static void setNBSNames( Context context, ArrayList<String> names )
+    {
+        String[] array = names.toArray( new String[names.size()] );
+        setPrefsStringArray( context, R.string.key_nbs_names, array );
+    }
+
+    public static void setNBSPhones( Context context, ArrayList<String> names )
+    {
+        String[] array = names.toArray( new String[names.size()] );
+        setPrefsStringArray( context, R.string.key_nbs_phones, array );
+    }
+
     public static String[] getBTNames( Context context )
     {
         return getPrefsStringArray( context, R.string.key_bt_names );
+    }
+
+    public static ArrayList<String> getNBSNames( Context context )
+    {
+        return getPrefsStringArrayList( context, R.string.key_nbs_names );
+    }
+
+    public static ArrayList<String> getNBSPhones( Context context )
+    {
+        return getPrefsStringArrayList( context, R.string.key_nbs_phones );
     }
 
     public static void setBTAddresses( Context context, String[] addrs )
@@ -402,12 +425,24 @@ public class CommonPrefs {
         editor.commit();
     }
 
-
     private static String[] getPrefsStringArray( Context context, int keyID )
     {
         String asStr = getString( context, keyID );
         String[] result = null == asStr ? null : TextUtils.split( asStr, "\n" );
         return result;
+    }
+
+    private static ArrayList<String> getPrefsStringArrayList( Context context, 
+                                                              int keyID )
+    {
+        ArrayList<String> list = new ArrayList<String>();
+        String[] strs = getPrefsStringArray( context, keyID );
+        if ( null != strs ) {
+            for ( int ii = 0; ii < strs.length; ++ii ) {
+                list.add( strs[ii] );
+            }
+        }
+        return list;
     }
 
     private static void setPrefsStringArray( Context context, int keyID, 

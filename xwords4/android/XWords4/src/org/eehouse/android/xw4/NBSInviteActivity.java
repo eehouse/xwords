@@ -35,8 +35,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import java.util.ArrayList;
-
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class NBSInviteActivity extends InviteActivity
     implements View.OnClickListener {
@@ -56,9 +57,8 @@ public class NBSInviteActivity extends InviteActivity
                         R.id.button_invite, R.id.button_add, 
                         R.id.button_clear, R.id.invite_desc,
                         R.string.invite_nbs_descf );
-
-        m_names = new ArrayList<String>();
-        m_phones = new ArrayList<String>();
+        getSavedState();
+        rebuildList();
     }
     
     @Override
@@ -93,6 +93,7 @@ public class NBSInviteActivity extends InviteActivity
                 m_names.remove( ii );
             }
         }
+        saveState();
         rebuildList();
         // int index = m_phones.size();
         // while ( index-- > 0 ) {
@@ -151,6 +152,7 @@ public class NBSInviteActivity extends InviteActivity
                     }
                 }
                 if ( len_before != m_phones.size() ) {
+                    saveState();
                     rebuildList();
                 }
             }
@@ -163,6 +165,18 @@ public class NBSInviteActivity extends InviteActivity
         setListAdapter( m_adapter );
         m_checkCount = 0;
         tryEnable();
+    }
+
+    private void getSavedState()
+    {
+        m_names = CommonPrefs.getNBSNames( this );
+        m_phones = CommonPrefs.getNBSPhones( this );
+    }
+
+    private void saveState()
+    {
+        CommonPrefs.setNBSNames( this, m_names );
+        CommonPrefs.setNBSPhones( this, m_phones );
     }
 
     private class NBSPhonesAdapter extends XWListAdapter {
