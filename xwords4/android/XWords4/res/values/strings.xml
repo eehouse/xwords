@@ -1896,4 +1896,6 @@
         don\'t see a number you want.</string>
     <string name="manual_number_hint">Other number</string>
     <string name="manual_owner_name">(Entered manually)</string>
+    <string name="nbs_nomobile">Contact has no mobile number.</string>
+    <string name="nbs_nomobilef">Contact for %s has no mobile number.</string>
 </resources>

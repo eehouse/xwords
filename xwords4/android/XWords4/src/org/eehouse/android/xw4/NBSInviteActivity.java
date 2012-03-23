@@ -140,9 +140,9 @@ public class NBSInviteActivity extends InviteActivity {
                                     null,
                                     CommonDataKinds.Phone.CONTACT_ID + " = ?", 
                                     new String[] { id }, null );
-
+                String name = "";
                 while ( pc.moveToNext() ) {
-                    String name = 
+                    name = 
                         pc.getString( pc.getColumnIndex( CommonDataKinds.
                                                          Phone.DISPLAY_NAME));
                     String number = 
@@ -160,6 +160,12 @@ public class NBSInviteActivity extends InviteActivity {
                 if ( len_before != m_phones.size() ) {
                     saveState();
                     rebuildList();
+                } else {
+                    int resid = null != name && 0 < name.length()
+                        ?  R.string.nbs_nomobilef
+                        : R.string.nbs_nomobile;
+                    String msg = Utils.format( this, resid, name );
+                    showOKOnlyDialog( msg );
                 }
             }
         }
