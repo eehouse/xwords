@@ -333,6 +333,7 @@ public class NBSService extends Service {
                 store.add( index, msg );
 
                 if ( store.isComplete() ) {
+                    s_partialMsgs.remove( id );
                     byte[] fullMsg = store.message();
                     perPhone.remove( id );
                     disAssemble( senderPhone, fullMsg );
