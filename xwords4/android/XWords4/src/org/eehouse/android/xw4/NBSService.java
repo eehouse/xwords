@@ -43,6 +43,8 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class NBSService extends Service {
 
+    private static final String PUBLIC_HEADER = "_XW4";
+
     private static final int MAX_LEN_TEXT = 100;
     private static final int HANDLE = 1;
     private static final int INVITE = 2;
@@ -101,6 +103,20 @@ public class NBSService extends Service {
         intent.putExtra( BINBUFFER, binmsg );
         context.startService( intent );
         return binmsg.length;
+    }
+
+    public static String toPublicFmt( String msg )
+    {
+        return PUBLIC_HEADER + msg;
+    }
+
+    public static String fromPublicFmt( String msg )
+    {
+        String result = null;
+        if ( msg.startsWith( PUBLIC_HEADER ) ) {
+            result = msg.substring( PUBLIC_HEADER.length() );
+        }
+        return result;
     }
 
     private static Intent getIntentTo( Context context, int cmd )
@@ -385,9 +401,10 @@ public class NBSService extends Service {
                 for ( String fragment : fragments ) {
                     DbgUtils.logf( "sending len %d packet: %s", 
                                    fragment.length(), fragment );
-                    mgr.sendTextMessage( phone, null, fragment, sent, dlvrd );
+                    String asPublic = toPublicFmt( fragment );
+                    mgr.sendTextMessage( phone, null, asPublic, sent, dlvrd );
                     DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
-                                   fragment, fragment.length(), phone );
+                                   asPublic, asPublic.length(), phone );
                 }
                 DbgUtils.showf( this, "sent %dth msg", ++s_nSent );
                 success = true;

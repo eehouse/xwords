@@ -33,27 +33,29 @@ public class NBSReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        DbgUtils.logf( "NBSReceiver::onReceive()" );
-
         Bundle bundle = intent.getExtras();
         if ( null != bundle ) {
+            boolean isMine = false;
             Object[] pdus = (Object[])bundle.get( "pdus" );
             SmsMessage[] nbses = new SmsMessage[pdus.length];
 
             for ( int ii = 0; ii < pdus.length; ++ii ) {
                 SmsMessage nbs = SmsMessage.createFromPdu((byte[])pdus[ii]);
                 String body = nbs.getMessageBody();
-                String phone = nbs.getOriginatingAddress();
-                DbgUtils.logf( "NBSReceiver: \"%s\" from %s", 
-                               body, phone );
-                NBSService.handleFrom( context, body, phone );
+                String postDetectable = NBSService.fromPublicFmt( body );
+                isMine = null != postDetectable;
+                if ( isMine ) {
+                    String phone = nbs.getOriginatingAddress();
+                    DbgUtils.logf( "NBSReceiver: \"%s\" from %s", 
+                                   body, phone );
+                    NBSService.handleFrom( context, postDetectable, phone );
+                }
             }
 
-            // Do this if it passes our test and we're sure doesn't
-            // belong in the user's inbox
-            // DbgUtils.logf( "NBSReceiver: ABORTING message" );
-            // abortBroadcast();
+            if ( isMine ) {
+                 DbgUtils.logf( "NBSReceiver: ABORTING message" );
+                 abortBroadcast();
+            }
         }
-        DbgUtils.logf( "onReceive done" );
     }
 }
