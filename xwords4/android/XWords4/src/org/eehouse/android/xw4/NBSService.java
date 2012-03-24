@@ -434,8 +434,7 @@ public class NBSService extends Service {
     {
         Intent intent = new Intent( this, DispatchNotify.class );
         intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
-        Utils.postNotification( this, intent, R.string.new_nbsmove_title, 
-                                body );
+        Utils.postNotification( this, intent, title, body );
     }
 
     private class NBSMsgSink extends MultiMsgSink {
