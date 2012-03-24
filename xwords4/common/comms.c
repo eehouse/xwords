@@ -457,7 +457,7 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID )
     XP_ASSERT( CONN_ID_NONE != connID );
     XP_ASSERT( 0 == comms->connID || connID == comms->connID );
     comms->connID = connID;
-    XP_STATUSF( "%s: set connID (gameID) to %lx", __func__, connID );
+    XP_LOGF( "%s: set connID (gameID) to %lx", __func__, connID );
 } /* comms_setConnID */
 
 static void
@@ -1743,6 +1743,9 @@ comms_isConnected( const CommsCtxt* const comms )
     case COMMS_CONN_RELAY:
         result = 0 != comms->r.connName[0];
         break;
+    case COMMS_CONN_SMS:
+    case COMMS_CONN_BT:
+        result = XP_TRUE;
     default:
         break;
     }
