@@ -28,7 +28,7 @@ import android.telephony.SmsMessage;
 
 import junit.framework.Assert;
 
-public class NBSReceiver extends BroadcastReceiver {
+public class SMSReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -37,23 +37,23 @@ public class NBSReceiver extends BroadcastReceiver {
         if ( null != bundle ) {
             boolean isMine = false;
             Object[] pdus = (Object[])bundle.get( "pdus" );
-            SmsMessage[] nbses = new SmsMessage[pdus.length];
+            SmsMessage[] smses = new SmsMessage[pdus.length];
 
             for ( int ii = 0; ii < pdus.length; ++ii ) {
-                SmsMessage nbs = SmsMessage.createFromPdu((byte[])pdus[ii]);
-                String body = nbs.getMessageBody();
-                String postDetectable = NBSService.fromPublicFmt( body );
+                SmsMessage sms = SmsMessage.createFromPdu((byte[])pdus[ii]);
+                String body = sms.getMessageBody();
+                String postDetectable = SMSService.fromPublicFmt( body );
                 isMine = null != postDetectable;
                 if ( isMine ) {
-                    String phone = nbs.getOriginatingAddress();
-                    DbgUtils.logf( "NBSReceiver: \"%s\" from %s", 
+                    String phone = sms.getOriginatingAddress();
+                    DbgUtils.logf( "SMSReceiver: \"%s\" from %s", 
                                    body, phone );
-                    NBSService.handleFrom( context, postDetectable, phone );
+                    SMSService.handleFrom( context, postDetectable, phone );
                 }
             }
 
             if ( isMine ) {
-                 DbgUtils.logf( "NBSReceiver: ABORTING message" );
+                 DbgUtils.logf( "SMSReceiver: ABORTING message" );
                  abortBroadcast();
             }
         }

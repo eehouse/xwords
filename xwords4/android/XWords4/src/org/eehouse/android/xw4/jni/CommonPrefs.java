@@ -349,16 +349,16 @@ public class CommonPrefs {
         setPrefsStringArray( context, R.string.key_bt_names, names );
     }
 
-    public static void setNBSNames( Context context, ArrayList<String> names )
+    public static void setSMSNames( Context context, ArrayList<String> names )
     {
         String[] array = names.toArray( new String[names.size()] );
-        setPrefsStringArray( context, R.string.key_nbs_names, array );
+        setPrefsStringArray( context, R.string.key_sms_names, array );
     }
 
-    public static void setNBSPhones( Context context, ArrayList<String> names )
+    public static void setSMSPhones( Context context, ArrayList<String> names )
     {
         String[] array = names.toArray( new String[names.size()] );
-        setPrefsStringArray( context, R.string.key_nbs_phones, array );
+        setPrefsStringArray( context, R.string.key_sms_phones, array );
     }
 
     public static String[] getBTNames( Context context )
@@ -366,14 +366,14 @@ public class CommonPrefs {
         return getPrefsStringArray( context, R.string.key_bt_names );
     }
 
-    public static ArrayList<String> getNBSNames( Context context )
+    public static ArrayList<String> getSMSNames( Context context )
     {
-        return getPrefsStringArrayList( context, R.string.key_nbs_names );
+        return getPrefsStringArrayList( context, R.string.key_sms_names );
     }
 
-    public static ArrayList<String> getNBSPhones( Context context )
+    public static ArrayList<String> getSMSPhones( Context context )
     {
-        return getPrefsStringArrayList( context, R.string.key_nbs_phones );
+        return getPrefsStringArrayList( context, R.string.key_sms_phones );
     }
 
     public static void setBTAddresses( Context context, String[] addrs )

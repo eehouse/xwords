@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 >
       <Button android:id="@+id/button_add"
-              android:text="@string/button_nbs_add"
+              android:text="@string/button_sms_add"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:layout_weight="1" 

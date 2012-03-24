@@ -54,7 +54,7 @@ public class CommsAddrRec {
 
     // sms case
     public String sms_phone;
-    public int sms_port;                // NBS port, if they still use those
+    public int sms_port;                // SMS port, if they still use those
 
     public CommsAddrRec( CommsConnType cTyp ) 
     {

@@ -454,7 +454,7 @@ public class GameUtils {
                                  null, gameID, isHost );
     }
 
-    public static long makeNewNBSGame( Context context, int gameID, 
+    public static long makeNewSMSGame( Context context, int gameID, 
                                        CommsAddrRec addr, int lang, 
                                        int nPlayersT, int nPlayersH )
     {
@@ -476,11 +476,11 @@ public class GameUtils {
         activity.startActivityForResult( intent, requestCode );
     }
 
-    public static void launchNBSInviter( Activity activity, int nMissing, 
+    public static void launchSMSInviter( Activity activity, int nMissing, 
                                         int requestCode )
     {
-        Intent intent = new Intent( activity, NBSInviteActivity.class );
-        intent.putExtra( NBSInviteActivity.INTENT_KEY_NMISSING, nMissing );
+        Intent intent = new Intent( activity, SMSInviteActivity.class );
+        intent.putExtra( SMSInviteActivity.INTENT_KEY_NMISSING, nMissing );
         activity.startActivityForResult( intent, requestCode );
     }
 

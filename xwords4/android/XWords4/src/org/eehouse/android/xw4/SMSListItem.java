@@ -27,9 +27,9 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
-public class NBSListItem extends LinearLayout  {
+public class SMSListItem extends LinearLayout  {
         
-    public NBSListItem( Context cx, AttributeSet as ) 
+    public SMSListItem( Context cx, AttributeSet as ) 
     {
         super( cx, as );
     }

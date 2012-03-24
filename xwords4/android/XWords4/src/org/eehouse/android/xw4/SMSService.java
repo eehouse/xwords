@@ -41,7 +41,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 
-public class NBSService extends Service {
+public class SMSService extends Service {
 
     private static final String PUBLIC_HEADER = "_XW4";
 
@@ -62,7 +62,7 @@ public class NBSService extends Service {
 
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
-    private enum NBS_CMD { NONE, INVITE, DATA, };
+    private enum SMS_CMD { NONE, INVITE, DATA, };
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
@@ -96,7 +96,7 @@ public class NBSService extends Service {
     public static int sendPacket( Context context, String phone, 
                                   int gameID, byte[] binmsg )
     {
-        DbgUtils.logf( "NBSService.sendPacket()" );
+        DbgUtils.logf( "SMSService.sendPacket()" );
         Intent intent = getIntentTo( context, SEND );
         intent.putExtra( PHONE, phone );
         intent.putExtra( GAMEID, gameID );
@@ -121,7 +121,7 @@ public class NBSService extends Service {
 
     private static Intent getIntentTo( Context context, int cmd )
     {
-        Intent intent = new Intent( context, NBSService.class );
+        Intent intent = new Intent( context, SMSService.class );
         intent.putExtra( CMD_STR, cmd );
         return intent;
     }
@@ -129,7 +129,7 @@ public class NBSService extends Service {
     @Override
     public void onCreate()
     {
-        if ( XWApp.NBSSUPPORTED ) {
+        if ( XWApp.SMSSUPPORTED ) {
         } else {
             stopSelf();
         }
@@ -139,11 +139,11 @@ public class NBSService extends Service {
     public int onStartCommand( Intent intent, int flags, int startId )
     {
         int result;
-        if ( XWApp.NBSSUPPORTED && null != intent ) {
+        if ( XWApp.SMSSUPPORTED && null != intent ) {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             switch( cmd ) {
             case HANDLE:
-                DbgUtils.showf( this, "got %dth nbs", ++m_nReceived );
+                DbgUtils.showf( this, "got %dth sms", ++m_nReceived );
                 String buffer = intent.getStringExtra( BUFFER );
                 String phone = intent.getStringExtra( PHONE );
                 receiveBuffer( buffer, phone );
@@ -193,7 +193,7 @@ public class NBSService extends Service {
             das.writeByte( nPlayersH );
             das.flush();
 
-            send( NBS_CMD.INVITE, bas.toByteArray(), phone );
+            send( SMS_CMD.INVITE, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logf( "ioe: %s", ioe.toString() );
         }
@@ -201,7 +201,7 @@ public class NBSService extends Service {
 
     public int sendPacket( String phone, int gameID, byte[] bytes )
     {
-        DbgUtils.logf( "non-static NBSService.sendPacket()" );
+        DbgUtils.logf( "non-static SMSService.sendPacket()" );
         int nSent = -1;
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
@@ -209,7 +209,7 @@ public class NBSService extends Service {
             das.writeInt( gameID );
             das.write( bytes, 0, bytes.length );
             das.flush();
-            if ( send( NBS_CMD.DATA, bas.toByteArray(), phone ) ) {
+            if ( send( SMS_CMD.DATA, bas.toByteArray(), phone ) ) {
                 nSent = bytes.length;
             }
         } catch ( java.io.IOException ioe ) {
@@ -218,12 +218,12 @@ public class NBSService extends Service {
         return nSent;
     }
 
-    private boolean send( NBS_CMD cmd, byte[] bytes, String phone )
+    private boolean send( SMS_CMD cmd, byte[] bytes, String phone )
         throws java.io.IOException
     {
-        DbgUtils.logf( "non-static NBSService.sendPacket()" );
+        DbgUtils.logf( "non-static SMSService.sendPacket()" );
         int hash = Arrays.hashCode( bytes );
-        DbgUtils.logf( "NBSService: outgoing hash on %d bytes: %X", 
+        DbgUtils.logf( "SMSService: outgoing hash on %d bytes: %X", 
                        bytes.length, hash );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
@@ -265,7 +265,7 @@ public class NBSService extends Service {
         return result;
     }
 
-    private void receive( NBS_CMD cmd, byte[] data, String phone )
+    private void receive( SMS_CMD cmd, byte[] data, String phone )
     {
         CommsAddrRec addr = new CommsAddrRec( phone );
         DataInputStream dis = 
@@ -279,14 +279,14 @@ public class NBSService extends Service {
                 int nPlayersT = dis.readByte();
                 int nPlayersH = dis.readByte();
 
-                long rowid = GameUtils.makeNewNBSGame( this, gameID, addr,
+                long rowid = GameUtils.makeNewSMSGame( this, gameID, addr,
                                                        lang, nPlayersT, nPlayersH );
 
                 if ( null != gameName && 0 < gameName.length() ) {
                     DBUtils.setName( this, rowid, gameName );
                 }
-                String body = Utils.format( this, R.string.new_nbs_bodyf, phone );
-                postNotification( gameID, R.string.new_nbs_title, body );
+                String body = Utils.format( this, R.string.new_sms_bodyf, phone );
+                postNotification( gameID, R.string.new_sms_title, body );
                 break;
             case DATA:
                 gameID = dis.readInt();
@@ -360,21 +360,21 @@ public class NBSService extends Service {
         try {
             byte proto = dis.readByte();
             if ( 0 != proto ) {
-                DbgUtils.logf( "NBSService.disAssemble: bad proto %d; dropping", 
+                DbgUtils.logf( "SMSService.disAssemble: bad proto %d; dropping", 
                                proto );
             } else {
-                NBS_CMD cmd = NBS_CMD.values()[dis.readByte()];
+                SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
                 int hashRead = dis.readInt();
-                DbgUtils.logf( "NBSService: incoming hash: %X", hashRead );
+                DbgUtils.logf( "SMSService: incoming hash: %X", hashRead );
                 byte[] rest = new byte[dis.available()];
                 dis.read( rest );
                 int hashComputed = Arrays.hashCode( rest );
                 if ( hashComputed == hashRead ) {
-                    DbgUtils.logf( "NBSService: incoming hashes on %d " + 
+                    DbgUtils.logf( "SMSService: incoming hashes on %d " + 
                                    "bytes match: %X", rest.length, hashRead );
                     receive( cmd, rest, senderPhone );
                 } else {
-                    DbgUtils.logf( "NBSService: incoming hashes on %d bytes "
+                    DbgUtils.logf( "SMSService: incoming hashes on %d bytes "
                                    + "DON'T match: read: %X; figured: %X", 
                                    rest.length, hashRead, hashComputed );
                 }
@@ -386,7 +386,7 @@ public class NBSService extends Service {
 
     private boolean sendBuffers( String[] fragments, String phone )
     {
-        DbgUtils.logf( "NBSService.sendBuffers()" );
+        DbgUtils.logf( "SMSService.sendBuffers()" );
         boolean success = false;
         if ( XWApp.onEmulator() ) {
             DbgUtils.logf( "sendBuffer(phone=%s): FAKING IT", phone );
@@ -420,9 +420,9 @@ public class NBSService extends Service {
         } else {
             long rowid = DBUtils.getRowIDFor( this, gameID );
             if ( DBUtils.ROWID_NOTFOUND != rowid ) {
-                NBSMsgSink sink = new NBSMsgSink( this );
+                SMSMsgSink sink = new SMSMsgSink( this );
                 if ( GameUtils.feedMessage( this, rowid, msg, addr, sink ) ) {
-                    postNotification( gameID, R.string.new_nbsmove_title, 
+                    postNotification( gameID, R.string.new_smsmove_title, 
                                       getString(R.string.new_move_body)
                                       );
                 }
@@ -437,9 +437,9 @@ public class NBSService extends Service {
         Utils.postNotification( this, intent, title, body );
     }
 
-    private class NBSMsgSink extends MultiMsgSink {
+    private class SMSMsgSink extends MultiMsgSink {
         private Context m_context;
-        public NBSMsgSink( Context context ) {
+        public SMSMsgSink( Context context ) {
             super();
             m_context = context;
         }
@@ -447,7 +447,7 @@ public class NBSService extends Service {
         /***** TransportProcs interface *****/
         public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
         {
-            DbgUtils.logf( "NBSMsgSink.transportSend()" );
+            DbgUtils.logf( "SMSMsgSink.transportSend()" );
             return sendPacket( addr.sms_phone, gameID, buf );
         }
 

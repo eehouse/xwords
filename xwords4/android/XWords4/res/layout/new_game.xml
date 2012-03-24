@@ -105,32 +105,32 @@
               />
     </LinearLayout>
 
-    <!-- NBS -->
-    <TextView android:id="@+id/nbs_separator"
+    <!-- SMS -->
+    <TextView android:id="@+id/sms_separator"
               style="@style/config_separator"
               android:layout_marginTop="10dip"
               android:textAppearance="?android:attr/textAppearanceMedium"
-              android:text="@string/newgame_nbs_header"
+              android:text="@string/newgame_sms_header"
               android:visibility="gone"
               />
 
-    <LinearLayout android:id="@+id/nbs_disabled"
+    <LinearLayout android:id="@+id/sms_disabled"
                   android:orientation="vertical"
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
                   android:visibility="gone"
                   >
-      <TextView android:text="@string/nbs_disabled"
+      <TextView android:text="@string/sms_disabled"
                 style="@style/relay_explain"
                 />
-      <Button android:id="@+id/newgame_enable_nbs"
+      <Button android:id="@+id/newgame_enable_sms"
               android:layout_width="fill_parent" 
               android:layout_height="wrap_content"
-              android:text="@string/newgame_enable_nbs" 
+              android:text="@string/newgame_enable_sms" 
               />
     </LinearLayout>
 
-    <LinearLayout android:id="@+id/nbs_stuff"
+    <LinearLayout android:id="@+id/sms_stuff"
                   android:orientation="vertical"
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
@@ -148,7 +148,7 @@
                    android:layout_weight="0"
                    android:layout_gravity="center_vertical|center_horizontal"
                    />
-        <TextView android:text="@string/nbs_networked_desc"
+        <TextView android:text="@string/sms_networked_desc"
                   style="@style/relay_explain"
                   />
       </LinearLayout>
@@ -157,14 +157,14 @@
                     android:layout_width="fill_parent" 
                     android:layout_height="wrap_content"
                     >
-        <Button android:id="@+id/newgame_invite_nbs"
+        <Button android:id="@+id/newgame_invite_sms"
                 android:layout_width="fill_parent" 
                 android:layout_weight="1" 
                 android:layout_height="wrap_content"
                 android:text="@string/newgame_invite" 
                 />
 
-        <Button android:id="@+id/newgame_nbs_config"
+        <Button android:id="@+id/newgame_sms_config"
                 android:layout_width="fill_parent" 
                 android:layout_weight="1" 
                 android:layout_height="wrap_content"

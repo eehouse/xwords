@@ -380,7 +380,7 @@ public class CommsTransport implements TransportProcs,
             }
             break;
         case COMMS_CONN_SMS:
-            nSent = NBSService.sendPacket( m_context, addr.sms_phone, 
+            nSent = SMSService.sendPacket( m_context, addr.sms_phone, 
                                            gameID, buf );
             break;
         case COMMS_CONN_BT:

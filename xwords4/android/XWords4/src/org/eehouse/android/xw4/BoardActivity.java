@@ -76,7 +76,7 @@ public class BoardActivity extends XWActivity
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
-    private static final int NBS_INVITE_RESULT = 3;
+    private static final int SMS_INVITE_RESULT = 3;
 
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
@@ -97,7 +97,7 @@ public class BoardActivity extends XWActivity
     private static final int BUTTON_BROWSE_ACTION = 15;
     private static final int VALUES_ACTION = 16;
     private static final int BT_PICK_ACTION = 17;
-    private static final int NBS_PICK_ACTION = 18;
+    private static final int SMS_PICK_ACTION = 18;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -532,10 +532,10 @@ public class BoardActivity extends XWActivity
                 // onResume -- meaning m_gi etc are still null.
                 m_missingDevs = data.getStringArrayExtra( BTInviteActivity.DEVS );
                 break;
-            case NBS_INVITE_RESULT:
+            case SMS_INVITE_RESULT:
                 // onActivityResult is called immediately *before*
                 // onResume -- meaning m_gi etc are still null.
-                m_missingDevs = data.getStringArrayExtra( NBSInviteActivity.DEVS );
+                m_missingDevs = data.getStringArrayExtra( SMSInviteActivity.DEVS );
                 break;
             }
         }
@@ -745,9 +745,9 @@ public class BoardActivity extends XWActivity
                 GameUtils.launchBTInviter( this, m_nMissingPlayers, 
                                            BT_INVITE_RESULT );
                 break;
-            case NBS_PICK_ACTION:
-                GameUtils.launchNBSInviter( this, m_nMissingPlayers, 
-                                            NBS_INVITE_RESULT );
+            case SMS_PICK_ACTION:
+                GameUtils.launchSMSInviter( this, m_nMissingPlayers, 
+                                            SMS_INVITE_RESULT );
                 break;
             case COMMIT_ACTION:
                 cmd = JNIThread.JNICmd.CMD_COMMIT;
@@ -1353,8 +1353,8 @@ public class BoardActivity extends XWActivity
                     action = BT_PICK_ACTION;
                     break;
                 case COMMS_CONN_SMS:
-                    msgID = R.string.nbs_devs_missing;
-                    action = NBS_PICK_ACTION;
+                    msgID = R.string.sms_devs_missing;
+                    action = SMS_PICK_ACTION;
                     break;
                 }
             }
@@ -1723,7 +1723,7 @@ public class BoardActivity extends XWActivity
 
     private void tryInvites()
     {
-        if ( XWApp.BTSUPPORTED || XWApp.NBSSUPPORTED ) {
+        if ( XWApp.BTSUPPORTED || XWApp.SMSSUPPORTED ) {
             if ( null != m_missingDevs ) {
                 String gameName = GameUtils.getName( this, m_rowid );
                 boolean doProgress = false;
@@ -1736,7 +1736,7 @@ public class BoardActivity extends XWActivity
                                                 m_gi.nPlayers, 1 );
                         break;
                     case COMMS_CONN_SMS:
-                        NBSService.inviteRemote( this, dev, m_gi.gameID, 
+                        SMSService.inviteRemote( this, dev, m_gi.gameID, 
                                                  gameName, m_gi.dictLang, 
                                                  m_gi.nPlayers, 1 );
                         break;

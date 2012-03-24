@@ -80,7 +80,7 @@ public class GamesList extends XWListActivity
     private long m_rowid;
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
-    private String m_nbsPhone;
+    // private String m_smsPhone;
 
     @Override
     protected Dialog onCreateDialog( int id )

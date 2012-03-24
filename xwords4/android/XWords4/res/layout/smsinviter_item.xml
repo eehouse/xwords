@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<org.eehouse.android.xw4.NBSListItem
+<org.eehouse.android.xw4.SMSListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="fill_parent" 
@@ -28,4 +28,4 @@
               android:layout_width="wrap_content"
               />
   </LinearLayout>
-</org.eehouse.android.xw4.NBSListItem>
+</org.eehouse.android.xw4.SMSListItem>

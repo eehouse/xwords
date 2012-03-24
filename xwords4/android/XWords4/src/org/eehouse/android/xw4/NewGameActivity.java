@@ -51,9 +51,9 @@ public class NewGameActivity extends XWActivity {
     private static final String SAVE_REMOTEGAME = "REMOTEGAME";
     private static final String SAVE_GAMEID = "GAMEID";
     private static final int CONFIG_FOR_BT = 1;
-    private static final int CONFIG_FOR_NBS = 2;
+    private static final int CONFIG_FOR_SMS = 2;
     private static final int INVITE_FOR_BT = 3;
-    private static final int INVITE_FOR_NBS = 4;
+    private static final int INVITE_FOR_SMS = 4;
 
     // Dialogs
     private static final int NAME_GAME = DlgDelegate.DIALOG_LAST + 1;
@@ -113,7 +113,7 @@ public class NewGameActivity extends XWActivity {
             } );
 
         checkEnableBT( true );
-        checkEnableNBS();
+        checkEnableSMS();
     }
 
     @Override
@@ -160,7 +160,7 @@ public class NewGameActivity extends XWActivity {
         if ( Activity.RESULT_CANCELED != resultCode ) {
             switch ( requestCode ) {
             case CONFIG_FOR_BT:
-            case CONFIG_FOR_NBS:
+            case CONFIG_FOR_SMS:
                 if ( Activity.RESULT_CANCELED == resultCode ) {
                     DBUtils.deleteGame( this, m_newRowID );
                 } else {
@@ -184,20 +184,20 @@ public class NewGameActivity extends XWActivity {
                 }
                 break;
 
-            case INVITE_FOR_NBS:
+            case INVITE_FOR_SMS:
                 if ( Activity.RESULT_CANCELED != resultCode ) {
                     String[] phones =
-                        data.getStringArrayExtra( NBSInviteActivity.DEVS );
+                        data.getStringArrayExtra( SMSInviteActivity.DEVS );
                     Assert.assertTrue( 1 == phones.length );
 
                     m_gameID = GameUtils.newGameID();
-                    m_gameName = Utils.format( this, R.string.dft_nbs_namef, 
+                    m_gameName = Utils.format( this, R.string.dft_sms_namef, 
                                                m_gameID & 0xFFFF );
-                    NBSService.inviteRemote( NewGameActivity.this, phones[0],
+                    SMSService.inviteRemote( NewGameActivity.this, phones[0],
                                              m_gameID, m_gameName, 
                                              m_lang, 2, 1 );
                     long rowid = 
-                        GameUtils.makeNewNBSGame( NewGameActivity.this, 
+                        GameUtils.makeNewSMSGame( NewGameActivity.this, 
                                                   m_gameID, null, m_lang, 
                                                   2, 1 );
                     GameUtils.launchGame( NewGameActivity.this, rowid, true );
@@ -348,14 +348,14 @@ public class NewGameActivity extends XWActivity {
         }
     }
 
-    private void makeNewNBSGame( boolean useDefaults )
+    private void makeNewSMSGame( boolean useDefaults )
     {
         int gameID = GameUtils.newGameID();
         if ( !useDefaults ) {
-            m_newRowID = GameUtils.makeNewNBSGame( NewGameActivity.this, 
+            m_newRowID = GameUtils.makeNewSMSGame( NewGameActivity.this, 
                                                    gameID, null, m_lang, 
                                                    2, 1 ); // initial defaults
-            String name = Utils.format( this, R.string.dft_nbs_namef, 
+            String name = Utils.format( this, R.string.dft_sms_namef, 
                                         gameID & 0xFFFF );
             DBUtils.setName( this, m_newRowID, name );
 
@@ -363,9 +363,9 @@ public class NewGameActivity extends XWActivity {
             intent.setAction( Intent.ACTION_EDIT );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
-            startActivityForResult( intent, CONFIG_FOR_NBS );
+            startActivityForResult( intent, CONFIG_FOR_SMS );
         } else {
-            GameUtils.launchNBSInviter( this, 1, INVITE_FOR_NBS );
+            GameUtils.launchSMSInviter( this, 1, INVITE_FOR_SMS );
         }
     }
 
@@ -416,35 +416,35 @@ public class NewGameActivity extends XWActivity {
         }
     }
 
-    private void checkEnableNBS()
+    private void checkEnableSMS()
     { 
-        if ( XWApp.NBSSUPPORTED ) {
+        if ( XWApp.SMSSUPPORTED ) {
             boolean enabled = true; // is the phone on
-            findViewById( R.id.nbs_separator ).setVisibility( View.VISIBLE );
+            findViewById( R.id.sms_separator ).setVisibility( View.VISIBLE );
 
-            findViewById( R.id.nbs_disabled ).
+            findViewById( R.id.sms_disabled ).
                 setVisibility( enabled ? View.GONE : View.VISIBLE  );
-            findViewById( R.id.nbs_stuff ).
+            findViewById( R.id.sms_stuff ).
                 setVisibility( enabled ? View.VISIBLE : View.GONE  );
 
             Button button;
             if ( enabled ) {
-                button = (Button)findViewById( R.id.newgame_invite_nbs );
+                button = (Button)findViewById( R.id.newgame_invite_sms );
                 button.setOnClickListener( new View.OnClickListener() {
                         @Override
                             public void onClick( View v ) {
-                            makeNewNBSGame( true );
+                            makeNewSMSGame( true );
                         }
                     } );
-                button = (Button)findViewById( R.id.newgame_nbs_config );
+                button = (Button)findViewById( R.id.newgame_sms_config );
                 button.setOnClickListener( new View.OnClickListener() {
                         @Override
                             public void onClick( View v ) {
-                            makeNewNBSGame( false );
+                            makeNewSMSGame( false );
                         }
                     } );
             } else {
-                button = (Button)findViewById( R.id.newgame_enable_nbs );
+                button = (Button)findViewById( R.id.newgame_enable_sms );
                 button.setOnClickListener( new View.OnClickListener() {
                         @Override
                             public void onClick( View v ) {

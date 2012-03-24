@@ -30,7 +30,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 public class XWApp extends Application {
 
     public static final boolean BTSUPPORTED = false;
-    public static final boolean NBSSUPPORTED = false;
+    public static final boolean SMSSUPPORTED = false;
 
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;

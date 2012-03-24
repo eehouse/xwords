@@ -1875,28 +1875,28 @@
     <string name="game_btname_title">Bluetooth game name</string>
     <string name="dft_bt_namef">Game %X</string>
 
-    <string name="newgame_nbs_header">New SMS Game</string>
-    <string name="nbs_networked_desc">Create a game that will be
+    <string name="newgame_sms_header">New SMS Game</string>
+    <string name="sms_networked_desc">Create a game that will be
     played via invisible text messages. !!!DO NOT DO THIS UNLESS YOU HAVE
     AN UNLIMITED TEXT MESSAGING PLAN!!!</string>
-    <string name="nbs_disabled">nbs_disabled</string>
-    <string name="newgame_enable_nbs">newgame_enable_nbs</string>
+    <string name="sms_disabled">sms_disabled</string>
+    <string name="newgame_enable_sms">newgame_enable_sms</string>
     <string name="err_no_phone">Phone number required</string>
-    <string name="dft_nbs_namef">SMS Game %X</string>    
-    <string name="nbs_devs_missing">Missing connections? Invite SMS
+    <string name="dft_sms_namef">SMS Game %X</string>    
+    <string name="sms_devs_missing">Missing connections? Invite SMS
       devs? (I won\'t ask again until you reopen this game.)</string>
 
-    <string name="new_nbs_title">New game via SMS</string>
-    <string name="new_nbs_bodyf">Phone with number %s has invited you to
+    <string name="new_sms_title">New game via SMS</string>
+    <string name="new_sms_bodyf">Phone with number %s has invited you to
     play</string>
-    <string name="new_nbsmove_title">New move via SMS</string>
+    <string name="new_smsmove_title">New move via SMS</string>
 
-    <string name="button_nbs_add">Add contact</string>
-    <string name="invite_nbs_descf">Please select the %d phone numbers you
+    <string name="button_sms_add">Add contact</string>
+    <string name="invite_sms_descf">Please select the %d phone numbers you
         want to invite to this game.  Use the Add contact button if you
         don\'t see a number you want.</string>
     <string name="manual_number_hint">Other number</string>
     <string name="manual_owner_name">(Entered manually)</string>
-    <string name="nbs_nomobile">Contact has no mobile number.</string>
-    <string name="nbs_nomobilef">Contact for %s has no mobile number.</string>
+    <string name="sms_nomobile">Contact has no mobile number.</string>
+    <string name="sms_nomobilef">Contact for %s has no mobile number.</string>
 </resources>

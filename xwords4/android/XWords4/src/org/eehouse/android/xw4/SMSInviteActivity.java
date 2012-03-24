@@ -39,22 +39,22 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class NBSInviteActivity extends InviteActivity {
+public class SMSInviteActivity extends InviteActivity {
 
     private static final int GET_CONTACT = 1;
 
     private ArrayList<String> m_names;
     private ArrayList<String> m_phones;
-    private NBSPhonesAdapter m_adapter;
+    private SMSPhonesAdapter m_adapter;
     private EditText m_manualField;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( savedInstanceState, R.layout.nbsinviter,
+        super.onCreate( savedInstanceState, R.layout.smsinviter,
                         R.id.button_invite, R.id.button_add, 
                         R.id.button_clear, R.id.invite_desc,
-                        R.string.invite_nbs_descf );
+                        R.string.invite_sms_descf );
 
         m_manualField = (EditText)findViewById( R.id.phone_edit );
         ImageButton button = (ImageButton)findViewById( R.id.manual_add_button );
@@ -101,7 +101,7 @@ public class NBSInviteActivity extends InviteActivity {
         ListView list = (ListView)findViewById( android.R.id.list );
         int count = list.getChildCount();
         for ( int ii = count - 1; ii >= 0; --ii ) {
-            NBSListItem item = (NBSListItem)list.getChildAt( ii );
+            SMSListItem item = (SMSListItem)list.getChildAt( ii );
             if ( item.isChecked() ) {
                 m_phones.remove( ii );
                 m_names.remove( ii );
@@ -117,7 +117,7 @@ public class NBSInviteActivity extends InviteActivity {
         int count = list.getChildCount();
         int index = 0;
         for ( int ii = 0; ii < count; ++ii ) {
-            NBSListItem item = (NBSListItem)list.getChildAt( ii );
+            SMSListItem item = (SMSListItem)list.getChildAt( ii );
             if ( item.isChecked() ) {
                 result[index++] = item.getNumber();
             }
@@ -162,8 +162,8 @@ public class NBSInviteActivity extends InviteActivity {
                     rebuildList();
                 } else {
                     int resid = null != name && 0 < name.length()
-                        ?  R.string.nbs_nomobilef
-                        : R.string.nbs_nomobile;
+                        ?  R.string.sms_nomobilef
+                        : R.string.sms_nomobile;
                     String msg = Utils.format( this, resid, name );
                     showOKOnlyDialog( msg );
                 }
@@ -173,7 +173,7 @@ public class NBSInviteActivity extends InviteActivity {
 
     private void rebuildList()
     {
-        m_adapter = new NBSPhonesAdapter();
+        m_adapter = new SMSPhonesAdapter();
         setListAdapter( m_adapter );
         m_checkCount = 0;
         tryEnable();
@@ -181,31 +181,31 @@ public class NBSInviteActivity extends InviteActivity {
 
     private void getSavedState()
     {
-        m_names = CommonPrefs.getNBSNames( this );
-        m_phones = CommonPrefs.getNBSPhones( this );
+        m_names = CommonPrefs.getSMSNames( this );
+        m_phones = CommonPrefs.getSMSPhones( this );
     }
 
     private void saveState()
     {
-        CommonPrefs.setNBSNames( this, m_names );
-        CommonPrefs.setNBSPhones( this, m_phones );
+        CommonPrefs.setSMSNames( this, m_names );
+        CommonPrefs.setSMSPhones( this, m_phones );
     }
 
-    private class NBSPhonesAdapter extends XWListAdapter {
-        private NBSListItem[] m_items;
+    private class SMSPhonesAdapter extends XWListAdapter {
+        private SMSListItem[] m_items;
 
-        public NBSPhonesAdapter()
+        public SMSPhonesAdapter()
         {
             super( m_phones.size() );
-            m_items = new NBSListItem[m_phones.size()];
+            m_items = new SMSListItem[m_phones.size()];
         }
 
         public Object getItem( int position ) 
         { 
-            NBSListItem item = 
-                (NBSListItem)Utils.inflate( NBSInviteActivity.this,
-                                            R.layout.nbsinviter_item );
-            item.setOnCheckedChangeListener( NBSInviteActivity.this );
+            SMSListItem item = 
+                (SMSListItem)Utils.inflate( SMSInviteActivity.this,
+                                            R.layout.smsinviter_item );
+            item.setOnCheckedChangeListener( SMSInviteActivity.this );
             item.setContents( m_names.get(position), m_phones.get(position) );
             m_items[position] = item;
             return item;

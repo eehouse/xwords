@@ -26,14 +26,12 @@ GameUtils.java
 GitVersion.java
 MountEventReceiver.java
 MultiMsgSink.java
-NBSReceiver.java
 NetLaunchInfo.java
 NetStateCache.java
 NetUtils.java
 NewGameActivity.java
 PollListPreference.java
 PrefsActivity.java
-ReceiveNBS.java
 RefreshNamesTask.java
 RelayGameActivity.java
 RelayMsgSink.java
@@ -51,7 +49,8 @@ XWListItem.java
 XWListPreference.java
 GameNamer.java
 LookupActivity.java
-NBSInviteActivity.java
-NBSService.java
 InviteActivity.java
-NBSListItem.java
+SMSInviteActivity.java
+SMSListItem.java
+SMSReceiver.java
+SMSService.java
