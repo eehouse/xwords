@@ -27,7 +27,7 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 /** Info we want to access when the game's closed that's not available
  * in CurGameInfo
@@ -59,7 +59,7 @@ public class GameSummary {
     public String[] remoteBTAddrs;
 
     public int dictLang;
-    public CurGameInfo.DeviceRole serverRole;
+    public DeviceRole serverRole;
 
     private int m_giFlags;
     private String m_playersSummary;
@@ -183,12 +183,17 @@ public class GameSummary {
                 result = String.format( m_context.getString(fmtID), roomName );
                 break;
             case COMMS_CONN_BT:
+            case COMMS_CONN_SMS:
                 if ( anyMissing() ) {
-                    fmtID = R.string.summary_bt_wait;
+                    if ( DeviceRole.SERVER_ISSERVER == serverRole ) {
+                        fmtID = R.string.summary_wait_host;
+                    } else {
+                        fmtID = R.string.summary_wait_guest;
+                    }
                 } else if ( gameOver ) {
-                    fmtID = R.string.summary_bt_gameover;
+                    fmtID = R.string.summary_gameover;
                 } else {
-                    fmtID = R.string.summary_bt_conn;
+                    fmtID = R.string.summary_conn;
                 }
                 result = m_context.getString( fmtID );
                 break;
@@ -201,7 +206,7 @@ public class GameSummary {
     {
         // This definition will expand as other transports are added
         return ( null != conType 
-                 && serverRole != CurGameInfo.DeviceRole.SERVER_STANDALONE );
+                 && serverRole != DeviceRole.SERVER_STANDALONE );
     }
 
     private boolean isLocal( int indx ) {
