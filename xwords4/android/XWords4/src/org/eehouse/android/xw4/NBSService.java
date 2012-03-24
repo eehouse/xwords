@@ -392,17 +392,12 @@ public class NBSService extends Service {
             DbgUtils.logf( "sendBuffer(phone=%s): FAKING IT", phone );
         } else {
             try {
-                PendingIntent sent = 
-                    PendingIntent.getBroadcast( this, 0, new Intent(), 0 );
-                PendingIntent dlvrd = 
-                    PendingIntent.getBroadcast( this, 0, new Intent(), 0 );
-
                 SmsManager mgr = SmsManager.getDefault();
                 for ( String fragment : fragments ) {
                     DbgUtils.logf( "sending len %d packet: %s", 
                                    fragment.length(), fragment );
                     String asPublic = toPublicFmt( fragment );
-                    mgr.sendTextMessage( phone, null, asPublic, sent, dlvrd );
+                    mgr.sendTextMessage( phone, null, asPublic, null, null );
                     DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
                                    asPublic, asPublic.length(), phone );
                 }
