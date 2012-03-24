@@ -15,8 +15,10 @@ usage() {
 add_to_gitignored() {
     DIR=$1
     FILE=$2
-    touch ${DIR}/.gitignore
-    grep -q "^${FILE}\$" ${DIR}/.gitignore || echo $FILE >> ${DIR}/.gitignore
+    if [ -n "${FILE/*~/}" ]; then
+        touch ${DIR}/.gitignore
+        grep -q "^${FILE}\$" ${DIR}/.gitignore || echo $FILE >> ${DIR}/.gitignore
+    fi
 }
 
 do_dir() {
