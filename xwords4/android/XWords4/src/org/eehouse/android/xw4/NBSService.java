@@ -50,6 +50,7 @@ public class NBSService extends Service {
 
     private static final String CMD_STR = "CMD";
     private static final String BUFFER = "BUFFER";
+    private static final String BINBUFFER = "BINBUFFER";
     private static final String PHONE = "PHONE";
     private static final String GAMEID = "GAMEID";
     private static final String GAMENAME = "GAMENAME";
@@ -66,7 +67,7 @@ public class NBSService extends Service {
     private static HashMap<String, HashMap <Integer, MsgStore>> s_partialMsgs
         = new HashMap<String, HashMap <Integer, MsgStore>>();
 
-    public static void handleFrom( Context context, byte[] buffer, String phone )
+    public static void handleFrom( Context context, String buffer, String phone )
     {
         Intent intent = getIntentTo( context, HANDLE );
         intent.putExtra( BUFFER, buffer );
@@ -91,15 +92,15 @@ public class NBSService extends Service {
     }
 
     public static int sendPacket( Context context, String phone, 
-                                   int gameID, byte[] buffer )
+                                  int gameID, byte[] binmsg )
     {
         DbgUtils.logf( "NBSService.sendPacket()" );
         Intent intent = getIntentTo( context, SEND );
         intent.putExtra( PHONE, phone );
         intent.putExtra( GAMEID, gameID );
-        intent.putExtra( BUFFER, buffer );
+        intent.putExtra( BINBUFFER, binmsg );
         context.startService( intent );
-        return buffer.length;
+        return binmsg.length;
     }
 
     private static Intent getIntentTo( Context context, int cmd )
@@ -127,7 +128,7 @@ public class NBSService extends Service {
             switch( cmd ) {
             case HANDLE:
                 DbgUtils.showf( this, "got %dth nbs", ++m_nReceived );
-                byte[] buffer = intent.getByteArrayExtra( BUFFER );
+                String buffer = intent.getStringExtra( BUFFER );
                 String phone = intent.getStringExtra( PHONE );
                 receiveBuffer( buffer, phone );
                 break;
@@ -144,9 +145,9 @@ public class NBSService extends Service {
                 break;
             case SEND:
                 phone = intent.getStringExtra( PHONE );
-                buffer = intent.getByteArrayExtra( BUFFER );
+                byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
                 gameID = intent.getIntExtra( GAMEID, -1 );
-                sendPacket( phone, gameID, buffer );
+                sendPacket( phone, gameID, bytes );
                 break;
             }
 
@@ -182,7 +183,7 @@ public class NBSService extends Service {
         }
     }
 
-    public int sendPacket( String phone, int gameID, byte[] buf )
+    public int sendPacket( String phone, int gameID, byte[] bytes )
     {
         DbgUtils.logf( "non-static NBSService.sendPacket()" );
         int nSent = -1;
@@ -190,10 +191,10 @@ public class NBSService extends Service {
         DataOutputStream das = new DataOutputStream( bas );
         try {
             das.writeInt( gameID );
-            das.write( buf, 0, buf.length );
+            das.write( bytes, 0, bytes.length );
             das.flush();
             if ( send( NBS_CMD.DATA, bas.toByteArray(), phone ) ) {
-                nSent = buf.length;
+                nSent = bytes.length;
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logf( "ioe: %s", ioe.toString() );
@@ -201,34 +202,34 @@ public class NBSService extends Service {
         return nSent;
     }
 
-    private boolean send( NBS_CMD cmd, byte[] data, String phone )
+    private boolean send( NBS_CMD cmd, byte[] bytes, String phone )
         throws java.io.IOException
     {
         DbgUtils.logf( "non-static NBSService.sendPacket()" );
-        int hash = Arrays.hashCode( data );
+        int hash = Arrays.hashCode( bytes );
         DbgUtils.logf( "NBSService: outgoing hash on %d bytes: %X", 
-                       data.length, hash );
+                       bytes.length, hash );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
         das.writeByte( 0 );     // protocol
         das.writeByte( cmd.ordinal() );
         das.writeInt( hash );
-        das.write( data, 0, data.length );
+        das.write( bytes, 0, bytes.length );
         das.flush();
 
         String as64 = Base64.encodeToString( bas.toByteArray(), Base64.NO_WRAP );
-        byte[][] msgs = breakAndEncode( as64 );
+        String[] msgs = breakAndEncode( as64 );
         return sendBuffers( msgs, phone );
     }
 
-    private byte[][] breakAndEncode( String msg ) 
+    private String[] breakAndEncode( String msg ) 
         throws java.io.IOException 
     {
         // TODO: as optimization, truncate header when only one packet
         // required
         Assert.assertFalse( msg.contains(":") );
         int count = (msg.length() + (MAX_LEN_TEXT-1)) / MAX_LEN_TEXT;
-        byte[][] result = new byte[count][];
+        String[] result = new String[count];
         int msgID = ++s_nSent % 0x000000FF;
         DbgUtils.logf( "preparing %d packets for msgid %x", count, msgID );
 
@@ -240,10 +241,9 @@ public class NBSService extends Service {
                 len = MAX_LEN_TEXT;
             }
             end += len;
-            String out = String.format( "0:%X:%X:%X:%s", msgID, ii, count, 
+            result[ii] = String.format( "0:%X:%X:%X:%s", msgID, ii, count, 
                                         msg.substring( start, end ) );
-            DbgUtils.logf( "fragment[%d]: %s", ii, out );
-            result[ii] = out.getBytes();
+            DbgUtils.logf( "fragment[%d]: %s", ii, result[ii] );
             start = end;
         }
         return result;
@@ -287,11 +287,10 @@ public class NBSService extends Service {
         }
     }
 
-    private void receiveBuffer( byte[] as64, String senderPhone )
+    private void receiveBuffer( String as64, String senderPhone )
     {
-        String asString = new String( as64 );
-        DbgUtils.logf( "receiveBuffer(%s)", asString );
-        String[] parts = asString.split( ":" );
+        DbgUtils.logf( "receiveBuffer(%s)", as64 );
+        String[] parts = as64.split( ":" );
         DbgUtils.logf( "receiveBuffer: got %d parts", parts.length );
         for ( String part : parts ) {
             DbgUtils.logf( "part: %s", part );
@@ -369,7 +368,7 @@ public class NBSService extends Service {
         }
     }
 
-    private boolean sendBuffers( byte[][] fragments, String phone )
+    private boolean sendBuffers( String[] fragments, String phone )
     {
         DbgUtils.logf( "NBSService.sendBuffers()" );
         boolean success = false;
@@ -383,15 +382,14 @@ public class NBSService extends Service {
                     PendingIntent.getBroadcast( this, 0, new Intent(), 0 );
 
                 SmsManager mgr = SmsManager.getDefault();
-                short port = XWApp.getNBSPort();
-                for ( byte[] fragment : fragments ) {
-                    String tmp = new String(fragment);
-                    DbgUtils.logf( "sending len %d packet: %s", tmp.length(), tmp );
-                    mgr.sendDataMessage( phone, null, port, fragment, sent, dlvrd );
-                    DbgUtils.logf( "sendDataMessage of %d bytes to %s on %d "
-                                   + "finished", fragment.length, phone, port );
+                for ( String fragment : fragments ) {
+                    DbgUtils.logf( "sending len %d packet: %s", 
+                                   fragment.length(), fragment );
+                    mgr.sendTextMessage( phone, null, fragment, sent, dlvrd );
+                    DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
+                                   fragment, fragment.length(), phone );
                 }
-                DbgUtils.showf( this, "send %dth msg", ++s_nSent );
+                DbgUtils.showf( this, "sent %dth msg", ++s_nSent );
                 success = true;
             } catch ( IllegalArgumentException iae ) {
                 DbgUtils.logf( "%s", iae.toString() );
