@@ -24,7 +24,6 @@
 
 	<string name="list_item_new_from">Nová hra podle vzoru</string>
     <string name="play">Hrát hru</string>
-	<string name="title_games_list">Crosswords</string>   
 	<string name="title_dicts_list">Slovníky Crosswords</string>   
 	<string name="title_game_configf">Konfigurovat %s</string>  
 	<string name="title_prefs">Předvolby Crosswords</string>  
