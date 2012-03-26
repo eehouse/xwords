@@ -136,23 +136,19 @@ public class SMSInviteActivity extends InviteActivity {
                 String id = cursor.getString( index );
                 ContentResolver resolver = getContentResolver();
                 Cursor pc = 
-                    resolver.query( CommonDataKinds.Phone.CONTENT_URI, 
-                                    null,
-                                    CommonDataKinds.Phone.CONTACT_ID + " = ?", 
+                    resolver.query( Phone.CONTENT_URI, null,
+                                    Phone.CONTACT_ID + " = ?", 
                                     new String[] { id }, null );
                 String name = "";
                 while ( pc.moveToNext() ) {
                     name = 
-                        pc.getString( pc.getColumnIndex( CommonDataKinds.
-                                                         Phone.DISPLAY_NAME));
+                        pc.getString( pc.getColumnIndex( Phone.DISPLAY_NAME));
                     String number = 
-                        pc.getString( pc.getColumnIndex( CommonDataKinds.
-                                                         Phone.NUMBER ) );
-                    int type = 
-                        pc.getInt( pc.getColumnIndex( CommonDataKinds.
-                                                      Phone.TYPE ) );
+                        pc.getString( pc.getColumnIndex( Phone.NUMBER ) );
+                    // int type = 
+                    //     pc.getInt( pc.getColumnIndex( Phone.TYPE ) );
 
-                    if ( Phone.TYPE_MOBILE == type && 0 < number.length() ) {
+                    if ( /*Phone.TYPE_MOBILE == type && */0 < number.length() ) {
                         m_names.add( name );
                         m_phones.add( number );
                     }
