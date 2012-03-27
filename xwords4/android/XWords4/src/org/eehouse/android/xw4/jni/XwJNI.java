@@ -255,4 +255,8 @@ public class XwJNI {
     public static native int[] dict_iter_getIndices( int closure );
     public static native int dict_iter_getStartsWith( int closure, 
                                                       String prefix );
+
+    // base64 stuff since 2.1 doesn't support it in java
+    public static native String base64Encode( byte[] in );
+    public static native byte[] base64Decode( String in );
 }

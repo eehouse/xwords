@@ -1547,4 +1547,45 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
     return result;
 }
 
+#ifdef XWFEATURE_SMS
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_base64Encode
+( JNIEnv* env, jclass C, jbyteArray jbytes )
+{
+    int inlen = (*env)->GetArrayLength( env, jbytes );
+    jbyte* elems = (*env)->GetByteArrayElements( env, jbytes, NULL );
+    XP_ASSERT( !!elems );
+
+    XP_UCHAR out[4+(inlen*4/3)];
+    XP_U16 outlen = VSIZE( out );
+    binToSms( out, &outlen, (const XP_U8*)elems, inlen );
+
+    (*env)->ReleaseByteArrayElements( env, jbytes, elems, 0 );
+
+    jstring result = (*env)->NewStringUTF( env, out );
+    return result;
+}
+
+JNIEXPORT jbyteArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_base64Decode
+( JNIEnv* env, jclass C, jstring jstr )
+{
+    jbyteArray result = NULL;
+    const char* instr = (*env)->GetStringUTFChars( env, jstr, NULL );
+    XP_U16 inlen = (*env)->GetStringUTFLength( env, jstr );
+    XP_U8 out[inlen];
+    XP_U16 outlen = VSIZE(out);
+    if ( smsToBin( out, &outlen, instr, inlen ) ) {
+        result = (*env)->NewByteArray( env, outlen );
+        jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
+        XP_MEMCPY( jelems, out, outlen );
+        (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
+    } else {
+        XP_ASSERT(0);
+    }
+    (*env)->ReleaseStringUTFChars( env, jstr, instr );
+    return result;
+}
+#endif
+
 #endif  /* XWFEATURE_BOARDWORDS */

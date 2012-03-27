@@ -28,7 +28,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
-import android.util.Base64;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -40,6 +39,7 @@ import java.lang.System;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.XwJNI;
 
 public class SMSService extends Service {
 
@@ -233,7 +233,7 @@ public class SMSService extends Service {
         das.write( bytes, 0, bytes.length );
         das.flush();
 
-        String as64 = Base64.encodeToString( bas.toByteArray(), Base64.NO_WRAP );
+        String as64 = XwJNI.base64Encode( bas.toByteArray() );
         String[] msgs = breakAndEncode( as64 );
         return sendBuffers( msgs, phone );
     }
@@ -325,7 +325,7 @@ public class SMSService extends Service {
                               int count, String msg )
     {
         if ( index == 0 && count == 1 ) {
-            disAssemble( senderPhone, msg.getBytes() );
+            disAssemble( senderPhone, msg );
         } else {
             synchronized( s_partialMsgs ) {
                 HashMap <Integer, MsgStore> perPhone = 
@@ -343,7 +343,7 @@ public class SMSService extends Service {
 
                 if ( store.isComplete() ) {
                     s_partialMsgs.remove( id );
-                    byte[] fullMsg = store.message();
+                    String fullMsg = store.message();
                     perPhone.remove( id );
                     disAssemble( senderPhone, fullMsg );
                 }
@@ -351,10 +351,10 @@ public class SMSService extends Service {
         }
     }
 
-    private void disAssemble( String senderPhone, byte[] fullMsg )
+    private void disAssemble( String senderPhone, String fullMsg )
     {
         DbgUtils.logf( "disAssemble()" );
-        byte[] data = Base64.decode( fullMsg, Base64.NO_WRAP );
+        byte[] data = XwJNI.base64Decode( fullMsg );
         DataInputStream dis = 
             new DataInputStream( new ByteArrayInputStream(data) );
         try {
@@ -487,16 +487,13 @@ public class SMSService extends Service {
             return complete;
         }
 
-        public byte[] message() 
+        public String message() 
         {
-            byte[] result = new byte[m_fullLength];
-            int offset = 0;
-            for ( int ii = 0; ii < m_msgs.length; ++ii ) {
-                byte[] src = m_msgs[ii].getBytes();
-                System.arraycopy( src, 0, result, offset, src.length );
-                offset += src.length;
+            StringBuffer sb = new StringBuffer(m_fullLength);
+            for ( String msg : m_msgs ) {
+                sb.append( msg );
             }
-            return result;
+            return sb.toString();
         }
     }
 }
