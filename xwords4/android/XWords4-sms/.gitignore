@@ -1,0 +1,7 @@
+*.apk
+local.properties
+bin
+gen
+libs
+proguard.cfg
+obj
