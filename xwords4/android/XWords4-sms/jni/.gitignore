@@ -1,7 +1,6 @@
 anddict.c
 anddict.h
 andglobals.h
-Android.mk
 andutils.c
 andutils.h
 drawwrapper.c
