@@ -21,6 +21,7 @@ print <<<EOF
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="/xw4mobile.css" />
 <title>Crosswords SMS redirect</title>
 <meta http-equiv="REFRESH"
     content="$content">
