@@ -24,8 +24,10 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import java.io.ByteArrayInputStream;
@@ -33,9 +35,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
+import java.lang.System;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.lang.System;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -60,6 +62,8 @@ public class SMSService extends Service {
     private static final String NPLAYERST = "NPLAYERST";
     private static final String NPLAYERSH = "NPLAYERSH";
 
+    private static Boolean s_showToasts = null;
+
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
     private enum SMS_CMD { NONE, INVITE, DATA, };
@@ -68,6 +72,11 @@ public class SMSService extends Service {
     private static int s_nSent = 0;
     private static HashMap<String, HashMap <Integer, MsgStore>> s_partialMsgs
         = new HashMap<String, HashMap <Integer, MsgStore>>();
+
+    public static void smsToastEnable( boolean newVal ) 
+    {
+        s_showToasts = newVal;
+    }
 
     public static void handleFrom( Context context, String buffer, String phone )
     {
@@ -121,6 +130,13 @@ public class SMSService extends Service {
 
     private static Intent getIntentTo( Context context, int cmd )
     {
+        if ( null == s_showToasts ) {
+            SharedPreferences sp
+                = PreferenceManager.getDefaultSharedPreferences( context );
+            String key = context.getString( R.string.key_show_sms );
+            s_showToasts = sp.getBoolean( key, false );
+        }
+
         Intent intent = new Intent( context, SMSService.class );
         intent.putExtra( CMD_STR, cmd );
         return intent;
@@ -388,27 +404,23 @@ public class SMSService extends Service {
     {
         DbgUtils.logf( "SMSService.sendBuffers()" );
         boolean success = false;
-        if ( XWApp.onEmulator() ) {
-            DbgUtils.logf( "sendBuffer(phone=%s): FAKING IT", phone );
-        } else {
-            try {
-                SmsManager mgr = SmsManager.getDefault();
-                for ( String fragment : fragments ) {
-                    DbgUtils.logf( "sending len %d packet: %s", 
-                                   fragment.length(), fragment );
-                    String asPublic = toPublicFmt( fragment );
-                    mgr.sendTextMessage( phone, null, asPublic, null, null );
-                    DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
-                                   asPublic, asPublic.length(), phone );
-                }
-                DbgUtils.showf( this, "sent %dth msg", ++s_nSent );
-                success = true;
-            } catch ( IllegalArgumentException iae ) {
-                DbgUtils.logf( "%s", iae.toString() );
-            } catch ( Exception ee ) {
-                DbgUtils.logf( "sendDataMessage message failed: %s", 
-                               ee.toString() );
+        try {
+            SmsManager mgr = SmsManager.getDefault();
+            for ( String fragment : fragments ) {
+                DbgUtils.logf( "sending len %d packet: %s", 
+                               fragment.length(), fragment );
+                String asPublic = toPublicFmt( fragment );
+                mgr.sendTextMessage( phone, null, asPublic, null, null );
+                DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
+                               asPublic, asPublic.length(), phone );
             }
+            DbgUtils.showf( this, "sent %dth msg", ++s_nSent );
+            success = true;
+        } catch ( IllegalArgumentException iae ) {
+            DbgUtils.logf( "%s", iae.toString() );
+        } catch ( Exception ee ) {
+            DbgUtils.logf( "sendDataMessage message failed: %s", 
+                           ee.toString() );
         }
         return success;
     }

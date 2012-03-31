@@ -37,6 +37,7 @@ public class PrefsActivity extends PreferenceActivity
     private static final int REVERT_ALL = 2;
 
     private String m_keyLogging;
+    private String m_smsToasting;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -112,6 +113,7 @@ public class PrefsActivity extends PreferenceActivity
         setContentView( R.layout.prefs_w_buttons );
 
         m_keyLogging = getString( R.string.key_logging_on );
+        m_smsToasting = getString( R.string.key_show_sms );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -147,6 +149,8 @@ public class PrefsActivity extends PreferenceActivity
     {
         if ( key.equals( m_keyLogging ) ) {
             DbgUtils.logEnable( sp.getBoolean( key, false ) );
+        } else if ( key.equals( m_smsToasting ) ) {
+            SMSService.smsToastEnable( sp.getBoolean( key, false ) );
         }
     }
 

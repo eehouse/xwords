@@ -302,6 +302,10 @@
 			            android:title="@string/logging_on"
 			            android:defaultValue="false"
 			            />
+    <CheckBoxPreference android:key="@string/key_show_sms"
+			            android:title="Show SMS sends, receives"
+			            android:defaultValue="false"
+			            />
     <EditTextPreference android:title="@string/git_rev_title"
 			            android:summary="@string/git_rev"
 			            android:enabled="false"
