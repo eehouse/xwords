@@ -200,6 +200,7 @@ public class NewGameActivity extends XWActivity {
                         GameUtils.makeNewSMSGame( NewGameActivity.this, 
                                                   m_gameID, null, m_lang, 
                                                   2, 1 );
+                    DBUtils.setName( this, rowid, m_gameName );
                     GameUtils.launchGame( NewGameActivity.this, rowid, true );
                     finish();
                 }
