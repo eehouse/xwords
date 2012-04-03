@@ -132,7 +132,9 @@ public class SMSService extends Service {
         String result = null;
         if ( msg.startsWith( PUBLIC_HEADER ) ) {
             int index = msg.lastIndexOf( " " );
-            result = msg.substring( index + 1 );
+            if ( 0 <= index ) {
+                result = msg.substring( index + 1 );
+            }
         }
         return result;
     }
