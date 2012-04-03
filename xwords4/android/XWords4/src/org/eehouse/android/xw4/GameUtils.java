@@ -289,6 +289,8 @@ public class GameUtils {
             tellDied( context, lock, informNow );
             DBUtils.deleteGame( context, lock );
             lock.unlock();
+        } else {
+            DbgUtils.logf( "deleteGame: unable to delete rowid %d", rowid );
         }
     }
 
