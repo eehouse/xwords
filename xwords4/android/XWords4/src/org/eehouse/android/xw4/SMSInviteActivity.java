@@ -26,15 +26,17 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import java.util.ArrayList;
+import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -45,6 +47,7 @@ public class SMSInviteActivity extends InviteActivity {
 
     private ArrayList<String> m_names;
     private ArrayList<String> m_phones;
+    private ArrayList<Boolean> m_checks;
     private SMSPhonesAdapter m_adapter;
     private EditText m_manualField;
 
@@ -64,8 +67,7 @@ public class SMSInviteActivity extends InviteActivity {
                     String number = m_manualField.getText().toString();
                     if ( 0 < number.length() ) {
                         m_manualField.setText("");
-                        m_phones.add( number );
-                        m_names.add( getString( R.string.manual_owner_name ) );
+                        add( getString( R.string.manual_owner_name ), number );
                         saveState();
                         rebuildList();
                     }
@@ -74,6 +76,7 @@ public class SMSInviteActivity extends InviteActivity {
 
         getSavedState();
         rebuildList();
+        tryEnable();
     }
     
     @Override
@@ -90,7 +93,8 @@ public class SMSInviteActivity extends InviteActivity {
         }
     }
 
-    protected void scan() {
+    protected void scan()
+    {
         Intent intent = new Intent( Intent.ACTION_PICK, 
                                     ContactsContract.Contacts.CONTENT_URI );
         startActivityForResult( intent, GET_CONTACT );
@@ -98,31 +102,51 @@ public class SMSInviteActivity extends InviteActivity {
 
     protected void clearSelected()
     {
-        ListView list = (ListView)findViewById( android.R.id.list );
-        int count = list.getChildCount();
+        int count = m_adapter.getCount();
         for ( int ii = count - 1; ii >= 0; --ii ) {
-            SMSListItem item = (SMSListItem)list.getChildAt( ii );
-            if ( item.isChecked() ) {
-                m_phones.remove( ii );
-                m_names.remove( ii );
+            if ( m_checks.get( ii ) ) {
+                remove( ii );
             }
         }
         saveState();
         rebuildList();
     }
 
-    protected String[] listSelected() {
-        ListView list = (ListView)findViewById( android.R.id.list );
-        String[] result = new String[m_checkCount];
-        int count = list.getChildCount();
+    protected String[] listSelected()
+    {
+        int count = m_adapter.getCount();
+        String[] result = new String[countChecks()];
         int index = 0;
-        for ( int ii = 0; ii < count; ++ii ) {
-            SMSListItem item = (SMSListItem)list.getChildAt( ii );
-            if ( item.isChecked() ) {
-                result[index++] = item.getNumber();
+        Iterator<Boolean> iter = m_checks.iterator();
+        for ( int ii = 0; iter.hasNext(); ++ii ) {
+            if ( iter.next() ) {
+                result[index++] = 
+                    ((SMSListItem)m_adapter.getItem(ii)).getNumber();
             }
         }
         return result;
+    }
+
+    @Override
+    protected void tryEnable() 
+    {
+        int count = countChecks();
+        m_okButton.setEnabled( count == m_nMissing );
+        m_clearButton.setEnabled( 0 < count );
+    }
+
+    private int countChecks()
+    {
+        int count = 0;
+        if ( null != m_checks ) {
+            Iterator<Boolean> iter = m_checks.iterator();
+            while ( iter.hasNext() ) {
+                if ( iter.next() ) {
+                    ++count;
+                }
+            }
+        }
+        return count;
     }
 
     private void addPhoneNumbers( Intent intent )
@@ -149,8 +173,7 @@ public class SMSInviteActivity extends InviteActivity {
                     //     pc.getInt( pc.getColumnIndex( Phone.TYPE ) );
 
                     if ( /*Phone.TYPE_MOBILE == type && */0 < number.length() ) {
-                        m_names.add( name );
-                        m_phones.add( number );
+                        add( name, number );
                     }
                 }
                 if ( len_before != m_phones.size() ) {
@@ -171,7 +194,6 @@ public class SMSInviteActivity extends InviteActivity {
     {
         m_adapter = new SMSPhonesAdapter();
         setListAdapter( m_adapter );
-        m_checkCount = 0;
         tryEnable();
     }
 
@@ -179,12 +201,32 @@ public class SMSInviteActivity extends InviteActivity {
     {
         m_names = CommonPrefs.getSMSNames( this );
         m_phones = CommonPrefs.getSMSPhones( this );
+
+        int size = m_phones.size();
+        m_checks = new ArrayList<Boolean>(size);
+        for ( int ii = 0; ii < size; ++ii ) {
+            m_checks.add( false );
+        }
     }
 
     private void saveState()
     {
         CommonPrefs.setSMSNames( this, m_names );
         CommonPrefs.setSMSPhones( this, m_phones );
+    }
+
+    private void add( String name, String number )
+    {
+        m_names.add( name );
+        m_phones.add( number );
+        m_checks.add( false );
+    }
+
+    private void remove( int index )
+    {
+        m_phones.remove( index );
+        m_names.remove( index );
+        m_checks.remove( index );
     }
 
     private class SMSPhonesAdapter extends XWListAdapter {
@@ -196,13 +238,31 @@ public class SMSInviteActivity extends InviteActivity {
             m_items = new SMSListItem[m_phones.size()];
         }
 
-        public Object getItem( int position ) 
+        public Object getItem( final int position ) 
         { 
+            // For some reason I can't cache items to be returned.
+            // Checking/unchecking breaks for some but not all items,
+            // with some relation to whether they were scrolled into
+            // view.  So build them anew each time (but still cache
+            // for by-index access.)
+
             SMSListItem item = 
                 (SMSListItem)Utils.inflate( SMSInviteActivity.this,
-                                            R.layout.smsinviter_item );
-            item.setOnCheckedChangeListener( SMSInviteActivity.this );
-            item.setContents( m_names.get(position), m_phones.get(position) );
+                                                R.layout.smsinviter_item );
+            item.setChecked( m_checks.get( position ) );
+
+            CompoundButton.OnCheckedChangeListener lstnr =
+                new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged( CompoundButton bv, 
+                                                  boolean isChecked ) {
+                        m_checks.set( position, isChecked );
+                        tryEnable();
+                    }
+                };
+            item.setOnCheckedChangeListener( lstnr );
+            item.setContents( String.format("%d:%s", position,
+                                            m_names.get(position) ), 
+                              m_phones.get(position) );
             m_items[position] = item;
             return item;
         }
@@ -214,7 +274,8 @@ public class SMSInviteActivity extends InviteActivity {
 
         public boolean isChecked( int index ) 
         {
-            boolean checked = m_items[index].isChecked();
+            SMSListItem item = m_items[index];
+            boolean checked = null != item && item.isChecked();
             return checked;
         }
     }

@@ -54,6 +54,12 @@ public class SMSListItem extends LinearLayout  {
         return tv.getText().toString();
     }
 
+    public void setChecked( boolean checked )
+    {
+        CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
+        cb.setChecked( checked );
+    }
+
     public boolean isChecked()
     {
         CheckBox cb = (CheckBox)findViewById( R.id.checkbox );

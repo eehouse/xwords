@@ -39,9 +39,11 @@ import android.os.Handler;
 
 import junit.framework.Assert;
 
-public class BTInviteActivity extends InviteActivity {
+public class BTInviteActivity extends InviteActivity
+    implements CompoundButton.OnCheckedChangeListener {
 
     private boolean m_firstScan;
+    private int m_checkCount;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -50,7 +52,7 @@ public class BTInviteActivity extends InviteActivity {
                         R.id.button_invite, R.id.button_rescan, 
                         R.id.button_clear, R.id.invite_desc,
                         R.string.invite_bt_descf );
-
+        tryEnable();
         m_firstScan = true;
         BTService.clearDevices( this, null ); // will return names
     }
@@ -115,6 +117,25 @@ public class BTInviteActivity extends InviteActivity {
             }
         }
         return result;
+    }
+
+    protected void tryEnable() 
+    {
+        m_okButton.setEnabled( m_checkCount == m_nMissing );
+        m_clearButton.setEnabled( 0 < m_checkCount );
+    }
+
+    public void onCheckedChanged( CompoundButton buttonView, 
+                                  boolean isChecked )
+    {
+        if ( isChecked ) {
+            ++m_checkCount;
+        } else {
+            --m_checkCount;
+        }
+        DbgUtils.logf( "BTInviteActivity.onCheckedChanged( isChecked=%b ); "
+                       + "count now %d", isChecked, m_checkCount );
+        tryEnable();
     }
 
     private class BTDevsAdapter extends XWListAdapter {

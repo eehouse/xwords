@@ -39,8 +39,7 @@ import android.os.Handler;
 import junit.framework.Assert;
 
 abstract class InviteActivity extends XWListActivity 
-    implements View.OnClickListener, 
-               CompoundButton.OnCheckedChangeListener {
+    implements View.OnClickListener {
 
     public static final String DEVS = "DEVS";
     public static final String INTENT_KEY_NMISSING = "NMISSING";
@@ -49,7 +48,6 @@ abstract class InviteActivity extends XWListActivity
     protected Button m_okButton;
     protected Button m_rescanButton;
     protected Button m_clearButton;
-    protected int m_checkCount = 0;
 
     protected void onCreate( Bundle savedInstanceState, int view_id,
                              int button_invite, int button_rescan, 
@@ -71,7 +69,6 @@ abstract class InviteActivity extends XWListActivity
         TextView desc = (TextView)findViewById( desc_id );
         desc.setText( Utils.format( this, desc_strf, m_nMissing ) );
 
-        m_checkCount = 0;
         tryEnable();
     }
 
@@ -90,25 +87,7 @@ abstract class InviteActivity extends XWListActivity
         }
     }
 
-    public void onCheckedChanged( CompoundButton buttonView, 
-                                  boolean isChecked )
-    {
-        DbgUtils.logf( "InviteActivity.onCheckedChanged( isChecked=%b )",
-                       isChecked );
-        if ( isChecked ) {
-            ++m_checkCount;
-        } else {
-            --m_checkCount;
-        }
-        tryEnable();
-    }
-
-    protected void tryEnable() 
-    {
-        m_okButton.setEnabled( m_checkCount == m_nMissing );
-        m_clearButton.setEnabled( 0 < m_checkCount );
-    }
-
+    abstract void tryEnable() ;
     abstract String[] listSelected();
     abstract void scan();
     abstract void clearSelected();
