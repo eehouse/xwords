@@ -60,9 +60,11 @@
     
     <activity android:name="NewGameActivity"
               android:theme="@android:style/Theme.NoTitleBar"
+              android:configChanges="keyboardHidden|orientation"
               />
     <activity android:name="SMSInviteActivity"
               android:theme="@android:style/Theme.Dialog"
+              android:configChanges="keyboardHidden|orientation"
               />
 
     <activity android:name="GameConfig"
