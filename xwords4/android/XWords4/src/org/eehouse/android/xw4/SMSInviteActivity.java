@@ -260,9 +260,7 @@ public class SMSInviteActivity extends InviteActivity {
                     }
                 };
             item.setOnCheckedChangeListener( lstnr );
-            item.setContents( String.format("%d:%s", position,
-                                            m_names.get(position) ), 
-                              m_phones.get(position) );
+            item.setContents( m_names.get(position), m_phones.get(position) );
             m_items[position] = item;
             return item;
         }
