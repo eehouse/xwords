@@ -36,6 +36,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import junit.framework.Assert;
 
@@ -193,6 +195,11 @@ public class SMSInviteActivity extends InviteActivity {
 
     private void rebuildList()
     {
+        Collections.sort(m_phoneRecs,new Comparator<PhoneRec>() {
+                public int compare( PhoneRec rec1, PhoneRec rec2 ) {
+                    return rec1.m_name.compareTo(rec2.m_name);
+                }
+            });
         m_adapter = new SMSPhonesAdapter();
         setListAdapter( m_adapter );
         tryEnable();
