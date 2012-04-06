@@ -45,9 +45,7 @@ public class SMSInviteActivity extends InviteActivity {
 
     private static final int GET_CONTACT = 1;
 
-    private ArrayList<String> m_names;
-    private ArrayList<String> m_phones;
-    private ArrayList<Boolean> m_checks;
+    private ArrayList<PhoneRec> m_phoneRecs;
     private SMSPhonesAdapter m_adapter;
     private EditText m_manualField;
 
@@ -67,7 +65,10 @@ public class SMSInviteActivity extends InviteActivity {
                     String number = m_manualField.getText().toString();
                     if ( 0 < number.length() ) {
                         m_manualField.setText("");
-                        add( getString( R.string.manual_owner_name ), number );
+                        PhoneRec rec = 
+                            new PhoneRec( getString( R.string.manual_owner_name ),
+                                          number );
+                        m_phoneRecs.add( rec );
                         saveState();
                         rebuildList();
                     }
@@ -104,8 +105,8 @@ public class SMSInviteActivity extends InviteActivity {
     {
         int count = m_adapter.getCount();
         for ( int ii = count - 1; ii >= 0; --ii ) {
-            if ( m_checks.get( ii ) ) {
-                remove( ii );
+            if ( m_phoneRecs.get( ii ).m_checked ) {
+                m_phoneRecs.remove( ii );
             }
         }
         saveState();
@@ -117,9 +118,9 @@ public class SMSInviteActivity extends InviteActivity {
         int count = m_adapter.getCount();
         String[] result = new String[countChecks()];
         int index = 0;
-        Iterator<Boolean> iter = m_checks.iterator();
+        Iterator<PhoneRec> iter = m_phoneRecs.iterator();
         for ( int ii = 0; iter.hasNext(); ++ii ) {
-            if ( iter.next() ) {
+            if ( iter.next().m_checked ) {
                 result[index++] = 
                     ((SMSListItem)m_adapter.getItem(ii)).getNumber();
             }
@@ -138,10 +139,10 @@ public class SMSInviteActivity extends InviteActivity {
     private int countChecks()
     {
         int count = 0;
-        if ( null != m_checks ) {
-            Iterator<Boolean> iter = m_checks.iterator();
+        if ( null != m_phoneRecs ) {
+            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
             while ( iter.hasNext() ) {
-                if ( iter.next() ) {
+                if ( iter.next().m_checked ) {
                     ++count;
                 }
             }
@@ -154,7 +155,7 @@ public class SMSInviteActivity extends InviteActivity {
         Uri data = intent.getData();
         Cursor cursor = managedQuery( data, null, null, null, null );
         if ( cursor.moveToFirst() ) {
-            int len_before = m_phones.size();
+            int len_before = m_phoneRecs.size();
             int index = cursor.getColumnIndex(ContactsContract.Contacts._ID );
             if ( 0 <= index ) {
                 String id = cursor.getString( index );
@@ -173,10 +174,10 @@ public class SMSInviteActivity extends InviteActivity {
                     //     pc.getInt( pc.getColumnIndex( Phone.TYPE ) );
 
                     if ( /*Phone.TYPE_MOBILE == type && */0 < number.length() ) {
-                        add( name, number );
+                        m_phoneRecs.add( new PhoneRec( name, number ) );
                     }
                 }
-                if ( len_before != m_phones.size() ) {
+                if ( len_before != m_phoneRecs.size() ) {
                     saveState();
                     rebuildList();
                 } else {
@@ -199,34 +200,41 @@ public class SMSInviteActivity extends InviteActivity {
 
     private void getSavedState()
     {
-        m_names = CommonPrefs.getSMSNames( this );
-        m_phones = CommonPrefs.getSMSPhones( this );
+        String[] names = CommonPrefs.getSMSNames( this );
+        String[] phones = CommonPrefs.getSMSPhones( this );
+        int size = phones.length;
 
-        int size = m_phones.size();
-        m_checks = new ArrayList<Boolean>(size);
+        m_phoneRecs = new ArrayList<PhoneRec>(size);
         for ( int ii = 0; ii < size; ++ii ) {
-            m_checks.add( false );
+            PhoneRec rec = new PhoneRec( names[ii], phones[ii] );
+            m_phoneRecs.add( rec );
         }
     }
 
     private void saveState()
     {
-        CommonPrefs.setSMSNames( this, m_names );
-        CommonPrefs.setSMSPhones( this, m_phones );
+        String[] names = new String[m_phoneRecs.size()];
+        String[] phones = new String[m_phoneRecs.size()];
+        Iterator<PhoneRec> iter = m_phoneRecs.iterator();
+        for ( int ii = 0; iter.hasNext(); ++ii ) {
+            PhoneRec rec = iter.next();
+            names[ii] = rec.m_name;
+            phones[ii] = rec.m_phone;
+        }
+        CommonPrefs.setSMSNames( this, names );
+        CommonPrefs.setSMSPhones( this, phones );
     }
 
-    private void add( String name, String number )
-    {
-        m_names.add( name );
-        m_phones.add( number );
-        m_checks.add( false );
-    }
-
-    private void remove( int index )
-    {
-        m_phones.remove( index );
-        m_names.remove( index );
-        m_checks.remove( index );
+    private class PhoneRec {
+        public String m_phone;
+        public String m_name;
+        public boolean m_checked;
+        public PhoneRec( String name, String phone )
+        {
+            m_name = name;
+            m_phone = phone;
+            m_checked = false;
+        }
     }
 
     private class SMSPhonesAdapter extends XWListAdapter {
@@ -234,8 +242,8 @@ public class SMSInviteActivity extends InviteActivity {
 
         public SMSPhonesAdapter()
         {
-            super( m_phones.size() );
-            m_items = new SMSListItem[m_phones.size()];
+            super( m_phoneRecs.size() );
+            m_items = new SMSListItem[m_phoneRecs.size()];
         }
 
         public Object getItem( final int position ) 
@@ -249,18 +257,19 @@ public class SMSInviteActivity extends InviteActivity {
             SMSListItem item = 
                 (SMSListItem)Utils.inflate( SMSInviteActivity.this,
                                                 R.layout.smsinviter_item );
-            item.setChecked( m_checks.get( position ) );
+            item.setChecked( m_phoneRecs.get(position).m_checked );
 
             CompoundButton.OnCheckedChangeListener lstnr =
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton bv, 
                                                   boolean isChecked ) {
-                        m_checks.set( position, isChecked );
+                        m_phoneRecs.get(position).m_checked = isChecked;
                         tryEnable();
                     }
                 };
             item.setOnCheckedChangeListener( lstnr );
-            item.setContents( m_names.get(position), m_phones.get(position) );
+            PhoneRec rec = m_phoneRecs.get( position );
+            item.setContents( rec.m_name, rec.m_phone );
             m_items[position] = item;
             return item;
         }
