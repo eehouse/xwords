@@ -59,7 +59,7 @@ public class BTInviteActivity extends InviteActivity
 
     // BTService.BTEventListener interface
     @Override
-    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
         switch( event ) {
         case SCAN_DONE:

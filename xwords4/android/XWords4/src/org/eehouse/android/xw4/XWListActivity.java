@@ -30,7 +30,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class XWListActivity extends ListActivity 
-    implements DlgDelegate.DlgClickNotify, BTService.BTEventListener {
+    implements DlgDelegate.DlgClickNotify, MultiService.BTEventListener {
 
     private DlgDelegate m_delegate;
 
@@ -54,7 +54,8 @@ public class XWListActivity extends ListActivity
     protected void onResume()
     {
         DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
-        BTService.setBTEventListener( this );
+        BTService.getMultiEventSrc().setListener( this );
+        SMSService.getMultiEventSrc().setListener( this );
         super.onResume();
     }
 
@@ -62,7 +63,8 @@ public class XWListActivity extends ListActivity
     protected void onPause()
     {
         DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
-        BTService.setBTEventListener( null );
+        BTService.getMultiEventSrc().setListener( null );
+        SMSService.getMultiEventSrc().setListener( null );
         super.onPause();
     }
 
@@ -191,7 +193,8 @@ public class XWListActivity extends ListActivity
     }
 
     // BTService.BTEventListener interface
-    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    public void eventOccurred( MultiService.MultiEvent event, 
+                               final Object ... args )
     {
         m_delegate.eventOccurred( event, args );
     }

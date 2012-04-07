@@ -267,7 +267,7 @@ public class DlgDelegate {
         return true;
     }
 
-    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
         String msg = null;
         boolean asToast = true;

@@ -821,22 +821,26 @@ public class BoardActivity extends XWActivity
     //////////////////////////////////////////////////
     @Override
     @SuppressWarnings("fallthrough")
-    public void eventOccurred( BTService.BTEvent event, final Object ... args )
+    public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
         switch( event ) {
         case MESSAGE_ACCEPTED:
         case MESSAGE_REFUSED:
             if ( null != m_jniThread ) {
-                boolean accepted = BTService.BTEvent.MESSAGE_ACCEPTED == event;
+                boolean accepted = 
+                    MultiService.MultiEvent.MESSAGE_ACCEPTED == event;
                 m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, accepted );
             }
             break;
         case MESSAGE_NOGAME:
-            post( new Runnable() {
-                    public void run() {
-                        showDialog( DLG_DELETED );
-                    }
-                } );
+            int gameID = (Integer)args[0];
+            if ( gameID == m_gi.gameID ) {
+                post( new Runnable() {
+                        public void run() {
+                            showDialog( DLG_DELETED );
+                        }
+                    } );
+            }
             break;
         case NEWGAME_FAILURE:
             DbgUtils.logf( "failed to create game" );

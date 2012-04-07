@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 
@@ -53,6 +54,8 @@ public class SMSService extends Service {
     private static final int HANDLE = 1;
     private static final int INVITE = 2;
     private static final int SEND = 3;
+    private static final int REMOVE = 4;
+    private static final int MESG_GAMEGONE = 5;
 
     private static final String CMD_STR = "CMD";
     private static final String BUFFER = "BUFFER";
@@ -65,10 +68,11 @@ public class SMSService extends Service {
     private static final String NPLAYERSH = "NPLAYERSH";
 
     private static Boolean s_showToasts = null;
+    private static MultiService s_srcMgr = new MultiService();
 
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
-    private enum SMS_CMD { NONE, INVITE, DATA, };
+    private enum SMS_CMD { NONE, INVITE, DATA, DEATH, };
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
@@ -116,6 +120,14 @@ public class SMSService extends Service {
         return binmsg.length;
     }
 
+    public static void gameDied( Context context, int gameID, String phone )
+    {
+        Intent intent = getIntentTo( context, REMOVE );
+        intent.putExtra( PHONE, phone );
+        intent.putExtra( GAMEID, gameID );
+        context.startService( intent );
+    }
+
     public static String toPublicFmt( String msg )
     {
         String result;
@@ -137,6 +149,11 @@ public class SMSService extends Service {
             }
         }
         return result;
+    }
+
+    public static MultiService getMultiEventSrc()
+    {
+        return s_srcMgr;
     }
 
     private static Intent getIntentTo( Context context, int cmd )
@@ -192,6 +209,11 @@ public class SMSService extends Service {
                 gameID = intent.getIntExtra( GAMEID, -1 );
                 sendPacket( phone, gameID, bytes );
                 break;
+            case REMOVE:
+                gameID = intent.getIntExtra( GAMEID, -1 );
+                phone = intent.getStringExtra( PHONE );
+                sendDiedPacket( phone, gameID );
+                break;
             }
 
             result = Service.START_STICKY;
@@ -221,6 +243,19 @@ public class SMSService extends Service {
             das.flush();
 
             send( SMS_CMD.INVITE, bas.toByteArray(), phone );
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.logf( "ioe: %s", ioe.toString() );
+        }
+    }
+
+    private void sendDiedPacket( String phone, int gameID )
+    {
+        ByteArrayOutputStream bas = new ByteArrayOutputStream( 32 );
+        DataOutputStream das = new DataOutputStream( bas );
+        try {
+            das.writeInt( gameID );
+            das.flush();
+            send( SMS_CMD.DEATH, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logf( "ioe: %s", ioe.toString() );
         }
@@ -320,6 +355,10 @@ public class SMSService extends Service {
                 byte[] rest = new byte[dis.available()];
                 dis.read( rest );
                 feedMessage( gameID, rest, addr );
+                break;
+            case DEATH:
+                gameID = dis.readInt();
+                s_srcMgr.sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
                 break;
             default:
                 Assert.fail();
@@ -438,17 +477,17 @@ public class SMSService extends Service {
 
     private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
     {
-        if ( BoardActivity.feedMessage( gameID, msg, addr ) ) {
+        long rowid = DBUtils.getRowIDFor( this, gameID );
+        if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+            sendDiedPacket( addr.sms_phone, gameID );
+        } else if ( BoardActivity.feedMessage( gameID, msg, addr ) ) {
             // do nothing
         } else {
-            long rowid = DBUtils.getRowIDFor( this, gameID );
-            if ( DBUtils.ROWID_NOTFOUND != rowid ) {
-                SMSMsgSink sink = new SMSMsgSink( this );
-                if ( GameUtils.feedMessage( this, rowid, msg, addr, sink ) ) {
-                    postNotification( gameID, R.string.new_smsmove_title, 
-                                      getString(R.string.new_move_body)
-                                      );
-                }
+            SMSMsgSink sink = new SMSMsgSink( this );
+            if ( GameUtils.feedMessage( this, rowid, msg, addr, sink ) ) {
+                postNotification( gameID, R.string.new_smsmove_title, 
+                                  getString(R.string.new_move_body)
+                                  );
             }
         }
     }

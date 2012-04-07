@@ -46,29 +46,11 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class BTService extends Service {
-
-    public enum BTEvent { BAD_PROTO
-                        , BT_ENABLED
-                        , BT_DISABLED
-                        , SCAN_DONE
-                        , HOST_PONGED
-                        , NEWGAME_SUCCESS
-                        , NEWGAME_FAILURE
-                        , MESSAGE_ACCEPTED
-                        , MESSAGE_REFUSED
-                        , MESSAGE_NOGAME
-                        , MESSAGE_RESEND
-                        , MESSAGE_FAILOUT
-                        , MESSAGE_DROPPED
-            };
-
-    public interface BTEventListener {
-        public void eventOccurred( BTEvent event, Object ... args );
-    }
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
@@ -96,8 +78,7 @@ public class BTService extends Service {
     private static final String NTO_STR = "TOT";
     private static final String NHE_STR = "HER";
 
-    private static BTEventListener s_eventListener = null;
-    private static Object s_syncObj = new Object();
+    private static MultiService s_srcMgr = new MultiService();
 
     private enum BTCmd { 
             PING,
@@ -167,10 +148,9 @@ public class BTService extends Service {
         }
     }
 
-    public static void setBTEventListener( BTEventListener li ) {
-        synchronized( s_syncObj ) {
-            s_eventListener = li;
-        }
+    public static MultiService getMultiEventSrc()
+    {
+        return s_srcMgr;
     }
 
     public static void radioChanged( Context context, boolean cameOn )
@@ -306,7 +286,8 @@ public class BTService extends Service {
                     break;
                 case RADIO:
                     boolean cameOn = intent.getBooleanExtra( RADIO_STR, false );
-                    BTEvent evt = cameOn? BTEvent.BT_ENABLED : BTEvent.BT_DISABLED;
+                    MultiEvent evt = cameOn? MultiEvent.BT_ENABLED
+                        : MultiEvent.BT_DISABLED;
                     sendResult( evt );
                     if ( !cameOn ) {
                         stopListener();
@@ -368,7 +349,7 @@ public class BTService extends Service {
                     byte proto = inStream.readByte();
                     if ( proto != BT_PROTO ) {
                         socket.close();
-                        sendResult( BTEvent.BAD_PROTO, 
+                        sendResult( MultiEvent.BAD_PROTO, 
                                     socket.getRemoteDevice().getName() );
                     } else {
                         byte msg = inStream.readByte();
@@ -633,7 +614,7 @@ public class BTService extends Service {
 
                     switch( elem.m_cmd ) {
                     case PING:
-                        sendPings( BTEvent.HOST_PONGED );
+                        sendPings( MultiEvent.HOST_PONGED );
                         break;
                     case SCAN:
                         sendPings( null );
@@ -656,7 +637,7 @@ public class BTService extends Service {
             }
         } // run
 
-        private void sendPings( BTEvent event )
+        private void sendPings( MultiEvent event )
         {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
             DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
@@ -725,8 +706,8 @@ public class BTService extends Service {
                     }
                     socket.close();
 
-                    BTEvent evt = success ? BTEvent.NEWGAME_SUCCESS
-                        : BTEvent.NEWGAME_FAILURE;
+                    MultiEvent evt = success ? MultiEvent.NEWGAME_SUCCESS
+                        : MultiEvent.NEWGAME_FAILURE;
                     sendResult( evt, elem.m_gameID );
                 }
             } catch ( java.io.IOException ioe ) {
@@ -740,13 +721,13 @@ public class BTService extends Service {
             synchronized( m_deadGames ) {
                 success = m_deadGames.contains( elem.m_gameID );
             }
-            BTEvent evt;
+            MultiEvent evt;
             if ( success ) {
-                evt = BTEvent.MESSAGE_DROPPED;
+                evt = MultiEvent.MESSAGE_DROPPED;
                 DbgUtils.logf( "dropping message because game %X dead", 
                                elem.m_gameID );
             } else {
-                evt = BTEvent.MESSAGE_REFUSED;
+                evt = MultiEvent.MESSAGE_REFUSED;
             }
             if ( !success ) {
                 try {
@@ -775,10 +756,10 @@ public class BTService extends Service {
 
                             switch ( reply ) {
                             case MESG_ACCPT:
-                                evt = BTEvent.MESSAGE_ACCEPTED;
+                                evt = MultiEvent.MESSAGE_ACCEPTED;
                                 break;
                             case MESG_GAMEGONE:
-                                evt = BTEvent.MESSAGE_NOGAME;
+                                evt = MultiEvent.MESSAGE_NOGAME;
                                 break;
                             }
                         }
@@ -793,7 +774,7 @@ public class BTService extends Service {
             sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
             if ( ! success ) {
                 int failCount = elem.incrFailCount();
-                sendResult( BTEvent.MESSAGE_RESEND, elem.m_recipient,
+                sendResult( MultiEvent.MESSAGE_RESEND, elem.m_recipient,
                             RESEND_TIMEOUT, failCount );
             }
             return success;
@@ -811,7 +792,7 @@ public class BTService extends Service {
                     if ( success ) {
                         iter.remove();
                     } else if ( elem.failCountExceeded() ) {
-                        sendResult( BTEvent.MESSAGE_FAILOUT, elem.m_recipient );
+                        sendResult( MultiEvent.MESSAGE_FAILOUT, elem.m_recipient );
                         iter.remove();
                     }
                 }
@@ -862,17 +843,12 @@ public class BTService extends Service {
 
     private void sendNames()
     {
-        sendResult( BTEvent.SCAN_DONE, (Object)(names()) );
+        sendResult( MultiEvent.SCAN_DONE, (Object)(names()) );
     }
 
-    private void sendResult( BTEvent event, Object ... args )
+    private void sendResult( MultiEvent event, Object ... args )
     {
-        Assert.assertNotNull( event );
-        synchronized( s_syncObj ) {
-            if ( null != s_eventListener ) {
-                s_eventListener.eventOccurred( event, args );
-            }
-        }
+        s_srcMgr.sendResult( event, args );
     }
 
     private void listLocalBTGames( boolean force )

@@ -283,6 +283,7 @@ public class GameUtils {
     public static void deleteGame( Context context, long rowid, 
                                    boolean informNow )
     {
+        DbgUtils.logf( "deleteGame(rowid=%d)", rowid );
         // does this need to be synchronized?
         GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
@@ -839,11 +840,16 @@ public class GameUtils {
                                   boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
-        if ( null != summary.relayID ) {
+        switch( summary.conType ) {
+        case COMMS_CONN_RELAY:
             tellRelayDied( context, summary, informNow );
-        }
-        if ( 0 != summary.gameID ) {
+            break;
+        case COMMS_CONN_BT:
             BTService.gameDied( context, summary.gameID );
+            break;
+        case COMMS_CONN_SMS:
+            SMSService.gameDied( context, summary.gameID, summary.smsPhone );
+            break;
         }
     }
 
