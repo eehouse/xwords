@@ -624,6 +624,8 @@ public class DBUtils {
 
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
 
+            setCached( rowid, null ); // force reread
+
             lock = new GameUtils.GameLock( rowid, true ).lock();
 
             notifyListeners( rowid );
