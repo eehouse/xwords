@@ -1872,8 +1872,10 @@
 	<string name="button_invite">Invite selected</string>
 
     <string name="btname_label">New Bluetooth game name</string>
+    <string name="smsname_label">New SMS game name</string>
     <string name="game_btname_title">Bluetooth game name</string>
-    <string name="dft_bt_namef">Game %X</string>
+    <string name="game_smsname_title">SMS game name</string>
+    <string name="dft_namef">Game %X</string>
 
     <string name="newgame_sms_header">New SMS Game</string>
     <string name="sms_networked_desc">Create a game that will be

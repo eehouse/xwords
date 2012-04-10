@@ -50,6 +50,7 @@ public class NewGameActivity extends XWActivity {
     // private static final String SAVE_DEVNAMES = "DEVNAMES";
     private static final String SAVE_REMOTEGAME = "REMOTEGAME";
     private static final String SAVE_GAMEID = "GAMEID";
+    private static final String SAVE_NAMEFOR = "SAVE_NAMEFOR";
     private static final int CONFIG_FOR_BT = 1;
     private static final int CONFIG_FOR_SMS = 2;
     private static final int INVITE_FOR_BT = 3;
@@ -59,6 +60,7 @@ public class NewGameActivity extends XWActivity {
     private static final int NAME_GAME = DlgDelegate.DIALOG_LAST + 1;
 
     private boolean m_showsOn;
+    private boolean m_nameForBT;
     private int m_chosen;
     private int m_lang = 0;
     private long m_newRowID = -1;
@@ -122,6 +124,7 @@ public class NewGameActivity extends XWActivity {
         super.onSaveInstanceState( outState );
         outState.putString( SAVE_REMOTEGAME, m_remoteDev );
         outState.putInt( SAVE_GAMEID, m_gameID );
+        outState.putBoolean( SAVE_NAMEFOR, m_nameForBT );
     }
 
     private void getBundledData( Bundle bundle )
@@ -129,6 +132,7 @@ public class NewGameActivity extends XWActivity {
         if ( null != bundle ) {
             m_remoteDev = bundle.getString( SAVE_REMOTEGAME );
             m_gameID = bundle.getInt( SAVE_GAMEID );
+            m_nameForBT = bundle.getBoolean( SAVE_NAMEFOR );
         }
     }
 
@@ -171,38 +175,18 @@ public class NewGameActivity extends XWActivity {
                 }
                 break;
             case INVITE_FOR_BT:     // user selected device 
+            case INVITE_FOR_SMS:
                 if ( Activity.RESULT_CANCELED != resultCode ) {
+                    m_nameForBT = INVITE_FOR_BT == requestCode;
                     String[] remoteDevs =
-                        data.getStringArrayExtra( BTInviteActivity.DEVS );
+                        data.getStringArrayExtra( InviteActivity.DEVS );
                     Assert.assertTrue( 1 == remoteDevs.length );
                     m_remoteDev = remoteDevs[0];
 
                     m_gameID = GameUtils.newGameID();
-                    m_gameName = Utils.format( this, R.string.dft_bt_namef, 
+                    m_gameName = Utils.format( this, R.string.dft_namef, 
                                                m_gameID & 0xFFFF );
                     showDialog( NAME_GAME );
-                }
-                break;
-
-            case INVITE_FOR_SMS:
-                if ( Activity.RESULT_CANCELED != resultCode ) {
-                    String[] phones =
-                        data.getStringArrayExtra( SMSInviteActivity.DEVS );
-                    Assert.assertTrue( 1 == phones.length );
-
-                    m_gameID = GameUtils.newGameID();
-                    m_gameName = Utils.format( this, R.string.dft_sms_namef, 
-                                               m_gameID & 0xFFFF );
-                    SMSService.inviteRemote( NewGameActivity.this, phones[0],
-                                             m_gameID, m_gameName, 
-                                             m_lang, 2, 1 );
-                    long rowid = 
-                        GameUtils.makeNewSMSGame( NewGameActivity.this, 
-                                                  m_gameID, null, m_lang, 
-                                                  2, 1 );
-                    DBUtils.setName( this, rowid, m_gameName );
-                    GameUtils.launchGame( NewGameActivity.this, rowid, true );
-                    finish();
                 }
                 break;
             }
@@ -218,23 +202,37 @@ public class NewGameActivity extends XWActivity {
             case NAME_GAME:
                 final GameNamer namerView =
                     (GameNamer)Utils.inflate( this, R.layout.rename_game );
-                namerView.setLabel( R.string.btname_label );
+                namerView.setLabel( m_nameForBT ? R.string.btname_label
+                                    : R.string.smsname_label );
                 namerView.setName( m_gameName );
 
                 OnClickListener lstnr =
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int itm ) {
+                            Activity thiz = NewGameActivity.this;
                             m_gameName = namerView.getName();
-                            BTService.inviteRemote( NewGameActivity.this, 
-                                                    m_remoteDev,
-                                                    m_gameID, m_gameName, 
+                            if ( m_nameForBT ) {
+                                BTService.inviteRemote( thiz, m_remoteDev,
+                                                        m_gameID, m_gameName, 
+                                                        m_lang, 2, 1 );
+                                startProgress( R.string.invite_progress );
+                            } else {
+                                SMSService.inviteRemote( thiz, m_remoteDev,
+                                                         m_gameID, m_gameName, 
+                                                         m_lang, 2, 1 );
+                                long rowid = GameUtils.
+                                    makeNewSMSGame( thiz, m_gameID, null, 
                                                     m_lang, 2, 1 );
-                            startProgress( R.string.invite_progress );
+                                DBUtils.setName( thiz, rowid, m_gameName );
+                                GameUtils.launchGame( thiz, rowid, true );
+                                finish();
+                            }
                         }
                     };
 
                 dialog = new AlertDialog.Builder( this )
-                    .setTitle( R.string.game_btname_title )
+                    .setTitle( m_nameForBT ? R.string.game_btname_title 
+                               : R.string.game_smsname_title )
                     .setNegativeButton( R.string.button_cancel, null )
                     .setPositiveButton( R.string.button_ok, lstnr )
                     .setView( namerView )
