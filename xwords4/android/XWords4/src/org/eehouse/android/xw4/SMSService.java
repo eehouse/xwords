@@ -46,7 +46,6 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 public class SMSService extends Service {
 
-    private static final String PUBLIC_HEADER = "-XW4 ";
     private static final String INSTALL_URL = "http://eehouse.org/_/aa.htm ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
 
@@ -131,9 +130,9 @@ public class SMSService extends Service {
     public static String toPublicFmt( String msg )
     {
         String result;
-        int msglen = msg.length() + PUBLIC_HEADER.length();
+        int msglen = msg.length() + 1 + XWApp.SMS_PUBLIC_HEADER.length();
         int urllen = INSTALL_URL.length();
-        result = String.format( "%s%s%s", PUBLIC_HEADER, 
+        result = String.format( "%s %s%s", XWApp.SMS_PUBLIC_HEADER, 
                                 msglen + urllen < MAX_SMS_LEN ? INSTALL_URL : "",
                                 msg );
         return result;
@@ -142,7 +141,7 @@ public class SMSService extends Service {
     public static String fromPublicFmt( String msg )
     {
         String result = null;
-        if ( msg.startsWith( PUBLIC_HEADER ) ) {
+        if ( msg.startsWith( XWApp.SMS_PUBLIC_HEADER ) ) {
             int index = msg.lastIndexOf( " " );
             if ( 0 <= index ) {
                 result = msg.substring( index + 1 );

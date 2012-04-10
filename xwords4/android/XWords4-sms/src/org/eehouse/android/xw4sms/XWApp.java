@@ -31,7 +31,7 @@ public class XWApp extends Application {
 
     public static final boolean BTSUPPORTED = false;
     public static final boolean SMSSUPPORTED = true;
-
+    public static final String SMS_PUBLIC_HEADER = "-XW4s";
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;
 
