@@ -54,3 +54,4 @@ SMSInviteActivity.java
 SMSListItem.java
 SMSReceiver.java
 SMSService.java
+MultiService.java
