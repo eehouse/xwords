@@ -65,9 +65,12 @@
               />
     <activity android:name="BTInviteActivity"
               android:theme="@android:style/Theme.Dialog"
+              android:configChanges="keyboardHidden|orientation"
               />
     <activity android:name="SMSInviteActivity"
               android:theme="@android:style/Theme.Dialog"
+              android:configChanges="keyboardHidden|orientation"
+              android:screenOrientation="portrait"
               />
 
     <activity android:name="GameConfig"
