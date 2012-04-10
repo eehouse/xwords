@@ -1891,11 +1891,11 @@
     play</string>
     <string name="new_smsmove_title">New move via SMS</string>
 
-    <string name="button_sms_add">Add contact</string>
-    <string name="invite_sms_descf">Please select the %d phone numbers you
-        want to invite to this game.  Use the Add contact button if you
-        don\'t see a number you want.</string>
-    <string name="manual_number_hint">Other number</string>
+    <string name="button_sms_add">Import contact</string>
+    <string name="invite_sms_descf">Please select the %d phone number[s]
+    you want to invite to this game.  Use the Import contact button if
+    you don\'t see the number you want.</string>
+    <string name="manual_number_hint">Enter manually</string>
     <string name="manual_owner_name">(Entered manually)</string>
     <string name="sms_nomobile">Contact has no mobile number.</string>
     <string name="sms_nomobilef">Contact for %s has no mobile number.</string>
