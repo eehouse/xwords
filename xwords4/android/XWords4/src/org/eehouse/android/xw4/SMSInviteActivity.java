@@ -29,6 +29,8 @@ import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
@@ -43,13 +45,14 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class SMSInviteActivity extends InviteActivity {
+public class SMSInviteActivity extends InviteActivity implements TextWatcher {
 
     private static final int GET_CONTACT = 1;
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private SMSPhonesAdapter m_adapter;
     private EditText m_manualField;
+    private ImageButton m_addButton;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -60,8 +63,9 @@ public class SMSInviteActivity extends InviteActivity {
                         R.string.invite_sms_descf );
 
         m_manualField = (EditText)findViewById( R.id.phone_edit );
-        ImageButton button = (ImageButton)findViewById( R.id.manual_add_button );
-        button.setOnClickListener( new View.OnClickListener() {
+        m_manualField.addTextChangedListener( this );
+        m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
+        m_addButton.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View view )
                 {
                     String number = m_manualField.getText().toString();
@@ -292,5 +296,22 @@ public class SMSInviteActivity extends InviteActivity {
             boolean checked = null != item && item.isChecked();
             return checked;
         }
+    }
+
+    // TextWatcher interface
+    public void afterTextChanged( Editable s )
+    {
+        m_addButton.setVisibility( 0 == s.length() 
+                                   ? View.INVISIBLE : View.VISIBLE );
+    }
+
+    public void beforeTextChanged( CharSequence s, int start, 
+                                   int count, int after )
+    {
+    }
+
+    public void onTextChanged( CharSequence s, int start, 
+                               int before, int count )
+    {
     }
 }
