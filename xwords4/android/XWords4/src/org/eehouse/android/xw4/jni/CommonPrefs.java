@@ -292,10 +292,12 @@ public class CommonPrefs {
                                 false );
     }
 
-    public static boolean getDefaultHintsAllowed( Context context )
+    public static boolean getDefaultHintsAllowed( Context context, 
+                                                  boolean networked )
     {
-        return getPrefsBoolean( context, R.string.key_init_hintsallowed, 
-                                true );
+        int key = networked ?
+            R.string.key_init_nethintsallowed : R.string.key_init_hintsallowed;
+        return getPrefsBoolean( context, key, true );
     }
 
     public static boolean getAutoJuggle( Context context )

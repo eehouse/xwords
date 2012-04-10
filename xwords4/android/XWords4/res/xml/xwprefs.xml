@@ -65,6 +65,12 @@
                         android:defaultValue="true"
                         />
 
+    <CheckBoxPreference android:key="@string/key_init_nethintsallowed"
+                        android:title="@string/nethints_allowed"
+                        android:summary="@string/nethints_allowed_sum"
+                        android:defaultValue="true"
+                        />
+
     <CheckBoxPreference android:key="@string/key_init_autojuggle"
                         android:title="@string/init_autojuggle"
                         android:summary="@string/init_autojuggle_sum"

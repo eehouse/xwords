@@ -73,7 +73,8 @@ public class CurGameInfo {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
-        hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context );
+        hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context, 
+                                                               isNetworked );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
         allowPickTiles = false;

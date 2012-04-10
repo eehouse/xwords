@@ -386,6 +386,11 @@
          generated based on his tray.  Can be used to cheat.  -->
     <string name="hints_allowed">Allow hints</string>
 
+    <!-- text of checkbox.  If this checkbox is checked, games created
+         for network play will by default have the hint feature
+         enabled. -->
+    <string name="nethints_allowed">Allow hints (networked)</string>
+
     <!-- text of checkbox controlling whether there's a game timer -->
     <string name="use_timer">Enable game timer</string>
 
@@ -850,6 +855,11 @@
          default to having the hint feature enabled(string elsewhere
          in this file) -->
     <string name="hints_allowed_sum">Enable the hint feature</string>
+
+    <!-- clarification on hints_allowed, whether new NETWORKED games
+         will default to having the hint feature enabled(string
+         elsewhere in this file) -->
+    <string name="nethints_allowed_sum">Enable hints for two-device games</string>
 
     <!-- Will new games, on default, randomly rearrange the start
          order of players. -->
