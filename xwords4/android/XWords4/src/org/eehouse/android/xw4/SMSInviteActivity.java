@@ -104,6 +104,7 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
     {
         Intent intent = new Intent( Intent.ACTION_PICK, 
                                     ContactsContract.Contacts.CONTENT_URI );
+        intent.setType( Phone.CONTENT_TYPE );
         startActivityForResult( intent, GET_CONTACT );
     }
 
@@ -159,43 +160,35 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
     private void addPhoneNumbers( Intent intent )
     {
         Uri data = intent.getData();
-        Cursor cursor = managedQuery( data, null, null, null, null );
+        Cursor cursor = managedQuery( data, 
+                                      new String[] { Phone.DISPLAY_NAME, 
+                                                     Phone.NUMBER, 
+                                                     Phone.TYPE },
+                                      null, null, null );
         if ( cursor.moveToFirst() ) {
+            String name = "";
             int len_before = m_phoneRecs.size();
-            int index = cursor.getColumnIndex(ContactsContract.Contacts._ID );
-            if ( 0 <= index ) {
-                String id = cursor.getString( index );
-                ContentResolver resolver = getContentResolver();
-                Cursor pc = 
-                    resolver.query( Phone.CONTENT_URI, null,
-                                    Phone.CONTACT_ID + " = ?", 
-                                    new String[] { id }, null );
-                String name = "";
-                while ( pc.moveToNext() ) {
-                    name = 
-                        pc.getString( pc.getColumnIndex( Phone.DISPLAY_NAME));
-                    String number = 
-                        pc.getString( pc.getColumnIndex( Phone.NUMBER ) );
-                    // int type = 
-                    //     pc.getInt( pc.getColumnIndex( Phone.TYPE ) );
+            name = cursor.getString( cursor.getColumnIndex( Phone.DISPLAY_NAME));
+            String number = 
+                cursor.getString( cursor.getColumnIndex( Phone.NUMBER ) );
+            int type = cursor.getInt( cursor.getColumnIndex( Phone.TYPE ) );
 
-                    if ( /*Phone.TYPE_MOBILE == type && */0 < number.length() ) {
-                        m_phoneRecs.add( new PhoneRec( name, number ) );
-                    }
-                }
-                if ( len_before != m_phoneRecs.size() ) {
-                    saveState();
-                    rebuildList();
-                } else {
-                    int resid = null != name && 0 < name.length()
-                        ?  R.string.sms_nomobilef
-                        : R.string.sms_nomobile;
-                    String msg = Utils.format( this, resid, name );
-                    showOKOnlyDialog( msg );
-                }
+            if ( Phone.TYPE_MOBILE == type && 0 < number.length() ) {
+                m_phoneRecs.add( new PhoneRec( name, number ) );
             }
+            if ( len_before != m_phoneRecs.size() ) {
+                saveState();
+                rebuildList();
+            } else {
+                int resid = null != name && 0 < name.length()
+                    ?  R.string.sms_nomobilef
+                    : R.string.sms_nomobile;
+                String msg = Utils.format( this, resid, name );
+                showOKOnlyDialog( msg );
+            }
+            cursor.close();
         }
-    }
+    } // addPhoneNumbers
 
     private void rebuildList()
     {
