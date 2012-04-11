@@ -508,8 +508,15 @@ public class SMSService extends Service {
         /***** TransportProcs interface *****/
         public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
         {
+            int nSent = -1;
             DbgUtils.logf( "SMSMsgSink.transportSend()" );
-            return sendPacket( addr.sms_phone, gameID, buf );
+            if ( null != addr ) {
+                nSent = sendPacket( addr.sms_phone, gameID, buf );
+            } else {
+                DbgUtils.logf( "SMSMsgSink.transportSend: "
+                               + "addr null so not sending" );
+            }
+            return nSent;
         }
 
         public boolean relayNoConnProc( byte[] buf, String relayID )
