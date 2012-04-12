@@ -21,30 +21,19 @@
             android:padding="8dp"
             />
 
-  <LinearLayout android:orientation="horizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                >
-    <EditText android:id="@+id/phone_edit"
-              android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:scrollHorizontally="true"
-              android:phoneNumber="true"
-              android:singleLine="true"
-              android:maxLength="15"
-              android:textAppearance="?android:attr/textAppearanceMedium"
-              android:layout_weight="1"
-              android:hint="@string/manual_number_hint"
-              />
-    <ImageButton android:id="@+id/manual_add_button"
-                 android:layout_width="wrap_content" 
-                 android:layout_height="wrap_content"
-                 android:src="@android:drawable/ic_input_add"
-                 android:gravity="right"
-                 android:layout_weight="0"
-                 android:visibility="invisible"
-                 />
-  </LinearLayout>
+  <TextView android:id="@android:id/empty"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/empty_sms_inviter"
+            android:padding="20dp"
+            />
+
+  <Button android:id="@+id/button_invite"
+          android:text="@string/button_invite"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="10dip"
+          />
 
   <LinearLayout android:orientation="horizontal"
                 android:layout_width="fill_parent" 
@@ -52,22 +41,20 @@
                 >
       <Button android:id="@+id/button_add"
               android:text="@string/button_sms_add"
-              android:layout_width="fill_parent"
+              android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:layout_weight="1" 
               />
       <Button android:id="@+id/button_clear"
               android:text="@string/bt_pick_clear_button"
-              android:layout_width="fill_parent"
+              android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:layout_weight="1"
               />
+      <ImageButton android:id="@+id/manual_add_button"
+                   android:layout_width="wrap_content" 
+                   android:layout_height="wrap_content"
+                   android:src="@android:drawable/ic_input_add"
+                   android:clickable="false"
+                   />
   </LinearLayout>
-
-  <Button android:id="@+id/button_invite"
-          android:text="@string/button_invite"
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          />
 
 </LinearLayout>

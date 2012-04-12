@@ -21,9 +21,10 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.text.method.KeyListener;
 import android.util.AttributeSet;
-import android.widget.LinearLayout;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import junit.framework.Assert;
@@ -41,6 +42,12 @@ public class GameNamer extends LinearLayout {
     {
         TextView view = (TextView)findViewById( R.id.name_label );
         view.setText( label );
+    }
+
+    public void setKeyListener( KeyListener lstnr )
+    {
+        EditText view = (EditText)findViewById( R.id.name_edit );
+        view.setKeyListener( lstnr );
     }
 
     public void setLabel( int id )

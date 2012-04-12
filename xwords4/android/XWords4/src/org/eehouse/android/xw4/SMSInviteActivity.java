@@ -21,7 +21,10 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -29,12 +32,12 @@ import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract;
+import android.text.method.DialerKeyListener;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import java.util.ArrayList;
@@ -45,14 +48,19 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
-public class SMSInviteActivity extends InviteActivity implements TextWatcher {
+public class SMSInviteActivity extends InviteActivity {
 
     private static final int GET_CONTACT = 1;
+    private static final int CONFIRM_NON_MOBILE = DlgDelegate.DIALOG_LAST + 1;
+    private static final int GET_NUMBER = DlgDelegate.DIALOG_LAST + 2;
+    private static final String SAVE_NAME = "SAVE_NAME";
+    private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private SMSPhonesAdapter m_adapter;
-    private EditText m_manualField;
     private ImageButton m_addButton;
+    private String m_pendingName;
+    private String m_pendingNumber;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -61,29 +69,35 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
                         R.id.button_invite, R.id.button_add, 
                         R.id.button_clear, R.id.invite_desc,
                         R.string.invite_sms_descf );
+        getBundledData( savedInstanceState );
 
-        m_manualField = (EditText)findViewById( R.id.phone_edit );
-        m_manualField.addTextChangedListener( this );
         m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
         m_addButton.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View view )
                 {
-                    String number = m_manualField.getText().toString();
-                    if ( 0 < number.length() ) {
-                        m_manualField.setText("");
-                        PhoneRec rec = 
-                            new PhoneRec( getString( R.string.manual_owner_name ),
-                                          number );
-                        m_phoneRecs.add( rec );
-                        saveState();
-                        rebuildList();
-                    }
+                    showDialog( GET_NUMBER );
                 }
             } );
 
         getSavedState();
         rebuildList();
         tryEnable();
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        outState.putString( SAVE_NAME, m_pendingName );
+        outState.putString( SAVE_NUMBER, m_pendingNumber );
+    }
+
+    private void getBundledData( Bundle bundle )
+    {
+        if ( null != bundle ) {
+            m_pendingName = bundle.getString( SAVE_NAME );
+            m_pendingNumber = bundle.getString( SAVE_NUMBER );
+        }
     }
     
     @Override
@@ -98,6 +112,56 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
                 break;
             }
         }
+    }
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {        
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            DialogInterface.OnClickListener lstnr;
+            switch( id ) {
+            case CONFIRM_NON_MOBILE:
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            addChecked( new PhoneRec( m_pendingName,
+                                                      m_pendingNumber ) );
+                            saveAndRebuild();
+                        }
+                    };
+                String msg = Utils.format( this, R.string.warn_nomobilef,
+                                           m_pendingNumber, m_pendingName );
+                dialog = new AlertDialog.Builder( this )
+                    .setMessage( msg )
+                    .setPositiveButton( R.string.button_ok, null )
+                    .setNegativeButton( R.string.button_use, lstnr )
+                    .create();
+                break;
+            case GET_NUMBER:
+                final GameNamer namerView =
+                    (GameNamer)Utils.inflate( this, R.layout.rename_game );
+                namerView.setLabel( R.string.get_sms_number );
+                namerView.setKeyListener(DialerKeyListener.getInstance());
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            String number = namerView.getName();
+                            String name = 
+                                getString( R.string.manual_owner_name );
+                            PhoneRec rec = new PhoneRec( name, number );
+                            addChecked( rec );
+                            saveAndRebuild();
+                        }
+                    };
+                dialog = new AlertDialog.Builder( this )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setView( namerView )
+                    .create();
+                break;
+            }
+            Utils.setRemoveOnDismiss( this, dialog, id );
+        }
+        return dialog;
     }
 
     protected void scan()
@@ -116,8 +180,7 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
                 m_phoneRecs.remove( ii );
             }
         }
-        saveState();
-        rebuildList();
+        saveAndRebuild();
     }
 
     protected String[] listSelected()
@@ -171,20 +234,15 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
             name = cursor.getString( cursor.getColumnIndex( Phone.DISPLAY_NAME));
             String number = 
                 cursor.getString( cursor.getColumnIndex( Phone.NUMBER ) );
-            int type = cursor.getInt( cursor.getColumnIndex( Phone.TYPE ) );
 
-            if ( Phone.TYPE_MOBILE == type && 0 < number.length() ) {
-                m_phoneRecs.add( new PhoneRec( name, number ) );
-            }
-            if ( len_before != m_phoneRecs.size() ) {
-                saveState();
-                rebuildList();
+            int type = cursor.getInt( cursor.getColumnIndex( Phone.TYPE ) );
+            if ( Phone.TYPE_MOBILE == type ) {
+                addChecked( new PhoneRec( name, number ) );
+                saveAndRebuild();
             } else {
-                int resid = null != name && 0 < name.length()
-                    ?  R.string.sms_nomobilef
-                    : R.string.sms_nomobile;
-                String msg = Utils.format( this, resid, name );
-                showOKOnlyDialog( msg );
+                m_pendingName = name;
+                m_pendingNumber = number;
+                showDialog( CONFIRM_NON_MOBILE );
             }
             cursor.close();
         }
@@ -215,7 +273,7 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
         }
     }
 
-    private void saveState()
+    private void saveAndRebuild()
     {
         String[] names = new String[m_phoneRecs.size()];
         String[] phones = new String[m_phoneRecs.size()];
@@ -227,6 +285,19 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
         }
         CommonPrefs.setSMSNames( this, names );
         CommonPrefs.setSMSPhones( this, phones );
+
+        rebuildList();
+    }
+
+    private void addChecked( PhoneRec rec )
+    {
+        Iterator<PhoneRec> iter = m_phoneRecs.iterator();
+        while ( iter.hasNext() ) {
+            iter.next().m_checked = false;
+        }
+
+        rec.m_checked = true;
+        m_phoneRecs.add( rec );
     }
 
     private class PhoneRec {
@@ -235,9 +306,14 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
         public boolean m_checked;
         public PhoneRec( String name, String phone )
         {
+            this( name, phone, false );
+        }
+
+        public PhoneRec( String name, String phone, boolean checked )
+        {
             m_name = name;
             m_phone = phone;
-            m_checked = false;
+            m_checked = checked;
         }
     }
 
@@ -289,22 +365,5 @@ public class SMSInviteActivity extends InviteActivity implements TextWatcher {
             boolean checked = null != item && item.isChecked();
             return checked;
         }
-    }
-
-    // TextWatcher interface
-    public void afterTextChanged( Editable s )
-    {
-        m_addButton.setVisibility( 0 == s.length() 
-                                   ? View.INVISIBLE : View.VISIBLE );
-    }
-
-    public void beforeTextChanged( CharSequence s, int start, 
-                                   int count, int after )
-    {
-    }
-
-    public void onTextChanged( CharSequence s, int start, 
-                               int before, int count )
-    {
     }
 }

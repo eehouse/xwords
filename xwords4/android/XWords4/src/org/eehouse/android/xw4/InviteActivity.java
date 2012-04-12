@@ -26,15 +26,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.os.Handler;
 
 import junit.framework.Assert;
 
@@ -54,6 +55,9 @@ abstract class InviteActivity extends XWListActivity
                              int button_clear, int desc_id, int desc_strf )
     {
         super.onCreate( savedInstanceState );
+        
+        requestWindowFeature( Window.FEATURE_NO_TITLE );
+
         setContentView( view_id );
 
         Intent intent = getIntent();
