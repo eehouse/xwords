@@ -56,6 +56,8 @@ public class SMSInviteActivity extends InviteActivity {
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
+    private static final int CLEAR_ACTION = 1;
+
     private ArrayList<PhoneRec> m_phoneRecs;
     private SMSPhonesAdapter m_adapter;
     private ImageButton m_addButton;
@@ -80,8 +82,7 @@ public class SMSInviteActivity extends InviteActivity {
             } );
 
         getSavedState();
-        rebuildList();
-        tryEnable();
+        rebuildList( true );
     }
 
     @Override
@@ -174,13 +175,7 @@ public class SMSInviteActivity extends InviteActivity {
 
     protected void clearSelected()
     {
-        int count = m_adapter.getCount();
-        for ( int ii = count - 1; ii >= 0; --ii ) {
-            if ( m_phoneRecs.get( ii ).m_checked ) {
-                m_phoneRecs.remove( ii );
-            }
-        }
-        saveAndRebuild();
+        showConfirmThen( getString( R.string.confirm_clear ), CLEAR_ACTION );
     }
 
     protected String[] listSelected()
@@ -204,6 +199,19 @@ public class SMSInviteActivity extends InviteActivity {
         int count = countChecks();
         m_okButton.setEnabled( count == m_nMissing );
         m_clearButton.setEnabled( 0 < count );
+    }
+
+    // DlgDelegate.DlgClickNotify interface
+    @Override
+    public void dlgButtonClicked( int id, int which )
+    {
+        if ( AlertDialog.BUTTON_POSITIVE == which ) {
+            switch( id ) {
+            case CLEAR_ACTION:
+                clearSelectedImpl();
+                break;
+            }
+        }
     }
 
     private int countChecks()
@@ -248,7 +256,7 @@ public class SMSInviteActivity extends InviteActivity {
         }
     } // addPhoneNumbers
 
-    private void rebuildList()
+    private void rebuildList( boolean checkIfAll )
     {
         Collections.sort(m_phoneRecs,new Comparator<PhoneRec>() {
                 public int compare( PhoneRec rec1, PhoneRec rec2 ) {
@@ -257,6 +265,12 @@ public class SMSInviteActivity extends InviteActivity {
             });
         m_adapter = new SMSPhonesAdapter();
         setListAdapter( m_adapter );
+        if ( checkIfAll && m_phoneRecs.size() == m_nMissing ) {
+            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
+            while ( iter.hasNext() ) {
+                iter.next().m_checked = true;
+            }
+        }
         tryEnable();
     }
 
@@ -286,7 +300,7 @@ public class SMSInviteActivity extends InviteActivity {
         CommonPrefs.setSMSNames( this, names );
         CommonPrefs.setSMSPhones( this, phones );
 
-        rebuildList();
+        rebuildList( false );
     }
 
     private void addChecked( PhoneRec rec )
@@ -298,6 +312,17 @@ public class SMSInviteActivity extends InviteActivity {
 
         rec.m_checked = true;
         m_phoneRecs.add( rec );
+    }
+
+    private void clearSelectedImpl()
+    {
+        int count = m_adapter.getCount();
+        for ( int ii = count - 1; ii >= 0; --ii ) {
+            if ( m_phoneRecs.get( ii ).m_checked ) {
+                m_phoneRecs.remove( ii );
+            }
+        }
+        saveAndRebuild();
     }
 
     private class PhoneRec {

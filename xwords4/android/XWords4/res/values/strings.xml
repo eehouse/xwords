@@ -1918,4 +1918,6 @@
     invite, the + button to enter numbers.</string>
     <string name="get_sms_number">Enter phone number:</string>
 
+    <string name="confirm_clear">Are you sure you want to delete the
+    checked phone number[s]?</string>
 </resources>
