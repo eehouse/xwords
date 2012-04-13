@@ -51,12 +51,12 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 public class SMSInviteActivity extends InviteActivity {
 
     private static final int GET_CONTACT = 1;
-    private static final int CONFIRM_NON_MOBILE = DlgDelegate.DIALOG_LAST + 1;
-    private static final int GET_NUMBER = DlgDelegate.DIALOG_LAST + 2;
+    private static final int GET_NUMBER = DlgDelegate.DIALOG_LAST + 1;
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private static final int CLEAR_ACTION = 1;
+    private static final int USE_IMMOBILE_ACTION = 2;
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private SMSPhonesAdapter m_adapter;
@@ -122,22 +122,6 @@ public class SMSInviteActivity extends InviteActivity {
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
             switch( id ) {
-            case CONFIRM_NON_MOBILE:
-                lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            addChecked( new PhoneRec( m_pendingName,
-                                                      m_pendingNumber ) );
-                            saveAndRebuild();
-                        }
-                    };
-                String msg = Utils.format( this, R.string.warn_nomobilef,
-                                           m_pendingNumber, m_pendingName );
-                dialog = new AlertDialog.Builder( this )
-                    .setMessage( msg )
-                    .setPositiveButton( R.string.button_ok, null )
-                    .setNegativeButton( R.string.button_use, lstnr )
-                    .create();
-                break;
             case GET_NUMBER:
                 final GameNamer namerView =
                     (GameNamer)Utils.inflate( this, R.layout.rename_game );
@@ -210,6 +194,10 @@ public class SMSInviteActivity extends InviteActivity {
             case CLEAR_ACTION:
                 clearSelectedImpl();
                 break;
+            case USE_IMMOBILE_ACTION:
+                addChecked( new PhoneRec( m_pendingName, m_pendingNumber ) );
+                saveAndRebuild();
+                break;
             }
         }
     }
@@ -237,9 +225,8 @@ public class SMSInviteActivity extends InviteActivity {
                                                      Phone.TYPE },
                                       null, null, null );
         if ( cursor.moveToFirst() ) {
-            String name = "";
-            int len_before = m_phoneRecs.size();
-            name = cursor.getString( cursor.getColumnIndex( Phone.DISPLAY_NAME));
+            String name = 
+                cursor.getString( cursor.getColumnIndex( Phone.DISPLAY_NAME));
             String number = 
                 cursor.getString( cursor.getColumnIndex( Phone.NUMBER ) );
 
@@ -250,7 +237,9 @@ public class SMSInviteActivity extends InviteActivity {
             } else {
                 m_pendingName = name;
                 m_pendingNumber = number;
-                showDialog( CONFIRM_NON_MOBILE );
+                String msg = Utils.format( this, R.string.warn_nomobilef,
+                                           number, name );
+                showConfirmThen( msg, R.string.button_yes, USE_IMMOBILE_ACTION );
             }
             cursor.close();
         }

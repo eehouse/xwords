@@ -1911,7 +1911,7 @@
     <string name="manual_owner_name">(Entered manually)</string>
 
     <string name="warn_nomobilef">The number %1$s for %2$s is not
-    marked as mobile.</string>
+    a \"mobile\" number. Import anyway?</string>
     <string name="button_use">Use anyway</string>
     <string name="empty_sms_inviter">Phone list is empty. Use the
     \"Import contact\" button to add people you want to
