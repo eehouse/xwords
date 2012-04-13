@@ -25,6 +25,8 @@ import java.util.Formatter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
@@ -93,6 +95,14 @@ public class DbgUtils {
     {
         if ( s_doLog ) {
             printStack( Thread.currentThread().getStackTrace() );
+        }
+    }
+
+    public static void dumpCursor( Cursor cursor ) 
+    {
+        if ( s_doLog ) {
+            String dump = DatabaseUtils.dumpCursorToString( cursor );
+            logf( "cursor: %s", dump );
         }
     }
 }
