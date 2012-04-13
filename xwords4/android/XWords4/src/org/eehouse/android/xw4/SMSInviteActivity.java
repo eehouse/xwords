@@ -159,7 +159,7 @@ public class SMSInviteActivity extends InviteActivity {
 
     protected void clearSelected()
     {
-        showConfirmThen( getString( R.string.confirm_clear ), CLEAR_ACTION );
+        showConfirmThen( R.string.confirm_clear, CLEAR_ACTION );
     }
 
     protected String[] listSelected()
@@ -241,20 +241,20 @@ public class SMSInviteActivity extends InviteActivity {
                                            number, name );
                 showConfirmThen( msg, R.string.button_yes, USE_IMMOBILE_ACTION );
             }
-            cursor.close();
         }
+        cursor.close();
     } // addPhoneNumbers
 
     private void rebuildList( boolean checkIfAll )
     {
-        Collections.sort(m_phoneRecs,new Comparator<PhoneRec>() {
+        Collections.sort( m_phoneRecs, new Comparator<PhoneRec>() {
                 public int compare( PhoneRec rec1, PhoneRec rec2 ) {
                     return rec1.m_name.compareTo(rec2.m_name);
                 }
             });
         m_adapter = new SMSPhonesAdapter();
         setListAdapter( m_adapter );
-        if ( checkIfAll && m_phoneRecs.size() == m_nMissing ) {
+        if ( checkIfAll && m_phoneRecs.size() <= m_nMissing ) {
             Iterator<PhoneRec> iter = m_phoneRecs.iterator();
             while ( iter.hasNext() ) {
                 iter.next().m_checked = true;
@@ -294,9 +294,11 @@ public class SMSInviteActivity extends InviteActivity {
 
     private void addChecked( PhoneRec rec )
     {
-        Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-        while ( iter.hasNext() ) {
-            iter.next().m_checked = false;
+        if ( m_nMissing <= countChecks() ) {
+            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
+            while ( iter.hasNext() ) {
+                iter.next().m_checked = false;
+            }
         }
 
         rec.m_checked = true;
