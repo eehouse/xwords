@@ -393,12 +393,7 @@ public class SMSService extends Service {
 
     private void receiveBuffer( String as64, String senderPhone )
     {
-        DbgUtils.logf( "receiveBuffer(%s)", as64 );
         String[] parts = as64.split( ":" );
-        DbgUtils.logf( "receiveBuffer: got %d parts", parts.length );
-        for ( String part : parts ) {
-            DbgUtils.logf( "part: %s", part );
-        }
         Assert.assertTrue( 5 == parts.length );
         if ( 5 == parts.length ) {
             byte proto = Byte.valueOf( parts[0], 10 );
@@ -415,8 +410,9 @@ public class SMSService extends Service {
         if ( index == 0 && count == 1 ) {
             disAssemble( senderPhone, msg );
         } else {
-            synchronized( s_partialMsgs ) {
-                HashMap <Integer, MsgStore> perPhone = 
+            // required?  Should always be in main thread.
+            synchronized( s_partialMsgs ) { 
+                HashMap<Integer, MsgStore> perPhone = 
                     s_partialMsgs.get( senderPhone );
                 if ( null == perPhone ) {
                     perPhone = new HashMap <Integer, MsgStore>();
@@ -427,13 +423,10 @@ public class SMSService extends Service {
                     store = new MsgStore( id, count );
                     perPhone.put( id, store );
                 }
-                store.add( index, msg );
 
-                if ( store.isComplete() ) {
-                    s_partialMsgs.remove( id );
-                    String fullMsg = store.message();
+                if ( store.add( index, msg ).isComplete() ) {
+                    disAssemble( senderPhone, store.message() );
                     perPhone.remove( id );
-                    disAssemble( senderPhone, fullMsg );
                 }
             }
         }
@@ -486,7 +479,7 @@ public class SMSService extends Service {
                 DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
                                asPublic, asPublic.length(), phone );
             }
-            DbgUtils.showf( this, "sent %dth msg", ++s_nSent );
+            DbgUtils.showf( this, "sent %dth msg", s_nSent );
             success = true;
         } catch ( IllegalArgumentException iae ) {
             DbgUtils.logf( "%s", iae.toString() );
@@ -587,13 +580,14 @@ public class SMSService extends Service {
             m_fullLength = 0;
         }
 
-        public void add( int index, String msg )
+        public MsgStore add( int index, String msg )
         {
             if ( null == m_msgs[index] ) {
                 ++m_haveCount;
                 m_fullLength += msg.length();
             }
             m_msgs[index] = msg;
+            return this;
         }
         
         public boolean isComplete()
