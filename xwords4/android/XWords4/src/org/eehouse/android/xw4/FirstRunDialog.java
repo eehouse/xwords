@@ -20,11 +20,8 @@
 
 package org.eehouse.android.xw4;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageInfo;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.webkit.WebView;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,45 +33,7 @@ import java.io.Reader;
  */
 
 public class FirstRunDialog {
-	private static final String HIDDEN_PREFS = "xwprefs_hidden";
-    private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
-
-    static boolean show( Context context, boolean skipCheck )
-    {
-        int thisVersion = 0;
-        int shownVersion = 0;
-
-        if ( !skipCheck ) {
-            try {
-                thisVersion = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(), 0)
-                    .versionCode;
-                DbgUtils.logf( "versionCode: %d", thisVersion );
-            } catch ( Exception e ) {
-            }
-        }
-
-        SharedPreferences prefs = null;
-        if ( thisVersion > 0 ) {
-            prefs = context.getSharedPreferences( HIDDEN_PREFS, 
-                                                  Context.MODE_PRIVATE );
-            shownVersion = prefs.getInt( SHOWN_VERSION_KEY, 0 );
-        }
-
-        boolean isUpgrade = shownVersion < thisVersion;
-        if ( skipCheck || isUpgrade ) {
-            showDialog( context );
-        
-            if ( !skipCheck ) {
-                Editor editor = prefs.edit();
-                editor.putInt( SHOWN_VERSION_KEY, thisVersion );
-                editor.commit();
-            }
-        }
-        return isUpgrade;
-    }
-
-    private static void showDialog( Context context )
+    public static void show( Context context )
     {
         String page = null;
         InputStream inputStream = null;

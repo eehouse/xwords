@@ -330,7 +330,7 @@ public class DlgDelegate {
                                     public void onClick( DialogInterface dlg, 
                                                          int which )
                                     {
-                                        FirstRunDialog.show( m_activity, true );
+                                        FirstRunDialog.show( m_activity );
                                     }
                                 } )
             .create();
