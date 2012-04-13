@@ -25,6 +25,8 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -42,6 +44,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class SMSService extends Service {
@@ -55,6 +58,7 @@ public class SMSService extends Service {
     private static final int SEND = 3;
     private static final int REMOVE = 4;
     private static final int MESG_GAMEGONE = 5;
+    private static final int CHECK_MSGDB = 6;
 
     private static final String CMD_STR = "CMD";
     private static final String BUFFER = "BUFFER";
@@ -68,6 +72,7 @@ public class SMSService extends Service {
 
     private static Boolean s_showToasts = null;
     private static MultiService s_srcMgr = new MultiService();
+    private static boolean s_dbCheckPending = true;
 
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
@@ -83,6 +88,14 @@ public class SMSService extends Service {
         s_showToasts = newVal;
     }
 
+    public static void checkForInvites( Context context )
+    {
+        if ( XWApp.SMSSUPPORTED ) {
+            Intent intent = getIntentTo( context, CHECK_MSGDB );
+            context.startService( intent );
+        }
+    }
+
     public static void handleFrom( Context context, String buffer, String phone )
     {
         Intent intent = getIntentTo( context, HANDLE );
@@ -96,7 +109,6 @@ public class SMSService extends Service {
                                      int lang, int nPlayersT, 
                                      int nPlayersH )
     {
-        DbgUtils.logf( "inviteRemote(%s)", phone );
         Intent intent = getIntentTo( context, INVITE );
         intent.putExtra( PHONE, phone );
         intent.putExtra( GAMEID, gameID );
@@ -110,7 +122,6 @@ public class SMSService extends Service {
     public static int sendPacket( Context context, String phone, 
                                   int gameID, byte[] binmsg )
     {
-        DbgUtils.logf( "SMSService.sendPacket()" );
         Intent intent = getIntentTo( context, SEND );
         intent.putExtra( PHONE, phone );
         intent.putExtra( GAMEID, gameID );
@@ -141,7 +152,7 @@ public class SMSService extends Service {
     public static String fromPublicFmt( String msg )
     {
         String result = null;
-        if ( msg.startsWith( XWApp.SMS_PUBLIC_HEADER ) ) {
+        if ( null != msg && msg.startsWith( XWApp.SMS_PUBLIC_HEADER ) ) {
             int index = msg.lastIndexOf( " " );
             if ( 0 <= index ) {
                 result = msg.substring( index + 1 );
@@ -185,6 +196,18 @@ public class SMSService extends Service {
         if ( XWApp.SMSSUPPORTED && null != intent ) {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             switch( cmd ) {
+            case CHECK_MSGDB:
+                if ( s_dbCheckPending ) {
+                    if ( Utils.firstBootEver( this ) ) {
+                        new Thread( new Runnable() {
+                            public void run() {
+                                checkMsgDB();
+                            } 
+                        } ).start();
+                    }
+                    s_dbCheckPending = false;
+                }
+                break;
             case HANDLE:
                 DbgUtils.showf( this, "got %dth sms", ++m_nReceived );
                 String buffer = intent.getStringExtra( BUFFER );
@@ -496,6 +519,31 @@ public class SMSService extends Service {
         Intent intent = new Intent( this, DispatchNotify.class );
         intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
         Utils.postNotification( this, intent, title, body );
+    }
+
+    // Runs in separate thread
+    private void checkMsgDB()
+    {
+        Uri uri = Uri.parse( "content://sms/inbox" );
+        String[] columns = new String[] { "body","address" };
+        Cursor cursor = getContentResolver().query( uri, columns,
+                                                    null, null, null );
+        try {
+            int bodyIndex = cursor.getColumnIndexOrThrow( "body" );
+            int phoneIndex = cursor.getColumnIndexOrThrow( "address" );
+            while ( cursor.moveToNext() ) {
+                String msg = fromPublicFmt( cursor.getString( bodyIndex ) );
+                if ( null != msg ) {
+                    String number = cursor.getString( phoneIndex );
+                    if ( null != number ) {
+                        handleFrom( this, msg, number );
+                    }
+                }
+            }
+            cursor.close();
+        } catch ( Exception ee ) {
+            DbgUtils.logf( "checkMsgDB: %s", ee.toString() );
+        }
     }
 
     private class SMSMsgSink extends MultiMsgSink {

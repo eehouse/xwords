@@ -49,6 +49,8 @@ public class XWApp extends Application {
 
         RelayReceiver.RestartTimer( this );
         BTService.startService( this );
+
+        SMSService.checkForInvites( this );
     }
 
     public static UUID getAppUUID()
