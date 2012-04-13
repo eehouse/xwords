@@ -1745,7 +1745,7 @@ comms_isConnected( const CommsCtxt* const comms )
         break;
     case COMMS_CONN_SMS:
     case COMMS_CONN_BT:
-        result = XP_TRUE;
+        result = comms->connID != 0;
     default:
         break;
     }
