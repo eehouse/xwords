@@ -70,6 +70,8 @@ public class GamesList extends XWListActivity
     private static final int SYNC_MENU_ACTION = 5;
     private static final int NEW_FROM_ACTION = 6;
 
+    private static boolean s_firstShown = false;
+
     private GameListAdapter m_adapter;
     private String m_missingDict;
     private Handler m_handler;
@@ -256,7 +258,11 @@ public class GamesList extends XWListActivity
         registerForContextMenu( getListView() );
         DBUtils.setDBChangeListener( this );
 
-        boolean isUpgrade = FirstRunDialog.show( this, false );
+        boolean isUpgrade = Utils.firstBootThisVersion( this );
+        if ( isUpgrade && !s_firstShown ) {
+            FirstRunDialog.show( this );
+            s_firstShown = true;
+        }
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, isUpgrade );
 
         // setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);

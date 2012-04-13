@@ -22,24 +22,46 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.widget.CheckBox;
-import android.widget.Toast;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.content.SharedPreferences.Editor;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
 public class Utils {
-    static final String DB_PATH = "XW_GAMES";
+    private static final String DB_PATH = "XW_GAMES";
+	private static final String HIDDEN_PREFS = "xwprefs_hidden";
+    private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
 
+    private static Boolean s_isFirstBootThisVersion = null;
+    private static Boolean s_isFirstBootEver = null;
 
     private Utils() {}
+
+    public static boolean firstBootEver( Context context )
+    {
+        if ( null == s_isFirstBootEver ) {
+            setFirstBootStatics( context );
+        }
+        return s_isFirstBootEver;
+    }
+
+    public static boolean firstBootThisVersion( Context context )
+    {
+        if ( null == s_isFirstBootThisVersion ) {
+            setFirstBootStatics( context );
+        }
+        return s_isFirstBootThisVersion;
+    }
 
     public static void notImpl( Context context ) 
     {
@@ -173,4 +195,35 @@ public class Utils {
         String fmt = context.getString( id );
         return String.format( fmt, args );
     }
+
+    private static void setFirstBootStatics( Context context )
+    {
+        int thisVersion = 0;
+        int prevVersion = 0;
+
+        try {
+            thisVersion = context.getPackageManager()
+                .getPackageInfo(context.getPackageName(), 0)
+                .versionCode;
+        } catch ( Exception e ) {
+        }
+
+        SharedPreferences prefs = null;
+        if ( 0 < thisVersion ) {
+            prefs = context.getSharedPreferences( HIDDEN_PREFS, 
+                                                  Context.MODE_PRIVATE );
+            prevVersion = prefs.getInt( SHOWN_VERSION_KEY, -1 );
+        }
+        boolean newVersion = prevVersion != thisVersion;
+        
+        s_isFirstBootThisVersion = new Boolean( newVersion );
+        s_isFirstBootEver = new Boolean( -1 == prevVersion );
+
+        if ( newVersion ) {
+            Editor editor = prefs.edit();
+            editor.putInt( SHOWN_VERSION_KEY, thisVersion );
+            editor.commit();
+        }
+    }
+
 }
