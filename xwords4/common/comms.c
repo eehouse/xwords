@@ -66,7 +66,8 @@ typedef struct AddressRecord {
     struct AddressRecord* next;
     CommsAddrRec addr;
     MsgID nextMsgID;        /* on a per-channel basis */
-    MsgID lastMsgRcd;        /* on a per-channel basis */
+    MsgID lastMsgRcd;       /* on a per-channel basis */
+    MsgID lastMsgAckd;      /* on a per-channel basis */
     /* only used if COMMS_HEARTBEAT set except for serialization (to_stream) */
     XP_PlayerAddr channelNo;
     struct {
@@ -180,7 +181,7 @@ static void set_reset_timer( CommsCtxt* comms );
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 # endif
 #endif
-#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
 static void setHeartbeatTimer( CommsCtxt* comms );
 
 #else
@@ -190,6 +191,10 @@ static void setHeartbeatTimer( CommsCtxt* comms );
 static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ, 
                                  XP_PlayerAddr channelNo,
                                  void* data, int dlen );
+#endif
+
+#if defined COMMS_HEARTBEAT || defined XWFEATURE_COMMSACK
+static void sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec );
 #endif
 
 /****************************************************************************
@@ -521,7 +526,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     MsgQueueElem** prevsQueueNext;
     XP_U16 version = stream_getVersion( stream );
     CommsAddrRec addr;
-    short i;
+    short ii;
 
     isServer = stream_getU8( stream );
     if ( version < STREAM_VERS_RELAY ) {
@@ -564,14 +569,16 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
     nAddrRecs = stream_getU8( stream );
     prevsAddrNext = &comms->recs;
-    for ( i = 0; i < nAddrRecs; ++i ) {
-        AddressRecord* rec = (AddressRecord*)XP_MALLOC( mpool, sizeof(*rec));
-        XP_MEMSET( rec, 0, sizeof(*rec) );
+    for ( ii = 0; ii < nAddrRecs; ++ii ) {
+        AddressRecord* rec = (AddressRecord*)XP_CALLOC( mpool, sizeof(*rec));
 
         addrFromStream( &rec->addr, stream );
 
         rec->nextMsgID = stream_getU16( stream );
         rec->lastMsgRcd = stream_getU16( stream );
+        if ( version >= STREAM_VERS_BLUETOOTH2 ) {
+            rec->lastMsgAckd = stream_getU16( stream );
+        }
         rec->channelNo = stream_getU16( stream );
         if ( rec->addr.conType == COMMS_CONN_RELAY ) {
             rec->r.hostID = stream_getU8( stream );
@@ -582,8 +589,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     }
 
     prevsQueueNext = &comms->msgQueueHead;
-    for ( i = 0; i < comms->queueLen; ++i ) {
-        MsgQueueElem* msg = (MsgQueueElem*)XP_MALLOC( mpool, sizeof(*msg) );
+    for ( ii = 0; ii < comms->queueLen; ++ii ) {
+        MsgQueueElem* msg = (MsgQueueElem*)XP_CALLOC( mpool, sizeof(*msg) );
 
         msg->channelNo = stream_getU16( stream );
         msg->msgID = stream_getU32( stream );
@@ -740,6 +747,7 @@ comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
 
         stream_putU16( stream, (XP_U16)rec->nextMsgID );
         stream_putU16( stream, (XP_U16)rec->lastMsgRcd );
+        stream_putU16( stream, (XP_U16)rec->lastMsgAckd );
         stream_putU16( stream, rec->channelNo );
         if ( rec->addr.conType == COMMS_CONN_RELAY ) {
             stream_putU8( stream, rec->r.hostID ); /* unneeded unless RELAY */
@@ -905,6 +913,9 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     stream_putU32( msgStream, msgID );
     XP_LOGF( "put lastMsgRcd: %ld", lastMsgRcd );
     stream_putU32( msgStream, lastMsgRcd );
+    if ( !!rec ) {
+        rec->lastMsgAckd = lastMsgRcd;
+    }
 
     headerLen = stream_getSize( msgStream );
     newMsgElem->len = streamSize + headerLen;
@@ -1182,6 +1193,21 @@ comms_resendAll( CommsCtxt* comms )
     }
     return success;
 } /* comms_resend */
+
+#ifdef XWFEATURE_COMMSACK
+void
+comms_ackAny( CommsCtxt* comms )
+{
+    AddressRecord* rec;
+    for ( rec = comms->recs; !!rec; rec = rec->next ) {
+        if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
+            XP_LOGF( "%s: %ld < %ld: rec needs ack", __func__,
+                     rec->lastMsgAckd, rec->lastMsgRcd );
+            sendEmptyMsg( comms, rec );
+        }
+    }
+}
+#endif
 
 #ifdef XWFEATURE_RELAY
 # ifdef DEBUG
@@ -1770,7 +1796,7 @@ comms_getBTAddrs( const CommsCtxt* const comms,
 }
 #endif
 
-#ifdef COMMS_HEARTBEAT
+#if defined COMMS_HEARTBEAT || defined XWFEATURE_COMMSACK
 static void
 sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec )
 {
@@ -1781,7 +1807,9 @@ sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec )
     sendMsg( comms, elem );
     freeElem( comms, elem );
 } /* sendEmptyMsg */
+#endif
 
+#ifdef COMMS_HEARTBEAT
 /* Heartbeat.
  *
  * Goal is to allow all participants to detect when another is gone quickly.
@@ -1833,7 +1861,7 @@ heartbeat_checks( CommsCtxt* comms )
 } /* heartbeat_checks */
 #endif
 
-#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
 static XP_Bool
 p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 {
