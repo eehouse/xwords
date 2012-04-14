@@ -204,6 +204,9 @@ XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
 XP_Bool comms_resendAll( CommsCtxt* comms );
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 
+#ifdef XWFEATURE_COMMSACK
+void comms_ackAny( CommsCtxt* comms );
+#endif
 
 XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
                                    const CommsAddrRec* addr );

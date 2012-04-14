@@ -917,6 +917,17 @@ handle_resend( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     }
 } /* handle_resend */
 
+#ifdef XWFEATURE_COMMSACK
+static void
+handle_ack( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    CommsCtxt* comms = globals->cGlobals.game.comms;
+    if ( comms != NULL ) {
+        comms_ackAny( comms );
+    }
+}
+#endif
+
 #ifdef DEBUG
 static void
 handle_commstats( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
@@ -1023,6 +1034,10 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
 #ifndef XWFEATURE_STANDALONE_ONLY
     (void)createAddItem( fileMenu, "Resend", 
                          GTK_SIGNAL_FUNC(handle_resend), globals );
+#ifdef XWFEATURE_COMMSACK
+    (void)createAddItem( fileMenu, "ack any", 
+                         GTK_SIGNAL_FUNC(handle_ack), globals );
+#endif
 # ifdef DEBUG
     (void)createAddItem( fileMenu, "Stats", 
                          GTK_SIGNAL_FUNC(handle_commstats), globals );
