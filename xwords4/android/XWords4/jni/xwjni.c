@@ -1267,6 +1267,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
     XWJNI_END();
 }
 
+#ifdef XWFEATURE_COMMSACK
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1ackAny
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    XP_ASSERT( !!state->game.comms );
+    (void)comms_ackAny( state->game.comms );
+    XWJNI_END();
+}
+#endif
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1transportFailed
 ( JNIEnv* env, jclass C, jint gamePtr )

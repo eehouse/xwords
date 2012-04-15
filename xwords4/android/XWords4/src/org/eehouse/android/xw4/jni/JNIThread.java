@@ -76,6 +76,7 @@ public class JNIThread extends Thread {
             CMD_COUNTS_VALUES,
             CMD_REMAINING,
             CMD_RESEND,
+            CMD_RESEND_ACK,
             CMD_HISTORY,
             CMD_FINAL,
             CMD_ENDGAME,
@@ -479,6 +480,10 @@ public class JNIThread extends Thread {
 
             case CMD_RESEND:
                 XwJNI.comms_resendAll( m_jniGamePtr );
+                break;
+            case CMD_RESEND_ACK:
+                XwJNI.comms_resendAll( m_jniGamePtr );
+                XwJNI.comms_ackAny( m_jniGamePtr );
                 break;
 
             case CMD_HISTORY:

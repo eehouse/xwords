@@ -679,6 +679,7 @@ public class GameUtils {
                         || draw;
                 }
             }
+            XwJNI.comms_ackAny( gamePtr );
 
             // update gi to reflect changes due to messages
             XwJNI.game_getGi( gamePtr, gi );
