@@ -99,14 +99,14 @@ public class Utils {
     }
 
     public static void postNotification( Context context, Intent intent, 
-                                         int titleID, int bodyID )
+                                         int titleID, int bodyID, int id )
     {
         postNotification( context, intent, titleID, 
-                          context.getString( bodyID ) );
+                          context.getString( bodyID ), id );
     }
 
     public static void postNotification( Context context, Intent intent, 
-                                         int titleID, String body )
+                                         int titleID, String body, int id )
     {
         PendingIntent pi = PendingIntent.
             getActivity( context, 0, intent, 
@@ -129,8 +129,14 @@ public class Utils {
 
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
-        nm.notify( titleID, // unique id; any will do
-                   notification );
+        nm.notify( id, notification );
+    }
+
+    public static void cancelNotification( Context context, int id )
+    {
+        NotificationManager nm = (NotificationManager)
+            context.getSystemService( Context.NOTIFICATION_SERVICE );
+        nm.cancel( id );
     }
 
     public static View inflate( Context context, int layoutId )

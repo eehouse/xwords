@@ -129,7 +129,8 @@ public class BoardActivity extends XWActivity
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
-    private CommsAddrRec.CommsConnType m_missingType;
+    private CommsAddrRec.CommsConnType m_connType = 
+        CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
     private String[] m_missingDevs;
     private String m_curTiles;
     private boolean m_canUndoTiles;
@@ -1348,6 +1349,8 @@ public class BoardActivity extends XWActivity
                                    CommsAddrRec.CommsConnType connType,
                                    final int nMissingPlayers )
         {
+            m_connType = connType;
+
             int msgID = 0;
             int action = 0;
             if ( 0 < nMissingPlayers && isServer && !m_haveInvited ) {
@@ -1364,7 +1367,6 @@ public class BoardActivity extends XWActivity
             }
             if ( 0 != action ) {
                 m_haveInvited = true;
-                m_missingType = connType;
                 final int faction = action;
                 final int fmsgID = msgID;
                 post( new Runnable() {
@@ -1553,7 +1555,8 @@ public class BoardActivity extends XWActivity
 
                 if ( null != m_xport ) {
                     trySendChats();
-                    m_xport.tickle();
+                    removeNotifications();
+                    m_xport.tickle( m_connType );
                     tryInvites();
                 }
             }
@@ -1725,6 +1728,24 @@ public class BoardActivity extends XWActivity
         }
     }
 
+    private void removeNotifications()
+    {
+        int id = 0;
+        switch( m_connType ) {
+        case COMMS_CONN_BT:
+        case COMMS_CONN_SMS:
+            id = m_gi.gameID;
+            break;
+        case COMMS_CONN_RELAY:
+            String relayID = DBUtils.getRelayID( this, m_rowid );
+            id = relayID.hashCode();
+            break;
+        }
+        if ( 0 != id ) {
+            Utils.cancelNotification( this, id );
+        }
+    }
+
     private void tryInvites()
     {
         if ( XWApp.BTSUPPORTED || XWApp.SMSSUPPORTED ) {
@@ -1733,7 +1754,7 @@ public class BoardActivity extends XWActivity
                 boolean doProgress = false;
                 m_invitesPending = m_missingDevs.length;
                 for ( String dev : m_missingDevs ) {
-                    switch( m_missingType ) {
+                    switch( m_connType ) {
                     case COMMS_CONN_BT:
                         BTService.inviteRemote( this, dev, m_gi.gameID, 
                                                 gameName, m_gi.dictLang, 

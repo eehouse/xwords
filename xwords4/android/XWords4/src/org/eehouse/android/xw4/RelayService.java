@@ -63,8 +63,10 @@ public class RelayService extends Service {
         Intent intent = new Intent( this, DispatchNotify.class );
         intent.putExtra( DispatchNotify.RELAYIDS_EXTRA, relayIDs );
 
-        Utils.postNotification( this, intent, R.string.notify_title,
-                                R.string.notify_body );
+        for ( String id : relayIDs ) {
+            Utils.postNotification( this, intent, R.string.notify_title,
+                                    R.string.notify_body, id.hashCode() );
+        }
     }
 
     private String[] collectIDs( int[] nBytes )

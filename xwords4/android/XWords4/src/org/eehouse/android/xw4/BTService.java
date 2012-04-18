@@ -971,7 +971,7 @@ public class BTService extends Service {
         Intent intent = new Intent( this, DispatchNotify.class );
         intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
         Utils.postNotification( this, intent, R.string.new_btmove_title, 
-                                body );
+                                body, gameID );
     }
 
     private Thread killSocketIn( final BluetoothSocket socket )

@@ -391,6 +391,26 @@ public class DBUtils {
         return 0 == getInt( context, rowid, DBHelper.CONTRACTED, 0 );
     }
 
+    public static String getRelayID( Context context, long rowid )
+    {
+        String result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.RELAYID };
+            String selection = String.format( ROW_ID_FMT, rowid );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = 
+                    cursor.getString( cursor.getColumnIndex(DBHelper.RELAYID) );
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
     public static long getRowIDFor( Context context, String relayID )
     {
         long result = ROWID_NOTFOUND;
