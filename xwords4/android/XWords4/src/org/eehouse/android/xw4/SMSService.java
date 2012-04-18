@@ -209,7 +209,10 @@ public class SMSService extends Service {
                 }
                 break;
             case HANDLE:
-                DbgUtils.showf( this, "got %dth sms", ++m_nReceived );
+                ++m_nReceived;
+                if ( s_showToasts ) {
+                    DbgUtils.showf( this, "got %dth msg", m_nReceived );
+                }
                 String buffer = intent.getStringExtra( BUFFER );
                 String phone = intent.getStringExtra( PHONE );
                 receiveBuffer( buffer, phone );
@@ -479,7 +482,9 @@ public class SMSService extends Service {
                 DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
                                asPublic, asPublic.length(), phone );
             }
-            DbgUtils.showf( this, "sent %dth msg", s_nSent );
+            if ( s_showToasts ) {
+                DbgUtils.showf( this, "sent %dth msg", s_nSent );
+            }
             success = true;
         } catch ( IllegalArgumentException iae ) {
             DbgUtils.logf( "%s", iae.toString() );
