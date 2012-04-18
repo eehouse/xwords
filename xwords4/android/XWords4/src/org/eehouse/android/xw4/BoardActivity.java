@@ -843,16 +843,26 @@ public class BoardActivity extends XWActivity
                     } );
             }
             break;
+
+            // This can be BT or SMS.  In BT case there's a progress
+            // thing going.  Not in SMS case.
         case NEWGAME_FAILURE:
             DbgUtils.logf( "failed to create game" );
         case NEWGAME_SUCCESS:
-            if ( 0 == --m_invitesPending ) {
-                m_handler.post( new Runnable() {
-                        public void run() {
+            final boolean success = 
+                MultiService.MultiEvent.NEWGAME_SUCCESS == event;
+            final boolean allHere = 0 == --m_invitesPending;
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        if ( allHere ) {
                             stopProgress();
+                        }
+                        if ( success ) {
+                            DbgUtils.showf( BoardActivity.this, 
+                                            R.string.invite_success );
+                        }
                     }
                 } );
-            }
             break;
 
         default:

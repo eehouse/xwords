@@ -1920,4 +1920,7 @@
 
     <string name="confirm_clear">Are you sure you want to delete the
     checked phone number[s]?</string>
+
+    <string name="invite_success">Invitation accepted.</string>
+
 </resources>

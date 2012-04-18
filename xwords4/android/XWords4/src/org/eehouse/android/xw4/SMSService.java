@@ -76,7 +76,7 @@ public class SMSService extends Service {
 
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
-    private enum SMS_CMD { NONE, INVITE, DATA, DEATH, };
+    private enum SMS_CMD { NONE, INVITE, DATA, DEATH, ACK, };
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
@@ -273,6 +273,20 @@ public class SMSService extends Service {
         }
     }
 
+    private void ackInvite( String phone, int gameID )
+    {
+        ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
+        DataOutputStream das = new DataOutputStream( bas );
+        try {
+            das.writeInt( gameID );
+            das.flush();
+
+            send( SMS_CMD.ACK, bas.toByteArray(), phone );
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.logf( "ioe: %s", ioe.toString() );
+        }
+    }
+
     private void sendDiedPacket( String phone, int gameID )
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 32 );
@@ -374,6 +388,8 @@ public class SMSService extends Service {
                 }
                 String body = Utils.format( this, R.string.new_sms_bodyf, phone );
                 postNotification( gameID, R.string.new_sms_title, body );
+
+                ackInvite( phone, gameID );
                 break;
             case DATA:
                 gameID = dis.readInt();
@@ -385,8 +401,13 @@ public class SMSService extends Service {
                 gameID = dis.readInt();
                 s_srcMgr.sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
                 break;
+            case ACK:
+                gameID = dis.readInt();
+                s_srcMgr.sendResult( MultiEvent.NEWGAME_SUCCESS, 
+                                     gameID );
+                break;
             default:
-                Assert.fail();
+                DbgUtils.logf( "unexpected cmd %s", cmd.toString() );
                 break;
             }
         } catch ( java.io.IOException ioe ) {
