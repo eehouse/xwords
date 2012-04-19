@@ -25,12 +25,16 @@ import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.DialogInterface;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.ContactsContract.PhoneLookup;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -130,6 +134,26 @@ public class Utils {
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
         nm.notify( id, notification );
+    }
+
+    // adapted from
+    // http://stackoverflow.com/questions/2174048/how-to-look-up-a-contacts-name-from-their-phone-number-on-android
+    public static String phoneToContact( Context context, String phone )
+    {
+        String name = null;
+        ContentResolver contentResolver = context.getContentResolver();
+        Cursor cursor =
+            contentResolver
+            .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI, 
+                                          Uri.encode( phone )), 
+                    new String[] { PhoneLookup.DISPLAY_NAME }, 
+                    null, null, null );
+        if ( cursor.moveToNext() ) {
+            int indx = cursor.getColumnIndex( PhoneLookup.DISPLAY_NAME );
+            name = cursor.getString( indx );
+        }
+        cursor.close();
+        return name;
     }
 
     public static void cancelNotification( Context context, int id )
