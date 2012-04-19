@@ -32,7 +32,7 @@ public class XWListItem extends LinearLayout {
     private int m_position;
     private Context m_context;
     private Object m_cached;
-    DeleteCallback m_cb;
+    private DeleteCallback m_cb;
 
     public interface DeleteCallback {
         void deleteCalled( XWListItem item );
