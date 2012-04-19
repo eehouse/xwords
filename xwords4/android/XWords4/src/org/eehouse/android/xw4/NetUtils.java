@@ -84,22 +84,30 @@ public class NetUtils {
             Socket socket = makeProxySocket( m_context, 10000 );
             if ( null != socket ) {
                 int strLens = 0;
+                int nObits = 0;
                 for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                    strLens += m_obits[ii].m_relayID.length() + 1; // 1 for /n
+                    String relayID = m_obits[ii].m_relayID;
+                    if ( null != relayID ) {
+                        ++nObits;
+                        strLens += relayID.length() + 1; // 1 for /n
+                    }
                 }
 
                 try {
                     DataOutputStream outStream = 
                         new DataOutputStream( socket.getOutputStream() );
-                    outStream.writeShort( 2 + 2 + (2*m_obits.length) + strLens );
+                    outStream.writeShort( 2 + 2 + (2*nObits) + strLens );
                     outStream.writeByte( NetUtils.PROTOCOL_VERSION );
                     outStream.writeByte( NetUtils.PRX_DEVICE_GONE );
                     outStream.writeShort( m_obits.length );
 
                     for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                        outStream.writeShort( m_obits[ii].m_seed );
-                        outStream.writeBytes( m_obits[ii].m_relayID );
-                        outStream.write( '\n' );
+                        String relayID = m_obits[ii].m_relayID;
+                        if ( null != relayID ) {
+                            outStream.writeShort( m_obits[ii].m_seed );
+                            outStream.writeBytes( relayID );
+                            outStream.write( '\n' );
+                        }
                     }
 
                     outStream.flush();
