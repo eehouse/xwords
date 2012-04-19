@@ -1288,11 +1288,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1hasComms
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
-( JNIEnv* env, jclass C, jint gamePtr )
+( JNIEnv* env, jclass C, jint gamePtr, jboolean thenAck )
 {
     XWJNI_START();
-    XP_ASSERT( !!state->game.comms );
-    (void)comms_resendAll( state->game.comms );
+    CommsCtxt* comms = state->game.comms;
+    XP_ASSERT( !!comms );
+    (void)comms_resendAll( comms );
+    if ( thenAck ) {
+        comms_ackAny( comms );
+    }
     XWJNI_END();
 }
 

@@ -76,7 +76,7 @@ public class JNIThread extends Thread {
             CMD_COUNTS_VALUES,
             CMD_REMAINING,
             CMD_RESEND,
-            CMD_RESEND_ACK,
+            CMD_ACKANY,
             CMD_HISTORY,
             CMD_FINAL,
             CMD_ENDGAME,
@@ -356,6 +356,7 @@ public class JNIThread extends Thread {
                                                   (byte[])args[0],
                                                   (CommsAddrRec)args[1]);
                 handle( JNICmd.CMD_DO );
+                handle( JNICmd.CMD_ACKANY );
                 if ( draw ) {
                     handle( JNICmd.CMD_SAVE );
                 }
@@ -479,10 +480,10 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_RESEND:
-                XwJNI.comms_resendAll( m_jniGamePtr );
+                XwJNI.comms_resendAll( m_jniGamePtr, 
+                                       ((Boolean)args[0]).booleanValue() );
                 break;
-            case CMD_RESEND_ACK:
-                XwJNI.comms_resendAll( m_jniGamePtr );
+            case CMD_ACKANY:
                 XwJNI.comms_ackAny( m_jniGamePtr );
                 break;
 

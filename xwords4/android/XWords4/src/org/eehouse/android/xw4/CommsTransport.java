@@ -224,7 +224,7 @@ public class CommsTransport implements TransportProcs,
 
     public void tickle( CommsConnType connType )
     {
-        m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND_ACK );
+        m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, true );
         // CommsAddrRec addr = new CommsAddrRec( m_context );
         // XwJNI.comms_getAddr( m_jniGamePtr, addr );
         // switch( addr.conType ) {

@@ -671,7 +671,7 @@ public class GameUtils {
         if ( lock.tryLock() ) {
             int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
                     
-            XwJNI.comms_resendAll( gamePtr );
+            XwJNI.comms_resendAll( gamePtr, false );
 
             if ( null != msgs ) {
                 for ( byte[] msg : msgs ) {
