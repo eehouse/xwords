@@ -60,9 +60,11 @@ public class XWListItem extends LinearLayout {
 
     public void setComment( String text )
     {
-        TextView view = (TextView)findViewById( R.id.text_item2 );
-        view.setVisibility( View.VISIBLE );
-        view.setText( text );
+        if ( null != text ) {
+            TextView view = (TextView)findViewById( R.id.text_item2 );
+            view.setVisibility( View.VISIBLE );
+            view.setText( text );
+        }
     }
 
     public void setDeleteCallback( DeleteCallback cb ) 
