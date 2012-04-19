@@ -84,6 +84,7 @@ public class GameConfig extends XWActivity
     private Button m_playButton;
     private ImageButton m_refreshRoomsButton;
     private View m_connectSetRelay;
+    private View m_connectSetSMS;
     private Spinner m_roomChoose;
     // private Button m_configureButton;
     private long m_rowid;
@@ -100,6 +101,7 @@ public class GameConfig extends XWActivity
     private String m_browseText;
     private LinearLayout m_playerLayout;
     private CommsAddrRec m_carOrig;
+    private CommsAddrRec[] m_remoteAddrs;
     private CommsAddrRec m_car;
     private CommonPrefs m_cp;
     private boolean m_canDoSMS = false;
@@ -399,6 +401,10 @@ public class GameConfig extends XWActivity
         setContentView(R.layout.game_config);
 
         m_connectSetRelay = findViewById(R.id.connect_set_relay);
+        m_connectSetSMS = findViewById(R.id.connect_set_sms);
+        if ( !XWApp.SMSSUPPORTED ) {
+            m_connectSetSMS.setVisibility( View.GONE );
+        }
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
@@ -478,6 +484,7 @@ public class GameConfig extends XWActivity
                 m_carOrig = new CommsAddrRec();
                 if ( XwJNI.game_hasComms( gamePtr ) ) {
                     XwJNI.comms_getAddr( gamePtr, m_carOrig );
+                    m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
                 } else if (DeviceRole.SERVER_STANDALONE != m_giOrig.serverRole){
                     String relayName = CommonPrefs.getDefaultRelayHost( this );
                     int relayPort = CommonPrefs.getDefaultRelayPort( this );
@@ -515,6 +522,8 @@ public class GameConfig extends XWActivity
 
                 loadPlayersList();
                 configLangSpinner();
+
+                loadPhones();
 
                 m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
@@ -692,6 +701,11 @@ public class GameConfig extends XWActivity
         m_connectSetRelay.
             setVisibility( m_conType == CommsConnType.COMMS_CONN_RELAY ?
                            View.VISIBLE : View.GONE );
+        if ( XWApp.SMSSUPPORTED ) {
+            m_connectSetSMS.
+                setVisibility( m_conType == CommsConnType.COMMS_CONN_SMS ?
+                               View.VISIBLE : View.GONE );
+        }
 
         if ( ! localOnlyGame()
              && ((0 == m_gi.remoteCount() )
@@ -784,6 +798,21 @@ public class GameConfig extends XWActivity
             if ( sel.equals( adapter.getItem(ii) ) ) {
                 spinner.setSelection( ii );
                 break;
+            }
+        }
+    }
+
+    private void loadPhones()
+    {
+        if ( XWApp.SMSSUPPORTED ) {
+            LinearLayout phoneList = 
+                (LinearLayout)findViewById(R.id.sms_phones);
+            for ( CommsAddrRec addr : m_remoteAddrs ) {
+                XWListItem item = 
+                    (XWListItem)Utils.inflate( this, R.layout.list_item );
+                item.setText( addr.sms_phone );
+                item.setEnabled( false );
+                phoneList.addView( item );
             }
         }
     }

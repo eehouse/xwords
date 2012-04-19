@@ -184,6 +184,8 @@ XP_Bool comms_checkAddr( DeviceRole role, const CommsAddrRec* addr,
 
 void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
+void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], 
+                     XP_U16* nRecs );
 
 #ifdef XWFEATURE_RELAY
 XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );
@@ -213,11 +215,6 @@ XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 
 XP_Bool comms_canChat( const CommsCtxt* comms );
 XP_Bool comms_isConnected( const CommsCtxt* const comms );
-
-#ifdef XWFEATURE_BLUETOOTH
-void comms_getBTAddrs( const CommsCtxt* const comms, 
-                       XP_BtAddrStr* addrs, XP_U16* count );
-#endif
 
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );

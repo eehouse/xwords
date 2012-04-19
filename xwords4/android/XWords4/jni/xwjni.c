@@ -1019,12 +1019,39 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddr
 (JNIEnv* env, jclass C, jint gamePtr, jobject jaddr )
 {
     XWJNI_START();
-    LOG_FUNC();
     XP_ASSERT( state->game.comms );
     CommsAddrRec addr;
     comms_getAddr( state->game.comms, &addr );
     setJAddrRec( env, jaddr, &addr );
     XWJNI_END();
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jobjectArray result = NULL;
+    XP_U16 ii;
+    XWJNI_START();
+    XP_ASSERT( state->game.comms );
+    CommsAddrRec addrs[MAX_NUM_PLAYERS];
+    XP_U16 count = VSIZE(addrs);
+    comms_getAddrs( state->game.comms, addrs, &count );
+
+    jclass clas = (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec") );
+    result = (*env)->NewObjectArray( env, count, clas, NULL );
+
+    jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
+    for ( ii = 0; ii < count; ++ii ) {
+        jobject jaddr = (*env)->NewObject( env, clas, initId );
+        setJAddrRec( env, jaddr, &addrs[ii] );
+        (*env)->SetObjectArrayElement( env, result, ii, jaddr );
+        (*env)->DeleteLocalRef( env, jaddr );
+    }
+    (*env)->DeleteLocalRef( env, clas );
+
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT void JNICALL
@@ -1111,21 +1138,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                 setString( env, jsummary, "relayID", buf );
             }
             setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
-#ifdef XWFEATURE_BLUETOOTH
-        } else if ( COMMS_CONN_BT == addr.conType ) {
-            XP_BtAddrStr addrs[MAX_NUM_PLAYERS];
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_SMS
+        } else if ( COMMS_CONN_BT == addr.conType 
+                    || COMMS_CONN_SMS == addr.conType ) {
+            XP_Bool isBT = COMMS_CONN_BT == addr.conType;
+            CommsAddrRec addrs[MAX_NUM_PLAYERS];
             XP_U16 count = VSIZE(addrs);
-            comms_getBTAddrs( comms, addrs, &count );
+            comms_getAddrs( comms, addrs, &count );
             
             int ii;
-            XP_ASSERT( count < VSIZE(addrs) );
             const XP_UCHAR* addrps[count];
             for ( ii = 0; ii < count; ++ii ) {
-                addrps[ii] = (XP_UCHAR*)&addrs[ii];
-                XP_LOGF( "%s: adding btaddr %s", __func__, addrps[ii] );
+                addrps[ii] = isBT ? (XP_UCHAR*)&addrs[ii].u.bt.btAddr : 
+                    (XP_UCHAR*)&addrs[ii].u.sms.phone;
+                XP_LOGF( "%s: adding btaddr/phone %s", __func__, addrps[ii] );
             }
             jobjectArray jaddrs = makeStringArray( env, count, addrps );
-            setObject( env, jsummary, "remoteBTAddrs", "[Ljava/lang/String;", 
+            setObject( env, jsummary, "remoteDevs", "[Ljava/lang/String;", 
                        jaddrs );
             (*env)->DeleteLocalRef( env, jaddrs );
 #endif

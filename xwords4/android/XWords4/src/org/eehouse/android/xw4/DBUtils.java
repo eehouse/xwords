@@ -192,9 +192,10 @@ public class DBUtils {
                         }
                         break;
                     case COMMS_CONN_BT:
+                    case COMMS_CONN_SMS:
                         col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
                         if ( col >= 0 ) {
-                            summary.setRemoteBTAddrs( cursor.getString( col ) );
+                            summary.setRemoteDevs( cursor.getString( col ) );
                         }
                         break;
                     }
@@ -274,8 +275,9 @@ public class DBUtils {
                         values.put( DBHelper.RELAYID, summary.relayID );
                         break;
                     case COMMS_CONN_BT:
-                        values.put( DBHelper.REMOTEDEVS,
-                                    summary.summarizeBTDevs() );
+                    case COMMS_CONN_SMS:
+                        values.put( DBHelper.REMOTEDEVS, 
+                                    summary.summarizeDevs() );
                         break;
                     }
                 }

@@ -56,7 +56,7 @@ public class GameSummary {
     public int pendingMsgLevel;
     public long modtime;
     public int gameID;
-    public String[] remoteBTAddrs;
+    public String[] remoteDevs; // BTAddr or phone number
 
     public int dictLang;
     public DeviceRole serverRole;
@@ -103,20 +103,19 @@ public class GameSummary {
         return result;
     }
 
-    public String summarizeBTDevs()
+    public String summarizeDevs()
     {
         String result = null;
-        if ( null != remoteBTAddrs ) {
-            result = TextUtils.join( "\n", remoteBTAddrs );
+        if ( null != remoteDevs ) {
+            result = TextUtils.join( "\n", remoteDevs );
         }
         return result;
     }
 
-    public void setRemoteBTAddrs( String asString )
+    public void setRemoteDevs( String asString )
     {
-        DbgUtils.logf( "setRemoteBTAddrs(%s)", asString );
         if ( null != asString ) {
-            remoteBTAddrs = TextUtils.split( asString, "\n" );
+            remoteDevs = TextUtils.split( asString, "\n" );
         }
     }
 
@@ -192,10 +191,16 @@ public class GameSummary {
                     }
                 } else if ( gameOver ) {
                     fmtID = R.string.summary_gameover;
+                } else if ( null != remoteDevs 
+                            && CommsConnType.COMMS_CONN_SMS == conType ) {
+                    result = Utils.format( m_context, R.string.summary_conn_sms,
+                                           TextUtils.join(", ", remoteDevs) );
                 } else {
                     fmtID = R.string.summary_conn;
                 }
-                result = m_context.getString( fmtID );
+                if ( null == result ) {
+                    result = m_context.getString( fmtID );
+                }
                 break;
             }
         }

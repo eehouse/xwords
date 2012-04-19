@@ -785,6 +785,19 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 
 } /* comms_setAddr */
 
+void
+comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], XP_U16* nRecs )
+{
+    AddressRecord* recs;
+    XP_U16 count;
+    for ( count = 0, recs = comms->recs;
+          count < *nRecs && !!recs;
+          ++count, recs = recs->next ) {
+        XP_MEMCPY( &addr[count], &recs->addr, sizeof(addr[count]) );
+    }
+    *nRecs = count;
+}
+
 #ifdef XWFEATURE_RELAY
 static XP_Bool
 haveRelayID( const CommsCtxt* comms )
@@ -1777,24 +1790,6 @@ comms_isConnected( const CommsCtxt* const comms )
     }
     return result;
 }
-
-#ifdef XWFEATURE_BLUETOOTH
-void
-comms_getBTAddrs( const CommsCtxt* const comms, 
-                  XP_BtAddrStr* addrs, XP_U16* count )
-{
-    XP_ASSERT( COMMS_CONN_BT == comms->addr.conType );
-
-    const AddressRecord* rec;
-    XP_U16 ii = 0;
-    for ( rec = comms->recs; !!rec; rec = rec->next ) {
-        XP_MEMCPY( &addrs[ii], &rec->addr.u.bt.btAddr, sizeof( addrs[ii] ) );
-        ++ii;
-    }
-    XP_ASSERT( ii <= *count );
-    *count = ii;
-}
-#endif
 
 #if defined COMMS_HEARTBEAT || defined XWFEATURE_COMMSACK
 static void
