@@ -1748,7 +1748,9 @@ public class BoardActivity extends XWActivity
             break;
         case COMMS_CONN_RELAY:
             String relayID = DBUtils.getRelayID( this, m_rowid );
-            id = relayID.hashCode();
+            if ( null != relayID ) {
+                id = relayID.hashCode();
+            }
             break;
         }
         if ( 0 != id ) {
