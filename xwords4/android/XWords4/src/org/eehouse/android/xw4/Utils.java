@@ -41,6 +41,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.HashMap;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -52,6 +53,8 @@ public class Utils {
 
     private static Boolean s_isFirstBootThisVersion = null;
     private static Boolean s_isFirstBootEver = null;
+    private static HashMap<String,String> s_phonesHash = 
+        new HashMap<String,String>();
 
     private Utils() {}
 
@@ -140,19 +143,29 @@ public class Utils {
     // http://stackoverflow.com/questions/2174048/how-to-look-up-a-contacts-name-from-their-phone-number-on-android
     public static String phoneToContact( Context context, String phone )
     {
-        String name = null;
-        ContentResolver contentResolver = context.getContentResolver();
-        Cursor cursor =
-            contentResolver
-            .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI, 
-                                          Uri.encode( phone )), 
-                    new String[] { PhoneLookup.DISPLAY_NAME }, 
-                    null, null, null );
-        if ( cursor.moveToNext() ) {
-            int indx = cursor.getColumnIndex( PhoneLookup.DISPLAY_NAME );
-            name = cursor.getString( indx );
+        // I'm assuming that since context is passed this needn't
+        // worry about synchronization -- will always be called from
+        // UI thread.
+        String name;
+        if ( s_phonesHash.containsKey( phone ) ) {
+            name = s_phonesHash.get( phone );
+        } else {
+            name = null;
+            ContentResolver contentResolver = context.getContentResolver();
+            Cursor cursor =
+                contentResolver
+                .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI, 
+                                              Uri.encode( phone )), 
+                        new String[] { PhoneLookup.DISPLAY_NAME }, 
+                        null, null, null );
+            if ( cursor.moveToNext() ) {
+                int indx = cursor.getColumnIndex( PhoneLookup.DISPLAY_NAME );
+                name = cursor.getString( indx );
+            }
+            cursor.close();
+
+            s_phonesHash.put( phone, name );
         }
-        cursor.close();
         return name;
     }
 
