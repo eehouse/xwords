@@ -130,9 +130,7 @@ public class SMSInviteActivity extends InviteActivity {
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             String number = namerView.getName();
-                            String name = 
-                                getString( R.string.manual_owner_name );
-                            PhoneRec rec = new PhoneRec( name, number );
+                            PhoneRec rec = new PhoneRec( number );
                             addChecked( rec );
                             saveAndRebuild();
                         }
@@ -265,28 +263,23 @@ public class SMSInviteActivity extends InviteActivity {
 
     private void getSavedState()
     {
-        String[] names = CommonPrefs.getSMSNames( this );
         String[] phones = CommonPrefs.getSMSPhones( this );
-        int size = phones.length;
 
-        m_phoneRecs = new ArrayList<PhoneRec>(size);
-        for ( int ii = 0; ii < size; ++ii ) {
-            PhoneRec rec = new PhoneRec( names[ii], phones[ii] );
+        m_phoneRecs = new ArrayList<PhoneRec>(phones.length);
+        for ( String phone : phones ) {
+            PhoneRec rec = new PhoneRec( phone );
             m_phoneRecs.add( rec );
         }
     }
 
     private void saveAndRebuild()
     {
-        String[] names = new String[m_phoneRecs.size()];
         String[] phones = new String[m_phoneRecs.size()];
         Iterator<PhoneRec> iter = m_phoneRecs.iterator();
         for ( int ii = 0; iter.hasNext(); ++ii ) {
             PhoneRec rec = iter.next();
-            names[ii] = rec.m_name;
             phones[ii] = rec.m_phone;
         }
-        CommonPrefs.setSMSNames( this, names );
         CommonPrefs.setSMSPhones( this, phones );
 
         rebuildList( false );
@@ -324,12 +317,24 @@ public class SMSInviteActivity extends InviteActivity {
         {
             this( name, phone, false );
         }
+        public PhoneRec( String phone )
+        {
+            this( null, phone, false );
+        }
 
         public PhoneRec( String name, String phone, boolean checked )
         {
-            m_name = name;
             m_phone = phone;
             m_checked = checked;
+
+            if ( null == name ) {
+                name = Utils.phoneToContact( SMSInviteActivity.this,
+                                             phone, false );
+                if ( null == name ) {
+                    name = getString( R.string.manual_owner_name );
+                }
+            }
+            m_name = name;
         }
     }
 

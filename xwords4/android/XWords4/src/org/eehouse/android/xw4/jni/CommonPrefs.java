@@ -351,11 +351,6 @@ public class CommonPrefs {
         setPrefsStringArray( context, R.string.key_bt_names, names );
     }
 
-    public static void setSMSNames( Context context, String[] names )
-    {
-        setPrefsStringArray( context, R.string.key_sms_names, names );
-    }
-
     public static void setSMSPhones( Context context, String[] names )
     {
         setPrefsStringArray( context, R.string.key_sms_phones, names );
@@ -364,11 +359,6 @@ public class CommonPrefs {
     public static String[] getBTNames( Context context )
     {
         return getPrefsStringArray( context, R.string.key_bt_names );
-    }
-
-    public static String[] getSMSNames( Context context )
-    {
-        return getPrefsStringArray( context, R.string.key_sms_names );
     }
 
     public static String[] getSMSPhones( Context context )

@@ -1907,7 +1907,7 @@
     number[s] you want to invite to your new game, then tap \"Invite
     checked\".</string>
     <string name="manual_number_hint">Enter manually</string>
-    <string name="manual_owner_name">(Entered manually)</string>
+    <string name="manual_owner_name">(Not in contacts)</string>
 
     <string name="warn_nomobilef">The number %1$s for %2$s is not
     a \"mobile\" number. Import anyway?</string>
