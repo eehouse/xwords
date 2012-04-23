@@ -148,24 +148,26 @@ public class Utils {
         // worry about synchronization -- will always be called from
         // UI thread.
         String name;
-        if ( s_phonesHash.containsKey( phone ) ) {
-            name = s_phonesHash.get( phone );
-        } else {
-            name = null;
-            ContentResolver contentResolver = context.getContentResolver();
-            Cursor cursor =
-                contentResolver
-                .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI, 
-                                              Uri.encode( phone )), 
-                        new String[] { PhoneLookup.DISPLAY_NAME }, 
-                        null, null, null );
-            if ( cursor.moveToNext() ) {
-                int indx = cursor.getColumnIndex( PhoneLookup.DISPLAY_NAME );
-                name = cursor.getString( indx );
-            }
-            cursor.close();
+        synchronized ( s_phonesHash ) {
+            if ( s_phonesHash.containsKey( phone ) ) {
+                name = s_phonesHash.get( phone );
+            } else {
+                name = null;
+                ContentResolver contentResolver = context.getContentResolver();
+                Cursor cursor =
+                    contentResolver
+                    .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI, 
+                                                  Uri.encode( phone )), 
+                            new String[] { PhoneLookup.DISPLAY_NAME }, 
+                            null, null, null );
+                if ( cursor.moveToNext() ) {
+                    int indx = cursor.getColumnIndex( PhoneLookup.DISPLAY_NAME );
+                    name = cursor.getString( indx );
+                }
+                cursor.close();
 
-            s_phonesHash.put( phone, name );
+                s_phonesHash.put( phone, name );
+            }
         }
         if ( null == name && phoneStandsIn ) {
             name = phone;
