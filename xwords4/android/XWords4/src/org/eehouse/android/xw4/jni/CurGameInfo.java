@@ -347,7 +347,7 @@ public class CurGameInfo {
         }
     }
 
-    public boolean moveUp( int which )
+    private boolean moveUp( int which )
     {
         boolean canMove = which > 0 && which < nPlayers;
         if ( canMove ) {
@@ -358,7 +358,7 @@ public class CurGameInfo {
         return canMove;
     }
 
-    public boolean moveDown( int which )
+    private boolean moveDown( int which )
     {
         return moveUp( which + 1 );
     }
