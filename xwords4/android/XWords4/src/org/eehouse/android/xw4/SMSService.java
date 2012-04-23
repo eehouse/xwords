@@ -52,6 +52,7 @@ public class SMSService extends Service {
     private static final String INSTALL_URL = "http://eehouse.org/_/aa.htm ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
 
+    private static final int SMS_PROTO_VERSION = 0;
     private static final int MAX_LEN_TEXT = 100;
     private static final int HANDLE = 1;
     private static final int INVITE = 2;
@@ -328,7 +329,7 @@ public class SMSService extends Service {
                        bytes.length, hash );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
-        das.writeByte( 0 );     // protocol
+        das.writeByte( SMS_PROTO_VERSION );
         das.writeByte( cmd.ordinal() );
         das.writeInt( hash );
         das.write( bytes, 0, bytes.length );
@@ -466,7 +467,7 @@ public class SMSService extends Service {
             new DataInputStream( new ByteArrayInputStream(data) );
         try {
             byte proto = dis.readByte();
-            if ( 0 != proto ) {
+            if ( SMS_PROTO_VERSION != proto ) {
                 DbgUtils.logf( "SMSService.disAssemble: bad proto %d; dropping", 
                                proto );
             } else {
