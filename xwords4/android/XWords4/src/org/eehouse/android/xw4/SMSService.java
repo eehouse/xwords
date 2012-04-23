@@ -487,7 +487,7 @@ public class SMSService extends Service {
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logf( "disAssemble: ioe: %s", ioe.toString() );
-        } catch { ArrayIndexOutOfBoundsException oob ) {
+        } catch ( ArrayIndexOutOfBoundsException oob ) {
             // enum this older code doesn't know about; drop it
             DbgUtils.logf( "disAssemble: dropping message with too-new enum" );
         }
