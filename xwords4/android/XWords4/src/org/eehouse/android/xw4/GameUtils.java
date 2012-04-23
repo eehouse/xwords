@@ -235,6 +235,21 @@ public class GameUtils {
         return summarizeAndClose( context, lock, gamePtr, gi, null );
     }
 
+    private static int setFromFeedImpl( FeedUtilsImpl feedImpl )
+    {
+        int result = GameSummary.MSG_FLAGS_NONE;
+        if ( feedImpl.m_gotChat ) {
+            result |= GameSummary.MSG_FLAGS_CHAT;
+        } 
+        if ( feedImpl.m_gotMsg ) {
+            result |= GameSummary.MSG_FLAGS_TURN;
+        }
+        if ( feedImpl.m_gameOver ) {
+            result |= GameSummary.MSG_FLAGS_GAMEOVER;
+        }
+        return result;
+    }
+
     private static GameSummary summarizeAndClose( Context context, 
                                                   GameLock lock,
                                                   int gamePtr, CurGameInfo gi,
@@ -244,15 +259,7 @@ public class GameUtils {
         XwJNI.game_summarize( gamePtr, summary );
 
         if ( null != feedImpl ) {
-            if ( feedImpl.m_gotChat ) {
-                summary.pendingMsgLevel |= GameSummary.MSG_FLAGS_CHAT;
-            } 
-            if ( feedImpl.m_gotMsg ) {
-                summary.pendingMsgLevel |= GameSummary.MSG_FLAGS_TURN;
-            }
-            if ( feedImpl.m_gameOver ) {
-                summary.pendingMsgLevel |= GameSummary.MSG_FLAGS_GAMEOVER;
-            }
+            summary.pendingMsgLevel |= setFromFeedImpl( feedImpl );
         }
 
         DBUtils.saveSummary( context, lock, summary );
@@ -665,10 +672,10 @@ public class GameUtils {
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
-        CurGameInfo gi = new CurGameInfo( context );
-        FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
         GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
+            CurGameInfo gi = new CurGameInfo( context );
+            FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
             int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
                     
             XwJNI.comms_resendAll( gamePtr, false );
@@ -686,16 +693,7 @@ public class GameUtils {
             saveGame( context, gamePtr, gi, lock, false );
             summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
 
-            int flags = GameSummary.MSG_FLAGS_NONE;
-            if ( feedImpl.m_gotChat ) {
-                flags |= GameSummary.MSG_FLAGS_CHAT;
-            } 
-            if ( feedImpl.m_gotMsg ) {
-                flags |= GameSummary.MSG_FLAGS_TURN;
-            }
-            if ( feedImpl.m_gameOver ) {
-                flags |= GameSummary.MSG_FLAGS_GAMEOVER;
-            }
+            int flags = setFromFeedImpl( feedImpl );
             if ( GameSummary.MSG_FLAGS_NONE != flags ) {
                 draw = true;
                 DBUtils.setMsgFlags( rowid, flags );
@@ -849,7 +847,11 @@ public class GameUtils {
             BTService.gameDied( context, summary.gameID );
             break;
         case COMMS_CONN_SMS:
-            SMSService.gameDied( context, summary.gameID, summary.smsPhone );
+            if ( null != summary.remoteDevs ) {
+                for ( String dev : summary.remoteDevs ) {
+                    SMSService.gameDied( context, summary.gameID, dev );
+                }
+            }
             break;
         }
     }

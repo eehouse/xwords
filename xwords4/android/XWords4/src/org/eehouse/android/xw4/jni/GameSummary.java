@@ -48,7 +48,6 @@ public class GameSummary {
     public boolean gameOver;
     public String[] players;
     public CommsConnType conType;
-    public String smsPhone;
     // relay-related fields
     public String roomName;
     public String relayID;
