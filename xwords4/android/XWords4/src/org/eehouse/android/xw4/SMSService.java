@@ -269,7 +269,7 @@ public class SMSService extends Service {
 
             send( SMS_CMD.INVITE, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "ioe: %s", ioe.toString() );
+            DbgUtils.logf( "inviteRemote: ioe: %s", ioe.toString() );
         }
     }
 
@@ -283,7 +283,7 @@ public class SMSService extends Service {
 
             send( SMS_CMD.ACK, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "ioe: %s", ioe.toString() );
+            DbgUtils.logf( "ackInvite: ioe: %s", ioe.toString() );
         }
     }
 
@@ -296,7 +296,7 @@ public class SMSService extends Service {
             das.flush();
             send( SMS_CMD.DEATH, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "ioe: %s", ioe.toString() );
+            DbgUtils.logf( "sendDiedPacket: ioe: %s", ioe.toString() );
         }
     }
 
@@ -314,7 +314,7 @@ public class SMSService extends Service {
                 nSent = bytes.length;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "ioe: %s", ioe.toString() );
+            DbgUtils.logf( "sendPacket: ioe: %s", ioe.toString() );
         }
         return nSent;
     }
@@ -386,7 +386,9 @@ public class SMSService extends Service {
                 if ( null != gameName && 0 < gameName.length() ) {
                     DBUtils.setName( this, rowid, gameName );
                 }
-                String body = Utils.format( this, R.string.new_sms_bodyf, phone );
+                String owner = Utils.phoneToContact( this, phone, true );
+                String body = Utils.format( this, R.string.new_name_bodyf, 
+                                            owner );
                 postNotification( gameID, R.string.new_sms_title, body );
 
                 ackInvite( phone, gameID );
@@ -411,7 +413,7 @@ public class SMSService extends Service {
                 break;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "ioe: %s", ioe.toString() );
+            DbgUtils.logf( "receive: ioe: %s", ioe.toString() );
         }
     }
 
@@ -485,7 +487,7 @@ public class SMSService extends Service {
                 }
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "ioe: %s", ioe.toString() );
+            DbgUtils.logf( "disAssemble: ioe: %s", ioe.toString() );
         }
     }
 
@@ -508,7 +510,7 @@ public class SMSService extends Service {
             }
             success = true;
         } catch ( IllegalArgumentException iae ) {
-            DbgUtils.logf( "%s", iae.toString() );
+            DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
         } catch ( Exception ee ) {
             DbgUtils.logf( "sendDataMessage message failed: %s", 
                            ee.toString() );

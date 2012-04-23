@@ -141,7 +141,8 @@ public class Utils {
 
     // adapted from
     // http://stackoverflow.com/questions/2174048/how-to-look-up-a-contacts-name-from-their-phone-number-on-android
-    public static String phoneToContact( Context context, String phone )
+    public static String phoneToContact( Context context, String phone, 
+                                         boolean phoneStandsIn )
     {
         // I'm assuming that since context is passed this needn't
         // worry about synchronization -- will always be called from
@@ -165,6 +166,9 @@ public class Utils {
             cursor.close();
 
             s_phonesHash.put( phone, name );
+        }
+        if ( null == name && phoneStandsIn ) {
+            name = phone;
         }
         return name;
     }

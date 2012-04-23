@@ -1899,8 +1899,7 @@
       devs? (I won\'t ask again until you reopen this game.)</string>
 
     <string name="new_sms_title">New game via SMS</string>
-    <string name="new_sms_bodyf">Phone with number %s has invited you to
-    play</string>
+    <string name="new_name_bodyf">%s has invited you to play</string>
     <string name="new_smsmove_title">New move via SMS</string>
 
     <string name="button_sms_add">Import contact</string>

@@ -811,7 +811,8 @@ public class GameConfig extends XWActivity
                 XWListItem item = 
                     (XWListItem)Utils.inflate( this, R.layout.list_item );
                 item.setText( addr.sms_phone );
-                String name = Utils.phoneToContact( this, addr.sms_phone );
+                String name = Utils.phoneToContact( this, addr.sms_phone, 
+                                                    false );
                 item.setComment( name );
                 item.setEnabled( false );
                 phoneList.addView( item );
