@@ -29,10 +29,12 @@ enum {
     XWSTATE_RECEIVED_ALL_REG,     /* includes waiting for dict from server */
     XWSTATE_NEEDSEND_BADWORD_INFO,
     XWSTATE_MOVE_CONFIRM_WAIT,    /* client's waiting to hear back */
-    XWSTATE_MOVE_CONFIRM_MUSTSEND, /* server should tell client asap */
+    XWSTATE_MOVE_CONFIRM_MUSTSEND,/* server should tell client asap */
     XWSTATE_NEEDSEND_ENDGAME,
     XWSTATE_INTURN,
-    XWSTATE_GAMEOVER
+    XWSTATE_GAMEOVER,
+
+    XWSTATE_LAST                  /* for asserts only :-) */
 };
 typedef XP_U8 XW_State;
 #define XWSTATE_NBITS 4

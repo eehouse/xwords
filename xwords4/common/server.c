@@ -285,7 +285,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
         ++nv->nDevices;
     }
 
-    XP_ASSERT( XWSTATE_GAMEOVER < 1<<4 );
+    XP_ASSERT( XWSTATE_LAST <= 1<<4 );
     nv->gameState = (XW_State)stream_getBits( stream, XWSTATE_NBITS );
     if ( version >= STREAM_VERS_SERVER_SAVES_TOSHOW ) {
         nv->stateAfterShow = (XW_State)stream_getBits( stream, XWSTATE_NBITS );
@@ -318,7 +318,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     /* number of players is upper limit on device count */
     stream_putBits( stream, NDEVICES_NBITS, nv->nDevices-1 );
 
-    XP_ASSERT( XWSTATE_GAMEOVER < 1<<4 );
+    XP_ASSERT( XWSTATE_LAST <= 1<<4 );
     stream_putBits( stream, XWSTATE_NBITS, nv->gameState );
     stream_putBits( stream, XWSTATE_NBITS, nv->stateAfterShow );
 
