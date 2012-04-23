@@ -195,7 +195,8 @@ public class DBUtils {
                     case COMMS_CONN_SMS:
                         col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
                         if ( col >= 0 ) {
-                            summary.setRemoteDevs( cursor.getString( col ) );
+                            summary.setRemoteDevs( context, 
+                                                   cursor.getString( col ) );
                         }
                         break;
                     }
