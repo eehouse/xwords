@@ -64,6 +64,9 @@ public class GameSummary {
     private String m_playersSummary;
     private CurGameInfo m_gi;
     private Context m_context;
+    private String[] m_remotePhones;
+
+    private GameSummary() {}
 
     public GameSummary( Context context ) {
         m_context = context;
@@ -111,10 +114,16 @@ public class GameSummary {
         return result;
     }
 
-    public void setRemoteDevs( String asString )
+    public void setRemoteDevs( Context context, String asString )
     {
         if ( null != asString ) {
             remoteDevs = TextUtils.split( asString, "\n" );
+
+            m_remotePhones = new String[remoteDevs.length];
+            for ( int ii = 0; ii < remoteDevs.length; ++ii ) {
+                m_remotePhones[ii] = 
+                    Utils.phoneToContact( context, remoteDevs[ii], true );
+            }
         }
     }
 
@@ -192,8 +201,9 @@ public class GameSummary {
                     fmtID = R.string.summary_gameover;
                 } else if ( null != remoteDevs 
                             && CommsConnType.COMMS_CONN_SMS == conType ) {
-                    result = Utils.format( m_context, R.string.summary_conn_sms,
-                                           TextUtils.join(", ", remoteDevs) );
+                    result = 
+                        Utils.format( m_context, R.string.summary_conn_sms,
+                                      TextUtils.join(", ", m_remotePhones) );
                 } else {
                     fmtID = R.string.summary_conn;
                 }
