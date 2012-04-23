@@ -477,8 +477,6 @@ public class SMSService extends Service {
                 dis.read( rest );
                 int hashComputed = Arrays.hashCode( rest );
                 if ( hashComputed == hashRead ) {
-                    DbgUtils.logf( "SMSService: incoming hashes on %d " + 
-                                   "bytes match: %X", rest.length, hashRead );
                     receive( cmd, rest, senderPhone );
                 } else {
                     DbgUtils.logf( "SMSService: incoming hashes on %d bytes "
@@ -488,6 +486,9 @@ public class SMSService extends Service {
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logf( "disAssemble: ioe: %s", ioe.toString() );
+        } catch { ArrayIndexOutOfBoundsException oob ) {
+            // enum this older code doesn't know about; drop it
+            DbgUtils.logf( "disAssemble: dropping message with too-new enum" );
         }
     }
 
