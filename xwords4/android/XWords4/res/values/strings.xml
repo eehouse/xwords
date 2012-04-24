@@ -1924,4 +1924,6 @@
     <string name="connect_label_sms">Connection (via SMS/text)</string>
     <string name="phone_label">Connected number[s]:</string>
     <string name="summary_conn_sms">Game in play with %s</string>
+    <string name="warn_unlimited">Are you certain this number is on an
+    account with unlimited texting?  Click cancel if you are not.</string>
 </resources>

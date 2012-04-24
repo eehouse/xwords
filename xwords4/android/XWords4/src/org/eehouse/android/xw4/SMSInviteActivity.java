@@ -57,6 +57,7 @@ public class SMSInviteActivity extends InviteActivity {
 
     private static final int CLEAR_ACTION = 1;
     private static final int USE_IMMOBILE_ACTION = 2;
+    private static final int POST_WARNING_ACTION = 3;
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private SMSPhonesAdapter m_adapter;
@@ -131,8 +132,11 @@ public class SMSInviteActivity extends InviteActivity {
                         public void onClick( DialogInterface dlg, int item ) {
                             String number = namerView.getName();
                             PhoneRec rec = new PhoneRec( number );
-                            addChecked( rec );
-                            saveAndRebuild();
+                            m_pendingNumber = number;
+                            m_pendingName = null;
+                            showConfirmThen( R.string.warn_unlimited, 
+                                             R.string.button_yes, 
+                                             POST_WARNING_ACTION );
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -193,6 +197,10 @@ public class SMSInviteActivity extends InviteActivity {
                 clearSelectedImpl();
                 break;
             case USE_IMMOBILE_ACTION:
+                showConfirmThen( R.string.warn_unlimited, R.string.button_yes, 
+                                 POST_WARNING_ACTION );
+                break;
+            case POST_WARNING_ACTION:
                 addChecked( new PhoneRec( m_pendingName, m_pendingNumber ) );
                 saveAndRebuild();
                 break;
@@ -229,12 +237,12 @@ public class SMSInviteActivity extends InviteActivity {
                 cursor.getString( cursor.getColumnIndex( Phone.NUMBER ) );
 
             int type = cursor.getInt( cursor.getColumnIndex( Phone.TYPE ) );
+            m_pendingName = name;
+            m_pendingNumber = number;
             if ( Phone.TYPE_MOBILE == type ) {
-                addChecked( new PhoneRec( name, number ) );
-                saveAndRebuild();
+                showConfirmThen( R.string.warn_unlimited, R.string.button_yes, 
+                                 POST_WARNING_ACTION );
             } else {
-                m_pendingName = name;
-                m_pendingNumber = number;
                 String msg = Utils.format( this, R.string.warn_nomobilef,
                                            number, name );
                 showConfirmThen( msg, R.string.button_yes, USE_IMMOBILE_ACTION );
