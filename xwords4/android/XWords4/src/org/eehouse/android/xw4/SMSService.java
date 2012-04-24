@@ -141,11 +141,11 @@ public class SMSService extends Service {
 
     public static String toPublicFmt( String msg )
     {
-        String result;
-        int msglen = msg.length() + 1 + XWApp.SMS_PUBLIC_HEADER.length();
+        int msglen = XWApp.SMS_PUBLIC_HEADER.length() + 4 + 1 + msg.length();
         int urllen = INSTALL_URL.length();
-        result = String.format( "%s %s%s", XWApp.SMS_PUBLIC_HEADER, 
-                                msglen + urllen < MAX_SMS_LEN ? INSTALL_URL : "",
+        String result = String.format( "%s%04X %s%s", XWApp.SMS_PUBLIC_HEADER, 
+                                msg.hashCode() & 0xFFFF,
+                                msglen + urllen < MAX_SMS_LEN? INSTALL_URL : "",
                                 msg );
         return result;
     }
@@ -154,9 +154,22 @@ public class SMSService extends Service {
     {
         String result = null;
         if ( null != msg && msg.startsWith( XWApp.SMS_PUBLIC_HEADER ) ) {
-            int index = msg.lastIndexOf( " " );
-            if ( 0 <= index ) {
-                result = msg.substring( index + 1 );
+            // Number format exception etc. can result from malicious
+            // messages.  Be safe: use try;
+            try {
+                String tmp = msg.substring( 1 + msg.lastIndexOf( " " ) );
+
+                int headerLen = XWApp.SMS_PUBLIC_HEADER.length();
+                String hashString = 
+                    msg.substring( headerLen, headerLen + 4 );
+                int hashRead = Integer.parseInt( hashString, 16 );
+                int hashCode = 0xFFFF & tmp.hashCode();
+                if ( hashRead == hashCode ) {
+                    result = tmp;
+                } else {
+                    DbgUtils.logf( "fromPublicFmt: hash code mismatch" );
+                }
+            } catch( Exception e ) {
             }
         }
         return result;
@@ -324,14 +337,10 @@ public class SMSService extends Service {
         throws java.io.IOException
     {
         DbgUtils.logf( "non-static SMSService.sendPacket()" );
-        int hash = Arrays.hashCode( bytes );
-        DbgUtils.logf( "SMSService: outgoing hash on %d bytes: %X", 
-                       bytes.length, hash );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
         das.writeByte( SMS_PROTO_VERSION );
         das.writeByte( cmd.ordinal() );
-        das.writeInt( hash );
         das.write( bytes, 0, bytes.length );
         das.flush();
 
@@ -472,18 +481,9 @@ public class SMSService extends Service {
                                proto );
             } else {
                 SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
-                int hashRead = dis.readInt();
-                DbgUtils.logf( "SMSService: incoming hash: %X", hashRead );
                 byte[] rest = new byte[dis.available()];
                 dis.read( rest );
-                int hashComputed = Arrays.hashCode( rest );
-                if ( hashComputed == hashRead ) {
-                    receive( cmd, rest, senderPhone );
-                } else {
-                    DbgUtils.logf( "SMSService: incoming hashes on %d bytes "
-                                   + "DON'T match: read: %X; figured: %X", 
-                                   rest.length, hashRead, hashComputed );
-                }
+                receive( cmd, rest, senderPhone );
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logf( "disAssemble: ioe: %s", ioe.toString() );
