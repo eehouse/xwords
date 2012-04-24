@@ -804,7 +804,7 @@ public class GameConfig extends XWActivity
 
     private void loadPhones()
     {
-        if ( XWApp.SMSSUPPORTED ) {
+        if ( XWApp.SMSSUPPORTED && null != m_remoteAddrs ) {
             LinearLayout phoneList = 
                 (LinearLayout)findViewById(R.id.sms_phones);
             for ( CommsAddrRec addr : m_remoteAddrs ) {
