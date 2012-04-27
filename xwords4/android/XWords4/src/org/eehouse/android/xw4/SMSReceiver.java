@@ -53,7 +53,7 @@ public class SMSReceiver extends BroadcastReceiver {
             }
 
             if ( isMine ) {
-                 DbgUtils.logf( "SMSReceiver: ABORTING message" );
+                 DbgUtils.logf( "SMSReceiver: CONSUMING message" );
                  abortBroadcast();
             }
         }
