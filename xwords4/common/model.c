@@ -936,6 +936,12 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
+#ifdef STREAM_VERS_BIGBOARD
+    if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
+        stream_putU32( stream, stack_getHash(model->vol.stack) );
+    }
+#endif
+
     XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
     numTiles = player->nPending;
@@ -963,10 +969,11 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
  * assert that it's in the tray, remove it from the tray, and place it on the
  * board.
  */
-void
+XP_Bool
 model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                           XWStreamCtxt* stream )
 {
+    XP_Bool success = XP_TRUE;
     XP_U16 numTiles, ii;
     Tile blank = dict_getBlankTile( model_getDictionary(model) );
     XP_U16 nColsNBits;
@@ -978,40 +985,50 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 #endif
 
     model_resetCurrentTurn( model, playerNum );
-
-    numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
-
-    XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
-
-    for ( ii = 0; ii < numTiles; ++ii ) {
-        XP_S16 foundAt;
-        Tile moveTile;
-        Tile tileFace = (Tile)stream_getBits( stream, TILE_NBITS );
-        XP_U16 col = (XP_U16)stream_getBits( stream, nColsNBits );
-        XP_U16 row = (XP_U16)stream_getBits( stream, nColsNBits );
-        XP_Bool isBlank = stream_getBits( stream, 1 );
-
-        /* This code gets called both for the server, which has all the
-           tiles in its tray, and for a client, which has "EMPTY" tiles
-           only.  If it's the empty case, we stuff a real tile into the
-           tray before falling through to the normal case */
-
-        if ( isBlank ) {
-            moveTile = blank;
-        } else {
-            moveTile = tileFace;
-        }
-
-        foundAt = model_trayContains( model, playerNum, moveTile );
-        if ( foundAt == -1 ) {
-            XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum, 0));
-
-            (void)model_removePlayerTile( model, playerNum, -1 );
-            model_addPlayerTile( model, playerNum, -1, moveTile );
-        }
-
-        model_moveTrayToBoard( model, playerNum, col, row, foundAt, tileFace );
+#ifdef STREAM_VERS_BIGBOARD
+    if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
+        XP_U32 hash = stream_getU32( stream );
+        success = hash == stack_getHash( model->vol.stack );
     }
+#endif
+    if ( success ) {
+        numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
+
+        XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
+
+        for ( ii = 0; ii < numTiles; ++ii ) {
+            XP_S16 foundAt;
+            Tile moveTile;
+            Tile tileFace = (Tile)stream_getBits( stream, TILE_NBITS );
+            XP_U16 col = (XP_U16)stream_getBits( stream, nColsNBits );
+            XP_U16 row = (XP_U16)stream_getBits( stream, nColsNBits );
+            XP_Bool isBlank = stream_getBits( stream, 1 );
+
+            /* This code gets called both for the server, which has all the
+               tiles in its tray, and for a client, which has "EMPTY" tiles
+               only.  If it's the empty case, we stuff a real tile into the
+               tray before falling through to the normal case */
+
+            if ( isBlank ) {
+                moveTile = blank;
+            } else {
+                moveTile = tileFace;
+            }
+
+            foundAt = model_trayContains( model, playerNum, moveTile );
+            if ( foundAt == -1 ) {
+                XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum, 0));
+
+                (void)model_removePlayerTile( model, playerNum, -1 );
+                model_addPlayerTile( model, playerNum, -1, moveTile );
+            }
+
+            model_moveTrayToBoard( model, playerNum, col, row, foundAt, tileFace );
+        }
+    } else {
+        XP_LOGF( "%s: dropping move on hash mismatch", __func__ );
+    }
+    return success;
 } /* model_makeTurnFromStream */
 
 void

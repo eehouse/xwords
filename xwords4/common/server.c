@@ -1914,34 +1914,42 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
     stream_destroy( stream );
 } /* sendMoveTo */
 
-static void
+static XP_Bool
 readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
               XP_U16* whoMovedP, XP_Bool* isTradeP,
               TrayTileSet* newTiles, TrayTileSet* tradedTiles, 
               XP_Bool* legalP )
 {
+    XP_Bool success;
     XP_U16 whoMoved = stream_getBits( stream, PLAYERNUM_NBITS );
     XP_Bool legalMove = XP_TRUE;
     XP_Bool isTrade;
 
     traySetFromStream( stream, newTiles );
-    isTrade = stream_getBits( stream, 1 );
+    success = pool_containsTiles( server->pool, newTiles );
+    if ( success ) {
+        isTrade = stream_getBits( stream, 1 );
 
-    if ( isTrade ) {
-        traySetFromStream( stream, tradedTiles );
-        XP_LOGF( "%s: got trade of %d tiles", __func__, tradedTiles->nTiles );
-    } else {
-        legalMove = stream_getBits( stream, 1 );
-        model_makeTurnFromStream( server->vol.model, whoMoved, stream );
+        if ( isTrade ) {
+            traySetFromStream( stream, tradedTiles );
+            XP_LOGF( "%s: got trade of %d tiles", __func__, 
+                     tradedTiles->nTiles );
+        } else {
+            legalMove = stream_getBits( stream, 1 );
+            success = model_makeTurnFromStream( server->vol.model, 
+                                                whoMoved, stream );
+            getPlayerTime( server, stream, whoMoved );
+        }
 
-        getPlayerTime( server, stream, whoMoved );
+        if ( success ) {
+            pool_removeTiles( server->pool, newTiles );
+
+            *whoMovedP = whoMoved;
+            *isTradeP = isTrade;
+            *legalP = legalMove;
+        }
     }
-
-    pool_removeTiles( server->pool, newTiles );
-
-    *whoMovedP = whoMoved;
-    *isTradeP = isTrade;
-    *legalP = legalMove;
+    return success;
 } /* readMoveInfo */
 
 static void
@@ -1997,6 +2005,7 @@ makeMoveReportIf( ServerCtxt* server, XWStreamCtxt** wordsStream )
 static XP_Bool
 reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    XP_Bool success = XP_TRUE;
     ModelCtxt* model = server->vol.model;
     XP_U16 whoMoved;
     XP_U16 nTilesMoved = 0; /* trade case */
@@ -2013,76 +2022,78 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 
     XP_ASSERT( gi->serverRole == SERVER_ISSERVER );
 
-    readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
-                  &tradedTiles, &isLegalMove ); /* modifies model */
-    XP_ASSERT( isLegalMove ); /* client should always report as true */
+    success = readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
+                            &tradedTiles, &isLegalMove ); /* modifies model */
+    XP_ASSERT( !success || isLegalMove ); /* client should always report as true */
     isLegalMove = XP_TRUE;
 
-    if ( isTrade ) {
+    if ( success ) {
+        if ( isTrade ) {
 
-        sendMoveToClientsExcept( server, whoMoved, XP_TRUE, &newTiles, 
-                                 &tradedTiles, sourceClientIndex );
+            sendMoveToClientsExcept( server, whoMoved, XP_TRUE, &newTiles, 
+                                     &tradedTiles, sourceClientIndex );
 
-        model_makeTileTrade( model, whoMoved,
-                             &tradedTiles, &newTiles );
-        pool_replaceTiles( server->pool, &tradedTiles );
+            model_makeTileTrade( model, whoMoved,
+                                 &tradedTiles, &newTiles );
+            pool_replaceTiles( server->pool, &tradedTiles );
 
-        server->vol.showPrevMove = XP_TRUE;
-        mvStream = makeTradeReportIf( server, &tradedTiles );
+            server->vol.showPrevMove = XP_TRUE;
+            mvStream = makeTradeReportIf( server, &tradedTiles );
 
-    } else {
-        nTilesMoved = model_getCurrentMoveCount( model, whoMoved );
-        isLegalMove = (nTilesMoved == 0)
-            || checkMoveAllowed( server, whoMoved );
-
-        /* I don't think this will work if there are more than two devices in
-           a palm game; need to change state and get out of here before
-           returning to send additional messages.  PENDING(ehouse) */
-        sendMoveToClientsExcept( server, whoMoved, isLegalMove, &newTiles, 
-                                 (TrayTileSet*)NULL, sourceClientIndex );
-
-        server->vol.showPrevMove = XP_TRUE;
-        mvStream = makeMoveReportIf( server, &wordsStream );
-
-        model_commitTurn( model, whoMoved, &newTiles );
-        resetEngines( server );
-    }
-
-    if ( isLegalMove ) {
-        XP_U16 nTilesLeft = model_getNumTilesTotal( model, whoMoved );
-
-        if ( (gi->phoniesAction == PHONIES_DISALLOW) && (nTilesMoved > 0) ) {
-            server->lastMoveSource = sourceClientIndex;
-            SETSTATE( server, XWSTATE_MOVE_CONFIRM_MUSTSEND );
-            doRequest = XP_TRUE;
-        } else if ( nTilesLeft > 0 ) {
-            nextTurn( server, PICK_NEXT );
         } else {
-            SETSTATE(server, XWSTATE_NEEDSEND_ENDGAME );
+            nTilesMoved = model_getCurrentMoveCount( model, whoMoved );
+            isLegalMove = (nTilesMoved == 0)
+                || checkMoveAllowed( server, whoMoved );
+
+            /* I don't think this will work if there are more than two devices in
+               a palm game; need to change state and get out of here before
+               returning to send additional messages.  PENDING(ehouse) */
+            sendMoveToClientsExcept( server, whoMoved, isLegalMove, &newTiles, 
+                                     (TrayTileSet*)NULL, sourceClientIndex );
+
+            server->vol.showPrevMove = XP_TRUE;
+            mvStream = makeMoveReportIf( server, &wordsStream );
+
+            model_commitTurn( model, whoMoved, &newTiles );
+            resetEngines( server );
+        }
+
+        if ( isLegalMove ) {
+            XP_U16 nTilesLeft = model_getNumTilesTotal( model, whoMoved );
+
+            if ( (gi->phoniesAction == PHONIES_DISALLOW) && (nTilesMoved > 0) ) {
+                server->lastMoveSource = sourceClientIndex;
+                SETSTATE( server, XWSTATE_MOVE_CONFIRM_MUSTSEND );
+                doRequest = XP_TRUE;
+            } else if ( nTilesLeft > 0 ) {
+                nextTurn( server, PICK_NEXT );
+            } else {
+                SETSTATE(server, XWSTATE_NEEDSEND_ENDGAME );
+                doRequest = XP_TRUE;
+            }
+
+            if ( !!mvStream ) {
+                XP_ASSERT( !server->nv.prevMoveStream );
+                server->nv.prevMoveStream = mvStream;
+                XP_ASSERT( !server->nv.prevWordsStream );
+                server->nv.prevWordsStream = wordsStream;
+            }
+        } else {
+            /* The client from which the move came still needs to be told.  But we
+               can't send a message now since we're burried in a message handler.
+               (Palm, at least, won't manage.)  So set up state to tell that
+               client again in a minute. */
+            SETSTATE( server, XWSTATE_NEEDSEND_BADWORD_INFO );
+            server->lastMoveSource = sourceClientIndex;
             doRequest = XP_TRUE;
         }
 
-        if ( !!mvStream ) {
-            XP_ASSERT( !server->nv.prevMoveStream );
-            server->nv.prevMoveStream = mvStream;
-            XP_ASSERT( !server->nv.prevWordsStream );
-            server->nv.prevWordsStream = wordsStream;
+        if ( doRequest ) {
+            util_requestTime( server->vol.util );
         }
-    } else {
-        /* The client from which the move came still needs to be told.  But we
-           can't send a message now since we're burried in a message handler.
-           (Palm, at least, won't manage.)  So set up state to tell that
-           client again in a minute. */
-        SETSTATE( server, XWSTATE_NEEDSEND_BADWORD_INFO );
-        server->lastMoveSource = sourceClientIndex;
-        doRequest = XP_TRUE;
     }
-
-    if ( doRequest ) {
-        util_requestTime( server->vol.util );
-    }
-
-    return XP_TRUE;
+    LOG_RETURNF( "%d", success );
+    return success;
 } /* reflectMoveAndInform */
 
 static XP_Bool
@@ -2101,9 +2112,10 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     moveOk = XWSTATE_INTURN == server->nv.gameState;
     XP_ASSERT( moveOk );  /* message permanently lost if dropped here! */
     if ( moveOk ) {
-        readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
-                      &tradedTiles, &isLegal ); /* modifies model */
-
+        moveOk = readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
+                               &tradedTiles, &isLegal ); /* modifies model */
+    }
+    if ( moveOk ) {
         if ( isTrade ) {
             model_makeTileTrade( model, whoMoved, &tradedTiles, &newTiles );
             pool_replaceTiles( server->pool, &tradedTiles );

@@ -198,8 +198,8 @@ void model_trayToStream( ModelCtxt* model, XP_S16 turn,
                          XWStreamCtxt* stream );
 void model_currentMoveToStream( ModelCtxt* model, XP_S16 turn, 
                                 XWStreamCtxt* stream);
-void model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
-                               XWStreamCtxt* stream );
+XP_Bool model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
+                                  XWStreamCtxt* stream );
 void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
                                  const MoveInfo* newMove );
 
