@@ -208,6 +208,22 @@ pool_removeTiles( PoolContext* pool, const TrayTileSet* tiles )
     XP_LOGF( "%s: %d tiles left in pool", __func__, pool->numTilesLeft );
 } /* pool_removeTiles */
 
+XP_Bool
+pool_containsTiles( const PoolContext* pool, const TrayTileSet* tiles )
+{
+    XP_Bool allThere = XP_TRUE;
+    XP_U16 ii;
+    XP_U8 counts[pool->numFaces];
+    XP_MEMCPY( counts, pool->lettersLeft, sizeof(counts) );
+
+    /* In case we have duplicates, make count of each type */
+    for ( ii = 0; allThere && ii < tiles->nTiles; ++ii ) {
+        allThere = 0 <= --counts[tiles->tiles[ii]];
+    }
+
+    return allThere;
+}
+
 XP_U16
 pool_getNTilesLeft( PoolContext* pool )
 {
