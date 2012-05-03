@@ -2269,6 +2269,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 #ifdef XWFEATURE_SLOW_ROBOT
     globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
     globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
+    globals.cGlobals.cp.robotTradePct = params->robotTradePct;
 #endif
 #ifdef XWFEATURE_CROSSHAIRS
     globals.cGlobals.cp.hideCrosshairs = params->hideCrosshairs;

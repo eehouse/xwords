@@ -84,9 +84,9 @@ typedef struct LaunchParams {
     XP_Bool hideCrosshairs;
 #endif
 
-
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16 robotThinkMin, robotThinkMax;
+    XP_U16 robotTradePct;
 #endif
 
     DeviceRole serverRole;

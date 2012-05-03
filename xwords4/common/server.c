@@ -92,6 +92,7 @@ typedef struct ServerNonvolatiles {
 #endif
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16 robotThinkMin, robotThinkMax;   /* not saved (yet) */
+    XP_U16 robotTradePct;
 #endif
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
@@ -507,6 +508,7 @@ server_prefsChanged( ServerCtxt* server, CommonPrefs* cp )
 #ifdef XWFEATURE_SLOW_ROBOT
     server->nv.robotThinkMin = cp->robotThinkMin;
     server->nv.robotThinkMax = cp->robotThinkMax;
+    server->nv.robotTradePct = cp->robotTradePct;
 #endif
 } /* server_prefsChanged */
 
@@ -775,10 +777,19 @@ makeRobotMove( ServerCtxt* server )
     XP_Bool canMove;
     XP_U32 time = 0L; /* stupid compiler.... */
     XW_UtilCtxt* util = server->vol.util;
+    XP_Bool forceTrade = XP_FALSE;
     
     if ( timerEnabled ) {
         time = util_getCurSeconds( util );
     }
+
+#ifdef XWFEATURE_SLOW_ROBOT
+    if ( 0 != server->nv.robotTradePct
+         && (server_countTilesInPool( server ) >= MAX_TRAY_TILES) ) {
+        XP_U16 pct = XP_RANDOM() % 100;
+        forceTrade = pct < server->nv.robotTradePct ;
+    }
+#endif
 
     turn = server->nv.currentTurn;
     XP_ASSERT( turn >= 0 );
@@ -789,23 +800,26 @@ makeRobotMove( ServerCtxt* server )
        paranoid.  PENDING(ehouse) */
     model_resetCurrentTurn( model, turn );
 
-    tileSet = model_getPlayerTiles( model, turn );
+    if ( !forceTrade ) {
+        tileSet = model_getPlayerTiles( model, turn );
 
-    XP_ASSERT( !!server_getEngineFor( server, turn ) );
-    searchComplete = engine_findMove( server_getEngineFor( server, turn ),
-                                      model, turn, tileSet->tiles, 
-                                      tileSet->nTiles, XP_FALSE,
+        XP_ASSERT( !!server_getEngineFor( server, turn ) );
+        searchComplete = engine_findMove( server_getEngineFor( server, turn ),
+                                          model, turn, tileSet->tiles, 
+                                          tileSet->nTiles, XP_FALSE,
 #ifdef XWFEATURE_SEARCHLIMIT
-                                      NULL, XP_FALSE,
+                                          NULL, XP_FALSE,
 #endif
-                                      server->vol.gi->players[turn].robotIQ,
-                                      &canMove, &newMove );
-    if ( searchComplete ) {
+                                          server->vol.gi->players[turn].robotIQ,
+                                          &canMove, &newMove );
+    }
+    if ( forceTrade || searchComplete ) {
         const XP_UCHAR* str;
         XWStreamCtxt* stream = NULL;
 
-        XP_Bool trade = (newMove.nTiles == 0) && canMove &&
-                         (server_countTilesInPool( server ) >= MAX_TRAY_TILES);
+        XP_Bool trade = forceTrade || 
+            ((newMove.nTiles == 0) && canMove &&
+             (server_countTilesInPool( server ) >= MAX_TRAY_TILES));
 
         server->vol.showPrevMove = XP_TRUE;
         if ( server->nv.showRobotScores ) {

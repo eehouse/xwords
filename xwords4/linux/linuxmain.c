@@ -433,6 +433,7 @@ typedef enum {
 #endif
 #ifdef XWFEATURE_SLOW_ROBOT
     ,CMD_SLOWROBOT
+    ,CMD_TRADEPCT
 #endif
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,CMD_GTK
@@ -517,6 +518,7 @@ static CmdInfoRec CmdInfoRecs[] = {
 #endif
 #ifdef XWFEATURE_SLOW_ROBOT
     ,{ CMD_SLOWROBOT, true, "slow-robot", "make robot slower to test network" }
+    ,{ CMD_TRADEPCT, true, "trade-pct", "what pct of the time should robot trade" }
 #endif
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,{ CMD_GTK, false, "gtk", "use GTK for display" }
@@ -1570,6 +1572,12 @@ main( int argc, char** argv )
             if ( !parsePair( optarg, &mainParams.robotThinkMin,
                              &mainParams.robotThinkMax ) ) {
                 usage(argv[0], "bad param" );
+            }
+            break;
+        case CMD_TRADEPCT:
+            mainParams.robotTradePct = atoi( optarg );
+            if ( mainParams.robotTradePct < 0 || mainParams.robotTradePct > 100 ) {
+                usage(argv[0], "must be 0 <= n <= 100" );
             }
             break;
 #endif
