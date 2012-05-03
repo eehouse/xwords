@@ -218,7 +218,7 @@ pool_containsTiles( const PoolContext* pool, const TrayTileSet* tiles )
 
     /* In case we have duplicates, make count of each type */
     for ( ii = 0; allThere && ii < tiles->nTiles; ++ii ) {
-        allThere = 0 <= --counts[tiles->tiles[ii]];
+        allThere = 0 < counts[tiles->tiles[ii]]--;
     }
 
     return allThere;
