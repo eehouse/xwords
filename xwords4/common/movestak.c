@@ -111,10 +111,10 @@ stack_getHash( StackCtxt* stack )
             XP_ASSERT( 0 );
         }
         hash = augmentFor( hash, &entry );
-        XP_LOGF( "hash after %d: %.8X", nn, (unsigned int)hash );
+        // XP_LOGF( "hash after %d: %.8X", nn, (unsigned int)hash );
     }
     XP_ASSERT( 0 != hash );
-    LOG_RETURNF( "%.8X", (unsigned int)hash );
+    // LOG_RETURNF( "%.8X", (unsigned int)hash );
     return hash;
 }
 #endif
