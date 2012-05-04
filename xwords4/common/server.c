@@ -1896,6 +1896,14 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
 
     stream = messageStreamWithHeader( server, devIndex, code );
 
+#ifdef STREAM_VERS_BIGBOARD
+    if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
+        XP_U32 hash = model_getHash( server->vol.model );
+        // XP_LOGF( "%s: adding hash %x", __func__, (unsigned int)hash );
+        stream_putU32( stream, hash );
+    }
+#endif
+
     stream_putBits( stream, PLAYERNUM_NBITS, turn ); /* who made the move */
 
     traySetToStream( stream, newTiles );
@@ -1934,33 +1942,44 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
               TrayTileSet* newTiles, TrayTileSet* tradedTiles, 
               XP_Bool* legalP )
 {
-    XP_Bool success;
-    XP_U16 whoMoved = stream_getBits( stream, PLAYERNUM_NBITS );
+    XP_Bool success = XP_TRUE;
     XP_Bool legalMove = XP_TRUE;
     XP_Bool isTrade;
 
-    traySetFromStream( stream, newTiles );
-    success = pool_containsTiles( server->pool, newTiles );
-    if ( success ) {
-        isTrade = stream_getBits( stream, 1 );
-
-        if ( isTrade ) {
-            traySetFromStream( stream, tradedTiles );
-            XP_LOGF( "%s: got trade of %d tiles", __func__, 
-                     tradedTiles->nTiles );
-        } else {
-            legalMove = stream_getBits( stream, 1 );
-            success = model_makeTurnFromStream( server->vol.model, 
-                                                whoMoved, stream );
-            getPlayerTime( server, stream, whoMoved );
+#ifdef STREAM_VERS_BIGBOARD
+    if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
+        XP_U32 hashReceived = stream_getU32( stream );
+        success = hashReceived == model_getHash( server->vol.model );
+        if ( !success ) {
+            XP_LOGF( "%s: hash mismatch: dropping move", __func__ );
         }
-
+    }
+#endif
+    if ( success ) {
+        XP_U16 whoMoved = stream_getBits( stream, PLAYERNUM_NBITS );
+        traySetFromStream( stream, newTiles );
+        success = pool_containsTiles( server->pool, newTiles );
         if ( success ) {
-            pool_removeTiles( server->pool, newTiles );
+            isTrade = stream_getBits( stream, 1 );
 
-            *whoMovedP = whoMoved;
-            *isTradeP = isTrade;
-            *legalP = legalMove;
+            if ( isTrade ) {
+                traySetFromStream( stream, tradedTiles );
+                XP_LOGF( "%s: got trade of %d tiles", __func__, 
+                         tradedTiles->nTiles );
+            } else {
+                legalMove = stream_getBits( stream, 1 );
+                success = model_makeTurnFromStream( server->vol.model, 
+                                                    whoMoved, stream );
+                getPlayerTime( server, stream, whoMoved );
+            }
+
+            if ( success ) {
+                pool_removeTiles( server->pool, newTiles );
+
+                *whoMovedP = whoMoved;
+                *isTradeP = isTrade;
+                *legalP = legalMove;
+            }
         }
     }
     return success;
@@ -2019,7 +2038,7 @@ makeMoveReportIf( ServerCtxt* server, XWStreamCtxt** wordsStream )
 static XP_Bool
 reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 {
-    XP_Bool success = XP_TRUE;
+    XP_Bool success;
     ModelCtxt* model = server->vol.model;
     XP_U16 whoMoved;
     XP_U16 nTilesMoved = 0; /* trade case */
@@ -2068,11 +2087,11 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
             server->vol.showPrevMove = XP_TRUE;
             mvStream = makeMoveReportIf( server, &wordsStream );
 
-            model_commitTurn( model, whoMoved, &newTiles );
+            success = model_commitTurn( model, whoMoved, &newTiles );
             resetEngines( server );
         }
 
-        if ( isLegalMove ) {
+        if ( success && isLegalMove ) {
             XP_U16 nTilesLeft = model_getNumTilesTotal( model, whoMoved );
 
             if ( (gi->phoniesAction == PHONIES_DISALLOW) && (nTilesMoved > 0) ) {
@@ -2106,7 +2125,6 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
             util_requestTime( server->vol.util );
         }
     }
-    LOG_RETURNF( "%d", success );
     return success;
 } /* reflectMoveAndInform */
 
@@ -2483,7 +2501,8 @@ sendUndoToClientsExcept( ServerCtxt* server, XP_U16 skip,
 static XP_Bool
 reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 {
-    XP_U16 nUndone, lastUndone;
+    XP_U16 nUndone;
+    XP_S16 lastUndone;
     XP_U16 turn;
     ModelCtxt* model = server->vol.model;
     XP_Bool success = XP_TRUE;
@@ -2492,7 +2511,7 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
     lastUndone = stream_getU16( stream );
 
     success = model_undoLatestMoves( model, server->pool, nUndone, &turn, 
-                                     NULL );
+                                     &lastUndone );
     if ( success ) {
 
         if ( code == XWPROTO_UNDO_INFO_CLIENT ) { /* need to inform */

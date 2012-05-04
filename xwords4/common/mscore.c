@@ -280,7 +280,7 @@ void
 normalizeMoves( ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
                 MoveInfo* moveInfo )
 {
-    XP_S16 lowCol, i, j, thisCol; /* unsigned is a problem on palm */
+    XP_S16 lowCol, ii, jj, thisCol; /* unsigned is a problem on palm */
     PlayerCtxt* player = &model->players[turn];
     XP_U16 nTiles = player->nPending;
     XP_S16 lastTaken;
@@ -291,27 +291,29 @@ normalizeMoves( ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
     moveInfo->nTiles = (XP_U8)nTiles;
 
     lastTaken = -1;
-    for ( i = 0; i < nTiles; ++i ) {
+    for ( ii = 0; ii < nTiles; ++ii ) {
         lowCol = 100; /* high enough to always be changed */
-        for ( j = 0; j < nTiles; ++j ) {
-            pt = &player->pendingTiles[j];
+        for ( jj = 0; jj < nTiles; ++jj ) {
+            pt = &player->pendingTiles[jj];
             thisCol = isHorizontal? pt->col:pt->row;
             if (thisCol < lowCol && thisCol > lastTaken ) {
                 lowCol = thisCol;
-                lowIndex = j;
+                lowIndex = jj;
             }
         }
         /* we've found the next to transfer (4 bytes smaller without a temp
            local ptr. */
         pt = &player->pendingTiles[lowIndex];
         lastTaken = lowCol;
-        moveInfo->tiles[i].varCoord = (XP_U8)lastTaken;
+        moveInfo->tiles[ii].varCoord = (XP_U8)lastTaken;
 
-        moveInfo->tiles[i].tile = pt->tile;
+        moveInfo->tiles[ii].tile = pt->tile;
     }
 
-    pt = &player->pendingTiles[0];
-    moveInfo->commonCoord = isHorizontal? pt->row:pt->col;
+    if ( 0 < nTiles ) {
+        pt = &player->pendingTiles[0];
+        moveInfo->commonCoord = isHorizontal? pt->row:pt->col;
+    }
 } /* normalizeMoves */
 
 static XP_Bool
