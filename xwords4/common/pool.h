@@ -28,6 +28,8 @@ void pool_requestTiles( PoolContext* pool, Tile* tiles,
                         /*in out*/ XP_U8* maxNum );
 void pool_replaceTiles( PoolContext* pool, const TrayTileSet* tiles );
 void pool_removeTiles( PoolContext* pool, const TrayTileSet* tiles );
+XP_Bool pool_containsTiles( const PoolContext* pool, 
+                            const TrayTileSet* tiles );
 
 XP_U16 pool_getNTilesLeft( PoolContext* pool );
 XP_U16 pool_getNTilesLeftFor( PoolContext* pool, Tile tile );

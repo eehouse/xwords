@@ -1709,6 +1709,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #ifdef XWFEATURE_SLOW_ROBOT
     g_globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
     g_globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
+    g_globals.cGlobals.cp.robotTradePct = params->robotTradePct;
 #endif
 
     setupCursesUtilCallbacks( &g_globals, params->util );

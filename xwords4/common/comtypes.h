@@ -198,6 +198,7 @@ typedef struct CommonPrefs {
     XP_Bool         sortNewTiles;    /* applies to all games */
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16          robotThinkMin, robotThinkMax;
+    XP_U16          robotTradePct;
 #endif
     XP_Bool         showColors; /* applies to all games */
     XP_Bool         allowPeek;  /* applies to all games */

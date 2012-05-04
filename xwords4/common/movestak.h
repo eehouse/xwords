@@ -69,6 +69,7 @@ StackCtxt* stack_make( MPFORMAL VTableMgr* vtmgr );
 void stack_destroy( StackCtxt* stack );
 
 void stack_init( StackCtxt* stack );
+XP_U32 stack_getHash( StackCtxt* stack );
 void stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile );
 
 void stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream );

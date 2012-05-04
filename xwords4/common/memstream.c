@@ -250,7 +250,7 @@ putOneBit( MemStreamCtxt* stream, XP_U16 bit )
         if ( stream->curWritePos == stream->nBytesWritten ) {
             stream_putU8( (XWStreamCtxt*)stream, 0 ); /* increments curPos */
         } else {
-            ++stream->curWritePos;
+            stream->buf[stream->curWritePos++] = 0;
         }
     }
 

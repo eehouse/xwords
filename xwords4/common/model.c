@@ -71,6 +71,8 @@ static void buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
                                  MovePrintFuncPre mpfpr, 
                                  MovePrintFuncPost mpfpo, void* closure );
 static void setPendingCounts( ModelCtxt* model, XP_S16 turn );
+static XP_S16 setContains( const TrayTileSet* tiles, Tile tile );
+static void removeTile( TrayTileSet* tiles, XP_U16 index );
 static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                             XP_U16 version, PlayerCtxt* pc );
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
@@ -289,6 +291,13 @@ model_destroy( ModelCtxt* model )
     XP_FREE( model->vol.mpool, model->vol.tiles );
     XP_FREE( model->vol.mpool, model );
 } /* model_destroy */
+
+XP_U32
+model_getHash( const ModelCtxt* model )
+{
+    XP_ASSERT( !!model->vol.stack );
+    return stack_getHash( model->vol.stack );
+}
 
 #ifdef STREAM_VERS_BIGBOARD
 void
@@ -787,39 +796,31 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                        XP_U16 nMovesSought, XP_U16* turnP, XP_S16* moveNumP )
 {
     StackCtxt* stack = model->vol.stack;
-    StackEntry entry;
-    XP_U16 turn = 0;
-    Tile blankTile = dict_getBlankTile( model_getDictionary(model) );
-    XP_Bool success = XP_TRUE;
+    XP_Bool success;
     XP_S16 moveSought = !!moveNumP ? *moveNumP : -1;
-    XP_U16 nMovesUndone;
-    XP_U16 nStackEntries;
+    XP_U16 nStackEntries = stack_getNEntries( stack );
 
-    nStackEntries = stack_getNEntries( stack );
-    if ( nStackEntries < nMovesSought ) {
-        return XP_FALSE;
-    } else if ( nStackEntries <= model->nPlayers ) {
-        return XP_FALSE;
-    }
+    if ( (0 <= moveSought && moveSought >= nStackEntries)
+         || ( nStackEntries < nMovesSought )
+         || ( nStackEntries <= model->nPlayers ) ) {
+        success = XP_FALSE;
+    } else {
+        XP_U16 nMovesUndone = 0;
+        XP_U16 turn;
+        StackEntry entry;
+        Tile blankTile = dict_getBlankTile( model_getDictionary(model) );
 
-    for ( nMovesUndone = 0; success && nMovesUndone < nMovesSought; ) {
-
-        success = stack_popEntry( stack, &entry );
-        if ( success ) {
-            ++nMovesUndone;
-
-            if ( moveSought < 0 ) {
-                moveSought = entry.moveNum - 1;
-            } else if ( moveSought-- != entry.moveNum ) {
-                success = XP_FALSE;
+        for ( ; ; ) {
+            success = stack_popEntry( stack, &entry );
+            if ( !success ) {
                 break;
             }
+            ++nMovesUndone;
 
             turn = entry.playerNum;
             model_resetCurrentTurn( model, turn );
 
             if ( entry.moveType == MOVE_TYPE ) {
-
                 /* get the tiles out of player's tray and back into the
                    pool */
                 replaceNewTiles( model, pool, turn, &entry.u.move.newTiles);
@@ -839,73 +840,87 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                 }
 
             } else if ( entry.moveType == PHONY_TYPE ) {
-
                 /* nothing to do, since nothing happened */
-
             } else {
                 XP_ASSERT( entry.moveType == ASSIGN_TYPE );
                 success = XP_FALSE;
                 break;
             }
-        }
-    }
 
-    /* Find the first MOVE still on the stack and highlight its tiles since
-       they're now the most recent move. Trades and lost turns ignored.  */
-    nStackEntries = stack_getNEntries( stack );
-    for ( ; ; ) {
-        StackEntry entry;
-        if ( nStackEntries == 0 ||
-             !stack_getNthEntry( stack, nStackEntries - 1, &entry ) ) {
-            break;
-        }
-        if ( entry.moveType == MOVE_TYPE ) {
-            XP_U16 nTiles = entry.u.move.moveInfo.nTiles;
-            XP_U16 col, row;
-            XP_U16* varies;
-
-            if ( entry.u.move.moveInfo.isHorizontal ) {
-                row = entry.u.move.moveInfo.commonCoord;
-                varies = &col;
-            } else {
-                col = entry.u.move.moveInfo.commonCoord;
-                varies = &row;
+            /* exit if we've undone what we're supposed to.  If the sought
+               stack height has been provided, use that.  Otherwise go by move
+               count. */
+            if ( 0 <= moveSought ) {
+                if ( moveSought == entry.moveNum ) {
+                    break;
+                }
+            } else if ( nMovesSought == nMovesUndone ) {
+                break;
             }
+        }
 
-            while ( nTiles-- ) {
-                CellTile tile;
-
-                *varies = entry.u.move.moveInfo.tiles[nTiles].varCoord;
-                tile = getModelTileRaw( model, col, row );
-                setModelTileRaw( model, col, row, 
-                                 (CellTile)(tile | PREV_MOVE_BIT) );
-                notifyBoardListeners( model, entry.playerNum, col, row, 
-                                      XP_FALSE );
+        /* Find the first MOVE still on the stack and highlight its tiles since
+           they're now the most recent move. Trades and lost turns ignored.  */
+        for ( nStackEntries = stack_getNEntries( stack ); 
+              0 < nStackEntries; --nStackEntries ) {
+            StackEntry entry;
+            if ( !stack_getNthEntry( stack, nStackEntries - 1, &entry ) ) {
+                break;
             }
-            break;
-        } else if ( entry.moveType == ASSIGN_TYPE ) {
-            break;
+            if ( entry.moveType == ASSIGN_TYPE ) {
+                break;
+            } else if ( entry.moveType == MOVE_TYPE ) {
+                XP_U16 nTiles = entry.u.move.moveInfo.nTiles;
+                XP_U16 col, row;
+                XP_U16* varies;
+
+                if ( entry.u.move.moveInfo.isHorizontal ) {
+                    row = entry.u.move.moveInfo.commonCoord;
+                    varies = &col;
+                } else {
+                    col = entry.u.move.moveInfo.commonCoord;
+                    varies = &row;
+                }
+
+                while ( nTiles-- ) {
+                    CellTile tile;
+
+                    *varies = entry.u.move.moveInfo.tiles[nTiles].varCoord;
+                    tile = getModelTileRaw( model, col, row );
+                    setModelTileRaw( model, col, row, 
+                                     (CellTile)(tile | PREV_MOVE_BIT) );
+                    notifyBoardListeners( model, entry.playerNum, col, row, 
+                                          XP_FALSE );
+                }
+                break;
+            }
+        }
+
+        /* We fail if we didn't undo as many as requested UNLESS the lower
+           limit is the trumping target/test. */
+        if ( 0 <= moveSought ) {
+            if ( moveSought != entry.moveNum ) {
+                success = XP_FALSE;
+            }
         } else {
-            --nStackEntries;        /* look at the next one */
+            if ( nMovesUndone != nMovesSought ) {
+                success = XP_FALSE;
+            }
         }
-    }
 
-    if ( nMovesUndone != nMovesSought ) {
-        success = XP_FALSE;
-    }
-
-    if ( success ) {
-        if ( !!turnP ) {
-            *turnP = turn;
-        }
-        if ( !!moveNumP ) {
-            *moveNumP = entry.moveNum;
-        }
-    } else {
-        while ( nMovesUndone-- ) {
-            /* undo isn't enough here: pool's got tiles in it!! */
-            XP_ASSERT( 0 );
-            (void)stack_redo( stack, NULL );
+        if ( success ) {
+            if ( !!turnP ) {
+                *turnP = turn;
+            }
+            if ( !!moveNumP ) {
+                *moveNumP = entry.moveNum;
+            }
+        } else {
+            while ( nMovesUndone-- ) {
+                /* redo isn't enough here: pool's got tiles in it!! */
+                XP_ASSERT( 0 );
+                (void)stack_redo( stack, NULL );
+            }
         }
     }
 
@@ -963,10 +978,11 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
  * assert that it's in the tray, remove it from the tray, and place it on the
  * board.
  */
-void
+XP_Bool
 model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                           XWStreamCtxt* stream )
 {
+    XP_Bool success = XP_TRUE;
     XP_U16 numTiles, ii;
     Tile blank = dict_getBlankTile( model_getDictionary(model) );
     XP_U16 nColsNBits;
@@ -978,40 +994,57 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 #endif
 
     model_resetCurrentTurn( model, playerNum );
+    if ( success ) {
+        numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
 
-    numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
+        XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
 
-    XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
+        Tile tileFaces[numTiles];
+        XP_U16 cols[numTiles];
+        XP_U16 rows[numTiles];
+        XP_Bool isBlanks[numTiles];
+        Tile moveTiles[numTiles];
+        TrayTileSet curTiles = *model_getPlayerTiles( model, playerNum );
 
-    for ( ii = 0; ii < numTiles; ++ii ) {
-        XP_S16 foundAt;
-        Tile moveTile;
-        Tile tileFace = (Tile)stream_getBits( stream, TILE_NBITS );
-        XP_U16 col = (XP_U16)stream_getBits( stream, nColsNBits );
-        XP_U16 row = (XP_U16)stream_getBits( stream, nColsNBits );
-        XP_Bool isBlank = stream_getBits( stream, 1 );
+        for ( ii = 0; success && ii < numTiles; ++ii ) {
+            tileFaces[ii] = (Tile)stream_getBits( stream, TILE_NBITS );
+            cols[ii] = (XP_U16)stream_getBits( stream, nColsNBits );
+            rows[ii] = (XP_U16)stream_getBits( stream, nColsNBits );
+            isBlanks[ii] = stream_getBits( stream, 1 );
 
-        /* This code gets called both for the server, which has all the
-           tiles in its tray, and for a client, which has "EMPTY" tiles
-           only.  If it's the empty case, we stuff a real tile into the
-           tray before falling through to the normal case */
+            if ( isBlanks[ii] ) {
+                moveTiles[ii] = blank;
+            } else {
+                moveTiles[ii] = tileFaces[ii];
+            }
 
-        if ( isBlank ) {
-            moveTile = blank;
-        } else {
-            moveTile = tileFace;
+            XP_S16 index = setContains( &curTiles, moveTiles[ii] );
+            if ( 0 <= index ) {
+                removeTile( &curTiles, index );
+            } else {
+                success = XP_FALSE;
+            }
         }
 
-        foundAt = model_trayContains( model, playerNum, moveTile );
-        if ( foundAt == -1 ) {
-            XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum, 0));
+        if ( success ) {
+            for ( ii = 0; ii < numTiles; ++ii ) {
+                XP_S16 foundAt = model_trayContains( model, playerNum, moveTiles[ii] );
+                if ( foundAt == -1 ) {
+                    XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum, 
+                                                                 0));
+                    /* Does this ever happen? */
+                    XP_LOGF( "%s: found empty tile and it's ok", __func__ );
 
-            (void)model_removePlayerTile( model, playerNum, -1 );
-            model_addPlayerTile( model, playerNum, -1, moveTile );
+                    (void)model_removePlayerTile( model, playerNum, -1 );
+                    model_addPlayerTile( model, playerNum, -1, moveTiles[ii] );
+                }
+
+                model_moveTrayToBoard( model, playerNum, cols[ii], rows[ii], foundAt, 
+                                       tileFaces[ii] );
+            }
         }
-
-        model_moveTrayToBoard( model, playerNum, col, row, foundAt, tileFace );
     }
+    return success;
 } /* model_makeTurnFromStream */
 
 void
@@ -1090,25 +1123,11 @@ model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
 XP_S16
 model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile )
 {
-    PlayerCtxt* player;
-    XP_S16 i;
-    XP_S16 result = -1;
-
     XP_ASSERT( turn >= 0 );
     XP_ASSERT( turn < model->nPlayers );
 
-    player = &model->players[turn];
-
-    /* search from top down so don't pull out of below divider */
-    for ( i = player->trayTiles.nTiles - 1; i >= 0 ; --i ) {
-        Tile playerTile = player->trayTiles.tiles[i];
-        if ( playerTile == tile ) {
-            result = i;
-            break;
-        }
-    }
-
-    return result;
+    const TrayTileSet* tiles = model_getPlayerTiles( model, turn );
+    return setContains( tiles, tile );
 } /* model_trayContains */
 
 XP_U16
@@ -1531,7 +1550,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
     XP_U16 ii;
     PlayerCtxt* player;
     PendingTile* pt;
-    XP_S16 score;
+    XP_S16 score = -1;
     XP_Bool inLine, isHorizontal;
     const Tile* newTilesP;
     XP_U16 nTiles;
@@ -1551,7 +1570,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
     player = &model->players[turn];
 
     if ( useStack ) {
-        MoveInfo moveInfo;
+        MoveInfo moveInfo = {0};
         inLine = tilesInLine( model, turn, &isHorizontal );
         XP_ASSERT( inLine );
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
@@ -1603,15 +1622,14 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
     while ( nTiles-- ) {
         model_addPlayerTile( model, turn, -1, *newTilesP++ );
     }
-
     return score;
 } /* commitTurn */
 
-void
+XP_Bool
 model_commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles )
 {
-    (void)commitTurn( model, turn, newTiles, (XWStreamCtxt*)NULL, 
-                      (WordNotifierInfo*)NULL, XP_TRUE );
+    XP_S16 score = commitTurn( model, turn, newTiles, NULL, NULL, XP_TRUE );
+    return 0 <= score;
 } /* model_commitTurn */
 
 /* Given a rack of new tiles and of old, remove all the old from the tray and
@@ -2316,7 +2334,7 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
         switch ( entry.moveType ) {
         case MOVE_TYPE:
             scoreLastMove( model, &entry.u.move.moveInfo, 
-                           nEntries - which - 1, expl, explLen );
+                           nEntries - which, expl, explLen );
             break;
         case TRADE_TYPE:
             nTiles = entry.u.trade.oldTiles.nTiles;
@@ -2404,6 +2422,32 @@ writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
         stream_putBits( stream, 7, pt->tile );
     }
 } /* writePlayerCtxt */
+
+static void
+removeTile( TrayTileSet* tiles, XP_U16 index )
+{
+    XP_U16 ii;
+    --tiles->nTiles;
+    for ( ii = index; ii < tiles->nTiles; ++ii ) {
+        tiles->tiles[ii] = tiles->tiles[ii+1];
+    }
+}
+
+static XP_S16
+setContains( const TrayTileSet* tiles, Tile tile )
+{
+    XP_S16 result = -1;
+    XP_S16 ii;
+    /* search from top down so don't pull out of below divider */
+    for ( ii = tiles->nTiles - 1; ii >= 0 ; --ii ) {
+        Tile playerTile = tiles->tiles[ii];
+        if ( playerTile == tile ) {
+            result = ii;
+            break;
+        }
+    }
+    return result;
+}
 
 #ifdef CPLUS
 }

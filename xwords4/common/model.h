@@ -114,6 +114,7 @@ void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
 
 void model_setSize( ModelCtxt* model, XP_U16 boardSize );
 void model_destroy( ModelCtxt* model );
+XP_U32 model_getHash( const ModelCtxt* model );
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
 XP_U16 model_getNPlayers( const ModelCtxt* model );
 
@@ -181,8 +182,8 @@ void model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
                                Tile* tile, XP_U16* col, XP_U16* row, 
                                XP_Bool* isBlank );
 
-void model_commitTurn( ModelCtxt* model, XP_S16 player, 
-                       TrayTileSet* newTiles );
+XP_Bool model_commitTurn( ModelCtxt* model, XP_S16 player, 
+                          TrayTileSet* newTiles );
 void model_commitRejectedPhony( ModelCtxt* model, XP_S16 player );
 void model_makeTileTrade( ModelCtxt* model, XP_S16 player,
                           const TrayTileSet* oldTiles, 
@@ -198,8 +199,8 @@ void model_trayToStream( ModelCtxt* model, XP_S16 turn,
                          XWStreamCtxt* stream );
 void model_currentMoveToStream( ModelCtxt* model, XP_S16 turn, 
                                 XWStreamCtxt* stream);
-void model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
-                               XWStreamCtxt* stream );
+XP_Bool model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
+                                  XWStreamCtxt* stream );
 void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
                                  const MoveInfo* newMove );
 
