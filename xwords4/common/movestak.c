@@ -26,6 +26,15 @@
 #include "memstream.h"
 #include "strutils.h"
 
+/* HASH_STREAM: It should be possible to hash the move stack by simply hashing
+   the stream from the beginning to the top of the undo stack (excluding
+   what's in the redo area), avoiding iterating over it and doing a ton of
+   bitwise operations to read it into entries.  But I don't currently seem to
+   have a XWStreamPos that corresponds to the undo-top and so I can't figure
+   out the length.  Hashing that includes the redo part of the stack doesn't
+   work once there's been undo activity.  (Not sure why...)  */
+// #define HASH_STREAM 
+
 #ifdef CPLUS
 extern "C" {
 #endif
@@ -58,8 +67,22 @@ stack_init( StackCtxt* stack )
 } /* stack_init */
 
 #ifdef STREAM_VERS_BIGBOARD
+#ifdef HASH_STREAM
+static XP_U16
+figureStackSize( const StackCtxt* stack )
+{
+    XWStreamCtxt* data = stack->data;
+    XWStreamPos oldReadPos = stream_setPos( data, POS_READ, START_OF_STREAM );
+    XWStreamPos oldWritePos = stream_setPos( data, POS_WRITE, stack->cachedPos );
+    XP_U16 len = stream_getSize( data );
+    (void)stream_setPos( data, POS_READ, oldReadPos );
+    (void)stream_setPos( data, POS_WRITE, oldWritePos );
+    return len;
+}
+#endif
+
 static XP_U32
-augmentHash( XP_U32 hash, XP_U8* ptr, XP_U16 len )
+augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
 {
     XP_ASSERT( 0 < len );
     // see http://en.wikipedia.org/wiki/Jenkins_hash_function
@@ -72,9 +95,11 @@ augmentHash( XP_U32 hash, XP_U8* ptr, XP_U16 len )
     hash += (hash << 3);
     hash ^= (hash >> 11);
     hash += (hash << 15);
+    // XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
     return hash;
 }
 
+#ifndef HASH_STREAM
 static XP_U32
 augmentFor( XP_U32 hash, const StackEntry* entry )
 {
@@ -98,12 +123,20 @@ augmentFor( XP_U32 hash, const StackEntry* entry )
     }
     return hash;
 }
+#endif
 
 XP_U32
 stack_getHash( StackCtxt* stack )
 {
-    XP_U32 hash = 0L;
+    XP_U32 hash;
+#ifdef HASH_STREAM
+    XP_U16 len = figureStackSize( stack );
+    const XP_U8* ptr = stream_getPtr( stack->data );
+    LOG_HEX( ptr, len, __func__ );
+    hash = augmentHash( 0L, ptr, len );
+#else
     XP_U16 nn, nEntries = stack->nEntries;
+    hash = 0L;
     for ( nn = 0; nn < nEntries; ++nn ) {
         StackEntry entry;
         XP_MEMSET( &entry, 0, sizeof(entry) );
@@ -115,6 +148,7 @@ stack_getHash( StackCtxt* stack )
     }
     XP_ASSERT( 0 != hash );
     // LOG_RETURNF( "%.8X", (unsigned int)hash );
+#endif
     return hash;
 }
 #endif
@@ -214,7 +248,7 @@ stack_copy( const StackCtxt* stack )
 static void
 pushEntry( StackCtxt* stack, const StackEntry* entry )
 {
-    XP_U16 i, bitsPerTile;
+    XP_U16 ii, bitsPerTile;
     XWStreamPos oldLoc;
     XP_U16 nTiles = entry->u.move.moveInfo.nTiles;
     XWStreamCtxt* stream = stack->data;
@@ -239,12 +273,12 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
         stream_putBits( stream, 1, entry->u.move.moveInfo.isHorizontal );
         bitsPerTile = stack->bitsPerTile;
         XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
-        for ( i = 0; i < nTiles; ++i ) {
+        for ( ii = 0; ii < nTiles; ++ii ) {
             Tile tile;
             stream_putBits( stream, 5, 
-                            entry->u.move.moveInfo.tiles[i].varCoord );
+                            entry->u.move.moveInfo.tiles[ii].varCoord );
 
-            tile = entry->u.move.moveInfo.tiles[i].tile;
+            tile = entry->u.move.moveInfo.tiles[ii].tile;
             stream_putBits( stream, bitsPerTile, tile & TILE_VALUE_MASK );
             stream_putBits( stream, 1, (tile & TILE_BLANK_BIT) != 0 );
         }
@@ -270,6 +304,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
     stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
+    // XP_LOGF( "after %s size now %d", __func__, figureStackSize( stack ) );
 } /* pushEntry */
 
 static void
@@ -380,18 +415,18 @@ stack_addAssign( StackCtxt* stack, XP_U16 turn, const TrayTileSet* tiles )
 } /* stack_addAssign */
 
 static XP_Bool
-setCacheReadyFor( StackCtxt* stack, XP_U16 n )
+setCacheReadyFor( StackCtxt* stack, XP_U16 nn )
 {
-    StackEntry dummy;
-    XP_U16 i;
+    XP_U16 ii;
     
     stream_setPos( stack->data, POS_READ, START_OF_STREAM );
-    for ( i = 0; i < n; ++i ) {
+    for ( ii = 0; ii < nn; ++ii ) {
+        StackEntry dummy;
         readEntry( stack, &dummy );
     }
 
-    stack->cacheNext = n;
-    stack->cachedPos = stream_getPos( stack->data, XP_FALSE );
+    stack->cacheNext = nn;
+    stack->cachedPos = stream_getPos( stack->data, POS_READ );
 
     return XP_TRUE;
 } /* setCacheReadyFor */
@@ -434,14 +469,15 @@ stack_getNthEntry( StackCtxt* stack, XP_U16 nn, StackEntry* entry )
 XP_Bool
 stack_popEntry( StackCtxt* stack, StackEntry* entry )
 {
-    XP_U16 n = stack->nEntries - 1;
-    XP_Bool found = stack_getNthEntry( stack, n, entry );
+    XP_U16 nn = stack->nEntries - 1;
+    XP_Bool found = stack_getNthEntry( stack, nn, entry );
     if ( found ) {
-        stack->nEntries = n;
+        stack->nEntries = nn;
 
-        setCacheReadyFor( stack, n ); /* set cachedPos by side-effect */
+        setCacheReadyFor( stack, nn ); /* set cachedPos by side-effect */
         stack->top = stack->cachedPos;
     }
+    //XP_LOGF( "after %s size now %d", __func__, figureStackSize( stack ) );
     return found;
 } /* stack_popEntry */
 

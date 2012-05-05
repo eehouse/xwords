@@ -159,7 +159,7 @@ build_cmds() {
             fi
 
             PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
-            PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20"
+            PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
             PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
             PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
@@ -481,7 +481,7 @@ while [ "$#" -gt 0 ]; do
             APP_NEW=$(getArg $*)
             shift
             ;;
-        --dict)
+        --game-dict)
             DICTS[${#DICTS[@]}]=$(getArg $*)
             shift
             ;;
