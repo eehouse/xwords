@@ -1702,6 +1702,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.cp.showBoardArrow = XP_TRUE;
     g_globals.cGlobals.cp.showRobotScores = params->showRobotScores;
     g_globals.cGlobals.cp.hideTileValues = params->hideValues;
+    g_globals.cGlobals.cp.skipCommitConfirm = params->skipCommitConfirm;
+    g_globals.cGlobals.cp.sortNewTiles = params->sortNewTiles;
+    g_globals.cGlobals.cp.showColors = params->showColors;
+    g_globals.cGlobals.cp.allowPeek = params->allowPeek;
 #ifdef XWFEATURE_SLOW_ROBOT
     g_globals.cGlobals.cp.robotThinkMin = params->robotThinkMin;
     g_globals.cGlobals.cp.robotThinkMax = params->robotThinkMax;
