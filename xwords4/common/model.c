@@ -72,6 +72,7 @@ static void buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
                                  MovePrintFuncPost mpfpo, void* closure );
 static void setPendingCounts( ModelCtxt* model, XP_S16 turn );
 static XP_S16 setContains( const TrayTileSet* tiles, Tile tile );
+static void sortTiles( TrayTileSet* dest, const TrayTileSet* src );
 static void removeTile( TrayTileSet* tiles, XP_U16 index );
 static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                             XP_U16 version, PlayerCtxt* pc );
@@ -1765,7 +1766,9 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
                          const TrayTileSet* tiles )
 {
     XP_ASSERT( turn >= 0 );
-    stack_addAssign( model->vol.stack, turn, tiles );
+    TrayTileSet sorted;
+    sortTiles( &sorted, tiles );
+    stack_addAssign( model->vol.stack, turn, &sorted );
 
     assignPlayerTiles( model, turn, tiles );
 } /* model_assignPlayerTiles */
@@ -1773,30 +1776,17 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 void
 model_sortTiles( ModelCtxt* model, XP_S16 turn )
 {
-    PlayerCtxt* player;
-    XP_S16 ii;
-    TrayTileSet tiles = { .nTiles = 0 };
     XP_S16 nTiles;
 
-    XP_ASSERT( turn >= 0 );
-    player = &model->players[turn];
+    TrayTileSet sorted;
+    sortTiles( &sorted, model_getPlayerTiles( model, turn ) );
 
-    for ( nTiles = model_getNumTilesInTray( model, turn ) - 1;
-          nTiles >= 0; --nTiles ) {
-        Tile min = 0xFF;
-        XP_U16 minIndex = 0;
-        for ( ii = 0; ii <= nTiles; ++ii ) {
-            Tile tile = player->trayTiles.tiles[ii];
-            if ( tile < min ) {
-                min = tile;
-                minIndex = ii;
-            }
-        }
-        tiles.tiles[tiles.nTiles++] = 
-            removePlayerTile( model, turn, minIndex );
+    nTiles = sorted.nTiles;
+    while ( nTiles > 0 ) {
+        removePlayerTile( model, turn, --nTiles );
     }
 
-    assignPlayerTiles( model, turn, &tiles );
+    assignPlayerTiles( model, turn, &sorted );
 } /* model_sortTiles */
 
 XP_U16
@@ -2447,6 +2437,23 @@ setContains( const TrayTileSet* tiles, Tile tile )
         }
     }
     return result;
+}
+
+static void
+sortTiles( TrayTileSet* dest, const TrayTileSet* src )
+{
+    TrayTileSet tmp = *src;
+    dest->nTiles = 0;
+    while ( 0 < tmp.nTiles ) {
+        XP_U16 ii, smallest;
+        for ( smallest = ii = 0; ii < tmp.nTiles; ++ii ) {
+            if ( tmp.tiles[ii] < tmp.tiles[smallest] ) {
+                smallest = ii;
+            }
+        }
+        dest->tiles[dest->nTiles++] = tmp.tiles[smallest];
+        removeTile( &tmp, smallest );
+    }
 }
 
 #ifdef CPLUS
