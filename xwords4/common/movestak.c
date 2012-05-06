@@ -104,9 +104,11 @@ static XP_U32
 augmentFor( XP_U32 hash, const StackEntry* entry )
 {
     switch( entry->moveType ) {
-    case ASSIGN_TYPE:
-        hash = augmentHash( hash, (XP_U8*)&entry->u.assign, 
-                            sizeof(entry->u.assign) );
+    case ASSIGN_TYPE: {
+        TrayTileSet tiles;
+        sortTiles( &tiles, &entry->u.assign.tiles );
+        hash = augmentHash( hash, (XP_U8*)&tiles, sizeof(tiles) );
+    }
         break;
     case MOVE_TYPE:
         hash = augmentHash( hash, (XP_U8*)&entry->u.move, 

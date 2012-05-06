@@ -73,6 +73,33 @@ traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts )
     ts->nTiles = (XP_U8)nTiles;
 } /* traySetFromStream */
 
+void
+removeTile( TrayTileSet* tiles, XP_U16 index )
+{
+    XP_U16 ii;
+    --tiles->nTiles;
+    for ( ii = index; ii < tiles->nTiles; ++ii ) {
+        tiles->tiles[ii] = tiles->tiles[ii+1];
+    }
+}
+
+void
+sortTiles( TrayTileSet* dest, const TrayTileSet* src )
+{
+    TrayTileSet tmp = *src;
+    dest->nTiles = 0;
+    while ( 0 < tmp.nTiles ) {
+        XP_U16 ii, smallest;
+        for ( smallest = ii = 0; ii < tmp.nTiles; ++ii ) {
+            if ( tmp.tiles[ii] < tmp.tiles[smallest] ) {
+                smallest = ii;
+            }
+        }
+        dest->tiles[dest->nTiles++] = tmp.tiles[smallest];
+        removeTile( &tmp, smallest );
+    }
+}
+
 #if 0
 static void
 signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num )

@@ -72,8 +72,6 @@ static void buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
                                  MovePrintFuncPost mpfpo, void* closure );
 static void setPendingCounts( ModelCtxt* model, XP_S16 turn );
 static XP_S16 setContains( const TrayTileSet* tiles, Tile tile );
-static void sortTiles( TrayTileSet* dest, const TrayTileSet* src );
-static void removeTile( TrayTileSet* tiles, XP_U16 index );
 static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                             XP_U16 version, PlayerCtxt* pc );
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
@@ -2413,16 +2411,6 @@ writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
     }
 } /* writePlayerCtxt */
 
-static void
-removeTile( TrayTileSet* tiles, XP_U16 index )
-{
-    XP_U16 ii;
-    --tiles->nTiles;
-    for ( ii = index; ii < tiles->nTiles; ++ii ) {
-        tiles->tiles[ii] = tiles->tiles[ii+1];
-    }
-}
-
 static XP_S16
 setContains( const TrayTileSet* tiles, Tile tile )
 {
@@ -2437,23 +2425,6 @@ setContains( const TrayTileSet* tiles, Tile tile )
         }
     }
     return result;
-}
-
-static void
-sortTiles( TrayTileSet* dest, const TrayTileSet* src )
-{
-    TrayTileSet tmp = *src;
-    dest->nTiles = 0;
-    while ( 0 < tmp.nTiles ) {
-        XP_U16 ii, smallest;
-        for ( smallest = ii = 0; ii < tmp.nTiles; ++ii ) {
-            if ( tmp.tiles[ii] < tmp.tiles[smallest] ) {
-                smallest = ii;
-            }
-        }
-        dest->tiles[dest->nTiles++] = tmp.tiles[smallest];
-        removeTile( &tmp, smallest );
-    }
 }
 
 #ifdef CPLUS
