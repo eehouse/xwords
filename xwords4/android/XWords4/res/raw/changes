@@ -7,13 +7,11 @@
 <body>
 <b>Crosswords 4.4 beta 43 release</b>
 <ul>
-  <li>Fix new crash drawing board on some versions of Android </li>
 
-  <li>In Wordlist screen remember which languages are expanded</li>
-
-  <li>In Word Lookup dialog fix contrast on some versions of Android</li>
-
-  <li>Fix old crash when two buttons pressed at about the same time</li>
+  <li>Fix bug that prevented undo from working for networked games.
+  (I'll turn undo back on in the next version, after everybody has
+  this fix.)</li>
+  
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
