@@ -196,7 +196,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     XP_Bool hasComms;
 #endif
     strVersion = stream_getU8( stream );
-    XP_DEBUGF( "strVersion = %d", (XP_U16)strVersion );
+   XP_DEBUGF( "%s: strVersion = 0x%x", __func__, (XP_U16)strVersion );
 
     if ( strVersion > CUR_STREAM_VERS ) {
         XP_LOGF( "%s: aborting; stream version too new!", __func__ );
@@ -506,6 +506,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
     XP_U16 strVersion = stream_getVersion( stream );
+    XP_LOGF( "%s: strVersion = 0x%x", __func__, strVersion );
     XP_ASSERT( STREAM_SAVE_PREVWORDS <= strVersion );
     nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? NUMCOLS_NBITS_4
         : NUMCOLS_NBITS_5;
@@ -525,7 +526,15 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->allowHintRect );
     stream_putBits( stream, 1, gi->confirmBTConnect );
 
-    stream_putU32( stream, gi->gameID );
+    if ( 0 ) {
+#ifdef STREAM_VERS_BIGBOARD
+    } else if ( STREAM_VERS_BIGBOARD <= strVersion ) {
+        stream_putU32( stream, gi->gameID );
+#endif
+    } else {
+        stream_putU16( stream, gi->gameID );
+    }
+
     stream_putU8( stream, gi->dictLang );
     stream_putU16( stream, gi->gameSeconds );
 

@@ -649,7 +649,7 @@ setStreamVersion( ServerCtxt* server )
             streamVersion = devVersion;
         }
     }
-    XP_LOGF( "%s: setting streamVersion: %d", __func__, streamVersion );
+    XP_LOGF( "%s: setting streamVersion: 0x%x", __func__, streamVersion );
     server->nv.streamVersion = streamVersion;
 }
 

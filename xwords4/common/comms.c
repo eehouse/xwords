@@ -36,7 +36,7 @@
 #ifndef XWFEATURE_STANDALONE_ONLY
 
 #ifndef INITIAL_CLIENT_VERS
-# define INITIAL_CLIENT_VERS 1
+# define INITIAL_CLIENT_VERS 2
 #endif
 
 #ifdef COMMS_HEARTBEAT
@@ -1123,7 +1123,8 @@ gameID( const CommsCtxt* comms )
         gameID = comms->util->gameInfo->gameID;
     }
     XP_ASSERT( 0 == comms->connID
-               || comms->connID == comms->util->gameInfo->gameID );
+               || (comms->connID & 0xFFFF) 
+               == (comms->util->gameInfo->gameID & 0xFFFF) );
     /* Most of the time these will be the same, but early in a game they won't
        be.  Would be nice not to have to use gameID. */
     return gameID;
