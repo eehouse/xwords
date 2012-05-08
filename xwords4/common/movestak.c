@@ -92,10 +92,16 @@ augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
         hash += (hash << 10);
         hash ^= (hash >> 6);
     }
+    // XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
+    return hash;
+}
+
+static XP_U32
+finshHash( XP_U32 hash )
+{
     hash += (hash << 3);
     hash ^= (hash >> 11);
     hash += (hash << 15);
-    // XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
     return hash;
 }
 
@@ -151,7 +157,7 @@ stack_getHash( StackCtxt* stack )
     XP_ASSERT( 0 != hash );
     // LOG_RETURNF( "%.8X", (unsigned int)hash );
 #endif
-    return hash;
+    return finshHash( hash );
 }
 #endif
 
