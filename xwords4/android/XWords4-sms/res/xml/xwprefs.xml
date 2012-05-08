@@ -11,13 +11,13 @@
                       android:summary="@string/prefs_names_summary"
                       >
 
-      <org.eehouse.android.xw4.XWEditTextPreference 
+      <org.eehouse.android.xw4sms.XWEditTextPreference 
 	     android:key="@string/key_player1_name"
 	     android:title="@string/pref_player1_name"
          android:capitalize="words"
 	     android:defaultValue=""
 	     />
-      <org.eehouse.android.xw4.XWEditTextPreference
+      <org.eehouse.android.xw4sms.XWEditTextPreference
 	     android:key="@string/key_player2_name"
 	     android:title="@string/pref_player2_name"
          android:capitalize="words"
@@ -25,7 +25,7 @@
 	     android:summary="@string/tell_unused"
 	     android:enabled="false"
 	     />
-      <org.eehouse.android.xw4.XWEditTextPreference 
+      <org.eehouse.android.xw4sms.XWEditTextPreference 
 	     android:key="@string/key_player3_name"
 	     android:title="@string/pref_player3_name"
          android:capitalize="words"
@@ -33,7 +33,7 @@
 	     android:summary="@string/tell_unused"
 	     android:enabled="false"
 	     />
-      <org.eehouse.android.xw4.XWEditTextPreference
+      <org.eehouse.android.xw4sms.XWEditTextPreference
 	     android:key="@string/key_player4_name"
 	     android:title="@string/pref_player4_name"
          android:capitalize="words"
@@ -46,13 +46,13 @@
     <PreferenceScreen android:title="@string/prefs_dicts"
                       android:summary="@string/prefs_dicts_summary"
                       >
-      <org.eehouse.android.xw4.DictListPreference 
+      <org.eehouse.android.xw4sms.DictListPreference 
          android:key="@string/key_default_dict"
          android:title="@string/default_dict"
          android:defaultValue="CollegeEng_2to8"
          />
 
-      <org.eehouse.android.xw4.DictListPreference 
+      <org.eehouse.android.xw4sms.DictListPreference 
          android:key="@string/key_default_robodict"
          android:title="@string/default_robodict"
          android:defaultValue="Top5000"
@@ -77,7 +77,7 @@
                         android:defaultValue="false"
                         />
 
-    <org.eehouse.android.xw4.XWListPreference
+    <org.eehouse.android.xw4sms.XWListPreference
 	   android:key="@string/key_default_phonies"
 	   android:title="@string/default_phonies"
 	   android:entries="@array/phony_names"
@@ -90,14 +90,14 @@
                         android:defaultValue="false"
                         />
 
-    <org.eehouse.android.xw4.XWEditTextPreference
+    <org.eehouse.android.xw4sms.XWEditTextPreference
 	   android:key="@string/key_initial_player_minutes"
 	   android:title="@string/initial_player_minutes"
 	   android:defaultValue="25"
 	   android:numeric="decimal"
 	   />
 
-    <org.eehouse.android.xw4.XWListPreference 
+    <org.eehouse.android.xw4sms.XWListPreference 
 	   android:key="@string/key_board_size"
 	   android:title="@string/board_size"
 	   android:entries="@array/board_sizes"
@@ -110,7 +110,7 @@
   <PreferenceScreen android:title="@string/prefs_appearance"
                     android:summary="@string/prefs_appearance_summary"
                     >
-    <org.eehouse.android.xw4.XWListPreference 
+    <org.eehouse.android.xw4sms.XWListPreference 
        android:key="@string/key_summary_field"
        android:title="@string/summary_field"
 	   android:entries="@array/game_summary_values"
@@ -141,71 +141,71 @@
     <PreferenceScreen android:title="@string/prefs_colors"
                       android:summary="@string/prefs_colors_summary"
                       >
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_player0"
          android:title="@string/player0"
          android:defaultValue="0x000000"
          />
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_player1"
          android:title="@string/player1"
          android:defaultValue="0xFF0000"
          />
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_player2"
          android:title="@string/player2"
          android:defaultValue="0x0000FF"
          />
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_player3"
          android:title="@string/player3"
          android:defaultValue="0x008F00"
          />
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_bonus_l2x"
          android:title="@string/bonus_l2x"
          android:defaultValue="0xAFAF00"
          />
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_bonus_l3x"
          android:title="@string/bonus_l3x"
          android:defaultValue="0x00AFAF"
          />
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_bonus_w2x"
          android:title="@string/bonus_w2x"
          android:defaultValue="0xAF00AF"
          />
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_bonus_w3x"
          android:title="@string/bonus_w3x"
          android:defaultValue="0xAFAFAF"
          />
 
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_clr_crosshairs"
          android:title="@string/clr_crosshairs"
          android:defaultValue="0x7070FF"
          />
 
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_clr_bonushint"
          android:title="@string/key_bonushint"
          android:defaultValue="0x7F7F7F"
          />
 
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_tile_back"
          android:title="@string/tile_back"
          android:defaultValue="0xFFFF99"
          />
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_empty"
          android:title="@string/empty"
          android:defaultValue="0xFFFFFF"
          />
 
-      <org.eehouse.android.xw4.EditColorPreference
+      <org.eehouse.android.xw4sms.EditColorPreference
          android:key="@string/key_background"
          android:title="@string/background"
          android:defaultValue="0xFFFFFF"
@@ -252,7 +252,7 @@
   <PreferenceScreen android:title="@string/network_behavior"
                     android:summary="@string/network_behavior_summary"
                     >
-    <org.eehouse.android.xw4.PollListPreference
+    <org.eehouse.android.xw4sms.PollListPreference
        android:key="@string/key_connect_frequency"
        android:title="@string/connect_frequency"
        android:entries="@array/connect_frequencies"
@@ -275,30 +275,30 @@
   <PreferenceScreen android:title="@string/advanced"
                     android:summary="@string/advanced_summary"
                     >
-    <org.eehouse.android.xw4.XWEditTextPreference 
+    <org.eehouse.android.xw4sms.XWEditTextPreference 
 	   android:key="@string/key_relay_host"
 	   android:title="@string/relay_host"
 	   android:defaultValue="@string/default_host"
 	   />
-    <org.eehouse.android.xw4.XWEditTextPreference
+    <org.eehouse.android.xw4sms.XWEditTextPreference
 	   android:key="@string/key_relay_port"
 	   android:title="@string/relay_port"
 	   android:defaultValue="10997"
 	   android:numeric="decimal"
 	   />
-    <org.eehouse.android.xw4.XWEditTextPreference
+    <org.eehouse.android.xw4sms.XWEditTextPreference
 	   android:key="@string/key_proxy_port"
 	   android:title="@string/proxy_port"
 	   android:defaultValue="10998"
 	   android:numeric="decimal"
 	   />
-    <org.eehouse.android.xw4.XWEditTextPreference
+    <org.eehouse.android.xw4sms.XWEditTextPreference
 	   android:key="@string/key_redir_host"
 	   android:title="@string/redir_host"
 	   android:defaultValue="@string/default_host"
 	   />
 
-    <org.eehouse.android.xw4.XWEditTextPreference
+    <org.eehouse.android.xw4sms.XWEditTextPreference
 	   android:key="@string/key_dict_host"
 	   android:title="@string/dict_host"
 	   android:defaultValue="@string/dict_url"
@@ -306,6 +306,10 @@
 
     <CheckBoxPreference android:key="@string/key_logging_on"
 			            android:title="@string/logging_on"
+			            android:defaultValue="false"
+			            />
+    <CheckBoxPreference android:key="@string/key_show_sms"
+			            android:title="Show SMS sends, receives"
 			            android:defaultValue="false"
 			            />
     <EditTextPreference android:title="@string/git_rev_title"
