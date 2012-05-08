@@ -495,7 +495,6 @@ while [ "$#" -gt 0 ]; do
             ;;
         --one-per)
             ONEPER=TRUE
-            shift
             ;;
         --host)
             HOST=$(getArg $*)
