@@ -11,6 +11,8 @@
   <li>Fix bug that prevented undo from working for networked games.
   (I'll turn undo back on in the next version, after everybody has
   this fix.)</li>
+
+  <li>Fix yet another Ice Cream Sandwich issue</li>
   
 </ul>
 
