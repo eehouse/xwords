@@ -279,7 +279,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
     const char* uuid = XW_BT_UUID;
     XP_LOGF( "uuid: %s", uuid );
     jstr = (*env)->NewStringUTF( env, uuid );
-    // (*env)->DeleteLocalRef( env, jstr );
 #endif
     return jstr;
 }
@@ -330,7 +329,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getChars
 {
     jobject result = NULL;
     result = and_dictionary_getChars( env, (DictionaryCtxt*)dictPtr );
-    // (*env)->DeleteLocalRef( env, result );
     return result;
 }
 
@@ -550,7 +548,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
     (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
     stream_destroy( stream );
 
-    // (*env)->DeleteLocalRef( env, result );
     XWJNI_END();
     return result;
 }
@@ -873,7 +870,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1formatRemainingTiles
     board_formatRemainingTiles( state->game.board, stream );
     result = streamToJString( env, stream );
     stream_destroy( stream );
-    // (*env)->DeleteLocalRef( env, result );
 
     XWJNI_END();
     return result;
@@ -889,7 +885,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
     server_formatDictCounts( state->game.server, stream, nCols );
     result = streamToJString( env, stream );
     stream_destroy( stream );
-    // (*env)->DeleteLocalRef( env, result );
     XWJNI_END();
     return result;
 }
@@ -915,7 +910,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
     model_writeGameHistory( state->game.model, stream, state->game.server,
                             gameOver );
     result = streamToJString( env, stream );
-    // (*env)->DeleteLocalRef( env, result );
     stream_destroy( stream );
     XWJNI_END();
     return result;
@@ -947,7 +941,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
         buf[0] = '\0';
     }
     result = (*env)->NewStringUTF( env, buf );
-    // (*env)->DeleteLocalRef( env, result );
     XWJNI_END();
     return result;
 }
@@ -961,7 +954,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_writeFinalScores( state->game.server, stream );
     result = streamToJString( env, stream );
-    // (*env)->DeleteLocalRef( env, result );
     stream_destroy( stream );
     XWJNI_END();
     return result;
@@ -1508,7 +1500,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
         if ( 0 < dict_countWords( &iter, &lens ) ) {
             XP_ASSERT( sizeof(jint) == sizeof(lens.lens[0]) );
             result = makeIntArray( env, VSIZE(lens.lens), (jint*)&lens.lens );
-            // (*env)->DeleteLocalRef( env, result );
         }
     }
     return result;
@@ -1534,7 +1525,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
             (*env)->SetObjectArrayElement( env, result, ii, jstr );
             (*env)->DeleteLocalRef( env, jstr );
         }
-        // (*env)->DeleteLocalRef( env, result );
     }
     return result;
 }
@@ -1550,7 +1540,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
         XP_ASSERT( sizeof(jint) == sizeof(data->idata.indices[0]) );
         jindices = makeIntArray( env, data->idata.count, 
                                  (jint*)data->idata.indices );
-        // (*env)->DeleteLocalRef( env, jindices );
     }
     return jindices;
 }
@@ -1566,7 +1555,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
             XP_UCHAR buf[64];
             dict_wordToString( &data->iter, buf, VSIZE(buf) );
             result = (*env)->NewStringUTF( env, buf );
-            // (*env)->DeleteLocalRef( env, result );
         }
     }
     return result;

@@ -216,7 +216,6 @@ pool_containsTiles( const PoolContext* pool, const TrayTileSet* tiles )
     XP_U8 counts[pool->numFaces];
     XP_MEMCPY( counts, pool->lettersLeft, sizeof(counts) );
 
-    /* In case we have duplicates, make count of each type */
     for ( ii = 0; allThere && ii < tiles->nTiles; ++ii ) {
         allThere = 0 < counts[tiles->tiles[ii]]--;
     }
