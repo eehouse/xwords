@@ -78,7 +78,7 @@ public class BTService extends Service {
     private static final String NTO_STR = "TOT";
     private static final String NHE_STR = "HER";
 
-    private static MultiService s_srcMgr = new MultiService();
+    private static MultiService s_srcMgr = null;
 
     private enum BTCmd { 
             PING,
@@ -148,9 +148,14 @@ public class BTService extends Service {
         }
     }
 
-    public static MultiService getMultiEventSrc()
+    public static void setListener( MultiService.BTEventListener li )
     {
-        return s_srcMgr;
+        if ( XWApp.BTSUPPORTED ) {
+            if ( null == s_srcMgr ) {
+                s_srcMgr = new MultiService();
+            }
+            s_srcMgr.setListener( li );
+        }
     }
 
     public static void radioChanged( Context context, boolean cameOn )

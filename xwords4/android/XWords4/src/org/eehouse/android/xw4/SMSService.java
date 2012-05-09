@@ -72,7 +72,7 @@ public class SMSService extends Service {
     private static final String NPLAYERSH = "NPLAYERSH";
 
     private static Boolean s_showToasts = null;
-    private static MultiService s_srcMgr = new MultiService();
+    private static MultiService s_srcMgr = null;
     private static boolean s_dbCheckPending = true;
 
     // All messages are base64-encoded byte arrays.  The first byte is
@@ -175,9 +175,14 @@ public class SMSService extends Service {
         return result;
     }
 
-    public static MultiService getMultiEventSrc()
+    public static void setListener( MultiService.BTEventListener li )
     {
-        return s_srcMgr;
+        if ( XWApp.SMSSUPPORTED ) {
+            if ( null == s_srcMgr ) {
+                s_srcMgr = new MultiService();
+            }
+            s_srcMgr.setListener( li );
+        }
     }
 
     private static Intent getIntentTo( Context context, int cmd )

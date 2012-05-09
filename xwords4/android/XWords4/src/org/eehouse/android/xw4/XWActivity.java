@@ -57,8 +57,8 @@ public class XWActivity extends Activity
     protected void onResume()
     {
         DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
-        BTService.getMultiEventSrc().setListener( this );
-        SMSService.getMultiEventSrc().setListener( this );
+        BTService.setListener( this );
+        SMSService.setListener( this );
         super.onResume();
     }
 
@@ -66,8 +66,8 @@ public class XWActivity extends Activity
     protected void onPause()
     {
         DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
-        BTService.getMultiEventSrc().setListener( null );
-        SMSService.getMultiEventSrc().setListener( null );
+        BTService.setListener( null );
+        SMSService.setListener( null );
         super.onPause();
     }
 
