@@ -8,12 +8,14 @@
 <b>Crosswords 4.4 beta 44 release</b>
 <ul>
 
-  <li>Fix bug that prevented undo from working for networked games.
-  (I'll turn undo back on in the next version, after everybody has
-  this fix.)</li>
-
+  <li>Fix trades in networked games not being reported</li>
+  
   <li>Fix yet another Ice Cream Sandwich issue</li>
   
+  <li>Fix bug that prevented undo from working for networked games. 
+  (I'll turn undo back on in the next release, after everybody has 
+  this fix.)</li>
+
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
