@@ -1419,10 +1419,10 @@ gtkShowFinalScores( const CommonGlobals* cGlobals )
 } /* gtkShowFinalScores */
 
 static void
-gtk_util_informMove( XW_UtilCtxt* XP_UNUSED(uc), XWStreamCtxt* XP_UNUSED(expl), 
+gtk_util_informMove( XW_UtilCtxt* XP_UNUSED(uc), XWStreamCtxt* expl, 
                      XWStreamCtxt* words )
 {
-    char* question = strFromStream( words/*expl*/ );
+    char* question = strFromStream( !!words? words : expl );
     (void)gtkask( question, GTK_BUTTONS_OK );
     free( question );
 }
