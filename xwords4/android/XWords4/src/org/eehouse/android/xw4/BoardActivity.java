@@ -1396,7 +1396,7 @@ public class BoardActivity extends XWActivity
         {
             m_dlgBytes = expl;
             m_dlgTitle = R.string.info_title;
-            m_words = wordsToArray( words );
+            m_words = null == words? null : wordsToArray( words );
             waitBlockingDialog( DLG_SCORES_BLK, 0 );
         }
 

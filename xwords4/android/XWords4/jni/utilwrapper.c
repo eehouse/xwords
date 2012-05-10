@@ -249,15 +249,15 @@ and_util_turnChanged(XW_UtilCtxt* uc)
 static void
 and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, XWStreamCtxt* words )
 {
-    if ( !!words ) {
-        UTIL_CBK_HEADER( "informMove", "(Ljava/lang/String;Ljava/lang/String;)V" );
-        jstring jexpl = streamToJString( env, expl );
-        jstring jwords = streamToJString( env, words );
-        (*env)->CallVoidMethod( env, util->jutil, mid, jexpl, jwords );
-        (*env)->DeleteLocalRef( env, jexpl );
+    UTIL_CBK_HEADER( "informMove", "(Ljava/lang/String;Ljava/lang/String;)V" );
+    jstring jexpl = streamToJString( env, expl );
+    jstring jwords = !!words ? streamToJString( env, words ) : NULL;
+    (*env)->CallVoidMethod( env, util->jutil, mid, jexpl, jwords );
+    (*env)->DeleteLocalRef( env, jexpl );
+    if ( !!jwords ) {
         (*env)->DeleteLocalRef( env, jwords );
-        UTIL_CBK_TAIL();
     }
+    UTIL_CBK_TAIL();
 }
 
 static void
