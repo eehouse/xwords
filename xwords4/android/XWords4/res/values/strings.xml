@@ -704,7 +704,7 @@
       -->
 
     <!-- Notifies user of a normal robot move -->
-    <string name="str_robot_moved">The robot made this move: </string>
+    <string name="str_robot_moved">The robot made this move:\u0020</string>
     <!-- Notifies user of a robot trade move -->
     <string name="strd_robot_traded">exchanged %d tiles.</string>
     <!-- title for window you get when you select menu with text
@@ -720,7 +720,8 @@
          information about the current rack is hidden then) -->
     <string name="strd_cumulative_score">Cumulative score: %d\n</string>
     <!-- Used in formatting remote player move summaries -->
-    <string name="str_remote_movedf">Remote player %1$s made this move: </string>
+    <string name="str_remote_movedf">Remote player %1$s made this
+    move:\u0020</string>
     <!-- I don't know how this is used. :-) -->
     <string name="strd_time_penalty_sub"></string>
     <!-- Used in formatting game history and move summaries -->
@@ -1258,9 +1259,9 @@
          substituted for %s. -->
     <string name="chat_titlef">%s message history</string>
     <!-- Prefix for local messages -->
-    <string name="chat_local_id">Me: </string>
+    <string name="chat_local_id">Me:\u0020</string>
     <!-- Prefix for remote messages -->
-    <string name="chat_other_id">Not me: </string>
+    <string name="chat_other_id">Not me:\u0020</string>
     <!-- Text on the button that causes the contents of the
          message-composition field to be sent. -->
     <string name="chat_send">Send</string>
