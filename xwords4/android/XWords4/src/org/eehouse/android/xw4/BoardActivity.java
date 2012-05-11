@@ -602,12 +602,6 @@ public class BoardActivity extends XWActivity
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.board_menu, menu );
 
-        // For now undo-last can crash the app or break a game in
-        // networked case.  Disable until this is fixed.
-        if ( null != m_gi
-             && m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-            menu.removeItem( R.id.board_menu_undo_last );
-        }
         return true;
     }
 
