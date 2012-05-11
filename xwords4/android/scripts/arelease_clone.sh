@@ -18,6 +18,10 @@ TAG=""
 BRANCH=""
 VARIANT="XWords4"
 
+if [ -f ./AndroidManifest.xml ]; then # we're in the right directory
+    VARIANT=$(basename $(pwd))
+fi
+
 while [ 0 -lt $# ] ; do
     case $1 in
         --tag)
