@@ -32,16 +32,17 @@ timer_func( gpointer data )
 }
 
 XP_Bool
-gtkask( const gchar *message, GtkButtonsType buttons )
+gtkask( GtkWidget* parent, const gchar *message, GtkButtonsType buttons )
 {
-    return gtkask_timeout( message, buttons, 0 );
+    return gtkask_timeout( parent, message, buttons, 0 );
 }
 
 XP_Bool
-gtkask_timeout( const gchar *message, GtkButtonsType buttons, XP_U16 timeout )
+gtkask_timeout( GtkWidget* parent, const gchar *message, 
+                GtkButtonsType buttons, XP_U16 timeout )
 {
     guint src = 0;
-    GtkWidget* dlg = gtk_message_dialog_new( NULL, /* parent */
+    GtkWidget* dlg = gtk_message_dialog_new( (GtkWindow*)parent, 
                                              GTK_MESSAGE_QUESTION,
                                              GTK_DIALOG_MODAL,
                                              buttons, "%s", message );

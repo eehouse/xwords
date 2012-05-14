@@ -27,9 +27,10 @@
 
 /* Returns true for "yes" or "ok" answer, false otherwise.
  */
-XP_Bool gtkask( const gchar *message, GtkButtonsType buttons );
-XP_Bool gtkask_timeout( const gchar *message, GtkButtonsType buttons, 
-                        XP_U16 timeout );
+XP_Bool gtkask( GtkWidget* parent, const gchar *message, 
+                GtkButtonsType buttons );
+XP_Bool gtkask_timeout( GtkWidget* parent, const gchar *message, 
+                        GtkButtonsType buttons, XP_U16 timeout );
 
 #endif
 #endif /* PLATFORM_GTK */

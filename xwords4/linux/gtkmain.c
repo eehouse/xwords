@@ -314,7 +314,7 @@ relay_status_gtk( void* closure, CommsRelayState state )
 }
 
 static void
-relay_connd_gtk( void* XP_UNUSED(closure), XP_UCHAR* const room,
+relay_connd_gtk( void* closure, XP_UCHAR* const room,
                  XP_Bool XP_UNUSED(reconnect), XP_U16 devOrder, 
                  XP_Bool allHere, XP_U16 nMissing )
 {
@@ -336,7 +336,8 @@ relay_connd_gtk( void* XP_UNUSED(closure), XP_UCHAR* const room,
     }
 
     if ( !skip ) {
-        (void)gtkask_timeout( buf, GTK_BUTTONS_OK, 500 );
+        GtkAppGlobals* globals = (GtkAppGlobals*)closure;
+        (void)gtkask_timeout( globals->window, buf, GTK_BUTTONS_OK, 500 );
     }
 }
 
@@ -373,7 +374,8 @@ relay_error_gtk( void* closure, XWREASON relayErr )
         proc = invoke_new_game;
         break;
     case XWRELAY_ERROR_DELETED:
-        gtkask_timeout( "relay says another device deleted game.", 
+        gtkask_timeout( globals->window,
+                        "relay says another device deleted game.", 
                         GTK_BUTTONS_OK, 1000 );
         break;
     default:
@@ -767,7 +769,8 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     if ( gameOver ) {
         catFinalScores( &globals->cGlobals );
     } else {
-        if ( gtkask( "Are you sure everybody wants to end the game now?", 
+        if ( gtkask( globals->window,
+                     "Are you sure everybody wants to end the game now?", 
                      GTK_BUTTONS_YES_NO ) ) {
             server_endGame( globals->cGlobals.game.server );
             gameOver = TRUE;
@@ -1297,7 +1300,7 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 } /* handle_commit_button */
 
 static void
-gtkUserError( GtkAppGlobals* XP_UNUSED(globals), const char* format, ... )
+gtkUserError( GtkAppGlobals* globals, const char* format, ... )
 {
     char buf[512];
     va_list ap;
@@ -1306,7 +1309,7 @@ gtkUserError( GtkAppGlobals* XP_UNUSED(globals), const char* format, ... )
 
     vsprintf( buf, format, ap );
 
-    (void)gtkask( buf, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
 
     va_end(ap);
 } /* gtkUserError */
@@ -1400,10 +1403,11 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
 } /* gtk_util_yOffsetChange */
 
 static void
-gtkShowFinalScores( const CommonGlobals* cGlobals )
+gtkShowFinalScores( const GtkAppGlobals* globals )
 {
     XWStreamCtxt* stream;
     XP_UCHAR* text;
+    const CommonGlobals* cGlobals = &globals->cGlobals;
 
     stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
                               cGlobals->params->vtMgr,
@@ -1413,17 +1417,18 @@ gtkShowFinalScores( const CommonGlobals* cGlobals )
     text = strFromStream( stream );
     stream_destroy( stream );
 
-    (void)gtkask_timeout( text, GTK_BUTTONS_OK, 500 );
+    (void)gtkask_timeout( globals->window, text, GTK_BUTTONS_OK, 500 );
 
     free( text );
 } /* gtkShowFinalScores */
 
 static void
-gtk_util_informMove( XW_UtilCtxt* XP_UNUSED(uc), XWStreamCtxt* expl, 
+gtk_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
                      XWStreamCtxt* words )
 {
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     char* question = strFromStream( !!words? words : expl );
-    (void)gtkask( question, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, question, GTK_BUTTONS_OK );
     free( question );
 }
 
@@ -1446,7 +1451,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc )
         server_handleUndo( cGlobals->game.server );
         board_draw( cGlobals->game.board );
     } else if ( !cGlobals->params->skipGameOver ) {
-        gtkShowFinalScores( cGlobals );
+        gtkShowFinalScores( globals );
     }
 } /* gtk_util_notifyGameOver */
 
@@ -1670,7 +1675,7 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
         XP_ASSERT( bwi->nWords == 1 );
         sprintf( buf, "Word \"%s\" not in the current dictionary. "
                  "Use it anyway?", bwi->words[0] );
-        result = gtkask( buf, GTK_BUTTONS_YES_NO );
+        result = gtkask( globals->window, buf, GTK_BUTTONS_YES_NO );
     }
 
     return result;
@@ -1690,7 +1695,7 @@ gtk_util_remSelected( XW_UtilCtxt* uc )
     text = strFromStream( stream );
     stream_destroy( stream );
 
-    (void)gtkask( text, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, text, GTK_BUTTONS_OK );
     free( text );
 }
 
@@ -1709,9 +1714,10 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #ifdef XWFEATURE_CHAT
 static void
-gtk_util_showChat( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* const msg )
+gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg )
 {
-    (void)gtkask( msg, GTK_BUTTONS_OK );
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK );
 }
 #endif
 #endif
@@ -1779,9 +1785,10 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 } /* gtk_util_userError */
 
 static XP_Bool
-gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id, 
+gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, 
                     XWStreamCtxt* stream )
 {
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     XP_Bool result;
     char* question;
     XP_Bool freeMe = XP_FALSE;
@@ -1804,7 +1811,7 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
         return XP_FALSE;
     }
 
-    result = gtkask( question, buttons );
+    result = gtkask( globals->window, question, buttons );
 
     if ( freeMe ) {
         free( question );
@@ -1814,12 +1821,13 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
 } /* gtk_util_userQuery */
 
 static XP_Bool
-gtk_util_confirmTrade( XW_UtilCtxt* XP_UNUSED(uc), 
+gtk_util_confirmTrade( XW_UtilCtxt* uc, 
                        const XP_UCHAR** tiles, XP_U16 nTiles )
 {
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     char question[256];
     formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
-    return gtkask( question, GTK_BUTTONS_YES_NO );
+    return gtkask( globals->window, question, GTK_BUTTONS_YES_NO );
 }
 
 static GtkWidget*
