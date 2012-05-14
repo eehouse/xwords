@@ -107,6 +107,7 @@ public interface UtilCtxt {
     void userError( int id );
 
     void informMove( String expl, String words );
+    void informUndo();
 
     void informMissing( boolean isServer, CommsAddrRec.CommsConnType connType,
                         int nMissingPlayers );

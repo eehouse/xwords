@@ -261,13 +261,20 @@ and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, XWStreamCtxt* words )
 }
 
 static void
+and_util_informUndo( XW_UtilCtxt* uc )
+{
+    UTIL_CBK_HEADER( "informUndo", "()V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
+}
+
+static void
 and_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
     (*env)->CallVoidMethod( env, util->jutil, mid );
     UTIL_CBK_TAIL();
 }
-
 
 static XP_Bool
 and_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
@@ -567,6 +574,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(    turnChanged);
 #endif
     SET_PROC(informMove);
+    SET_PROC(informUndo);
     SET_PROC(notifyGameOver);
     SET_PROC(hiliteCell);
     SET_PROC(engineProgressCallback);

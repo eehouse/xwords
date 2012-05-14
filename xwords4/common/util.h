@@ -128,6 +128,7 @@ typedef struct UtilVtable {
 #endif
     void (*m_util_informMove)( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
                                XWStreamCtxt* words );
+    void (*m_util_informUndo)( XW_UtilCtxt* uc );
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc );
 
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row );
@@ -241,6 +242,8 @@ struct XW_UtilCtxt {
 
 #define util_informMove(uc,e,w) \
          (uc)->vtable->m_util_informMove( (uc),(e),(w))
+#define util_informUndo(uc) \
+         (uc)->vtable->m_util_informUndo( (uc))
 #define util_notifyGameOver( uc ) \
          (uc)->vtable->m_util_notifyGameOver((uc))
 

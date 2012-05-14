@@ -1395,6 +1395,12 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
+        public void informUndo()
+        {
+            nonBlockingDialog( DLG_OKONLY, getString( R.string.remote_undone ) );
+        }
+
+        @Override
         public void notifyGameOver()
         {
             m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );

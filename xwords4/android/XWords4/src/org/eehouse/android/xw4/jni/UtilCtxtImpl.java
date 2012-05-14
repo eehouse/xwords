@@ -207,6 +207,11 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "informMove" );
     }
 
+    public void informUndo()
+    {
+        subclassOverride( "informUndo" );
+    }
+
     public void informMissing( boolean isServer, 
                                CommsAddrRec.CommsConnType connType,
                                int nMissingPlayers )

@@ -1927,4 +1927,6 @@
     <string name="summary_conn_sms">Game in play with %s</string>
     <string name="warn_unlimited">Are you certain this number is on an
     account with unlimited texting?  Click cancel if you are not.</string>
+
+    <string name="remote_undone">Remote device undid a turn.</string>
 </resources>

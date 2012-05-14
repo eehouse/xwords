@@ -1433,6 +1433,14 @@ gtk_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl,
 }
 
 static void
+gtk_util_informUndo( XW_UtilCtxt* uc )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    (void)gtkask_timeout( globals->window, "Remote player undid a move",
+                          GTK_BUTTONS_OK, 500 );
+}
+
+static void
 gtk_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
@@ -1978,6 +1986,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
     util->vtable->m_util_yOffsetChange = gtk_util_yOffsetChange;
     util->vtable->m_util_informMove = gtk_util_informMove;
+    util->vtable->m_util_informUndo = gtk_util_informUndo;
     util->vtable->m_util_notifyGameOver = gtk_util_notifyGameOver;
     util->vtable->m_util_hiliteCell = gtk_util_hiliteCell;
     util->vtable->m_util_altKeyDown = gtk_util_altKeyDown;

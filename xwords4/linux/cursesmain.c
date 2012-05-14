@@ -365,6 +365,12 @@ curses_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl,
 }
 
 static void
+curses_util_informUndo( XW_UtilCtxt* XP_UNUSED(uc))
+{
+    LOG_FUNC();
+}
+
+static void
 curses_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
@@ -1508,6 +1514,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_userPickTileTray = curses_util_userPickTileTray;
     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange;
     util->vtable->m_util_informMove = curses_util_informMove;
+    util->vtable->m_util_informUndo = curses_util_informUndo;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
     util->vtable->m_util_engineProgressCallback = 

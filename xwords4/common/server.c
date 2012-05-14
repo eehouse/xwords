@@ -2529,8 +2529,9 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 
             sendUndoToClientsExcept( server, sourceClientIndex, nUndone, 
                                      lastUndone );
-
         }
+
+        util_informUndo( server->vol.util );
         nextTurn( server, turn );
     }
 
