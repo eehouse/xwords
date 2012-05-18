@@ -165,6 +165,7 @@ public class GameListAdapter extends XWListAdapter {
                 LinearLayout list =
                     (LinearLayout)layout.findViewById( R.id.player_list );
                 boolean haveNetTurn = false;
+                boolean[] isLocal = new boolean[1];
                 for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
                     View tmp = m_factory.inflate( R.layout.player_list_elem, 
                                                   null );
@@ -172,8 +173,12 @@ public class GameListAdapter extends XWListAdapter {
                     view.setText( summary.summarizePlayer( ii ) );
                     view = (TextView)tmp.findViewById( R.id.item_score );
                     view.setText( String.format( "  %d", summary.scores[ii] ) );
-                    if ( summary.isNextToPlay( ii ) ) {
-                        tmp.setBackgroundColor( TURN_COLOR );
+                    if ( summary.isNextToPlay( ii, isLocal ) ) {
+                        if ( isLocal[0] ) {
+                            tmp.setBackgroundColor( TURN_COLOR );
+                        } else {
+                            tmp.setBackgroundResource( R.drawable.green_border );
+                        }
                         if ( summary.isMultiGame() ) {
                             haveNetTurn = true;
                         }

@@ -309,8 +309,12 @@ public class GameSummary {
         return result;
     }
 
-    public boolean isNextToPlay( int indx ) {
-        return indx == turn && isLocal(indx);
+    public boolean isNextToPlay( int indx, boolean[] isLocal ) {
+        boolean isNext = indx == turn;
+        if ( isNext ) {
+            isLocal[0] = isLocal(indx);
+        }
+        return isNext;
     }
 
     public String dictNames( String separator ) 
