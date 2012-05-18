@@ -21,8 +21,11 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
+import android.telephony.PhoneNumberUtils;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.R;
 
 public class UtilCtxtImpl implements UtilCtxt {
@@ -236,6 +239,14 @@ public class UtilCtxtImpl implements UtilCtxt {
     public void showChat( String msg )
     {
         subclassOverride( "showChat" );
+    }
+
+    public boolean phoneNumbersSame( String num1, String num2 )
+    {
+        Assert.assertTrue( XWApp.SMSSUPPORTED );
+        boolean same = PhoneNumberUtils.compare( m_context, num1, num2 );
+        DbgUtils.logf( "phoneNumbersSame => %b", same );
+        return same;
     }
 
     private void subclassOverride( String name ) {

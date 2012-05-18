@@ -462,9 +462,14 @@ and_util_phoneNumbersSame( XW_UtilCtxt* uc, const XP_UCHAR* p1,
 {
     XP_Bool same = 0 == strcmp( p1, p2 );
     if ( !same ) {
-        /* If they're same, fine, but if not probably need to call into
-           platform code for a closer look */
-        XP_LOGF( "%s(%s,%s)=>%d", __func__, p1, p2, same );
+        UTIL_CBK_HEADER( "phoneNumbersSame", 
+                         "(Ljava/lang/String;Ljava/lang/String;)Z" );
+        jstring js1 = (*env)->NewStringUTF( env, p1 );
+        jstring js2 = (*env)->NewStringUTF( env, p2 );
+        same = (*env)->CallBooleanMethod( env, util->jutil, mid, js1, js2 );
+        (*env)->DeleteLocalRef( env, js1 );
+        (*env)->DeleteLocalRef( env, js2 );
+        UTIL_CBK_TAIL();
     }
     return same;
 }
