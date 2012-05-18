@@ -460,8 +460,13 @@ static XP_Bool
 and_util_phoneNumbersSame( XW_UtilCtxt* uc, const XP_UCHAR* p1,
                            const XP_UCHAR* p2 )
 {
-    XP_LOGF( "%s(%s,%s)", __func__, p1, p2 );
-    return XP_TRUE;
+    XP_Bool same = 0 == strcmp( p1, p2 );
+    if ( !same ) {
+        /* If they're same, fine, but if not probably need to call into
+           platform code for a closer look */
+        XP_LOGF( "%s(%s,%s)=>%d", __func__, p1, p2, same );
+    }
+    return same;
 }
 #endif
 
