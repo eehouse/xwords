@@ -84,6 +84,7 @@ public class JNIThread extends Thread {
             CMD_SENDCHAT,
             CMD_DRAW_CONNS_STATUS,
             CMD_DRAW_BT_STATUS,
+            CMD_DRAW_SMS_STATUS,
             };
 
     public static final int RUNNING = 1;
@@ -546,6 +547,13 @@ public class JNIThread extends Thread {
                 boolean btWorking = ((Boolean)args[0]).booleanValue();
                 m_connsIconID = btWorking ? R.drawable.bluetooth_active 
                     : R.drawable.bluetooth_disabled;
+                draw = true;
+                break;
+
+            case CMD_DRAW_SMS_STATUS:
+                boolean smsWorking = ((Boolean)args[0]).booleanValue();
+                m_connsIconID = smsWorking ? R.drawable.sms_allconn
+                    : R.drawable.sms_disabled;
                 draw = true;
                 break;
 

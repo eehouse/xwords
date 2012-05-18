@@ -20,10 +20,13 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -51,6 +54,9 @@ public class SMSService extends Service {
 
     private static final String INSTALL_URL = "http://eehouse.org/_/aa.htm ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
+
+    private static final String MSG_SENT = "MSG_SENT";
+    private static final String MSG_DELIVERED = "MSG_DELIVERED";
 
     private static final int SMS_PROTO_VERSION = 0;
     private static final int MAX_LEN_TEXT = 100;
@@ -203,6 +209,7 @@ public class SMSService extends Service {
     public void onCreate()
     {
         if ( XWApp.SMSSUPPORTED ) {
+            registerReceivers();
         } else {
             stopSelf();
         }
@@ -416,11 +423,11 @@ public class SMSService extends Service {
                 break;
             case DEATH:
                 gameID = dis.readInt();
-                s_srcMgr.sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
+                sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
                 break;
             case ACK:
                 gameID = dis.readInt();
-                s_srcMgr.sendResult( MultiEvent.NEWGAME_SUCCESS, 
+                sendResult( MultiEvent.NEWGAME_SUCCESS, 
                                      gameID );
                 break;
             default:
@@ -442,6 +449,8 @@ public class SMSService extends Service {
             int index = Integer.valueOf( parts[2], 16 );
             int count = Integer.valueOf( parts[3], 16 );
             tryAssemble( senderPhone, id, index, count, parts[4] );
+            
+            sendResult( MultiEvent.SMS_RECEIVE_OK );
         }
     }
 
@@ -498,17 +507,25 @@ public class SMSService extends Service {
         }
     }
 
+    private PendingIntent makeStatusIntent( String msg )
+    {
+        Intent intent = new Intent( msg );
+        return PendingIntent.getBroadcast( this, 0, intent, 0 );
+    }
+
     private boolean sendBuffers( String[] fragments, String phone )
     {
         DbgUtils.logf( "SMSService.sendBuffers()" );
         boolean success = false;
         try {
             SmsManager mgr = SmsManager.getDefault();
+            PendingIntent sent = makeStatusIntent( MSG_SENT );
+            PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
             for ( String fragment : fragments ) {
                 DbgUtils.logf( "sending len %d packet: %s", 
                                fragment.length(), fragment );
                 String asPublic = toPublicFmt( fragment );
-                mgr.sendTextMessage( phone, null, asPublic, null, null );
+                mgr.sendTextMessage( phone, null, asPublic, sent, delivery );
                 DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
                                asPublic, asPublic.length(), phone );
             }
@@ -572,6 +589,53 @@ public class SMSService extends Service {
         } catch ( Exception ee ) {
             DbgUtils.logf( "checkMsgDB: %s", ee.toString() );
         }
+    }
+
+    private void sendResult( MultiEvent event, Object ... args )
+    {
+        if ( null != s_srcMgr ) {
+            s_srcMgr.sendResult( event, args );
+        }
+    }
+
+    private void registerReceivers()
+    {
+        registerReceiver( new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context arg0, Intent arg1) 
+                {
+                    DbgUtils.logf( "got MSG_DELIVERED" );
+                    switch ( getResultCode() ) {
+                    case Activity.RESULT_OK:
+                        sendResult( MultiEvent.SMS_SEND_OK );
+                        DbgUtils.logf( "SUCCESS!!!" );
+                        break;
+                    case SmsManager.RESULT_ERROR_RADIO_OFF:
+                        DbgUtils.showf( SMSService.this, "NO RADIO!!!" );
+                        sendResult( MultiEvent.SMS_SEND_FAILED_NORADIO );
+                        break;
+                    case SmsManager.RESULT_ERROR_NO_SERVICE:
+                        DbgUtils.showf( SMSService.this, "NO SERVICE!!!" );
+                    default:
+                        DbgUtils.logf( "FAILURE!!!" );
+                        sendResult( MultiEvent.SMS_SEND_FAILED );
+                        break;
+                    }
+                }
+            }, new IntentFilter(MSG_SENT) );
+
+        registerReceiver( new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context arg0, Intent arg1) 
+                {
+                    DbgUtils.logf( "got MSG_DELIVERED" );
+                    if ( Activity.RESULT_OK == getResultCode() ) {
+                        DbgUtils.logf( "SUCCESS!!!" );
+                    } else {
+                        DbgUtils.logf( "FAILURE!!!" );
+                    }
+                }
+            }, new IntentFilter(MSG_DELIVERED) );
     }
 
     private class SMSMsgSink extends MultiMsgSink {

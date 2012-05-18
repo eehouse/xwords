@@ -37,6 +37,11 @@ public class MultiService {
                           , MESSAGE_RESEND
                           , MESSAGE_FAILOUT
                           , MESSAGE_DROPPED
+
+                          , SMS_RECEIVE_OK
+                          , SMS_SEND_OK
+                          , SMS_SEND_FAILED
+                          , SMS_SEND_FAILED_NORADIO
             };
 
     public interface BTEventListener {
