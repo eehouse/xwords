@@ -328,7 +328,6 @@ public class SMSService extends Service {
 
     public int sendPacket( String phone, int gameID, byte[] bytes )
     {
-        DbgUtils.logf( "non-static SMSService.sendPacket()" );
         int nSent = -1;
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
@@ -515,15 +514,12 @@ public class SMSService extends Service {
 
     private boolean sendBuffers( String[] fragments, String phone )
     {
-        DbgUtils.logf( "SMSService.sendBuffers()" );
         boolean success = false;
         try {
             SmsManager mgr = SmsManager.getDefault();
             PendingIntent sent = makeStatusIntent( MSG_SENT );
             PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
             for ( String fragment : fragments ) {
-                DbgUtils.logf( "sending len %d packet: %s", 
-                               fragment.length(), fragment );
                 String asPublic = toPublicFmt( fragment );
                 mgr.sendTextMessage( phone, null, asPublic, sent, delivery );
                 DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
