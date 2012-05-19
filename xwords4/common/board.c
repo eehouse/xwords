@@ -387,7 +387,7 @@ board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top,
               XP_U16 width, XP_U16 height, XP_U16 maxCellSz,
               XP_Bool leftHanded )
 {
-    XP_LOGF( "%s(%d,%d,%d,%d)", __func__, left, top, width, height );
+    /* XP_LOGF( "%s(%d,%d,%d,%d)", __func__, left, top, width, height ); */
 
     board->boardBounds.left = left;
     board->boardBounds.top = top;
@@ -1365,8 +1365,8 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
                   XP_U16 trayWidth, XP_U16 trayHeight,
                   XP_U16 minDividerWidth )
 {
-    XP_LOGF( "%s(%d,%d,%d,%d)", __func__, trayLeft, trayTop, 
-             trayWidth, trayHeight );
+    /* XP_LOGF( "%s(%d,%d,%d,%d)", __func__, trayLeft, trayTop,  */
+             /* trayWidth, trayHeight ); */
 
     XP_U16 dividerWidth;
     /* XP_U16 boardBottom, boardRight; */
