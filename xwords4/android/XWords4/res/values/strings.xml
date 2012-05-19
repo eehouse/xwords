@@ -1915,7 +1915,7 @@
     <string name="button_use">Use anyway</string>
     <string name="empty_sms_inviter">Phone list is empty. Use the
     \"Import contact\" button to add people you want to
-    invite, the + button to enter numbers.</string>
+    invite, the + button to enter numbers directly.</string>
     <string name="get_sms_number">Enter phone number:</string>
 
     <string name="confirm_clear">Are you sure you want to delete the
