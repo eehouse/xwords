@@ -456,6 +456,10 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
+        if ( null != result && 1 < result.length ) {
+            DbgUtils.logf( "getRowIDsFor(%x)=>length %d array", gameID,
+                           result.length );
+        }
         return result;
     }
 
