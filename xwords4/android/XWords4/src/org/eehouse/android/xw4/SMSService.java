@@ -540,17 +540,25 @@ public class SMSService extends Service {
 
     private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
     {
-        long rowid = DBUtils.getRowIDFor( this, gameID );
-        if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+        long[] rowids = DBUtils.getRowIDsFor( this, gameID );
+        if ( null == rowids || 0 == rowids.length ) {
             sendDiedPacket( addr.sms_phone, gameID );
-        } else if ( BoardActivity.feedMessage( gameID, msg, addr ) ) {
-            // do nothing
         } else {
-            SMSMsgSink sink = new SMSMsgSink( this );
-            if ( GameUtils.feedMessage( this, rowid, msg, addr, sink ) ) {
-                postNotification( gameID, R.string.new_smsmove_title, 
-                                  getString(R.string.new_move_body)
-                                  );
+            for ( long rowid : rowids ) {
+                if ( BoardActivity.feedMessage( gameID, msg, addr ) ) {
+                    // do nothing
+                } else {
+                    SMSMsgSink sink = new SMSMsgSink( this );
+                    if ( GameUtils.feedMessage( this, rowid, msg, addr, 
+                                                sink ) ) {
+                        postNotification( gameID, R.string.new_smsmove_title, 
+                                          getString(R.string.new_move_body)
+                                          );
+                    }
+                }
+                if ( 1 < rowids.length ) {
+                    msg = (byte[])msg.clone();
+                }
             }
         }
     }

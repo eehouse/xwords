@@ -414,9 +414,9 @@ public class DBUtils {
         return result;
     }
 
-    public static long getRowIDFor( Context context, String relayID )
+    public static long[] getRowIDsFor( Context context, String relayID )
     {
-        long result = ROWID_NOTFOUND;
+        long[] result = null;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
@@ -424,8 +424,11 @@ public class DBUtils {
             String selection = DBHelper.RELAYID + "='" + relayID + "'";
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
-            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                result = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
+            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                if ( null == result ) {
+                    result = new long[cursor.getCount()];
+                }
+                result[ii] = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
             }
             cursor.close();
             db.close();
@@ -433,9 +436,9 @@ public class DBUtils {
         return result;
     }
 
-    public static long getRowIDFor( Context context, int gameID )
+    public static long[] getRowIDsFor( Context context, int gameID )
     {
-        long result = ROWID_NOTFOUND;
+        long[] result = null;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
@@ -443,8 +446,12 @@ public class DBUtils {
             String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
-            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                result = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
+
+            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                if ( null == result ) {
+                    result = new long[cursor.getCount()];
+                }
+                result[ii] = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
             }
             cursor.close();
             db.close();

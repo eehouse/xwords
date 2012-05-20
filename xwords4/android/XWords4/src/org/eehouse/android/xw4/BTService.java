@@ -431,8 +431,8 @@ public class BTService extends Service {
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
 
-            if ( DBUtils.ROWID_NOTFOUND == DBUtils.getRowIDFor( BTService.this,
-                                                                gameID ) ) {
+            long[] rowids = DBUtils.getRowIDsFor( BTService.this, gameID );
+            if ( null == rowids || 0 == rowids.length ) {
                 String sender = host.getName();
                 CommsAddrRec addr = new CommsAddrRec( sender, host.getAddress() );
                 long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
@@ -476,8 +476,9 @@ public class BTService extends Service {
                                    len, host.getName(), gameID );
 
                     // check if it's still here
-                    long rowid = DBUtils.getRowIDFor( BTService.this, gameID );
-                    boolean haveGame = DBUtils.ROWID_NOTFOUND != rowid;
+                    long[] rowids = DBUtils.getRowIDsFor( BTService.this, 
+                                                          gameID );
+                    boolean haveGame = null != rowids && 0 < rowids.length;
                     BTCmd result = haveGame ? 
                         BTCmd.MESG_ACCPT : BTCmd.MESG_GAMEGONE;
 
@@ -490,18 +491,24 @@ public class BTService extends Service {
                     CommsAddrRec addr = new CommsAddrRec( host.getName(), 
                                                           host.getAddress() );
 
-                    if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
-                        // do nothing
-                    } else if ( haveGame && 
-                                GameUtils.feedMessage( BTService.this, rowid, 
-                                                       buffer, addr, 
-                                                       m_btMsgSink ) ) {
-                        postNotification( gameID, R.string.new_btmove_title, 
-                                          R.string.new_move_body );
-                        // do nothing
-                    } else {
-                        DbgUtils.logf( "nobody took msg for gameID %X", 
-                                       gameID );
+                    for ( long rowid : rowids ) {
+                        if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
+                            // do nothing
+                        } else if ( haveGame && 
+                                    GameUtils.feedMessage( BTService.this, rowid, 
+                                                           buffer, addr, 
+                                                           m_btMsgSink ) ) {
+                            postNotification( gameID, R.string.new_btmove_title, 
+                                              R.string.new_move_body );
+                            // do nothing
+                        } else {
+                            DbgUtils.logf( "nobody took msg for gameID %X", 
+                                           gameID );
+                        }
+                        // duplicate in case recipient modifies the msg
+                        if ( 1 < rowids.length ) {
+                            buffer = (byte[])buffer.clone();
+                        }
                     }
                 } else {
                     DbgUtils.logf( "receiveMessages: read only %d of %d bytes",

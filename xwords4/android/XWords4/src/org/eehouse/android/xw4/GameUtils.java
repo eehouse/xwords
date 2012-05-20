@@ -718,10 +718,13 @@ public class GameUtils {
     public static boolean feedMessages( Context context, String relayID,
                                         byte[][] msgs, MultiMsgSink sink )
     {
-        long rowid = DBUtils.getRowIDFor( context, relayID );
-        boolean draw = -1 != rowid;
+        long[] rowids = DBUtils.getRowIDsFor( context, relayID );
+        boolean draw = null != rowids;
         if ( draw ) {
-            draw = feedMessages( context, rowid, msgs, null, sink );
+            draw = false;
+            for ( long rowid : rowids ) {
+                draw = feedMessages( context, rowid, msgs, null, sink ) || draw;
+            }
         }
         return draw;
     }

@@ -668,8 +668,12 @@ public class GamesList extends XWListActivity
     {
         if ( null != relayIDs ) {
             for ( String relayID : relayIDs ) {
-                long rowid = DBUtils.getRowIDFor( this, relayID );
-                m_adapter.inval( rowid );
+                long[] rowids = DBUtils.getRowIDsFor( this, relayID );
+                if ( null != rowids ) {
+                    for ( long rowid : rowids ) {
+                        m_adapter.inval( rowid );
+                    }
+                }
             }
             onContentChanged();
         }
@@ -680,11 +684,16 @@ public class GamesList extends XWListActivity
     private void startFirstHasDict( String[] relayIDs )
     {
         if ( null != relayIDs ) {
+            outer:
             for ( String relayID : relayIDs ) {
-                long rowid = DBUtils.getRowIDFor( this, relayID );
-                if ( -1 != rowid && GameUtils.gameDictsHere( this, rowid ) ) {
-                    GameUtils.launchGame( this, rowid );
-                    break;
+                long[] rowids = DBUtils.getRowIDsFor( this, relayID );
+                if ( null != rowids ) {
+                    for ( long rowid : rowids ) {
+                        if ( GameUtils.gameDictsHere( this, rowid ) ) {
+                            GameUtils.launchGame( this, rowid );
+                            break outer;
+                        }
+                    }
                 }
             }
         }
@@ -732,9 +741,9 @@ public class GamesList extends XWListActivity
 
     private void startHasGameID( int gameID )
     {
-        long rowid = DBUtils.getRowIDFor( this, gameID );
-        if ( DBUtils.ROWID_NOTFOUND != rowid ) {
-            GameUtils.launchGame( this, rowid );
+        long[] rowids = DBUtils.getRowIDsFor( this, gameID );
+        if ( null != rowids && 0 < rowids.length ) {
+            GameUtils.launchGame( this, rowids[0] );
         }
     }
 
