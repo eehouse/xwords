@@ -60,12 +60,19 @@ public class RelayService extends Service {
 
     private void setupNotification( String[] relayIDs )
     {
-        Intent intent = new Intent( this, DispatchNotify.class );
-        intent.putExtra( DispatchNotify.RELAYIDS_EXTRA, relayIDs );
-
-        for ( String id : relayIDs ) {
-            Utils.postNotification( this, intent, R.string.notify_title,
-                                    R.string.notify_body, id.hashCode() );
+        for ( String relayID : relayIDs ) {
+            long[] rowids = DBUtils.getRowIDsFor( this, relayID );
+            if ( null != rowids ) {
+                for ( long rowid : rowids ) {
+                    Intent intent = new Intent( this, DispatchNotify.class );
+                    intent.putExtra( DispatchNotify.RELAYIDS_EXTRA, 
+                                     new String[] {relayID} );
+                    String msg = Utils.format( this, R.string.notify_bodyf, 
+                                               GameUtils.getName( this, rowid ) );
+                    Utils.postNotification( this, intent, R.string.notify_title,
+                                            msg, relayID.hashCode() );
+                }
+            }
         }
     }
 

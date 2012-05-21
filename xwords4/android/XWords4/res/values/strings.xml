@@ -1500,7 +1500,7 @@
     device, and the body that appears when you pull the notifications
     down. -->
     <string name="notify_title">Moves made</string>
-    <string name="notify_body">New game moves have arrived</string>
+    <string name="notify_bodyf">Activity in game "%s"</string>
 
     <!--
         ############################################################
