@@ -55,6 +55,7 @@ public class Utils {
     private static Boolean s_isFirstBootEver = null;
     private static HashMap<String,String> s_phonesHash = 
         new HashMap<String,String>();
+    private static int s_nextCode = 0; // keep PendingIntents unique
 
     private Utils() {}
 
@@ -115,9 +116,15 @@ public class Utils {
     public static void postNotification( Context context, Intent intent, 
                                          int titleID, String body, int id )
     {
-        PendingIntent pi = PendingIntent.
-            getActivity( context, 0, intent, 
-                         PendingIntent.FLAG_UPDATE_CURRENT );
+        /* s_nextCode: per this link
+           http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
+           one way to avoid getting the same PendingIntent for similar
+           Intents is to send a different second param each time,
+           though the docs say that param's ignored.
+        */
+        PendingIntent pi = 
+            PendingIntent.getActivity( context, ++s_nextCode, intent, 
+                                       PendingIntent.FLAG_ONE_SHOT );
 
         String title = context.getString( titleID );
         Notification notification = 
@@ -137,6 +144,13 @@ public class Utils {
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
         nm.notify( id, notification );
+    }
+
+    public static void cancelNotification( Context context, int id )
+    {
+        NotificationManager nm = (NotificationManager)
+            context.getSystemService( Context.NOTIFICATION_SERVICE );
+        nm.cancel( id );
     }
 
     // adapted from
@@ -173,13 +187,6 @@ public class Utils {
             name = phone;
         }
         return name;
-    }
-
-    public static void cancelNotification( Context context, int id )
-    {
-        NotificationManager nm = (NotificationManager)
-            context.getSystemService( Context.NOTIFICATION_SERVICE );
-        nm.cancel( id );
     }
 
     public static View inflate( Context context, int layoutId )
