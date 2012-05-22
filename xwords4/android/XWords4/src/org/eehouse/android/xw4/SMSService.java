@@ -43,6 +43,7 @@ import java.io.OutputStream;
 import java.lang.System;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
@@ -89,6 +90,7 @@ public class SMSService extends Service {
     private static int s_nSent = 0;
     private static HashMap<String, HashMap <Integer, MsgStore>> s_partialMsgs
         = new HashMap<String, HashMap <Integer, MsgStore>>();
+    private static HashSet<Integer> s_sentDied = new HashSet<Integer>();
 
     public static void smsToastEnable( boolean newVal ) 
     {
@@ -315,14 +317,17 @@ public class SMSService extends Service {
 
     private void sendDiedPacket( String phone, int gameID )
     {
-        ByteArrayOutputStream bas = new ByteArrayOutputStream( 32 );
-        DataOutputStream das = new DataOutputStream( bas );
-        try {
-            das.writeInt( gameID );
-            das.flush();
-            send( SMS_CMD.DEATH, bas.toByteArray(), phone );
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "sendDiedPacket: ioe: %s", ioe.toString() );
+        if ( !s_sentDied.contains(gameID) ) {
+            ByteArrayOutputStream bas = new ByteArrayOutputStream( 32 );
+            DataOutputStream das = new DataOutputStream( bas );
+            try {
+                das.writeInt( gameID );
+                das.flush();
+                send( SMS_CMD.DEATH, bas.toByteArray(), phone );
+                s_sentDied.add( gameID );
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.logf( "sendDiedPacket: ioe: %s", ioe.toString() );
+            }
         }
     }
 
@@ -347,7 +352,6 @@ public class SMSService extends Service {
     private boolean send( SMS_CMD cmd, byte[] bytes, String phone )
         throws java.io.IOException
     {
-        DbgUtils.logf( "non-static SMSService.sendPacket()" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
         das.writeByte( SMS_PROTO_VERSION );
