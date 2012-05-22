@@ -196,11 +196,7 @@ public class GameListAdapter extends XWListAdapter {
                     (ImageView)layout.findViewById( R.id.msg_marker );
                 CommsConnType conType = summary.conType;
                 if ( CommsConnType.COMMS_CONN_RELAY == conType ) {
-                    if ( summary.pendingMsgLevel != GameSummary.MSG_FLAGS_NONE ) {
-                        iconID = R.drawable.ic_popup_sync_1;
-                    } else {
-                        iconID = R.drawable.relaygame;
-                    }
+                    iconID = R.drawable.relaygame;
                 } else if ( CommsConnType.COMMS_CONN_BT == conType ) {
                     iconID = android.R.drawable.stat_sys_data_bluetooth;
                 } else if ( CommsConnType.COMMS_CONN_SMS == conType ) {
