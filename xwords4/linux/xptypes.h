@@ -90,6 +90,7 @@ extern void linux_debugf(const char*, ...)
 #else
 
 # define XP_MALLOC(pool,nbytes)       malloc(nbytes)
+# define XP_CALLOC(pool,nbytes)       calloc(1,nbytes)
 # define XP_REALLOC(pool,p,s)         realloc((p),(s))
 # define XP_FREE(pool,p)              free(p)
 void linux_freep( void** ptrp );

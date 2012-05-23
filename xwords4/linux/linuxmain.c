@@ -318,9 +318,10 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
         /* 0-length packet closes it off */
         XP_LOGF( "%s: writing 0-length packet", __func__ );
         len = 0;
+#ifdef DEBUG
         ssize_t nwritten = write( fd, &len, sizeof(len) );
         XP_ASSERT( nwritten == sizeof(len) );
-
+#endif
         close( fd );
     }
 
