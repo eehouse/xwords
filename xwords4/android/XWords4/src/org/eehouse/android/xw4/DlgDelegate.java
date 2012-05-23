@@ -440,11 +440,12 @@ public class DlgDelegate {
         if ( null == m_cbkOnDismissLstnr ) {
             m_cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
                     public void onDismiss( DialogInterface di ) {
-                        if ( SKIP_CALLBACK != m_cbckID ) {
-                            m_clickCallback.dlgButtonClicked( m_cbckID, 
+                        int cbckID = m_cbckID;
+                        m_cbckID = 0;
+                        if ( SKIP_CALLBACK != cbckID ) {
+                            m_clickCallback.dlgButtonClicked( cbckID, 
                                                               DISMISS_BUTTON );
                         }
-                        m_cbckID = 0;
                     }
                 };
         }

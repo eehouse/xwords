@@ -64,6 +64,7 @@ public class SMSInviteActivity extends InviteActivity {
     private ImageButton m_addButton;
     private String m_pendingName;
     private String m_pendingNumber;
+    private boolean m_immobileConfirmed;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -191,20 +192,28 @@ public class SMSInviteActivity extends InviteActivity {
     @Override
     public void dlgButtonClicked( int id, int which )
     {
-        if ( AlertDialog.BUTTON_POSITIVE == which ) {
+        switch( which ) {
+        case AlertDialog.BUTTON_POSITIVE:
             switch( id ) {
             case CLEAR_ACTION:
                 clearSelectedImpl();
                 break;
             case USE_IMMOBILE_ACTION:
-                showConfirmThen( R.string.warn_unlimited, R.string.button_yes, 
-                                 POST_WARNING_ACTION );
+                m_immobileConfirmed = true;
                 break;
             case POST_WARNING_ACTION:
                 addChecked( new PhoneRec( m_pendingName, m_pendingNumber ) );
                 saveAndRebuild();
                 break;
             }
+            break;
+        case DlgDelegate.DISMISS_BUTTON:
+            if ( USE_IMMOBILE_ACTION == id && m_immobileConfirmed ) {
+                showConfirmThen( R.string.warn_unlimited, 
+                                 R.string.button_yes, 
+                                 POST_WARNING_ACTION );
+            }
+            break;
         }
     }
 
@@ -243,6 +252,7 @@ public class SMSInviteActivity extends InviteActivity {
                 showConfirmThen( R.string.warn_unlimited, R.string.button_yes, 
                                  POST_WARNING_ACTION );
             } else {
+                m_immobileConfirmed = false;
                 String msg = Utils.format( this, R.string.warn_nomobilef,
                                            number, name );
                 showConfirmThen( msg, R.string.button_yes, USE_IMMOBILE_ACTION );
