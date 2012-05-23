@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001, 2006 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001, 2006-2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -25,6 +25,7 @@
 #include "movestak.h"
 #include "memstream.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 /* HASH_STREAM: It should be possible to hash the move stack by simply hashing
    the stream from the beginning to the top of the undo stack (excluding
@@ -33,7 +34,6 @@
    have a XWStreamPos that corresponds to the undo-top and so I can't figure
    out the length.  Hashing that includes the redo part of the stack doesn't
    work once there's been undo activity.  (Not sure why...)  */
-// #define HASH_STREAM 
 
 #ifdef CPLUS
 extern "C" {
@@ -67,20 +67,6 @@ stack_init( StackCtxt* stack )
 } /* stack_init */
 
 #ifdef STREAM_VERS_BIGBOARD
-#ifdef HASH_STREAM
-static XP_U16
-figureStackSize( const StackCtxt* stack )
-{
-    XWStreamCtxt* data = stack->data;
-    XWStreamPos oldReadPos = stream_setPos( data, POS_READ, START_OF_STREAM );
-    XWStreamPos oldWritePos = stream_setPos( data, POS_WRITE, stack->cachedPos );
-    XP_U16 len = stream_getSize( data );
-    (void)stream_setPos( data, POS_READ, oldReadPos );
-    (void)stream_setPos( data, POS_WRITE, oldWritePos );
-    return len;
-}
-#endif
-
 static XP_U32
 augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
 {
@@ -138,10 +124,12 @@ stack_getHash( StackCtxt* stack )
 {
     XP_U32 hash;
 #ifdef HASH_STREAM
-    XP_U16 len = figureStackSize( stack );
-    const XP_U8* ptr = stream_getPtr( stack->data );
-    LOG_HEX( ptr, len, __func__ );
-    hash = augmentHash( 0L, ptr, len );
+    XP_U16 len = 0;
+    stream_copyBits( stack->data, 0, stack->top, NULL, &len );
+    XP_U8 buf[len];
+    stream_copyBits( stack->data, 0, stack->top, buf, &len );
+    LOG_HEX( buf, len, __func__ );
+    hash = augmentHash( 0L, buf, len );
 #else
     XP_U16 nn, nEntries = stack->nEntries;
     hash = 0L;
@@ -312,7 +300,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
     stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
-    // XP_LOGF( "after %s size now %d", __func__, figureStackSize( stack ) );
+    XP_LOGSTREAM( stack->data );
 } /* pushEntry */
 
 static void
@@ -485,7 +473,7 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
         setCacheReadyFor( stack, nn ); /* set cachedPos by side-effect */
         stack->top = stack->cachedPos;
     }
-    //XP_LOGF( "after %s size now %d", __func__, figureStackSize( stack ) );
+    XP_LOGSTREAM( stack->data );
     return found;
 } /* stack_popEntry */
 

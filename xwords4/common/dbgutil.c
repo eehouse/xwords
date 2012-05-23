@@ -21,6 +21,7 @@
 #ifdef ENABLE_LOGGING
 
 #include "dbgutil.h"
+#include "strutils.h"
 
 #define CASESTR(s) case s: return #s
 
@@ -76,17 +77,17 @@ BoardObjectType_2str( BoardObjectType obj )
 
 #ifdef DEBUG
 void
-dbg_logstream( XWStreamCtxt* stream, const char* func, int line )
+dbg_logstream( const XWStreamCtxt* stream, const char* func, int line )
 {
     if ( !!stream ) {
-        XWStreamPos pos = stream_getPos( stream, POS_READ );
-        XP_U16 len = stream_getSize( stream );
-        XP_UCHAR buf[len+1];
-        stream_getBytes( stream, buf, len );
-        buf[len] = '\0';
-        XP_LOGF( "stream %p at pos %lx from line %d of func %s: \"%s\"", stream,
-                 pos, line, func, buf );
-        (void)stream_setPos( stream, POS_READ, pos );
+        XP_U16 len = 0;
+        XWStreamPos end = stream_getPos( stream, POS_WRITE );
+        stream_copyBits( stream, 0, end, NULL, &len );
+        XP_U8 buf[len];
+        stream_copyBits( stream, 0, end, buf, &len );
+        char comment[128];
+        XP_SNPRINTF( comment, VSIZE(comment), "%s line %d", func, line );
+        LOG_HEX( buf, len, comment );
     } else {
         XP_LOGF( "stream from line %d of func %s is null", 
                  line, func );

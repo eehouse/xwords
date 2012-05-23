@@ -171,6 +171,28 @@ mem_stream_getBits( XWStreamCtxt* p_sctx, XP_U16 nBits )
     return result;
 } /* stream_getBits */
 
+#if defined HASH_STREAM || defined DEBUG
+static void
+mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos XP_UNUSED(startPos),
+                     XWStreamPos endPos, XP_U8* buf, XP_U16* lenp )
+{
+    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    XP_U16 len = BYTE_PART(endPos);
+    XP_Bool hasBits = 0 != BIT_PART(endPos);
+    if ( hasBits ) {
+        ++len;
+    }
+    if ( !!buf && len <= *lenp ) {
+        XP_ASSERT( len <= stream->nBytesAllocated );
+        XP_MEMCPY( buf, stream->buf, len );
+        if ( hasBits ) {
+            buf[len-1] &= 1 << BIT_PART(endPos);
+        }
+    }
+    *lenp = len;
+}
+#endif
+
 static void
 mem_stream_putBytes( XWStreamCtxt* p_sctx, const void* whence, 
                      XP_U16 count )
@@ -441,6 +463,9 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_getU16, mem );
     SET_VTABLE_ENTRY( vtable, stream_getU32, mem );
     SET_VTABLE_ENTRY( vtable, stream_getBits, mem );
+#if defined HASH_STREAM || defined DEBUG
+    SET_VTABLE_ENTRY( vtable, stream_copyBits, mem );
+#endif
 
     SET_VTABLE_ENTRY( vtable, stream_putU8, mem );
     SET_VTABLE_ENTRY( vtable, stream_putBytes, mem );
