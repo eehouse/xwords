@@ -81,4 +81,10 @@ void read_pipe_then_close( CommonGlobals* cGlobals,
 void do_nbs_then_close( CommonGlobals* cGlobals, 
                         const TransportProcs* procs );
 
+#ifdef USE_GLIBLOOP
+void setOneSecondTimer( CommonGlobals* cGlobals );
+#else
+# define setOneSecondTimer( cGlobals )
+#endif
+
 #endif

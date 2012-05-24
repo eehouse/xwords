@@ -58,6 +58,7 @@ typedef struct LaunchParams {
     XP_U16 gameSeed;
     XP_S16 dropNthRcvd;         /* negative means use for random calc */
     XP_U16 nPacketsRcvd;        /* toward dropNthRcvd */
+    XP_U16 undoRatio;
     XP_Bool askNewGame;
     XP_S16 quitAfter;
     XP_Bool sleepOnAnchor;

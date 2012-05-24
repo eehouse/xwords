@@ -2388,6 +2388,8 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     g_signal_connect( GTK_OBJECT(drawing_area), "button_release_event",
                       G_CALLBACK(button_release_event), &globals );
 
+    setOneSecondTimer( &globals.cGlobals );
+
 #ifdef KEY_SUPPORT
 # ifdef KEYBOARD_NAV
     g_signal_connect( GTK_OBJECT(window), "key_press_event",

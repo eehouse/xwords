@@ -1734,6 +1734,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
 #ifdef USE_GLIBLOOP
     cursesListenOnSocket( &g_globals, 0, handle_stdin );
+    setOneSecondTimer( &g_globals.cGlobals );
 #else
     cursesListenOnSocket( &g_globals, 0 ); /* stdin */
 
@@ -1763,7 +1764,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         .flags = COMMS_XPORT_FLAGS_HASNOCONN,
 #endif
     };
-
 
     if ( !!params->pipe && !!params->fileName ) {
         read_pipe_then_close( &g_globals.cGlobals, &procs );

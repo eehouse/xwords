@@ -370,6 +370,36 @@ do_nbs_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
     LOG_RETURN_VOID();
 } /* do_nbs_then_close */
 
+#ifdef USE_GLIBLOOP
+static gboolean
+secondTimerFired( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+
+    /* Undo */
+    XWGame* game = &cGlobals->game;
+    if ( !!game->server && !!game->board ) {
+        XP_U16 undoRatio = cGlobals->params->undoRatio;
+        if ( 0 != undoRatio ) {
+            if ( (XP_RANDOM() % 100) < undoRatio ) {
+                XP_LOGF( "%s: calling server_handleUndo", __func__ );
+                if ( server_handleUndo( game->server ) ) {
+                    board_draw( game->board );
+                }
+            } 
+        }
+    }
+
+    return TRUE;
+}
+
+void
+setOneSecondTimer( CommonGlobals* cGlobals )
+{
+    (void)g_timeout_add_seconds( 1, secondTimerFired, cGlobals );
+}
+#endif
+
 typedef enum {
     CMD_SKIP_GAMEOVER
     ,CMD_SHOW_OTHERSCORES
@@ -435,6 +465,9 @@ typedef enum {
 #ifdef XWFEATURE_SLOW_ROBOT
     ,CMD_SLOWROBOT
     ,CMD_TRADEPCT
+#endif
+#ifdef USE_GLIBLOOP		/* just because hard to implement otherwise */
+    ,CMD_UNDOPCT
 #endif
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,CMD_GTK
@@ -520,6 +553,9 @@ static CmdInfoRec CmdInfoRecs[] = {
 #ifdef XWFEATURE_SLOW_ROBOT
     ,{ CMD_SLOWROBOT, true, "slow-robot", "make robot slower to test network" }
     ,{ CMD_TRADEPCT, true, "trade-pct", "what pct of the time should robot trade" }
+#endif
+#ifdef USE_GLIBLOOP
+    ,{ CMD_UNDOPCT, true, "undo-pct", "each second, what are the odds of doing an undo" }
 #endif
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,{ CMD_GTK, false, "gtk", "use GTK for display" }
@@ -1590,6 +1626,15 @@ main( int argc, char** argv )
                 usage(argv[0], "must be 0 <= n <= 100" );
             }
             break;
+#endif
+
+#ifdef USE_GLIBLOOP
+	case CMD_UNDOPCT:
+            mainParams.undoRatio = atoi( optarg );
+            if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 100 ) {
+                usage(argv[0], "must be 0 <= n <= 100" );
+            }
+	    break;
 #endif
 
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
