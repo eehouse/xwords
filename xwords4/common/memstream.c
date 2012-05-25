@@ -178,14 +178,10 @@ mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos XP_UNUSED(startPos)
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     XP_U16 len = BYTE_PART(endPos);
-    XP_Bool hasBits = 0 != BIT_PART(endPos);
-    if ( hasBits ) {
-        ++len;
-    }
     if ( !!buf && len <= *lenp ) {
         XP_ASSERT( len <= stream->nBytesAllocated );
         XP_MEMCPY( buf, stream->buf, len );
-        if ( hasBits ) {
+        if ( 0 != BIT_PART(endPos) ) {
             buf[len-1] &= 1 << BIT_PART(endPos);
         }
     }
