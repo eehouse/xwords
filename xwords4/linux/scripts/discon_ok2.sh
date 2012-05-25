@@ -17,6 +17,7 @@ DROP_N=""
 MINRUN=2
 ONE_PER_ROOM=""                 # don't run more than one device at a time per room
 USE_GTK=""
+UNDO_PCT=0
 ALL_VIA_RQ=${ALL_VIA_RQ:-FALSE}
 SEED=""
 BOARD_SIZES_OLD=(15)
@@ -160,6 +161,7 @@ build_cmds() {
 
             PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
+            PARAMS="$PARAMS --undo-pct $UNDO_PCT "
             PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
             PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
@@ -454,6 +456,7 @@ function usage() {
     echo "    [--host <hostname>]                                     \\" >&2
     echo "    [--port <int>]                                          \\" >&2
     echo "    [--seed <int>]                                          \\" >&2
+    echo "    [--undo-pct <int>]                                      \\" >&2
     echo "    [--help]                                                \\" >&2
 
     exit 1
@@ -506,6 +509,10 @@ while [ "$#" -gt 0 ]; do
             ;;
         --seed)
             SEED=$(getArg $*)
+            shift
+            ;;
+        --undo-pct)
+            UNDO_PCT=$(getArg $*)
             shift
             ;;
         --help)
