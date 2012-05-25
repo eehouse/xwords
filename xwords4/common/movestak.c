@@ -83,7 +83,7 @@ augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
 }
 
 static XP_U32
-finshHash( XP_U32 hash )
+finishHash( XP_U32 hash )
 {
     hash += (hash << 3);
     hash ^= (hash >> 11);
@@ -143,10 +143,11 @@ stack_getHash( StackCtxt* stack )
         // XP_LOGF( "hash after %d: %.8X", nn, (unsigned int)hash );
     }
     XP_ASSERT( 0 != hash );
-    // LOG_RETURNF( "%.8X", (unsigned int)hash );
 #endif
-    return finshHash( hash );
-}
+    hash = finishHash( hash );
+    // LOG_RETURNF( "%s: %.8X", __func__, (unsigned int)hash );
+    return hash;
+} /* stack_getHash */
 #endif
 
 void
