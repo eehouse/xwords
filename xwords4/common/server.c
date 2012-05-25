@@ -1958,9 +1958,12 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
-        success = hashReceived == model_getHash( server->vol.model );
+        XP_U32 hashLocal = model_getHash( server->vol.model );
+        success = hashReceived == hashLocal;
         if ( !success ) {
-            XP_LOGF( "%s: hash mismatch: dropping move", __func__ );
+            XP_LOGF( "%s: hash mismatch: rcvd %.8X vs local %.8X; dropping move",
+                     __func__, (unsigned int)hashReceived, 
+                     (unsigned int)hashLocal );
         }
     }
 #endif
@@ -2151,7 +2154,6 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     XWStreamCtxt* wordsStream = NULL;
 
     moveOk = XWSTATE_INTURN == server->nv.gameState;
-    XP_ASSERT( moveOk );  /* message permanently lost if dropped here! */
     if ( moveOk ) {
         moveOk = readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
                                &tradedTiles, &isLegal ); /* modifies model */
@@ -2540,7 +2542,7 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 #endif
 
 XP_Bool
-server_handleUndo( ServerCtxt* server )
+server_handleUndo( ServerCtxt* server, XP_U16 limit )
 {
     XP_Bool result = XP_FALSE;
     XP_U16 lastTurnUndone = 0; /* quiet compiler good */
@@ -2567,6 +2569,8 @@ server_handleUndo( ServerCtxt* server )
         XP_ASSERT( moveNum >= 0 );
         lastUndone = moveNum;
         if ( !LP_IS_ROBOT(&gi->players[lastTurnUndone]) ) {
+            break;
+        } else if ( 0 != limit && nUndone >= limit ) {
             break;
         }
     }

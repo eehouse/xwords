@@ -383,7 +383,7 @@ secondTimerFired( gpointer data )
         if ( 0 != undoRatio ) {
             if ( (XP_RANDOM() % 100) < undoRatio ) {
                 XP_LOGF( "%s: calling server_handleUndo", __func__ );
-                if ( server_handleUndo( game->server ) ) {
+                if ( server_handleUndo( game->server, 1 ) ) {
                     board_draw( game->board );
                 }
             } 

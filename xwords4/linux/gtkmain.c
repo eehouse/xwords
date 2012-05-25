@@ -1163,7 +1163,7 @@ handle_juggle_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 static void
 handle_undo_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-    if ( server_handleUndo( globals->cGlobals.game.server ) ) {
+    if ( server_handleUndo( globals->cGlobals.game.server, 0 ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_undo_button */
@@ -1456,7 +1456,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc )
         sleep( cGlobals->params->quitAfter );
         quit();
     } else if ( cGlobals->params->undoWhenDone ) {
-        server_handleUndo( cGlobals->game.server );
+        server_handleUndo( cGlobals->game.server, 0 );
         board_draw( cGlobals->game.board );
     } else if ( !cGlobals->params->skipGameOver ) {
         gtkShowFinalScores( globals );

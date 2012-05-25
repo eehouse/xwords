@@ -801,7 +801,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1handleUndo
 (JNIEnv* env, jclass C, jint gamePtr)
 {
     XWJNI_START();
-    server_handleUndo( state->game.server );
+    server_handleUndo( state->game.server, 0 );
     XWJNI_END();
 }
 

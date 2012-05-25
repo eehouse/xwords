@@ -88,7 +88,7 @@ XP_U16 server_secondsUsedBy( ServerCtxt* server, XP_U16 playerNum );
 
 /* It might make more sense to have the board supply the undo method clients
    call... */
-XP_Bool server_handleUndo( ServerCtxt* server );
+XP_Bool server_handleUndo( ServerCtxt* server, XP_U16 limit );
 
 /* signed because negative number means nobody's turn yet */
 XP_S16 server_getCurrentTurn( ServerCtxt* server );

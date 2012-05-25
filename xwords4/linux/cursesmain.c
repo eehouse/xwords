@@ -387,7 +387,7 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
         sleep( globals->cGlobals.params->quitAfter );
         handleQuit( globals );
     } else if ( globals->cGlobals.params->undoWhenDone ) {
-        server_handleUndo( globals->cGlobals.game.server );
+        server_handleUndo( globals->cGlobals.game.server, 0 );
     } else if ( !globals->cGlobals.params->skipGameOver ) {
         /* This is modal.  Don't show if quitting */
         cursesShowFinalScores( globals );
@@ -757,7 +757,7 @@ handleBackspace( CursesAppGlobals* globals )
 static XP_Bool
 handleUndo( CursesAppGlobals* globals )
 {
-    globals->doDraw = server_handleUndo( globals->cGlobals.game.server );
+    globals->doDraw = server_handleUndo( globals->cGlobals.game.server, 0 );
     return XP_TRUE;
 } /* handleUndo */
 
