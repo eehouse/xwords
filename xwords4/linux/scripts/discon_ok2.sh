@@ -68,14 +68,28 @@ print_cmdline() {
     echo "New cmdline: ${APPS[$COUNTER]} ${ARGS[$COUNTER]}" >> $LOG
 }
 
+function pick_ndevs() {
+    local NDEVS=2
+    local RNUM=$((RANDOM % 100))
+    if [ $RNUM -gt 90 ]; then
+        NDEVS=4
+    elif [ $RNUM -gt 75 ]; then
+        NDEVS=3
+    fi
+    echo $NDEVS
+}
+
 # Given a device count, figure out how many local players per device.
 # "1 1" would be a two-device game with 1 each.  "1 2 1" a
 # three-device game with four players total
 function figure_locals() {
     local NDEVS=$1
+    local NPLAYERS=$(pick_ndevs)
+    [ $NPLAYERS -lt $NDEVS ] && NPLAYERS=$NDEVS
+    
     local EXTRAS=0
     if [ -z "$ONEPER" ]; then
-        EXTRAS=$((4 - $NDEVS))
+        EXTRAS=$(($NPLAYERS - $NDEVS))
     fi
 
     local LOCALS=""
@@ -132,11 +146,11 @@ build_cmds() {
         ROOM=$(printf "ROOM_%.3d" $((GAME % NROOMS)))
         ROOM_PIDS[$ROOM]=0
         check_room $ROOM
-        NDEVS=$(( $RANDOM % ($MAXDEVS-1) + 2 ))
+        NDEVS=$(pick_ndevs)
         LOCALS=( $(figure_locals $NDEVS) ) # as array
         NPLAYERS=$(sum ${LOCALS[@]})
         [ ${#LOCALS[*]} -eq $NDEVS ] || usage "problem with LOCALS"
-        [ $NDEVS -lt $MINDEVS ] && NDEVS=$MINDEVS
+        #[ $NDEVS -lt $MINDEVS ] && NDEVS=$MINDEVS
         DICT=${DICTS[$((GAME%${#DICTS[*]}))]}
         # make one in three games public
         local PUBLIC=""
@@ -161,7 +175,7 @@ build_cmds() {
 
             PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
-            PARAMS="$PARAMS --undo-pct $UNDO_PCT "
+            [ $UNDO_PCT -gt 0 ] && PARAMS="$PARAMS --undo-pct $UNDO_PCT "
             PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
             PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
