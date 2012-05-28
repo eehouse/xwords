@@ -66,7 +66,6 @@ stack_init( StackCtxt* stack )
        shrunk to fit as soon as we serialize/deserialize anyway. */
 } /* stack_init */
 
-#ifdef STREAM_VERS_BIGBOARD
 static XP_U32
 augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
 {
@@ -91,7 +90,6 @@ finishHash( XP_U32 hash )
     return hash;
 }
 
-#ifndef HASH_STREAM
 static XP_U32
 augmentFor( XP_U32 hash, const StackEntry* entry )
 {
@@ -117,22 +115,12 @@ augmentFor( XP_U32 hash, const StackEntry* entry )
     }
     return hash;
 }
-#endif
 
 XP_U32
-stack_getHash( StackCtxt* stack )
+stack_getHashOld( StackCtxt* stack )
 {
-    XP_U32 hash;
-#ifdef HASH_STREAM
-    XP_U16 len = 0;
-    stream_copyBits( stack->data, 0, stack->top, NULL, &len );
-    XP_U8 buf[len];
-    stream_copyBits( stack->data, 0, stack->top, buf, &len );
-    LOG_HEX( buf, len, __func__ );
-    hash = augmentHash( 0L, buf, len );
-#else
     XP_U16 nn, nEntries = stack->nEntries;
-    hash = 0L;
+    XP_U32 hash = 0L;
     for ( nn = 0; nn < nEntries; ++nn ) {
         StackEntry entry;
         XP_MEMSET( &entry, 0, sizeof(entry) );
@@ -143,12 +131,24 @@ stack_getHash( StackCtxt* stack )
         // XP_LOGF( "hash after %d: %.8X", nn, (unsigned int)hash );
     }
     XP_ASSERT( 0 != hash );
-#endif
     hash = finishHash( hash );
-    // LOG_RETURNF( "%s: %.8X", __func__, (unsigned int)hash );
+    LOG_RETURNF( "%.8X", (unsigned int)hash );
+    return hash;
+} /* stack_getHashOld */
+
+XP_U32
+stack_getHash( const StackCtxt* stack )
+{
+    XP_U32 hash;
+    XP_U16 len = 0;
+    stream_copyBits( stack->data, 0, stack->top, NULL, &len );
+    XP_U8 buf[len];
+    stream_copyBits( stack->data, 0, stack->top, buf, &len );
+    // LOG_HEX( buf, len, __func__ );
+    hash = finishHash( augmentHash( 0L, buf, len ) );
+    LOG_RETURNF( "%.8X", (unsigned int)hash );
     return hash;
 } /* stack_getHash */
-#endif
 
 void
 stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile )
@@ -301,7 +301,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
     stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
-    XP_LOGSTREAM( stack->data );
+    // XP_LOGSTREAM( stack->data );
 } /* pushEntry */
 
 static void
@@ -474,7 +474,7 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
         setCacheReadyFor( stack, nn ); /* set cachedPos by side-effect */
         stack->top = stack->cachedPos;
     }
-    XP_LOGSTREAM( stack->data );
+    // XP_LOGSTREAM( stack->data );
     return found;
 } /* stack_popEntry */
 

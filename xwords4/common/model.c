@@ -292,10 +292,42 @@ model_destroy( ModelCtxt* model )
 } /* model_destroy */
 
 XP_U32
-model_getHash( const ModelCtxt* model )
+model_getHash( const ModelCtxt* model, XP_U16 version )
 {
-    XP_ASSERT( !!model->vol.stack );
-    return stack_getHash( model->vol.stack );
+    StackCtxt* stack = model->vol.stack;
+    XP_ASSERT( !!stack );
+    XP_U32 hash =
+#ifdef STREAM_VERS_HASHSTREAM
+    STREAM_VERS_HASHSTREAM <= version ?
+        stack_getHash( stack ) : 
+#endif
+        stack_getHashOld( stack );
+    /* XP_LOGF( "%s(version=%x)=>%.8X", __func__, version,  */
+    /*          (unsigned int)hash ); */
+    return hash;
+}
+
+XP_Bool
+model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
+{
+    StackCtxt* stack = model->vol.stack;
+    XP_U32 localHash = stack_getHash( stack );
+    XP_Bool matches = XP_FALSE;
+    if ( localHash == hash ) {
+        matches = XP_TRUE;
+    } else {
+        /* XP_LOGF( "%s: %.8X != %.8X", __func__, (unsigned int)hash, */
+        /*          (unsigned int)localHash ); */
+        localHash = stack_getHashOld( stack );
+        if ( localHash == hash ) {
+            matches = XP_TRUE;
+        /* } else { */
+        /*     XP_LOGF( "%s: %.8X != %.8X", __func__, (unsigned int)hash, */
+        /*              (unsigned int)localHash ); */
+        }
+    }
+    // LOG_RETURNF( "%d", matches );
+    return matches;
 }
 
 #ifdef STREAM_VERS_BIGBOARD

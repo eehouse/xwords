@@ -1906,8 +1906,10 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
     stream = messageStreamWithHeader( server, devIndex, code );
 
 #ifdef STREAM_VERS_BIGBOARD
-    if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
-        XP_U32 hash = model_getHash( server->vol.model );
+    XP_U16 version = stream_getVersion( stream );
+    if ( STREAM_VERS_BIGBOARD <= version ) {
+        XP_ASSERT( version == server->nv.streamVersion );
+        XP_U32 hash = model_getHash( server->vol.model, version );
         // XP_LOGF( "%s: adding hash %x", __func__, (unsigned int)hash );
         stream_putU32( stream, hash );
     }
@@ -1958,12 +1960,9 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
-        XP_U32 hashLocal = model_getHash( server->vol.model );
-        success = hashReceived == hashLocal;
+        success = model_hashMatches( server->vol.model, hashReceived );
         if ( !success ) {
-            XP_LOGF( "%s: hash mismatch: rcvd %.8X vs local %.8X; dropping move",
-                     __func__, (unsigned int)hashReceived, 
-                     (unsigned int)hashLocal );
+            XP_LOGF( "%s: hash mismatch",__func__);
         }
     }
 #endif
@@ -2604,7 +2603,7 @@ writeProto( const ServerCtxt* server, XWStreamCtxt* stream, XW_Proto proto )
     XP_ASSERT( server->nv.streamVersion > 0 );
     if ( STREAM_SAVE_PREVWORDS < server->nv.streamVersion ) {
         stream_putBits( stream, XWPROTO_NBITS, XWPROTO_NEW_PROTO );
-        stream_putBits( stream, 8, CUR_STREAM_VERS );
+        stream_putBits( stream, 8, server->nv.streamVersion );
     }
     stream_setVersion( stream, server->nv.streamVersion );
 #else
