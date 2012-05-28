@@ -2,6 +2,7 @@
 set -u -e
 
 APP_NEW=""
+APP_NEW_PARAMS=""
 NGAMES=""
 UPGRADE_ODDS=""
 NROOMS=""
@@ -26,6 +27,7 @@ NAMES=(UNUSED Brynn Ariela Kati Eric)
 
 declare -A PIDS
 declare -A APPS
+declare -A NEW_ARGS
 declare -A ARGS
 declare -A ROOMS
 declare -A FILES
@@ -65,7 +67,8 @@ function check_room() {
 print_cmdline() {
     local COUNTER=$1
     local LOG=${LOGS[$COUNTER]}
-    echo "New cmdline: ${APPS[$COUNTER]} ${ARGS[$COUNTER]}" >> $LOG
+    echo -n "New cmdline: " >> $LOG
+    echo "${APPS[$COUNTER]} ${NEW_ARGS[$COUNTER]} ${ARGS[$COUNTER]}" >> $LOG
 }
 
 function pick_ndevs() {
@@ -164,12 +167,15 @@ build_cmds() {
             > $LOG # clear the log
 
             APPS[$COUNTER]="$APP_NEW"
+            NEW_ARGS[$COUNTER]="$APP_NEW_PARAMS"
             BOARD_SIZE="--board-size ${BOARD_SIZES_NEW[$((RANDOM%${#BOARD_SIZES_NEW[*]}))]}"
             if [ xx = "${APPS_OLD+xx}" ]; then
                 # 50% chance of starting out with old app
-                if [ 0 -eq $((RANDOM%2)) ]; then
+                NAPPS=$((1+${#APPS_OLD[*]}))
+                if [ 0 -lt $((RANDOM%$NAPPS)) ]; then
                     APPS[$COUNTER]=${APPS_OLD[$((RANDOM%${#APPS_OLD[*]}))]}
                     BOARD_SIZE="--board-size ${BOARD_SIZES_OLD[$((RANDOM%${#BOARD_SIZES_OLD[*]}))]}"
+                    NEW_ARGS[$COUNTER]=""
                 fi
             fi
 
@@ -228,7 +234,7 @@ read_resume_cmds() {
 launch() {
     LOG=${LOGS[$1]}
     APP="${APPS[$1]}"
-    PARAMS="${ARGS[$1]}"
+    PARAMS="${NEW_ARGS[$1]} ${ARGS[$1]}"
     exec $APP $PARAMS >/dev/null 2>>$LOG
 }
 
@@ -305,6 +311,7 @@ try_upgrade() {
             # one in five chance of upgrading
             if [ 0 -eq $((RANDOM % UPGRADE_ODDS)) ]; then
                 APPS[$KEY]=$APP_NEW
+                NEW_ARGS[$KEY]="$APP_NEW_PARAMS"
                 print_cmdline $KEY
             fi
         fi
@@ -462,6 +469,7 @@ function usage() {
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--old-app <path/to/app]*                               \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
+    echo "    [--new-app-args [arg*]]  # passed only to new app       \\" >&2
     echo "    [--min-devs <int>]                                      \\" >&2
     echo "    [--max-devs <int>]                                      \\" >&2
     echo "    [--one-per]              # force one player per device  \\" >&2
@@ -496,6 +504,11 @@ while [ "$#" -gt 0 ]; do
             ;;
         --new-app)
             APP_NEW=$(getArg $*)
+            shift
+            ;;
+        --new-app-args)
+            APP_NEW_PARAMS="${2}"
+            echo "got $APP_NEW_PARAMS"
             shift
             ;;
         --game-dict)
@@ -594,7 +607,7 @@ for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT SAVE_GOOD \
     echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
 done
 echo "DICTS: ${DICTS[*]}"
-echo -n "APPS_OLD: "; [ xx = "${APPS_OLD[*]+xx}" ] && echo "APPS_OLD: ${APPS_OLD[*]}" || echo ""
+echo -n "APPS_OLD: "; [ xx = "${APPS_OLD[*]+xx}" ] && echo "${APPS_OLD[*]}" || echo ""
 
 echo "*********$0 starting: $(date)**************"
 STARTTIME=$(date +%s)
