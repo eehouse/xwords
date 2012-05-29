@@ -294,6 +294,9 @@ model_destroy( ModelCtxt* model )
 XP_U32
 model_getHash( const ModelCtxt* model, XP_U16 version )
 {
+#ifndef STREAM_VERS_HASHSTREAM
+    XP_USE(version);
+#endif
     StackCtxt* stack = model->vol.stack;
     XP_ASSERT( !!stack );
     XP_U32 hash =
@@ -311,22 +314,11 @@ XP_Bool
 model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 {
     StackCtxt* stack = model->vol.stack;
-    XP_U32 localHash = stack_getHash( stack );
-    XP_Bool matches = XP_FALSE;
-    if ( localHash == hash ) {
-        matches = XP_TRUE;
-    } else {
-        /* XP_LOGF( "%s: %.8X != %.8X", __func__, (unsigned int)hash, */
-        /*          (unsigned int)localHash ); */
-        localHash = stack_getHashOld( stack );
-        if ( localHash == hash ) {
-            matches = XP_TRUE;
-        /* } else { */
-        /*     XP_LOGF( "%s: %.8X != %.8X", __func__, (unsigned int)hash, */
-        /*              (unsigned int)localHash ); */
-        }
-    }
-    // LOG_RETURNF( "%d", matches );
+    XP_Bool matches = 
+#ifdef STREAM_VERS_HASHSTREAM
+        (hash == stack_getHash( stack )) ||
+#endif
+        (hash == stack_getHashOld( stack ));
     return matches;
 }
 

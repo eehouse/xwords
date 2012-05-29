@@ -136,6 +136,7 @@ stack_getHashOld( StackCtxt* stack )
     return hash;
 } /* stack_getHashOld */
 
+#ifdef STREAM_VERS_HASHSTREAM
 XP_U32
 stack_getHash( const StackCtxt* stack )
 {
@@ -149,6 +150,7 @@ stack_getHash( const StackCtxt* stack )
     LOG_RETURNF( "%.8X", (unsigned int)hash );
     return hash;
 } /* stack_getHash */
+#endif
 
 void
 stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile )
