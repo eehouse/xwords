@@ -560,9 +560,6 @@ public class SMSService extends Service {
                                           );
                     }
                 }
-                if ( 1 < rowids.length ) {
-                    msg = (byte[])msg.clone();
-                }
             }
         }
     }

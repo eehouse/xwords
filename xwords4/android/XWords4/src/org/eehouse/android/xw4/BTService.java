@@ -505,10 +505,6 @@ public class BTService extends Service {
                             DbgUtils.logf( "nobody took msg for gameID %X", 
                                            gameID );
                         }
-                        // duplicate in case recipient modifies the msg
-                        if ( 1 < rowids.length ) {
-                            buffer = (byte[])buffer.clone();
-                        }
                     }
                 } else {
                     DbgUtils.logf( "receiveMessages: read only %d of %d bytes",
