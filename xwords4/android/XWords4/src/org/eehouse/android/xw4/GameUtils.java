@@ -718,10 +718,9 @@ public class GameUtils {
     public static boolean feedMessages( Context context, String relayID,
                                         byte[][] msgs, MultiMsgSink sink )
     {
+        boolean draw = false;
         long[] rowids = DBUtils.getRowIDsFor( context, relayID );
-        boolean draw = null != rowids;
-        if ( draw ) {
-            draw = false;
+        if ( null != rowids ) {
             for ( long rowid : rowids ) {
                 draw = feedMessages( context, rowid, msgs, null, sink ) || draw;
             }
