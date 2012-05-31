@@ -55,7 +55,13 @@ for DIR in $(ls); do
 done
 
 
-echo "<html><body>"
+cat <<EOF
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/xw4mobile.css" />
+</head>
+<body>
+EOF
 
 echo "<p>Download dictionaries for:"
 for DIR in $DIRS; do
