@@ -30,4 +30,18 @@ public class BoardDims {
     public int trayTop, trayHt;
     public int cellSize, maxCellSize;
     public int timerWidth;
+
+    // public String toString() 
+    // {
+    //     return "width: " + width
+    //         + " height: " + height
+    //         + " left: " + left
+    //         + " top: " + top
+    //         + " scoreHt: " + scoreHt
+    //         + " boardHt: " + boardHt
+    //         + " trayTop: " + trayTop
+    //         + " trayHt: " + trayHt
+    //         + " cellSize: " + cellSize
+    //         + " maxCellSize: " + maxCellSize;
+    // }
 }
