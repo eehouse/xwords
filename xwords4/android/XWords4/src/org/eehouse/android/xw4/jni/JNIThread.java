@@ -233,12 +233,16 @@ public class JNIThread extends Thread {
         XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
                                       dims.scoreHt, true );
 
+        // Have no idea why I was doing -1 below, but it breaks layout
+        // for small (QVGA) boards.  If it needs to be done, do it
+        // early in figureBoardDims so the calculations that follow
+        // are consistent.
         XwJNI.board_setPos( m_jniGamePtr, 0, dims.scoreHt, 
-                            dims.width-1, dims.boardHt, dims.maxCellSize, 
+                            dims.width/*-1*/, dims.boardHt, dims.maxCellSize, 
                             false );
 
         XwJNI.board_setTrayLoc( m_jniGamePtr, 0, dims.trayTop,
-                                dims.width-1, dims.trayHt, kMinDivWidth );
+                                dims.width/*-1*/, dims.trayHt, kMinDivWidth );
 
         XwJNI.board_invalAll( m_jniGamePtr );
     }
