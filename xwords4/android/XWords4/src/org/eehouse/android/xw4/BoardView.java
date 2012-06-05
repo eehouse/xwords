@@ -256,24 +256,41 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         result.maxCellSize = maxCellSize;
 
-        result.trayHt = cellSize * 3;
-        result.scoreHt = 2 * m_defaultFontHt;
-        int wantHt = result.trayHt + result.scoreHt + (cellSize * nCells);
-        int nToScroll = 0;
+        // Now determine if vertical scrolling will be necessary.
+        // There's a minimum tray and scoreboard height.  If we can
+        // fit them and all cells no scrolling's needed.  Otherwise
+        // determine the minimum number that must be hidden to fit.
+        // Finally grow scoreboard and tray to use whatever's left.
+        int trayHt = (5 * cellSize) / 2;
+        int scoreHt = (cellSize * 3) / 2;
+        int wantHt = trayHt + scoreHt + (cellSize * nCells);
+        int nToScroll;
         if ( wantHt <= height ) {
-            result.top = (height - wantHt) / 2;
+            nToScroll = 0;
         } else {
-            int minTray = 3 * m_defaultFontHt;
-            nToScroll = 
-                nCells - ((height - minTray - result.scoreHt) / cellSize);
-            result.trayHt = 
-                height - result.scoreHt - (cellSize * (nCells-nToScroll));
-            result.top = 0;
+            nToScroll = nCells - ((height - trayHt - scoreHt) / cellSize);
         }
 
-        result.boardHt = cellSize * (nCells-nToScroll);
-        result.trayTop = result.scoreHt + result.boardHt;
-        result.height = result.scoreHt + result.boardHt + result.trayHt;
+        int heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
+        int heightLeft = height - heightUsed;
+        if ( 0 < heightLeft ) {
+            if ( heightLeft > (cellSize * 3 / 2) ) {
+                heightLeft = cellSize * 3 / 2;
+            }
+            heightLeft /= 3;
+            trayHt += heightLeft * 2;
+            scoreHt += heightLeft;
+        }
+        heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
+        heightLeft = height - heightUsed;
+        result.top = heightLeft / 2;
+
+        result.trayHt = trayHt;
+        result.scoreHt = scoreHt;
+
+        result.boardHt = cellSize * nCells;
+        result.trayTop = scoreHt + (cellSize * (nCells-nToScroll));
+        result.height = heightUsed;
         result.cellSize = cellSize;
 
         if ( gi.timerEnabled ) {
