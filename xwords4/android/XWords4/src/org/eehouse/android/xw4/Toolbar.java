@@ -87,14 +87,18 @@ public class Toolbar {
 
     public void setVisibility( int vis )
     {
-        m_me.setVisibility( vis );
+        if ( null != m_me ) {
+            m_me.setVisibility( vis );
+        }
     }
 
     public void setListener( int index, View.OnClickListener listener )
     {
         TBButtonInfo info = s_buttonInfo[index];
         ImageButton button = (ImageButton)m_activity.findViewById( info.m_id );
-        button.setOnClickListener( listener );
+        if ( null != button ) {
+            button.setOnClickListener( listener );
+        }
     }
 
     public void setListener( int index, final int msgID, final int prefsKey, 
@@ -114,7 +118,9 @@ public class Toolbar {
         int vis = enable ? View.VISIBLE : View.GONE;
 
         ImageButton button = (ImageButton)m_activity.findViewById( info.m_id );
-        button.setVisibility( vis );
+        if ( null != button ) {
+            button.setVisibility( vis );
+        }
     }
 
 }
