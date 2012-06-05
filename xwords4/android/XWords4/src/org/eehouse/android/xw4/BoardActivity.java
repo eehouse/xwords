@@ -457,9 +457,13 @@ public class BoardActivity extends XWActivity
         m_view = (BoardView)findViewById( R.id.board_view );
         m_tradeButtons = findViewById( R.id.exchange_buttons );
         m_exchCommmitButton = (Button)findViewById( R.id.exchange_commit );
-        m_exchCommmitButton.setOnClickListener( this );
+        if ( null != m_exchCommmitButton ) {
+            m_exchCommmitButton.setOnClickListener( this );
+        }
         m_exchCancelButton = (Button)findViewById( R.id.exchange_cancel );
-        m_exchCancelButton.setOnClickListener( this );
+        if ( null != m_exchCancelButton ) {
+            m_exchCancelButton.setOnClickListener( this );
+        }
         m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
 
         Intent intent = getIntent();
@@ -1815,8 +1819,10 @@ public class BoardActivity extends XWActivity
     private void adjustTradeVisibility()
     {
         m_toolbar.setVisibility( m_inTrade? View.GONE : View.VISIBLE );
-        m_tradeButtons.setVisibility( m_inTrade? View.VISIBLE : View.GONE );
-        if ( m_inTrade ) {
+        if ( null != m_tradeButtons ) {
+            m_tradeButtons.setVisibility( m_inTrade? View.VISIBLE : View.GONE );
+        }
+        if ( m_inTrade && null != m_exchCommmitButton ) {
             m_exchCommmitButton.setEnabled( m_gsi.tradeTilesSelected );
         }
     }
