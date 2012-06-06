@@ -655,7 +655,8 @@
          room for the full board and tray to be shown then hiding the
          tray just "turns it over", i.e. shows tiles with '?'
          characters.-->
-	<string name="board_menu_tray">Hide rack</string>
+	<string name="board_menu_tray_hide">Hide rack</string>
+	<string name="board_menu_tray_show">Show rack</string>
 
     <!-- Undos the last *committed* turn.  Note that this is different
          from the undo button that undoes or redoes an in-progress
