@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <group android:id="@+id/group_done">
+    <!-- title set in BoardActivity -->
+    <item android:id="@+id/board_menu_done"
+          android:alphabeticShortcut="D"
+          />
+    <item android:id="@+id/board_menu_trade"
+          android:title="@string/board_menu_trade"
+          android:alphabeticShortcut="T"
+          />
+  </group>
+
+  <group android:id="@+id/group_exchange">
+    <item android:id="@+id/board_menu_trade_commit"
+          android:title="@string/button_trade_commit"
+          />
+    <item android:id="@+id/board_menu_trade_cancel"
+          android:title="@string/button_trade_cancel"
+          />
+  </group>
+
+  <group android:id="@+id/group_hint">
+    <item android:id="@+id/board_menu_hint_prev"
+          android:title="@string/menu_hint_prev"
+          />
+    <item android:id="@+id/board_menu_hint_next"
+          android:title="@string/menu_hint_next"
+          />
+  </group>
+
+  <item android:id="@+id/board_menu_tray"/>
+
+  <item android:id="@+id/board_menu_juggle"
+        android:title="@string/menu_juggle"
+        />
+  <item android:id="@+id/board_menu_flip"
+        android:title="@string/menu_flip"
+        />
+
+  <item android:id="@+id/board_menu_undo_current"
+        android:title="@string/board_menu_undo_current"
+        />
+
+  <item android:id="@+id/board_menu_undo_last"
+        android:title="@string/board_menu_undo_last"
+        />
+
+  <item android:id="@+id/board_menu_zoom"
+        android:title="@string/menu_zoom"
+        />
+  <item android:id="@+id/board_menu_chat"
+        android:title="@string/menu_chat"
+        />
+  <item android:id="@+id/board_menu_toggle"
+        android:title="@string/menu_toggle_values"
+        />
+
+  <item android:title="@string/board_submenu_game">
+    <menu>
+      <item android:id="@+id/board_menu_game_counts"
+            android:title="@string/board_menu_game_counts" />
+      <item android:id="@+id/board_menu_game_left"
+            android:title="@string/board_menu_game_left" />
+      <item android:id="@+id/board_menu_game_history"
+            android:title="@string/board_menu_game_history" />
+      <item android:id="@+id/board_menu_game_final"
+            android:title="@string/board_menu_game_final" />
+      <item android:id="@+id/board_menu_game_resend"
+            android:title="@string/board_menu_game_resend" />
+    </menu>
+  </item>
+
+    <item android:id="@+id/gamel_menu_checkmoves"
+          android:title="@string/gamel_menu_checkmoves"
+          />
+
+    <item android:id="@+id/board_menu_file_prefs"
+          android:title="@string/menu_prefs"
+          android:alphabeticShortcut="P"
+          />
+    <item android:id="@+id/board_menu_file_about"
+          android:title="@string/board_menu_file_about"
+          android:alphabeticShortcut="A"
+          />
+
+</menu>

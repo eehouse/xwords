@@ -617,9 +617,12 @@ public class BoardActivity extends XWActivity
         MenuItem item;
         int strId;
 
+        updateMenus( menu );
+
         if ( null != m_gsi ) {
             inTrade = m_gsi.inTrade;
             menu.setGroupVisible( R.id.group_done, !inTrade );
+            menu.setGroupVisible( R.id.group_exchange, inTrade );
 
             if ( UtilCtxt.TRAY_REVEALED == m_gsi.trayVisState ) {
                 strId = R.string.board_menu_tray_hide;
@@ -656,12 +659,36 @@ public class BoardActivity extends XWActivity
             showNotAgainDlgThen( R.string.not_again_done, 
                                  R.string.key_notagain_done, COMMIT_ACTION );
             break;
-        // case R.id.board_menu_juggle:
-        //     cmd = JNIThread.JNICmd.CMD_JUGGLE;
-        //     break;
-        // case R.id.board_menu_flip:
-        //     cmd = JNIThread.JNICmd.CMD_FLIP;
-        //     break;
+
+        case R.id.board_menu_trade_commit:
+            cmd = JNIThread.JNICmd.CMD_COMMIT;
+            break;
+        case R.id.board_menu_trade_cancel:
+            cmd = JNIThread.JNICmd.CMD_CANCELTRADE;
+            break;
+
+        case R.id.board_menu_hint_prev:
+            cmd = JNIThread.JNICmd.CMD_PREV_HINT;
+            break;
+        case R.id.board_menu_hint_next:
+            cmd = JNIThread.JNICmd.CMD_NEXT_HINT;
+            break;
+        case R.id.board_menu_juggle:
+            cmd = JNIThread.JNICmd.CMD_JUGGLE;
+            break;
+        case R.id.board_menu_flip:
+            cmd = JNIThread.JNICmd.CMD_FLIP;
+            break;
+        case R.id.board_menu_zoom:
+            cmd = JNIThread.JNICmd.CMD_TOGGLEZOOM;
+            break;
+        case R.id.board_menu_chat:
+            startChatActivity();
+            break;
+        case R.id.board_menu_toggle:
+            cmd = JNIThread.JNICmd.CMD_VALUES;
+            break;
+
         case R.id.board_menu_trade:
             showNotAgainDlgThen( R.string.not_again_trading, 
                                  R.string.key_notagain_trading,
@@ -671,9 +698,9 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_tray:
             cmd = JNIThread.JNICmd.CMD_TOGGLE_TRAY;
             break;
-        // case R.id.board_menu_undo_current:
-        //     cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
-        //     break;
+        case R.id.board_menu_undo_current:
+            cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
+            break;
         case R.id.board_menu_undo_last:
             showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
             break;
@@ -1823,6 +1850,27 @@ public class BoardActivity extends XWActivity
         m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.gameIsConnected );
         m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
                           null != m_gi.dictName( m_view.getCurPlayer() ) );
+    }
+
+    private void hideShowItem( Menu menu, int id, boolean visible )
+    {
+        MenuItem item = menu.findItem( id );
+        if ( null != item ) {
+            item.setVisible( visible );
+        }
+    }
+
+    private void updateMenus( Menu menu )
+    {
+        if ( null != m_gsi ) {
+            hideShowItem( menu, R.id.board_menu_flip, m_gsi.visTileCount >= 1 );
+            hideShowItem( menu, R.id.board_menu_toggle, m_gsi.visTileCount >= 1 );
+            hideShowItem( menu, R.id.board_menu_juggle, m_gsi.canShuffle );
+            hideShowItem( menu, R.id.board_menu_undo_current, m_gsi.canRedo );
+            hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
+            hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
+            hideShowItem( menu, R.id.board_menu_chat, m_gsi.gameIsConnected );
+        }
     }
 
     private void adjustTradeVisibility()
