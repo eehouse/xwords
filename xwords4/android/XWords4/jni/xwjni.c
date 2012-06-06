@@ -1256,6 +1256,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
     game_getState( &state->game, &info );
 
     setInt( env, jgsi, "visTileCount", info.visTileCount );
+    setInt( env, jgsi, "trayVisState", info.trayVisState );
     setBool( env, jgsi, "canHint", info.canHint );
     setBool( env, jgsi, "canRedo", info.canRedo);
     setBool( env, jgsi, "inTrade", info.inTrade );
