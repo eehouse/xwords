@@ -27,6 +27,10 @@ public interface UtilCtxt {
     static final int BONUS_TRIPLE_LETTER = 3;
     static final int BONUS_TRIPLE_WORD = 4;
 
+    public static final int TRAY_HIDDEN = 0;
+    public static final int TRAY_REVERSED = 1;
+    public static final int TRAY_REVEALED = 2;
+
     // must match defns in util.h
     public static final int PICKER_PICKALL = -1;
     public static final int PICKER_BACKUP = -2;
