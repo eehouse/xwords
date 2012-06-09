@@ -32,6 +32,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
@@ -56,6 +57,7 @@ public class Utils {
     private static HashMap<String,String> s_phonesHash = 
         new HashMap<String,String>();
     private static int s_nextCode = 0; // keep PendingIntents unique
+    private static Boolean s_hasSmallScreen = null;
 
     private Utils() {}
 
@@ -283,6 +285,19 @@ public class Utils {
         } catch ( NumberFormatException nfe ) {
             return 0;
         }
+    }
+
+    public static boolean hasSmallScreen( Context context )
+    {
+        if ( null == s_hasSmallScreen ) {
+            int screenLayout = context.getResources().
+                getConfiguration().screenLayout;
+            boolean hasSmallScreen = 
+                (screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK)
+                == Configuration.SCREENLAYOUT_SIZE_SMALL;
+            s_hasSmallScreen = new Boolean( hasSmallScreen );
+        }
+        return s_hasSmallScreen;
     }
 
     public static String format( Context context, int id, Object... args )
