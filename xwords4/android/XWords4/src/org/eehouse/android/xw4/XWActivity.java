@@ -135,6 +135,11 @@ public class XWActivity extends Activity
         m_delegate.showOKOnlyDialog( msgID );
     }
 
+    protected void showOKOnlyDialog( String msg )
+    {
+        m_delegate.showOKOnlyDialog( msg, 0 );
+    }
+
     protected void showDictGoneFinish()
     {
         m_delegate.showDictGoneFinish();

@@ -32,6 +32,7 @@ import android.graphics.Rect;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.BoardDims;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.DBUtils;
@@ -125,7 +126,6 @@ public class JNIThread extends Thread {
     private Handler m_handler;
     private SyncedDraw m_drawer;
     private static final int kMinDivWidth = 10;
-    private Rect m_connsIconRect;
     private int m_connsIconID = 0;
 
     LinkedBlockingQueue<QueueElem> m_queue;
@@ -217,14 +217,9 @@ public class JNIThread extends Thread {
 
     private void doLayout( BoardDims dims )
     {
-        int scoreWidth = dims.width;
-
-        if ( DeviceRole.SERVER_STANDALONE != m_gi.serverRole ) {
-            scoreWidth -= dims.cellSize;
-            m_connsIconRect = 
-                new Rect( scoreWidth, 0, scoreWidth + dims.cellSize, 
-                          dims.scoreHt );
-        }
+        int scoreWidth = dims.width - dims.cellSize;
+        ConnStatusHandler.setRect( scoreWidth, 0, scoreWidth + dims.cellSize, 
+                                   dims.scoreHt );
 
         if ( m_gi.timerEnabled ) {
             scoreWidth -= dims.timerWidth;
@@ -581,9 +576,6 @@ public class JNIThread extends Thread {
                 // where it can be synchronized with that class's use
                 // of the same bitmap for blitting.
                 m_drawer.doJNIDraw();
-                if ( null != m_connsIconRect ) {
-                    m_drawer.doIconDraw( m_connsIconID, m_connsIconRect );
-                }
 
                 // main UI thread has to invalidate view as it created
                 // it.

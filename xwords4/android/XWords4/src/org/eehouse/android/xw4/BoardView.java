@@ -50,6 +50,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private static final float MIN_FONT_DIPS = 14.0f;
     private static final int MULTI_INACTIVE = -1;
+    private static final boolean FRAME_TRAY_RECTS = false; // for debugging
 
     private static Bitmap s_bitmap;    // the board
     private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
@@ -193,10 +194,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
             m_lastSpacing = MULTI_INACTIVE;
-            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
+            if ( !ConnStatusHandler.handleDown( xx, yy ) ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
+            }
             break;
         case MotionEvent.ACTION_MOVE:
-            if ( MULTI_INACTIVE == m_lastSpacing ) {
+            if ( ConnStatusHandler.handleMove( xx, yy ) ) {
+            } else if ( MULTI_INACTIVE == m_lastSpacing ) {
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
             } else {
                 int zoomBy = figureZoom( event );
@@ -207,7 +211,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
             break;
         case MotionEvent.ACTION_UP:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+            if ( ConnStatusHandler.handleUp( xx, yy ) ) {
+                String msg = ConnStatusHandler.getStatusText();
+                m_parent.showOKOnlyDialog( msg );
+            } else {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+            }
             break;
         case MotionEvent.ACTION_POINTER_DOWN:
         case MotionEvent.ACTION_POINTER_2_DOWN:
@@ -233,6 +242,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
                 canvas.drawBitmap( s_bitmap, m_left, m_top, m_drawPaint );
+                ConnStatusHandler.draw( canvas, getResources(), m_left, m_top );
             }
         }
     }
@@ -367,17 +377,17 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void doIconDraw( int resID, final Rect rect )
     {
-        synchronized( this ) {
-            if ( null != m_canvas ) {
-                if ( 0 == resID ) {
-                    fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
-                } else {
-                    Drawable icon = getResources().getDrawable( resID );
-                    icon.setBounds( rect );
-                    icon.draw( m_canvas );
-                }
-            }
-        }
+        // synchronized( this ) {
+        //     if ( null != m_canvas ) {
+        //         if ( 0 == resID ) {
+        //             fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
+        //         } else {
+        //             Drawable icon = getResources().getDrawable( resID );
+        //             icon.setBounds( rect );
+        //             icon.draw( m_canvas );
+        //         }
+        //     }
+        // }
     }
 
     public void setInTrade( boolean inTrade ) 
@@ -817,6 +827,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 }
                 m_letterRect.offsetTo( rect.left+2, rect.top+2 );
                 drawCentered( text, m_letterRect, m_fontDims );
+                if ( FRAME_TRAY_RECTS ) {
+                    m_canvas.drawRect( m_letterRect, m_strokePaint );
+                }
             }
 
             if ( val >= 0 ) {
@@ -832,6 +845,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 m_fillPaint.setTextAlign( Paint.Align.RIGHT );
                 m_canvas.drawText( text, m_valRect.right, m_valRect.bottom, 
                                    m_fillPaint );
+                if ( FRAME_TRAY_RECTS ) {
+                    m_canvas.drawRect( m_valRect, m_strokePaint );
+                }
             }
         }
     }

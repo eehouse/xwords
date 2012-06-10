@@ -1406,6 +1406,7 @@ public class BoardActivity extends XWActivity
                                    final int nMissingPlayers )
         {
             m_connType = connType;
+            ConnStatusHandler.setType( connType );
 
             int msgID = 0;
             int action = 0;
