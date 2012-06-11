@@ -75,6 +75,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Drawable m_downArrow;
     private boolean m_blackArrow;
     private boolean m_inTrade = false;
+    private boolean m_hasSmallScreen;
     // m_backgroundUsed: alpha not set ensures inequality
     private int m_backgroundUsed = 0x00000000;
     private boolean m_darkOnLight;
@@ -144,6 +145,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         super( context, attrs );
 
         m_context = context;
+        m_hasSmallScreen = Utils.hasSmallScreen( context );
+
         final float scale = getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
@@ -261,7 +264,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         // fit them and all cells no scrolling's needed.  Otherwise
         // determine the minimum number that must be hidden to fit.
         // Finally grow scoreboard and tray to use whatever's left.
-        int trayHt = (5 * cellSize) / 2;
+        int trayHt = 2 * cellSize;
         int scoreHt = (cellSize * 3) / 2;
         int wantHt = trayHt + scoreHt + (cellSize * nCells);
         int nToScroll;
@@ -761,6 +764,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void drawCentered( String text, Rect rect, FontDims fontDims ) 
     {
+        drawIn( text, rect, fontDims, Paint.Align.CENTER );
+    }
+
+    private void drawIn( String text, Rect rect, FontDims fontDims, 
+                         Paint.Align align ) 
+    {
         int descent = -1;
         int textSize;
         if ( null == fontDims ) {
@@ -784,9 +793,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             drawScaled( text, rect, descent );
         } else {
             int bottom = rect.bottom - descent;
-            int center = rect.left + ( rect.width() / 2 );
-            m_fillPaint.setTextAlign( Paint.Align.CENTER );
-            m_canvas.drawText( text, center, bottom, m_fillPaint );
+            int origin = rect.left;
+            if ( Paint.Align.CENTER == align ) {
+                origin += rect.width() / 2;
+            }
+            m_fillPaint.setTextAlign( align );
+            m_canvas.drawText( text, origin, bottom, m_fillPaint );
         }
     } // drawCentered
 
@@ -810,23 +822,32 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private void positionDrawTile( final Rect rect, String text, int val )
     {
         if ( figureFontDims() ) {
+            int offset = m_hasSmallScreen ? 1 : 2;
             if ( null != text ) {
                 if ( null == m_letterRect ) {
-                    m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, 
-                                             rect.height() * 3 / 4 );
+                    int width = rect.width();
+                    int height = rect.height();
+                    if ( m_hasSmallScreen ) {
+                        height = height * 2 / 3;
+                    } else {
+                        height = height * 3 / 4;
+                    }
+                    width -= offset;
+                    m_letterRect = new Rect( 0, 0, width, height );
                 }
-                m_letterRect.offsetTo( rect.left+2, rect.top+2 );
-                drawCentered( text, m_letterRect, m_fontDims );
+                m_letterRect.offsetTo( rect.left + offset, rect.top + offset );
+                drawIn( text, m_letterRect, m_fontDims, Paint.Align.LEFT );
             }
 
             if ( val >= 0 ) {
+                int divisor = m_hasSmallScreen ? 3 : 4;
                 if ( null == m_valRect ) {
-                    m_valRect = new Rect( 0, 0, rect.width() / 4, 
-                                          rect.height() / 4 );
-                    m_valRect.inset( 2, 2 );
+                    m_valRect = new Rect( 0, 0, rect.width() / divisor, 
+                                          rect.height() / divisor );
+                    m_valRect.inset( offset, offset );
                 }
-                m_valRect.offsetTo( rect.right - (rect.width() / 4),
-                                    rect.bottom - (rect.height() / 4) );
+                m_valRect.offsetTo( rect.right - (rect.width() / divisor),
+                                    rect.bottom - (rect.height() / divisor) );
                 text = String.format( "%d", val );
                 m_fillPaint.setTextSize( m_valRect.height() );
                 m_fillPaint.setTextAlign( Paint.Align.RIGHT );
