@@ -25,12 +25,10 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
-import org.eehouse.android.xw4.jni.CommsAddrRec;
-
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public class ConnStatusHandler {
-    private static CommsAddrRec.CommsConnType s_connType = 
-        CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
+    private static CommsConnType s_connType = CommsConnType.COMMS_CONN_NONE;
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
 
@@ -39,7 +37,7 @@ public class ConnStatusHandler {
         s_rect = new Rect( left, top, right, bottom );
     }
 
-    public static void setType( CommsAddrRec.CommsConnType connType )
+    public static void setType( CommsConnType connType )
     {
         s_connType = connType;
     }
@@ -88,11 +86,31 @@ public class ConnStatusHandler {
                 iconID = R.drawable.sologame;
                 break;
             }
-            Drawable icon = res.getDrawable( iconID );
+
             Rect rect = new Rect( s_rect );
+            int quarterHeight = rect.height() / 4;
             rect.offset( offsetX, offsetY );
-            icon.setBounds( rect );
-            icon.draw( canvas );
+
+            rect.top += quarterHeight;
+            rect.bottom = rect.top + (2 * quarterHeight);
+            drawIn( canvas, res, iconID, rect );
+
+            if ( CommsConnType.COMMS_CONN_NONE != s_connType ) {
+                rect.bottom = rect.top;
+                rect.top -= quarterHeight;
+                drawIn( canvas, res, R.drawable.out_success, rect );
+
+                rect.top += 3 * quarterHeight;
+                rect.bottom = rect.top + quarterHeight;
+                drawIn( canvas, res, R.drawable.in_success, rect );
+            } 
         }
+    }
+
+    private static void drawIn( Canvas canvas, Resources res, int id, Rect rect )
+    {
+        Drawable icon = res.getDrawable( id );
+        icon.setBounds( rect );
+        icon.draw( canvas );
     }
 }
