@@ -1922,7 +1922,7 @@
     <string name="confirm_clear">Are you sure you want to delete the
     checked phone number[s]?</string>
 
-    <string name="invite_success">Invitation accepted.</string>
+    <string name="invite_success">Invitation received.</string>
     <string name="connect_label_sms">Connection (via SMS/text)</string>
     <string name="phone_label">Connected number[s]:</string>
     <string name="summary_conn_sms">Game in play with %s</string>
