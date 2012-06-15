@@ -704,6 +704,13 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_undo_last:
             showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
             break;
+
+            // small devices only
+        case R.id.board_menu_dict:
+            String dictName = m_gi.dictName( m_view.getCurPlayer() );
+            DictBrowseActivity.launch( this, dictName );
+            break;
+
         case R.id.board_menu_game_counts:
             m_jniThread.handle( JNIThread.JNICmd.CMD_COUNTS_VALUES,
                                 R.string.counts_values_title );

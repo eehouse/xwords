@@ -31,17 +31,21 @@
           />
   </group>
 
+  <item android:id="@+id/board_menu_undo_current"
+        android:title="@string/board_menu_undo_current"
+        />
+
   <item android:id="@+id/board_menu_tray"/>
+
+  <item android:id="@+id/board_menu_dict"
+        android:title="@string/board_menu_dict"
+        />
 
   <item android:id="@+id/board_menu_juggle"
         android:title="@string/menu_juggle"
         />
   <item android:id="@+id/board_menu_flip"
         android:title="@string/menu_flip"
-        />
-
-  <item android:id="@+id/board_menu_undo_current"
-        android:title="@string/board_menu_undo_current"
         />
 
   <item android:id="@+id/board_menu_undo_last"
