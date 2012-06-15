@@ -46,7 +46,6 @@ public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
     private int m_fieldID;
-    private static final int TURN_COLOR = 0x7F00FF00;
 
     private class ViewInfo implements View.OnClickListener {
         private View m_view;
@@ -79,7 +78,7 @@ public class GameListAdapter extends XWListAdapter {
             m_name.setBackgroundColor( android.R.color.transparent );
             if ( !m_expanded ) {
                 if ( m_haveTurnLocal ) {
-                    m_name.setBackgroundColor( TURN_COLOR );
+                    m_name.setBackgroundColor( Utils.TURN_COLOR );
                 } else if ( m_haveTurn ) {
                     m_name.setBackgroundResource( R.drawable.green_border );
                 }
@@ -185,7 +184,7 @@ public class GameListAdapter extends XWListAdapter {
                         haveTurn = true;
                         if ( isLocal[0] ) {
                             haveTurnLocal = true;
-                            tmp.setBackgroundColor( TURN_COLOR );
+                            tmp.setBackgroundColor( Utils.TURN_COLOR );
                         } else {
                             tmp.setBackgroundResource( R.drawable.green_border );
                         }

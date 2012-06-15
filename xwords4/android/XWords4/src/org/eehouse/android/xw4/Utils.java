@@ -48,6 +48,8 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 
 public class Utils {
+    public static final int TURN_COLOR = 0x7F00FF00;
+
     private static final String DB_PATH = "XW_GAMES";
 	private static final String HIDDEN_PREFS = "xwprefs_hidden";
     private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
