@@ -277,7 +277,8 @@ curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ),
 
 static void
 curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                              const XP_Rect* rOuter, const DrawScoreInfo* dsi )
+                              const XP_Rect* rOuter, 
+                              XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[100];

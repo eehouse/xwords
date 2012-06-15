@@ -484,7 +484,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         height[0] = r.height();
     }
 
-    public void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi )
+    public void score_drawPlayer( Rect rInner, Rect rOuter, 
+                                  int gotPct, DrawScoreInfo dsi )
     {
         if ( 0 != (dsi.flags & CELL_ISCURSOR) ) {
             fillRectOther( rOuter, CommonPrefs.COLOR_FOCUS );
@@ -496,12 +497,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         m_fillPaint.setColor( color );
 
-        Rect rect = new Rect( rOuter );
-        int height = rect.height() / texts.length;
-        rect.bottom = rect.top + height;
+        int height = rOuter.height() / texts.length;
+        rOuter.bottom = rOuter.top + height;
         for ( String text : texts ) {
-            drawCentered( text, rect, null );
-            rect.offset( 0, height );
+            drawCentered( text, rOuter, null );
+            rOuter.offset( 0, height );
         }
     }
 

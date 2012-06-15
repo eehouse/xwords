@@ -149,6 +149,7 @@ typedef struct DrawCtxVTable {
     void DRAW_VTABLE_NAME(score_drawPlayer) ( DrawCtx* dctx,
                                               const XP_Rect* rInner, 
                                               const XP_Rect* rOuter, 
+                                              XP_U16 gotPct, 
                                               const DrawScoreInfo* dsi );
 
     void DRAW_VTABLE_NAME(score_pendingScore) ( DrawCtx* dctx, 
@@ -276,8 +277,8 @@ struct DrawCtx {
     CALL_DRAW_NAME4(drawRemText, (dc), (ri), (ro), (n), (f) )
 #define draw_measureScoreText(dc,r,dsi,wp,hp) \
     CALL_DRAW_NAME4(measureScoreText,(dc),(r),(dsi),(wp),(hp))
-#define draw_score_drawPlayer(dc, ri, ro, dsi) \
-    CALL_DRAW_NAME3(score_drawPlayer,(dc),(ri),(ro),(dsi))
+#define draw_score_drawPlayer(dc, ri, ro, gp, dsi)           \
+    CALL_DRAW_NAME4(score_drawPlayer,(dc),(ri),(ro),(gp),(dsi))
 #define draw_score_pendingScore(dc, r, s, p, f ) \
     CALL_DRAW_NAME4(score_pendingScore,(dc), (r), (s), (p), (f))
 #define draw_drawTimer( dc, r, plyr, sec ) \
