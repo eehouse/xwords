@@ -1013,7 +1013,8 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
 
 static void
 gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                           const XP_Rect* rOuter, const DrawScoreInfo* dsi )
+                           const XP_Rect* rOuter, 
+                           XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Bool hasCursor = (dsi->flags & CELL_ISCURSOR) != 0;

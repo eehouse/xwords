@@ -185,20 +185,20 @@ and_draw_drawRemText( DrawCtx* dctx, const XP_Rect* rInner,
 }
 
 static void
-and_draw_score_drawPlayer( DrawCtx* dctx,
-                           const XP_Rect* rInner, 
-                           const XP_Rect* rOuter, 
+and_draw_score_drawPlayer( DrawCtx* dctx, const XP_Rect* rInner, 
+                           const XP_Rect* rOuter, XP_U16 gotPct,
                            const DrawScoreInfo* dsi )
 {
     DRAW_CBK_HEADER("score_drawPlayer", 
-                    "(Landroid/graphics/Rect;Landroid/graphics/Rect;"
+                    "(Landroid/graphics/Rect;Landroid/graphics/Rect;I"
                     "L" PKG_PATH("jni/DrawScoreInfo") ";)V" );
 
     jobject jrinner = makeJRect( draw, JCACHE_RECT0, rInner );
     jobject jrouter = makeJRect( draw, JCACHE_RECT1, rOuter );
     jobject jdsi = makeDSI( draw, JCACHE_DSI, dsi );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, jdsi );
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, gotPct, 
+                            jdsi );
 } /* and_draw_score_drawPlayer */
 
 static void
