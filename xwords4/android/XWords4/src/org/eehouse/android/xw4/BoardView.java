@@ -442,7 +442,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         drawCentered( m_remText, rInner, null );
     }
 
-    public void measureScoreText( Rect r, DrawScoreInfo dsi, 
+    public void measureScoreText( Rect rect, DrawScoreInfo dsi, 
                                   int[] width, int[] height )
     {
         String[] scoreInfo = new String[dsi.isTurn?1:2];
@@ -466,7 +466,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         scoreInfo[indx] = sb.toString();
         m_scores[dsi.playerNum] = scoreInfo;
 
-        m_fillPaint.setTextSize( dsi.isTurn? r.height() : m_defaultFontHt );
+        m_fillPaint.setTextSize( dsi.isTurn? rect.height() : m_defaultFontHt );
 
         int needWidth = 0;
         for ( int ii = 0; ii < scoreInfo.length; ++ii ) {
@@ -476,12 +476,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 needWidth = m_boundsScratch.width();
             }
         }
-        if ( needWidth > r.width() ) {
-            needWidth = r.width();
+        if ( needWidth > rect.width() ) {
+            needWidth = rect.width();
         }
         width[0] = needWidth;
 
-        height[0] = r.height();
+        height[0] = rect.height();
     }
 
     public void score_drawPlayer( Rect rInner, Rect rOuter, 
