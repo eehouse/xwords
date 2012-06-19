@@ -54,6 +54,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static Bitmap s_bitmap;    // the board
     private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
     private static final int PINCH_THRESHOLD = 40;
+    private static final int SCORE_HT_DROP = 2;
+    private static final boolean DEBUG_DRAWFRAMES = false;
 
     private Context m_context;
     private Paint m_drawPaint;
@@ -466,7 +468,15 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         scoreInfo[indx] = sb.toString();
         m_scores[dsi.playerNum] = scoreInfo;
 
-        m_fillPaint.setTextSize( dsi.isTurn? rect.height() : m_defaultFontHt );
+        int rectHt = rect.height();
+        if ( !dsi.isTurn ) {
+            rectHt /= 2;
+        }
+        int textHeight = rectHt - SCORE_HT_DROP;
+        if ( textHeight < m_defaultFontHt ) {
+            textHeight = m_defaultFontHt;
+        }
+        m_fillPaint.setTextSize( textHeight );
 
         int needWidth = 0;
         for ( int ii = 0; ii < scoreInfo.length; ++ii ) {
@@ -489,6 +499,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         if ( 0 != (dsi.flags & CELL_ISCURSOR) ) {
             fillRectOther( rOuter, CommonPrefs.COLOR_FOCUS );
+        } else if ( DEBUG_DRAWFRAMES && dsi.selected ) {
+            fillRectOther( rOuter, CommonPrefs.COLOR_FOCUS );
         }
         String[] texts = m_scores[dsi.playerNum];
         int color = m_playerColors[dsi.playerNum];
@@ -502,6 +514,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         for ( String text : texts ) {
             drawCentered( text, rOuter, null );
             rOuter.offset( 0, height );
+        }
+        if ( DEBUG_DRAWFRAMES ) {
+            m_strokePaint.setColor( BLACK );
+            m_canvas.drawRect( rInner, m_strokePaint );
         }
     }
 
@@ -773,7 +789,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         int descent = -1;
         int textSize;
         if ( null == fontDims ) {
-            textSize = rect.height() - 2;
+            textSize = rect.height() - SCORE_HT_DROP;
         } else {
             int height = rect.height() - 4; // borders and padding, 2 each 
             descent = fontDims.descentFor( height );
