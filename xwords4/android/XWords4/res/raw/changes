@@ -5,12 +5,10 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 45 release</b>
+<b>Crosswords 4.4 beta 46 release</b>
 <ul>
 
-  <li>Turn on undo for multi-device games</li>
-  
-  <li>UI tweaks, e.g. frame in green the remote player whose turn it is</li>
+  <li>Improve board layout for small-screen phones, e.g. Samsung Galaxy Y</li>
   
 </ul>
 
