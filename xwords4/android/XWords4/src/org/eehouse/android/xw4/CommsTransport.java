@@ -401,11 +401,24 @@ public class CommsTransport implements TransportProcs,
 
     public void relayStatus( CommsRelayState newState )
     {
-        //DbgUtils.logf( "relayStatus called; state=%s", newState.toString() );
-        if ( null != m_jniThread ) {
-            m_jniThread.handle( JNICmd.CMD_DRAW_CONNS_STATUS, newState );
-        } else {
-            DbgUtils.logf( "can't draw status yet" );
+        DbgUtils.logf( "relayStatus called; state=%s", newState.toString() );
+        
+        switch( newState ) {
+        case COMMS_RELAYSTATE_UNCONNECTED:
+        case COMMS_RELAYSTATE_DENIED:
+        case COMMS_RELAYSTATE_CONNECT_PENDING:
+            ConnStatusHandler.updateStatusOut( CommsConnType.COMMS_CONN_RELAY, 
+                                               false );
+            break;
+        case COMMS_RELAYSTATE_CONNECTED: 
+        case COMMS_RELAYSTATE_RECONNECTED: 
+            ConnStatusHandler.updateStatusOut( CommsConnType.COMMS_CONN_RELAY, 
+                                               true );
+            break;
+        case COMMS_RELAYSTATE_ALLCONNECTED:
+            ConnStatusHandler.updateStatusIn( CommsConnType.COMMS_CONN_RELAY, 
+                                              true );
+            break;
         }
     }
 

@@ -868,11 +868,14 @@ public class BoardActivity extends XWActivity
         switch( event ) {
         case MESSAGE_ACCEPTED:
         case MESSAGE_REFUSED:
-            if ( null != m_jniThread ) {
-                boolean accepted = 
-                    MultiService.MultiEvent.MESSAGE_ACCEPTED == event;
-                m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, accepted );
-            }
+            // if ( null != m_jniThread ) {
+            //     boolean accepted = 
+            //         MultiService.MultiEvent.MESSAGE_ACCEPTED == event;
+            //     m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, accepted );
+            // }
+            ConnStatusHandler.
+                updateStatusIn(CommsAddrRec.CommsConnType.COMMS_CONN_BT, 
+                               MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
             break;
         case MESSAGE_NOGAME:
             int gameID = (Integer)args[0];
@@ -910,12 +913,12 @@ public class BoardActivity extends XWActivity
         case SMS_RECEIVE_OK:
         case SMS_SEND_FAILED:
         case SMS_SEND_FAILED_NORADIO:
-            if ( null != m_jniThread ) {
-                boolean accepted = 
-                    MultiService.MultiEvent.SMS_RECEIVE_OK == event
-                    || MultiService.MultiEvent.SMS_SEND_OK == event;
-                m_jniThread.handle( JNICmd.CMD_DRAW_SMS_STATUS, accepted );
-            }
+            // if ( null != m_jniThread ) {
+            //     boolean accepted = 
+            //         MultiService.MultiEvent.SMS_RECEIVE_OK == event
+            //         || MultiService.MultiEvent.SMS_SEND_OK == event;
+            //     m_jniThread.handle( JNICmd.CMD_DRAW_SMS_STATUS, accepted );
+            // }
             break;
 
         default:

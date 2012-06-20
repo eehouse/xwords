@@ -83,9 +83,9 @@ public class JNIThread extends Thread {
             CMD_ENDGAME,
             CMD_POST_OVER,
             CMD_SENDCHAT,
-            CMD_DRAW_CONNS_STATUS,
-            CMD_DRAW_BT_STATUS,
-            CMD_DRAW_SMS_STATUS,
+            // CMD_DRAW_CONNS_STATUS,
+            // CMD_DRAW_BT_STATUS,
+            // CMD_DRAW_SMS_STATUS,
             };
 
     public static final int RUNNING = 1;
@@ -519,43 +519,43 @@ public class JNIThread extends Thread {
                 XwJNI.server_sendChat( m_jniGamePtr, (String)args[0] );
                 break;
 
-            case CMD_DRAW_CONNS_STATUS:
-                int newID = 0;
-                switch( (TransportProcs.CommsRelayState)(args[0]) ) {
-                case COMMS_RELAYSTATE_UNCONNECTED:
-                case COMMS_RELAYSTATE_DENIED:
-                case COMMS_RELAYSTATE_CONNECT_PENDING:
-                    newID = R.drawable.netarrow_unconn;
-                    break;
-                case COMMS_RELAYSTATE_CONNECTED: 
-                case COMMS_RELAYSTATE_RECONNECTED: 
-                    newID = R.drawable.netarrow_someconn;
-                    break;
-                case COMMS_RELAYSTATE_ALLCONNECTED:
-                    newID = R.drawable.netarrow_allconn;
-                    break;
-                default:
-                    newID = 0;
-                }
-                if ( m_connsIconID != newID ) {
-                    draw = true;
-                    m_connsIconID = newID;
-                }
-                break;
+            // case CMD_DRAW_CONNS_STATUS:
+            //     int newID = 0;
+            //     switch( (TransportProcs.CommsRelayState)(args[0]) ) {
+            //     case COMMS_RELAYSTATE_UNCONNECTED:
+            //     case COMMS_RELAYSTATE_DENIED:
+            //     case COMMS_RELAYSTATE_CONNECT_PENDING:
+            //         newID = R.drawable.netarrow_unconn;
+            //         break;
+            //     case COMMS_RELAYSTATE_CONNECTED: 
+            //     case COMMS_RELAYSTATE_RECONNECTED: 
+            //         newID = R.drawable.netarrow_someconn;
+            //         break;
+            //     case COMMS_RELAYSTATE_ALLCONNECTED:
+            //         newID = R.drawable.netarrow_allconn;
+            //         break;
+            //     default:
+            //         newID = 0;
+            //     }
+            //     if ( m_connsIconID != newID ) {
+            //         draw = true;
+            //         m_connsIconID = newID;
+            //     }
+            //     break;
             
-            case CMD_DRAW_BT_STATUS:
-                boolean btWorking = ((Boolean)args[0]).booleanValue();
-                m_connsIconID = btWorking ? R.drawable.bluetooth_active 
-                    : R.drawable.bluetooth_disabled;
-                draw = true;
-                break;
+            // case CMD_DRAW_BT_STATUS:
+            //     boolean btWorking = ((Boolean)args[0]).booleanValue();
+            //     m_connsIconID = btWorking ? R.drawable.bluetooth_active 
+            //         : R.drawable.bluetooth_disabled;
+            //     draw = true;
+            //     break;
 
-            case CMD_DRAW_SMS_STATUS:
-                boolean smsWorking = ((Boolean)args[0]).booleanValue();
-                m_connsIconID = smsWorking ? R.drawable.sms_allconn
-                    : R.drawable.sms_disabled;
-                draw = true;
-                break;
+            // case CMD_DRAW_SMS_STATUS:
+            //     boolean smsWorking = ((Boolean)args[0]).booleanValue();
+            //     m_connsIconID = smsWorking ? R.drawable.sms_allconn
+            //         : R.drawable.sms_disabled;
+            //     draw = true;
+            //     break;
 
             case CMD_TIMER_FIRED:
                 draw = XwJNI.timerFired( m_jniGamePtr, 

@@ -48,6 +48,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.XwJNI;
 
@@ -238,6 +239,9 @@ public class SMSService extends Service {
                 break;
             case HANDLE:
                 ++m_nReceived;
+                ConnStatusHandler.
+                    updateStatusIn( CommsConnType.COMMS_CONN_SMS,
+                                    true );
                 if ( s_showToasts ) {
                     DbgUtils.showf( this, "got %dth msg", m_nReceived );
                 }
@@ -539,6 +543,9 @@ public class SMSService extends Service {
             DbgUtils.logf( "sendDataMessage message failed: %s", 
                            ee.toString() );
         }
+
+        ConnStatusHandler.updateStatusOut( CommsConnType.COMMS_CONN_SMS, 
+                                           success );
         return success;
     }
 
