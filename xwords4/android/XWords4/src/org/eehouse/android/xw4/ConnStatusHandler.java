@@ -24,6 +24,8 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Message;
 import android.text.format.Time;
 import java.util.HashMap;
 import junit.framework.Assert;
@@ -34,7 +36,7 @@ public class ConnStatusHandler {
     private static CommsConnType s_connType = CommsConnType.COMMS_CONN_NONE;
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
-    // private static Object s_syncMe = new Object();
+    private static Handler s_handler;
 
     private static class SuccessRecord {
         // man strftime for these
@@ -92,6 +94,11 @@ public class ConnStatusHandler {
     public static void setType( CommsConnType connType )
     {
         s_connType = connType;
+    }
+
+    public static void setHandler( Handler handler )
+    {
+        s_handler = handler;
     }
 
     public static boolean handleDown( int xx, int yy )
@@ -155,12 +162,20 @@ public class ConnStatusHandler {
         return msg;
     }
 
+    private static void invalidateParent()
+    {
+        if ( null != s_handler ) {
+            Message.obtain( s_handler ).sendToTarget();
+        }
+    }
+   
     public static void updateStatusIn( CommsConnType connType, boolean success )
     {
         synchronized( s_records ) {
             SuccessRecord record = recordFor( connType, true );
             record.update( success );
         }
+        invalidateParent();
     }
 
     public static void updateStatusOut( CommsConnType connType, boolean success )
@@ -169,6 +184,7 @@ public class ConnStatusHandler {
             SuccessRecord record = recordFor( connType, false );
             record.update( success );
         }
+        invalidateParent();
     }
 
     public static void draw( Canvas canvas, Resources res, 
