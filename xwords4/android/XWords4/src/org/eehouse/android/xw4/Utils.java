@@ -36,6 +36,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
+import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -55,6 +56,7 @@ public class Utils {
     private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
 
     private static Boolean s_isFirstBootThisVersion = null;
+    private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
     private static HashMap<String,String> s_phonesHash = 
         new HashMap<String,String>();
@@ -77,6 +79,23 @@ public class Utils {
             setFirstBootStatics( context );
         }
         return s_isFirstBootThisVersion;
+    }
+
+    // Does the device have ability to send SMS -- e.g. is it a phone
+    // and not a Kindle Fire.  Not related to XWApp.SMSSUPPORTED
+    public static boolean deviceSupportsSMS( Context context )
+    {
+        if ( null == s_deviceSupportSMS ) {
+            boolean doesSMS = false;
+            TelephonyManager tm = (TelephonyManager)
+                context.getSystemService(Context.TELEPHONY_SERVICE);
+            if ( null != tm ) {
+                int type = tm.getPhoneType();
+                doesSMS = TelephonyManager.PHONE_TYPE_NONE != type;
+            }
+            s_deviceSupportSMS = new Boolean( doesSMS );
+        }
+        return s_deviceSupportSMS;
     }
 
     public static void notImpl( Context context ) 
