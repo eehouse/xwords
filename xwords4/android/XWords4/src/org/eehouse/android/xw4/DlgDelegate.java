@@ -218,12 +218,20 @@ public class DlgDelegate {
         m_activity.showDialog( CONFIRM_THEN );
     }
 
-    public void showEmailOrSMSThen( int callbackID )
+    public void showEmailOrSMSThen( final int callbackID )
     {
         Assert.assertTrue( 0 != callbackID );
         Assert.assertTrue( 0 == m_cbckID );
-        m_cbckID = callbackID;
-        m_activity.showDialog( TEXT_OR_HTML_THEN );
+        if ( Utils.deviceSupportsSMS( m_activity ) ) {
+            m_cbckID = callbackID;
+            m_activity.showDialog( TEXT_OR_HTML_THEN );
+        } else {
+            post( new Runnable() {
+                    public void run() {
+                        m_clickCallback.dlgButtonClicked( callbackID, EMAIL_BTN );
+                    } 
+                });
+        }
     }
 
     public void doSyncMenuitem()
