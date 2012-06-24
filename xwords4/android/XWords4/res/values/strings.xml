@@ -1197,11 +1197,11 @@
       have Crosswords installed.)  The first uses defaults; the second
       lets you change them before beginning the game.</string>
 
-    <!-- The invitation process beging with this query.  The choice is
+    <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
     <string name="sms_or_email">Send invitation using SMS (texting) or
-      email?</string>
+       via email?</string>
 
     <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
@@ -1238,7 +1238,9 @@
          of the installed apps that can process the request he'd like
          to have launched.  This string is passed to Android and used
          as the title of the dialog that presents that choice. -->
-    <string name="invite_chooser">Send invitation via</string>
+    <string name="invite_chooserf">Send invitation via %s</string>
+    <string name="invite_chooser_email">email</string>
+    <string name="invite_chooser_sms">sms</string>
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->

@@ -508,6 +508,7 @@ public class GameUtils {
 
         if ( null != gameUri ) {
             int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
+            int choiceID;
             String format = context.getString( fmtId );
             String message = String.format( format, gameUri.toString() );
 
@@ -519,13 +520,17 @@ public class GameUtils {
                     Utils.format( context, R.string.invite_subjectf, room );
                 intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+                choiceID = R.string.invite_chooser_email;
             } else {
                 intent.setAction( Intent.ACTION_VIEW );
                 intent.setType( "vnd.android-dir/mms-sms" );
                 intent.putExtra( "sms_body", message );
+                choiceID = R.string.invite_chooser_sms;
             }
 
-            String chooserMsg = context.getString( R.string.invite_chooser );
+            String choiceType = context.getString( choiceID );
+            String chooserMsg = 
+                Utils.format( context, R.string.invite_chooserf, choiceType );
             context.startActivity( Intent.createChooser( intent, chooserMsg ) );
         }
     }
