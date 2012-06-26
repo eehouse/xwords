@@ -109,6 +109,17 @@ curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
     return XP_TRUE;
 } /* curses_draw_scoreBegin */
 
+#ifdef XWFEATURE_SCOREONEPASS
+static void
+curses_draw_drawRemText( DrawCtx* p_dctx, XP_S16 nTilesLeft,
+                         XP_Bool focussed, XP_Rect* rect )
+{
+    XP_USE(p_dctx);
+    XP_USE(nTilesLeft);
+    XP_USE(focussed);
+    XP_USE(rect);
+}
+#else
 static void
 formatRemText( char* buf, int bufLen, XP_S16 nTilesLeft, int width )
 {
@@ -145,7 +156,10 @@ curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
         cursesHiliteRect( dctx->boardWin, rInner );
     }
 } /* curses_draw_drawRemText */
+#endif
 
+#ifdef XWFEATURE_SCOREONEPASS
+#else
 static int
 fitIn( char* buf, int len, int* rem, const char* str )
 {
@@ -244,6 +258,27 @@ curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx),
 } /* curses_draw_measureScoreText */
 
 static void
+curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                              const XP_Rect* rOuter, 
+                              XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
+{
+    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    char buf[100];
+    int y = rInner->top;
+
+    curses_draw_clearRect( p_dctx, rOuter );
+
+    /* print the name and turn/remoteness indicator */
+    formatScoreText( buf, sizeof(buf), dsi, rInner->width );
+    mvwprintw( dctx->boardWin, y, rOuter->left, buf );
+
+    if ( (dsi->flags&CELL_ISCURSOR) != 0 ) {
+        cursesHiliteRect( dctx->boardWin, rOuter );
+    }
+} /* curses_draw_score_drawPlayer */
+#endif
+
+static void
 curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
                                 XP_S16 score, XP_U16 XP_UNUSED(playerNum),
                                 CellFlags XP_UNUSED(flags) )
@@ -274,26 +309,6 @@ curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ),
 } /* curses_draw_objFinished */
 
 #define MY_PAIR 1
-
-static void
-curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                              const XP_Rect* rOuter, 
-                              XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
-{
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    char buf[100];
-    int y = rInner->top;
-
-    curses_draw_clearRect( p_dctx, rOuter );
-
-    /* print the name and turn/remoteness indicator */
-    formatScoreText( buf, sizeof(buf), dsi, rInner->width );
-    mvwprintw( dctx->boardWin, y, rOuter->left, buf );
-
-    if ( (dsi->flags&CELL_ISCURSOR) != 0 ) {
-        cursesHiliteRect( dctx->boardWin, rOuter );
-    }
-} /* curses_draw_score_drawPlayer */
 
 static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
@@ -557,11 +572,15 @@ cursesDrawCtxtMake( WINDOW* boardWin )
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_scoreBegin, curses );
 
+#ifdef XWFEATURE_SCOREONEPASS
+    SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, curses );
+#else
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureRemText, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureScoreText, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayer, curses );
+#endif
+    SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, curses );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, curses );

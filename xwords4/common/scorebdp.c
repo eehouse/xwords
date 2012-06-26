@@ -37,6 +37,113 @@ board_ScoreCallback( void* closure, XP_S16 player, XP_UCHAR* expl,
                                       expl, explLen );
 } /* board_ScoreCallback */
 
+#ifdef XWFEATURE_SCOREONEPASS
+void
+drawScoreBoard( BoardCtxt* board )
+{
+    if ( board->scoreBoardInvalid ) {
+        XP_U16 ii;
+        XP_U16 nPlayers = board->gi->nPlayers;
+        DrawFocusState dfs = dfsFor( board, OBJ_SCORE );
+        ScoresArray scores;
+        ModelCtxt* model = board->model;
+        XP_S16 nTilesInPool = server_countTilesInPool( board->server );
+	    
+        if ( board->gameOver ) {
+            model_figureFinalScores( model, &scores, NULL );
+        } else {
+            for ( ii = 0; ii < nPlayers; ++ii ) {
+                scores.arr[ii] = model_getPlayerScore( model, ii );
+            }
+        }
+
+        if ( draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
+                              scores.arr, nTilesInPool, dfs ) ) {
+            XP_S16 curTurn = server_getCurrentTurn( board->server );
+            XP_U16 selPlayer = board->selPlayer;
+            XP_Rect scoreRect;
+            XP_Rect playerRects[nPlayers];
+            XP_U16 remDim;
+            XP_Bool isVertical = !board->scoreSplitHor;
+            XP_Bool remFocussed = XP_FALSE;
+            XP_Bool focusAll = XP_FALSE;
+            DrawScoreInfo data[nPlayers];
+#ifdef KEYBOARD_NAV
+            XP_S16 cursorIndex = -1;
+
+            if ( (board->focussed == OBJ_SCORE) && !board->hideFocus ) {
+                focusAll = !board->focusHasDived;
+                if ( !focusAll ) {
+                    cursorIndex = board->scoreCursorLoc;
+                    remFocussed = CURSOR_LOC_REM == cursorIndex;                
+                    --cursorIndex;                                              
+                }
+            }
+#endif
+
+            XP_MEMSET( playerRects, 0, sizeof(playerRects) );
+            XP_MEMSET( data, 0, sizeof(data) );
+
+            scoreRect = board->scoreBdBounds;
+            draw_drawRemText( board->draw, nTilesInPool, focusAll || remFocussed, 
+                              &scoreRect );
+            XP_ASSERT( rectContainsRect( &board->scoreBdBounds, &scoreRect ) );
+            remDim = isVertical? scoreRect.height : scoreRect.width;
+            board->remDim = remDim;
+#ifdef KEYBOARD_NAV
+            board->remRect = scoreRect;
+            if ( 0 == remDim && board->scoreCursorLoc == CURSOR_LOC_REM ) {
+                board->scoreCursorLoc = selPlayer + 1;
+            }
+#endif
+            scoreRect = board->scoreBdBounds;
+            if ( isVertical ) {
+                scoreRect.height -= remDim;
+                scoreRect.top += remDim;
+            } else {
+                scoreRect.width -= remDim;
+                scoreRect.left += remDim;
+            }
+
+            for ( ii = 0; ii < nPlayers; ++ii ) {
+                DrawScoreInfo* dsi = &data[ii];
+                LocalPlayer* lp = &board->gi->players[ii];
+                dsi->lsc = board_ScoreCallback;
+                dsi->lscClosure = model;
+#ifdef KEYBOARD_NAV
+                if ( (ii == cursorIndex) || focusAll ) {
+                    dsi->flags |= CELL_ISCURSOR;
+                }
+#endif
+                dsi->playerNum = ii;
+                dsi->totalScore = scores.arr[ii];
+                dsi->isTurn = (ii == curTurn);
+                dsi->name = emptyStringIfNull(lp->name);
+                dsi->selected = board->trayVisState != TRAY_HIDDEN
+                    && ii==selPlayer;
+                dsi->isRobot = LP_IS_ROBOT(lp);
+                dsi->isRemote = !lp->isLocal;
+                dsi->nTilesLeft = (nTilesInPool > 0)? -1:
+                    model_getNumTilesTotal( model, ii );
+            }
+
+            draw_score_drawPlayers( board->draw, &scoreRect, nPlayers, data, playerRects );
+            for ( ii = 0; ii < nPlayers; ++ii ) {
+                XP_MEMCPY( &board->pti[ii].scoreRects, &playerRects[ii],
+                           sizeof(board->pti[ii].scoreRects) );
+            }
+
+            draw_objFinished( board->draw, OBJ_SCORE, 
+                              &board->scoreBdBounds, dfs );
+
+            board->scoreBoardInvalid = XP_FALSE;
+        }
+    }
+
+    drawTimer( board );
+} /* drawScoreBoard */
+#else
+
 static void
 centerIn( XP_Rect* rInner, const XP_Rect* rOuter, XP_U16 width, XP_U16 height )
 {
@@ -78,10 +185,7 @@ drawScoreBoard( BoardCtxt* board )
             XP_Bool remFocussed = XP_FALSE;
             XP_Bool focusAll = XP_FALSE;
 #ifdef KEYBOARD_NAV
-            XP_Rect cursorRect;
-            XP_Rect* cursorRectP = NULL;
             XP_S16 cursorIndex = -1;
-
             if ( (board->focussed == OBJ_SCORE) && !board->hideFocus ) {
                 focusAll = !board->focusHasDived;
                 if ( !focusAll ) {
@@ -209,10 +313,6 @@ drawScoreBoard( BoardCtxt* board )
 #ifdef KEYBOARD_NAV
                     XP_MEMCPY( &board->pti[ii].scoreRects, &scoreRect, 
                                sizeof(scoreRect) );
-                    if ( ii == cursorIndex ) {
-                        cursorRect = scoreRect;
-                        cursorRectP = &cursorRect;
-                    }
 #endif
                     *adjustPt += *adjustDim;
                 }
@@ -228,6 +328,7 @@ drawScoreBoard( BoardCtxt* board )
 
     drawTimer( board );
 } /* drawScoreBoard */
+#endif
 
 static XP_S16
 figureSecondsLeft( BoardCtxt* board )

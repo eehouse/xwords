@@ -44,6 +44,10 @@ typedef struct FontPerSize {
 	PangoLayout* layout;
 } FontPerSize;
 
+static void gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds, 
+                                       const DrawScoreInfo* dsi,
+                                       XP_U16* widthP, XP_U16* heightP );
+
 /* static GdkGC* newGCForColor( GdkWindow* window, XP_Color* newC ); */
 static void
 gtkInsetRect( XP_Rect* r, short i )
@@ -900,6 +904,113 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
 } /* gtkDrawDrawRemText */
 
 static void
+gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                           const XP_Rect* rOuter, 
+                           XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
+{
+    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    XP_Bool hasCursor = (dsi->flags & CELL_ISCURSOR) != 0;
+    GdkColor* cursor = NULL;
+    XP_U16 playerNum = dsi->playerNum;
+    const XP_UCHAR* scoreBuf = dctx->scoreCache[playerNum].str;
+    XP_U16 fontHt = dctx->scoreCache[playerNum].fontHt;
+
+    if ( hasCursor ) {
+        cursor = &dctx->cursor;
+        gtkFillRect( dctx, rOuter, cursor );
+    }
+
+#ifdef USE_CAIRO
+    //gdk_cairo_set_source_color( dctx->cr, &dctx->playerColors[playerNum] );
+#else
+    gdk_gc_set_foreground( dctx->drawGC, &dctx->playerColors[playerNum] );
+#endif
+
+    if ( dsi->selected ) {
+        XP_Rect selRect = *rOuter;
+        XP_S16 diff;
+        if ( dctx->scoreIsVertical ) {
+            diff = selRect.height - rInner->height;
+        } else {
+            diff = selRect.width - rInner->width;
+        }
+        if ( diff > 0 ) {
+            if ( dctx->scoreIsVertical ) {
+                selRect.height -= diff>>1;
+                selRect.top += diff>>2;
+            } else {
+                selRect.width -= diff>>1;
+                selRect.left += diff>>2;
+            }
+        }
+
+        draw_rectangle( dctx, DRAW_WHAT(dctx), dctx->drawGC,
+                        TRUE, selRect.left, selRect.top, 
+                        selRect.width, selRect.height );
+        if ( hasCursor ) {
+            gtkFillRect( dctx, rInner, cursor );
+        }
+        gtkEraseRect( dctx, rInner );
+    }
+
+/*     XP_U16 fontHt = rInner->height; */
+/*     if ( strstr( scoreBuf, "\n" ) ) { */
+/*         fontHt >>= 1; */
+/*     } */
+
+    draw_string_at( dctx, NULL, scoreBuf, fontHt/*-1*/,
+                    rInner, XP_GTK_JUST_CENTER,
+                    &dctx->playerColors[playerNum], cursor );
+
+} /* gtk_draw_score_drawPlayer */
+
+#ifdef XWFEATURE_SCOREONEPASS
+static void
+gtk_draw_drawRemText( DrawCtx* p_dctx, XP_S16 nTilesLeft,
+                      XP_Bool focussed, XP_Rect* rect )
+{
+    if ( nTilesLeft <= 0 ) {
+	rect->width = rect->height = 0;
+    } else {
+	XP_U16 width, height;
+        gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, &width, &height, focussed );
+	rect->width = width;
+	rect->height = height;
+        gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, NULL, NULL, focussed );
+    }
+}
+
+static void
+gtk_draw_score_drawPlayers( DrawCtx* p_dctx, const XP_Rect* scoreRect,
+                            XP_U16 nPlayers, 
+                            DrawScoreInfo playerData[], 
+                            XP_Rect playerRects[] )
+{
+    XP_USE( playerData );
+    XP_USE( p_dctx );
+
+    XP_U16 ii;
+    XP_Rect rect = *scoreRect;
+    rect.width /= nPlayers;
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        XP_U16 ignoreW, ignoreH;
+        XP_Rect innerR;
+        gtk_draw_measureScoreText( p_dctx, &rect, &playerData[ii], &ignoreW, 
+                                   &ignoreH );
+
+        innerR = rect;
+        innerR.left += 4;
+        innerR.width -= 8;
+        gtk_draw_score_drawPlayer( p_dctx, &innerR, &rect, 0, &playerData[ii] );
+
+        playerRects[ii] = rect;
+        rect.left += rect.width;
+    }
+
+}
+
+#else
+static void
 gtk_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
                          XP_U16* width, XP_U16* height )
 {
@@ -918,6 +1029,7 @@ gtk_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
     gtkDrawDrawRemText( p_dctx, rInner, nTilesLeft, NULL, NULL, focussed );
 } /* gtk_draw_drawRemText */
 
+#endif
 static void
 formatScoreText( PangoLayout* layout, XP_UCHAR* buf, XP_U16 bufLen, 
                  const DrawScoreInfo* dsi, const XP_Rect* bounds, 
@@ -1010,67 +1122,6 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
                  VSIZE(dctx->scoreCache[playerNum].str), "%s", buf );
     dctx->scoreCache[playerNum].fontHt = lineHeight;
 } /* gtk_draw_measureScoreText */
-
-static void
-gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                           const XP_Rect* rOuter, 
-                           XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
-{
-    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    XP_Bool hasCursor = (dsi->flags & CELL_ISCURSOR) != 0;
-    GdkColor* cursor = NULL;
-    XP_U16 playerNum = dsi->playerNum;
-    const XP_UCHAR* scoreBuf = dctx->scoreCache[playerNum].str;
-    XP_U16 fontHt = dctx->scoreCache[playerNum].fontHt;
-
-    if ( hasCursor ) {
-        cursor = &dctx->cursor;
-        gtkFillRect( dctx, rOuter, cursor );
-    }
-
-#ifdef USE_CAIRO
-    //gdk_cairo_set_source_color( dctx->cr, &dctx->playerColors[playerNum] );
-#else
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->playerColors[playerNum] );
-#endif
-
-    if ( dsi->selected ) {
-        XP_Rect selRect = *rOuter;
-        XP_S16 diff;
-        if ( dctx->scoreIsVertical ) {
-            diff = selRect.height - rInner->height;
-        } else {
-            diff = selRect.width - rInner->width;
-        }
-        if ( diff > 0 ) {
-            if ( dctx->scoreIsVertical ) {
-                selRect.height -= diff>>1;
-                selRect.top += diff>>2;
-            } else {
-                selRect.width -= diff>>1;
-                selRect.left += diff>>2;
-            }
-        }
-
-        draw_rectangle( dctx, DRAW_WHAT(dctx), dctx->drawGC,
-                        TRUE, selRect.left, selRect.top, 
-                        selRect.width, selRect.height );
-        if ( hasCursor ) {
-            gtkFillRect( dctx, rInner, cursor );
-        }
-        gtkEraseRect( dctx, rInner );
-    }
-
-/*     XP_U16 fontHt = rInner->height; */
-/*     if ( strstr( scoreBuf, "\n" ) ) { */
-/*         fontHt >>= 1; */
-/*     } */
-
-    draw_string_at( dctx, NULL, scoreBuf, fontHt/*-1*/,
-                    rInner, XP_GTK_JUST_CENTER,
-                    &dctx->playerColors[playerNum], cursor );
-
-} /* gtk_draw_score_drawPlayer */
 
 static void
 gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
@@ -1297,10 +1348,15 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_scoreBegin, gtk );
+#ifdef XWFEATURE_SCOREONEPASS
+    SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, gtk );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayers, gtk );
+#else
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureRemText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureScoreText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayer, gtk );
+#endif
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTimer, gtk );

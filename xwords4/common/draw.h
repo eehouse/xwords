@@ -131,17 +131,26 @@ typedef struct DrawCtxVTable {
     XP_Bool DRAW_VTABLE_NAME(trayBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
                                           XP_U16 owner, XP_S16 score,
                                           DrawFocusState dfs );
-    void DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, const XP_Rect* r, 
-                                            XP_S16 nTilesLeft, 
-                                            XP_U16* width, XP_U16* height );
-    void DRAW_VTABLE_NAME(drawRemText) (DrawCtx* dctx, const XP_Rect* rInner,
-                                        const XP_Rect* rOuter, 
-                                        XP_S16 nTilesLeft, XP_Bool focussed );
 
     XP_Bool DRAW_VTABLE_NAME(scoreBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
                                            XP_U16 numPlayers, 
                                            const XP_S16* const scores,
                                            XP_S16 remCount, DrawFocusState dfs );
+#ifdef XWFEATURE_SCOREONEPASS
+    void DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, XP_S16 nTilesLeft, 
+                                         XP_Bool focussed, XP_Rect* rect );
+    void DRAW_VTABLE_NAME(score_drawPlayers)( DrawCtx* dctx, 
+                                              const XP_Rect* scoreRect,
+                                              XP_U16 nPlayers, 
+                                              DrawScoreInfo playerData[], 
+                                              XP_Rect playerRects[] );
+#else
+    void DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, const XP_Rect* r, 
+                                            XP_S16 nTilesLeft, 
+                                            XP_U16* width, XP_U16* height );
+    void DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, const XP_Rect* rInner,
+                                         const XP_Rect* rOuter, 
+                                         XP_S16 nTilesLeft, XP_Bool focussed );
     void DRAW_VTABLE_NAME(measureScoreText) ( DrawCtx* dctx, 
                                               const XP_Rect* r, 
                                               const DrawScoreInfo* dsi,
@@ -151,7 +160,7 @@ typedef struct DrawCtxVTable {
                                               const XP_Rect* rOuter, 
                                               XP_U16 gotPct, 
                                               const DrawScoreInfo* dsi );
-
+#endif
     void DRAW_VTABLE_NAME(score_pendingScore) ( DrawCtx* dctx, 
                                                 const XP_Rect* rect, 
                                                 XP_S16 score, 
@@ -271,14 +280,21 @@ struct DrawCtx {
     CALL_DRAW_NAME3(vertScrollBoard, (dc),(r),(d),(f))
 #define draw_scoreBegin( dc, r, t, s, c, f ) \
     CALL_DRAW_NAME5( scoreBegin,(dc), (r), (t), (s), (c), (f))
-#define draw_measureRemText( dc, r, n, wp, hp ) \
+#ifdef XWFEATURE_SCOREONEPASS
+# define draw_drawRemText( dc, nt, f, ro )			\
+    CALL_DRAW_NAME3(drawRemText, (dc), (nt), (f), (ro) )
+# define draw_score_drawPlayers( dc, r, np, pd, pr )			\
+    CALL_DRAW_NAME4(score_drawPlayers, (dc), (r), (np), (pd), (pr) )
+#else
+# define draw_measureRemText( dc, r, n, wp, hp ) \
     CALL_DRAW_NAME4(measureRemText, (dc), (r), (n), (wp), (hp) )
-#define draw_drawRemText( dc, ri, ro, n, f )                  \
+# define draw_drawRemText( dc, ri, ro, n, f )                  \
     CALL_DRAW_NAME4(drawRemText, (dc), (ri), (ro), (n), (f) )
-#define draw_measureScoreText(dc,r,dsi,wp,hp) \
+# define draw_measureScoreText(dc,r,dsi,wp,hp) \
     CALL_DRAW_NAME4(measureScoreText,(dc),(r),(dsi),(wp),(hp))
-#define draw_score_drawPlayer(dc, ri, ro, gp, dsi)           \
+# define draw_score_drawPlayer(dc, ri, ro, gp, dsi)           \
     CALL_DRAW_NAME4(score_drawPlayer,(dc),(ri),(ro),(gp),(dsi))
+#endif
 #define draw_score_pendingScore(dc, r, s, p, f ) \
     CALL_DRAW_NAME4(score_pendingScore,(dc), (r), (s), (p), (f))
 #define draw_drawTimer( dc, r, plyr, sec ) \
