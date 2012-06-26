@@ -318,7 +318,7 @@ XP_Bool onBorderCanScroll( const BoardCtxt* board, SDIndex indx, XP_U16 row,
                            XP_S16* change );
 XP_Bool adjustXOffset( BoardCtxt* board, XP_S16 moveBy );
 XP_Bool adjustYOffset( BoardCtxt* board, XP_S16 moveBy );
-
+XP_Bool rectContainsRect( const XP_Rect* rect1, const XP_Rect* rect2 );
 
 
 #ifdef KEYBOARD_NAV

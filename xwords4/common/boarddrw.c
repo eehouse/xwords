@@ -216,8 +216,8 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
 } /* figureHintAtts */
 #endif
 
-static XP_Bool
-rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 )
+XP_Bool
+rectContainsRect( const XP_Rect* rect1, const XP_Rect* rect2 )
 {
     return ( rect1->top <= rect2->top
              && rect1->left <= rect2->left
