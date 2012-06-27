@@ -127,12 +127,16 @@ drawScoreBoard( BoardCtxt* board )
                     model_getNumTilesTotal( model, ii );
             }
 
-            draw_score_drawPlayers( board->draw, &scoreRect, nPlayers, data, playerRects );
+            draw_score_drawPlayers( board->draw, &scoreRect, nPlayers, data, 
+                                    playerRects );
             for ( ii = 0; ii < nPlayers; ++ii ) {
-                XP_MEMCPY( &board->pti[ii].scoreRects, &playerRects[ii],
+                XP_Rect* rp = &playerRects[ii];
+                board->pti[ii].scoreDims = isVertical ? rp->height : rp->width;
+#ifdef KEYBOARD_NAV
+                XP_MEMCPY( &board->pti[ii].scoreRects, rp,
                            sizeof(board->pti[ii].scoreRects) );
+#endif
             }
-
             draw_objFinished( board->draw, OBJ_SCORE, 
                               &board->scoreBdBounds, dfs );
 
