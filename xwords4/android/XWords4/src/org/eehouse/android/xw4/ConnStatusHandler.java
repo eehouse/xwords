@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -33,10 +34,16 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public class ConnStatusHandler {
+    // private static final int GREEN = 0x7F00FF00;
+    // private static final int RED = 0x7FFF0000;
+    private static final int GREEN = 0xFF00FF00;
+    private static final int RED = 0xFFFF0000;
+
     private static CommsConnType s_connType = CommsConnType.COMMS_CONN_NONE;
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
     private static Handler s_handler;
+    private static Paint s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
 
     private static class SuccessRecord {
         // man strftime for these
@@ -213,26 +220,36 @@ public class ConnStatusHandler {
                 int quarterHeight = rect.height() / 4;
                 rect.offset( offsetX, offsetY );
 
-                rect.top += quarterHeight;
-                rect.bottom = rect.top + (2 * quarterHeight);
-                drawIn( canvas, res, iconID, rect );
-
                 if ( CommsConnType.COMMS_CONN_NONE != s_connType ) {
-                    SuccessRecord record = recordFor( s_connType, true );
-                    int inID = record.successNewer ? R.drawable.in_success
-                        : R.drawable.in_failure;
-                    record = recordFor( s_connType, false );
-                    int outID = record.successNewer ? R.drawable.out_success
-                        : R.drawable.out_failure;
+                    int saveTop = rect.top;
+                    SuccessRecord record;
 
-                    rect.bottom = rect.top;
-                    rect.top -= quarterHeight;
-                    drawIn( canvas, res, outID, rect );
+                    // Do the background coloring
+                    rect.bottom = rect.top + quarterHeight * 2;
+                    record = recordFor( s_connType, false );
+                    s_fillPaint.setColor( record.successNewer ? GREEN : RED );
+                    canvas.drawRect( rect, s_fillPaint );
+                    rect.top = rect.bottom;
+                    rect.bottom = rect.top + quarterHeight * 2;
+                    record = recordFor( s_connType, true );
+                    s_fillPaint.setColor( record.successNewer ? GREEN : RED );
+                    canvas.drawRect( rect, s_fillPaint );
+
+                    // now the icons
+                    rect.top = saveTop;
+                    rect.bottom = rect.top + quarterHeight;
+                    drawIn( canvas, res, R.drawable.out_arrow, rect );
 
                     rect.top += 3 * quarterHeight;
                     rect.bottom = rect.top + quarterHeight;
-                    drawIn( canvas, res, inID, rect );
-                } 
+                    drawIn( canvas, res, R.drawable.in_arrow, rect );
+
+                    rect.top = saveTop;
+                }
+
+                rect.top += quarterHeight;
+                rect.bottom = rect.top + (2 * quarterHeight);
+                drawIn( canvas, res, iconID, rect );
             }
         }
     }
