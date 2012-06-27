@@ -128,6 +128,22 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
     return result;
 }
 
+#ifdef XWFEATURE_SCOREONEPASS
+static void
+and_draw_drawRemText( DrawCtx* dctx, XP_S16 nTilesLeft, 
+                      XP_Bool focussed, XP_Rect* rect )
+{
+}
+
+static void
+and_draw_score_drawPlayers( DrawCtx* dctx, const XP_Rect* scoreRect,
+                             XP_U16 nPlayers, DrawScoreInfo playerData[], 
+                             XP_Rect playerRects[] )
+{
+}
+
+#else
+
 static void 
 and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r, 
                          XP_S16 nTilesLeft, 
@@ -145,6 +161,21 @@ and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r,
     *width = getIntFromArray( env, widthArray, true );
     *height = getIntFromArray( env, heightArray, true );
 } /* and_draw_measureRemText */
+
+static void
+and_draw_drawRemText( DrawCtx* dctx, const XP_Rect* rInner,
+                      const XP_Rect* rOuter, 
+                      XP_S16 nTilesLeft, XP_Bool focussed )
+{
+    DRAW_CBK_HEADER("drawRemText",
+                    "(Landroid/graphics/Rect;Landroid/graphics/Rect;IZ)V" );
+
+    jobject jrinner = makeJRect( draw, JCACHE_RECT0, rInner );
+    jobject jrouter = makeJRect( draw, JCACHE_RECT1, rOuter );
+
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, 
+                            nTilesLeft, focussed );
+}
 
 static void
 and_draw_measureScoreText( DrawCtx* dctx, 
@@ -170,21 +201,6 @@ and_draw_measureScoreText( DrawCtx* dctx,
 } /* and_draw_measureScoreText */
 
 static void
-and_draw_drawRemText( DrawCtx* dctx, const XP_Rect* rInner,
-                      const XP_Rect* rOuter, 
-                      XP_S16 nTilesLeft, XP_Bool focussed )
-{
-    DRAW_CBK_HEADER("drawRemText",
-                    "(Landroid/graphics/Rect;Landroid/graphics/Rect;IZ)V" );
-
-    jobject jrinner = makeJRect( draw, JCACHE_RECT0, rInner );
-    jobject jrouter = makeJRect( draw, JCACHE_RECT1, rOuter );
-
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, 
-                            nTilesLeft, focussed );
-}
-
-static void
 and_draw_score_drawPlayer( DrawCtx* dctx, const XP_Rect* rInner, 
                            const XP_Rect* rOuter, XP_U16 gotPct,
                            const DrawScoreInfo* dsi )
@@ -200,6 +216,7 @@ and_draw_score_drawPlayer( DrawCtx* dctx, const XP_Rect* rInner,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, gotPct, 
                             jdsi );
 } /* and_draw_score_drawPlayer */
+#endif
 
 static void
 and_draw_drawTimer( DrawCtx* dctx, const XP_Rect* rect, XP_U16 player, 
@@ -476,10 +493,14 @@ makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
 #define SET_PROC(nam) draw->vtable->m_draw_##nam = and_draw_##nam
     SET_PROC(boardBegin);
     SET_PROC(scoreBegin);
-    SET_PROC(measureRemText);
+#ifdef XWFEATURE_SCOREONEPASS
+    SET_PROC(score_drawPlayers);
+#else
     SET_PROC(measureScoreText);
-    SET_PROC(drawRemText);
     SET_PROC(score_drawPlayer);
+    SET_PROC(measureRemText);
+#endif
+    SET_PROC(drawRemText);
     SET_PROC(drawTimer);
 
     SET_PROC(drawCell);
