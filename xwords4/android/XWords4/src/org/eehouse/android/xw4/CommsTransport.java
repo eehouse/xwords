@@ -407,18 +407,22 @@ public class CommsTransport implements TransportProcs,
         case COMMS_RELAYSTATE_UNCONNECTED:
         case COMMS_RELAYSTATE_DENIED:
         case COMMS_RELAYSTATE_CONNECT_PENDING:
-            ConnStatusHandler.updateStatusOut( CommsConnType.COMMS_CONN_RELAY, 
+            ConnStatusHandler.updateStatusOut( m_context, 
+                                               CommsConnType.COMMS_CONN_RELAY, 
                                                false );
-            ConnStatusHandler.updateStatusIn( CommsConnType.COMMS_CONN_RELAY, 
+            ConnStatusHandler.updateStatusIn( m_context, 
+                                              CommsConnType.COMMS_CONN_RELAY, 
                                               false );
             break;
         case COMMS_RELAYSTATE_CONNECTED: 
         case COMMS_RELAYSTATE_RECONNECTED: 
-            ConnStatusHandler.updateStatusOut( CommsConnType.COMMS_CONN_RELAY, 
+            ConnStatusHandler.updateStatusOut( m_context, 
+                                               CommsConnType.COMMS_CONN_RELAY, 
                                                true );
             break;
         case COMMS_RELAYSTATE_ALLCONNECTED:
-            ConnStatusHandler.updateStatusIn( CommsConnType.COMMS_CONN_RELAY, 
+            ConnStatusHandler.updateStatusIn( m_context, 
+                                              CommsConnType.COMMS_CONN_RELAY, 
                                               true );
             break;
         }

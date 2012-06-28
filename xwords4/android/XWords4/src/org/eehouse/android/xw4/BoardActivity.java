@@ -882,7 +882,7 @@ public class BoardActivity extends XWActivity
             //     m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, accepted );
             // }
             ConnStatusHandler.
-                updateStatusIn(CommsAddrRec.CommsConnType.COMMS_CONN_BT, 
+                updateStatusIn(this, CommsAddrRec.CommsConnType.COMMS_CONN_BT, 
                                MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
             break;
         case MESSAGE_NOGAME:

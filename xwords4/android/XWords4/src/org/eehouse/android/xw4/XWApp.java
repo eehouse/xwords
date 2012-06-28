@@ -50,6 +50,7 @@ public class XWApp extends Application {
 
         RelayReceiver.RestartTimer( this );
         BTService.startService( this );
+        ConnStatusHandler.loadState( this );
     }
 
     public static UUID getAppUUID()
