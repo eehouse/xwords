@@ -141,17 +141,17 @@ public class CommonPrefs {
 
     public static String getDefaultRelayHost( Context context )
     {
-        return getString( context, R.string.key_relay_host );
+        return getPrefsString( context, R.string.key_relay_host );
     }
 
     public static String getDefaultRedirHost( Context context )
     {
-        return getString( context, R.string.key_redir_host );
+        return getPrefsString( context, R.string.key_redir_host );
     }
 
     public static int getDefaultRelayPort( Context context )
     {
-        String val = getString( context, R.string.key_relay_port );
+        String val = getPrefsString( context, R.string.key_relay_port );
         int result = 0;
         try {
             result = Integer.parseInt( val );
@@ -162,7 +162,7 @@ public class CommonPrefs {
 
     public static int getDefaultProxyPort( Context context )
     {
-        String val = getString( context, R.string.key_proxy_port );
+        String val = getPrefsString( context, R.string.key_proxy_port );
         int result = 0;
         try {
             result = Integer.parseInt( val );
@@ -174,7 +174,7 @@ public class CommonPrefs {
 
     public static String getDefaultDictURL( Context context )
     {
-        return getString( context, R.string.key_dict_host );
+        return getPrefsString( context, R.string.key_dict_host );
     }
 
     public static boolean getVolKeysZoom( Context context )
@@ -184,7 +184,7 @@ public class CommonPrefs {
 
     public static int getDefaultBoardSize( Context context )
     {
-        String value = getString( context, R.string.key_board_size );
+        String value = getPrefsString( context, R.string.key_board_size );
         int result;
         try {
             result = Integer.parseInt( value.substring( 0, 2 ) );
@@ -196,7 +196,8 @@ public class CommonPrefs {
 
     public static int getDefaultPlayerMinutes( Context context )
     {
-        String value = getString( context, R.string.key_initial_player_minutes );
+        String value = 
+            getPrefsString( context, R.string.key_initial_player_minutes );
         int result;
         try {
             result = Integer.parseInt( value );
@@ -208,7 +209,7 @@ public class CommonPrefs {
 
     public static long getProxyInterval( Context context )
     {
-        String value = getString( context, R.string.key_connect_frequency );
+        String value = getPrefsString( context, R.string.key_connect_frequency );
         long result;
         try {
             result = Long.parseLong( value );
@@ -220,7 +221,7 @@ public class CommonPrefs {
 
     public static String getDefaultHumanDict( Context context )
     {
-        String value = getString( context, R.string.key_default_dict );
+        String value = getPrefsString( context, R.string.key_default_dict );
         if ( value.equals("") || !DictUtils.dictExists( context, value ) ) {
             value = DictUtils.dictList( context )[0].name;
         }
@@ -229,7 +230,7 @@ public class CommonPrefs {
 
     public static String getDefaultRobotDict( Context context )
     {
-        String value = getString( context, R.string.key_default_robodict );
+        String value = getPrefsString( context, R.string.key_default_robodict );
         if ( value.equals("") || !DictUtils.dictExists( context, value ) ) {
             value = getDefaultHumanDict( context );
         }
@@ -246,7 +247,7 @@ public class CommonPrefs {
         case 2: id = R.string.key_player3_name; break;
         case 3: id = R.string.key_player4_name; break;
         }
-        String result = getString( context, id );
+        String result = getPrefsString( context, id );
         if ( null != result && 0 == result.length() ) {
             result = null;      // be consistent
         }
@@ -270,7 +271,7 @@ public class CommonPrefs {
     public static CurGameInfo.XWPhoniesChoice 
         getDefaultPhonies( Context context )
     {
-        String value = getString( context, R.string.key_default_phonies );
+        String value = getPrefsString( context, R.string.key_default_phonies );
 
         CurGameInfo.XWPhoniesChoice result = 
             CurGameInfo.XWPhoniesChoice.PHONIES_IGNORE;
@@ -332,7 +333,7 @@ public class CommonPrefs {
 
     public static String getSummaryField( Context context )
     {
-        return getString( context, R.string.key_summary_field );
+        return getPrefsString( context, R.string.key_summary_field );
     }
 
     public static void setClosedLangs( Context context, String[] langs )
@@ -396,7 +397,7 @@ public class CommonPrefs {
         editor.commit();
     }
 
-    private static String getString( Context context, int keyID )
+    public static String getPrefsString( Context context, int keyID )
     {
         String key = context.getString( keyID );
         SharedPreferences sp = PreferenceManager
@@ -404,8 +405,8 @@ public class CommonPrefs {
         return sp.getString( key, "" );
     }
 
-    private static void setPrefsString( Context context, int keyID, 
-                                        String newValue )
+    public static void setPrefsString( Context context, int keyID, 
+                                       String newValue )
     {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
@@ -417,7 +418,7 @@ public class CommonPrefs {
 
     private static String[] getPrefsStringArray( Context context, int keyID )
     {
-        String asStr = getString( context, keyID );
+        String asStr = getPrefsString( context, keyID );
         String[] result = null == asStr ? null : TextUtils.split( asStr, "\n" );
         return result;
     }
