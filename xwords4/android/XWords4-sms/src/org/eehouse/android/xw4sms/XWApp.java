@@ -47,6 +47,8 @@ public class XWApp extends Application {
                        getString( R.string.git_rev ) );
         DbgUtils.logEnable( this );
 
+        ConnStatusHandler.loadState( this );
+
         RelayReceiver.RestartTimer( this );
         BTService.startService( this );
 
