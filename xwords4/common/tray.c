@@ -442,10 +442,15 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
 #endif
     } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
         result = board_commitTurn( board );
-#ifndef DISABLE_EMPTYTRAY_UNDO
+#if defined XWFEATURE_TRAYUNDO_ALL
     } else if ( index < 0 ) { /* other empty area */
         /* it better be true */
         (void)board_replaceTiles( board );
+        result = XP_TRUE;
+#elif defined XWFEATURE_TRAYUNDO_ONE
+    } else if ( index < 0 ) { /* other empty area */
+        /* it better be true */
+        (void)board_replaceNTiles( board, 1 );
         result = XP_TRUE;
 #endif
     }

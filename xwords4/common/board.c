@@ -1689,10 +1689,10 @@ board_toggle_showValues( BoardCtxt* board )
 } /* board_toggle_showValues */
 
 XP_Bool
-board_replaceTiles( BoardCtxt* board )
+board_replaceNTiles( BoardCtxt* board, XP_U16 nTiles )
 {
     XP_Bool result = XP_FALSE;
-    while ( replaceLastTile( board ) ) {
+    while ( 0 < nTiles-- && replaceLastTile( board ) ) {
         result = XP_TRUE;
     } 
 
@@ -1701,6 +1701,12 @@ board_replaceTiles( BoardCtxt* board )
     }
 
     return result;
+}
+
+XP_Bool
+board_replaceTiles( BoardCtxt* board )
+{
+    return board_replaceNTiles( board, MAX_TRAY_TILES );
 } /* board_replaceTiles */
 
 XP_Bool
