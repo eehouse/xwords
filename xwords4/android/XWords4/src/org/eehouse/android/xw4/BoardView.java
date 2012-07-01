@@ -531,6 +531,56 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
+    // public void drawRemText( int nTilesLeft, boolean focussed, Rect rect )
+    // {
+    //     int width, height;
+    //     String remText = null;
+    //     if ( 0 >= nTilesLeft ) {
+    //         // make it disappear if useless 
+    //         width = height = 0;
+    //     } else {
+    //         // should cache a formatter
+    //         remText = String.format( "%d", nTilesLeft );
+    //         m_fillPaint.setTextSize( m_mediumFontHt );
+    //         m_fillPaint.getTextBounds( remText, 0, remText.length(), 
+    //                                    m_boundsScratch );
+
+    //         int minWidth = m_boundsScratch.width();
+    //         if ( minWidth < 20 ) {
+    //             minWidth = 20; // it's a button; make it bigger
+    //         }
+    //         width = minWidth;
+    //         height = m_boundsScratch.height();
+    //     }
+
+    //     rect.right = rect.left + width;
+    //     // rect.bottom = rect.top + height;
+
+    //     if ( 0 < nTilesLeft ) {
+    //         int indx = focussed ? CommonPrefs.COLOR_FOCUS
+    //             : CommonPrefs.COLOR_TILE_BACK;
+    //         fillRectOther( rect, indx );
+
+    //         m_fillPaint.setColor( adjustColor(BLACK) );
+    //         drawCentered( remText, rect, null );
+    //     }
+    // }
+
+    // public void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData, 
+    //                                Rect[] playerRects )
+    // {
+    //     // To measure
+
+    //     int width = scoreRect.width() / playerRects.length;
+    //     int left = scoreRect.left;
+    //     for ( int ii = 0; ii < playerRects.length; ++ii ) {
+    //         playerRects[ii].set( left, scoreRect.top, left + width,
+    //                              scoreRect.bottom );
+    //         drawCentered( playerData[ii].name, playerRects[ii], null );
+    //         left += width;
+    //     }
+    // }
+
     public void drawTimer( Rect rect, int player, int secondsLeft )
     {
         if ( null != m_canvas && (m_lastSecsLeft != secondsLeft

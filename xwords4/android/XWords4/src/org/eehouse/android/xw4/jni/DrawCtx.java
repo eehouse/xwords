@@ -49,6 +49,12 @@ public interface DrawCtx {
     void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, boolean focussed );
     void score_drawPlayer( Rect rInner, Rect rOuter, int gotPct, 
                            DrawScoreInfo dsi );
+
+    // New way of drawing
+    // void drawRemText( int nTilesLeft, boolean focussed, Rect rect );
+    // void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData, 
+    //                         Rect[] playerRects );
+
     void drawTimer( Rect rect, int player, int secondsLeft );
     boolean boardBegin( Rect rect, int cellWidth, int cellHeight );
 

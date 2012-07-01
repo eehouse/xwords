@@ -25,7 +25,12 @@
 enum { 
     JCACHE_RECT0
     ,JCACHE_RECT1
+#ifdef XWFEATURE_SCOREONEPASS
+    ,JCACHE_DSIS
+    ,JCACHE_RECTS
+#else
     ,JCACHE_DSI
+#endif
     ,JCACHE_COUNT
 };
 
@@ -69,6 +74,94 @@ makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
     return robj;
 } /* makeJRect */
 
+#ifdef XWFEATURE_SCOREONEPASS
+static void
+readJRect( JNIEnv* env, XP_Rect* rect, jobject jrect )
+{
+    rect->left = getInt( env, jrect, "left" );
+    rect->top = getInt( env, jrect, "top" );
+    rect->width = getInt( env, jrect, "right" ) - rect->left;
+    rect->height = getInt( env, jrect, "bottom" ) - rect->top;
+}
+
+static jobject
+makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
+{
+    XP_U16 ii;
+    JNIEnv* env = *draw->env;
+    jobject jrects = draw->jCache[indx];
+    if ( !jrects ) {
+        jclass rclass = (*env)->FindClass( env, "android/graphics/Rect");
+        jrects = (*env)->NewObjectArray( env, nPlayers, rclass, NULL );
+        draw->jCache[indx] = (*env)->NewGlobalRef( env, jrects );
+        (*env)->DeleteLocalRef( env, jrects );
+        jrects = draw->jCache[indx];
+
+        jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", 
+                                                "()V" );
+
+        for ( ii = 0; ii < nPlayers; ++ii ) {
+            jobject jrect = (*env)->NewObject( env, rclass, initId );
+            (*env)->SetObjectArrayElement( env, jrects, ii, jrect );
+            (*env)->DeleteLocalRef( env, jrect );
+        }
+
+        (*env)->DeleteLocalRef( env, rclass );
+    }
+
+    if ( NULL != rects ) {
+        XP_ASSERT(0);
+        /* for ( ii = 0; ii < nPlayers; ++ii ) { */
+        /*     jobject jrect = (*env)->GetObjectArrayElement( env, jrects, ii ); */
+        /*     writeJRect( env, jrect, &rects[ii] ); */
+        /* } */
+    }
+
+    return jrects;
+}
+
+static jobject
+makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsi[] )
+{
+    XP_U16 ii;
+    JNIEnv* env = *draw->env;
+    jobject dsiobjs = draw->jCache[indx];
+
+    if ( !dsiobjs ) {
+        jclass clas = (*env)->FindClass( env, PKG_PATH("jni/DrawScoreInfo") );
+        dsiobjs = (*env)->NewObjectArray( env, nPlayers, clas, NULL );
+        draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobjs );
+        (*env)->DeleteLocalRef( env, dsiobjs );
+        dsiobjs = draw->jCache[indx];
+
+        jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
+        for ( ii = 0; ii < nPlayers; ++ii ) {
+            jobject dsiobj = (*env)->NewObject( env, clas, initId );
+            (*env)->SetObjectArrayElement( env, dsiobjs, ii, dsiobj );
+            (*env)->DeleteLocalRef( env, dsiobj );
+        }
+
+        (*env)->DeleteLocalRef( env, clas );
+    }
+
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        jobject dsiobj = (*env)->GetObjectArrayElement( env, dsiobjs, ii );
+
+        setInt( env, dsiobj, "playerNum", dsi->playerNum );
+        setInt( env, dsiobj, "totalScore", dsi->totalScore );
+        setInt( env, dsiobj, "nTilesLeft", dsi->nTilesLeft );
+        setInt( env, dsiobj, "flags", dsi->flags );
+        setBool( env, dsiobj, "isTurn", dsi->isTurn );
+        setBool( env, dsiobj, "selected", dsi->selected );
+        setBool( env, dsiobj, "isRemote", dsi->isRemote );
+        setBool( env, dsiobj, "isRobot", dsi->isRobot );
+        setString( env, dsiobj, "name", dsi->name );
+    }
+    return dsiobjs;
+}
+
+#else
+
 static jobject
 makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 {
@@ -98,6 +191,7 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 
     return dsiobj;
 }
+#endif
 
 #define DRAW_CBK_HEADER(nam,sig)                                \
     AndDraw* draw = (AndDraw*)dctx;                             \
@@ -133,13 +227,33 @@ static void
 and_draw_drawRemText( DrawCtx* dctx, XP_S16 nTilesLeft, 
                       XP_Bool focussed, XP_Rect* rect )
 {
+    DRAW_CBK_HEADER("drawRemText", "(IZLandroid/graphics/Rect;)V" );
+
+    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, nTilesLeft, focussed,
+                            jrect );
+    readJRect( env, rect, jrect );
 }
 
 static void
 and_draw_score_drawPlayers( DrawCtx* dctx, const XP_Rect* scoreRect,
-                             XP_U16 nPlayers, DrawScoreInfo playerData[], 
-                             XP_Rect playerRects[] )
+                            XP_U16 nPlayers, DrawScoreInfo playerData[], 
+                            XP_Rect playerRects[] )
 {
+    XP_U16 ii;
+    DRAW_CBK_HEADER("score_drawPlayers", "(Landroid/graphics/Rect;"
+                    "[L" PKG_PATH("jni/DrawScoreInfo;")
+                    "[Landroid/graphics/Rect;)V" );
+
+    jobject jrect = makeJRect( draw, JCACHE_RECT0, scoreRect );
+    jobject jdsis = makeDSIs( draw, JCACHE_DSIS, nPlayers, playerData );
+    jobject jrects = makeJRects( draw, JCACHE_RECTS, nPlayers, NULL );
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, jdsis, jrects );
+
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        jobject jrect = (*env)->GetObjectArrayElement( env, jrects, ii );
+        readJRect( env, &playerRects[ii], jrect );
+    }
 }
 
 #else
