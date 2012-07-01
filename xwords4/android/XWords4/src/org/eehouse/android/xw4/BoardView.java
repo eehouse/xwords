@@ -450,21 +450,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    public void doIconDraw( int resID, final Rect rect )
-    {
-        // synchronized( this ) {
-        //     if ( null != m_canvas ) {
-        //         if ( 0 == resID ) {
-        //             fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
-        //         } else {
-        //             Drawable icon = getResources().getDrawable( resID );
-        //             icon.setBounds( rect );
-        //             icon.draw( m_canvas );
-        //         }
-        //     }
-        // }
-    }
-
     public void setInTrade( boolean inTrade ) 
     {
         m_inTrade = inTrade;

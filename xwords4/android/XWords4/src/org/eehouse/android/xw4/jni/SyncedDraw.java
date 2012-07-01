@@ -24,5 +24,4 @@ import android.graphics.Rect;
 
 public interface SyncedDraw {
     void doJNIDraw();
-    void doIconDraw( int resID, final Rect rect );
 }
