@@ -240,6 +240,78 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;             // required to get subsequent events
     }
 
+    // private void printMode( String comment, int mode )
+    // {
+    //     comment += ": ";
+    //     switch( mode ) {
+    //     case View.MeasureSpec.AT_MOST:
+    //         comment += "AT_MOST";
+    //         break;
+    //     case View.MeasureSpec.EXACTLY:
+    //         comment += "EXACTLY";
+    //         break;
+    //     case View.MeasureSpec.UNSPECIFIED:
+    //         comment += "UNSPECIFIED";
+    //         break;
+    //     default:
+    //         comment += "<bogus>";
+    //     }
+    //     DbgUtils.logf( comment );
+    // }
+
+    @Override
+    protected void onMeasure( int widthMeasureSpec, int heightMeasureSpec )
+    {
+        // One of the android sample apps ignores mode entirely:
+        // int w = MeasureSpec.getSize(widthMeasureSpec);
+        // int h = MeasureSpec.getSize(heightMeasureSpec);
+        // int d = w == 0 ? h : h == 0 ? w : w < h ? w : h;
+        // setMeasuredDimension(d, d);
+
+        int width = View.MeasureSpec.getSize( widthMeasureSpec );
+        int height = View.MeasureSpec.getSize( heightMeasureSpec );
+
+        int heightMode = View.MeasureSpec.getMode( heightMeasureSpec );
+        // printMode( "heightMode", heightMode );
+
+        BoardDims dims = figureBoardDims( width, height );
+        // If I let the spec tell me whether I can reduce the width
+        // then I don't change it on the second pass, but if I ignore
+        // that it works (even though the docs say my change is what
+        // will be ignored.)  I'm probably specifying something
+        // incorrectly in the layout xml file.
+        if ( false ) {
+            height = resolveSize( dims.height, heightMeasureSpec );
+            width = resolveSize( dims.width, widthMeasureSpec );
+        } else {
+            height = dims.height;
+        }
+
+        int minHeight = getSuggestedMinimumHeight();
+        if ( height < minHeight ) {
+            height = minHeight;
+        }
+        setMeasuredDimension( width, height );
+    }
+
+    // @Override
+    // protected void onLayout( boolean changed, int left, int top, 
+    //                          int right, int bottom )
+    // {
+    //     DbgUtils.logf( "BoardView.onLayout(%b, %d, %d, %d, %d)",
+    //                    changed, left, top, right, bottom );
+    //     super.onLayout( changed, left, top, right, bottom );
+    // }
+
+    // @Override
+    // protected void onSizeChanged( int width, int height, 
+    //                               int oldWidth, int oldHeight )
+    // {
+    //     DbgUtils.logf( "BoardView.onSizeChanged(%d,%d,%d,%d)", width, height, 
+    //                    oldWidth, oldHeight );
+    //     super.onSizeChanged( width, height, oldWidth, oldHeight );
+    // }
+
     // This will be called from the UI thread
     @Override
     protected void onDraw( Canvas canvas ) 
@@ -252,14 +324,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    private BoardDims figureBoardDims( int width, int height,
-                                       CurGameInfo gi )
+    private BoardDims figureBoardDims( int width, int height )
     {
         BoardDims result = new BoardDims();
         result.width = width;
         result.left = 0;
+        result.top = 0;
 
-        int nCells = gi.boardSize;
+        int nCells = m_gi.boardSize;
         int cellSize = width / nCells;
         int maxCellSize = 4 * m_defaultFontHt;
         if ( cellSize > maxCellSize ) {
@@ -296,9 +368,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             trayHt += heightLeft * 2;
             scoreHt += heightLeft;
             heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
-            heightLeft = height - heightUsed;
         }
-        result.top = heightLeft / 2;
 
         result.trayHt = trayHt;
         result.scoreHt = scoreHt;
@@ -308,7 +378,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         result.height = heightUsed;
         result.cellSize = cellSize;
 
-        if ( gi.timerEnabled ) {
+        if ( m_gi.timerEnabled ) {
             Paint paint = new Paint();
             paint.setTextSize( m_mediumFontHt );
             paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
@@ -334,7 +404,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_letterRect = null;
             m_valRect = null;
 
-            BoardDims dims = figureBoardDims( width, height, m_gi );
+            BoardDims dims = figureBoardDims( width, height );
             m_left = dims.left;
             m_top = dims.top;
             
