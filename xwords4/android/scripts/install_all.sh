@@ -6,11 +6,11 @@ APK=./bin/XWords4-debug.apk
 
 usage() {
     [ $# -ge 1 ] && echo "Error: $1"
-    echo "usage: $(basename $0) [-e] [-d] [-p /path/to/.apk]"
+    echo "usage: $(basename $0) [-e|-d] [-p /path/to/.apk]"
     exit 1
 }
 
-DEVICES=""
+DEVICES="$(adb devices | grep 'device$' | awk '{print $1}')"
 
 while [ $# -ge 1 ]; do
     case $1 in
