@@ -15,10 +15,10 @@ DEVICES="$(adb devices | grep 'device$' | awk '{print $1}')"
 while [ $# -ge 1 ]; do
     case $1 in
         -e)
-            DEVICES="$DEVICES $(adb devices | grep '^emulator' | awk '{print $1}')"
+            DEVICES="$(adb devices | grep '^emulator' | awk '{print $1}')"
             ;;
         -d)
-            DEVICES="$DEVICES $(adb devices | grep -v emulator | grep 'device$' | awk '{print $1}')"
+            DEVICES="$(adb devices | grep -v emulator | grep 'device$' | awk '{print $1}')"
             ;;
         -p)
             [ $# -gt 1 ] || usage "-p requires an argument"
