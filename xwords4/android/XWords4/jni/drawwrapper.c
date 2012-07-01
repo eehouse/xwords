@@ -121,7 +121,7 @@ makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
 }
 
 static jobject
-makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsi[] )
+makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
 {
     XP_U16 ii;
     JNIEnv* env = *draw->env;
@@ -146,6 +146,7 @@ makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsi[] )
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
         jobject dsiobj = (*env)->GetObjectArrayElement( env, dsiobjs, ii );
+        const DrawScoreInfo* dsi = &dsis[ii];
 
         setInt( env, dsiobj, "playerNum", dsi->playerNum );
         setInt( env, dsiobj, "totalScore", dsi->totalScore );
