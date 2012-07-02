@@ -945,7 +945,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         Canvas canvas = new Canvas( bitmap );
         int bottom = local.bottom - descent;
-        canvas.drawText( text, 0, bottom, m_fillPaint );
+        canvas.drawText( text, -local.left, bottom, m_fillPaint );
 
         m_canvas.drawBitmap( bitmap, null, rect, m_drawPaint );
     }
