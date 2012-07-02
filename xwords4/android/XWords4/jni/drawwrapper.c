@@ -505,11 +505,13 @@ and_draw_objFinished( DrawCtx* dctx, BoardObjectType typ,
                       const XP_Rect* rect, 
                       DrawFocusState XP_UNUSED(dfs) )
 {
+#ifndef XWFEATURE_SCOREONEPASS
     DRAW_CBK_HEADER( "objFinished", "(ILandroid/graphics/Rect;)V" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             (jint)typ, jrect );
+#endif
 }
 
 static void

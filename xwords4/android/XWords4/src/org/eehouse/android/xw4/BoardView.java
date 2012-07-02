@@ -471,8 +471,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                int remCount )
     {
         fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
-        m_canvas.save( Canvas.CLIP_SAVE_FLAG );
-        m_canvas.clipRect(rect);
+        // m_canvas.save( Canvas.CLIP_SAVE_FLAG );
+        // m_canvas.clipRect(rect);
         m_scores = new String[numPlayers][];
         return true;
     }
@@ -609,30 +609,75 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     //     }
 
     //     rect.right = rect.left + width;
-    //     // rect.bottom = rect.top + height;
 
     //     if ( 0 < nTilesLeft ) {
+    //         Rect drawRect = new Rect( rect );
+    //         if ( height < drawRect.height() ) {
+    //             drawRect.inset( 0, (drawRect.height() - height) / 2 );
+    //         }
+
     //         int indx = focussed ? CommonPrefs.COLOR_FOCUS
     //             : CommonPrefs.COLOR_TILE_BACK;
     //         fillRectOther( rect, indx );
 
     //         m_fillPaint.setColor( adjustColor(BLACK) );
-    //         drawCentered( remText, rect, null );
+    //         drawCentered( remText, drawRect, null );
     //     }
     // }
 
     // public void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData, 
     //                                Rect[] playerRects )
     // {
-    //     // To measure
-
-    //     int width = scoreRect.width() / playerRects.length;
+    //     Rect tmp = new Rect();
+    //     int nPlayers = playerRects.length;
+    //     int width = scoreRect.width() / (nPlayers + 1);
     //     int left = scoreRect.left;
-    //     for ( int ii = 0; ii < playerRects.length; ++ii ) {
-    //         playerRects[ii].set( left, scoreRect.top, left + width,
-    //                              scoreRect.bottom );
-    //         drawCentered( playerData[ii].name, playerRects[ii], null );
-    //         left += width;
+    //     int right;
+    //     StringBuffer sb = new StringBuffer();
+    //     String[] scoreStrings = new String[2];
+    //     for ( int ii = 0; ii < nPlayers; ++ii ) {
+    //         DrawScoreInfo dsi = playerData[ii];
+    //         boolean isTurn = dsi.isTurn;
+    //         int indx = 0;
+    //         sb.delete( 0, sb.length() );
+
+    //         if ( isTurn ) {
+    //             sb.append( dsi.name );
+    //             sb.append( ":" );
+    //         } else {
+    //             scoreStrings[indx++] = dsi.name;
+    //         }
+    //         sb.append( dsi.totalScore );
+    //         if ( dsi.nTilesLeft >= 0 ) {
+    //             sb.append( ":" );
+    //             sb.append( dsi.nTilesLeft );
+    //         }
+    //         scoreStrings[indx] = sb.toString();
+
+    //         int color = m_playerColors[dsi.playerNum];
+    //         if ( !m_prefs.allowPeek ) {
+    //             color = adjustColor( color );
+    //         }
+    //         m_fillPaint.setColor( color );
+
+    //         right = left + (width * (isTurn? 2 : 1) );
+    //         playerRects[ii].set( left, scoreRect.top, right, scoreRect.bottom );
+    //         left = right;
+
+    //         tmp.set( playerRects[ii] );
+    //         tmp.inset( 2, 2 );
+    //         int height = tmp.height() / (isTurn? 1 : 2);
+    //         tmp.bottom = tmp.top + height;
+    //         for ( String str : scoreStrings ) {
+    //             drawCentered( str, tmp, null );
+    //             if ( isTurn ) {
+    //                 break;
+    //             }
+    //             tmp.offset( 0, height );
+    //         }
+    //         if ( DEBUG_DRAWFRAMES ) {
+    //             m_canvas.drawRect( playerRects[ii], m_strokePaint );
+    //         }
     //     }
     // }
 
@@ -835,9 +880,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void objFinished( /*BoardObjectType*/int typ, Rect rect )
     {
-        if ( DrawCtx.OBJ_SCORE == typ ) {
-            m_canvas.restoreToCount(1); // in case new canvas...
-        }
+        // if ( DrawCtx.OBJ_SCORE == typ ) {
+        //     m_canvas.restoreToCount(1); // in case new canvas...
+        // }
     }
 
     public void dictChanged( int dictPtr )
