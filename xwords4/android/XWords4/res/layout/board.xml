@@ -43,7 +43,9 @@
                   android:orientation="horizontal"
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
+                  android:minHeight="48dp"
                   >
+
    	  <ImageButton android:id="@+id/prevhint_button_horizontal"
                    style="@style/toolbar_button"
     	           android:src="@drawable/prev_hint"
