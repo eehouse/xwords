@@ -132,7 +132,7 @@ public class ConnStatusHandler {
 
     public static boolean handleDown( int xx, int yy )
     {
-        s_downOnMe = s_rect.contains( xx, yy );
+        s_downOnMe = null != s_rect && s_rect.contains( xx, yy );
         return s_downOnMe;
     }
 
