@@ -40,13 +40,14 @@
               android:orientation="vertical"
               android:layout_below="@id/game_locked_check"
               android:layout_above="@id/play_button"
+              android:layout_alignWithParentIfMissing="true"
               >
 
     <!-- only one direct child possible -->
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="fill_parent"
-                  android:orientation="vertical">
-
+                  android:orientation="vertical"
+                  >
 
       <TextView style="@style/config_separator"
                 android:text="@string/lang_label"
