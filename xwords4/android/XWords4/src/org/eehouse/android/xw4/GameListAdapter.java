@@ -119,7 +119,7 @@ public class GameListAdapter extends XWListAdapter {
             // DbgUtils.logf( "doInBackground(id=%d)", m_id );
             View layout = m_factory.inflate( R.layout.game_list_item, null );
             boolean hideTitle = false;//CommonPrefs.getHideTitleBar(m_context);
-            GameSummary summary = DBUtils.getSummary( m_context, m_rowid, false );
+            GameSummary summary = DBUtils.getSummary( m_context, m_rowid );
             if ( null == summary ) {
                 m_rowid = -1;
             } else {

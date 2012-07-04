@@ -77,18 +77,12 @@ public class DBUtils {
         boolean sourceLocal;
     }
 
-    public static GameSummary getSummary( Context context, long rowid,
-                                          boolean wait )
+    public static GameSummary getSummary( Context context, long rowid )
     {
         GameSummary result = null;
         GameUtils.GameLock lock = new GameUtils.GameLock( rowid, false );
-        if ( wait ) {
-            result = getSummary( context, lock.lock() );
-            lock.unlock();
-        } else if ( lock.tryLock() ) {
-            result = getSummary( context, lock );
-            lock.unlock();
-        }
+        result = getSummary( context, lock.lock() );
+        lock.unlock();
         return result;
     }
 

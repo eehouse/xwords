@@ -472,7 +472,7 @@ public class GamesList extends XWListActivity
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
-        GameSummary summary = DBUtils.getSummary( this, rowid, true );
+        GameSummary summary = DBUtils.getSummary( this, rowid );
         if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
              && summary.roomName.length() == 0 ) {
             // If it's unconfigured and of the type RelayGameActivity
@@ -612,8 +612,7 @@ public class GamesList extends XWListActivity
                     break;
 
                 case R.id.list_item_copy:
-                    GameSummary summary = DBUtils.getSummary( this, 
-                                                              m_rowid, true );
+                    GameSummary summary = DBUtils.getSummary( this, m_rowid );
                     if ( summary.inNetworkGame() ) {
                         showOKOnlyDialog( R.string.no_copy_network );
                     } else {
