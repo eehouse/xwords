@@ -103,7 +103,7 @@ public class GameUtils {
         
         public GameLock lock()
         {
-            long stopTime = System.currentTimeMillis() + 1000;
+            long stopTime = System.currentTimeMillis() + 5000;
             // DbgUtils.logf( "GameLock.lock(%s)", m_path );
             // Utils.printStack();
             for ( ; ; ) {
