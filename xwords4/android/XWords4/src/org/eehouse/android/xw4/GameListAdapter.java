@@ -33,6 +33,7 @@ import android.widget.LinearLayout;
 import java.io.FileInputStream;
 import java.util.Date;
 import java.util.HashMap;       // class is not synchronized
+import java.util.Random;
 import java.text.DateFormat;
 
 import junit.framework.Assert;
@@ -54,10 +55,16 @@ public class GameListAdapter extends XWListAdapter {
         private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
         private long m_rowid;
         private ImageButton m_expandButton;
-        public ViewInfo( View view, long rowid, boolean expanded, 
-                         boolean haveTurn, boolean haveTurnLocal ) {
+
+        public ViewInfo( View view, long rowid ) 
+        {
             m_view = view;
             m_rowid = rowid; 
+        }
+
+        public ViewInfo( View view, long rowid, boolean expanded, 
+                         boolean haveTurn, boolean haveTurnLocal ) {
+            this( view, rowid );
             m_expanded = expanded;
             m_haveTurn = haveTurn;
             m_haveTurnLocal = haveTurnLocal;
@@ -116,15 +123,19 @@ public class GameListAdapter extends XWListAdapter {
         @Override
         protected Void doInBackground( Void... unused ) 
         {
-            // DbgUtils.logf( "doInBackground(id=%d)", m_id );
+            // force slow loading for debugging
+            // try {
+            //     Random random = new Random();
+            //     int sleepTime = random.nextInt() % 3000;
+            //     Thread.sleep( sleepTime );
+            // } catch ( Exception e ) {
+            // }
             View layout = m_factory.inflate( R.layout.game_list_item, null );
             boolean hideTitle = false;//CommonPrefs.getHideTitleBar(m_context);
             GameSummary summary = DBUtils.getSummary( m_context, m_rowid );
             if ( null == summary ) {
                 m_rowid = -1;
             } else {
-                //Assert.assertNotNull( summary );
-
                 String state = summary.summarizeState();
 
                 TextView view = (TextView)layout.findViewById( R.id.game_name );
@@ -234,7 +245,7 @@ public class GameListAdapter extends XWListAdapter {
         @Override
         protected void onPostExecute( Void unused )
         {
-            // DbgUtils.logf( "onPostExecute(id=%d)", m_id );
+            // DbgUtils.logf( "onPostExecute(rowid=%d)", m_rowid );
             if ( -1 != m_rowid ) {
                 m_cb.itemLoaded( m_rowid );
             }
@@ -260,24 +271,20 @@ public class GameListAdapter extends XWListAdapter {
     {
         final long rowid = DBUtils.gamesList(m_context)[position];
         View layout;
+        boolean haveLayout = false;
         synchronized( m_viewsCache ) {
             ViewInfo vi = m_viewsCache.get( rowid );
-            layout = null == vi? null : vi.m_view;
+            haveLayout = null != vi;
+            if ( haveLayout ) {
+                layout = vi.m_view;
+            } else {
+                layout = m_factory.inflate( R.layout.game_list_tmp, null );
+                vi = new ViewInfo( layout, rowid );
+                m_viewsCache.put( rowid, vi );
+            }
         }
 
-        if ( null == layout ) {
-            layout = m_factory.inflate( R.layout.game_list_item, null );
-            final boolean hideTitle = 
-                false;//CommonPrefs.getHideTitleBar( m_context );
-
-            TextView view = (TextView)layout.findViewById( R.id.game_name );
-            if ( hideTitle ) {
-                view.setVisibility( View.GONE );
-            } else {
-                String text = GameUtils.getName( m_context, rowid );
-                view.setText( text );
-            }
-
+        if ( !haveLayout ) {
             new LoadItemTask( m_context, rowid/*, ++m_taskCounter*/ ).execute();
         }
 

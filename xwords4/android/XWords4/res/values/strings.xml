@@ -1945,4 +1945,6 @@
     <!-- board menu for small devices only -->
     <string name="board_menu_dict">Browse wordlist</string>
 
+    <string name="game_list_tmp">Loading game summary...</string>
+
 </resources>
