@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 import android.widget.ListAdapter;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -47,6 +48,8 @@ public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
     private int m_fieldID;
+    private static final boolean s_isFire = 
+        Build.MANUFACTURER.equals( "Amazon" );
 
     private class ViewInfo implements View.OnClickListener {
         private View m_view;
@@ -123,13 +126,17 @@ public class GameListAdapter extends XWListAdapter {
         @Override
         protected Void doInBackground( Void... unused ) 
         {
-            // force slow loading for debugging
-            // try {
-            //     Random random = new Random();
-            //     int sleepTime = random.nextInt() % 3000;
-            //     Thread.sleep( sleepTime );
-            // } catch ( Exception e ) {
-            // }
+            // Without this, on the Fire only the last item in the
+            // list it tappable.  Likely my fault, but this seems to
+            // work around it.
+            if ( s_isFire ) {
+                try {
+                    Random random = new Random();
+                    int sleepTime = 500 + (random.nextInt() % 500);
+                    Thread.sleep( sleepTime );
+                } catch ( Exception e ) {
+                }
+            }
             View layout = m_factory.inflate( R.layout.game_list_item, null );
             boolean hideTitle = false;//CommonPrefs.getHideTitleBar(m_context);
             GameSummary summary = DBUtils.getSummary( m_context, m_rowid );
