@@ -409,6 +409,31 @@ public class GamesList extends XWListActivity
         onContentChanged();
     }
 
+    public void itemClicked( long rowid )
+    {
+        // We need a way to let the user get back to the basic-config
+        // dialog in case it was dismissed.  That way it to check for
+        // an empty room name.
+        GameSummary summary = DBUtils.getSummary( this, rowid );
+        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
+             && summary.roomName.length() == 0 ) {
+            // If it's unconfigured and of the type RelayGameActivity
+            // can handle send it there, otherwise use the full-on
+            // config.
+            Class clazz;
+            if ( RelayGameActivity.isSimpleGame( summary ) ) {
+                clazz = RelayGameActivity.class;
+            } else {
+                clazz = GameConfig.class;
+            }
+            GameUtils.doConfig( this, rowid, clazz );
+        } else {
+            if ( checkWarnNoDict( rowid ) ) {
+                GameUtils.launchGame( this, rowid );
+            }
+        }
+    }
+
     // BTService.BTEventListener interface
     @Override
     public void eventOccurred( MultiService.MultiEvent event, 
@@ -463,31 +488,6 @@ public class GamesList extends XWListActivity
                 break;
             default:
                 Assert.fail();
-            }
-        }
-    }
-
-    public void itemClicked( long rowid )
-    {
-        // We need a way to let the user get back to the basic-config
-        // dialog in case it was dismissed.  That way it to check for
-        // an empty room name.
-        GameSummary summary = DBUtils.getSummary( this, rowid );
-        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
-             && summary.roomName.length() == 0 ) {
-            // If it's unconfigured and of the type RelayGameActivity
-            // can handle send it there, otherwise use the full-on
-            // config.
-            Class clazz;
-            if ( RelayGameActivity.isSimpleGame( summary ) ) {
-                clazz = RelayGameActivity.class;
-            } else {
-                clazz = GameConfig.class;
-            }
-            GameUtils.doConfig( this, rowid, clazz );
-        } else {
-            if ( checkWarnNoDict( rowid ) ) {
-                GameUtils.launchGame( this, rowid );
             }
         }
     }
