@@ -255,7 +255,7 @@ randIntArray( XP_U16* rnums, XP_U16 count )
     return changed;
 } /* randIntArray */
 
-#ifdef XWFEATURE_SMS
+#ifdef XWFEATURE_BASE64
 /* base-64 encode binary data as a message legal for SMS.  See
  * http://www.ietf.org/rfc/rfc2045.txt for the algorithm.  glib uses this and
  * so it's not needed on linux, but unless all platforms provided identical

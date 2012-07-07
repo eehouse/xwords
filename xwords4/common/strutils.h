@@ -88,7 +88,7 @@ XP_UCHAR* emptyStringIfNull( XP_UCHAR* str );
 /* Produce an array of ints 0..count-1, juggled */
 XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );
 
-#ifdef XWFEATURE_SMS
+#ifdef XWFEATURE_BASE64
 void binToSms( XP_UCHAR* out, XP_U16* outlen, const XP_U8* in, XP_U16 inlen );
 XP_Bool smsToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen );
 #endif

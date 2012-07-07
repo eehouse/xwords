@@ -1581,7 +1581,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
     return result;
 }
 
-#ifdef XWFEATURE_SMS
+#ifdef XWFEATURE_BASE64
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_base64Encode
 ( JNIEnv* env, jclass C, jbyteArray jbytes )
