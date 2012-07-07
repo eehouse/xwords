@@ -48,8 +48,14 @@ public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
     private int m_fieldID;
-    private static final boolean s_isFire = 
-        Build.MANUFACTURER.equals( "Amazon" );
+    private static final boolean s_isFire;
+    private static Random s_random;
+    static {
+        s_isFire = Build.MANUFACTURER.equals( "Amazon" );
+        if ( s_isFire ) {
+            s_random = new Random();
+        }
+    }
 
     private class ViewInfo implements View.OnClickListener {
         private View m_view;
@@ -131,8 +137,7 @@ public class GameListAdapter extends XWListAdapter {
             // work around it.
             if ( s_isFire ) {
                 try {
-                    Random random = new Random();
-                    int sleepTime = 500 + (random.nextInt() % 500);
+                    int sleepTime = 500 + (s_random.nextInt() % 500);
                     Thread.sleep( sleepTime );
                 } catch ( Exception e ) {
                 }
