@@ -57,45 +57,49 @@ public class ConnStatusHandler {
     private static class SuccessRecord implements java.io.Serializable {
         // man strftime for these
         // private static final String TIME_FMT = "%X %x";
-        private static final Time s_zero = new Time();
-        public Time lastSuccess;
-        public Time lastFailure;
+        public long lastSuccess;
+        public long lastFailure;
         public boolean successNewer;
+        transient private Time m_time;
 
         public SuccessRecord()
         {
-            lastSuccess = new Time();
-            lastFailure = new Time();
+            m_time = new Time();
+            lastSuccess = 0;
+            lastFailure = 0;
             successNewer = false;
         }
 
         public boolean haveFailure()
         {
-            return lastFailure.after( s_zero );
+            return lastFailure > 0;
         }
 
         public boolean haveSuccess()
         {
-            return lastSuccess.after( s_zero );
+            return lastSuccess > 0;
         }
 
         public String newerStr( Context context )
         {
-            Time which = successNewer? lastSuccess : lastFailure;
-            return format( context, which );
-            // return which.format( TIME_FMT );
+            m_time.set( successNewer? lastSuccess : lastFailure );
+            return format( context, m_time );
         }
 
         public String olderStr( Context context )
         {
-            Time which = successNewer? lastFailure : lastSuccess;
-            return format( context, which );
+            m_time.set( successNewer? lastFailure : lastSuccess );
+            return format( context, m_time );
         }
 
         public void update( boolean success ) 
         {
-            Time last = success? lastSuccess : lastFailure;
-            last.setToNow();
+            long now = System.currentTimeMillis();
+            if ( success ) {
+                lastSuccess = now;
+            } else {
+                lastFailure = now;
+            }
             successNewer = success;
         }
 
@@ -108,6 +112,14 @@ public class ConnStatusHandler {
                                                      DateUtils.WEEK_IN_MILLIS, 
                                                      0 );
             return seq.toString();
+        }
+
+        // called during deserialization
+        private void readObject( ObjectInputStream in ) 
+            throws java.io.IOException, java.lang.ClassNotFoundException
+        {
+            in.defaultReadObject();
+            m_time = new Time();
         }
     }
 
