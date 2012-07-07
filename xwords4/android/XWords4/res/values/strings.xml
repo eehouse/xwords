@@ -107,7 +107,7 @@
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
          any is downloaded. -->
-    <string name="gamel_menu_checkmoves">Check relay</string>
+    <string name="gamel_menu_checkmoves">Check for moves</string>
 
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">Checking relay for moves
