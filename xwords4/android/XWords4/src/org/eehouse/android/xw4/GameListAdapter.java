@@ -144,7 +144,7 @@ public class GameListAdapter extends XWListAdapter {
             }
             View layout = m_factory.inflate( R.layout.game_list_item, null );
             boolean hideTitle = false;//CommonPrefs.getHideTitleBar(m_context);
-            GameSummary summary = DBUtils.getSummary( m_context, m_rowid );
+            GameSummary summary = DBUtils.getSummary( m_context, m_rowid, 1500 );
             if ( null == summary ) {
                 m_rowid = -1;
             } else {

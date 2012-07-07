@@ -33,7 +33,6 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import android.content.res.AssetManager;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,10 +58,8 @@ public class GameUtils {
         private long m_rowid;
         private boolean m_isForWrite;
         private int m_lockCount;
-        // StackTraceElement[] m_lockTrace;
+        StackTraceElement[] m_lockTrace;
 
-        // This will leak empty ReentrantReadWriteLock instances for
-        // now.
         private static HashMap<Long, GameLock> 
             s_locks = new HashMap<Long,GameLock>();
 
@@ -71,8 +68,11 @@ public class GameUtils {
             m_rowid = rowid;
             m_isForWrite = isForWrite;
             m_lockCount = 0;
-            // DbgUtils.logf( "GameLock.GameLock(%s,%s) done", m_path, 
-            //             m_isForWrite?"T":"F" );
+            if ( XWApp.DEBUG_LOCKS ) {
+                DbgUtils.logf( "GameLock.GameLock(rowid:%d,isForWrite:%b)=>"
+                               + "this: %H", rowid, isForWrite, this );
+                DbgUtils.printStack();
+            }
         }
 
         // This could be written to allow multiple read locks.  Let's
@@ -88,10 +88,12 @@ public class GameUtils {
                     ++m_lockCount;
                     gotIt = true;
                     
-                    // StackTraceElement[] trace = Thread.currentThread().
-                    //     getStackTrace();
-                    // m_lockTrace = new StackTraceElement[trace.length];
-                    // System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
+                    if ( XWApp.DEBUG_LOCKS ) {
+                        StackTraceElement[] trace = Thread.currentThread().
+                            getStackTrace();
+                        m_lockTrace = new StackTraceElement[trace.length];
+                        System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
+                    }
                 } else if ( this == owner && ! m_isForWrite ) {
                     Assert.assertTrue( 0 == m_lockCount );
                     ++m_lockCount;
@@ -101,30 +103,53 @@ public class GameUtils {
             return gotIt;
         }
         
+        // Wait forever (but may assert if too long)
         public GameLock lock()
         {
-            long stopTime = System.currentTimeMillis() + 5000;
+            return this.lock( 0 );
+        }
+
+        // Version that's allowed to return null -- if maxMillis > 0
+        public GameLock lock( long maxMillis )
+        {
+            GameLock result = null;
+            final long assertTime = 2000;
+            Assert.assertTrue( maxMillis < assertTime );
+            long sleptTime = 0;
             // DbgUtils.logf( "GameLock.lock(%s)", m_path );
             // Utils.printStack();
             for ( ; ; ) {
                 if ( tryLock() ) {
+                    result = this;
                     break;
                 }
-                // DbgUtils.logf( "GameLock.lock() failed; sleeping" );
-                // Utils.printStack();
+                if ( XWApp.DEBUG_LOCKS ) {
+                    DbgUtils.logf( "GameLock.lock() %H failed; sleeping", this );
+                    DbgUtils.printStack();
+                }
                 try {
                     Thread.sleep( 25 ); // milliseconds
+                    sleptTime += 25;
                 } catch( InterruptedException ie ) {
                     DbgUtils.logf( "GameLock.lock(): %s", ie.toString() );
                     break;
                 }
-                if ( System.currentTimeMillis() >= stopTime ) {
-                    // Utils.printStack( m_lockTrace );
+
+                if ( 0 < maxMillis && sleptTime >= maxMillis ) {
+                    break;
+                } else if ( sleptTime >= assertTime ) {
+                    if ( XWApp.DEBUG_LOCKS ) {
+                        DbgUtils.logf( "lock %H overlocked. lock holding stack:", 
+                                       this );
+                        DbgUtils.printStack( m_lockTrace );
+                        DbgUtils.logf( "lock %H seeking stack:", this );
+                        DbgUtils.printStack();
+                    }
                     Assert.fail();
                 }
             }
             // DbgUtils.logf( "GameLock.lock(%s) done", m_path );
-            return this;
+            return result;
         }
 
         public void unlock()

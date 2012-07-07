@@ -85,8 +85,12 @@ public class DbgUtils {
     public static void printStack( StackTraceElement[] trace )
     {
         if ( s_doLog ) {
-            for ( int ii = 0; ii < trace.length; ++ii ) {
-                DbgUtils.logf( "ste %d: %s", ii, trace[ii].toString() );
+            if ( null == trace ) {
+                DbgUtils.logf( "printStack(): null trace" );
+            } else {
+                for ( int ii = 0; ii < trace.length; ++ii ) {
+                    DbgUtils.logf( "ste %d: %s", ii, trace[ii].toString() );
+                }
             }
         }
     }

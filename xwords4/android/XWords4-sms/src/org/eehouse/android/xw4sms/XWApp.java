@@ -28,7 +28,7 @@ import java.util.UUID;
 import org.eehouse.android.xw4sms.jni.XwJNI;
 
 public class XWApp extends Application {
-
+    public static final boolean DEBUG_LOCKS = false;
     public static final boolean BTSUPPORTED = false;
     public static final boolean SMSSUPPORTED = true;
     public static final String SMS_PUBLIC_HEADER = "-XW4s";
