@@ -973,6 +973,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             int origin = rect.left;
             if ( Paint.Align.CENTER == align ) {
                 origin += rect.width() / 2;
+            } else {
+                origin -= m_boundsScratch.left - 1;
             }
             m_fillPaint.setTextAlign( align );
             m_canvas.drawText( text, origin, bottom, m_fillPaint );
