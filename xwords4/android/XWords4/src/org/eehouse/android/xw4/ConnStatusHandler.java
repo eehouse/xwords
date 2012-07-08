@@ -48,7 +48,6 @@ public class ConnStatusHandler {
     private static final int GREEN = 0xFF00FF00;
     private static final int RED = 0xFFFF0000;
 
-    private static CommsConnType s_connType = CommsConnType.COMMS_CONN_NONE;
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
     private static Handler s_handler;
@@ -132,11 +131,6 @@ public class ConnStatusHandler {
         s_rect = new Rect( left, top, right, bottom );
     }
 
-    public static void setType( CommsConnType connType )
-    {
-        s_connType = connType;
-    }
-
     public static void setHandler( Handler handler )
     {
         s_handler = handler;
@@ -160,16 +154,17 @@ public class ConnStatusHandler {
         return s_downOnMe && s_rect.contains( xx, yy );
     }
 
-    public static String getStatusText( Context context )
+    public static String getStatusText( Context context, CommsConnType connType )
     {
         String msg;
-        if ( CommsConnType.COMMS_CONN_NONE == s_connType ) {
+        if ( CommsConnType.COMMS_CONN_NONE == connType ) {
             msg = "This is a standalone game. There is no network status.";
         } else {
             synchronized( s_lockObj ) {
-                msg = "Network status for game connected via " + connType2Str();
+                msg = "Network status for game connected via "
+                    + connType2Str( connType );
                 msg += ":\n\n";
-                SuccessRecord record = recordFor( s_connType, false );
+                SuccessRecord record = recordFor( connType, false );
                 msg += 
                     String.format( "Last send was %s (at %s)\n",
                                    record.successNewer? "successful":"unsuccessful", 
@@ -190,7 +185,7 @@ public class ConnStatusHandler {
                 }
                 msg += "\n";
 
-                record = recordFor( s_connType, true );
+                record = recordFor( connType, true );
                 if ( record.haveSuccess() ) {
                     msg += 
                         String.format( "Last receipt was at %s",
@@ -233,12 +228,12 @@ public class ConnStatusHandler {
     }
 
     public static void draw( Canvas canvas, Resources res, 
-                             int offsetX, int offsetY )
+                             int offsetX, int offsetY, CommsConnType connType )
     {
         synchronized( s_lockObj ) {
             if ( null != s_rect ) {
                 int iconID;
-                switch( s_connType ) {
+                switch( connType ) {
                 case COMMS_CONN_RELAY:
                     iconID = R.drawable.relaygame;
                     break;
@@ -258,18 +253,18 @@ public class ConnStatusHandler {
                 int quarterHeight = rect.height() / 4;
                 rect.offset( offsetX, offsetY );
 
-                if ( CommsConnType.COMMS_CONN_NONE != s_connType ) {
+                if ( CommsConnType.COMMS_CONN_NONE != connType ) {
                     int saveTop = rect.top;
                     SuccessRecord record;
 
                     // Do the background coloring
                     rect.bottom = rect.top + quarterHeight * 2;
-                    record = recordFor( s_connType, false );
+                    record = recordFor( connType, false );
                     s_fillPaint.setColor( record.successNewer ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
                     rect.top = rect.bottom;
                     rect.bottom = rect.top + quarterHeight * 2;
-                    record = recordFor( s_connType, true );
+                    record = recordFor( connType, true );
                     s_fillPaint.setColor( record.successNewer ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
 
@@ -344,10 +339,10 @@ public class ConnStatusHandler {
         icon.draw( canvas );
     }
 
-    private static String connType2Str()
+    private static String connType2Str( CommsConnType connType )
     {
         String result = null;
-        switch( s_connType ) {
+        switch( connType ) {
         case COMMS_CONN_RELAY:
             result = "internet/relay";
             break;

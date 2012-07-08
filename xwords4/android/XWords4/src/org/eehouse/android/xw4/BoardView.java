@@ -44,10 +44,6 @@ import junit.framework.Assert;
 public class BoardView extends View implements DrawCtx, BoardHandler,
                                                SyncedDraw {
 
-    public interface MultiHandlerIface {
-        boolean inactive();
-    }
-
     private static final float MIN_FONT_DIPS = 14.0f;
     private static final int MULTI_INACTIVE = -1;
     private static final boolean FRAME_TRAY_RECTS = false; // for debugging
@@ -95,8 +91,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_lastTimerPlayer;
     private int m_pendingScore;
     private Handler m_viewHandler;
+    private CommsAddrRec.CommsConnType m_connType = 
+        CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
 
-    private MultiHandlerIface m_multiHandler = null;
     private int m_lastSpacing = MULTI_INACTIVE;
 
 
@@ -217,7 +214,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             break;
         case MotionEvent.ACTION_UP:
             if ( ConnStatusHandler.handleUp( xx, yy ) ) {
-                String msg = ConnStatusHandler.getStatusText(m_context);
+                String msg = ConnStatusHandler.getStatusText( m_context,
+                                                              m_connType );
                 m_parent.showOKOnlyDialog( msg );
             } else {
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
@@ -319,7 +317,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
                 canvas.drawBitmap( s_bitmap, m_left, m_top, m_drawPaint );
-                ConnStatusHandler.draw( canvas, getResources(), m_left, m_top );
+                ConnStatusHandler.draw( canvas, getResources(), m_left, m_top,
+                                        m_connType );
             }
         }
     }
@@ -428,12 +427,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     // BoardHandler interface implementation
     public void startHandling( XWActivity parent, JNIThread thread, 
-                               int gamePtr, CurGameInfo gi ) 
+                               int gamePtr, CurGameInfo gi, 
+                               CommsAddrRec.CommsConnType connType ) 
     {
         m_parent = parent;
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
+        m_connType = connType;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
     }

@@ -1424,7 +1424,6 @@ public class BoardActivity extends XWActivity
                                    final int nMissingPlayers )
         {
             m_connType = connType;
-            ConnStatusHandler.setType( connType );
 
             int msgID = 0;
             int action = 0;
@@ -1609,7 +1608,8 @@ public class BoardActivity extends XWActivity
                 m_jniThread.setDaemon( true );
                 m_jniThread.start();
 
-                m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi );
+                m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi,
+                                      m_connType );
                 if ( null != m_xport ) {
                     m_xport.setReceiver( m_jniThread );
                 }
