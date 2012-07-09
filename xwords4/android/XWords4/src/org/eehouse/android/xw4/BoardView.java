@@ -472,8 +472,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                int remCount )
     {
         fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
-        // m_canvas.save( Canvas.CLIP_SAVE_FLAG );
-        // m_canvas.clipRect(rect);
         m_scores = new String[numPlayers][];
         return true;
     }
@@ -481,22 +479,18 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void measureRemText( Rect r, int nTilesLeft, int[] width, 
                                 int[] height ) 
     {
-        if ( nTilesLeft > 0 ) {
-            // should cache a formatter
-            m_remText = String.format( "%d", nTilesLeft );
-            m_fillPaint.setTextSize( m_mediumFontHt );
-            m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(), 
-                                       m_boundsScratch );
+        // should cache a formatter
+        m_remText = String.format( "%d", nTilesLeft );
+        m_fillPaint.setTextSize( m_mediumFontHt );
+        m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(), 
+                                   m_boundsScratch );
 
-            int minWidth = m_boundsScratch.width();
-            if ( minWidth < 20 ) {
-                minWidth = 20; // it's a button; make it bigger
-            }
-            width[0] = minWidth;
-            height[0] = m_boundsScratch.height();
-        } else {
-            width[0] = height[0] = 0;
+        int minWidth = m_boundsScratch.width();
+        if ( minWidth < 20 ) {
+            minWidth = 20; // it's a button; make it bigger
         }
+        width[0] = minWidth;
+        height[0] = m_boundsScratch.height();
     }
 
     public void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, 
