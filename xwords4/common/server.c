@@ -2790,44 +2790,42 @@ void
 server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
                              XP_S16 player )
 {
-    DictionaryCtxt* dict;
-    Tile tile;
-    XP_U16 nChars;
-    XP_U16 counts[MAX_UNIQUE_TILES+1]; /* 1 for the blank */
     PoolContext* pool = server->pool;
+    if ( !!pool ) {
+        DictionaryCtxt* dict;
+        Tile tile;
+        XP_U16 nChars;
+        XP_U16 counts[MAX_UNIQUE_TILES+1]; /* 1 for the blank */
 
-    if ( !pool ) {
-        return;  /* might want to print an explanation in the stream */
-    }
+        XP_ASSERT( !!server->vol.model );
 
-    XP_ASSERT( !!server->vol.model );
+        XP_MEMSET( counts, 0, sizeof(counts) );
+        model_countAllTrayTiles( server->vol.model, counts, player );
 
-    XP_MEMSET( counts, 0, sizeof(counts) );
-    model_countAllTrayTiles( server->vol.model, counts, player );
+        dict = model_getDictionary( server->vol.model );
+        nChars = dict_numTileFaces( dict );
 
-    dict = model_getDictionary( server->vol.model );
-    nChars = dict_numTileFaces( dict );
+        for ( tile = 0; ; ) {
+            XP_U16 count = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
+            XP_Bool hasCount = count > 0;
 
-    for ( tile = 0; ; ) {
-        XP_U16 count = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
-        XP_Bool hasCount = count > 0;
+            if ( hasCount ) {
+                const XP_UCHAR* face = dict_getTileString( dict, tile );
 
-        if ( hasCount ) {
-            const XP_UCHAR* face = dict_getTileString( dict, tile );
-
-            for ( ; ; ) {
-                stream_catString( stream, face );
-                if ( --count == 0 ) {
-                    break;
+                for ( ; ; ) {
+                    stream_catString( stream, face );
+                    if ( --count == 0 ) {
+                        break;
+                    }
+                    stream_catString( stream, "." );
                 }
-                stream_catString( stream, "." );
             }
-        }
 
-        if ( ++tile >= nChars ) {
-            break;
-        } else if ( hasCount ) {
-            stream_catString( stream, (void*)"   " );
+            if ( ++tile >= nChars ) {
+                break;
+            } else if ( hasCount ) {
+                stream_catString( stream, (void*)"   " );
+            }
         }
     }
 } /* server_formatRemainingTiles */
