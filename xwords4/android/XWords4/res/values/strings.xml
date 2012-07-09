@@ -1947,4 +1947,20 @@
 
     <string name="game_list_tmp">Loading game summary...</string>
 
+    <string name="connstat_nonet">This is a standalone game. There is
+    no network status.</string>
+    <string name="connstat_net">Network status for game connected via
+    %1$s:</string>
+    <string name="connstat_succ">successful</string>
+    <string name="connstat_unsucc">unsuccessful</string>
+    <string name="connstat_lastsend">Last send was %1$s (%2$s)</string>
+    <string name="connstat_lastother_succ">(Last failure was %1$s)</string>
+    <string name="connstat_lastother_unsucc">(Last successful send was
+    %1$s)</string>
+    <string name="connstat_lastreceipt">Last receipt was %1$s</string>
+    <string name="connstat_noreceipt">No messages have been received.</string>
+    <string name="connstat_relay">internet/relay</string>
+    <string name="connstat_sms">sms/texting</string>
+    <string name="connstat_bt">bluetooth</string>
+
 </resources>

@@ -54,8 +54,6 @@ public class ConnStatusHandler {
     private static Paint s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
 
     private static class SuccessRecord implements java.io.Serializable {
-        // man strftime for these
-        // private static final String TIME_FMT = "%X %x";
         public long lastSuccess;
         public long lastFailure;
         public boolean successNewer;
@@ -158,42 +156,49 @@ public class ConnStatusHandler {
     {
         String msg;
         if ( CommsConnType.COMMS_CONN_NONE == connType ) {
-            msg = "This is a standalone game. There is no network status.";
+            msg = context.getString( R.string.connstat_nonet );
         } else {
+            StringBuffer sb = new StringBuffer();
             synchronized( s_lockObj ) {
-                msg = "Network status for game connected via "
-                    + connType2Str( connType );
-                msg += ":\n\n";
-                SuccessRecord record = recordFor( connType, false );
-                msg += 
-                    String.format( "Last send was %s (at %s)\n",
-                                   record.successNewer? "successful":"unsuccessful", 
-                                   record.newerStr( context ) );
+                String tmp = context.getString( connType2StrID( connType ) );
+                sb.append( Utils.format( context, R.string.connstat_net, 
+                                         tmp ) );
+                sb.append("\n\n");
 
-                String fmt = null;
+                SuccessRecord record = recordFor( connType, false );
+                tmp = context.getString( record.successNewer? 
+                                         R.string.connstat_succ :
+                                         R.string.connstat_unsucc );
+                sb.append( Utils.format( context, R.string.connstat_lastsend,
+                                         tmp, record.newerStr( context ) ) );
+                sb.append("\n");
+
+                int fmtId = 0;
                 if ( record.successNewer ) {
                     if ( record.haveFailure() ) {
-                        fmt = "(Last failure was at %s)\n";
+                        fmtId = R.string.connstat_lastother_succ;
                     }
                 } else {
                     if ( record.haveSuccess() ) {
-                        fmt = "(Last successful send was at %s)\n";
+                        fmtId = R.string.connstat_lastother_unsucc;
                     }
                 }
-                if ( null != fmt ) {
-                    msg += String.format( fmt, record.olderStr( context ) );
+                if ( 0 != fmtId ) {
+                    sb.append( Utils.format( context, fmtId, 
+                                            record.olderStr( context ) ) );
                 }
-                msg += "\n";
+                sb.append( "\n\n" );
 
                 record = recordFor( connType, true );
                 if ( record.haveSuccess() ) {
-                    msg += 
-                        String.format( "Last receipt was at %s",
-                                       record.newerStr( context ) );
+                    sb.append( Utils.format( context, 
+                                             R.string.connstat_lastreceipt,
+                                             record.newerStr( context ) ) );
                 } else {
-                    msg += "No messages have been received.";
+                    sb.append( context.getString(R.string.connstat_noreceipt) );
                 }
             }
+            msg = sb.toString();
         }
         return msg;
     }
@@ -339,23 +344,23 @@ public class ConnStatusHandler {
         icon.draw( canvas );
     }
 
-    private static String connType2Str( CommsConnType connType )
+    private static int connType2StrID( CommsConnType connType )
     {
-        String result = null;
+        int resID = 0;
         switch( connType ) {
         case COMMS_CONN_RELAY:
-            result = "internet/relay";
+            resID = R.string.connstat_relay;
             break;
         case COMMS_CONN_SMS:
-            result = "sms/texting";
+            resID = R.string.connstat_sms;
             break;
         case COMMS_CONN_BT:
-            result = "bluetooth";
+            resID = R.string.connstat_bt;
             break;
         default:
             Assert.fail();
         }
-        return result;
+        return resID;
     }
 
     private static SuccessRecord recordFor( CommsConnType connType, boolean isIn )
