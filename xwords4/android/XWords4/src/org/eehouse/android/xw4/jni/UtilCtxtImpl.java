@@ -175,6 +175,13 @@ public class UtilCtxtImpl implements UtilCtxt {
         case UtilCtxt.STRD_TURN_SCORE:
             id = R.string.strd_turn_score;
             break;
+        case UtilCtxt.STRD_REMAINS_HEADER:
+            id = R.string.strd_remains_header;
+            break;
+        case UtilCtxt.STRD_REMAINS_EXPL:
+            id = R.string.strd_remains_expl;
+            break;
+
         default:
             DbgUtils.logf( "no such stringCode: %d", stringCode );
         }

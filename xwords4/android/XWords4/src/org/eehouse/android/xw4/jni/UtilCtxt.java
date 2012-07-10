@@ -82,6 +82,9 @@ public interface UtilCtxt {
     static final int STR_COMMIT_CONFIRM =                20;
     static final int STR_BONUS_ALL =                     21;
     static final int STRD_TURN_SCORE =                   22;
+    static final int STRD_REMAINS_HEADER =               23;
+    static final int STRD_REMAINS_EXPL =                 24;
+
     String getUserString( int stringCode );
 
     static final int QUERY_COMMIT_TURN = 0;

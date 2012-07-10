@@ -26,6 +26,8 @@
 # define STR_COMMIT_CONFIRM                20
 # define STR_BONUS_ALL                     21
 # define STRD_TURN_SCORE                   22
+# define STRD_REMAINS_HEADER               23
+# define STRD_REMAINS_EXPL                 24
 
-# define N_AND_USER_STRINGS                22
+# define N_AND_USER_STRINGS                24
 #endif

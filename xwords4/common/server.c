@@ -2788,45 +2788,65 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
  */
 void
 server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
-                             XP_S16 player )
+                             XP_S16 XP_UNUSED(player) )
 {
     PoolContext* pool = server->pool;
     if ( !!pool ) {
-        DictionaryCtxt* dict;
+        XP_UCHAR buf[48];
+        DictionaryCtxt* dict = model_getDictionary( server->vol.model );
         Tile tile;
-        XP_U16 nChars;
+        XP_U16 nChars = dict_numTileFaces( dict );
+        XP_U16 offset;
         XP_U16 counts[MAX_UNIQUE_TILES+1]; /* 1 for the blank */
+        XP_U16 nLeft = pool_getNTilesLeft( pool );
+        XP_UCHAR cntsBuf[512];
 
         XP_ASSERT( !!server->vol.model );
 
+        const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
+                                                  STRD_REMAINS_HEADER );
+        XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
+        stream_catString( stream, buf );
+        stream_catString( stream, "\n\n" );
+
         XP_MEMSET( counts, 0, sizeof(counts) );
-        model_countAllTrayTiles( server->vol.model, counts, player );
+        model_countAllTrayTiles( server->vol.model, counts, -1 );
 
-        dict = model_getDictionary( server->vol.model );
-        nChars = dict_numTileFaces( dict );
-
-        for ( tile = 0; ; ) {
+        for ( cntsBuf[0] = '\0', offset = 0, tile = 0; 
+              offset < sizeof(cntsBuf); ) {
             XP_U16 count = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
             XP_Bool hasCount = count > 0;
+            nLeft += counts[tile];
 
             if ( hasCount ) {
                 const XP_UCHAR* face = dict_getTileString( dict, tile );
 
                 for ( ; ; ) {
-                    stream_catString( stream, face );
+                    offset += XP_SNPRINTF( &cntsBuf[offset], 
+                                           sizeof(cntsBuf) - offset, "%s", 
+                                           face );
                     if ( --count == 0 ) {
                         break;
                     }
-                    stream_catString( stream, "." );
+                    offset += XP_SNPRINTF( &cntsBuf[offset], 
+                                           sizeof(cntsBuf) - offset, "." );
                 }
             }
 
             if ( ++tile >= nChars ) {
                 break;
             } else if ( hasCount ) {
-                stream_catString( stream, (void*)"   " );
+                offset += XP_SNPRINTF( &cntsBuf[offset], 
+                                       sizeof(cntsBuf) - offset, "   " );
             }
+            XP_ASSERT( offset < sizeof(cntsBuf) );
         }
+
+        fmt = util_getUserString( server->vol.util, STRD_REMAINS_EXPL );
+        XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
+        stream_catString( stream, buf );
+
+        stream_catString( stream, cntsBuf );
     }
 } /* server_formatRemainingTiles */
 

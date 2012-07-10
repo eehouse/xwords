@@ -331,6 +331,11 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     case STRS_VALUES_HEADER:
         return (XP_UCHAR*)"%s counts/values:\n";
 
+    case STRD_REMAINS_HEADER:
+        return (XP_UCHAR*)"%d tiles left in pool.";
+    case STRD_REMAINS_EXPL:
+        return (XP_UCHAR*)"%d tiles left in pool and all tray[s]:\n";
+
     default:
         return (XP_UCHAR*)"unknown code to linux_util_getUserString";
     }

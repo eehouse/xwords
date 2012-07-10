@@ -769,6 +769,13 @@
          one turn is substituted for %d.-->
     <string name="strd_turn_score">Score for turn: %d\n</string>
 
+    <!-- First line in the remaining tiles dialog (reached by tapping
+         the number at left end of the scoreboard) -->
+    <string name="strd_remains_header">%d tiles left in pool.</string>
+    <!-- Intro to the paragraph lisiting all of the tiles remaining -->
+    <string name="strd_remains_expl">%d tiles left in pool and all
+    tray[s]:\n</string>
+
     <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
     <string name="confirm_undo_last">Are you sure you want to undo the
