@@ -31,8 +31,8 @@ void pool_removeTiles( PoolContext* pool, const TrayTileSet* tiles );
 XP_Bool pool_containsTiles( const PoolContext* pool, 
                             const TrayTileSet* tiles );
 
-XP_U16 pool_getNTilesLeft( PoolContext* pool );
-XP_U16 pool_getNTilesLeftFor( PoolContext* pool, Tile tile );
+XP_U16 pool_getNTilesLeft( const PoolContext* pool );
+XP_U16 pool_getNTilesLeftFor( const PoolContext* pool, Tile tile );
 
 PoolContext* pool_make( MPFORMAL_NOCOMMA );
 

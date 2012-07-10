@@ -224,13 +224,13 @@ pool_containsTiles( const PoolContext* pool, const TrayTileSet* tiles )
 }
 
 XP_U16
-pool_getNTilesLeft( PoolContext* pool )
+pool_getNTilesLeft( const PoolContext* pool )
 {
     return pool->numTilesLeft;
 } /* pool_remainingTileCount */
 
 XP_U16
-pool_getNTilesLeftFor( PoolContext* pool, Tile tile )
+pool_getNTilesLeftFor( const PoolContext* pool, Tile tile )
 {
     return pool->lettersLeft[tile];
 } /* pool_remainingTileCount */
