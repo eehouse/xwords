@@ -969,13 +969,13 @@ static void
 gtk_draw_drawRemText( DrawCtx* p_dctx, XP_S16 nTilesLeft,
                       XP_Bool focussed, XP_Rect* rect )
 {
-    if ( nTilesLeft <= 0 ) {
-	rect->width = rect->height = 0;
+    if ( XP_FALSE && nTilesLeft <= 0 ) {
+        rect->width = rect->height = 0;
     } else {
-	XP_U16 width, height;
+        XP_U16 width, height;
         gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, &width, &height, focussed );
-	rect->width = width;
-	rect->height = height;
+        rect->width = width;
+        rect->height = height;
         gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, NULL, NULL, focussed );
     }
 }
@@ -1014,7 +1014,7 @@ static void
 gtk_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
                          XP_U16* width, XP_U16* height )
 {
-    if ( nTilesLeft <= 0 ) {
+    if ( XP_FALSE && nTilesLeft <= 0 ) {
         *width = *height = 0;
     } else {
         gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, width, height, XP_FALSE );
