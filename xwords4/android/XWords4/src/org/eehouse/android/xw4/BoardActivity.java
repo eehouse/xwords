@@ -882,7 +882,8 @@ public class BoardActivity extends XWActivity
             //     m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, accepted );
             // }
             ConnStatusHandler.
-                updateStatusIn(this, CommsAddrRec.CommsConnType.COMMS_CONN_BT, 
+                updateStatusIn(this, m_handler,
+                               CommsAddrRec.CommsConnType.COMMS_CONN_BT, 
                                MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
             break;
         case MESSAGE_NOGAME:
@@ -1611,7 +1612,7 @@ public class BoardActivity extends XWActivity
                 m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi,
                                       m_connType );
                 if ( null != m_xport ) {
-                    m_xport.setReceiver( m_jniThread );
+                    m_xport.setReceiver( m_jniThread, m_handler );
                 }
                 m_jniThread.handle( JNICmd.CMD_START );
 

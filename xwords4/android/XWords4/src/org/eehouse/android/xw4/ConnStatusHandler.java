@@ -123,6 +123,7 @@ public class ConnStatusHandler {
     private static HashMap<CommsConnType,SuccessRecord[]> s_records = 
         new HashMap<CommsConnType,SuccessRecord[]>();
     private static Object s_lockObj = new Object();
+    private static boolean s_needsSave = false;
 
     public static void setRect( int left, int top, int right, int bottom )
     {
@@ -210,7 +211,7 @@ public class ConnStatusHandler {
         }
     }
    
-    public static void updateStatusIn( Context context, 
+    public static void updateStatusIn( Context context, Handler handler,
                                        CommsConnType connType, boolean success )
     {
         synchronized( s_lockObj ) {
@@ -218,10 +219,10 @@ public class ConnStatusHandler {
             record.update( success );
         }
         invalidateParent();
-        saveState( context );
+        saveState( context, handler );
     }
 
-    public static void updateStatusOut( Context context, 
+    public static void updateStatusOut( Context context, Handler handler,
                                         CommsConnType connType, boolean success )
     {
         synchronized( s_lockObj ) {
@@ -229,7 +230,7 @@ public class ConnStatusHandler {
             record.update( success );
         }
         invalidateParent();
-        saveState( context );
+        saveState( context, handler );
     }
 
     public static void draw( Canvas canvas, Resources res, 
@@ -319,20 +320,26 @@ public class ConnStatusHandler {
         }
     }
 
-    private static void saveState( Context context )
+    private static void saveState( final Context context, Handler handler )
     {
-        DbgUtils.logf( "saveState called; need to coalesce these!!!" );
-        synchronized( s_lockObj ) {
-            ByteArrayOutputStream bas = new ByteArrayOutputStream();
-            try {
-                ObjectOutputStream out = new ObjectOutputStream( bas );
-                out.writeObject(s_records);
-                out.flush();
-                String as64 = XwJNI.base64Encode( bas.toByteArray() );
-                CommonPrefs.setPrefsString( context, 
-                                            R.string.key_connstat_data, as64 );
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "loadState: %s", ioe.toString() );
+        if ( null == handler ) {
+            doSave( context );
+        } else {
+            boolean savePending;
+            synchronized( s_lockObj ) {
+                savePending = s_needsSave;
+                if ( !savePending ) {
+                    s_needsSave = true;
+                }
+            }
+
+            if ( !savePending ) {
+                Runnable proc = new Runnable() {
+                        public void run() {
+                            doSave( context );
+                        }
+                    };
+                handler.postDelayed( proc, 5000 );
             }
         }
     }
@@ -374,6 +381,31 @@ public class ConnStatusHandler {
             }
         }
         return records[isIn?0:1];
+    }
+
+    private static void doSave( Context context )
+    {
+        synchronized( s_lockObj ) {
+            DbgUtils.logf( "ConnStatusHandler:doSave() doing save" );
+            ByteArrayOutputStream bas
+                = new ByteArrayOutputStream();
+            try {
+                ObjectOutputStream out
+                    = new ObjectOutputStream( bas );
+                out.writeObject(s_records);
+                out.flush();
+                String as64 = 
+                    XwJNI.base64Encode( bas.toByteArray() );
+                CommonPrefs.
+                    setPrefsString( context, 
+                                    R.string.key_connstat_data, 
+                                    as64 );
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.logf( "loadState: %s", 
+                               ioe.toString() );
+            }
+            s_needsSave = false;
+        }
     }
 
 }

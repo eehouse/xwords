@@ -48,7 +48,8 @@ public class CommsTransport implements TransportProcs,
     private CommsAddrRec m_relayAddr;
     private JNIThread m_jniThread;
     private CommsThread m_thread;
-    private TransportProcs.TPMsgHandler m_handler;
+    private TransportProcs.TPMsgHandler m_tpHandler;
+    private Handler m_handler;
     private boolean m_done = false;
 
     private Vector<ByteBuffer> m_buffersOut;
@@ -67,7 +68,7 @@ public class CommsTransport implements TransportProcs,
     {
         m_jniGamePtr = jniGamePtr;
         m_context = context;
-        m_handler = handler;
+        m_tpHandler = handler;
         m_buffersOut = new Vector<ByteBuffer>();
         m_bytesIn = ByteBuffer.allocate( 2048 );
 
@@ -202,9 +203,10 @@ public class CommsTransport implements TransportProcs,
         } // loop
     }
     
-    public void setReceiver( JNIThread jnit )
+    public void setReceiver( JNIThread jnit, Handler handler )
     {
         m_jniThread = jnit;
+        m_handler = handler;
     }
 
     public void waitToStop()
@@ -407,21 +409,21 @@ public class CommsTransport implements TransportProcs,
         case COMMS_RELAYSTATE_UNCONNECTED:
         case COMMS_RELAYSTATE_DENIED:
         case COMMS_RELAYSTATE_CONNECT_PENDING:
-            ConnStatusHandler.updateStatusOut( m_context, 
+            ConnStatusHandler.updateStatusOut( m_context, m_handler,
                                                CommsConnType.COMMS_CONN_RELAY, 
                                                false );
-            ConnStatusHandler.updateStatusIn( m_context, 
+            ConnStatusHandler.updateStatusIn( m_context, m_handler,
                                               CommsConnType.COMMS_CONN_RELAY, 
                                               false );
             break;
         case COMMS_RELAYSTATE_CONNECTED: 
         case COMMS_RELAYSTATE_RECONNECTED: 
-            ConnStatusHandler.updateStatusOut( m_context, 
+            ConnStatusHandler.updateStatusOut( m_context, m_handler,
                                                CommsConnType.COMMS_CONN_RELAY, 
                                                true );
             break;
         case COMMS_RELAYSTATE_ALLCONNECTED:
-            ConnStatusHandler.updateStatusIn( m_context, 
+            ConnStatusHandler.updateStatusIn( m_context, m_handler,
                                               CommsConnType.COMMS_CONN_RELAY, 
                                               true );
             break;
@@ -431,12 +433,12 @@ public class CommsTransport implements TransportProcs,
     public void relayConnd( String room, int devOrder, boolean allHere, 
                             int nMissing )
     {
-        m_handler.tpmRelayConnd( room, devOrder, allHere, nMissing );
+        m_tpHandler.tpmRelayConnd( room, devOrder, allHere, nMissing );
     }
 
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
-        m_handler.tpmRelayErrorProc( relayErr );
+        m_tpHandler.tpmRelayErrorProc( relayErr );
     }
 
     public boolean relayNoConnProc( byte[] buf, String relayID )

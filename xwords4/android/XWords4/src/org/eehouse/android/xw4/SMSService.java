@@ -240,8 +240,8 @@ public class SMSService extends Service {
             case HANDLE:
                 ++m_nReceived;
                 ConnStatusHandler.
-                    updateStatusIn( this, CommsConnType.COMMS_CONN_SMS,
-                                    true );
+                    updateStatusIn( this, null,
+                                    CommsConnType.COMMS_CONN_SMS, true );
                 if ( s_showToasts ) {
                     DbgUtils.showf( this, "got %dth msg", m_nReceived );
                 }
@@ -544,7 +544,8 @@ public class SMSService extends Service {
                            ee.toString() );
         }
 
-        ConnStatusHandler.updateStatusOut( this, CommsConnType.COMMS_CONN_SMS, 
+        ConnStatusHandler.updateStatusOut( this, null, 
+                                           CommsConnType.COMMS_CONN_SMS, 
                                            success );
         return success;
     }
