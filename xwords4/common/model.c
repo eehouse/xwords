@@ -1162,6 +1162,29 @@ model_getCurrentMoveCount( const ModelCtxt* model, XP_S16 turn )
     return player->nPending;
 } /* model_getCurrentMoveCount */
 
+XP_Bool
+model_getCurrentMoveIsVertical( const ModelCtxt* model, XP_S16 turn,
+                                XP_Bool* isVertical )
+{
+    XP_ASSERT( turn >= 0 );
+    const PlayerCtxt* player = &model->players[turn];
+    XP_U16 nPending = player->nPending;
+    XP_Bool known = 2 <= nPending;
+    if ( known ) {
+        --nPending;
+        if ( player->pendingTiles[nPending].col
+             == player->pendingTiles[nPending-1].col ) {
+            *isVertical = XP_TRUE;
+        } else if ( player->pendingTiles[nPending].row
+             == player->pendingTiles[nPending-1].row ) {
+            *isVertical = XP_FALSE;
+        } else {
+            known = XP_FALSE;
+        }
+    }
+    return known;
+}
+
 void
 model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
                           Tile* tile, XP_U16* col, XP_U16* row, 

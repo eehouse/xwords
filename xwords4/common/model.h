@@ -179,6 +179,9 @@ void model_addToCurrentMove( ModelCtxt* model, XP_S16 turn,
                              Tile tile, XP_Bool isBlank );
 XP_U16 model_getCurrentMoveCount( const ModelCtxt* model, XP_S16 turn );
 
+XP_Bool model_getCurrentMoveIsVertical( const ModelCtxt* model, XP_S16 turn,
+                                        XP_Bool* isHorizontal );
+
 void model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
                                Tile* tile, XP_U16* col, XP_U16* row, 
                                XP_Bool* isBlank );

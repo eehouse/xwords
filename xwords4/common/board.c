@@ -88,9 +88,7 @@ static void dictChanged( void* p_board, XP_S16 playerNum,
 
 static void boardTurnChanged( void* board );
 static void boardGameOver( void* board );
-static void setArrow( BoardCtxt* board, XP_U16 row, XP_U16 col );
-static void setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col, 
-                         XP_U16 row );
+static void setArrow( BoardCtxt* board, XP_U16 row, XP_U16 col, XP_Bool* vp );
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 
 #ifdef XWFEATURE_MINIWIN
@@ -108,7 +106,7 @@ static XP_Bool setTrayVisState( BoardCtxt* board, XW_TrayVisState newState );
 static XP_Bool advanceArrow( BoardCtxt* board );
 static XP_Bool exitTradeMode( BoardCtxt* board );
 
-static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
+static XP_Bool getArrow( const BoardCtxt* board, XP_U16* col, XP_U16* row );
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
 static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
@@ -1696,10 +1694,6 @@ board_replaceNTiles( BoardCtxt* board, XP_U16 nTiles )
         result = XP_TRUE;
     } 
 
-    if ( result ) {
-        (void)setArrowVisible( board, XP_FALSE );
-    }
-
     return result;
 }
 
@@ -2531,7 +2525,7 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 
         model_moveBoardToTray( board->model, board->selPlayer, 
                                modcol, modrow, -1 );
-        setArrow( board, pencol, penrow );
+        setArrow( board, pencol, penrow, NULL );
         result = XP_TRUE;
 
     }
@@ -3122,7 +3116,7 @@ board_moveArrow( BoardCtxt* board, XP_Key cursorKey )
     changed = figureNextLoc( board, cursorKey, XP_TRUE, XP_FALSE, 
                              &col, &row, NULL );
     if ( changed ) {
-        (void)setArrow( board, col, row );
+        (void)setArrow( board, col, row, NULL );
     }
     return changed;
 } /* board_moveArrow */
@@ -3210,14 +3204,16 @@ static XP_Bool
 replaceLastTile( BoardCtxt* board )
 {
     XP_Bool result = XP_FALSE;
-    XP_U16 tilesInMove = model_getCurrentMoveCount( board->model, 
-                                                    board->selPlayer );
-
+    XP_S16 turn = board->selPlayer;
+    XP_U16 tilesInMove = model_getCurrentMoveCount( board->model, turn );
     if ( tilesInMove > 0 ) {
         XP_U16 col, row;
         Tile tile;
         XP_Bool isBlank;
         XP_S16 index;
+        XP_Bool isVertical;
+        XP_Bool directionKnown = 
+            model_getCurrentMoveIsVertical( board->model, turn, &isVertical );
 
         index = -1;
         model_getCurrentMoveTile( board->model, board->selPlayer, &index,
@@ -3225,8 +3221,7 @@ replaceLastTile( BoardCtxt* board )
         model_moveBoardToTray( board->model, board->selPlayer, col, row, -1 );
 
         flipIf( board, col, row, &col, &row );
-        setArrow( board, col, row );
-
+        setArrow( board, col, row, directionKnown? &isVertical : NULL );
         result = XP_TRUE;
     }
 
@@ -3320,35 +3315,33 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
 #endif  /* #ifdef KEY_SUPPORT */
 
 static void
-setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col, XP_U16 row )
+setArrow( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool* vertp )
 {
+    XP_U16 player = board->selPlayer;
     BoardArrow* arrow = &board->pti[player].boardArrow;
     invalCell( board, arrow->col, arrow->row );
     invalCell( board, col, row );
 
     arrow->col = (XP_U8)col;
     arrow->row = (XP_U8)row;
+    if ( !!vertp ) {
+        arrow->vert = *vertp;
+    }
 
     scrollIntoView( board, col, row );
-} /* setArrowFor */
-
-static void
-setArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
-{
-    setArrowFor( board, board->selPlayer, col, row );
 } /* setArrow */
 
 static XP_Bool
-getArrowFor( BoardCtxt* board, XP_U16 player, XP_U16* col, XP_U16* row )
+getArrowFor( const BoardCtxt* board, XP_U16 player, XP_U16* col, XP_U16* row )
 {
-    BoardArrow* arrow = &board->pti[player].boardArrow;
+    const BoardArrow* arrow = &board->pti[player].boardArrow;
     *col = arrow->col;
     *row = arrow->row;
     return arrow->visible;
 } /* getArrowFor */
 
 static XP_Bool
-getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row )
+getArrow( const BoardCtxt* board, XP_U16* col, XP_U16* row )
 {
     return getArrowFor( board, board->selPlayer, col, row );
 } /* getArrow */
