@@ -965,11 +965,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             drawScaled( text, rect, m_boundsScratch, descent );
         } else {
             int bottom = rect.bottom - descent;
-            int origin = rect.left + (extra / 5);
+            int origin = rect.left;
             if ( Paint.Align.CENTER == align ) {
                 origin += rect.width() / 2;
             } else {
-                origin -= m_boundsScratch.left;
+                origin += (extra / 5) - m_boundsScratch.left;
             }
             m_fillPaint.setTextAlign( align );
             m_canvas.drawText( text, origin, bottom, m_fillPaint );
