@@ -959,38 +959,35 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         descent += 2;
 
         m_fillPaint.getTextBounds( text, 0, text.length(), m_boundsScratch );
-        if ( m_boundsScratch.width() > rect.width() ) {
+        int extra = rect.width() - m_boundsScratch.width();
+        if ( 0 >= extra ) {
             m_fillPaint.setTextAlign( Paint.Align.LEFT );
-            drawScaled( text, rect, descent );
+            drawScaled( text, rect, m_boundsScratch, descent );
         } else {
             int bottom = rect.bottom - descent;
-            int origin = rect.left;
+            int origin = rect.left + (extra / 5);
             if ( Paint.Align.CENTER == align ) {
                 origin += rect.width() / 2;
             } else {
-                int right = m_boundsScratch.left + m_boundsScratch.width();
-                if ( right > rect.right ) {
-                    origin -= m_boundsScratch.left;
-                }
+                origin -= m_boundsScratch.left;
             }
             m_fillPaint.setTextAlign( align );
             m_canvas.drawText( text, origin, bottom, m_fillPaint );
         }
     } // drawCentered
 
-    private void drawScaled( String text, final Rect rect, int descent )
+    private void drawScaled( String text, final Rect rect, 
+                             Rect textBounds, int descent )
     {
-        Rect local = new Rect();
-        m_fillPaint.getTextBounds( text, 0, text.length(), local );
-        local.bottom = rect.height();
+        textBounds.bottom = rect.height();
 
-        Bitmap bitmap = Bitmap.createBitmap( local.width(),
+        Bitmap bitmap = Bitmap.createBitmap( textBounds.width(),
                                              rect.height(), 
                                              Bitmap.Config.ARGB_8888 );
 
         Canvas canvas = new Canvas( bitmap );
-        int bottom = local.bottom - descent;
-        canvas.drawText( text, -local.left, bottom, m_fillPaint );
+        int bottom = textBounds.bottom - descent;
+        canvas.drawText( text, -textBounds.left, bottom, m_fillPaint );
 
         m_canvas.drawBitmap( bitmap, null, rect, m_drawPaint );
     }
@@ -998,18 +995,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private void positionDrawTile( final Rect rect, String text, int val )
     {
         if ( figureFontDims() ) {
-            int offset = m_hasSmallScreen ? 1 : 2;
+            final int offset = 2;
             if ( null != text ) {
                 if ( null == m_letterRect ) {
-                    int width = rect.width();
-                    int height = rect.height();
-                    if ( m_hasSmallScreen ) {
-                        height = height * 2 / 3;
-                    } else {
-                        height = height * 3 / 4;
-                    }
-                    width -= offset;
-                    m_letterRect = new Rect( 0, 0, width, height );
+                    m_letterRect = new Rect( 0, 0, rect.width() - offset,
+                                             rect.height() * 3 / 4 );
                 }
                 m_letterRect.offsetTo( rect.left + offset, rect.top + offset );
                 drawIn( text, m_letterRect, m_fontDims, Paint.Align.LEFT );
