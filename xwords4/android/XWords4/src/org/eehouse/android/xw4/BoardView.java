@@ -479,18 +479,22 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void measureRemText( Rect r, int nTilesLeft, int[] width, 
                                 int[] height ) 
     {
-        // should cache a formatter
-        m_remText = String.format( "%d", nTilesLeft );
-        m_fillPaint.setTextSize( m_mediumFontHt );
-        m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(), 
-                                   m_boundsScratch );
+        if ( 0 > nTilesLeft ) {
+            width[0] = height[0] = 0;
+        } else {
+            // should cache a formatter
+            m_remText = String.format( "%d", nTilesLeft );
+            m_fillPaint.setTextSize( m_mediumFontHt );
+            m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(), 
+                                       m_boundsScratch );
 
-        int minWidth = m_boundsScratch.width();
-        if ( minWidth < 20 ) {
-            minWidth = 20; // it's a button; make it bigger
+            int minWidth = m_boundsScratch.width();
+            if ( minWidth < 20 ) {
+                minWidth = 20; // it's a button; make it bigger
+            }
+            width[0] = minWidth;
+            height[0] = m_boundsScratch.height();
         }
-        width[0] = minWidth;
-        height[0] = m_boundsScratch.height();
     }
 
     public void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, 
