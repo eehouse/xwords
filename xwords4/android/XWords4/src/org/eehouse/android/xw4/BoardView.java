@@ -437,6 +437,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_connType = connType;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
+
+        // Make sure we draw.  Sometimes when we're reloading after
+        // an obsuring Activity goes away we otherwise won't.
+        invalidate();
     }
 
     // SyncedDraw interface implementation
