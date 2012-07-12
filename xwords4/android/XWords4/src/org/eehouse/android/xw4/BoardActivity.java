@@ -71,8 +71,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_DELETED = DLG_OKONLY + 8;
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
-    private static final int DLG_LOOKUP = DLG_OKONLY + 11;
-    private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 12;
+    private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 11;
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
@@ -851,7 +850,7 @@ public class BoardActivity extends XWActivity
                 checkAndHandle( cmd );
             }
         }
-    }
+    } // dlgButtonClicked
 
     //////////////////////////////////////////////////
     // View.OnClickListener interface
