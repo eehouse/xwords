@@ -2507,7 +2507,6 @@ sendUndoToClientsExcept( ServerCtxt* server, XP_U16 skip,
     }
 } /* sendUndoToClientsExcept */
 
-/* This is unused on Android where I've disabled undo in networked games. */
 static XP_Bool
 reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 {
@@ -2523,6 +2522,7 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
     success = model_undoLatestMoves( model, server->pool, nUndone, &turn, 
                                      &lastUndone );
     if ( success ) {
+        sortTilesIf( server, turn );
 
         if ( code == XWPROTO_UNDO_INFO_CLIENT ) { /* need to inform */
             XP_U16 sourceClientIndex = 
@@ -2585,6 +2585,7 @@ server_handleUndo( ServerCtxt* server, XP_U16 limit )
                                      lastUndone );
         }
 #endif
+        sortTilesIf( server, lastTurnUndone );
         nextTurn( server, lastTurnUndone );
     } else {
         /* I'm a bit nervous about this.  Is this the ONLY thing that cause
