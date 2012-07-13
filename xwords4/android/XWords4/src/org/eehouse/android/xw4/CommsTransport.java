@@ -179,12 +179,19 @@ public class CommsTransport implements TransportProcs,
                             } else {
                                 addIncoming();
                             }
+                            ConnStatusHandler.
+                                updateStatusIn( m_context, m_handler,
+                                                CommsConnType.COMMS_CONN_RELAY, 
+                                                0 <= nRead );
                         }
                         if (key.isValid() && key.isWritable()) {
                             getOut();
                             if ( null != m_bytesOut ) {
                                 int nWritten = channel.write( m_bytesOut );
-                                //DbgUtils.logf( "wrote " + nWritten + " bytes" );
+                                ConnStatusHandler.
+                                    updateStatusOut( m_context, m_handler,
+                                                     CommsConnType.COMMS_CONN_RELAY,
+                                                     0 < nWritten );
                             }
                         }
                     } catch ( java.io.IOException ioe ) {
