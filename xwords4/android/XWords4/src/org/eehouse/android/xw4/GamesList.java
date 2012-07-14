@@ -63,6 +63,7 @@ public class GamesList extends XWListActivity
     private static final int RENAME_GAME       = WARN_NODICT + 4;
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
+    private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
 
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
@@ -337,6 +338,7 @@ public class GamesList extends XWListActivity
     {
         super.onSaveInstanceState( outState );
         outState.putLong( SAVE_ROWID, m_rowid );
+        outState.putStringArray( SAVE_DICTNAMES, m_missingDictNames );
         if ( null != m_netLaunchInfo ) {
             m_netLaunchInfo.putSelf( outState );
         }
@@ -347,6 +349,7 @@ public class GamesList extends XWListActivity
         if ( null != bundle ) {
             m_rowid = bundle.getLong( SAVE_ROWID );
             m_netLaunchInfo = new NetLaunchInfo( bundle );
+            m_missingDictNames = bundle.getStringArray( SAVE_DICTNAMES );
         }
     }
 
