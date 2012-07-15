@@ -110,7 +110,7 @@ curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_scoreBegin */
 
 #ifdef XWFEATURE_SCOREONEPASS
-static void
+static XP_Bool
 curses_draw_drawRemText( DrawCtx* p_dctx, XP_S16 nTilesLeft,
                          XP_Bool focussed, XP_Rect* rect )
 {
@@ -118,6 +118,7 @@ curses_draw_drawRemText( DrawCtx* p_dctx, XP_S16 nTilesLeft,
     XP_USE(nTilesLeft);
     XP_USE(focussed);
     XP_USE(rect);
+    return XP_TRUE;
 }
 #else
 static void
@@ -129,7 +130,7 @@ formatRemText( char* buf, int bufLen, XP_S16 nTilesLeft, int width )
     }
 } /* formatRemText */
 
-static void
+static XP_Bool
 curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx), 
                             const XP_Rect* r, 
                             XP_S16 nTilesLeft, 
@@ -140,9 +141,10 @@ curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx),
     
     *width = strlen(buf);
     *height = 1;
+    return XP_TRUE;
 } /* curses_draw_measureRemText */
 
-static void
+static XP_Bool
 curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
                          const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft,
                          XP_Bool focussed )
@@ -155,6 +157,7 @@ curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
     if ( focussed ) {
         cursesHiliteRect( dctx->boardWin, rInner );
     }
+    return XP_TRUE;
 } /* curses_draw_drawRemText */
 #endif
 

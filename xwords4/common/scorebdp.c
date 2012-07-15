@@ -85,8 +85,11 @@ drawScoreBoard( BoardCtxt* board )
             XP_MEMSET( data, 0, sizeof(data) );
 
             scoreRect = board->scoreBdBounds;
-            draw_drawRemText( board->draw, nTilesInPool, focusAll || remFocussed, 
-                              &scoreRect );
+            if ( !draw_drawRemText( board->draw, nTilesInPool, 
+                                    focusAll || remFocussed, 
+                                    &scoreRect ) ) {
+                scoreRect.height = scoreRect.width = 0;
+            }
             XP_ASSERT( rectContainsRect( &board->scoreBdBounds, &scoreRect ) );
             remDim = isVertical? scoreRect.height : scoreRect.width;
             board->remDim = remDim;
@@ -218,8 +221,11 @@ drawScoreBoard( BoardCtxt* board )
                 /* Let platform decide whether the rem: string should be given
                    any space once there are no tiles left.  On Palm that space
                    is clickable to drop a menu, so will probably leave it. */
-                draw_measureRemText( board->draw, &board->scoreBdBounds, 
-                                     nTilesInPool, &remWidth, &remHeight );
+                if ( !draw_measureRemText( board->draw, &board->scoreBdBounds, 
+                                           nTilesInPool, &remWidth, 
+                                           &remHeight ) ) {
+                    remWidth = remHeight = 0;
+                }
                 XP_ASSERT( remWidth <= board->scoreBdBounds.width );
                 XP_ASSERT( remHeight <= board->scoreBdBounds.height );
                 remDim = isVertical? remHeight : remWidth;

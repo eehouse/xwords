@@ -965,19 +965,19 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 } /* gtk_draw_score_drawPlayer */
 
 #ifdef XWFEATURE_SCOREONEPASS
-static void
+static XP_Bool
 gtk_draw_drawRemText( DrawCtx* p_dctx, XP_S16 nTilesLeft,
                       XP_Bool focussed, XP_Rect* rect )
 {
-    if ( XP_FALSE && nTilesLeft <= 0 ) {
-        rect->width = rect->height = 0;
-    } else {
+    XP_Bool drawIt = 0 <= nTilesLeft;
+    if ( drawIt ) {
         XP_U16 width, height;
         gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, &width, &height, focussed );
         rect->width = width;
         rect->height = height;
         gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, NULL, NULL, focussed );
     }
+    return drawIt;
 }
 
 static void
@@ -1010,15 +1010,15 @@ gtk_draw_score_drawPlayers( DrawCtx* p_dctx, const XP_Rect* scoreRect,
 }
 
 #else
-static void
+static XP_Bool
 gtk_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
                          XP_U16* width, XP_U16* height )
 {
-    if ( XP_FALSE && nTilesLeft <= 0 ) {
-        *width = *height = 0;
-    } else {
+    XP_Bool drawIt = 0 <= nTilesLeft;
+    if ( drawIt ) {
         gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, width, height, XP_FALSE );
     }
+    return drawIt;
 } /* gtk_draw_measureRemText */
 
 static void

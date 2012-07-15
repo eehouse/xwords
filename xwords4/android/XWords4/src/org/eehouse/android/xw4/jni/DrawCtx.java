@@ -44,14 +44,14 @@ public interface DrawCtx {
 
 
     boolean scoreBegin( Rect rect, int numPlayers, int[] scores, int remCount );
-    void measureRemText( Rect r, int nTilesLeft, int[] width, int[] height );
+    boolean measureRemText( Rect r, int nTilesLeft, int[] width, int[] height );
     void measureScoreText( Rect r, DrawScoreInfo dsi, int[] width, int[] height );
     void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, boolean focussed );
     void score_drawPlayer( Rect rInner, Rect rOuter, int gotPct, 
                            DrawScoreInfo dsi );
 
     // New way of drawing
-    // void drawRemText( int nTilesLeft, boolean focussed, Rect rect );
+    // boolean drawRemText( int nTilesLeft, boolean focussed, Rect rect );
     // void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData, 
     //                         Rect[] playerRects );
 

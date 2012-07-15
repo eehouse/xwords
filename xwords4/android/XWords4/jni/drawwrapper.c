@@ -224,16 +224,19 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
 }
 
 #ifdef XWFEATURE_SCOREONEPASS
-static void
+static XP_Bool
 and_draw_drawRemText( DrawCtx* dctx, XP_S16 nTilesLeft, 
                       XP_Bool focussed, XP_Rect* rect )
 {
-    DRAW_CBK_HEADER("drawRemText", "(IZLandroid/graphics/Rect;)V" );
+    DRAW_CBK_HEADER("drawRemText", "(IZLandroid/graphics/Rect;)Z" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, nTilesLeft, focussed,
-                            jrect );
-    readJRect( env, rect, jrect );
+    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
+                                                 nTilesLeft, focussed, jrect );
+    if ( result ) {
+        readJRect( env, rect, jrect );
+    }
+    return result;
 }
 
 static void
@@ -259,22 +262,25 @@ and_draw_score_drawPlayers( DrawCtx* dctx, const XP_Rect* scoreRect,
 
 #else
 
-static void 
-and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r, 
+static XP_Bool
+and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* rect, 
                          XP_S16 nTilesLeft, 
                          XP_U16* width, XP_U16* height )
 {
-    DRAW_CBK_HEADER("measureRemText", "(Landroid/graphics/Rect;I[I[I)V" );
+    DRAW_CBK_HEADER("measureRemText", "(Landroid/graphics/Rect;I[I[I)Z" );
     
     jintArray widthArray = makeIntArray( env, 1, NULL );
     jintArray heightArray = makeIntArray( env, 1, NULL );
-    jobject jrect = makeJRect( draw, JCACHE_RECT0, r );
+    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, nTilesLeft, 
-                            widthArray, heightArray );
-
-    *width = getIntFromArray( env, widthArray, true );
-    *height = getIntFromArray( env, heightArray, true );
+    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, 
+                                                 nTilesLeft, widthArray, 
+                                                 heightArray );
+    if ( result ) {
+        *width = getIntFromArray( env, widthArray, true );
+        *height = getIntFromArray( env, heightArray, true );
+    }
+    return result;
 } /* and_draw_measureRemText */
 
 static void
@@ -612,12 +618,13 @@ makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
     SET_PROC(scoreBegin);
 #ifdef XWFEATURE_SCOREONEPASS
     SET_PROC(score_drawPlayers);
+    SET_PROC(drawRemText);
 #else
     SET_PROC(measureScoreText);
     SET_PROC(score_drawPlayer);
     SET_PROC(measureRemText);
-#endif
     SET_PROC(drawRemText);
+#endif
     SET_PROC(drawTimer);
 
     SET_PROC(drawCell);

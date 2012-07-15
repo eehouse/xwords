@@ -480,12 +480,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;
     }
 
-    public void measureRemText( Rect r, int nTilesLeft, int[] width, 
-                                int[] height ) 
+    public boolean measureRemText( Rect r, int nTilesLeft, int[] width, 
+                                   int[] height ) 
     {
-        if ( 0 > nTilesLeft ) {
-            width[0] = height[0] = 0;
-        } else {
+        boolean showREM = 0 <= nTilesLeft;
+        if ( showREM ) {
             // should cache a formatter
             m_remText = String.format( "%d", nTilesLeft );
             m_fillPaint.setTextSize( m_mediumFontHt );
@@ -499,6 +498,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             width[0] = minWidth;
             height[0] = m_boundsScratch.height();
         }
+        return showREM;
     }
 
     public void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, 
@@ -589,32 +589,25 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    // public void drawRemText( int nTilesLeft, boolean focussed, Rect rect )
+    // public boolean drawRemText( int nTilesLeft, boolean focussed, Rect rect )
     // {
-    //     int width, height;
-    //     String remText = null;
-    //     if ( 0 >= nTilesLeft ) {
-    //         // make it disappear if useless 
-    //         width = height = 0;
-    //     } else {
+    //     boolean willDraw = 0 <= nTilesLeft;
+    //     if ( willDraw ) {
+    //         String remText = null;
     //         // should cache a formatter
     //         remText = String.format( "%d", nTilesLeft );
     //         m_fillPaint.setTextSize( m_mediumFontHt );
     //         m_fillPaint.getTextBounds( remText, 0, remText.length(), 
     //                                    m_boundsScratch );
 
-    //         int minWidth = m_boundsScratch.width();
-    //         if ( minWidth < 20 ) {
-    //             minWidth = 20; // it's a button; make it bigger
+    //         int width = m_boundsScratch.width();
+    //         if ( width < 20 ) {
+    //             width = 20; // it's a button; make it bigger
     //         }
-    //         width = minWidth;
-    //         height = m_boundsScratch.height();
-    //     }
+    //         rect.right = rect.left + width;
 
-    //     rect.right = rect.left + width;
-
-    //     if ( 0 < nTilesLeft ) {
     //         Rect drawRect = new Rect( rect );
+    //         int height = m_boundsScratch.height();
     //         if ( height < drawRect.height() ) {
     //             drawRect.inset( 0, (drawRect.height() - height) / 2 );
     //         }
@@ -626,6 +619,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     //         m_fillPaint.setColor( adjustColor(BLACK) );
     //         drawCentered( remText, drawRect, null );
     //     }
+    //     return willDraw;
     // }
 
     // public void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData, 

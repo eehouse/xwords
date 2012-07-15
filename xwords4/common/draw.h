@@ -137,17 +137,17 @@ typedef struct DrawCtxVTable {
                                            const XP_S16* const scores,
                                            XP_S16 remCount, DrawFocusState dfs );
 #ifdef XWFEATURE_SCOREONEPASS
-    void DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, XP_S16 nTilesLeft, 
-                                         XP_Bool focussed, XP_Rect* rect );
+    XP_Bool DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, XP_S16 nTilesLeft, 
+                                            XP_Bool focussed, XP_Rect* rect );
     void DRAW_VTABLE_NAME(score_drawPlayers)( DrawCtx* dctx, 
                                               const XP_Rect* scoreRect,
                                               XP_U16 nPlayers, 
                                               DrawScoreInfo playerData[], 
                                               XP_Rect playerRects[] );
 #else
-    void DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, const XP_Rect* r, 
-                                            XP_S16 nTilesLeft, 
-                                            XP_U16* width, XP_U16* height );
+    XP_Bool DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, const XP_Rect* r, 
+                                               XP_S16 nTilesLeft, 
+                                               XP_U16* width, XP_U16* height );
     void DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, const XP_Rect* rInner,
                                          const XP_Rect* rOuter, 
                                          XP_S16 nTilesLeft, XP_Bool focussed );
