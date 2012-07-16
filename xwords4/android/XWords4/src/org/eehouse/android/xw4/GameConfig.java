@@ -96,6 +96,7 @@ public class GameConfig extends XWActivity
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
     private Spinner m_phoniesSpinner;
+    private Spinner m_boardsizeSpinner;
     private Spinner m_langSpinner;
     private Spinner m_smartnessSpinner;
     private String m_browseText;
@@ -119,6 +120,7 @@ public class GameConfig extends XWActivity
                                                         ,R.id.refresh_button
                                                         ,R.id.hints_allowed
                                                         ,R.id.pick_faceup
+                                                        ,R.id.boardsize_spinner
                                                         ,R.id.use_timer
                                                         ,R.id.timer_minutes_edit
                                                         ,R.id.smart_robot
@@ -416,6 +418,7 @@ public class GameConfig extends XWActivity
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
         m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
+        m_boardsizeSpinner = (Spinner)findViewById( R.id.boardsize_spinner );
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
     } // onCreate
 
@@ -547,6 +550,8 @@ public class GameConfig extends XWActivity
                     };
                 check.setOnCheckedChangeListener( lstnr );
                 Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
+
+                setBoardsizeSpinner();
             }
         }
     } // loadGame
@@ -842,6 +847,39 @@ public class GameConfig extends XWActivity
         m_smartnessSpinner.setSelection( setting );
     }
 
+    private int positionToSize( int position ) {
+        switch( position ) {
+        case 0: return 15;
+        case 1: return 13;
+        case 2: return 11;
+        default:
+            Assert.fail();
+        }
+        return -1;
+    }
+
+    private void setBoardsizeSpinner()
+    {
+        int size = m_gi.boardSize;
+        int selection = 0;
+        switch( size ) {
+        case 15:
+            selection = 0;
+            break;
+        case 13:
+            selection = 1;
+            break;
+        case 11:
+            selection = 2;
+            break;
+        default:
+            Assert.fail();
+            break;
+        }
+        Assert.assertTrue( size == positionToSize(selection) );
+        m_boardsizeSpinner.setSelection( selection );
+    }
+
     // private void configConnectSpinner()
     // {
     //     m_connectSpinner = (Spinner)findViewById( R.id.connect_spinner );
@@ -997,6 +1035,9 @@ public class GameConfig extends XWActivity
         position = m_smartnessSpinner.getSelectedItemPosition();
         m_gi.setRobotSmartness(position * 49 + 1);
 
+        position = m_boardsizeSpinner.getSelectedItemPosition();
+        m_gi.boardSize = positionToSize( position );
+
         switch( m_conType ) {
         case COMMS_CONN_RELAY:
             m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
@@ -1019,9 +1060,6 @@ public class GameConfig extends XWActivity
             break;
             // nothing to save for BT yet
         }
-
-        // position = m_connectSpinner.getSelectedItemPosition();
-        // m_car.conType = m_types[ position ];
 
         m_car.conType = m_conType;
     } // saveChanges

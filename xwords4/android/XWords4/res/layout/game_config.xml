@@ -246,6 +246,26 @@
                 android:text="@string/pick_faceup"
                 />
 
+      <LinearLayout android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    >
+        <TextView android:layout_height="wrap_content"
+                  android:layout_width="wrap_content"
+                  android:text="@string/board_size"
+                  android:textAppearance="?android:attr/textAppearanceMedium"
+                  android:layout_weight="1"
+                  />
+        <Spinner android:id="@+id/boardsize_spinner"
+                 android:prompt="@string/board_size"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_weight="1"
+                 android:drawSelectorOnTop="true"
+                 android:entries="@array/board_sizes"
+                 />
+      </LinearLayout>
+
     </LinearLayout>
 
   </ScrollView>
