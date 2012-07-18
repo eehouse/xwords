@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -79,7 +79,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_backgroundUsed = 0x00000000;
     private boolean m_darkOnLight;
     private Drawable m_origin;
-    private int m_left, m_top;
     private JNIThread m_jniThread;
     private XWActivity m_parent;
     private String[][] m_scores;
@@ -190,8 +189,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public boolean onTouchEvent( MotionEvent event ) 
     {
         int action = event.getAction();
-        int xx = (int)event.getX() - m_left;
-        int yy = (int)event.getY() - m_top;
+        int xx = (int)event.getX();
+        int yy = (int)event.getY();
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
@@ -283,11 +282,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             width = resolveSize( dims.width, widthMeasureSpec );
         } else {
             height = dims.height;
+            width = dims.width;
         }
 
         int minHeight = getSuggestedMinimumHeight();
         if ( height < minHeight ) {
             height = minHeight;
+        }
+        int minWidth = getSuggestedMinimumWidth();
+        if ( width < minWidth ) {
+            width = minWidth;
         }
         setMeasuredDimension( width, height );
     }
@@ -316,8 +320,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
-                canvas.drawBitmap( s_bitmap, m_left, m_top, m_drawPaint );
-                ConnStatusHandler.draw( canvas, getResources(), m_left, m_top,
+                canvas.drawBitmap( s_bitmap, 0, 0, m_drawPaint );
+                ConnStatusHandler.draw( canvas, getResources(), 0, 0,
                                         m_connType );
             }
         }
@@ -326,62 +330,75 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private BoardDims figureBoardDims( int width, int height )
     {
         BoardDims result = new BoardDims();
-        result.width = width;
-        result.left = 0;
-        result.top = 0;
-
         int nCells = m_gi.boardSize;
-        int cellSize = width / nCells;
         int maxCellSize = 4 * m_defaultFontHt;
-        if ( cellSize > maxCellSize ) {
-            cellSize = maxCellSize;
-
-            int boardWidth = nCells * cellSize;
-            result.left = (width - boardWidth) / 2;
-            result.width = boardWidth;
-        }
-        result.maxCellSize = maxCellSize;
-
-        // Now determine if vertical scrolling will be necessary.
-        // There's a minimum tray and scoreboard height.  If we can
-        // fit them and all cells no scrolling's needed.  Otherwise
-        // determine the minimum number that must be hidden to fit.
-        // Finally grow scoreboard and tray to use whatever's left.
-        int trayHt = 2 * cellSize;
-        int scoreHt = (cellSize * 3) / 2;
-        int wantHt = trayHt + scoreHt + (cellSize * nCells);
+        int trayHt;
+        int scoreHt;
+        int wantHt;
         int nToScroll;
-        if ( wantHt <= height ) {
-            nToScroll = 0;
-        } else {
-            nToScroll = nCells - ((height - trayHt - scoreHt) / cellSize);
-        }
 
-        int heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
-        int heightLeft = height - heightUsed;
-        if ( 0 < heightLeft ) {
-            if ( heightLeft > (cellSize * 3 / 2) ) {
-                heightLeft = cellSize * 3 / 2;
+        for ( boolean firstPass = true; ; ) {
+            result.width = width;
+
+            int cellSize = width / nCells;
+            if ( cellSize > maxCellSize ) {
+                cellSize = maxCellSize;
+
+                int boardWidth = nCells * cellSize;
+                result.width = boardWidth;
             }
-            heightLeft /= 3;
-            trayHt += heightLeft * 2;
-            scoreHt += heightLeft;
-            heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
-        }
+            result.maxCellSize = maxCellSize;
 
-        result.trayHt = trayHt;
-        result.scoreHt = scoreHt;
+            // Now determine if vertical scrolling will be necessary.
+            // There's a minimum tray and scoreboard height.  If we can
+            // fit them and all cells no scrolling's needed.  Otherwise
+            // determine the minimum number that must be hidden to fit.
+            // Finally grow scoreboard and tray to use whatever's left.
+            trayHt = 2 * cellSize;
+            scoreHt = (cellSize * 3) / 2;
+            wantHt = trayHt + scoreHt + (cellSize * nCells);
+            if ( wantHt <= height ) {
+                nToScroll = 0;
+            } else {
+                // Scrolling's required if we use cell width sufficient to
+                // fill the screen.  But perhaps we don't need to.
+                int cellWidth = 2 * (height / ( 4 + 3 + (2*nCells)));
+                if ( firstPass && cellWidth >= m_defaultFontHt ) {
+                    firstPass = false;
+                    width = nCells * cellWidth;
+                    continue;
+                } else {
+                    nToScroll = nCells - ((height - trayHt - scoreHt) / cellSize);
+                }
+            }
 
-        result.boardHt = cellSize * nCells;
-        result.trayTop = scoreHt + (cellSize * (nCells-nToScroll));
-        result.height = heightUsed;
-        result.cellSize = cellSize;
+            int heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
+            int heightLeft = height - heightUsed;
+            if ( 0 < heightLeft ) {
+                if ( heightLeft > (cellSize * 3 / 2) ) {
+                    heightLeft = cellSize * 3 / 2;
+                }
+                heightLeft /= 3;
+                trayHt += heightLeft * 2;
+                scoreHt += heightLeft;
+                heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
+            }
 
-        if ( m_gi.timerEnabled ) {
-            Paint paint = new Paint();
-            paint.setTextSize( m_mediumFontHt );
-            paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
-            result.timerWidth = m_boundsScratch.width();
+            result.trayHt = trayHt;
+            result.scoreHt = scoreHt;
+
+            result.boardHt = cellSize * nCells;
+            result.trayTop = scoreHt + (cellSize * (nCells-nToScroll));
+            result.height = heightUsed;
+            result.cellSize = cellSize;
+
+            if ( m_gi.timerEnabled ) {
+                Paint paint = new Paint();
+                paint.setTextSize( m_mediumFontHt );
+                paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
+                result.timerWidth = m_boundsScratch.width();
+            }
+            break;
         }
 
         return result;
@@ -404,8 +421,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_valRect = null;
 
             BoardDims dims = figureBoardDims( width, height );
-            m_left = dims.left;
-            m_top = dims.top;
             
             if ( null == s_bitmap ) {
                 s_bitmap = Bitmap.createBitmap( 1 + dims.width,
@@ -877,9 +892,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void objFinished( /*BoardObjectType*/int typ, Rect rect )
     {
-        // if ( DrawCtx.OBJ_SCORE == typ ) {
-        //     m_canvas.restoreToCount(1); // in case new canvas...
-        // }
+        if ( DrawCtx.OBJ_BOARD == typ ) {
+            // On squat screens, where I can't use the full width for
+            // the board (without scrolling), the right-most cells
+            // don't draw their right borders due to clipping, so draw
+            // for them.
+            m_strokePaint.setColor( adjustColor(FRAME_GREY) );
+            int xx = rect.left + rect.width() - 1;
+            m_canvas.drawLine( xx, rect.top, xx, rect.top + rect.height(),
+                               m_strokePaint );
+        }
     }
 
     public void dictChanged( int dictPtr )
