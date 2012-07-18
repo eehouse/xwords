@@ -5,19 +5,13 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 47 release</b>
+<b>Crosswords 4.4 beta 48 release</b>
 <ul>
 
-  <li>New tappable network status/game type icon on board</li>
+  <li>Fix board to be narrower (not need scrolling) on wide screens</li>
 
-  <li>Tweak for better experience on large-screen devices like Kindle Fire</li>
+  <li>Add board-size option to game config screen</li>
 
-  <li>Improve drawing of scoreboard and tiles in rack</li>
-
-  <li>Tap in empty area of tray undoes one tile move, and arrow follows</li>
-
-  <li>Other minor bug fixes</li>
-  
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
