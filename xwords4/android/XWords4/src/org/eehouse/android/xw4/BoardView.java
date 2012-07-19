@@ -421,10 +421,19 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_valRect = null;
 
             BoardDims dims = figureBoardDims( width, height );
-            
+
+            // If board size has changed we need a new bitmap
+            int bmHeight = 1 + dims.height;
+            int bmWidth = 1 + dims.width;
+            if ( null != s_bitmap ) {
+                if ( s_bitmap.getHeight() != bmHeight
+                     || s_bitmap.getWidth() != bmWidth ) {
+                    s_bitmap = null;
+                }
+            }
+
             if ( null == s_bitmap ) {
-                s_bitmap = Bitmap.createBitmap( 1 + dims.width,
-                                                1 + dims.height,
+                s_bitmap = Bitmap.createBitmap( bmWidth, bmHeight,
                                                 Bitmap.Config.ARGB_8888 );
             }
             m_canvas = new Canvas( s_bitmap );
