@@ -243,6 +243,16 @@ public class ConnStatusHandler {
         }
     }
 
+    public static void showSuccessIn( Handler handler )
+    {
+        showSuccess( handler, true );
+    }
+
+    public static void showSuccessOut( Handler handler )
+    {
+        showSuccess( handler, false );
+    }
+
     public static void draw( Canvas canvas, Resources res, 
                              int offsetX, int offsetY, CommsConnType connType )
     {

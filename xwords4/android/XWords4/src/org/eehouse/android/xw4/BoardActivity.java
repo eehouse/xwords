@@ -918,9 +918,14 @@ public class BoardActivity extends XWActivity
             break;
 
         case SMS_SEND_OK:
+            ConnStatusHandler.showSuccessOut( m_handler );
+            break;
         case SMS_RECEIVE_OK:
+            ConnStatusHandler.showSuccessIn( m_handler );
+            break;
         case SMS_SEND_FAILED:
         case SMS_SEND_FAILED_NORADIO:
+
             // if ( null != m_jniThread ) {
             //     boolean accepted = 
             //         MultiService.MultiEvent.SMS_RECEIVE_OK == event
