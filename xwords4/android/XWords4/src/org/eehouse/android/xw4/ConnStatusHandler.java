@@ -47,11 +47,15 @@ public class ConnStatusHandler {
     // private static final int RED = 0x7FFF0000;
     private static final int GREEN = 0xFF00FF00;
     private static final int RED = 0xFFFF0000;
+    private static final int SUCCESS_IN = 0;
+    private static final int SUCCESS_OUT = 1;
+    private static final int SHOW_SUCCESS_INTERVAL = 1000;
 
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
     private static Handler s_handler;
     private static Paint s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
+    private static boolean[] s_showSuccesses = { false, false };
 
     private static class SuccessRecord implements java.io.Serializable {
         public long lastSuccess;
@@ -220,6 +224,9 @@ public class ConnStatusHandler {
         }
         invalidateParent();
         saveState( context, handler );
+        if ( success ) {
+            showSuccess( handler, true );
+        }
     }
 
     public static void updateStatusOut( Context context, Handler handler,
@@ -231,6 +238,9 @@ public class ConnStatusHandler {
         }
         invalidateParent();
         saveState( context, handler );
+        if ( success ) {
+            showSuccess( handler, false );
+        }
     }
 
     public static void draw( Canvas canvas, Resources res, 
@@ -277,11 +287,15 @@ public class ConnStatusHandler {
                     // now the icons
                     rect.top = saveTop;
                     rect.bottom = rect.top + quarterHeight;
-                    drawIn( canvas, res, R.drawable.out_arrow, rect );
+                    int arrowID = s_showSuccesses[SUCCESS_OUT]? 
+                        R.drawable.out_arrow_active : R.drawable.out_arrow;
+                    drawIn( canvas, res, arrowID, rect );
 
                     rect.top += 3 * quarterHeight;
                     rect.bottom = rect.top + quarterHeight;
-                    drawIn( canvas, res, R.drawable.in_arrow, rect );
+                    arrowID = s_showSuccesses[SUCCESS_IN]? 
+                        R.drawable.in_arrow_active : R.drawable.in_arrow;
+                    drawIn( canvas, res, arrowID, rect );
 
                     rect.top = saveTop;
                 }
@@ -340,6 +354,35 @@ public class ConnStatusHandler {
                         }
                     };
                 handler.postDelayed( proc, 5000 );
+            }
+        }
+    }
+
+    private static void showSuccess( Handler handler, boolean isIn )
+    {
+        if ( null == handler ) {
+            DbgUtils.logf( "showSuccess: have no handler :-(" );
+        } else {
+            synchronized( s_lockObj ) {
+                if ( isIn && s_showSuccesses[SUCCESS_IN] ) {
+                    // do nothing
+                } else if ( !isIn && s_showSuccesses[SUCCESS_OUT] ) {
+                    // do nothing
+                } else {
+                    final int index = isIn? SUCCESS_IN : SUCCESS_OUT;
+                    s_showSuccesses[index] = true;
+
+                    Runnable proc = new Runnable() {
+                            public void run() {
+                                synchronized( s_lockObj ) {
+                                    s_showSuccesses[index] = false;
+                                    invalidateParent();
+                                }
+                            }
+                        };
+                    handler.postDelayed( proc, SHOW_SUCCESS_INTERVAL );
+                    invalidateParent();
+                }
             }
         }
     }
