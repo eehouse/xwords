@@ -418,7 +418,7 @@ public class NewGameActivity extends XWActivity {
 
     private void checkEnableSMS()
     { 
-        if ( XWApp.SMSSUPPORTED ) {
+        if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS(this) ) {
             boolean enabled = true; // is the phone on
             findViewById( R.id.sms_separator ).setVisibility( View.VISIBLE );
 
