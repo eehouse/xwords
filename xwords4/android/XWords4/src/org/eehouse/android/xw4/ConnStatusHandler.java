@@ -370,9 +370,7 @@ public class ConnStatusHandler {
 
     private static void showSuccess( Handler handler, boolean isIn )
     {
-        if ( null == handler ) {
-            DbgUtils.logf( "showSuccess: have no handler :-(" );
-        } else {
+        if ( null != handler ) {
             synchronized( s_lockObj ) {
                 if ( isIn && s_showSuccesses[SUCCESS_IN] ) {
                     // do nothing
