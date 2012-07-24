@@ -29,11 +29,12 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.DbgUtils;
 
-public class CommonPrefs {
+public class CommonPrefs extends XWPrefs {
     public static final int COLOR_TILE_BACK = 0;
     public static final int COLOR_NOTILE = 1;
     public static final int COLOR_FOCUS = 2;
@@ -375,26 +376,6 @@ public class CommonPrefs {
     public static String[] getBTAddresses( Context context )
     {
         return getPrefsStringArray( context, R.string.key_bt_addrs );
-    }
-
-    public static boolean getPrefsBoolean( Context context, int keyID,
-                                           boolean defaultValue )
-    {
-        String key = context.getString( keyID );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        return sp.getBoolean( key, defaultValue );
-    }
-
-    public static void setPrefsBoolean( Context context, int keyID, 
-                                        boolean newValue )
-    {
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        SharedPreferences.Editor editor = sp.edit();
-        String key = context.getString( keyID );
-        editor.putBoolean( key, newValue );
-        editor.commit();
     }
 
     public static String getPrefsString( Context context, int keyID )
