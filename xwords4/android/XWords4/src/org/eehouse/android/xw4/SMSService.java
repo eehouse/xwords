@@ -211,7 +211,7 @@ public class SMSService extends Service {
     @Override
     public void onCreate()
     {
-        if ( XWApp.SMSSUPPORTED ) {
+        if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS( this ) ) {
             registerReceivers();
         } else {
             stopSelf();
