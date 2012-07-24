@@ -270,6 +270,12 @@
                         android:summary="@string/notify_other_summary"
                         android:defaultValue="false"
                         />
+    <org.eehouse.android.xw4.SMSCheckBoxPreference 
+        android:key="@string/key_enable_sms"
+        android:title="@string/enable_sms"
+        android:summary="@string/enable_sms_summary"
+        android:defaultValue="false"
+        />
   </PreferenceScreen>
 
   <PreferenceScreen android:title="@string/advanced"

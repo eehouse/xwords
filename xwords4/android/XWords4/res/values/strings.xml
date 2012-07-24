@@ -1902,8 +1902,11 @@
     <string name="sms_networked_desc">Create a game that will be
     played via invisible text messages. !!!DO NOT DO THIS UNLESS YOU HAVE
     AN UNLIMITED TEXT MESSAGING PLAN!!!</string>
-    <string name="sms_disabled">sms_disabled</string>
-    <string name="newgame_enable_sms">newgame_enable_sms</string>
+
+    <string name="sms_disabled">Playing vis SMS is currently disabled.
+    You can enable it in Settings->Network game settings.</string>
+    <string name="newgame_enable_sms">Launch Settings</string>
+
     <string name="err_no_phone">Phone number required</string>
     <string name="dft_sms_namef">SMS Game %X</string>    
     <string name="sms_devs_missing">Missing connections? Invite SMS
@@ -1969,5 +1972,18 @@
     <string name="connstat_relay">internet/relay</string>
     <string name="connstat_sms">sms/texting</string>
     <string name="connstat_bt">bluetooth</string>
+
+    <string name="enable_sms">Allow games via SMS</string>
+    <string name="enable_sms_summary">Only if you have unlimited texting!</string>
+
+    <string name="confirm_sms_title">Confirm SMS plan</string>
+    <string name="confirm_sms_expl">Warning: A single game over SMS
+    may cause 50 text messages to be sent. Unless you have an
+    unlimited plan these may cost you up to 50 cents each. How will
+    you deal with this? (If it isn\'t clear, you SHOULD NOT ENABLE this
+    feature unless you have unlimited texting.)</string>
+    <string name="confirm_sms_noclue">Leave disabled</string>
+    <string name="confirm_sms_unlimited">I have an unlimited texting plan</string>
+    <string name="confirm_sms_willpay">I will happily pay all charges</string>
 
 </resources>

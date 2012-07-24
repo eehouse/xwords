@@ -55,6 +55,7 @@
   <string name="key_connect_frequency">key_connect_frequency</string>
   <string name="key_notify_sound">key_notify_sound</string>
   <string name="key_notify_vibrate">key_notify_vibrate</string>
+  <string name="key_enable_sms">key_enable_sms</string>
   <string name="key_hide_intro">key_hide_intro</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_summary_field">key_summary_field</string>
@@ -236,6 +237,12 @@
     <item>@string/game_summary_field_language</item>
     <item>@string/game_summary_field_opponents</item>
     <item>@string/game_summary_field_state</item>
+  </string-array>
+
+  <string-array name="confirm_sms_reasons">
+    <item>@string/confirm_sms_noclue</item>
+    <item>@string/confirm_sms_unlimited</item>
+    <item>@string/confirm_sms_willpay</item>
   </string-array>
 
 </resources>

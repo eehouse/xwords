@@ -35,6 +35,7 @@ public class PrefsActivity extends PreferenceActivity
 
     private static final int REVERT_COLORS = 1;
     private static final int REVERT_ALL = 2;
+    public static final int CONFIRM_SMS = 3;
 
     private String m_keyLogging;
     private String m_smsToasting;
@@ -42,6 +43,7 @@ public class PrefsActivity extends PreferenceActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
+        Dialog dialog = null;
         DialogInterface.OnClickListener lstnr = null;
         int confirmID = 0;
 
@@ -89,10 +91,12 @@ public class PrefsActivity extends PreferenceActivity
                     }
                 };
             break;
+        case CONFIRM_SMS:
+            dialog = SMSCheckBoxPreference.onCreateDialog( this, id );
+            break;
         }
 
-        Dialog dialog = null;
-        if ( null != lstnr ) {
+        if ( null == dialog && null != lstnr ) {
             dialog = new AlertDialog.Builder( this )
                 .setTitle( R.string.query_title )
                 .setMessage( confirmID )
@@ -145,6 +149,7 @@ public class PrefsActivity extends PreferenceActivity
             unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    @Override
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
         if ( key.equals( m_keyLogging ) ) {

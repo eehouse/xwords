@@ -56,3 +56,5 @@ XWListItem.java
 XWListPreference.java
 MultiService.java
 ConnStatusHandler.java
+SMSCheckBoxPreference.java
+XWPrefs.java

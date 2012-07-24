@@ -26,6 +26,11 @@ import android.preference.PreferenceManager;
 
 public class XWPrefs {
 
+    public static boolean getSMSEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_sms, false );
+    }
+
     public static boolean getPrefsBoolean( Context context, int keyID,
                                            boolean defaultValue )
     {

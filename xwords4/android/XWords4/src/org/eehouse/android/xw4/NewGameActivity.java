@@ -61,6 +61,7 @@ public class NewGameActivity extends XWActivity {
 
     private boolean m_showsOn;
     private boolean m_nameForBT;
+    private boolean m_firingPrefs = false;
     private int m_chosen;
     private int m_lang = 0;
     private long m_newRowID = -1;
@@ -133,6 +134,16 @@ public class NewGameActivity extends XWActivity {
             m_remoteDev = bundle.getString( SAVE_REMOTEGAME );
             m_gameID = bundle.getInt( SAVE_GAMEID );
             m_nameForBT = bundle.getBoolean( SAVE_NAMEFOR );
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged( boolean hasFocus )
+    {
+        super.onWindowFocusChanged( hasFocus );
+        if ( hasFocus && m_firingPrefs ) {
+            m_firingPrefs = false;
+            checkEnableSMS();
         }
     }
 
@@ -419,7 +430,7 @@ public class NewGameActivity extends XWActivity {
     private void checkEnableSMS()
     { 
         if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS(this) ) {
-            boolean enabled = true; // is the phone on
+            boolean enabled = XWPrefs.getSMSEnabled( this );
             findViewById( R.id.sms_separator ).setVisibility( View.VISIBLE );
 
             findViewById( R.id.sms_disabled ).
@@ -447,8 +458,9 @@ public class NewGameActivity extends XWActivity {
                 button = (Button)findViewById( R.id.newgame_enable_sms );
                 button.setOnClickListener( new View.OnClickListener() {
                         @Override
-                            public void onClick( View v ) {
-                            Utils.notImpl( NewGameActivity.this );
+                        public void onClick( View v ) {
+                            m_firingPrefs = true;
+                            Utils.launchSettings( NewGameActivity.this );
                         }
                     } );
             }
