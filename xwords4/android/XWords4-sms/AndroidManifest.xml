@@ -81,15 +81,14 @@
     <activity android:name="PrefsActivity"
               android:label="@string/title_prefs"
               android:screenOrientation="sensor"
-              >
-    </activity>
+              android:configChanges="keyboardHidden|orientation"
+              />
 
     <activity android:name="BoardActivity"
               android:theme="@android:style/Theme.Light"
               android:screenOrientation="portrait"
               android:configChanges="keyboardHidden"
-              >
-    </activity>
+              />
 
     <activity android:name="LookupActivity"
               android:configChanges="keyboardHidden|orientation"
