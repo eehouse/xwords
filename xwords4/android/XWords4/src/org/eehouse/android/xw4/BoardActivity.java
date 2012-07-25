@@ -1640,6 +1640,7 @@ public class BoardActivity extends XWActivity
                 }
 
                 if ( null != m_xport ) {
+                    warnIfNoTransport();
                     trySendChats();
                     removeNotifications();
                     m_xport.tickle( m_connType );
@@ -1803,6 +1804,17 @@ public class BoardActivity extends XWActivity
         }
     }
 
+    private void warnIfNoTransport()
+    {
+        switch( m_connType ) {
+        case COMMS_CONN_SMS:
+            if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( this ) ) {
+                showOKOnlyDialog( R.string.warn_sms_disabled );
+            }
+            break;
+        }
+    }
+    
     private void trySendChats()
     {
         if ( null != m_jniThread ) {

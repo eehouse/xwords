@@ -57,7 +57,7 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
     public void setChecked( boolean checked )
     {
         if ( !checked || !m_attached ) {
-            super.setChecked( false );
+            super_setChecked( checked );
         } else {
             m_activity.showDialog( PrefsActivity.CONFIRM_SMS );
         }
