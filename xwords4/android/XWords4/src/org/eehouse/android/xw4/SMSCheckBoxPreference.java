@@ -32,22 +32,22 @@ import android.widget.Spinner;
 
 public class SMSCheckBoxPreference extends CheckBoxPreference {
 
-    private PrefsActivity m_activity;
+    private Context m_context;
     private boolean m_attached = false;
-    protected static SMSCheckBoxPreference s_this = null;
+    private static SMSCheckBoxPreference s_this = null;
 
     public SMSCheckBoxPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
+        m_context = context;
         s_this = this;
-        m_activity = (PrefsActivity)context;
     }
 
     @Override
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
-        if ( !XWApp.SMSSUPPORTED || !Utils.deviceSupportsSMS( m_activity ) ) {
+        if ( !XWApp.SMSSUPPORTED || !Utils.deviceSupportsSMS( m_context ) ) {
             setEnabled( false );
         }
         m_attached = true;
@@ -56,10 +56,11 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
     @Override
     public void setChecked( boolean checked )
     {
-        if ( !checked || !m_attached ) {
-            super_setChecked( checked );
+        if ( checked && m_attached && m_context instanceof PrefsActivity ) {
+            PrefsActivity activity = (PrefsActivity)m_context;
+            activity.showDialog( PrefsActivity.CONFIRM_SMS );
         } else {
-            m_activity.showDialog( PrefsActivity.CONFIRM_SMS );
+            super_setChecked( checked );
         }
     }
 
