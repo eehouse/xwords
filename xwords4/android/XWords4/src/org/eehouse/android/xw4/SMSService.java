@@ -132,12 +132,18 @@ public class SMSService extends Service {
     public static int sendPacket( Context context, String phone, 
                                   int gameID, byte[] binmsg )
     {
-        Intent intent = getIntentTo( context, SEND );
-        intent.putExtra( PHONE, phone );
-        intent.putExtra( GAMEID, gameID );
-        intent.putExtra( BINBUFFER, binmsg );
-        context.startService( intent );
-        return binmsg.length;
+        int nSent = -1;
+        if ( XWPrefs.getSMSEnabled( context ) ) {
+            Intent intent = getIntentTo( context, SEND );
+            intent.putExtra( PHONE, phone );
+            intent.putExtra( GAMEID, gameID );
+            intent.putExtra( BINBUFFER, binmsg );
+            context.startService( intent );
+            nSent = binmsg.length;
+        } else {
+            DbgUtils.logf( "sendPacket: dropping because SMS disabled" );
+        }
+        return nSent;
     }
 
     public static void gameDied( Context context, int gameID, String phone )
