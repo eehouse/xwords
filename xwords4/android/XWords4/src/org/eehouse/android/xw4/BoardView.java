@@ -321,8 +321,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
                 canvas.drawBitmap( s_bitmap, 0, 0, m_drawPaint );
-                ConnStatusHandler.draw( canvas, getResources(), 0, 0,
-                                        m_connType );
+                ConnStatusHandler.draw( m_context, canvas, getResources(), 
+                                        0, 0, m_connType );
             }
         }
     }

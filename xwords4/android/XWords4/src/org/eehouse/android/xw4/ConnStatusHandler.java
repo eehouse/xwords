@@ -253,7 +253,7 @@ public class ConnStatusHandler {
         showSuccess( handler, false );
     }
 
-    public static void draw( Canvas canvas, Resources res, 
+    public static void draw( Context context, Canvas canvas, Resources res, 
                              int offsetX, int offsetY, CommsConnType connType )
     {
         synchronized( s_lockObj ) {
@@ -282,16 +282,19 @@ public class ConnStatusHandler {
                 if ( CommsConnType.COMMS_CONN_NONE != connType ) {
                     int saveTop = rect.top;
                     SuccessRecord record;
+                    boolean enabled = connTypeEnabled( context, connType );
 
                     // Do the background coloring
                     rect.bottom = rect.top + quarterHeight * 2;
                     record = recordFor( connType, false );
-                    s_fillPaint.setColor( record.successNewer ? GREEN : RED );
+                    s_fillPaint.setColor( enabled && record.successNewer
+                                          ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
                     rect.top = rect.bottom;
                     rect.bottom = rect.top + quarterHeight * 2;
                     record = recordFor( connType, true );
-                    s_fillPaint.setColor( record.successNewer ? GREEN : RED );
+                    s_fillPaint.setColor( enabled && record.successNewer
+                                          ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
 
                     // now the icons
@@ -458,5 +461,16 @@ public class ConnStatusHandler {
             s_needsSave = false;
         }
     }
-
+    
+    private static boolean connTypeEnabled( Context context,
+                                            CommsConnType connType )
+    {
+        boolean result = true;
+        switch( connType ) {
+        case COMMS_CONN_SMS:
+            result = XWApp.SMSSUPPORTED && XWPrefs.getSMSEnabled( context );
+            break;
+        }
+        return result;
+    }
 }
