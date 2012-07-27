@@ -49,6 +49,8 @@ typedef struct LaunchParams {
     CurGameInfo gi;
     PlayerDicts dicts;
     char* fileName;
+    char* dbFileName;
+    XP_U32 dbFileID;
     char* pipe;
     char* nbs;
     char* bonusFile;

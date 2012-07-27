@@ -36,6 +36,7 @@
 #include <syslog.h>
 #include <stdarg.h>
 #include <linux/un.h>
+#include <sqlite3.h>
 
 #ifdef XWFEATURE_BLUETOOTH
 # include <bluetooth/bluetooth.h>
@@ -103,6 +104,42 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
 
     return stream;
 } /* streamFromFile */
+
+XWStreamCtxt*
+streamFromDB( CommonGlobals* cGlobals, void* closure )
+{
+    XWStreamCtxt* stream = NULL;
+    const LaunchParams* params = cGlobals->params;
+    const char* name = params->dbFileName;
+    XP_U32 rowid = params->dbFileID;
+    sqlite3* ppDb;
+    int res = sqlite3_open( name, &ppDb );
+    if ( SQLITE_OK == res ) {
+        sqlite3_blob* ppBlob;
+        res = sqlite3_blob_open( ppDb, "main", "summaries", "SNAPSHOT", rowid,
+                               0 /*flags*/, &ppBlob ); 
+        if ( SQLITE_OK == res ) {
+            int size = sqlite3_blob_bytes( ppBlob );
+            XP_U8 buf[size];
+            res = sqlite3_blob_read( ppBlob, buf, size, 0 );
+            if ( SQLITE_OK == res ) {
+                stream = mem_stream_make( MPPARM(params->util->mpool) params->vtMgr, 
+                                          closure, CHANNEL_NONE, NULL );
+                stream_putBytes( stream, buf, size );
+            }
+        }
+        sqlite3_blob_close( ppBlob );
+    }
+
+    if ( SQLITE_OK != res ) {
+        XP_LOGF( "%s: error from sqlite: %s", __func__,
+                 sqlite3_errmsg(ppDb) );
+    }
+
+    (void)sqlite3_close( ppDb );
+
+    return stream;
+}
 
 void
 writeToFile( XWStreamCtxt* stream, void* closure )
@@ -414,6 +451,8 @@ typedef enum {
     ,CMD_SEED
     ,CMD_GAMESEED
     ,CMD_GAMEFILE
+    ,CMD_GAMEDB_FILE
+    ,CMD_GAMEDB_ID
     ,CMD_NOMMAP
     ,CMD_PRINTHISORY
     ,CMD_SKIPWARNINGS
@@ -501,6 +540,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SEED, true, "seed", "random seed" }
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
+    ,{ CMD_GAMEDB_FILE, true, "game-db-file", "sqlite3 file, android format, holding game" }
+    ,{ CMD_GAMEDB_ID, true, "game-db-id", "id of row of game we want (defaults to first)" }
     ,{ CMD_NOMMAP, false, "no-mmap", "copy dicts to memory rather than mmap them" }
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
     ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
@@ -1452,6 +1493,11 @@ main( int argc, char** argv )
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;
             break;
+        case CMD_GAMEDB_FILE:
+            mainParams.dbFileName = optarg;
+        case CMD_GAMEDB_ID:
+            mainParams.dbFileID = atoi(optarg);
+            break;
         case CMD_NOMMAP:
             mainParams.useMmap = false;
             break;
@@ -1675,7 +1721,7 @@ main( int argc, char** argv )
     /* sanity checks */
     totalPlayerCount = mainParams.nLocalPlayers 
         + mainParams.info.serverInfo.nRemotePlayers;
-    if ( !mainParams.fileName ) {
+    if ( !mainParams.fileName && !mainParams.dbFileName ) {
         if ( (totalPlayerCount < 1) || 
              (totalPlayerCount > MAX_NUM_PLAYERS) ) {
             mainParams.needsNewGame = XP_TRUE;

@@ -189,7 +189,7 @@ OBJ = \
 	$(PLATFORM)/linuxutl.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
-LIBS = -lm -luuid $(GPROFFLAG)
+LIBS = -lm -luuid -lsqlite3 $(GPROFFLAG)
 # Turn this off for now.  I apparently have a memory problem, but it
 # doesn't make the app unusable for testing while crash on boot does.
 # LIBS += -lmcheck

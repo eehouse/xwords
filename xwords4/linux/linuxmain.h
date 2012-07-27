@@ -64,6 +64,7 @@ void catFinalScores( const CommonGlobals* cGlobals );
 XP_Bool file_exists( const char* fileName );
 XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name, 
                               void* closure );
+XWStreamCtxt* streamFromDB( CommonGlobals* cGlobals, void* closure );
 void writeToFile( XWStreamCtxt* stream, void* closure );
 
 int blocking_read( int fd, unsigned char* buf, int len );

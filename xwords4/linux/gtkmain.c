@@ -417,9 +417,12 @@ createOrLoadObjects( GtkAppGlobals* globals )
     };
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
-
         stream = streamFromFile( &globals->cGlobals, params->fileName, globals );
+    } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
+        stream = streamFromDB( &globals->cGlobals, globals );
+    }
 
+    if ( !!stream ) {
         opened = game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
                                       &globals->cGlobals.params->gi, 
                                       params->dict, &params->dicts, params->util, 

@@ -1770,18 +1770,22 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     } else if ( !!params->nbs && !!params->fileName ) {
         do_nbs_then_close( &g_globals.cGlobals, &procs );
     } else {
-
+        XP_Bool opened = XP_FALSE;
         initCurses( &g_globals );
         getmaxyx( g_globals.boardWin, height, width );
 
         g_globals.draw = (struct CursesDrawCtx*)
             cursesDrawCtxtMake( g_globals.boardWin );
 
+        XWStreamCtxt* stream = NULL;
         if ( !!params->fileName && file_exists( params->fileName ) ) {
-            XWStreamCtxt* stream;
             stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
                                      &g_globals );
+        } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
+            stream = streamFromDB( &g_globals.cGlobals, &g_globals );
+        }
 
+        if ( !!stream ) {
             (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
                                        &params->gi, params->dict, &params->dicts,
                                        params->util, 
@@ -1789,11 +1793,12 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                                        &g_globals.cGlobals.cp, &procs );
 
             stream_destroy( stream );
-
             if ( !isServer && params->gi.serverRole == SERVER_ISSERVER ) {
                 isServer = XP_TRUE;
             }
-        } else {
+            opened = XP_TRUE;
+        }
+        if ( !opened ) {
             game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
                               params->util, (DrawCtx*)g_globals.draw,
                               &g_globals.cGlobals.cp, &procs, params->gameSeed );
