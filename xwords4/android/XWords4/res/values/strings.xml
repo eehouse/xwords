@@ -1986,8 +1986,9 @@
     <string name="confirm_sms_unlimited">I have an unlimited texting plan</string>
     <string name="confirm_sms_willpay">I will happily pay all charges</string>
 
-    <string name="warn_sms_disabled">SMS is currently disabled, so no
-    moves will be sent for this game.  (If you want to enable SMS, go
-    to Settings->Network game settings.) </string>
+    <string name="warn_sms_disabled">Play via SMS is currently
+    disabled, so no moves will be sent for this game.  (If you want to
+    enable play via SMS, go to Settings->Network game settings.)
+    </string>
 
 </resources>
