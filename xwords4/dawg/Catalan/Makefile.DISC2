@@ -39,7 +39,7 @@ LANG_SPECIAL_INFO = \
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Catalan/DISC2-xwords.txt.gz
+SOURCEDICT ?= $(XWDICTPATH)/Catalan/DISC2-LP.txt.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< \
