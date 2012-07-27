@@ -144,7 +144,7 @@ curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx),
     return XP_TRUE;
 } /* curses_draw_measureRemText */
 
-static XP_Bool
+static void
 curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
                          const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft,
                          XP_Bool focussed )
@@ -157,7 +157,6 @@ curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
     if ( focussed ) {
         cursesHiliteRect( dctx->boardWin, rInner );
     }
-    return XP_TRUE;
 } /* curses_draw_drawRemText */
 #endif
 
