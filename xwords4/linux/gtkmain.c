@@ -418,8 +418,10 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
         stream = streamFromFile( &globals->cGlobals, params->fileName, globals );
+#ifdef USE_SQLITE
     } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
         stream = streamFromDB( &globals->cGlobals, globals );
+#endif
     }
 
     if ( !!stream ) {

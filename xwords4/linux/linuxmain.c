@@ -36,7 +36,9 @@
 #include <syslog.h>
 #include <stdarg.h>
 #include <linux/un.h>
-#include <sqlite3.h>
+#ifdef USE_SQLITE
+# include <sqlite3.h>
+#endif
 
 #ifdef XWFEATURE_BLUETOOTH
 # include <bluetooth/bluetooth.h>
@@ -105,6 +107,7 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
     return stream;
 } /* streamFromFile */
 
+#ifdef USE_SQLITE
 XWStreamCtxt*
 streamFromDB( CommonGlobals* cGlobals, void* closure )
 {
@@ -140,6 +143,7 @@ streamFromDB( CommonGlobals* cGlobals, void* closure )
 
     return stream;
 }
+#endif
 
 void
 writeToFile( XWStreamCtxt* stream, void* closure )
@@ -451,8 +455,10 @@ typedef enum {
     ,CMD_SEED
     ,CMD_GAMESEED
     ,CMD_GAMEFILE
+#ifdef USE_SQLITE
     ,CMD_GAMEDB_FILE
     ,CMD_GAMEDB_ID
+#endif
     ,CMD_NOMMAP
     ,CMD_PRINTHISORY
     ,CMD_SKIPWARNINGS
@@ -540,8 +546,10 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SEED, true, "seed", "random seed" }
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
+#ifdef USE_SQLITE
     ,{ CMD_GAMEDB_FILE, true, "game-db-file", "sqlite3 file, android format, holding game" }
     ,{ CMD_GAMEDB_ID, true, "game-db-id", "id of row of game we want (defaults to first)" }
+#endif
     ,{ CMD_NOMMAP, false, "no-mmap", "copy dicts to memory rather than mmap them" }
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
     ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
@@ -1493,11 +1501,13 @@ main( int argc, char** argv )
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;
             break;
+#ifdef USE_SQLITE
         case CMD_GAMEDB_FILE:
             mainParams.dbFileName = optarg;
         case CMD_GAMEDB_ID:
             mainParams.dbFileID = atoi(optarg);
             break;
+#endif
         case CMD_NOMMAP:
             mainParams.useMmap = false;
             break;
@@ -1721,7 +1731,11 @@ main( int argc, char** argv )
     /* sanity checks */
     totalPlayerCount = mainParams.nLocalPlayers 
         + mainParams.info.serverInfo.nRemotePlayers;
-    if ( !mainParams.fileName && !mainParams.dbFileName ) {
+    if ( !mainParams.fileName
+#ifdef USE_SQLITE
+         && !mainParams.dbFileName 
+#endif
+         ) {
         if ( (totalPlayerCount < 1) || 
              (totalPlayerCount > MAX_NUM_PLAYERS) ) {
             mainParams.needsNewGame = XP_TRUE;

@@ -1781,8 +1781,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         if ( !!params->fileName && file_exists( params->fileName ) ) {
             stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
                                      &g_globals );
+#ifdef USE_SQLITE
         } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
             stream = streamFromDB( &g_globals.cGlobals, &g_globals );
+#endif
         }
 
         if ( !!stream ) {

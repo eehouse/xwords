@@ -49,8 +49,10 @@ typedef struct LaunchParams {
     CurGameInfo gi;
     PlayerDicts dicts;
     char* fileName;
+#ifdef USE_SQLITE
     char* dbFileName;
     XP_U32 dbFileID;
+#endif
     char* pipe;
     char* nbs;
     char* bonusFile;

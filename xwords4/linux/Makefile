@@ -51,6 +51,7 @@ endif
 
 SVN_REV ?= "$(shell ../scripts/gitversion.sh)"
 SVNDEF = -D'SVN_REV=$(SVN_REV)'
+USE_SQLITE = 1
 
 ifdef CURSES_ONLY
 DO_GTK =
@@ -99,6 +100,8 @@ DEFINES += -DHASH_STREAM
 ### Enable zero or one of these two ###
 #DEFINES += -DXWFEATURE_TRAYUNDO_ALL
 DEFINES += -DXWFEATURE_TRAYUNDO_ONE
+# DEFINES += -DXWFEATURE_BONUSALL
+# DEFINES += -DXWFEATURE_BONUSALLHINT
 
 # MAX_ROWS controls STREAM_VERS_BIGBOARD and with it move hashing
 DEFINES += -DMAX_ROWS=32
@@ -189,7 +192,11 @@ OBJ = \
 	$(PLATFORM)/linuxutl.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
-LIBS = -lm -luuid -lsqlite3 $(GPROFFLAG)
+LIBS = -lm -luuid $(GPROFFLAG)
+ifdef USE_SQLITE
+LIBS += -lsqlite3
+DEFINES += -DUSE_SQLITE
+endif
 # Turn this off for now.  I apparently have a memory problem, but it
 # doesn't make the app unusable for testing while crash on boot does.
 # LIBS += -lmcheck
