@@ -1799,9 +1799,21 @@ board_requestHint( BoardCtxt* board,
                 }
             }
 #endif
+#ifdef XWFEATURE_BONUSALL
+            XP_U16 allTilesBonus = 0;
+# ifdef XWFEATURE_BONUSALLHINT
+            if ( 0 == pti->dividerLoc ) {
+                allTilesBonus = server_figureFinishBonus( board->server, 
+                                                          selPlayer );
+            }
+# endif
+#endif
             searchComplete = 
                 engine_findMove( engine, model, selPlayer,
                                  tiles, nTiles, usePrev,
+#ifdef XWFEATURE_BONUSALL
+                                 allTilesBonus, 
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
                                  lp, useTileLimits,
 #endif

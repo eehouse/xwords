@@ -126,6 +126,10 @@ void server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
 
 void server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream );
 
+#ifdef XWFEATURE_BONUSALL
+XP_U16 server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn );
+#endif
+
 #ifdef CPLUS
 }
 #endif

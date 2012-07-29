@@ -51,6 +51,9 @@ void engine_destroy( EngineCtxt* ctxt );
 XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, 
                          XP_U16 turn, const Tile* tiles, 
                          XP_U16 nTiles, XP_Bool usePrev,
+#ifdef XWFEATURE_BONUSALL
+                         XP_U16 allTilesBonus, 
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
                          const BdHintLimits* boardLimits,
                          XP_Bool useTileLimits,

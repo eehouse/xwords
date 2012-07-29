@@ -104,6 +104,9 @@ struct EngineCtxt {
     XP_U16 scoreCache[MAX_ROWS];
 
     XP_U16 nTilesMax;
+#ifdef XWFEATURE_BONUSALL
+    XP_U16 allTilesBonus;
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_U16 nTilesMin;
     XP_U16 nTilesMinUser, nTilesMaxUser;
@@ -242,11 +245,10 @@ static XP_Bool
 initTray( EngineCtxt* engine, const Tile* tiles, XP_U16 numTiles ) 
 {
     XP_Bool result = numTiles > 0;
-    XP_U16 i;
 
     if ( result ) {
         XP_MEMSET( engine->rack, 0, sizeof(engine->rack) );
-        for ( i = 0; i < numTiles; ++i ) {
+        while ( 0 < numTiles-- ) {
             Tile tile = *tiles++;
             XP_ASSERT( tile < MAX_UNIQUE_TILES );
             ++engine->rack[tile];
@@ -380,6 +382,9 @@ XP_Bool
 engine_findMove( EngineCtxt* engine, const ModelCtxt* model, 
                  XP_U16 turn, const Tile* tiles,
                  XP_U16 nTiles, XP_Bool usePrev,
+#ifdef XWFEATURE_BONUSALL
+                 XP_U16 allTilesBonus,
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
                  const BdHintLimits* searchLimits,
                  XP_Bool useTileLimits,
@@ -389,7 +394,10 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
     XP_Bool result = XP_TRUE;
     XP_U16 star_row;
 
-    engine->nTilesMax = MAX_TRAY_TILES;
+    engine->nTilesMax = XP_MIN( MAX_TRAY_TILES, nTiles );
+#ifdef XWFEATURE_BONUSALL
+    engine->allTilesBonus = allTilesBonus;
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
     if ( useTileLimits ) {
         /* We'll want to use the numbers we've been using already unless
@@ -1092,7 +1100,13 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
                                  &posmove->moveInfo,
                                  engine, (XWStreamCtxt*)NULL,
                                  (WordNotifierInfo*)NULL );
-
+#ifdef XWFEATURE_BONUSALL
+        if ( 0 != engine->allTilesBonus && 0 == engine->nTilesMax ) {
+            XP_LOGF( "%s: adding bonus: %d becoming %d", __func__, score ,
+                     score + engine->allTilesBonus );
+            score += engine->allTilesBonus;
+        }
+#endif
         /* First, check that the score is even what we're interested in.  If
            it is, then go to the expense of filling in a PossibleMove to be
            compared in full */

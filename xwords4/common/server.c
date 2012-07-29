@@ -811,11 +811,16 @@ makeRobotMove( ServerCtxt* server )
 
     if ( !forceTrade ) {
         tileSet = model_getPlayerTiles( model, turn );
-
+#ifdef XWFEATURE_BONUSALL
+        XP_U16 allTilesBonus = server_figureFinishBonus( server, turn );
+#endif
         XP_ASSERT( !!server_getEngineFor( server, turn ) );
         searchComplete = engine_findMove( server_getEngineFor( server, turn ),
                                           model, turn, tileSet->tiles, 
                                           tileSet->nTiles, XP_FALSE,
+#ifdef XWFEATURE_BONUSALL
+                                          allTilesBonus, 
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
                                           NULL, XP_FALSE,
 #endif
@@ -2850,6 +2855,34 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
         stream_catString( stream, cntsBuf );
     }
 } /* server_formatRemainingTiles */
+
+#ifdef XWFEATURE_BONUSALL
+XP_U16
+server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn )
+{
+    XP_U16 result = 0;
+    if ( 0 == pool_getNTilesLeft( server->pool ) ) {
+        XP_U16 nOthers = server->vol.gi->nPlayers - 1;
+        if ( 0 < nOthers ) {
+            Tile tile;
+            const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+            XP_U16 counts[dict_numTileFaces( dict )];
+            XP_MEMSET( counts, 0, sizeof(counts) );
+            model_countAllTrayTiles( server->vol.model, counts, turn );
+            for ( tile = 0; tile < VSIZE(counts); ++tile ) {
+                XP_U16 count = counts[tile];
+                if ( 0 < count ) {
+                    result += count * dict_getTileValue( dict, tile );
+                }
+            }
+            /* Check this... */
+            result += result / nOthers;
+        }
+    }
+    // LOG_RETURNF( "%d", result );
+    return result;
+}
+#endif
 
 #define IMPOSSIBLY_LOW_SCORE -1000
 void
