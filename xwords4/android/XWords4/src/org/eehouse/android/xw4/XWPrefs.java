@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
  * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -29,6 +29,11 @@ public class XWPrefs {
     public static boolean getSMSEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_sms, false );
+    }
+
+    public static boolean getDebugEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_debug, false );
     }
 
     public static boolean getPrefsBoolean( Context context, int keyID,

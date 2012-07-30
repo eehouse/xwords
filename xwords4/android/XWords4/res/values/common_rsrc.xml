@@ -88,6 +88,7 @@
   <string name="key_na_lookup">key_na_lookup</string>
   <string name="key_na_browse">key_na_browse</string>
   <string name="key_na_values">key_na_values</string>
+  <string name="key_enable_debug">key_enable_debug</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
@@ -110,6 +111,8 @@
   <string name="relay_port">Relay game port</string>
   <string name="proxy_port">Relay device port</string>
   <string name="name_dict_fmt">%1$s/%2$s</string>
+  <string name="gamel_menu_storedb">Write DB to SD card</string>
+  <string name="gamel_menu_loaddb">Load DB from SD card</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 

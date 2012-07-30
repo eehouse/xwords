@@ -71,6 +71,11 @@ public class DBHelper extends SQLiteOpenHelper {
         super( context, DB_NAME, null, DB_VERSION );
     }
 
+    public static String getDBName()
+    {
+        return DB_NAME;
+    }
+
     private void onCreateSum( SQLiteDatabase db ) 
     {
         db.execSQL( "CREATE TABLE " + TABLE_NAME_SUM + " ("

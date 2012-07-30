@@ -275,6 +275,19 @@
   <PreferenceScreen android:title="@string/advanced"
                     android:summary="@string/advanced_summary"
                     >
+    <EditTextPreference android:title="@string/git_rev_title"
+			            android:summary="@string/git_rev"
+			            android:enabled="false"
+			            />
+    <CheckBoxPreference android:key="@string/key_logging_on"
+			            android:title="@string/logging_on"
+			            android:defaultValue="false"
+			            />
+    <CheckBoxPreference android:key="@string/key_enable_debug"
+                        android:title="Enable debug features"
+                        android:summary="Menuitems etc."
+                        android:defaultValue="false"
+                        />
     <org.eehouse.android.xw4.XWEditTextPreference 
 	   android:key="@string/key_relay_host"
 	   android:title="@string/relay_host"
@@ -303,14 +316,5 @@
 	   android:title="@string/dict_host"
 	   android:defaultValue="@string/dict_url"
 	   />
-
-    <CheckBoxPreference android:key="@string/key_logging_on"
-			            android:title="@string/logging_on"
-			            android:defaultValue="false"
-			            />
-    <EditTextPreference android:title="@string/git_rev_title"
-			            android:summary="@string/git_rev"
-			            android:enabled="false"
-			            />
   </PreferenceScreen>
 </PreferenceScreen>

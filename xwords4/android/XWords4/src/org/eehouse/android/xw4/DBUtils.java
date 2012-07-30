@@ -20,20 +20,26 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.Cursor;
 import android.net.Uri;
-import java.util.StringTokenizer;
-import android.content.ContentValues;
+import android.os.Environment;
+import android.text.TextUtils;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import android.text.TextUtils;
+import java.util.StringTokenizer;
 
 import junit.framework.Assert;
 
@@ -894,6 +900,36 @@ public class DBUtils {
         synchronized( s_listeners ) {
             Assert.assertTrue( s_listeners.contains( listener ) );
             s_listeners.remove( listener );
+        }
+    }
+
+    public static void saveDB( Context context )
+    {
+        String name = DBHelper.getDBName();
+        File srcDB = context.getDatabasePath( name );
+        if ( srcDB.exists() ) {
+            try {
+                File destDB = new File( Environment.getExternalStorageDirectory(),
+                                        name );
+                InputStream src = new FileInputStream(srcDB);
+                OutputStream dest = new FileOutputStream(destDB);
+                byte[] buffer = new byte[1024];
+                for ( ; ; ) {
+                    int nRead = src.read(buffer);
+                    if ( 0 > nRead ) {
+                        break;
+                    }
+                    dest.write( buffer, 0, nRead );
+                }
+
+                dest.flush();
+                dest.close();
+                src.close();
+            } catch( java.io.FileNotFoundException fnfe ) {
+                DbgUtils.logf( "in saveDB: %s", fnfe.toString() );
+            } catch( java.io.IOException ioe ) {
+                DbgUtils.logf( "in saveDB: %s", ioe.toString() );
+            }
         }
     }
 

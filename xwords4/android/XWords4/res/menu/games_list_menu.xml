@@ -32,5 +32,13 @@
           android:icon="@drawable/stat_notify_sync"
           />
 
+    <!-- Debug only menuitems -->
+    <item android:id="@+id/gamel_menu_storedb"
+          android:title="@string/gamel_menu_storedb"
+          />
+    <item android:id="@+id/gamel_menu_loaddb"
+          android:title="@string/gamel_menu_loaddb"
+          />
+
     <!-- ic_menu_archive.png -->
 </menu>

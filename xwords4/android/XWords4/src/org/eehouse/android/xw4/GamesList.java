@@ -71,6 +71,9 @@ public class GamesList extends XWListActivity
     private static final int DELETE_ALL_ACTION = 4;
     private static final int SYNC_MENU_ACTION = 5;
     private static final int NEW_FROM_ACTION = 6;
+    private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
+                                               , R.id.gamel_menu_storedb
+    };
 
     private static boolean s_firstShown = false;
 
@@ -525,11 +528,24 @@ public class GamesList extends XWListActivity
         return handleMenuItem( item.getItemId(), info.position );
     } // onContextItemSelected
 
+    @Override
     public boolean onCreateOptionsMenu( Menu menu )
     {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.games_list_menu, menu );
+
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
+    {
+        boolean visible = XWPrefs.getDebugEnabled( this ) ;
+        for ( int id : DEBUGITEMS ) {
+            MenuItem item = menu.findItem( id );
+            item.setVisible( visible );
+        }
+        return super.onPrepareOptionsMenu( menu );
     }
 
     public boolean onOptionsItemSelected( MenuItem item )
@@ -572,6 +588,13 @@ public class GamesList extends XWListActivity
 
         case R.id.gamel_menu_email:
             Utils.emailAuthor( this );
+            break;
+
+        case R.id.gamel_menu_loaddb:
+            Utils.notImpl(this);
+            break;
+        case R.id.gamel_menu_storedb:
+            DBUtils.saveDB( this );
             break;
 
         // case R.id.gamel_menu_view_hidden:
