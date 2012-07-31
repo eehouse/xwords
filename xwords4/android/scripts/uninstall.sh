@@ -2,7 +2,7 @@
 
 set -u -e
 
-VARIANT=xw4
+VARIANT=""
 
 usage() {
     [ $# -ge 1 ] && echo "Error: $1"
@@ -31,10 +31,19 @@ while [ $# -ge 1 ]; do
     shift
 done
 
+if [ -z $VARIANT ]; then
+    if [ -f AndroidManifest.xml ]; then
+        LINE=$(grep 'package="org.eehouse.android' AndroidManifest.xml)
+        VARIANT=$(echo $LINE | sed 's,.*android.\([^"]*\)",\1,')
+    fi
+fi
+
+[ -z $VARIANT ] && usage "Variant unknown"
+
 COUNT=0
 
 for DEVICE in $DEVICES; do
-    echo $DEVICE
+    echo "running: adb -s $DEVICE uninstall org.eehouse.android.${VARIANT}"
     adb -s $DEVICE uninstall org.eehouse.android.${VARIANT}
     COUNT=$((COUNT+1))
 done
