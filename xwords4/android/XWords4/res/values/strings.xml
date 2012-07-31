@@ -1979,15 +1979,17 @@
     <string name="enable_sms">Allow games via SMS</string>
     <string name="enable_sms_summary">Only if you have unlimited texting!</string>
 
-    <string name="confirm_sms_title">Confirm SMS plan</string>
-    <string name="confirm_sms_expl">Warning: A single game over SMS
-    may cause 50 text messages to be sent. Unless you have an
-    unlimited plan these may cost you up to 50 cents each. How will
-    you deal with this? (If it isn\'t clear, you SHOULD NOT ENABLE this
-    feature unless you have unlimited texting.)</string>
-    <string name="confirm_sms_noclue">Leave disabled</string>
-    <string name="confirm_sms_unlimited">I have an unlimited texting plan</string>
-    <string name="confirm_sms_willpay">I will happily pay all charges</string>
+    <string name="confirm_sms_title">Confirm your SMS plan</string>
+    <string name="confirm_sms_expl">Warning: This feature is meant for
+    phones with unlimited texting plans. Once you enable it dozens of
+    SMS (text) messages will be sent (invisibly) for each game
+    played. If you don\'t have an unlimited plan your carrier may
+    charge you for each and every one!\n\nShould play via SMS be
+    enabled?</string>
+    <string name="confirm_sms_prompt">Enable play via SMS?</string>
+    <string name="confirm_sms_leave">No: leave disabled</string>
+    <string name="confirm_sms_unlimited">Yes: I have unlimited texting</string>
+    <string name="confirm_sms_willpay">Yes: I\'ll pay all carrier charges</string>
 
     <string name="warn_sms_disabled">Play via SMS is currently
     disabled, so no moves will be sent for this game.  (If you want to
