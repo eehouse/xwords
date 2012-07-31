@@ -29,6 +29,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import java.io.ByteArrayInputStream;
@@ -468,9 +469,19 @@ public class ConnStatusHandler {
         boolean result = true;
         switch( connType ) {
         case COMMS_CONN_SMS:
-            result = XWApp.SMSSUPPORTED && XWPrefs.getSMSEnabled( context );
+            result = XWApp.SMSSUPPORTED && XWPrefs.getSMSEnabled( context )
+                && !getAirplaneModeOn( context );
             break;
         }
         return result;
     }
+
+    private static boolean getAirplaneModeOn( Context context ) 
+    {
+        boolean result =
+            0 != Settings.System.getInt( context.getContentResolver(),
+                                         Settings.System.AIRPLANE_MODE_ON, 0 );
+        return result;
+    }
+
 }
