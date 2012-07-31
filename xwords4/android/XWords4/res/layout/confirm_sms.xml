@@ -1,23 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
-              android:paddingLeft="8dp"
-              android:paddingRight="8dp"
-              >
-
-  <TextView android:layout_height="wrap_content"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
-            android:text="@string/confirm_sms_expl"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            >
+  <LinearLayout android:orientation="vertical"
+                android:layout_width="fill_parent" 
+                android:layout_height="fill_parent"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                >
 
-  <Spinner android:id="@+id/confirm_sms_reasons"
-           android:layout_width="fill_parent"
-           android:layout_height="wrap_content"
-           android:drawSelectorOnTop="true"
-           android:entries="@array/confirm_sms_reasons"
-           />
-</LinearLayout>
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:text="@string/confirm_sms_expl"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              />
+
+    <Spinner android:id="@+id/confirm_sms_reasons"
+             android:prompt="@string/confirm_sms_prompt"
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:drawSelectorOnTop="true"
+             android:entries="@array/confirm_sms_reasons"
+             />
+  </LinearLayout>
+</ScrollView>
