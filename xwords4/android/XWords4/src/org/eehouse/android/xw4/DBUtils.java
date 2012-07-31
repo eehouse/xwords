@@ -903,16 +903,28 @@ public class DBUtils {
         }
     }
 
+    public static void loadDB( Context context )
+    {
+        copyGameDB( context, false );
+    }
+
     public static void saveDB( Context context )
     {
+        copyGameDB( context, true );
+    }
+
+    private static void copyGameDB( Context context, boolean toSDCard )
+    {
         String name = DBHelper.getDBName();
-        File srcDB = context.getDatabasePath( name );
-        if ( srcDB.exists() ) {
-            try {
-                File destDB = new File( Environment.getExternalStorageDirectory(),
-                                        name );
-                InputStream src = new FileInputStream(srcDB);
-                OutputStream dest = new FileOutputStream(destDB);
+        File gamesDB = context.getDatabasePath( name );
+        File sdcardDB = new File( Environment.getExternalStorageDirectory(),
+                                  name );
+        try {
+            File srcDB = toSDCard? gamesDB : sdcardDB;
+            if ( srcDB.exists() ) {
+                FileInputStream src = new FileInputStream( srcDB );
+                FileOutputStream dest = 
+                    new FileOutputStream( toSDCard? sdcardDB : gamesDB );
                 byte[] buffer = new byte[1024];
                 for ( ; ; ) {
                     int nRead = src.read(buffer);
@@ -925,11 +937,11 @@ public class DBUtils {
                 dest.flush();
                 dest.close();
                 src.close();
-            } catch( java.io.FileNotFoundException fnfe ) {
-                DbgUtils.logf( "in saveDB: %s", fnfe.toString() );
-            } catch( java.io.IOException ioe ) {
-                DbgUtils.logf( "in saveDB: %s", ioe.toString() );
             }
+        } catch( java.io.FileNotFoundException fnfe ) {
+            DbgUtils.logf( "in saveDB: %s", fnfe.toString() );
+        } catch( java.io.IOException ioe ) {
+            DbgUtils.logf( "in saveDB: %s", ioe.toString() );
         }
     }
 

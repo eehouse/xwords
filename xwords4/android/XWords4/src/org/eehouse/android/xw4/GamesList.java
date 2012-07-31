@@ -591,7 +591,8 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_loaddb:
-            Utils.notImpl(this);
+            DBUtils.loadDB( this );
+            onContentChanged();
             break;
         case R.id.gamel_menu_storedb:
             DBUtils.saveDB( this );
