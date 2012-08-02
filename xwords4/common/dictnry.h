@@ -83,10 +83,8 @@ struct DictionaryCtxt {
     XP_LangCode langCode;
 
     XP_U8 nFaces;
-#ifdef NODE_CAN_4
     XP_U8 nodeSize;
     XP_Bool is_4_byte;
-#endif
 
     XP_S8 blankTile; /* negative means there's no known blank */
     XP_Bool isUTF8;
@@ -130,22 +128,13 @@ struct DictionaryCtxt {
 #define dict_edge_with_tile(d,e,t) (*((d)->func_dict_edge_with_tile))(d,e,t)
 #define dict_getShortName(d)      (*((d)->func_dict_getShortName))(d)
 
-#ifdef NODE_CAN_4
-# define ISACCEPTING(d,e) \
+#define ISACCEPTING(d,e) \
     ((ACCEPTINGMASK_NEW & ((array_edge_old*)(e))->bits) != 0)
-# define IS_LAST_EDGE(d,e) \
+#define IS_LAST_EDGE(d,e) \
     ((LASTEDGEMASK_NEW & ((array_edge_old*)(e))->bits) != 0)
-# define EDGETILE(d,edge) \
+#define EDGETILE(d,edge) \
     ((Tile)(((array_edge_old*)(edge))->bits & \
             ((d)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
-#else
-# define ISACCEPTING(d,e) \
-    ((ACCEPTINGMASK_OLD & ((array_edge_old*)(e))->bits) != 0)
-# define IS_LAST_EDGE(d,e) \
-    ((LASTEDGEMASK_OLD & ((array_edge_old*)(e))->bits) != 0)
-# define EDGETILE(d,edge) \
-    ((Tile)(((array_edge_old*)(edge))->bits & LETTERMASK_OLD))
-#endif
 
 XP_Bool dict_tilesAreSame( const DictionaryCtxt* dict1, 
                            const DictionaryCtxt* dict2 );

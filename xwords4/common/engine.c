@@ -716,11 +716,7 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
             if ( IS_LAST_EDGE(dict,candidateEdge ) ) {
                 break;
             }
-#ifdef NODE_CAN_4
             candidateEdge += dict->nodeSize;
-#else
-            candidateEdge += 3;
-#endif
         }
     }
  outer:
@@ -893,9 +889,7 @@ leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                  anchorCol, row );
     if ( !engine->returnNOW ) {
         if ( (limit > 0) && (edge != NULL) ) {
-#ifdef NODE_CAN_4
             XP_U16 nodeSize = engine->dict->nodeSize;
-#endif
             if ( engine->nTilesMax > 0 ) {
                 for ( ; ; ) {
                     XP_Bool isBlank;
@@ -911,12 +905,7 @@ leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                     if ( IS_LAST_EDGE( dict, edge ) || engine->returnNOW ) {
                         break;
                     }
-#ifdef NODE_CAN_4
                     edge += nodeSize;
-#else
-                    edge += 3;
-#endif
-
                 }
             }
         }
@@ -980,11 +969,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                 if ( IS_LAST_EDGE( dict, edge ) ) {
                     break;
                 }
-#ifdef NODE_CAN_4
                 edge += dict->nodeSize;
-#else
-                edge += 3;
-#endif
             }
         }
 

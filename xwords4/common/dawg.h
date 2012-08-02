@@ -66,9 +66,7 @@ typedef struct dawg_header {
     unsigned char charTableRecNum;
     unsigned char valTableRecNum;
     unsigned char reserved[3]; /* worst case this points to a new resource */
-#ifdef NODE_CAN_4
     unsigned short flags;
-#endif
 } dawg_header;
 
 /* Part of xwords3 dictionaries on PalmOS */

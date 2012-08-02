@@ -376,13 +376,8 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         CHECK_PTR( ptr, sizeof(offset), end );
         offset = n_ptr_tohl( &ptr );
         dictLength -= sizeof(offset);
-#ifdef NODE_CAN_4
         XP_ASSERT( dictLength % ctxt->super.nodeSize == 0 );
         *numEdges = dictLength / ctxt->super.nodeSize;
-#else
-        XP_ASSERT( dictLength % 3 == 0 );
-        *numEdges = dictLength / 3;
-#endif
 #ifdef DEBUG
         ctxt->super.numEdges = *numEdges;
 #endif
@@ -392,12 +387,8 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
 
     if ( dictLength > 0 ) {
         ctxt->super.base = (array_edge*)ptr;
-#ifdef NODE_CAN_4
         ctxt->super.topEdge = ctxt->super.base 
             + (offset * ctxt->super.nodeSize);
-#else
-        ctxt->super.topEdge = ctxt->super.base + (offset * 3);
-#endif
     } else {
         ctxt->super.topEdge = (array_edge*)NULL;
         ctxt->super.base = (array_edge*)NULL;

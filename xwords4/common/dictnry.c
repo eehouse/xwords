@@ -600,7 +600,6 @@ dict_super_edge_for_index( const DictionaryCtxt* dict, XP_U32 index )
         result = NULL;
     } else {
         XP_ASSERT( index < dict->numEdges );
-#ifdef NODE_CAN_4
         /* avoid long-multiplication lib call on Palm... */
         if ( dict->nodeSize == 3 ) {
             index += (index << 1);
@@ -608,9 +607,6 @@ dict_super_edge_for_index( const DictionaryCtxt* dict, XP_U32 index )
             XP_ASSERT( dict->nodeSize == 4 );
             index <<= 2;
         }
-#else
-        index += (index << 1);
-#endif
         result = &dict->base[index];
     }
     return result;
@@ -627,7 +623,6 @@ dict_super_index_from( const DictionaryCtxt* dict, array_edge* p_edge )
 {
     unsigned long result;
 
-#ifdef NODE_CAN_4
     array_edge_new* edge = (array_edge_new*)p_edge;
     result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
 
@@ -639,14 +634,6 @@ dict_super_index_from( const DictionaryCtxt* dict, array_edge* p_edge )
             result |= 0x00010000; /* using | instead of + saves 4 bytes */
         }
     }
-#else
-    array_edge_old* edge = (array_edge_old*)p_edge;
-    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
-    if ( (edge->bits & EXTRABITMASK_OLD) != 0 ) { 
-        result |= 0x00010000; /* using | instead of + saves 4 bytes */
-    }
-#endif
-
     return result;
 } /* dict_super_index_from */
 
@@ -673,11 +660,7 @@ dict_super_edge_with_tile( const DictionaryCtxt* dict, array_edge* from,
             from = NULL;
             break;
         }
-#ifdef NODE_CAN_4
         from += dict->nodeSize;
-#else
-        from += 3;
-#endif
     }
 
     return from;

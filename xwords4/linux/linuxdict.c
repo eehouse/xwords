@@ -252,7 +252,6 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         flags &= ~DICT_HEADER_MASK;
         XP_DEBUGF( "has header!" );
     }
-#ifdef NODE_CAN_4
     if ( flags == 0x0001 ) {
         dctx->super.nodeSize = 3;
         charSize = 1;
@@ -280,10 +279,6 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         formatOk = XP_FALSE;
         XP_ASSERT(0);
     }
-
-#else
-    XP_ASSERT( flags == 0x0001 );
-#endif
 
     if ( formatOk ) {
         XP_U8 numFaceBytes, numFaces;
@@ -351,17 +346,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         }
 
         if ( dictLength > 0 ) {
-# ifdef NODE_CAN_4
             numEdges = dictLength / dctx->super.nodeSize;
-# else
-            numEdges = dictLength / 3;
-# endif
 #ifdef DEBUG
-# ifdef NODE_CAN_4
             XP_ASSERT( (dictLength % dctx->super.nodeSize) == 0 );
-# else
-            XP_ASSERT( (dictLength % 3) == 0 );
-# endif
             dctx->super.numEdges = numEdges;
 #endif
             dctx->super.base = (array_edge*)ptr;
