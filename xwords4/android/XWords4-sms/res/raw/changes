@@ -5,10 +5,13 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 49 release</b>
-<ul>
 
-  <li>First release of new play-via-SMS feature (in separate app)</li>
+<b>CrossW-SMS 4.4 beta 49 release</b>
+
+<p>This is first release of this variant of Crosswords featuring the 
+ability to play via SMS</p>
+
+<ul>Other changes
 
   <li>Add colored arrows to net status icon to show traffic in and out</li>
 
@@ -21,6 +24,8 @@
 <p>Please remember that this is beta software.  Please let me know (at 
 eehouse@eehouse.org) what's broken and what features you'd most like 
 to see.</p>
+
+<p>(Website <a href="http://eehouse.org/xw4sms.html">here</a>.)</p>
 
 <p>Thanks!<br>--Eric</p>
 

@@ -2,4 +2,5 @@
 
 <resources>
   <string name="app_name">Crosswords</string>  
+  <string name="app_version">4.4 beta 49</string>
 </resources>
