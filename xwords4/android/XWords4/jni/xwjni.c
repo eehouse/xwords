@@ -934,7 +934,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
     jstring result = NULL;
     XWJNI_START();
     XP_ASSERT( !!state->game.model );
-    XP_UCHAR buf[64];
+    XP_UCHAR buf[64] = {0};
     XP_U16 buflen = sizeof(buf);
     if ( !model_getPlayersLastScore( state->game.model, player, buf, 
                                      &buflen ) ) {
