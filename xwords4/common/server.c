@@ -1945,6 +1945,7 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
 
         if ( !legal ) {
             XP_ASSERT( server->illegalWordInfo.nWords > 0 );
+            stream_putBits( stream, PLAYERNUM_NBITS, turn );
             bwiToStream( stream, &server->illegalWordInfo );
         }
     }
