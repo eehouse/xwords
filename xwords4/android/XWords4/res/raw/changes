@@ -8,8 +8,6 @@
 <b>Crosswords 4.4 beta 49 release</b>
 <ul>
 
-  <li>First release of new play-via-SMS feature (in separate app)</li>
-
   <li>Add colored arrows to net status icon to show traffic in and out</li>
 
   <li>Add debug features to copy games to and from sdcard</li>
