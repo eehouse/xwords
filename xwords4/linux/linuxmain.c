@@ -728,6 +728,10 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
         if ( 0 == connect( sock, (const struct sockaddr*)&to_sock, 
                            sizeof(to_sock) ) ) {
             cGlobals->socket = sock;
+
+            struct timeval tv = {0};
+            tv.tv_sec = 15;
+            setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv) );
         } else {
             close( sock );
             sock = -1;
