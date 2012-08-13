@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import android.content.res.AssetManager;
@@ -224,9 +223,6 @@ public class DictUtils {
         Assert.assertFalse( from.equals(to) );
         boolean success = false;
 
-        FileChannel channelIn = null;
-        FileChannel channelOut = null;
-
         try {
             FileInputStream fis = DictLoc.INTERNAL == from 
                 ? context.openFileInput( name )
@@ -236,24 +232,9 @@ public class DictUtils {
                 ? context.openFileOutput( name, Context.MODE_PRIVATE ) 
                 : new FileOutputStream( getDictFile( context, name, to ) );
 
-            channelIn = fis.getChannel();
-            channelOut = fos.getChannel();
-            channelIn.transferTo( 0, channelIn.size(), channelOut );
-            success = true;
-
+            success = DBUtils.copyFileStream( fos, fis );
         } catch ( java.io.FileNotFoundException fnfe ) {
             DbgUtils.logf( "%s", fnfe.toString() );
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "%s", ioe.toString() );
-        } finally {
-            try {
-                // Order should match assignment order to above in
-                // case one or both null
-                channelIn.close();
-                channelOut.close();
-            } catch ( Exception e ) {
-                DbgUtils.logf( "%s", e.toString() );
-            }
         }
         return success;
     } // copyDict

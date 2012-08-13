@@ -30,9 +30,10 @@ import android.os.Environment;
 import android.text.TextUtils;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -913,6 +914,30 @@ public class DBUtils {
         copyGameDB( context, true );
     }
 
+    public static boolean copyFileStream( FileOutputStream fos,
+                                          FileInputStream fis )
+    {
+        boolean success = false;
+        FileChannel channelSrc = null;
+        FileChannel channelDest = null;
+        try {
+            channelSrc = fis.getChannel();
+            channelDest = fos.getChannel();
+            channelSrc.transferTo( 0, channelSrc.size(), channelDest );
+            success = true;
+        } catch( java.io.IOException ioe ) {
+            DbgUtils.logf( "in saveDB: %s", ioe.toString() );
+        } finally {
+            try {
+                channelSrc.close();
+                channelDest.close();
+            } catch( java.io.IOException ioe ) {
+                DbgUtils.logf( "in saveDB: %s", ioe.toString() );
+            }
+        }
+        return success;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
@@ -925,23 +950,10 @@ public class DBUtils {
                 FileInputStream src = new FileInputStream( srcDB );
                 FileOutputStream dest = 
                     new FileOutputStream( toSDCard? sdcardDB : gamesDB );
-                byte[] buffer = new byte[1024];
-                for ( ; ; ) {
-                    int nRead = src.read(buffer);
-                    if ( 0 > nRead ) {
-                        break;
-                    }
-                    dest.write( buffer, 0, nRead );
-                }
-
-                dest.flush();
-                dest.close();
-                src.close();
+                copyFileStream( dest, src );
             }
         } catch( java.io.FileNotFoundException fnfe ) {
             DbgUtils.logf( "in saveDB: %s", fnfe.toString() );
-        } catch( java.io.IOException ioe ) {
-            DbgUtils.logf( "in saveDB: %s", ioe.toString() );
         }
     }
 
