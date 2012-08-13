@@ -1,6 +1,6 @@
-/* -*- fill-column: 78; compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -594,21 +594,23 @@ static XP_Bool
 lookup( const DictionaryCtxt* dict, array_edge* edge, Tile* buf, 
         XP_U16 tileIndex, XP_U16 length ) 
 {
+    XP_Bool result = XP_FALSE;
     while ( edge != NULL ) {
         Tile targetTile = buf[tileIndex];
         edge = dict_edge_with_tile( dict, edge, targetTile );
         if ( edge == NULL ) { /* tile not available out of this node */
-            return XP_FALSE;
+            break;
         } else {
             if ( ++tileIndex == length ) { /* is this the last tile? */
-                return ISACCEPTING(dict, edge);
+                result = ISACCEPTING(dict, edge);
+                break;
             } else {
                 edge = dict_follow( dict, edge );
                 continue;
             }
         }
     }
-    return XP_FALSE;
+    return result;
 } /* lookup */
 
 static void
