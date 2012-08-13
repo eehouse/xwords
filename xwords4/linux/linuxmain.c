@@ -403,7 +403,10 @@ do_nbs_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
 
     /* Do I need this?  Will reader get err if I close? */
     unsigned short len = 0;
-    ssize_t nwritten = write( fd, &len, sizeof(len) );
+#ifdef DEBUG
+    ssize_t nwritten = 
+#endif
+        write( fd, &len, sizeof(len) );
     XP_ASSERT( nwritten == sizeof(len) );
 
     close( fd );
@@ -1013,8 +1016,9 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), 
-                          XP_Bool isServer, CommsConnType conType,
-                          XP_U16 nMissing )
+                          XP_Bool XP_UNUSED_DBG(isServer), 
+                          CommsConnType XP_UNUSED_DBG(conType),
+                          XP_U16 XP_UNUSED_DBG(nMissing) )
 {
     XP_LOGF( "%s(isServer=%d, conType=%d, nMissing=%d)", 
              __func__, isServer, conType, nMissing );
