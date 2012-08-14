@@ -577,6 +577,10 @@ public class GamesList extends XWListActivity
                                  SYNC_MENU_ACTION );
             break;
 
+        case R.id.gamel_menu_checkupdates:
+            NetUtils.checkVersions( this );
+            break;
+
         case R.id.gamel_menu_prefs:
             intent = new Intent( this, PrefsActivity.class );
             startActivity( intent );

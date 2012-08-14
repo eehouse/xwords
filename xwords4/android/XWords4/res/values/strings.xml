@@ -1996,4 +1996,6 @@
     enable play via SMS, go to Settings->Network game settings.)
     </string>
 
+    <string name="gamel_menu_checkupdates">Check for updates</string>
+
 </resources>

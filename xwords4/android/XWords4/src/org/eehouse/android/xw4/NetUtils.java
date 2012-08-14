@@ -25,15 +25,27 @@ import java.net.InetAddress;
 import java.net.Socket;
 import android.content.Context;
 
-import java.io.InputStream;
-import java.io.DataInputStream;
-import java.io.OutputStream;
-import java.io.DataOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import android.content.pm.PackageManager;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
@@ -269,5 +281,42 @@ public class NetUtils {
             DbgUtils.logf( "sendToRelay: null msgs" );
         }
     } // sendToRelay
+
+
+    public static void checkVersions( Context context ) 
+    {
+        PackageManager pm = context.getPackageManager();
+        String packageName = context.getPackageName();
+        try { 
+            int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
+
+            // Create a new HttpClient and Post Header
+            HttpPost post = 
+                new HttpPost("http://www.eehouse.org/xw4/info.py/curVersion");
+
+            // Add your data
+            List<NameValuePair> nvp = new ArrayList<NameValuePair>();
+            nvp.add(new BasicNameValuePair( "name", packageName ) );
+            nvp.add( new BasicNameValuePair( "version", 
+                                             String.format( "%d", 
+                                                            versionCode ) ) );
+            post.setEntity( new UrlEncodedFormEntity(nvp) );
+
+            // Execute HTTP Post Request
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpResponse response = httpclient.execute(post);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                String result = EntityUtils.toString( entity );
+                DbgUtils.logf( "checkVersions: received: \"%s\"", result );
+            }
+        } catch ( PackageManager.NameNotFoundException nnfe ) {
+            DbgUtils.logf( "checkVersions: %s", nnfe.toString() );
+        } catch (ClientProtocolException cpe) {
+            DbgUtils.logf( "checkVersions: %s", cpe.toString() );
+        } catch (java.io.IOException ioe) {
+            DbgUtils.logf( "checkVersions: %s", ioe.toString() );
+        }
+    }
 
 }
