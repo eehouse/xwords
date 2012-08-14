@@ -282,6 +282,46 @@ public class NetUtils {
         }
     } // sendToRelay
 
+    private static HttpPost makePost( String proc )
+    {
+        return new HttpPost("http://www.eehouse.org/xw4/info.py/" + proc);
+    }
+
+    private static String runPost( HttpPost post, List<NameValuePair> nvp )
+    {
+        String result = null;
+        try {
+            post.setEntity( new UrlEncodedFormEntity(nvp) );
+
+            // Execute HTTP Post Request
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpResponse response = httpclient.execute(post);
+            HttpEntity entity = response.getEntity();
+            if ( null != entity ) {
+                result = EntityUtils.toString( entity );
+            }
+        } catch ( java.io.UnsupportedEncodingException uee ) {
+            DbgUtils.logf( "runPost: %s", uee.toString() );
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.logf( "runPost: %s", ioe.toString() );
+        }
+        return result;
+    }
+
+    private static String checkDictVersion( Context context, 
+                                            DictUtils.DictAndLoc dal, 
+                                            String sum )
+    {
+        int lang = DictLangCache.getDictLangCode( context, dal );
+        HttpPost post = makePost( "dictVersion" );
+        List<NameValuePair> nvp = new ArrayList<NameValuePair>();
+        nvp.add( new BasicNameValuePair( "name", dal.name ) );
+        nvp.add( new BasicNameValuePair( "lang", 
+                                         String.format( "%d", 
+                                                        lang ) ) );
+        nvp.add( new BasicNameValuePair( "md5sum", sum ) );
+        return runPost( post, nvp );
+    }
 
     public static void checkVersions( Context context ) 
     {
@@ -290,32 +330,31 @@ public class NetUtils {
         try { 
             int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
 
-            // Create a new HttpClient and Post Header
-            HttpPost post = 
-                new HttpPost("http://www.eehouse.org/xw4/info.py/curVersion");
+            HttpPost post = makePost( "curVersion" );
 
-            // Add your data
             List<NameValuePair> nvp = new ArrayList<NameValuePair>();
             nvp.add(new BasicNameValuePair( "name", packageName ) );
             nvp.add( new BasicNameValuePair( "version", 
                                              String.format( "%d", 
                                                             versionCode ) ) );
-            post.setEntity( new UrlEncodedFormEntity(nvp) );
-
-            // Execute HTTP Post Request
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpResponse response = httpclient.execute(post);
-            HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                String result = EntityUtils.toString( entity );
-                DbgUtils.logf( "checkVersions: received: \"%s\"", result );
-            }
+            String result = runPost( post, nvp );
+            DbgUtils.logf( "checkVersions: received: \"%s\"", result );
         } catch ( PackageManager.NameNotFoundException nnfe ) {
             DbgUtils.logf( "checkVersions: %s", nnfe.toString() );
-        } catch (ClientProtocolException cpe) {
-            DbgUtils.logf( "checkVersions: %s", cpe.toString() );
-        } catch (java.io.IOException ioe) {
-            DbgUtils.logf( "checkVersions: %s", ioe.toString() );
+        }
+
+        DictUtils.DictAndLoc[] list = DictUtils.dictList( context );
+        for ( DictUtils.DictAndLoc dal : list ) {
+            inner:
+            switch ( dal.loc ) {
+            case DOWNLOAD:
+            case EXTERNAL:
+            case INTERNAL:
+                String sum = DictUtils.getMD5SumFor( context, dal );
+                String url = checkDictVersion( context, dal, sum );
+                DbgUtils.logf( "checkVersions(%s)=>%s", dal.name, url );
+                break inner;          // switch
+            }
         }
     }
 

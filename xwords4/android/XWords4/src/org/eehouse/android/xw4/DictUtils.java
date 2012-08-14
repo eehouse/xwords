@@ -23,21 +23,22 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Environment;
+import android.text.Html;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import android.content.res.AssetManager;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.Lock;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
-import android.text.Html;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import junit.framework.Assert;
 
@@ -523,6 +524,60 @@ public class DictUtils {
 
         return state.equals( Environment.MEDIA_MOUNTED );
         // want this later? Environment.MEDIA_MOUNTED_READ_ONLY
+    }
+
+    private static String figureMD5Sum( Context context, DictAndLoc dandl )
+    {
+        byte[] digest = null;
+        String result = null;
+        String name = dandl.name;
+        File path = getDictFile( context, addDictExtn( name ), dandl.loc );
+        try {
+            InputStream fis = new FileInputStream( path );
+            byte[] buffer = new byte[1024];
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            for ( ; ; ) {
+                int nRead = fis.read( buffer );
+                if ( 0 > nRead ) {
+                    break;
+                }
+                md.update( buffer, 0, nRead );
+            }
+            fis.close();
+
+            digest = md.digest();
+        } catch ( java.io.FileNotFoundException fnfe ) {
+            DbgUtils.logf( "figureMD5Sum: %s", fnfe.toString() );
+        } catch( java.security.NoSuchAlgorithmException nsae ) {
+            DbgUtils.logf( "figureMD5Sum: %s", nsae.toString() );
+        } catch( java.io.IOException ioe ) {
+            DbgUtils.logf( "figureMD5Sum: %s", ioe.toString() );
+        }
+
+        if ( null != digest ) {
+            final char[] hexArray = {'0','1','2','3','4','5','6','7','8','9',
+                                     'a','b','c','d','e','f'};
+            char[] chars = new char[digest.length * 2];
+            for ( int ii = 0; ii < digest.length; ii++ ) {
+                int byt = digest[ii] & 0xFF;
+                chars[ii * 2] = hexArray[byt >> 4];
+                chars[ii * 2 + 1] = hexArray[byt & 0x0F];
+            }
+            result = new String(chars);
+        }
+        return result;
+    } // figureMD5Sum
+
+    public static String getMD5SumFor( Context context, DictAndLoc dandl )
+    {
+        String sum = null; // DBUtils.getDictMD5Sum( context, dandl.name, 
+                           // dandl.loc.ordinal() );
+        if ( null == sum ) {
+            sum = figureMD5Sum( context, dandl );
+            // DBUtils.setDictMD5Sum( context, dandl.name, 
+            //                        dandl.loc.ordinal(), sum );
+        }
+        return sum;
     }
 
     private static File getSDDir( Context context )
