@@ -1997,9 +1997,9 @@
     </string>
 
     <string name="gamel_menu_checkupdates">Check for updates</string>
-    <string name="new_dict_avail">New Wordlist available</string>
-    <string name="new_dict_availf">%s has been updated</string>
-    <string name="new_app_availf">New app available</string>
-    <string name="new_app_avail">Click to download</string>
+    <string name="new_dict_avail">New wordlist available</string>
+    <string name="new_dict_availf">Tap to update %s</string>
+    <string name="new_app_availf">New version of %s</string>
+    <string name="new_app_avail">Tap to download</string>
 
 </resources>

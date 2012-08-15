@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import java.io.ByteArrayOutputStream;
@@ -320,12 +321,11 @@ public class NetUtils {
                                             String sum )
     {
         int lang = DictLangCache.getDictLangCode( context, dal );
+        String langStr = DictLangCache.getLangName( context, lang );
         HttpPost post = makePost( "dictVersion" );
         List<NameValuePair> nvp = new ArrayList<NameValuePair>();
         nvp.add( new BasicNameValuePair( "name", dal.name ) );
-        nvp.add( new BasicNameValuePair( "lang", 
-                                         String.format( "%d", 
-                                                        lang ) ) );
+        nvp.add( new BasicNameValuePair( "lang", langStr ) );
         nvp.add( new BasicNameValuePair( "md5sum", sum ) );
         return runPost( post, nvp );
     }
@@ -351,10 +351,12 @@ public class NetUtils {
                                                                 versionCode ) ) );
                 String url = runPost( post, nvp );
                 if ( null != url ) {
+                    ApplicationInfo ai = pm.getApplicationInfo( packageName, 0);
+                    String label = pm.getApplicationLabel( ai ).toString();
                     Intent intent = 
                         new Intent( Intent.ACTION_VIEW, Uri.parse(url) );
-                    String title = Utils.format( context, R.string.new_app_availf, 
-                                                 packageName );
+                    String title = 
+                        Utils.format( context, R.string.new_app_availf, label );
                     String body = context.getString( R.string.new_app_avail );
                     Utils.postNotification( context, intent, title, body,
                                             url.hashCode() );

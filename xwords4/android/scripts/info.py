@@ -68,45 +68,20 @@ def curVersion( req, name, version ):
         logging.debug( 'Error: bad name ' + name )
     return result
 
-# Order determined by language_names in
-# android/XWords4/res/values/common_rsrc.xml
-def langStr( lang ):
-    langs = ( '<unknown>'
-              ,'English'
-              ,'French'
-              ,'German'
-              ,'Turkish'
-              ,'Arabic'
-              ,'Spanish'
-              ,'Swedish'
-              ,'Polish'
-              ,'Danish'
-              ,'Italian'
-              ,'Dutch'
-              ,'Catalan'
-              ,'Portuguese'
-              ,''
-              ,'Russian'
-              ,''
-              ,'Czech'
-              ,'Greek'
-              ,'Slovak' )
-    return langs[int(lang)]
-
 # public
 def dictVersion( req, name, lang, md5sum ):
     result = ''
     if not name.endswith(k_suffix): name += k_suffix
     dictSums = getDictSums()
-    path = langStr(lang) + "/" + name
+    path = lang + "/" + name
     if not path in dictSums:
         sum = md5Checksum( dictSums, path )
         if sum:
             dictSums[path] = sum
             s_shelf['sums'] = dictSums
-    if path in dictSums and dictSums[path] != md5sum:
-        logging.debug( dictSums[path] + " vs " + md5sum )
-        result = k_urlbase + "and_wordlists/" + path
+    if path in dictSums:
+        if dictSums[path] != md5sum:
+            result = k_urlbase + "and_wordlists/" + path
     else:
         logging.debug( path + " not known" )
     s_shelf.close()
