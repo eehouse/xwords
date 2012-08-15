@@ -3,15 +3,14 @@
 # the client's version is up-to-date or with the newer version if it's
 # not.  May include md5 sums in liu of versions for .xwd files.
 
-import logging
+import logging, shelve, hashlib, sys
 
+k_suffix = '.xwd'
+
+s_shelf = None
+k_shelfFile = "/var/www/xw4/info_shelf"
 s_versions = { 'org.eehouse.android.xw4' : '42'
                ,'org.eehouse.android.xw4sms' : '41'
-               }
-
-s_dictSums = { 'Catalan/DISC2_2to9' : 'd02349fd4021f7a5a5dfd834dc4f2491'
-               ,'English/CSW12_2to8': '2314a99c1a6af2900db3aefcd2186060'
-               ,'English/CSW12_2to9': '0b4b1c49d58fb8149535a29b786b8638_x'
                }
 
 logging.basicConfig(level=logging.DEBUG
@@ -21,7 +20,29 @@ logging.basicConfig(level=logging.DEBUG
 #        ,filemode='w')
 
 # This seems to be required to prime the pump somehow.
-logging.debug( "loaded...." )
+# logging.debug( "loaded...." )
+
+def md5Checksum(sums, filePath):
+    if not filePath.endswith(k_suffix): filePath += k_suffix
+    if not filePath in sums:
+        file = open( "/var/www/and_wordlists/" + filePath, 'rb' )
+        md5 = hashlib.md5()
+        while True:
+            buffer = file.read(128)
+            if not buffer:  break
+            md5.update( buffer )
+        sums[filePath] = md5.hexdigest()
+        logging.debug( "figured sum for " + filePath )
+    return sums[filePath]
+
+def getDictSums():
+    global s_shelf
+    s_shelf = shelve.open(k_shelfFile)
+    if not 'sums' in s_shelf: s_shelf['sums'] = {}
+    if not 'count' in s_shelf: s_shelf['count'] = 0
+    s_shelf['count'] += 1
+    logging.debug( "Count now %d" % s_shelf['count'] )
+    return s_shelf['sums']
 
 # public
 def curVersion( req, name, version ):
@@ -64,12 +85,43 @@ def langStr( lang ):
 
 # public
 def dictVersion( req, name, lang, md5sum ):
-    global s_dictSums
     result = ''
+    if not name.endswith(k_suffix): name += k_suffix
+    dictSums = getDictSums()
     path = langStr(lang) + "/" + name
-    if path in s_dictSums:
-        if s_dictSums[path] != md5sum:
-            result = "http://eehouse.org/and_wordlists/" + path + ".xwd"
+    if not path in dictSums:
+        sum = md5Checksum( dictSums, path )
+        if sum:
+            dictSums[path] = sum
+            s_shelf['sums'] = dictSums
+    if path in dictSums and dictSums[path] != md5sum:
+        result = "http://eehouse.org/and_wordlists/" + path
     else:
         logging.debug( path + " not known" )
+    s_shelf.close()
     return result
+
+def clearShelf():
+    shelf = shelve.open(k_shelfFile)
+    shelf['sums'] = {}
+    shelf.close()
+
+def usage():
+    print "usage:", sys.argv[0], '--get-sums [lang/dict]* | --clear-shelf'
+
+def main():
+    arg = sys.argv[1]
+    if arg == '--clear-shelf':
+        clearShelf()
+    elif arg == '--get-sums':
+        dictSums = getDictSums()
+        for arg in sys.argv[2:]:
+            print arg, md5Checksum(dictSums, arg)
+        s_shelf['sums'] = dictSums
+        s_shelf.close()
+    else:
+        usage()
+
+##############################################################################
+if __name__ == '__main__':
+    main()
