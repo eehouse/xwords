@@ -145,6 +145,13 @@ public class Utils {
     public static void postNotification( Context context, Intent intent, 
                                          int titleID, String body, int id )
     {
+        String title = context.getString( titleID );
+        postNotification( context, intent, title, body, id );
+    }
+
+    public static void postNotification( Context context, Intent intent, 
+                                         String title, String body, int id )
+    {
         /* s_nextCode: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
            one way to avoid getting the same PendingIntent for similar
@@ -155,7 +162,6 @@ public class Utils {
             PendingIntent.getActivity( context, ++s_nextCode, intent, 
                                        PendingIntent.FLAG_ONE_SHOT );
 
-        String title = context.getString( titleID );
         Notification notification = 
             new Notification( R.drawable.icon48x48, title,
                               System.currentTimeMillis() );

@@ -20,22 +20,22 @@
 
 package org.eehouse.android.xw4;
 
-import javax.net.SocketFactory;
-import java.net.InetAddress;
-import java.net.Socket;
 import android.content.Context;
-
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import android.content.pm.PackageManager;
+import javax.net.SocketFactory;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -349,8 +349,16 @@ public class NetUtils {
                 nvp.add( new BasicNameValuePair( "version", 
                                                  String.format( "%d", 
                                                                 versionCode ) ) );
-                String result = runPost( post, nvp );
-                DbgUtils.logf( "checkVersions: received: \"%s\"", result );
+                String url = runPost( post, nvp );
+                if ( null != url ) {
+                    Intent intent = 
+                        new Intent( Intent.ACTION_VIEW, Uri.parse(url) );
+                    String title = Utils.format( context, R.string.new_app_availf, 
+                                                 packageName );
+                    String body = context.getString( R.string.new_app_avail );
+                    Utils.postNotification( context, intent, title, body,
+                                            url.hashCode() );
+                }
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.logf( "checkVersions: %s", nnfe.toString() );
             }
