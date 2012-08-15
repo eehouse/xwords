@@ -418,6 +418,8 @@ public class DictsActivity extends ExpandableListActivity
                 String name = intent.getStringExtra( DICT_NAME_EXTRA );
                 askStartDownload( lang, name );
             }
+
+            downloadNewDict( intent );
         }
     }
 
@@ -538,6 +540,20 @@ public class DictsActivity extends ExpandableListActivity
         return handled;
     }
 
+    private void downloadNewDict( Intent intent )
+    {
+        String url = intent.getStringExtra( NetUtils.NEW_DICT_URL );
+        int loci = intent.getIntExtra( NetUtils.NEW_DICT_LOC, 0 );
+        if ( 0 < loci ) {
+            DictUtils.DictLoc loc = DictUtils.DictLoc.values()[loci];
+            DbgUtils.logf( "downloadNewDict: got %s for %s", url,
+                           loc.toString() );
+
+            startDownload( url, DictUtils.DictLoc.EXTERNAL == loc );
+            finish();
+        }
+    }
+
     private void setDefault( int keyId )
     {
         XWListItem view = m_adapter.getSelChildView();
@@ -656,6 +672,17 @@ public class DictsActivity extends ExpandableListActivity
         }
     }
 
+    private void startDownload( String url, boolean toSD )
+    {
+        DictImportActivity.setUseSD( toSD );
+        try {
+            startActivity( mkDownloadIntent( this, url ) );
+        } catch ( android.content.ActivityNotFoundException anfe ) {
+            Toast.makeText( this, R.string.no_download_warning, 
+                            Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void startDownload( int lang, String name, boolean toSD )
     {
         DictImportActivity.setUseSD( toSD );
@@ -692,6 +719,14 @@ public class DictsActivity extends ExpandableListActivity
         CommonPrefs.setClosedLangs( this, asArray );
     }
 
+    private static Intent mkDownloadIntent( Context context, String dict_url )
+    {
+        Uri uri = Uri.parse( dict_url );
+        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        return intent;
+    }
+
     private static Intent mkDownloadIntent( Context context,
                                             int lang, String dict )
     {
@@ -702,10 +737,7 @@ public class DictsActivity extends ExpandableListActivity
         if ( null != dict ) {
             dict_url += "/" + dict + XWConstants.DICT_EXTN;
         }
-        Uri uri = Uri.parse( dict_url );
-        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-        return intent;
+        return mkDownloadIntent( context, dict_url );
     }
 
     public static void launchAndDownload( Activity activity, int lang, 

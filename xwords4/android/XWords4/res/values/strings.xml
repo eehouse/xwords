@@ -1997,5 +1997,7 @@
     </string>
 
     <string name="gamel_menu_checkupdates">Check for updates</string>
+    <string name="new_dict_avail">New Wordlist available</string>
+    <string name="new_dict_availf">%s has been updated</string>
 
 </resources>

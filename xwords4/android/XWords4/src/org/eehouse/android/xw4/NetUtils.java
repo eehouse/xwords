@@ -25,6 +25,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import android.content.Context;
 
+import android.content.Intent;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -61,6 +62,9 @@ public class NetUtils {
     public static byte PRX_DEVICE_GONE = 3;
     public static byte PRX_GET_MSGS = 4;
     public static byte PRX_PUT_MSGS = 5;
+
+    public static final String NEW_DICT_URL = "NEW_DICT_URL";
+    public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
     
     public static Socket makeProxySocket( Context context, 
                                           int timeoutMillis )
@@ -299,6 +303,9 @@ public class NetUtils {
             HttpEntity entity = response.getEntity();
             if ( null != entity ) {
                 result = EntityUtils.toString( entity );
+                if ( 0 == result.length() ) {
+                    result = null;
+                }
             }
         } catch ( java.io.UnsupportedEncodingException uee ) {
             DbgUtils.logf( "runPost: %s", uee.toString() );
@@ -327,33 +334,47 @@ public class NetUtils {
     {
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
-        try { 
-            int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
+        String installer = pm.getInstallerPackageName( packageName );
+        if ( "com.google.android.feedback".equals( installer ) 
+             || "com.android.vending".equals( installer ) ) {
+            DbgUtils.logf( "checkVersion; skipping market app" );
+        } else {
+            try { 
+                int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
 
-            HttpPost post = makePost( "curVersion" );
+                HttpPost post = makePost( "curVersion" );
 
-            List<NameValuePair> nvp = new ArrayList<NameValuePair>();
-            nvp.add(new BasicNameValuePair( "name", packageName ) );
-            nvp.add( new BasicNameValuePair( "version", 
-                                             String.format( "%d", 
-                                                            versionCode ) ) );
-            String result = runPost( post, nvp );
-            DbgUtils.logf( "checkVersions: received: \"%s\"", result );
-        } catch ( PackageManager.NameNotFoundException nnfe ) {
-            DbgUtils.logf( "checkVersions: %s", nnfe.toString() );
+                List<NameValuePair> nvp = new ArrayList<NameValuePair>();
+                nvp.add(new BasicNameValuePair( "name", packageName ) );
+                nvp.add( new BasicNameValuePair( "version", 
+                                                 String.format( "%d", 
+                                                                versionCode ) ) );
+                String result = runPost( post, nvp );
+                DbgUtils.logf( "checkVersions: received: \"%s\"", result );
+            } catch ( PackageManager.NameNotFoundException nnfe ) {
+                DbgUtils.logf( "checkVersions: %s", nnfe.toString() );
+            }
         }
 
         DictUtils.DictAndLoc[] list = DictUtils.dictList( context );
         for ( DictUtils.DictAndLoc dal : list ) {
-            inner:
             switch ( dal.loc ) {
-            case DOWNLOAD:
+                // case DOWNLOAD:
             case EXTERNAL:
             case INTERNAL:
                 String sum = DictUtils.getMD5SumFor( context, dal );
                 String url = checkDictVersion( context, dal, sum );
-                DbgUtils.logf( "checkVersions(%s)=>%s", dal.name, url );
-                break inner;          // switch
+                if ( null != url ) {
+                    Intent intent = new Intent( context, DictsActivity.class );
+                    intent.putExtra( NEW_DICT_URL, url );
+                    intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
+                    String body = 
+                        Utils.format( context, R.string.new_dict_availf,
+                                      dal.name );
+                    Utils.postNotification( context, intent, 
+                                            R.string.new_dict_avail, 
+                                            body, url.hashCode() );
+                }
             }
         }
     }
