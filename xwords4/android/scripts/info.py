@@ -6,12 +6,21 @@
 import logging, shelve, hashlib, sys
 
 k_suffix = '.xwd'
+k_filebase = "/var/www/"
+k_shelfFile = k_filebase + "xw4/info_shelf"
+k_urlbase = "http://eehouse.org/"
+k_versions = { 'org.eehouse.android.xw4': {
+        'version' : 42,
+        'url' : 'xw4/android/XWords4-release_android_beta_49.apk'
+        }
+               ,'org.eehouse.android.xw4sms' : {
+        'version' : 41,
+        'url' : 'xw4/android/sms/XWords4-release_android_beta_49-3-g8b6af3f.apk'
+        }
+               }
 
 s_shelf = None
-k_shelfFile = "/var/www/xw4/info_shelf"
-s_versions = { 'org.eehouse.android.xw4' : '42'
-               ,'org.eehouse.android.xw4sms' : '41'
-               }
+
 
 logging.basicConfig(level=logging.DEBUG
         ,format='%(asctime)s [[%(levelname)s]] %(message)s'
@@ -25,7 +34,7 @@ logging.basicConfig(level=logging.DEBUG
 def md5Checksum(sums, filePath):
     if not filePath.endswith(k_suffix): filePath += k_suffix
     if not filePath in sums:
-        file = open( "/var/www/and_wordlists/" + filePath, 'rb' )
+        file = open( k_filebase + "and_wordlists/" + filePath, 'rb' )
         md5 = hashlib.md5()
         while True:
             buffer = file.read(128)
@@ -46,17 +55,18 @@ def getDictSums():
 
 # public
 def curVersion( req, name, version ):
-    global s_versions
+    global k_versions
+    result = ""
     logging.debug( "version: " + version )
-    if name in s_versions:
-        if s_versions[name] == version:
-            logging.debug(name + " is up-to-date")
-            return ""
-        else:
+    if name in k_versions:
+        if k_versions[name]['version'] > int(version):
             logging.debug( name + " is old" )
-            return s_versions[name]
+            result = k_urlbase + k_versions[name]['url']
+        else:
+            logging.debug(name + " is up-to-date")
     else:
         logging.debug( 'Error: bad name ' + name )
+    return result
 
 # Order determined by language_names in
 # android/XWords4/res/values/common_rsrc.xml
@@ -95,7 +105,8 @@ def dictVersion( req, name, lang, md5sum ):
             dictSums[path] = sum
             s_shelf['sums'] = dictSums
     if path in dictSums and dictSums[path] != md5sum:
-        result = "http://eehouse.org/and_wordlists/" + path
+        logging.debug( dictSums[path] + " vs " + md5sum )
+        result = k_urlbase + "and_wordlists/" + path
     else:
         logging.debug( path + " not known" )
     s_shelf.close()
