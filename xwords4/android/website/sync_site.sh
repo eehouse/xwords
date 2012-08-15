@@ -7,6 +7,8 @@ USER=eehouse
 WEBROOT=/var/www/xw4sms
 ACTION=""
 
+EXCLUDES="--exclude=*~ --exclude=*# --exclude=$(basename $0)"
+
 usage() {
     [ $# -ge 1 ] && echo "ERROR: $1" 1>&2
     echo "usage: $0 --push|--pull \\"
@@ -46,25 +48,10 @@ while [ $# -ge 1 ]; do
 done
 
 cd $(dirname $0)
-FILES=""
-for FILE in $(find . -type f); do
-    # echo "file: $FILE"
-    case $FILE in
-        */$(basename ${0}))
-            ;;
-        *~)
-            ;;
-        *)
-            FILES="$FILES $FILE"
-            ;;
-    esac
-done
-
-echo $FILES
-#exit 0
 
 if [ "$ACTION" = push ]; then
-    rsync -avz --exclude=*~ --exclude=$(basename $0) . ${USER}@${HOST}:${WEBROOT}/
+    echo rsync -avz "$EXCLUDES" . ${USER}@${HOST}:${WEBROOT}/
+    rsync -avz "$EXCLUDES" . ${USER}@${HOST}:${WEBROOT}/
 elif [ "$ACTION" = pull ]; then
     rsync ${USER}@${HOST}: .
 else
