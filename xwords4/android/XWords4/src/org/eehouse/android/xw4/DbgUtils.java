@@ -82,6 +82,12 @@ public class DbgUtils {
         showf( context, context.getString( formatid ), args );
     } // showf
 
+    public static void loge( Exception exception )
+    {
+        logf( "Exception: %s", exception.toString() );
+        printStack();
+    }
+
     public static void printStack( StackTraceElement[] trace )
     {
         if ( s_doLog ) {
