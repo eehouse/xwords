@@ -36,7 +36,6 @@ import android.content.res.AssetManager;
 import java.util.concurrent.locks.Lock;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Random;
 import android.text.Html;
 
 import junit.framework.Assert;
@@ -49,7 +48,6 @@ public class GameUtils {
     public static final String INVITED = "invited";
     public static final String INTENT_KEY_ROWID = "rowid";
     public static final String INTENT_FORRESULT_ROWID = "forresult";
-    private static Random s_random = new Random();
 
     // Implements read-locks and write-locks per game.  A read lock is
     // obtainable when other read locks are granted but not when a
@@ -524,7 +522,6 @@ public class GameUtils {
                                              String room, String inviteID,
                                              int lang, int nPlayers )
     {
-        Random random = new Random();
         if ( null == inviteID ) {
             inviteID = makeRandomID();
         }
@@ -861,7 +858,7 @@ public class GameUtils {
     {
         int rint;
         do {
-            rint = s_random.nextInt();
+            rint = Utils.nextRandomInt();
         } while ( 0 == rint );
         DbgUtils.logf( "newGameID()=>%X", rint );
         return rint;

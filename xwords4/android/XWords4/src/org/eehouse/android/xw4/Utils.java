@@ -44,6 +44,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.HashMap;
+import java.util.Random;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -62,8 +63,14 @@ public class Utils {
         new HashMap<String,String>();
     private static int s_nextCode = 0; // keep PendingIntents unique
     private static Boolean s_hasSmallScreen = null;
+    private static Random s_random = new Random();
 
     private Utils() {}
+
+    public static int nextRandomInt()
+    {
+        return s_random.nextInt();
+    }
 
     public static boolean firstBootEver( Context context )
     {
