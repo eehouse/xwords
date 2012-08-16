@@ -214,8 +214,8 @@ public class GameUtils {
             addr = new CommsAddrRec();
             XwJNI.comms_getAddr( gamePtr, addr );
             if ( CommsAddrRec.CommsConnType.COMMS_CONN_NONE == addr.conType ) {
-                String relayName = CommonPrefs.getDefaultRelayHost( context );
-                int relayPort = CommonPrefs.getDefaultRelayPort( context );
+                String relayName = XWPrefs.getDefaultRelayHost( context );
+                int relayPort = XWPrefs.getDefaultRelayPort( context );
                 XwJNI.comms_getInitialAddr( addr, relayName, relayPort );
             }
         }
@@ -453,8 +453,8 @@ public class GameUtils {
                                        int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
-        String relayName = CommonPrefs.getDefaultRelayHost( context );
-        int relayPort = CommonPrefs.getDefaultRelayPort( context );
+        String relayName = XWPrefs.getDefaultRelayHost( context );
+        int relayPort = XWPrefs.getDefaultRelayPort( context );
         CommsAddrRec addr = new CommsAddrRec( relayName, relayPort );
         addr.ip_relay_invite = room;
 

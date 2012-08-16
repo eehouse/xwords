@@ -34,9 +34,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import javax.net.SocketFactory;
 
-
-import org.eehouse.android.xw4.jni.CommonPrefs;
-
 public class NetUtils {
 
     private static final int MAX_SEND = 1024;
@@ -55,8 +52,8 @@ public class NetUtils {
     {
         Socket socket = null;
         try {
-            int port = CommonPrefs.getDefaultProxyPort( context );
-            String host = CommonPrefs.getDefaultRelayHost( context );
+            int port = XWPrefs.getDefaultProxyPort( context );
+            String host = XWPrefs.getDefaultRelayHost( context );
 
             SocketFactory factory = SocketFactory.getDefault();
             InetAddress addr = InetAddress.getByName( host );

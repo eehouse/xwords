@@ -34,8 +34,6 @@ import android.widget.Toast;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.CommonPrefs;
-
 
 public class DlgDelegate {
 
@@ -180,7 +178,7 @@ public class DlgDelegate {
     public void showNotAgainDlgThen( int msgID, int prefsKey,
                                      int callbackID )
     {
-        boolean set = CommonPrefs.getPrefsBoolean( m_activity, prefsKey, false );
+        boolean set = XWPrefs.getPrefsBoolean( m_activity, prefsKey, false );
         if ( set || 0 != m_cbckID ) {
             // If it's set, do the action without bothering with the
             // dialog
@@ -364,8 +362,7 @@ public class DlgDelegate {
         DialogInterface.OnClickListener lstnr_n = 
             new DialogInterface.OnClickListener() {
                 public void onClick( DialogInterface dlg, int item ) {
-                    CommonPrefs.setPrefsBoolean( m_activity, m_prefsKey,
-                                                 true );
+                    XWPrefs.setPrefsBoolean( m_activity, m_prefsKey, true );
                     if ( SKIP_CALLBACK != m_cbckID ) {
                         m_clickCallback.
                             dlgButtonClicked( m_cbckID, 

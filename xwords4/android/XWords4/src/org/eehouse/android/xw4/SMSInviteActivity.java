@@ -46,8 +46,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.CommonPrefs;
-
 public class SMSInviteActivity extends InviteActivity {
 
     private static final int GET_CONTACT = 1;
@@ -281,7 +279,7 @@ public class SMSInviteActivity extends InviteActivity {
 
     private void getSavedState()
     {
-        String[] phones = CommonPrefs.getSMSPhones( this );
+        String[] phones = XWPrefs.getSMSPhones( this );
 
         m_phoneRecs = new ArrayList<PhoneRec>(phones.length);
         for ( String phone : phones ) {
@@ -298,7 +296,7 @@ public class SMSInviteActivity extends InviteActivity {
             PhoneRec rec = iter.next();
             phones[ii] = rec.m_phone;
         }
-        CommonPrefs.setSMSPhones( this, phones );
+        XWPrefs.setSMSPhones( this, phones );
 
         rebuildList( false );
     }

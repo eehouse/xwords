@@ -56,7 +56,6 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
-import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
@@ -383,7 +382,7 @@ public class DictsActivity extends ExpandableListActivity
         getBundledData( savedInstanceState );
 
         m_closedLangs = new HashSet<String>();
-        String[] closed = CommonPrefs.getClosedLangs( this );
+        String[] closed = XWPrefs.getClosedLangs( this );
         if ( null != closed ) {
             for ( String str : closed ) {
                 m_closedLangs.add( str );
@@ -716,7 +715,7 @@ public class DictsActivity extends ExpandableListActivity
     private void saveClosed()
     {
         String[] asArray = m_closedLangs.toArray( new String[m_closedLangs.size()] );
-        CommonPrefs.setClosedLangs( this, asArray );
+        XWPrefs.setClosedLangs( this, asArray );
     }
 
     private static Intent mkDownloadIntent( Context context, String dict_url )
@@ -730,7 +729,7 @@ public class DictsActivity extends ExpandableListActivity
     private static Intent mkDownloadIntent( Context context,
                                             int lang, String dict )
     {
-        String dict_url = CommonPrefs.getDefaultDictURL( context );
+        String dict_url = XWPrefs.getDefaultDictURL( context );
         if ( 0 != lang ) {
             dict_url += "/" + DictLangCache.getLangName( context, lang );
         }

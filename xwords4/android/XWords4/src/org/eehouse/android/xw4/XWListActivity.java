@@ -27,8 +27,6 @@ import android.os.Bundle;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.CommonPrefs;
-
 public class XWListActivity extends ListActivity 
     implements DlgDelegate.DlgClickNotify, MultiService.BTEventListener {
 

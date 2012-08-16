@@ -49,7 +49,6 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class SMSService extends Service {

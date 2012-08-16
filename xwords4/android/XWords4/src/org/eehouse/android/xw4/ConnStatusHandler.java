@@ -39,7 +39,6 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
 
@@ -324,8 +323,8 @@ public class ConnStatusHandler {
     public static void loadState( Context context )
     {
         synchronized( s_lockObj ) {
-            String as64 = CommonPrefs.getPrefsString( context, 
-                                                      R.string.key_connstat_data );
+            String as64 = XWPrefs.getPrefsString( context, 
+                                                  R.string.key_connstat_data );
             if ( null != as64 && 0 < as64.length() ) {
                 byte[] bytes = XwJNI.base64Decode( as64 );
                 try {
@@ -451,10 +450,8 @@ public class ConnStatusHandler {
                 out.flush();
                 String as64 = 
                     XwJNI.base64Encode( bas.toByteArray() );
-                CommonPrefs.
-                    setPrefsString( context, 
-                                    R.string.key_connstat_data, 
-                                    as64 );
+                XWPrefs.setPrefsString( context, R.string.key_connstat_data, 
+                                        as64 );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.logf( "loadState: %s", 
                                ioe.toString() );

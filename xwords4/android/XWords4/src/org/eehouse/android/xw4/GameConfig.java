@@ -489,8 +489,8 @@ public class GameConfig extends XWActivity
                     XwJNI.comms_getAddr( gamePtr, m_carOrig );
                     m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
                 } else if (DeviceRole.SERVER_STANDALONE != m_giOrig.serverRole){
-                    String relayName = CommonPrefs.getDefaultRelayHost( this );
-                    int relayPort = CommonPrefs.getDefaultRelayPort( this );
+                    String relayName = XWPrefs.getDefaultRelayHost( this );
+                    int relayPort = XWPrefs.getDefaultRelayPort( this );
                     XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
                 }
                 m_conType = m_carOrig.conType;

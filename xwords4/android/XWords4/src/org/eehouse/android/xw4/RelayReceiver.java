@@ -28,8 +28,6 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.widget.Toast;
 
-import org.eehouse.android.xw4.jni.CommonPrefs;
-
 public class RelayReceiver extends BroadcastReceiver {
 
     @Override
@@ -51,7 +49,7 @@ public class RelayReceiver extends BroadcastReceiver {
     public static void RestartTimer( Context context, boolean force )
     {
         RestartTimer( context, 
-                      1000 * CommonPrefs.getProxyInterval( context ), force );
+                      1000 * XWPrefs.getProxyInterval( context ), force );
     }
 
     public static void RestartTimer( Context context )

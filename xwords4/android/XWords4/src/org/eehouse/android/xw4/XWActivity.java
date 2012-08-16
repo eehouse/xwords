@@ -30,8 +30,6 @@ import android.view.View;
 import android.widget.TextView;
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.CommonPrefs;
-
 public class XWActivity extends Activity
     implements DlgDelegate.DlgClickNotify, MultiService.BTEventListener {
 

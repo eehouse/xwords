@@ -26,8 +26,6 @@ import android.net.Uri.Builder;
 import android.os.Bundle;
 import java.net.URLEncoder;
 
-import org.eehouse.android.xw4.jni.CommonPrefs;
-
 
 public class NetLaunchInfo {
     public String room;
@@ -85,8 +83,8 @@ public class NetLaunchInfo {
         Builder ub = new Builder();
         ub.scheme( "http" );
         String format = context.getString( R.string.game_url_pathf );
-        ub.path( String.format( format,
-                                CommonPrefs.getDefaultRedirHost( context ) ) );
+        ub.path( String.format( format, 
+                                XWPrefs.getDefaultRedirHost( context ) ) );
         
         ub.appendQueryParameter( "lang", String.format("%d", lang ) );
         ub.appendQueryParameter( "np", String.format( "%d", nPlayers ) );

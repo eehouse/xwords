@@ -34,7 +34,6 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 
 import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class RelayService extends Service {
 

@@ -463,7 +463,7 @@ public class BoardActivity extends XWActivity
         if ( null != m_exchCancelButton ) {
             m_exchCancelButton.setOnClickListener( this );
         }
-        m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
+        m_volKeysZoom = XWPrefs.getVolKeysZoom( this );
 
         Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
@@ -560,7 +560,7 @@ public class BoardActivity extends XWActivity
         if ( hasFocus ) {
             if ( m_firingPrefs ) {
                 m_firingPrefs = false;
-                m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
+                m_volKeysZoom = XWPrefs.getVolKeysZoom( this );
                 if ( null != m_jniThread ) {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
                 }

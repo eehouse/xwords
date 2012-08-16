@@ -47,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class BTService extends Service {
@@ -877,9 +876,9 @@ public class BTService extends Service {
     {
         m_names = new HashMap<String, String>();
 
-        String[] names = CommonPrefs.getBTNames( this );
+        String[] names = XWPrefs.getBTNames( this );
         if ( null != names ) {
-            String[] addrs = CommonPrefs.getBTAddresses( this );
+            String[] addrs = XWPrefs.getBTAddresses( this );
             if ( null != addrs && names.length == addrs.length ) {
                 for ( int ii = 0; ii < names.length; ++ii ) {
                     m_names.put( names[ii], addrs[ii] );
@@ -905,8 +904,8 @@ public class BTService extends Service {
             addrs[ii] = entry.getValue();
         }
 
-        CommonPrefs.setBTNames( this, names );
-        CommonPrefs.setBTAddresses( this, addrs );
+        XWPrefs.setBTNames( this, names );
+        XWPrefs.setBTAddresses( this, addrs );
     }
 
     private void startListener()
