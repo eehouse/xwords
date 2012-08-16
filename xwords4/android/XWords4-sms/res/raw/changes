@@ -6,18 +6,14 @@
 </head>
 <body>
 
-<b>CrossW-SMS 4.4 beta 49 release</b>
+<b>CrossW-SMS 4.4 beta 50 release</b>
 
 <p>This is first release of this variant of Crosswords featuring the 
 ability to play via SMS</p>
 
 <ul>Other changes
 
-  <li>Add colored arrows to net status icon to show traffic in and out</li>
-
-  <li>Add debug features to copy games to and from sdcard</li>
-
-  <li>Center board vertically in tall narrow screens</li>
+  <li>bug fix for phonies</li>
 
 </ul>
 
