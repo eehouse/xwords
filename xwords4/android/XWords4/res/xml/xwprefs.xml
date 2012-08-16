@@ -322,7 +322,6 @@
 	   android:title="@string/expl_update_url"
 	   android:defaultValue="@string/default_update_url"
 	   />
-
     
   </PreferenceScreen>
 </PreferenceScreen>
