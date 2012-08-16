@@ -60,6 +60,11 @@ public class XWPrefs {
         return result;
     }
 
+    public static String getDefaultUpdateUrl( Context context )
+    {
+        return getPrefsString( context, R.string.key_update_url );
+    }
+
     public static int getDefaultProxyPort( Context context )
     {
         String val = getPrefsString( context, R.string.key_proxy_port );

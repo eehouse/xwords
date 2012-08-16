@@ -20,12 +20,15 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.SystemClock;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,10 +48,40 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
+
+    // every hourish for now; later should be more like weekly
+    private static final long INTERVAL_MILLIS = 1000 * 60 * 60;
     
     @Override
     public void onReceive( Context context, Intent intent )
     {
+        DbgUtils.logf( "UpdateCheckReceiver.onReceive()" );
+        if ( null != intent && null != intent.getAction() 
+             && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
+            restartTimer( context );
+        } else {
+            checkVersions( context );
+            restartTimer( context );
+        }
+    }
+
+    public static void restartTimer( Context context )
+    {
+        AlarmManager am =
+            (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
+
+        Intent intent = new Intent( context, UpdateCheckReceiver.class );
+        PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
+        am.cancel( pi );
+
+        long interval_millis = (INTERVAL_MILLIS / 2)
+            + Math.abs(Utils.nextRandomInt() % INTERVAL_MILLIS);
+        DbgUtils.logf( "restartTimer: using interval %d (from %d)", interval_millis,
+                       INTERVAL_MILLIS );
+        long first_millis = SystemClock.elapsedRealtime() + interval_millis;
+        am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+                                first_millis, // first firing
+                                interval_millis, pi );
     }
 
     public static void checkVersions( Context context ) 
@@ -63,7 +96,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             try { 
                 int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
 
-                HttpPost post = makePost( "curVersion" );
+                HttpPost post = makePost( context, "curVersion" );
 
                 List<NameValuePair> nvp = new ArrayList<NameValuePair>();
                 nvp.add(new BasicNameValuePair( "name", packageName ) );
@@ -127,9 +160,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return result;
     }
 
-    private static HttpPost makePost( String proc )
+    private static HttpPost makePost( Context context, String proc )
     {
-        return new HttpPost("http://www.eehouse.org/xw4/info.py/" + proc);
+        String url = String.format( "%s/%s", 
+                                    XWPrefs.getDefaultUpdateUrl( context ),
+                                    proc );
+        return new HttpPost( url );
     }
 
     private static String runPost( HttpPost post, List<NameValuePair> nvp )
@@ -162,7 +198,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     {
         int lang = DictLangCache.getDictLangCode( context, dal );
         String langStr = DictLangCache.getLangName( context, lang );
-        HttpPost post = makePost( "dictVersion" );
+        HttpPost post = makePost( context, "dictVersion" );
         List<NameValuePair> nvp = new ArrayList<NameValuePair>();
         nvp.add( new BasicNameValuePair( "name", dal.name ) );
         nvp.add( new BasicNameValuePair( "lang", langStr ) );

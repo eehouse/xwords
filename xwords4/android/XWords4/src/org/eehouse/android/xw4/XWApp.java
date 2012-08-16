@@ -51,6 +51,7 @@ public class XWApp extends Application {
         ConnStatusHandler.loadState( this );
 
         RelayReceiver.RestartTimer( this );
+        UpdateCheckReceiver.restartTimer( this );
         BTService.startService( this );
     }
 

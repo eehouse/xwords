@@ -316,5 +316,13 @@
 	   android:title="@string/dict_host"
 	   android:defaultValue="@string/dict_url"
 	   />
+
+    <org.eehouse.android.xw4.XWEditTextPreference
+	   android:key="@string/key_update_url"
+	   android:title="@string/expl_update_url"
+	   android:defaultValue="@string/default_update_url"
+	   />
+
+    
   </PreferenceScreen>
 </PreferenceScreen>

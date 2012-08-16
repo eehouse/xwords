@@ -32,6 +32,7 @@
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_redir_host">key_redir_host</string>
   <string name="key_relay_port">key_relay_port2</string>
+  <string name="key_update_url">key_update_url</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
   <string name="key_dict_host">key_dict_host3</string>
@@ -97,6 +98,8 @@
   <!-- <string name="default_host">10.0.2.2</string> -->
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
   <string name="game_url_pathf">//%1$s/newgame.php</string>
+  <string name="expl_update_url">Update checks URL</string>
+  <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
 
   <!-- Debugging stuff. No point in localizing it. -->
   <string name="advanced">For debugging</string>
