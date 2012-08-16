@@ -71,7 +71,8 @@ public class GamesList extends XWListActivity
     private static final int SYNC_MENU_ACTION = 5;
     private static final int NEW_FROM_ACTION = 6;
     private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
-                                               , R.id.gamel_menu_storedb
+                                              , R.id.gamel_menu_storedb
+                                              , R.id.gamel_menu_checkupdates
     };
 
     private static boolean s_firstShown = false;
