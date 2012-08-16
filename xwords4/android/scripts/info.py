@@ -3,7 +3,7 @@
 # the client's version is up-to-date or with the newer version if it's
 # not.  May include md5 sums in liu of versions for .xwd files.
 
-import logging, shelve, hashlib, sys
+import logging, shelve, hashlib, sys, json
 
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
@@ -56,21 +56,22 @@ def getDictSums():
 # public
 def curVersion( req, name, version ):
     global k_versions
-    result = ""
+    result = {}
     logging.debug( "version: " + version )
     if name in k_versions:
         if k_versions[name]['version'] > int(version):
             logging.debug( name + " is old" )
-            result = k_urlbase + k_versions[name]['url']
+            result['url'] = k_urlbase + k_versions[name]['url']
+            result['success'] = True
         else:
             logging.debug(name + " is up-to-date")
     else:
         logging.debug( 'Error: bad name ' + name )
-    return result
+    return json.dumps( result )
 
 # public
 def dictVersion( req, name, lang, md5sum ):
-    result = ''
+    result = {}
     if not name.endswith(k_suffix): name += k_suffix
     dictSums = getDictSums()
     path = lang + "/" + name
@@ -81,11 +82,12 @@ def dictVersion( req, name, lang, md5sum ):
             s_shelf['sums'] = dictSums
     if path in dictSums:
         if dictSums[path] != md5sum:
-            result = k_urlbase + "and_wordlists/" + path
+            result['url'] = k_urlbase + "and_wordlists/" + path
+            result['success'] = True
     else:
         logging.debug( path + " not known" )
     s_shelf.close()
-    return result
+    return json.dumps( result )
 
 def clearShelf():
     shelf = shelve.open(k_shelfFile)

@@ -48,6 +48,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
@@ -287,6 +288,22 @@ public class NetUtils {
         }
     } // sendToRelay
 
+    private static String urlFromJson( String json )
+    {
+        String result = null;
+        if ( null != json ) {
+            try {
+                JSONObject jobj = new JSONObject( json );
+                if ( null != jobj && jobj.has( "url" ) ) {
+                    result = jobj.getString( "url" );
+                }
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
+        }
+        return result;
+    }
+
     private static HttpPost makePost( String proc )
     {
         return new HttpPost("http://www.eehouse.org/xw4/info.py/" + proc);
@@ -327,7 +344,8 @@ public class NetUtils {
         nvp.add( new BasicNameValuePair( "name", dal.name ) );
         nvp.add( new BasicNameValuePair( "lang", langStr ) );
         nvp.add( new BasicNameValuePair( "md5sum", sum ) );
-        return runPost( post, nvp );
+        String json = runPost( post, nvp );
+        return urlFromJson( json );
     }
 
     public static void checkVersions( Context context ) 
@@ -349,7 +367,8 @@ public class NetUtils {
                 nvp.add( new BasicNameValuePair( "version", 
                                                  String.format( "%d", 
                                                                 versionCode ) ) );
-                String url = runPost( post, nvp );
+                String json = runPost( post, nvp );
+                String url = urlFromJson( json );
                 if ( null != url ) {
                     ApplicationInfo ai = pm.getApplicationInfo( packageName, 0);
                     String label = pm.getApplicationLabel( ai ).toString();
