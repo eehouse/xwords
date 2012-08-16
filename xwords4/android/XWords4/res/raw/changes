@@ -5,15 +5,9 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 49 release</b>
+<b>Crosswords 4.4 beta 50 release</b>
 <ul>
-
-  <li>Add colored arrows to net status icon to show traffic in and out</li>
-
-  <li>Add debug features to copy games to and from sdcard</li>
-
-  <li>Center board vertically in tall narrow screens</li>
-
+  <li>Oops: Fix "Warn if phonies" option.  (Thanks for the quick reports. :-)</li>
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
