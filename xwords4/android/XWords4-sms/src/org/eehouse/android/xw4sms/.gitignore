@@ -58,3 +58,4 @@ MultiService.java
 ConnStatusHandler.java
 SMSCheckBoxPreference.java
 XWPrefs.java
+UpdateCheckReceiver.java
