@@ -2146,14 +2146,13 @@ typedef struct _FirstWordData {
 } FirstWordData;
 
 static XP_Bool
-getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED_DBG(isLegal), 
+getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
 #ifdef XWFEATURE_BOARDWORDS
               const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
               XP_U16 XP_UNUSED(end),
 #endif
               void* closure )
 {
-    XP_ASSERT( isLegal );
     FirstWordData* data = (FirstWordData*)closure;
     if ( '\0' == data->word[0] && '\0' != word[0] ) {
         XP_STRCAT( data->word, word );

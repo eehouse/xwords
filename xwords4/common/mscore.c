@@ -669,10 +669,12 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
 
             if ( !!notifyInfo ) {
                 XP_U16 len = curTile - checkWordBuf;
+                XP_Bool legal = engine_check( dict, checkWordBuf, len );
+
                 XP_UCHAR buf[(MAX_ROWS*2)+1];
                 dict_tilesToString( dict, checkWordBuf, len, buf, 
                                     sizeof(buf) );
-                (void)(*notifyInfo->proc)( buf, XP_TRUE, /* it's "legal" here */
+                (void)(*notifyInfo->proc)( buf, legal,
 #ifdef XWFEATURE_BOARDWORDS
                                            movei, start, end, 
 #endif

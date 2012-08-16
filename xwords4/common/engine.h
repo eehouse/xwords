@@ -59,6 +59,7 @@ XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model,
                          XP_Bool useTileLimits,
 #endif
                          XP_U16 robotIQ, XP_Bool* canMove, MoveInfo* result );
+XP_Bool engine_check( DictionaryCtxt* dict, Tile* buf, XP_U16 buflen );
 
 #ifdef CPLUS
 }
