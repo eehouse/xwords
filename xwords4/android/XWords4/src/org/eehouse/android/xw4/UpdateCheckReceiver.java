@@ -100,9 +100,11 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
                 List<NameValuePair> nvp = new ArrayList<NameValuePair>();
                 nvp.add(new BasicNameValuePair( "name", packageName ) );
-                nvp.add( new BasicNameValuePair( "version", 
+                nvp.add( new BasicNameValuePair( "avers", 
                                                  String.format( "%d", 
                                                                 versionCode ) ) );
+                nvp.add( new BasicNameValuePair( "gvers", GitVersion.VERS ) );
+                nvp.add( new BasicNameValuePair( "installer", installer ) );
                 String json = runPost( post, nvp );
                 String url = urlFromJson( json );
                 if ( null != url ) {

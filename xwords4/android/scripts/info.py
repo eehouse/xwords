@@ -1,9 +1,7 @@
-# Script meant to be installed on eehouse.org that will hard-code the
-# latest version of a bunch of stuff and reply with empty string if
-# the client's version is up-to-date or with the newer version if it's
-# not.  May include md5 sums in liu of versions for .xwd files.
+# Script meant to be installed on eehouse.org.
 
 import logging, shelve, hashlib, sys, json
+from mod_python import apache
 
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
@@ -41,7 +39,7 @@ def md5Checksum(sums, filePath):
             if not buffer:  break
             md5.update( buffer )
         sums[filePath] = md5.hexdigest()
-        logging.debug( "figured sum for " + filePath )
+        logging.debug( "figured sum for %s" % filePath )
     return sums[filePath]
 
 def getDictSums():
@@ -54,15 +52,16 @@ def getDictSums():
     return s_shelf['sums']
 
 # public
-def curVersion( req, name, version ):
+def curVersion( req, name, avers, gvers, installer ):
     global k_versions
-    result = {}
-    logging.debug( "version: " + version )
+    result = { 'success' : True }
+    logging.debug('IP address of requester is %s' % req.get_remote_host(apache.REMOTE_NAME))
+    logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
+                   % (name, avers, installer, gvers) )
     if name in k_versions:
-        if k_versions[name]['version'] > int(version):
+        if k_versions[name]['version'] > int(avers):
             logging.debug( name + " is old" )
             result['url'] = k_urlbase + k_versions[name]['url']
-            result['success'] = True
         else:
             logging.debug(name + " is up-to-date")
     else:
@@ -71,7 +70,7 @@ def curVersion( req, name, version ):
 
 # public
 def dictVersion( req, name, lang, md5sum ):
-    result = {}
+    result = { 'success' : True }
     if not name.endswith(k_suffix): name += k_suffix
     dictSums = getDictSums()
     path = lang + "/" + name
@@ -83,7 +82,6 @@ def dictVersion( req, name, lang, md5sum ):
     if path in dictSums:
         if dictSums[path] != md5sum:
             result['url'] = k_urlbase + "and_wordlists/" + path
-            result['success'] = True
     else:
         logging.debug( path + " not known" )
     s_shelf.close()
