@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -42,6 +42,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class UpdateCheckReceiver extends BroadcastReceiver {
@@ -86,6 +87,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static void checkVersions( Context context ) 
     {
+        DbgUtils.logf("checkVersions");
+        JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
         String installer = pm.getInstallerPackageName( packageName );
@@ -96,53 +99,96 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             try { 
                 int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
 
-                HttpPost post = makePost( context, "curVersion" );
+                JSONObject appParams = new JSONObject();
 
-                List<NameValuePair> nvp = new ArrayList<NameValuePair>();
-                nvp.add(new BasicNameValuePair( "name", packageName ) );
-                nvp.add( new BasicNameValuePair( "avers", 
-                                                 String.format( "%d", 
-                                                                versionCode ) ) );
-                nvp.add( new BasicNameValuePair( "gvers", GitVersion.VERS ) );
-                nvp.add( new BasicNameValuePair( "installer", installer ) );
-                String json = runPost( post, nvp );
-                String url = urlFromJson( json );
-                if ( null != url ) {
-                    ApplicationInfo ai = pm.getApplicationInfo( packageName, 0);
-                    String label = pm.getApplicationLabel( ai ).toString();
-                    Intent intent = 
-                        new Intent( Intent.ACTION_VIEW, Uri.parse(url) );
-                    String title = 
-                        Utils.format( context, R.string.new_app_availf, label );
-                    String body = context.getString( R.string.new_app_avail );
-                    Utils.postNotification( context, intent, title, body,
-                                            url.hashCode() );
-                }
+                appParams.put( "name", packageName );
+                appParams.put( "avers", versionCode );
+                appParams.put( "gvers", GitVersion.VERS );
+                appParams.put( "installer", installer );
+                params.put( "app", appParams );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.logf( "checkVersions: %s", nnfe.toString() );
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
             }
         }
-
-        DictUtils.DictAndLoc[] list = DictUtils.dictList( context );
-        for ( DictUtils.DictAndLoc dal : list ) {
+        JSONArray dictParams = new JSONArray();
+        DictUtils.DictAndLoc[] dals = DictUtils.dictList( context );
+        for ( int ii = 0; ii < dals.length; ++ii ) {
+            DictUtils.DictAndLoc dal = dals[ii];
             switch ( dal.loc ) {
                 // case DOWNLOAD:
             case EXTERNAL:
             case INTERNAL:
                 String sum = DictUtils.getMD5SumFor( context, dal );
-                String url = checkDictVersion( context, dal, sum );
-                if ( null != url ) {
-                    Intent intent = new Intent( context, DictsActivity.class );
-                    intent.putExtra( NEW_DICT_URL, url );
-                    intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
-                    String body = 
-                        Utils.format( context, R.string.new_dict_availf,
-                                      dal.name );
-                    Utils.postNotification( context, intent, 
-                                            R.string.new_dict_avail, 
-                                            body, url.hashCode() );
+                dictParams.put( makeDictParams( context, dal, sum, ii ) );
+            }
+        }
+        if ( 0 < dictParams.length() ) {
+            try {
+                params.put( "dicts", dictParams );
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
+        }
+
+        if ( 0 < params.length() ) {
+            HttpPost post = makePost( context, "getUpdates" );
+            String json = runPost( post, params );
+            makeNotificationsIf( context, json, pm, packageName, dals );
+        }
+    }
+
+    private static void makeNotificationsIf( Context context,
+                                             String jstr, PackageManager pm,
+                                             String packageName, 
+                                             DictUtils.DictAndLoc[] dals )
+    {
+        DbgUtils.logf( "makeNotificationsIf: %s", jstr );
+        try {
+            JSONObject jobj = new JSONObject( jstr );
+            if ( null != jobj ) {
+                if ( jobj.has( "app" ) ) {
+                    JSONObject app = jobj.getJSONObject( "app" );
+                    if ( app.has( "url" ) ) {
+                        String url = app.getString( "url" );
+                        ApplicationInfo ai = pm.getApplicationInfo( packageName, 0);
+                        String label = pm.getApplicationLabel( ai ).toString();
+                        Intent intent = 
+                            new Intent( Intent.ACTION_VIEW, Uri.parse(url) );
+                        String title = 
+                            Utils.format( context, R.string.new_app_availf, label );
+                        String body = context.getString( R.string.new_app_avail );
+                        Utils.postNotification( context, intent, title, body,
+                                                url.hashCode() );
+                    }
+                }
+                if ( jobj.has( "dicts" ) ) {
+                    JSONArray dicts = jobj.getJSONArray( "dicts" );
+                    for ( int ii = 0; ii < dicts.length(); ++ii ) {
+                        JSONObject dict = dicts.getJSONObject( ii );
+                        if ( dict.has( "url" ) && dict.has("index") ) {
+                            String url = dict.getString( "url" );
+                            int index = dict.getInt( "index" );
+                            DictUtils.DictAndLoc dal = dals[index];
+                            Intent intent = 
+                                new Intent( context, DictsActivity.class );
+                            intent.putExtra( NEW_DICT_URL, url );
+                            intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
+                            String body = 
+                                Utils.format( context, R.string.new_dict_availf,
+                                              dal.name );
+                            Utils.postNotification( context, intent, 
+                                                    R.string.new_dict_avail, 
+                                                    body, url.hashCode() );
+                        }
+                    }
                 }
             }
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        } catch ( PackageManager.NameNotFoundException nnfe ) {
+            DbgUtils.loge( nnfe );
         }
     }
 
@@ -170,10 +216,14 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return new HttpPost( url );
     }
 
-    private static String runPost( HttpPost post, List<NameValuePair> nvp )
+    private static String runPost( HttpPost post, JSONObject params )
     {
         String result = null;
         try {
+            String jsonStr = params.toString();
+            DbgUtils.logf( "as string: %s", jsonStr );
+            List<NameValuePair> nvp = new ArrayList<NameValuePair>();
+            nvp.add(new BasicNameValuePair( "params", jsonStr ) );
             post.setEntity( new UrlEncodedFormEntity(nvp) );
 
             // Execute HTTP Post Request
@@ -194,19 +244,23 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return result;
     }
 
-    private static String checkDictVersion( Context context, 
-                                            DictUtils.DictAndLoc dal, 
-                                            String sum )
+    private static JSONObject makeDictParams( Context context, 
+                                              DictUtils.DictAndLoc dal, 
+                                              String sum, int index )
     {
+        JSONObject params = new JSONObject();
         int lang = DictLangCache.getDictLangCode( context, dal );
         String langStr = DictLangCache.getLangName( context, lang );
-        HttpPost post = makePost( context, "dictVersion" );
         List<NameValuePair> nvp = new ArrayList<NameValuePair>();
-        nvp.add( new BasicNameValuePair( "name", dal.name ) );
-        nvp.add( new BasicNameValuePair( "lang", langStr ) );
-        nvp.add( new BasicNameValuePair( "md5sum", sum ) );
-        String json = runPost( post, nvp );
-        return urlFromJson( json );
+        try {
+            params.put( "name", dal.name );
+            params.put( "lang", langStr );
+            params.put( "md5sum", sum );
+            params.put( "index", index );
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+        return params;
     }
 
 }

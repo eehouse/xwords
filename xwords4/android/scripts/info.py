@@ -87,6 +87,67 @@ def dictVersion( req, name, lang, md5sum ):
     s_shelf.close()
     return json.dumps( result )
 
+def getApp( params ):
+    global k_versions
+    result = None
+    if 'avers' in params and 'name' in params and 'gvers' in params:
+        avers = params['avers']
+        name = params['name']
+        gvers = params['gvers']
+        if 'installer' in params: installer = params['installer']
+        else: installer = ''
+        logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
+                       % (name, avers, installer, gvers) )
+        if name in k_versions:
+            if True or k_versions[name]['version'] > int(avers):
+                result = {'url': k_urlbase + k_versions[name]['url']}
+            else:
+                logging.debug(name + " is up-to-date")
+        else:
+            logging.debug( 'Error: bad name ' + name )
+    else:
+        logging.debug( 'missing param' )
+    return result
+
+def getDicts( params ):
+    result = []
+    dictSums = getDictSums()
+    for param in params:
+        name = param['name']
+        lang = param['lang']
+        md5sum = param['md5sum']
+        index = param['index']
+        if not name.endswith(k_suffix): name += k_suffix
+        path = lang + "/" + name
+        if not path in dictSums:
+            sum = md5Checksum( dictSums, path )
+            if sum:
+                dictSums[path] = sum
+                s_shelf['sums'] = dictSums
+        if path in dictSums:
+            if True or dictSums[path] != md5sum:
+                cur = { 'url' : k_urlbase + "and_wordlists/" + path,
+                        'index' : index }
+                result.append( cur )
+        else:
+            logging.debug( path + " not known" )
+
+    if 0 == len(result): result = None
+    return result
+
+# public
+def getUpdates( req, params ):
+    result = { 'success' : True }
+    logging.debug( "getUpdates: got params: %s" % params )
+    asJson = json.loads( params )
+    if 'app' in asJson:
+        appResult = getApp( asJson['app'] )
+        if appResult: result['app'] = appResult
+    if 'dicts' in asJson:
+        dictsResult = getDicts( asJson['dicts'] )
+        if dictsResult: result['dicts'] = dictsResult
+    return json.dumps( result )
+
 def clearShelf():
     shelf = shelve.open(k_shelfFile)
     shelf['sums'] = {}
