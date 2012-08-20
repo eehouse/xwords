@@ -50,8 +50,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
 
-    // every hourish for now; later should be more like weekly
-    private static final long INTERVAL_MILLIS = 1000 * 60 * 60;
+    // every 8 hours for now; later should be more like weekly
+    private static final long INTERVAL_MILLIS = 1000 * 60 * 60 * 8;
     
     @Override
     public void onReceive( Context context, Intent intent )
@@ -105,6 +105,11 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 appParams.put( "avers", versionCode );
                 appParams.put( "gvers", GitVersion.VERS );
                 appParams.put( "installer", installer );
+                if ( XWPrefs.getPrefsBoolean( context, 
+                                              R.string.key_update_prerel,
+                                              false ) ) {
+                    appParams.put( "devOK", true );
+                }
                 params.put( "app", appParams );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.logf( "checkVersions: %s", nnfe.toString() );

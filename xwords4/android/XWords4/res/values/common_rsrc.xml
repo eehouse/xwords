@@ -33,6 +33,7 @@
   <string name="key_redir_host">key_redir_host</string>
   <string name="key_relay_port">key_relay_port2</string>
   <string name="key_update_url">key_update_url</string>
+  <string name="key_update_prerel">key_update_prerel</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
   <string name="key_dict_host">key_dict_host3</string>

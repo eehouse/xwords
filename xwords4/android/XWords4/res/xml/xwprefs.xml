@@ -322,6 +322,11 @@
 	   android:title="@string/expl_update_url"
 	   android:defaultValue="@string/default_update_url"
 	   />
-    
+    <!-- CHANGE ME TO false !!! -->
+    <CheckBoxPreference android:key="@string/key_update_prerel"
+                        android:title="Update between releases"
+                        android:summary="Get intermediate builds"
+                        android:defaultValue="true"
+                        />
   </PreferenceScreen>
 </PreferenceScreen>
