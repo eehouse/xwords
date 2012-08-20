@@ -1,22 +1,27 @@
 # Script meant to be installed on eehouse.org.
 
 import logging, shelve, hashlib, sys, json
-from mod_python import apache
+try:
+    from mod_python import apache
+    apacheAvailable = True
+except ImportError:
+    apacheAvailable = False
 
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
-k_shelfFile = k_filebase + "xw4/info_shelf"
+k_shelfFile = k_filebase + 'xw4/info_shelf'
 k_urlbase = "http://eehouse.org/"
 k_versions = { 'org.eehouse.android.xw4': {
         'version' : 42,
-        'url' : 'xw4/android/XWords4-release_android_beta_49.apk'
-        }
-               ,'org.eehouse.android.xw4sms' : {
-        'version' : 41,
-        'url' : 'xw4/android/sms/XWords4-release_android_beta_49-3-g8b6af3f.apk'
-        }
+        'avers' : 'android_beta_50-23-gfca1621',
+        'url' : 'xw4/android/XWords4-release_android_beta_50-23-gfca1621.apk',
+        },
+               'org.eehouse.android.xw4sms' : {
+        'version' : 42,
+        'avers' : 'android_beta_50-23-gfca1621',
+        'url' : 'xw4/android/sms/XWords4-release_android_beta_50-23-gfca1621.apk',
+        },
                }
-
 s_shelf = None
 
 
@@ -27,7 +32,7 @@ logging.basicConfig(level=logging.DEBUG
 #        ,filemode='w')
 
 # This seems to be required to prime the pump somehow.
-# logging.debug( "loaded...." )
+logging.debug( "loaded...." )
 
 def md5Checksum(sums, filePath):
     if not filePath.endswith(k_suffix): filePath += k_suffix
@@ -55,13 +60,20 @@ def getDictSums():
 def curVersion( req, name, avers, gvers, installer ):
     global k_versions
     result = { 'success' : True }
-    logging.debug('IP address of requester is %s' % req.get_remote_host(apache.REMOTE_NAME))
+    if apacheAvailable:
+        logging.debug( 'IP address of requester is %s' 
+                       % req.get_remote_host(apache.REMOTE_NAME) )
+
     logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
                    % (name, avers, installer, gvers) )
     if name in k_versions:
-        if k_versions[name]['version'] > int(avers):
+        versions = k_versions[name]
+        if versions['version'] > int(avers):
             logging.debug( name + " is old" )
-            result['url'] = k_urlbase + k_versions[name]['url']
+            result['url'] = k_urlbase + versions['url']
+        elif versions['avers'] != avers:
+            logging.debug( avers + " is old" )
+            result['url'] = k_urlbase + versions['url']
         else:
             logging.debug(name + " is up-to-date")
     else:
@@ -99,7 +111,7 @@ def getApp( params ):
         logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
                        % (name, avers, installer, gvers) )
         if name in k_versions:
-            if True or k_versions[name]['version'] > int(avers):
+            if k_versions[name]['version'] > int(avers):
                 result = {'url': k_urlbase + k_versions[name]['url']}
             else:
                 logging.debug(name + " is up-to-date")
@@ -125,7 +137,7 @@ def getDicts( params ):
                 dictSums[path] = sum
                 s_shelf['sums'] = dictSums
         if path in dictSums:
-            if True or dictSums[path] != md5sum:
+            if dictSums[path] != md5sum:
                 cur = { 'url' : k_urlbase + "and_wordlists/" + path,
                         'index' : index }
                 result.append( cur )
