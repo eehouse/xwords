@@ -7,19 +7,51 @@ try:
 except ImportError:
     apacheAvailable = False
 
+# constants that are also used in UpdateCheckReceiver.java
+k_NAME = 'name'
+k_AVERS = 'avers'
+k_GVERS = 'gvers'
+k_INSTALLER = 'installer'
+k_DEVOK = 'devOK'
+k_APP = 'app'
+k_DICTS = 'dicts'
+k_LANG = 'lang'
+k_MD5SUM = 'md5sum'
+k_INDEX = 'index'
+k_SUCCESS = 'success'
+k_URL = 'url'
+
+k_SUMS = 'sums'
+k_COUNT = 'count'
+
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
 k_shelfFile = k_filebase + 'xw4/info_shelf'
 k_urlbase = "http://eehouse.org/"
 k_versions = { 'org.eehouse.android.xw4': {
         'version' : 42,
-        'avers' : 'android_beta_50-23-gfca1621',
-        'url' : 'xw4/android/XWords4-release_android_beta_50-23-gfca1621.apk',
+        k_AVERS : 42,
+        k_GVERS : 'android_beta_50-25-gcc4549e',
+        k_URL : 'xw4/android/XWords4-release_android_beta_50-25-gcc4549e.apk',
         },
                'org.eehouse.android.xw4sms' : {
         'version' : 42,
-        'avers' : 'android_beta_50-23-gfca1621',
-        'url' : 'xw4/android/sms/XWords4-release_android_beta_50-23-gfca1621.apk',
+        k_AVERS : 42,
+        k_GVERS : 'android_beta_50-25-gcc4549e',
+        k_URL : 'xw4/android/sms/XWords4-release_android_beta_50-25-gcc4549e.apk',
+        },
+               }
+k_versions_dbg = { 'org.eehouse.android.xw4': {
+        'version' : 42,
+        k_AVERS : 42,
+        k_GVERS : 'android_beta_50-25-gcc4549e',
+        k_URL : 'xw4/android/XWords4-release_android_beta_50-25-gcc4549e.apk',
+        },
+               'org.eehouse.android.xw4sms' : {
+        'version' : 42,
+        k_AVERS : 42,
+        k_GVERS : 'android_beta_50-25-gcc4549e',
+        k_URL : 'xw4/android/sms/XWords4-release_android_beta_50-25-gcc4549e.apk',
         },
                }
 s_shelf = None
@@ -50,16 +82,16 @@ def md5Checksum(sums, filePath):
 def getDictSums():
     global s_shelf
     s_shelf = shelve.open(k_shelfFile)
-    if not 'sums' in s_shelf: s_shelf['sums'] = {}
-    if not 'count' in s_shelf: s_shelf['count'] = 0
-    s_shelf['count'] += 1
-    logging.debug( "Count now %d" % s_shelf['count'] )
-    return s_shelf['sums']
+    if not k_SUMS in s_shelf: s_shelf[k_SUMS] = {}
+    if not k_COUNT in s_shelf: s_shelf[k_COUNT] = 0
+    s_shelf[k_COUNT] += 1
+    logging.debug( "Count now %d" % s_shelf[k_COUNT] )
+    return s_shelf[k_SUMS]
 
 # public
-def curVersion( req, name, avers, gvers, installer ):
+def curVersion( req, name, avers = 41, gvers = None, installer = None ):
     global k_versions
-    result = { 'success' : True }
+    result = { k_SUCCESS : True }
     if apacheAvailable:
         logging.debug( 'IP address of requester is %s' 
                        % req.get_remote_host(apache.REMOTE_NAME) )
@@ -68,12 +100,12 @@ def curVersion( req, name, avers, gvers, installer ):
                    % (name, avers, installer, gvers) )
     if name in k_versions:
         versions = k_versions[name]
-        if versions['version'] > int(avers):
-            logging.debug( name + " is old" )
-            result['url'] = k_urlbase + versions['url']
-        elif versions['avers'] != avers:
+        if versions[k_AVERS] > int(avers):
             logging.debug( avers + " is old" )
-            result['url'] = k_urlbase + versions['url']
+            result[k_URL] = k_urlbase + versions[k_URL]
+        elif versions[k_AVERS] != avers:
+            logging.debug( avers + " is old" )
+            result[k_URL] = k_urlbase + versions[k_URL]
         else:
             logging.debug(name + " is up-to-date")
     else:
@@ -82,7 +114,7 @@ def curVersion( req, name, avers, gvers, installer ):
 
 # public
 def dictVersion( req, name, lang, md5sum ):
-    result = { 'success' : True }
+    result = { k_SUCCESS : True }
     if not name.endswith(k_suffix): name += k_suffix
     dictSums = getDictSums()
     path = lang + "/" + name
@@ -90,31 +122,36 @@ def dictVersion( req, name, lang, md5sum ):
         sum = md5Checksum( dictSums, path )
         if sum:
             dictSums[path] = sum
-            s_shelf['sums'] = dictSums
+            s_shelf[k_SUMS] = dictSums
     if path in dictSums:
         if dictSums[path] != md5sum:
-            result['url'] = k_urlbase + "and_wordlists/" + path
+            result[k_URL] = k_urlbase + "and_wordlists/" + path
     else:
         logging.debug( path + " not known" )
     s_shelf.close()
     return json.dumps( result )
 
 def getApp( params ):
-    global k_versions
+    global k_versions, k_versions_dbg
     result = None
-    if 'avers' in params and 'name' in params and 'gvers' in params:
-        avers = params['avers']
-        name = params['name']
-        gvers = params['gvers']
-        if 'installer' in params: installer = params['installer']
-        else: installer = ''
-        logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
-                       % (name, avers, installer, gvers) )
-        if name in k_versions:
-            if k_versions[name]['version'] > int(avers):
-                result = {'url': k_urlbase + k_versions[name]['url']}
-            else:
-                logging.debug(name + " is up-to-date")
+    if k_NAME in params:
+        name = params[k_NAME]
+        if k_AVERS in params and k_GVERS in params:
+            avers = params[k_AVERS]
+            gvers = params[k_GVERS]
+            if k_INSTALLER in params: installer = params[k_INSTALLER]
+            else: installer = ''
+            logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
+                           % (name, avers, installer, gvers) )
+            if k_DEVOK in params and params[k_DEVOK]: versions = k_versions_dbg
+            else: versions = k_versions
+            if name in versions:
+                if versions[name][k_AVERS] > int(avers):
+                    result = {k_URL: k_urlbase + versions[name][k_URL]}
+                elif not gvers == versions[name][k_GVERS]:
+                    result = {k_URL: k_urlbase + versions[name][k_URL]}
+                else:
+                    logging.debug(name + " is up-to-date")
         else:
             logging.debug( 'Error: bad name ' + name )
     else:
@@ -125,21 +162,21 @@ def getDicts( params ):
     result = []
     dictSums = getDictSums()
     for param in params:
-        name = param['name']
-        lang = param['lang']
-        md5sum = param['md5sum']
-        index = param['index']
+        name = param[k_NAME]
+        lang = param[k_LANG]
+        md5sum = param[k_MD5SUM]
+        index = param[k_INDEX]
         if not name.endswith(k_suffix): name += k_suffix
         path = lang + "/" + name
         if not path in dictSums:
             sum = md5Checksum( dictSums, path )
             if sum:
                 dictSums[path] = sum
-                s_shelf['sums'] = dictSums
+                s_shelf[k_SUMS] = dictSums
         if path in dictSums:
             if dictSums[path] != md5sum:
-                cur = { 'url' : k_urlbase + "and_wordlists/" + path,
-                        'index' : index }
+                cur = { k_URL : k_urlbase + "and_wordlists/" + path,
+                        k_INDEX : index }
                 result.append( cur )
         else:
             logging.debug( path + " not known" )
@@ -149,26 +186,30 @@ def getDicts( params ):
 
 # public
 def getUpdates( req, params ):
-    result = { 'success' : True }
+    result = { k_SUCCESS : True }
     logging.debug( "getUpdates: got params: %s" % params )
     asJson = json.loads( params )
-    if 'app' in asJson:
-        appResult = getApp( asJson['app'] )
-        if appResult: result['app'] = appResult
-    if 'dicts' in asJson:
-        dictsResult = getDicts( asJson['dicts'] )
-        if dictsResult: result['dicts'] = dictsResult
+    if k_APP in asJson:
+        appResult = getApp( asJson[k_APP] )
+        if appResult: result[k_APP] = appResult
+    if k_DICTS in asJson:
+        dictsResult = getDicts( asJson[k_DICTS] )
+        if dictsResult: result[k_DICTS] = dictsResult
     return json.dumps( result )
 
 def clearShelf():
     shelf = shelve.open(k_shelfFile)
-    shelf['sums'] = {}
+    shelf[k_SUMS] = {}
     shelf.close()
 
 def usage():
-    print "usage:", sys.argv[0], '--get-sums [lang/dict]* | --clear-shelf'
+    print "usage:", sys.argv[0], '--get-sums [lang/dict]*'
+    print "                    | --test-get-app app <org.eehouse.app.name> avers gvers"
+    print '                    | --clear-shelf'
+    sys.exit(-1)
 
 def main():
+    if 1 >= len(sys.argv): usage();
     arg = sys.argv[1]
     if arg == '--clear-shelf':
         clearShelf()
@@ -176,8 +217,15 @@ def main():
         dictSums = getDictSums()
         for arg in sys.argv[2:]:
             print arg, md5Checksum(dictSums, arg)
-        s_shelf['sums'] = dictSums
+        s_shelf[k_SUMS] = dictSums
         s_shelf.close()
+    elif arg == '--test-get-app':
+        if not 5 == len(sys.argv): usage()
+        params = { k_NAME: sys.argv[2], 
+                   k_AVERS: int(sys.argv[3]),
+                   k_GVERS: sys.argv[4],
+                   }
+        print getApp( params )
     else:
         usage()
 
