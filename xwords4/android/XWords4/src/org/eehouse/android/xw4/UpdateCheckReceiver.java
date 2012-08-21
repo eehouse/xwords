@@ -50,8 +50,22 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
 
-    // every 8 hours for now; later should be more like weekly
-    private static final long INTERVAL_MILLIS = 1000 * 60 * 60 * 8;
+    // weekly
+    private static final long INTERVAL_MILLIS = 1000 * 60 * 60 * 24 * 7;
+
+    // constants that are also used in info.py
+    private static final String k_NAME = "name";
+    private static final String k_AVERS = "avers";
+    private static final String k_GVERS = "gvers";
+    private static final String k_INSTALLER = "installer";
+    private static final String k_DEVOK = "devOK";
+    private static final String k_APP = "app";
+    private static final String k_DICTS = "dicts";
+    private static final String k_LANG = "lang";
+    private static final String k_MD5SUM = "md5sum";
+    private static final String k_INDEX = "index";
+    private static final String k_URL = "url";
+    private static final String k_PARAMS = "params";
     
     @Override
     public void onReceive( Context context, Intent intent )
@@ -101,18 +115,18 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
                 JSONObject appParams = new JSONObject();
 
-                appParams.put( "name", packageName );
-                appParams.put( "avers", versionCode );
-                appParams.put( "gvers", GitVersion.VERS );
-                appParams.put( "installer", installer );
+                appParams.put( k_NAME, packageName );
+                appParams.put( k_AVERS, versionCode );
+                appParams.put( k_GVERS, GitVersion.VERS );
+                appParams.put( k_INSTALLER, installer );
                 if ( XWPrefs.getPrefsBoolean( context, 
                                               R.string.key_update_prerel,
                                               false ) ) {
-                    appParams.put( "devOK", true );
+                    appParams.put( k_DEVOK, true );
                 }
-                params.put( "app", appParams );
+                params.put( k_APP, appParams );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
-                DbgUtils.logf( "checkVersions: %s", nnfe.toString() );
+                DbgUtils.loge( nnfe );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
@@ -125,13 +139,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 // case DOWNLOAD:
             case EXTERNAL:
             case INTERNAL:
-                String sum = DictUtils.getMD5SumFor( context, dal );
-                dictParams.put( makeDictParams( context, dal, sum, ii ) );
+                dictParams.put( makeDictParams( context, dal, ii ) );
             }
         }
         if ( 0 < dictParams.length() ) {
             try {
-                params.put( "dicts", dictParams );
+                params.put( k_DICTS, dictParams );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
@@ -153,10 +166,10 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         try {
             JSONObject jobj = new JSONObject( jstr );
             if ( null != jobj ) {
-                if ( jobj.has( "app" ) ) {
-                    JSONObject app = jobj.getJSONObject( "app" );
-                    if ( app.has( "url" ) ) {
-                        String url = app.getString( "url" );
+                if ( jobj.has( k_APP ) ) {
+                    JSONObject app = jobj.getJSONObject( k_APP );
+                    if ( app.has( k_URL ) ) {
+                        String url = app.getString( k_URL );
                         ApplicationInfo ai = pm.getApplicationInfo( packageName, 0);
                         String label = pm.getApplicationLabel( ai ).toString();
                         Intent intent = 
@@ -168,13 +181,13 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                                 url.hashCode() );
                     }
                 }
-                if ( jobj.has( "dicts" ) ) {
-                    JSONArray dicts = jobj.getJSONArray( "dicts" );
+                if ( jobj.has( k_DICTS ) ) {
+                    JSONArray dicts = jobj.getJSONArray( k_DICTS );
                     for ( int ii = 0; ii < dicts.length(); ++ii ) {
                         JSONObject dict = dicts.getJSONObject( ii );
-                        if ( dict.has( "url" ) && dict.has("index") ) {
-                            String url = dict.getString( "url" );
-                            int index = dict.getInt( "index" );
+                        if ( dict.has( k_URL ) && dict.has( k_INDEX ) ) {
+                            String url = dict.getString( k_URL );
+                            int index = dict.getInt( k_INDEX );
                             DictUtils.DictAndLoc dal = dals[index];
                             Intent intent = 
                                 new Intent( context, DictsActivity.class );
@@ -197,22 +210,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
     }
 
-    private static String urlFromJson( String json )
-    {
-        String result = null;
-        if ( null != json ) {
-            try {
-                JSONObject jobj = new JSONObject( json );
-                if ( null != jobj && jobj.has( "url" ) ) {
-                    result = jobj.getString( "url" );
-                }
-            } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
-            }
-        }
-        return result;
-    }
-
     private static HttpPost makePost( Context context, String proc )
     {
         String url = String.format( "%s/%s", 
@@ -228,7 +225,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             String jsonStr = params.toString();
             DbgUtils.logf( "as string: %s", jsonStr );
             List<NameValuePair> nvp = new ArrayList<NameValuePair>();
-            nvp.add(new BasicNameValuePair( "params", jsonStr ) );
+            nvp.add( new BasicNameValuePair( k_PARAMS, jsonStr ) );
             post.setEntity( new UrlEncodedFormEntity(nvp) );
 
             // Execute HTTP Post Request
@@ -241,28 +238,28 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                     result = null;
                 }
             }
-        } catch ( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.logf( "runPost: %s", uee.toString() );
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "runPost: %s", ioe.toString() );
+        } catch( java.io.UnsupportedEncodingException uee ) {
+            DbgUtils.loge( uee );
+        } catch( java.io.IOException ioe ) {
+            DbgUtils.loge( ioe );
         }
         return result;
     }
 
     private static JSONObject makeDictParams( Context context, 
                                               DictUtils.DictAndLoc dal, 
-                                              String sum, int index )
+                                              int index )
     {
         JSONObject params = new JSONObject();
         int lang = DictLangCache.getDictLangCode( context, dal );
         String langStr = DictLangCache.getLangName( context, lang );
-        List<NameValuePair> nvp = new ArrayList<NameValuePair>();
+        String sum = DictUtils.getMD5SumFor( context, dal );
         try {
-            params.put( "name", dal.name );
-            params.put( "lang", langStr );
-            params.put( "md5sum", sum );
-            params.put( "index", index );
-        } catch ( org.json.JSONException jse ) {
+            params.put( k_NAME, dal.name );
+            params.put( k_LANG, langStr );
+            params.put( k_MD5SUM, sum );
+            params.put( k_INDEX, index );
+        } catch( org.json.JSONException jse ) {
             DbgUtils.loge( jse );
         }
         return params;
