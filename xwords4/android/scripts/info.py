@@ -31,13 +31,11 @@ k_urlbase = "http://eehouse.org/"
 k_versions = { 'org.eehouse.android.xw4': {
         'version' : 42,
         k_AVERS : 42,
-        k_GVERS : 'android_beta_50-25-gcc4549e',
         k_URL : 'xw4/android/XWords4-release_android_beta_50-25-gcc4549e.apk',
         },
                'org.eehouse.android.xw4sms' : {
         'version' : 42,
         k_AVERS : 42,
-        k_GVERS : 'android_beta_50-25-gcc4549e',
         k_URL : 'xw4/android/sms/XWords4-release_android_beta_50-25-gcc4549e.apk',
         },
                }
@@ -88,7 +86,7 @@ def getDictSums():
     logging.debug( "Count now %d" % s_shelf[k_COUNT] )
     return s_shelf[k_SUMS]
 
-# public
+# public, but deprecated
 def curVersion( req, name, avers = 41, gvers = None, installer = None ):
     global k_versions
     result = { k_SUCCESS : True }
@@ -103,16 +101,13 @@ def curVersion( req, name, avers = 41, gvers = None, installer = None ):
         if versions[k_AVERS] > int(avers):
             logging.debug( avers + " is old" )
             result[k_URL] = k_urlbase + versions[k_URL]
-        elif versions[k_AVERS] != avers:
-            logging.debug( avers + " is old" )
-            result[k_URL] = k_urlbase + versions[k_URL]
         else:
             logging.debug(name + " is up-to-date")
     else:
         logging.debug( 'Error: bad name ' + name )
     return json.dumps( result )
 
-# public
+# public, but deprecated
 def dictVersion( req, name, lang, md5sum ):
     result = { k_SUCCESS : True }
     if not name.endswith(k_suffix): name += k_suffix
@@ -146,10 +141,11 @@ def getApp( params ):
             if k_DEVOK in params and params[k_DEVOK]: versions = k_versions_dbg
             else: versions = k_versions
             if name in versions:
-                if versions[name][k_AVERS] > int(avers):
-                    result = {k_URL: k_urlbase + versions[name][k_URL]}
-                elif not gvers == versions[name][k_GVERS]:
-                    result = {k_URL: k_urlbase + versions[name][k_URL]}
+                versForName = versions[name]
+                if versForName[k_AVERS] > int(avers):
+                    result = {k_URL: k_urlbase + versForName[k_URL]}
+                elif k_GVERS in versForName and not gvers == versForName[k_GVERS]:
+                    result = {k_URL: k_urlbase + versForName[k_URL]}
                 else:
                     logging.debug(name + " is up-to-date")
         else:
