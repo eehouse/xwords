@@ -51,7 +51,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
 
     // weekly
-    private static final long INTERVAL_MILLIS = 1000 * 60 * 60 * 24 * 7;
+    private static final long INTERVAL_ONEDAY = 1000 * 60 * 60 * 24;
+    private static final long INTERVAL_NDAYS = 7;
 
     // constants that are also used in info.py
     private static final String k_NAME = "name";
@@ -70,7 +71,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        DbgUtils.logf( "UpdateCheckReceiver.onReceive()" );
         if ( null != intent && null != intent.getAction() 
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
             restartTimer( context );
@@ -89,19 +89,19 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
         am.cancel( pi );
 
-        long interval_millis = (INTERVAL_MILLIS / 2)
-            + Math.abs(Utils.nextRandomInt() % INTERVAL_MILLIS);
-        DbgUtils.logf( "restartTimer: using interval %d (from %d)", interval_millis,
-                       INTERVAL_MILLIS );
-        long first_millis = SystemClock.elapsedRealtime() + interval_millis;
+        long interval_millis = INTERVAL_ONEDAY;
+        if ( !devOK( context ) ) {
+            interval_millis *= INTERVAL_NDAYS;
+        }
+        interval_millis = (interval_millis / 2)
+            + Math.abs(Utils.nextRandomInt() % interval_millis);
         am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
-                                first_millis, // first firing
+                                SystemClock.elapsedRealtime() + interval_millis,
                                 interval_millis, pi );
     }
 
     public static void checkVersions( Context context ) 
     {
-        DbgUtils.logf("checkVersions");
         JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
@@ -119,9 +119,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 appParams.put( k_AVERS, versionCode );
                 appParams.put( k_GVERS, GitVersion.VERS );
                 appParams.put( k_INSTALLER, installer );
-                if ( XWPrefs.getPrefsBoolean( context, 
-                                              R.string.key_update_prerel,
-                                              false ) ) {
+                if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );
                 }
                 params.put( k_APP, appParams );
@@ -162,7 +160,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                              String packageName, 
                                              DictUtils.DictAndLoc[] dals )
     {
-        DbgUtils.logf( "makeNotificationsIf: %s", jstr );
         try {
             JSONObject jobj = new JSONObject( jstr );
             if ( null != jobj ) {
@@ -223,7 +220,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         String result = null;
         try {
             String jsonStr = params.toString();
-            DbgUtils.logf( "as string: %s", jsonStr );
             List<NameValuePair> nvp = new ArrayList<NameValuePair>();
             nvp.add( new BasicNameValuePair( k_PARAMS, jsonStr ) );
             post.setEntity( new UrlEncodedFormEntity(nvp) );
@@ -263,6 +259,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             DbgUtils.loge( jse );
         }
         return params;
+    }
+
+    private static boolean devOK( Context context )
+    {
+        return XWPrefs.getPrefsBoolean( context, R.string.key_update_prerel,
+                                        false );
     }
 
 }
