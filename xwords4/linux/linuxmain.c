@@ -1498,7 +1498,7 @@ main( int argc, char** argv )
             break;
 #endif
         case CMD_PLAYERDICT:
-            mainParams.gi.players[nPlayerDicts++].dictName = optarg;
+            mainParams.playerDictNames[nPlayerDicts++] = optarg;
             break;
         case CMD_SEED:
             seed = atoi(optarg);
@@ -1778,11 +1778,11 @@ main( int argc, char** argv )
     }
 
     for ( ii = 0; ii < nPlayerDicts; ++ii ) {
-        XP_UCHAR* name = mainParams.gi.players[ii].dictName;
+        const XP_UCHAR* name = mainParams.playerDictNames[ii];
         if ( !!name ) {
             mainParams.dicts.dicts[ii] = 
                 linux_dictionary_make( MPPARM(mainParams.util->mpool) name,
-				       mainParams.useMmap );
+                                       mainParams.useMmap );
         }
     }
 
