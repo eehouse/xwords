@@ -5,9 +5,9 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 50 release</b>
+<b>Crosswords 4.4 beta 51 release</b>
 <ul>
-  <li>Oops: Fix "Warn if phonies" option.  (Thanks for the quick reports. :-)</li>
+  <li>Add auto-update for wordlists and the app itself (when side-loaded)</li>
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 

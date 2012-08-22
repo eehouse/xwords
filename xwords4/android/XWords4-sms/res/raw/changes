@@ -6,15 +6,15 @@
 </head>
 <body>
 
-<b>CrossW-SMS 4.4 beta 50 release</b>
+<b>CrossW-SMS 4.4 beta 51 release</b>
 
 <p>This is first release of this variant of Crosswords featuring the 
 ability to play via SMS</p>
 
 <ul>Other changes
 
-  <li>bug fix for phonies</li>
-
+  <li>Add auto-update for wordlists and the app itself (when side-loaded)</li>
+  
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
