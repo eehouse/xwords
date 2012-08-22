@@ -552,13 +552,13 @@ getPendingTileFor( const ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
     XP_Bool found = XP_FALSE;
     const PlayerCtxt* player;
     const PendingTile* pendings;
-    XP_U16 i;
+    XP_U16 ii;
 
     XP_ASSERT( turn < VSIZE(model->players) );
 
     player = &model->players[turn];
     pendings = player->pendingTiles;
-    for ( i = 0; i < player->nPending; ++i ) {
+    for ( ii = 0; ii < player->nPending; ++ii ) {
 
         if ( (pendings->col == col) && (pendings->row == row) ) {
             *cellTile = pendings->tile;
@@ -742,14 +742,14 @@ getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 static void
 undoFromMoveInfo( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveInfo* mi )
 {
-    XP_U16 col, row, i;
+    XP_U16 col, row, ii;
     XP_U16* other;
     MoveInfoTile* tinfo;
 
     col = row = mi->commonCoord;
     other = mi->isHorizontal? &col: &row;
 
-    for ( tinfo = mi->tiles, i = 0; i < mi->nTiles; ++tinfo, ++i ) {
+    for ( tinfo = mi->tiles, ii = 0; ii < mi->nTiles; ++tinfo, ++ii ) {
         Tile tile;
 
         *other = tinfo->varCoord;
@@ -1074,7 +1074,7 @@ void
 model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
                             const MoveInfo* newMove )
 {
-    XP_U16 col, row, i;
+    XP_U16 col, row, ii;
     XP_U16* other;
     const MoveInfoTile* tinfo;
     Tile blank;
@@ -1086,7 +1086,7 @@ model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
     col = row = newMove->commonCoord; /* just assign both */
     other = newMove->isHorizontal? &col: &row;
 
-    for ( tinfo = newMove->tiles, i = 0; i < numTiles; ++i, ++tinfo ) {
+    for ( tinfo = newMove->tiles, ii = 0; ii < numTiles; ++ii, ++tinfo ) {
         XP_S16 tileIndex;
         Tile tile = tinfo->tile;
 
@@ -1110,13 +1110,13 @@ model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
 {
     PlayerCtxt* player;
     XP_S16 nPlayers = model->nPlayers;
-    XP_S16 i;
+    XP_S16 ii;
     Tile blank;
 
     blank = dict_getBlankTile( model_getDictionary(model) );
 
-    for ( i = 0, player = model->players; i < nPlayers; ++i, ++player ) {
-        if ( i != excludePlayer ) {
+    for ( ii = 0, player = model->players; ii < nPlayers; ++ii, ++player ) {
+        if ( ii != excludePlayer ) {
             XP_U16 nTiles = player->nPending;
             PendingTile* pt;
             Tile* tiles;
@@ -1927,11 +1927,11 @@ formatTray( const TrayTileSet* tiles, DictionaryCtxt* dict, XP_UCHAR* buf,
             XP_U16 bufSize, XP_Bool keepHidden )
 {
     if ( keepHidden ) {
-        XP_U16 i;
-        for ( i = 0; i < tiles->nTiles; ++i ) {
-            buf[i] = '?';
+        XP_U16 ii;
+        for ( ii = 0; ii < tiles->nTiles; ++ii ) {
+            buf[ii] = '?';
         }
-        buf[i] = '\0';
+        buf[ii] = '\0';
     } else {
         dict_tilesToString( dict, (Tile*)tiles->tiles, tiles->nTiles, 
                             buf, bufSize );

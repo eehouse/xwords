@@ -258,11 +258,11 @@ tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal )
     PendingTile* pt = player->pendingTiles;
     XP_U16 commonX = pt->col;
     XP_U16 commonY = pt->row;
-    short i;
+    short ii;
 
     xIsCommon = yIsCommon = XP_TRUE;
 
-    for ( i = 1; ++pt, i < player->nPending; ++i ) {
+    for ( ii = 1; ++pt, ii < player->nPending; ++ii ) {
         // test the boolean first in case it's already been made false
         // (to save time)
         if ( xIsCommon && (pt->col != commonX) ) {
@@ -460,7 +460,7 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo,
     XP_U16* incr;
     XP_U16 oneScore;
     XP_U16 score = 0;
-    short i;
+    short ii;
     short moveMultiplier = 1;
     short multipliers[MAX_TRAY_TILES];
     MoveInfo tmpMI;
@@ -477,9 +477,9 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo,
         incr = &row;
     }
 
-    for ( i = 0; i < nTiles; ++i ) {
-        *incr = moveInfo->tiles[i].varCoord;
-        moveMultiplier *= multipliers[i] = word_multiplier( model, col, row );
+    for ( ii = 0; ii < nTiles; ++ii ) {
+        *incr = moveInfo->tiles[ii].varCoord;
+        moveMultiplier *= multipliers[ii] = word_multiplier( model, col, row );
     }
 
     oneScore = scoreWord( model, turn, moveInfo, (EngineCtxt*)NULL, stream,
@@ -495,16 +495,16 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo,
     tmpMI.nTiles = 1;
     tmpMI.tiles[0].varCoord = moveInfo->commonCoord;
 
-    for ( i = 0, tiles = moveInfo->tiles; i < nTiles; ++i, ++tiles ) {
+    for ( ii = 0, tiles = moveInfo->tiles; ii < nTiles; ++ii, ++tiles ) {
 
         tmpMI.commonCoord = tiles->varCoord;
         tmpMI.tiles[0].tile = tiles->tile;
 
         oneScore = scoreWord( model, turn, &tmpMI, engine, stream, notifyInfo );
         if ( !!stream ) {
-            formatWordScore( stream, oneScore, multipliers[i] );
+            formatWordScore( stream, oneScore, multipliers[ii] );
         }
-        oneScore *= multipliers[i];
+        oneScore *= multipliers[ii];
         score += oneScore;
     }
 

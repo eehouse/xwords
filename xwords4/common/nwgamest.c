@@ -345,14 +345,14 @@ static XP_Bool
 checkConsistent( NewGameCtx* ngc, XP_Bool warnUser )
 {
     XP_Bool consistent;
-    XP_U16 i;
+    XP_U16 ii;
 
     /* If ISSERVER, make sure there's at least one non-local player. */
     consistent = ngc->role != SERVER_ISSERVER;
-    for ( i = 0; !consistent && i < ngc->nPlayersShown; ++i ) {
+    for ( ii = 0; !consistent && ii < ngc->nPlayersShown; ++ii ) {
         DeepValue dValue;
         dValue.col = NG_COL_REMOTE;
-        (*ngc->getColProc)( ngc->closure, i, NG_COL_REMOTE,
+        (*ngc->getColProc)( ngc->closure, ii, NG_COL_REMOTE,
                             deepCopy, &dValue );
         if ( dValue.value.ng_bool ) {
             consistent = XP_TRUE;

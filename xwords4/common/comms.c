@@ -1015,15 +1015,15 @@ static void
 printQueue( const CommsCtxt* comms )
 {
     MsgQueueElem* elem;
-    short i;
+    short ii;
 
-    for ( elem = comms->msgQueueHead, i = 0; i < comms->queueLen; 
-          elem = elem->next, ++i ) {
+    for ( elem = comms->msgQueueHead, ii = 0; ii < comms->queueLen; 
+          elem = elem->next, ++ii ) {
         XP_STATUSF( "\t%d: channel: %x; msgID=" XP_LD 
 #ifdef COMMS_CHECKSUM
                     "; check=%s"
 #endif
-                    ,i+1, elem->channelNo, elem->msgID
+                    ,ii+1, elem->channelNo, elem->msgID
 #ifdef COMMS_CHECKSUM
                     , elem->checksum 
 #endif

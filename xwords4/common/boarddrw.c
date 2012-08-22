@@ -135,7 +135,7 @@ invalOldPerimeter( BoardCtxt* board )
 static void
 invalBlanksWithNeighbors( BoardCtxt* board, BlankQueue* bqp ) 
 {
-    XP_U16 i;
+    XP_U16 ii;
     XP_U16 lastCol, lastRow;
     BlankQueue invalBlanks;
     XP_U16 nInvalBlanks = 0;
@@ -143,9 +143,9 @@ invalBlanksWithNeighbors( BoardCtxt* board, BlankQueue* bqp )
     lastCol = model_numCols(board->model) - 1;
     lastRow = model_numRows(board->model) - 1;
 
-    for ( i = 0; i < bqp->nBlanks; ++i ) {
-        XP_U16 modelCol = bqp->col[i];
-        XP_U16 modelRow = bqp->row[i];
+    for ( ii = 0; ii < bqp->nBlanks; ++ii ) {
+        XP_U16 modelCol = bqp->col[ii];
+        XP_U16 modelRow = bqp->row[ii];
         XP_U16 col, row;
 
         flipIf( board, modelCol, modelRow, &col, &row );
@@ -266,7 +266,7 @@ drawBoard( BoardCtxt* board )
                              dfsFor( board, OBJ_BOARD ) ) ) {
 
         XP_Bool allDrawn = XP_TRUE;
-        XP_S16 i;
+        XP_S16 ii;
         XP_S16 col, row, nVisCols;
         ModelCtxt* model = board->model;
         BoardArrow const* arrow = NULL;
@@ -319,8 +319,8 @@ drawBoard( BoardCtxt* board )
         }
 
         /* draw the blanks we skipped before */
-        for ( i = 0; i < bq.nBlanks; ++i ) {
-            if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE ) ) {
+        for ( ii = 0; ii < bq.nBlanks; ++ii ) {
+            if ( !drawCell( board, bq.col[ii], bq.row[ii], XP_FALSE ) ) {
                 allDrawn = XP_FALSE;
             }
         }

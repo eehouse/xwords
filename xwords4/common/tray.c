@@ -350,13 +350,13 @@ invalTilesUnderRect( BoardCtxt* board, const XP_Rect* rect )
        it for now.  If it needs to be faster, invalCellsUnderRect is the model
        to use. */
 
-    XP_U16 i;
+    XP_U16 ii;
     XP_Rect locRect;
 
-    for ( i = 0; i < MAX_TRAY_TILES; ++i ) {
-        figureTrayTileRect( board, i, &locRect );
+    for ( ii = 0; ii < MAX_TRAY_TILES; ++ii ) {
+        figureTrayTileRect( board, ii, &locRect );
         if ( rectsIntersect( rect, &locRect ) ) {
-            board_invalTrayTiles( board, (TileBit)(1 << i) );
+            board_invalTrayTiles( board, (TileBit)(1 << ii) );
         }
     }
 
@@ -553,7 +553,7 @@ board_juggleTray( BoardCtxt* board )
 
         nTiles = model_getNumTilesInTray( model, turn ) - dividerLoc;
         if ( nTiles > 1 ) {
-            XP_S16 i;
+            XP_S16 ii;
             Tile tmpT[MAX_TRAY_TILES];
             XP_U16 newT[MAX_TRAY_TILES];
 
@@ -562,15 +562,15 @@ board_juggleTray( BoardCtxt* board )
             }
 
             /* save copies of the tiles in juggled order */
-            for ( i = 0; i < nTiles; ++i ) {
-                tmpT[i] = model_getPlayerTile( model, turn, 
-                                               (Tile)(dividerLoc + newT[i]) );
+            for ( ii = 0; ii < nTiles; ++ii ) {
+                tmpT[ii] = model_getPlayerTile( model, turn, 
+                                                (Tile)(dividerLoc + newT[ii]) );
             }
 
             /* delete tiles off right end; put juggled ones back on the other */
-            for ( i = nTiles - 1; i >= 0; --i ) {
+            for ( ii = nTiles - 1; ii >= 0; --ii ) {
                 (void)model_removePlayerTile( model, turn, -1 );
-                model_addPlayerTile( model, turn, dividerLoc, tmpT[i] );
+                model_addPlayerTile( model, turn, dividerLoc, tmpT[ii] );
             }
             board->selInfo->traySelBits = 0;
             result = XP_TRUE;

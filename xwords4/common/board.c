@@ -1268,9 +1268,9 @@ static void
 flipAllLimits( BoardCtxt* board )
 {
     XP_U16 nPlayers = board->gi->nPlayers;
-    XP_U16 i;
-    for ( i = 0; i < nPlayers; ++i ) {
-        flipLimits( &board->pti[i].limits );
+    XP_U16 ii;
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        flipLimits( &board->pti[ii].limits );
     }
 }
 #endif
@@ -1493,9 +1493,9 @@ chooseBestSelPlayer( BoardCtxt* board )
 
         if ( curTurn >= 0 ) {
             XP_U16 nPlayers = board->gi->nPlayers;
-            XP_U16 i;
+            XP_U16 ii;
 
-            for ( i = 0; i < nPlayers; ++i ) {
+            for ( ii = 0; ii < nPlayers; ++ii ) {
                 LocalPlayer* lp = &board->gi->players[curTurn];
 
                 if ( !LP_IS_ROBOT(lp) && lp->isLocal ) {

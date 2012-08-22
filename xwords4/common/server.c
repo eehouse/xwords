@@ -369,7 +369,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 {
     ServerCtxt* server;
     XP_U16 version = stream_getVersion( stream );
-    short i;
+    short ii;
 
     server = server_make( MPPARM(mpool) model, comms, util );
     getNV( stream, &server->nv, nPlayers );
@@ -378,8 +378,8 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         server->pool = pool_makeFromStream( MPPARM(mpool) stream );
     }
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        ServerPlayer* player = &server->players[i];
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        ServerPlayer* player = &server->players[ii];
 
         player->deviceIndex = stream_getU8( stream );
 
@@ -413,7 +413,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 void
 server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 {
-    XP_U16 i;
+    XP_U16 ii;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
 
     putNV( stream, &server->nv, nPlayers );
@@ -423,8 +423,8 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
         pool_writeToStream( server->pool, stream );
     }
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        const ServerPlayer* player = &server->players[i];
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        const ServerPlayer* player = &server->players[ii];
 
         stream_putU8( stream, player->deviceIndex );
 
@@ -447,9 +447,9 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 static void
 cleanupServer( ServerCtxt* server )
 {
-    XP_U16 i;
-    for ( i = 0; i < VSIZE(server->players); ++i ){
-        ServerPlayer* player = &server->players[i];
+    XP_U16 ii;
+    for ( ii = 0; ii < VSIZE(server->players); ++ii ){
+        ServerPlayer* player = &server->players[ii];
         if ( player->engine != NULL ) {
             engine_destroy( player->engine );
         }
@@ -1080,13 +1080,13 @@ server_do( ServerCtxt* server )
 static XP_S8
 getIndexForDevice( ServerCtxt* server, XP_PlayerAddr channelNo )
 {
-    short i;
+    short ii;
     XP_S8 result = -1;
 
-    for ( i = 0; i < server->nv.nDevices; ++i ) {
-        RemoteAddress* addr = &server->nv.addresses[i];
+    for ( ii = 0; ii < server->nv.nDevices; ++ii ) {
+        RemoteAddress* addr = &server->nv.addresses[ii];
         if ( addr->channelNo == channelNo ) {
-            result = i;
+            result = ii;
             break;
         }
     }
@@ -1170,12 +1170,12 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
 static void
 clearLocalRobots( ServerCtxt* server )
 {
-    XP_U16 i;
+    XP_U16 ii;
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers = gi->nPlayers;
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        LocalPlayer* player = &gi->players[i];
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        LocalPlayer* player = &gi->players[ii];
         if ( LP_IS_LOCAL( player ) ) {
             player->robotIQ = 0;
         }
@@ -1551,11 +1551,11 @@ server_resetEngine( ServerCtxt* server, XP_U16 playerNum )
 static void
 resetEngines( ServerCtxt* server )
 {
-    XP_U16 i;
+    XP_U16 ii;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
 
-    for ( i = 0; i < nPlayers; ++i ) {
-        server_resetEngine( server, i );
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        server_resetEngine( server, ii );
     }
 } /* resetEngines */
 

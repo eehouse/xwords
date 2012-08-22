@@ -41,12 +41,12 @@ make_vtablemgr( MPFORMAL_NOCOMMA )
 void
 vtmgr_destroy( MPFORMAL VTableMgr* vtmgr )
 {
-    XP_U16 i;
+    XP_U16 ii;
 
     XP_ASSERT( !!vtmgr );
 
-    for ( i = 0; i < VTABLE_NUM_SLOTS; ++i ) {
-        void* vtable = vtmgr->slots[i];
+    for ( ii = 0; ii < VTABLE_NUM_SLOTS; ++ii ) {
+        void* vtable = vtmgr->slots[ii];
         XP_FREEP( mpool, &vtable );
     }
 

@@ -234,18 +234,18 @@ XP_Bool
 randIntArray( XP_U16* rnums, XP_U16 count )
 {
     XP_Bool changed = XP_FALSE;
-    XP_U16 i;
+    XP_U16 ii;
 
-    for ( i = 0; i < count; ++i ) {
-        rnums[i] = i;
+    for ( ii = 0; ii < count; ++ii ) {
+        rnums[ii] = ii;
     }
 
-    for ( i = count; i > 0 ; ) {
-        XP_U16 rIndex = ((XP_U16)XP_RANDOM()) % i;
-        if ( --i != rIndex ) {
+    for ( ii = count; ii > 0 ; ) {
+        XP_U16 rIndex = ((XP_U16)XP_RANDOM()) % ii;
+        if ( --ii != rIndex ) {
             XP_U16 tmp = rnums[rIndex];
-            rnums[rIndex] = rnums[i];
-            rnums[i] = tmp;
+            rnums[rIndex] = rnums[ii];
+            rnums[ii] = tmp;
             if ( !changed ) {
                 changed = XP_TRUE;
             }

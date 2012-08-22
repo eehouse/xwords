@@ -239,7 +239,7 @@ void
 pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict )
 {
     XP_U16 numFaces = dict_numTileFaces( dict );
-    Tile i;
+    Tile ii;
 
     XP_FREEP( pool->mpool, &pool->lettersLeft );
 
@@ -248,9 +248,9 @@ pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict )
                              numFaces * sizeof(pool->lettersLeft[0]) );
     pool->numTilesLeft = 0;
 
-    for ( i = 0; i < numFaces; ++i ) {
-        XP_U16 numTiles = dict_numTiles( dict, i );
-        pool->lettersLeft[i] = (XP_U8)numTiles;
+    for ( ii = 0; ii < numFaces; ++ii ) {
+        XP_U16 numTiles = dict_numTiles( dict, ii );
+        pool->lettersLeft[ii] = (XP_U8)numTiles;
         pool->numTilesLeft += numTiles;
     }
 

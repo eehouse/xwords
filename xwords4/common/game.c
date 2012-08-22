@@ -323,7 +323,7 @@ game_dispose( XWGame* game )
 void
 gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
 {
-    XP_U16 i;
+    XP_U16 ii;
 
     XP_MEMSET( gi, 0, sizeof(*gi) );
     gi->serverRole = SERVER_STANDALONE;
@@ -333,17 +333,17 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
     
     gi->confirmBTConnect = XP_TRUE;
 
-    for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
+    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         XP_UCHAR buf[20];
-        LocalPlayer* fp = &gi->players[i];
+        LocalPlayer* fp = &gi->players[ii];
 
         if ( !!nameTemplate ) {
-            XP_SNPRINTF( buf, sizeof(buf), nameTemplate, i+1 );
+            XP_SNPRINTF( buf, sizeof(buf), nameTemplate, ii+1 );
             XP_ASSERT( fp->name == NULL );
             fp->name = copyString( mpool, buf );
         }
 
-        fp->robotIQ = (i == 0) ? 1 : 0; /* one robot */
+        fp->robotIQ = (ii == 0) ? 1 : 0; /* one robot */
         fp->isLocal = XP_TRUE;
         fp->secondsUsed = 0;
     }
@@ -352,10 +352,11 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
 static void
 disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
 {
-    XP_U16 i;
+    XP_U16 ii;
     LocalPlayer* lp;
 
-    for ( lp = gi->players, i = 0; i < MAX_NUM_PLAYERS; ++lp, ++i ) {
+    for ( lp = gi->players, ii = 0; ii < MAX_NUM_PLAYERS; ++lp, ++ii ) {
+        XP_LOGF( "%s: disposing name %p", __func__, lp->name );
         XP_FREEP( mpool, &lp->name );
         XP_FREEP( mpool, &lp->password );
         XP_FREEP( mpool, &lp->dictName );
@@ -373,7 +374,7 @@ gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
 void
 gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 {
-    XP_U16 nPlayers, i;
+    XP_U16 nPlayers, ii;
     const LocalPlayer* srcPl;
     LocalPlayer* destPl;
 
@@ -393,8 +394,8 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     destGI->phoniesAction = srcGI->phoniesAction;
     destGI->allowPickTiles = srcGI->allowPickTiles;
 
-    for ( srcPl = srcGI->players, destPl = destGI->players, i = 0; 
-          i < nPlayers; ++srcPl, ++destPl, ++i ) {
+    for ( srcPl = srcGI->players, destPl = destGI->players, ii = 0; 
+          ii < nPlayers; ++srcPl, ++destPl, ++ii ) {
 
         replaceStringIfDifferent( mpool, &destPl->name, srcPl->name );
         replaceStringIfDifferent( mpool, &destPl->password, 
