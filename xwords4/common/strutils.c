@@ -395,7 +395,7 @@ void
 log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
 {
     const char* hex = "0123456789ABCDEF";
-    XP_U16 i, j;
+    XP_U16 ii, jj;
     XP_U16 offset = 0;
 
     while ( offset < len ) {
@@ -406,9 +406,9 @@ log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
         XP_UCHAR* charsp = chars;
         XP_U16 oldOffset = offset;
 
-        for ( i = 0; i < NUM_PER_LINE && offset < len; ++i ) {
+        for ( ii = 0; ii < NUM_PER_LINE && offset < len; ++ii ) {
             XP_U8 byte = memp[offset];
-            for ( j = 0; j < 2; ++j ) {
+            for ( jj = 0; jj < 2; ++jj ) {
                 *valsp++ = hex[(byte & 0xF0) >> 4];
                 byte <<= 4;
             }
