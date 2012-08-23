@@ -61,9 +61,9 @@ public class NetUtils {
             socket.setSoTimeout( timeoutMillis );
 
         } catch ( java.net.UnknownHostException uhe ) {
-            DbgUtils.logf( uhe.toString() );
+            DbgUtils.loge( uhe );
         } catch( java.io.IOException ioe ) {
-            DbgUtils.logf( ioe.toString() );
+            DbgUtils.loge( ioe );
         }
         return socket;
     }
@@ -118,7 +118,7 @@ public class NetUtils {
                         DBUtils.clearObits( m_context, m_obits );
                     }
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( ioe.toString() );
+                    DbgUtils.loge( ioe );
                 }
             }
         }
@@ -188,11 +188,11 @@ public class NetUtils {
             }
 
         } catch( java.net.UnknownHostException uhe ) {
-            DbgUtils.logf( uhe.toString() );
+            DbgUtils.loge( uhe );
         } catch( java.io.IOException ioe ) {
-            DbgUtils.logf( ioe.toString() );
+            DbgUtils.loge( ioe );
         } catch( NullPointerException npe ) {
-            DbgUtils.logf( npe.toString() );
+            DbgUtils.loge( npe );
         }
         return msgs;
     } // queryRelay
@@ -260,7 +260,7 @@ public class NetUtils {
                     socket.close();
                 }
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "%s", ioe.toString() );
+                DbgUtils.loge( ioe );
             }
         } else {
             DbgUtils.logf( "sendToRelay: null msgs" );

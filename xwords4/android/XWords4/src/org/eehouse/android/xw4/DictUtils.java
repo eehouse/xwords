@@ -175,7 +175,9 @@ public class DictUtils {
                 fis.close();
                 loc = DictLoc.INTERNAL;
             } catch ( java.io.FileNotFoundException fnf ) {
+                DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {
+                DbgUtils.loge( ioe );
             }
         }
 
@@ -235,7 +237,7 @@ public class DictUtils {
 
             success = DBUtils.copyFileStream( fos, fis );
         } catch ( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.logf( "%s", fnfe.toString() );
+            DbgUtils.loge( fnfe );
         }
         return success;
     } // copyDict
@@ -329,9 +331,9 @@ public class DictUtils {
                 fis.close();
                 DbgUtils.logf( "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
-                DbgUtils.logf( fnf.toString() );
+                DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( ioe.toString() );
+                DbgUtils.loge( ioe );
             }
         }
         
@@ -431,10 +433,9 @@ public class DictUtils {
                 invalDictList();
                 success = true;
             } catch ( java.io.FileNotFoundException fnf ) {
-                DbgUtils.logf( "saveDict: FileNotFoundException: %s", 
-                               fnf.toString() );
+                DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "saveDict: IOException: %s", ioe.toString() );
+                DbgUtils.loge( ioe );
                 deleteDict( context, name );
             }
         }
@@ -513,7 +514,7 @@ public class DictUtils {
             AssetManager am = context.getAssets();
             return am.list("");
         } catch( java.io.IOException ioe ) {
-            DbgUtils.logf( ioe.toString() );
+            DbgUtils.loge( ioe );
             return new String[0];
         }
     }
@@ -547,11 +548,11 @@ public class DictUtils {
 
             digest = md.digest();
         } catch ( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.logf( "figureMD5Sum: %s", fnfe.toString() );
+            DbgUtils.loge( fnfe );
         } catch( java.security.NoSuchAlgorithmException nsae ) {
-            DbgUtils.logf( "figureMD5Sum: %s", nsae.toString() );
+            DbgUtils.loge( nsae );
         } catch( java.io.IOException ioe ) {
-            DbgUtils.logf( "figureMD5Sum: %s", ioe.toString() );
+            DbgUtils.loge( ioe );
         }
 
         if ( null != digest ) {

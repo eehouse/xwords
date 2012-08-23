@@ -203,7 +203,7 @@ public class LookupActivity extends XWListActivity
             try {
                 startActivity( intent );
             } catch ( android.content.ActivityNotFoundException anfe ) {
-                DbgUtils.logf( "%s", anfe.toString() );
+                DbgUtils.loge( anfe );
             }
         }
     } // lookupWord

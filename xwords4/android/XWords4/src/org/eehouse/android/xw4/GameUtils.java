@@ -129,7 +129,7 @@ public class GameUtils {
                     Thread.sleep( 25 ); // milliseconds
                     sleptTime += 25;
                 } catch( InterruptedException ie ) {
-                    DbgUtils.logf( "GameLock.lock(): %s", ie.toString() );
+                    DbgUtils.loge( ie );
                     break;
                 }
 

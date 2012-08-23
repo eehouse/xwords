@@ -1727,7 +1727,7 @@ public class BoardActivity extends XWActivity
                     m_forResultWait.acquire();
                     m_blockingDlgPosted = false;
                 } catch ( java.lang.InterruptedException ie ) {
-                    DbgUtils.logf( "waitBlockingDialog: got %s", ie.toString() );
+                    DbgUtils.loge( ie );
                     if ( m_blockingDlgPosted ) {
                         dismissDialog( dlgID );
                         m_blockingDlgPosted = false;

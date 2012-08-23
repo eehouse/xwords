@@ -93,7 +93,7 @@ public class CommsTransport implements TransportProcs,
 
                 closeSocket();
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( ioe.toString() );
+                DbgUtils.loge( ioe );
             } catch ( UnresolvedAddressException uae ) {
                 DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
                                m_relayAddr.ip_relay_hostName, 
@@ -129,7 +129,7 @@ public class CommsTransport implements TransportProcs,
                                                       m_relayAddr.ip_relay_port );
                                 m_socketChannel.connect( isa );
                             } catch ( java.io.IOException ioe ) {
-                                DbgUtils.logf( ioe.toString() );
+                                DbgUtils.loge( ioe );
                                 failed = true;
                                 break outer_loop;
                             }
@@ -153,7 +153,7 @@ public class CommsTransport implements TransportProcs,
                     DbgUtils.logf( "exiting: %s", ioe.toString() );
                     DbgUtils.logf( ioe.toString() );
                 } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
-                    DbgUtils.logf( "%s", ncp.toString() );
+                    DbgUtils.loge( ncp );
                     closeSocket();
                     break;
                 }
@@ -201,7 +201,7 @@ public class CommsTransport implements TransportProcs,
                         break outer_loop;
                     } catch ( java.nio.channels.
                               NoConnectionPendingException ncp ) {
-                        DbgUtils.logf( "%s", ncp.toString() );
+                        DbgUtils.loge( ncp );
                         break outer_loop;
                     }
                 }
@@ -351,7 +351,7 @@ public class CommsTransport implements TransportProcs,
             try {
                 m_thread.join(100);   // wait up to 1/10 second
             } catch ( java.lang.InterruptedException ie ) {
-                DbgUtils.logf( "got InterruptedException: %s", ie.toString() );
+                DbgUtils.loge( ie );
             }
             m_thread = null;
         }

@@ -333,8 +333,7 @@ public class BTService extends Service {
                     listenUsingRfcommWithServiceRecord( appName,
                                                         XWApp.getAppUUID() );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "listenUsingRfcommWithServiceRecord=>%s", 
-                               ioe.toString() );
+                DbgUtils.loge( ioe );
                 m_serverSocket = null;
             }
 
@@ -375,7 +374,7 @@ public class BTService extends Service {
                         }
                     }
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( "accept=>%s", ioe.toString() );
+                    DbgUtils.loge( ioe );
                     DbgUtils.logf( "trying again..." );
                     continue;
                 }
@@ -385,7 +384,7 @@ public class BTService extends Service {
                 try {
                     m_serverSocket.close();
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( "close()=>%s", ioe.toString() );
+                    DbgUtils.loge( ioe );
                 }
                 m_serverSocket = null;
             }
@@ -397,7 +396,7 @@ public class BTService extends Service {
                 try {
                     m_serverSocket.close();
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( "close()=>%s", ioe.toString() );
+                    DbgUtils.loge( ioe );
                 }
                 m_serverSocket = null;
             }
@@ -510,7 +509,7 @@ public class BTService extends Service {
                                    nRead, len );
                 }
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "receiveMessages: ioe: %s", ioe.toString() );
+                DbgUtils.loge( ioe );
             }
         } // receiveMessage
     } // class BTListenerThread
@@ -673,7 +672,7 @@ public class BTService extends Service {
                         socket.close();
                     }
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( "sendPings: ioe: %s", ioe.toString() );
+                    DbgUtils.loge( ioe );
                 }
 
                 if ( success ) {
@@ -718,7 +717,7 @@ public class BTService extends Service {
                     sendResult( evt, elem.m_gameID );
                 }
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "sendInvite: ioe: %s", ioe.toString() );
+                DbgUtils.loge( ioe );
             }
         } // sendInvite
 
@@ -773,7 +772,7 @@ public class BTService extends Service {
                         socket.close();
                     }
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( "sendMsg: ioe: %s", ioe.toString() );
+                    DbgUtils.loge( ioe );
                     success = false;
                 }
             }
@@ -928,7 +927,7 @@ public class BTService extends Service {
         try {
             m_listener.join( 100 );
         } catch ( InterruptedException ie ) {
-            DbgUtils.logf( "stopListener: join=>%s", ie.toString() );
+            DbgUtils.loge( ie );
         }
         m_listener = null;
         DbgUtils.logf( "stopListener done" );
@@ -941,7 +940,7 @@ public class BTService extends Service {
         try {
             m_sender.join( 100 );
         } catch ( InterruptedException ie ) {
-            DbgUtils.logf( "stopSender: join=>%s", ie.toString() );
+            DbgUtils.loge( ie );
         }
         m_sender = null;
         DbgUtils.logf( "stopSender done" );
@@ -962,7 +961,7 @@ public class BTService extends Service {
             dos.writeByte( cmd.ordinal() );
             DbgUtils.logf( "connect successful" );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "connect()=>%s", ioe.toString() );
+            DbgUtils.loge( ioe );
             dos = null;
         }
         return dos;
@@ -1000,7 +999,7 @@ public class BTService extends Service {
                     try {
                         socket.close();
                     } catch( java.io.IOException ioe ) {
-                        DbgUtils.logf( "killSocketIn: %s", ioe.toString() );
+                        DbgUtils.loge( ioe );
                     }
                 }
             } );

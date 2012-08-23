@@ -66,11 +66,11 @@ public class DictImportActivity extends XWActivity {
                     m_saved = saveDict( is, uri.getPath() );
                     is.close();
                 } catch ( java.net.URISyntaxException use ) {
-                    DbgUtils.logf( "URISyntaxException: %s", use.toString() );
+                    DbgUtils.loge( use );
                 } catch ( java.net.MalformedURLException mue ) {
-                    DbgUtils.logf( "MalformedURLException: %s", mue.toString() );
+                    DbgUtils.loge( mue );
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logf( "IOException: %s", ioe.toString() );
+                    DbgUtils.loge( ioe );
                 }
             }
             return totalSize;
