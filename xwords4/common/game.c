@@ -356,7 +356,6 @@ disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
     LocalPlayer* lp;
 
     for ( lp = gi->players, ii = 0; ii < MAX_NUM_PLAYERS; ++lp, ++ii ) {
-        XP_LOGF( "%s: disposing name %p", __func__, lp->name );
         XP_FREEP( mpool, &lp->name );
         XP_FREEP( mpool, &lp->password );
         XP_FREEP( mpool, &lp->dictName );
