@@ -545,9 +545,6 @@ public class DictsActivity extends ExpandableListActivity
         int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
             DictUtils.DictLoc loc = DictUtils.DictLoc.values()[loci];
-            DbgUtils.logf( "downloadNewDict: got %s for %s", url,
-                           loc.toString() );
-
             startDownload( url, DictUtils.DictLoc.EXTERNAL == loc );
             finish();
         }
