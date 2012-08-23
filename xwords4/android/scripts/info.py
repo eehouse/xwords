@@ -29,27 +29,28 @@ k_filebase = "/var/www/"
 k_shelfFile = k_filebase + 'xw4/info_shelf'
 k_urlbase = "http://eehouse.org/"
 k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 42,
-        k_AVERS : 42,
-        k_URL : 'xw4/android/XWords4-release_android_beta_50-25-gcc4549e.apk',
+        'version' : 43,
+        k_AVERS : 43,
+        k_URL : 'xw4/android/XWords4-release_android_beta_51.apk',
         },
                'org.eehouse.android.xw4sms' : {
-        'version' : 42,
-        k_AVERS : 42,
-        k_URL : 'xw4/android/sms/XWords4-release_android_beta_50-25-gcc4549e.apk',
+        'version' : 43,
+        k_AVERS : 43,
+        k_URL : 'xw4/android/sms/XWords4-release_android_beta_51.apk',
         },
                }
+
 k_versions_dbg = { 'org.eehouse.android.xw4': {
-        'version' : 42,
-        k_AVERS : 42,
-        k_GVERS : 'android_beta_50-25-gcc4549e',
-        k_URL : 'xw4/android/XWords4-release_android_beta_50-25-gcc4549e.apk',
+        'version' : 43,
+        k_AVERS : 43,
+        k_GVERS : 'android_beta_51',
+        k_URL : 'xw4/android/XWords4-release_android_beta_51.apk',
         },
                'org.eehouse.android.xw4sms' : {
-        'version' : 42,
-        k_AVERS : 42,
-        k_GVERS : 'android_beta_50-25-gcc4549e',
-        k_URL : 'xw4/android/sms/XWords4-release_android_beta_50-25-gcc4549e.apk',
+        'version' : 43,
+        k_AVERS : 43,
+        k_GVERS : 'android_beta_51',
+        k_URL : 'xw4/android/sms/XWords4-release_android_beta_51.apk',
         },
                }
 s_shelf = None
