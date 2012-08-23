@@ -67,6 +67,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_INDEX = "index";
     private static final String k_URL = "url";
     private static final String k_PARAMS = "params";
+    private static final String k_DEVID = "did";
+
+    private static boolean s_loggedInstaller = false; // remove after one release
     
     @Override
     public void onReceive( Context context, Intent intent )
@@ -108,7 +111,11 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         String installer = pm.getInstallerPackageName( packageName );
         if ( "com.google.android.feedback".equals( installer ) 
              || "com.android.vending".equals( installer ) ) {
-            DbgUtils.logf( "checkVersion; skipping market app" );
+            if ( !s_loggedInstaller ) {
+                DbgUtils.logf( "checkVersion; skipping market app; installer=%s", 
+                               installer );
+                s_loggedInstaller = true;
+            }
         } else {
             try { 
                 int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
@@ -123,6 +130,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                     appParams.put( k_DEVOK, true );
                 }
                 params.put( k_APP, appParams );
+                params.put( k_DEVID, XWPrefs.getDevID( context ) );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.loge( nnfe );
             } catch ( org.json.JSONException jse ) {
@@ -143,6 +151,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         if ( 0 < dictParams.length() ) {
             try {
                 params.put( k_DICTS, dictParams );
+                params.put( k_DEVID, XWPrefs.getDevID( context ) );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
