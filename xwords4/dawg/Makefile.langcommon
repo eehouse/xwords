@@ -276,10 +276,17 @@ $(XWLANG)_charcount.bin: table.bin ../xloc.pl
 	cat $$TMP >> $@; \
 	rm -f $$TMP
 
-$(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin
-	SIZ=$$(ls -l $< | awk '{print $$5}'); \
+$(XWLANG)%_note.bin:
+	echo -n $(DICTNOTE) > $@
+	perl -e "print pack(\"c\",0)" >> $@
+
+$(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin $(XWLANG)%_note.bin
+	SIZ=0; \
+	for FILE in $+; do \
+		SIZ=$$(($$SIZ + $$(ls -l $$FILE | awk '{print $$5}'))); \
+	done; \
 	perl -e "print pack(\"n\",$$SIZ)" > $@
-	cat $< >> $@
+	cat $+ >> $@
 
 %.dict: %.dict.gz
 	zcat $< > $@

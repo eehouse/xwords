@@ -290,13 +290,21 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             memcpy( &headerLen, ptr, sizeof(headerLen) );
             ptr += sizeof(headerLen);
             headerLen = ntohs( headerLen );
-            if ( headerLen != sizeof(wordCount) ) { /* the only case we know right now */
-                goto closeAndExit;
-            }
+
             memcpy( &wordCount, ptr, sizeof(wordCount) );
             ptr += sizeof(wordCount);
+            headerLen -= sizeof(wordCount);
             dctx->super.nWords = ntohl( wordCount );
             XP_DEBUGF( "dict contains %ld words", dctx->super.nWords );
+
+            if ( 0 < headerLen ) {
+                XP_UCHAR buf[headerLen];
+                XP_MEMCPY( buf, ptr, headerLen );
+                XP_LOGF( "%s: got note of len %d: \"%s\"", __func__, headerLen-1, buf );
+            } else {
+                XP_LOGF( "%s: no note", __func__ );
+            }
+            ptr += headerLen;
         }
 
         if ( isUTF8 ) {

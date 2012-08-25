@@ -18,6 +18,7 @@
 XWLANG=BasEnglish
 LANGCODE=en_US
 DICT2DAWGARGS = -r -nosort
+DICTNOTE = "Built on $(shell date)"
 
 TARGET_TYPE ?= WINCE
 
