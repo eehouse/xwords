@@ -341,7 +341,7 @@ public class ConnStatusHandler {
                 // } catch ( java.lang.ClassNotFoundException cnfe ) {
                 //     DbgUtils.logf( "loadState: %s", cnfe.toString() );
                 } catch ( Exception ex ) {
-                    DbgUtils.logf( "loadState: %s", ex.toString() );
+                    DbgUtils.loge( ex );
                 }
             }
         }
@@ -453,8 +453,7 @@ public class ConnStatusHandler {
                 XWPrefs.setPrefsString( context, R.string.key_connstat_data, 
                                         as64 );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "loadState: %s", 
-                               ioe.toString() );
+                DbgUtils.loge( ioe );
             }
             s_needsSave = false;
         }

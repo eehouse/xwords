@@ -309,7 +309,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
 static void
 readEntry( StackCtxt* stack, StackEntry* entry )
 {
-    XP_U16 nTiles, i, bitsPerTile;
+    XP_U16 nTiles, ii, bitsPerTile;
     XWStreamCtxt* stream = stack->data;
 
     entry->moveType = (StackMoveType)stream_getBits( stream, 2 );
@@ -326,15 +326,15 @@ readEntry( StackCtxt* stack, StackEntry* entry )
         entry->u.move.moveInfo.isHorizontal = (XP_U8)stream_getBits(stream, 1);
         bitsPerTile = stack->bitsPerTile;
         XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
-        for ( i = 0; i < nTiles; ++i ) {
+        for ( ii = 0; ii < nTiles; ++ii ) {
             Tile tile;
-            entry->u.move.moveInfo.tiles[i].varCoord = 
+            entry->u.move.moveInfo.tiles[ii].varCoord = 
                 (XP_U8)stream_getBits(stream, 5);
             tile = (Tile)stream_getBits( stream, bitsPerTile );
             if ( 0 != stream_getBits( stream, 1 ) ) {
                 tile |= TILE_BLANK_BIT;
             }
-            entry->u.move.moveInfo.tiles[i].tile = tile;
+            entry->u.move.moveInfo.tiles[ii].tile = tile;
         }
 
         if ( entry->moveType == MOVE_TYPE ) {

@@ -739,20 +739,20 @@ robotTradeTiles( ServerCtxt* server, MoveInfo* newMove )
     XP_U16 numInTray = model_getNumPlayerTiles( server->model, turn );
     XP_MEMCPY( tradeTiles, curTiles, numInTray );
 
-    for ( i = 0; i < numInTray; ++i ) { /* for each tile in tray */
+    for ( ii = 0; ii < numInTray; ++ii ) { /* for each tile in tray */
         XP_Bool keep = XP_FALSE;
-        for ( j = 0; j < newMove->numTiles; ++j ) { /* for each in move */
-            Tile movedTile = newMove->tiles[j].tile;
-            if ( newMove->tiles[j].isBlank ) {
+        for ( jj = 0; jj < newMove->numTiles; ++jj ) { /* for each in move */
+            Tile movedTile = newMove->tiles[jj].tile;
+            if ( newMove->tiles[jj].isBlank ) {
                 movedTile |= TILE_BLANK_BIT;
             }
-            if ( movedTile == curTiles[i] ) { /* it's in the move */
+            if ( movedTile == curTiles[ii] ) { /* it's in the move */
                 keep = XP_TRUE;
                 break;
             }
         }
         if ( !keep ) {
-            tradeTiles[numToTrade++] = curTiles[i];
+            tradeTiles[numToTrade++] = curTiles[ii];
         }
     }
 
@@ -1607,7 +1607,7 @@ curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
 {
     const TrayTileSet* tileSet = model_getPlayerTiles( server->vol.model, turn );
     DictionaryCtxt* dict = model_getDictionary( server->vol.model );
-    XP_U16 i, j;
+    XP_U16 ii, jj;
     XP_U16 size = tileSet->nTiles;
     const Tile* tp = tileSet->tiles;
     XP_U16 tradedTiles[MAX_TRAY_TILES];
@@ -1618,18 +1618,18 @@ curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
     if ( !!notInTray ) {
         const Tile* tp = notInTray->tiles;
         nNotInTray = notInTray->nTiles;
-        for ( i = 0; i < nNotInTray; ++i ) {
-            tradedTiles[i] = *tp++;
+        for ( ii = 0; ii < nNotInTray; ++ii ) {
+            tradedTiles[ii] = *tp++;
         }
     }
 
-    for ( i = 0; i < size; ++i ) {
+    for ( ii = 0; ii < size; ++ii ) {
         Tile tile = *tp++;
         XP_Bool toBeTraded = XP_FALSE;
 
-        for ( j = 0; j < nNotInTray; ++j ) {
-            if ( tradedTiles[j] == tile ) {
-                tradedTiles[j] = 0xFFFF;
+        for ( jj = 0; jj < nNotInTray; ++jj ) {
+            if ( tradedTiles[jj] == tile ) {
+                tradedTiles[jj] = 0xFFFF;
                 toBeTraded = XP_TRUE;
                 break;
             }

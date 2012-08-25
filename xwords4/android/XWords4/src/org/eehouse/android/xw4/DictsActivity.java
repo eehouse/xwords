@@ -519,8 +519,8 @@ public class DictsActivity extends ExpandableListActivity
         ExpandableListContextMenuInfo info = null;
         try {
             info = (ExpandableListContextMenuInfo)item.getMenuInfo();
-        } catch (ClassCastException e) {
-            DbgUtils.logf( "bad menuInfo: %s", e.toString() );
+        } catch (ClassCastException cce) {
+            DbgUtils.loge( cce );
             return false;
         }
         
@@ -545,9 +545,6 @@ public class DictsActivity extends ExpandableListActivity
         int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
             DictUtils.DictLoc loc = DictUtils.DictLoc.values()[loci];
-            DbgUtils.logf( "downloadNewDict: got %s for %s", url,
-                           loc.toString() );
-
             startDownload( url, DictUtils.DictLoc.EXTERNAL == loc );
             finish();
         }

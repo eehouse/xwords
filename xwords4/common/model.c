@@ -774,10 +774,10 @@ replaceNewTiles( ModelCtxt* model, PoolContext* pool, XP_U16 turn,
                  TrayTileSet* tileSet )
 {
     Tile* t;
-    XP_U16 i, nTiles;
+    XP_U16 ii, nTiles;
 
-    for ( t = tileSet->tiles, i = 0, nTiles = tileSet->nTiles;
-          i < nTiles; ++i ) {
+    for ( t = tileSet->tiles, ii = 0, nTiles = tileSet->nTiles;
+          ii < nTiles; ++ii ) {
         XP_S16 index;
         Tile tile = *t++;
 

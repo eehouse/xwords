@@ -55,7 +55,7 @@ public class FirstRunDialog {
 			page = stringBuilder.toString();
 		}
 		catch ( IOException ioe ) {
-			DbgUtils.logf( ioe.toString() );
+			DbgUtils.loge( ioe );
 		}
 		finally {
             // could just catch NPE....
@@ -63,7 +63,7 @@ public class FirstRunDialog {
 				try {
 					inputStream.close();
 				} catch ( IOException ioe ) {
-                    DbgUtils.logf( ioe.toString() );
+                    DbgUtils.loge( ioe );
 				}
 			}
 		}

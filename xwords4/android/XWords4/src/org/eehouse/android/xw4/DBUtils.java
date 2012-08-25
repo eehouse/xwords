@@ -596,7 +596,7 @@ public class DBUtils {
                 long result = db.replaceOrThrow( DBHelper.TABLE_NAME_OBITS,
                                                  "", values );
             } catch ( Exception ex ) {
-                DbgUtils.logf( "ex: %s", ex.toString() );
+                DbgUtils.loge( ex );
             }
             db.close();
         }
@@ -926,13 +926,13 @@ public class DBUtils {
             channelSrc.transferTo( 0, channelSrc.size(), channelDest );
             success = true;
         } catch( java.io.IOException ioe ) {
-            DbgUtils.logf( "in saveDB: %s", ioe.toString() );
+            DbgUtils.loge( ioe );
         } finally {
             try {
                 channelSrc.close();
                 channelDest.close();
             } catch( java.io.IOException ioe ) {
-                DbgUtils.logf( "in saveDB: %s", ioe.toString() );
+                DbgUtils.loge( ioe );
             }
         }
         return success;
@@ -953,7 +953,7 @@ public class DBUtils {
                 copyFileStream( dest, src );
             }
         } catch( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.logf( "in saveDB: %s", fnfe.toString() );
+            DbgUtils.loge( fnfe );
         }
     }
 

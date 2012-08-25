@@ -306,7 +306,7 @@ public class SMSService extends Service {
 
             send( SMS_CMD.INVITE, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "inviteRemote: ioe: %s", ioe.toString() );
+            DbgUtils.loge( ioe );
         }
     }
 
@@ -320,7 +320,7 @@ public class SMSService extends Service {
 
             send( SMS_CMD.ACK, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "ackInvite: ioe: %s", ioe.toString() );
+            DbgUtils.loge( ioe );
         }
     }
 
@@ -335,7 +335,7 @@ public class SMSService extends Service {
                 send( SMS_CMD.DEATH, bas.toByteArray(), phone );
                 s_sentDied.add( gameID );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logf( "sendDiedPacket: ioe: %s", ioe.toString() );
+                DbgUtils.loge( ioe );
             }
         }
     }
@@ -353,7 +353,7 @@ public class SMSService extends Service {
                 nSent = bytes.length;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "sendPacket: ioe: %s", ioe.toString() );
+            DbgUtils.loge( ioe );
         }
         return nSent;
     }
@@ -447,7 +447,7 @@ public class SMSService extends Service {
                 break;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "receive: ioe: %s", ioe.toString() );
+            DbgUtils.loge( ioe );
         }
     }
 
@@ -512,7 +512,7 @@ public class SMSService extends Service {
                 receive( cmd, rest, senderPhone );
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logf( "disAssemble: ioe: %s", ioe.toString() );
+            DbgUtils.loge( ioe );
         } catch ( ArrayIndexOutOfBoundsException oob ) {
             // enum this older code doesn't know about; drop it
             DbgUtils.logf( "disAssemble: dropping message with too-new enum" );
@@ -545,8 +545,7 @@ public class SMSService extends Service {
         } catch ( IllegalArgumentException iae ) {
             DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
         } catch ( Exception ee ) {
-            DbgUtils.logf( "sendDataMessage message failed: %s", 
-                           ee.toString() );
+            DbgUtils.loge( ee );
         }
 
         ConnStatusHandler.updateStatusOut( this, null, 
@@ -605,7 +604,7 @@ public class SMSService extends Service {
             }
             cursor.close();
         } catch ( Exception ee ) {
-            DbgUtils.logf( "checkMsgDB: %s", ee.toString() );
+            DbgUtils.loge( ee );
         }
     }
 

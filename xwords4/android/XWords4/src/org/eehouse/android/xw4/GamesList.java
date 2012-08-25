@@ -520,8 +520,8 @@ public class GamesList extends XWListActivity
         AdapterView.AdapterContextMenuInfo info;
         try {
             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        } catch (ClassCastException e) {
-            DbgUtils.logf( "bad menuInfo: %s", e.toString() );
+        } catch (ClassCastException cce) {
+            DbgUtils.loge( cce );
             return false;
         }
 
