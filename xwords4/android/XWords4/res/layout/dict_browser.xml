@@ -7,6 +7,12 @@
               android:paddingLeft="8dp"
               android:paddingRight="8dp">
 
+  <TextView android:id="@+id/desc"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:visibility="gone"
+            />
+
   <LinearLayout android:orientation="horizontal"
                 android:layout_width="fill_parent" 
                 android:layout_height="wrap_content"

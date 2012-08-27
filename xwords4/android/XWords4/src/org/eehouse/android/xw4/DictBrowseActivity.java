@@ -91,6 +91,14 @@ public class DictBrowseActivity extends XWListActivity
                 R.string.dict_browse_title1f : R.string.dict_browse_titlef;
             setTitle( Utils.format( DictBrowseActivity.this, format,
                                     m_name, m_nWords, m_minShown, m_maxShown ));
+
+            String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
+            if ( null != desc ) {
+                TextView view = (TextView)findViewById( R.id.desc );
+                Assert.assertNotNull( view );
+                view.setVisibility( View.VISIBLE );
+                view.setText( desc );
+            }
         }
 
         public Object getItem( int position ) 
