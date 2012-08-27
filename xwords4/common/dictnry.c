@@ -489,6 +489,12 @@ dict_getWordCount( const DictionaryCtxt* dict )
     return nWords;
 }
 
+const XP_UCHAR* 
+dict_getDesc( const DictionaryCtxt* dict )
+{
+    return dict->desc;
+}
+
 #ifdef STUBBED_DICT
 
 #define BLANK_FACE '\0'

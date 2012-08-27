@@ -73,6 +73,7 @@ struct DictionaryCtxt {
     XP_UCHAR* name;
     XP_UCHAR* langName;
     XP_UCHAR* faces;
+    XP_UCHAR* desc;
     const XP_UCHAR** facePtrs;
     XP_U8* countsAndValues;
 
@@ -162,6 +163,8 @@ void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile,
 
 XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );
 XP_U32 dict_getWordCount( const DictionaryCtxt* dict );
+
+const XP_UCHAR* dict_getDesc( const DictionaryCtxt* dict );
 
 void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
 void dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream );
