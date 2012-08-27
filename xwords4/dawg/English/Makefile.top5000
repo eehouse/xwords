@@ -1,5 +1,5 @@
 # -*- mode: makefile; compile-command: "make -f Makefile.top5000"; -*-
-# Copyright 2002 - 2011 by Eric House (xwords@eehouse.org).  All
+# Copyright 2002 - 2012 by Eric House (xwords@eehouse.org).  All
 # rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -19,6 +19,7 @@
 XWLANG = Top5000
 LANGCODE = en_US
 TARGET_TYPE = WINCE
+DICTNOTE = "Words on a list at www.wordfrequency.info"
 
 include ../Makefile.langcommon
 
@@ -30,7 +31,7 @@ SOURCEDICT ?= $(ENGLISH)/CSW.dict.gz
 # proper nouns, that we don't want.  So we'll use it as a filter: any
 # word from CSW that's also in top5000 makes the grade
 
-$(XWLANG)Main.dict.gz: $(SOURCEDICT) $(ENGLISH)/Top_5000.dict.gz Makefile.top5000
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) $(ENGLISH)/Top_5000.dict.gz
 	zcat $(ENGLISH)/Top_5000.dict.gz | tr [a-z] [A-Z] > /tmp/Top_5000.dict
 	rm -f $@
 	for WORD in $$(zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$"); do \
