@@ -292,6 +292,16 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
             ctxt->super.nWords = n_ptr_tohl( &ptr );
             headerLen -= 4; /* don't skip it */
         }
+
+        if ( 1 <= headerLen ) { /* have description? */
+            XP_U16 len = 1 + XP_STRLEN( ptr );
+            ctxt->super.desc = 
+                (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, len);
+            XP_MEMCPY( ctxt->super.desc, ptr, len );
+            ptr += len;
+            headerLen -= len;
+        }
+
         CHECK_PTR( ptr, headerLen, end );
         ptr += headerLen;
     }
@@ -430,6 +440,7 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
 
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.desc );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.faces );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.facePtrs );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.countsAndValues );

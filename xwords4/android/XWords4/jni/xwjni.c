@@ -1581,6 +1581,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
     return result;
 }
 
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getDesc
+( JNIEnv* env, jclass C, jint closure )
+{
+    jstring result = NULL;
+    DictIterData* data = (DictIterData*)closure;
+    if ( NULL != data ) {
+        const XP_UCHAR* disc = dict_getDesc( data->dict );
+        if ( NULL != disc && '\0' != disc[0] ) {
+            result = (*env)->NewStringUTF( env, disc );
+        }
+    }
+    return result;
+}
+
 #ifdef XWFEATURE_BASE64
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_base64Encode
