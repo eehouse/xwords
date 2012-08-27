@@ -157,35 +157,45 @@ dict_tilesToString( const DictionaryCtxt* dict, const Tile* tiles,
  * run out of room in which to return tiles.  Failure to match means return of
  * XP_FALSE, but if we run out of room before failing we return XP_TRUE.
  */
-XP_Bool
-dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* str,
-                     Tile* tiles, XP_U16* nTilesP )
+static XP_S16
+tilesForStringImpl( const DictionaryCtxt* dict, const XP_UCHAR* str,
+                    Tile* tiles, XP_U16 nTiles, XP_U16 nFound )
 {
-    XP_U16 nFaces = dict_numTileFaces( dict );
-    XP_U16 nTiles = 0;
-    XP_Bool success = XP_TRUE;
-    XP_ASSERT( 0 < *nTilesP );
-
-    while ( str[0] != '\0' && success && nTiles < *nTilesP ) {
+    XP_S16 result = -1;
+    if ( nFound == nTiles || '\0' == str[0] ) {
+        result = nFound;
+    } else {
+        XP_U16 nFaces = dict_numTileFaces( dict );
         Tile tile;
-        const XP_UCHAR* prevstr = str;
         for ( tile = 0; tile < nFaces; ++tile ) {
             if ( tile != dict->blankTile ) {
                 const XP_UCHAR* facep = dict_getTileString( dict, tile );
                 XP_U16 faceLen = XP_STRLEN( facep );
                 if ( 0 == XP_STRNCMP( facep, str, faceLen ) ) {
-                    tiles[nTiles++] = tile;
-                    str += faceLen;
-                    if ( nTiles == *nTilesP ) {
+                    XP_S16 maxFound = tilesForStringImpl( dict, str + faceLen, 
+                                                          tiles, nTiles, 
+                                                          nFound + 1 );
+                    if ( 0 <= maxFound ) {
+                        tiles[nFound] = tile;
+                        result = maxFound;
                         break;
                     }
                 }
             }
         }
-        success = str > prevstr;
     }
-    XP_ASSERT( nTiles <= *nTilesP );
-    *nTilesP = nTiles;
+    return result;
+} /* tilesForStringImpl */
+
+XP_Bool
+dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* str,
+                     Tile* tiles, XP_U16* nTilesP )
+{
+    XP_S16 nFound = tilesForStringImpl( dict, str, tiles, *nTilesP, 0 );
+    XP_Bool success = 0 <= nFound;
+    if ( success ) {
+        *nTilesP = nFound;
+    }
     return success;
 } /* dict_tilesForString */
 
