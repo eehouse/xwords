@@ -550,15 +550,18 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
 #ifdef USE_SQLITE
-    ,{ CMD_GAMEDB_FILE, true, "game-db-file", "sqlite3 file, android format, holding game" }
-    ,{ CMD_GAMEDB_ID, true, "game-db-id", "id of row of game we want (defaults to first)" }
+    ,{ CMD_GAMEDB_FILE, true, "game-db-file",
+       "sqlite3 file, android format, holding game" }
+    ,{ CMD_GAMEDB_ID, true, "game-db-id",
+       "id of row of game we want (defaults to first)" }
 #endif
     ,{ CMD_NOMMAP, false, "no-mmap", "copy dicts to memory rather than mmap them" }
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
     ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
     ,{ CMD_LOCALPWD, true, "password", "password for user (in sequence)" }
     ,{ CMD_DUPPACKETS, false, "dup-packets", "send two of each to test dropping" }
-    ,{ CMD_DROPNTHPACKET, true, "drop-nth-packet", "drop this packet; default 0 (none)" }
+    ,{ CMD_DROPNTHPACKET, true, "drop-nth-packet", 
+       "drop this packet; default 0 (none)" }
     ,{ CMD_NOHINTS, false, "no-hints", "disallow hints" }
     ,{ CMD_PICKTILESFACEUP, false, "pick-face-up", "allow to pick tiles" }
     ,{ CMD_PLAYERNAME, true, "name", "name of local, non-robot player" }
@@ -581,7 +584,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
 #ifdef XWFEATURE_CROSSHAIRS
-    ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", "don't show crosshairs on board" }
+    ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
+       "don't show crosshairs on board" }
 #endif
     ,{ CMD_ADDPIPE, true, "with-pipe", "named pipe to listen on for relay msgs" }
     ,{ CMD_ADDNBS, true, "with-nbs", 
@@ -596,8 +600,10 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
     ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
     ,{ CMD_JOINADVERTISED, false, "join-public", "look for a public room" }
-    ,{ CMD_PHONIES, true, "phonies", "ignore (0, default), warn (1) or lose turn (2)" }
-    ,{ CMD_BONUSFILE, true, "bonus-file", "provides bonus info: . + * ^ and ! are legal" }
+    ,{ CMD_PHONIES, true, "phonies", 
+       "ignore (0, default), warn (1) or lose turn (2)" }
+    ,{ CMD_BONUSFILE, true, "bonus-file",
+       "provides bonus info: . + * ^ and ! are legal" }
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     ,{ CMD_BTADDR, true, "btaddr", "bluetooth address of host" }
@@ -607,7 +613,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_TRADEPCT, true, "trade-pct", "what pct of the time should robot trade" }
 #endif
 #ifdef USE_GLIBLOOP
-    ,{ CMD_UNDOPCT, true, "undo-pct", "each second, what are the odds of doing an undo" }
+    ,{ CMD_UNDOPCT, true, "undo-pct",
+       "each second, what are the odds of doing an undo" }
 #endif
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,{ CMD_GTK, false, "gtk", "use GTK for display" }
@@ -1183,7 +1190,8 @@ testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
 }
 
 static void
-walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params), const DictionaryCtxt* dict, 
+walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params), 
+                const DictionaryCtxt* dict, 
                 GSList* testPrefixes, const char* testMinMax )
 {
     /* This is just to test that the dict-iterating code works.  The words are
@@ -1282,7 +1290,8 @@ walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params), const DictionaryCtxt*
                 dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
             }
             char prfx[8];
-            dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, VSIZE(prfx) );
+            dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, 
+                                VSIZE(prfx) );
             fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
                      ii, indices[ii], prfx, buf1, buf2 );
         }
@@ -1309,7 +1318,8 @@ walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params), const DictionaryCtxt*
                         DictPosition pos = dict_getPosition( &iter );
                         XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
                         if ( pos > 0 ) {
-                            if ( !dict_getNthWord( &iter, pos-1, depth, &data ) ) {
+                            if ( !dict_getNthWord( &iter, pos-1, depth,
+                                                   &data ) ) {
                                 XP_ASSERT( 0 );
                             }
                             dict_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
