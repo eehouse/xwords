@@ -69,8 +69,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_PARAMS = "params";
     private static final String k_DEVID = "did";
 
-    private static boolean s_loggedInstaller = false; // remove after one release
-    
     @Override
     public void onReceive( Context context, Intent intent )
     {
@@ -109,13 +107,10 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
         String installer = pm.getInstallerPackageName( packageName );
+
         if ( "com.google.android.feedback".equals( installer ) 
-             || "com.android.vending".equals( installer ) ) {
-            if ( !s_loggedInstaller ) {
-                DbgUtils.logf( "checkVersion; skipping market app; installer=%s", 
-                               installer );
-                s_loggedInstaller = true;
-            }
+             || "com.android.vending".equals( installer ) ) { 
+            // Do nothing; it's a Market app
         } else {
             try { 
                 int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
