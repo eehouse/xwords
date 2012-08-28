@@ -194,13 +194,18 @@ findStartsWithChars( DictIter* iter, const XP_UCHAR* chars, XP_U16 charsOffset,
                      array_edge* edge, XP_U16 nTilesUsed )
 {
     XP_S16 result = -1;
-    if ( NULL == edge || ( '\0' == chars[charsOffset] ) ) {
+    XP_U16 charsLen = XP_STRLEN( &chars[charsOffset] );
+    if ( NULL == edge ) {
+        if ( 0 == charsLen ) {
+            iter->nEdges = nTilesUsed;
+            result = charsOffset;
+        } 
+    } else if ( 0 == charsLen ) {
         iter->nEdges = nTilesUsed;
         result = charsOffset;
     } else {
         const DictionaryCtxt* dict = iter->dict;
         XP_U16 nodeSize = dict->nodeSize;
-        XP_U16 charsLen = XP_STRLEN( &chars[charsOffset] );
         for ( ; ; ) {
             Tile tile = EDGETILE( dict, edge );
             const XP_UCHAR* facep = dict_getTileString( dict, tile );
@@ -650,8 +655,14 @@ dict_findStartsWith( DictIter* iter, const XP_UCHAR* prefix )
     ASSERT_INITED( iter );
     array_edge* edge = dict_getTopEdge( iter->dict );
     XP_S16 offset = findStartsWithChars( iter, prefix, 0, edge, 0 );
-    if ( 0 < offset ) {
-        if ( nextWord( iter ) ) {
+    if ( 0 > offset ) {
+        /* not found; do nothing */
+    } else if ( 0 == offset ) {
+        if ( !firstWord( iter ) ) {
+            offset = -1;
+        }
+    } else {
+        if ( ACCEPT_ITER( iter, iter->nEdges ) || nextWord( iter ) ) {
             DictPosition result = figurePosition( iter );
             iter->position = result;
         } else {

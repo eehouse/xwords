@@ -1306,7 +1306,7 @@ walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params),
             for ( ii = 0; ii < count; ++ii ) {
                 gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
                 XP_S16 lenMatched = dict_findStartsWith( &iter, prefix );
-                if ( 0 < lenMatched ) {
+                if ( 0 <= lenMatched ) {
                     XP_UCHAR buf[32];
                     XP_UCHAR bufPrev[32] = {0};
                     dict_wordToString( &iter, buf, VSIZE(buf) );
@@ -1314,7 +1314,7 @@ walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params),
                     XP_ASSERT( 0 == strncmp( buf, prefix, lenMatched ) );
 
                     DictPosition pos = dict_getPosition( &iter );
-                    XP_ASSERT( 0 == strncmp( buf, words[pos], lenMatched ) );
+                    XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
                     if ( pos > 0 ) {
                         if ( !dict_getNthWord( &iter, pos-1, depth, &data ) ) {
                             XP_ASSERT( 0 );
