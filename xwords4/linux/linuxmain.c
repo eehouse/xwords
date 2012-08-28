@@ -1305,31 +1305,27 @@ walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params),
             guint count = g_slist_length( testPrefixes );
             for ( ii = 0; ii < count; ++ii ) {
                 gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
-                Tile tiles[MAX_COLS_DICT];
-                XP_U16 nTiles = VSIZE(tiles);
-                if ( dict_tilesForString( dict, prefix, tiles, &nTiles ) ) {
-                    if ( dict_findStartsWith( &iter, NULL, tiles, nTiles ) ) {
-                        XP_UCHAR buf[32];
-                        XP_UCHAR bufPrev[32] = {0};
-                        dict_wordToString( &iter, buf, VSIZE(buf) );
+                XP_S16 lenMatched = dict_findStartsWith( &iter, prefix );
+                if ( 0 < lenMatched ) {
+                    XP_UCHAR buf[32];
+                    XP_UCHAR bufPrev[32] = {0};
+                    dict_wordToString( &iter, buf, VSIZE(buf) );
 
-                        XP_ASSERT( 0 == strncmp( buf, prefix, strlen(prefix) ) );
+                    XP_ASSERT( 0 == strncmp( buf, prefix, lenMatched ) );
 
-                        DictPosition pos = dict_getPosition( &iter );
-                        XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
-                        if ( pos > 0 ) {
-                            if ( !dict_getNthWord( &iter, pos-1, depth,
-                                                   &data ) ) {
-                                XP_ASSERT( 0 );
-                            }
-                            dict_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
-                            XP_ASSERT( 0 == strcmp( bufPrev, words[pos-1] ) );
+                    DictPosition pos = dict_getPosition( &iter );
+                    XP_ASSERT( 0 == strncmp( buf, words[pos], lenMatched ) );
+                    if ( pos > 0 ) {
+                        if ( !dict_getNthWord( &iter, pos-1, depth, &data ) ) {
+                            XP_ASSERT( 0 );
                         }
-                        XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", 
-                                 prefix, buf, bufPrev );
-                    } else {
-                        XP_LOGF( "nothing starts with %s", prefix );
+                        dict_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
+                        XP_ASSERT( 0 == strcmp( bufPrev, words[pos-1] ) );
                     }
+                    XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", 
+                             prefix, buf, bufPrev );
+                } else {
+                    XP_LOGF( "nothing starts with %s", prefix );
                 }
             }
 

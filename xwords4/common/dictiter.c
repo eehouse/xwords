@@ -170,7 +170,7 @@ prevWord( DictIter* iter )
 }
 
 static XP_Bool
-findStartsWith( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
+findStartsWithTiles( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
 {
     const DictionaryCtxt* dict = iter->dict;
     array_edge* edge = dict_getTopEdge( dict );
@@ -189,6 +189,44 @@ findStartsWith( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
     return 0 == nTiles;
 }
 
+static XP_S16
+findStartsWithChars( DictIter* iter, const XP_UCHAR* chars, XP_U16 charsOffset, 
+                     array_edge* edge, XP_U16 nTilesUsed )
+{
+    XP_S16 result = -1;
+    if ( NULL == edge || ( '\0' == chars[charsOffset] ) ) {
+        iter->nEdges = nTilesUsed;
+        result = charsOffset;
+    } else {
+        const DictionaryCtxt* dict = iter->dict;
+        XP_U16 nodeSize = dict->nodeSize;
+        XP_U16 charsLen = XP_STRLEN( &chars[charsOffset] );
+        for ( ; ; ) {
+            Tile tile = EDGETILE( dict, edge );
+            const XP_UCHAR* facep = dict_getTileString( dict, tile );
+            XP_U16 faceLen = XP_STRLEN( facep );
+            if ( faceLen > charsLen ) {
+                faceLen = charsLen;
+            } 
+            if ( 0 == XP_STRNCMP( facep, &chars[charsOffset], faceLen ) ) {
+                XP_S16 newOffset = findStartsWithChars( iter, chars, 
+                                                        charsOffset + faceLen, 
+                                                        dict_follow( dict, edge ), 
+                                                        nTilesUsed + 1 );
+                if ( result < newOffset ) {
+                    iter->edges[nTilesUsed] = edge;
+                    result = newOffset;
+                }
+            }
+            if ( IS_LAST_EDGE( dict, edge ) ) {
+                break;
+            }
+            edge += nodeSize;
+        }
+    }
+    return result;
+}
+
 static XP_Bool
 startsWith( const DictIter* iter, const Tile* tiles, XP_U16 nTiles )
 {
@@ -203,7 +241,7 @@ static XP_Bool
 findWordStartsWith( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
 {
     XP_Bool found = XP_FALSE;
-    if ( findStartsWith( iter, tiles, nTiles ) ) {
+    if ( findStartsWithTiles( iter, tiles, nTiles ) ) {
         found = ACCEPT_ITER( iter, iter->nEdges );
         if ( !found ) {
             found = nextWord( iter ) && startsWith( iter, tiles, nTiles );
@@ -586,37 +624,41 @@ dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
     return success;
 } /* dict_getNthWord */
 
-XP_Bool 
-dict_findStartsWith( DictIter* iter, const IndexData* data, 
-                     const Tile* prefix, XP_U16 len )
+static DictPosition 
+figurePosition( DictIter* iter )
 {
-    XP_Bool success = XP_FALSE;
-    ASSERT_INITED( iter );
-    XP_USE(data);
-    XP_LOGF( "%s: not using data", __func__ );
+    DictPosition result = 0;
+    DictIter iterZero;
+    dict_initIterFrom( &iterZero, iter );
+    if ( !firstWord( &iterZero ) ) {
+        XP_ASSERT( 0 );
+    }
 
-    DictIter targetIter;
-    dict_initIterFrom( &targetIter, iter );
-    if ( findWordStartsWith( &targetIter, prefix, len ) ) {
-
-        DictPosition result = 0;
-        DictIter iterZero;
-        dict_initIterFrom( &iterZero, iter );
-        if ( !firstWord( &iterZero ) ) {
+    while ( ! wordsEqual( &iterZero, iter ) ) {
+        ++result;
+        if ( !nextWord( &iterZero ) ) {
             XP_ASSERT( 0 );
         }
-
-        while ( ! wordsEqual( &iterZero, &targetIter ) ) {
-            ++result;
-            if ( !nextWord( &iterZero ) ) {
-                XP_ASSERT( 0 );
-            }
-        }
-        copyIter( iter, &iterZero );
-        iter->position = result;
-        success = XP_TRUE;
     }
-    return success;
+    copyIter( iter, &iterZero );
+    return result;
+}
+
+XP_S16
+dict_findStartsWith( DictIter* iter, const XP_UCHAR* prefix )
+{
+    ASSERT_INITED( iter );
+    array_edge* edge = dict_getTopEdge( iter->dict );
+    XP_S16 offset = findStartsWithChars( iter, prefix, 0, edge, 0 );
+    if ( 0 < offset ) {
+        if ( nextWord( iter ) ) {
+            DictPosition result = figurePosition( iter );
+            iter->position = result;
+        } else {
+            offset = -1;
+        }
+    }
+    return offset;
 }
 
 void

@@ -1568,13 +1568,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
     jint result = -1;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        Tile tiles[MAX_COLS];
-        XP_U16 nTiles = VSIZE(tiles);
         const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
-        if ( dict_tilesForString( data->dict, prefix, tiles, &nTiles ) ) {
-            if ( dict_findStartsWith( &data->iter, NULL, tiles, nTiles ) ) {
-                result = dict_getPosition( &data->iter );
-            }
+        if ( 0 <= dict_findStartsWith( &data->iter, prefix ) ) {
+            result = dict_getPosition( &data->iter );
         }
         (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
     }
