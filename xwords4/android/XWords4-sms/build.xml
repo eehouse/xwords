@@ -49,6 +49,16 @@
         <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
             <arg value="clean"/>
         </exec>
+        <exec dir="." executable="../scripts/cleanvariants.sh" >
+            <arg value="--dest-dir"/>
+            <arg value="./res"/>
+            <arg value="--dest-dir"/>
+            <arg value="./src"/>
+            <arg value="--dest-dir"/>
+            <arg value="./jni"/>
+            <arg value="--dest-dir"/>
+            <arg value="./assets"/>
+        </exec>
     </target>
 
 <!-- extension targets. Uncomment the ones where you want to do custom work
@@ -58,6 +68,8 @@
         <exec dir="." executable="../scripts/mkvariant.sh" output="/dev/null">
             <arg value="--variant-name"/>
             <arg value="xw4sms"/>
+            <arg value="--app-name"/>
+            <arg value="CrossW-SMS"/>
             <arg value="--dest-dir"/>
             <arg value="./res"/>
             <arg value="--dest-dir"/>

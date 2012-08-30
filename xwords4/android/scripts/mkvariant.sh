@@ -5,10 +5,11 @@ set -u -e
 MAKEFILE=$(dirname $0)/Variant.mk
 DIRS=""
 VARIANT=""
+APPNAME=""
 
 usage() {
     [ $# -ge 1 ] && echo "ERROR: $1"
-    echo "usage: $0 [--dest-dir <dir>]* --variant-name <dir>"
+    echo "usage: $0 [--dest-dir <dir>]* --variant-name <dir> --app-name <name>"
     exit 1
 }
 
@@ -44,8 +45,9 @@ do_dir() {
             if git ls-files $FILE --error-unmatch 2>/dev/null; then
                 echo "skipping $FILE; it's under version control within this variant"
             else
+                echo "looking at $FILE"
                 make -f $MAKEFILE SRC_PATH=$SRC_PATH DEST_PATH=$DEST_PATH \
-                    VARIANT=${VARIANT} $FILE
+                    VARIANT=${VARIANT} APPNAME=${APPNAME} $FILE
                 add_to_gitignored $DEST_PATH $(basename $FILE)
             fi
         fi
@@ -62,6 +64,10 @@ while [ $# -ge 1 ]; do
             shift
             VARIANT=$1
             ;;
+        --app-name)
+            shift
+            APPNAME=$1
+            ;;
         --dest-dir)
             shift
             DIRS="$DIRS $1"
@@ -76,6 +82,7 @@ done
 echo "$0 DIRS: $DIRS"
 
 [ -n "$VARIANT" ] || usage "--variant-name not supplied"
+[ -n "$APPNAME" ] || usage "--app-name not supplied"
 
 for DIR in $DIRS; do
     do_dir ../XWords4 . $DIR

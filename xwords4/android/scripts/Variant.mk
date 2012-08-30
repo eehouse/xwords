@@ -12,6 +12,7 @@ $(DEST_PATH)/%.png : $(SRC_PATH)/%.png
 $(DEST_PATH)/%.xml : $(SRC_PATH)/%.xml
 	@sed \
 		-e "s,\(^.*org.eehouse.android.\)xw4\(.*$$\),\1$(VARIANT)\2," \
+		-e "s,Crosswords,$(APPNAME),g" \
 		< $< > $@
 
 $(DEST_PATH)/%.h : $(SRC_PATH)/%.h
