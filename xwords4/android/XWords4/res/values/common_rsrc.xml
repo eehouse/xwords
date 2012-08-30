@@ -233,6 +233,14 @@
     <item>:fr:</item>
     <item>http://littre.reverso.net/dictionnaire-francais/definition/%2$s</item>
     <!--  -->
+    <item>DIEC</item>
+    <item>:ca:</item>
+    <item>http://mdlc.iec.cat/results.asp?txtEntrada=%2$s</item>
+    <!--  -->
+    <item>Viccionari</item>
+    <item>:ca:</item>
+    <item>http://ca.m.wiktionary.org/wiki/%2$s</item>
+    <!--  -->
     <item>Google</item>
     <item></item> <!-- means all supported -->
     <item>http://www.google.com/search?nl=%1$s\u0026q=%2$s</item>
