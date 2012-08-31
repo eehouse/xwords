@@ -69,7 +69,7 @@
             <arg value="--variant-name"/>
             <arg value="xw4sms"/>
             <arg value="--app-name"/>
-            <arg value="CWords-SMS"/>
+            <arg value="cWords-SMS"/>
             <arg value="--dest-dir"/>
             <arg value="./res"/>
             <arg value="--dest-dir"/>
