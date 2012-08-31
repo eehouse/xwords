@@ -329,8 +329,7 @@ public class GameUtils {
     {
         String result = DBUtils.getName( context, rowid );
         if ( null == result || 0 == result.length() ) {
-            String fmt = context.getString( R.string.gamef );
-            result = String.format( fmt, rowid );
+            result = context.getString( R.string.gamef, rowid );
         }
         return result;
     }
@@ -531,8 +530,7 @@ public class GameUtils {
         if ( null != gameUri ) {
             int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
             int choiceID;
-            String format = context.getString( fmtId );
-            String message = String.format( format, gameUri.toString() );
+            String message = context.getString( fmtId, gameUri.toString() );
 
             Intent intent = new Intent();
             if ( choseEmail ) {

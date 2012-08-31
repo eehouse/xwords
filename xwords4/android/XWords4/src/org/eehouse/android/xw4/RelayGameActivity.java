@@ -82,9 +82,8 @@ public class RelayGameActivity extends XWActivity
         XwJNI.game_dispose( gamePtr );
 
         String lang = DictLangCache.getLangName( this, m_gi.dictLang );
-        String fmt = getString( R.string.relay_game_explainf );
         TextView text = (TextView)findViewById( R.id.explain );
-        text.setText( String.format( fmt, lang ) );
+        text.setText( getString( R.string.relay_game_explainf, lang ) );
     }
 
     @Override

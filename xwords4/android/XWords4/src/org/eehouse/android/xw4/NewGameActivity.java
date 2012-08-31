@@ -78,11 +78,10 @@ public class NewGameActivity extends XWActivity {
         setContentView( R.layout.new_game );
 
         TextView desc = (TextView)findViewById( R.id.newgame_local_desc );
-        String fmt = getString( R.string.newgame_local_descf );
         String dict = CommonPrefs.getDefaultHumanDict( this );
         String lang = DictLangCache.getLangName( this, dict );
         m_lang = DictLangCache.getLangLangCode( this, lang );
-        desc.setText( String.format( fmt, lang ) );
+        desc.setText( getString( R.string.newgame_local_descf, lang ) );
         
         Button button = (Button)findViewById( R.id.newgame_local );
         button.setOnClickListener( new View.OnClickListener() {

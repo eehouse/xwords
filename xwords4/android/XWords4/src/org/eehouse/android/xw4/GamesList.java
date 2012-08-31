@@ -116,12 +116,12 @@ public class GamesList extends XWListActivity
                     DictLangCache.getLangName( this, m_missingDictLang );
                 String gameName = GameUtils.getName( this, m_rowid );
                 if ( WARN_NODICT == id ) {
-                    message = String.format( getString( R.string.no_dictf ),
-                                             gameName, langName );
+                    message = getString( R.string.no_dictf,
+                                         gameName, langName );
                 } else {
-                    message = String.format( getString(R.string.no_dict_substf),
-                                             gameName, m_missingDictNames[0], 
-                                             langName );
+                    message = getString( R.string.no_dict_substf,
+                                         gameName, m_missingDictNames[0], 
+                                         langName );
                 }
 
                 ab = new AlertDialog.Builder( this )
@@ -510,8 +510,8 @@ public class GamesList extends XWListActivity
         int position = info.position;
         long rowid = DBUtils.gamesList( this )[position];
         String title = GameUtils.getName( this, rowid );
-        String fmt = getString(R.string.game_item_menu_titlef );
-        menu.setHeaderTitle( String.format( fmt, title ) );
+        menu.setHeaderTitle( getString( R.string.game_item_menu_titlef, 
+                                        title ) );
     }
         
     @Override
@@ -751,8 +751,7 @@ public class GamesList extends XWListActivity
             rowid = GameUtils.makeNewNetGame( this, info );
             GameUtils.launchGame( this, rowid, true );
         } else {
-            String fmt = getString( R.string.dup_game_queryf );
-            String msg = String.format( fmt, info.room );
+            String msg = getString( R.string.dup_game_queryf, info.room );
             m_netLaunchInfo = info;
             showConfirmThen( msg, NEW_NET_GAME_ACTION );
         }

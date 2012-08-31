@@ -55,10 +55,9 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
         m_lang = lang;
         m_nInGame = nInGame;
 
-        String fmt = context.getString( R.string.public_names_progress );
-        String msg = String.format( fmt, nInGame, 
-                                    DictLangCache.getLangName(context,lang) );
-
+        String msg = context.getString( R.string.public_names_progress,
+                                        nInGame, 
+                                        DictLangCache.getLangName(context,lang) );
         m_progress = ProgressDialog.show( context, msg, null, true, 
                                           true );
     }

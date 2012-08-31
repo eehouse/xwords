@@ -261,10 +261,9 @@ public class GameConfig extends XWActivity
                     });
                 break;
             case NO_NAME_FOUND:
-                String format = getString( R.string.no_name_found_f );
-                String msg = 
-                    String.format( format, m_gi.nPlayers, DictLangCache.
-                                   getLangName( this, m_gi.dictLang ) );
+                String msg = getString( R.string.no_name_found_f,
+                                        m_gi.nPlayers, DictLangCache.
+                                        getLangName( this, m_gi.dictLang ) );
                 dialog = new AlertDialog.Builder( this )
                     .setPositiveButton( R.string.button_ok, null )
                     // message added below since varies with language etc.
@@ -315,8 +314,7 @@ public class GameConfig extends XWActivity
 
         // Dicts spinner with label
         String langName = DictLangCache.getLangName( this, m_gi.dictLang );
-        String label = String.format( getString( R.string.dict_lang_labelf ),
-                                      langName );
+        String label = getString( R.string.dict_lang_labelf, langName );
         TextView text = (TextView)dialog.findViewById( R.id.dict_label );
         text.setText( label );
         configDictSpinner( dialog, lp );
@@ -724,9 +722,8 @@ public class GameConfig extends XWActivity
     {
         Spinner dictsSpinner = 
             (Spinner)dialog.findViewById( R.id.dict_spinner );
-        String fmt = getString( R.string.dicts_list_promptf );
         String lang = DictLangCache.getLangName( this, m_gi.dictLang );
-        dictsSpinner.setPrompt(String.format( fmt, lang ) );
+        dictsSpinner.setPrompt( getString( R.string.dicts_list_promptf, lang ) );
 
         OnItemSelectedListener onSel = 
             new OnItemSelectedListener() {
@@ -922,10 +919,10 @@ public class GameConfig extends XWActivity
         if ( localOnlyGame() ) {
             label = getString( R.string.players_label_standalone );
         } else {
-            String fmt = getString( R.string.players_label_host );
             int remoteCount = m_gi.remoteCount();
-            label = String.format( fmt, m_gi.nPlayers - remoteCount, 
-                                   remoteCount );
+            label = getString( R.string.players_label_host,
+                               m_gi.nPlayers - remoteCount, 
+                               remoteCount );
         }
         ((TextView)findViewById( R.id.players_label )).setText( label );
     }

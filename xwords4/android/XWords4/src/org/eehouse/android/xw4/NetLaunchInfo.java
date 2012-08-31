@@ -82,9 +82,8 @@ public class NetLaunchInfo {
     {
         Builder ub = new Builder();
         ub.scheme( "http" );
-        String format = context.getString( R.string.game_url_pathf );
-        ub.path( String.format( format, 
-                                XWPrefs.getDefaultRedirHost( context ) ) );
+        ub.path( context.getString( R.string.game_url_pathf, 
+                                    XWPrefs.getDefaultRedirHost( context ) ) );
         
         ub.appendQueryParameter( "lang", String.format("%d", lang ) );
         ub.appendQueryParameter( "np", String.format( "%d", nPlayers ) );

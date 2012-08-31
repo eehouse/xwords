@@ -342,8 +342,7 @@ public class Utils {
 
     public static String format( Context context, int id, Object... args )
     {
-        String fmt = context.getString( id );
-        return String.format( fmt, args );
+        return context.getString( id, args );
     }
 
     private static void setFirstBootStatics( Context context )

@@ -172,11 +172,10 @@ public class GameListAdapter extends XWListAdapter {
                     }
 
                     String name = GameUtils.getName( m_context, m_rowid );
-                    String format = 
-                        m_context.getString( R.string.str_game_namef );
 
                     if ( null != value ) {
-                        value = String.format( format, name, value );
+                        value = m_context.getString( R.string.str_game_namef, 
+                                                     name, value );
                     } else {
                         value = name;
                     }

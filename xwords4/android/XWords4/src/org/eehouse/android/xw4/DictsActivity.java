@@ -337,8 +337,7 @@ public class DictsActivity extends ExpandableListActivity
             XWListItem rowView = m_adapter.getSelChildView();
             String lang = 
                 DictLangCache.getLangName( this, rowView.getText() );
-            format = getString( R.string.set_default_messagef );
-            message = String.format( format, lang );
+            message = getString( R.string.set_default_messagef, lang );
             dialog = new AlertDialog.Builder( this )
                 .setTitle( R.string.query_title )
                 .setMessage( message )
@@ -507,8 +506,9 @@ public class DictsActivity extends ExpandableListActivity
                 menu.removeItem( R.id.dicts_item_move );
             }
 
-            String fmt = getString(R.string.game_item_menu_titlef );
-            menu.setHeaderTitle( String.format( fmt, row.getText() ) );
+            String title = getString( R.string.game_item_menu_titlef,
+                                      row.getText() );
+            menu.setHeaderTitle( title );
         }
     }
    
@@ -575,8 +575,7 @@ public class DictsActivity extends ExpandableListActivity
     public void deleteCalled( XWListItem item )
     {
         String dict = item.getText();
-        String msg = String.format( getString( R.string.confirm_delete_dictf ),
-                                    dict );
+        String msg = getString( R.string.confirm_delete_dictf, dict );
 
         m_deleteDict = dict;
         m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
@@ -605,9 +604,8 @@ public class DictsActivity extends ExpandableListActivity
                 fmtid = R.string.confirm_deletemore_dictf;
             }
             if ( 0 != fmtid ) {
-                String fmt = getString( fmtid );
-                msg += String.format( fmt, DictLangCache.
-                                       getLangName( this, langcode ) );
+                msg += getString( fmtid, DictLangCache.
+                                  getLangName( this, langcode ) );
             }
         }
 

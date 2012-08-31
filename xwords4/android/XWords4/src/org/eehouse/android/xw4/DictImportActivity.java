@@ -108,8 +108,8 @@ public class DictImportActivity extends XWActivity {
                 DbgUtils.logf( "based on MIME type" );
                 new DownloadFilesTask().execute( uri );
             } else if ( uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
-                String fmt = getString( R.string.downloading_dictf );
-                String txt = String.format( fmt, basename( uri.getPath()) );
+                String txt = getString( R.string.downloading_dictf,
+                                        basename( uri.getPath()) );
                 TextView view = (TextView)findViewById( R.id.dwnld_message );
                 view.setText( txt );
                 new DownloadFilesTask().execute( uri );

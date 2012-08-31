@@ -425,8 +425,7 @@ public class BoardActivity extends XWActivity
         switch( id ) {
         case DLG_INVITE:
             AlertDialog ad = (AlertDialog)dialog;
-            String format = getString( R.string.invite_msgf );
-            String message = String.format( format, m_missing );
+            String message = getString( R.string.invite_msgf, m_missing );
             if ( m_missing > 1 ) {
                 message += getString( R.string.invite_multiple );
             }
@@ -1097,8 +1096,7 @@ public class BoardActivity extends XWActivity
             // All players have now joined the game.  The device that
             // created the room will assign tiles.  Then it will be
             // the first player's turn
-            String fmt = getString( R.string.msg_relay_all_heref );
-            str = String.format( fmt, room );
+            str = getString( R.string.msg_relay_all_heref, room );
             if ( devOrder > 1 ) {
                 naMsg = R.string.not_again_conndall;
                 naKey = R.string.key_notagain_conndall;
@@ -1113,9 +1111,8 @@ public class BoardActivity extends XWActivity
                 m_missing = nMissing;
                 showDialog( DLG_INVITE );
             } else {
-                String fmt = getString( R.string.msg_relay_waiting );
-                str = String.format( fmt, devOrder,
-                                     room, nMissing );
+                str = getString( R.string.msg_relay_waiting, devOrder,
+                                 room, nMissing );
                 if ( devOrder == 1 ) {
                     naMsg = R.string.not_again_conndfirst;
                     naKey = R.string.key_notagain_conndfirst;
@@ -1502,8 +1499,7 @@ public class BoardActivity extends XWActivity
                 sb.append( "; " );
             }
         
-            String format = getString( R.string.ids_badwords );
-            String message = String.format( format, sb.toString() );
+            String message = getString( R.string.ids_badwords, sb.toString() );
 
             if ( turnLost ) {
                 nonBlockingDialog( DLG_BADWORDS, 
@@ -1991,8 +1987,7 @@ public class BoardActivity extends XWActivity
 
     private void setupPasswdVars()
     {
-        String fmt = getString( R.string.msg_ask_password );
-        m_dlgTitleStr = String.format( fmt, m_pwdName );
+        m_dlgTitleStr = getString( R.string.msg_ask_password, m_pwdName );
         m_passwdLyt = (LinearLayout)Utils.inflate( BoardActivity.this,
                                                    R.layout.passwd_view );
         m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
