@@ -294,7 +294,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         }
 
         if ( 1 <= headerLen ) { /* have description? */
-            XP_U16 len = 1 + XP_STRLEN( ptr );
+            XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)ptr );
             ctxt->super.desc = 
                 (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, len);
             XP_MEMCPY( ctxt->super.desc, ptr, len );
