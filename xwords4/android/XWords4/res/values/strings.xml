@@ -18,6 +18,7 @@
     <string name="empty_games_list">Use the button below to create a
       game. Tap an existing game to play it or long-tap it for other
       options.</string>
+      <!--  -->
     <string name="empty_games_list2">You can hide this and the button
       below in the Appearance section of Settings (accessed via your
       device\'s menu key).</string>
@@ -121,10 +122,10 @@
       the relay.</string>
 
     <!-- Deletes all games on the device (after confirmation) -->
-	<string name="gamel_menu_delete_all">Delete all</string>
+    <string name="gamel_menu_delete_all">Delete all</string>
 
     <!-- Brings up "About Crosswords" dialog -->
-	<string name="board_menu_file_about">About Crosswords</string>
+    <string name="board_menu_file_about">About Crosswords</string>
 
     <!-- 
        ############################################################
@@ -146,15 +147,15 @@
     <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
-	<string name="list_item_reset">Reset</string>
+    <string name="list_item_reset">Reset</string>
     <!-- creates a new game with all configuation copied from the
          selected game -->
-	<string name="list_item_new_from">New from</string>
+    <string name="list_item_new_from">New from</string>
     <!-- makes a copy of the selected game.  This is currently
          disabled for networked games since there would be problems if
          two identically configured games started trying to talk to a
          remote game that expected there was only one of them. -->
-	<string name="list_item_copy">Copy</string>
+    <string name="list_item_copy">Copy</string>
     <!-- Title of dialog for renaming game (triggered by selecting
          list_item_rename) -->
 
@@ -163,7 +164,7 @@
     <string name="no_copy_network">Games that have already connected
       to the relay cannot be copied. Use \"New from\" for a
       ready-to-play copy with all the same settings.</string>
-
+      <!--  -->
     <string name="game_rename_title">Rename game</string>
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
@@ -195,7 +196,7 @@
        ############################################################ 
       -->
     <!-- window title -->
-	<string name="title_dicts_list">Installed Crosswords Wordlists</string>   
+    <string name="title_dicts_list">Installed Crosswords Wordlists</string>   
 
     <!-- text of button at the bottom of the screen.  It launches the
          browser pointed at the site where additional wordlists can be
@@ -295,7 +296,9 @@
          choices in respose to the dialog launched in response to the
          dicts_item_select menu (see dicts_item_select above.) -->
     <string name="button_default_human">Human</string>
+    <!--  -->
     <string name="button_default_robot">Robot</string>
+    <!--  -->
     <string name="button_default_both">Both</string>
 
     <!-- When the dicts_item_move menu is chosen, this text is used in
@@ -307,6 +310,7 @@
 
     <!-- see move_dictf above -->
     <string name="loc_internal">Internal</string>
+    <!--  -->
     <string name="loc_external">External</string>
 
     <!-- 
@@ -316,11 +320,11 @@
        ############################################################ 
       -->
     <!-- window title (game name substituted for %s) -->
-	<string name="title_game_configf">%s settings</string>  
+    <string name="title_game_configf">%s settings</string>  
 
     <!-- alternate window title used when game is networked -->
-	<string name="title_gamenet_configf">%s settings (networked)</string>  
-
+    <string name="title_gamenet_configf">%s settings (networked)</string>  
+    <!--  -->
     <string name="title_gamebt_configf">%s settings (via Bluetooth)</string>
 
     <!-- title for popup list of langugages from which user picks -->
@@ -427,7 +431,7 @@
 
     <!-- Shown when using the the Game configure screen to configure a
          networked game and you try to make all players local. -->
-	<string name="str_reg_server_sans_remote">At least one player must
+    <string name="str_reg_server_sans_remote">At least one player must
          be marked \"Remote\" for a game started as Host.</string>
 
     <!-- Used as the default name for remote players displayed within
@@ -647,55 +651,55 @@
 
     <!-- This menu commits the current move as it's been laid out on
          the board -->
-	<string name="board_menu_done">Turn done</string>
+    <string name="board_menu_done">Turn done</string>
 
     <!-- This menu begins an exchange of tiles: puts the board into
          trade mode. -->
-	<string name="board_menu_trade">Exchange tiles</string>
+    <string name="board_menu_trade">Exchange tiles</string>
 
     <!-- hide and shows the tray.  On devices where there is enough
          room for the full board and tray to be shown then hiding the
          tray just "turns it over", i.e. shows tiles with '?'
          characters.-->
-	<string name="board_menu_tray_hide">Hide rack</string>
-	<string name="board_menu_tray_show">Show rack</string>
+    <string name="board_menu_tray_hide">Hide rack</string>
+    <string name="board_menu_tray_show">Show rack</string>
 
     <!-- Undos the last *committed* turn.  Note that this is different
          from the undo button that undoes or redoes an in-progress
          not-yet-committed turn.  This is disabled for networked
          games.-->
-	<string name="board_menu_undo_last">Undo last</string>
+    <string name="board_menu_undo_last">Undo last</string>
 
     <!-- Title of submenu -->
-	<string name="board_submenu_game">Game</string>
+    <string name="board_submenu_game">Game</string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles in
          the language of the game along with how many of each there
          are and how many points each is worth.  This display is the
          same throughout the game. -->
-	<string name="board_menu_game_counts">Counts and values</string>
+    <string name="board_menu_game_counts">Counts and values</string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles not
          yet played and not in the rack of the player whose rack is
          visible (whose turn it is, generally).  This display will
          change as tiles are used and depending on what player is
          asking. -->
-	<string name="board_menu_game_left">Tiles remaining</string>
+    <string name="board_menu_game_left">Tiles remaining</string>
 
     <!-- Brings up listing of all moves played so far this game.  -->
-	<string name="board_menu_game_history">Game history</string>
+    <string name="board_menu_game_history">Game history</string>
 
     <!-- Brings up explanation of the game's final score.  If the game
          is not yet over, gives you a choice whether to end it now,
          and if you decline does nothing. -->
-	<string name="board_menu_game_final">Final scores</string>
+    <string name="board_menu_game_final">Final scores</string>
 
     <!-- Meaningful only for networked games, this menu causes all
          messages that have not yet been acknowledged by a remote
          device in the game to be resent.  Eventually I hope to be
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
-	<string name="board_menu_game_resend">Resend messages</string>
+    <string name="board_menu_game_resend">Resend messages</string>
 
     <!--       
        ############################################################
@@ -794,7 +798,7 @@
        ############################################################
       -->
     <!-- window title -->
-	<string name="title_prefs">Crosswords settings</string>  
+    <string name="title_prefs">Crosswords settings</string>  
 
     <!--
        ############################################################
@@ -883,7 +887,7 @@
     <string name="default_phonies">Handle phonies</string>
 
     <!-- default number of minutes on timer for new games -->
-	<string name="initial_player_minutes">Timer minutes per player</string>
+    <string name="initial_player_minutes">Timer minutes per player</string>
 
     <!-- preference for board size (15x15, 13x13 etc.) -->
     <string name="board_size">Board size</string>
@@ -1016,9 +1020,9 @@
       -->
     <!-- Names of the three colors by which colors can be edited in
          the color preferences dialog -->
-	<string name="red">Red</string>
-	<string name="green">Green</string>
-	<string name="blue">Blue</string>
+    <string name="red">Red</string>
+    <string name="green">Green</string>
+    <string name="blue">Blue</string>
     
 
     <!--       
@@ -1110,27 +1114,27 @@
     <string name="connect_frequency">Background move check</string>
     <!-- These are the possible values for the connect_frequency
          setting presented as a drop-down list. -->
-	<string name="connect_never">Never check</string>
-	<string name="connect_five_mins">Every 5 minutes</string>
-	<string name="connect_fifteen_mins">Every 15 minutes</string>
-	<string name="connect_thirty_mins">Every 30 minutes</string>
-	<string name="connect_one_hour">Every hour</string>
-	<string name="connect_six_hours">Every six hours</string>
-	<string name="connect_daily">Once every day</string>
+    <string name="connect_never">Never check</string>
+    <string name="connect_five_mins">Every 5 minutes</string>
+    <string name="connect_fifteen_mins">Every 15 minutes</string>
+    <string name="connect_thirty_mins">Every 30 minutes</string>
+    <string name="connect_one_hour">Every hour</string>
+    <string name="connect_six_hours">Every six hours</string>
+    <string name="connect_daily">Once every day</string>
 
     <!-- When one or more new moves is found, should I play a
          notification sound -->
-	<string name="notify_sound">Play sound</string>
+    <string name="notify_sound">Play sound</string>
 
     <!-- When one or more new moves is found, should I vibrate the
          device -->
-	<string name="notify_vibrate">Vibrate</string>
+    <string name="notify_vibrate">Vibrate</string>
 
     <!-- This text is displayed as the "summary" for both of the
          notify choices above, as extra information.  (There could be
          different strings if it makes more sense in your language.)
          -->
-	<string name="notify_other_summary">When opponent moves arrive</string>
+    <string name="notify_other_summary">When opponent moves arrive</string>
 
     <!-- ############################################################
          # :Screens:
@@ -1159,11 +1163,11 @@
     <!-- Text of first of two buttons for new standalone games.  Tap
          this and a new game will be created and opened.  If the first
          player is a robot it will immediately take its turn.-->
-	<string name="newgame_local">Play now</string>
+    <string name="newgame_local">Play now</string>
 
     <!-- Text of second of two buttons for new standalone games.  Tap
     this and you'll get taken to the "Game configure" screen -->
-	<string name="newgame_local_config">Configure first</string>
+    <string name="newgame_local_config">Configure first</string>
 
     <!-- section separator (white-on-gray bar) for second section:
          networked games -->
@@ -1183,11 +1187,11 @@
          this and a game will be created, but you probably won't see
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
-	<string name="newgame_invite">Invite now</string>
+    <string name="newgame_invite">Invite now</string>
 
     <!-- Text of second of two buttons for new networked games.  Tap
     this and you'll get taken to the "Game configure" screen -->
-	<string name="newgame_net_config">Configure first</string>
+    <string name="newgame_net_config">Configure first</string>
 
     <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -1215,8 +1219,8 @@
     <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
-	<string name="button_text">SMS/Text</string>  
-	<string name="button_html">Email</string>  
+    <string name="button_text">SMS/Text</string>  
+    <string name="button_html">Email</string>  
 
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
@@ -1253,7 +1257,7 @@
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-	<string name="query_tradef">Are you sure you want to exchange the
+    <string name="query_tradef">Are you sure you want to exchange the
          selected tiles (%s)?</string>
 
     <!-- ############################################################
@@ -1347,32 +1351,32 @@
     <!-- Displayed when you try to commit a turn that is illegal
          because the tiles placed are not all in the same row or
          column. -->
-	<string name="str_tiles_not_in_line">All tiles played must be in a
+    <string name="str_tiles_not_in_line">All tiles played must be in a
          line.</string>
 
     <!-- Displayed when you try to commit a turn that is illegal
          because there is empty space between some of the tiles
          placed, i.e. they do not form a single word. -->
-	<string name="str_no_empties_in_turn">Empty squares cannot
+    <string name="str_no_empties_in_turn">Empty squares cannot
          separate tiles played.</string>
 
     <!-- Displayed when you try to commit the first move of the game
          and are playing a single tile.  The first move must include
          two or more tiles. -->
-	<string name="str_two_tiles_first_move">Must play two or more
+    <string name="str_two_tiles_first_move">Must play two or more
          pieces on the first move.</string>
 
     <!-- Displayed when you try to commit a turn that is illegal
          because tiles played do not touch other tiles already on the
          board (or the middle/star square in the case of the initial
          move.) -->
-	<string name="str_tiles_must_contact">New pieces must contact
+    <string name="str_tiles_must_contact">New pieces must contact
          others already in place (or the middle square on the first
          move)</string>
 
     <!-- Displyed when you try to commit a move and it's not your
          turn. -->
-	<string name="str_not_your_turn">You can\'t do that; it\'s not
+    <string name="str_not_your_turn">You can\'t do that; it\'s not
          your turn!</string>
 
     <!-- Displayed when you try to reveal a robot player's tiles,
@@ -1381,32 +1385,32 @@
          ability to reveal another players tiles this way is
          controlled by the peek_other preference and is disabled by
          default.)-->
-	<string name="str_no_peek_robot_tiles">No peeking at the robot\'s
+    <string name="str_no_peek_robot_tiles">No peeking at the robot\'s
          tiles!</string>
 
     <!-- Same as above, but used when you try to show tiles belonging
          to a player on another device (a remote player.) -->
-	<string name="str_no_peek_remote_tiles">No peeking at remote
+    <string name="str_no_peek_remote_tiles">No peeking at remote
          players\' tiles!</string>
 
     <!-- Displayed when you try to begin a trade but there are not
          seven or more tiles in the pool.  The rules don't allow
          trading in this case. -->
-	<string name="str_too_few_tiles_left_to_trade">Too few tiles left
+    <string name="str_too_few_tiles_left_to_trade">Too few tiles left
          to exchange.</string>
 
     <!-- Displayed if you try to use the undo menuitem or button and
          there are no tiles on the board (no move has yet been made.)
          [If I'm being clever and disabling those features in this
          case there may be no way to see this.] -->
-	<string name="str_cant_undo_tileassign">Tile assignment can\'t be
+    <string name="str_cant_undo_tileassign">Tile assignment can\'t be
          undone.</string>
 
     <!-- Using the hint feature is cheating by some players, and it
          can be disabled via the hints_allowed preference.  I should
          be disabling the buttons in this case, but if I don't and you
          try to get a hint you'll get this message instead.-->
-	<string name="str_cant_hint_while_disabled">The hint feature is
+    <string name="str_cant_hint_while_disabled">The hint feature is
          disabled for this game.  Enable it for a new game using the
          Settings dialog.</string>
 
@@ -1416,13 +1420,13 @@
          when playing via the relay because the relay is aware of how
          many players are expected and only connects devices where the
          numbers match. -->
-	<string name="str_reg_unexpected_user">Refused attempt to register
+    <string name="str_reg_unexpected_user">Refused attempt to register
          unexpected user[s]</string>
 
     <!-- Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
-	<string name="str_server_dict_wins">Conflict between Host and
+    <string name="str_server_dict_wins">Conflict between Host and
       Guest wordlists; Host wins.</string>
 
 
@@ -1497,15 +1501,15 @@
        -->
 
     <!-- Text of dialog.  Player name is substituted -->
-	<string name="msg_ask_password">Password for \"%s\":</string>
+    <string name="msg_ask_password">Password for \"%s\":</string>
 
     <!-- used to create default names of games (when user has not
          named them.) -->
-	<string name="gamef">Game %d</string>
+    <string name="gamef">Game %d</string>
 
     <!-- used to create default player names.  Number between 1 and 4
          is substituted -->
-	<string name="playerf">Player %d</string>
+    <string name="playerf">Player %d</string>
 
     <!-- When a move is fetched from the relay a Notification is
     posted.  These are its title, which appears in the top bar of the
@@ -1522,25 +1526,25 @@
 
     <!-- Text for buttons at the bottom of dialogs.  These first are
       in many places.-->
-	<string name="button_ok">OK</string>  
-	<string name="button_cancel">Cancel</string>  
-	<string name="button_yes">Yes</string>  
-	<string name="button_no">No</string>  
+    <string name="button_ok">OK</string>  
+    <string name="button_cancel">Cancel</string>  
+    <string name="button_yes">Yes</string>  
+    <string name="button_no">No</string>  
 
     <!-- Used in Game config dialog to confirm saving changes that reset a game -->
-	<string name="button_save">Save</string>
+    <string name="button_save">Save</string>
     <!-- Used for button in dialog put up with the relay says the
          remote partner of this game has deleted it.  Ok, meaning
          "don't discard", is the other option.  This same button is
          used as an option in the Game config dialog, where "Save" is
          the other option, for discarding changes that would otherwise
          reset a game. -->
-	<string name="button_discard">Discard</string>
+    <string name="button_discard">Discard</string>
 
     <!-- Used for a button when informing user that his attempt to
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) -->
-	<string name="button_retry">Retry</string>  
+    <string name="button_retry">Retry</string>  
 
     <!-- Shown in the main screen when you launch Crosswords from an
          invitation (received in email or messaging app, say) and
@@ -1554,7 +1558,7 @@
       want to open another?</string>
 
     <!-- Title of generic dialog used to display information -->
-	<string name="info_title">FYI...</string>
+    <string name="info_title">FYI...</string>
 
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
@@ -1592,8 +1596,8 @@
 
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
-	<string name="query_title">A question...</string>
-	
+    <string name="query_title">A question...</string>
+
     <!--
        ###########################################################
        # :Dialogs:
@@ -1606,7 +1610,7 @@
       -->
 
     <!-- Title of New user info dialog-->
-	<string name="newbie_title">New user info</string>
+    <string name="newbie_title">New user info</string>
 
     <!-- Text for button in new-user-info dialog with title just
          above.  -->
@@ -1809,199 +1813,302 @@
     <!-- New strings that need to be documented and found a home
          above. -->
     <string name="button_lookup">Look up words</string>
+      <!--  -->
     <string name="button_lookupf">Look up %s</string>
+      <!--  -->
     <string name="title_lookup">Tap to look up</string>
+      <!--  -->
     <string name="button_done">Done</string>
+      <!--  -->
     <string name="button_donef">Done with %s</string>
 
+      <!--  -->
     <string name="site_spinner_label">Pick a site</string>
+      <!--  -->
     <string name="site_spinner_prompt">Pick a site</string>
+      <!--  -->
     <string name="word_list_label">Tap word to search</string>
+      <!--  -->
     <string name="pick_url_titlef">Look up %s at</string>
 
+      <!--  -->
     <string name="board_menu_pass">Pass</string>
 
+      <!--  -->
     <string name="not_again_lookup">This button lets you look up the
       words just played online.  (Note that not all languages are
       supported yet.)</string>
 
+      <!--  -->
     <string name="button_move">Move</string>
 
+      <!--  -->
     <string name="button_search">Find</string>
+      <!--  -->
     <string name="word_search_hint">First letters</string>
+      <!--  -->
     <string name="tilepick_undo">Undo last</string>
+      <!--  -->
     <string name="tilepick_all">Pick for me</string>
+      <!--  -->
     <string name="cur_tilesf">Tile picker\n(so far: %s)</string>
+      <!--  -->
     <string name="pick_faceup">Pick tiles face-up</string>
 
+      <!--  -->
     <string name="dict_browse_titlef">%1$s (%2$d words using %3$d-%4$d
       tiles)</string>
+      <!--  -->
     <string name="dict_browse_title1f">%1$s (%2$d words using %3$d
       tiles)</string>
+      <!--  -->
     <string name="dict_browse_nowordsf">No word in %1$s starts with
       %2$s.</string>
+      <!--  -->
     <string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>
+      <!--  -->
     <string name="alert_empty_dictf">The wordlist %s contains only
       tile information.  There are no words to browse.</string>
 
+      <!--  -->
     <string name="min_len">Min length</string>
+      <!--  -->
     <string name="max_len">Max length</string>
+      <!--  -->
     <string name="prompt_min_len">Words no shorter than</string>
+      <!--  -->
     <string name="prompt_max_len">Words no longer than</string>
 
+      <!--  -->
     <string name="board_menu_file_email">Email author</string>
+      <!--  -->
     <string name="email_author_subject">Comment about Crosswords</string>
+      <!--  -->
     <string name="email_author_chooser">Send comment via</string>
 
+      <!--  -->
     <string name="email_body_revf">(If relevant, please include the
       version: \"%s\"; and make/model of your phone or
       tablet.)"</string>
 
     <string name="newgame_enable_bt">Turn Bluetooth on</string>
 
+      <!--  -->
     <string name="bt_pick_rescan_button">Rescan</string>
+      <!--  -->
     <string name="bt_pick_clear_button">Remove checked</string>
+      <!--  -->
     <string name="bt_pick_title">Opponent devices</string>
 
+      <!--  -->
     <string name="scan_progress">Scanning for Crosswords on paired devices</string>
+      <!--  -->
     <string name="invite_progress">Sending new game info...</string>
 
+      <!--  -->
     <string name="summary_wait_host">Waiting for connection[s]</string>
+      <!--  -->
     <string name="summary_wait_guest">Unconnected</string>
+      <!--  -->
     <string name="summary_gameover">Game over</string>
+      <!--  -->
     <string name="summary_conn">Game in play</string>
+      <!--  -->
     <string name="new_bt_title">New game via Bluetooth</string>
+      <!--  -->
     <string name="new_bt_bodyf">Paired device %s has invited you to
       play</string>
-
+      <!--  -->
     <string name="bt_bad_protof">Crosswords on %s wrong version for
       Bluetooth play.</string>
-
+      <!--  -->
     <string name="new_btmove_title">New move via Bluetooth</string>
+    <!--  -->
     <string name="new_move_body">One or more moves has arrived</string>
-
+    <!--  -->
     <string name="bt_devs_missing">Missing connections?  Invite BT
       devs?  (I won\'t ask again until you reopen this game.)</string>
-
+      <!--  -->
     <string name="invite_bt_descf">Please select the %d device[s] you
         want to include in this game.  Use the Rescan button if you
         don\'t see a device you expect.</string>
-
+        <!--  -->
     <string name="bt_resendf">Bluetooth send to %1$s failed; retry %3$d in
         %2$d seconds.</string>
+        <!--  -->
     <string name="bt_failf">Bluetooth sends to %1$s have failed too many
         times. Re-open the game to try again.</string>
-	<string name="button_invite">Invite checked</string>
-
+        <!--  -->
+    <string name="button_invite">Invite checked</string>
+    <!--  -->
     <string name="btname_label">New Bluetooth game name</string>
+    <!--  -->
     <string name="smsname_label">New SMS game name</string>
+    <!--  -->
     <string name="game_btname_title">Bluetooth game name</string>
+    <!--  -->
     <string name="game_smsname_title">Name your game</string>
+    <!--  -->
     <string name="dft_namef">Game %X</string>
-
+    <!--  -->
     <string name="newgame_sms_header">New SMS Game</string>
+    <!--  -->
     <string name="sms_networked_desc">Create a game that will be
     played via invisible text messages.  The \"Invite now\" button
     starts a two-device game and helps you invite a friend to join it.
     Or press \"Configure first\" to change some of the defaults before
     you start your SMS game. (You\'ll have a chance to send
     invites later.)</string>
-
+    <!--  -->
     <string name="sms_disabled">Playing vis SMS is currently disabled.
     You can enable it in Settings->Network game settings.</string>
+    <!--  -->
     <string name="newgame_enable_sms">Launch Settings</string>
-
+    <!--  -->
     <string name="err_no_phone">Phone number required</string>
+    <!--  -->
     <string name="dft_sms_namef">SMS Game %X</string>    
+    <!--  -->
     <string name="sms_devs_missing">Missing connections? Invite SMS
       devs? (I won\'t ask again until you reopen this game.)</string>
-
+      <!--  -->
     <string name="new_sms_title">New game via SMS</string>
+    <!--  -->
     <string name="new_name_bodyf">%s has invited you to play</string>
+    <!--  -->
     <string name="new_smsmove_title">New move via SMS</string>
-
+    <!--  -->
     <string name="button_sms_add">Import contact</string>
+    <!--  -->
     <string name="invite_sms_descf">Please check the %d phone
     number[s] you want to invite to your new game, then tap \"Invite
     checked\".</string>
+    <!--  -->
     <string name="manual_number_hint">Enter manually</string>
+    <!--  -->
     <string name="manual_owner_name">(Not in contacts)</string>
-
+    <!--  -->
     <string name="warn_nomobilef">The number %1$s for %2$s is not
     a \"mobile\" number. Import anyway?</string>
+    <!--  -->
     <string name="button_use">Use anyway</string>
+    <!--  -->
     <string name="empty_sms_inviter">Phone list is empty. Use the
     \"Import contact\" button to add people you want to
     invite, the + button to enter numbers directly.</string>
+    <!--  -->
     <string name="get_sms_number">Enter phone number:</string>
-
+    <!--  -->
     <string name="confirm_clear">Are you sure you want to delete the
     checked phone number[s]?</string>
-
+    <!--  -->
     <string name="invite_success">Invitation received.</string>
+    <!--  -->
     <string name="connect_label_sms">Connection (via SMS/text)</string>
+    <!--  -->
     <string name="phone_label">Connected number[s]:</string>
+    <!--  -->
     <string name="summary_conn_sms">Game in play with %s</string>
+    <!--  -->
     <string name="warn_unlimited">Are you certain this number is on an
     account with unlimited texting?  Click cancel if you are not.</string>
 
+    <!--  -->
     <string name="remote_undone">Remote device undid a turn.</string>
 
+    <!--  -->
     <string name="menu_hint_prev">Prev hint</string>
+
+    <!--  -->
     <string name="menu_hint_next">Next hint</string>
+
+    <!--  -->
     <string name="board_menu_undo_current">Undo/Redo</string>
+
+    <!--  -->
     <string name="menu_juggle">Juggle rack</string>
+
+    <!--  -->
     <string name="menu_flip">Flip board</string>
+    <!--  -->
     <string name="menu_zoom">Zoom in/out</string>
+    <!--  -->
     <string name="menu_chat">Chat</string>
+    <!--  -->
     <string name="menu_toggle_values">Toggle values</string>
 
     <!-- board menu for small devices only -->
     <string name="board_menu_dict">Browse wordlist</string>
 
+    <!--  -->
     <string name="game_list_tmp">Loading game summary...</string>
 
+    <!--  -->
     <string name="connstat_nonet">This is a standalone game. There is
     no network status.</string>
+    <!--  -->
     <string name="connstat_net">Network status for game connected via
     %1$s:</string>
+    <!--  -->
     <string name="connstat_succ">successful</string>
+    <!--  -->
     <string name="connstat_unsucc">unsuccessful</string>
+    <!--  -->
     <string name="connstat_lastsend">Last send was %1$s (%2$s)</string>
+    <!--  -->
     <string name="connstat_lastother_succ">(Last failure was %1$s)</string>
+    <!--  -->
     <string name="connstat_lastother_unsucc">(Last successful send was
     %1$s)</string>
+    <!--  -->
     <string name="connstat_lastreceipt">Last receipt was %1$s</string>
+    <!--  -->
     <string name="connstat_noreceipt">No messages have been received.</string>
+    <!--  -->
     <string name="connstat_relay">internet/relay</string>
+    <!--  -->
     <string name="connstat_sms">sms/texting</string>
+    <!--  -->
     <string name="connstat_bt">bluetooth</string>
-
+    <!--  -->
     <string name="enable_sms">Allow games via SMS</string>
+    <!--  -->
     <string name="enable_sms_summary">Only if you have unlimited texting!</string>
 
+    <!--  -->
     <string name="confirm_sms_title">Confirm your SMS plan</string>
+    <!--  -->
     <string name="confirm_sms_expl">Warning: This feature is meant for
     phones with unlimited texting plans. Once you enable it dozens of
     SMS (text) messages will be sent (invisibly) for each game
     played. If you don\'t have an unlimited plan your carrier may
     charge you for each and every one!\n\nShould play via SMS be
     enabled?</string>
+    <!--  -->
     <string name="confirm_sms_prompt">Enable play via SMS?</string>
+    <!--  -->
     <string name="confirm_sms_leave">No: leave disabled</string>
+    <!--  -->
     <string name="confirm_sms_unlimited">Yes: I have unlimited texting</string>
+    <!--  -->
     <string name="confirm_sms_willpay">Yes: I\'ll pay all carrier charges</string>
 
+    <!--  -->
     <string name="warn_sms_disabled">Play via SMS is currently
     disabled, so no moves will be sent for this game.  (If you want to
     enable play via SMS, go to Settings->Network game settings.)
     </string>
 
+    <!--  -->
     <string name="gamel_menu_checkupdates">Check for updates</string>
+    <!--  -->
     <string name="new_dict_avail">New wordlist available</string>
+    <!--  -->
     <string name="new_dict_availf">Tap to update %s</string>
+    <!--  -->
     <string name="new_app_availf">New version of %s</string>
+    <!--  -->
     <string name="new_app_avail">Tap to download</string>
 
 </resources>
