@@ -51,7 +51,6 @@
     <!-- system menu for main board view -->
     <string name="board_menu_done">Fet</string>
     <string name="board_menu_trade">Canvia</string>
-    <string name="board_menu_tray">Amaga/Mostra</string>
     <string name="board_submenu_game">Partida</string>
     <string name="board_menu_game_counts">Quantitat i valors</string>
     <string name="board_menu_game_left">Fitxes romanents</string>
@@ -178,11 +177,6 @@
     <string name="tile_back">Fons de la fitxa</string>
     <string name="empty">Cel·la buida/fons</string>
     <string name="clr_crosshairs">Creu d\'ubicació</string>
-    <string name="advanced">Avançat</string>
-    <string name="advanced_summary">No hauríeu de necessitar canviar això</string>
-    <string name="relay_host">Adreça del repetidor</string>
-    <string name="dict_host">URL de baixada de diccionaris</string>
-    <string name="relay_port">Port del repetidor</string>
 
     <string name="msg_relay_waiting">Esteu connectat al repetidor. S\'està esperant a %d jugador/s.</string>
 
@@ -230,7 +224,5 @@
     <string name="gamef">Partida %d</string>
     <string name="playerf">Jugador %d</string>
     <string name="initial_player_minutes">Minuts de partida</string>
-
-    <string name="git_rev_title">Id. versió codi font </string>
 
 </resources>

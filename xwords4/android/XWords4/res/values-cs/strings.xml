@@ -158,11 +158,6 @@
     <string name="bonus_w3x">Trojitá hodnota slova</string>
     <string name="tile_back">Pozadí kamenů</string>
     <string name="empty">Prázdné pole/pozadí</string>
-    <string name="advanced">Rozšířené</string>
-    <string name="advanced_summary">Toto byste neměli potřebovat měnit...</string>
-    <string name="relay_host">Relay adresa</string>
-    <string name="dict_host">URL adresa pro nahrávání slovníků</string>
-    <string name="relay_port">Relay port</string>
 
     <string name="msg_relay_waiting">Připojen na relay. Čekám na %d hráče.</string>
 

@@ -157,10 +157,6 @@
     <string name="tile_back">Pozadie kamenňov</string>
     <string name="empty">Prázdne pole/pozadie</string>
     <string name="advanced">Rozšírené</string>
-    <string name="advanced_summary">Toto by ste nemali potrebovať meniť...</string>
-    <string name="relay_host">Relay adresa</string>
-    <string name="dict_host">URL adresa pre nahrávanie slovníkov</string>
-    <string name="relay_port">Relay port</string>
 
     <string name="msg_relay_waiting">Pripojený na relay. Čakám na %d
       hráčov.</string>
