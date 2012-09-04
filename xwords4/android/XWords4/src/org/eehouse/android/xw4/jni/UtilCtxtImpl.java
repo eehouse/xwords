@@ -222,6 +222,12 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "informUndo" );
     }
 
+    public void informNetDict( String oldName, String newName, 
+                               CurGameInfo.XWPhoniesChoice phonies )
+    {
+        subclassOverride( "informNetDict" );
+    }
+
     public void informMissing( boolean isServer, 
                                CommsAddrRec.CommsConnType connType,
                                int nMissingPlayers )

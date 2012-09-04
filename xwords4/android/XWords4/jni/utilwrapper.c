@@ -269,6 +269,28 @@ and_util_informUndo( XW_UtilCtxt* uc )
 }
 
 static void
+and_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
+                        const XP_UCHAR* newName,
+                        XWPhoniesChoice phoniesAction )
+{
+    LOG_FUNC();
+    UTIL_CBK_HEADER( "informNetDict", 
+                     "(Ljava/lang/String;Ljava/lang/String;L"
+                     PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") ";)V" );
+    jstring jnew = (*env)->NewStringUTF( env, newName );
+    jstring jold = (*env)->NewStringUTF( env, oldName );
+    jobject jphon = intToJEnum( env, phoniesAction, 
+                                PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
+
+    (*env)->CallVoidMethod( env, util->jutil, mid, jold, jnew, jphon );
+    (*env)->DeleteLocalRef( env, jnew );
+    (*env)->DeleteLocalRef( env, jold );
+    (*env)->DeleteLocalRef( env, jphon );
+
+    UTIL_CBK_TAIL();
+}
+
+static void
 and_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
@@ -585,6 +607,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
 #endif
     SET_PROC(informMove);
     SET_PROC(informUndo);
+    SET_PROC(informNetDict);
     SET_PROC(notifyGameOver);
     SET_PROC(hiliteCell);
     SET_PROC(engineProgressCallback);
