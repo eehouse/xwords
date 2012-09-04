@@ -1473,6 +1473,14 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
+        public void informNetDict( String oldName, String newName, 
+                                   CurGameInfo.XWPhoniesChoice phonies )
+        {
+            DbgUtils.logf( "informNetDict(%s, %s, %s)", oldName, newName,
+                           phonies.toString() );
+        }
+
+        @Override
         public void notifyGameOver()
         {
             m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
