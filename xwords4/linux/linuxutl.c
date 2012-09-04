@@ -89,7 +89,7 @@ static DictionaryCtxt*
 linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx) )
 {
     XP_DEBUGF( "linux_util_makeEmptyDict called" );
-    return linux_dictionary_make( MPPARM(uctx->mpool) NULL, NULL, XP_FALSE );
+    return linux_dictionary_make( MPPARM(uctx->mpool) NULL, XP_FALSE );
 } /* linux_util_makeEmptyDict */
 
 #define EM BONUS_NONE
@@ -350,6 +350,7 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
     util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
     util->vtable->m_util_getCurSeconds = linux_util_getCurSeconds;
     util->vtable->m_util_getUserString = linux_util_getUserString;
+
 }
 
 void

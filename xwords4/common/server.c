@@ -1231,6 +1231,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
         localGI.serverRole = SERVER_ISCLIENT;
 
+        /* so it's not lost (HACK!).  Without this, a client won't have a default
+           dict name when a new game is started. */
         localGI.dictName = copyString( server->mpool, gi->dictName );
         gi_copy( MPPARM(server->mpool) gi, &localGI );
 
@@ -1238,17 +1240,6 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
         newDict = util_makeEmptyDict( server->vol.util );
         dict_loadFromStream( newDict, stream );
-
-#ifdef STREAM_VERS_BIGBOARD
-        if ( STREAM_VERS_DICTNAME <= streamVersion ) {
-            XP_UCHAR buf[128];
-            stringFromStreamHere( stream, buf, VSIZE(buf) );
-            if ( 0 != XP_STRCMP( buf, gi->dictName ) ) {
-                util_informNetDict( server->vol.util, gi->dictName, buf,
-                                    localGI.phoniesAction );
-            }
-        }
-#endif
 
         channelNo = stream_getAddress( stream );
         XP_ASSERT( channelNo != 0 );
@@ -1382,11 +1373,7 @@ server_sendInitialMessage( ServerCtxt* server )
         gi_writeToStream( stream, &localGI );
 
         dict_writeToStream( dict, stream );
-#ifdef STREAM_VERS_BIGBOARD
-        if ( STREAM_VERS_DICTNAME <= addr->streamVersion ) {
-            stringToStream( stream, dict_getShortName(dict) );
-        }
-#endif
+
         /* send tiles currently in tray */
         for ( ii = 0; ii < nPlayers; ++ii ) {
             model_trayToStream( model, ii, stream );

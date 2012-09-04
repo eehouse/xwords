@@ -48,7 +48,6 @@ typedef struct LaunchParams {
     DictionaryCtxt* dict;
     CurGameInfo gi;
     PlayerDicts dicts;
-    GSList* dictDirs;
     char* fileName;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE

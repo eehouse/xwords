@@ -394,16 +394,6 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
     }
 } /* curses_util_notifyGameOver */
 
-static void
-curses_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
-                           const XP_UCHAR* newName,
-                           XWPhoniesChoice phoniesAction )
-{
-    XP_USE(uc);
-    XP_USE(phoniesAction);
-    XP_LOGF( "%s: %s => %s", __func__, oldName, newName );
-}
-
 static XP_Bool
 curses_util_hiliteCell( XW_UtilCtxt* uc, 
                         XP_U16 XP_UNUSED(col), XP_U16 XP_UNUSED(row) )
@@ -1526,7 +1516,6 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_informMove = curses_util_informMove;
     util->vtable->m_util_informUndo = curses_util_informUndo;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
-    util->vtable->m_util_informNetDict = curses_util_informNetDict;
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
     util->vtable->m_util_engineProgressCallback = 
         curses_util_engineProgressCallback;

@@ -32,9 +32,7 @@ void linux_debugf(const char*, ...)
     __attribute__ ((format (printf, 1, 2)));
 #endif
 
-DictionaryCtxt* linux_dictionary_make( MPFORMAL const LaunchParams* mainParams,
-                                       const char* dictFileName, XP_Bool useMMap );
-
+DictionaryCtxt* linux_dictionary_make( MPFORMAL const char* dictFileName, XP_Bool useMmap );
 
 void linux_util_vt_init( MPFORMAL XW_UtilCtxt* util );
 void linux_util_vt_destroy( XW_UtilCtxt* util );
