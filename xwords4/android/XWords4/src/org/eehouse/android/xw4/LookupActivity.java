@@ -78,6 +78,9 @@ public class LookupActivity extends XWListActivity
 
         Intent intent = getIntent();
         m_words = intent.getStringArrayExtra( WORDS );
+        for ( int ii = 0; ii < m_words.length; ++ii ) {
+            m_words[ii] = m_words[ii].toLowerCase();
+        }
         setLang( intent.getIntExtra( LANG, -1 ) );
         m_forceList = intent.getBooleanExtra( FORCELIST, false );
 
