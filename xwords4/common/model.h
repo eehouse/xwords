@@ -248,6 +248,7 @@ void model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
 /********************* scoring ********************/
 
 typedef XP_Bool (*WordNotifierProc)( const XP_UCHAR* word, XP_Bool isLegal, 
+                                     const DictionaryCtxt* dict,
 #ifdef XWFEATURE_BOARDWORDS
                                      const MoveInfo* movei, XP_U16 start, 
                                      XP_U16 end,
