@@ -1406,6 +1406,7 @@ freeBWI( MPFORMAL BadWordInfo* bwi )
 {
     XP_U16 nWords = bwi->nWords;
 
+    XP_FREEP( mpool, &bwi->dictName );
     while ( nWords-- ) {
         XP_FREE( mpool, (XP_UCHAR*)bwi->words[nWords] );
         bwi->words[nWords] = (XP_UCHAR*)NULL;
@@ -1436,6 +1437,7 @@ bwiFromStream( MPFORMAL XWStreamCtxt* stream, BadWordInfo* bwi )
     const XP_UCHAR** sp = bwi->words;
 
     bwi->nWords = nWords;
+    bwi->dictName = NULL;
     for ( sp = bwi->words; nWords; ++sp, --nWords ) {
         *sp = (const XP_UCHAR*)stringFromStream( mpool, stream );
     }
@@ -1874,7 +1876,7 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
 
 static XP_Bool
 storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
-               const DictionaryCtxt* XP_UNUSED(dict),
+               const DictionaryCtxt* dict,
 #ifdef XWFEATURE_BOARDWORDS
                const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
                XP_U16 XP_UNUSED(end), 
@@ -1883,9 +1885,12 @@ storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
 {
     if ( !isLegal ) {
         ServerCtxt* server = (ServerCtxt*)closure;
+        const XP_UCHAR* name = dict_getShortName( dict );
 
-        XP_LOGF( "storeBadWords called with \"%s\"", word );
-
+        XP_LOGF( "storeBadWords called with \"%s\" (name=%s)", word, name );
+        if ( NULL == server->illegalWordInfo.dictName ) {
+            server->illegalWordInfo.dictName = copyString( server->mpool, name );
+        }
         server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
             = copyString( server->mpool, word );
     }

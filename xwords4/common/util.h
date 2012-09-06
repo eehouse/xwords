@@ -82,6 +82,7 @@ typedef struct PickInfo {
 
 typedef struct BadWordInfo {
     XP_U16 nWords;
+    XP_UCHAR* dictName;
     const XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
 } BadWordInfo;
 
