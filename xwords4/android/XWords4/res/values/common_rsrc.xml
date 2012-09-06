@@ -239,7 +239,7 @@
     <!--  -->
     <item>Viccionari</item>
     <item>:ca:</item>
-    <item>http://ca.m.wiktionary.org/wiki/%2$s</item>
+    <item>http://ca.wiktionary.org/w/index.php?search=%2$s</item>
     <!--  -->
     <item>Google</item>
     <item></item> <!-- means all supported -->

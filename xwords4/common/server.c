@@ -1404,7 +1404,6 @@ server_sendInitialMessage( ServerCtxt* server )
 static void
 freeBWI( MPFORMAL BadWordInfo* bwi )
 {
-    /*     BadWordInfo* bwi = &server->illegalWordInfo; */
     XP_U16 nWords = bwi->nWords;
 
     while ( nWords-- ) {
@@ -1884,7 +1883,7 @@ storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
     if ( !isLegal ) {
         ServerCtxt* server = (ServerCtxt*)closure;
 
-        XP_STATUSF( "storeBadWords called with \"%s\"", word );
+        XP_LOGF( "storeBadWords called with \"%s\"", word );
 
         server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
             = copyString( server->mpool, word );
@@ -2115,7 +2114,9 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
                                      (TrayTileSet*)NULL, sourceClientIndex );
 
             server->vol.showPrevMove = XP_TRUE;
-            mvStream = makeMoveReportIf( server, &wordsStream );
+            if ( isLegalMove ) {
+                mvStream = makeMoveReportIf( server, &wordsStream );
+            }
 
             success = model_commitTurn( model, whoMoved, &newTiles );
             resetEngines( server );

@@ -37,6 +37,7 @@ typedef struct MemPoolEntry {
     XP_U32 lineNo;
     XP_U32 size;
     void* ptr;
+    XP_U16 index;
 } MemPoolEntry;
 
 struct MemPoolCtx {
@@ -97,14 +98,16 @@ void
 mpool_destroy( MemPoolCtx* mpool )
 {
     if ( mpool->nUsed > 0 ) {
-        XP_WARNF( "leaking %d blocks", mpool->nUsed );
+        XP_WARNF( "leaking %d blocks (of %d allocs)", mpool->nUsed, 
+                  mpool->nAllocs );
     }
     if ( !!mpool->usedList ) {
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS /* I don't want to hear about this right now */
-            XP_LOGF( "%s: " XP_P " in %s, ln %ld of %s\n", __func__, 
-                     entry->ptr, entry->func, entry->lineNo, entry->fileName );
+            XP_LOGF( "%s: " XP_P " index=%d, in %s, ln %ld of %s\n", __func__, 
+                     entry->ptr, entry->index, 
+                     entry->func, entry->lineNo, entry->fileName );
 #ifdef DEBUG
             {
                 char* tryTxt;
@@ -149,13 +152,13 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
     entry->size = size;
     entry->ptr = XP_PLATMALLOC( size );
     XP_ASSERT( !!entry->ptr );
+    entry->index = ++mpool->nAllocs;
 
     ++mpool->nUsed;
-    ++mpool->nAllocs;
 
 #ifdef MPOOL_DEBUG
-    XP_LOGF( "%s(size=%ld,file=%s,lineNo=%ld)=>%p",
-             __func__, size, file, lineNo, entry->ptr );
+    XP_LOGF( "%s(size=%ld,index=%d,file=%s,lineNo=%ld)=>%p",
+             __func__, size, entry->index, file, lineNo, entry->ptr );
 #endif
 
     return entry->ptr;
@@ -226,8 +229,8 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     } else {
 
 #ifdef MPOOL_DEBUG
-    XP_LOGF( "%s(ptr=%p):size=%ld,func=%s,file=%s,lineNo=%ld)", __func__, 
-             entry->ptr, entry->size, entry->func, entry->fileName, 
+    XP_LOGF( "%s(ptr=%p):size=%ld,index=%d,func=%s,file=%s,lineNo=%ld)", __func__, 
+             entry->ptr, entry->size, entry->index, entry->func, entry->fileName, 
              entry->lineNo );
 #endif
 
