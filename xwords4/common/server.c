@@ -1408,8 +1408,7 @@ freeBWI( MPFORMAL BadWordInfo* bwi )
 
     XP_FREEP( mpool, &bwi->dictName );
     while ( nWords-- ) {
-        XP_FREE( mpool, (XP_UCHAR*)bwi->words[nWords] );
-        bwi->words[nWords] = (XP_UCHAR*)NULL;
+        XP_FREEP( mpool, &bwi->words[nWords] );
     }
 
     bwi->nWords = 0;
@@ -1423,7 +1422,9 @@ bwiToStream( XWStreamCtxt* stream, BadWordInfo* bwi )
     const XP_UCHAR** sp;
 
     stream_putBits( stream, 4, nWords );
-    
+    if ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) ) {
+        stringToStream( stream, bwi->dictName );
+    }
     for ( sp = bwi->words; nWords > 0; --nWords, ++sp ) {
         stringToStream( stream, *sp );
     }
@@ -1437,7 +1438,8 @@ bwiFromStream( MPFORMAL XWStreamCtxt* stream, BadWordInfo* bwi )
     const XP_UCHAR** sp = bwi->words;
 
     bwi->nWords = nWords;
-    bwi->dictName = NULL;
+    bwi->dictName = ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) )
+        ? stringFromStream( mpool, stream ) : NULL;
     for ( sp = bwi->words; nWords; ++sp, --nWords ) {
         *sp = (const XP_UCHAR*)stringFromStream( mpool, stream );
     }
