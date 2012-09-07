@@ -1492,10 +1492,10 @@ public class BoardActivity extends XWActivity
         //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
         // }
         @Override
-        public boolean warnIllegalWord( String[] words, int turn, 
+        public boolean warnIllegalWord( String dict, String[] words, int turn, 
                                         boolean turnLost )
         {
-            DbgUtils.logf( "warnIllegalWord" );
+            DbgUtils.logf( "warnIllegalWord(dict=%s)", dict );
             boolean accept = turnLost;
 
             StringBuffer sb = new StringBuffer();
@@ -1507,7 +1507,8 @@ public class BoardActivity extends XWActivity
                 sb.append( "; " );
             }
         
-            String message = getString( R.string.ids_badwords, sb.toString() );
+            String message = 
+                getString( R.string.ids_badwords, sb.toString(), dict );
 
             if ( turnLost ) {
                 nonBlockingDialog( DLG_BADWORDS, 

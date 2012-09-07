@@ -242,7 +242,8 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "notifyGameOver" );
     }
 
-    public boolean warnIllegalWord( String[] words, int turn, boolean turnLost )
+    public boolean warnIllegalWord( String dict, String[] words, int turn, 
+                                    boolean turnLost )
     {
         subclassOverride( "warnIllegalWord" );
         return false;

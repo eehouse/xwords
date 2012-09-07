@@ -428,14 +428,18 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
                           XP_U16 turn, XP_Bool turnLost )
 {
     jboolean result = XP_FALSE;
-    UTIL_CBK_HEADER("warnIllegalWord", "([Ljava/lang/String;IZ)Z" );
+    UTIL_CBK_HEADER("warnIllegalWord", 
+                    "(Ljava/lang/String;[Ljava/lang/String;IZ)Z" );
     XP_ASSERT( bwi->nWords > 0 );
     if ( bwi->nWords > 0 ) {
         jobjectArray jwords = makeStringArray( env, bwi->nWords, 
                                                (const XP_UCHAR**)bwi->words );
+        XP_ASSERT( !!bwi->dictName );
+        jstring jname = (*env)->NewStringUTF( env, bwi->dictName );
         result = (*env)->CallBooleanMethod( env, util->jutil, mid,
-                                            jwords, turn, turnLost );
+                                            jname, jwords, turn, turnLost );
         (*env)->DeleteLocalRef( env, jwords );
+        (*env)->DeleteLocalRef( env, jname );
     }
     UTIL_CBK_TAIL();
     return result;
