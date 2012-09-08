@@ -107,7 +107,7 @@ skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), const XP_U8** ptrp )
     
     nCols = *ptr++;
     if ( nCols > 0 ) {
-	nRows = *ptr++;
+        nRows = *ptr++;
 
         nBytes = ((nRows * nCols) + 7) / 8;
 
@@ -116,8 +116,8 @@ skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), const XP_U8** ptrp )
         lbs->nCols = nCols;
         lbs->nBytes = nBytes;
 	
-	memcpy( lbs + 1, ptr, nBytes );
-	ptr += nBytes;
+        memcpy( lbs + 1, ptr, nBytes );
+        ptr += nBytes;
     }
 
     *ptrp = ptr;
@@ -308,6 +308,17 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             } else {
                 XP_LOGF( "%s: no note", __func__ );
             }
+            if ( 0 < headerLen ) {
+                XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)ptr );
+                dctx->super.md5Sum = XP_MALLOC( dctx->super.mpool, len );
+                XP_MEMCPY( dctx->super.md5Sum, ptr, len );
+                XP_LOGF( "%s: got md5Sum of len %d: \"%s\"", __func__, 
+                         headerLen-1, dctx->super.md5Sum );
+                ptr += len;
+                headerLen -= len;
+            } else {
+                XP_LOGF( "%s: no md5Sum", __func__ );
+            }
             ptr += headerLen;
         }
 
@@ -317,6 +328,25 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         numFaces = *ptr++;
         if ( !isUTF8 ) {
             numFaceBytes = numFaces * charSize;
+        }
+
+        if ( NULL == dctx->super.md5Sum
+#ifdef DEBUG
+             || XP_TRUE 
+#endif
+             ) {
+            XP_U32 curPos = ptr - dctx->dictBase;
+            gssize dictLength = dctx->dictLength - curPos;
+            GChecksum* cksum = g_checksum_new( G_CHECKSUM_MD5 );
+            g_checksum_update( cksum, ptr, dictLength );
+            const gchar* sum = g_checksum_get_string( cksum );
+            XP_LOGF( "calculated sum on %d bytes: %s", dictLength, sum );
+            if ( NULL == dctx->super.md5Sum ) {
+                dctx->super.md5Sum = copyString( dctx->super.mpool, sum );
+            } else {
+                XP_ASSERT( 0 == XP_STRCMP( dctx->super.md5Sum, sum ) );
+            }
+            g_checksum_free( cksum );
         }
 
         dctx->super.nFaces = numFaces;
@@ -427,14 +457,15 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
     freeSpecials( ctxt );
 
     if ( !!ctxt->dictBase ) {
-	if ( ctxt->useMMap ) {
-	    (void)munmap( ctxt->dictBase, ctxt->dictLength );
-	} else {
-	    XP_FREE( dict->mpool, ctxt->dictBase );
-	}
+        if ( ctxt->useMMap ) {
+            (void)munmap( ctxt->dictBase, ctxt->dictLength );
+        } else {
+            XP_FREE( dict->mpool, ctxt->dictBase );
+        }
     }
 
     XP_FREEP( dict->mpool, &ctxt->super.desc );
+    XP_FREEP( dict->mpool, &ctxt->super.md5Sum );
     XP_FREE( dict->mpool, ctxt->super.countsAndValues );
     XP_FREE( dict->mpool, ctxt->super.faces );
     XP_FREE( dict->mpool, ctxt->super.facePtrs );

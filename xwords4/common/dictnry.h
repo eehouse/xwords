@@ -74,6 +74,7 @@ struct DictionaryCtxt {
     XP_UCHAR* langName;
     XP_UCHAR* faces;
     XP_UCHAR* desc;
+    XP_UCHAR* md5Sum;
     const XP_UCHAR** facePtrs;
     XP_U8* countsAndValues;
 
