@@ -280,7 +280,12 @@ $(XWLANG)%_note.bin:
 	echo -n $(DICTNOTE) > $@
 	perl -e "print pack(\"c\",0)" >> $@
 
-$(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin $(XWLANG)%_note.bin
+$(XWLANG)%_md5sum.bin: 
+	cat table.bin values.bin frankspecials.bin $(XWLANG)StartLoc.bin \
+		dawg$(XWLANG)$*_*.bin | md5sum | awk '{print $$1}' | tr -d '\n' > $@
+	perl -e "print pack(\"c\",0)" >> $@
+
+$(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin $(XWLANG)%_note.bin $(XWLANG)%_md5sum.bin
 	SIZ=0; \
 	for FILE in $+; do \
 		SIZ=$$(($$SIZ + $$(ls -l $$FILE | awk '{print $$5}'))); \
