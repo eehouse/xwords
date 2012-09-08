@@ -156,6 +156,18 @@ sub readNodesToEnd($) {
     return @nodes;
 } # readNodesToEnd
 
+sub printHeader($$) {
+    my ( $buf, $len ) = @_;
+    printf STDERR "skipped %d bytes of header:\n", $len + 2;
+    my $asStr = Encode::decode_utf8($buf);
+    my @strs = split( '\0', $asStr );
+    foreach my $str (@strs) {
+        if ( 0 < length($str) ) {
+            print STDERR 'Got: ', $str, "\n";
+        }
+    }
+}
+
 sub nodeSizeFromFlags($$) {
     my ( $fh, $flags ) = @_;
 
@@ -167,7 +179,7 @@ sub nodeSizeFromFlags($$) {
         2 == sysread( $fh, $buf, 2 ) || die "couldn't read length of header";
         my $len = unpack( "n", $buf );
         $len == sysread( $fh, $buf, $len ) || die  "couldn't read header bytes";
-        printf STDERR "skipped %d bytes of header\n", $len + 2;
+        printHeader( $buf, $len );
     }
 
     if ( $flags == 2 || $ flags == 4 ) {
