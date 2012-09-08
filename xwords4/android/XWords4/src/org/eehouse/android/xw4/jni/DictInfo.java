@@ -21,7 +21,11 @@
 package org.eehouse.android.xw4.jni;
 
 public class DictInfo {
+    // set in java code
+    public String name;
+
+    // set in jni code
     public int langCode;
     public int wordCount;
-    public String name;
+    public String md5Sum;
 };
