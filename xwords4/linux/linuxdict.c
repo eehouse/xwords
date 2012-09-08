@@ -83,6 +83,20 @@ linux_dictionary_make( MPFORMAL const char* dictFileName, XP_Bool useMMap )
     return (DictionaryCtxt*)result;
 } /* gtk_dictionary_make */
 
+static XP_UCHAR*
+getNullTermParam( LinuxDictionaryCtxt* dctx, const XP_U8** ptr, 
+                  XP_U16* headerLen )
+{
+    XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
+    XP_UCHAR* result = XP_MALLOC( dctx->super.mpool, len );
+    XP_MEMCPY( result, *ptr, len );
+    XP_LOGF( "%s: got param of len %d: \"%s\"", __func__, 
+             len, result );
+    *ptr += len;
+    *headerLen -= len;
+    return result;
+}
+
 static XP_U16
 countSpecials( LinuxDictionaryCtxt* ctxt )
 {
@@ -298,24 +312,12 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             XP_DEBUGF( "dict contains %ld words", dctx->super.nWords );
 
             if ( 0 < headerLen ) {
-                XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)ptr );
-                dctx->super.desc = XP_MALLOC( dctx->super.mpool, len );
-                XP_MEMCPY( dctx->super.desc, ptr, len );
-                XP_LOGF( "%s: got note of len %d: \"%s\"", __func__, 
-                         headerLen-1, dctx->super.desc );
-                ptr += len;
-                headerLen -= len;
+                dctx->super.desc = getNullTermParam( dctx, &ptr, &headerLen );
             } else {
                 XP_LOGF( "%s: no note", __func__ );
             }
             if ( 0 < headerLen ) {
-                XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)ptr );
-                dctx->super.md5Sum = XP_MALLOC( dctx->super.mpool, len );
-                XP_MEMCPY( dctx->super.md5Sum, ptr, len );
-                XP_LOGF( "%s: got md5Sum of len %d: \"%s\"", __func__, 
-                         headerLen-1, dctx->super.md5Sum );
-                ptr += len;
-                headerLen -= len;
+                dctx->super.md5Sum = getNullTermParam( dctx, &ptr, &headerLen );
             } else {
                 XP_LOGF( "%s: no md5Sum", __func__ );
             }
