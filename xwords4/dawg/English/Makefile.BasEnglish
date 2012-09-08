@@ -18,7 +18,7 @@
 XWLANG=BasEnglish
 LANGCODE=en_US
 DICT2DAWGARGS = -r -nosort
-DICTNOTE = "Built on $(shell date)"
+DICTNOTE = "Wordlist created in the 1930s for language learners"
 
 TARGET_TYPE ?= WINCE
 

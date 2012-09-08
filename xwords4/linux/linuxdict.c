@@ -85,6 +85,20 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
     return (DictionaryCtxt*)result;
 } /* gtk_dictionary_make */
 
+static XP_UCHAR*
+getNullTermParam( LinuxDictionaryCtxt* dctx, const XP_U8** ptr, 
+                  XP_U16* headerLen )
+{
+    XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
+    XP_UCHAR* result = XP_MALLOC( dctx->super.mpool, len );
+    XP_MEMCPY( result, *ptr, len );
+    XP_LOGF( "%s: got param of len %d: \"%s\"", __func__, 
+             len, result );
+    *ptr += len;
+    *headerLen -= len;
+    return result;
+}
+
 static XP_U16
 countSpecials( LinuxDictionaryCtxt* ctxt )
 {
@@ -109,7 +123,7 @@ skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), const XP_U8** ptrp )
     
     nCols = *ptr++;
     if ( nCols > 0 ) {
-	nRows = *ptr++;
+        nRows = *ptr++;
 
         nBytes = ((nRows * nCols) + 7) / 8;
 
@@ -118,8 +132,8 @@ skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), const XP_U8** ptrp )
         lbs->nCols = nCols;
         lbs->nBytes = nBytes;
 	
-	memcpy( lbs + 1, ptr, nBytes );
-	ptr += nBytes;
+        memcpy( lbs + 1, ptr, nBytes );
+        ptr += nBytes;
     }
 
     *ptrp = ptr;
@@ -306,15 +320,14 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
             XP_DEBUGF( "dict contains %ld words", dctx->super.nWords );
 
             if ( 0 < headerLen ) {
-                XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)ptr );
-                dctx->super.desc = XP_MALLOC( dctx->super.mpool, len );
-                XP_MEMCPY( dctx->super.desc, ptr, len );
-                XP_LOGF( "%s: got note of len %d: \"%s\"", __func__, 
-                         headerLen-1, dctx->super.desc );
-                ptr += len;
-                headerLen -= len;
+                dctx->super.desc = getNullTermParam( dctx, &ptr, &headerLen );
             } else {
                 XP_LOGF( "%s: no note", __func__ );
+            }
+            if ( 0 < headerLen ) {
+                dctx->super.md5Sum = getNullTermParam( dctx, &ptr, &headerLen );
+            } else {
+                XP_LOGF( "%s: no md5Sum", __func__ );
             }
             ptr += headerLen;
         }
@@ -325,6 +338,25 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
         numFaces = *ptr++;
         if ( !isUTF8 ) {
             numFaceBytes = numFaces * charSize;
+        }
+
+        if ( NULL == dctx->super.md5Sum
+#ifdef DEBUG
+             || XP_TRUE 
+#endif
+             ) {
+            XP_U32 curPos = ptr - dctx->dictBase;
+            gssize dictLength = dctx->dictLength - curPos;
+            GChecksum* cksum = g_checksum_new( G_CHECKSUM_MD5 );
+            g_checksum_update( cksum, ptr, dictLength );
+            const gchar* sum = g_checksum_get_string( cksum );
+            XP_LOGF( "calculated sum on %d bytes: %s", dictLength, sum );
+            if ( NULL == dctx->super.md5Sum ) {
+                dctx->super.md5Sum = copyString( dctx->super.mpool, sum );
+            } else {
+                XP_ASSERT( 0 == XP_STRCMP( dctx->super.md5Sum, sum ) );
+            }
+            g_checksum_free( cksum );
         }
 
         dctx->super.nFaces = numFaces;
@@ -435,14 +467,15 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
     freeSpecials( ctxt );
 
     if ( !!ctxt->dictBase ) {
-	if ( ctxt->useMMap ) {
-	    (void)munmap( ctxt->dictBase, ctxt->dictLength );
-	} else {
-	    XP_FREE( dict->mpool, ctxt->dictBase );
-	}
+        if ( ctxt->useMMap ) {
+            (void)munmap( ctxt->dictBase, ctxt->dictLength );
+        } else {
+            XP_FREE( dict->mpool, ctxt->dictBase );
+        }
     }
 
     XP_FREEP( dict->mpool, &ctxt->super.desc );
+    XP_FREEP( dict->mpool, &ctxt->super.md5Sum );
     XP_FREE( dict->mpool, ctxt->super.countsAndValues );
     XP_FREE( dict->mpool, ctxt->super.faces );
     XP_FREE( dict->mpool, ctxt->super.facePtrs );

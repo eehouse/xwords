@@ -265,6 +265,18 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
     ctxt->super.facePtrs = ptrs;
 } /* splitFaces_via_java */
 
+static XP_UCHAR*
+getNullTermParam( AndDictionaryCtxt* dctx, const XP_U8** ptr, 
+                  XP_U16* headerLen )
+{
+    XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
+    XP_UCHAR* result = XP_MALLOC( dctx->super.mpool, len );
+    XP_MEMCPY( result, *ptr, len );
+    *ptr += len;
+    *headerLen -= len;
+    return result;
+}
+
 static XP_Bool
 parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
            XP_U32* numEdges )
@@ -294,12 +306,10 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         }
 
         if ( 1 <= headerLen ) { /* have description? */
-            XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)ptr );
-            ctxt->super.desc = 
-                (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, len);
-            XP_MEMCPY( ctxt->super.desc, ptr, len );
-            ptr += len;
-            headerLen -= len;
+            ctxt->super.desc = getNullTermParam( ctxt, &ptr, &headerLen );
+        }
+        if ( 1 <= headerLen ) { /* have md5sum? */
+            ctxt->super.md5Sum = getNullTermParam( ctxt, &ptr, &headerLen );
         }
 
         CHECK_PTR( ptr, headerLen, end );
@@ -440,6 +450,7 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
 
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.md5Sum );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.desc );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.faces );
     XP_FREEP( ctxt->super.mpool, &ctxt->super.facePtrs );

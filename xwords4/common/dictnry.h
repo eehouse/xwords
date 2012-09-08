@@ -74,6 +74,7 @@ struct DictionaryCtxt {
     XP_UCHAR* langName;
     XP_UCHAR* faces;
     XP_UCHAR* desc;
+    XP_UCHAR* md5Sum;
     const XP_UCHAR** facePtrs;
     XP_U8* countsAndValues;
 
@@ -165,6 +166,7 @@ XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );
 XP_U32 dict_getWordCount( const DictionaryCtxt* dict );
 
 const XP_UCHAR* dict_getDesc( const DictionaryCtxt* dict );
+const XP_UCHAR* dict_getMd5Sum( const DictionaryCtxt* dict );
 
 void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
 void dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream );

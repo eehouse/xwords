@@ -18,6 +18,7 @@
 XWLANG = SOWPODS
 LANGCODE = en_US
 TARGET_TYPE = WINCE
+DICTNOTE = "Used in Scrabble™ tournaments especially outside the US"
 
 include ../Makefile.langcommon
 
