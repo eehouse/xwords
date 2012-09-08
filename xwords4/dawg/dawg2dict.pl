@@ -26,6 +26,10 @@ use Encode 'from_to';
 use Encode;
 
 my $gInFile;
+my $gSumOnly = 0;
+my $gSum;
+my $gDescOnly = 0;
+my $gDesc;
 my $gDoRaw = 0;
 my $gDoJSON = 0;
 my $gFileType;
@@ -35,9 +39,11 @@ use Fcntl 'SEEK_CUR';
 sub systell { sysseek($_[0], 0, SEEK_CUR) }
 
 sub usage() {
-    print STDERR "USAGE: $0 "
-        . "[-raw | -json] "
-        . "-dict <xwdORpdb>"
+    print STDERR "USAGE: $0"
+        . " [-raw | -json] "
+        . " [-get-sum]"
+        . " [-get-desc]"
+        . " -dict <xwdORpdb>"
         . "\n"
         . "\t(Takes a .pdb or .xwd and prints its words to stdout)\n";
     exit 1;
@@ -52,6 +58,10 @@ sub parseARGV() {
             $gDoJSON = 1;
         } elsif ( $parm eq "-dict" ) {
             $gInFile = shift(@ARGV);
+        } elsif ( $parm eq "-get-sum" ) {
+            $gSumOnly = 1;
+        } elsif ( $parm eq "-get-desc" ) {
+            $gDescOnly = 1;
         } else {
             usage();
         }
@@ -161,6 +171,10 @@ sub printHeader($$) {
     printf STDERR "skipped %d bytes of header:\n", $len + 2;
     my $asStr = Encode::decode_utf8($buf);
     my @strs = split( '\0', $asStr );
+    # There are variable numbers of strings showing up in this thing.
+    # Need to figure out the right way to unpack the thing.
+    $gDesc = $strs[1]; 
+    $gSum = $strs[2];
     foreach my $str (@strs) {
         if ( 0 < length($str) ) {
             print STDERR 'Got: ', $str, "\n";
@@ -204,6 +218,7 @@ sub mergeSpecials($$) {
 
 sub prepXWD($$$$) {
     my ( $fh, $facRef, $nodesRef, $startRef ) = @_;
+    my $done = 1;
 
     printf STDERR "at 0x%x at start\n", systell($fh);
     my $buf;
@@ -212,33 +227,44 @@ sub prepXWD($$$$) {
 
     $gNodeSize = nodeSizeFromFlags( $fh, $flags );
 
-    my $nSpecials;
-    my $faceCount = readXWDFaces( $fh, $facRef, \$nSpecials );
+    if ( $gSumOnly ) {
+        print STDOUT $gSum, "\n";
+    } elsif( $gDescOnly ) {
+        print STDOUT $gDesc, "\n";
+    } else {
+        $done = 0;
+    }
 
-    printf STDERR "at 0x%x before header read\n", systell($fh);
-    # skip xloc header
-    $nRead = sysread( $fh, $buf, 2 );
+    if ( !$done ) {
+        my $nSpecials;
+        my $faceCount = readXWDFaces( $fh, $facRef, \$nSpecials );
 
-    # skip values info.
-    printf STDERR "at 0x%x before reading %d values\n", systell($fh), $faceCount;
-    sysread( $fh, $buf, $faceCount * 2 );
-    printf STDERR "at 0x%x after values read\n", systell($fh);
+        printf STDERR "at 0x%x before header read\n", systell($fh);
+        # skip xloc header
+        $nRead = sysread( $fh, $buf, 2 );
 
-    printf STDERR "at 0x%x before specials read\n", systell($fh);
-    my @specials;
-    getSpecials( $fh, $nSpecials, \@specials );
-    mergeSpecials( $facRef, \@specials );
-    printf STDERR "at 0x%x after specials read\n", systell($fh);
+        # skip values info.
+        printf STDERR "at 0x%x before reading %d values\n", systell($fh), $faceCount;
+        sysread( $fh, $buf, $faceCount * 2 );
+        printf STDERR "at 0x%x after values read\n", systell($fh);
 
-    printf STDERR "at 0x%x before offset read\n", systell($fh);
-    sysread( $fh, $buf, 4 );
-    $$startRef = unpack( 'N', $buf );
-    print STDERR "startRef=$$startRef\n";
+        printf STDERR "at 0x%x before specials read\n", systell($fh);
+        my @specials;
+        getSpecials( $fh, $nSpecials, \@specials );
+        mergeSpecials( $facRef, \@specials );
+        printf STDERR "at 0x%x after specials read\n", systell($fh);
 
-    my @nodes = readNodesToEnd( $fh );
+        printf STDERR "at 0x%x before offset read\n", systell($fh);
+        sysread( $fh, $buf, 4 );
+        $$startRef = unpack( 'N', $buf );
+        print STDERR "startRef=$$startRef\n";
 
-    @$nodesRef = @nodes;
+        my @nodes = readNodesToEnd( $fh );
+
+        @$nodesRef = @nodes;
+    }
     print STDERR "prepXWD done\n";
+    return $done;
 } # prepXWD
 
 sub readPDBSpecials($$$$$) {
@@ -448,17 +474,20 @@ binmode INFILE;
 my @faces;
 my @nodes;
 my $startIndex;
+my $done;
 
 if ( $gFileType eq "xwd" ){ 
-    prepXWD( *INFILE, \@faces, \@nodes, \$startIndex );
+    $done = prepXWD( *INFILE, \@faces, \@nodes, \$startIndex );
 } elsif ( $gFileType eq "pdb" ) {
-    prepPDB( *INFILE, \@faces, \@nodes, \$startIndex );
+    $done = prepPDB( *INFILE, \@faces, \@nodes, \$startIndex );
 }
 close INFILE;
 
 die "no nodes!!!" if 0 == @nodes;
 
-if ( $gDoRaw ) {
+if ( $done ) {
+    # we're done...
+} elsif ( $gDoRaw ) {
     printNodes( \@nodes, \@faces );
 } elsif ( $gDoJSON ) {
     print "dict = {\n";
