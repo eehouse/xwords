@@ -505,6 +505,12 @@ dict_getDesc( const DictionaryCtxt* dict )
     return dict->desc;
 }
 
+const XP_UCHAR* 
+dict_getMd5Sum( const DictionaryCtxt* dict )
+{
+    return dict->md5Sum;
+}
+
 #ifdef STUBBED_DICT
 
 #define BLANK_FACE '\0'
