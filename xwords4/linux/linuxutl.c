@@ -475,6 +475,16 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "You tried to supply more players than the host expected.";
         break;
 
+    case ERR_RELAY_BASE + XWRELAY_ERROR_DELETED:
+        message = "Game deleted .";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_NORECONN:
+        message = "Cannot reconnect.";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_DEADGAME:
+        message = "Game is listed as dead on relay.";
+        break;
+
     default:
         XP_LOGF( "no code for error: %d", id );
         message = "<unrecognized error code reported>";

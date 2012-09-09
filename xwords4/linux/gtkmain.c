@@ -378,6 +378,8 @@ relay_error_gtk( void* closure, XWREASON relayErr )
                         "relay says another device deleted game.", 
                         GTK_BUTTONS_OK, 1000 );
         break;
+    case XWRELAY_ERROR_DEADGAME:
+        break;
     default:
         assert(0);
         break;
