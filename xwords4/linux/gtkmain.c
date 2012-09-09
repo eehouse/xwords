@@ -1470,14 +1470,15 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc )
 
 static void
 gtk_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
-                        const XP_UCHAR* newName,
+                        const XP_UCHAR* newName, const XP_UCHAR* newSum,
                         XWPhoniesChoice phoniesAction )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     gchar buf[512];
 
-    int offset = snprintf( buf, VSIZE(buf), "dict changing from %s to %s.", 
-                           oldName, newName );
+    int offset = snprintf( buf, VSIZE(buf),
+                           "dict changing from %s to %s (sum=%s).", 
+                           oldName, newName, newSum );
     if ( PHONIES_DISALLOW == phoniesAction ) {
         snprintf( &buf[offset], VSIZE(buf)-offset, "%s",
                   "\nPHONIES_DISALLOW is set so this may lead to some surprises." );

@@ -1241,12 +1241,12 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= streamVersion ) {
-            XP_UCHAR buf[128];
-            stringFromStreamHere( stream, buf, VSIZE(buf) );
-            if ( 0 != XP_STRCMP( buf, gi->dictName ) ) {
-                util_informNetDict( server->vol.util, gi->dictName, buf,
-                                    localGI.phoniesAction );
-            }
+            XP_UCHAR name[128];
+            XP_UCHAR sum[128];
+            stringFromStreamHere( stream, name, VSIZE(name) );
+            stringFromStreamHere( stream, sum, VSIZE(sum) );
+            util_informNetDict( server->vol.util, gi->dictName, name,
+                                sum, localGI.phoniesAction );
         }
 #endif
 
@@ -1385,6 +1385,7 @@ server_sendInitialMessage( ServerCtxt* server )
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= addr->streamVersion ) {
             stringToStream( stream, dict_getShortName(dict) );
+            stringToStream( stream, dict_getMd5Sum(dict) );
         }
 #endif
         /* send tiles currently in tray */

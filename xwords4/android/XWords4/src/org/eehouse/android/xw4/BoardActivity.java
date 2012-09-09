@@ -1473,11 +1473,19 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
-        public void informNetDict( String oldName, String newName, 
+        public void informNetDict( String oldName, String newName, String newSum, 
                                    CurGameInfo.XWPhoniesChoice phonies )
         {
-            DbgUtils.logf( "informNetDict(%s, %s, %s)", oldName, newName,
-                           phonies.toString() );
+            // If it's same dict and same sum, we're good.  That
+            // should be the normal case.  Otherwise: if same name but
+            // different sum, notify and offer to upgrade.  If
+            // different name, offer to install.
+            String oldSum = DictLangCache.getDictMD5Sum( BoardActivity.this,
+                                                         oldName );
+            String str = String.format( "informNetDict(%s, %s, %s, %s, %s)", 
+                                        oldName, oldSum, newName, newSum, 
+                                        phonies.toString() );
+            nonBlockingDialog( DLG_OKONLY, str );
         }
 
         @Override

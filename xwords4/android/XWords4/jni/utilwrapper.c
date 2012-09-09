@@ -270,21 +270,23 @@ and_util_informUndo( XW_UtilCtxt* uc )
 
 static void
 and_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
-                        const XP_UCHAR* newName,
+                        const XP_UCHAR* newName, const XP_UCHAR* newSum,
                         XWPhoniesChoice phoniesAction )
 {
     LOG_FUNC();
     UTIL_CBK_HEADER( "informNetDict", 
-                     "(Ljava/lang/String;Ljava/lang/String;L"
+                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;L"
                      PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") ";)V" );
     jstring jnew = (*env)->NewStringUTF( env, newName );
+    jstring jsum = (*env)->NewStringUTF( env, newSum );
     jstring jold = (*env)->NewStringUTF( env, oldName );
     jobject jphon = intToJEnum( env, phoniesAction, 
                                 PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
 
-    (*env)->CallVoidMethod( env, util->jutil, mid, jold, jnew, jphon );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jold, jnew, jsum, jphon );
     (*env)->DeleteLocalRef( env, jnew );
     (*env)->DeleteLocalRef( env, jold );
+    (*env)->DeleteLocalRef( env, jsum );
     (*env)->DeleteLocalRef( env, jphon );
 
     UTIL_CBK_TAIL();

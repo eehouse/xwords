@@ -396,12 +396,12 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
 
 static void
 curses_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
-                           const XP_UCHAR* newName,
+                           const XP_UCHAR* newName, const XP_UCHAR* newSum,
                            XWPhoniesChoice phoniesAction )
 {
     XP_USE(uc);
     XP_USE(phoniesAction);
-    XP_LOGF( "%s: %s => %s", __func__, oldName, newName );
+    XP_LOGF( "%s: %s => %s (cksum: %s)", __func__, oldName, newName, newSum );
 }
 
 static XP_Bool
