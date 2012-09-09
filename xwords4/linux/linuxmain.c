@@ -1517,6 +1517,12 @@ main( int argc, char** argv )
             break;
 #ifdef USE_SQLITE
         case CMD_GAMEDB_FILE:
+            /* Android isn't using XWFEATURE_SEARCHLIMIT, and it writes to
+               stream, so to read an android DB is to invite mayhem. */
+# ifdef XWFEATURE_SEARCHLIMIT
+            usage( argv[0], "Don't open android DBs without "
+                   "disabling XWFEATURE_SEARCHLIMIT" );
+# endif
             mainParams.dbFileName = optarg;
         case CMD_GAMEDB_ID:
             mainParams.dbFileID = atoi(optarg);
