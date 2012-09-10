@@ -127,6 +127,7 @@ public class XwJNI {
     public static native void game_summarize( int gamePtr, GameSummary summary );
     public static native byte[] game_saveToStream( int gamePtr,
                                                    CurGameInfo gi  );
+    public static native void game_saveSucceeded( int gamePtr );
     public static native void game_getGi( int gamePtr, CurGameInfo gi );
     public static native void game_getState( int gamePtr, 
                                              JNIThread.GameStateInfo gsi );

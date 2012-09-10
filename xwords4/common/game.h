@@ -103,7 +103,8 @@ XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                              const TransportProcs* procs );
 
 void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
-                        XWStreamCtxt* stream );
+                        XWStreamCtxt* stream, XP_U16 saveToken );
+void game_saveSucceeded( const XWGame* game, XP_U16 saveToken );
 void game_dispose( XWGame* game );
 
 void game_getState( const XWGame* game, GameStateInfo* gsi );

@@ -259,8 +259,9 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 
 void
 game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
-                   XWStreamCtxt* stream )
+                   XWStreamCtxt* stream, XP_U16 saveToken )
 {
+    XP_ASSERT( 0 != saveToken );
     stream_putU8( stream, CUR_STREAM_VERS );
     stream_setVersion( stream, CUR_STREAM_VERS );
 
@@ -272,7 +273,7 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
         XP_ASSERT( !game->comms );
 #endif
         if ( !!game->comms ) {
-            comms_writeToStream( game->comms, stream );
+            comms_writeToStream( game->comms, stream, saveToken );
         }
 
         model_writeToStream( game->model, stream );
@@ -280,6 +281,14 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
         board_writeToStream( game->board, stream );
     }
 } /* game_saveToStream */
+
+void
+game_saveSucceeded( const XWGame* game, XP_U16 saveToken )
+{
+    if ( !!game->comms ) {
+        comms_saveSucceeded( game->comms, saveToken );
+    }
+}
 
 void
 game_getState( const XWGame* game, GameStateInfo* gsi )

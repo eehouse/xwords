@@ -175,6 +175,8 @@ writeToFile( XWStreamCtxt* stream, void* closure )
     }
 
     free( buf );
+
+    game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
 } /* writeToFile */
 
 void
@@ -232,6 +234,27 @@ strFromStream( XWStreamCtxt* stream )
 
     return buf;
 } /* strFromStream */
+
+void
+saveGame( CommonGlobals* cGlobals )
+{
+    if ( !!cGlobals->params->fileName ) {
+        XWStreamCtxt* outStream;
+
+        outStream = mem_stream_make( cGlobals->params->util->mpool,
+                                     cGlobals->params->vtMgr, 
+                                     cGlobals, 0, writeToFile );
+        stream_open( outStream );
+
+        game_saveToStream( &cGlobals->game, 
+                           &cGlobals->params->gi, 
+                           outStream, ++cGlobals->curSaveToken );
+
+        stream_destroy( outStream );
+
+        game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
+    }
+}
 
 static void
 handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,

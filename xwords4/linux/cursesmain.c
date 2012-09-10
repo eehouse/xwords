@@ -1893,22 +1893,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 #endif
     }
-    if ( !!g_globals.cGlobals.params->fileName ) {
-        XWStreamCtxt* outStream;
-
-        outStream =
-            mem_stream_make( MPPARM(g_globals.cGlobals.params->util->mpool)
-                             g_globals.cGlobals.params->vtMgr, 
-                             &g_globals.cGlobals, 0, writeToFile );
-        stream_open( outStream );
-
-        game_saveToStream( &g_globals.cGlobals.game, 
-                           &g_globals.cGlobals.params->gi, 
-                           outStream );
-
-        stream_destroy( outStream );
-        sync();
-    }
+    saveGame( &g_globals.cGlobals );
 
     game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
     gi_disposePlayerInfo( MEMPOOL &g_globals.cGlobals.params->gi );

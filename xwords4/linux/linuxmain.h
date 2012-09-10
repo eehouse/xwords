@@ -66,6 +66,7 @@ XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name,
                               void* closure );
 XWStreamCtxt* streamFromDB( CommonGlobals* cGlobals, void* closure );
 void writeToFile( XWStreamCtxt* stream, void* closure );
+void saveGame( CommonGlobals* cGlobals );
 
 int blocking_read( int fd, unsigned char* buf, int len );
 

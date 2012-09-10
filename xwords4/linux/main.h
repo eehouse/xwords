@@ -193,6 +193,8 @@ struct CommonGlobals {
 #endif
 
     TimerInfo timerInfo[NUM_TIMERS_PLUS_ONE];
+
+    XP_U16 curSaveToken;
 };
 
 #endif

@@ -66,8 +66,15 @@ typedef struct AddressRecord {
     struct AddressRecord* next;
     CommsAddrRec addr;
     MsgID nextMsgID;        /* on a per-channel basis */
-    MsgID lastMsgRcd;       /* on a per-channel basis */
     MsgID lastMsgAckd;      /* on a per-channel basis */
+
+    /* lastMsgRcd is the numerically highest MsgID we've seen.  Because once
+     * it's sent in message as an ACK the other side will delete messages
+     * based on it, we don't send a number higher than has actually been
+     * written out successfully. lastMsgSaved is that number.
+     */
+    MsgID lastMsgRcd;
+    MsgID lastMsgSaved;
     /* only used if COMMS_HEARTBEAT set except for serialization (to_stream) */
     XP_PlayerAddr channelNo;
     struct {
@@ -109,6 +116,7 @@ struct CommsCtxt {
     XP_Bool hbTimerPending;
     XP_Bool reconTimerPending;
 #endif
+    XP_U16 lastSaveToken;
 
     /* The following fields, down to isServer, are only used if
        XWFEATURE_RELAY is defined, but I'm leaving them in here so apps built
@@ -575,7 +583,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         addrFromStream( &rec->addr, stream );
 
         rec->nextMsgID = stream_getU16( stream );
-        rec->lastMsgRcd = stream_getU16( stream );
+        rec->lastMsgSaved = rec->lastMsgRcd = stream_getU16( stream );
         if ( version >= STREAM_VERS_BLUETOOTH2 ) {
             rec->lastMsgAckd = stream_getU16( stream );
         }
@@ -713,7 +721,8 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 } /* addrToStream */
 
 void
-comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
+comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, 
+                     XP_U16 saveToken )
 {
     XP_U16 nAddrRecs;
     AddressRecord* rec;
@@ -762,7 +771,25 @@ comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putBytes( stream, msg->msg, msg->len );
     }
 
+    comms->lastSaveToken = saveToken;
 } /* comms_writeToStream */
+
+void
+comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken )
+{
+    XP_LOGF( "%s(saveToken=%d)", __func__, saveToken );
+    XP_ASSERT( !!comms );
+    if ( saveToken == comms->lastSaveToken ) {
+        XP_LOGF( "%s: lastSave matches", __func__ );
+        AddressRecord* rec;
+        for ( rec = comms->recs; !!rec; rec = rec->next ) {
+            rec->lastMsgSaved = rec->lastMsgRcd;
+        }
+#ifdef XWFEATURE_COMMSACK
+        comms_ackAny( comms );  /* might not want this for all transports */
+#endif
+    }
+}
 
 void
 comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr )
@@ -902,7 +929,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 {
     XP_U16 headerLen;
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
-    MsgID lastMsgRcd = (!!rec)? rec->lastMsgRcd : 0;
+    MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
     MsgQueueElem* newMsgElem;
     XWStreamCtxt* msgStream;
 
@@ -924,10 +951,10 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 
     stream_putU16( msgStream, channelNo );
     stream_putU32( msgStream, msgID );
-    XP_LOGF( "put lastMsgRcd: %ld", lastMsgRcd );
-    stream_putU32( msgStream, lastMsgRcd );
+    XP_LOGF( "put lastMsgSaved: %ld", lastMsgSaved );
+    stream_putU32( msgStream, lastMsgSaved );
     if ( !!rec ) {
-        rec->lastMsgAckd = lastMsgRcd;
+        rec->lastMsgAckd = lastMsgSaved;
     }
 
     headerLen = stream_getSize( msgStream );
@@ -1734,6 +1761,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 XP_LOGF( "%s: got channelNo=%d;msgID=%ld;len=%d", __func__, 
                          channelNo & CHANNEL_MASK, msgID, payloadSize );
                 rec->lastMsgRcd = msgID;
+                comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
                 stream_setAddress( stream, channelNo );
                 messageValid = payloadSize > 0;
             }

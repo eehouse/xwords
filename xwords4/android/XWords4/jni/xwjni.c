@@ -211,7 +211,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
                                             NULL, 0, NULL );
 
-    game_saveToStream( NULL, gi, stream );
+    game_saveToStream( NULL, gi, stream, 0 );
     destroyGI( MPPARM(mpool) &gi );
 
     int nBytes = stream_getSize( stream );
@@ -344,6 +344,7 @@ typedef struct _JNIState {
     XWGame game;
     JNIEnv* env;
     AndGlobals globals;
+    XP_U16 curSaveCount;
 #ifdef DEBUG
     const char* envSetterFunc;
 #endif
@@ -536,7 +537,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             NULL, 0, NULL );
 
-    game_saveToStream( &state->game, gi, stream );
+    game_saveToStream( &state->game, gi, stream, ++state->curSaveCount );
 
     if ( NULL != jgi ) {
         destroyGI( MPPARM(mpool) &gi );
@@ -551,6 +552,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
 
     XWJNI_END();
     return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveSucceeded
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    game_saveSucceeded( &state->game, state->curSaveCount );
+    XWJNI_END();
 }
 
 JNIEXPORT void JNICALL
