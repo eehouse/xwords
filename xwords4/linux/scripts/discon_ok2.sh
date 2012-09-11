@@ -74,9 +74,9 @@ print_cmdline() {
 function pick_ndevs() {
     local NDEVS=2
     local RNUM=$((RANDOM % 100))
-    if [ $RNUM -gt 90 ]; then
+    if [ $RNUM -gt 90 -a $MAXDEVS -ge 4 ]; then
         NDEVS=4
-    elif [ $RNUM -gt 75 ]; then
+    elif [ $RNUM -gt 75 -a $MAXDEVS -ge 3 ]; then
         NDEVS=3
     fi
     echo $NDEVS
@@ -563,7 +563,7 @@ done
 [ -z "$PORT" ] && PORT=10997
 [ -z "$TIMEOUT" ] && TIMEOUT=$((NGAMES*60+500))
 [ -z "$SAVE_GOOD" ] && SAVE_GOOD=YES
-[ -z "$RESIGN_RATIO" ] && RESIGN_RATIO=1000
+[ -z "$RESIGN_RATIO" -a "$NGAMES" -gt 1 ] && RESIGN_RATIO=1000 || RESIGN_RATIO=0
 [ -z "$DROP_N" ] && DROP_N=0
 [ -z "$USE_GTK" ] && USE_GTK=FALSE
 [ -z "$UPGRADE_ODDS" ] && UPGRADE_ODDS=10
