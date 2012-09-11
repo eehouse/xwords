@@ -175,8 +175,6 @@ writeToFile( XWStreamCtxt* stream, void* closure )
     }
 
     free( buf );
-
-    game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
 } /* writeToFile */
 
 void
@@ -239,20 +237,33 @@ void
 saveGame( CommonGlobals* cGlobals )
 {
     if ( !!cGlobals->params->fileName ) {
-        XWStreamCtxt* outStream;
+        XP_Bool doSave = XP_TRUE;
+        if ( 0 < cGlobals->params->saveFailPct
+             /* don't fail to save first time!  */
+             && file_exists( cGlobals->params->fileName ) ) {
+            XP_U16 pct = XP_RANDOM() % 100;
+            doSave = pct >= cGlobals->params->saveFailPct;
+        }
 
-        outStream = mem_stream_make( cGlobals->params->util->mpool,
-                                     cGlobals->params->vtMgr, 
-                                     cGlobals, 0, writeToFile );
-        stream_open( outStream );
+        if ( doSave ) {
+            XWStreamCtxt* outStream;
 
-        game_saveToStream( &cGlobals->game, 
-                           &cGlobals->params->gi, 
-                           outStream, ++cGlobals->curSaveToken );
+            outStream = mem_stream_make( cGlobals->params->util->mpool,
+                                         cGlobals->params->vtMgr, 
+                                         cGlobals, 0, writeToFile );
+            stream_open( outStream );
 
-        stream_destroy( outStream );
+            game_saveToStream( &cGlobals->game, 
+                               &cGlobals->params->gi, 
+                               outStream, ++cGlobals->curSaveToken );
 
-        game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
+            stream_destroy( outStream );
+
+            game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
+            XP_LOGF( "%s: saved", __func__ );
+        } else {
+            XP_LOGF( "%s: simulating save failure", __func__ );
+        }
     }
 }
 
@@ -481,6 +492,7 @@ typedef enum {
     ,CMD_SEED
     ,CMD_GAMESEED
     ,CMD_GAMEFILE
+    ,CMD_SAVEFAIL_PCT
 #ifdef USE_SQLITE
     ,CMD_GAMEDB_FILE
     ,CMD_GAMEDB_ID
@@ -572,6 +584,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SEED, true, "seed", "random seed" }
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
+    ,{ CMD_SAVEFAIL_PCT, true, "savefail-pct", "How often, at random, does save fail?" }
 #ifdef USE_SQLITE
     ,{ CMD_GAMEDB_FILE, true, "game-db-file",
        "sqlite3 file, android format, holding game" }
@@ -1538,6 +1551,10 @@ main( int argc, char** argv )
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;
             break;
+        case CMD_SAVEFAIL_PCT:
+            mainParams.saveFailPct = atoi( optarg );
+            break;
+
 #ifdef USE_SQLITE
         case CMD_GAMEDB_FILE:
             /* Android isn't using XWFEATURE_SEARCHLIMIT, and it writes to
