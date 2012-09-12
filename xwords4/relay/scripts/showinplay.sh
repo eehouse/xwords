@@ -30,8 +30,8 @@ echo "SELECT dead,connname,cid,room,lang,clntVers,ntotal,nperdevice,seeds,ack,ns
      "FROM games $QUERY ORDER BY NOT dead, connname LIMIT $LIMIT;" \
     | psql xwgames
 
-echo "SELECT id, connname, hid, msglen "\
+echo "SELECT connname, hid, count(*), sum(msglen) "\
      "FROM msgs where connname in (SELECT connname from games where not games.dead group by connname)" \
-     "order by connname, id;" \
+     "GROUP BY connname, hid ORDER BY connname;" \
     | psql xwgames
 
