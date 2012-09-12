@@ -98,8 +98,10 @@ mem_stream_make_sized( MPFORMAL VTableMgr* vtmgr, XP_U16 startSize,
     MemStreamCtxt* result =
         (MemStreamCtxt*)mem_stream_make( MPPARM(mpool) vtmgr, closure, 
                                          channelNo, onClose );
-    result->buf = (XP_U8*)XP_MALLOC( mpool, startSize );
-    result->nBytesAllocated = startSize;
+    if ( 0 < startSize ) {
+        result->buf = (XP_U8*)XP_CALLOC( mpool, startSize );
+        result->nBytesAllocated = startSize;
+    }
     return (XWStreamCtxt*)result;
 }
 
