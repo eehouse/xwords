@@ -185,9 +185,9 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 static XWStreamCtxt*
 streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 {
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
-                                            NULL, 0, NULL );
     int len = (*env)->GetArrayLength( env, jstream );
+    XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) vtMgr,
+                                                  len, NULL, 0, NULL );
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
     stream_putBytes( stream, jelems, len );
     (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
@@ -345,6 +345,7 @@ typedef struct _JNIState {
     JNIEnv* env;
     AndGlobals globals;
     XP_U16 curSaveCount;
+    XP_U16 lastSavedSize;
 #ifdef DEBUG
     const char* envSetterFunc;
 #endif
@@ -534,8 +535,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
        ours should -- changes like remote players being added. */
     CurGameInfo* gi = 
         (NULL == jgi) ? globals->gi : makeGI( MPPARM(mpool) env, jgi );
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                            NULL, 0, NULL );
+    XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) globals->vtMgr,
+                                                  state->lastSavedSize,
+                                                  NULL, 0, NULL );
 
     game_saveToStream( &state->game, gi, stream, ++state->curSaveCount );
 
@@ -549,6 +551,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
     stream_getBytes( stream, jelems, nBytes );
     (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
     stream_destroy( stream );
+    state->lastSavedSize = nBytes;
 
     XWJNI_END();
     return result;
