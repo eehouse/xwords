@@ -248,15 +248,16 @@ saveGame( CommonGlobals* cGlobals )
         if ( doSave ) {
             XWStreamCtxt* outStream;
 
-            outStream = mem_stream_make( cGlobals->params->util->mpool,
-                                         cGlobals->params->vtMgr, 
-                                         cGlobals, 0, writeToFile );
+            outStream = mem_stream_make_sized( cGlobals->params->util->mpool,
+                                               cGlobals->params->vtMgr, 
+                                               cGlobals->lastStreamSize,
+                                               cGlobals, 0, writeToFile );
             stream_open( outStream );
 
             game_saveToStream( &cGlobals->game, 
                                &cGlobals->params->gi, 
                                outStream, ++cGlobals->curSaveToken );
-
+            cGlobals->lastStreamSize = stream_getSize( outStream );
             stream_destroy( outStream );
 
             game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
