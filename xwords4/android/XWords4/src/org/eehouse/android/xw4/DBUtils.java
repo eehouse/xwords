@@ -90,8 +90,9 @@ public class DBUtils {
         public int m_maxShown;
         public int m_pos;
         public int m_top;
-        public int[] m_counts;
+        public String m_prefix;
         public int m_count;
+        public int[] m_counts;
     }
 
     public static GameSummary getSummary( Context context, long rowid, 
@@ -960,7 +961,8 @@ public class DBUtils {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { DBHelper.ITERPOS, DBHelper.ITERTOP,
                                  DBHelper.ITERMIN, DBHelper.ITERMAX,
-                                 DBHelper.WORDCOUNTS, DBHelper.WORDCOUNT };
+                                 DBHelper.WORDCOUNTS, DBHelper.WORDCOUNT,
+                                 DBHelper.ITERPREFIX };
             String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTS, columns, 
                                       selection, null, null, null, null );
@@ -976,6 +978,9 @@ public class DBUtils {
                 result.m_maxShown = 
                     cursor.getInt( cursor
                                    .getColumnIndex(DBHelper.ITERMAX));
+                result.m_prefix = 
+                    cursor.getString( cursor
+                                      .getColumnIndex(DBHelper.ITERPREFIX));
                 result.m_count = 
                     cursor.getInt( cursor.getColumnIndex(DBHelper.WORDCOUNT));
                 String counts = 
@@ -1007,6 +1012,7 @@ public class DBUtils {
             values.put( DBHelper.ITERTOP, state.m_top );
             values.put( DBHelper.ITERMIN, state.m_minShown );
             values.put( DBHelper.ITERMAX, state.m_maxShown );
+            values.put( DBHelper.ITERPREFIX, state.m_prefix );
             values.put( DBHelper.WORDCOUNT, state.m_count );
             if ( null != state.m_counts ) {
                 String[] nums = new String[state.m_counts.length];

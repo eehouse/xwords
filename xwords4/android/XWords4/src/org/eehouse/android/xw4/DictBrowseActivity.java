@@ -239,6 +239,7 @@ public class DictBrowseActivity extends XWListActivity
         if ( null == m_browseState ) {
             m_browseState = DBUtils.dictsGetOffset( this, m_name );
         }
+        showPrefix( true );
     }
 
     @Override
@@ -308,6 +309,20 @@ public class DictBrowseActivity extends XWListActivity
         EditText edit = (EditText)findViewById( R.id.word_edit );
         String text = edit.getText().toString();
         if ( null != text && 0 < text.length() ) {
+            m_browseState.m_prefix = text;
+            showPrefix( false );
+        }
+    }
+
+    private void showPrefix( boolean fillField ) 
+    {
+        String text = m_browseState.m_prefix;
+        if ( null != text && 0 < text.length() ) {
+            if ( fillField ) {
+                EditText edit = (EditText)findViewById( R.id.word_edit );
+                edit.setText( text );
+            }
+
             int pos = XwJNI.dict_iter_getStartsWith( m_dictClosure, text );
             if ( 0 <= pos ) {
                 getListView().setSelection( pos );
