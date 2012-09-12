@@ -54,6 +54,7 @@ public class DBUtils {
 
     private static final String ROW_ID = "rowid";
     private static final String ROW_ID_FMT = "rowid=%d";
+    private static final String NAME_FMT = "%s='%s'";
 
     private static long s_cachedRowID = -1;
     private static byte[] s_cachedBytes = null;
@@ -82,6 +83,15 @@ public class DBUtils {
         }
         String msg;
         boolean sourceLocal;
+    }
+
+    public static class DictBrowseState {
+        public int m_minShown;
+        public int m_maxShown;
+        public int m_pos;
+        public int m_top;
+        public int[] m_counts;
+        public int m_count;
     }
 
     public static GameSummary getSummary( Context context, long rowid, 
@@ -936,6 +946,83 @@ public class DBUtils {
             }
         }
         return success;
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // DictsDB stuff
+    /////////////////////////////////////////////////////////////////
+    public static DictBrowseState dictsGetOffset( Context context, 
+                                                  String name )
+    {
+        DictBrowseState result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.ITERPOS, DBHelper.ITERTOP,
+                                 DBHelper.ITERMIN, DBHelper.ITERMAX,
+                                 DBHelper.WORDCOUNTS, DBHelper.WORDCOUNT };
+            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTS, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = new DictBrowseState();
+                result.m_pos = cursor.getInt( cursor
+                                              .getColumnIndex(DBHelper.ITERPOS));
+                result.m_top = cursor.getInt( cursor
+                                              .getColumnIndex(DBHelper.ITERTOP));
+                result.m_minShown = 
+                    cursor.getInt( cursor
+                                   .getColumnIndex(DBHelper.ITERMIN));
+                result.m_maxShown = 
+                    cursor.getInt( cursor
+                                   .getColumnIndex(DBHelper.ITERMAX));
+                result.m_count = 
+                    cursor.getInt( cursor.getColumnIndex(DBHelper.WORDCOUNT));
+                String counts = 
+                    cursor.getString( cursor.getColumnIndex(DBHelper.WORDCOUNTS));
+                if ( null != counts ) {
+                    String[] nums = TextUtils.split( counts, ":" );
+                    int[] ints = new int[nums.length];
+                    for ( int ii = 0; ii < nums.length; ++ii ) {
+                        ints[ii] = Integer.parseInt( nums[ii] );
+                    }
+                    result.m_counts = ints;
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static void dictsSetOffset( Context context, String name, 
+                                       DictBrowseState state )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.ITERPOS, state.m_pos );
+            values.put( DBHelper.ITERTOP, state.m_top );
+            values.put( DBHelper.ITERMIN, state.m_minShown );
+            values.put( DBHelper.ITERMAX, state.m_maxShown );
+            values.put( DBHelper.WORDCOUNT, state.m_count );
+            if ( null != state.m_counts ) {
+                String[] nums = new String[state.m_counts.length];
+                for ( int ii = 0; ii < nums.length; ++ii ) {
+                    nums[ii] = String.format( "%d", state.m_counts[ii] );
+                }
+                values.put( DBHelper.WORDCOUNTS, TextUtils.join( ":", nums ) );
+            }
+            int result = db.update( DBHelper.TABLE_NAME_DICTS,
+                                    values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.DICTNAME, name );
+                db.insert( DBHelper.TABLE_NAME_DICTS, null, values );
+            }
+            db.close();
+        }
     }
 
     private static void copyGameDB( Context context, boolean toSDCard )

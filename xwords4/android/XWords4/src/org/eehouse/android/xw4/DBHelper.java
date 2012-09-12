@@ -28,8 +28,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";
+    public static final String TABLE_NAME_DICTS = "dicts";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 12;
+    private static final int DB_VERSION = 13;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -60,6 +61,19 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String RELAYID = "RELAYID";
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE";
+
+    public static final String DICTNAME = "DICTNAME";
+    public static final String MD5SUM = "MD5SUM";
+    public static final String WORDCOUNT = "WORDCOUNT";
+    public static final String WORDCOUNTS = "WORDCOUNTS";
+    public static final String LANGCODE = "LANGCODE";
+    public static final String LOC = "LOC";     
+    public static final String ITERMIN = "ITERMIN";
+    public static final String ITERMAX = "ITERMAX";
+    public static final String ITERPOS = "ITERPOS";
+    public static final String ITERTOP = "ITERTOP";
+    public static final String ITERPREFIX = "ITERPREFIX";
+
     // not used yet
     public static final String CREATE_TIME = "CREATE_TIME";
     // not used yet
@@ -122,11 +136,29 @@ public class DBHelper extends SQLiteOpenHelper {
                     + ");" );
     }
 
+    private void onCreateDictsDB( SQLiteDatabase db )
+    {
+        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTS + " ("
+                    + DICTNAME     + " TEXT,"
+                    + MD5SUM       + " TEXT(32),"
+                    + WORDCOUNT    + " INTEGER,"
+                    + WORDCOUNTS   + " TEXT,"
+                    + LANGCODE     + " INTEGER,"
+                    + LOC          + " INTEGER(2),"
+                    + ITERMIN      + " INTEGER(4),"
+                    + ITERMAX      + " INTEGER(4),"
+                    + ITERPOS      + " INTEGER,"
+                    + ITERTOP      + " INTEGER,"
+                    + ITERPREFIX   + " TEXT"
+                    + ");" );
+    }
+
     @Override
     public void onCreate( SQLiteDatabase db ) 
     {
         onCreateSum( db );
         onCreateObits( db );
+        onCreateDictsDB( db );
     }
 
     @Override
@@ -154,6 +186,7 @@ public class DBHelper extends SQLiteOpenHelper {
         case 11:
             addColumn( db, REMOTEDEVS, "TEXT" );
         case 12:
+            onCreateDictsDB( db );
             // nothing yet
             break;
         default:
