@@ -241,6 +241,10 @@
     <item>:ca:</item>
     <item>http://ca.wiktionary.org/w/index.php?search=%2$s</item>
     <!--  -->
+    <item>DISC lookup</item>
+    <item>:ca:</item>
+    <item>http://escrable.montane.cat/diccionari/cercador/?mot=%2$s</item>
+    <!--  -->
     <item>Google</item>
     <item></item> <!-- means all supported -->
     <item>http://www.google.com/search?nl=%1$s\u0026q=%2$s</item>
