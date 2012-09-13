@@ -1031,6 +1031,31 @@ public class DBUtils {
         }
     }
 
+    public static String dictsGetMD5Sum( Context context, String name )
+    {
+        DictInfo info = dictsGetInfo( context, name );
+        String result = null == info? null : info.md5Sum;
+        return result;
+    }
+
+    public static void dictsSetMD5Sum( Context context, String name, String sum )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.MD5SUM, sum );
+            int result = db.update( DBHelper.TABLE_NAME_DICTINFO,
+                                    values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.DICTNAME, name );
+                db.insert( DBHelper.TABLE_NAME_DICTINFO, null, values );
+            }
+            db.close();
+        }
+    }
+
     public static DictInfo dictsGetInfo( Context context, String name )
     {
         DictInfo result = null;
@@ -1147,6 +1172,8 @@ public class DBUtils {
     {
         if ( null == s_dbHelper ) {
             s_dbHelper = new DBHelper( context );
+            // force any upgrade
+            s_dbHelper.getWritableDatabase().close();
         }
     }
 

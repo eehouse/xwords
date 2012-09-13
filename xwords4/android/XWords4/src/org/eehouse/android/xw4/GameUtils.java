@@ -220,7 +220,7 @@ public class GameUtils {
         XwJNI.game_dispose( gamePtr );
 
         gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
+        XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get( context ), 
                                 CommonPrefs.get( context ), dictNames,
                                 pairs.m_bytes,  pairs.m_paths, gi.langName() );
                                 
@@ -360,11 +360,11 @@ public class GameUtils {
                 XwJNI.game_makeFromStream( gamePtr, stream, gi, 
                                            dictNames, pairs.m_bytes, 
                                            pairs.m_paths, langName,
-                                           util, JNIUtilsImpl.get(), 
+                                           util, JNIUtilsImpl.get( context ), 
                                            CommonPrefs.get(context),
                                            tp);
             if ( !madeGame ) {
-                XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
+                XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
                                         CommonPrefs.get(context), dictNames,
                                         pairs.m_bytes, pairs.m_paths, 
                                         langName );
@@ -773,7 +773,7 @@ public class GameUtils {
         int gamePtr = XwJNI.initJNI();
         XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
                                    pairs.m_bytes, pairs.m_paths,
-                                   gi.langName(), JNIUtilsImpl.get(), 
+                                   gi.langName(), JNIUtilsImpl.get(context), 
                                    CommonPrefs.get( context ) );
         // second time required as game_makeFromStream can overwrite
         gi.replaceDicts( newDict );
@@ -816,11 +816,12 @@ public class GameUtils {
                                                   new CurGameInfo(context), 
                                                   dictNames, pairs.m_bytes,
                                                   pairs.m_paths, langName,
-                                                  JNIUtilsImpl.get(), cp );
+                                                  JNIUtilsImpl.get(context),
+                                                  cp );
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
+            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
                                     cp, dictNames, pairs.m_bytes, 
                                     pairs.m_paths, langName );
         }

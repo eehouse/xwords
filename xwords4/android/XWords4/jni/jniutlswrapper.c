@@ -93,6 +93,19 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
 }
 
 jstring
+and_util_getMD5SumFor( JNIUtilCtxt* jniutil, const XP_UCHAR* name )
+{
+    JNIEnv* env = *jniutil->envp;
+    jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
+                                 "(Ljava/lang/String;)Ljava/lang/String;" );
+    jstring jname = (*env)->NewStringUTF( env, name );
+    jstring result = 
+        (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jname );
+    (*env)->DeleteLocalRef( env, jname );
+    return result;
+}
+
+jstring
 and_util_figureMD5Sum( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len )
 {
     JNIEnv* env = *jniutil->envp;

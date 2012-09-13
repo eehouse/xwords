@@ -114,14 +114,14 @@ public class DictUtils {
         // changes?
     }
 
-    private static void tryDir( File dir, boolean strict, DictLoc loc, 
-                                ArrayList<DictAndLoc> al )
+    private static void tryDir( Context context, File dir, boolean strict, 
+                                DictLoc loc, ArrayList<DictAndLoc> al )
     {
         if ( null != dir ) {
             String[] list = dir.list();
             if ( null != list ) {
                 for ( String file : list ) {
-                    if ( isDict( file, strict? dir : null ) ) {
+                    if ( isDict( context, file, strict? dir : null ) ) {
                         al.add( new DictAndLoc( removeDictExtn( file ), loc ) );
                     }
                 }
@@ -135,21 +135,21 @@ public class DictUtils {
             ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
 
             for ( String file : getAssets( context ) ) {
-                if ( isDict( file, null ) ) {
+                if ( isDict( context, file, null ) ) {
                     al.add( new DictAndLoc( removeDictExtn( file ), 
                                             DictLoc.BUILT_IN ) );
                 }
             }
 
             for ( String file : context.fileList() ) {
-                if ( isDict( file, null ) ) {
+                if ( isDict( context, file, null ) ) {
                     al.add( new DictAndLoc( removeDictExtn( file ),
                                             DictLoc.INTERNAL ) );
                 }
             }
 
-            tryDir( getSDDir( context ), false, DictLoc.EXTERNAL, al );
-            tryDir( getDownloadDir(), true, DictLoc.DOWNLOAD, al );
+            tryDir( context, getSDDir( context ), false, DictLoc.EXTERNAL, al );
+            tryDir( context, getDownloadDir(), true, DictLoc.DOWNLOAD, al );
 
             s_dictListCache = 
                 al.toArray( new DictUtils.DictAndLoc[al.size()] );
@@ -480,13 +480,13 @@ public class DictUtils {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
  
-    private static boolean isDict( String file, File dir )
+    private static boolean isDict( Context context, String file, File dir )
     {
         boolean ok = file.endsWith( XWConstants.DICT_EXTN );
         if ( ok && null != dir ) {
             String fullPath = new File( dir, file ).getPath();
-            ok = XwJNI.dict_getInfo( null, fullPath, JNIUtilsImpl.get(), 
-                                     true, null );
+            ok = XwJNI.dict_getInfo( null, removeDictExtn( file ), fullPath,
+                                     JNIUtilsImpl.get(context), true, null );
         }
         return ok;
     }

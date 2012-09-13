@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import java.io.ByteArrayInputStream;
@@ -31,15 +32,17 @@ import org.eehouse.android.xw4.*;
 
 public class JNIUtilsImpl implements JNIUtils {
 
-    private static JNIUtils s_impl = null;
+    private static JNIUtilsImpl s_impl = null;
+    private Context m_context;
 
     private JNIUtilsImpl(){}
 
-    public static JNIUtils get()
+    public static JNIUtils get( Context context )
     {
         if ( null == s_impl ) {
             s_impl = new JNIUtilsImpl();
         }
+        s_impl.m_context = context;
         return s_impl;
     }
 
@@ -86,6 +89,11 @@ public class JNIUtilsImpl implements JNIUtils {
         
         String[] result = al.toArray( new String[al.size()] );
         return result;
+    }
+
+    public String getMD5SumFor( String dictName )
+    {
+        return DBUtils.dictsGetMD5Sum( m_context, dictName );
     }
 
     public String figureMD5Sum( byte[] bytes )

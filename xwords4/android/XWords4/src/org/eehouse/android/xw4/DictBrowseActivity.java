@@ -164,9 +164,9 @@ public class DictBrowseActivity extends XWListActivity
 
             String[] names = { name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
-            m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], 
-                                                  pairs.m_paths[0],
-                                                  JNIUtilsImpl.get() );
+            m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0],
+                                                  name, pairs.m_paths[0],
+                                                  JNIUtilsImpl.get(this) );
 
             m_browseState = DBUtils.dictsGetOffset( this, name );
             boolean newState = null == m_browseState;

@@ -239,15 +239,15 @@ public class XwJNI {
     // Dicts
     public static native boolean dict_tilesAreSame( int dictPtr1, int dictPtr2 );
     public static native String[] dict_getChars( int dictPtr );
-    public static native boolean dict_getInfo( byte[] dict, String path, 
-                                               JNIUtils jniu, boolean check,
-                                               DictInfo info );
+    public static native boolean dict_getInfo( byte[] dict, String name,
+                                               String path, JNIUtils jniu, 
+                                               boolean check, DictInfo info );
     public static native int dict_getTileValue( int dictPtr, int tile );
 
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
-    public static native int dict_iter_init( byte[] dict, String path, 
-                                             JNIUtils jniu );
+    public static native int dict_iter_init( byte[] dict, String name,
+                                             String path, JNIUtils jniu );
     public static native void dict_iter_setMinMax( int closure,
                                                    int min, int max );
     public static native void dict_iter_destroy( int closure );

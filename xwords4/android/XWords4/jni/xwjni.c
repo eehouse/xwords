@@ -285,7 +285,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
-( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, 
+( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jname, jstring jpath, 
   jobject jniu, jboolean check, jobject jinfo )
 {
     jboolean result = false;
@@ -293,7 +293,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, jname,
                                      jDictBytes, jpath, NULL, check );
     if ( NULL != dict ) {
         if ( NULL != jinfo ) {
@@ -1382,7 +1382,8 @@ typedef struct _DictIterData {
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
-(JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, jobject jniu )
+( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jname, 
+  jstring jpath, jobject jniu )
 {
     jint closure = 0;
 #ifdef MEM_DEBUG
@@ -1391,7 +1392,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
     DictIterData* data = XP_CALLOC( mpool, sizeof(*data) );
     data->env = env;
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &data->env, jniu );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, jname,
                                      jDictBytes, jpath, NULL, false );
     if ( !!dict ) {
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
