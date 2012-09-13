@@ -28,7 +28,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";
-    public static final String TABLE_NAME_DICTS = "dicts";
+    public static final String TABLE_NAME_DICTBROWSE = "dictbrowse";
+    public static final String TABLE_NAME_DICTINFO = "dictinfo";
     private static final String DB_NAME = "xwdb";
     private static final int DB_VERSION = 13;
 
@@ -138,13 +139,18 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private void onCreateDictsDB( SQLiteDatabase db )
     {
-        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTS + " ("
+        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTINFO + " ("
                     + DICTNAME     + " TEXT,"
                     + MD5SUM       + " TEXT(32),"
                     + WORDCOUNT    + " INTEGER,"
-                    + WORDCOUNTS   + " TEXT,"
                     + LANGCODE     + " INTEGER,"
-                    + LOC          + " INTEGER(2),"
+                    + LOC          + " INTEGER(2)"
+                    + ");" );
+
+        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTBROWSE + " ("
+                    + DICTNAME     + " TEXT,"
+                    + WORDCOUNT    + " INTEGER,"
+                    + WORDCOUNTS   + " TEXT,"
                     + ITERMIN      + " INTEGER(4),"
                     + ITERMAX      + " INTEGER(4),"
                     + ITERPOS      + " INTEGER,"

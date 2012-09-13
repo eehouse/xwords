@@ -39,8 +39,6 @@ import org.eehouse.android.xw4.jni.DictInfo;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictLangCache {
-    private static final HashMap<DictAndLoc,DictInfo> s_nameToLang = 
-        new HashMap<DictAndLoc,DictInfo>();
     private static String[] s_langNames;
 
     private static int m_adaptedLang = -1;
@@ -230,7 +228,8 @@ public class DictLangCache {
                               DictUtils.DictLoc loc, boolean added )
     {
         DictAndLoc dal = new DictAndLoc( name, loc );
-        s_nameToLang.remove( dal );
+        DBUtils.dictsRemoveInfo( context, dal );
+
         if ( added ) {
             getInfo( context, dal );
         }
@@ -352,15 +351,7 @@ public class DictLangCache {
 
     private static DictInfo getInfo( Context context, String name )
     {
-        DictInfo result = null;
-        Set<DictAndLoc> keys = s_nameToLang.keySet();
-        for ( DictAndLoc key : keys ) {
-            if ( key.name.equals(name) ) {
-                result = s_nameToLang.get( key );
-                break;
-            }
-        }
-
+        DictInfo result = DBUtils.dictsGetInfo( context, name );
         if ( null == result ) {
             DictUtils.DictLoc loc = DictUtils.getDictLoc( context, name );
             result = getInfo( context, new DictAndLoc( name, loc ) );
@@ -370,28 +361,19 @@ public class DictLangCache {
 
     private static DictInfo getInfo( Context context, DictAndLoc dal )
     {
-        DictInfo info;
-        if ( s_nameToLang.containsKey( dal ) ) {
-            info = s_nameToLang.get( dal );
-        } else {
+        DictInfo info = DBUtils.dictsGetInfo( context, dal.name );
+        if ( null == info ) {
             String[] names = { dal.name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, names );
 
             info = new DictInfo();
-
-            // It should not be possible for dict_getInfo to fail
-            // unless DictUtils.dictList() isn't doing its job and
-            // puts unchecked dicts on the list.  Should probably
-            // assert that this returns true.  Open question: do I
-            // always trust dicts in the BUILTIN and INTERNAL
-            // locations?  Files can get damaged....
             if ( XwJNI.dict_getInfo( pairs.m_bytes[0], pairs.m_paths[0], 
                                      JNIUtilsImpl.get(), 
                                      DictUtils.DictLoc.DOWNLOAD == dal.loc,
                                      info ) ) {
 
                 info.name = dal.name;
-                s_nameToLang.put( dal, info );
+                DBUtils.dictsSetInfo( context, dal, info );
             } else {
                 info = null;
                 DbgUtils.logf( "getInfo(): unable to open dict %s", dal.name );

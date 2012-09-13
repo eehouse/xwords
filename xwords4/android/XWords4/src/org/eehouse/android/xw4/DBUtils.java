@@ -964,7 +964,7 @@ public class DBUtils {
                                  DBHelper.WORDCOUNTS, DBHelper.WORDCOUNT,
                                  DBHelper.ITERPREFIX };
             String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTS, columns, 
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTBROWSE, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
                 result = new DictBrowseState();
@@ -1021,12 +1021,79 @@ public class DBUtils {
                 }
                 values.put( DBHelper.WORDCOUNTS, TextUtils.join( ":", nums ) );
             }
-            int result = db.update( DBHelper.TABLE_NAME_DICTS,
+            int result = db.update( DBHelper.TABLE_NAME_DICTBROWSE,
                                     values, selection, null );
             if ( 0 == result ) {
                 values.put( DBHelper.DICTNAME, name );
-                db.insert( DBHelper.TABLE_NAME_DICTS, null, values );
+                db.insert( DBHelper.TABLE_NAME_DICTBROWSE, null, values );
             }
+            db.close();
+        }
+    }
+
+    public static DictInfo dictsGetInfo( Context context, String name )
+    {
+        DictInfo result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.LANGCODE,
+                                 DBHelper.WORDCOUNT,
+                                 DBHelper.MD5SUM,
+                                 DBHelper.LOC };
+            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTINFO, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = new DictInfo();
+                result.name = name;
+                result.langCode = 
+                    cursor.getInt( cursor.getColumnIndex(DBHelper.LANGCODE));
+                result.wordCount = 
+                    cursor.getInt( cursor.getColumnIndex(DBHelper.WORDCOUNT));
+                result.md5Sum =
+                    cursor.getString( cursor.getColumnIndex(DBHelper.MD5SUM));
+             }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static void dictsSetInfo( Context context, DictUtils.DictAndLoc dal,
+                                     DictInfo info )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = 
+                String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
+            ContentValues values = new ContentValues();
+
+            values.put( DBHelper.LANGCODE, info.langCode );
+            values.put( DBHelper.WORDCOUNT, info.wordCount );
+            values.put( DBHelper.MD5SUM, info.md5Sum );
+            values.put( DBHelper.LOC, dal.loc.ordinal() );
+
+            int result = db.update( DBHelper.TABLE_NAME_DICTINFO,
+                                    values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.DICTNAME, dal.name );
+                db.insert( DBHelper.TABLE_NAME_DICTINFO, null, values );
+            }
+            db.close();
+        }
+    }
+
+    public static void dictsRemoveInfo( Context context, 
+                                        DictUtils.DictAndLoc dal )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = 
+                String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
+            db.delete( DBHelper.TABLE_NAME_DICTINFO, selection, null );
             db.close();
         }
     }
