@@ -340,6 +340,23 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         goto error;
     }
 
+    if ( NULL == ctxt->super.md5Sum
+#ifdef DEBUG
+         || XP_TRUE 
+#endif
+         ) {
+        JNIEnv* env = ctxt->env;
+        jstring jsum = and_util_figureMD5Sum( ctxt->jniutil, ptr, end - ptr );
+        XP_UCHAR* md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );
+        (*env)->DeleteLocalRef( env, jsum );
+        if ( NULL == ctxt->super.md5Sum ) {
+            ctxt->super.md5Sum = md5Sum;
+        } else {
+            XP_ASSERT( 0 == XP_STRCMP( ctxt->super.md5Sum, md5Sum ) );
+            XP_FREE( ctxt->super.mpool, md5Sum );
+        }
+    }
+
     ctxt->super.nodeSize = nodeSize;
 
     if ( !isUTF8 ) {

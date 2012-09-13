@@ -555,18 +555,7 @@ public class DictUtils {
             DbgUtils.loge( ioe );
         }
 
-        if ( null != digest ) {
-            final char[] hexArray = {'0','1','2','3','4','5','6','7','8','9',
-                                     'a','b','c','d','e','f'};
-            char[] chars = new char[digest.length * 2];
-            for ( int ii = 0; ii < digest.length; ii++ ) {
-                int byt = digest[ii] & 0xFF;
-                chars[ii * 2] = hexArray[byt >> 4];
-                chars[ii * 2 + 1] = hexArray[byt & 0x0F];
-            }
-            result = new String(chars);
-        }
-        return result;
+        return Utils.digestToString( digest );
     } // figureMD5Sum
 
     public static String getMD5SumFor( Context context, DictAndLoc dandl )

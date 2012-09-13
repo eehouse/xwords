@@ -20,11 +20,12 @@
 
 package org.eehouse.android.xw4.jni;
 
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Bitmap;
-import java.util.ArrayList;
+import android.graphics.drawable.BitmapDrawable;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.security.MessageDigest;
+import java.util.ArrayList;
 
 import org.eehouse.android.xw4.*;
 
@@ -85,5 +86,28 @@ public class JNIUtilsImpl implements JNIUtils {
         
         String[] result = al.toArray( new String[al.size()] );
         return result;
+    }
+
+    public String figureMD5Sum( byte[] bytes )
+    {
+        byte[] digest = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] buf = new byte[128];
+            int nLeft = bytes.length;
+            int offset = 0;
+            while ( 0 < nLeft ) {
+                int len = Math.min( buf.length, nLeft );
+                System.arraycopy( bytes, offset, buf, 0, len );
+                md.update( buf, 0, len );
+                nLeft -= len;
+                offset += len;
+            }
+            digest = md.digest();
+        } catch ( java.security.NoSuchAlgorithmException nsae ) {
+            DbgUtils.loge( nsae );
+        }
+
+        return Utils.digestToString( digest );
     }
 }

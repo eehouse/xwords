@@ -26,4 +26,5 @@ public interface JNIUtils {
 
     // Stuff I can't do in C....
     String[] splitFaces( byte[] chars, boolean isUTF8 );
+    String figureMD5Sum( byte[] bytes );
 }
