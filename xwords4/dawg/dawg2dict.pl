@@ -169,17 +169,9 @@ sub readNodesToEnd($) {
 sub printHeader($$) {
     my ( $buf, $len ) = @_;
     printf STDERR "skipped %d bytes of header:\n", $len + 2;
-    my $asStr = Encode::decode_utf8($buf);
-    my @strs = split( '\0', $asStr );
-    # There are variable numbers of strings showing up in this thing.
-    # Need to figure out the right way to unpack the thing.
-    $gDesc = $strs[1]; 
-    $gSum = $strs[2];
-    foreach my $str (@strs) {
-        if ( 0 < length($str) ) {
-            print STDERR 'Got: ', $str, "\n";
-        }
-    }
+    my $count;
+    ($count, $gDesc, $gSum) = unpack( 'N Z* Z*', $buf );
+    printf STDERR "has %d words\n", $count;
 }
 
 sub nodeSizeFromFlags($$) {
