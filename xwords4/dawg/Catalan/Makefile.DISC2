@@ -20,7 +20,7 @@ LANGCODE=ca_ES
 TARGET_TYPE ?= WINCE
 ENC = UTF-8
 
-DICTNOTE = "Built from DISC 2.0.5.\nSee http://escrable.montane.cat/diccionari for more information."
+DICTNOTE = "Built from DISC 2.0.6.\nSee http://escrable.montane.cat/diccionari for more information."
 
 
 ifeq ($(TARGET_TYPE),PALM)
