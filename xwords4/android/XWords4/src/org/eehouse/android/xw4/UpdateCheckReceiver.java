@@ -253,7 +253,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         JSONObject params = new JSONObject();
         int lang = DictLangCache.getDictLangCode( context, dal );
         String langStr = DictLangCache.getLangName( context, lang );
-        String sum = DictUtils.getMD5SumFor( context, dal );
+        String sum = DictLangCache.getDictMD5Sum( context, dal.name );
         try {
             params.put( k_NAME, dal.name );
             params.put( k_LANG, langStr );

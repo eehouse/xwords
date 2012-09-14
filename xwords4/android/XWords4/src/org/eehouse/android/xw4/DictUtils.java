@@ -527,49 +527,6 @@ public class DictUtils {
         // want this later? Environment.MEDIA_MOUNTED_READ_ONLY
     }
 
-    private static String figureMD5Sum( Context context, DictAndLoc dandl )
-    {
-        byte[] digest = null;
-        String result = null;
-        String name = dandl.name;
-        File path = getDictFile( context, addDictExtn( name ), dandl.loc );
-        try {
-            InputStream fis = new FileInputStream( path );
-            byte[] buffer = new byte[1024];
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            for ( ; ; ) {
-                int nRead = fis.read( buffer );
-                if ( 0 > nRead ) {
-                    break;
-                }
-                md.update( buffer, 0, nRead );
-            }
-            fis.close();
-
-            digest = md.digest();
-        } catch ( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.loge( fnfe );
-        } catch( java.security.NoSuchAlgorithmException nsae ) {
-            DbgUtils.loge( nsae );
-        } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
-        }
-
-        return Utils.digestToString( digest );
-    } // figureMD5Sum
-
-    public static String getMD5SumFor( Context context, DictAndLoc dandl )
-    {
-        String sum = null; // DBUtils.getDictMD5Sum( context, dandl.name, 
-                           // dandl.loc.ordinal() );
-        if ( null == sum ) {
-            sum = figureMD5Sum( context, dandl );
-            // DBUtils.setDictMD5Sum( context, dandl.name, 
-            //                        dandl.loc.ordinal(), sum );
-        }
-        return sum;
-    }
-
     private static File getSDDir( Context context )
     {
         File result = null;
