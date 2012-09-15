@@ -1,4 +1,4 @@
-#!/usr/bin/perl -CS
+#!/usr/bin/perl -C
 #
 # Copyright 2004 - 2009 by Eric House (xwords@eehouse.org)
 #
@@ -24,10 +24,11 @@ use strict;
 use Fcntl;
 use Encode 'from_to';
 use Encode;
+use Digest::MD5;
 
 my $gInFile;
 my $gSumOnly = 0;
-my $gSum;
+my $gSum = '';
 my $gDescOnly = 0;
 my $gDesc;
 my $gDoRaw = 0;
@@ -95,24 +96,37 @@ sub readXWDFaces($$$) {
     $nChars = unpack( 'c', $buf );
     printf STDERR "nChars of faces: %d\n", $nChars;
 
-    binmode( $fh, ":encoding(utf8)" ) or die "binmode(:utf-8) failed\n";
-    sysread( $fh, $buf, $nChars );
-    length($buf) == $nChars or die "didn't read expected number of bytes\n";
-    binmode( $fh ) or die "binmode failed\n";
+    # At this point $fh is pointing at the start of data
+    if ( $gSumOnly ) {
+        my $sum = sumRestOfFile( $fh );
+        if ( $sum eq $gSum ) {
+            print STDERR "got: $sum, $gSum twice!!!\n";
+        } elsif ( !$gSum ) {
+            $gSum = $sum;
+        } else {
+            print STDERR "disagreement: $sum vs $gSum\n";
+            exit( -1 );
+        }
+    } else {
+        binmode( $fh, ":encoding(utf8)" ) or die "binmode(:utf-8) failed\n";
+        sysread( $fh, $buf, $nChars );
+        length($buf) == $nChars or die "didn't read expected number of bytes\n";
+        binmode( $fh ) or die "binmode failed\n";
 
-    print STDERR "string now: $buf\n";
-    my @faces;
-    for ( my $ii = 0; $ii < $nChars; ++$ii ) {
-        my $chr = substr( $buf, $ii, 1 );
-        print STDERR "pushing $chr \n";
-        push( @faces, $chr );
+        print STDERR "string now: $buf\n";
+        my @faces;
+        for ( my $ii = 0; $ii < $nChars; ++$ii ) {
+            my $chr = substr( $buf, $ii, 1 );
+            print STDERR "pushing $chr \n";
+            push( @faces, $chr );
+        }
+
+        printf STDERR "at 0x%x after reading faces\n", systell($fh);
+
+        ${$nSpecials} = countSpecials( \@faces );
+        @{$facRef} = @faces;
+        printf STDERR "readXWDFaces=>%d\n", $nChars;
     }
-
-    printf STDERR "at 0x%x after reading faces\n", systell($fh);
-
-    ${$nSpecials} = countSpecials( \@faces );
-    @{$facRef} = @faces;
-    printf STDERR "readXWDFaces=>%d\n", $nChars;
     return $nChars;
 } # readXWDFaces
 
@@ -170,7 +184,12 @@ sub printHeader($$) {
     my ( $buf, $len ) = @_;
     printf STDERR "skipped %d bytes of header:\n", $len + 2;
     my $count;
-    ($count, $gDesc, $gSum) = unpack( 'N Z* Z*', $buf );
+    if ( $len == 4 ) {
+        ($count) = unpack( 'N', $buf );
+    } else {
+        print STDERR 'unpacking...\n';
+        ($count, $gDesc, $gSum) = unpack( 'N Z* Z*', $buf );
+    }
     printf STDERR "has %d words\n", $count;
 }
 
@@ -190,7 +209,7 @@ sub nodeSizeFromFlags($$) {
 
     if ( $flags == 2 || $ flags == 4 ) {
         return 3;
-    } elsif ( $flags == 5 ) {
+    } elsif ( $flags == 3 || $flags == 5 ) {
         return 4;
     } else {
         die "invalid dict flags $flags";
@@ -208,6 +227,21 @@ sub mergeSpecials($$) {
     }
 }
 
+sub sumRestOfFile($) {
+    my ( $fh ) = @_;
+    my $buf;
+    my $count = 0;
+    my $md5 = Digest::MD5->new;
+    for ( ; ; ) {
+        my $nRead = sysread( $fh, $buf, 128 );
+        0 == $nRead && last;
+        $count += $nRead;
+        $md5->add( $buf );
+    }
+    # print STDERR "read $count bytes\n";
+    return $md5->hexdigest();
+}
+
 sub prepXWD($$$$) {
     my ( $fh, $facRef, $nodesRef, $startRef ) = @_;
     my $done = 1;
@@ -219,18 +253,14 @@ sub prepXWD($$$$) {
 
     $gNodeSize = nodeSizeFromFlags( $fh, $flags );
 
+    my $nSpecials;
+    my $faceCount = readXWDFaces( $fh, $facRef, \$nSpecials ); # does checksum
+
     if ( $gSumOnly ) {
         print STDOUT $gSum, "\n";
     } elsif( $gDescOnly ) {
         print STDOUT $gDesc, "\n";
     } else {
-        $done = 0;
-    }
-
-    if ( !$done ) {
-        my $nSpecials;
-        my $faceCount = readXWDFaces( $fh, $facRef, \$nSpecials );
-
         printf STDERR "at 0x%x before header read\n", systell($fh);
         # skip xloc header
         $nRead = sysread( $fh, $buf, 2 );
