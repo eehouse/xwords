@@ -68,7 +68,7 @@ and_util_makeJBitmap( JNIUtilCtxt* jniutil, int nCols, int nRows,
 
     bitmap = (*env)->CallObjectMethod( env, jniutil->jjniutil, mid,
                                        nCols, nRows, jcolors );
-    (*env)->DeleteLocalRef( env, jcolors );
+    deleteLocalRef( env, jcolors );
 
     return bitmap;
 }
@@ -87,7 +87,7 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
     jbyteArray jbytes = makeByteArray( env, len, (jbyte*)bytes );
     strarray = 
         (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jbytes, isUTF8 );
-    (*env)->DeleteLocalRef( env, jbytes );
+    deleteLocalRef( env, jbytes );
 
     return strarray;
 }
@@ -104,9 +104,6 @@ and_util_getMD5SumFor( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
         : makeByteArray( env, len, (jbyte*)bytes );
     jstring result = 
         (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jname, jbytes );
-    (*env)->DeleteLocalRef( env, jname );
-    if ( NULL != jbytes ) {
-        (*env)->DeleteLocalRef( env, jbytes );
-    }
+    deleteLocalRefs( env, jname, jbytes, DELETE_NO_REF );
     return result;
 }

@@ -84,7 +84,7 @@ getInt( JNIEnv* env, jobject obj, const char* name )
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     int result = (*env)->GetIntField( env, obj, fid );
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
     return result;
 }
 
@@ -96,7 +96,7 @@ setInt( JNIEnv* env, jobject obj, const char* name, int value )
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     (*env)->SetIntField( env, obj, fid, value );
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
 }
 
 bool
@@ -109,7 +109,7 @@ setBool( JNIEnv* env, jobject obj, const char* name, bool value )
         (*env)->SetBooleanField( env, obj, fid, value );
         success = true;
     }
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
 
     return success;
 }
@@ -120,13 +120,13 @@ setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
     bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
 
     if ( 0 != fid ) {
         jstring str = (*env)->NewStringUTF( env, value );
         (*env)->SetObjectField( env, obj, fid, str );
         success = true;
-        (*env)->DeleteLocalRef( env, str );
+        deleteLocalRef( env, str );
     }
 
     return success;
@@ -148,11 +148,11 @@ getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
         const char* chars = (*env)->GetStringUTFChars( env, jstr, NULL );
         XP_MEMCPY( buf, chars, len );
         (*env)->ReleaseStringUTFChars( env, jstr, chars );
-        (*env)->DeleteLocalRef( env, jstr );
+        deleteLocalRef( env, jstr );
     }
     buf[len] = '\0';
 
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
 }
 
 XP_UCHAR* 
@@ -180,7 +180,7 @@ getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
     *ret = (*env)->GetObjectField( env, obj, fid );
     XP_ASSERT( !!*ret );
 
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
     return true;
 }
 
@@ -194,7 +194,7 @@ setObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
     XP_ASSERT( !!fid );
     (*env)->SetObjectField( env, obj, fid, val );
 
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
 }
 
 bool
@@ -206,7 +206,7 @@ getBool( JNIEnv* env, jobject obj, const char* name )
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Z");
     XP_ASSERT( !!fid );
     result = (*env)->GetBooleanField( env, obj, fid );
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
     return result;
 }
 
@@ -266,7 +266,7 @@ getIntFromArray( JNIEnv* env, jintArray arr, bool del )
     int result = ints[0];
     (*env)->ReleaseIntArrayElements( env, arr, ints, 0);
     if ( del ) {
-        (*env)->DeleteLocalRef( env, arr );
+        deleteLocalRef( env, arr );
     }
     return result;
 }
@@ -277,14 +277,13 @@ makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
     jclass clas = (*env)->FindClass(env, "java/lang/String");
     jstring empty = (*env)->NewStringUTF( env, "" );
     jobjectArray jarray = (*env)->NewObjectArray( env, siz, clas, empty );
-    (*env)->DeleteLocalRef( env, clas );
-    (*env)->DeleteLocalRef( env, empty );
+    deleteLocalRefs( env, clas, empty, DELETE_NO_REF );
 
     int ii;
     for ( ii = 0; !!vals && ii < siz; ++ii ) {    
         jstring jstr = (*env)->NewStringUTF( env, vals[ii] );
         (*env)->SetObjectArrayElement( env, jarray, ii, jstr );
-        (*env)->DeleteLocalRef( env, jstr );
+        deleteLocalRef( env, jstr );
     }
 
     return jarray;
@@ -311,7 +310,7 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     XP_ASSERT( !!cls );
     jmethodID mid = (*env)->GetMethodID( env, cls, proc, sig );
     XP_ASSERT( !!mid );
-    (*env)->DeleteLocalRef( env, cls );
+    deleteLocalRef( env, cls );
     return mid;
 }
 
@@ -400,8 +399,7 @@ jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field,
     XP_ASSERT( !!jenum );
     jint result = jEnumToInt( env, jenum );
 
-    (*env)->DeleteLocalRef( env, clazz );
-    (*env)->DeleteLocalRef( env, jenum );
+    deleteLocalRefs( env, clazz, jenum, DELETE_NO_REF );
     return result;
 }
 
@@ -415,7 +413,7 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
     snprintf( buf, sizeof(buf), "L%s;", fieldSig );
     jfieldID fid = (*env)->GetFieldID( env, clazz, field, buf );
     XP_ASSERT( !!fid );         /* failed */
-    (*env)->DeleteLocalRef( env, clazz );
+    deleteLocalRef( env, clazz );
 
     jobject jenum = (*env)->GetObjectField( env, jobj, fid );
     if ( !jenum ) {       /* won't exist in new object */
@@ -426,13 +424,13 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
         jenum = (*env)->NewObject( env, clazz, mid );
         XP_ASSERT( !!jenum );
         (*env)->SetObjectField( env, jobj, fid, jenum );
-        (*env)->DeleteLocalRef( env, clazz );
+        deleteLocalRef( env, clazz );
     }
 
     jobject jval = intToJEnum( env, val, fieldSig );
     XP_ASSERT( !!jval );
     (*env)->SetObjectField( env, jobj, fid, jval );
-    (*env)->DeleteLocalRef( env, jval );
+    deleteLocalRef( env, jval );
 } /* intToJenumField */
 
 /* Cons up a new enum instance and set its value */
@@ -455,8 +453,7 @@ intToJEnum( JNIEnv* env, int val, const char* enumSig )
     jenum = (*env)->GetObjectArrayElement( env, jvalues, val );
     XP_ASSERT( !!jenum );
 
-    (*env)->DeleteLocalRef( env, jvalues );
-    (*env)->DeleteLocalRef( env, clazz );
+    deleteLocalRefs( env, jvalues, clazz, DELETE_NO_REF );
     return jenum;
 } /* intToJEnum */
 
@@ -474,6 +471,28 @@ and_empty_stream( MPFORMAL AndGlobals* globals )
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             globals, 0, NULL );
     return stream;
+}
+
+void deleteLocalRef( JNIEnv* env, jobject jobj )
+{
+    if ( NULL != jobj ) {
+        (*env)->DeleteLocalRef( env, jobj );
+    }
+}
+
+void
+deleteLocalRefs( JNIEnv* env, jobject jobj, ... )
+{
+    va_list ap;
+    va_start( ap, jobj );
+    for ( ; ; ) {
+        jobject jnext = va_arg( ap, jobject );
+        if ( DELETE_NO_REF == jnext ) {
+            break;
+        }
+        deleteLocalRef( env, jnext );
+    }
+    va_end( ap );
 }
 
 #ifdef DEBUG

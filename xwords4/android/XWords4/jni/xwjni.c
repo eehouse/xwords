@@ -100,9 +100,9 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
 
             lp->secondsUsed = 0;
 
-            (*env)->DeleteLocalRef( env, jlp );
+            deleteLocalRef( env, jlp );
         }
-        (*env)->DeleteLocalRef( env, jplayers );
+        deleteLocalRef( env, jplayers );
     } else {
         XP_ASSERT(0);
     }
@@ -147,9 +147,9 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
             setString( env, jlp, "dictName", lp->dictName );
             setInt( env, jlp, "secondsUsed", lp->secondsUsed );
 
-            (*env)->DeleteLocalRef( env, jlp );
+            deleteLocalRef( env, jlp );
         }
-        (*env)->DeleteLocalRef( env, jplayers );
+        deleteLocalRef( env, jplayers );
     } else {
         XP_ASSERT(0);
     }
@@ -1052,9 +1052,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
         jobject jaddr = (*env)->NewObject( env, clas, initId );
         setJAddrRec( env, jaddr, &addrs[ii] );
         (*env)->SetObjectArrayElement( env, result, ii, jaddr );
-        (*env)->DeleteLocalRef( env, jaddr );
+        deleteLocalRef( env, jaddr );
     }
-    (*env)->DeleteLocalRef( env, clas );
+    deleteLocalRef( env, clas );
 
     XWJNI_END();
     return result;
@@ -1162,7 +1162,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             jobjectArray jaddrs = makeStringArray( env, count, addrps );
             setObject( env, jsummary, "remoteDevs", "[Ljava/lang/String;", 
                        jaddrs );
-            (*env)->DeleteLocalRef( env, jaddrs );
+            deleteLocalRef( env, jaddrs );
 #endif
         }
     }
@@ -1183,7 +1183,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     }
     jintArray jarr = makeIntArray( env, nPlayers, jvals );
     setObject( env, jsummary, "scores", "[I", jarr );
-    (*env)->DeleteLocalRef( env, jarr );
+    deleteLocalRef( env, jarr );
 
     XWJNI_END();
 }
@@ -1539,7 +1539,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
                                       depth, buf, VSIZE(buf) );
             jstring jstr = (*env)->NewStringUTF( env, buf );
             (*env)->SetObjectArrayElement( env, result, ii, jstr );
-            (*env)->DeleteLocalRef( env, jstr );
+            deleteLocalRef( env, jstr );
         }
     }
     return result;

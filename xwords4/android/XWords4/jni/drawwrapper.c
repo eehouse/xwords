@@ -59,10 +59,8 @@ makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
         robj = (*env)->NewObject( env, rclass, initId, rect->left, rect->top,
                                   right, bottom );
                  
-        (*env)->DeleteLocalRef( env, rclass );
-
         draw->jCache[indx] = (*env)->NewGlobalRef( env, robj );
-        (*env)->DeleteLocalRef( env, robj );
+        deleteLocalRefs( env, robj, rclass, DELETE_NO_REF );
         robj = draw->jCache[indx];
     } else {
         setInt( env, robj, "left", rect->left );
@@ -94,7 +92,6 @@ makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
         jclass rclass = (*env)->FindClass( env, "android/graphics/Rect");
         jrects = (*env)->NewObjectArray( env, nPlayers, rclass, NULL );
         draw->jCache[indx] = (*env)->NewGlobalRef( env, jrects );
-        (*env)->DeleteLocalRef( env, jrects );
         jrects = draw->jCache[indx];
 
         jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", 
@@ -103,10 +100,10 @@ makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
         for ( ii = 0; ii < nPlayers; ++ii ) {
             jobject jrect = (*env)->NewObject( env, rclass, initId );
             (*env)->SetObjectArrayElement( env, jrects, ii, jrect );
-            (*env)->DeleteLocalRef( env, jrect );
+            deleteLocalRef( env, jrect );
         }
 
-        (*env)->DeleteLocalRef( env, rclass );
+        deleteLocalRefs( env, rclass, jrects, DELETE_NO_REF );
     }
 
     if ( NULL != rects ) {
@@ -131,17 +128,17 @@ makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
         jclass clas = (*env)->FindClass( env, PKG_PATH("jni/DrawScoreInfo") );
         dsiobjs = (*env)->NewObjectArray( env, nPlayers, clas, NULL );
         draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobjs );
-        (*env)->DeleteLocalRef( env, dsiobjs );
+        deleteLocalRef( env, dsiobjs );
         dsiobjs = draw->jCache[indx];
 
         jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
         for ( ii = 0; ii < nPlayers; ++ii ) {
             jobject dsiobj = (*env)->NewObject( env, clas, initId );
             (*env)->SetObjectArrayElement( env, dsiobjs, ii, dsiobj );
-            (*env)->DeleteLocalRef( env, dsiobj );
+            deleteLocalRef( env, dsiobj );
         }
 
-        (*env)->DeleteLocalRef( env, clas );
+        deleteLocalRef( env, clas );
     }
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
@@ -173,10 +170,9 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
         jclass rclass = (*env)->FindClass( env, PKG_PATH("jni/DrawScoreInfo") );
         jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", "()V" );
         dsiobj = (*env)->NewObject( env, rclass, initId );
-        (*env)->DeleteLocalRef( env, rclass );
 
         draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobj );
-        (*env)->DeleteLocalRef( env, dsiobj );
+        deleteLocalRefs( env, rclass, dsiobj, DELETE_NO_REF );
         dsiobj = draw->jCache[indx];
     }
 
@@ -219,7 +215,7 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
     result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                         jrect, numPlayers, jscores, remCount );
 
-    (*env)->DeleteLocalRef( env, jscores );
+    deleteLocalRef( env, jscores );
     return result;
 }
 
@@ -389,9 +385,7 @@ and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
                                                  jrect, jtext, tile, value,
                                                  owner, bonus, hintAtts, 
                                                  flags );
-    if ( !!jtext ) {
-        (*env)->DeleteLocalRef( env, jtext );
-    }
+    deleteLocalRef( env, jtext );
 
     return result;
 }
@@ -444,9 +438,7 @@ and_draw_drawTile( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, jtext, val, flags );
 
-    if ( !!jtext ) {
-        (*env)->DeleteLocalRef( env, jtext );
-    }
+    deleteLocalRef( env, jtext );
 }
 
 static void
@@ -466,9 +458,7 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, const XP_Rect* rect,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, jtext, val, owner, flags );
 
-    if ( !!jtext ) {
-        (*env)->DeleteLocalRef( env, jtext );
-    }
+    deleteLocalRef( env, jtext );
 }
 
 static void 
@@ -550,7 +540,7 @@ and_draw_getMiniWText( DrawCtx* dctx, XWMiniTextType textHint )
     const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
     snprintf( draw->miniTextBuf, VSIZE(draw->miniTextBuf), "%s", str );
     (*env)->ReleaseStringUTFChars( env, jstr, str );
-    (*env)->DeleteLocalRef( env, jstr );
+    deleteLocalRef( env, jstr );
     return draw->miniTextBuf;
 }
 
@@ -567,7 +557,7 @@ and_draw_measureMiniWText( DrawCtx* dctx, const XP_UCHAR* textP,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jstr, widthArray, heightArray );
 
-    (*env)->DeleteLocalRef( env, jstr );
+    deleteLocalRef( env, jstr );
     *width = getIntFromArray( env, widthArray, true );
     *height = getIntFromArray( env, heightArray, true );
 }
@@ -585,7 +575,7 @@ and_draw_drawMiniWindow( DrawCtx* dctx, const XP_UCHAR* text,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jstr, jrect );
 
-    (*env)->DeleteLocalRef( env, jstr );
+    deleteLocalRef( env, jstr );
 }
 #endif
 

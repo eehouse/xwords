@@ -45,7 +45,7 @@ makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
 
         setJAddrRec( env, jaddr, addr );
     
-        (*env)->DeleteLocalRef( env, clazz );
+        deleteLocalRef( env, clazz );
     }
     return jaddr;
 }
@@ -82,11 +82,7 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 
         result = (*env)->CallIntMethod( env, aprocs->jxport, mid, 
                                         jbytes, jaddr, gameID );
-
-        if ( NULL != jaddr ) {
-            (*env)->DeleteLocalRef( env, jaddr );
-        }
-        (*env)->DeleteLocalRef( env, jbytes );
+        deleteLocalRefs( env, jaddr, jbytes, DELETE_NO_REF );
     }
     LOG_RETURNF( "%d", result );
     return result;
@@ -105,7 +101,7 @@ and_xport_relayStatus( void* closure, CommsRelayState newState )
         jobject jenum = intToJEnum( env, newState, 
                                     PKG_PATH("jni/TransportProcs$CommsRelayState") );
         (*env)->CallVoidMethod( env, aprocs->jxport, mid, jenum );
-        (*env)->DeleteLocalRef( env, jenum );
+        deleteLocalRef( env, jenum );
     }
 }
 
@@ -122,7 +118,7 @@ and_xport_relayConnd( void* closure, XP_UCHAR* const room, XP_Bool reconnect,
         jstring str = (*env)->NewStringUTF( env, room );
         (*env)->CallVoidMethod( env, aprocs->jxport, mid, 
                                 str, devOrder, allHere, nMissing );
-        (*env)->DeleteLocalRef( env, str );
+        deleteLocalRef( env, str );
     }
 }
 
@@ -142,8 +138,7 @@ and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
         jstring str = (*env)->NewStringUTF( env, relayID );
         result = (*env)->CallBooleanMethod( env, aprocs->jxport, mid, 
                                             jbytes, str );
-        (*env)->DeleteLocalRef( env, jbytes );
-        (*env)->DeleteLocalRef( env, str );
+        deleteLocalRefs( env, jbytes, str, DELETE_NO_REF );
     }
     return result;
 }
@@ -163,7 +158,7 @@ and_xport_relayError( void* closure, XWREASON relayErr )
                                     PKG_PATH("jni/TransportProcs$XWRELAY_ERROR") );
         (*env)->CallVoidMethod( env, aprocs->jxport, mid, jenum );
 
-        (*env)->DeleteLocalRef( env, jenum );
+        deleteLocalRef( env, jenum );
     }
 }
 
