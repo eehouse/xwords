@@ -346,9 +346,11 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
 #endif
          ) {
         JNIEnv* env = ctxt->env;
-        jstring jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name );
+        jstring jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name,
+                                              NULL, 0 );
         if ( NULL == jsum ) {
-            jsum = and_util_figureMD5Sum( ctxt->jniutil, ptr, end - ptr );
+            jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name,
+                                          ptr, end - ptr );
         }
         XP_UCHAR* md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );
         (*env)->DeleteLocalRef( env, jsum );

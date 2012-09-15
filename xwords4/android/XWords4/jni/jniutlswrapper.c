@@ -93,28 +93,20 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
 }
 
 jstring
-and_util_getMD5SumFor( JNIUtilCtxt* jniutil, const XP_UCHAR* name )
+and_util_getMD5SumFor( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
+                       const XP_U8* bytes, jsize len )
 {
     JNIEnv* env = *jniutil->envp;
     jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
-                                 "(Ljava/lang/String;)Ljava/lang/String;" );
+                                 "(Ljava/lang/String;[B)Ljava/lang/String;" );
     jstring jname = (*env)->NewStringUTF( env, name );
+    jbyteArray jbytes = NULL == bytes? NULL
+        : makeByteArray( env, len, (jbyte*)bytes );
     jstring result = 
-        (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jname );
+        (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jname, jbytes );
     (*env)->DeleteLocalRef( env, jname );
+    if ( NULL != jbytes ) {
+        (*env)->DeleteLocalRef( env, jbytes );
+    }
     return result;
-}
-
-jstring
-and_util_figureMD5Sum( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len )
-{
-    JNIEnv* env = *jniutil->envp;
-    jmethodID mid = getMethodID( env, jniutil->jjniutil, "figureMD5Sum",
-                                 "([B)Ljava/lang/String;" );
-    jbyteArray jbytes = makeByteArray( env, len, (jbyte*)bytes );
-    jstring sum =
-        (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jbytes );
-    (*env)->DeleteLocalRef( env, jbytes );
-
-    return sum;
 }
