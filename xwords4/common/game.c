@@ -261,13 +261,13 @@ void
 game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
                    XWStreamCtxt* stream, XP_U16 saveToken )
 {
-    XP_ASSERT( 0 != saveToken );
     stream_putU8( stream, CUR_STREAM_VERS );
     stream_setVersion( stream, CUR_STREAM_VERS );
 
     gi_writeToStream( stream, gi );
 
     if ( !!game ) {
+        XP_ASSERT( 0 != saveToken );
         stream_putU8( stream, (XP_U8)!!game->comms );
 #ifdef XWFEATURE_STANDALONE_ONLY
         XP_ASSERT( !game->comms );
