@@ -1,4 +1,4 @@
-#!/usr/bin/perl -CS
+#!/usr/bin/perl -C
 #
 # Copyright 2004 - 2009 by Eric House (xwords@eehouse.org)
 #
