@@ -93,7 +93,6 @@ public class JNIUtilsImpl implements JNIUtils {
 
     public String getMD5SumFor( String dictName, byte[] bytes )
     {
-        DbgUtils.logf( "dictName(%H)", bytes );
         String result = null;
         if ( null == bytes ) {
             result = DBUtils.dictsGetMD5Sum( m_context, dictName );
