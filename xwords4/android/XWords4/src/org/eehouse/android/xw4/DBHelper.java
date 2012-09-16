@@ -149,7 +149,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTBROWSE + " ("
                     + DICTNAME     + " TEXT,"
-                    + WORDCOUNT    + " INTEGER,"
                     + WORDCOUNTS   + " TEXT,"
                     + ITERMIN      + " INTEGER(4),"
                     + ITERMAX      + " INTEGER(4),"

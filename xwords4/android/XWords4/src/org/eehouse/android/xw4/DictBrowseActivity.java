@@ -174,8 +174,6 @@ public class DictBrowseActivity extends XWListActivity
                 m_browseState = new DBUtils.DictBrowseState();
                 m_browseState.m_pos = 0;
                 m_browseState.m_top = 0;
-                m_browseState.m_count = 
-                    XwJNI.dict_iter_wordCount( m_dictClosure );
             }
             if ( null == m_browseState.m_counts ) {
                 m_browseState.m_counts = 

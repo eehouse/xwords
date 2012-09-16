@@ -91,7 +91,6 @@ public class DBUtils {
         public int m_pos;
         public int m_top;
         public String m_prefix;
-        public int m_count;
         public int[] m_counts;
     }
 
@@ -981,8 +980,6 @@ public class DBUtils {
                 result.m_prefix = 
                     cursor.getString( cursor
                                       .getColumnIndex(DBHelper.ITERPREFIX));
-                result.m_count = 
-                    cursor.getInt( cursor.getColumnIndex(DBHelper.WORDCOUNT));
                 String counts = 
                     cursor.getString( cursor.getColumnIndex(DBHelper.WORDCOUNTS));
                 if ( null != counts ) {
@@ -1013,7 +1010,6 @@ public class DBUtils {
             values.put( DBHelper.ITERMIN, state.m_minShown );
             values.put( DBHelper.ITERMAX, state.m_maxShown );
             values.put( DBHelper.ITERPREFIX, state.m_prefix );
-            values.put( DBHelper.WORDCOUNT, state.m_count );
             if ( null != state.m_counts ) {
                 String[] nums = new String[state.m_counts.length];
                 for ( int ii = 0; ii < nums.length; ++ii ) {
