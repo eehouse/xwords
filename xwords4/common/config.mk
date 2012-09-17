@@ -16,11 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-COMMON_INCS = -I ./$(PLATFORM) -I../common -I../relay
+COMMON_INCS = -I ../common -I../relay
 INCLUDES += $(COMMON_INCS) -I./
 
 COMMONDIR ?= ../common
-COMMONOBJDIR = ../common/$(PLATFORM)
+COMMONOBJDIR = $(PLATFORM)/common
 
 COMMONSRC = \
 	$(COMMONDIR)/board.c \

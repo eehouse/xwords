@@ -16,15 +16,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+BUILD_DIR ?= .
+
 ifeq ($(MEMDEBUG),TRUE)
 DEFINES = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DNUMBER_KEY_AS_INDEX 
 DEFINES += -DCOMMS_CHECKSUM
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 CFLAGS += -DDEBUG_TS -rdynamic 
-PLATFORM = obj_linux_memdbg
+PLATFORM = $(BUILD_DIR)/obj_linux_memdbg
 else
 DEFINES =
-PLATFORM = obj_linux_rel
+PLATFORM = $(BUILD_DIR)/obj_linux_rel
 # Not shipping this!  Always build with symbols etc
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 #CFLAGS += -Os -Werror -Wunused
