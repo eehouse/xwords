@@ -227,6 +227,7 @@ public class DictBrowseActivity extends XWListActivity
             m_browseState.m_pos = list.getFirstVisiblePosition();
             View view = list.getChildAt( 0 );
             m_browseState.m_top = (view == null) ? 0 : view.getTop();
+            m_browseState.m_prefix = getFindText();
             DBUtils.dictsSetOffset( this, m_name, m_loc, m_browseState );
             m_browseState = null;
         }
@@ -241,7 +242,7 @@ public class DictBrowseActivity extends XWListActivity
         if ( null == m_browseState ) {
             m_browseState = DBUtils.dictsGetOffset( this, m_name, m_loc );
         }
-        showPrefix( true );
+        setFindText( m_browseState.m_prefix );
     }
 
     @Override
@@ -308,23 +309,29 @@ public class DictBrowseActivity extends XWListActivity
 
     private void findButtonClicked()
     {
-        EditText edit = (EditText)findViewById( R.id.word_edit );
-        String text = edit.getText().toString();
+        String text = getFindText();
         if ( null != text && 0 < text.length() ) {
             m_browseState.m_prefix = text;
-            showPrefix( false );
+            showPrefix();
         }
     }
 
-    private void showPrefix( boolean fillField ) 
+    private String getFindText()
+    {
+        EditText edit = (EditText)findViewById( R.id.word_edit );
+        return edit.getText().toString();
+    }
+
+    private void setFindText( String text )
+    {
+        EditText edit = (EditText)findViewById( R.id.word_edit );
+        edit.setText( text );
+    }
+
+    private void showPrefix() 
     {
         String text = m_browseState.m_prefix;
         if ( null != text && 0 < text.length() ) {
-            if ( fillField ) {
-                EditText edit = (EditText)findViewById( R.id.word_edit );
-                edit.setText( text );
-            }
-
             int pos = XwJNI.dict_iter_getStartsWith( m_dictClosure, text );
             if ( 0 <= pos ) {
                 getListView().setSelection( pos );
@@ -349,6 +356,7 @@ public class DictBrowseActivity extends XWListActivity
             m_browseState.m_top = 0;
             m_browseState.m_minShown = min;
             m_browseState.m_maxShown = max;
+            m_browseState.m_prefix = getFindText();
             DBUtils.dictsSetOffset( this, m_name, m_loc, m_browseState );
             m_browseState = null;
 
