@@ -960,8 +960,7 @@ public class DBUtils {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { DBHelper.ITERPOS, DBHelper.ITERTOP,
                                  DBHelper.ITERMIN, DBHelper.ITERMAX,
-                                 DBHelper.WORDCOUNTS, DBHelper.WORDCOUNT,
-                                 DBHelper.ITERPREFIX };
+                                 DBHelper.WORDCOUNTS, DBHelper.ITERPREFIX };
             String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTBROWSE, columns, 
                                       selection, null, null, null, null );
