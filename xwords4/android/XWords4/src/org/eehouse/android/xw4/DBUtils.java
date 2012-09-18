@@ -45,6 +45,7 @@ import java.util.StringTokenizer;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.DictUtils.DictLoc;
 
 
 public class DBUtils {
@@ -55,6 +56,7 @@ public class DBUtils {
     private static final String ROW_ID = "rowid";
     private static final String ROW_ID_FMT = "rowid=%d";
     private static final String NAME_FMT = "%s='%s'";
+    private static final String NAMELOC_FMT = "%s='%s' AND %s=%d";
 
     private static long s_cachedRowID = -1;
     private static byte[] s_cachedBytes = null;
@@ -951,9 +953,10 @@ public class DBUtils {
     /////////////////////////////////////////////////////////////////
     // DictsDB stuff
     /////////////////////////////////////////////////////////////////
-    public static DictBrowseState dictsGetOffset( Context context, 
-                                                  String name )
+    public static DictBrowseState dictsGetOffset( Context context, String name,
+                                                  DictLoc loc )
     {
+        Assert.assertTrue( DictLoc.UNKNOWN != loc );
         DictBrowseState result = null;
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -961,10 +964,12 @@ public class DBUtils {
             String[] columns = { DBHelper.ITERPOS, DBHelper.ITERTOP,
                                  DBHelper.ITERMIN, DBHelper.ITERMAX,
                                  DBHelper.WORDCOUNTS, DBHelper.ITERPREFIX };
-            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+            String selection = 
+                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                               name, DBHelper.LOC, loc.ordinal() );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTBROWSE, columns, 
                                       selection, null, null, null, null );
-            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+            if ( 1 >= cursor.getCount() && cursor.moveToFirst() ) {
                 result = new DictBrowseState();
                 result.m_pos = cursor.getInt( cursor
                                               .getColumnIndex(DBHelper.ITERPOS));
@@ -997,12 +1002,15 @@ public class DBUtils {
     }
 
     public static void dictsSetOffset( Context context, String name, 
-                                       DictBrowseState state )
+                                       DictLoc loc, DictBrowseState state )
     {
+        Assert.assertTrue( DictLoc.UNKNOWN != loc );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+            String selection = 
+                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                               name, DBHelper.LOC, loc.ordinal() );
             ContentValues values = new ContentValues();
             values.put( DBHelper.ITERPOS, state.m_pos );
             values.put( DBHelper.ITERTOP, state.m_top );
@@ -1020,6 +1028,7 @@ public class DBUtils {
                                     values, selection, null );
             if ( 0 == result ) {
                 values.put( DBHelper.DICTNAME, name );
+                values.put( DBHelper.LOC, loc.ordinal() );
                 db.insert( DBHelper.TABLE_NAME_DICTBROWSE, null, values );
             }
             db.close();
@@ -1105,6 +1114,23 @@ public class DBUtils {
         }
     }
 
+    public static void dictsMoveInfo( Context context, String name,
+                                      DictLoc fromLoc, DictLoc toLoc )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = 
+                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                               name, DBHelper.LOC, fromLoc.ordinal() );
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.LOC, toLoc.ordinal() );
+            db.update( DBHelper.TABLE_NAME_DICTINFO, values, selection, null );
+            db.update( DBHelper.TABLE_NAME_DICTBROWSE, values, selection, null);
+            db.close();
+        }
+    }
+
     public static void dictsRemoveInfo( Context context, 
                                         DictUtils.DictAndLoc dal )
     {
@@ -1112,8 +1138,10 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
             String selection = 
-                String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
+                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                               dal.name, DBHelper.LOC, dal.loc.ordinal() );
             db.delete( DBHelper.TABLE_NAME_DICTINFO, selection, null );
+            db.delete( DBHelper.TABLE_NAME_DICTBROWSE, selection, null );
             db.close();
         }
     }

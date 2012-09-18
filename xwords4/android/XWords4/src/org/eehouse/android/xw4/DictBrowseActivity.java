@@ -48,7 +48,8 @@ import org.eehouse.android.xw4.jni.XwJNI;
 public class DictBrowseActivity extends XWListActivity
     implements View.OnClickListener, OnItemSelectedListener {
 
-    public static final String DICT_NAME = "DICT_NAME";
+    private static final String DICT_NAME = "DICT_NAME";
+    private static final String DICT_LOC = "DICT_LOC";
 
     private static final int MIN_LEN = 2;
     private static final int FINISH_ACTION = 1;
@@ -56,6 +57,7 @@ public class DictBrowseActivity extends XWListActivity
     private int m_dictClosure = 0;
     private int m_lang;
     private String m_name;
+    private DictUtils.DictLoc m_loc;
     private Spinner m_minSpinner;
     private Spinner m_maxSpinner;
     private DBUtils.DictBrowseState m_browseState;
@@ -160,6 +162,8 @@ public class DictBrowseActivity extends XWListActivity
             finish();
         } else {
             m_name = name;
+            m_loc = 
+                DictUtils.DictLoc.values()[intent.getIntExtra( DICT_LOC, 0 )];
             m_lang = DictLangCache.getDictLangCode( this, name );
 
             String[] names = { name };
@@ -168,7 +172,7 @@ public class DictBrowseActivity extends XWListActivity
                                                   name, pairs.m_paths[0],
                                                   JNIUtilsImpl.get(this) );
 
-            m_browseState = DBUtils.dictsGetOffset( this, name );
+            m_browseState = DBUtils.dictsGetOffset( this, name, m_loc );
             boolean newState = null == m_browseState;
             if ( newState ) {
                 m_browseState = new DBUtils.DictBrowseState();
@@ -223,7 +227,7 @@ public class DictBrowseActivity extends XWListActivity
             m_browseState.m_pos = list.getFirstVisiblePosition();
             View view = list.getChildAt( 0 );
             m_browseState.m_top = (view == null) ? 0 : view.getTop();
-            DBUtils.dictsSetOffset( this, m_name, m_browseState );
+            DBUtils.dictsSetOffset( this, m_name, m_loc, m_browseState );
             m_browseState = null;
         }
 
@@ -235,7 +239,7 @@ public class DictBrowseActivity extends XWListActivity
     {
         super.onResume();
         if ( null == m_browseState ) {
-            m_browseState = DBUtils.dictsGetOffset( this, m_name );
+            m_browseState = DBUtils.dictsGetOffset( this, m_name, m_loc );
         }
         showPrefix( true );
     }
@@ -345,7 +349,7 @@ public class DictBrowseActivity extends XWListActivity
             m_browseState.m_top = 0;
             m_browseState.m_minShown = min;
             m_browseState.m_maxShown = max;
-            DBUtils.dictsSetOffset( this, m_name, m_browseState );
+            DBUtils.dictsSetOffset( this, m_name, m_loc, m_browseState );
             m_browseState = null;
 
             startActivity( getIntent() );
@@ -407,10 +411,18 @@ public class DictBrowseActivity extends XWListActivity
     }
 
 
-    public static void launch( Context caller, String name )
+    public static void launch( Context caller, String name, 
+                               DictUtils.DictLoc loc )
     {
         Intent intent = new Intent( caller, DictBrowseActivity.class );
         intent.putExtra( DICT_NAME, name );
+        intent.putExtra( DICT_LOC, loc.ordinal() );
         caller.startActivity( intent );
+    }
+
+    public static void launch( Context caller, String name )
+    {
+        DictUtils.DictLoc loc = DictUtils.getDictLoc( caller, name );
+        launch( caller, name, loc );
     }
 }

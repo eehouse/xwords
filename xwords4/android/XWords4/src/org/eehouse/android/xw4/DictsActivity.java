@@ -306,6 +306,9 @@ public class DictsActivity extends ExpandableListActivity
                             rowView.setComment( m_locNames[toLoc.ordinal()] );
                             rowView.cache( toLoc );
                             rowView.invalidate();
+                            DBUtils.dictsMoveInfo( DictsActivity.this,
+                                                   rowView.getText(),
+                                                   m_moveFromLoc, toLoc );
                         } else {
                             DbgUtils.logf( "moveDict(%s) failed", 
                                            rowView.getText() );
@@ -473,7 +476,8 @@ public class DictsActivity extends ExpandableListActivity
             askStartDownload( 0, null );
         } else {
             XWListItem item = (XWListItem)view;
-            DictBrowseActivity.launch( this, item.getText() );
+            DictBrowseActivity.launch( this, item.getText(), 
+                                       (DictUtils.DictLoc)item.getCached() );
         }
     }
 

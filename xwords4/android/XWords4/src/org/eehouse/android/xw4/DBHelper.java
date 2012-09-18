@@ -133,29 +133,30 @@ public class DBHelper extends SQLiteOpenHelper {
     {
         db.execSQL( "CREATE TABLE " + TABLE_NAME_OBITS + " ("
                     + RELAYID    + " TEXT,"
-                    + SEED       + " INTEGER"
-                    + ");" );
+                    + SEED       + " INTEGER);"
+                    );
     }
 
     private void onCreateDictsDB( SQLiteDatabase db )
     {
-        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTINFO + " ("
+        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTINFO + "(" 
                     + DICTNAME     + " TEXT,"
+                    + LOC          + " UNSIGNED INTEGER(1),"
                     + MD5SUM       + " TEXT(32),"
                     + WORDCOUNT    + " INTEGER,"
-                    + LANGCODE     + " INTEGER,"
-                    + LOC          + " INTEGER(2)"
-                    + ");" );
+                    + LANGCODE     + " INTEGER);"
+                    );
 
-        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTBROWSE + " ("
+        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTBROWSE + "("
                     + DICTNAME     + " TEXT,"
+                    + LOC          + " UNSIGNED INTEGER(1),"
                     + WORDCOUNTS   + " TEXT,"
                     + ITERMIN      + " INTEGER(4),"
                     + ITERMAX      + " INTEGER(4),"
                     + ITERPOS      + " INTEGER,"
                     + ITERTOP      + " INTEGER,"
-                    + ITERPREFIX   + " TEXT"
-                    + ");" );
+                    + ITERPREFIX   + " TEXT);"
+                    );
     }
 
     @Override
