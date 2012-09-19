@@ -13,7 +13,14 @@ ability to play via SMS</p>
 
 <ul>Other changes
 
-  <li>Add auto-update for wordlists and the app itself (when side-loaded)</li>
+  <li>Remember wordlist browser position, word size, etc.</li>
+
+  <li>Fix wordlist browser bugs for languages with more than one 
+  letter on a tile</li>
+
+  <li>New word lookup URLs for Catalan language lists</li>
+
+  <li>Display wordlist comment if present</li>
   
 </ul>
 
