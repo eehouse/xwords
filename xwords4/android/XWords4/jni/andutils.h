@@ -57,6 +57,7 @@ void setBoolArray( JNIEnv* env, jbooleanArray jarr, int count,
 
 jobjectArray makeStringArray( JNIEnv *env, int size, const XP_UCHAR** vals );
 jstring streamToJString( JNIEnv* env, XWStreamCtxt* stream );
+jbyteArray streamToBArray( JNIEnv *env, XWStreamCtxt* stream );
 
 /* Note: jmethodID can be cached.  Should not look up more than once. */
 jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,

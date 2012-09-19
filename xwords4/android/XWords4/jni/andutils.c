@@ -238,6 +238,17 @@ makeByteArray( JNIEnv *env, int siz, const jbyte* vals )
     return array;
 }
 
+jbyteArray
+streamToBArray( JNIEnv *env, XWStreamCtxt* stream )
+{
+    int nBytes = stream_getSize( stream );
+    jbyteArray result = (*env)->NewByteArray( env, nBytes );
+    jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
+    stream_getBytes( stream, jelems, nBytes );
+    (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
+    return result;
+}
+
 void
 setBoolArray( JNIEnv* env, jbooleanArray jarr, int count, 
               const jboolean* vals )

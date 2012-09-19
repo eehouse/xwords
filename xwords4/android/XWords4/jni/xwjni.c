@@ -214,11 +214,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
     game_saveToStream( NULL, gi, stream, 0 );
     destroyGI( MPPARM(mpool) &gi );
 
-    int nBytes = stream_getSize( stream );
-    result = (*env)->NewByteArray( env, nBytes );
-    jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
-    stream_getBytes( stream, jelems, nBytes );
-    (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
+    result = streamToBArray( env, stream );
     stream_destroy( stream );
 
     vtmgr_destroy( MPPARM(mpool) vtMgr );
@@ -545,13 +541,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
         destroyGI( MPPARM(mpool) &gi );
     }
 
-    int nBytes = stream_getSize( stream );
-    result = (*env)->NewByteArray( env, nBytes );
-    jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
-    stream_getBytes( stream, jelems, nBytes );
-    (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
+    state->lastSavedSize = stream_getSize( stream );
+    result = streamToBArray( env, stream );
     stream_destroy( stream );
-    state->lastSavedSize = nBytes;
 
     XWJNI_END();
     return result;
@@ -1636,10 +1628,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_base64Decode
     XP_U8 out[inlen];
     XP_U16 outlen = VSIZE(out);
     if ( smsToBin( out, &outlen, instr, inlen ) ) {
-        result = (*env)->NewByteArray( env, outlen );
-        jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
-        XP_MEMCPY( jelems, out, outlen );
-        (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
+        result = makeByteArray( env, outlen, (jbyte*)out );
     } else {
         XP_ASSERT(0);
     }
