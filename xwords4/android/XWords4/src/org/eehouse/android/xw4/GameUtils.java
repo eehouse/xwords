@@ -887,9 +887,11 @@ public class GameUtils {
     private static void tellRelayDied( Context context, GameSummary summary,
                                        boolean informNow )
     {
-        DBUtils.addDeceased( context, summary.relayID, summary.seed );
-        if ( informNow ) {
-            NetUtils.informOfDeaths( context );
+        if ( null != summary.relayID ) {
+            DBUtils.addDeceased( context, summary.relayID, summary.seed );
+            if ( informNow ) {
+                NetUtils.informOfDeaths( context );
+            }
         }
     }
 
