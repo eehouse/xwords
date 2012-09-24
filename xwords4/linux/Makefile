@@ -223,7 +223,30 @@ endif
 # provides an all: target
 include ../common/rules.mk
 
-all: $(TARGET)
+REQUIRED_DEBS = gcc libgtk2.0-dev \
+		libbluetooth-dev \
+		libncurses5-dev \
+		libncursesw5-dev \
+		uuid-dev \
+		libsqlite3-dev \
+
+.PHONY: debcheck debs_install
+
+debs_install:
+	sudo apt-get install $(REQUIRED_DEBS)
+
+debcheck:
+	@if which dpkg; then \
+		for DEB in $(REQUIRED_DEBS); do \
+			if ! dpkg -l $$DEB >/dev/null 2>&1; then \
+				echo "$$DEB not installed"; \
+				echo "try running 'make debs_install'"; \
+				break; \
+			fi \
+		done; \
+	fi
+
+all: debcheck $(TARGET)
 
 help:
 	@echo "make [MEMDEBUG=TRUE] [CURSES_ONLY=TRUE] [GTK_ONLY=TRUE]"
@@ -248,7 +271,7 @@ gprof:
 	$(MAKE) GPROFFLAG=-pg MEMDEBUG=TRUE
 
 
-$(PLATFORM)/xwords: $(COMMONOBJ) $(OBJ) *.h Makefile
+$(PLATFORM)/xwords: $(COMMONOBJ) $(OBJ) *.h Makefile debcheck
 	mkdir -p $(PLATFORM)
 	$(CC) $(CFLAGS) $(DEFINES) $(COMMONOBJ) $(OBJ) $(LIBS) -o $@
 
@@ -256,7 +279,7 @@ $(PLATFORM)/libxwords.so.0: $(COMMONOBJ) $(OBJ) *.h Makefile
 	mkdir -p $(PLATFORM)
 	$(CC) $(CFLAGS) $(DEFINES) $(COMMONOBJ) $(OBJ) -shared -o $@  -Wl,-soname,libxwords.so.0
 
-$(PLATFORM)/%.o: %.c
+$(PLATFORM)/%.o: %.c debcheck
 	mkdir -p $(PLATFORM)
 	$(CC) -c $(INCLUDES) $(DEFINES) -DPLATFORM=$(PLATFORM) $(CFLAGS) $< -o $@
 
