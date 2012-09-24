@@ -278,10 +278,7 @@ and_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
                                 PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
 
     (*env)->CallVoidMethod( env, util->jutil, mid, jold, jnew, jsum, jphon );
-    (*env)->DeleteLocalRef( env, jnew );
-    (*env)->DeleteLocalRef( env, jold );
-    (*env)->DeleteLocalRef( env, jsum );
-    (*env)->DeleteLocalRef( env, jphon );
+    deleteLocalRefs( env, jnew, jold, jsum, jphon, DELETE_NO_REF );
 
     UTIL_CBK_TAIL();
 }
