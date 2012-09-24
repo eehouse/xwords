@@ -545,6 +545,12 @@ public class GamesList extends XWListActivity
             MenuItem item = menu.findItem( id );
             item.setVisible( visible );
         }
+
+        if ( visible && !DBUtils.gameDBExists( this ) ) {
+            MenuItem item = menu.findItem( R.id.gamel_menu_loaddb );
+            item.setVisible( false );
+        }
+
         return super.onPrepareOptionsMenu( menu );
     }
 

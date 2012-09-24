@@ -1146,6 +1146,14 @@ public class DBUtils {
         }
     }
 
+    public static boolean gameDBExists( Context context )
+    {
+        String name = DBHelper.getDBName();
+        File sdcardDB = new File( Environment.getExternalStorageDirectory(),
+                                  name );
+        return sdcardDB.exists();
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
