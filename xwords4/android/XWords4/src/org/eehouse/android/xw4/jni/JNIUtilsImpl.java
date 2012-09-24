@@ -20,25 +20,29 @@
 
 package org.eehouse.android.xw4.jni;
 
-import android.graphics.drawable.BitmapDrawable;
+import android.content.Context;
 import android.graphics.Bitmap;
-import java.util.ArrayList;
+import android.graphics.drawable.BitmapDrawable;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.security.MessageDigest;
+import java.util.ArrayList;
 
 import org.eehouse.android.xw4.*;
 
 public class JNIUtilsImpl implements JNIUtils {
 
-    private static JNIUtils s_impl = null;
+    private static JNIUtilsImpl s_impl = null;
+    private Context m_context;
 
     private JNIUtilsImpl(){}
 
-    public static JNIUtils get()
+    public static JNIUtils get( Context context )
     {
         if ( null == s_impl ) {
             s_impl = new JNIUtilsImpl();
         }
+        s_impl.m_context = context;
         return s_impl;
     }
 
@@ -84,6 +88,37 @@ public class JNIUtilsImpl implements JNIUtils {
         }
         
         String[] result = al.toArray( new String[al.size()] );
+        return result;
+    }
+
+    public String getMD5SumFor( String dictName, byte[] bytes )
+    {
+        String result = null;
+        if ( null == bytes ) {
+            result = DBUtils.dictsGetMD5Sum( m_context, dictName );
+        } else {
+            byte[] digest = null;
+            try {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] buf = new byte[128];
+                int nLeft = bytes.length;
+                int offset = 0;
+                while ( 0 < nLeft ) {
+                    int len = Math.min( buf.length, nLeft );
+                    System.arraycopy( bytes, offset, buf, 0, len );
+                    md.update( buf, 0, len );
+                    nLeft -= len;
+                    offset += len;
+                }
+                digest = md.digest();
+            } catch ( java.security.NoSuchAlgorithmException nsae ) {
+                DbgUtils.loge( nsae );
+            }
+            result = Utils.digestToString( digest );
+
+            // Is this needed?  Caller might be doing it anyway.
+            DBUtils.dictsSetMD5Sum( m_context, dictName, result );
+        }
         return result;
     }
 }

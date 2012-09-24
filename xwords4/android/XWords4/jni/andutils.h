@@ -57,6 +57,7 @@ void setBoolArray( JNIEnv* env, jbooleanArray jarr, int count,
 
 jobjectArray makeStringArray( JNIEnv *env, int size, const XP_UCHAR** vals );
 jstring streamToJString( JNIEnv* env, XWStreamCtxt* stream );
+jbyteArray streamToBArray( JNIEnv *env, XWStreamCtxt* stream );
 
 /* Note: jmethodID can be cached.  Should not look up more than once. */
 jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,
@@ -70,4 +71,8 @@ void intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
                       const char* fieldSig );
 jobject intToJEnum( JNIEnv* env, int val, const char* enumSig );
 jint jEnumToInt( JNIEnv* env, jobject jenum );
+
+void deleteLocalRef( JNIEnv* env, jobject jobj );
+void deleteLocalRefs( JNIEnv* env, jobject jobj, ... );
+# define DELETE_NO_REF ((jobject)-1)    /* terminates above varargs list */
 #endif

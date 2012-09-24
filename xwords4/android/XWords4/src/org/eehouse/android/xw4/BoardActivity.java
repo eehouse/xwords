@@ -448,7 +448,7 @@ public class BoardActivity extends XWActivity
         }
 
         m_utils = new BoardUtilCtxt();
-        m_jniu = JNIUtilsImpl.get();
+        m_jniu = JNIUtilsImpl.get( this );
         setContentView( R.layout.board );
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason

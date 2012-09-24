@@ -50,6 +50,7 @@ typedef struct LaunchParams {
     PlayerDicts dicts;
     GSList* dictDirs;
     char* fileName;
+    XP_U16 saveFailPct;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE
     char* dbFileName;
@@ -163,6 +164,7 @@ struct CommonGlobals {
 
     XWGame game;
     XP_U16 lastNTilesToUse;
+    XP_U16 lastStreamSize;
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
@@ -194,6 +196,8 @@ struct CommonGlobals {
 #endif
 
     TimerInfo timerInfo[NUM_TIMERS_PLUS_ONE];
+
+    XP_U16 curSaveToken;
 };
 
 #endif

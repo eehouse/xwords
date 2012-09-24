@@ -68,6 +68,7 @@ XWStreamCtxt* streamFromDB( CommonGlobals* cGlobals, void* closure );
 void writeToFile( XWStreamCtxt* stream, void* closure );
 XP_Bool getDictPath( const LaunchParams *params, const char* name, 
                      char* result, int resultLen );
+void saveGame( CommonGlobals* cGlobals );
 
 int blocking_read( int fd, unsigned char* buf, int len );
 

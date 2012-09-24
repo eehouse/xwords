@@ -114,14 +114,14 @@ public class DictUtils {
         // changes?
     }
 
-    private static void tryDir( File dir, boolean strict, DictLoc loc, 
-                                ArrayList<DictAndLoc> al )
+    private static void tryDir( Context context, File dir, boolean strict, 
+                                DictLoc loc, ArrayList<DictAndLoc> al )
     {
         if ( null != dir ) {
             String[] list = dir.list();
             if ( null != list ) {
                 for ( String file : list ) {
-                    if ( isDict( file, strict? dir : null ) ) {
+                    if ( isDict( context, file, strict? dir : null ) ) {
                         al.add( new DictAndLoc( removeDictExtn( file ), loc ) );
                     }
                 }
@@ -135,21 +135,21 @@ public class DictUtils {
             ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
 
             for ( String file : getAssets( context ) ) {
-                if ( isDict( file, null ) ) {
+                if ( isDict( context, file, null ) ) {
                     al.add( new DictAndLoc( removeDictExtn( file ), 
                                             DictLoc.BUILT_IN ) );
                 }
             }
 
             for ( String file : context.fileList() ) {
-                if ( isDict( file, null ) ) {
+                if ( isDict( context, file, null ) ) {
                     al.add( new DictAndLoc( removeDictExtn( file ),
                                             DictLoc.INTERNAL ) );
                 }
             }
 
-            tryDir( getSDDir( context ), false, DictLoc.EXTERNAL, al );
-            tryDir( getDownloadDir(), true, DictLoc.DOWNLOAD, al );
+            tryDir( context, getSDDir( context ), false, DictLoc.EXTERNAL, al );
+            tryDir( context, getDownloadDir(), true, DictLoc.DOWNLOAD, al );
 
             s_dictListCache = 
                 al.toArray( new DictUtils.DictAndLoc[al.size()] );
@@ -480,13 +480,13 @@ public class DictUtils {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
  
-    private static boolean isDict( String file, File dir )
+    private static boolean isDict( Context context, String file, File dir )
     {
         boolean ok = file.endsWith( XWConstants.DICT_EXTN );
         if ( ok && null != dir ) {
             String fullPath = new File( dir, file ).getPath();
-            ok = XwJNI.dict_getInfo( null, fullPath, JNIUtilsImpl.get(), 
-                                     true, null );
+            ok = XwJNI.dict_getInfo( null, removeDictExtn( file ), fullPath,
+                                     JNIUtilsImpl.get(context), true, null );
         }
         return ok;
     }
@@ -525,60 +525,6 @@ public class DictUtils {
 
         return state.equals( Environment.MEDIA_MOUNTED );
         // want this later? Environment.MEDIA_MOUNTED_READ_ONLY
-    }
-
-    private static String figureMD5Sum( Context context, DictAndLoc dandl )
-    {
-        byte[] digest = null;
-        String result = null;
-        String name = dandl.name;
-        File path = getDictFile( context, addDictExtn( name ), dandl.loc );
-        try {
-            InputStream fis = new FileInputStream( path );
-            byte[] buffer = new byte[1024];
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            for ( ; ; ) {
-                int nRead = fis.read( buffer );
-                if ( 0 > nRead ) {
-                    break;
-                }
-                md.update( buffer, 0, nRead );
-            }
-            fis.close();
-
-            digest = md.digest();
-        } catch ( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.loge( fnfe );
-        } catch( java.security.NoSuchAlgorithmException nsae ) {
-            DbgUtils.loge( nsae );
-        } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
-        }
-
-        if ( null != digest ) {
-            final char[] hexArray = {'0','1','2','3','4','5','6','7','8','9',
-                                     'a','b','c','d','e','f'};
-            char[] chars = new char[digest.length * 2];
-            for ( int ii = 0; ii < digest.length; ii++ ) {
-                int byt = digest[ii] & 0xFF;
-                chars[ii * 2] = hexArray[byt >> 4];
-                chars[ii * 2 + 1] = hexArray[byt & 0x0F];
-            }
-            result = new String(chars);
-        }
-        return result;
-    } // figureMD5Sum
-
-    public static String getMD5SumFor( Context context, DictAndLoc dandl )
-    {
-        String sum = null; // DBUtils.getDictMD5Sum( context, dandl.name, 
-                           // dandl.loc.ordinal() );
-        if ( null == sum ) {
-            sum = figureMD5Sum( context, dandl );
-            // DBUtils.setDictMD5Sum( context, dandl.name, 
-            //                        dandl.loc.ordinal(), sum );
-        }
-        return sum;
     }
 
     private static File getSDDir( Context context )

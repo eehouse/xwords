@@ -32,6 +32,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.SectionIndexer;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -47,10 +48,8 @@ import org.eehouse.android.xw4.jni.XwJNI;
 public class DictBrowseActivity extends XWListActivity
     implements View.OnClickListener, OnItemSelectedListener {
 
-    public static final String DICT_NAME = "DICT_NAME";
-    public static final String DICT_MIN = "DICT_MIN";
-    public static final String DICT_MAX = "DICT_MAX";
-    public static final String DICT_COUNTS = "DICT_COUNTS";
+    private static final String DICT_NAME = "DICT_NAME";
+    private static final String DICT_LOC = "DICT_LOC";
 
     private static final int MIN_LEN = 2;
     private static final int FINISH_ACTION = 1;
@@ -58,13 +57,12 @@ public class DictBrowseActivity extends XWListActivity
     private int m_dictClosure = 0;
     private int m_lang;
     private String m_name;
+    private DictUtils.DictLoc m_loc;
     private Spinner m_minSpinner;
     private Spinner m_maxSpinner;
-    private int m_minShown;
-    private int m_maxShown;
+    private DBUtils.DictBrowseState m_browseState;
     private int m_minAvail;
     private int m_maxAvail;
-    private int[] m_counts;
 
 
 // - Steps to reproduce the problem:
@@ -84,13 +82,15 @@ public class DictBrowseActivity extends XWListActivity
         {
             super();
 
-            XwJNI.dict_iter_setMinMax( m_dictClosure, m_minShown, m_maxShown );
+            XwJNI.dict_iter_setMinMax( m_dictClosure, m_browseState.m_minShown,
+                                       m_browseState.m_maxShown );
             m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
 
-            int format = m_minShown == m_maxShown ?
+            int format = m_browseState.m_minShown == m_browseState.m_maxShown ?
                 R.string.dict_browse_title1f : R.string.dict_browse_titlef;
             setTitle( Utils.format( DictBrowseActivity.this, format,
-                                    m_name, m_nWords, m_minShown, m_maxShown ));
+                                    m_name, m_nWords, m_browseState.m_minShown, 
+                                    m_browseState.m_maxShown ));
 
             String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
             if ( null != desc ) {
@@ -162,19 +162,29 @@ public class DictBrowseActivity extends XWListActivity
             finish();
         } else {
             m_name = name;
+            m_loc = 
+                DictUtils.DictLoc.values()[intent.getIntExtra( DICT_LOC, 0 )];
             m_lang = DictLangCache.getDictLangCode( this, name );
 
             String[] names = { name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( this, names );
-            m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0], 
-                                                  pairs.m_paths[0],
-                                                  JNIUtilsImpl.get() );
+            m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0],
+                                                  name, pairs.m_paths[0],
+                                                  JNIUtilsImpl.get(this) );
 
-            m_counts = intent.getIntArrayExtra( DICT_COUNTS );
-            if ( null == m_counts ) {
-                m_counts = XwJNI.dict_iter_getCounts( m_dictClosure );
+            m_browseState = DBUtils.dictsGetOffset( this, name, m_loc );
+            boolean newState = null == m_browseState;
+            if ( newState ) {
+                m_browseState = new DBUtils.DictBrowseState();
+                m_browseState.m_pos = 0;
+                m_browseState.m_top = 0;
             }
-            if ( null == m_counts ) {
+            if ( null == m_browseState.m_counts ) {
+                m_browseState.m_counts = 
+                    XwJNI.dict_iter_getCounts( m_dictClosure );
+            }
+
+            if ( null == m_browseState.m_counts ) {
                 // empty dict?  Just close down for now.  Later if
                 // this is extended to include tile info -- it should
                 // be -- then use an empty list elem and disable
@@ -183,7 +193,11 @@ public class DictBrowseActivity extends XWListActivity
                                            name );
                 showOKOnlyDialogThen( msg, FINISH_ACTION );
             } else {
-                figureMinMax();
+                figureMinMax( m_browseState.m_counts );
+                if ( newState ) {
+                    m_browseState.m_minShown = m_minAvail;
+                    m_browseState.m_maxShown = m_maxAvail;
+                }
 
                 setContentView( R.layout.dict_browser );
 
@@ -195,14 +209,40 @@ public class DictBrowseActivity extends XWListActivity
                         }
                     } );
 
-                m_minShown = intent.getIntExtra( DICT_MIN, m_minAvail );
-                m_maxShown = intent.getIntExtra( DICT_MAX, m_maxAvail );
                 setUpSpinners();
 
                 setListAdapter( new DictListAdapter() );
                 getListView().setFastScrollEnabled( true );
+                getListView().setSelectionFromTop( m_browseState.m_pos,
+                                                   m_browseState.m_top );
             }
         }
+    } // onCreate
+
+    @Override
+    protected void onPause()
+    {
+        if ( null != m_browseState ) { // already saved?
+            ListView list = getListView();
+            m_browseState.m_pos = list.getFirstVisiblePosition();
+            View view = list.getChildAt( 0 );
+            m_browseState.m_top = (view == null) ? 0 : view.getTop();
+            m_browseState.m_prefix = getFindText();
+            DBUtils.dictsSetOffset( this, m_name, m_loc, m_browseState );
+            m_browseState = null;
+        }
+
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if ( null == m_browseState ) {
+            m_browseState = DBUtils.dictsGetOffset( this, m_name, m_loc );
+        }
+        setFindText( m_browseState.m_prefix );
     }
 
     @Override
@@ -247,9 +287,9 @@ public class DictBrowseActivity extends XWListActivity
         TextView text = (TextView)view;
         int newval = Integer.parseInt( text.getText().toString() );
         if ( parent == m_minSpinner ) {
-            setMinMax( newval, m_maxShown );
+            setMinMax( newval, m_browseState.m_maxShown );
         } else if ( parent == m_maxSpinner ) {
-            setMinMax( m_minShown, newval );
+            setMinMax( m_browseState.m_minShown, newval );
         }
     }
 
@@ -269,8 +309,28 @@ public class DictBrowseActivity extends XWListActivity
 
     private void findButtonClicked()
     {
+        String text = getFindText();
+        if ( null != text && 0 < text.length() ) {
+            m_browseState.m_prefix = text;
+            showPrefix();
+        }
+    }
+
+    private String getFindText()
+    {
         EditText edit = (EditText)findViewById( R.id.word_edit );
-        String text = edit.getText().toString();
+        return edit.getText().toString();
+    }
+
+    private void setFindText( String text )
+    {
+        EditText edit = (EditText)findViewById( R.id.word_edit );
+        edit.setText( text );
+    }
+
+    private void showPrefix() 
+    {
+        String text = m_browseState.m_prefix;
         if ( null != text && 0 < text.length() ) {
             int pos = XwJNI.dict_iter_getStartsWith( m_dictClosure, text );
             if ( 0 <= pos ) {
@@ -289,26 +349,32 @@ public class DictBrowseActivity extends XWListActivity
         // adapter/making it recognized a changed dataset.  So, as a
         // workaround, relaunch the activity with different
         // parameters.
-        if ( m_minShown != min || m_maxShown != max ) {
-            Intent intent = getIntent();
-            intent.putExtra( DICT_MIN, min );
-            intent.putExtra( DICT_MAX, max );
-            intent.putExtra( DICT_COUNTS, m_counts );
-            startActivity( intent );
+        if ( m_browseState.m_minShown != min || 
+             m_browseState.m_maxShown != max ) {
+
+            m_browseState.m_pos = 0;
+            m_browseState.m_top = 0;
+            m_browseState.m_minShown = min;
+            m_browseState.m_maxShown = max;
+            m_browseState.m_prefix = getFindText();
+            DBUtils.dictsSetOffset( this, m_name, m_loc, m_browseState );
+            m_browseState = null;
+
+            startActivity( getIntent() );
 
             finish();
         }
     }
 
-    private void figureMinMax()
+    private void figureMinMax( int[] counts )
     {
-        Assert.assertTrue( m_counts.length == XwJNI.MAX_COLS_DICT + 1 );
+        Assert.assertTrue( counts.length == XwJNI.MAX_COLS_DICT + 1 );
         m_minAvail = 0;
-        while ( 0 == m_counts[m_minAvail] ) {
+        while ( 0 == counts[m_minAvail] ) {
             ++m_minAvail;
         }
         m_maxAvail = XwJNI.MAX_COLS_DICT;
-        while ( 0 == m_counts[m_maxAvail] ) { // 
+        while ( 0 == counts[m_maxAvail] ) { // 
             --m_maxAvail;
         }
     }
@@ -342,19 +408,29 @@ public class DictBrowseActivity extends XWListActivity
         // current max the largest min allowed, and the current
         // min the smallest max allowed.
         m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
-        makeAdapter( m_minSpinner, m_minAvail, m_maxShown, m_minShown );
+        makeAdapter( m_minSpinner, m_minAvail, m_browseState.m_maxShown, 
+                     m_browseState.m_minShown );
         m_minSpinner.setOnItemSelectedListener( this );
 
         m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
-        makeAdapter( m_maxSpinner, m_minShown, m_maxAvail, m_maxShown );
+        makeAdapter( m_maxSpinner, m_browseState.m_minShown, 
+                     m_maxAvail, m_browseState.m_maxShown );
         m_maxSpinner.setOnItemSelectedListener( this );
     }
 
 
-    public static void launch( Context caller, String name )
+    public static void launch( Context caller, String name, 
+                               DictUtils.DictLoc loc )
     {
         Intent intent = new Intent( caller, DictBrowseActivity.class );
         intent.putExtra( DICT_NAME, name );
+        intent.putExtra( DICT_LOC, loc.ordinal() );
         caller.startActivity( intent );
+    }
+
+    public static void launch( Context caller, String name )
+    {
+        DictUtils.DictLoc loc = DictUtils.getDictLoc( caller, name );
+        launch( caller, name, loc );
     }
 }

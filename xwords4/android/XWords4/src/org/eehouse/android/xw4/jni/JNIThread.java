@@ -277,6 +277,8 @@ public class JNIThread extends Thread {
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
         GameUtils.saveGame( m_context, state, m_lock, false );
         DBUtils.saveSummary( m_context, m_lock, summary );
+        // There'd better be no way for saveGame above to fail!
+        XwJNI.game_saveSucceeded( m_jniGamePtr );
     }
 
     @SuppressWarnings("fallthrough")
@@ -357,7 +359,6 @@ public class JNIThread extends Thread {
                                                   (byte[])args[0],
                                                   (CommsAddrRec)args[1]);
                 handle( JNICmd.CMD_DO );
-                handle( JNICmd.CMD_ACKANY );
                 if ( draw ) {
                     handle( JNICmd.CMD_SAVE );
                 }

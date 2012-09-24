@@ -100,9 +100,9 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
 
             lp->secondsUsed = 0;
 
-            (*env)->DeleteLocalRef( env, jlp );
+            deleteLocalRef( env, jlp );
         }
-        (*env)->DeleteLocalRef( env, jplayers );
+        deleteLocalRef( env, jplayers );
     } else {
         XP_ASSERT(0);
     }
@@ -147,9 +147,9 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
             setString( env, jlp, "dictName", lp->dictName );
             setInt( env, jlp, "secondsUsed", lp->secondsUsed );
 
-            (*env)->DeleteLocalRef( env, jlp );
+            deleteLocalRef( env, jlp );
         }
-        (*env)->DeleteLocalRef( env, jplayers );
+        deleteLocalRef( env, jplayers );
     } else {
         XP_ASSERT(0);
     }
@@ -185,9 +185,9 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 static XWStreamCtxt*
 streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 {
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
-                                            NULL, 0, NULL );
     int len = (*env)->GetArrayLength( env, jstream );
+    XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) vtMgr,
+                                                  len, NULL, 0, NULL );
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
     stream_putBytes( stream, jelems, len );
     (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
@@ -211,14 +211,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
                                             NULL, 0, NULL );
 
-    game_saveToStream( NULL, gi, stream );
+    game_saveToStream( NULL, gi, stream, 0 );
     destroyGI( MPPARM(mpool) &gi );
 
-    int nBytes = stream_getSize( stream );
-    result = (*env)->NewByteArray( env, nBytes );
-    jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
-    stream_getBytes( stream, jelems, nBytes );
-    (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
+    result = streamToBArray( env, stream );
     stream_destroy( stream );
 
     vtmgr_destroy( MPPARM(mpool) vtMgr );
@@ -285,7 +281,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
-( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, 
+( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jname, jstring jpath, 
   jobject jniu, jboolean check, jobject jinfo )
 {
     jboolean result = false;
@@ -293,7 +289,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &env, jniu );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, jname,
                                      jDictBytes, jpath, NULL, check );
     if ( NULL != dict ) {
         if ( NULL != jinfo ) {
@@ -344,6 +340,8 @@ typedef struct _JNIState {
     XWGame game;
     JNIEnv* env;
     AndGlobals globals;
+    XP_U16 curSaveCount;
+    XP_U16 lastSavedSize;
 #ifdef DEBUG
     const char* envSetterFunc;
 #endif
@@ -533,24 +531,31 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
        ours should -- changes like remote players being added. */
     CurGameInfo* gi = 
         (NULL == jgi) ? globals->gi : makeGI( MPPARM(mpool) env, jgi );
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                            NULL, 0, NULL );
+    XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) globals->vtMgr,
+                                                  state->lastSavedSize,
+                                                  NULL, 0, NULL );
 
-    game_saveToStream( &state->game, gi, stream );
+    game_saveToStream( &state->game, gi, stream, ++state->curSaveCount );
 
     if ( NULL != jgi ) {
         destroyGI( MPPARM(mpool) &gi );
     }
 
-    int nBytes = stream_getSize( stream );
-    result = (*env)->NewByteArray( env, nBytes );
-    jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
-    stream_getBytes( stream, jelems, nBytes );
-    (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
+    state->lastSavedSize = stream_getSize( stream );
+    result = streamToBArray( env, stream );
     stream_destroy( stream );
 
     XWJNI_END();
     return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveSucceeded
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    game_saveSucceeded( &state->game, state->curSaveCount );
+    XWJNI_END();
 }
 
 JNIEXPORT void JNICALL
@@ -1039,9 +1044,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
         jobject jaddr = (*env)->NewObject( env, clas, initId );
         setJAddrRec( env, jaddr, &addrs[ii] );
         (*env)->SetObjectArrayElement( env, result, ii, jaddr );
-        (*env)->DeleteLocalRef( env, jaddr );
+        deleteLocalRef( env, jaddr );
     }
-    (*env)->DeleteLocalRef( env, clas );
+    deleteLocalRef( env, clas );
 
     XWJNI_END();
     return result;
@@ -1149,7 +1154,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             jobjectArray jaddrs = makeStringArray( env, count, addrps );
             setObject( env, jsummary, "remoteDevs", "[Ljava/lang/String;", 
                        jaddrs );
-            (*env)->DeleteLocalRef( env, jaddrs );
+            deleteLocalRef( env, jaddrs );
 #endif
         }
     }
@@ -1170,7 +1175,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     }
     jintArray jarr = makeIntArray( env, nPlayers, jvals );
     setObject( env, jsummary, "scores", "[I", jarr );
-    (*env)->DeleteLocalRef( env, jarr );
+    deleteLocalRef( env, jarr );
 
     XWJNI_END();
 }
@@ -1369,7 +1374,8 @@ typedef struct _DictIterData {
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
-(JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jpath, jobject jniu )
+( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jname, 
+  jstring jpath, jobject jniu )
 {
     jint closure = 0;
 #ifdef MEM_DEBUG
@@ -1378,7 +1384,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
     DictIterData* data = XP_CALLOC( mpool, sizeof(*data) );
     data->env = env;
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) &data->env, jniu );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, NULL,
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jniutil, jname,
                                      jDictBytes, jpath, NULL, false );
     if ( !!dict ) {
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
@@ -1525,7 +1531,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
                                       depth, buf, VSIZE(buf) );
             jstring jstr = (*env)->NewStringUTF( env, buf );
             (*env)->SetObjectArrayElement( env, result, ii, jstr );
-            (*env)->DeleteLocalRef( env, jstr );
+            deleteLocalRef( env, jstr );
         }
     }
     return result;
@@ -1622,10 +1628,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_base64Decode
     XP_U8 out[inlen];
     XP_U16 outlen = VSIZE(out);
     if ( smsToBin( out, &outlen, instr, inlen ) ) {
-        result = (*env)->NewByteArray( env, outlen );
-        jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
-        XP_MEMCPY( jelems, out, outlen );
-        (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
+        result = makeByteArray( env, outlen, (jbyte*)out );
     } else {
         XP_ASSERT(0);
     }

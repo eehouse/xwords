@@ -129,9 +129,7 @@ and_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         jstr = streamToJString( env, stream );
     }
     result = (*env)->CallBooleanMethod( env, util->jutil, mid, id, jstr );
-    if ( NULL != jstr ) {
-        (*env)->DeleteLocalRef( env, jstr );
-    }
+    deleteLocalRef( env, jstr );
     UTIL_CBK_TAIL();
     return result;
 }
@@ -143,7 +141,7 @@ and_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
     UTIL_CBK_HEADER("confirmTrade", "([Ljava/lang/String;)Z" );
     jobjectArray jtiles = makeStringArray( env, nTiles, tiles );
     result = (*env)->CallBooleanMethod( env, util->jutil, mid, jtiles );
-    (*env)->DeleteLocalRef( env, jtiles );
+    deleteLocalRef( env, jtiles );
     UTIL_CBK_TAIL();
     return result;
 }
@@ -160,7 +158,7 @@ and_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
     result = (*env)->CallIntMethod( env, util->jutil, mid, 
                                     playerNum, jtexts );
 
-    (*env)->DeleteLocalRef( env, jtexts );
+    deleteLocalRef( env, jtexts );
     UTIL_CBK_TAIL();
     return result;
 }
@@ -178,8 +176,7 @@ and_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi,
     result = (*env)->CallIntMethod( env, util->jutil, mid, 
                                     playerNum, jtexts, jcurtiles, 
                                     pi->thisPick );
-    (*env)->DeleteLocalRef( env, jtexts );
-    (*env)->DeleteLocalRef( env, jcurtiles );
+    deleteLocalRefs( env, jtexts, jcurtiles, DELETE_NO_REF );
         
     UTIL_CBK_TAIL();
     return result;
@@ -195,7 +192,7 @@ and_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
     jstring jname = (*env)->NewStringUTF( env, name );
     jstring jstr = (*env)->CallObjectMethod( env, util->jutil, mid, 
                                              jname );
-    (*env)->DeleteLocalRef( env, jname );
+    deleteLocalRef( env, jname );
 
     if ( NULL != jstr ) {       /* null means user cancelled */
         jsize jsiz = (*env)->GetStringUTFLength( env, jstr );
@@ -207,7 +204,7 @@ and_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
             *len = jsiz;
             result = XP_TRUE;
         }
-        (*env)->DeleteLocalRef( env, jstr );
+        deleteLocalRef( env, jstr );
     }
 
     UTIL_CBK_TAIL();
@@ -253,10 +250,7 @@ and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, XWStreamCtxt* words )
     jstring jexpl = streamToJString( env, expl );
     jstring jwords = !!words ? streamToJString( env, words ) : NULL;
     (*env)->CallVoidMethod( env, util->jutil, mid, jexpl, jwords );
-    (*env)->DeleteLocalRef( env, jexpl );
-    if ( !!jwords ) {
-        (*env)->DeleteLocalRef( env, jwords );
-    }
+    deleteLocalRefs( env, jexpl, jwords, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
 
@@ -415,7 +409,7 @@ and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
         XP_MEMCPY( buf, jchars, len );
         buf[len] = '\0';
         (*env)->ReleaseStringUTFChars( env, jresult, jchars );
-        (*env)->DeleteLocalRef( env, jresult );
+        deleteLocalRef( env, jresult );
         util->userStrings[index] = buf;
     }
 
@@ -440,8 +434,7 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
         jstring jname = (*env)->NewStringUTF( env, bwi->dictName );
         result = (*env)->CallBooleanMethod( env, util->jutil, mid,
                                             jname, jwords, turn, turnLost );
-        (*env)->DeleteLocalRef( env, jwords );
-        (*env)->DeleteLocalRef( env, jname );
+        deleteLocalRefs( env, jwords, jname, DELETE_NO_REF );
     }
     UTIL_CBK_TAIL();
     return result;
@@ -453,7 +446,7 @@ and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg )
     UTIL_CBK_HEADER("showChat", "(Ljava/lang/String;)V" );
     jstring jmsg = (*env)->NewStringUTF( env, msg );
     (*env)->CallVoidMethod( env, util->jutil, mid, jmsg );
-    (*env)->DeleteLocalRef( env, jmsg );
+    deleteLocalRef( env, jmsg );
     UTIL_CBK_TAIL();
 }
 
@@ -495,8 +488,7 @@ and_util_phoneNumbersSame( XW_UtilCtxt* uc, const XP_UCHAR* p1,
         jstring js1 = (*env)->NewStringUTF( env, p1 );
         jstring js2 = (*env)->NewStringUTF( env, p2 );
         same = (*env)->CallBooleanMethod( env, util->jutil, mid, js1, js2 );
-        (*env)->DeleteLocalRef( env, js1 );
-        (*env)->DeleteLocalRef( env, js2 );
+        deleteLocalRefs( env, js1, js2, DELETE_NO_REF );
         UTIL_CBK_TAIL();
     }
     return same;
@@ -511,7 +503,7 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
         UTIL_CBK_HEADER( "cellSquareHeld", "(Ljava/lang/String;)V" );
         jstring jwords = streamToJString( env, words );
         (*env)->CallVoidMethod( env, util->jutil, mid, jwords );
-        (*env)->DeleteLocalRef( env, jwords );
+        deleteLocalRef( env, jwords );
         UTIL_CBK_TAIL();
     }
 }
@@ -528,7 +520,7 @@ and_util_informMissing(XW_UtilCtxt* uc, XP_Bool isServer,
     jobject jtyp = intToJEnum( env, connType,
                                PKG_PATH("jni/CommsAddrRec$CommsConnType") );
     (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtyp, nMissing );
-    (*env)->DeleteLocalRef( env, jtyp );
+    deleteLocalRef( env, jtyp );
     UTIL_CBK_TAIL();
 }
 

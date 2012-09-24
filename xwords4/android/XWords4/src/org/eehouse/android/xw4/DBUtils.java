@@ -45,6 +45,7 @@ import java.util.StringTokenizer;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.DictUtils.DictLoc;
 
 
 public class DBUtils {
@@ -54,6 +55,8 @@ public class DBUtils {
 
     private static final String ROW_ID = "rowid";
     private static final String ROW_ID_FMT = "rowid=%d";
+    private static final String NAME_FMT = "%s='%s'";
+    private static final String NAMELOC_FMT = "%s='%s' AND %s=%d";
 
     private static long s_cachedRowID = -1;
     private static byte[] s_cachedBytes = null;
@@ -82,6 +85,15 @@ public class DBUtils {
         }
         String msg;
         boolean sourceLocal;
+    }
+
+    public static class DictBrowseState {
+        public int m_minShown;
+        public int m_maxShown;
+        public int m_pos;
+        public int m_top;
+        public String m_prefix;
+        public int[] m_counts;
     }
 
     public static GameSummary getSummary( Context context, long rowid, 
@@ -938,6 +950,210 @@ public class DBUtils {
         return success;
     }
 
+    /////////////////////////////////////////////////////////////////
+    // DictsDB stuff
+    /////////////////////////////////////////////////////////////////
+    public static DictBrowseState dictsGetOffset( Context context, String name,
+                                                  DictLoc loc )
+    {
+        Assert.assertTrue( DictLoc.UNKNOWN != loc );
+        DictBrowseState result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.ITERPOS, DBHelper.ITERTOP,
+                                 DBHelper.ITERMIN, DBHelper.ITERMAX,
+                                 DBHelper.WORDCOUNTS, DBHelper.ITERPREFIX };
+            String selection = 
+                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                               name, DBHelper.LOC, loc.ordinal() );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTBROWSE, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 >= cursor.getCount() && cursor.moveToFirst() ) {
+                result = new DictBrowseState();
+                result.m_pos = cursor.getInt( cursor
+                                              .getColumnIndex(DBHelper.ITERPOS));
+                result.m_top = cursor.getInt( cursor
+                                              .getColumnIndex(DBHelper.ITERTOP));
+                result.m_minShown = 
+                    cursor.getInt( cursor
+                                   .getColumnIndex(DBHelper.ITERMIN));
+                result.m_maxShown = 
+                    cursor.getInt( cursor
+                                   .getColumnIndex(DBHelper.ITERMAX));
+                result.m_prefix = 
+                    cursor.getString( cursor
+                                      .getColumnIndex(DBHelper.ITERPREFIX));
+                String counts = 
+                    cursor.getString( cursor.getColumnIndex(DBHelper.WORDCOUNTS));
+                if ( null != counts ) {
+                    String[] nums = TextUtils.split( counts, ":" );
+                    int[] ints = new int[nums.length];
+                    for ( int ii = 0; ii < nums.length; ++ii ) {
+                        ints[ii] = Integer.parseInt( nums[ii] );
+                    }
+                    result.m_counts = ints;
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static void dictsSetOffset( Context context, String name, 
+                                       DictLoc loc, DictBrowseState state )
+    {
+        Assert.assertTrue( DictLoc.UNKNOWN != loc );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = 
+                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                               name, DBHelper.LOC, loc.ordinal() );
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.ITERPOS, state.m_pos );
+            values.put( DBHelper.ITERTOP, state.m_top );
+            values.put( DBHelper.ITERMIN, state.m_minShown );
+            values.put( DBHelper.ITERMAX, state.m_maxShown );
+            values.put( DBHelper.ITERPREFIX, state.m_prefix );
+            if ( null != state.m_counts ) {
+                String[] nums = new String[state.m_counts.length];
+                for ( int ii = 0; ii < nums.length; ++ii ) {
+                    nums[ii] = String.format( "%d", state.m_counts[ii] );
+                }
+                values.put( DBHelper.WORDCOUNTS, TextUtils.join( ":", nums ) );
+            }
+            int result = db.update( DBHelper.TABLE_NAME_DICTBROWSE,
+                                    values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.DICTNAME, name );
+                values.put( DBHelper.LOC, loc.ordinal() );
+                db.insert( DBHelper.TABLE_NAME_DICTBROWSE, null, values );
+            }
+            db.close();
+        }
+    }
+
+    public static String dictsGetMD5Sum( Context context, String name )
+    {
+        DictInfo info = dictsGetInfo( context, name );
+        String result = null == info? null : info.md5Sum;
+        return result;
+    }
+
+    public static void dictsSetMD5Sum( Context context, String name, String sum )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.MD5SUM, sum );
+            int result = db.update( DBHelper.TABLE_NAME_DICTINFO,
+                                    values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.DICTNAME, name );
+                db.insert( DBHelper.TABLE_NAME_DICTINFO, null, values );
+            }
+            db.close();
+        }
+    }
+
+    public static DictInfo dictsGetInfo( Context context, String name )
+    {
+        DictInfo result = null;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { DBHelper.LANGCODE,
+                                 DBHelper.WORDCOUNT,
+                                 DBHelper.MD5SUM,
+                                 DBHelper.LOC };
+            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTINFO, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = new DictInfo();
+                result.name = name;
+                result.langCode = 
+                    cursor.getInt( cursor.getColumnIndex(DBHelper.LANGCODE));
+                result.wordCount = 
+                    cursor.getInt( cursor.getColumnIndex(DBHelper.WORDCOUNT));
+                result.md5Sum =
+                    cursor.getString( cursor.getColumnIndex(DBHelper.MD5SUM));
+             }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static void dictsSetInfo( Context context, DictUtils.DictAndLoc dal,
+                                     DictInfo info )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = 
+                String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
+            ContentValues values = new ContentValues();
+
+            values.put( DBHelper.LANGCODE, info.langCode );
+            values.put( DBHelper.WORDCOUNT, info.wordCount );
+            values.put( DBHelper.MD5SUM, info.md5Sum );
+            values.put( DBHelper.LOC, dal.loc.ordinal() );
+
+            int result = db.update( DBHelper.TABLE_NAME_DICTINFO,
+                                    values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.DICTNAME, dal.name );
+                db.insert( DBHelper.TABLE_NAME_DICTINFO, null, values );
+            }
+            db.close();
+        }
+    }
+
+    public static void dictsMoveInfo( Context context, String name,
+                                      DictLoc fromLoc, DictLoc toLoc )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = 
+                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                               name, DBHelper.LOC, fromLoc.ordinal() );
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.LOC, toLoc.ordinal() );
+            db.update( DBHelper.TABLE_NAME_DICTINFO, values, selection, null );
+            db.update( DBHelper.TABLE_NAME_DICTBROWSE, values, selection, null);
+            db.close();
+        }
+    }
+
+    public static void dictsRemoveInfo( Context context, 
+                                        DictUtils.DictAndLoc dal )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            String selection = 
+                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                               dal.name, DBHelper.LOC, dal.loc.ordinal() );
+            db.delete( DBHelper.TABLE_NAME_DICTINFO, selection, null );
+            db.delete( DBHelper.TABLE_NAME_DICTBROWSE, selection, null );
+            db.close();
+        }
+    }
+
+    public static boolean gameDBExists( Context context )
+    {
+        String name = DBHelper.getDBName();
+        File sdcardDB = new File( Environment.getExternalStorageDirectory(),
+                                  name );
+        return sdcardDB.exists();
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
@@ -987,6 +1203,8 @@ public class DBUtils {
     {
         if ( null == s_dbHelper ) {
             s_dbHelper = new DBHelper( context );
+            // force any upgrade
+            s_dbHelper.getWritableDatabase().close();
         }
     }
 

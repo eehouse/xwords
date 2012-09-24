@@ -186,7 +186,8 @@ class SafeCref {
     /* SafeCref( CookieRef* cref ); */
     ~SafeCref();
 
-    bool Forward( HostID src, in_addr& addr, HostID dest, unsigned char* buf, int buflen ) {
+    bool Forward( HostID src, in_addr& addr, HostID dest, unsigned char* buf, 
+                  int buflen ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
@@ -206,11 +207,13 @@ class SafeCref {
         }
     }
 
-    bool Connect( int socket, int nPlayersH, int nPlayersS, int seed, in_addr& addr ) {
+    bool Connect( int socket, int nPlayersH, int nPlayersS, int seed, 
+                  in_addr& addr ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            return cref->_Connect( socket, m_clientVersion, nPlayersH, nPlayersS, seed, 
+            return cref->_Connect( socket, m_clientVersion, nPlayersH, 
+                                   nPlayersS, seed, 
                                    m_seenSeed, addr );
         } else {
             return false;
@@ -226,8 +229,9 @@ class SafeCref {
             if ( m_dead ) {
                 *errp = XWRELAY_ERROR_DEADGAME;
             } else {
-                success = cref->_Reconnect( socket, m_clientVersion, srcID, nPlayersH, 
-                                            nPlayersS, seed, addr, m_dead );
+                success = cref->_Reconnect( socket, m_clientVersion, srcID, 
+                                            nPlayersH, nPlayersS, seed, addr, 
+                                            m_dead );
             }
         }
         return success;

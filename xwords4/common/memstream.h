@@ -38,6 +38,11 @@ XWStreamCtxt* mem_stream_make( MPFORMAL VTableMgr* vtmgr,
                                                          subclass */
                                MemStreamCloseCallback onCloseWritten );
 
+XWStreamCtxt* mem_stream_make_sized( MPFORMAL VTableMgr* vtmgr, 
+                                     XP_U16 initialSize,
+                                     void* closure, XP_PlayerAddr addr,
+                                     MemStreamCloseCallback onCloseWritten );
+
 
 #ifdef CPLUS
 }

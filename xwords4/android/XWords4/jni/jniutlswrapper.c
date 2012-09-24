@@ -68,7 +68,7 @@ and_util_makeJBitmap( JNIUtilCtxt* jniutil, int nCols, int nRows,
 
     bitmap = (*env)->CallObjectMethod( env, jniutil->jjniutil, mid,
                                        nCols, nRows, jcolors );
-    (*env)->DeleteLocalRef( env, jcolors );
+    deleteLocalRef( env, jcolors );
 
     return bitmap;
 }
@@ -84,14 +84,26 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
         = getMethodID( env, jniutil->jjniutil, "splitFaces",
                        "([BZ)[Ljava/lang/String;" );
 
-    jbyteArray jbytes = (*env)->NewByteArray( env, len );
+    jbyteArray jbytes = makeByteArray( env, len, (jbyte*)bytes );
+    strarray = 
+        (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jbytes, isUTF8 );
+    deleteLocalRef( env, jbytes );
 
-    jbyte* jp = (*env)->GetByteArrayElements( env, jbytes, NULL );
-    XP_MEMCPY( jp, bytes, len );
-    (*env)->ReleaseByteArrayElements( env, jbytes, jp, 0 );
-
-    strarray = (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jbytes,
-                                         isUTF8 );
-    (*env)->DeleteLocalRef( env, jbytes );
     return strarray;
+}
+
+jstring
+and_util_getMD5SumFor( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
+                       const XP_U8* bytes, jsize len )
+{
+    JNIEnv* env = *jniutil->envp;
+    jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
+                                 "(Ljava/lang/String;[B)Ljava/lang/String;" );
+    jstring jname = (*env)->NewStringUTF( env, name );
+    jbyteArray jbytes = NULL == bytes? NULL
+        : makeByteArray( env, len, (jbyte*)bytes );
+    jstring result = 
+        (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jname, jbytes );
+    deleteLocalRefs( env, jname, jbytes, DELETE_NO_REF );
+    return result;
 }

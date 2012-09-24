@@ -141,7 +141,7 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
         JNIEnv* env = ctxt->env;
         jobject tmp = and_util_makeJBitmap( ctxt->jniutil, nCols, nRows, colors );
         bitmap = (*env)->NewGlobalRef( env, tmp );
-        (*env)->DeleteLocalRef( env, tmp );
+        deleteLocalRef( env, tmp );
         XP_FREE( ctxt->super.mpool, colors );
 #endif
     }
@@ -242,13 +242,13 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
             XP_MEMCPY( &facesBuf[indx], bytes, nBytes );
         }
         (*env)->ReleaseStringUTFChars( env, jstr, bytes );
-        (*env)->DeleteLocalRef( env, jstr );
+        deleteLocalRef( env, jstr );
 
         indx += nBytes;
         facesBuf[indx++] = '\0';
         XP_ASSERT( indx < VSIZE(facesBuf) );
     }
-    (*env)->DeleteLocalRef( env, jstrarr );
+    deleteLocalRef( env, jstrarr );
 
     XP_UCHAR* faces = (XP_UCHAR*)XP_CALLOC( ctxt->super.mpool, indx );
     const XP_UCHAR** ptrs = (const XP_UCHAR**)
@@ -338,6 +338,28 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
     nFaces = (XP_U16)(*ptr++);
     if ( nFaces > 64 ) {
         goto error;
+    }
+
+    if ( NULL == ctxt->super.md5Sum
+#ifdef DEBUG
+         || XP_TRUE 
+#endif
+         ) {
+        JNIEnv* env = ctxt->env;
+        jstring jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name,
+                                              NULL, 0 );
+        if ( NULL == jsum ) {
+            jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name,
+                                          ptr, end - ptr );
+        }
+        XP_UCHAR* md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );
+        deleteLocalRef( env, jsum );
+        if ( NULL == ctxt->super.md5Sum ) {
+            ctxt->super.md5Sum = md5Sum;
+        } else {
+            XP_ASSERT( 0 == XP_STRCMP( ctxt->super.md5Sum, md5Sum ) );
+            XP_FREE( ctxt->super.mpool, md5Sum );
+        }
     }
 
     ctxt->super.nodeSize = nodeSize;
@@ -517,12 +539,9 @@ makeDicts( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil,
                 dict = makeDict( MPPARM(mpool) env, jniutil, jname, jdict, 
                                  jpath, jlang, false );
                 XP_ASSERT( !!dict );
-                (*env)->DeleteLocalRef( env, jdict );
-                (*env)->DeleteLocalRef( env, jname );
+                deleteLocalRefs( env, jdict, jname, DELETE_NO_REF );
             }
-            if ( NULL != jpath) {
-                (*env)->DeleteLocalRef( env, jpath );
-            }
+            deleteLocalRef( env, jpath );
         }
         if ( 0 == ii ) {
             *dictp = dict;

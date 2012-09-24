@@ -70,10 +70,8 @@ mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
                  XP_PlayerAddr channelNo, MemStreamCloseCallback onClose )
 {
     StreamCtxVTable* vtable;
-    MemStreamCtxt* result = (MemStreamCtxt*)XP_MALLOC( mpool, 
+    MemStreamCtxt* result = (MemStreamCtxt*)XP_CALLOC( mpool, 
                                                        sizeof(*result) );
-    XP_MEMSET( result, 0, sizeof(*result) );
-
     MPASSIGN(result->mpool, mpool);
 
     vtable = (StreamCtxVTable*)vtmgr_getVTable( vtmgr, VTABLE_MEM_STREAM );
@@ -91,6 +89,21 @@ mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
 
     return (XWStreamCtxt*)result;
 } /* make_mem_stream */
+
+XWStreamCtxt* 
+mem_stream_make_sized( MPFORMAL VTableMgr* vtmgr, XP_U16 startSize, 
+                       void* closure, XP_PlayerAddr channelNo, 
+                       MemStreamCloseCallback onClose )
+{
+    MemStreamCtxt* result =
+        (MemStreamCtxt*)mem_stream_make( MPPARM(mpool) vtmgr, closure, 
+                                         channelNo, onClose );
+    if ( 0 < startSize ) {
+        result->buf = (XP_U8*)XP_CALLOC( mpool, startSize );
+        result->nBytesAllocated = startSize;
+    }
+    return (XWStreamCtxt*)result;
+}
 
 static void
 mem_stream_getBytes( XWStreamCtxt* p_sctx, void* where, XP_U16 count )

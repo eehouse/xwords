@@ -86,7 +86,7 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
 } /* gtk_dictionary_make */
 
 static XP_UCHAR*
-getNullTermParam( LinuxDictionaryCtxt* dctx, const XP_U8** ptr, 
+getNullTermParam( LinuxDictionaryCtxt* XP_UNUSED_DBG(dctx), const XP_U8** ptr,
                   XP_U16* headerLen )
 {
     XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );

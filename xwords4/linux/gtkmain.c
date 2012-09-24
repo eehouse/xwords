@@ -378,6 +378,8 @@ relay_error_gtk( void* closure, XWREASON relayErr )
                         "relay says another device deleted game.", 
                         GTK_BUTTONS_OK, 1000 );
         break;
+    case XWRELAY_ERROR_DEADGAME:
+        break;
     default:
         assert(0);
         break;
@@ -678,19 +680,7 @@ quit( void )
 static void
 cleanup( GtkAppGlobals* globals )
 {
-    if ( !!globals->cGlobals.params->fileName ) {
-        XWStreamCtxt* outStream;
-
-        outStream = mem_stream_make( MEMPOOL globals->cGlobals.params->vtMgr, 
-                                     globals, 0, writeToFile );
-        stream_open( outStream );
-
-        game_saveToStream( &globals->cGlobals.game, 
-                           &globals->cGlobals.params->gi, 
-                           outStream );
-
-        stream_destroy( outStream );
-    }
+    saveGame( &globals->cGlobals );
 
     game_dispose( &globals->cGlobals.game ); /* takes care of the dict */
     gi_disposePlayerInfo( MEMPOOL &globals->cGlobals.params->gi );
@@ -2105,6 +2095,9 @@ newConnectionInput( GIOChannel *source,
                     redraw =
                         server_receiveMessage(globals->cGlobals.game.server,
                                               inboundS );
+                    if ( redraw ) {
+                        saveGame( &globals->cGlobals );
+                    }
                 }
                 stream_destroy( inboundS );
             }
