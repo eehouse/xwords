@@ -18,11 +18,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <locale.h>
+#include <string.h>
 
 #include <netdb.h>		/* gethostbyname */
 #include <errno.h>
@@ -74,11 +76,12 @@
 #define DEFAULT_LISTEN_PORT 4998
 
 XP_Bool
-file_exists( const char* fileName ) 
+file_exists( const char* fileName )
 {
     struct stat statBuf;
 
     int statResult = stat( fileName, &statBuf );
+    XP_LOGF( "%s(%s)=>%d", __func__, fileName, statResult == 0 );
     return statResult == 0;
 } /* file_exists */
 
@@ -489,6 +492,7 @@ typedef enum {
     ,CMD_TESTPRFX
     ,CMD_TESTMINMAX
 #endif
+    ,CMD_DICTDIR
     ,CMD_PLAYERDICT
     ,CMD_SEED
     ,CMD_GAMESEED
@@ -581,6 +585,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_TESTPRFX, true, "test-prefix", "list first word starting with this" }
     ,{ CMD_TESTMINMAX, true, "test-minmax", "M:M -- include only words whose len in range" }
 #endif
+    ,{ CMD_DICTDIR, true, "dict-dir", "path to dir in which dicts will be sought" }
     ,{ CMD_PLAYERDICT, true, "player-dict", "dictionary name for player (in sequence)" }
     ,{ CMD_SEED, true, "seed", "random seed" }
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
@@ -1382,7 +1387,7 @@ walk_dict_test_all( const LaunchParams* params, GSList* testDicts,
     for ( ii = 0; ii < count; ++ii ) {
         gchar* name = (gchar*)g_slist_nth_data( testDicts, ii );
         DictionaryCtxt* dict = 
-            linux_dictionary_make( MPPARM(params->util->mpool) name,
+            linux_dictionary_make( MPPARM(params->util->mpool) params, name,
                                    params->useMmap );
         if ( NULL != dict ) {
             XP_LOGF( "walk_dict_test(%s)", name );
@@ -1392,6 +1397,55 @@ walk_dict_test_all( const LaunchParams* params, GSList* testDicts,
     }
 }
 #endif
+
+static void
+trimDictPath( const char* input, char* buf, int bufsiz, char** path, char** dict )
+{
+    struct stat statBuf;
+    int statResult = stat( input, &statBuf );
+    if ( 0 == statResult && S_ISLNK(statBuf.st_mode) ) {
+        ssize_t nWritten = readlink( input, buf, bufsiz );
+        buf[nWritten] = '\0';
+    } else {
+        snprintf( buf, bufsiz, "%s", input );
+    }
+
+    char* result = strrchr( buf, '/' );
+    if ( !!result ) {           /* is is a full path */
+        *path = buf;
+        *result = '\0';         /* null-terminate it */
+        *dict = 1 + result;
+    } else {
+        *path = NULL;
+        *dict = buf;
+    }
+    char* dot = strrchr( *dict, '.' );
+    if ( !!dot && 0 == strcmp(dot, ".xwd") ) {
+        *dot = '\0';
+    }
+    XP_LOGF( "%s=> dict: %s; path: %s", __func__, *dict, *path );
+}
+
+XP_Bool
+getDictPath( const LaunchParams *params, const char* name, 
+             char* result, int resultLen )
+{
+    XP_Bool success = XP_FALSE;
+    GSList* dictDirs;
+    result[0] = '\0';
+    for ( dictDirs = params->dictDirs; !!dictDirs; dictDirs = dictDirs->next ) {
+        const char* path = dictDirs->data;
+        char buf[256];
+        int len = snprintf( buf, VSIZE(buf), "%s/%s.xwd", path, name );
+        if ( len < VSIZE(buf) && file_exists( buf ) ) {
+            snprintf( result, resultLen, "%s", buf );
+            success = XP_TRUE;
+            break;
+        }
+    }
+    LOG_RETURNF( "%d", success );
+    return success;
+}
 
 int
 main( int argc, char** argv )
@@ -1413,6 +1467,9 @@ main( int argc, char** argv )
     GSList* testPrefixes = NULL;
     char* testMinMax = NULL;
 #endif
+    char dictbuf[256];
+    char* dict;
+    char* path;
 
     /* install a no-op signal handler.  Later curses- or gtk-specific code
        will install one that does the right thing in that context */
@@ -1487,6 +1544,19 @@ main( int argc, char** argv )
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
 
+    char* envDictPath = getenv( "XW_DICTSPATH" );
+    if ( !!envDictPath ) {
+        char *saveptr;
+        for ( ; ; ) {
+            char* path = strtok_r( envDictPath, ":", &saveptr );
+            if ( !path ) {
+                break;
+            }
+            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, path );
+            envDictPath = NULL;
+        }
+    }
+
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
 #if defined PLATFORM_GTK
@@ -1526,8 +1596,12 @@ main( int argc, char** argv )
             conType = COMMS_CONN_IP_DIRECT;
             break;
         case CMD_DICT:
-            mainParams.gi.dictName = copyString( mainParams.util->mpool,
-                                                 (XP_UCHAR*)optarg );
+            trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
+            mainParams.gi.dictName = copyString( mainParams.util->mpool, dict );
+            if ( !path ) {
+                path = ".";
+            }
+            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, path );
             break;
 #ifdef XWFEATURE_WALKDICT
         case CMD_TESTDICT:
@@ -1540,8 +1614,16 @@ main( int argc, char** argv )
             testMinMax = optarg;
             break;
 #endif
+        case CMD_DICTDIR:
+            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, optarg );
+            break;
         case CMD_PLAYERDICT:
-            mainParams.playerDictNames[nPlayerDicts++] = optarg;
+            trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
+            mainParams.playerDictNames[nPlayerDicts++] = dict;
+            if ( !path ) {
+                path = ".";
+            }
+            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, path );
             break;
         case CMD_SEED:
             seed = atoi(optarg);
@@ -1804,9 +1886,11 @@ main( int argc, char** argv )
     }
 
     if ( !!mainParams.gi.dictName ) {
+        /* char path[256]; */
+        /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
         mainParams.dict = 
-            linux_dictionary_make( MPPARM(mainParams.util->mpool) 
-                                   mainParams.gi.dictName, 
+            linux_dictionary_make( MPPARM(mainParams.util->mpool) &mainParams,
+                                   mainParams.gi.dictName,
                                    mainParams.useMmap );
         XP_ASSERT( !!mainParams.dict );
         mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
@@ -1834,8 +1918,8 @@ main( int argc, char** argv )
         const XP_UCHAR* name = mainParams.playerDictNames[ii];
         if ( !!name ) {
             mainParams.dicts.dicts[ii] = 
-                linux_dictionary_make( MPPARM(mainParams.util->mpool) name,
-                                       mainParams.useMmap );
+                linux_dictionary_make( MPPARM(mainParams.util->mpool) 
+                                       &mainParams, name, mainParams.useMmap );
         }
     }
 

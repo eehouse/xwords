@@ -49,6 +49,7 @@ typedef struct LinuxDictionaryCtxt {
 
 /************************ Prototypes ***********************/
 static XP_Bool initFromDictFile( LinuxDictionaryCtxt* dctx, 
+                                 const LaunchParams* params,
                                  const char* fileName );
 static void linux_dictionary_destroy( DictionaryCtxt* dict );
 static const XP_UCHAR* linux_dict_getShortName( const DictionaryCtxt* dict );
@@ -57,7 +58,8 @@ static const XP_UCHAR* linux_dict_getShortName( const DictionaryCtxt* dict );
  *
  ****************************************************************************/
 DictionaryCtxt* 
-linux_dictionary_make( MPFORMAL const char* dictFileName, XP_Bool useMMap )
+linux_dictionary_make( MPFORMAL const LaunchParams* params,
+                       const char* dictFileName, XP_Bool useMMap )
 {
     LinuxDictionaryCtxt* result = 
         (LinuxDictionaryCtxt*)XP_MALLOC(mpool, sizeof(*result));
@@ -69,7 +71,7 @@ linux_dictionary_make( MPFORMAL const char* dictFileName, XP_Bool useMMap )
     result->useMMap = useMMap;
 
     if ( !!dictFileName ) {
-        XP_Bool success = initFromDictFile( result, dictFileName );
+        XP_Bool success = initFromDictFile( result, params, dictFileName );
         if ( success ) {
             result->super.destructor = linux_dictionary_destroy;
             result->super.func_dict_getShortName = linux_dict_getShortName;
@@ -219,7 +221,8 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
 } /* dict_splitFaces */
 
 static XP_Bool
-initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
+initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params, 
+                  const char* fileName )
 {
     XP_Bool formatOk = XP_TRUE;
     long curPos, dictLength;
@@ -231,15 +234,20 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     XP_Bool isUTF8 = XP_FALSE;
     XP_Bool hasHeader = XP_FALSE;
     const XP_U8* ptr;
+    char path[256];
 
+    if ( !getDictPath( params, fileName, path, VSIZE(path) ) ) {
+        XP_LOGF( "%s: path=%s", __func__, path );
+        goto closeAndExit;
+    }
     struct stat statbuf;
-    if ( 0 != stat( fileName, &statbuf ) || 0 == statbuf.st_size ) {
+    if ( 0 != stat( path, &statbuf ) || 0 == statbuf.st_size ) {
         goto closeAndExit;
     }
     dctx->dictLength = statbuf.st_size;
 
     {
-        FILE* dictF = fopen( fileName, "r" );
+        FILE* dictF = fopen( path, "r" );
         XP_ASSERT( !!dictF );
         if ( dctx->useMMap ) {
             dctx->dictBase = mmap( NULL, dctx->dictLength, PROT_READ, 

@@ -735,6 +735,7 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 
 static XP_Bool
 warnBadWords( const XP_UCHAR* word, XP_Bool isLegal, 
+              const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
               const MoveInfo* XP_UNUSED(movei), 
               XP_U16 XP_UNUSED(start), XP_U16 XP_UNUSED(end),

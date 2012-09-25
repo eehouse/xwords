@@ -197,7 +197,12 @@ public class DictLangCache {
 
     public static String getDictMD5Sum( Context context, String dict )
     {
-        return getInfo( context, dict ).md5Sum;
+        String result = null;
+        DictInfo info = getInfo( context, dict );
+        if ( null != info ) {
+            result = info.md5Sum;
+        }
+        return result;
     }
 
     public static int getDictLangCode( Context context, String dict )

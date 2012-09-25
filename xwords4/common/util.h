@@ -82,6 +82,7 @@ typedef struct PickInfo {
 
 typedef struct BadWordInfo {
     XP_U16 nWords;
+    XP_UCHAR* dictName;
     const XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
 } BadWordInfo;
 
@@ -129,6 +130,11 @@ typedef struct UtilVtable {
     void (*m_util_informMove)( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
                                XWStreamCtxt* words );
     void (*m_util_informUndo)( XW_UtilCtxt* uc );
+    void (*m_util_informNetDict)( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
+                                  const XP_UCHAR* newName,
+                                  const XP_UCHAR* newSum,
+                                  XWPhoniesChoice phoniesAction );
+
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc );
 
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row );
@@ -244,6 +250,8 @@ struct XW_UtilCtxt {
          (uc)->vtable->m_util_informMove( (uc),(e),(w))
 #define util_informUndo(uc) \
          (uc)->vtable->m_util_informUndo( (uc))
+#define util_informNetDict(uc, on, nn, ns, pa ) \
+         (uc)->vtable->m_util_informNetDict( (uc), (on), (nn), (ns), (pa) )
 #define util_notifyGameOver( uc ) \
          (uc)->vtable->m_util_notifyGameOver((uc))
 

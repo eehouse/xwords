@@ -78,6 +78,7 @@ static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
                              const PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
 static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
+                           const DictionaryCtxt* dict,
 #ifdef XWFEATURE_BOARDWORDS
                            const MoveInfo* movei, XP_U16 start, XP_U16 end,
 #endif
@@ -2147,6 +2148,7 @@ typedef struct _FirstWordData {
 
 static XP_Bool
 getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
+              const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
               const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
               XP_U16 XP_UNUSED(end),
@@ -2246,6 +2248,7 @@ appendWithCR( XWStreamCtxt* stream, const XP_UCHAR* word, XP_U16* counter )
 
 static XP_Bool 
 recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
+            const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
             const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
             XP_U16 XP_UNUSED(end),
@@ -2277,6 +2280,7 @@ typedef struct _ListWordsThroughInfo {
 
 static XP_Bool
 listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
+                  const DictionaryCtxt* XP_UNUSED(dict),
                   const MoveInfo* movei, XP_U16 start, XP_U16 end, 
                   void* closure )
 {

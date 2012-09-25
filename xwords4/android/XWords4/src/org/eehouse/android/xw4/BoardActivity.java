@@ -1473,6 +1473,22 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
+        public void informNetDict( String oldName, String newName, String newSum, 
+                                   CurGameInfo.XWPhoniesChoice phonies )
+        {
+            // If it's same dict and same sum, we're good.  That
+            // should be the normal case.  Otherwise: if same name but
+            // different sum, notify and offer to upgrade.  If
+            // different name, offer to install.
+            String oldSum = DictLangCache.getDictMD5Sum( BoardActivity.this,
+                                                         oldName );
+            String str = String.format( "informNetDict(%s, %s, %s, %s, %s)", 
+                                        oldName, oldSum, newName, newSum, 
+                                        phonies.toString() );
+            nonBlockingDialog( DLG_OKONLY, str );
+        }
+
+        @Override
         public void notifyGameOver()
         {
             m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
@@ -1484,10 +1500,10 @@ public class BoardActivity extends XWActivity
         //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
         // }
         @Override
-        public boolean warnIllegalWord( String[] words, int turn, 
+        public boolean warnIllegalWord( String dict, String[] words, int turn, 
                                         boolean turnLost )
         {
-            DbgUtils.logf( "warnIllegalWord" );
+            DbgUtils.logf( "warnIllegalWord(dict=%s)", dict );
             boolean accept = turnLost;
 
             StringBuffer sb = new StringBuffer();
@@ -1499,7 +1515,8 @@ public class BoardActivity extends XWActivity
                 sb.append( "; " );
             }
         
-            String message = getString( R.string.ids_badwords, sb.toString() );
+            String message = 
+                getString( R.string.ids_badwords, sb.toString(), dict );
 
             if ( turnLost ) {
                 nonBlockingDialog( DLG_BADWORDS, 

@@ -1458,6 +1458,24 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc )
     }
 } /* gtk_util_notifyGameOver */
 
+static void
+gtk_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
+                        const XP_UCHAR* newName, const XP_UCHAR* newSum,
+                        XWPhoniesChoice phoniesAction )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    gchar buf[512];
+
+    int offset = snprintf( buf, VSIZE(buf),
+                           "dict changing from %s to %s (sum=%s).", 
+                           oldName, newName, newSum );
+    if ( PHONIES_DISALLOW == phoniesAction ) {
+        snprintf( &buf[offset], VSIZE(buf)-offset, "%s",
+                  "\nPHONIES_DISALLOW is set so this may lead to some surprises." );
+    }
+    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
+}
+
 /* define this to prevent user events during debugging from stopping the engine */
 /* #define DONT_ABORT_ENGINE */
 
@@ -1983,6 +2001,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_informMove = gtk_util_informMove;
     util->vtable->m_util_informUndo = gtk_util_informUndo;
     util->vtable->m_util_notifyGameOver = gtk_util_notifyGameOver;
+    util->vtable->m_util_informNetDict = gtk_util_informNetDict;
     util->vtable->m_util_hiliteCell = gtk_util_hiliteCell;
     util->vtable->m_util_altKeyDown = gtk_util_altKeyDown;
     util->vtable->m_util_engineProgressCallback = 

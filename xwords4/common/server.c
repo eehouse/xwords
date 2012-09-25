@@ -1231,8 +1231,6 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
         localGI.serverRole = SERVER_ISCLIENT;
 
-        /* so it's not lost (HACK!).  Without this, a client won't have a default
-           dict name when a new game is started. */
         localGI.dictName = copyString( server->mpool, gi->dictName );
         gi_copy( MPPARM(server->mpool) gi, &localGI );
 
@@ -1240,6 +1238,17 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
         newDict = util_makeEmptyDict( server->vol.util );
         dict_loadFromStream( newDict, stream );
+
+#ifdef STREAM_VERS_BIGBOARD
+        if ( STREAM_VERS_DICTNAME <= streamVersion ) {
+            XP_UCHAR name[128];
+            XP_UCHAR sum[128];
+            stringFromStreamHere( stream, name, VSIZE(name) );
+            stringFromStreamHere( stream, sum, VSIZE(sum) );
+            util_informNetDict( server->vol.util, gi->dictName, name,
+                                sum, localGI.phoniesAction );
+        }
+#endif
 
         channelNo = stream_getAddress( stream );
         XP_ASSERT( channelNo != 0 );
@@ -1373,7 +1382,12 @@ server_sendInitialMessage( ServerCtxt* server )
         gi_writeToStream( stream, &localGI );
 
         dict_writeToStream( dict, stream );
-
+#ifdef STREAM_VERS_BIGBOARD
+        if ( STREAM_VERS_DICTNAME <= addr->streamVersion ) {
+            stringToStream( stream, dict_getShortName(dict) );
+            stringToStream( stream, dict_getMd5Sum(dict) );
+        }
+#endif
         /* send tiles currently in tray */
         for ( ii = 0; ii < nPlayers; ++ii ) {
             model_trayToStream( model, ii, stream );
@@ -1393,9 +1407,9 @@ freeBWI( MPFORMAL BadWordInfo* bwi )
 {
     XP_U16 nWords = bwi->nWords;
 
+    XP_FREEP( mpool, &bwi->dictName );
     while ( nWords-- ) {
-        XP_FREE( mpool, (XP_UCHAR*)bwi->words[nWords] );
-        bwi->words[nWords] = (XP_UCHAR*)NULL;
+        XP_FREEP( mpool, &bwi->words[nWords] );
     }
 
     bwi->nWords = 0;
@@ -1409,7 +1423,9 @@ bwiToStream( XWStreamCtxt* stream, BadWordInfo* bwi )
     const XP_UCHAR** sp;
 
     stream_putBits( stream, 4, nWords );
-    
+    if ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) ) {
+        stringToStream( stream, bwi->dictName );
+    }
     for ( sp = bwi->words; nWords > 0; --nWords, ++sp ) {
         stringToStream( stream, *sp );
     }
@@ -1423,6 +1439,8 @@ bwiFromStream( MPFORMAL XWStreamCtxt* stream, BadWordInfo* bwi )
     const XP_UCHAR** sp = bwi->words;
 
     bwi->nWords = nWords;
+    bwi->dictName = ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) )
+        ? stringFromStream( mpool, stream ) : NULL;
     for ( sp = bwi->words; nWords; ++sp, --nWords ) {
         *sp = (const XP_UCHAR*)stringFromStream( mpool, stream );
     }
@@ -1861,6 +1879,7 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
 
 static XP_Bool
 storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
+               const DictionaryCtxt* dict,
 #ifdef XWFEATURE_BOARDWORDS
                const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
                XP_U16 XP_UNUSED(end), 
@@ -1869,9 +1888,12 @@ storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
 {
     if ( !isLegal ) {
         ServerCtxt* server = (ServerCtxt*)closure;
+        const XP_UCHAR* name = dict_getShortName( dict );
 
-        XP_LOGF( "storeBadWords called with \"%s\"", word );
-
+        XP_LOGF( "storeBadWords called with \"%s\" (name=%s)", word, name );
+        if ( NULL == server->illegalWordInfo.dictName ) {
+            server->illegalWordInfo.dictName = copyString( server->mpool, name );
+        }
         server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
             = copyString( server->mpool, word );
     }

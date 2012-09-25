@@ -116,6 +116,9 @@ public interface UtilCtxt {
     void informMove( String expl, String words );
     void informUndo();
 
+    void informNetDict( String oldName, String newName, String newSum, 
+                        CurGameInfo.XWPhoniesChoice phonies );
+
     void informMissing( boolean isServer, CommsAddrRec.CommsConnType connType,
                         int nMissingPlayers );
 
@@ -123,7 +126,8 @@ public interface UtilCtxt {
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
 
-    boolean warnIllegalWord( String[] words, int turn, boolean turnLost );
+    boolean warnIllegalWord( String dict, String[] words, int turn, 
+                             boolean turnLost );
 
     void showChat( String msg );
 

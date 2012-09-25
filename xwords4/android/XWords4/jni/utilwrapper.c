@@ -263,6 +263,27 @@ and_util_informUndo( XW_UtilCtxt* uc )
 }
 
 static void
+and_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
+                        const XP_UCHAR* newName, const XP_UCHAR* newSum,
+                        XWPhoniesChoice phoniesAction )
+{
+    LOG_FUNC();
+    UTIL_CBK_HEADER( "informNetDict", 
+                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;L"
+                     PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") ";)V" );
+    jstring jnew = (*env)->NewStringUTF( env, newName );
+    jstring jsum = (*env)->NewStringUTF( env, newSum );
+    jstring jold = (*env)->NewStringUTF( env, oldName );
+    jobject jphon = intToJEnum( env, phoniesAction, 
+                                PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
+
+    (*env)->CallVoidMethod( env, util->jutil, mid, jold, jnew, jsum, jphon );
+    deleteLocalRefs( env, jnew, jold, jsum, jphon, DELETE_NO_REF );
+
+    UTIL_CBK_TAIL();
+}
+
+static void
 and_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
@@ -400,14 +421,17 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
                           XP_U16 turn, XP_Bool turnLost )
 {
     jboolean result = XP_FALSE;
-    UTIL_CBK_HEADER("warnIllegalWord", "([Ljava/lang/String;IZ)Z" );
+    UTIL_CBK_HEADER("warnIllegalWord", 
+                    "(Ljava/lang/String;[Ljava/lang/String;IZ)Z" );
     XP_ASSERT( bwi->nWords > 0 );
     if ( bwi->nWords > 0 ) {
         jobjectArray jwords = makeStringArray( env, bwi->nWords, 
                                                (const XP_UCHAR**)bwi->words );
+        XP_ASSERT( !!bwi->dictName );
+        jstring jname = (*env)->NewStringUTF( env, bwi->dictName );
         result = (*env)->CallBooleanMethod( env, util->jutil, mid,
-                                            jwords, turn, turnLost );
-        deleteLocalRef( env, jwords );
+                                            jname, jwords, turn, turnLost );
+        deleteLocalRefs( env, jwords, jname, DELETE_NO_REF );
     }
     UTIL_CBK_TAIL();
     return result;
@@ -578,6 +602,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
 #endif
     SET_PROC(informMove);
     SET_PROC(informUndo);
+    SET_PROC(informNetDict);
     SET_PROC(notifyGameOver);
     SET_PROC(hiliteCell);
     SET_PROC(engineProgressCallback);

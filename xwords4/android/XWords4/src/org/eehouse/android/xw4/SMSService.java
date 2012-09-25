@@ -53,7 +53,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 public class SMSService extends Service {
 
-    private static final String INSTALL_URL = "http://eehouse.org/_/aa.htm ";
+    private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
 
     private static final String MSG_SENT = "MSG_SENT";

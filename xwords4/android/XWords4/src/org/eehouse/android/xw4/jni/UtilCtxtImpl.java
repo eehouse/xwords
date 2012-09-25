@@ -222,6 +222,12 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "informUndo" );
     }
 
+    public void informNetDict( String oldName, String newName, String newSum, 
+                               CurGameInfo.XWPhoniesChoice phonies )
+    {
+        subclassOverride( "informNetDict" );
+    }
+
     public void informMissing( boolean isServer, 
                                CommsAddrRec.CommsConnType connType,
                                int nMissingPlayers )
@@ -236,7 +242,8 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "notifyGameOver" );
     }
 
-    public boolean warnIllegalWord( String[] words, int turn, boolean turnLost )
+    public boolean warnIllegalWord( String dict, String[] words, int turn, 
+                                    boolean turnLost )
     {
         subclassOverride( "warnIllegalWord" );
         return false;
