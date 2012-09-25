@@ -563,7 +563,6 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
 {
     XP_U16 tileMultiplier;
     XP_U16 restScore = 0;
-    XP_U16 scoreFromCache;
     XP_U16 thisTileValue;
     XP_U16 nTiles = movei->nTiles;
     Tile tile;
@@ -609,8 +608,7 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
 
         if ( engine != NULL ) {
             XP_ASSERT( nTiles==1 );
-            scoreFromCache = engine_getScoreCache( engine, 
-                                                   movei->commonCoord );
+            (void)engine_getScoreCache( engine, movei->commonCoord );
         }
 
         /* for a while, at least, calculate and use the cached crosscheck score

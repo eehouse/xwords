@@ -2482,9 +2482,8 @@ static XP_Bool
 handleIllegalWord( ServerCtxt* server, XWStreamCtxt* incoming )
 {
     BadWordInfo bwi;
-    XP_U16 whichPlayer;
 
-    whichPlayer = stream_getBits( incoming, PLAYERNUM_NBITS );
+    (void)stream_getBits( incoming, PLAYERNUM_NBITS );
     bwiFromStream( MPPARM(server->mpool) incoming, &bwi );
 
     badWordMoveUndoAndTellUser( server, &bwi );

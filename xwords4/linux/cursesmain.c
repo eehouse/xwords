@@ -902,6 +902,7 @@ drawMenuFromList( WINDOW* win, const MenuList** menuLists,
     int winMaxY, winMaxX;
 
     getmaxyx( win, winMaxY, winMaxX );
+    XP_USE(winMaxY);
 
     int maxColWidth = 0;
     if ( 0 == nLines ) {
@@ -1484,11 +1485,10 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 static void
 cursesSendOnClose( XWStreamCtxt* stream, void* closure )
 {
-    XP_S16 result;
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
 
     XP_LOGF( "cursesSendOnClose called" );
-    result = comms_send( globals->cGlobals.game.comms, stream );
+    (void)comms_send( globals->cGlobals.game.comms, stream );
 } /* cursesSendOnClose */
 
 static XWStreamCtxt*

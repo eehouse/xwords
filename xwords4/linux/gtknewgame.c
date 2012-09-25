@@ -109,7 +109,6 @@ static void
 callChangedWithIndex( GtkNewGameState* state, GtkWidget* item, 
                       GtkWidget** items  )
 {
-    NGValue value;
     gint player;
     for ( player = 0; player < MAX_NUM_PLAYERS; ++player ) {
         if ( item == items[player] ) {
@@ -118,7 +117,7 @@ callChangedWithIndex( GtkNewGameState* state, GtkWidget* item,
     }
     XP_ASSERT( player < MAX_NUM_PLAYERS );
 
-    value.ng_bool = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) );
+    (void)gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) );
     newg_colChanged( state->newGameCtxt, player );
 } /* callChangedWithIndex */
 

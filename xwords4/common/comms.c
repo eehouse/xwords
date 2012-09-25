@@ -1964,7 +1964,6 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
     XP_UCHAR buf[100];
     AddressRecord* rec;
     MsgQueueElem* elem;
-    XP_U32 now;
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                  (XP_UCHAR*)"msg queue len: %d\n", comms->queueLen );
@@ -1977,7 +1976,6 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_catString( stream, buf );
     }
 
-    now = util_getCurSeconds( comms->util );
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                      (XP_UCHAR*)"  Stats for channel: %x\n", 

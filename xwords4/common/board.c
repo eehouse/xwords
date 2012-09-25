@@ -1939,7 +1939,6 @@ figureBoardRect( BoardCtxt* board )
             nVisible = nRows;
         } else {
             XP_S16 maxYOffset;
-            XP_Bool yChanged = XP_TRUE;
             /* Need to hide rows etc. */
             boardBounds.height = maxHeight;
             vsd->scale = boardScale;
@@ -1952,8 +1951,6 @@ figureBoardRect( BoardCtxt* board )
                 vsd->offset = maxYOffset;
             } else if ( maxYOffset != vsd->maxOffset ) {
                 vsd->maxOffset = maxYOffset;
-            } else {
-                yChanged = XP_FALSE;
             }
 
             board->boardObscuresTray = board->trayBounds.top < wantHeight

@@ -184,7 +184,6 @@ gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr, DeviceRole role,
 {
     GtkConnsState state;
     XP_MEMSET( &state, 0, sizeof(state) );
-    gint loc;
     XP_U16 nTypes = 0;
 
     state.readOnly = readOnly;
@@ -200,13 +199,13 @@ gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr, DeviceRole role,
 
 #ifdef XWFEATURE_RELAY
     state.pageTypes[nTypes++] = COMMS_CONN_RELAY;
-    loc = gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook), 
+    (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook), 
                                     makeRelayPage(&state),
                                     gtk_label_new( "Relay" ) );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     state.pageTypes[nTypes++] = COMMS_CONN_BT;
-    loc = gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
+    (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
                                     makeBTPage(&state),
                                     gtk_label_new( "Bluetooth" ) );
 #endif

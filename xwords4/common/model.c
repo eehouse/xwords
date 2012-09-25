@@ -117,7 +117,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
                       const PlayerDicts* dicts, XW_UtilCtxt* util )
 {
     ModelCtxt* model;
-    XP_U16 nCols, nRows;
+    XP_U16 nCols;
     XP_U16 ii;
     XP_Bool hasDict;
     XP_U16 nPlayers;
@@ -129,11 +129,10 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 #ifdef STREAM_VERS_BIGBOARD
     } else if ( STREAM_VERS_BIGBOARD <= version ) {
         nCols = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS_5 );
-        nRows = nCols;
 #endif
     } else {
         nCols = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS_4 );
-        nRows = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS_4 );
+        (void)stream_getBits( stream, NUMCOLS_NBITS_4 );
     }
     XP_ASSERT( MAX_COLS >= nCols );
 
@@ -700,11 +699,6 @@ model_foreachPendingCell( ModelCtxt* model, XP_S16 turn,
     count = player->nPending;
 
     for ( pt = player->pendingTiles; count--; ++pt ) {
-        XP_U16 col, row;
-
-        col = pt->col;
-        row = pt->row;
-
         (*bl)( closure, turn, pt->col, pt->row, XP_FALSE );
     }
 } /* model_invalPendingCells */

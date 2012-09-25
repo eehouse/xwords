@@ -652,7 +652,6 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                  XP_Bool clearBack )
 {
     XP_UCHAR numbuf[3];
-    gint len; 
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect insetR = *rect;
     XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0;
@@ -691,7 +690,6 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
     
             if ( !valHidden ) {
                 XP_SNPRINTF( numbuf, VSIZE(numbuf), "%d", val );
-                len = XP_STRLEN( numbuf );
 
                 draw_string_at( dctx, NULL, numbuf, formatRect.height>>2,
                                 &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
