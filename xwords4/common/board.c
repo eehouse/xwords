@@ -165,7 +165,6 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 
         result->star_row = (XP_U16)(model_numRows(model) / 2);
 
-        /* could just pass in invalCell.... PENDING(eeh) */
         model_setBoardListener( model, boardCellChanged, result );
         model_setTrayListener( model, boardTilesChanged, result );
         model_setDictListener( model, dictChanged, result );
@@ -3465,8 +3464,6 @@ boardTurnChanged( void* p_board )
     setTimerIf( board );
 
     board->scoreBoardInvalid = XP_TRUE;
-
-    util_turnChanged( board->util );
 } /* boardTurnChanged */
 
 static void

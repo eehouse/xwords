@@ -1858,6 +1858,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 
     XP_ASSERT( server->nv.gameState != XWSTATE_GAMEOVER );
     callTurnChangeListener( server );
+    util_turnChanged( server->vol.util, server->nv.currentTurn );
 
     if ( robotMovePending(server) && !POSTPONEROBOTMOVE(server) ) {
         moreToDo = XP_TRUE;

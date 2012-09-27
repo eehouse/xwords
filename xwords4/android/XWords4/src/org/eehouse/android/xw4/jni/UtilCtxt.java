@@ -40,7 +40,7 @@ public interface UtilCtxt {
                           String[] curTiles, int nPicked );
 
     String askPassword( String name );
-    void turnChanged();
+    void turnChanged( int newTurn );
 
     boolean engineProgressCallback();
 

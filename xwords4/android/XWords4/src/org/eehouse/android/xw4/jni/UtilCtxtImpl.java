@@ -62,7 +62,7 @@ public class UtilCtxtImpl implements UtilCtxt {
         return null;
     }
 
-    public void turnChanged()
+    public void turnChanged( int newTurn )
     {
         subclassOverride( "turnChanged" );
     }

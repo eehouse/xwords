@@ -680,7 +680,7 @@ public class GameUtils {
             DBUtils.appendChatHistory( m_context, m_rowid, msg, false );
             m_gotChat = true;
         }
-        public void turnChanged()
+        public void turnChanged( int newTurn )
         {
             m_gotMsg = true;
         }

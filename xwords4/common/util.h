@@ -125,7 +125,7 @@ typedef struct UtilVtable {
     void (*m_util_yOffsetChange)(XW_UtilCtxt* uc, XP_U16 maxOffset,
                                  XP_U16 oldOffset, XP_U16 newOffset );
 #ifdef XWFEATURE_TURNCHANGENOTIFY
-    void (*m_util_turnChanged)(XW_UtilCtxt* uc);
+    void (*m_util_turnChanged)(XW_UtilCtxt* uc, XP_S16 newTurn);
 #endif
     void (*m_util_informMove)( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
                                XWStreamCtxt* words );
@@ -240,10 +240,10 @@ struct XW_UtilCtxt {
          (uc)->vtable->m_util_yOffsetChange((uc), (m), (o), (n) )
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
-# define util_turnChanged( uc ) \
-         (uc)->vtable->m_util_turnChanged((uc) )
+# define util_turnChanged( uc, t )                    \
+        (uc)->vtable->m_util_turnChanged( (uc), (t) )
 #else
-# define util_turnChanged( uc )
+# define util_turnChanged( uc, t )
 #endif
 
 #define util_informMove(uc,e,w) \

@@ -235,10 +235,10 @@ and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 maxOffset,
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
 static void
-and_util_turnChanged(XW_UtilCtxt* uc)
+and_util_turnChanged( XW_UtilCtxt* uc, XP_S16 turn )
 {
-    UTIL_CBK_HEADER( "turnChanged", "()V" );
-    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_HEADER( "turnChanged", "(I)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, turn );
     UTIL_CBK_TAIL();
 }
 #endif
@@ -598,7 +598,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(trayHiddenChange);
     SET_PROC(yOffsetChange);
 #ifdef XWFEATURE_TURNCHANGENOTIFY
-    SET_PROC(    turnChanged);
+    SET_PROC(turnChanged);
 #endif
     SET_PROC(informMove);
     SET_PROC(informUndo);

@@ -1306,15 +1306,18 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
-        public void turnChanged()
+        public void turnChanged( int newTurn )
         {
-            post( new Runnable() {
-                    public void run() {
-                        showNotAgainDlgThen( R.string.not_again_turnchanged, 
-                                             R.string.key_notagain_turnchanged );
-                    }
-                } );
-            m_jniThread.handle( JNIThread.JNICmd. CMD_ZOOM, -8 );
+            DbgUtils.logf( "turnChanged(%d)", newTurn );
+            if ( 0 <= newTurn ) {
+                post( new Runnable() {
+                        public void run() {
+                            showNotAgainDlgThen( R.string.not_again_turnchanged, 
+                                                 R.string.key_notagain_turnchanged );
+                        }
+                    } );
+                m_jniThread.handle( JNIThread.JNICmd. CMD_ZOOM, -8 );
+            }
         }
 
         @Override
