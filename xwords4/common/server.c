@@ -80,6 +80,7 @@ typedef struct ServerVolatiles {
 } ServerVolatiles;
 
 typedef struct ServerNonvolatiles {
+    XP_U32 lastMoveTime;    /* seconds of last turn change */
     XP_U8 nDevices;
     XW_State gameState;
     XW_State stateAfterShow;
@@ -276,6 +277,10 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     XP_U16 ii;
     XP_U16 version = stream_getVersion( stream );
 
+    if ( STREAM_VERS_DICTNAME <= version ) {
+        nv->lastMoveTime = stream_getU32( stream );
+    }
+
     if ( version < STREAM_VERS_SERVER_SAVES_TOSHOW ) {
         /* no longer used */
         (void)stream_getBits( stream, 3 ); /* was npassesinrow */
@@ -315,6 +320,8 @@ static void
 putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
     XP_U16 ii;
+
+    stream_putU32( stream, nv->lastMoveTime );
 
     /* number of players is upper limit on device count */
     stream_putBits( stream, NDEVICES_NBITS, nv->nDevices-1 );
@@ -629,7 +636,7 @@ server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg )
 #endif
 
 static void
-callTurnChangeListener( ServerCtxt* server )
+callTurnChangeListener( const ServerCtxt* server )
 {
     if ( server->vol.turnChangeListener != NULL ) {
         (*server->vol.turnChangeListener)( server->vol.turnChangeData );
@@ -2380,6 +2387,12 @@ server_getMissingPlayers( const ServerCtxt* server )
     return result;
 }
 
+XP_U32
+server_getLastMoveTime( const ServerCtxt* server )
+{
+    return server->nv.lastMoveTime;
+}
+
 static void
 doEndGame( ServerCtxt* server )
 {
@@ -2463,6 +2476,7 @@ setTurn( ServerCtxt* server, XP_S16 turn )
 {
     if ( server->nv.currentTurn != turn ) {
         server->nv.currentTurn = turn;
+        server->nv.lastMoveTime = util_getCurSeconds( server->vol.util );
         callTurnChangeListener( server );
     }
 }

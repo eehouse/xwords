@@ -31,7 +31,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_DICTBROWSE = "dictbrowse";
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 13;
+    private static final int DB_VERSION = 14;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -62,6 +62,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String RELAYID = "RELAYID";
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE";
+    public static final String LASTMOVE = "LASTMOVE";
+    
 
     public static final String DICTNAME = "DICTNAME";
     public static final String MD5SUM = "MD5SUM";
@@ -118,6 +120,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + CHAT_HISTORY   + " TEXT,"
                     + GAMEID     + " INTEGER,"
                     + REMOTEDEVS + " TEXT,"
+                    + LASTMOVE   + " INTEGER DEFAULT 0,"
                     // HASMSGS: sqlite doesn't have bool; use 0 and 1
                     + HASMSGS    + " INTEGER DEFAULT 0,"
                     + CONTRACTED + " INTEGER DEFAULT 0,"
@@ -125,8 +128,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     + CREATE_TIME + " INTEGER,"
                     + LASTPLAY_TIME + " INTEGER,"
 
-                    + SNAPSHOT   + " BLOB"
-                    + ");" );
+                    + SNAPSHOT   + " BLOB);"
+                    );
     }
 
     private void onCreateObits( SQLiteDatabase db ) 
@@ -193,6 +196,8 @@ public class DBHelper extends SQLiteOpenHelper {
             addColumn( db, REMOTEDEVS, "TEXT" );
         case 12:
             onCreateDictsDB( db );
+        case 13:
+            addColumn( db, LASTMOVE, "INTEGER" );
             // nothing yet
             break;
         default:
@@ -204,7 +209,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void addColumn( SQLiteDatabase db, String colName, String colType )
+    private void addColumn( SQLiteDatabase db, String colName, String colType )
     {
         String cmd = String.format( "ALTER TABLE %s ADD COLUMN %s %s;",
                                     TABLE_NAME_SUM, colName, colType );

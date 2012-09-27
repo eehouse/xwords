@@ -1118,6 +1118,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     setBool( env, jsummary, "gameOver", gameOver );
     setInt( env, jsummary, "turn", 
             server_getCurrentTurn( state->game.server ) );
+    setInt( env, jsummary, "lastMoveTime", 
+            server_getLastMoveTime(state->game.server) );
     
     if ( !!state->game.comms ) {
         CommsAddrRec addr;

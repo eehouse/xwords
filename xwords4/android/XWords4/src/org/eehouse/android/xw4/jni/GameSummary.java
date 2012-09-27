@@ -40,6 +40,7 @@ public class GameSummary {
     public static final int MSG_FLAGS_GAMEOVER = 4;
     public static final int MSG_FLAGS_ALL = 7;
 
+    public int lastMoveTime;
     public int nMoves;
     public int turn;
     public int nPlayers;

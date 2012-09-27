@@ -133,6 +133,7 @@ public class DBUtils {
                                  DBHelper.DICTLANG, DBHelper.GAMEID,
                                  DBHelper.SCORES, DBHelper.HASMSGS,
                                  DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
+                                 DBHelper.LASTMOVE
             };
             String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -176,6 +177,8 @@ public class DBUtils {
                 int tmp = cursor.getInt(cursor.
                                         getColumnIndex(DBHelper.GAME_OVER));
                 summary.gameOver = tmp != 0;
+                summary.lastMoveTime = 
+                    cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
 
                 String scoresStr = 
                     cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
@@ -275,6 +278,8 @@ public class DBUtils {
                 values.put( DBHelper.DICTLANG, summary.dictLang );
                 values.put( DBHelper.GAMEID, summary.gameID );
                 values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
+                values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
+                
                 values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
                 values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
                 if ( null != inviteID ) {
