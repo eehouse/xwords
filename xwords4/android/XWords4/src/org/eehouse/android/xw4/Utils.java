@@ -43,6 +43,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 import junit.framework.Assert;
@@ -359,6 +360,13 @@ public class Utils {
             }
             result = new String(chars);
         }
+        return result;
+    }
+
+    public static long getCurSeconds()
+    {
+        long millis = new Date().getTime();
+        int result = (int)(millis / 1000);
         return result;
     }
 

@@ -484,6 +484,19 @@ and_empty_stream( MPFORMAL AndGlobals* globals )
     return stream;
 }
 
+XP_U32
+getCurSeconds( JNIEnv* env )
+{
+    jclass clazz = (*env)->FindClass( env, PKG_PATH("Utils") );
+    XP_ASSERT( !!clazz );
+    jmethodID mid = (*env)->GetStaticMethodID( env, clazz,
+                                               "getCurSeconds", "()J" );
+    jlong result = (*env)->CallStaticLongMethod( env, clazz, mid );
+
+    deleteLocalRef( env, clazz );
+    return result;
+}
+
 void deleteLocalRef( JNIEnv* env, jobject jobj )
 {
     if ( NULL != jobj ) {

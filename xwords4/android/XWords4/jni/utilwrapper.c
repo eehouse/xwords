@@ -369,9 +369,12 @@ and_util_altKeyDown( XW_UtilCtxt* uc )
 XP_U32
 and_util_getCurSeconds( XW_UtilCtxt* uc )
 {
-    struct timeval tv;
-    gettimeofday( &tv, NULL );
-    return tv.tv_sec;
+    AndUtil* andutil = (AndUtil*)uc;
+    XP_U32 curSeconds = getCurSeconds( *andutil->env );
+    /* struct timeval tv; */
+    /* gettimeofday( &tv, NULL ); */
+    /* XP_LOGF( "%s: %d vs %d", __func__, (int)tv.tv_sec, (int)curSeconds ); */
+    return curSeconds;
 }
 
 

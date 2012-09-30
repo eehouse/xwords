@@ -72,6 +72,8 @@ void intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
 jobject intToJEnum( JNIEnv* env, int val, const char* enumSig );
 jint jEnumToInt( JNIEnv* env, jobject jenum );
 
+XP_U32 getCurSeconds( JNIEnv* env );
+
 void deleteLocalRef( JNIEnv* env, jobject jobj );
 void deleteLocalRefs( JNIEnv* env, jobject jobj, ... );
 # define DELETE_NO_REF ((jobject)-1)    /* terminates above varargs list */
