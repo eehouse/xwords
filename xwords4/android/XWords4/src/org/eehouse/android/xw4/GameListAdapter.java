@@ -60,7 +60,7 @@ public class GameListAdapter extends XWListAdapter {
     private class ViewInfo implements View.OnClickListener {
         private View m_view;
         private View m_hideable;
-        private View m_name;
+        private ExpiringTextView m_name;
         private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
         private long m_rowid;
         private ImageButton m_expandButton;
@@ -78,7 +78,7 @@ public class GameListAdapter extends XWListAdapter {
             m_haveTurn = haveTurn;
             m_haveTurnLocal = haveTurnLocal;
             m_hideable = (LinearLayout)view.findViewById( R.id.hideable );
-            m_name = (TextView)m_view.findViewById( R.id.game_name );
+            m_name = (ExpiringTextView)m_view.findViewById( R.id.game_name );
             m_expandButton = (ImageButton)view.findViewById( R.id.expander );
             m_expandButton.setOnClickListener( this );
             showHide();
@@ -92,13 +92,7 @@ public class GameListAdapter extends XWListAdapter {
             m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
 
             m_name.setBackgroundColor( android.R.color.transparent );
-            if ( !m_expanded ) {
-                if ( m_haveTurnLocal ) {
-                    m_name.setBackgroundColor( Utils.TURN_COLOR );
-                } else if ( m_haveTurn ) {
-                    m_name.setBackgroundResource( R.drawable.green_border );
-                }
-            }
+            m_name.setPct( 75, m_haveTurn && !m_expanded, m_haveTurnLocal );
         }
 
         public void onClick( View view ) {
