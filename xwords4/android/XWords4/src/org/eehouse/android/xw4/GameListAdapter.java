@@ -196,8 +196,8 @@ public class GameListAdapter extends XWListAdapter {
                 boolean haveTurnLocal = false;
                 boolean[] isLocal = new boolean[1];
                 for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
-                    View tmp = m_factory.inflate( R.layout.player_list_elem, 
-                                                  null );
+                    ExpiringLinearLayout tmp = (ExpiringLinearLayout)
+                        m_factory.inflate( R.layout.player_list_elem, null );
                     view = (TextView)tmp.findViewById( R.id.item_name );
                     view.setText( summary.summarizePlayer( ii ) );
                     view = (TextView)tmp.findViewById( R.id.item_score );
@@ -206,11 +206,9 @@ public class GameListAdapter extends XWListAdapter {
                         haveTurn = true;
                         if ( isLocal[0] ) {
                             haveTurnLocal = true;
-                            tmp.setBackgroundColor( Utils.TURN_COLOR );
-                        } else {
-                            tmp.setBackgroundResource( R.drawable.green_border );
                         }
                     }
+                    tmp.setPct( 20 * (ii + 1), haveTurn, haveTurnLocal );
                     list.addView( tmp, ii );
                 }
 
