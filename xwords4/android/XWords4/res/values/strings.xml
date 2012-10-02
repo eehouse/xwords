@@ -2111,6 +2111,4 @@
     <!--  -->
     <string name="new_app_avail">Tap to download</string>
 
-    <!-- Used in GameListAdapter to show when turn started -->
-    <string name="turn_start">Current turn began: %s</string>
 </resources>

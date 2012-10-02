@@ -19,23 +19,23 @@
  */
 package org.eehouse.android.xw4;
 
+import android.widget.ListAdapter;
 import android.content.Context;
-import android.database.DataSetObserver;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import android.database.DataSetObserver;
+import android.view.LayoutInflater;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.TextView;
 import java.io.FileInputStream;
-import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;       // class is not synchronized
 import java.util.Random;
+import java.text.DateFormat;
 
 import junit.framework.Assert;
 
@@ -232,16 +232,6 @@ public class GameListAdapter extends XWListAdapter {
                     view.setText( roleSummary );
                 } else {
                     view.setVisibility( View.GONE );
-                }
-
-                view = (TextView)layout.findViewById( R.id.timeleft );
-                long startTime = summary.lastMoveTime;
-                if ( 0 == startTime ) {
-                    view.setVisibility( View.GONE );
-                } else {
-                    String time = m_df.format( new Date( startTime * 1000 ) );
-                    view.setText( m_context.getString( R.string.turn_start,
-                                                       time ) );
                 }
 
                 boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
