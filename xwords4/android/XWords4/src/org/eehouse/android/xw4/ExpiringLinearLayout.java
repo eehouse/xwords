@@ -21,6 +21,7 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
@@ -33,10 +34,13 @@ public class ExpiringLinearLayout extends LinearLayout {
         m_context = context;
     }
 
-    public void setPct( boolean haveTurn, boolean haveTurnLocal, long startSecs )
+    public void setPct( Handler handler, boolean haveTurn, 
+                        boolean haveTurnLocal, long startSecs )
     {
-        m_delegate = new ExpiringDelegate( m_context, this, haveTurn, 
-                                           haveTurnLocal, startSecs );
+        if ( null == m_delegate ) {
+            m_delegate = new ExpiringDelegate( m_context, this, handler );
+        }
+        m_delegate.configure( haveTurn, haveTurnLocal, startSecs );
     }
 
     @Override

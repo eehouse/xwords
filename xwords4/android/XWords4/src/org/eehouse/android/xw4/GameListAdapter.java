@@ -19,23 +19,24 @@
  */
 package org.eehouse.android.xw4;
 
-import android.widget.ListAdapter;
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.database.DataSetObserver;
-import android.view.LayoutInflater;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.TextView;
 import java.io.FileInputStream;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;       // class is not synchronized
 import java.util.Random;
-import java.text.DateFormat;
 
 import junit.framework.Assert;
 
@@ -48,6 +49,7 @@ public class GameListAdapter extends XWListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
     private int m_fieldID;
+    private Handler m_handler;
     private static final boolean s_isFire;
     private static Random s_random;
     static {
@@ -96,8 +98,8 @@ public class GameListAdapter extends XWListAdapter {
             m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
 
             m_name.setBackgroundColor( android.R.color.transparent );
-            m_name.setPct( m_haveTurn && !m_expanded, m_haveTurnLocal, 
-                           m_lastMoveTime );
+            m_name.setPct( m_handler, m_haveTurn && !m_expanded, 
+                           m_haveTurnLocal, m_lastMoveTime );
         }
 
         public void onClick( View view ) {
@@ -191,8 +193,8 @@ public class GameListAdapter extends XWListAdapter {
 
                 LinearLayout list =
                     (LinearLayout)layout.findViewById( R.id.player_list );
-                boolean haveTurn = false;
-                boolean haveTurnLocal = false;
+                boolean haveATurn = false;
+                boolean haveALocalTurn = false;
                 boolean[] isLocal = new boolean[1];
                 for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
                     ExpiringLinearLayout tmp = (ExpiringLinearLayout)
@@ -201,13 +203,15 @@ public class GameListAdapter extends XWListAdapter {
                     view.setText( summary.summarizePlayer( ii ) );
                     view = (TextView)tmp.findViewById( R.id.item_score );
                     view.setText( String.format( "  %d", summary.scores[ii] ) );
-                    if ( summary.isNextToPlay( ii, isLocal ) ) {
-                        haveTurn = true;
+                    boolean thisHasTurn = summary.isNextToPlay( ii, isLocal );
+                    if ( thisHasTurn ) {
+                        haveATurn = true;
                         if ( isLocal[0] ) {
-                            haveTurnLocal = true;
+                            haveALocalTurn = true;
                         }
                     }
-                    tmp.setPct( haveTurn, haveTurnLocal, summary.lastMoveTime );
+                    tmp.setPct( m_handler, thisHasTurn, isLocal[0], 
+                                summary.lastMoveTime );
                     list.addView( tmp, ii );
                 }
 
@@ -243,8 +247,8 @@ public class GameListAdapter extends XWListAdapter {
 
                 boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
                 ViewInfo vi = new ViewInfo( layout, m_rowid, expanded, 
-                                            summary.lastMoveTime, haveTurn, 
-                                            haveTurnLocal );
+                                            summary.lastMoveTime, haveATurn, 
+                                            haveALocalTurn );
 
                 synchronized( m_viewsCache ) {
                     m_viewsCache.put( m_rowid, vi );
@@ -263,9 +267,10 @@ public class GameListAdapter extends XWListAdapter {
         }
     } // class LoadItemTask
 
-    public GameListAdapter( Context context, LoadItemCB cb ) {
+    public GameListAdapter( Context context, Handler handler, LoadItemCB cb ) {
         super( DBUtils.gamesList(context).length );
         m_context = context;
+        m_handler = handler;
         m_cb = cb;
         m_factory = LayoutInflater.from( context );
         m_df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 

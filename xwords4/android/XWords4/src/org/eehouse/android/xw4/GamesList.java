@@ -267,7 +267,7 @@ public class GamesList extends XWListActivity
                 }
             });
 
-        m_adapter = new GameListAdapter( this, this );
+        m_adapter = new GameListAdapter( this, new Handler(), this );
         setListAdapter( m_adapter );
 
         NetUtils.informOfDeaths( this );

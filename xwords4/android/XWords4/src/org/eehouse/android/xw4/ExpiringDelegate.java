@@ -27,97 +27,105 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.view.View;
 import junit.framework.Assert;
 
 public class ExpiringDelegate {
-    // private static final long INTERVAL_SECS = 3 * 24 * 60 * 60;
-    private static final long INTERVAL_SECS = 60 * 60;
 
-    private Drawable m_back = null;
+    private static final long INTERVAL_SECS = 3 * 24 * 60 * 60;
+    // private static final long INTERVAL_SECS = 60 * 10;   // for testing
+
     private Context m_context;
     private View m_view;
+    private boolean m_active = false;
     private int m_pct = -1;
+    private int m_backPct = -1;
+    private Drawable m_back = null;
     private boolean m_doFrame = false;
-    // these could probably be static as drawing's all in same thread.
-    private Rect m_rect;
-    private Paint m_paint;
-    private float[] m_points;
+    private Handler m_handler;
+    private boolean m_haveTurnLocal = false;
     private long m_startSecs;
+    private Runnable m_runnable = null;
+    // these can be static as drawing's all in same thread.
+    private static Rect s_rect;
+    private static Paint s_paint;
+    private static float[] s_points;
 
-    public ExpiringDelegate( Context context, View view, boolean haveTurn, 
-                             boolean haveTurnLocal, long startSecs )
+    static {
+        s_rect = new Rect();
+        s_paint = new Paint(); 
+        s_paint.setStyle(Paint.Style.STROKE);  
+        s_paint.setStrokeWidth( 1 );
+        s_points = new float[4*6];
+    }
+
+    public ExpiringDelegate( Context context, View view, Handler handler )
     {
         m_context = context;
         m_view = view;
-        m_startSecs = startSecs;
+        m_handler = handler;
+    }
 
-        figurePct();
-
-        if ( !haveTurn ) {
-            // nothing to do
-        } else if ( haveTurnLocal ) {
-            setBackground();
-        } else {
-            m_view.setWillNotDraw( false );
-            m_doFrame = true;   // required if setWillNotDraw() used?
+    public void configure( boolean haveTurn, boolean haveTurnLocal, 
+                           long startSecs )
+    {
+        m_active = haveTurn;
+        m_doFrame = !haveTurnLocal;
+        if ( haveTurn ) {
+            m_startSecs = startSecs;
+            m_haveTurnLocal = haveTurnLocal;
+            figurePct();
+            if ( haveTurnLocal ) {
+                setBackground();
+            } else {
+                m_view.setWillNotDraw( false );
+            }
         }
     }
 
     public void onDraw( Canvas canvas ) 
     {
-        if ( m_doFrame ) {
-            initDrawingIf();
+        if ( m_active && m_doFrame ) {
             Assert.assertTrue( 0 <= m_pct && m_pct <= 100 );
-            m_view.getDrawingRect( m_rect );
-            int width = m_rect.width();
+            m_view.getDrawingRect( s_rect );
+            int width = s_rect.width();
             int redWidth = width * m_pct / 100;
             Assert.assertTrue( redWidth <= width );
 
             // left edge
-            addPoints( 0, m_rect.left, m_rect.top,
-                       m_rect.left, m_rect.bottom - 1 );
+            addPoints( 0, s_rect.left, s_rect.top,
+                       s_rect.left, s_rect.bottom - 1 );
 
             // left horizontals
-            addPoints( 1, m_rect.left, m_rect.top, 
-                       m_rect.left + redWidth, m_rect.top );
-            addPoints( 2, m_rect.left, m_rect.bottom - 1,
-                       m_rect.left + redWidth,
-                       m_rect.bottom - 1 );
+            addPoints( 1, s_rect.left, s_rect.top, 
+                       s_rect.left + redWidth, s_rect.top );
+            addPoints( 2, s_rect.left, s_rect.bottom - 1,
+                       s_rect.left + redWidth,
+                       s_rect.bottom - 1 );
 
             // right horizontals
-            addPoints( 3, m_rect.left + redWidth, m_rect.top, 
-                       m_rect.right - 1, m_rect.top );
-            addPoints( 4, m_rect.left + redWidth, m_rect.bottom - 1,
-                       m_rect.right - 1, m_rect.bottom - 1 );
+            addPoints( 3, s_rect.left + redWidth, s_rect.top, 
+                       s_rect.right - 1, s_rect.top );
+            addPoints( 4, s_rect.left + redWidth, s_rect.bottom - 1,
+                       s_rect.right - 1, s_rect.bottom - 1 );
 
             // right edge
-            addPoints( 5, m_rect.right - 1, m_rect.top,
-                       m_rect.right - 1, m_rect.bottom );
+            addPoints( 5, s_rect.right - 1, s_rect.top,
+                       s_rect.right - 1, s_rect.bottom );
 
             int offset = 0;
-            int count = m_points.length;
+            int count = s_points.length;
             if ( 0 < redWidth ) {
-                m_paint.setColor( Color.RED );
-                canvas.drawLines( m_points, offset, count / 2, m_paint );
+                s_paint.setColor( Color.RED );
+                canvas.drawLines( s_points, offset, count / 2, s_paint );
                 count /= 2;
                 offset += count;
             }
             if ( redWidth < width ) {
-                m_paint.setColor( Color.GREEN );
+                s_paint.setColor( Color.GREEN );
             }
-            canvas.drawLines( m_points, offset, count, m_paint );
-        }
-    }
-
-    private void initDrawingIf()
-    {
-        if ( null == m_rect ) {
-            m_rect = new Rect();
-            m_paint = new Paint(); 
-            m_paint.setStyle(Paint.Style.STROKE);  
-            m_paint.setStrokeWidth( 1 );
-            m_points = new float[4*6];
+            canvas.drawLines( s_points, offset, count, s_paint );
         }
     }
 
@@ -125,37 +133,38 @@ public class ExpiringDelegate {
                             int right, int bottom )
     {
         offset *= 4;
-        m_points[offset + 0] = left;
-        m_points[offset + 1] = top;
-        m_points[offset + 2] = right;
-        m_points[offset + 3] = bottom;
+        s_points[offset + 0] = left;
+        s_points[offset + 1] = top;
+        s_points[offset + 2] = right;
+        s_points[offset + 3] = bottom;
     }
 
     private void setBackground()
     {
-        if ( null == m_back && -1 != m_pct ) {
-            mkTurnIndicator();
+        Assert.assertTrue( m_active );
+        Drawable back;
+        if ( -1 != m_pct && m_backPct != m_pct ) {
+            m_back = mkBackground( m_pct );
+            m_backPct = m_pct;
         }
         if ( null != m_back ) {
             m_view.setBackgroundDrawable( m_back );
         }
     }
 
-    private void mkTurnIndicator()
+    private Drawable mkBackground( int pct )
     {
-        Assert.assertTrue( 0 <= m_pct && m_pct <= 100 );
-        if ( null == m_back ) {
-            Bitmap bm = Bitmap.createBitmap( 100, 1, Bitmap.Config.ARGB_8888 );
-            Canvas canvas = new Canvas(bm);
+        Assert.assertTrue( 0 <= pct && pct <= 100 );
+        Bitmap bm = Bitmap.createBitmap( 100, 1, Bitmap.Config.ARGB_8888 );
+        Canvas canvas = new Canvas(bm);
 
-            Paint paint = new Paint(); 
-            paint.setStyle(Paint.Style.FILL);  
-            paint.setColor( Color.RED ); 
-            canvas.drawRect( 0, 0, m_pct, 1, paint );
-            paint.setColor( Utils.TURN_COLOR ); 
-            canvas.drawRect( m_pct, 0, 100, 1, paint );
-            m_back = new BitmapDrawable( m_context.getResources(), bm );
-        }
+        Paint paint = new Paint(); 
+        paint.setStyle(Paint.Style.FILL);  
+        paint.setColor( Color.RED ); 
+        canvas.drawRect( 0, 0, pct, 1, paint );
+        paint.setColor( Utils.TURN_COLOR ); 
+        canvas.drawRect( pct, 0, 100, 1, paint );
+        return new BitmapDrawable( m_context.getResources(), bm );
     }
 
     private void figurePct()
@@ -173,8 +182,29 @@ public class ExpiringDelegate {
                 long lastStart = m_startSecs + (onePct * m_pct);
                 Assert.assertTrue( lastStart <= now );
                 long nextStartIn = lastStart + onePct - now;
-                DbgUtils.logf( "pct change %d seconds from now", nextStartIn );
+                // DbgUtils.logf( "pct change %d seconds from now", nextStartIn );
+
+                m_handler.postDelayed( mkRunnable(), 1000 * nextStartIn );
             }
         }
+    }
+
+    private Runnable mkRunnable()
+    {
+        if ( null == m_runnable ) {
+            m_runnable = new Runnable() {
+                    public void run() {
+                        if ( m_active ) {
+                            figurePct();
+                            if ( m_haveTurnLocal ) {
+                                m_back = null;
+                                setBackground();
+                            }
+                            m_view.invalidate();
+                        }
+                    }
+                };
+        }
+        return m_runnable;
     }
 }
