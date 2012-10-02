@@ -31,6 +31,9 @@ import android.view.View;
 import junit.framework.Assert;
 
 public class ExpiringDelegate {
+    // private static final long INTERVAL_SECS = 3 * 24 * 60 * 60;
+    private static final long INTERVAL_SECS = 60 * 60;
+
     private Drawable m_back = null;
     private Context m_context;
     private View m_view;
@@ -40,13 +43,17 @@ public class ExpiringDelegate {
     private Rect m_rect;
     private Paint m_paint;
     private float[] m_points;
+    private long m_startSecs;
 
-    public ExpiringDelegate( Context context, View view, int pct, 
-                             boolean haveTurn, boolean haveTurnLocal )
+    public ExpiringDelegate( Context context, View view, boolean haveTurn, 
+                             boolean haveTurnLocal, long startSecs )
     {
         m_context = context;
         m_view = view;
-        m_pct = pct;
+        m_startSecs = startSecs;
+
+        figurePct();
+
         if ( !haveTurn ) {
             // nothing to do
         } else if ( haveTurnLocal ) {
@@ -127,38 +134,47 @@ public class ExpiringDelegate {
     private void setBackground()
     {
         if ( null == m_back && -1 != m_pct ) {
-            mkTurnIndicator( m_pct );
+            mkTurnIndicator();
         }
         if ( null != m_back ) {
             m_view.setBackgroundDrawable( m_back );
         }
     }
 
-    private void mkTurnIndicator( int pctGone )
+    private void mkTurnIndicator()
     {
-        DbgUtils.logf( "mkTurnIndicator(%d)", pctGone );
-        Assert.assertTrue( 0 <= pctGone && pctGone <= 100 );
-        if ( null == m_back || m_pct != pctGone ) {
-            m_pct = pctGone;
-            // long now = System.currentTimeMillis() / 1000;
-            // long allowed = 60*60;   // one hour
-            // allowed *= 24 * 3;   // three days
-            // long used = now - lastTurn;
-            // if ( used < allowed ) {
-            //     long asLong = (100 * used) / allowed;
-            //     Assert.assertTrue( asLong <= 100 && asLong >= 0 );
-            //     pctGone = (int)asLong;
-            // }
-            Bitmap bm = Bitmap.createBitmap( 100, 2, Bitmap.Config.ARGB_8888 );
+        Assert.assertTrue( 0 <= m_pct && m_pct <= 100 );
+        if ( null == m_back ) {
+            Bitmap bm = Bitmap.createBitmap( 100, 1, Bitmap.Config.ARGB_8888 );
             Canvas canvas = new Canvas(bm);
 
             Paint paint = new Paint(); 
             paint.setStyle(Paint.Style.FILL);  
             paint.setColor( Color.RED ); 
-            canvas.drawRect( 0, 0, pctGone, 2, paint );
+            canvas.drawRect( 0, 0, m_pct, 1, paint );
             paint.setColor( Utils.TURN_COLOR ); 
-            canvas.drawRect( pctGone, 0, 100, 2, paint );
+            canvas.drawRect( m_pct, 0, 100, 1, paint );
             m_back = new BitmapDrawable( m_context.getResources(), bm );
+        }
+    }
+
+    private void figurePct()
+    {
+        if ( 0 == m_startSecs ) {
+            m_pct = 0;
+        } else {
+            long now = Utils.getCurSeconds();
+            long passed = now - m_startSecs;
+            m_pct = (int)((100 * passed) / INTERVAL_SECS);
+            if ( m_pct > 100 ) {
+                m_pct = 100;
+            } else {
+                long onePct = INTERVAL_SECS / 100;
+                long lastStart = m_startSecs + (onePct * m_pct);
+                Assert.assertTrue( lastStart <= now );
+                long nextStartIn = lastStart + onePct - now;
+                DbgUtils.logf( "pct change %d seconds from now", nextStartIn );
+            }
         }
     }
 }

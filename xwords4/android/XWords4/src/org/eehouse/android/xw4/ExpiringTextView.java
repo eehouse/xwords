@@ -34,10 +34,10 @@ class ExpiringTextView extends TextView {
         m_context = context;
     }
 
-    public void setPct( int pct, boolean haveTurn, boolean haveTurnLocal )
+    public void setPct( boolean haveTurn, boolean haveTurnLocal, long startSecs )
     {
-        m_delegate = new ExpiringDelegate( m_context, this, pct, haveTurn, 
-                                           haveTurnLocal );
+        m_delegate = new ExpiringDelegate( m_context, this, haveTurn, 
+                                           haveTurnLocal, startSecs );
     }
 
     @Override

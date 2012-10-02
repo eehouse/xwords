@@ -63,18 +63,22 @@ public class GameListAdapter extends XWListAdapter {
         private ExpiringTextView m_name;
         private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
         private long m_rowid;
+        private long m_lastMoveTime;
         private ImageButton m_expandButton;
 
         public ViewInfo( View view, long rowid ) 
         {
             m_view = view;
             m_rowid = rowid; 
+            m_lastMoveTime = 0;
         }
 
         public ViewInfo( View view, long rowid, boolean expanded, 
-                         boolean haveTurn, boolean haveTurnLocal ) {
+                         long lastMoveTime, boolean haveTurn, 
+                         boolean haveTurnLocal ) {
             this( view, rowid );
             m_expanded = expanded;
+            m_lastMoveTime = lastMoveTime;
             m_haveTurn = haveTurn;
             m_haveTurnLocal = haveTurnLocal;
             m_hideable = (LinearLayout)view.findViewById( R.id.hideable );
@@ -92,7 +96,8 @@ public class GameListAdapter extends XWListAdapter {
             m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
 
             m_name.setBackgroundColor( android.R.color.transparent );
-            m_name.setPct( 75, m_haveTurn && !m_expanded, m_haveTurnLocal );
+            m_name.setPct( m_haveTurn && !m_expanded, m_haveTurnLocal, 
+                           m_lastMoveTime );
         }
 
         public void onClick( View view ) {
@@ -202,14 +207,16 @@ public class GameListAdapter extends XWListAdapter {
                             haveTurnLocal = true;
                         }
                     }
-                    tmp.setPct( 20 * (ii + 1), haveTurn, haveTurnLocal );
+                    tmp.setPct( haveTurn, haveTurnLocal, summary.lastMoveTime );
                     list.addView( tmp, ii );
                 }
 
                 view = (TextView)layout.findViewById( R.id.state );
                 view.setText( state );
                 view = (TextView)layout.findViewById( R.id.modtime );
-                view.setText( m_df.format( new Date( summary.modtime ) ) );
+                long lastMoveTime = summary.lastMoveTime;
+                lastMoveTime *= 1000;
+                view.setText( m_df.format( new Date( lastMoveTime ) ) );
 
                 int iconID;
                 ImageView marker =
@@ -235,8 +242,9 @@ public class GameListAdapter extends XWListAdapter {
                 }
 
                 boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
-                ViewInfo vi = new ViewInfo( layout, m_rowid, 
-                                            expanded, haveTurn, haveTurnLocal );
+                ViewInfo vi = new ViewInfo( layout, m_rowid, expanded, 
+                                            summary.lastMoveTime, haveTurn, 
+                                            haveTurnLocal );
 
                 synchronized( m_viewsCache ) {
                     m_viewsCache.put( m_rowid, vi );
