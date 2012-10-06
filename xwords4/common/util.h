@@ -136,8 +136,9 @@ typedef struct UtilVtable {
                                   XWPhoniesChoice phoniesAction );
 
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc );
-
+#ifdef XWFEATURE_HILITECELL
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row );
+#endif
 
     XP_Bool (*m_util_engineProgressCallback)( XW_UtilCtxt* uc );
 
@@ -255,8 +256,10 @@ struct XW_UtilCtxt {
 #define util_notifyGameOver( uc ) \
          (uc)->vtable->m_util_notifyGameOver((uc))
 
-#define util_hiliteCell( uc, c, r ) \
+#ifdef XWFEATURE_HILITECELL
+# define util_hiliteCell( uc, c, r ) \
          (uc)->vtable->m_util_hiliteCell((uc), (c), (r))
+#endif
 
 #define util_engineProgressCallback( uc ) \
          (uc)->vtable->m_util_engineProgressCallback((uc))

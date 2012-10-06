@@ -1479,6 +1479,7 @@ gtk_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
 /* define this to prevent user events during debugging from stopping the engine */
 /* #define DONT_ABORT_ENGINE */
 
+#ifdef XWFEATURE_HILITECELL
 static XP_Bool
 gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 {
@@ -1502,6 +1503,7 @@ gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
     return !pending;
 #endif
 } /* gtk_util_hiliteCell */
+#endif
 
 static XP_Bool
 gtk_util_altKeyDown( XW_UtilCtxt* uc )
@@ -2002,7 +2004,9 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_informUndo = gtk_util_informUndo;
     util->vtable->m_util_notifyGameOver = gtk_util_notifyGameOver;
     util->vtable->m_util_informNetDict = gtk_util_informNetDict;
+#ifdef XWFEATURE_HILITECELL
     util->vtable->m_util_hiliteCell = gtk_util_hiliteCell;
+#endif
     util->vtable->m_util_altKeyDown = gtk_util_altKeyDown;
     util->vtable->m_util_engineProgressCallback = 
         gtk_util_engineProgressCallback;

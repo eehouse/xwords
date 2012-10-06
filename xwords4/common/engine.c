@@ -794,6 +794,7 @@ isAnchorSquare( EngineCtxt* engine, XP_U16 col, XP_U16 row )
     return XP_FALSE;
 } /* isAnchorSquare */
 
+#ifdef XWFEATURE_HILITECELL
 static void
 hiliteForAnchor( EngineCtxt* engine, XP_U16 col, XP_U16 row )
 {
@@ -807,6 +808,9 @@ hiliteForAnchor( EngineCtxt* engine, XP_U16 col, XP_U16 row )
         engine->returnNOW = XP_TRUE;
     }
 } /* hiliteForAnchor */
+#else
+# define hiliteForAnchor( engine, col, row )
+#endif
 
 static void
 findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor, 

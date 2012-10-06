@@ -291,13 +291,14 @@ and_util_notifyGameOver( XW_UtilCtxt* uc )
     UTIL_CBK_TAIL();
 }
 
+#ifdef XWFEATURE_HILITECELL
 static XP_Bool
 and_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 {
     /* don't log; this is getting called a lot */
     return XP_TRUE;             /* means keep going */
 }
-
+#endif
 
 static XP_Bool
 and_util_engineProgressCallback( XW_UtilCtxt* uc )
@@ -607,7 +608,9 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(informUndo);
     SET_PROC(informNetDict);
     SET_PROC(notifyGameOver);
+#ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);
+#endif
     SET_PROC(engineProgressCallback);
     SET_PROC(setTimer);
     SET_PROC(clearTimer);

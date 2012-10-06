@@ -404,6 +404,7 @@ curses_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
     XP_LOGF( "%s: %s => %s (cksum: %s)", __func__, oldName, newName, newSum );
 }
 
+#ifdef XWFEATURE_HILITECELL
 static XP_Bool
 curses_util_hiliteCell( XW_UtilCtxt* uc, 
                         XP_U16 XP_UNUSED(col), XP_U16 XP_UNUSED(row) )
@@ -414,6 +415,7 @@ curses_util_hiliteCell( XW_UtilCtxt* uc,
     }
     return XP_TRUE;
 } /* curses_util_hiliteCell */
+#endif
 
 static XP_Bool
 curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
@@ -1527,7 +1529,9 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_informUndo = curses_util_informUndo;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
     util->vtable->m_util_informNetDict = curses_util_informNetDict;
+#ifdef XWFEATURE_HILITECELL
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
+#endif
     util->vtable->m_util_engineProgressCallback = 
         curses_util_engineProgressCallback;
 
