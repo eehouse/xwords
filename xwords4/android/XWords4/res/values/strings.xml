@@ -693,6 +693,7 @@
          is not yet over, gives you a choice whether to end it now,
          and if you decline does nothing. -->
     <string name="board_menu_game_final">Final scores</string>
+    <string name="board_menu_game_resign">Resign</string>
 
     <!-- Meaningful only for networked games, this menu causes all
          messages that have not yet been acknowledged by a remote
@@ -1592,7 +1593,7 @@
     <!-- text of confirmation dialog shown when user chooses the menu
          item with text board_menu_game_final and the game is not over
          -->
-    <string name="ids_endnow">Are you sure you want to end the game now?</string>
+    <string name="ids_endnow">Are you sure you want to resign?</string>
 
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
@@ -2110,5 +2111,9 @@
     <string name="new_app_availf">New version of %s</string>
     <!--  -->
     <string name="new_app_avail">Tap to download</string>
+    <!-- Used in formatting final scores display -->
+    <string name="str_resigned">Resigned</string>
+    <!-- Used in formatting final scores display -->
+    <string name="str_winner">Winner</string>
 
 </resources>

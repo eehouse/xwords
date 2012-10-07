@@ -85,6 +85,7 @@ typedef struct ServerNonvolatiles {
     XW_State gameState;
     XW_State stateAfterShow;
     XP_S8 currentTurn; /* invalid when game is over */
+    XP_S8 quitter;     /* -1 unless somebody resigned */
     XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
     XP_Bool sortNewTiles;
@@ -134,8 +135,8 @@ static void assignTilesToAll( ServerCtxt* server );
 static void resetEngines( ServerCtxt* server );
 static void nextTurn( ServerCtxt* server, XP_S16 nxtTurn );
 
-static void doEndGame( ServerCtxt* server );
-static void endGameInternal( ServerCtxt* server, GameEndReason why );
+static void doEndGame( ServerCtxt* server, XP_S16 quitter );
+static void endGameInternal( ServerCtxt* server, GameEndReason why, XP_S16 quitter );
 static void badWordMoveUndoAndTellUser( ServerCtxt* server, 
                                         BadWordInfo* bwi );
 static XP_Bool tileCountsOk( const ServerCtxt* server );
@@ -249,6 +250,7 @@ initServer( ServerCtxt* server )
 #ifdef STREAM_VERS_BIGBOARD
     server->nv.streamVersion = STREAM_SAVE_PREVWORDS; /* default to old */
 #endif
+    server->nv.quitter = -1;
 } /* initServer */
 
 ServerCtxt* 
@@ -298,6 +300,9 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     }
 
     nv->currentTurn = (XP_S8)stream_getBits( stream, NPLAYERS_NBITS ) - 1;
+    if ( STREAM_VERS_DICTNAME <= version ) {
+        nv->quitter = (XP_S8)stream_getBits( stream, NPLAYERS_NBITS ) - 1;
+    }
     nv->pendingRegistrations = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
@@ -332,6 +337,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
 
     /* +1: make -1 (NOTURN) into a positive number */
     stream_putBits( stream, NPLAYERS_NBITS, nv->currentTurn+1 );
+    stream_putBits( stream, NPLAYERS_NBITS, nv->quitter+1 );
     stream_putBits( stream, NPLAYERS_NBITS, nv->pendingRegistrations );
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
@@ -1054,7 +1060,7 @@ server_do( ServerCtxt* server )
 #endif /* XWFEATURE_STANDALONE_ONLY */
 
         case XWSTATE_NEEDSEND_ENDGAME:
-            endGameInternal( server, END_REASON_OUT_OF_TILES );
+            endGameInternal( server, END_REASON_OUT_OF_TILES, -1 );
             break;
 
         case XWSTATE_NEED_SHOWSCORE:
@@ -2399,13 +2405,29 @@ server_getLastMoveTime( const ServerCtxt* server )
 }
 
 static void
-doEndGame( ServerCtxt* server )
+doEndGame( ServerCtxt* server, XP_S16 quitter )
 {
     SETSTATE( server, XWSTATE_GAMEOVER );
     setTurn( server, -1 );
+    server->nv.quitter = quitter;
 
     (*server->vol.gameOverListener)( server->vol.gameOverData );
 } /* doEndGame */
+
+static void 
+putQuitter( const ServerCtxt* server, XWStreamCtxt* stream, XP_S16 quitter )
+{
+    if ( STREAM_VERS_DICTNAME <= server->nv.streamVersion ) {
+        stream_putU8( stream, quitter );
+    }
+}
+
+static void
+getQuitter( const ServerCtxt* server, XWStreamCtxt* stream, XP_S16* quitter )
+{
+    *quitter = STREAM_VERS_DICTNAME <= server->nv.streamVersion
+            ? stream_getU8( stream ) : -1;
+}
 
 /* Somebody wants to end the game.
  *
@@ -2415,7 +2437,7 @@ doEndGame( ServerCtxt* server )
  * GAME_OVER message to all clients including the one that requested it.
  */
 static void
-endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why) )
+endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why), XP_S16 quitter )
 {
     XP_ASSERT( server->nv.gameState != XWSTATE_GAMEOVER );
 
@@ -2427,10 +2449,11 @@ endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why) )
             XWStreamCtxt* stream;
             stream = messageStreamWithHeader( server, devIndex,
                                               XWPROTO_END_GAME );
+            putQuitter( server, stream, quitter );
             stream_destroy( stream );
         }
 #endif
-        doEndGame( server );
+        doEndGame( server, quitter );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else {
@@ -2449,7 +2472,7 @@ server_endGame( ServerCtxt* server )
 {
     XW_State gameState = server->nv.gameState;
     if ( gameState < XWSTATE_GAMEOVER && gameState >= XWSTATE_INTURN ) {
-        endGameInternal( server, END_REASON_USER_REQUEST );
+        endGameInternal( server, END_REASON_USER_REQUEST, server->nv.currentTurn );
     }
 } /* server_endGame */
 
@@ -2711,7 +2734,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         XP_FREE( server->mpool, msg );
 #endif
     } else if ( readStreamHeader( server, incoming ) ) {
-
+        XP_S16 quitter;
         switch( code ) {
 /*         case XWPROTO_MOVEMADE_INFO: */
 /*             accepted = client_reflectMoveMade( server, incoming ); */
@@ -2763,11 +2786,13 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             break;
 
         case XWPROTO_CLIENT_REQ_END_GAME:
-            endGameInternal( server, END_REASON_USER_REQUEST );
+            getQuitter( server, incoming, &quitter );
+            endGameInternal( server, END_REASON_USER_REQUEST, quitter );
             accepted = XP_TRUE;
             break;
         case XWPROTO_END_GAME:
-            doEndGame( server );
+            getQuitter( server, incoming, &quitter );
+            doEndGame( server, quitter );
             accepted = XP_TRUE;
             break;
         default:
@@ -2927,21 +2952,63 @@ server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn )
 #endif
 
 #define IMPOSSIBLY_LOW_SCORE -1000
+#if 0
+static void
+printPlayer( const ServerCtxt* server, XWStreamCtxt* stream, XP_U16 index, 
+             const XP_UCHAR* placeBuf, ScoresArray* scores, 
+             ScoresArray* tilePenalties, XP_U16 place )
+{
+    XP_UCHAR buf[128];
+    CurGameInfo* gi = server->vol.gi;
+    ModelCtxt* model = server->vol.model;
+    XP_Bool firstDone = model_getNumTilesTotal( model, index ) == 0;
+    XP_UCHAR tmpbuf[48];
+    XP_U16 addSubKey = firstDone? STRD_REMAINING_TILES_ADD : STRD_UNUSED_TILES_SUB;
+    const XP_UCHAR* addSubString = util_getUserString( server->vol.util, addSubKey );
+    XP_UCHAR* timeStr = (XP_UCHAR*)"";
+    XP_UCHAR timeBuf[16];
+    if ( gi->timerEnabled ) {
+        XP_U16 penalty = player_timePenalty( gi, index );
+        if ( penalty > 0 ) {
+            XP_SNPRINTF( timeBuf, sizeof(timeBuf), 
+                         util_getUserString( server->vol.util,
+                                             STRD_TIME_PENALTY_SUB ),
+                         penalty ); /* positive for formatting */
+            timeStr = timeBuf;
+        }
+    }
+
+    XP_SNPRINTF( tmpbuf, sizeof(tmpbuf), addSubString,
+                 firstDone? 
+                 tilePenalties->arr[index]:
+                 -tilePenalties->arr[index] );
+
+    XP_SNPRINTF( buf, sizeof(buf), 
+                 (XP_UCHAR*)"[%s] %s: %d" XP_CR "  (%d %s%s)",
+                 placeBuf, emptyStringIfNull(gi->players[index].name),
+                 scores->arr[index], model_getPlayerScore( model, index ),
+                 tmpbuf, timeStr );
+    if ( 0 < place ) {
+        stream_catString( stream, XP_CR );
+    }
+    stream_catString( stream, buf );
+} /* printPlayer */
+#endif
+
 void
 server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
 {
     ScoresArray scores;
     ScoresArray tilePenalties;
-    XP_S16 highestIndex;
-    XP_S16 highestScore;
-    XP_U16 place, nPlayers, ii;
-    XP_S16 curScore;
+    XP_U16 place, nPlayers;
+    XP_S16 quitter = server->nv.quitter;
+    XP_Bool quitterDone = XP_FALSE;
+    XP_USE(quitter);
     ModelCtxt* model = server->vol.model;
     const XP_UCHAR* addString = util_getUserString( server->vol.util,
                                                     STRD_REMAINING_TILES_ADD );
     const XP_UCHAR* subString = util_getUserString( server->vol.util,
                                                     STRD_UNUSED_TILES_SUB );
-    XP_UCHAR timeBuf[16];
     XP_UCHAR* timeStr;
     CurGameInfo* gi = server->vol.gi;
 
@@ -2951,29 +3018,46 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
 
     nPlayers = gi->nPlayers;
 
-    for ( place = 1; ; ++place ) {
+    for ( place = 1; !quitterDone; ++place ) {
+        XP_UCHAR timeBuf[16];
+        XP_UCHAR buf[128]; 
+        XP_S16 highestScore = IMPOSSIBLY_LOW_SCORE;
+        XP_S16 highestIndex = -1;
+        const XP_UCHAR* placeStr = NULL;
+        XP_UCHAR placeBuf[32];
         XP_UCHAR tmpbuf[48];
-        XP_UCHAR buf[128];
+        XP_U16 ii, placeKey = 0;
         XP_Bool firstDone;
 
-        highestScore = IMPOSSIBLY_LOW_SCORE;
-        highestIndex = -1;
-
+        /* Find the next player we should print */
         for ( ii = 0; ii < nPlayers; ++ii ) {
-            if ( scores.arr[ii] > highestScore ) {
+            if ( quitter != ii && scores.arr[ii] > highestScore ) {
                 highestIndex = ii;
                 highestScore = scores.arr[ii];
             }
         }
 
         if ( highestIndex == -1 ) {
-            break; /* we're done */
-        } else if ( place > 1 ) {
-            stream_catString( stream, XP_CR );
+            if ( quitter >= 0 ) {
+                XP_ASSERT( !quitterDone );
+                highestIndex = quitter;
+                quitterDone = XP_TRUE;
+                placeKey = STR_RESIGNED;
+            } else {
+                break; /* we're done */
+            }
+        } else if ( place == 1 ) {
+            placeKey = STR_WINNER;
         }
-        scores.arr[highestIndex] = IMPOSSIBLY_LOW_SCORE;
 
-        curScore = model_getPlayerScore( model, highestIndex );
+        if ( !placeStr ) {
+            if ( 0 < placeKey ) {
+                placeStr = util_getUserString( server->vol.util, placeKey );
+            } else {
+                XP_SNPRINTF( placeBuf, VSIZE(placeBuf), "#%d", place );
+                placeStr = placeBuf;
+            }
+        }
 
         timeStr = (XP_UCHAR*)"";
         if ( gi->timerEnabled ) {
@@ -2996,11 +3080,19 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
                      -tilePenalties.arr[highestIndex] );
 
         XP_SNPRINTF( buf, sizeof(buf), 
-                     (XP_UCHAR*)"[%d] %s: %d" XP_CR "  (%d %s%s)",
-                     place, 
+                     (XP_UCHAR*)"[%s] %s: %d" XP_CR "  (%d %s%s)", placeStr, 
                      emptyStringIfNull(gi->players[highestIndex].name),
-                     highestScore, curScore, tmpbuf, timeStr );
+                     scores.arr[highestIndex], 
+                     model_getPlayerScore( model, highestIndex ),
+                     tmpbuf, timeStr );
+
+        if ( 1 < place ) {
+            stream_catString( stream, XP_CR );
+        }
         stream_catString( stream, buf );
+
+        /* Don't consider this one next time around */
+        scores.arr[highestIndex] = IMPOSSIBLY_LOW_SCORE;
     }
 } /* server_writeFinalScores */
 

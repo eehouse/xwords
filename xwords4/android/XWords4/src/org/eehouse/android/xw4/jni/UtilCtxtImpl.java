@@ -181,6 +181,12 @@ public class UtilCtxtImpl implements UtilCtxt {
         case UtilCtxt.STRD_REMAINS_EXPL:
             id = R.string.strd_remains_expl;
             break;
+        case UtilCtxt.STR_RESIGNED:
+            id = R.string.str_resigned;
+            break;
+        case UtilCtxt.STR_WINNER:
+            id = R.string.str_winner;
+            break;
 
         default:
             DbgUtils.logf( "no such stringCode: %d", stringCode );

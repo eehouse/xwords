@@ -765,8 +765,9 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
         catFinalScores( &globals->cGlobals );
     } else {
         if ( gtkask( globals->window,
-                     "Are you sure everybody wants to end the game now?", 
+                     "Are you sure you want to resign?", 
                      GTK_BUTTONS_YES_NO ) ) {
+            globals->cGlobals.manualFinal = XP_TRUE;
             server_endGame( globals->cGlobals.game.server );
             gameOver = TRUE;
         }
@@ -1412,7 +1413,8 @@ gtkShowFinalScores( const GtkAppGlobals* globals )
     text = strFromStream( stream );
     stream_destroy( stream );
 
-    (void)gtkask_timeout( globals->window, text, GTK_BUTTONS_OK, 500 );
+    XP_U16 timeout = cGlobals->manualFinal? 0 : 500;
+    (void)gtkask_timeout( globals->window, text, GTK_BUTTONS_OK, timeout );
 
     free( text );
 } /* gtkShowFinalScores */

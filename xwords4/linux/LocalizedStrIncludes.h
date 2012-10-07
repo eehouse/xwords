@@ -58,6 +58,9 @@ enum {
     STRD_REMAINS_HEADER,
     STRD_REMAINS_EXPL,
 
+    STR_RESIGNED,
+    STR_WINNER,
+
     STR_LAST
 };
 

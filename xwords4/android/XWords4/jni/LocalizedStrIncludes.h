@@ -28,6 +28,8 @@
 # define STRD_TURN_SCORE                   22
 # define STRD_REMAINS_HEADER               23
 # define STRD_REMAINS_EXPL                 24
+# define STR_RESIGNED                      25
+# define STR_WINNER                        26
 
-# define N_AND_USER_STRINGS                24
+# define N_AND_USER_STRINGS                26
 #endif

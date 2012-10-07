@@ -165,6 +165,7 @@ struct CommonGlobals {
     XWGame game;
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
+    XP_Bool manualFinal;        /* use asked for final scores */
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;

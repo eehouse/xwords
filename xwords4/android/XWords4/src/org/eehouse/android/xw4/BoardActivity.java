@@ -731,7 +731,7 @@ public class BoardActivity extends XWActivity
                                 R.string.history_title );
             break;
 
-        case R.id.board_menu_game_final:
+        case R.id.board_menu_game_resign:
             m_jniThread.handle( JNIThread.JNICmd.CMD_FINAL,
                                 R.string.history_title );
             break;
