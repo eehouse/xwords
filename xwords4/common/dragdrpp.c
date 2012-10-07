@@ -86,11 +86,13 @@ static XP_Bool
 ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
     DragState* ds = &board->dragState;
-    XP_Bool found;
     XP_Bool trayVisible;
     XP_U16 col, row;
 
-    found = coordToCell( board, xx, yy, &col, &row );
+#ifdef DEBUG
+    XP_Bool found =
+#endif
+        coordToCell( board, xx, yy, &col, &row );
     XP_ASSERT( found );
 #ifdef XWFEATURE_CROSSHAIRS
     if ( !board->hideCrosshairs ) {
@@ -105,9 +107,12 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
         ds->dtype = DT_TILE;
         flipIf( board, col, row, &modelc, &modelr );
 
-        found = model_getTile( board->model, modelc, modelr, XP_TRUE, 
-                               board->selPlayer, &ds->tile, &ds->isBlank, 
-                               NULL, NULL );
+#ifdef DEBUG
+        found = 
+#endif
+            model_getTile( board->model, modelc, modelr, XP_TRUE, 
+                           board->selPlayer, &ds->tile, &ds->isBlank, 
+                           NULL, NULL );
         XP_ASSERT( found );
     } else {
         /* If we're not dragging a tile, we can either drag the board (scroll)

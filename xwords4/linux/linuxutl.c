@@ -584,9 +584,15 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
         /* XP_U8 buf[siz]; */
         /* stream_getBytes( stream, buf, siz ); */
         XP_U16 tmp = XP_HTONS( siz );
-        ssize_t nwritten = write( fd, &tmp, sizeof(tmp) );
+#ifdef DEBUG
+        ssize_t nwritten = 
+#endif
+            write( fd, &tmp, sizeof(tmp) );
         XP_ASSERT( nwritten == sizeof(tmp) );
-        nwritten = write( fd, stream_getPtr( stream ), siz );
+#ifdef DEBUG
+        nwritten = 
+#endif
+            write( fd, stream_getPtr( stream ), siz );
         XP_ASSERT( nwritten == siz );
         stream_destroy( stream );
     }

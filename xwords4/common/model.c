@@ -1592,7 +1592,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
     PlayerCtxt* player;
     PendingTile* pt;
     XP_S16 score = -1;
-    XP_Bool inLine, isHorizontal;
+    XP_Bool isHorizontal;
     const Tile* newTilesP;
     XP_U16 nTiles;
 
@@ -1612,7 +1612,10 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
 
     if ( useStack ) {
         MoveInfo moveInfo = {0};
-        inLine = tilesInLine( model, turn, &isHorizontal );
+#ifdef DEBUG
+        XP_Bool inLine = 
+#endif
+            tilesInLine( model, turn, &isHorizontal );
         XP_ASSERT( inLine );
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
     

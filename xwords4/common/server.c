@@ -692,7 +692,9 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
         util_userError( server->vol.util, ERR_REG_UNEXPECTED_USER );
         success = XP_FALSE;
     } else {
+#ifdef DEBUG
         XP_S8 prevIndex = -1;
+#endif
         for ( ; ii < playersInMsg; ++ii ) {
             clientIndex = registerRemotePlayer( server, stream );
 
@@ -701,8 +703,10 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
                need to let the board know to redraw the scoreboard with more
                players there. */
             callTurnChangeListener( server );
+#ifdef DEBUG
             XP_ASSERT( ii == 0 || prevIndex == clientIndex );
             prevIndex = clientIndex;
+#endif
         }
 
     }

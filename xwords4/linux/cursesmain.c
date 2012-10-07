@@ -395,8 +395,9 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
 } /* curses_util_notifyGameOver */
 
 static void
-curses_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
-                           const XP_UCHAR* newName, const XP_UCHAR* newSum,
+curses_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* XP_UNUSED_DBG(oldName),
+                           const XP_UCHAR* XP_UNUSED_DBG(newName), 
+                           const XP_UCHAR* XP_UNUSED_DBG(newSum),
                            XWPhoniesChoice phoniesAction )
 {
     XP_USE(uc);

@@ -1290,13 +1290,14 @@ allocAndSet( GdkColormap* map, GdkColor* color, unsigned short red,
              unsigned short green, unsigned short blue )
 
 {
-    gboolean success;
 
     color->red = red;
     color->green = green;
     color->blue = blue;
-
-    success = gdk_colormap_alloc_color( map,
+#ifdef DEBUG
+    gboolean success = 
+#endif
+        gdk_colormap_alloc_color( map,
                                         color,
                                         TRUE, /* writeable */
                                         TRUE ); /* best-match */
