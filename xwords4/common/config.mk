@@ -20,7 +20,7 @@ COMMON_INCS = -I ../common -I../relay
 INCLUDES += $(COMMON_INCS) -I./
 
 COMMONDIR ?= ../common
-COMMONOBJDIR = $(PLATFORM)/common
+COMMONOBJDIR = $(BUILD_PLAT_DIR)/common
 
 COMMONSRC = \
 	$(COMMONDIR)/board.c \

@@ -23,14 +23,16 @@ DEFINES = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DNUMBER_KEY_AS_INDEX
 DEFINES += -DCOMMS_CHECKSUM
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 CFLAGS += -DDEBUG_TS -rdynamic 
-PLATFORM = $(BUILD_DIR)/obj_linux_memdbg
+PLATFORM = obj_linux_memdbg
 else
 DEFINES =
-PLATFORM = $(BUILD_DIR)/obj_linux_rel
+PLATFORM = obj_linux_rel
 # Not shipping this!  Always build with symbols etc
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 #CFLAGS += -Os -Werror -Wunused
 endif
+
+BUILD_PLAT_DIR = $(BUILD_DIR)/$(PLATFORM)
 
 # CC = llvm-gcc
 
@@ -72,12 +74,13 @@ endif
 DEFINES += $(DO_CURSES) $(DO_GTK) $(SVNDEF)
 
 ifdef LIB_NO_UI
-TARGET=$(PLATFORM)/libxwords.so.0
+TARGET=$(BUILD_PLAT_DIR)/libxwords.so.0
 POINTER_SUPPORT = -DPOINTER_SUPPORT
 else
-TARGET=$(PLATFORM)/xwords
+TARGET=$(BUILD_PLAT_DIR)/xwords
 endif
 
+export BUILD_PLAT_DIR
 include ../common/config.mk
 
 DEFINES += -DPLATFORM_LINUX -DKEY_SUPPORT -DKEYBOARD_NAV \
@@ -161,38 +164,38 @@ INCLUDES += ${EXTRAINCS}
 
 ifdef DO_GTK
 GTK_OBJS = \
-	$(PLATFORM)/gtkmain.o \
-	$(PLATFORM)/gtkdraw.o \
-	$(PLATFORM)/gtkask.o \
-	$(PLATFORM)/gtkletterask.o \
-	$(PLATFORM)/gtkpasswdask.o \
-	$(PLATFORM)/gtknewgame.o \
-	$(PLATFORM)/gtkconnsdlg.o \
-	$(PLATFORM)/gtkutils.o \
-	$(PLATFORM)/gtkntilesask.o \
-	$(PLATFORM)/gtkchat.o
+	$(BUILD_PLAT_DIR)/gtkmain.o \
+	$(BUILD_PLAT_DIR)/gtkdraw.o \
+	$(BUILD_PLAT_DIR)/gtkask.o \
+	$(BUILD_PLAT_DIR)/gtkletterask.o \
+	$(BUILD_PLAT_DIR)/gtkpasswdask.o \
+	$(BUILD_PLAT_DIR)/gtknewgame.o \
+	$(BUILD_PLAT_DIR)/gtkconnsdlg.o \
+	$(BUILD_PLAT_DIR)/gtkutils.o \
+	$(BUILD_PLAT_DIR)/gtkntilesask.o \
+	$(BUILD_PLAT_DIR)/gtkchat.o
 endif
 ifdef DO_CURSES
 CURSES_OBJS = \
-	$(PLATFORM)/cursesmain.o \
-	$(PLATFORM)/cursesdraw.o \
-	$(PLATFORM)/cursesask.o \
-	$(PLATFORM)/cursesdlgutil.o \
-	$(PLATFORM)/cursesletterask.o
+	$(BUILD_PLAT_DIR)/cursesmain.o \
+	$(BUILD_PLAT_DIR)/cursesdraw.o \
+	$(BUILD_PLAT_DIR)/cursesask.o \
+	$(BUILD_PLAT_DIR)/cursesdlgutil.o \
+	$(BUILD_PLAT_DIR)/cursesletterask.o
 endif
 ifndef LIB_NO_UI
-MAIN_OBJS = $(PLATFORM)/linuxmain.o
+MAIN_OBJS = $(BUILD_PLAT_DIR)/linuxmain.o
 endif
 
 
 OBJ = \
-	$(PLATFORM)/filestream.o \
-	$(PLATFORM)/linuxbt.o \
-	$(PLATFORM)/uuidhack.o \
-	$(PLATFORM)/linuxudp.o \
-	$(PLATFORM)/linuxsms.o \
-	$(PLATFORM)/linuxdict.o \
-	$(PLATFORM)/linuxutl.o \
+	$(BUILD_PLAT_DIR)/filestream.o \
+	$(BUILD_PLAT_DIR)/linuxbt.o \
+	$(BUILD_PLAT_DIR)/uuidhack.o \
+	$(BUILD_PLAT_DIR)/linuxudp.o \
+	$(BUILD_PLAT_DIR)/linuxsms.o \
+	$(BUILD_PLAT_DIR)/linuxdict.o \
+	$(BUILD_PLAT_DIR)/linuxutl.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
 LIBS = -lm -luuid $(GPROFFLAG)
@@ -272,21 +275,22 @@ gprof:
 	$(MAKE) GPROFFLAG=-pg MEMDEBUG=TRUE
 
 
-$(PLATFORM)/xwords: $(COMMONOBJ) $(OBJ) *.h Makefile debcheck
-	mkdir -p $(PLATFORM)
+$(BUILD_PLAT_DIR)/xwords: $(COMMONOBJ) $(OBJ) *.h Makefile debcheck
+	mkdir -p $(BUILD_PLAT_DIR)
 	$(CC) $(CFLAGS) $(DEFINES) $(COMMONOBJ) $(OBJ) $(LIBS) -o $@
 
-$(PLATFORM)/libxwords.so.0: $(COMMONOBJ) $(OBJ) *.h Makefile
-	mkdir -p $(PLATFORM)
-	$(CC) $(CFLAGS) $(DEFINES) $(COMMONOBJ) $(OBJ) -shared -o $@  -Wl,-soname,libxwords.so.0
+$(BUILD_PLAT_DIR)/libxwords.so.0: $(COMMONOBJ) $(OBJ) *.h Makefile
+	mkdir -p $(BUILD_PLAT_DIR)
+	$(CC) $(CFLAGS) $(DEFINES) $(COMMONOBJ) $(OBJ) -shared -o $@  \
+		-Wl,-soname,libxwords.so.0
 
-$(PLATFORM)/%.o: %.c debcheck
-	mkdir -p $(PLATFORM)
+$(BUILD_PLAT_DIR)/%.o: %.c debcheck
+	mkdir -p $(BUILD_PLAT_DIR)
 	$(CC) -c $(INCLUDES) $(DEFINES) -DPLATFORM=$(PLATFORM) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf $(PLATFORM)/*.o $(TARGET) $(DESTDIR)/usr/local/bin/xwords
-	cd ../common && $(MAKE) PLATFORM=$(PLATFORM) $@
+	rm -rf $(BUILD_PLAT_DIR)/*.o $(TARGET) $(DESTDIR)/usr/local/bin/xwords
+	rm -f $(COMMONOBJ)
 
 install: $(TARGET)
 	cp $< $(DESTDIR)/usr/local/bin
