@@ -421,6 +421,11 @@ public class DBUtils {
         return 0 == getInt( context, rowid, DBHelper.CONTRACTED, 0 );
     }
 
+    public static boolean gameOver( Context context, long rowid ) 
+    {
+        return 0 != getInt( context, rowid, DBHelper.GAME_OVER, 0 );
+    }
+
     public static String getRelayID( Context context, long rowid )
     {
         String result = null;

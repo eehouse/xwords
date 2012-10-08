@@ -140,6 +140,7 @@ public class BoardActivity extends XWActivity
     private BoardUtilCtxt m_utils;
     private int m_nMissingPlayers = -1;
     private int m_invitesPending;
+    private boolean m_gameOver = false;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -648,6 +649,12 @@ public class BoardActivity extends XWActivity
             }
             item.setTitle( strId );
             item.setEnabled( null == m_gsi || m_gsi.curTurnSelected );
+        }
+
+        if ( m_gameOver || DBUtils.gameOver( this, m_rowid ) ) {
+            m_gameOver = true;
+            item = menu.findItem( R.id.board_menu_game_resign );
+            item.setTitle( R.string.board_menu_game_final );
         }
 
         return true;
@@ -1494,6 +1501,7 @@ public class BoardActivity extends XWActivity
         @Override
         public void notifyGameOver()
         {
+            m_gameOver = true;
             m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
         }
 
