@@ -293,10 +293,12 @@ game_saveSucceeded( const XWGame* game, XP_U16 saveToken )
 void
 game_getState( const XWGame* game, GameStateInfo* gsi )
 {
+    XP_Bool gameOver = server_getGameIsOver( game->server );
+
     gsi->curTurnSelected = board_curTurnSelected( game->board );
     gsi->trayVisState = board_getTrayVisState( game->board );
     gsi->visTileCount = board_visTileCount( game->board );
-    gsi->canHint = board_canHint( game->board );
+    gsi->canHint = !gameOver && board_canHint( game->board );
     gsi->canRedo = board_canTogglePending( game->board );
     gsi->inTrade = board_inTrade( game->board, &gsi->tradeTilesSelected );
     gsi->gameIsConnected = !!game->comms && comms_canChat( game->comms );
