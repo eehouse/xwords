@@ -73,7 +73,7 @@ typedef void (*TurnChangeListener)( void* data );
 void server_setTurnChangeListener( ServerCtxt* server, TurnChangeListener tl,
                                    void* data );
 
-typedef void (*GameOverListener)( void* data );
+typedef void (*GameOverListener)( void* data, XP_S16 quitter );
 void server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
                                  void* data );
 

@@ -213,13 +213,19 @@ catGameHistory( CommonGlobals* cGlobals )
 } /* catGameHistory */
 
 void
-catFinalScores( const CommonGlobals* cGlobals )
+catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
 {
     XWStreamCtxt* stream;
 
     stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
                               cGlobals->params->vtMgr,
                               NULL, CHANNEL_NONE, catOnClose );
+    if ( -1 != quitter ) {
+        XP_UCHAR buf[128];
+        XP_SNPRINTF( buf, VSIZE(buf), "Player %s resigned\n",
+                     cGlobals->params->gi.players[quitter].name );
+        stream_catString( stream, buf );
+    }
     server_writeFinalScores( cGlobals->game.server, stream );
     stream_putU8( stream, '\n' );
     stream_destroy( stream );

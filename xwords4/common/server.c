@@ -2411,7 +2411,7 @@ doEndGame( ServerCtxt* server, XP_S16 quitter )
     setTurn( server, -1 );
     server->nv.quitter = quitter;
 
-    (*server->vol.gameOverListener)( server->vol.gameOverData );
+    (*server->vol.gameOverListener)( server->vol.gameOverData, quitter );
 } /* doEndGame */
 
 static void 

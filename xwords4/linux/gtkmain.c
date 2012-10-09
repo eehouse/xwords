@@ -762,7 +762,7 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     XP_Bool gameOver = server_getGameIsOver( globals->cGlobals.game.server );
 
     if ( gameOver ) {
-        catFinalScores( &globals->cGlobals );
+        catFinalScores( &globals->cGlobals, -1 );
     } else {
         if ( gtkask( globals->window,
                      "Are you sure you want to resign?", 
@@ -1438,7 +1438,7 @@ gtk_util_informUndo( XW_UtilCtxt* uc )
 }
 
 static void
-gtk_util_notifyGameOver( XW_UtilCtxt* uc )
+gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -1447,7 +1447,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc )
         catGameHistory( cGlobals );
     }
 
-    catFinalScores( cGlobals );
+    catFinalScores( cGlobals, quitter );
 
     if ( cGlobals->params->quitAfter >= 0 ) {
         sleep( cGlobals->params->quitAfter );

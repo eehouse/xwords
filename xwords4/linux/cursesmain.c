@@ -371,7 +371,7 @@ curses_util_informUndo( XW_UtilCtxt* XP_UNUSED(uc))
 }
 
 static void
-curses_util_notifyGameOver( XW_UtilCtxt* uc )
+curses_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     board_draw( globals->cGlobals.game.board );
@@ -381,7 +381,7 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
         catGameHistory( &globals->cGlobals );
     }
 
-    catFinalScores( &globals->cGlobals );
+    catFinalScores( &globals->cGlobals, quitter );
 
     if ( globals->cGlobals.params->quitAfter >= 0 ) {
         sleep( globals->cGlobals.params->quitAfter );

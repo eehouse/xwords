@@ -284,7 +284,7 @@ and_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
 }
 
 static void
-and_util_notifyGameOver( XW_UtilCtxt* uc )
+and_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(quitter) )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
     (*env)->CallVoidMethod( env, util->jutil, mid );

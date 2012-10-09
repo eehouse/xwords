@@ -87,7 +87,7 @@ static void dictChanged( void* p_board, XP_S16 playerNum,
                          const DictionaryCtxt* newDict );
 
 static void boardTurnChanged( void* board );
-static void boardGameOver( void* board );
+static void boardGameOver( void* board, XP_S16 quitter );
 static void setArrow( BoardCtxt* board, XP_U16 row, XP_U16 col, XP_Bool* vp );
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 
@@ -3467,12 +3467,12 @@ boardTurnChanged( void* p_board )
 } /* boardTurnChanged */
 
 static void
-boardGameOver( void* closure )
+boardGameOver( void* closure, XP_S16 quitter )
 {
     BoardCtxt* board = (BoardCtxt*)closure;    
     board->scoreBoardInvalid = XP_TRUE; /* not sure if this will do it. */
     board->gameOver = XP_TRUE;
-    util_notifyGameOver( board->util );
+    util_notifyGameOver( board->util, quitter );
 } /* boardGameOver */
 
 static void
