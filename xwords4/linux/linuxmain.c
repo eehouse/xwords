@@ -1408,6 +1408,14 @@ walk_dict_test_all( const LaunchParams* params, GSList* testDicts,
 static void
 trimDictPath( const char* input, char* buf, int bufsiz, char** path, char** dict )
 {
+    char unlinked[256];
+    XP_ASSERT( strlen(input) < VSIZE(unlinked) );
+    ssize_t siz = readlink( input, unlinked, VSIZE(unlinked) );
+    if ( 0 <= siz ) {
+        unlinked[siz] = '\0';
+        input = unlinked;
+    }
+
     struct stat statBuf;
     int statResult = stat( input, &statBuf );
     if ( 0 == statResult && S_ISLNK(statBuf.st_mode) ) {
@@ -1430,7 +1438,7 @@ trimDictPath( const char* input, char* buf, int bufsiz, char** path, char** dict
     if ( !!dot && 0 == strcmp(dot, ".xwd") ) {
         *dot = '\0';
     }
-    XP_LOGF( "%s=> dict: %s; path: %s", __func__, *dict, *path );
+    XP_LOGF( "%s => dict: %s; path: %s", __func__, *dict, *path );
 }
 
 XP_Bool
