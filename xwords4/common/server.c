@@ -1232,6 +1232,10 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         CurGameInfo localGI;
         XP_U32 gameID;
         PoolContext* pool;
+#ifdef STREAM_VERS_BIGBOARD
+        XP_UCHAR rmtDictName[128];
+        XP_UCHAR rmtDictSum[64];
+#endif
 
         /* version; any dependencies here? */
         XP_U8 streamVersion = stream_getU8( stream );
@@ -1258,12 +1262,10 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= streamVersion ) {
-            XP_UCHAR name[128];
-            XP_UCHAR sum[128];
-            stringFromStreamHere( stream, name, VSIZE(name) );
-            stringFromStreamHere( stream, sum, VSIZE(sum) );
-            util_informNetDict( server->vol.util, gi->dictName, name,
-                                sum, localGI.phoniesAction );
+            stringFromStreamHere( stream, rmtDictName, VSIZE(rmtDictName) );
+            stringFromStreamHere( stream, rmtDictSum, VSIZE(rmtDictSum) );
+        } else {
+            rmtDictName[0] = '\0';
         }
 #endif
 
@@ -1290,6 +1292,13 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         } else if ( dict_tilesAreSame( newDict, curDict ) ) {
             /* keep the dict the local user installed */
             dict_destroy( newDict );
+#ifdef STREAM_VERS_BIGBOARD
+            if ( '\0' != rmtDictName[0] ) {
+                const XP_UCHAR* ourName = dict_getShortName( curDict );
+                util_informNetDict( server->vol.util, ourName, rmtDictName,
+                                    rmtDictSum, localGI.phoniesAction );
+            }
+#endif
         } else {
             dict_destroy( curDict );
             model_setDictionary( model, newDict );
