@@ -1485,12 +1485,27 @@ public class BoardActivity extends XWActivity
             // should be the normal case.  Otherwise: if same name but
             // different sum, notify and offer to upgrade.  If
             // different name, offer to install.
-            String oldSum = DictLangCache.getDictMD5Sum( BoardActivity.this,
-                                                         oldName );
-            String str = String.format( "informNetDict(%s, %s, %s, %s, %s)", 
-                                        oldName, oldSum, newName, newSum, 
-                                        phonies.toString() );
-            nonBlockingDialog( DLG_OKONLY, str );
+            String msg = null;
+            if ( oldName.equals( newName ) ) {
+                String oldSum = DictLangCache.getDictMD5Sum( BoardActivity.this,
+                                                             oldName );
+                if ( !oldSum.equals( newSum ) ) {
+                    // Same dict, different versions
+                    msg = getString( R.string. inform_dict_diffversionf,
+                                     oldName );
+                }
+            } else {
+                // Different dict!  If we have the other one, switch
+                // to it.  Otherwise offer to download
+                msg = getString( R.string.inform_dict_diffdictf,
+                                 oldName, newName );
+            }
+            if ( null != msg ) {
+                if ( CurGameInfo.XWPhoniesChoice.PHONIES_DISALLOW == phonies ) {
+                    msg += getString( R.string.inform_dict_phonies );
+                }
+                nonBlockingDialog( DLG_OKONLY, msg );
+            }
         }
 
         @Override
