@@ -50,7 +50,7 @@
                   >
 
       <TextView style="@style/config_separator"
-                android:text="@string/lang_label"
+                android:id="@+id/lang_separator"
                 />
 
       <Spinner android:id="@+id/lang_spinner"
@@ -58,6 +58,12 @@
                android:layout_height="wrap_content"
                android:drawSelectorOnTop="true"
                android:prompt="@string/title_langs_list"
+               />
+      <Spinner android:id="@+id/dict_spinner"
+               android:layout_width="fill_parent"
+               android:layout_height="wrap_content"
+               android:drawSelectorOnTop="true"
+               android:layout_marginLeft="20sp"
                />
 
       <!-- players -->

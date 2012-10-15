@@ -351,8 +351,12 @@
     <!-- text of button to juggle (randomly rearrange order of) players -->
     <string name="button_juggle_players">Shuffle players</string>
 
-    <!-- text of separator marking out the language area of the dialog -->
+    <!-- text of separator marking out the language area of the
+         dialog.  First is used for single-device games, and second
+         for networked games (where players aren't allowed to have
+         different wordlists.) -->
     <string name="lang_label">Game language</string>
+    <string name="langdict_label">Game language/wordlist</string>
 
     <!-- text of separator marking out the connection area of the dialog -->
     <string name="connect_label_relay">Connection (via internet)</string>

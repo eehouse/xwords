@@ -85,6 +85,7 @@ public class GameConfig extends XWActivity
     private ImageButton m_refreshRoomsButton;
     private View m_connectSetRelay;
     private View m_connectSetSMS;
+    private Spinner m_dictSpinner;
     private Spinner m_roomChoose;
     // private Button m_configureButton;
     private long m_rowid;
@@ -105,8 +106,8 @@ public class GameConfig extends XWActivity
     private CommsAddrRec[] m_remoteAddrs;
     private CommsAddrRec m_car;
     private CommonPrefs m_cp;
-    private boolean m_canDoSMS = false;
-    private boolean m_canDoBT = false;
+    // private boolean m_canDoSMS = false;
+    // private boolean m_canDoBT = false;
     private boolean m_gameStarted = false;
     private CommsConnType[] m_types;
     private String[] m_connStrings;
@@ -313,11 +314,20 @@ public class GameConfig extends XWActivity
         Utils.setText( dialog, R.id.password_edit, lp.password );
 
         // Dicts spinner with label
-        String langName = DictLangCache.getLangName( this, m_gi.dictLang );
-        String label = getString( R.string.dict_lang_labelf, langName );
-        TextView text = (TextView)dialog.findViewById( R.id.dict_label );
-        text.setText( label );
-        configDictSpinner( dialog, lp );
+        TextView dictLabel = (TextView)dialog.findViewById( R.id.dict_label );
+        if ( localOnlyGame() ) {
+            String langName = DictLangCache.getLangName( this, m_gi.dictLang );
+            String label = getString( R.string.dict_lang_labelf, langName );
+            dictLabel.setText( label );
+        } else {
+            dictLabel.setVisibility( View.GONE );
+        }
+        Spinner dictSpinner = (Spinner)dialog.findViewById( R.id.dict_spinner );
+        if ( localOnlyGame() ) {
+            configDictSpinner( dictSpinner, m_gi.dictLang, m_gi.dictName(lp) );
+        } else {
+            dictSpinner.setVisibility( View.GONE );
+        }
 
         final View localSet = dialog.findViewById( R.id.local_player_set );
 
@@ -360,15 +370,18 @@ public class GameConfig extends XWActivity
         LocalPlayer lp = m_gi.players[m_whichPlayer];
         lp.name = Utils.getText( dialog, R.id.player_name_edit );
         lp.password = Utils.getText( dialog, R.id.password_edit );
-        Spinner spinner =
-            (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
-        int position = spinner.getSelectedItemPosition();
-        SpinnerAdapter adapter = spinner.getAdapter();
 
-        if ( position < adapter.getCount() ) {
-            String name = (String)adapter.getItem( position );
-            if ( ! name.equals( m_browseText ) ) {
-                lp.dictName = name;
+        if ( localOnlyGame() ) {
+            Spinner spinner =
+                (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
+            int position = spinner.getSelectedItemPosition();
+            SpinnerAdapter adapter = spinner.getAdapter();
+
+            if ( position < adapter.getCount() ) {
+                String name = (String)adapter.getItem( position );
+                if ( ! name.equals( m_browseText ) ) {
+                    lp.dictName = name;
+                }
             }
         }
 
@@ -497,6 +510,16 @@ public class GameConfig extends XWActivity
                 m_car = new CommsAddrRec( m_carOrig );
 
                 setTitle();
+
+                TextView label = (TextView)findViewById( R.id.lang_separator );
+                label.setText( getString( localOnlyGame() ? R.string.lang_label
+                                          : R.string.langdict_label ) );
+
+                m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
+                if ( localOnlyGame() ) {
+                    m_dictSpinner.setVisibility( View.GONE );
+                    m_dictSpinner = null;
+                }
 
                 if ( m_conType.equals( CommsConnType.COMMS_CONN_RELAY ) ) {
                     m_joinPublicCheck = 
@@ -675,12 +698,13 @@ public class GameConfig extends XWActivity
                 }
             };
  
+        boolean localGame = localOnlyGame();
         for ( int ii = 0; ii < names.length; ++ii ) {
             final XWListItem view
                 = (XWListItem)factory.inflate( R.layout.list_item, null );
             view.setPosition( ii );
             view.setText( names[ii] );
-            if ( m_gi.players[ii].isLocal ) {
+            if ( localGame && m_gi.players[ii].isLocal ) {
                 view.setComment( m_gi.dictName(ii) );
             }
             if ( canDelete ) {
@@ -718,12 +742,12 @@ public class GameConfig extends XWActivity
         adjustPlayersLabel();
     } // loadPlayersList
 
-    private void configDictSpinner( final Dialog dialog, LocalPlayer lp )
+    private void configDictSpinner( Spinner dictsSpinner, int lang,
+                                    String curDict )
     {
-        Spinner dictsSpinner = 
-            (Spinner)dialog.findViewById( R.id.dict_spinner );
-        String lang = DictLangCache.getLangName( this, m_gi.dictLang );
-        dictsSpinner.setPrompt( getString( R.string.dicts_list_promptf, lang ) );
+        String langName = DictLangCache.getLangName( this, lang );
+        dictsSpinner.setPrompt( getString( R.string.dicts_list_promptf, 
+                                           langName ) );
 
         OnItemSelectedListener onSel = 
             new OnItemSelectedListener() {
@@ -745,9 +769,9 @@ public class GameConfig extends XWActivity
             };
 
         ArrayAdapter<String> adapter = 
-            DictLangCache.getDictsAdapter( this, m_gi.dictLang );
-        configSpinnerWDownload( dictsSpinner, adapter, onSel, 
-                                m_gi.dictName(lp) );
+            DictLangCache.getDictsAdapter( this, lang );
+
+        configSpinnerWDownload( dictsSpinner, adapter, onSel, curDict );
     }
 
     private void configLangSpinner()
@@ -767,6 +791,10 @@ public class GameConfig extends XWActivity
                                       getLangLangCode( GameConfig.this, 
                                                        chosen ) );
                         loadPlayersList();
+                        if ( null != m_dictSpinner ) {
+                            configDictSpinner( m_dictSpinner, m_gi.dictLang, 
+                                               m_gi.dictName );
+                        }
                     }
                 }
 
@@ -1020,6 +1048,14 @@ public class GameConfig extends XWActivity
 
     private void saveChanges()
     {
+        if ( !localOnlyGame() ) {
+            Spinner dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
+            String name = (String)dictSpinner.getSelectedItem();
+            if ( !m_browseText.equals( name ) ) {
+                m_gi.dictName = name;
+            }
+        }
+
         m_gi.hintsNotAllowed = !Utils.getChecked( this, R.id.hints_allowed );
         m_gi.allowPickTiles = Utils.getChecked( this, R.id.pick_faceup );
         m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
