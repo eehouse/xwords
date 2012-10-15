@@ -573,6 +573,10 @@
       player[s].  Would you like to invite someone to join -- assuming
       you haven\'t already?</string>
 
+      <!-- Toast shown when players are missing, same time as above
+           but more subtle.  -->
+      <string name="players_missf">%d player[s] missing</string>
+
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
@@ -1698,8 +1702,8 @@
       to discard changes to avoid a restart.</string>
 
     <!-- This is shown in the Board screen when you successfully
-         connecting a game to the relay and are the first device in
-         the game to do so. -->
+         connect a game to the relay and are the first device in the
+         game to do so. -->
     <string name="not_again_conndfirst">You have connected and started
       a game in a new room.  Once the remaining devices have joined
       your room and Crosswords has assigned them tiles the game can
@@ -1932,9 +1936,6 @@
     <!--  -->
     <string name="new_move_body">One or more moves has arrived</string>
     <!--  -->
-    <string name="bt_devs_missing">Missing connections?  Invite BT
-      devs?  (I won\'t ask again until you reopen this game.)</string>
-      <!--  -->
     <string name="invite_bt_descf">Please select the %d device[s] you
         want to include in this game.  Use the Rescan button if you
         don\'t see a device you expect.</string>
@@ -1975,9 +1976,6 @@
     <!--  -->
     <string name="dft_sms_namef">SMS Game %X</string>    
     <!--  -->
-    <string name="sms_devs_missing">Missing connections? Invite SMS
-      devs? (I won\'t ask again until you reopen this game.)</string>
-      <!--  -->
     <string name="new_sms_title">New game via SMS</string>
     <!--  -->
     <string name="new_name_bodyf">%s has invited you to play</string>

@@ -1098,28 +1098,25 @@ public class BoardActivity extends XWActivity
     {
         int naMsg = 0;
         int naKey = 0;
-        String str = null;
+        String toastStr = null;
         if ( allHere ) {
             // All players have now joined the game.  The device that
             // created the room will assign tiles.  Then it will be
             // the first player's turn
-            str = getString( R.string.msg_relay_all_heref, room );
+            toastStr = getString( R.string.msg_relay_all_heref, room );
             if ( devOrder > 1 ) {
                 naMsg = R.string.not_again_conndall;
                 naKey = R.string.key_notagain_conndall;
             }
         } else if ( nMissing > 0 ) {
-
-            // Let's only invite for two-person games for now.  Simple
-            // case first....
             if ( !m_haveInvited ) {
                 m_haveInvited = true;
                 m_room = room;
                 m_missing = nMissing;
                 showDialog( DLG_INVITE );
             } else {
-                str = getString( R.string.msg_relay_waiting, devOrder,
-                                 room, nMissing );
+                toastStr = getString( R.string.msg_relay_waiting, devOrder,
+                                      room, nMissing );
                 if ( devOrder == 1 ) {
                     naMsg = R.string.not_again_conndfirst;
                     naKey = R.string.key_notagain_conndfirst;
@@ -1130,8 +1127,8 @@ public class BoardActivity extends XWActivity
             }
         }
 
-        if ( null != str ) {
-            m_toastStr = str;
+        if ( null != toastStr ) {
+            m_toastStr = toastStr;
             if ( naMsg == 0 ) {
                 dlgButtonClicked( SHOW_EXPL_ACTION, 
                                   AlertDialog.BUTTON_POSITIVE );
@@ -1437,16 +1434,13 @@ public class BoardActivity extends XWActivity
         {
             m_connType = connType;
 
-            int msgID = 0;
             int action = 0;
             if ( 0 < nMissingPlayers && isServer && !m_haveInvited ) {
                 switch( connType ) {
                 case COMMS_CONN_BT:
-                    msgID = R.string.bt_devs_missing;
                     action = BT_PICK_ACTION;
                     break;
                 case COMMS_CONN_SMS:
-                    msgID = R.string.sms_devs_missing;
                     action = SMS_PICK_ACTION;
                     break;
                 }
@@ -1454,14 +1448,15 @@ public class BoardActivity extends XWActivity
             if ( 0 != action ) {
                 m_haveInvited = true;
                 final int faction = action;
-                final int fmsgID = msgID;
+                final String fmsg = getString( R.string.invite_msgf,
+                                               nMissingPlayers );
                 post( new Runnable() {
                         public void run() {
                             DbgUtils.showf( BoardActivity.this, 
-                                            "%d players missing", 
-                                            nMissingPlayers );
+                                            getString( R.string.players_missf,
+                                                       nMissingPlayers ) );
                             m_nMissingPlayers = nMissingPlayers;
-                            showConfirmThen( fmsgID, faction );
+                            showConfirmThen( fmsg, faction );
                         }
                     } );
             }
