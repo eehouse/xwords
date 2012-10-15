@@ -252,6 +252,12 @@
   <PreferenceScreen android:title="@string/network_behavior"
                     android:summary="@string/network_behavior_summary"
                     >
+    <org.eehouse.android.xw4.SMSCheckBoxPreference 
+        android:key="@string/key_enable_sms"
+        android:title="@string/enable_sms"
+        android:summary="@string/enable_sms_summary"
+        android:defaultValue="false"
+        />
     <org.eehouse.android.xw4.PollListPreference
        android:key="@string/key_connect_frequency"
        android:title="@string/connect_frequency"
@@ -288,6 +294,10 @@
                         android:summary="Menuitems etc."
                         android:defaultValue="false"
                         />
+    <CheckBoxPreference android:key="@string/key_show_sms"
+			            android:title="Show SMS sends, receives"
+			            android:defaultValue="false"
+			            />
     <org.eehouse.android.xw4.XWEditTextPreference 
 	   android:key="@string/key_relay_host"
 	   android:title="@string/relay_host"

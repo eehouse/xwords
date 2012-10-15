@@ -30,7 +30,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 public class XWApp extends Application {
     public static final boolean DEBUG_LOCKS = false;
     public static final boolean BTSUPPORTED = false;
-    public static final boolean SMSSUPPORTED = false;
+    public static final boolean SMSSUPPORTED = true;
     public static final String SMS_PUBLIC_HEADER = "-XW4";
 
     private static UUID s_UUID = null;
@@ -53,6 +53,8 @@ public class XWApp extends Application {
         RelayReceiver.RestartTimer( this );
         UpdateCheckReceiver.restartTimer( this );
         BTService.startService( this );
+
+        SMSService.checkForInvites( this );
     }
 
     public static UUID getAppUUID()
