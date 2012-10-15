@@ -1929,12 +1929,23 @@ main( int argc, char** argv )
         mainParams.needsNewGame = XP_TRUE;
     }
 
-    for ( ii = 0; ii < nPlayerDicts; ++ii ) {
-        const XP_UCHAR* name = mainParams.playerDictNames[ii];
-        if ( !!name ) {
-            mainParams.dicts.dicts[ii] = 
-                linux_dictionary_make( MPPARM(mainParams.util->mpool) 
-                                       &mainParams, name, mainParams.useMmap );
+    /* per-player dicts are for local players only.  Assign in the order
+       given.  It's an error to give too many, or not to give enough if
+       there's no game-dict */
+    if ( 0 < nPlayerDicts ) {
+        XP_U16 nextDict = 0;
+        for ( ii = 0; ii < mainParams.gi.nPlayers; ++ii ) {
+            if ( mainParams.gi.players[ii].isLocal ) {
+                const XP_UCHAR* name = mainParams.playerDictNames[nextDict++];
+                XP_ASSERT( !!name );
+                mainParams.dicts.dicts[ii] = 
+                    linux_dictionary_make( MPPARM(mainParams.util->mpool) 
+                                           &mainParams, name, mainParams.useMmap );
+            }
+        }
+        if ( nextDict < nPlayerDicts ) {
+            usage( argv[0], " --player-dict used more times than there are "
+                   "local players" );
         }
     }
 
