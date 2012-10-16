@@ -18,23 +18,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.eehouse.android.xw4;
+package org.eehouse.android.xw4gcm;
 
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
 import java.util.UUID;
 
-import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4gcm.jni.XwJNI;
 
 public class XWApp extends Application {
     public static final boolean DEBUG_LOCKS = false;
     public static final boolean BTSUPPORTED = false;
     public static final boolean SMSSUPPORTED = true;
-    public static final boolean GCMSUPPORTED = false;
-    public static final boolean DEBUG = false;
+    public static final boolean GCMSUPPORTED = true;
+    public static final boolean DEBUG = true;
 
-    public static final String SMS_PUBLIC_HEADER = "-XW4";
+    public static final String SMS_PUBLIC_HEADER = "-XW4g";
 
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;
@@ -58,6 +58,8 @@ public class XWApp extends Application {
         BTService.startService( this );
 
         SMSService.checkForInvites( this );
+
+        GCMIntentService.init( this );
     }
 
     public static UUID getAppUUID()

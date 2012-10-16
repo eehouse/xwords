@@ -184,6 +184,16 @@ public class XWPrefs {
         return id;
     }
 
+    public static void setGCMDevID( Context context, String devID )
+    {
+        setPrefsString( context, R.string.key_gcm_regid, devID );
+    }
+
+    public static void clearGCMDevID( Context context )
+    {
+        clearPrefsKey( context, R.string.key_gcm_regid );
+    }
+
     protected static String getPrefsString( Context context, int keyID )
     {
         String key = context.getString( keyID );
@@ -200,6 +210,16 @@ public class XWPrefs {
         SharedPreferences.Editor editor = sp.edit();
         String key = context.getString( keyID );
         editor.putString( key, newValue );
+        editor.commit();
+    }
+
+    protected static void clearPrefsKey( Context context, int keyID )
+    {
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        SharedPreferences.Editor editor = sp.edit();
+        String key = context.getString( keyID );
+        editor.remove( key );
         editor.commit();
     }
 

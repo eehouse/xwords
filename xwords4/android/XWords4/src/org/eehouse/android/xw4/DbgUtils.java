@@ -45,10 +45,15 @@ public class DbgUtils {
 
     public static void logEnable( Context context )
     {
-        SharedPreferences sp
-            = PreferenceManager.getDefaultSharedPreferences( context );
-        String key = context.getString( R.string.key_logging_on );
-        boolean on = sp.getBoolean( key, false );
+        boolean on;
+        if ( XWApp.DEBUG ) {
+            on = true;
+        } else {
+            SharedPreferences sp
+                = PreferenceManager.getDefaultSharedPreferences( context );
+            String key = context.getString( R.string.key_logging_on );
+            on = sp.getBoolean( key, false );
+        }
         logEnable( on );
     }
 
