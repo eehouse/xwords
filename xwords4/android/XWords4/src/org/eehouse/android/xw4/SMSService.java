@@ -75,6 +75,7 @@ public class SMSService extends Service {
     private static final String GAMEID = "GAMEID";
     private static final String GAMENAME = "GAMENAME";
     private static final String LANG = "LANG";
+    private static final String DICT = "DICT";
     private static final String NPLAYERST = "NPLAYERST";
     private static final String NPLAYERSH = "NPLAYERSH";
 
@@ -115,14 +116,15 @@ public class SMSService extends Service {
 
     public static void inviteRemote( Context context, String phone,
                                      int gameID, String gameName, 
-                                     int lang, int nPlayersT, 
-                                     int nPlayersH )
+                                     int lang, String dict, 
+                                     int nPlayersT, int nPlayersH )
     {
         Intent intent = getIntentTo( context, INVITE );
         intent.putExtra( PHONE, phone );
         intent.putExtra( GAMEID, gameID );
         intent.putExtra( GAMENAME, gameName );
         intent.putExtra( LANG, lang );
+        intent.putExtra( DICT, dict );
         intent.putExtra( NPLAYERST, nPlayersT );
         intent.putExtra( NPLAYERSH, nPlayersH );
         context.startService( intent );
@@ -256,14 +258,14 @@ public class SMSService extends Service {
                 break;
             case INVITE:
                 phone = intent.getStringExtra( PHONE );
-                DbgUtils.logf( "INVITE(%s)", phone );
                 int gameID = intent.getIntExtra( GAMEID, -1 );
                 String gameName = intent.getStringExtra( GAMENAME );
                 int lang = intent.getIntExtra( LANG, -1 );
+                String dict = intent.getStringExtra( DICT );
                 int nPlayersT = intent.getIntExtra( NPLAYERST, -1 );
                 int nPlayersH = intent.getIntExtra( NPLAYERSH, -1 );
-                inviteRemote( phone, gameID, gameName, lang, nPlayersT, 
-                              nPlayersH);
+                inviteRemote( phone, gameID, gameName, lang, dict,
+                              nPlayersT, nPlayersH );
                 break;
             case SEND:
                 phone = intent.getStringExtra( PHONE );
@@ -292,7 +294,8 @@ public class SMSService extends Service {
     }
 
     private void inviteRemote( String phone, int gameID, String gameName, 
-                               int lang, int nPlayersT, int nPlayersH )
+                               int lang, String dict, 
+                               int nPlayersT, int nPlayersH )
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
@@ -300,6 +303,7 @@ public class SMSService extends Service {
             das.writeInt( gameID );
             das.writeUTF( gameName );
             das.writeInt( lang );
+            das.writeUTF( dict );
             das.writeByte( nPlayersT );
             das.writeByte( nPlayersH );
             das.flush();
@@ -411,21 +415,30 @@ public class SMSService extends Service {
                 int gameID = dis.readInt();
                 String gameName = dis.readUTF();
                 int lang = dis.readInt();
+                String dict = dis.readUTF();
                 int nPlayersT = dis.readByte();
                 int nPlayersH = dis.readByte();
+                
+                if ( DictLangCache.haveDict( this, lang, dict ) ) {
+                    long rowid = 
+                        GameUtils.makeNewSMSGame( this, gameID, addr, lang, 
+                                                  dict, nPlayersT, nPlayersH );
 
-                long rowid = GameUtils.makeNewSMSGame( this, gameID, addr,
-                                                       lang, nPlayersT, nPlayersH );
+                    if ( null != gameName && 0 < gameName.length() ) {
+                        DBUtils.setName( this, rowid, gameName );
+                    }
+                    String owner = Utils.phoneToContact( this, phone, true );
+                    String body = Utils.format( this, R.string.new_name_bodyf, 
+                                                owner );
+                    postNotification( gameID, R.string.new_sms_title, body );
 
-                if ( null != gameName && 0 < gameName.length() ) {
-                    DBUtils.setName( this, rowid, gameName );
+                    ackInvite( phone, gameID );
+                } else {
+                    // PENDING: post notification so user can choose
+                    // to download or delete.
+                    DbgUtils.showf( this, "Dropping invite for missing dict %s",
+                                    dict );
                 }
-                String owner = Utils.phoneToContact( this, phone, true );
-                String body = Utils.format( this, R.string.new_name_bodyf, 
-                                            owner );
-                postNotification( gameID, R.string.new_sms_title, body );
-
-                ackInvite( phone, gameID );
                 break;
             case DATA:
                 gameID = dis.readInt();

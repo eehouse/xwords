@@ -415,7 +415,7 @@ public class GameUtils {
     }
 
     private static long makeNewMultiGame( Context context, CommsAddrRec addr,
-                                          int[] lang, 
+                                          int[] lang, String dict,
                                           int nPlayersT, int nPlayersH, 
                                           String inviteID, int gameID,
                                           boolean isHost )
@@ -423,7 +423,7 @@ public class GameUtils {
         long rowid = -1;
 
         CurGameInfo gi = new CurGameInfo( context, true );
-        gi.setLang( lang[0] );
+        gi.setLang( lang[0], dict );
         lang[0] = gi.dictLang;
         gi.setNPlayers( nPlayersT, nPlayersH );
         gi.juggle();
@@ -455,7 +455,7 @@ public class GameUtils {
         CommsAddrRec addr = new CommsAddrRec( relayName, relayPort );
         addr.ip_relay_invite = room;
 
-        return makeNewMultiGame( context, addr, lang, nPlayersT, 
+        return makeNewMultiGame( context, addr, lang, null, nPlayersT, 
                                  nPlayersH, inviteID, 0, false );
     }
 
@@ -482,13 +482,14 @@ public class GameUtils {
         if ( isHost ) { 
             addr = new CommsAddrRec( null, null );
         }
-        return makeNewMultiGame( context, addr, langa, nPlayersT, nPlayersH,
-                                 null, gameID, isHost );
+        return makeNewMultiGame( context, addr, langa, null, nPlayersT, 
+                                 nPlayersH, null, gameID, isHost );
     }
 
     public static long makeNewSMSGame( Context context, int gameID, 
                                        CommsAddrRec addr, int lang, 
-                                       int nPlayersT, int nPlayersH )
+                                       String dict, int nPlayersT, 
+                                       int nPlayersH )
     {
         long rowid = -1;
         int[] langa = { lang };
@@ -496,8 +497,8 @@ public class GameUtils {
         if ( isHost ) { 
             addr = new CommsAddrRec(CommsAddrRec.CommsConnType.COMMS_CONN_SMS);
         }
-        return makeNewMultiGame( context, addr, langa, nPlayersT, nPlayersH,
-                                 null, gameID, isHost );
+        return makeNewMultiGame( context, addr, langa, dict, nPlayersT, 
+                                 nPlayersH, null, gameID, isHost );
     }
 
     public static void launchBTInviter( Activity activity, int nMissing, 
