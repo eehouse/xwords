@@ -824,10 +824,12 @@ public class GameConfig extends XWActivity
                                       ArrayAdapter<String> adapter,
                                       String sel )
     {
-        for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
-            if ( sel.equals( adapter.getItem(ii) ) ) {
-                spinner.setSelection( ii );
-                break;
+        if ( null != sel ) {
+            for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
+                if ( sel.equals( adapter.getItem(ii) ) ) {
+                    spinner.setSelection( ii );
+                    break;
+                }
             }
         }
     }
