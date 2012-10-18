@@ -64,6 +64,7 @@ public class NewGameActivity extends XWActivity {
     private boolean m_firingPrefs = false;
     private int m_chosen;
     private int m_lang = 0;
+    private String m_dict = null;
     private long m_newRowID = -1;
     private String m_gameName;
     private int m_gameID;
@@ -78,8 +79,8 @@ public class NewGameActivity extends XWActivity {
         setContentView( R.layout.new_game );
 
         TextView desc = (TextView)findViewById( R.id.newgame_local_desc );
-        String dict = CommonPrefs.getDefaultHumanDict( this );
-        String lang = DictLangCache.getLangName( this, dict );
+        m_dict = CommonPrefs.getDefaultHumanDict( this );
+        String lang = DictLangCache.getLangName( this, m_dict );
         m_lang = DictLangCache.getLangLangCode( this, lang );
         desc.setText( getString( R.string.newgame_local_descf, lang ) );
         
@@ -229,10 +230,10 @@ public class NewGameActivity extends XWActivity {
                             } else {
                                 SMSService.inviteRemote( thiz, m_remoteDev,
                                                          m_gameID, m_gameName, 
-                                                         m_lang, 2, 1 );
+                                                         m_lang, m_dict, 2, 1 );
                                 long rowid = GameUtils.
                                     makeNewSMSGame( thiz, m_gameID, null, 
-                                                    m_lang, 2, 1 );
+                                                    m_lang, m_dict, 2, 1 );
                                 DBUtils.setName( thiz, rowid, m_gameName );
                                 GameUtils.launchGame( thiz, rowid, true );
                                 finish();
@@ -364,7 +365,7 @@ public class NewGameActivity extends XWActivity {
         if ( !useDefaults ) {
             m_newRowID = GameUtils.makeNewSMSGame( NewGameActivity.this, 
                                                    gameID, null, m_lang, 
-                                                   2, 1 ); // initial defaults
+                                                   m_dict, 2, 1 );
             String name = Utils.format( this, R.string.dft_sms_namef, 
                                         gameID & 0xFFFF );
             DBUtils.setName( this, m_newRowID, name );

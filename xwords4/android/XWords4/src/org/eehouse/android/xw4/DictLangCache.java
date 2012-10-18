@@ -121,6 +121,19 @@ public class DictLangCache {
         return result;
     }
 
+    public static boolean haveDict( Context context, int code, String name )
+    {
+        boolean found = false;
+        DictInfo[] infos = getInfosHaveLang( context, code );
+        for ( DictInfo info : infos ) {
+            if ( info.name.equals( name ) ) {
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+
     private static String[] getHaveLang( Context context, int code,
                                          Comparator<DictInfo> comp,
                                          boolean withCounts )

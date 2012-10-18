@@ -141,6 +141,12 @@ public class CurGameInfo {
         }
     }
 
+    public void setLang( int lang, String dict )
+    {
+        dictName = dict;
+        setLang( lang );
+    }
+
     public void setLang( int lang )
     {
         if ( 0 == lang ) {

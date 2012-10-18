@@ -20,7 +20,24 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.DialogInterface.OnClickListener;
+
 public class MultiService {
+
+    public static final String LANG = "LANG";
+    public static final String DICT = "DICT";
+    public static final String GAMEID = "GAMEID";
+    public static final String GAMENAME = "GAMENAME";
+    public static final String NPLAYERST = "NPLAYERST";
+    public static final String NPLAYERSH = "NPLAYERSH";
+    public static final String INVITER = "INVITER";
+    public static final String OWNER = "OWNER";
+
+    public static final int OWNER_SMS = 1;
 
     private BTEventListener m_li;
 
@@ -65,6 +82,56 @@ public class MultiService {
                 m_li.eventOccurred( event, args );
             }
         }
+    }
+
+    public static boolean isMissingDictIntent( Intent intent )
+    {
+        return intent.hasExtra( LANG )
+            && intent.hasExtra( DICT )
+            && intent.hasExtra( GAMEID )
+            && intent.hasExtra( GAMENAME )
+            && intent.hasExtra( NPLAYERST )
+            && intent.hasExtra( NPLAYERSH );
+    }
+
+    public static Dialog missingDictDialog( Context context, Intent intent,
+                                            OnClickListener onDownload,
+                                            OnClickListener onDecline )
+    {
+        int lang = intent.getIntExtra( LANG, -1 );
+        String langStr = DictLangCache.getLangName( context, lang );
+        String dict = intent.getStringExtra( DICT );
+        String inviter = intent.getStringExtra( INVITER );
+        String msg = context.getString( R.string.invite_dict_missing_bodyf,
+                                        inviter, dict, langStr );
+        return new AlertDialog.Builder( context )
+            .setTitle( R.string.invite_dict_missing_title )
+            .setMessage( msg)
+            .setPositiveButton( R.string.button_download, onDownload )
+            .setNegativeButton( R.string.button_decline, onDecline )
+            .create();
+    }
+
+    // resend the intent, but only if the dict it names is here.  (If
+    // it's not, we may need to try again later, e.g. because our cue
+    // was a focus gain.)
+    static boolean returnOnDownload( Context context, Intent intent )
+    {
+        boolean downloaded = isMissingDictIntent( intent );
+        if ( downloaded ) {
+            int lang = intent.getIntExtra( LANG, -1 );
+            String dict = intent.getStringExtra( DICT );
+            downloaded = DictLangCache.haveDict( context, lang, dict );
+            if ( downloaded ) {
+                int owner = intent.getIntExtra( OWNER, -1 );
+                if ( owner == OWNER_SMS ) {
+                    SMSService.onGameDictDownload( context, intent );
+                } else {
+                    DbgUtils.logf( "unexpected OWNER: %d", owner );
+                }
+            }
+        }
+        return downloaded;
     }
 
 }

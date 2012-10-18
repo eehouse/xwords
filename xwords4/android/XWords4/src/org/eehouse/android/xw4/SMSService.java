@@ -67,16 +67,12 @@ public class SMSService extends Service {
     private static final int REMOVE = 4;
     private static final int MESG_GAMEGONE = 5;
     private static final int CHECK_MSGDB = 6;
+    private static final int ADDED_MISSING = 7;
 
     private static final String CMD_STR = "CMD";
     private static final String BUFFER = "BUFFER";
     private static final String BINBUFFER = "BINBUFFER";
     private static final String PHONE = "PHONE";
-    private static final String GAMEID = "GAMEID";
-    private static final String GAMENAME = "GAMENAME";
-    private static final String LANG = "LANG";
-    private static final String NPLAYERST = "NPLAYERST";
-    private static final String NPLAYERSH = "NPLAYERSH";
 
     private static Boolean s_showToasts = null;
     private static MultiService s_srcMgr = null;
@@ -115,16 +111,12 @@ public class SMSService extends Service {
 
     public static void inviteRemote( Context context, String phone,
                                      int gameID, String gameName, 
-                                     int lang, int nPlayersT, 
-                                     int nPlayersH )
+                                     int lang, String dict, 
+                                     int nPlayersT, int nPlayersH )
     {
         Intent intent = getIntentTo( context, INVITE );
-        intent.putExtra( PHONE, phone );
-        intent.putExtra( GAMEID, gameID );
-        intent.putExtra( GAMENAME, gameName );
-        intent.putExtra( LANG, lang );
-        intent.putExtra( NPLAYERST, nPlayersT );
-        intent.putExtra( NPLAYERSH, nPlayersH );
+        fillInviteIntent( intent, phone, gameID, gameName, lang, dict,
+                          nPlayersT, nPlayersH );
         context.startService( intent );
     }
 
@@ -135,7 +127,7 @@ public class SMSService extends Service {
         if ( XWPrefs.getSMSEnabled( context ) ) {
             Intent intent = getIntentTo( context, SEND );
             intent.putExtra( PHONE, phone );
-            intent.putExtra( GAMEID, gameID );
+            intent.putExtra( MultiService.GAMEID, gameID );
             intent.putExtra( BINBUFFER, binmsg );
             context.startService( intent );
             nSent = binmsg.length;
@@ -149,7 +141,14 @@ public class SMSService extends Service {
     {
         Intent intent = getIntentTo( context, REMOVE );
         intent.putExtra( PHONE, phone );
-        intent.putExtra( GAMEID, gameID );
+        intent.putExtra( MultiService.GAMEID, gameID );
+        context.startService( intent );
+    }
+
+    public static void onGameDictDownload( Context context, Intent intentOld )
+    {
+        Intent intent = getIntentTo( context, ADDED_MISSING );
+        intent.fillIn( intentOld, 0 );
         context.startService( intent );
     }
 
@@ -255,24 +254,30 @@ public class SMSService extends Service {
                 receiveBuffer( buffer, phone );
                 break;
             case INVITE:
+            case ADDED_MISSING:
                 phone = intent.getStringExtra( PHONE );
-                DbgUtils.logf( "INVITE(%s)", phone );
-                int gameID = intent.getIntExtra( GAMEID, -1 );
-                String gameName = intent.getStringExtra( GAMENAME );
-                int lang = intent.getIntExtra( LANG, -1 );
-                int nPlayersT = intent.getIntExtra( NPLAYERST, -1 );
-                int nPlayersH = intent.getIntExtra( NPLAYERSH, -1 );
-                inviteRemote( phone, gameID, gameName, lang, nPlayersT, 
-                              nPlayersH);
+                int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+                String gameName = intent.getStringExtra( MultiService.GAMENAME );
+                int lang = intent.getIntExtra( MultiService.LANG, -1 );
+                String dict = intent.getStringExtra( MultiService.DICT );
+                int nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
+                int nPlayersH = intent.getIntExtra( MultiService.NPLAYERSH, -1 );
+                if ( INVITE == cmd ) {
+                    inviteRemote( phone, gameID, gameName, lang, dict,
+                                  nPlayersT, nPlayersH );
+                } else if ( ADDED_MISSING == cmd ) {
+                    makeForInvite( phone, gameID, gameName, lang, dict, 
+                                   nPlayersT, nPlayersH );
+                }
                 break;
             case SEND:
                 phone = intent.getStringExtra( PHONE );
                 byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
-                gameID = intent.getIntExtra( GAMEID, -1 );
+                gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
                 sendPacket( phone, gameID, bytes );
                 break;
             case REMOVE:
-                gameID = intent.getIntExtra( GAMEID, -1 );
+                gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
                 phone = intent.getStringExtra( PHONE );
                 sendDiedPacket( phone, gameID );
                 break;
@@ -292,7 +297,8 @@ public class SMSService extends Service {
     }
 
     private void inviteRemote( String phone, int gameID, String gameName, 
-                               int lang, int nPlayersT, int nPlayersH )
+                               int lang, String dict, 
+                               int nPlayersT, int nPlayersH )
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
@@ -300,6 +306,7 @@ public class SMSService extends Service {
             das.writeInt( gameID );
             das.writeUTF( gameName );
             das.writeInt( lang );
+            das.writeUTF( dict );
             das.writeByte( nPlayersT );
             das.writeByte( nPlayersH );
             das.flush();
@@ -402,7 +409,6 @@ public class SMSService extends Service {
 
     private void receive( SMS_CMD cmd, byte[] data, String phone )
     {
-        CommsAddrRec addr = new CommsAddrRec( phone );
         DataInputStream dis = 
             new DataInputStream( new ByteArrayInputStream(data) );
         try {
@@ -411,27 +417,32 @@ public class SMSService extends Service {
                 int gameID = dis.readInt();
                 String gameName = dis.readUTF();
                 int lang = dis.readInt();
+                String dict = dis.readUTF();
                 int nPlayersT = dis.readByte();
                 int nPlayersH = dis.readByte();
-
-                long rowid = GameUtils.makeNewSMSGame( this, gameID, addr,
-                                                       lang, nPlayersT, nPlayersH );
-
-                if ( null != gameName && 0 < gameName.length() ) {
-                    DBUtils.setName( this, rowid, gameName );
+                
+                if ( DictLangCache.haveDict( this, lang, dict ) ) {
+                    makeForInvite( phone, gameID, gameName, lang, dict, 
+                                   nPlayersT, nPlayersH );
+                } else {
+                    Intent intent = new Intent( this, DictsActivity.class );
+                    fillInviteIntent( intent, phone, gameID, gameName, lang, dict,
+                                      nPlayersT, nPlayersH );
+                    intent.putExtra( MultiService.OWNER, 
+                                     MultiService.OWNER_SMS );
+                    intent.putExtra( MultiService.INVITER, 
+                                     Utils.phoneToContact( this, phone, true ) );
+                    Utils.postNotification( this, intent, 
+                                            R.string.missing_dict_title, 
+                                            R.string.missing_dict_detail, 
+                                            gameID );
                 }
-                String owner = Utils.phoneToContact( this, phone, true );
-                String body = Utils.format( this, R.string.new_name_bodyf, 
-                                            owner );
-                postNotification( gameID, R.string.new_sms_title, body );
-
-                ackInvite( phone, gameID );
                 break;
             case DATA:
                 gameID = dis.readInt();
                 byte[] rest = new byte[dis.available()];
                 dis.read( rest );
-                feedMessage( gameID, rest, addr );
+                feedMessage( gameID, rest, new CommsAddrRec( phone ) );
                 break;
             case DEATH:
                 gameID = dis.readInt();
@@ -519,6 +530,26 @@ public class SMSService extends Service {
         }
     }
 
+    private void makeForInvite( String phone, int gameID, String gameName, 
+                                int lang, String dict, int nPlayersT, 
+                                int nPlayersH )
+    {
+        long rowid = 
+            GameUtils.makeNewSMSGame( this, gameID, 
+                                      new CommsAddrRec( phone ),
+                                      lang, dict, nPlayersT, nPlayersH );
+
+        if ( null != gameName && 0 < gameName.length() ) {
+            DBUtils.setName( this, rowid, gameName );
+        }
+        String owner = Utils.phoneToContact( this, phone, true );
+        String body = Utils.format( this, R.string.new_name_bodyf, 
+                                    owner );
+        postNotification( gameID, R.string.new_sms_title, body );
+
+        ackInvite( phone, gameID );
+    }
+
     private PendingIntent makeStatusIntent( String msg )
     {
         Intent intent = new Intent( msg );
@@ -552,6 +583,20 @@ public class SMSService extends Service {
                                            CommsConnType.COMMS_CONN_SMS, 
                                            success );
         return success;
+    }
+
+    private static void fillInviteIntent( Intent intent, String phone,
+                                          int gameID, String gameName, 
+                                          int lang, String dict, 
+                                          int nPlayersT, int nPlayersH )
+    {
+        intent.putExtra( PHONE, phone );
+        intent.putExtra( MultiService.GAMEID, gameID );
+        intent.putExtra( MultiService.GAMENAME, gameName );
+        intent.putExtra( MultiService.LANG, lang );
+        intent.putExtra( MultiService.DICT, dict );
+        intent.putExtra( MultiService.NPLAYERST, nPlayersT );
+        intent.putExtra( MultiService.NPLAYERSH, nPlayersH );
     }
 
     private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
