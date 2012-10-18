@@ -2128,4 +2128,14 @@
     <string name="inform_dict_phonies">\u0020(Remember that phonies
     will be discarded based on the host\'s wordlist.)</string>
 
+    <string name="missing_dict_title">Game invitation pending</string>
+    <string name="missing_dict_detail">Required wordlist missing</string>
+    <string name="invite_dict_missing_title">Missing wordlist</string>
+    <string name="invite_dict_missing_bodyf">%1$s has invited you to
+    play Crosswords using the wordlist %2$s (for play in %3$s), but it
+    is not installed.  Would you like to download the wordlist or
+    decline the invitation?</string>
+    <string name="button_decline">Decline</string>
+
+
 </resources>

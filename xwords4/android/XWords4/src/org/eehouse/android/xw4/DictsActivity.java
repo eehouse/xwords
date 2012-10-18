@@ -78,6 +78,7 @@ public class DictsActivity extends ExpandableListActivity
     private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
     private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 2;
     private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 3;
+    private static final int DICT_OR_DECLINE = DlgDelegate.DIALOG_LAST + 4;
     private int m_lang = 0;
     private String[] m_langs;
     private String m_name = null;
@@ -92,6 +93,7 @@ public class DictsActivity extends ExpandableListActivity
     private DictUtils.DictLoc m_moveFromLoc;
     private int m_moveFromItem;
     private int m_moveToItm;
+    private boolean m_launchedForMissing = false;
 
     private LayoutInflater m_factory;
 
@@ -248,7 +250,7 @@ public class DictsActivity extends ExpandableListActivity
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        OnClickListener lstnr;
+        OnClickListener lstnr, lstnr2;
         Dialog dialog;
         String format;
         String message;
@@ -349,6 +351,27 @@ public class DictsActivity extends ExpandableListActivity
                 .setNegativeButton( R.string.button_default_both, lstnr )
                 .create();
             break;
+
+        case DICT_OR_DECLINE:
+            lstnr = new OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        Intent intent = getIntent();
+                        int lang = intent.getIntExtra( MultiService.LANG, -1 );
+                        String name = intent.getStringExtra( MultiService.DICT );
+                        m_launchedForMissing = true;
+                        askStartDownload( lang, name );
+                    }
+                };
+            lstnr2 = new OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        finish();
+                    }
+                };
+
+            dialog = MultiService.missingDictDialog( this, getIntent(), 
+                                                     lstnr, lstnr2 );
+            break;
+
         default:
             dialog = m_delegate.onCreateDialog( id );
             doRemove = false;
@@ -413,14 +436,18 @@ public class DictsActivity extends ExpandableListActivity
 
         Intent intent = getIntent();
         if ( null != intent ) {
-            boolean downloadNow = intent.getBooleanExtra( DICT_DOLAUNCH, false );
-            if ( downloadNow ) {
-                int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
-                String name = intent.getStringExtra( DICT_NAME_EXTRA );
-                askStartDownload( lang, name );
-            }
+            if ( MultiService.isMissingDictIntent( intent ) ) {
+                showDialog( DICT_OR_DECLINE );
+            } else {
+                boolean downloadNow = intent.getBooleanExtra( DICT_DOLAUNCH, false );
+                if ( downloadNow ) {
+                    int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
+                    String name = intent.getStringExtra( DICT_NAME_EXTRA );
+                    askStartDownload( lang, name );
+                }
 
-            downloadNewDict( intent );
+                downloadNewDict( intent );
+            }
         }
     }
 
@@ -541,6 +568,18 @@ public class DictsActivity extends ExpandableListActivity
         }
 
         return handled;
+    }
+
+    @Override
+    public void onWindowFocusChanged( boolean hasFocus )
+    {
+        super.onWindowFocusChanged( hasFocus );
+        if ( hasFocus && m_launchedForMissing ) {
+            Intent intent = getIntent();
+            if ( MultiService.returnOnDownload( this, intent ) ) {
+                finish();
+            }
+        }
     }
 
     private void downloadNewDict( Intent intent )
@@ -673,19 +712,21 @@ public class DictsActivity extends ExpandableListActivity
     private void startDownload( String url, boolean toSD )
     {
         DictImportActivity.setUseSD( toSD );
-        try {
-            startActivity( mkDownloadIntent( this, url ) );
-        } catch ( android.content.ActivityNotFoundException anfe ) {
-            Toast.makeText( this, R.string.no_download_warning, 
-                            Toast.LENGTH_SHORT).show();
-        }
+        Intent intent = mkDownloadIntent( this, url );
+        startDownload( intent );
     }
 
     private void startDownload( int lang, String name, boolean toSD )
     {
         DictImportActivity.setUseSD( toSD );
+        Intent intent = mkDownloadIntent( this, lang, name );
+        startDownload( intent );
+    }
+
+    private void startDownload( Intent downloadIntent )
+    {
         try {
-            startActivity( mkDownloadIntent( this, lang, name ) );
+            startActivity( downloadIntent );
         } catch ( android.content.ActivityNotFoundException anfe ) {
             Toast.makeText( this, R.string.no_download_warning, 
                             Toast.LENGTH_SHORT).show();
