@@ -29,6 +29,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.SystemClock;
+import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,7 +77,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
             restartTimer( context );
         } else {
-            checkVersions( context );
+            checkVersions( context, false );
             restartTimer( context );
         }
     }
@@ -101,7 +102,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 interval_millis, pi );
     }
 
-    public static void checkVersions( Context context ) 
+    public static void checkVersions( Context context, boolean fromUI ) 
     {
         JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
@@ -155,15 +156,16 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         if ( 0 < params.length() ) {
             HttpPost post = makePost( context, "getUpdates" );
             String json = runPost( post, params );
-            makeNotificationsIf( context, json, pm, packageName, dals );
+            makeNotificationsIf( context, fromUI, json, pm, packageName, dals );
         }
     }
 
-    private static void makeNotificationsIf( Context context,
+    private static void makeNotificationsIf( Context context, boolean fromUI, 
                                              String jstr, PackageManager pm,
                                              String packageName, 
                                              DictUtils.DictAndLoc[] dals )
     {
+        boolean gotOne = false;
         try {
             JSONObject jobj = new JSONObject( jstr );
             if ( null != jobj ) {
@@ -180,6 +182,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                         String body = context.getString( R.string.new_app_avail );
                         Utils.postNotification( context, intent, title, body,
                                                 url.hashCode() );
+                        gotOne = true;
                     }
                 }
                 if ( jobj.has( k_DICTS ) ) {
@@ -200,6 +203,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             Utils.postNotification( context, intent, 
                                                     R.string.new_dict_avail, 
                                                     body, url.hashCode() );
+                            gotOne = true;
                         }
                     }
                 }
@@ -208,6 +212,11 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             DbgUtils.loge( jse );
         } catch ( PackageManager.NameNotFoundException nnfe ) {
             DbgUtils.loge( nnfe );
+        }
+
+        if ( !gotOne && fromUI ) {
+            Toast.makeText( context, R.string.checkupdates_none_found,
+                            Toast.LENGTH_SHORT ).show();
         }
     }
 

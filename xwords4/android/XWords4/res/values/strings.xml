@@ -2105,6 +2105,7 @@
 
     <!--  -->
     <string name="gamel_menu_checkupdates">Check for updates</string>
+    <string name="checkupdates_none_found">Everything is up-to-date.</string>
     <!--  -->
     <string name="new_dict_avail">New wordlist available</string>
     <!--  -->

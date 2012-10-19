@@ -584,7 +584,7 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_checkupdates:
-            UpdateCheckReceiver.checkVersions( this );
+            UpdateCheckReceiver.checkVersions( this, true );
             break;
 
         case R.id.gamel_menu_prefs:
