@@ -39,7 +39,7 @@ HASH=$(shell git describe)
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
 LDFLAGS += -pthread -g $(STATIC) \
-	-L$(shell pg_config --libdir) -lpq
+	-L$(shell pg_config --libdir)
 
 CPPFLAGS += -DSPAWN_SELF -g -Wall \
 	-I $(shell pg_config --includedir) \
@@ -51,7 +51,10 @@ CPPFLAGS += -DSPAWN_SELF -g -Wall \
 
 memdebug all: xwrelay rq
 
+# Manual config in order to place -lpq after the .obj files as
+# required by something Ubuntu did upgrading natty to oneiric
 xwrelay: $(OBJ)
+	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o $@ $^ -lpq
 
 rq: rq.c
 
