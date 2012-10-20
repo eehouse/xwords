@@ -2138,5 +2138,6 @@
     decline the invitation?</string>
     <string name="button_decline">Decline</string>
 
-
+    <string name="downloadingf">Downloading %s...</string>
+    <string name="download_done">Download finished</string>
 </resources>

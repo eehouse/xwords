@@ -412,6 +412,8 @@ public class DictUtils {
         boolean success = false;
         File sdFile = null;
         boolean useSD = DictLoc.EXTERNAL == loc;
+
+        name = addDictExtn( name );
         if ( useSD ) {
             sdFile = getSDPathFor( context, name );
         }

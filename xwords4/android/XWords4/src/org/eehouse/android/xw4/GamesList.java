@@ -103,10 +103,15 @@ public class GamesList extends XWListActivity
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             for ( String name : m_missingDictNames ) {
-                                DictsActivity.
-                                    launchAndDownload( GamesList.this, 
-                                                       m_missingDictLang,
-                                                       name );
+                                NetUtils.launchAndDownload( GamesList.this,
+                                                            new Handler(),
+                                                            m_missingDictLang,
+                                                            name,
+                                                            DictUtils.DictLoc.INTERNAL );
+                                // DictsActivity.
+                                //     launchAndDownload( GamesList.this, 
+                                //                        m_missingDictLang,
+                                //                        name );
                                 break; // just do one
                             }
                         }
@@ -808,5 +813,4 @@ public class GamesList extends XWListActivity
             onContentChanged();
         }
     }
-
 }

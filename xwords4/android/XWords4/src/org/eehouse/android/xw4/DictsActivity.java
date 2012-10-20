@@ -769,13 +769,7 @@ public class DictsActivity extends ExpandableListActivity
     private static Intent mkDownloadIntent( Context context,
                                             int lang, String dict )
     {
-        String dict_url = XWPrefs.getDefaultDictURL( context );
-        if ( 0 != lang ) {
-            dict_url += "/" + DictLangCache.getLangName( context, lang );
-        }
-        if ( null != dict ) {
-            dict_url += "/" + dict + XWConstants.DICT_EXTN;
-        }
+        String dict_url = Utils.makeDictUrl( context, lang, dict );
         return mkDownloadIntent( context, dict_url );
     }
 

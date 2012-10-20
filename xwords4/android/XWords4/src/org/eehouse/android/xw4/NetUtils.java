@@ -20,15 +20,22 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -266,4 +273,60 @@ public class NetUtils {
             DbgUtils.logf( "sendToRelay: null msgs" );
         }
     } // sendToRelay
+
+    static void launchAndDownload( final Context context, 
+                                   final Handler handler,
+                                   final int lang, final String name,
+                                   final DictUtils.DictLoc loc )
+    {
+        String msg = context.getString( R.string.downloadingf, name );
+        final Notification notification = 
+            new Notification( R.drawable.icon48x48, msg,
+                              System.currentTimeMillis() );
+        notification.flags = notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        PendingIntent pi = PendingIntent.getActivity( context, 0, 
+                                                      new Intent(), 0 );
+        notification.setLatestEventInfo( context, "", "", pi );
+
+        final NotificationManager notificationManager
+            = (NotificationManager) 
+            context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify( R.string.downloadingf, notification );
+
+        new Thread( new Runnable() {
+                public void run() {
+                    HttpURLConnection urlConn = null;
+                    try {
+                        URL url = new URL( Utils.makeDictUrl( context, 
+                                                              lang, name ) );
+                        urlConn = (HttpURLConnection)url.openConnection();
+                        InputStream in = 
+                            new BufferedInputStream( urlConn.getInputStream(), 
+                                                     1024*8 );
+                        boolean success = 
+                            DictUtils.saveDict( context, in, 
+                                                name, loc );
+                        DbgUtils.logf( "saveDict returned %b", success );
+                    } catch ( java.net.MalformedURLException mue ) {
+                        DbgUtils.loge( mue );
+                    } catch ( java.io.IOException ioe ) {
+                        DbgUtils.loge( ioe );
+                    } finally {
+                        if ( null != urlConn ) {
+                            urlConn.disconnect();
+                        }
+                    }
+                    notificationManager.cancel( R.string.downloadingf );
+                    if ( null != handler ) {
+                        handler.post( new Runnable() {
+                                public void run() {
+                                    Utils.showToast( context, 
+                                                     R.string.download_done );
+                                } 
+                            } );
+                    }
+                }
+            } ).start();
+    }
+
 }
