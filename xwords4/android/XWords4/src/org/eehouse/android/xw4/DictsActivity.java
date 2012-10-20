@@ -728,8 +728,7 @@ public class DictsActivity extends ExpandableListActivity
         try {
             startActivity( downloadIntent );
         } catch ( android.content.ActivityNotFoundException anfe ) {
-            Toast.makeText( this, R.string.no_download_warning, 
-                            Toast.LENGTH_SHORT).show();
+            Utils.showToast( this, R.string.no_download_warning );
         }
     }
 

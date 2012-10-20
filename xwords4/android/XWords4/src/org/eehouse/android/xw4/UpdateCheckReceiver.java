@@ -215,8 +215,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
 
         if ( !gotOne && fromUI ) {
-            Toast.makeText( context, R.string.checkupdates_none_found,
-                            Toast.LENGTH_SHORT ).show();
+            Utils.showToast( context, R.string.checkupdates_none_found );
         }
     }
 

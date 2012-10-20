@@ -217,9 +217,8 @@ public class GameConfig extends XWActivity
                         public void onDismiss( DialogInterface di ) 
                         {
                             if ( m_gi.forceRemoteConsistent() ) {
-                                Toast.makeText( GameConfig.this, 
-                                                R.string.forced_consistent,
-                                                Toast.LENGTH_SHORT).show();
+                                Utils.showToast( GameConfig.this, 
+                                                 R.string.forced_consistent );
                                 loadPlayersList();
                             }
                         }

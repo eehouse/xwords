@@ -238,9 +238,7 @@ public class DlgDelegate {
             showOKOnlyDialog( R.string.no_games_to_refresh );
         } else {
             RelayReceiver.RestartTimer( m_activity, true );
-            Toast.makeText( m_activity, 
-                            m_activity.getString( R.string.msgs_progress ),
-                            Toast.LENGTH_LONG ).show();
+            Utils.showToast( m_activity, R.string.msgs_progress );
         }
     }
 

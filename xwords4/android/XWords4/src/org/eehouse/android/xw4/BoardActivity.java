@@ -808,8 +808,7 @@ public class BoardActivity extends XWActivity
                 cmd = JNIThread.JNICmd.CMD_COMMIT;
                 break;
             case SHOW_EXPL_ACTION:
-                Toast.makeText( BoardActivity.this, m_toastStr, 
-                                Toast.LENGTH_SHORT).show();
+                Utils.showToast( BoardActivity.this, m_toastStr );
                 m_toastStr = null;
                 break;
             case BUTTON_BROWSE_ACTION:
@@ -841,8 +840,7 @@ public class BoardActivity extends XWActivity
                 startChatActivity();
                 break;
             case START_TRADE_ACTION:
-                Toast.makeText( this, R.string.entering_trade,
-                                Toast.LENGTH_SHORT).show();
+                Utils.showToast( this, R.string.entering_trade );
                 cmd = JNIThread.JNICmd.CMD_TRADE;
                 break;
             case LOOKUP_ACTION:
@@ -1002,8 +1000,7 @@ public class BoardActivity extends XWActivity
         }
 
         if ( doToast ) {
-            Toast.makeText( this, getString( strID ), 
-                            Toast.LENGTH_SHORT).show();
+            Utils.showToast( this, strID );
         } else if ( dlgID >= 0 ) {
             final int strIDf = strID;
             final int dlgIDf = dlgID;
@@ -1204,8 +1201,7 @@ public class BoardActivity extends XWActivity
                 final String bonusStr = getString( id );
                 post( new Runnable() {
                         public void run() {
-                            Toast.makeText( BoardActivity.this, bonusStr,
-                                            Toast.LENGTH_SHORT).show();
+                            Utils.showToast( BoardActivity.this, bonusStr );
                         }
                     } );
             }
@@ -1223,8 +1219,7 @@ public class BoardActivity extends XWActivity
             final String text = String.format( "%s\n%s", name, expl );
             post( new Runnable() {
                     public void run() {
-                        Toast.makeText( BoardActivity.this, text,
-                                        Toast.LENGTH_SHORT).show();
+                        Utils.showToast( BoardActivity.this, text );
                     }
                 } );
         }
