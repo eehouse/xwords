@@ -86,7 +86,7 @@ do_start() {
         fi
         echo "starting..." | tee -a $LOGFILE
         echo "running $XWRELAY $@ -f $CONFFILE -s $CSSFILE" | tee -a $LOGFILE
-        $XWRELAY $@ -f $CONFFILE -i $IDFILE -s $CSSFILE &
+        $XWRELAY $@ -f $CONFFILE -s $CSSFILE &
         NEWPID=$!                
         echo -n $NEWPID > $PIDFILE
         sleep 1
