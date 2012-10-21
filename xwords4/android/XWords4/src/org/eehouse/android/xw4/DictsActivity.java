@@ -59,7 +59,8 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 
 public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
-               MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify {
+               MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify,
+               NetUtils.DownloadFinishedListener {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
@@ -88,6 +89,7 @@ public class DictsActivity extends ExpandableListActivity
     private DlgDelegate m_delegate;
     private String[] m_locNames;
     private DictListAdapter m_adapter;
+    private Handler m_handler;
 
     private long m_packedPosition;
     private DictUtils.DictLoc m_moveFromLoc;
@@ -359,7 +361,9 @@ public class DictsActivity extends ExpandableListActivity
                         int lang = intent.getIntExtra( MultiService.LANG, -1 );
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
-                        askStartDownload( lang, name );
+                        m_handler = new Handler();
+                        NetUtils.launchAndDownload( DictsActivity.this, lang, 
+                                                    name, DictsActivity.this );
                     }
                 };
             lstnr2 = new OnClickListener() {
@@ -568,18 +572,6 @@ public class DictsActivity extends ExpandableListActivity
         }
 
         return handled;
-    }
-
-    @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        super.onWindowFocusChanged( hasFocus );
-        if ( hasFocus && m_launchedForMissing ) {
-            Intent intent = getIntent();
-            if ( MultiService.returnOnDownload( this, intent ) ) {
-                finish();
-            }
-        }
     }
 
     private void downloadNewDict( Intent intent )
@@ -792,5 +784,28 @@ public class DictsActivity extends ExpandableListActivity
     {
         launchAndDownload( activity, lang, null );
     }
+
+    // NetUtils.DownloadFinishedListener interface
+    public void downloadFinished( int lang, String name, 
+                                  final boolean success )
+    {
+        if ( m_launchedForMissing ) {
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        if ( success ) {
+                            Intent intent = getIntent();
+                            if ( MultiService.returnOnDownload( DictsActivity.this,
+                                                                intent ) ) {
+                                finish();
+                            }
+                        } else {
+                            Utils.showToast( DictsActivity.this, 
+                                             R.string.download_failed );
+                        }
+                    }
+                } );
+        }
+    }
+
 
 }

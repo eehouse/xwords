@@ -20,11 +20,7 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Handler;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -53,6 +49,10 @@ public class NetUtils {
     public static byte PRX_DEVICE_GONE = 3;
     public static byte PRX_GET_MSGS = 4;
     public static byte PRX_PUT_MSGS = 5;
+
+    public interface DownloadFinishedListener {
+        void downloadFinished( int lang, String name, boolean success );
+    }
 
     public static Socket makeProxySocket( Context context, 
                                           int timeoutMillis )
@@ -275,26 +275,26 @@ public class NetUtils {
     } // sendToRelay
 
     static void launchAndDownload( final Context context, 
-                                   final Handler handler,
                                    final int lang, final String name,
-                                   final DictUtils.DictLoc loc )
+                                   final DownloadFinishedListener lstnr )
+    {
+        launchAndDownload( context, lang, name,
+                           DictUtils.DictLoc.INTERNAL, 
+                           lstnr );
+    }
+
+    static void launchAndDownload( final Context context, 
+                                   final int lang, final String name,
+                                   final DictUtils.DictLoc loc,
+                                   final DownloadFinishedListener lstnr )
     {
         String msg = context.getString( R.string.downloadingf, name );
-        final Notification notification = 
-            new Notification( R.drawable.icon48x48, msg,
-                              System.currentTimeMillis() );
-        notification.flags = notification.flags |= Notification.FLAG_AUTO_CANCEL;
-        PendingIntent pi = PendingIntent.getActivity( context, 0, 
-                                                      new Intent(), 0 );
-        notification.setLatestEventInfo( context, "", "", pi );
-
-        final NotificationManager notificationManager
-            = (NotificationManager) 
-            context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify( R.string.downloadingf, notification );
+        final StatusNotifier sno = 
+            new StatusNotifier( context, msg, R.string.download_done );
 
         new Thread( new Runnable() {
                 public void run() {
+                    boolean success = false;
                     HttpURLConnection urlConn = null;
                     try {
                         URL url = new URL( Utils.makeDictUrl( context, 
@@ -303,10 +303,10 @@ public class NetUtils {
                         InputStream in = 
                             new BufferedInputStream( urlConn.getInputStream(), 
                                                      1024*8 );
-                        boolean success = 
-                            DictUtils.saveDict( context, in, 
-                                                name, loc );
+                        success = DictUtils.saveDict( context, in, 
+                                                      name, loc );
                         DbgUtils.logf( "saveDict returned %b", success );
+
                     } catch ( java.net.MalformedURLException mue ) {
                         DbgUtils.loge( mue );
                     } catch ( java.io.IOException ioe ) {
@@ -316,15 +316,9 @@ public class NetUtils {
                             urlConn.disconnect();
                         }
                     }
-                    notificationManager.cancel( R.string.downloadingf );
-                    if ( null != handler ) {
-                        handler.post( new Runnable() {
-                                public void run() {
-                                    Utils.showToast( context, 
-                                                     R.string.download_done );
-                                } 
-                            } );
-                    }
+
+                    sno.close();
+                    lstnr.downloadFinished( lang, name, success );
                 }
             } ).start();
     }

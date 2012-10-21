@@ -2140,4 +2140,5 @@
 
     <string name="downloadingf">Downloading %s...</string>
     <string name="download_done">Download finished</string>
+    <string name="download_failed">Download unsuccessful</string>
 </resources>

@@ -53,7 +53,8 @@ import org.eehouse.android.xw4.jni.*;
 public class GamesList extends XWListActivity 
     implements DispatchNotify.HandleRelaysIface,
                DBUtils.DBChangeListener,
-               GameListAdapter.LoadItemCB {
+               GameListAdapter.LoadItemCB, 
+               NetUtils.DownloadFinishedListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -104,14 +105,8 @@ public class GamesList extends XWListActivity
                         public void onClick( DialogInterface dlg, int item ) {
                             for ( String name : m_missingDictNames ) {
                                 NetUtils.launchAndDownload( GamesList.this,
-                                                            new Handler(),
                                                             m_missingDictLang,
-                                                            name,
-                                                            DictUtils.DictLoc.INTERNAL );
-                                // DictsActivity.
-                                //     launchAndDownload( GamesList.this, 
-                                //                        m_missingDictLang,
-                                //                        name );
+                                                            name, GamesList.this );
                                 break; // just do one
                             }
                         }
@@ -621,6 +616,19 @@ public class GamesList extends XWListActivity
         }
 
         return handled;
+    }
+
+    // NetUtils.DownloadFinishedListener interface
+    public void downloadFinished( int lang, String name, 
+                                  final boolean success )
+    {
+        post( new Runnable() {
+                public void run() {
+                    int id = success ? R.string.download_done 
+                        : R.string.download_failed;
+                    Utils.showToast( GamesList.this, id );
+                }
+            } );
     }
 
     private boolean handleMenuItem( int menuID, int position ) 
