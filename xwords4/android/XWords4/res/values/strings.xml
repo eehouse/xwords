@@ -266,18 +266,6 @@
       is using it, but there is another %s wordlist installed that can
       replace it.</string>
 
-    <!-- Text of dialog brought up when user taps the download_dicts
-         button -->
-    <string name="storeWhereMsg">Store downloaded wordlists using
-      internal or external (SD card) memory? (You can always move them
-      later.)</string>
-    <!-- title of above -->
-    <string name="storeWhereTitle">Wordlist storage</string>
-    <!-- One of the buttons in the above dialog -->
-    <string name="button_internal">Internal</string>
-    <!-- The other button in the above dialog -->
-    <string name="button_sd">External</string>
-
     <!--
        ############################################################
        # :Dialogs:
@@ -2141,4 +2129,8 @@
     <string name="downloadingf">Downloading %s...</string>
     <string name="download_done">Download finished</string>
     <string name="download_failed">Download unsuccessful</string>
+
+    <string name="default_loc">Store wordlists internally</string> 
+    <string name="default_loc_summary">(Not in external/sdcard memory)</string>
+
 </resources>

@@ -76,10 +76,9 @@ public class DictsActivity extends ExpandableListActivity
     // For new callback alternative
     private static final int DELETE_DICT_ACTION = 1;
 
-    private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
-    private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 2;
-    private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 3;
-    private static final int DICT_OR_DECLINE = DlgDelegate.DIALOG_LAST + 4;
+    private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 1;
+    private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 2;
+    private static final int DICT_OR_DECLINE = DlgDelegate.DIALOG_LAST + 3;
     private int m_lang = 0;
     private String[] m_langs;
     private String m_name = null;
@@ -259,21 +258,6 @@ public class DictsActivity extends ExpandableListActivity
         boolean doRemove = true;
 
         switch( id ) {
-        case PICK_STORAGE:
-            lstnr = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        startDownload( m_lang, m_name, item != 
-                                       DialogInterface.BUTTON_POSITIVE );
-                    }
-                };
-
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.storeWhereTitle )
-                .setMessage( R.string.storeWhereMsg )
-                .setPositiveButton( R.string.button_internal, lstnr )
-                .setNegativeButton( R.string.button_sd, lstnr )
-                .create();
-            break;
         case MOVE_DICT:
             message = Utils.format( this, R.string.move_dictf,
                                     m_adapter.getSelChildView().getText() );
@@ -447,7 +431,7 @@ public class DictsActivity extends ExpandableListActivity
                 if ( downloadNow ) {
                     int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
                     String name = intent.getStringExtra( DICT_NAME_EXTRA );
-                    askStartDownload( lang, name );
+                    startDownload( lang, name );
                 }
 
                 downloadNewDict( intent );
@@ -504,7 +488,7 @@ public class DictsActivity extends ExpandableListActivity
     public void onClick( View view ) 
     {
         if ( view instanceof Button ) {
-            askStartDownload( 0, null );
+            startDownload( 0, null );
         } else {
             XWListItem item = (XWListItem)view;
             DictBrowseActivity.launch( this, item.getText(), 
@@ -690,15 +674,11 @@ public class DictsActivity extends ExpandableListActivity
         expandGroups();
     }
 
-    private void askStartDownload( int lang, String name )
+    private void startDownload( int lang, String name )
     {
-        if ( DictUtils.haveWriteableSD() ) {
-            m_lang = lang;
-            m_name = name;
-            showDialog( PICK_STORAGE );
-        } else {
-            startDownload( lang, name, false );
-        }
+        boolean toSD = 
+            DictUtils.DictLoc.EXTERNAL == XWPrefs.getDefaultLoc( this );
+        startDownload( lang, name, toSD );
     }
 
     private void startDownload( String url, boolean toSD )

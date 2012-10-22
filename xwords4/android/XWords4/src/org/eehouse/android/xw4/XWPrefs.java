@@ -184,6 +184,15 @@ public class XWPrefs {
         return id;
     }
 
+    public static DictUtils.DictLoc getDefaultLoc( Context context )
+    {
+        boolean value = getPrefsBoolean( context, R.string.key_default_loc, 
+                                         true );
+        DictUtils.DictLoc result = value ? DictUtils.DictLoc.INTERNAL
+            : DictUtils.DictLoc.EXTERNAL;
+        return result;
+    }
+    
     protected static String getPrefsString( Context context, int keyID )
     {
         String key = context.getString( keyID );

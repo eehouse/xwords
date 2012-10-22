@@ -278,9 +278,8 @@ public class NetUtils {
                                    final int lang, final String name,
                                    final DownloadFinishedListener lstnr )
     {
-        launchAndDownload( context, lang, name,
-                           DictUtils.DictLoc.INTERNAL, 
-                           lstnr );
+        DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( context );
+        launchAndDownload( context, lang, name, loc, lstnr );
     }
 
     static void launchAndDownload( final Context context, 
