@@ -56,6 +56,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.DictUtils.DictLoc;
 
 public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
@@ -91,7 +92,7 @@ public class DictsActivity extends ExpandableListActivity
     private Handler m_handler;
 
     private long m_packedPosition;
-    private DictUtils.DictLoc m_moveFromLoc;
+    private DictLoc m_moveFromLoc;
     private int m_moveFromItem;
     private int m_moveToItm;
     private boolean m_launchedForMissing = false;
@@ -145,10 +146,10 @@ public class DictsActivity extends ExpandableListActivity
                     dal = dals[childPosition];
                     view.setText( dal.name );
 
-                    DictUtils.DictLoc loc = dal.loc;
+                    DictLoc loc = dal.loc;
                     view.setComment( m_locNames[loc.ordinal()] );
                     view.cache( loc );
-                    if ( DictUtils.DictLoc.BUILT_IN != loc ) {
+                    if ( DictLoc.BUILT_IN != loc ) {
                         view.setDeleteCallback( DictsActivity.this );
                     }
                 } else {
@@ -264,7 +265,7 @@ public class DictsActivity extends ExpandableListActivity
 
             String[] items = new String[3];
             for ( int ii = 0; ii < 3; ++ii ) {
-                DictUtils.DictLoc loc = itemToRealLoc(ii);
+                DictLoc loc = itemToRealLoc(ii);
                 if ( loc.equals( m_moveFromLoc ) ) {
                     m_moveFromItem = ii;
                 }
@@ -286,7 +287,7 @@ public class DictsActivity extends ExpandableListActivity
                     public void onClick( DialogInterface dlg, int item ) {
                         XWListItem rowView = m_adapter.getSelChildView();
                         Assert.assertTrue( m_moveToItm != m_moveFromItem );
-                        DictUtils.DictLoc toLoc = itemToRealLoc( m_moveToItm );
+                        DictLoc toLoc = itemToRealLoc( m_moveToItm );
                         if ( DictUtils.moveDict( DictsActivity.this,
                                                  rowView.getText(),
                                                  m_moveFromLoc,
@@ -474,7 +475,7 @@ public class DictsActivity extends ExpandableListActivity
 
             int tmp = savedInstanceState.getInt( MOVEFROMLOC, -1 );
             if ( -1 != tmp ) {
-                m_moveFromLoc = DictUtils.DictLoc.values()[tmp];
+                m_moveFromLoc = DictLoc.values()[tmp];
             }
         }
     }
@@ -492,7 +493,7 @@ public class DictsActivity extends ExpandableListActivity
         } else {
             XWListItem item = (XWListItem)view;
             DictBrowseActivity.launch( this, item.getText(), 
-                                       (DictUtils.DictLoc)item.getCached() );
+                                       (DictLoc)item.getCached() );
         }
     }
 
@@ -519,8 +520,8 @@ public class DictsActivity extends ExpandableListActivity
             inflater.inflate( R.menu.dicts_item_menu, menu );
             
             XWListItem row = (XWListItem)info.targetView;
-            DictUtils.DictLoc loc = (DictUtils.DictLoc)row.getCached();
-            if ( loc == DictUtils.DictLoc.BUILT_IN
+            DictLoc loc = (DictLoc)row.getCached();
+            if ( loc == DictLoc.BUILT_IN
                  || ! DictUtils.haveWriteableSD() ) {
                 menu.removeItem( R.id.dicts_item_move );
             }
@@ -563,8 +564,8 @@ public class DictsActivity extends ExpandableListActivity
         String url = intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
         int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
-            DictUtils.DictLoc loc = DictUtils.DictLoc.values()[loci];
-            startDownload( url, DictUtils.DictLoc.EXTERNAL == loc );
+            DictLoc loc = DictLoc.values()[loci];
+            startDownload( url, DictLoc.EXTERNAL == loc );
             finish();
         }
     }
@@ -586,7 +587,7 @@ public class DictsActivity extends ExpandableListActivity
     // options for YY?
     private void askMoveDict( XWListItem item )
     {
-        m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
+        m_moveFromLoc = (DictLoc)item.getCached();
         showDialog( MOVE_DICT );
     }
 
@@ -597,7 +598,7 @@ public class DictsActivity extends ExpandableListActivity
         String msg = getString( R.string.confirm_delete_dictf, dict );
 
         m_deleteDict = dict;
-        m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
+        m_moveFromLoc = (DictLoc)item.getCached();
 
         // When and what to warn about.  First off, if there's another
         // identical dict, simply confirm.  Or if nobody's using this
@@ -660,13 +661,13 @@ public class DictsActivity extends ExpandableListActivity
         }
     }
 
-    private DictUtils.DictLoc itemToRealLoc( int item )
+    private DictLoc itemToRealLoc( int item )
     {
-        item += DictUtils.DictLoc.INTERNAL.ordinal();
-        return DictUtils.DictLoc.values()[item];
+        item += DictLoc.INTERNAL.ordinal();
+        return DictLoc.values()[item];
     }
 
-    private void deleteDict( String dict, DictUtils.DictLoc loc )
+    private void deleteDict( String dict, DictLoc loc )
     {
         DictUtils.deleteDict( this, dict, loc );
         DictLangCache.inval( this, dict, loc, false );
@@ -677,7 +678,7 @@ public class DictsActivity extends ExpandableListActivity
     private void startDownload( int lang, String name )
     {
         boolean toSD = 
-            DictUtils.DictLoc.EXTERNAL == XWPrefs.getDefaultLoc( this );
+            DictLoc.EXTERNAL == XWPrefs.getDefaultLoc( this );
         startDownload( lang, name, toSD );
     }
 
