@@ -1,6 +1,6 @@
-#!/usr/bin/perl -C
+#!/usr/bin/perl
 #
-# Copyright 2004 - 2009 by Eric House (xwords@eehouse.org)
+# Copyright 2004 - 2012 by Eric House (xwords@eehouse.org)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -261,6 +261,7 @@ sub prepXWD($$$$) {
     } elsif( $gDescOnly ) {
         print STDOUT $gDesc, "\n";
     } else {
+        $done = 0;
         printf STDERR "at 0x%x before header read\n", systell($fh);
         # skip xloc header
         $nRead = sysread( $fh, $buf, 2 );
