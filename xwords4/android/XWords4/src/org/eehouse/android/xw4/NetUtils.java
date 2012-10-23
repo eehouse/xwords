@@ -51,7 +51,7 @@ public class NetUtils {
     public static byte PRX_PUT_MSGS = 5;
 
     public interface DownloadFinishedListener {
-        void downloadFinished( int lang, String name, boolean success );
+        void downloadFinished( boolean success );
     }
 
     public static Socket makeProxySocket( Context context, 
@@ -274,19 +274,27 @@ public class NetUtils {
         }
     } // sendToRelay
 
-    static void launchAndDownload( final Context context, 
-                                   final int lang, final String name,
-                                   final DownloadFinishedListener lstnr )
+    static void launchAndDownload( Context context, int lang, String name,
+                                   DownloadFinishedListener lstnr )
     {
         DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( context );
         launchAndDownload( context, lang, name, loc, lstnr );
     }
 
-    static void launchAndDownload( final Context context, 
-                                   final int lang, final String name,
+    static void launchAndDownload( Context context, int lang, String name,
+                                   DictUtils.DictLoc loc,
+                                   DownloadFinishedListener lstnr )
+    {
+        String url = Utils.makeDictUrl( context, lang, name );
+        launchAndDownload( context, url, loc, lstnr );
+    }
+
+    static void launchAndDownload( final Context context, final String urlStr,
                                    final DictUtils.DictLoc loc,
                                    final DownloadFinishedListener lstnr )
     {
+        String tmp = Utils.dictFromURL( context, urlStr );
+        final String name = DictUtils.removeDictExtn( tmp );
         String msg = context.getString( R.string.downloadingf, name );
         final StatusNotifier sno = 
             new StatusNotifier( context, msg, R.string.download_done );
@@ -296,12 +304,11 @@ public class NetUtils {
                     boolean success = false;
                     HttpURLConnection urlConn = null;
                     try {
-                        URL url = new URL( Utils.makeDictUrl( context, 
-                                                              lang, name ) );
+                        URL url = new URL( urlStr );
                         urlConn = (HttpURLConnection)url.openConnection();
-                        InputStream in = 
-                            new BufferedInputStream( urlConn.getInputStream(), 
-                                                     1024*8 );
+                        InputStream in = new
+                            BufferedInputStream( urlConn.getInputStream(), 
+                                                 1024*8 );
                         success = DictUtils.saveDict( context, in, 
                                                       name, loc );
                         DbgUtils.logf( "saveDict returned %b", success );
@@ -317,7 +324,10 @@ public class NetUtils {
                     }
 
                     sno.close();
-                    lstnr.downloadFinished( lang, name, success );
+                    DictLangCache.inval( context, name, loc, true );
+                    if ( null != lstnr ) {
+                        lstnr.downloadFinished( success );
+                    }
                 }
             } ).start();
     }

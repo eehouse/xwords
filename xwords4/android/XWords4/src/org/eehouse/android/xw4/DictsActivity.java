@@ -561,11 +561,12 @@ public class DictsActivity extends ExpandableListActivity
 
     private void downloadNewDict( Intent intent )
     {
-        String url = intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
         int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
             DictLoc loc = DictLoc.values()[loci];
-            startDownload( url, DictLoc.EXTERNAL == loc );
+            String url = 
+                intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
+            NetUtils.launchAndDownload( this, url, loc, null );
             finish();
         }
     }
@@ -677,21 +678,12 @@ public class DictsActivity extends ExpandableListActivity
 
     private void startDownload( int lang, String name )
     {
-        boolean toSD = 
-            DictLoc.EXTERNAL == XWPrefs.getDefaultLoc( this );
+        boolean toSD = XWPrefs.getDefaultLocInternal( this );
         startDownload( lang, name, toSD );
-    }
-
-    private void startDownload( String url, boolean toSD )
-    {
-        DictImportActivity.setUseSD( toSD );
-        Intent intent = mkDownloadIntent( this, url );
-        startDownload( intent );
     }
 
     private void startDownload( int lang, String name, boolean toSD )
     {
-        DictImportActivity.setUseSD( toSD );
         Intent intent = mkDownloadIntent( this, lang, name );
         startDownload( intent );
     }
@@ -767,8 +759,7 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     // NetUtils.DownloadFinishedListener interface
-    public void downloadFinished( int lang, String name, 
-                                  final boolean success )
+    public void downloadFinished( final boolean success )
     {
         if ( m_launchedForMissing ) {
             m_handler.post( new Runnable() {

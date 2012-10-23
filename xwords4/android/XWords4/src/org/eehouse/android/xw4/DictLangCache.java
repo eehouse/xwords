@@ -242,6 +242,7 @@ public class DictLangCache {
         return getLangName( context, code );
     }
 
+    // May be called from background thread
     public static void inval( final Context context, String name,
                               DictUtils.DictLoc loc, boolean added )
     {

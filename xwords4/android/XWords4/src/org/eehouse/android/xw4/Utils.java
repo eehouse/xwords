@@ -381,6 +381,16 @@ public class Utils {
         return result;
     }
 
+    public static String dictFromURL( Context context, String url )
+    {
+        String result = null;
+        int indx = url.lastIndexOf( "/" );
+        if ( 0 <= indx ) {
+            result = url.substring( indx + 1 );
+        }
+        return result;
+    }
+
     public static String makeDictUrl( Context context, int lang, String name )
     {
         String dict_url = CommonPrefs.getDefaultDictURL( context );

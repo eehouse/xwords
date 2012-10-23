@@ -184,11 +184,15 @@ public class XWPrefs {
         return id;
     }
 
+    public static boolean getDefaultLocInternal( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_default_loc, true );
+    }
+
     public static DictUtils.DictLoc getDefaultLoc( Context context )
     {
-        boolean value = getPrefsBoolean( context, R.string.key_default_loc, 
-                                         true );
-        DictUtils.DictLoc result = value ? DictUtils.DictLoc.INTERNAL
+        boolean internal = getDefaultLocInternal( context );
+        DictUtils.DictLoc result = internal ? DictUtils.DictLoc.INTERNAL
             : DictUtils.DictLoc.EXTERNAL;
         return result;
     }
