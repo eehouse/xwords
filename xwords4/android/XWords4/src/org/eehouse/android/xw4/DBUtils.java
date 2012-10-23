@@ -1045,6 +1045,7 @@ public class DBUtils {
         }
     }
 
+    // Called from jni
     public static String dictsGetMD5Sum( Context context, String name )
     {
         DictInfo info = dictsGetInfo( context, name );
@@ -1052,6 +1053,7 @@ public class DBUtils {
         return result;
     }
 
+    // Called from jni
     public static void dictsSetMD5Sum( Context context, String name, String sum )
     {
         initDB( context );
