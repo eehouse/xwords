@@ -1295,7 +1295,9 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 #ifdef STREAM_VERS_BIGBOARD
             if ( '\0' != rmtDictName[0] ) {
                 const XP_UCHAR* ourName = dict_getShortName( curDict );
-                util_informNetDict( server->vol.util, ourName, rmtDictName,
+                util_informNetDict( server->vol.util, 
+                                    dict_getLangCode( curDict ),
+                                    ourName, rmtDictName,
                                     rmtDictSum, localGI.phoniesAction );
             }
 #endif

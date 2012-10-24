@@ -2110,9 +2110,16 @@
     <!--  -->
     <string name="inform_dict_diffversionf">You and the host of this
     game are using different versions of the wordlist %1$s.</string>
+    <string name="inform_dict_title">Wordlist mismatch</string>
     <!--  -->
     <string name="inform_dict_diffdictf">You are using the wordlist
-    %1$s but the game host is using %2$s.</string>
+    %1$s but the game host is using %2$s. Would you like to use %3$s
+    too?</string>
+    <string name="inform_dict_download">\u0020(You will have to download it
+    first.)</string>
+    <!-- Shown in toast when relaunching after switching dicts -->
+    <string name="reload_new_dict">Reloading game with %1$s</string>
+
     <!--  -->
     <string name="inform_dict_phonies">\u0020(Remember that phonies
     will be discarded based on the host\'s wordlist.)</string>

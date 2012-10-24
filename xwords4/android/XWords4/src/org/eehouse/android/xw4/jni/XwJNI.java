@@ -132,6 +132,13 @@ public class XwJNI {
     public static native void game_getState( int gamePtr, 
                                              JNIThread.GameStateInfo gsi );
     public static native boolean game_hasComms( int gamePtr );
+
+    // Keep for historical purposes.  But threading issues make it
+    // impossible to implement this without a ton of work.
+    // public static native boolean game_changeDict( int gamePtr, CurGameInfo gi,
+    //                                               String dictName, 
+    //                                               byte[] dictBytes, 
+    //                                               String dictPath ); 
     public static native void game_dispose( int gamePtr );
 
     // Board methods

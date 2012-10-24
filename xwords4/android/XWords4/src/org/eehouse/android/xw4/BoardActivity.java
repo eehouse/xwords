@@ -56,7 +56,8 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
 public class BoardActivity extends XWActivity 
-    implements TransportProcs.TPMsgHandler, View.OnClickListener {
+    implements TransportProcs.TPMsgHandler, View.OnClickListener,
+               NetUtils.DownloadFinishedListener {
 
     public static final String INTENT_KEY_CHAT = "chat";
 
@@ -72,6 +73,9 @@ public class BoardActivity extends XWActivity
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
     private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 11;
+    private static final int DLG_USEDICT = DLG_OKONLY + 12;
+    private static final int DLG_GETDICT = DLG_OKONLY + 13;
+                    
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
@@ -105,6 +109,7 @@ public class BoardActivity extends XWActivity
     private static final String PWDNAME = "PWDNAME";
     private static final String TOASTSTR = "TOASTSTR";
     private static final String WORDS = "WORDS";
+    private static final String GETDICT = "GETDICT";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -155,6 +160,7 @@ public class BoardActivity extends XWActivity
     private String m_toastStr;
     private String[] m_words;
     private String m_pwdName;
+    private String m_getDict;
 
     private int m_missing;
     private boolean m_haveInvited = false;
@@ -241,6 +247,30 @@ public class BoardActivity extends XWActivity
                     ab.setNegativeButton( R.string.button_retry, lstnr );
                 }
                 dialog = ab.create();
+                Utils.setRemoveOnDismiss( this, dialog, id );
+                break;
+
+            case DLG_USEDICT:
+            case DLG_GETDICT:
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            if ( DLG_USEDICT == id ) {
+                                setGotGameDict();
+                            } else {
+                                NetUtils.launchAndDownload( BoardActivity.this,
+                                                            m_gi.dictLang,
+                                                            m_getDict,
+                                                            BoardActivity.this );
+                            }
+                        }
+                    };
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( m_dlgTitle )
+                    .setMessage( m_dlgBytes )
+                    .setPositiveButton( R.string.button_yes, lstnr )
+                    .setNegativeButton( R.string.button_no, null )
+                    .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
 
@@ -512,6 +542,7 @@ public class BoardActivity extends XWActivity
         outState.putString( TOASTSTR, m_toastStr );
         outState.putStringArray( WORDS, m_words );
         outState.putString( PWDNAME, m_pwdName );
+        outState.putString( GETDICT, m_getDict );
     }
 
     private void getBundledData( Bundle bundle )
@@ -524,6 +555,7 @@ public class BoardActivity extends XWActivity
             m_toastStr = bundle.getString( TOASTSTR );
             m_words = bundle.getStringArray( WORDS );
             m_pwdName = bundle.getString( PWDNAME );
+            m_getDict = bundle.getString( GETDICT );
         }
     }
 
@@ -1014,6 +1046,31 @@ public class BoardActivity extends XWActivity
         }
     }
 
+    //////////////////////////////////////////////////
+    // NetUtils.DownloadFinishedListener interface
+    //////////////////////////////////////////////////
+    public void downloadFinished( final boolean success )
+    {
+        if ( success ) {
+            post( new Runnable() {
+                    public void run() {
+                        setGotGameDict();
+                    }
+                } ); 
+        }
+    }
+
+    private void setGotGameDict()
+    {
+        Assert.assertNotNull( m_getDict );
+        m_jniThread.setSaveDict( m_getDict );
+
+        String msg = getString( R.string.reload_new_dict, m_getDict );
+        Utils.showToast( this, msg );
+        finish();
+        GameUtils.launchGame( this, m_rowid, false );
+    }
+
     private XwJNI.XP_Key keyCodeToXPKey( int keyCode )
     {
         XwJNI.XP_Key xpKey = XwJNI.XP_Key.XP_KEY_NONE;
@@ -1473,7 +1530,8 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
-        public void informNetDict( String oldName, String newName, String newSum, 
+        public void informNetDict( int code, String oldName, 
+                                   String newName, String newSum, 
                                    CurGameInfo.XWPhoniesChoice phonies )
         {
             // If it's same dict and same sum, we're good.  That
@@ -1492,14 +1550,18 @@ public class BoardActivity extends XWActivity
             } else {
                 // Different dict!  If we have the other one, switch
                 // to it.  Otherwise offer to download
+                int dlgID;
                 msg = getString( R.string.inform_dict_diffdictf,
-                                 oldName, newName );
-            }
-            if ( null != msg ) {
-                if ( CurGameInfo.XWPhoniesChoice.PHONIES_DISALLOW == phonies ) {
-                    msg += getString( R.string.inform_dict_phonies );
+                                 oldName, newName, newName );
+                if ( DictLangCache.haveDict( BoardActivity.this, code, 
+                                             newName ) ) {
+                    dlgID = DLG_USEDICT;
+                } else {
+                    dlgID = DLG_GETDICT;
+                    msg += getString( R.string.inform_dict_download );
                 }
-                nonBlockingDialog( DLG_OKONLY, msg );
+                m_getDict = newName;
+                nonBlockingDialog( dlgID, msg );
             }
         }
 
@@ -1779,6 +1841,11 @@ public class BoardActivity extends XWActivity
         case DLG_BADWORDS:
             m_dlgTitle = R.string.badwords_title;
             break;
+        case DLG_USEDICT:
+        case DLG_GETDICT:
+            m_dlgTitle = R.string.inform_dict_title;
+            break;
+
         default:
             Assert.fail();
         }
