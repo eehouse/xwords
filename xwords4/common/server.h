@@ -83,6 +83,7 @@ void server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
 
 EngineCtxt* server_getEngineFor( ServerCtxt* server, XP_U16 playerNum );
 void server_resetEngine( ServerCtxt* server, XP_U16 playerNum );
+void server_resetEngines( ServerCtxt* server );
 
 XP_U16 server_secondsUsedBy( ServerCtxt* server, XP_U16 playerNum );
 

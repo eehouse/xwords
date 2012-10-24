@@ -95,6 +95,8 @@ void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                        );
 void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
                  CommonPrefs* cp, const TransportProcs* procs );
+void game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, 
+                      DictionaryCtxt* dict );
 
 XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                              CurGameInfo* gi, DictionaryCtxt* dict, 

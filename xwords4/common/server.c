@@ -1582,6 +1582,15 @@ server_getEngineFor( ServerCtxt* server, XP_U16 playerNum )
 } /* server_getEngineFor */
 
 void
+server_resetEngines( ServerCtxt* server )
+{
+    XP_U16 nPlayers = server->vol.gi->nPlayers;
+    while ( 0 < nPlayers-- ) {
+        server_resetEngine( server, nPlayers );
+    }
+}
+
+void
 server_resetEngine( ServerCtxt* server, XP_U16 playerNum )
 {
     ServerPlayer* player = &server->players[playerNum];

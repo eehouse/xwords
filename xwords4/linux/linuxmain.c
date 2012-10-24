@@ -1462,6 +1462,32 @@ getDictPath( const LaunchParams *params, const char* name,
     return success;
 }
 
+GSList* 
+listDicts( const LaunchParams *params )
+{
+    GSList* result = NULL;
+    GSList* iter = params->dictDirs;
+    while ( !!iter ) {
+        const gchar *path = iter->data;
+        GDir* dir = g_dir_open( path, 0, NULL );
+        if ( !!dir ) {
+            for ( ; ; ) {
+                const gchar* name = g_dir_read_name( dir );
+                if ( !name ) {
+                    break;
+                }
+                if ( g_str_has_suffix( name, ".xwd" ) ) {
+                    gint len = strlen(name) - 4;
+                    result = g_slist_prepend( result, g_strndup( name, len ) );
+                }
+            }
+            g_dir_close( dir );
+        }
+        iter = iter->next;
+    }
+    return result;
+}
+
 int
 main( int argc, char** argv )
 {
