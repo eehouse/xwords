@@ -44,8 +44,9 @@ assertUtilOK( XW_UtilCtxt* util )
 # define assertUtilOK(u)
 #endif
 
+#ifdef XWFEATURE_CHANGEDICT
 static void gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict );
-
+#endif
 
 static void
 checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
@@ -186,6 +187,7 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
     board_prefsChanged( game->board, cp );
 } /* game_reset */
 
+#ifdef XWFEATURE_CHANGEDICT
 void
 game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, DictionaryCtxt* dict )
 {
@@ -194,6 +196,7 @@ game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, DictionaryCtxt* dict )
     gi_setDict( MPPARM(mpool) gi, dict );
     server_resetEngines( game->server );
 }
+#endif
 
 XP_Bool
 game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
@@ -572,6 +575,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     }
 } /* gi_writeToStream */
 
+#ifdef XWFEATURE_CHANGEDICT
 static void
 gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict )
 {
@@ -583,6 +587,7 @@ gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict )
         XP_FREEP( mpool, &pl->dictName );
     }    
 }
+#endif
 
 XP_Bool
 player_hasPasswd( LocalPlayer* player )

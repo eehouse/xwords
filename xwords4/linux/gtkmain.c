@@ -861,6 +861,7 @@ save_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* save_game */
 
+#ifdef XWFEATURE_CHANGEDICT
 static void
 change_dictionary( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
@@ -877,6 +878,7 @@ change_dictionary( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 	}
 	g_slist_free( dicts );
 } /* change_dictionary */
+#endif
 
 static void
 handle_undo( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
@@ -1020,10 +1022,10 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
                          GTK_SIGNAL_FUNC(load_game), globals );
     (void)createAddItem( fileMenu, "Save game", 
                          GTK_SIGNAL_FUNC(save_game), globals );
-
+#ifdef XWFEATURE_CHANGEDICT
     (void)createAddItem( fileMenu, "Change dictionary", 
                          GTK_SIGNAL_FUNC(change_dictionary), globals );
-
+#endif
     (void)createAddItem( fileMenu, "Cancel trade", 
                          GTK_SIGNAL_FUNC(handle_trade_cancel), globals );
 

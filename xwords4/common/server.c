@@ -1581,6 +1581,7 @@ server_getEngineFor( ServerCtxt* server, XP_U16 playerNum )
     return engine;
 } /* server_getEngineFor */
 
+#ifdef XWFEATURE_CHANGEDICT
 void
 server_resetEngines( ServerCtxt* server )
 {
@@ -1589,6 +1590,7 @@ server_resetEngines( ServerCtxt* server )
         server_resetEngine( server, nPlayers );
     }
 }
+#endif
 
 void
 server_resetEngine( ServerCtxt* server, XP_U16 playerNum )
