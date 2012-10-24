@@ -619,7 +619,7 @@ public class GamesList extends XWListActivity
     }
 
     // NetUtils.DownloadFinishedListener interface
-    public void downloadFinished( final boolean success )
+    public void downloadFinished( String name, final boolean success )
     {
         post( new Runnable() {
                 public void run() {

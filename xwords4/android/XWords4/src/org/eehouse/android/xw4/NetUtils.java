@@ -51,7 +51,7 @@ public class NetUtils {
     public static byte PRX_PUT_MSGS = 5;
 
     public interface DownloadFinishedListener {
-        void downloadFinished( boolean success );
+        void downloadFinished( String name, boolean success );
     }
 
     public static Socket makeProxySocket( Context context, 
@@ -326,7 +326,7 @@ public class NetUtils {
                     sno.close();
                     DictLangCache.inval( context, name, loc, true );
                     if ( null != lstnr ) {
-                        lstnr.downloadFinished( success );
+                        lstnr.downloadFinished( name, success );
                     }
                 }
             } ).start();

@@ -256,7 +256,7 @@ public class BoardActivity extends XWActivity
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
                             if ( DLG_USEDICT == id ) {
-                                setGotGameDict();
+                                setGotGameDict( m_getDict );
                             } else {
                                 NetUtils.launchAndDownload( BoardActivity.this,
                                                             m_gi.dictLang,
@@ -1049,23 +1049,22 @@ public class BoardActivity extends XWActivity
     //////////////////////////////////////////////////
     // NetUtils.DownloadFinishedListener interface
     //////////////////////////////////////////////////
-    public void downloadFinished( final boolean success )
+    public void downloadFinished( final String name, final boolean success )
     {
         if ( success ) {
             post( new Runnable() {
                     public void run() {
-                        setGotGameDict();
+                        setGotGameDict( name );
                     }
                 } ); 
         }
     }
 
-    private void setGotGameDict()
+    private void setGotGameDict( String getDict )
     {
-        Assert.assertNotNull( m_getDict );
-        m_jniThread.setSaveDict( m_getDict );
+        m_jniThread.setSaveDict( getDict );
 
-        String msg = getString( R.string.reload_new_dict, m_getDict );
+        String msg = getString( R.string.reload_new_dict, getDict );
         Utils.showToast( this, msg );
         finish();
         GameUtils.launchGame( this, m_rowid, false );

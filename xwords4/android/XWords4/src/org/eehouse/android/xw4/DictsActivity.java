@@ -759,7 +759,7 @@ public class DictsActivity extends ExpandableListActivity
     }
 
     // NetUtils.DownloadFinishedListener interface
-    public void downloadFinished( final boolean success )
+    public void downloadFinished( String name, final boolean success )
     {
         if ( m_launchedForMissing ) {
             m_handler.post( new Runnable() {
