@@ -347,8 +347,8 @@ public class DictsActivity extends ExpandableListActivity
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
                         m_handler = new Handler();
-                        NetUtils.launchAndDownload( DictsActivity.this, lang, 
-                                                    name, DictsActivity.this );
+                        NetUtils.downloadDictInBack( DictsActivity.this, lang, 
+                                                     name, DictsActivity.this );
                     }
                 };
             lstnr2 = new OnClickListener() {
@@ -438,7 +438,7 @@ public class DictsActivity extends ExpandableListActivity
                 downloadNewDict( intent );
             }
         }
-    }
+    } // onCreate
 
     @Override
     protected void onResume()
@@ -566,7 +566,7 @@ public class DictsActivity extends ExpandableListActivity
             DictLoc loc = DictLoc.values()[loci];
             String url = 
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
-            NetUtils.launchAndDownload( this, url, loc, null );
+            NetUtils.downloadDictInBack( this, url, loc, null );
             finish();
         }
     }
@@ -678,12 +678,6 @@ public class DictsActivity extends ExpandableListActivity
 
     private void startDownload( int lang, String name )
     {
-        boolean toSD = XWPrefs.getDefaultLocInternal( this );
-        startDownload( lang, name, toSD );
-    }
-
-    private void startDownload( int lang, String name, boolean toSD )
-    {
         Intent intent = mkDownloadIntent( this, lang, name );
         startDownload( intent );
     }
@@ -756,6 +750,11 @@ public class DictsActivity extends ExpandableListActivity
     public static void launchAndDownload( Activity activity, int lang )
     {
         launchAndDownload( activity, lang, null );
+    }
+
+    public static void launchAndDownload( Activity activity )
+    {
+        launchAndDownload( activity, 0, null );
     }
 
     // NetUtils.DownloadFinishedListener interface

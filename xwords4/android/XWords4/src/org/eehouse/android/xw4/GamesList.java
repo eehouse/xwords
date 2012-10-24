@@ -103,12 +103,11 @@ public class GamesList extends XWListActivity
             case WARN_NODICT_SUBST:
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            for ( String name : m_missingDictNames ) {
-                                NetUtils.launchAndDownload( GamesList.this,
-                                                            m_missingDictLang,
-                                                            name, GamesList.this );
-                                break; // just do one
-                            }
+                            // just do one
+                            NetUtils.downloadDictInBack( GamesList.this,
+                                                         m_missingDictLang,
+                                                         m_missingDictNames[0],
+                                                         GamesList.this );
                         }
                     };
                 String message;

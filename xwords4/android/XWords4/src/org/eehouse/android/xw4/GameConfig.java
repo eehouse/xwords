@@ -784,7 +784,7 @@ public class GameConfig extends XWActivity
                     String chosen = 
                         (String)parentView.getItemAtPosition( position );
                     if ( chosen.equals( m_browseText ) ) {
-                        DictsActivity.launchAndDownload( GameConfig.this, 0 );
+                        DictsActivity.launchAndDownload( GameConfig.this );
                     } else {
                         m_gi.setLang( DictLangCache.
                                       getLangLangCode( GameConfig.this, 

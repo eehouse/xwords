@@ -258,10 +258,10 @@ public class BoardActivity extends XWActivity
                             if ( DLG_USEDICT == id ) {
                                 setGotGameDict( m_getDict );
                             } else {
-                                NetUtils.launchAndDownload( BoardActivity.this,
-                                                            m_gi.dictLang,
-                                                            m_getDict,
-                                                            BoardActivity.this );
+                                NetUtils.downloadDictInBack( BoardActivity.this,
+                                                             m_gi.dictLang,
+                                                             m_getDict,
+                                                             BoardActivity.this );
                             }
                         }
                     };

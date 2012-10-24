@@ -274,24 +274,24 @@ public class NetUtils {
         }
     } // sendToRelay
 
-    static void launchAndDownload( Context context, int lang, String name,
-                                   DownloadFinishedListener lstnr )
+    static void downloadDictInBack( Context context, int lang, String name,
+                                    DownloadFinishedListener lstnr )
     {
         DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( context );
-        launchAndDownload( context, lang, name, loc, lstnr );
+        downloadDictInBack( context, lang, name, loc, lstnr );
     }
 
-    static void launchAndDownload( Context context, int lang, String name,
-                                   DictUtils.DictLoc loc,
-                                   DownloadFinishedListener lstnr )
+    static void downloadDictInBack( Context context, int lang, String name,
+                                    DictUtils.DictLoc loc,
+                                    DownloadFinishedListener lstnr )
     {
         String url = Utils.makeDictUrl( context, lang, name );
-        launchAndDownload( context, url, loc, lstnr );
+        downloadDictInBack( context, url, loc, lstnr );
     }
 
-    static void launchAndDownload( final Context context, final String urlStr,
-                                   final DictUtils.DictLoc loc,
-                                   final DownloadFinishedListener lstnr )
+    static void downloadDictInBack( final Context context, final String urlStr,
+                                    final DictUtils.DictLoc loc,
+                                    final DownloadFinishedListener lstnr )
     {
         String tmp = Utils.dictFromURL( context, urlStr );
         final String name = DictUtils.removeDictExtn( tmp );
