@@ -111,21 +111,23 @@ public class GameConfig extends XWActivity
     private boolean m_gameStarted = false;
     private CommsConnType[] m_types;
     private String[] m_connStrings;
-    private static final int[] s_disabledWhenLocked = { R.id.juggle_players
-                                                        ,R.id.add_player
-                                                        ,R.id.lang_spinner
-                                                        ,R.id.join_public_room_check
-                                                        ,R.id.room_edit
-                                                        ,R.id.advertise_new_room_check
-                                                        ,R.id.room_spinner
-                                                        ,R.id.refresh_button
-                                                        ,R.id.hints_allowed
-                                                        ,R.id.pick_faceup
-                                                        ,R.id.boardsize_spinner
-                                                        ,R.id.use_timer
-                                                        ,R.id.timer_minutes_edit
-                                                        ,R.id.smart_robot
-                                                        ,R.id.phonies_spinner
+    private static final int[] s_disabledWhenLocked
+        = { R.id.juggle_players
+            ,R.id.add_player
+            ,R.id.lang_spinner
+            ,R.id.dict_spinner
+            ,R.id.join_public_room_check
+            ,R.id.room_edit
+            ,R.id.advertise_new_room_check
+            ,R.id.room_spinner
+            ,R.id.refresh_button
+            ,R.id.hints_allowed
+            ,R.id.pick_faceup
+            ,R.id.boardsize_spinner
+            ,R.id.use_timer
+            ,R.id.timer_minutes_edit
+            ,R.id.smart_robot
+            ,R.id.phonies_spinner
     };
 
     class RemoteChoices extends XWListAdapter {
@@ -217,9 +219,8 @@ public class GameConfig extends XWActivity
                         public void onDismiss( DialogInterface di ) 
                         {
                             if ( m_gi.forceRemoteConsistent() ) {
-                                Toast.makeText( GameConfig.this, 
-                                                R.string.forced_consistent,
-                                                Toast.LENGTH_SHORT).show();
+                                Utils.showToast( GameConfig.this, 
+                                                 R.string.forced_consistent );
                                 loadPlayersList();
                             }
                         }
@@ -785,7 +786,7 @@ public class GameConfig extends XWActivity
                     String chosen = 
                         (String)parentView.getItemAtPosition( position );
                     if ( chosen.equals( m_browseText ) ) {
-                        DictsActivity.launchAndDownload( GameConfig.this, 0 );
+                        DictsActivity.launchAndDownload( GameConfig.this );
                     } else {
                         m_gi.setLang( DictLangCache.
                                       getLangLangCode( GameConfig.this, 

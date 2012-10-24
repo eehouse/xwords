@@ -56,7 +56,8 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
 public class BoardActivity extends XWActivity 
-    implements TransportProcs.TPMsgHandler, View.OnClickListener {
+    implements TransportProcs.TPMsgHandler, View.OnClickListener,
+               NetUtils.DownloadFinishedListener {
 
     public static final String INTENT_KEY_CHAT = "chat";
 
@@ -72,6 +73,9 @@ public class BoardActivity extends XWActivity
     private static final int DLG_INVITE = DLG_OKONLY + 9;
     private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
     private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 11;
+    private static final int DLG_USEDICT = DLG_OKONLY + 12;
+    private static final int DLG_GETDICT = DLG_OKONLY + 13;
+                    
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
@@ -105,6 +109,7 @@ public class BoardActivity extends XWActivity
     private static final String PWDNAME = "PWDNAME";
     private static final String TOASTSTR = "TOASTSTR";
     private static final String WORDS = "WORDS";
+    private static final String GETDICT = "GETDICT";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -155,6 +160,7 @@ public class BoardActivity extends XWActivity
     private String m_toastStr;
     private String[] m_words;
     private String m_pwdName;
+    private String m_getDict;
 
     private int m_missing;
     private boolean m_haveInvited = false;
@@ -235,12 +241,36 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
-                                m_jniThread.handle( JNIThread.JNICmd.CMD_RESET );
+                                m_jniThread.handle( JNICmd.CMD_RESET );
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
                 }
                 dialog = ab.create();
+                Utils.setRemoveOnDismiss( this, dialog, id );
+                break;
+
+            case DLG_USEDICT:
+            case DLG_GETDICT:
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            if ( DLG_USEDICT == id ) {
+                                setGotGameDict( m_getDict );
+                            } else {
+                                NetUtils.downloadDictInBack( BoardActivity.this,
+                                                             m_gi.dictLang,
+                                                             m_getDict,
+                                                             BoardActivity.this );
+                            }
+                        }
+                    };
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( m_dlgTitle )
+                    .setMessage( m_dlgBytes )
+                    .setPositiveButton( R.string.button_yes, lstnr )
+                    .setNegativeButton( R.string.button_no, null )
+                    .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
 
@@ -512,6 +542,7 @@ public class BoardActivity extends XWActivity
         outState.putString( TOASTSTR, m_toastStr );
         outState.putStringArray( WORDS, m_words );
         outState.putString( PWDNAME, m_pwdName );
+        outState.putString( GETDICT, m_getDict );
     }
 
     private void getBundledData( Bundle bundle )
@@ -524,6 +555,7 @@ public class BoardActivity extends XWActivity
             m_toastStr = bundle.getString( TOASTSTR );
             m_words = bundle.getStringArray( WORDS );
             m_pwdName = bundle.getString( PWDNAME );
+            m_getDict = bundle.getString( GETDICT );
         }
     }
 
@@ -562,7 +594,7 @@ public class BoardActivity extends XWActivity
                 m_firingPrefs = false;
                 m_volKeysZoom = XWPrefs.getVolKeysZoom( this );
                 if ( null != m_jniThread ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
+                    m_jniThread.handle( JNICmd.CMD_PREFS_CHANGE );
                 }
                 // in case of change...
                 setBackgroundColor();
@@ -578,7 +610,7 @@ public class BoardActivity extends XWActivity
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
-                m_jniThread.handle( JNIThread.JNICmd.CMD_KEYDOWN, xpKey );
+                m_jniThread.handle( JNICmd.CMD_KEYDOWN, xpKey );
             } else {
                 switch( keyCode ) {
                 case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -601,7 +633,7 @@ public class BoardActivity extends XWActivity
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
-                m_jniThread.handle( JNIThread.JNICmd.CMD_KEYUP, xpKey );
+                m_jniThread.handle( JNICmd.CMD_KEYUP, xpKey );
             }
         }
         return super.onKeyUp( keyCode, event );
@@ -663,7 +695,7 @@ public class BoardActivity extends XWActivity
     public boolean onOptionsItemSelected( MenuItem item ) 
     {
         boolean handled = true;
-        JNIThread.JNICmd cmd = JNIThread.JNICmd.CMD_NONE;
+        JNICmd cmd = JNICmd.CMD_NONE;
         Runnable proc = null;
 
         int id = item.getItemId();
@@ -674,32 +706,32 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.board_menu_trade_commit:
-            cmd = JNIThread.JNICmd.CMD_COMMIT;
+            cmd = JNICmd.CMD_COMMIT;
             break;
         case R.id.board_menu_trade_cancel:
-            cmd = JNIThread.JNICmd.CMD_CANCELTRADE;
+            cmd = JNICmd.CMD_CANCELTRADE;
             break;
 
         case R.id.board_menu_hint_prev:
-            cmd = JNIThread.JNICmd.CMD_PREV_HINT;
+            cmd = JNICmd.CMD_PREV_HINT;
             break;
         case R.id.board_menu_hint_next:
-            cmd = JNIThread.JNICmd.CMD_NEXT_HINT;
+            cmd = JNICmd.CMD_NEXT_HINT;
             break;
         case R.id.board_menu_juggle:
-            cmd = JNIThread.JNICmd.CMD_JUGGLE;
+            cmd = JNICmd.CMD_JUGGLE;
             break;
         case R.id.board_menu_flip:
-            cmd = JNIThread.JNICmd.CMD_FLIP;
+            cmd = JNICmd.CMD_FLIP;
             break;
         case R.id.board_menu_zoom:
-            cmd = JNIThread.JNICmd.CMD_TOGGLEZOOM;
+            cmd = JNICmd.CMD_TOGGLEZOOM;
             break;
         case R.id.board_menu_chat:
             startChatActivity();
             break;
         case R.id.board_menu_toggle:
-            cmd = JNIThread.JNICmd.CMD_VALUES;
+            cmd = JNICmd.CMD_VALUES;
             break;
 
         case R.id.board_menu_trade:
@@ -709,10 +741,10 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.board_menu_tray:
-            cmd = JNIThread.JNICmd.CMD_TOGGLE_TRAY;
+            cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.board_menu_undo_current:
-            cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
+            cmd = JNICmd.CMD_UNDO_CUR;
             break;
         case R.id.board_menu_undo_last:
             showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
@@ -725,26 +757,26 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.board_menu_game_counts:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_COUNTS_VALUES,
+            m_jniThread.handle( JNICmd.CMD_COUNTS_VALUES,
                                 R.string.counts_values_title );
             break;
         case R.id.board_menu_game_left:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
+            m_jniThread.handle( JNICmd.CMD_REMAINING,
                                 R.string.tiles_left_title );
             break;
 
         case R.id.board_menu_game_history:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_HISTORY,
+            m_jniThread.handle( JNICmd.CMD_HISTORY,
                                 R.string.history_title );
             break;
 
         case R.id.board_menu_game_resign:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_FINAL,
+            m_jniThread.handle( JNICmd.CMD_FINAL,
                                 R.string.history_title );
             break;
 
         case R.id.board_menu_game_resend:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false );
+            m_jniThread.handle( JNICmd.CMD_RESEND, false );
             break;
 
         case R.id.gamel_menu_checkmoves:
@@ -767,7 +799,7 @@ public class BoardActivity extends XWActivity
             handled = false;
         }
 
-        if ( handled && cmd != JNIThread.JNICmd.CMD_NONE ) {
+        if ( handled && cmd != JNICmd.CMD_NONE ) {
             m_jniThread.handle( cmd );
         }
         return handled;
@@ -788,10 +820,10 @@ public class BoardActivity extends XWActivity
                                                 m_gi.nPlayers );
             }
         } else if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            JNIThread.JNICmd cmd = JNIThread.JNICmd.CMD_NONE;
+            JNICmd cmd = JNICmd.CMD_NONE;
             switch ( id ) {
             case UNDO_LAST_ACTION:
-                cmd = JNIThread.JNICmd.CMD_UNDO_LAST;
+                cmd = JNICmd.CMD_UNDO_LAST;
                 break;
             case SYNC_ACTION:
                 doSyncMenuitem();
@@ -805,11 +837,10 @@ public class BoardActivity extends XWActivity
                                             SMS_INVITE_RESULT );
                 break;
             case COMMIT_ACTION:
-                cmd = JNIThread.JNICmd.CMD_COMMIT;
+                cmd = JNICmd.CMD_COMMIT;
                 break;
             case SHOW_EXPL_ACTION:
-                Toast.makeText( BoardActivity.this, m_toastStr, 
-                                Toast.LENGTH_SHORT).show();
+                Utils.showToast( BoardActivity.this, m_toastStr );
                 m_toastStr = null;
                 break;
             case BUTTON_BROWSE_ACTION:
@@ -817,33 +848,32 @@ public class BoardActivity extends XWActivity
                 DictBrowseActivity.launch( this, dictName );
                 break;
             case PREV_HINT_ACTION:
-                cmd = JNIThread.JNICmd.CMD_PREV_HINT;
+                cmd = JNICmd.CMD_PREV_HINT;
                 break;
             case NEXT_HINT_ACTION:
-                cmd = JNIThread.JNICmd.CMD_NEXT_HINT;
+                cmd = JNICmd.CMD_NEXT_HINT;
                 break;
             case JUGGLE_ACTION:
-                cmd = JNIThread.JNICmd.CMD_JUGGLE;
+                cmd = JNICmd.CMD_JUGGLE;
                 break;
             case FLIP_ACTION:
-                cmd = JNIThread.JNICmd.CMD_FLIP;
+                cmd = JNICmd.CMD_FLIP;
                 break;
             case ZOOM_ACTION:
-                cmd = JNIThread.JNICmd.CMD_TOGGLEZOOM;
+                cmd = JNICmd.CMD_TOGGLEZOOM;
                 break;
             case UNDO_ACTION:
-                cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
+                cmd = JNICmd.CMD_UNDO_CUR;
                 break;
             case VALUES_ACTION:
-                cmd = JNIThread.JNICmd.CMD_VALUES;
+                cmd = JNICmd.CMD_VALUES;
                 break;
             case CHAT_ACTION:
                 startChatActivity();
                 break;
             case START_TRADE_ACTION:
-                Toast.makeText( this, R.string.entering_trade,
-                                Toast.LENGTH_SHORT).show();
-                cmd = JNIThread.JNICmd.CMD_TRADE;
+                Utils.showToast( this, R.string.entering_trade );
+                cmd = JNICmd.CMD_TRADE;
                 break;
             case LOOKUP_ACTION:
                 launchLookup( m_words, m_gi.dictLang );
@@ -852,7 +882,7 @@ public class BoardActivity extends XWActivity
                 Assert.fail();
             }
 
-            if ( JNIThread.JNICmd.CMD_NONE != cmd ) {
+            if ( JNICmd.CMD_NONE != cmd ) {
                 checkAndHandle( cmd );
             }
         }
@@ -865,9 +895,9 @@ public class BoardActivity extends XWActivity
     public void onClick( View view ) 
     {
         if ( view == m_exchCommmitButton ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_COMMIT );
+            m_jniThread.handle( JNICmd.CMD_COMMIT );
         } else if ( view == m_exchCancelButton ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_CANCELTRADE );
+            m_jniThread.handle( JNICmd.CMD_CANCELTRADE );
         }
     }
 
@@ -1002,8 +1032,7 @@ public class BoardActivity extends XWActivity
         }
 
         if ( doToast ) {
-            Toast.makeText( this, getString( strID ), 
-                            Toast.LENGTH_SHORT).show();
+            Utils.showToast( this, strID );
         } else if ( dlgID >= 0 ) {
             final int strIDf = strID;
             final int dlgIDf = dlgID;
@@ -1015,6 +1044,30 @@ public class BoardActivity extends XWActivity
                     }
                 });
         }
+    }
+
+    //////////////////////////////////////////////////
+    // NetUtils.DownloadFinishedListener interface
+    //////////////////////////////////////////////////
+    public void downloadFinished( final String name, final boolean success )
+    {
+        if ( success ) {
+            post( new Runnable() {
+                    public void run() {
+                        setGotGameDict( name );
+                    }
+                } ); 
+        }
+    }
+
+    private void setGotGameDict( String getDict )
+    {
+        m_jniThread.setSaveDict( getDict );
+
+        String msg = getString( R.string.reload_new_dict, getDict );
+        Utils.showToast( this, msg );
+        finish();
+        GameUtils.launchGame( this, m_rowid, false );
     }
 
     private XwJNI.XP_Key keyCodeToXPKey( int keyCode )
@@ -1151,7 +1204,7 @@ public class BoardActivity extends XWActivity
             post( new Runnable() {
                     public void run() {
                         if ( null != m_jniThread ) {
-                            m_jniThread.handleBkgrnd( JNIThread.JNICmd.CMD_DO );
+                            m_jniThread.handleBkgrnd( JNICmd.CMD_DO );
                         }
                     }
                 } );
@@ -1160,7 +1213,7 @@ public class BoardActivity extends XWActivity
         @Override
         public void remSelected() 
         {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
+            m_jniThread.handle( JNICmd.CMD_REMAINING,
                                 R.string.tiles_left_title );
         }
 
@@ -1174,7 +1227,7 @@ public class BoardActivity extends XWActivity
                                newRole.toString(), m_gi.serverRole.toString() );
                 m_gi.serverRole = newRole;
                 if ( !isServer ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_SWITCHCLIENT );
+                    m_jniThread.handle( JNICmd.CMD_SWITCHCLIENT );
                 }
             }
         }
@@ -1204,8 +1257,7 @@ public class BoardActivity extends XWActivity
                 final String bonusStr = getString( id );
                 post( new Runnable() {
                         public void run() {
-                            Toast.makeText( BoardActivity.this, bonusStr,
-                                            Toast.LENGTH_SHORT).show();
+                            Utils.showToast( BoardActivity.this, bonusStr );
                         }
                     } );
             }
@@ -1223,8 +1275,7 @@ public class BoardActivity extends XWActivity
             final String text = String.format( "%s\n%s", name, expl );
             post( new Runnable() {
                     public void run() {
-                        Toast.makeText( BoardActivity.this, text,
-                                        Toast.LENGTH_SHORT).show();
+                        Utils.showToast( BoardActivity.this, text );
                     }
                 } );
         }
@@ -1320,7 +1371,7 @@ public class BoardActivity extends XWActivity
                                                  R.string.key_notagain_turnchanged );
                         }
                     } );
-                m_jniThread.handle( JNIThread.JNICmd. CMD_ZOOM, -8 );
+                m_jniThread.handle( JNICmd. CMD_ZOOM, -8 );
             }
         }
 
@@ -1478,7 +1529,8 @@ public class BoardActivity extends XWActivity
         }
 
         @Override
-        public void informNetDict( String oldName, String newName, String newSum, 
+        public void informNetDict( int code, String oldName, 
+                                   String newName, String newSum, 
                                    CurGameInfo.XWPhoniesChoice phonies )
         {
             // If it's same dict and same sum, we're good.  That
@@ -1497,14 +1549,18 @@ public class BoardActivity extends XWActivity
             } else {
                 // Different dict!  If we have the other one, switch
                 // to it.  Otherwise offer to download
+                int dlgID;
                 msg = getString( R.string.inform_dict_diffdictf,
-                                 oldName, newName );
-            }
-            if ( null != msg ) {
-                if ( CurGameInfo.XWPhoniesChoice.PHONIES_DISALLOW == phonies ) {
-                    msg += getString( R.string.inform_dict_phonies );
+                                 oldName, newName, newName );
+                if ( DictLangCache.haveDict( BoardActivity.this, code, 
+                                             newName ) ) {
+                    dlgID = DLG_USEDICT;
+                } else {
+                    dlgID = DLG_GETDICT;
+                    msg += getString( R.string.inform_dict_download );
                 }
-                nonBlockingDialog( DLG_OKONLY, msg );
+                m_getDict = newName;
+                nonBlockingDialog( dlgID, msg );
             }
         }
 
@@ -1512,7 +1568,7 @@ public class BoardActivity extends XWActivity
         public void notifyGameOver()
         {
             m_gameOver = true;
-            m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
+            m_jniThread.handle( JNICmd.CMD_POST_OVER );
         }
 
         // public void yOffsetChange( int maxOffset, int oldOffset, int newOffset )
@@ -1667,7 +1723,7 @@ public class BoardActivity extends XWActivity
                     startChatActivity();
                 }
                 if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
+                    m_jniThread.handle( JNICmd.CMD_POST_OVER );
                 }
                 if ( 0 != flags ) {
                     DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
@@ -1684,7 +1740,7 @@ public class BoardActivity extends XWActivity
         }
     } // loadGame
 
-    private void checkAndHandle( JNIThread.JNICmd cmd )
+    private void checkAndHandle( JNICmd cmd )
     {
         if ( null != m_jniThread ) {
             m_jniThread.handle( cmd );
@@ -1784,6 +1840,11 @@ public class BoardActivity extends XWActivity
         case DLG_BADWORDS:
             m_dlgTitle = R.string.badwords_title;
             break;
+        case DLG_USEDICT:
+        case DLG_GETDICT:
+            m_dlgTitle = R.string.inform_dict_title;
+            break;
+
         default:
             Assert.fail();
         }
@@ -1800,7 +1861,7 @@ public class BoardActivity extends XWActivity
     {
         boolean handled = null != m_jniThread;
         if ( handled ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, zoomBy );
+            m_jniThread.handle( JNICmd.CMD_ZOOM, zoomBy );
         }
         return handled;
     }

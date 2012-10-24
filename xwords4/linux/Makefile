@@ -108,6 +108,8 @@ DEFINES += -DXWFEATURE_TRAYUNDO_ONE
 DEFINES += -DXWFEATURE_BONUSALL
 # DEFINES += -DXWFEATURE_BONUSALLHINT
 DEFINES += -DXWFEATURE_HILITECELL
+# allow change dict inside running game
+DEFINES += -DXWFEATURE_CHANGEDICT
 
 # MAX_ROWS controls STREAM_VERS_BIGBOARD and with it move hashing
 DEFINES += -DMAX_ROWS=32
@@ -173,6 +175,7 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkconnsdlg.o \
 	$(BUILD_PLAT_DIR)/gtkutils.o \
 	$(BUILD_PLAT_DIR)/gtkntilesask.o \
+	$(BUILD_PLAT_DIR)/gtkaskdict.o \
 	$(BUILD_PLAT_DIR)/gtkchat.o
 endif
 ifdef DO_CURSES

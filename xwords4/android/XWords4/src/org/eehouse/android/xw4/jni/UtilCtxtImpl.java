@@ -228,7 +228,8 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "informUndo" );
     }
 
-    public void informNetDict( String oldName, String newName, String newSum, 
+    public void informNetDict( int lang, String oldName, 
+                               String newName, String newSum, 
                                CurGameInfo.XWPhoniesChoice phonies )
     {
         subclassOverride( "informNetDict" );

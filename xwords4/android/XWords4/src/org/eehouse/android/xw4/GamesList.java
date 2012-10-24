@@ -53,7 +53,8 @@ import org.eehouse.android.xw4.jni.*;
 public class GamesList extends XWListActivity 
     implements DispatchNotify.HandleRelaysIface,
                DBUtils.DBChangeListener,
-               GameListAdapter.LoadItemCB {
+               GameListAdapter.LoadItemCB, 
+               NetUtils.DownloadFinishedListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -102,13 +103,11 @@ public class GamesList extends XWListActivity
             case WARN_NODICT_SUBST:
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            for ( String name : m_missingDictNames ) {
-                                DictsActivity.
-                                    launchAndDownload( GamesList.this, 
-                                                       m_missingDictLang,
-                                                       name );
-                                break; // just do one
-                            }
+                            // just do one
+                            NetUtils.downloadDictInBack( GamesList.this,
+                                                         m_missingDictLang,
+                                                         m_missingDictNames[0],
+                                                         GamesList.this );
                         }
                     };
                 String message;
@@ -584,7 +583,7 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_checkupdates:
-            UpdateCheckReceiver.checkVersions( this );
+            UpdateCheckReceiver.checkVersions( this, true );
             break;
 
         case R.id.gamel_menu_prefs:
@@ -616,6 +615,18 @@ public class GamesList extends XWListActivity
         }
 
         return handled;
+    }
+
+    // NetUtils.DownloadFinishedListener interface
+    public void downloadFinished( String name, final boolean success )
+    {
+        post( new Runnable() {
+                public void run() {
+                    int id = success ? R.string.download_done 
+                        : R.string.download_failed;
+                    Utils.showToast( GamesList.this, id );
+                }
+            } );
     }
 
     private boolean handleMenuItem( int menuID, int position ) 
@@ -808,5 +819,4 @@ public class GamesList extends XWListActivity
             onContentChanged();
         }
     }
-
 }

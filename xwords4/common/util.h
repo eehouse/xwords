@@ -130,7 +130,8 @@ typedef struct UtilVtable {
     void (*m_util_informMove)( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
                                XWStreamCtxt* words );
     void (*m_util_informUndo)( XW_UtilCtxt* uc );
-    void (*m_util_informNetDict)( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
+    void (*m_util_informNetDict)( XW_UtilCtxt* uc, XP_LangCode lang,
+                                  const XP_UCHAR* oldName,
                                   const XP_UCHAR* newName,
                                   const XP_UCHAR* newSum,
                                   XWPhoniesChoice phoniesAction );
@@ -251,8 +252,9 @@ struct XW_UtilCtxt {
          (uc)->vtable->m_util_informMove( (uc),(e),(w))
 #define util_informUndo(uc) \
          (uc)->vtable->m_util_informUndo( (uc))
-#define util_informNetDict(uc, on, nn, ns, pa ) \
-         (uc)->vtable->m_util_informNetDict( (uc), (on), (nn), (ns), (pa) )
+#define util_informNetDict(uc, cd, on, nn, ns, pa )                      \
+         (uc)->vtable->m_util_informNetDict( (uc), (cd), (on), (nn), (ns), \
+                                             (pa) )
 #define util_notifyGameOver( uc, q )                  \
          (uc)->vtable->m_util_notifyGameOver((uc), (q))
 

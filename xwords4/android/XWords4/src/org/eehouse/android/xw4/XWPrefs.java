@@ -194,6 +194,19 @@ public class XWPrefs {
         clearPrefsKey( context, R.string.key_gcm_regid );
     }
 
+    public static boolean getDefaultLocInternal( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_default_loc, true );
+    }
+
+    public static DictUtils.DictLoc getDefaultLoc( Context context )
+    {
+        boolean internal = getDefaultLocInternal( context );
+        DictUtils.DictLoc result = internal ? DictUtils.DictLoc.INTERNAL
+            : DictUtils.DictLoc.EXTERNAL;
+        return result;
+    }
+    
     protected static String getPrefsString( Context context, int keyID )
     {
         String key = context.getString( keyID );

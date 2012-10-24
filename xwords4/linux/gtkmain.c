@@ -58,6 +58,7 @@
 #include "gtkletterask.h"
 #include "gtkpasswdask.h"
 #include "gtkntilesask.h"
+#include "gtkaskdict.h"
 /* #include "undo.h" */
 #include "gtkdraw.h"
 #include "memstream.h"
@@ -860,11 +861,24 @@ save_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* save_game */
 
+#ifdef XWFEATURE_CHANGEDICT
 static void
-load_dictionary( GtkWidget* XP_UNUSED(widget), 
-                 GtkAppGlobals* XP_UNUSED(globals) )
+change_dictionary( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-} /* load_dictionary */
+    LaunchParams* params = globals->cGlobals.params;
+	GSList* dicts = listDicts( params );
+	gchar buf[265];
+	gchar* name = gtkaskdict( dicts, buf, VSIZE(buf) );
+	if ( !!name ) {
+		DictionaryCtxt* dict = 
+			linux_dictionary_make( MPPARM(params->util->mpool) params, name,
+								   params->useMmap );
+		game_changeDict( MPPARM(params->util->mpool) &globals->cGlobals.game, 
+                         &params->gi, dict );
+	}
+	g_slist_free( dicts );
+} /* change_dictionary */
+#endif
 
 static void
 handle_undo( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
@@ -1008,10 +1022,10 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
                          GTK_SIGNAL_FUNC(load_game), globals );
     (void)createAddItem( fileMenu, "Save game", 
                          GTK_SIGNAL_FUNC(save_game), globals );
-
-    (void)createAddItem( fileMenu, "Load dictionary", 
-                         GTK_SIGNAL_FUNC(load_dictionary), globals );
-
+#ifdef XWFEATURE_CHANGEDICT
+    (void)createAddItem( fileMenu, "Change dictionary", 
+                         GTK_SIGNAL_FUNC(change_dictionary), globals );
+#endif
     (void)createAddItem( fileMenu, "Cancel trade", 
                          GTK_SIGNAL_FUNC(handle_trade_cancel), globals );
 
@@ -1461,7 +1475,8 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
 } /* gtk_util_notifyGameOver */
 
 static void
-gtk_util_informNetDict( XW_UtilCtxt* uc, const XP_UCHAR* oldName,
+gtk_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
+                        const XP_UCHAR* oldName,
                         const XP_UCHAR* newName, const XP_UCHAR* newSum,
                         XWPhoniesChoice phoniesAction )
 {

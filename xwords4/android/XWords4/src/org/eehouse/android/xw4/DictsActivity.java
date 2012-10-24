@@ -56,10 +56,12 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.DictUtils.DictLoc;
 
 public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
-               MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify {
+               MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify,
+               NetUtils.DownloadFinishedListener {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
@@ -75,10 +77,9 @@ public class DictsActivity extends ExpandableListActivity
     // For new callback alternative
     private static final int DELETE_DICT_ACTION = 1;
 
-    private static final int PICK_STORAGE = DlgDelegate.DIALOG_LAST + 1;
-    private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 2;
-    private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 3;
-    private static final int DICT_OR_DECLINE = DlgDelegate.DIALOG_LAST + 4;
+    private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 1;
+    private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 2;
+    private static final int DICT_OR_DECLINE = DlgDelegate.DIALOG_LAST + 3;
     private int m_lang = 0;
     private String[] m_langs;
     private String m_name = null;
@@ -88,9 +89,10 @@ public class DictsActivity extends ExpandableListActivity
     private DlgDelegate m_delegate;
     private String[] m_locNames;
     private DictListAdapter m_adapter;
+    private Handler m_handler;
 
     private long m_packedPosition;
-    private DictUtils.DictLoc m_moveFromLoc;
+    private DictLoc m_moveFromLoc;
     private int m_moveFromItem;
     private int m_moveToItm;
     private boolean m_launchedForMissing = false;
@@ -144,10 +146,10 @@ public class DictsActivity extends ExpandableListActivity
                     dal = dals[childPosition];
                     view.setText( dal.name );
 
-                    DictUtils.DictLoc loc = dal.loc;
+                    DictLoc loc = dal.loc;
                     view.setComment( m_locNames[loc.ordinal()] );
                     view.cache( loc );
-                    if ( DictUtils.DictLoc.BUILT_IN != loc ) {
+                    if ( DictLoc.BUILT_IN != loc ) {
                         view.setDeleteCallback( DictsActivity.this );
                     }
                 } else {
@@ -257,28 +259,13 @@ public class DictsActivity extends ExpandableListActivity
         boolean doRemove = true;
 
         switch( id ) {
-        case PICK_STORAGE:
-            lstnr = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        startDownload( m_lang, m_name, item != 
-                                       DialogInterface.BUTTON_POSITIVE );
-                    }
-                };
-
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.storeWhereTitle )
-                .setMessage( R.string.storeWhereMsg )
-                .setPositiveButton( R.string.button_internal, lstnr )
-                .setNegativeButton( R.string.button_sd, lstnr )
-                .create();
-            break;
         case MOVE_DICT:
             message = Utils.format( this, R.string.move_dictf,
                                     m_adapter.getSelChildView().getText() );
 
             String[] items = new String[3];
             for ( int ii = 0; ii < 3; ++ii ) {
-                DictUtils.DictLoc loc = itemToRealLoc(ii);
+                DictLoc loc = itemToRealLoc(ii);
                 if ( loc.equals( m_moveFromLoc ) ) {
                     m_moveFromItem = ii;
                 }
@@ -300,7 +287,7 @@ public class DictsActivity extends ExpandableListActivity
                     public void onClick( DialogInterface dlg, int item ) {
                         XWListItem rowView = m_adapter.getSelChildView();
                         Assert.assertTrue( m_moveToItm != m_moveFromItem );
-                        DictUtils.DictLoc toLoc = itemToRealLoc( m_moveToItm );
+                        DictLoc toLoc = itemToRealLoc( m_moveToItm );
                         if ( DictUtils.moveDict( DictsActivity.this,
                                                  rowView.getText(),
                                                  m_moveFromLoc,
@@ -359,7 +346,9 @@ public class DictsActivity extends ExpandableListActivity
                         int lang = intent.getIntExtra( MultiService.LANG, -1 );
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
-                        askStartDownload( lang, name );
+                        m_handler = new Handler();
+                        NetUtils.downloadDictInBack( DictsActivity.this, lang, 
+                                                     name, DictsActivity.this );
                     }
                 };
             lstnr2 = new OnClickListener() {
@@ -443,13 +432,13 @@ public class DictsActivity extends ExpandableListActivity
                 if ( downloadNow ) {
                     int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
                     String name = intent.getStringExtra( DICT_NAME_EXTRA );
-                    askStartDownload( lang, name );
+                    startDownload( lang, name );
                 }
 
                 downloadNewDict( intent );
             }
         }
-    }
+    } // onCreate
 
     @Override
     protected void onResume()
@@ -486,7 +475,7 @@ public class DictsActivity extends ExpandableListActivity
 
             int tmp = savedInstanceState.getInt( MOVEFROMLOC, -1 );
             if ( -1 != tmp ) {
-                m_moveFromLoc = DictUtils.DictLoc.values()[tmp];
+                m_moveFromLoc = DictLoc.values()[tmp];
             }
         }
     }
@@ -500,11 +489,11 @@ public class DictsActivity extends ExpandableListActivity
     public void onClick( View view ) 
     {
         if ( view instanceof Button ) {
-            askStartDownload( 0, null );
+            startDownload( 0, null );
         } else {
             XWListItem item = (XWListItem)view;
             DictBrowseActivity.launch( this, item.getText(), 
-                                       (DictUtils.DictLoc)item.getCached() );
+                                       (DictLoc)item.getCached() );
         }
     }
 
@@ -531,8 +520,8 @@ public class DictsActivity extends ExpandableListActivity
             inflater.inflate( R.menu.dicts_item_menu, menu );
             
             XWListItem row = (XWListItem)info.targetView;
-            DictUtils.DictLoc loc = (DictUtils.DictLoc)row.getCached();
-            if ( loc == DictUtils.DictLoc.BUILT_IN
+            DictLoc loc = (DictLoc)row.getCached();
+            if ( loc == DictLoc.BUILT_IN
                  || ! DictUtils.haveWriteableSD() ) {
                 menu.removeItem( R.id.dicts_item_move );
             }
@@ -570,25 +559,14 @@ public class DictsActivity extends ExpandableListActivity
         return handled;
     }
 
-    @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        super.onWindowFocusChanged( hasFocus );
-        if ( hasFocus && m_launchedForMissing ) {
-            Intent intent = getIntent();
-            if ( MultiService.returnOnDownload( this, intent ) ) {
-                finish();
-            }
-        }
-    }
-
     private void downloadNewDict( Intent intent )
     {
-        String url = intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
         int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
-            DictUtils.DictLoc loc = DictUtils.DictLoc.values()[loci];
-            startDownload( url, DictUtils.DictLoc.EXTERNAL == loc );
+            DictLoc loc = DictLoc.values()[loci];
+            String url = 
+                intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
+            NetUtils.downloadDictInBack( this, url, loc, null );
             finish();
         }
     }
@@ -610,7 +588,7 @@ public class DictsActivity extends ExpandableListActivity
     // options for YY?
     private void askMoveDict( XWListItem item )
     {
-        m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
+        m_moveFromLoc = (DictLoc)item.getCached();
         showDialog( MOVE_DICT );
     }
 
@@ -621,7 +599,7 @@ public class DictsActivity extends ExpandableListActivity
         String msg = getString( R.string.confirm_delete_dictf, dict );
 
         m_deleteDict = dict;
-        m_moveFromLoc = (DictUtils.DictLoc)item.getCached();
+        m_moveFromLoc = (DictLoc)item.getCached();
 
         // When and what to warn about.  First off, if there's another
         // identical dict, simply confirm.  Or if nobody's using this
@@ -684,13 +662,13 @@ public class DictsActivity extends ExpandableListActivity
         }
     }
 
-    private DictUtils.DictLoc itemToRealLoc( int item )
+    private DictLoc itemToRealLoc( int item )
     {
-        item += DictUtils.DictLoc.INTERNAL.ordinal();
-        return DictUtils.DictLoc.values()[item];
+        item += DictLoc.INTERNAL.ordinal();
+        return DictLoc.values()[item];
     }
 
-    private void deleteDict( String dict, DictUtils.DictLoc loc )
+    private void deleteDict( String dict, DictLoc loc )
     {
         DictUtils.deleteDict( this, dict, loc );
         DictLangCache.inval( this, dict, loc, false );
@@ -698,27 +676,8 @@ public class DictsActivity extends ExpandableListActivity
         expandGroups();
     }
 
-    private void askStartDownload( int lang, String name )
+    private void startDownload( int lang, String name )
     {
-        if ( DictUtils.haveWriteableSD() ) {
-            m_lang = lang;
-            m_name = name;
-            showDialog( PICK_STORAGE );
-        } else {
-            startDownload( lang, name, false );
-        }
-    }
-
-    private void startDownload( String url, boolean toSD )
-    {
-        DictImportActivity.setUseSD( toSD );
-        Intent intent = mkDownloadIntent( this, url );
-        startDownload( intent );
-    }
-
-    private void startDownload( int lang, String name, boolean toSD )
-    {
-        DictImportActivity.setUseSD( toSD );
         Intent intent = mkDownloadIntent( this, lang, name );
         startDownload( intent );
     }
@@ -728,8 +687,7 @@ public class DictsActivity extends ExpandableListActivity
         try {
             startActivity( downloadIntent );
         } catch ( android.content.ActivityNotFoundException anfe ) {
-            Toast.makeText( this, R.string.no_download_warning, 
-                            Toast.LENGTH_SHORT).show();
+            Utils.showToast( this, R.string.no_download_warning );
         }
     }
 
@@ -769,13 +727,7 @@ public class DictsActivity extends ExpandableListActivity
     private static Intent mkDownloadIntent( Context context,
                                             int lang, String dict )
     {
-        String dict_url = XWPrefs.getDefaultDictURL( context );
-        if ( 0 != lang ) {
-            dict_url += "/" + DictLangCache.getLangName( context, lang );
-        }
-        if ( null != dict ) {
-            dict_url += "/" + dict + XWConstants.DICT_EXTN;
-        }
+        String dict_url = Utils.makeDictUrl( context, lang, dict );
         return mkDownloadIntent( context, dict_url );
     }
 
@@ -799,5 +751,32 @@ public class DictsActivity extends ExpandableListActivity
     {
         launchAndDownload( activity, lang, null );
     }
+
+    public static void launchAndDownload( Activity activity )
+    {
+        launchAndDownload( activity, 0, null );
+    }
+
+    // NetUtils.DownloadFinishedListener interface
+    public void downloadFinished( String name, final boolean success )
+    {
+        if ( m_launchedForMissing ) {
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        if ( success ) {
+                            Intent intent = getIntent();
+                            if ( MultiService.returnOnDownload( DictsActivity.this,
+                                                                intent ) ) {
+                                finish();
+                            }
+                        } else {
+                            Utils.showToast( DictsActivity.this, 
+                                             R.string.download_failed );
+                        }
+                    }
+                } );
+        }
+    }
+
 
 }

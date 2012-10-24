@@ -21,14 +21,17 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import android.content.Intent;
+import android.os.Handler;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +49,10 @@ public class NetUtils {
     public static byte PRX_DEVICE_GONE = 3;
     public static byte PRX_GET_MSGS = 4;
     public static byte PRX_PUT_MSGS = 5;
+
+    public interface DownloadFinishedListener {
+        void downloadFinished( String name, boolean success );
+    }
 
     public static Socket makeProxySocket( Context context, 
                                           int timeoutMillis )
@@ -266,4 +273,63 @@ public class NetUtils {
             DbgUtils.logf( "sendToRelay: null msgs" );
         }
     } // sendToRelay
+
+    static void downloadDictInBack( Context context, int lang, String name,
+                                    DownloadFinishedListener lstnr )
+    {
+        DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( context );
+        downloadDictInBack( context, lang, name, loc, lstnr );
+    }
+
+    static void downloadDictInBack( Context context, int lang, String name,
+                                    DictUtils.DictLoc loc,
+                                    DownloadFinishedListener lstnr )
+    {
+        String url = Utils.makeDictUrl( context, lang, name );
+        downloadDictInBack( context, url, loc, lstnr );
+    }
+
+    static void downloadDictInBack( final Context context, final String urlStr,
+                                    final DictUtils.DictLoc loc,
+                                    final DownloadFinishedListener lstnr )
+    {
+        String tmp = Utils.dictFromURL( context, urlStr );
+        final String name = DictUtils.removeDictExtn( tmp );
+        String msg = context.getString( R.string.downloadingf, name );
+        final StatusNotifier sno = 
+            new StatusNotifier( context, msg, R.string.download_done );
+
+        new Thread( new Runnable() {
+                public void run() {
+                    boolean success = false;
+                    HttpURLConnection urlConn = null;
+                    try {
+                        URL url = new URL( urlStr );
+                        urlConn = (HttpURLConnection)url.openConnection();
+                        InputStream in = new
+                            BufferedInputStream( urlConn.getInputStream(), 
+                                                 1024*8 );
+                        success = DictUtils.saveDict( context, in, 
+                                                      name, loc );
+                        DbgUtils.logf( "saveDict returned %b", success );
+
+                    } catch ( java.net.MalformedURLException mue ) {
+                        DbgUtils.loge( mue );
+                    } catch ( java.io.IOException ioe ) {
+                        DbgUtils.loge( ioe );
+                    } finally {
+                        if ( null != urlConn ) {
+                            urlConn.disconnect();
+                        }
+                    }
+
+                    sno.close();
+                    DictLangCache.inval( context, name, loc, true );
+                    if ( null != lstnr ) {
+                        lstnr.downloadFinished( name, success );
+                    }
+                }
+            } ).start();
+    }
+
 }

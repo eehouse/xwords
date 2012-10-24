@@ -79,7 +79,7 @@ public class DbgUtils {
     {
         Formatter formatter = new Formatter();
         String msg = formatter.format( format, args ).toString();
-        Toast.makeText( context, msg, Toast.LENGTH_SHORT ).show();
+        Utils.showToast( context, msg );
     } // showf
 
     public static void showf( Context context, int formatid, Object... args )

@@ -118,8 +118,8 @@ public interface UtilCtxt {
     void informMove( String expl, String words );
     void informUndo();
 
-    void informNetDict( String oldName, String newName, String newSum, 
-                        CurGameInfo.XWPhoniesChoice phonies );
+    void informNetDict( int lang, String oldName, String newName, 
+                        String newSum, CurGameInfo.XWPhoniesChoice phonies );
 
     void informMissing( boolean isServer, CommsAddrRec.CommsConnType connType,
                         int nMissingPlayers );

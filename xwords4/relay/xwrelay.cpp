@@ -1064,7 +1064,7 @@ main( int argc, char** argv )
     int nWorkerThreads = 0;
     char* conffile = NULL;
     const char* serverName = NULL;
-    const char* idFileName = NULL;
+    // const char* idFileName = NULL;
     const char* logFile = NULL;
     bool doDaemon = true;
     bool doFork = true;
@@ -1079,7 +1079,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:i:f:l:t:s:w:"
+       int opt = getopt(argc, argv, "h?c:p:n:f:l:t:s:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -1115,9 +1115,9 @@ main( int argc, char** argv )
        case 'f':
            conffile = optarg;
            break;
-       case 'i':
-           idFileName = optarg;
-           break;
+       // case 'i':
+       //     idFileName = optarg;
+       //     break;
        case 'l':
            logFile = optarg;
            break;

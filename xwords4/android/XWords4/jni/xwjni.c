@@ -1287,6 +1287,22 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1hasComms
     return result;
 }
 
+#ifdef XWFEATURE_CHANGEDICT
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_game_1changeDict
+( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, jstring jname, 
+  jbyteArray jDictBytes, jstring jpath )
+{
+    XWJNI_START_GLOBALS();
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil, 
+                                     jname, jDictBytes, jpath, NULL, false );
+    game_changeDict( MPPARM(mpool) &state->game, globals->gi, dict );
+    setJGI( env, jgi, globals->gi );
+    XWJNI_END();
+    return XP_FALSE;            /* no need to redraw */
+}
+#endif
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
 ( JNIEnv* env, jclass C, jint gamePtr, jboolean thenAck )

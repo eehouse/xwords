@@ -199,15 +199,13 @@ public class CurGameInfo {
             || phoniesAction != other.phoniesAction;
 
         if ( !matter && DeviceRole.SERVER_STANDALONE != serverRole ) {
-            for ( int ii = 0; ii < nPlayers; ++ii ) {
+            matter = !dictName.equals( other.dictName );
+            for ( int ii = 0; !matter && ii < nPlayers; ++ii ) {
                 LocalPlayer me = players[ii];
                 LocalPlayer him = other.players[ii];
                 matter = me.isRobot() != him.isRobot()
                     || me.isLocal != him.isLocal
                     || !me.name.equals( him.name );
-                if ( matter ) {
-                    break;
-                }
             }
         }
 

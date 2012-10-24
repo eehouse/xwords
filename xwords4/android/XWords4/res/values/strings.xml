@@ -266,18 +266,6 @@
       is using it, but there is another %s wordlist installed that can
       replace it.</string>
 
-    <!-- Text of dialog brought up when user taps the download_dicts
-         button -->
-    <string name="storeWhereMsg">Store downloaded wordlists using
-      internal or external (SD card) memory? (You can always move them
-      later.)</string>
-    <!-- title of above -->
-    <string name="storeWhereTitle">Wordlist storage</string>
-    <!-- One of the buttons in the above dialog -->
-    <string name="button_internal">Internal</string>
-    <!-- The other button in the above dialog -->
-    <string name="button_sd">External</string>
-
     <!--
        ############################################################
        # :Dialogs:
@@ -2105,6 +2093,7 @@
 
     <!--  -->
     <string name="gamel_menu_checkupdates">Check for updates</string>
+    <string name="checkupdates_none_found">Everything is up-to-date.</string>
     <!--  -->
     <string name="new_dict_avail">New wordlist available</string>
     <!--  -->
@@ -2121,9 +2110,16 @@
     <!--  -->
     <string name="inform_dict_diffversionf">You and the host of this
     game are using different versions of the wordlist %1$s.</string>
+    <string name="inform_dict_title">Wordlist mismatch</string>
     <!--  -->
     <string name="inform_dict_diffdictf">You are using the wordlist
-    %1$s but the game host is using %2$s.</string>
+    %1$s but the game host is using %2$s. Would you like to use %3$s
+    too?</string>
+    <string name="inform_dict_download">\u0020(You will have to download it
+    first.)</string>
+    <!-- Shown in toast when relaunching after switching dicts -->
+    <string name="reload_new_dict">Reloading game with %1$s</string>
+
     <!--  -->
     <string name="inform_dict_phonies">\u0020(Remember that phonies
     will be discarded based on the host\'s wordlist.)</string>
@@ -2137,5 +2133,11 @@
     decline the invitation?</string>
     <string name="button_decline">Decline</string>
 
+    <string name="downloadingf">Downloading %s...</string>
+    <string name="download_done">Download finished</string>
+    <string name="download_failed">Download unsuccessful</string>
+
+    <string name="default_loc">Store wordlists internally</string> 
+    <string name="default_loc_summary">(Not in external/sdcard memory)</string>
 
 </resources>

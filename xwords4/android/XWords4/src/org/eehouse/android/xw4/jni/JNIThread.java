@@ -127,6 +127,7 @@ public class JNIThread extends Thread {
     private SyncedDraw m_drawer;
     private static final int kMinDivWidth = 10;
     private int m_connsIconID = 0;
+    private String m_newDict = null;
 
     LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -197,6 +198,14 @@ public class JNIThread extends Thread {
         synchronized( m_gsi ) {
             return m_gsi.clone();
         }
+    }
+
+    // Gross hack.  This is the easiest way to set the dict without
+    // rewriting game loading code or running into cross-threading
+    // issues.
+    public void setSaveDict( String newDict )
+    {
+        m_newDict = newDict;
     }
 
     private boolean toggleTray() {
@@ -272,9 +281,12 @@ public class JNIThread extends Thread {
         XwJNI.server_do( m_jniGamePtr );
 
         XwJNI.game_getGi( m_jniGamePtr, m_gi );
+        if ( null != m_newDict ) {
+            m_gi.dictName = m_newDict;
+        }
         GameSummary summary = new GameSummary( m_context, m_gi );
         XwJNI.game_summarize( m_jniGamePtr, summary );
-        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
+        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
         GameUtils.saveGame( m_context, state, m_lock, false );
         DBUtils.saveSummary( m_context, m_lock, summary );
         // There'd better be no way for saveGame above to fail!

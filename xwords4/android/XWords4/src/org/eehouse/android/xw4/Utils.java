@@ -108,8 +108,19 @@ public class Utils {
 
     public static void notImpl( Context context ) 
     {
-        CharSequence text = "Feature coming soon";
-        Toast.makeText( context, text, Toast.LENGTH_SHORT).show();
+        String text = "Feature coming soon";
+        showToast( context, text );
+    }
+
+    public static void showToast( Context context, String msg )
+    {
+        Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    public static void showToast( Context context, int id )
+    {
+        String msg = context.getString( id );
+        showToast( context, msg );
     }
 
     public static void setRemoveOnDismiss( final Activity activity, 
@@ -368,6 +379,28 @@ public class Utils {
         long millis = new Date().getTime();
         int result = (int)(millis / 1000);
         return result;
+    }
+
+    public static String dictFromURL( Context context, String url )
+    {
+        String result = null;
+        int indx = url.lastIndexOf( "/" );
+        if ( 0 <= indx ) {
+            result = url.substring( indx + 1 );
+        }
+        return result;
+    }
+
+    public static String makeDictUrl( Context context, int lang, String name )
+    {
+        String dict_url = CommonPrefs.getDefaultDictURL( context );
+        if ( 0 != lang ) {
+            dict_url += "/" + DictLangCache.getLangName( context, lang );
+        }
+        if ( null != name ) {
+            dict_url += "/" + name + XWConstants.DICT_EXTN;
+        }
+        return dict_url;
     }
 
     private static void setFirstBootStatics( Context context )

@@ -44,6 +44,10 @@ assertUtilOK( XW_UtilCtxt* util )
 # define assertUtilOK(u)
 #endif
 
+#ifdef XWFEATURE_CHANGEDICT
+static void gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict );
+#endif
+
 static void
 checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
 {
@@ -183,6 +187,17 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
     board_prefsChanged( game->board, cp );
 } /* game_reset */
 
+#ifdef XWFEATURE_CHANGEDICT
+void
+game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, DictionaryCtxt* dict )
+{
+    model_destroyDicts( game->model );
+    model_setDictionary( game->model, dict );
+    gi_setDict( MPPARM(mpool) gi, dict );
+    server_resetEngines( game->server );
+}
+#endif
+
 XP_Bool
 game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                      CurGameInfo* gi, DictionaryCtxt* dict, 
@@ -196,7 +211,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     XP_Bool hasComms;
 #endif
     strVersion = stream_getU8( stream );
-   XP_DEBUGF( "%s: strVersion = 0x%x", __func__, (XP_U16)strVersion );
+    XP_DEBUGF( "%s: strVersion = 0x%x", __func__, (XP_U16)strVersion );
 
     if ( strVersion > CUR_STREAM_VERS ) {
         XP_LOGF( "%s: aborting; stream version too new!", __func__ );
@@ -559,6 +574,20 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
         stream_putBits( stream, 1, pl->isLocal );
     }
 } /* gi_writeToStream */
+
+#ifdef XWFEATURE_CHANGEDICT
+static void
+gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict )
+{
+    XP_U16 ii;
+    const XP_UCHAR* name = dict_getName( dict );
+    replaceStringIfDifferent( mpool, &gi->dictName, name );
+    for ( ii = 0; ii < gi->nPlayers; ++ii ) {
+        const LocalPlayer* pl = &gi->players[ii];
+        XP_FREEP( mpool, &pl->dictName );
+    }    
+}
+#endif
 
 XP_Bool
 player_hasPasswd( LocalPlayer* player )
