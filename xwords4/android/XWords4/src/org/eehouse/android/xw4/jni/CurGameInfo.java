@@ -143,7 +143,9 @@ public class CurGameInfo {
 
     public void setLang( int lang, String dict )
     {
-        dictName = dict;
+        if ( null != dict ) {
+            dictName = dict;
+        }
         setLang( lang );
     }
 
