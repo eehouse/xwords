@@ -64,7 +64,13 @@ public class GCMIntentService extends GCMBaseIntentService {
             DbgUtils.logf( "registering..." );
             GCMRegistrar.register( app, GCMConsts.SENDER_ID );
         } else {
-            DbgUtils.logf("Already registered");
+            DbgUtils.logf( "Already registered: id=\"%s\"", regId );
+        }
+
+        String curID = XWPrefs.getGCMDevID( app );
+        if ( ! curID.equals( regId ) ) {
+            DbgUtils.logf( "saved bad id: %s", curID );
+            XWPrefs.setGCMDevID( app, regId );
         }
     }
 

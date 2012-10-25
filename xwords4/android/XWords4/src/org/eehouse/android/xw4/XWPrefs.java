@@ -189,6 +189,11 @@ public class XWPrefs {
         setPrefsString( context, R.string.key_gcm_regid, devID );
     }
 
+    public static String getGCMDevID( Context context )
+    {
+        return getPrefsString( context, R.string.key_gcm_regid );
+    }
+
     public static void clearGCMDevID( Context context )
     {
         clearPrefsKey( context, R.string.key_gcm_regid );
