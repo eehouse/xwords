@@ -584,11 +584,11 @@ public class GameUtils {
                                          String[][] missingNames, 
                                          int[] missingLang )
     {
-        String[] dictNames = dictNames( context, rowid, missingLang );
+        String[] gameDicts = dictNames( context, rowid, missingLang );
         HashSet<String> missingSet;
         DictUtils.DictAndLoc[] installed = DictUtils.dictList( context );
 
-        missingSet = new HashSet<String>( Arrays.asList( dictNames ) );
+        missingSet = new HashSet<String>( Arrays.asList( gameDicts ) );
         missingSet.remove( null );
         boolean allHere = 0 != missingSet.size(); // need some non-null!
         if ( allHere ) {
@@ -596,6 +596,8 @@ public class GameUtils {
                 missingSet.remove( dal.name );
             }
             allHere = 0 == missingSet.size();
+        } else {
+            DbgUtils.logf( "gameDictsHere: game has no dicts!" );
         }
         if ( null != missingNames ) {
             missingNames[0] = 
