@@ -293,7 +293,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
                                      jDictBytes, jpath, NULL, check );
     if ( NULL != dict ) {
         if ( NULL != jinfo ) {
-            setInt( env, jinfo, "langCode", dict_getLangCode( dict ) );
+            XP_LangCode code = dict_getLangCode( dict );
+            XP_ASSERT( 0 < code );
+            setInt( env, jinfo, "langCode", code );
             setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
             setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
         }

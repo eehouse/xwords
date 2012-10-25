@@ -381,6 +381,14 @@ public class DictLangCache {
     private static DictInfo getInfo( Context context, DictAndLoc dal )
     {
         DictInfo info = DBUtils.dictsGetInfo( context, dal.name );
+
+        // Tmp test that recovers from problem with new background download code
+        if ( null != info && 0 == info.langCode ) {
+            DbgUtils.logf( "getInfo: dropping info for %s b/c lang code wrong", 
+                           dal.name );
+            info = null;
+        }
+
         if ( null == info ) {
             String[] names = { dal.name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, names );
