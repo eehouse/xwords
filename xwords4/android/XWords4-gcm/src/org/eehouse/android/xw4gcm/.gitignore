@@ -63,3 +63,4 @@ XWListAdapter.java
 XWListItem.java
 XWListPreference.java
 XWPrefs.java
+StatusNotifier.java
