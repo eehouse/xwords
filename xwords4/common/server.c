@@ -2429,6 +2429,7 @@ server_getLastMoveTime( const ServerCtxt* server )
 static void
 doEndGame( ServerCtxt* server, XP_S16 quitter )
 {
+    XP_ASSERT( quitter < server->vol.gi->nPlayers );
     SETSTATE( server, XWSTATE_GAMEOVER );
     setTurn( server, -1 );
     server->nv.quitter = quitter;
@@ -2445,7 +2446,7 @@ putQuitter( const ServerCtxt* server, XWStreamCtxt* stream, XP_S16 quitter )
 }
 
 static void
-getQuitter( const ServerCtxt* server, XWStreamCtxt* stream, XP_S16* quitter )
+getQuitter( const ServerCtxt* server, XWStreamCtxt* stream, XP_S8* quitter )
 {
     *quitter = STREAM_VERS_DICTNAME <= server->nv.streamVersion
             ? stream_getU8( stream ) : -1;
@@ -2462,6 +2463,7 @@ static void
 endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why), XP_S16 quitter )
 {
     XP_ASSERT( server->nv.gameState != XWSTATE_GAMEOVER );
+    XP_ASSERT( quitter < server->vol.gi->nPlayers );
 
     if ( server->vol.gi->serverRole != SERVER_ISCLIENT ) {
 
@@ -2756,7 +2758,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         XP_FREE( server->mpool, msg );
 #endif
     } else if ( readStreamHeader( server, incoming ) ) {
-        XP_S16 quitter;
+        XP_S8 quitter;
         switch( code ) {
 /*         case XWPROTO_MOVEMADE_INFO: */
 /*             accepted = client_reflectMoveMade( server, incoming ); */
