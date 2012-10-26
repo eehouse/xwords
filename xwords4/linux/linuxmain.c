@@ -216,6 +216,7 @@ void
 catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
 {
     XWStreamCtxt* stream;
+    XP_ASSERT( quitter < cGlobals->params->gi.nPlayers );
 
     stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
                               cGlobals->params->vtMgr,
