@@ -1384,6 +1384,9 @@ server_sendInitialMessage( ServerCtxt* server )
     XP_U16 nPlayers = server->vol.gi->nPlayers;
     CurGameInfo localGI;
     XP_U32 gameID = server->vol.gi->gameID;
+#ifdef STREAM_VERS_BIGBOARD
+    XP_U8 streamVersion = server->nv.streamVersion;
+#endif
 
     XP_ASSERT( server->nv.nDevices > 1 );
     for ( deviceIndex = 1; deviceIndex < server->nv.nDevices;
@@ -1397,8 +1400,8 @@ server_sendInitialMessage( ServerCtxt* server )
         writeProto( server, stream, XWPROTO_CLIENT_SETUP );
 
 #ifdef STREAM_VERS_BIGBOARD
-        XP_ASSERT( 0 < server->nv.streamVersion );
-        stream_putU8( stream, server->nv.streamVersion );
+        XP_ASSERT( 0 < streamVersion );
+        stream_putU8( stream, streamVersion );
 #else
         stream_putU8( stream, CUR_STREAM_VERS );
 #endif
@@ -1411,7 +1414,7 @@ server_sendInitialMessage( ServerCtxt* server )
 
         dict_writeToStream( dict, stream );
 #ifdef STREAM_VERS_BIGBOARD
-        if ( STREAM_VERS_DICTNAME <= addr->streamVersion ) {
+        if ( STREAM_VERS_DICTNAME <= streamVersion ) {
             stringToStream( stream, dict_getShortName(dict) );
             stringToStream( stream, dict_getMd5Sum(dict) );
         }
