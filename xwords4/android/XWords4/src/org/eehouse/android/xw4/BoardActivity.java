@@ -101,6 +101,7 @@ public class BoardActivity extends XWActivity
     private static final int VALUES_ACTION = 16;
     private static final int BT_PICK_ACTION = 17;
     private static final int SMS_PICK_ACTION = 18;
+    private static final int SMS_CONFIG_ACTION = 19;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -787,7 +788,7 @@ public class BoardActivity extends XWActivity
 
         case R.id.board_menu_file_prefs:
             m_firingPrefs = true;
-            startActivity( new Intent( this, PrefsActivity.class ) );
+            Utils.launchSettings( this );
             break;
 
         case R.id.board_menu_file_about:
@@ -836,6 +837,10 @@ public class BoardActivity extends XWActivity
                 GameUtils.launchSMSInviter( this, m_nMissingPlayers, 
                                             SMS_INVITE_RESULT );
                 break;
+            case SMS_CONFIG_ACTION:
+                Utils.launchSettings( this );
+                break;
+
             case COMMIT_ACTION:
                 cmd = JNICmd.CMD_COMMIT;
                 break;
@@ -1904,7 +1909,9 @@ public class BoardActivity extends XWActivity
         switch( m_connType ) {
         case COMMS_CONN_SMS:
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( this ) ) {
-                showOKOnlyDialog( R.string.warn_sms_disabled );
+                showConfirmThen( R.string.warn_sms_disabled, 
+                                 R.string.configure, 
+                                 SMS_CONFIG_ACTION );
             }
             break;
         }

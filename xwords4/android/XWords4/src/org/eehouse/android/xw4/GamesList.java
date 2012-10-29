@@ -587,8 +587,7 @@ public class GamesList extends XWListActivity
             break;
 
         case R.id.gamel_menu_prefs:
-            intent = new Intent( this, PrefsActivity.class );
-            startActivity( intent );
+            Utils.launchSettings( this );
             break;
 
         case R.id.gamel_menu_about:

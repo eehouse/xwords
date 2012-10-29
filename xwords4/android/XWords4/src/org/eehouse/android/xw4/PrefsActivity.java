@@ -166,7 +166,7 @@ public class PrefsActivity extends PreferenceActivity
 
         // Now replace this activity with a new copy
         // so the new values get loaded.
-        startActivity( new Intent( this, PrefsActivity.class ) );
+        Utils.launchSettings( this );
         finish();
     }
 
