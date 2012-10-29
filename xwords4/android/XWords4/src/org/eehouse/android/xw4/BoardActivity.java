@@ -1910,7 +1910,7 @@ public class BoardActivity extends XWActivity
         case COMMS_CONN_SMS:
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( this ) ) {
                 showConfirmThen( R.string.warn_sms_disabled, 
-                                 R.string.configure, 
+                                 R.string.newgame_enable_sms, 
                                  SMS_CONFIG_ACTION );
             }
             break;
