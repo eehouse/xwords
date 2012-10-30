@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -26,6 +26,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.XWApp;
+import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.R;
 
 public class UtilCtxtImpl implements UtilCtxt {
@@ -91,6 +92,11 @@ public class UtilCtxtImpl implements UtilCtxt {
     public void setIsServer( boolean isServer )
     {
         subclassOverride( "setIsServer" );
+    }
+
+    public String getDevID()
+    {
+        return XWPrefs.getDevID( m_context );
     }
 
     public void bonusSquareHeld( int bonus )

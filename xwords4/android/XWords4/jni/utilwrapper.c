@@ -39,6 +39,9 @@ typedef struct _AndUtil {
     jobject jutil;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
     XP_UCHAR* userStrings[N_AND_USER_STRINGS];
+#ifdef XWFEATURE_DEVID
+    XP_UCHAR* devIDStorage;
+#endif
 } AndUtil;
 
 
@@ -543,6 +546,37 @@ and_util_setIsServer(XW_UtilCtxt* uc, XP_Bool isServer )
     (*env)->CallVoidMethod( env, util->jutil, mid, isServer );
     UTIL_CBK_TAIL();
 }
+
+#ifdef XWFEATURE_DEVID
+static const XP_UCHAR*
+and_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
+{
+    const XP_UCHAR* result = NULL;
+    UTIL_CBK_HEADER( "getDevID", "()Ljava/lang/String;" );
+    jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid );
+    if ( NULL != jresult ) {
+        const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+        jsize len = (*env)->GetStringUTFLength( env, jresult );
+        if ( NULL != util->devIDStorage
+             && 0 == XP_MEMCMP( util->devIDStorage, jchars, len ) ) {
+            XP_LOGF( "%s: already have matching devID", __func__ );
+        } else {
+            XP_LOGF( "%s: allocating storage for devID", __func__ );
+            XP_FREEP( util->util.mpool, &util->devIDStorage );
+            util->devIDStorage = XP_MALLOC( util->util.mpool, len + 1 );
+            XP_MEMCPY( util->devIDStorage, jchars, len );
+            util->devIDStorage[len] = '\0';
+        }
+        (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+
+        result = (const XP_UCHAR*)util->devIDStorage;
+        *typ = ID_TYPE_ANDROID_GCM;
+    }
+    UTIL_CBK_TAIL();
+    return result;
+}
+#endif  /* XWFEATURE_DEVID */
+
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -642,6 +676,9 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(informMissing);
     SET_PROC(addrChange);
     SET_PROC(setIsServer);
+# ifdef XWFEATURE_DEVID
+    SET_PROC(getDevID);
+# endif
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
     SET_PROC(getTraySearchLimits);
@@ -671,6 +708,9 @@ destroyUtil( XW_UtilCtxt** utilc )
     if ( NULL != util->jutil ) {
         (*env)->DeleteGlobalRef( env, util->jutil );
     }
+#ifdef XWFEATURE_DEVID
+    XP_FREEP( util->util.mpool, &util->devIDStorage );
+#endif
     XP_FREE( util->util.mpool, util->util.vtable );
     XP_FREE( util->util.mpool, util );
     *utilc = NULL;

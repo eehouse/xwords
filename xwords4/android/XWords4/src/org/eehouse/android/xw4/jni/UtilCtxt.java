@@ -56,6 +56,8 @@ public interface UtilCtxt {
     void remSelected();
     void setIsServer( boolean isServer );
 
+    String getDevID();
+
     void bonusSquareHeld( int bonus );
     void playerScoreHeld( int player );
     void cellSquareHeld( String words );
