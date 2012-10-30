@@ -82,7 +82,7 @@
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4gcm/GCMConsts.java"
               />
-        <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
+        <exec dir="." executable="../scripts/ndkbuild.sh" >
             <arg value="-j3"/>
         </exec>
         <exec dir=".." executable="./scripts/genvers.sh" output="/dev/null">
