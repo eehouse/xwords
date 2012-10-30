@@ -153,6 +153,11 @@ public class XWActivity extends Activity
         m_delegate.showConfirmThen( msg, action );
     }
 
+    protected void showConfirmThen( int msg, int posButton, int action )
+    {
+        m_delegate.showConfirmThen( getString(msg), posButton, action );
+    }
+
     public void showEmailOrSMSThen( int action )
     {
         m_delegate.showEmailOrSMSThen( action );

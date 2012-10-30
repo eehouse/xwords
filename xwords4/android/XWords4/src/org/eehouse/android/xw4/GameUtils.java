@@ -404,7 +404,7 @@ public class GameUtils {
 
     public static long saveNew( Context context, CurGameInfo gi )
     {
-        long rowid = -1;
+        long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
             GameLock lock = DBUtils.saveNewGame( context, bytes );
@@ -438,9 +438,11 @@ public class GameUtils {
         Assert.assertTrue( gi.nPlayers == nPlayersT );
         rowid = saveNew( context, gi );
 
-        GameLock lock = new GameLock( rowid, true ).lock();
-        applyChanges( context, gi, addr, inviteID, lock, false );
-        lock.unlock();
+        if ( DBUtils.ROWID_NOTFOUND != rowid ) {
+            GameLock lock = new GameLock( rowid, true ).lock();
+            applyChanges( context, gi, addr, inviteID, lock, false );
+            lock.unlock();
+        }
 
         return rowid;
     }

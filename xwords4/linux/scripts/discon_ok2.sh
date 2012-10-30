@@ -79,6 +79,9 @@ function pick_ndevs() {
     elif [ $RNUM -gt 75 -a $MAXDEVS -ge 3 ]; then
         NDEVS=3
     fi
+    if [ -n "$MINDEVS" -a "$NDEVS" -lt "$MINDEVS" ]; then
+        NDEVS=$MINDEVS
+    fi
     echo $NDEVS
 }
 

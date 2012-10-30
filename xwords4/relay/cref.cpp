@@ -179,7 +179,8 @@ CookieRef::Unlock() {
 }
 
 bool
-CookieRef::_Connect( int socket, int clientVersion, int nPlayersH, int nPlayersS, int seed, 
+CookieRef::_Connect( int socket, int clientVersion, DevID* devID, 
+                     int nPlayersH, int nPlayersS, int seed, 
                      bool seenSeed, in_addr& addr )
 {
     bool connected = false;
@@ -199,7 +200,8 @@ CookieRef::_Connect( int socket, int clientVersion, int nPlayersH, int nPlayersS
     if ( !connected ) {
         set<int> sockets = GetSockets();
         if ( sockets.end() == sockets.find( socket ) ) {
-            pushConnectEvent( socket, clientVersion, nPlayersH, nPlayersS, seed, addr );
+            pushConnectEvent( socket, clientVersion, devID, nPlayersH, 
+                              nPlayersS, seed, addr );
             handleEvents();
             connected = HasSocket_locked( socket );
         } else {
@@ -210,8 +212,8 @@ CookieRef::_Connect( int socket, int clientVersion, int nPlayersH, int nPlayersS
 }
 
 bool
-CookieRef::_Reconnect( int socket, int clientVersion, HostID hid, 
-                       int nPlayersH, int nPlayersS,
+CookieRef::_Reconnect( int socket, int clientVersion, DevID* devID,
+                       HostID hid, int nPlayersH, int nPlayersS,
                        int seed, in_addr& addr, bool gameDead )
 {
     bool spotTaken = false;
@@ -223,7 +225,8 @@ CookieRef::_Reconnect( int socket, int clientVersion, HostID hid,
             logf( XW_LOGINFO, "%s: dropping because already here",
                   __func__ );
         } else {
-            pushReconnectEvent( socket, clientVersion, hid, nPlayersH, nPlayersS, seed, addr );
+            pushReconnectEvent( socket, clientVersion, devID, hid, nPlayersH, 
+                                nPlayersS, seed, addr );
         }
         if ( gameDead ) {
             pushGameDead( socket );
@@ -243,7 +246,8 @@ CookieRef::_HandleAck( HostID hostID )
 }
 
 void
-CookieRef::_PutMsg( HostID srcID,  in_addr& addr, HostID destID, unsigned char* buf, int buflen )
+CookieRef::_PutMsg( HostID srcID, in_addr& addr, HostID destID, 
+                    unsigned char* buf, int buflen )
 {
     CRefEvent evt( XWE_PROXYMSG );
     evt.u.fwd.src = srcID;
@@ -513,13 +517,15 @@ CookieRef::_Remove( int socket )
 } /* Forward */
 
 void 
-CookieRef::pushConnectEvent( int socket, int clientVersion, int nPlayersH, int nPlayersS,
+CookieRef::pushConnectEvent( int socket, int clientVersion, DevID* devID,
+                             int nPlayersH, int nPlayersS,
                              int seed, in_addr& addr )
 {
     CRefEvent evt;
     evt.type = XWE_DEVCONNECT;
     evt.u.con.socket = socket;
     evt.u.con.clientVersion = clientVersion;
+    evt.u.con.devID = devID;
     evt.u.con.srcID = HOST_ID_NONE;
     evt.u.con.nPlayersH = nPlayersH;
     evt.u.con.nPlayersS = nPlayersS;
@@ -529,13 +535,14 @@ CookieRef::pushConnectEvent( int socket, int clientVersion, int nPlayersH, int n
 } /* pushConnectEvent */
 
 void 
-CookieRef::pushReconnectEvent( int socket, int clientVersion, HostID srcID, 
-                               int nPlayersH, int nPlayersS, int seed,
-                               in_addr& addr )
+CookieRef::pushReconnectEvent( int socket, int clientVersion, DevID* devID,
+                               HostID srcID, int nPlayersH, int nPlayersS, 
+                               int seed, in_addr& addr )
 {
     CRefEvent evt( XWE_RECONNECT );
     evt.u.con.socket = socket;
     evt.u.con.clientVersion = clientVersion;
+    evt.u.con.devID = devID;
     evt.u.con.srcID = srcID;
     evt.u.con.nPlayersH = nPlayersH;
     evt.u.con.nPlayersS = nPlayersS;
@@ -879,7 +886,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp )
     evt->u.con.srcID =
         DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID, 
                                  evt->u.con.clientVersion, nPlayersH, seed, 
-                                 evt->u.con.addr, reconn );
+                                 evt->u.con.addr, evt->u.con.devID, reconn );
 
     HostID hostid = evt->u.con.srcID;
     if ( NULL != hidp ) {

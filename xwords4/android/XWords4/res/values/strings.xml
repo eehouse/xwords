@@ -1786,8 +1786,9 @@
 
     <!-- Another paragraph in the about dialog -->
     <string name="about_web">For a manual or sourcecode see:
-        http://xwords.sf.net.  To report bugs, suggest features, offer to
-        help, etc., please email: xwords@eehouse.org.</string>
+    http://xwords.sf.net/android.php.  To report bugs, suggest
+    features, offer to help, etc., please email:
+    xwords@eehouse.org.</string>
 
     <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
@@ -2074,7 +2075,7 @@
     phones with unlimited texting plans. Once you enable it dozens of
     SMS (text) messages will be sent (invisibly) for each game
     played. If you don\'t have an unlimited plan your carrier may
-    charge you for each and every one!\n\nShould play via SMS be
+    charge you for each and every message!\n\nShould play via SMS be
     enabled?</string>
     <!--  -->
     <string name="confirm_sms_prompt">Enable play via SMS?</string>
@@ -2140,4 +2141,5 @@
     <string name="default_loc">Store wordlists internally</string> 
     <string name="default_loc_summary">(Not in external/sdcard memory)</string>
 
+    <string name="sms_searching_toast">Searching SMS messages...</string>
 </resources>

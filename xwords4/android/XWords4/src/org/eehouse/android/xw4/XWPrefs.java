@@ -204,6 +204,16 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_default_loc, true );
     }
 
+    public static boolean getHaveCheckedSMS( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_checked_sms, false );
+    }
+
+    public static void setHaveCheckedSMS( Context context, boolean newValue )
+    {
+        setPrefsBoolean( context, R.string.key_checked_sms, newValue );
+    }
+
     public static DictUtils.DictLoc getDefaultLoc( Context context )
     {
         boolean internal = getDefaultLocInternal( context );

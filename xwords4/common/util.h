@@ -152,7 +152,9 @@ typedef struct UtilVtable {
     XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc );
 
     XP_U32 (*m_util_getCurSeconds)( XW_UtilCtxt* uc );
-
+#ifdef XWFEATURE_DEVID
+    const XP_UCHAR* (*m_util_getDevID)( XW_UtilCtxt* uc, DevIDType* typ );
+#endif
     DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc );
 
     const XP_UCHAR* (*m_util_getUserString)( XW_UtilCtxt* uc, 
@@ -279,6 +281,11 @@ struct XW_UtilCtxt {
 
 #define util_getCurSeconds(uc) \
          (uc)->vtable->m_util_getCurSeconds((uc))
+
+#ifdef XWFEATURE_DEVID
+# define util_getDevID( uc, t )                      \
+         (uc)->vtable->m_util_getDevID((uc),(t))
+#endif
 
 #define util_makeEmptyDict( uc ) \
          (uc)->vtable->m_util_makeEmptyDict((uc))

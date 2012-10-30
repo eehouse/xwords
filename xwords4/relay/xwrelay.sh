@@ -58,6 +58,8 @@ cid integer
 ,ctime TIMESTAMP (0) DEFAULT CURRENT_TIMESTAMP
 ,mtimes TIMESTAMP(0)[]
 ,addrs INET[]
+,devTypes INTEGER[]
+,devids TEXT[]
 );
 EOF
 
@@ -67,6 +69,8 @@ id SERIAL
 ,connName VARCHAR(64)
 ,hid INTEGER
 ,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+,devType INTEGER
+,devid TEXT
 ,msg BYTEA
 ,msglen INTEGER
 ,UNIQUE ( connName, hid, msg )

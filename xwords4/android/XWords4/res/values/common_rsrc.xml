@@ -69,6 +69,7 @@
   <string name="key_connstat_data">key_connstat_data</string>
   <string name="key_dev_id">key_dev_id</string>
   <string name="key_gcm_regid">key_gcm_regid</string>
+  <string name="key_checked_sms">key_checked_sms</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
