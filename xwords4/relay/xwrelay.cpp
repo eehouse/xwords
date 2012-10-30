@@ -228,6 +228,20 @@ getNetByte( unsigned char** bufpp, const unsigned char* end,
     return ok;
 } /* getNetByte */
 
+static bool
+getNetString( unsigned char** bufpp, const unsigned char* end, string& out )
+{
+    char* str = (char*)*bufpp;
+    size_t len = 1 + strlen( str );
+    bool success = str + len <= (char*)end;
+    if ( success ) {
+        out = str;
+        *bufpp += len;
+    }
+    // logf( XW_LOGERROR, "%s => %d", __func__, out.c_str() );
+    return success;
+}
+
 #ifdef RELAY_HEARTBEAT
 static bool
 processHeartbeat( unsigned char* buf, int bufLen, int socket )
@@ -268,12 +282,14 @@ readStr( unsigned char** bufp, const unsigned char* end,
 
 static XWREASON
 flagsOK( unsigned char** bufp, unsigned char const* end, 
-         unsigned short* clientVersion )
+         unsigned short* clientVersion, unsigned short* flagsp )
 {
     XWREASON err = XWRELAY_ERROR_OLDFLAGS;
     unsigned char flags;
     if ( getNetByte( bufp, end, &flags ) ) {
+        *flagsp = flags;
         switch ( flags ) {
+        case XWRELAY_PROTO_VERSION_CLIENTID:
         case XWRELAY_PROTO_VERSION_CLIENTVERS:
             if ( getNetShort( bufp, end, clientVersion ) ) {
                 err = XWRELAY_ERROR_NONE;
@@ -346,7 +362,8 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
     cookie[0] = '\0';
 
     unsigned short clientVersion;
-    XWREASON err = flagsOK( &bufp, end, &clientVersion );
+    unsigned short flags;
+    XWREASON err = flagsOK( &bufp, end, &clientVersion, &flags );
     if ( err == XWRELAY_ERROR_NONE ) {
         /* HostID srcID; */
         unsigned char nPlayersH;
@@ -362,6 +379,17 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
              && getNetByte( &bufp, end, &nPlayersT )
              && getNetShort( &bufp, end, &seed )
              && getNetByte( &bufp, end, &langCode ) ) {
+
+            DevID devID;
+            if ( XWRELAY_PROTO_VERSION_CLIENTID <= flags ) {
+                unsigned char devIDType = 0;
+                if ( getNetByte( &bufp, end, &devIDType )
+                     && 0 != devIDType ) {
+                    getNetString( &bufp, end, devID.m_devIDString );
+                    devID.m_devIDType = devIDType;
+                }
+            }
+
             logf( XW_LOGINFO, "%s(): langCode=%d; nPlayersT=%d; "
                   "wantsPublic=%d; seed=%.4X",
                   __func__, langCode, nPlayersT, wantsPublic, seed );
@@ -371,8 +399,9 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
             static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
             MutexLock ml( &s_newCookieLock );
 
-            SafeCref scr( cookie, socket, clientVersion, nPlayersH, nPlayersT, 
-                          seed, langCode, wantsPublic, makePublic );
+            SafeCref scr( cookie, socket, clientVersion, &devID, 
+                          nPlayersH, nPlayersT, seed, langCode, 
+                          wantsPublic, makePublic );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
             success = scr.Connect( socket, nPlayersH, nPlayersT, seed, addr );
@@ -396,7 +425,8 @@ processReconnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
     logf( XW_LOGINFO, "%s()", __func__ );
 
     unsigned short clientVersion;
-    XWREASON err = flagsOK( &bufp, end, &clientVersion );
+    unsigned short flags;
+    XWREASON err = flagsOK( &bufp, end, &clientVersion, &flags );
     if ( err == XWRELAY_ERROR_NONE ) {
         char cookie[MAX_INVITE_LEN+1];
         char connName[MAX_CONNNAME_LEN+1] = {0};

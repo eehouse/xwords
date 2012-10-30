@@ -503,6 +503,9 @@ typedef enum {
     ,CMD_DICTDIR
     ,CMD_PLAYERDICT
     ,CMD_SEED
+#ifdef XWFEATURE_DEVID
+    ,CMD_DEVID
+#endif
     ,CMD_GAMESEED
     ,CMD_GAMEFILE
     ,CMD_SAVEFAIL_PCT
@@ -596,6 +599,9 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_DICTDIR, true, "dict-dir", "path to dir in which dicts will be sought" }
     ,{ CMD_PLAYERDICT, true, "player-dict", "dictionary name for player (in sequence)" }
     ,{ CMD_SEED, true, "seed", "random seed" }
+#ifdef XWFEATURE_DEVID
+    ,{ CMD_DEVID, true, "devid", "device ID (for testing GCM stuff)" }
+#endif
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
     ,{ CMD_SAVEFAIL_PCT, true, "savefail-pct", "How often, at random, does save fail?" }
@@ -1585,6 +1591,9 @@ main( int argc, char** argv )
     mainParams.allowPeek = XP_TRUE;
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
+#ifdef XWFEATURE_DEVID
+    mainParams.devID = "";
+#endif
 
     char* envDictPath = getenv( "XW_DICTSPATH" );
     if ( !!envDictPath ) {
@@ -1670,6 +1679,11 @@ main( int argc, char** argv )
         case CMD_SEED:
             seed = atoi(optarg);
             break;
+#ifdef XWFEATURE_DEVID
+        case CMD_DEVID:
+            mainParams.devID = optarg;
+            break;
+#endif
         case CMD_GAMESEED:
             mainParams.gameSeed = atoi(optarg);
             break;

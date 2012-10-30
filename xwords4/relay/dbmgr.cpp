@@ -244,8 +244,9 @@ DBMgr::AllDevsAckd( const char* const connName )
 }
 
 HostID
-DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion, int nToAdd, 
-                  unsigned short seed, const in_addr& addr, bool ackd )
+DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion, 
+                  int nToAdd, unsigned short seed, const in_addr& addr, 
+                  const DevID* devID, bool ackd )
 {
     HostID newID = curID;
 
@@ -260,14 +261,23 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion, int nTo
     }
     assert( newID <= 4 );
 
+    char devIDBuf[512] = {0};
+    if ( !!devID ) {
+        snprintf( devIDBuf, sizeof(devIDBuf),
+                  "devids[%d] = \'%s\', devTypes[%d] = %d,",
+                  newID, devID->m_devIDString.c_str(),
+                  newID, devID->m_devIDType );
+    }
+
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
         " clntVers[%d] = %d,"
-        " seeds[%d] = %d, addrs[%d] = \'%s\', mtimes[%d]='now', ack[%d]=\'%c\'"
+        " seeds[%d] = %d, addrs[%d] = \'%s\', %s"
+        " mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
-    char query[256];
+    char query[1024];
     snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, clientVersion,
-              newID, seed, newID, inet_ntoa(addr), newID, 
-              newID, ackd?'A':'a', connName );
+              newID, seed, newID, inet_ntoa(addr), devIDBuf, 
+              newID, newID, ackd?'A':'a', connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     execSql( query );
@@ -437,7 +447,8 @@ DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
 }
 
 void
-DBMgr::RecordAddress( const char* const connName, HostID hid, const in_addr& addr )
+DBMgr::RecordAddress( const char* const connName, HostID hid, 
+                      const in_addr& addr )
 {
     assert( hid >= 0 && hid <= 4 );
     const char* fmt = "UPDATE " GAMES_TABLE " SET addrs[%d] = \'%s\'"
@@ -558,6 +569,22 @@ DBMgr::readArray( const char* const connName, int arr[]  ) /* len 4 */
     PQclear( result );
 }
 
+void
+DBMgr::getDevID( const char* connName, int hid, DevID& devID )
+{
+    const char* fmt = "SELECT devids[%d], devTypes[%d]  FROM " GAMES_TABLE " WHERE connName='%s'";
+    char query[256];
+    snprintf( query, sizeof(query), fmt, hid, hid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+    PGresult* result = PQexec( getThreadConn(), query );
+    assert( 1 == PQntuples( result ) );
+    devID.m_devIDString = PQgetvalue( result, 0, 0 );
+    devID.m_devIDType = (unsigned char)atoi( PQgetvalue( result, 0, 1 ) );
+    assert( devID.m_devIDType <= 2 ); // for now!!!
+    PQclear( result );
+}
+
 /*
  id | connname  | hid |   msg   
 ----+-----------+-----+---------
@@ -598,16 +625,20 @@ void
 DBMgr::StoreMessage( const char* const connName, int hid, 
                      const unsigned char* buf, int len )
 {
+    DevID devID;
+    getDevID( connName, hid, devID );
+
     size_t newLen;
-    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, msg, msglen)"
-        " VALUES( '%s', %d, E'%s', %d)";
+    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, devid, devType, msg, msglen)"
+        " VALUES( '%s', %d, '%s', %d, E'%s', %d)";
 
     unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, len, &newLen );
     assert( NULL != bytes );
     
     char query[newLen+128];
     unsigned int siz = snprintf( query, sizeof(query), fmt, connName, hid, 
-                                 bytes, len );
+                                 devID.m_devIDString.c_str(), 
+                                 devID.m_devIDType, bytes, len );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
     PQfreemem( bytes );
     assert( siz < sizeof(query) );

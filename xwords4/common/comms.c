@@ -185,6 +185,11 @@ static XP_Bool sendNoConn( CommsCtxt* comms,
                            const MsgQueueElem* elem, XWHostID destID );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
 static void set_reset_timer( CommsCtxt* comms );
+# ifdef XWFEATURE_DEVID
+static void putDevID( const CommsCtxt* comms, XWStreamCtxt* stream );
+# else
+#  define putDevID( comms, stream )
+# endif
 # ifdef DEBUG
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 # endif
@@ -2120,6 +2125,7 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( stream, comms->r.nPlayersTotal );
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
+            putDevID( comms, stream );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
 
@@ -2292,6 +2298,27 @@ relayDisconnect( CommsCtxt* comms )
         set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
     }
 } /* relayDisconnect */
+
+#ifdef XWFEATURE_DEVID
+static void
+putDevID( const CommsCtxt* comms, XWStreamCtxt* stream )
+{
+# if XWRELAY_PROTO_VERSION >= XWRELAY_PROTO_VERSION_CLIENTID
+    DevIDType typ;
+    const XP_UCHAR* devID = util_getDevID( comms->util, &typ );
+    stream_putU8( stream, typ );
+    if ( ID_TYPE_NONE != typ ) {
+        stream_catString( stream, devID );
+        stream_putU8( stream, '\0' );
+    }
+# else
+    XP_ASSERT(0);
+    XP_USE(comms);
+    XP_USE(stream);
+# endif
+}
+#endif
+
 #endif
 
 EXTERN_C_END

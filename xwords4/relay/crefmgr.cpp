@@ -590,12 +590,13 @@ CookieMapIterator::Next()
 
 /* connect case */
 SafeCref::SafeCref( const char* cookie, int socket, int clientVersion,
-                    int nPlayersH, int nPlayersS, 
+                    DevID* devID, int nPlayersH, int nPlayersS, 
                     unsigned short gameSeed, int langCode, bool wantsPublic, 
                     bool makePublic )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_clientVersion( clientVersion )
+    , m_devID( devID )
     , m_isValid( false )
     , m_seenSeed( false )
 {
@@ -621,6 +622,7 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_clientVersion( clientVersion )
+    , m_devID( NULL )
     , m_isValid( false )
 {
     CidInfo* cinfo;

@@ -344,6 +344,16 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     }
 } /* linux_util_getUserString */
 
+#ifdef XWFEATURE_DEVID
+static const XP_UCHAR*
+linux_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    *typ = ID_TYPE_LINUX;
+    return cGlobals->params->devID;
+}
+#endif
+
 void
 linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 {
@@ -353,6 +363,9 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
     util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
     util->vtable->m_util_getCurSeconds = linux_util_getCurSeconds;
     util->vtable->m_util_getUserString = linux_util_getUserString;
+#ifdef XWFEATURE_DEVID
+    util->vtable->m_util_getDevID = linux_util_getDevID;
+#endif
 }
 
 void
