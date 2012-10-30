@@ -39,6 +39,7 @@ public class PrefsActivity extends PreferenceActivity
 
     private String m_keyLogging;
     private String m_smsToasting;
+    private String m_smsEnable;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -118,6 +119,7 @@ public class PrefsActivity extends PreferenceActivity
 
         m_keyLogging = getString( R.string.key_logging_on );
         m_smsToasting = getString( R.string.key_show_sms );
+        m_smsEnable = getString( R.string.key_enable_sms );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -156,6 +158,12 @@ public class PrefsActivity extends PreferenceActivity
             DbgUtils.logEnable( sp.getBoolean( key, false ) );
         } else if ( key.equals( m_smsToasting ) ) {
             SMSService.smsToastEnable( sp.getBoolean( key, false ) );
+        } else if ( key.equals( m_smsEnable ) ) {
+            if ( sp.getBoolean( key, true ) ) {
+                SMSService.checkForInvites( this );
+            } else {
+                XWPrefs.setHaveCheckedSMS( this, false );
+            }
         }
     }
 

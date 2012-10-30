@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -76,7 +77,6 @@ public class SMSService extends Service {
 
     private static Boolean s_showToasts = null;
     private static MultiService s_srcMgr = null;
-    private static boolean s_dbCheckPending = true;
 
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
@@ -101,7 +101,8 @@ public class SMSService extends Service {
         }
     }
 
-    public static void handleFrom( Context context, String buffer, String phone )
+    public static void handleFrom( Context context, String buffer, 
+                                   String phone )
     {
         Intent intent = getIntentTo( context, HANDLE );
         intent.putExtra( BUFFER, buffer );
@@ -230,15 +231,14 @@ public class SMSService extends Service {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             switch( cmd ) {
             case CHECK_MSGDB:
-                if ( s_dbCheckPending ) {
-                    if ( Utils.firstBootEver( this ) ) {
-                        new Thread( new Runnable() {
+                if ( ! XWPrefs.getHaveCheckedSMS( this ) ) {
+                    Utils.showToast( this, R.string.sms_searching_toast );
+                    XWPrefs.setHaveCheckedSMS( this, true );
+                    new Thread( new Runnable() {
                             public void run() {
                                 checkMsgDB();
                             } 
                         } ).start();
-                    }
-                    s_dbCheckPending = false;
                 }
                 break;
             case HANDLE:
@@ -288,7 +288,7 @@ public class SMSService extends Service {
             result = Service.START_STICKY_COMPATIBILITY;
         }
         return result;
-    }
+    } // onStartCommand
 
     @Override
     public IBinder onBind( Intent intent )
@@ -632,25 +632,27 @@ public class SMSService extends Service {
     private void checkMsgDB()
     {
         Uri uri = Uri.parse( "content://sms/inbox" );
+        ContentResolver resolver = getContentResolver();
         String[] columns = new String[] { "body","address" };
-        Cursor cursor = getContentResolver().query( uri, columns,
-                                                    null, null, null );
-        try {
-            int bodyIndex = cursor.getColumnIndexOrThrow( "body" );
-            int phoneIndex = cursor.getColumnIndexOrThrow( "address" );
-            while ( cursor.moveToNext() ) {
-                String msg = fromPublicFmt( cursor.getString( bodyIndex ) );
-                if ( null != msg ) {
-                    String number = cursor.getString( phoneIndex );
-                    if ( null != number ) {
-                        handleFrom( this, msg, number );
+        Cursor cursor = resolver.query( uri, columns, null, null, null );
+        if ( 0 < cursor.getCount() ) {
+            try {
+                int bodyIndex = cursor.getColumnIndexOrThrow( "body" );
+                int phoneIndex = cursor.getColumnIndexOrThrow( "address" );
+                while ( cursor.moveToNext() ) {
+                    String msg = fromPublicFmt( cursor.getString( bodyIndex ) );
+                    if ( null != msg ) {
+                        String number = cursor.getString( phoneIndex );
+                        if ( null != number ) {
+                            handleFrom( this, msg, number );
+                        }
                     }
                 }
+            } catch ( Exception ee ) {
+                DbgUtils.loge( ee );
             }
-            cursor.close();
-        } catch ( Exception ee ) {
-            DbgUtils.loge( ee );
         }
+        cursor.close();
     }
 
     private void sendResult( MultiEvent event, Object ... args )

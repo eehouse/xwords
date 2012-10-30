@@ -2141,4 +2141,5 @@
     <string name="default_loc">Store wordlists internally</string> 
     <string name="default_loc_summary">(Not in external/sdcard memory)</string>
 
+    <string name="sms_searching_toast">Searching SMS messages...</string>
 </resources>
