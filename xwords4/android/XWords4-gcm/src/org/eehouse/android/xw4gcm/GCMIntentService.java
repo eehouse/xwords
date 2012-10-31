@@ -52,6 +52,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     protected void onMessage( Context context, Intent intent ) 
     {
         DbgUtils.logf( "GCMIntentService.onMessage(%s)", intent.toString() );
+        RelayReceiver.RestartTimer( context, true );
     }
 
     public static void init( Application app )
