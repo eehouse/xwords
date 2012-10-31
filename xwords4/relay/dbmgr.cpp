@@ -629,21 +629,27 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     getDevID( connName, hid, devID );
 
     size_t newLen;
-    const char* fmt = "INSERT INTO " MSGS_TABLE " (connname, hid, devid, devType, msg, msglen)"
+    const char* fmt = "INSERT INTO " MSGS_TABLE 
+        " (connname, hid, devid, devType, msg, msglen)"
         " VALUES( '%s', %d, '%s', %d, E'%s', %d)";
 
-    unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, len, &newLen );
+    unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
+                                              len, &newLen );
     assert( NULL != bytes );
     
-    char query[newLen+128];
-    unsigned int siz = snprintf( query, sizeof(query), fmt, connName, hid, 
-                                 devID.m_devIDString.c_str(), 
-                                 devID.m_devIDType, bytes, len );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
-    PQfreemem( bytes );
-    assert( siz < sizeof(query) );
+    char query[1024];
+    size_t siz = snprintf( query, sizeof(query), fmt, connName, hid,
+                           devID.m_devIDString.c_str(),
+                           devID.m_devIDType, bytes, len );
 
-    execSql( query );
+    PQfreemem( bytes );
+
+    if ( siz < sizeof(query) ) {
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+        execSql( query );
+    } else {
+        logf( XW_LOGERROR, "%s: buffer too small", __func__ );
+    }
 }
 
 bool
