@@ -96,7 +96,7 @@ public class UtilCtxtImpl implements UtilCtxt {
 
     public String getDevID()
     {
-        return XWPrefs.getDevID( m_context );
+        return XWPrefs.getGCMDevID( m_context );
     }
 
     public void bonusSquareHeld( int bonus )
