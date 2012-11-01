@@ -237,26 +237,38 @@ public class SMSInviteActivity extends InviteActivity {
                                                      Phone.NUMBER, 
                                                      Phone.TYPE },
                                       null, null, null );
-        if ( cursor.moveToFirst() ) {
-            String name = 
-                cursor.getString( cursor.getColumnIndex( Phone.DISPLAY_NAME));
-            String number = 
-                cursor.getString( cursor.getColumnIndex( Phone.NUMBER ) );
+        // Have seen a crash reporting
+        // "android.database.StaleDataException: Attempted to access a
+        // cursor after it has been closed." when the query takes a
+        // long time to return.  Be safe.
+        if ( null != cursor && !cursor.isClosed() ) {
+            if ( cursor.moveToFirst() ) {
+                    String name = 
+                        cursor.getString( cursor.
+                                          getColumnIndex( Phone.DISPLAY_NAME));
+                    String number = 
+                        cursor.getString( cursor.
+                                          getColumnIndex( Phone.NUMBER ) );
 
-            int type = cursor.getInt( cursor.getColumnIndex( Phone.TYPE ) );
-            m_pendingName = name;
-            m_pendingNumber = number;
-            if ( Phone.TYPE_MOBILE == type ) {
-                showConfirmThen( R.string.warn_unlimited, R.string.button_yes, 
-                                 POST_WARNING_ACTION );
-            } else {
-                m_immobileConfirmed = false;
-                String msg = Utils.format( this, R.string.warn_nomobilef,
-                                           number, name );
-                showConfirmThen( msg, R.string.button_yes, USE_IMMOBILE_ACTION );
+                    int type = cursor.getInt( cursor.
+                                              getColumnIndex( Phone.TYPE ) );
+                    m_pendingName = name;
+                    m_pendingNumber = number;
+                    if ( Phone.TYPE_MOBILE == type ) {
+                        showConfirmThen( R.string.warn_unlimited, 
+                                         R.string.button_yes, 
+                                         POST_WARNING_ACTION );
+                    } else {
+                        m_immobileConfirmed = false;
+                        String msg = 
+                            Utils.format( this, R.string.warn_nomobilef,
+                                          number, name );
+                        showConfirmThen( msg, R.string.button_yes, 
+                                         USE_IMMOBILE_ACTION );
+                    }
             }
+            cursor.close();
         }
-        cursor.close();
     } // addPhoneNumbers
 
     private void rebuildList( boolean checkIfAll )
