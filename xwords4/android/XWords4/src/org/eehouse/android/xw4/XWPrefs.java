@@ -199,11 +199,6 @@ public class XWPrefs {
         clearPrefsKey( context, R.string.key_gcm_regid );
     }
 
-    public static boolean getDefaultLocInternal( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_default_loc, true );
-    }
-
     public static boolean getHaveCheckedSMS( Context context )
     {
         return getPrefsBoolean( context, R.string.key_checked_sms, false );
@@ -222,6 +217,11 @@ public class XWPrefs {
         return result;
     }
     
+    public static boolean getDefaultLocInternal( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_default_loc, true );
+    }
+
     protected static String getPrefsString( Context context, int keyID )
     {
         String key = context.getString( keyID );
