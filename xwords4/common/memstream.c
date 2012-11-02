@@ -248,8 +248,10 @@ mem_stream_putBytes( XWStreamCtxt* p_sctx, const void* whence,
 static void
 mem_stream_catString( XWStreamCtxt* p_sctx, const char* whence )
 {
-    XP_U16 len = XP_STRLEN( whence );
-    mem_stream_putBytes( p_sctx, (void*)whence, len );
+    if ( !!whence ) {
+        XP_U16 len = XP_STRLEN( whence );
+        mem_stream_putBytes( p_sctx, (void*)whence, len );
+    }
 }
 
 static void
