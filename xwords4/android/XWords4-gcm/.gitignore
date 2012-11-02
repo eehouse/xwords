@@ -1,6 +1,0 @@
-*.apk
-local.properties
-bin
-gen
-proguard.cfg
-obj
