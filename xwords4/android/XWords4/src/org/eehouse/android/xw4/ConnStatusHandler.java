@@ -320,6 +320,9 @@ public class ConnStatusHandler {
         }
     }
 
+    // This gets rid of lint warning, but I don't like it as it
+    // effects the whole method.
+    // @SuppressWarnings("unchecked")
     public static void loadState( Context context )
     {
         synchronized( s_lockObj ) {
@@ -330,8 +333,8 @@ public class ConnStatusHandler {
                 try {
                     ObjectInputStream ois = 
                         new ObjectInputStream( new ByteArrayInputStream(bytes) );
-                    s_records = 
-                        (HashMap<CommsConnType,SuccessRecord[]>)ois.readObject();
+                    Object obj = ois.readObject();
+                    s_records = (HashMap<CommsConnType,SuccessRecord[]>)obj;
                 // } catch ( java.io.StreamCorruptedException sce ) {
                 //     DbgUtils.logf( "loadState: %s", sce.toString() );
                 // } catch ( java.io.OptionalDataException ode ) {
