@@ -552,6 +552,7 @@ static const XP_UCHAR*
 and_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
 {
     const XP_UCHAR* result = NULL;
+    *typ = ID_TYPE_ANDROID_GCM;
     UTIL_CBK_HEADER( "getDevID", "()Ljava/lang/String;" );
     jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid );
     if ( NULL != jresult ) {
@@ -568,9 +569,7 @@ and_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
             util->devIDStorage[len] = '\0';
         }
         (*env)->ReleaseStringUTFChars( env, jresult, jchars );
-
         result = (const XP_UCHAR*)util->devIDStorage;
-        *typ = ID_TYPE_ANDROID_GCM;
     }
     UTIL_CBK_TAIL();
     return result;

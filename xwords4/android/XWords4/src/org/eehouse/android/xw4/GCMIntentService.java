@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.eehouse.android.xw4gcm;
+package org.eehouse.android.xw4;
 
 import android.app.Application;
 import android.content.Context;
@@ -58,20 +58,23 @@ public class GCMIntentService extends GCMBaseIntentService {
     public static void init( Application app )
     {
         DbgUtils.logf( "GCMIntentService.init()" );
-        GCMRegistrar.checkDevice( app );
-        GCMRegistrar.checkManifest( app );
-        final String regId = GCMRegistrar.getRegistrationId( app );
-        if (regId.equals("")) {
-            DbgUtils.logf( "registering..." );
-            GCMRegistrar.register( app, GCMConsts.SENDER_ID );
-        } else {
-            DbgUtils.logf( "Already registered: id=\"%s\"", regId );
-        }
+        int sdkVersion = Integer.valueOf(android.os.Build.VERSION.SDK);
+        if ( 8 <= sdkVersion ) {
+            GCMRegistrar.checkDevice( app );
+            GCMRegistrar.checkManifest( app );
+            final String regId = GCMRegistrar.getRegistrationId( app );
+            if (regId.equals("")) {
+                DbgUtils.logf( "registering..." );
+                GCMRegistrar.register( app, GCMConsts.SENDER_ID );
+            } else {
+                DbgUtils.logf( "Already registered: id=\"%s\"", regId );
+            }
 
-        String curID = XWPrefs.getGCMDevID( app );
-        if ( ! curID.equals( regId ) ) {
-            DbgUtils.logf( "saved bad id: %s", curID );
-            XWPrefs.setGCMDevID( app, regId );
+            String curID = XWPrefs.getGCMDevID( app );
+            if ( ! curID.equals( regId ) ) {
+                DbgUtils.logf( "saved bad id: %s", curID );
+                XWPrefs.setGCMDevID( app, regId );
+            }
         }
     }
 

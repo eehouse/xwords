@@ -31,7 +31,7 @@ public class XWApp extends Application {
     public static final boolean DEBUG_LOCKS = false;
     public static final boolean BTSUPPORTED = false;
     public static final boolean SMSSUPPORTED = true;
-    public static final boolean GCMSUPPORTED = false;
+    public static final boolean GCMSUPPORTED = true;
     public static final boolean DEBUG = false;
 
     public static final String SMS_PUBLIC_HEADER = "-XW4";
@@ -58,6 +58,8 @@ public class XWApp extends Application {
         BTService.startService( this );
 
         SMSService.checkForInvites( this );
+
+        GCMIntentService.init( this );
     }
 
     public static UUID getAppUUID()
