@@ -29,7 +29,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 

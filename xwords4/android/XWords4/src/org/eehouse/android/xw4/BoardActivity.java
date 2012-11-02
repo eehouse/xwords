@@ -1228,8 +1228,6 @@ public class BoardActivity extends XWActivity
             DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
                 : DeviceRole.SERVER_ISCLIENT;
             if ( newRole != m_gi.serverRole ) {
-                DbgUtils.logf( "new role: %s; old role: %s", 
-                               newRole.toString(), m_gi.serverRole.toString() );
                 m_gi.serverRole = newRole;
                 if ( !isServer ) {
                     m_jniThread.handle( JNICmd.CMD_SWITCHCLIENT );
@@ -1368,7 +1366,6 @@ public class BoardActivity extends XWActivity
         @Override
         public void turnChanged( int newTurn )
         {
-            DbgUtils.logf( "turnChanged(%d)", newTurn );
             if ( 0 <= newTurn ) {
                 post( new Runnable() {
                         public void run() {
@@ -1548,7 +1545,7 @@ public class BoardActivity extends XWActivity
                                                              oldName );
                 if ( !oldSum.equals( newSum ) ) {
                     // Same dict, different versions
-                    msg = getString( R.string. inform_dict_diffversionf,
+                    msg = getString( R.string.inform_dict_diffversionf,
                                      oldName );
                 }
             } else {
@@ -1585,7 +1582,6 @@ public class BoardActivity extends XWActivity
         public boolean warnIllegalWord( String dict, String[] words, int turn, 
                                         boolean turnLost )
         {
-            DbgUtils.logf( "warnIllegalWord(dict=%s)", dict );
             boolean accept = turnLost;
 
             StringBuffer sb = new StringBuffer();
@@ -1609,7 +1605,6 @@ public class BoardActivity extends XWActivity
                 accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
             }
 
-            DbgUtils.logf( "warnIllegalWord=>%b", accept );
             return accept;
         }
 
@@ -2039,7 +2034,6 @@ public class BoardActivity extends XWActivity
             if ( null == m_screenTimer ) {
                 m_screenTimer = new Runnable() {
                         public void run() {
-                            DbgUtils.logf( "run() called for setKeepScreenOn()" );
                             if ( null != m_view ) {
                                 m_view.setKeepScreenOn( false );
                             }
