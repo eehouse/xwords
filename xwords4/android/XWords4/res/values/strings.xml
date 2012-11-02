@@ -1821,12 +1821,6 @@
     <string name="button_donef">Done with %s</string>
 
       <!--  -->
-    <string name="site_spinner_label">Pick a site</string>
-      <!--  -->
-    <string name="site_spinner_prompt">Pick a site</string>
-      <!--  -->
-    <string name="word_list_label">Tap word to search</string>
-      <!--  -->
     <string name="pick_url_titlef">Look up %s at</string>
 
       <!--  -->
@@ -1896,8 +1890,6 @@
     <string name="bt_pick_rescan_button">Rescan</string>
       <!--  -->
     <string name="bt_pick_clear_button">Remove checked</string>
-      <!--  -->
-    <string name="bt_pick_title">Opponent devices</string>
 
       <!--  -->
     <string name="scan_progress">Scanning for Crosswords on paired devices</string>
@@ -1961,8 +1953,6 @@
     <!--  -->
     <string name="newgame_enable_sms">Launch Settings</string>
     <!--  -->
-    <string name="err_no_phone">Phone number required</string>
-    <!--  -->
     <string name="dft_sms_namef">SMS Game %X</string>    
     <!--  -->
     <string name="new_sms_title">New game via SMS</string>
@@ -1977,14 +1967,10 @@
     number[s] you want to invite to your new game, then tap \"Invite
     checked\".</string>
     <!--  -->
-    <string name="manual_number_hint">Enter manually</string>
-    <!--  -->
     <string name="manual_owner_name">(Not in contacts)</string>
     <!--  -->
     <string name="warn_nomobilef">The number %1$s for %2$s is not
     a \"mobile\" number. Import anyway?</string>
-    <!--  -->
-    <string name="button_use">Use anyway</string>
     <!--  -->
     <string name="empty_sms_inviter">Phone list is empty. Use the
     \"Import contact\" button to add people you want to
@@ -2120,10 +2106,6 @@
     first.)</string>
     <!-- Shown in toast when relaunching after switching dicts -->
     <string name="reload_new_dict">Reloading game with %1$s</string>
-
-    <!--  -->
-    <string name="inform_dict_phonies">\u0020(Remember that phonies
-    will be discarded based on the host\'s wordlist.)</string>
 
     <string name="missing_dict_title">Game invitation pending</string>
     <string name="missing_dict_detail">Required wordlist missing</string>

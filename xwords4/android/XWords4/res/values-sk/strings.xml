@@ -49,7 +49,6 @@
     <!-- system menu for main board view -->
 	<string name="board_menu_done">Ukončiť ťah</string>
 	<string name="board_menu_trade">Vymeniť</string>
-	<string name="board_menu_tray">Skryť/Ukázať</string>
 	<string name="board_submenu_game">Hra</string>
 	<string name="board_menu_game_counts">Počty a hodnoty</string>
 	<string name="board_menu_game_left">Zostávajúce kamene</string>
