@@ -23,6 +23,7 @@ while [ $# -ge 1 ]; do
     shift
 done
 
+[ -n "$FILE" ] || usage "file parameter missing"
 [ -e $FILE ] || usage "File $FILE not found"
 
 xmlstarlet sel -T -t -m "/resources/string" -v @name -n $FILE

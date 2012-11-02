@@ -5,6 +5,8 @@ set -e -u
 # Grabs the list of string names from values.xml and greps for each.
 # If it's not found in a .java or .xml file lists it.
 
+cd $(dirname $0)
+
 IDS=$(./string-names.sh ../XWords4/res/values/strings.xml)
 STR_COUNT=$(echo $IDS | wc -w)
 
