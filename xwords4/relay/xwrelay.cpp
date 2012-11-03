@@ -386,7 +386,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
                 if ( getNetByte( &bufp, end, &devIDType )
                      && 0 != devIDType ) {
                     getNetString( &bufp, end, devID.m_devIDString );
-                    devID.m_devIDType = devIDType;
+                    devID.m_devIDType = (DevIDType)devIDType;
                 }
             }
 

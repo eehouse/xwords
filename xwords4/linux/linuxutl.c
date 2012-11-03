@@ -348,9 +348,25 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
 static const XP_UCHAR*
 linux_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
 {
+    XP_UCHAR* result;
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    *typ = ID_TYPE_LINUX;
-    return cGlobals->params->devID;
+    if ( !!cGlobals->params->rDevID ) {
+        *typ = ID_TYPE_RELAY;
+        result = cGlobals->params->rDevID;
+    } else {
+        *typ = ID_TYPE_LINUX;
+        result = cGlobals->params->devID;
+    }
+    return result;
+}
+
+static void
+linux_util_deviceRegistered( XW_UtilCtxt* XP_UNUSED(uc), 
+                             const XP_UCHAR* idRelay )
+{
+    /* Script discon_ok2.sh is grepping for this in logs, so don't change
+       it! */
+    XP_LOGF( "%s: new id: %s", __func__, idRelay );
 }
 #endif
 
@@ -365,6 +381,7 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
     util->vtable->m_util_getUserString = linux_util_getUserString;
 #ifdef XWFEATURE_DEVID
     util->vtable->m_util_getDevID = linux_util_getDevID;
+    util->vtable->m_util_deviceRegistered = linux_util_deviceRegistered;
 #endif
 }
 

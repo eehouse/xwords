@@ -1330,6 +1330,16 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
                           sizeof(comms->r.connName) );
 #endif
 
+#ifdef XWFEATURE_DEVID
+    if ( !reconnected ) {
+        XP_UCHAR devID[MAX_DEVID_LEN + 1];
+        stringFromStreamHere( stream, devID, sizeof(devID) );
+        if ( devID[0] != '\0' ) {
+            util_deviceRegistered( comms->util, devID );
+        }
+    }
+#endif
+
     (*comms->procs.rconnd)( comms->procs.closure, 
                             comms->addr.u.ip_relay.invite, reconnected,
                             comms->r.myHostID, XP_FALSE, nSought - nHere );

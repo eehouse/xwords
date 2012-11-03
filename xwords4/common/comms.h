@@ -55,12 +55,6 @@ typedef enum {
     , COMMS_RELAYSTATE_ALLCONNECTED
 } CommsRelayState;
 
-typedef enum {
-    ID_TYPE_NONE
-    ,ID_TYPE_LINUX
-    ,ID_TYPE_ANDROID_GCM
-} DevIDType;
-
 #ifdef XWFEATURE_BLUETOOTH
 # define XW_BT_UUID "7be0d084-ff89-4d6d-9c78-594773a6f963"
 

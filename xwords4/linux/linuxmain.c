@@ -505,6 +505,7 @@ typedef enum {
     ,CMD_SEED
 #ifdef XWFEATURE_DEVID
     ,CMD_DEVID
+    ,CMD_RDEVID
 #endif
     ,CMD_GAMESEED
     ,CMD_GAMEFILE
@@ -601,6 +602,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SEED, true, "seed", "random seed" }
 #ifdef XWFEATURE_DEVID
     ,{ CMD_DEVID, true, "devid", "device ID (for testing GCM stuff)" }
+    ,{ CMD_RDEVID, true, "rdevid", "relay's converted device ID (for testing GCM stuff)" }
 #endif
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
@@ -1682,6 +1684,9 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_DEVID
         case CMD_DEVID:
             mainParams.devID = optarg;
+            break;
+        case CMD_RDEVID:
+            mainParams.rDevID = optarg;
             break;
 #endif
         case CMD_GAMESEED:

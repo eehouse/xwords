@@ -58,8 +58,7 @@ cid integer
 ,ctime TIMESTAMP (0) DEFAULT CURRENT_TIMESTAMP
 ,mtimes TIMESTAMP(0)[]
 ,addrs INET[]
-,devTypes INTEGER[]
-,devids TEXT[]
+,devids INTEGER[]
 );
 EOF
 
@@ -69,11 +68,19 @@ id SERIAL
 ,connName VARCHAR(64)
 ,hid INTEGER
 ,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-,devType INTEGER
-,devid TEXT
+,devid INTEGER
 ,msg BYTEA
 ,msglen INTEGER
 ,UNIQUE ( connName, hid, msg )
+);
+EOF
+
+    cat | psql $DBNAME --file - <<EOF
+CREATE TABLE devices ( 
+id INTEGER UNIQUE PRIMARY KEY
+,devType INTEGER
+,devid TEXT
+,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 EOF
 }

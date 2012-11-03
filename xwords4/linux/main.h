@@ -61,6 +61,7 @@ typedef struct LaunchParams {
     char* bonusFile;
 #ifdef XWFEATURE_DEVID
     char* devID;
+    char* rDevID;
 #endif
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;

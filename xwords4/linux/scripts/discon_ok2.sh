@@ -190,6 +190,7 @@ build_cmds() {
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
+            # PARAMS="$PARAMS --devid LINUX_TEST_$(printf %.5d ${COUNTER})"
             PARAMS="$PARAMS $PUBLIC"
             ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM
@@ -380,6 +381,19 @@ increment_drop() {
     fi
 }
 
+set_relay_devid() {
+    KEY=$1
+    CMD=${ARGS[$KEY]}
+    if [ "$CMD" != "${CMD/--devid //}" ]; then
+        RELAY_ID=$(grep 'deviceRegistered: new id: ' ${LOGS[$KEY]} | tail -n 1)
+        if [ -n "$RELAY_ID" ]; then
+            RELAY_ID=$(echo $RELAY_ID | sed 's,^.*new id: ,,')
+            # turn --devid <whatever> into --rdevid $RELAY_ID
+            ARGS[$KEY]=$(echo $CMD | sed 's,^\(.*\)--devid[ ]\+[^ ]\+\(.*\)$,\1--rdevid $RELAY_ID\2,')
+        fi
+    fi
+}
+
 run_cmds() {
     ENDTIME=$(($(date +%s) + TIMEOUT))
     while :; do
@@ -409,6 +423,7 @@ run_cmds() {
             PIDS[$KEY]=0
             ROOM_PIDS[$ROOM]=0
             [ "$DROP_N" -ge 0 ] && increment_drop $KEY
+            # set_relay_devid $KEY
             check_game $KEY
         fi
     done
