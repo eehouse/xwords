@@ -5,34 +5,9 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 53 release</b>
+<b>Crosswords 4.4 beta 54 release</b>
 <ul>
-
-  <li>Add a second way devices can play: via SMS.  If you and your
-  friends have unlimited texting plans (ONLY IF!!) this is the way to
-  go: connecting is easier, moves get transmitted more quickly, and
-  less battery is required. <a
-  href="http://xwords.sf.net/and_faq.php">See the FAQ</a></li>
-
-  <li>In the main games-list screen, replace green highlighting of the
-  player whose turn it is with green transitioning to red over three
-  days.  That way you can see how long it's been that person's turn.
-  Nothing happens -- yet -- when the three days is up.  Maybe later
-  that'll force a resignation.</li>
-
-  <li>Download wordlists without using the browser when possible</li>
-
-  <li>Warn when you join a network game with a different wordlist from
-  the host's, and give a chance to download and switch.</li>
-
-  <li>Don't allow networked games to have different wordlist for each
-  player.  That feature is for local games only now.</li>
-
-  <li>There's now a preference for where downloaded wordlists are
-  stored instead of a question asked each time.</li>
-
-  <li>Recast game-over feature as "resigning".</li>
-  
+  <li>Don't try to access download directory when OS says it doesn't exist</li>
 </ul>
 
 <p>Please remember that this is beta software.  Please let me know (at 
