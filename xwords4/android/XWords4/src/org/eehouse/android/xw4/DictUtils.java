@@ -560,6 +560,11 @@ public class DictUtils {
         return result;
     }
 
+    public static boolean haveDownloadDir()
+    {
+        return null != getDownloadDir();
+    }
+
     private static File getDownloadDir()
     {
         File result = null;

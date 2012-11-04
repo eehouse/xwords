@@ -263,15 +263,6 @@ public class DictsActivity extends ExpandableListActivity
             message = Utils.format( this, R.string.move_dictf,
                                     m_adapter.getSelChildView().getText() );
 
-            String[] items = new String[3];
-            for ( int ii = 0; ii < 3; ++ii ) {
-                DictLoc loc = itemToRealLoc(ii);
-                if ( loc.equals( m_moveFromLoc ) ) {
-                    m_moveFromItem = ii;
-                }
-                items[ii] = m_locNames[loc.ordinal()];
-            }
-
             OnClickListener newSelLstnr =
                 new OnClickListener() {
                     public void onClick( DialogInterface dlgi, int item ) {
@@ -307,7 +298,8 @@ public class DictsActivity extends ExpandableListActivity
 
             dialog = new AlertDialog.Builder( this )
                 .setTitle( message )
-                .setSingleChoiceItems( items, m_moveFromItem, newSelLstnr )
+                .setSingleChoiceItems( makeDictDirItems(), m_moveFromItem, 
+                                       newSelLstnr )
                 .setPositiveButton( R.string.button_move, lstnr )
                 .setNegativeButton( R.string.button_cancel, null )
                 .create();
@@ -714,6 +706,26 @@ public class DictsActivity extends ExpandableListActivity
     {
         String[] asArray = m_closedLangs.toArray( new String[m_closedLangs.size()] );
         XWPrefs.setClosedLangs( this, asArray );
+    }
+
+
+    private String[] makeDictDirItems() 
+    {
+        boolean showDownload = DictUtils.haveDownloadDir();
+        int nItems = showDownload ? 3 : 2;
+        int nextI = 0;
+        String[] items = new String[nItems];
+        for ( int ii = 0; ii < 3; ++ii ) {
+            DictLoc loc = itemToRealLoc(ii);
+            if ( !showDownload && DictLoc.DOWNLOAD == loc ) {
+                continue;
+            }
+            if ( loc.equals( m_moveFromLoc ) ) {
+                m_moveFromItem = nextI;
+            }
+            items[nextI++] = m_locNames[loc.ordinal()];
+        }
+        return items;
     }
 
     private static Intent mkDownloadIntent( Context context, String dict_url )
