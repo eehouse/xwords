@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
+import java.io.File;
 
 public class PrefsActivity extends PreferenceActivity 
     implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -40,6 +41,7 @@ public class PrefsActivity extends PreferenceActivity
     private String m_keyLogging;
     private String m_smsToasting;
     private String m_smsEnable;
+    private String m_downloadPath;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -120,6 +122,7 @@ public class PrefsActivity extends PreferenceActivity
         m_keyLogging = getString( R.string.key_logging_on );
         m_smsToasting = getString( R.string.key_show_sms );
         m_smsEnable = getString( R.string.key_enable_sms );
+        m_downloadPath = getString( R.string.key_download_path );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -164,6 +167,23 @@ public class PrefsActivity extends PreferenceActivity
             } else {
                 XWPrefs.setHaveCheckedSMS( this, false );
             }
+        } else if ( key.equals( m_downloadPath ) ) {
+            String value = sp.getString( key, null );
+            if ( null != value ) {
+                File dir = new File( value );
+                String msg = null;
+                if ( !dir.exists() ) {
+                    msg = String.format( "%s does not exist", value );
+                } else if ( !dir.isDirectory() ) {
+                    msg = String.format( "%s is not a directory", value );
+                } else if ( !dir.canWrite() ) {
+                    msg = String.format( "Cannot write to %s", value );
+                }
+                if ( null != msg ) {
+                    Utils.showToast( this, msg );
+                }
+            }
+            DictUtils.invalDictList();
         }
     }
 

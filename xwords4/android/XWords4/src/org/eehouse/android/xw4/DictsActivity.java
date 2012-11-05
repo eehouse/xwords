@@ -711,7 +711,7 @@ public class DictsActivity extends ExpandableListActivity
 
     private String[] makeDictDirItems() 
     {
-        boolean showDownload = DictUtils.haveDownloadDir();
+        boolean showDownload = DictUtils.haveDownloadDir( this );
         int nItems = showDownload ? 3 : 2;
         int nextI = 0;
         String[] items = new String[nItems];
