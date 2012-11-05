@@ -7,8 +7,14 @@
 <body>
 <b>Crosswords 4.4 beta 54 release</b>
 <ul>
-  <li>Don't try to access download directory when OS says it doesn't exist</li>
+
+  <li>Don't try to access directory OS says is for downloads when it
+    doesn't actually exist</li>
+
 </ul>
+
+<p>(The full changelog 
+is <a href="http://xwords.sf.net/and_changes.php">here</a>.)</p>
 
 <p>Please remember that this is beta software.  Please let me know (at 
 eehouse@eehouse.org) what's broken and what features you'd most like 
