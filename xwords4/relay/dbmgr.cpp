@@ -34,6 +34,7 @@
 
 #define GAMES_TABLE "games"
 #define MSGS_TABLE "msgs"
+#define DEVICES_TABLE "devices"
 
 #define ARRAYSUM "sum_array(nPerDevice)"
 
@@ -243,10 +244,59 @@ DBMgr::AllDevsAckd( const char* const connName )
     return full;
 }
 
+// Return DevIDRelay for device, adding it to devices table IFF it's not
+// already there.
+DBMgr::DevIDRelay
+DBMgr::RegisterDevice( const DevID* host )
+{
+    DBMgr::DevIDRelay devID;
+    assert( host->m_devIDType != ID_TYPE_RELAY );
+    int ii;
+    bool success;
+
+    // if it's already present, just return
+    devID = getDevID( host );
+    if ( DEVID_NONE == devID ) {
+        // loop until we're successful inserting the unique key.  Ship with this
+        // coming from random, but test with increasing values initially to make
+        // sure duplicates are detected.
+        for ( success = false, ii = 0; !success; ++ii ) {
+            assert( 10 > ii );  // better to check that we're looping BECAUSE
+                                // of uniqueness problem.
+            devID = (DBMgr::DevIDRelay)random();
+            if ( DEVID_NONE == devID ) {
+                continue;
+            }
+            const char* command = "INSERT INTO " DEVICES_TABLE
+                " (id, devType, devid)"
+                " VALUES( $1, $2, $3 )";
+            int nParams = 3;
+            char* paramValues[nParams];
+            char buf[512];
+            formatParams( paramValues, nParams,
+                          "%d"DELIM"%d"DELIM"%s", 
+                          buf, sizeof(buf), devID, host->m_devIDType, 
+                          host->m_devIDString.c_str() );
+
+            PGresult* result = PQexecParams( getThreadConn(), command,
+                                             nParams, NULL,
+                                             paramValues, 
+                                             NULL, NULL, 0 );
+            success = PGRES_COMMAND_OK == PQresultStatus(result);
+            if ( !success ) {
+                logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), 
+                      PQresultErrorMessage(result) );
+            }
+            PQclear( result );
+        }
+    }
+    return devID;
+}
+
 HostID
 DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion, 
                   int nToAdd, unsigned short seed, const in_addr& addr, 
-                  const DevID* devID, bool ackd )
+                  DevIDRelay devID, bool ackd )
 {
     HostID newID = curID;
 
@@ -262,11 +312,9 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
     assert( newID <= 4 );
 
     char devIDBuf[512] = {0};
-    if ( !!devID ) {
+    if ( DEVID_NONE != devID ) {
         snprintf( devIDBuf, sizeof(devIDBuf),
-                  "devids[%d] = \'%s\', devTypes[%d] = %d,",
-                  newID, devID->m_devIDString.c_str(),
-                  newID, devID->m_devIDType );
+                  "devids[%d] = %d, ", newID, devID );
     }
 
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
@@ -569,20 +617,45 @@ DBMgr::readArray( const char* const connName, int arr[]  ) /* len 4 */
     PQclear( result );
 }
 
-void
-DBMgr::getDevID( const char* connName, int hid, DevID& devID )
+DBMgr::DevIDRelay 
+DBMgr::getDevID( const char* connName, int hid )
 {
-    const char* fmt = "SELECT devids[%d], devTypes[%d]  FROM " GAMES_TABLE " WHERE connName='%s'";
+    DBMgr::DevIDRelay devID;
+    const char* fmt = "SELECT devids[%d] FROM " GAMES_TABLE " WHERE connName='%s'";
     char query[256];
-    snprintf( query, sizeof(query), fmt, hid, hid, connName );
+    snprintf( query, sizeof(query), fmt, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query );
 
     PGresult* result = PQexec( getThreadConn(), query );
     assert( 1 == PQntuples( result ) );
-    devID.m_devIDString = PQgetvalue( result, 0, 0 );
-    devID.m_devIDType = (unsigned char)atoi( PQgetvalue( result, 0, 1 ) );
-    assert( devID.m_devIDType <= 2 ); // for now!!!
+    devID = (DBMgr::DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
     PQclear( result );
+    return devID;
+}
+
+DBMgr::DevIDRelay 
+DBMgr::getDevID( const DevID* devID )
+{
+    DBMgr::DevIDRelay rDevID = DEVID_NONE;
+    DevIDType devIDType = devID->m_devIDType;
+    assert( ID_TYPE_NONE < devIDType );
+    const char* asStr = devID->m_devIDString.c_str();
+    if ( ID_TYPE_RELAY == devIDType ) {
+        rDevID = strtoul( asStr, NULL, 16 );
+    } else {
+        const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE devtype=%d and devid = '%s'";
+        char query[512];
+        snprintf( query, sizeof(query), fmt, devIDType, asStr );
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+
+        PGresult* result = PQexec( getThreadConn(), query );
+        assert( 1 >= PQntuples( result ) );
+        if ( 1 == PQntuples( result ) ) {
+            rDevID = (DBMgr::DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
+        }
+        PQclear( result );
+    }
+    return rDevID;
 }
 
 /*
@@ -625,13 +698,12 @@ void
 DBMgr::StoreMessage( const char* const connName, int hid, 
                      const unsigned char* buf, int len )
 {
-    DevID devID;
-    getDevID( connName, hid, devID );
+    DevIDRelay devID = getDevID( connName, hid );
 
     size_t newLen;
     const char* fmt = "INSERT INTO " MSGS_TABLE 
-        " (connname, hid, devid, devType, msg, msglen)"
-        " VALUES( '%s', %d, '%s', %d, E'%s', %d)";
+        " (connname, hid, devid, msg, msglen)"
+        " VALUES( '%s', %d, %d, E'%s', %d)";
 
     unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                               len, &newLen );
@@ -639,8 +711,7 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     
     char query[1024];
     size_t siz = snprintf( query, sizeof(query), fmt, connName, hid,
-                           devID.m_devIDString.c_str(),
-                           devID.m_devIDType, bytes, len );
+                           devID, bytes, len );
 
     PQfreemem( bytes );
 

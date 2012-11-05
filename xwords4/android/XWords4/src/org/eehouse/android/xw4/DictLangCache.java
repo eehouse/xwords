@@ -33,6 +33,7 @@ import java.util.Comparator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
+import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.DictInfo;
@@ -244,7 +245,7 @@ public class DictLangCache {
 
     // May be called from background thread
     public static void inval( final Context context, String name,
-                              DictUtils.DictLoc loc, boolean added )
+                              DictLoc loc, boolean added )
     {
         DictAndLoc dal = new DictAndLoc( name, loc );
         DBUtils.dictsRemoveInfo( context, dal );
@@ -372,7 +373,7 @@ public class DictLangCache {
     {
         DictInfo result = DBUtils.dictsGetInfo( context, name );
         if ( null == result ) {
-            DictUtils.DictLoc loc = DictUtils.getDictLoc( context, name );
+            DictLoc loc = DictUtils.getDictLoc( context, name );
             result = getInfo( context, new DictAndLoc( name, loc ) );
         }
         return result;
@@ -397,7 +398,7 @@ public class DictLangCache {
             if ( XwJNI.dict_getInfo( pairs.m_bytes[0], dal.name, 
                                      pairs.m_paths[0], 
                                      JNIUtilsImpl.get( context ), 
-                                     DictUtils.DictLoc.DOWNLOAD == dal.loc,
+                                     DictLoc.DOWNLOAD == dal.loc,
                                      info ) ) {
 
                 info.name = dal.name;

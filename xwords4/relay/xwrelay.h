@@ -105,6 +105,13 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
 #endif
 ;
 
+typedef enum {
+    ID_TYPE_NONE
+    ,ID_TYPE_RELAY              /* assigned by relay as replacement for one of the below */
+    ,ID_TYPE_LINUX
+    ,ID_TYPE_ANDROID_GCM
+} DevIDType;
+
 #ifndef CANT_DO_TYPEDEF
 typedef unsigned char XWRELAY_Cmd;
 #endif
@@ -115,6 +122,7 @@ typedef unsigned char XWRELAY_Cmd;
 #define MAX_INVITE_LEN 31
 #define MAX_MSG_LEN    1024     /* Used for proxy too! */
 #define MAX_CONNNAME_LEN 48     /* host ID, boot time, and seeds as hex? */
+#define MAX_DEVID_LEN 8         /* 32-bit number as hex */
 
 #define XWRELAY_PROTO_VERSION_ORIG            0x01
 #define XWRELAY_PROTO_VERSION_LATE_NAME       0x02

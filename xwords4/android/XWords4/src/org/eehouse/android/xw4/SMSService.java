@@ -232,7 +232,6 @@ public class SMSService extends Service {
             switch( cmd ) {
             case CHECK_MSGDB:
                 if ( ! XWPrefs.getHaveCheckedSMS( this ) ) {
-                    Utils.showToast( this, R.string.sms_searching_toast );
                     XWPrefs.setHaveCheckedSMS( this, true );
                     new Thread( new Runnable() {
                             public void run() {

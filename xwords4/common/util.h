@@ -154,6 +154,7 @@ typedef struct UtilVtable {
     XP_U32 (*m_util_getCurSeconds)( XW_UtilCtxt* uc );
 #ifdef XWFEATURE_DEVID
     const XP_UCHAR* (*m_util_getDevID)( XW_UtilCtxt* uc, DevIDType* typ );
+    void (*m_util_deviceRegistered)( XW_UtilCtxt* uc, const XP_UCHAR* idRelay );
 #endif
     DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc );
 
@@ -285,6 +286,8 @@ struct XW_UtilCtxt {
 #ifdef XWFEATURE_DEVID
 # define util_getDevID( uc, t )                      \
          (uc)->vtable->m_util_getDevID((uc),(t))
+# define util_deviceRegistered( uc, id )             \
+         (uc)->vtable->m_util_deviceRegistered( (uc), (id) )
 #endif
 
 #define util_makeEmptyDict( uc ) \

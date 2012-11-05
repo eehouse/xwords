@@ -730,7 +730,6 @@ public class GameUtils {
             }
             lock.unlock();
         }
-        DbgUtils.logf( "feedMessages=>%b", draw );
         return draw;
     } // feedMessages
 

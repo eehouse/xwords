@@ -30,6 +30,8 @@
 #include <pthread.h>
 #include "xwrelay_priv.h"
 #include "xwrelay.h"
+#include "devid.h"
+#include "dbmgr.h"
 #include "states.h"
 
 typedef vector<unsigned char> MsgBuffer;
@@ -61,13 +63,6 @@ struct AckTimer {
 public:
     HostID m_hid;
     class CookieRef* m_this;
-};
-
-class DevID {
- public:
-    DevID() { m_devIDType = 0; }
-    string m_devIDString;
-    unsigned char m_devIDType;
 };
 
 class CookieRef {
@@ -224,10 +219,12 @@ class CookieRef {
 
     void handleEvents();
 
-    void sendResponse( const CRefEvent* evt, bool initial );
+    void sendResponse( const CRefEvent* evt, bool initial, 
+                       const DBMgr::DevIDRelay* devID );
     void sendAnyStored( const CRefEvent* evt );
     void initPlayerCounts( const CRefEvent* evt );
-    bool increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp );
+    bool increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp, 
+                               DBMgr::DevIDRelay* devID );
     void updateAck( HostID hostID, bool keep );
     void dropPending( int seed );
 

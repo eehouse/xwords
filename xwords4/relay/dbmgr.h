@@ -26,13 +26,19 @@
 
 #include "xwrelay.h"
 #include "xwrelay_priv.h"
-#include "cref.h"
+#include "devid.h"
 #include <libpq-fe.h>
 
 using namespace std;
 
 class DBMgr {
  public:
+    /* DevIDs on various platforms are stored in devices table.  This is the
+       key, and used in msgs and games tables as a shorter way to refer to
+       them. */
+    typedef unsigned int DevIDRelay;
+    static const DevIDRelay DEVID_NONE = 0;
+
     static DBMgr* Get();
 
     ~DBMgr();
@@ -56,9 +62,11 @@ class DBMgr {
                        char* connNameBuf, int bufLen, int* nPlayersHP );
     bool AllDevsAckd( const char* const connName );
 
+    DevIDRelay RegisterDevice( const DevID* hosts );
+
     HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const in_addr& addr, 
-                      const DevID* devID, bool unAckd );
+                      DevIDRelay devID, bool unAckd );
     void NoteAckd( const char* const connName, HostID id );
     HostID HIDForSeed( const char* const connName, unsigned short seed );
     bool RmDeviceByHid( const char* const connName, HostID id );
@@ -99,7 +107,8 @@ class DBMgr {
     DBMgr();
     bool execSql( const char* const query ); /* no-results query */
     void readArray( const char* const connName, int arr[] );
-    void getDevID( const char* connName, int hid, DevID& devID );
+    DevIDRelay getDevID( const char* connName, int hid );
+    DevIDRelay getDevID( const DevID* devID );
 
     PGconn* getThreadConn( void );
 

@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -641,9 +642,10 @@ CookieRef::handleEvents()
             case XWA_SEND_CONNRSP: 
                 {
                     HostID hid;
-                    if ( increasePlayerCounts( &evt, false, &hid ) ) {
+                    DBMgr::DevIDRelay devID;
+                    if ( increasePlayerCounts( &evt, false, &hid, &devID ) ) {
                         setAllConnectedTimer();
-                        sendResponse( &evt, true );
+                        sendResponse( &evt, true, &devID );
                         setAckTimer( hid );
                     }
                 }
@@ -666,8 +668,8 @@ CookieRef::handleEvents()
             /*     break; */
 
             case XWA_SEND_RERSP:
-                increasePlayerCounts( &evt, true, NULL );
-                sendResponse( &evt, false );
+                increasePlayerCounts( &evt, true, NULL, NULL );
+                sendResponse( &evt, false, NULL );
                 sendAnyStored( &evt );
                 postCheckAllHere();
                 break;
@@ -855,8 +857,10 @@ CookieRef::send_stored_messages( HostID dest, int socket )
 } /* send_stored_messages */
 
 bool
-CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp )
+CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp, 
+                                 DBMgr::DevIDRelay* devIDp )
 {
+    DBMgr::DevIDRelay devID = DBMgr::DEVID_NONE;
     int nPlayersH = evt->u.con.nPlayersH;
     int socket = evt->u.con.socket;
     int seed = evt->u.con.seed;
@@ -883,10 +887,25 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp )
         assert( m_nPlayersHere <= m_nPlayersSought );
     }
 
+    if ( !!devIDp ) {
+        DevIDType devIDType = evt->u.con.devID->m_devIDType;
+        // does client support devID
+        if ( ID_TYPE_NONE != devIDType ) { 
+            // have we not already converted it?
+            if ( ID_TYPE_RELAY == devIDType ) {
+                devID = (DBMgr::DevIDRelay)strtoul( evt->u.con.devID->m_devIDString.c_str(), 
+                                                     NULL, 16 );
+            } else {
+                devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
+            }
+        }
+        *devIDp = devID;
+    }
+
     evt->u.con.srcID =
         DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID, 
                                  evt->u.con.clientVersion, nPlayersH, seed, 
-                                 evt->u.con.addr, evt->u.con.devID, reconn );
+                                 evt->u.con.addr, devID, reconn );
 
     HostID hostid = evt->u.con.srcID;
     if ( NULL != hidp ) {
@@ -1016,7 +1035,8 @@ CookieRef::cancelAllConnectedTimer()
 }
 
 void
-CookieRef::sendResponse( const CRefEvent* evt, bool initial )
+CookieRef::sendResponse( const CRefEvent* evt, bool initial, 
+                         const DBMgr::DevIDRelay* devID )
 {
     int socket = evt->u.con.socket;
 
@@ -1028,6 +1048,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
                       + sizeof(unsigned char) /* total here */
                       + sizeof(unsigned char) /* total expected */
                       + 1 + MAX_CONNNAME_LEN
+                      + 1 + 1 + MAX_DEVID_LEN
     ];
 
     unsigned char* bufp = buf;
@@ -1043,11 +1064,32 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
 
     const char* connName = ConnName();
     assert( !!connName && connName[0] );
-    int len = strlen( connName );
+    size_t len = strlen( connName );
     assert( len < MAX_CONNNAME_LEN );
     *bufp++ = (char)len;
     memcpy( bufp, connName, len );
     bufp += len;
+
+    if ( initial ) {
+        // we always write at least empty string
+        char idbuf[MAX_DEVID_LEN + 1] = {0};
+
+        // If client supports devid, and we have one (response case), write it as
+        // 8-byte hex string plus a length byte -- but only if we didn't already
+        // receive it.
+        if ( !!devID && ID_TYPE_RELAY < evt->u.con.devID->m_devIDType ) { 
+            len = snprintf( idbuf, sizeof(idbuf), "%.8X", *devID );
+            assert( len < sizeof(idbuf) );
+        }
+        
+        len = strlen( idbuf );
+        assert( len <= MAX_DEVID_LEN );
+        *bufp++ = (char)len;
+        if ( 0 < len ) {
+            memcpy( bufp, idbuf, len );
+            bufp += len;
+        }
+    }
 
     send_with_length( socket, buf, bufp - buf, true );
     logf( XW_LOGVERBOSE0, "sent %s", cmdToStr( XWRELAY_Cmd(buf[0]) ) );
