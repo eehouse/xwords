@@ -60,20 +60,24 @@ public class GCMIntentService extends GCMBaseIntentService {
         DbgUtils.logf( "GCMIntentService.init()" );
         int sdkVersion = Integer.valueOf(android.os.Build.VERSION.SDK);
         if ( 8 <= sdkVersion ) {
-            GCMRegistrar.checkDevice( app );
-            GCMRegistrar.checkManifest( app );
-            final String regId = GCMRegistrar.getRegistrationId( app );
-            if (regId.equals("")) {
-                DbgUtils.logf( "registering..." );
-                GCMRegistrar.register( app, GCMConsts.SENDER_ID );
-            } else {
-                DbgUtils.logf( "Already registered: id=\"%s\"", regId );
-            }
+            try {
+                GCMRegistrar.checkDevice( app );
+                GCMRegistrar.checkManifest( app );
+                final String regId = GCMRegistrar.getRegistrationId( app );
+                if (regId.equals("")) {
+                    DbgUtils.logf( "registering..." );
+                    GCMRegistrar.register( app, GCMConsts.SENDER_ID );
+                } else {
+                    DbgUtils.logf( "Already registered: id=\"%s\"", regId );
+                }
 
-            String curID = XWPrefs.getGCMDevID( app );
-            if ( ! curID.equals( regId ) ) {
-                DbgUtils.logf( "saved bad id: %s", curID );
-                XWPrefs.setGCMDevID( app, regId );
+                String curID = XWPrefs.getGCMDevID( app );
+                if ( ! curID.equals( regId ) ) {
+                    DbgUtils.logf( "saved bad id: %s", curID );
+                    XWPrefs.setGCMDevID( app, regId );
+                }
+            } catch ( UnsupportedOperationException uoe ) {
+                DbgUtils.showf( app, "Device can't do GCM; am I on an emulator?" );
             }
         }
     }
