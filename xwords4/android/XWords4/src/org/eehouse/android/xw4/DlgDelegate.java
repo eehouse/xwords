@@ -208,12 +208,20 @@ public class DlgDelegate {
 
     public void showConfirmThen( String msg, int posButton, int callbackID )
     {
-        m_msg = msg;
-        m_posButton = posButton;
-        Assert.assertTrue( 0 != callbackID );
-        Assert.assertTrue( 0 == m_cbckID );
-        m_cbckID = callbackID;
-        m_activity.showDialog( CONFIRM_THEN );
+        // FIX ME!! Need to store data per message rather than have
+        // assertions failing or messages dropped.
+
+        if ( 0 != m_cbckID ) {
+            DbgUtils.logf( "showConfirmThen: busy with another message; "
+                           + "dropping \"%s\" in favor of \"%s\"", 
+                           msg, m_msg );
+        } else {
+            m_msg = msg;
+            m_posButton = posButton;
+            Assert.assertTrue( 0 != callbackID );
+            m_cbckID = callbackID;
+            m_activity.showDialog( CONFIRM_THEN );
+        }
     }
 
     public void showEmailOrSMSThen( final int callbackID )

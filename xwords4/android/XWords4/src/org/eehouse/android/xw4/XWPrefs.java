@@ -206,6 +206,11 @@ public class XWPrefs {
             : DictUtils.DictLoc.EXTERNAL;
         return result;
     }
+
+    public static String getMyDownloadDir( Context context )
+    {
+        return getPrefsString( context, R.string.key_download_path );
+    }
     
     protected static String getPrefsString( Context context, int keyID )
     {

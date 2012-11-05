@@ -299,6 +299,10 @@
                         android:summary="Menuitems etc."
                         android:defaultValue="false"
                         />
+    <org.eehouse.android.xw4.XWEditTextPreference 
+        android:key="@string/key_download_path"
+        android:title="@string/download_path_title"
+        />
     <CheckBoxPreference android:key="@string/key_show_sms"
 			            android:title="Show SMS sends, receives"
 			            android:defaultValue="false"

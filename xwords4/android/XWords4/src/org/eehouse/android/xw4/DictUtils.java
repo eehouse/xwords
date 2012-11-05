@@ -149,7 +149,8 @@ public class DictUtils {
             }
 
             tryDir( context, getSDDir( context ), false, DictLoc.EXTERNAL, al );
-            tryDir( context, getDownloadDir(), true, DictLoc.DOWNLOAD, al );
+            tryDir( context, getDownloadDir( context ), true, 
+                    DictLoc.DOWNLOAD, al );
 
             s_dictListCache = 
                 al.toArray( new DictUtils.DictAndLoc[al.size()] );
@@ -248,7 +249,7 @@ public class DictUtils {
         File path = null;
         switch( loc ) {
         case DOWNLOAD:
-            path = getDownloadsPathFor( name );
+            path = getDownloadsPathFor( context, name );
             break;
         case EXTERNAL:
             path = getSDPathFor( context, name );
@@ -305,7 +306,7 @@ public class DictUtils {
                 FileInputStream fis = null;
                 if ( null == fis ) {
                     if ( loc == DictLoc.UNKNOWN || loc == DictLoc.DOWNLOAD ) {
-                        File path = getDownloadsPathFor( name );
+                        File path = getDownloadsPathFor( context, name );
                         if ( null != path && path.exists() ) {
                             DbgUtils.logf( "loading %s from Download", name );
                             fis = new FileInputStream( path );
@@ -365,7 +366,7 @@ public class DictUtils {
         File path;
         switch ( to ) {
         case DOWNLOAD:
-            path = getDownloadsPathFor( name );
+            path = getDownloadsPathFor( context, name );
             break;
         case EXTERNAL:
             path = getSDPathFor( context, name );
@@ -560,25 +561,36 @@ public class DictUtils {
         return result;
     }
 
-    private static File getDownloadDir()
+    public static boolean haveDownloadDir( Context context )
+    {
+        return null != getDownloadDir( context );
+    }
+
+    private static File getDownloadDir( Context context )
     {
         File result = null;
         if ( haveWriteableSD() ) {
-            File storage = Environment.getExternalStorageDirectory();
-            if ( null != storage ) {
-                result = new File( storage.getPath(), "download/" );
-                if ( !result.exists() ) {
-                    result = null;
+            File file = null;
+            String myPath = XWPrefs.getMyDownloadDir( context );
+            if ( null != myPath && 0 < myPath.length() ) {
+                file = new File( myPath );
+            } else {
+                file = Environment.getExternalStorageDirectory();
+                if ( null != file ) {
+                    file = new File( file, "download/" );
                 }
+            }
+            if ( null != file && file.exists() && file.isDirectory() ) {
+                result = file;
             }
         }
         return result;
     }
 
-    private static File getDownloadsPathFor( String name )
+    private static File getDownloadsPathFor( Context context, String name )
     {
         File result = null;
-        File dir = getDownloadDir();
+        File dir = getDownloadDir( context );
         if ( dir != null ) {
             result = new File( dir, name );
         }
