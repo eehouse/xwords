@@ -110,6 +110,8 @@ typedef enum {
     ,ID_TYPE_RELAY              /* assigned by relay as replacement for one of the below */
     ,ID_TYPE_LINUX
     ,ID_TYPE_ANDROID_GCM
+
+    ,ID_TYPE_NTYPES
 } DevIDType;
 
 #ifndef CANT_DO_TYPEDEF

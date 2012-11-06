@@ -2316,6 +2316,7 @@ putDevID( const CommsCtxt* comms, XWStreamCtxt* stream )
 # if XWRELAY_PROTO_VERSION >= XWRELAY_PROTO_VERSION_CLIENTID
     DevIDType typ;
     const XP_UCHAR* devID = util_getDevID( comms->util, &typ );
+    XP_ASSERT( ID_TYPE_NONE <= typ && typ < ID_TYPE_NTYPES );
     stream_putU8( stream, typ );
     if ( ID_TYPE_NONE != typ ) {
         stream_catString( stream, devID );
