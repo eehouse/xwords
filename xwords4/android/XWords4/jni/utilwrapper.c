@@ -552,9 +552,9 @@ static const XP_UCHAR*
 and_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
 {
     const XP_UCHAR* result = NULL;
-    *typ = ID_TYPE_ANDROID_GCM;
-    UTIL_CBK_HEADER( "getDevID", "()Ljava/lang/String;" );
-    jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid );
+    UTIL_CBK_HEADER( "getDevID", "([B)Ljava/lang/String;" );
+    jbyteArray jbarr = makeByteArray( env, 1, NULL );
+    jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, jbarr );
     if ( NULL != jresult ) {
         const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
         jsize len = (*env)->GetStringUTFLength( env, jresult );
@@ -570,9 +570,24 @@ and_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
         }
         (*env)->ReleaseStringUTFChars( env, jresult, jchars );
         result = (const XP_UCHAR*)util->devIDStorage;
+
+        jbyte* elems = (*env)->GetByteArrayElements( env, jbarr, NULL );
+        *typ = (DevIDType)elems[0];
+        (*env)->ReleaseByteArrayElements( env, jbarr, elems, 0 );
     }
+    deleteLocalRef( env, jbarr );
     UTIL_CBK_TAIL();
     return result;
+}
+
+static void
+and_util_deviceRegistered( XW_UtilCtxt* uc, const XP_UCHAR* idRelay )
+{
+    UTIL_CBK_HEADER( "deviceRegistered", "(Ljava/lang/String;)V" );
+    jstring jstr = (*env)->NewStringUTF( env, idRelay );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jstr );
+    deleteLocalRef( env, jstr );
+    UTIL_CBK_TAIL();
 }
 #endif  /* XWFEATURE_DEVID */
 
@@ -677,6 +692,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(setIsServer);
 # ifdef XWFEATURE_DEVID
     SET_PROC(getDevID);
+    SET_PROC(deviceRegistered);
 # endif
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT

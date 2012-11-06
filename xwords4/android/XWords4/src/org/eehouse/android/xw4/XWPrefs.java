@@ -199,6 +199,20 @@ public class XWPrefs {
         clearPrefsKey( context, R.string.key_gcm_regid );
     }
 
+    public static String getRelayDevID( Context context )
+    {
+        String result = getPrefsString( context, R.string.key_relay_regid );
+        if ( null != result && 0 == result.length() ) {
+            result = null;
+        }
+        return result;
+    }
+
+    public static void setRelayDevID( Context context, String idRelay )
+    {
+        setPrefsString( context, R.string.key_relay_regid, idRelay );
+    }
+
     public static boolean getHaveCheckedSMS( Context context )
     {
         return getPrefsBoolean( context, R.string.key_checked_sms, false );

@@ -94,9 +94,21 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "setIsServer" );
     }
 
-    public String getDevID()
+    public String getDevID( /*out*/ byte[] typ )
     {
-        return XWPrefs.getGCMDevID( m_context );
+        String result = XWPrefs.getRelayDevID( m_context );
+        if ( null != result ) {
+            typ[0] = UtilCtxt.ID_TYPE_RELAY;
+        } else {
+            result = XWPrefs.getGCMDevID( m_context );
+            typ[0] = UtilCtxt.ID_TYPE_ANDROID_GCM;
+        }
+        return result;
+    }
+
+    public void deviceRegistered( String idRelay )
+    {
+        XWPrefs.setRelayDevID( m_context, idRelay );
     }
 
     public void bonusSquareHeld( int bonus )
