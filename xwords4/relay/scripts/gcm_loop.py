@@ -16,7 +16,7 @@ g_sent = {}
 
 def init():
     try:
-        con = psycopg2.connect(database='xwgames', user='eehouse')
+        con = psycopg2.connect(database='xwgames', user='relay')
     except psycopg2.DatabaseError, e:
         print 'Error %s' % e 
         sys.exit(1)
@@ -24,9 +24,14 @@ def init():
 
 def get( con ):
     cur = con.cursor()
-    cur.execute("SELECT id, devid from msgs where devid != ''")
-
+    cur.execute("SELECT id, devid from msgs where devid != 0")
     return cur.fetchall()
+
+def asGCMIds(con, devids):
+    cur = con.cursor()
+    query = "SELECT devid FROM devices WHERE devtype = 3 AND id IN (%s)" % ",".join([str(y) for y in devids])
+    cur.execute( query )
+    return [elem[0] for elem in cur.fetchall()]
 
 def notifyGCM( devids ):
     print "sending for", len(devids), "devices"
@@ -48,7 +53,7 @@ def notifyGCM( devids ):
 # successful mark them as sent.  Backoff is based on msgids: if the
 # only messages a device has pending have been seen before, backoff
 # applies.
-def sendWithBackoff( msgs ):
+def sendWithBackoff( con, msgs ):
     global g_sent
     targets = []
     for row in msgs:
@@ -59,7 +64,8 @@ def sendWithBackoff( msgs ):
             g_sent[ msgid ] = True
             targets.append( devid )
     if 0 < len(targets):
-        notifyGCM( targets )
+        devids = asGCMIds( con, targets )
+        notifyGCM( devids )
     else:
         print "no new targets found"
 
@@ -88,7 +94,7 @@ g_con = init()
 while g_con:
     devids = get( g_con )
     if 0 < len(devids):
-        sendWithBackoff( devids )
+        sendWithBackoff( g_con, devids )
         pruneSent( devids )
     else: print "no messages found"
     if not g_loop: break
