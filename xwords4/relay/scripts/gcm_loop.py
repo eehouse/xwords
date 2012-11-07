@@ -6,7 +6,7 @@
 #
 # Depends on the gcm module
 
-import sys, gcm, psycopg2, time, signal
+import getpass, sys, gcm, psycopg2, time, signal
 from time import gmtime, strftime
 
 # I'm not checking my key in...
@@ -27,10 +27,13 @@ import mykey
 
 g_con = None
 g_debug = False
+g_skipSend = False               # for debugging
+DEVTYPE = 3                     # 3 == GCM
+LINE_LEN = 76
 
 def init():
     try:
-        con = psycopg2.connect(database='xwgames', user='relay')
+        con = psycopg2.connect(database='xwgames', user=getpass.getuser())
     except psycopg2.DatabaseError, e:
         print 'Error %s' % e 
         sys.exit(1)
@@ -38,14 +41,15 @@ def init():
 
 def getPendingMsgs( con ):
     cur = con.cursor()
-    cur.execute("SELECT id, devid from msgs where devid != 0")
+    cur.execute("SELECT id, devid FROM msgs WHERE devid IN (SELECT id FROM devices WHERE devtype=%d)" % DEVTYPE)
     result = cur.fetchall()
     if g_debug: print "getPendingMsgs=>", result
     return result
 
 def asGCMIds(con, devids):
     cur = con.cursor()
-    query = "SELECT devid FROM devices WHERE devtype = 3 AND id IN (%s)" % ",".join([str(y) for y in devids])
+    query = "SELECT devid FROM devices WHERE devtype = %d AND id IN (%s)" \
+        % (DEVTYPE, ",".join([str(y) for y in devids]))
     cur.execute( query )
     return [elem[0] for elem in cur.fetchall()]
 
@@ -67,25 +71,17 @@ def notifyGCM( devids ):
         print 'no errors'
 
 # given a list of msgid, devid lists, figure out which messages should
-# be sent/resent now, pass their device ids to the sender, and if it's
-# successful mark them as sent.  Backoff is based on msgids: if the
-# only messages a device has pending have been seen before, backoff
-# applies.
-def sendWithBackoff( con, msgs, sent ):
+# be sent/resent now and mark them as sent.  Backoff is based on
+# msgids: if the only messages a device has pending have been seen
+# before, backoff applies.
+def targetsAfterBackoff( msgs, sent ):
     targets = []
     for row in msgs:
-        devid = row[1]
         msgid = row[0]
         if not msgid in sent:
             sent[ msgid ] = True
-            targets.append( devid )
-            print "sendWithBackoff: sending for", msgid
-    if 0 < len(targets):
-        print strftime("%Y-%m-%d %H:%M:%S", gmtime()),
-        print "sending for:", targets
-        devids = asGCMIds( con, targets )
-        notifyGCM( devids )
-    return sent
+            targets.append( row[1] )
+    return targets
 
 # devids is an array of (msgid, devid) tuples
 def pruneSent( devids, sent ):
@@ -115,6 +111,7 @@ def main():
     global g_con
     loopInterval = 0
     g_con = init()
+    emptyCount = 0
 
     ii = 1
     while ii < len(sys.argv):
@@ -133,9 +130,20 @@ def main():
     while g_con:
         devids = getPendingMsgs( g_con )
         if 0 < len(devids):
-            sent = sendWithBackoff( g_con, devids, sent )
-            sent = pruneSent( devids, sent )
-        else: print "no messages found"
+            targets = targetsAfterBackoff( devids, sent )
+            if 0 < len(targets):
+                if 0 < emptyCount: print ""
+                emptyCount = 0
+                print strftime("%Y-%m-%d %H:%M:%S", gmtime()),
+                print "devices needing notification:", targets
+                if not g_skipSend:
+                    notifyGCM( asGCMIds( g_con, targets ) )
+                pruneSent( devids, sent )
+            else: 
+                sys.stdout.write('.')
+                sys.stdout.flush()
+                emptyCount = emptyCount + 1
+                if 0 == (emptyCount % LINE_LEN): print ""
         if 0 == loopInterval: break
         time.sleep( loopInterval )
         if g_debug: print
