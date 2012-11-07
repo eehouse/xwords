@@ -70,6 +70,12 @@ def notifyGCM( devids ):
     else:
         print 'no errors'
 
+def shouldSend(val):
+    pow = 1
+    while pow < val:
+        pow *= 2
+    return pow == val
+
 # given a list of msgid, devid lists, figure out which messages should
 # be sent/resent now and mark them as sent.  Backoff is based on
 # msgids: if the only messages a device has pending have been seen
@@ -79,7 +85,9 @@ def targetsAfterBackoff( msgs, sent ):
     for row in msgs:
         msgid = row[0]
         if not msgid in sent:
-            sent[ msgid ] = True
+            sent[msgid] = 0
+        sent[msgid] += 1
+        if shouldSend( sent[msgid] ):
             targets.append( row[1] )
     return targets
 
