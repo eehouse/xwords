@@ -7,12 +7,26 @@
 # Depends on the gcm module
 
 import sys, gcm, psycopg2, time, signal
+from time import gmtime, strftime
+
 # I'm not checking my key in...
 import mykey
 
+# Backoff strategy
+#
+# A message is considered in need of delivery as long as its in the
+# msgs table, and the expected behavior is that as soon as a device
+# receives a GCM notification it fetches all messages so that they're
+# deleted.  But when a device is offline we don't get any errors, so
+# while a message remains in that table we need to be sure we don't
+# ask GCM to contact the device too often.
+#
+# But it's devices we contact, not messages.  A device is in the
+# contact list if it is the target of at least one message in the msgs
+# table.
+
 g_con = None
-g_loop = True
-g_sent = {}
+g_debug = False
 
 def init():
     try:
@@ -22,16 +36,25 @@ def init():
         sys.exit(1)
     return con
 
-def get( con ):
+def getPendingMsgs( con ):
     cur = con.cursor()
-    cur.execute("SELECT id, devid from msgs where devid != ''")
+    cur.execute("SELECT id, devid from msgs where devid != 0")
+    result = cur.fetchall()
+    if g_debug: print "getPendingMsgs=>", result
+    return result
 
-    return cur.fetchall()
+def asGCMIds(con, devids):
+    cur = con.cursor()
+    query = "SELECT devid FROM devices WHERE devtype = 3 AND id IN (%s)" % ",".join([str(y) for y in devids])
+    cur.execute( query )
+    return [elem[0] for elem in cur.fetchall()]
 
 def notifyGCM( devids ):
-    print "sending for", len(devids), "devices"
     instance = gcm.GCM( mykey.myKey )
-    data = {'param1': 'value1' }
+    data = { 'getMoves': True, 
+             # 'title' : 'Msg from Darth',
+             # 'msg' : "I am your father, Luke.",
+             }
     # JSON request
 
     response = instance.json_request( registration_ids = devids,
@@ -48,31 +71,34 @@ def notifyGCM( devids ):
 # successful mark them as sent.  Backoff is based on msgids: if the
 # only messages a device has pending have been seen before, backoff
 # applies.
-def sendWithBackoff( msgs ):
-    global g_sent
+def sendWithBackoff( con, msgs, sent ):
     targets = []
     for row in msgs:
         devid = row[1]
-        if devid in targets: continue
         msgid = row[0]
-        if not msgid in g_sent:
-            g_sent[ msgid ] = True
+        if not msgid in sent:
+            sent[ msgid ] = True
             targets.append( devid )
+            print "sendWithBackoff: sending for", msgid
     if 0 < len(targets):
-        notifyGCM( targets )
-    else:
-        print "no new targets found"
+        print strftime("%Y-%m-%d %H:%M:%S", gmtime()),
+        print "sending for:", targets
+        devids = asGCMIds( con, targets )
+        notifyGCM( devids )
+    return sent
 
-def pruneSent( devids ):
-    global g_sent
-    print "len of g_sent before prune:", len(g_sent)
+# devids is an array of (msgid, devid) tuples
+def pruneSent( devids, sent ):
+    if g_debug: print "pruneSent: before:", sent
+    lenBefore = len(sent)
     msgids = []
     for row in devids:
         msgids.append(row[0])
-    for msgid in g_sent.keys():
+    for msgid in sent.keys():
         if not msgid in msgids:
-            del g_sent[msgid]
-    print "len of g_sent after prune:", len(g_sent)
+            del sent[msgid]
+    if g_debug: print "pruneSent: after:", sent
+    return sent
 
 def handleSigTERM( one, two ):
     print 'handleSigTERM called: ', one, two
@@ -80,19 +106,43 @@ def handleSigTERM( one, two ):
     if g_con:
         g_con.close()
         g_con = None
-    
-signal.signal( signal.SIGTERM, handleSigTERM )
-signal.signal( signal.SIGINT, handleSigTERM )
 
-g_con = init()
-while g_con:
-    devids = get( g_con )
-    if 0 < len(devids):
-        sendWithBackoff( devids )
-        pruneSent( devids )
-    else: print "no messages found"
-    if not g_loop: break
-    time.sleep( 5 )
+def usage():
+    print "usage:", sys.argv[0], "[--loop]"
+    sys.exit();
 
-if g_con:
-    g_con.close()
+def main():
+    global g_con
+    loopInterval = 0
+    g_con = init()
+
+    ii = 1
+    while ii < len(sys.argv):
+        arg = sys.argv[ii]
+        if arg == '--loop':
+            ii = ii + 1
+            loopInterval = float(sys.argv[ii])
+        else:
+            usage()
+        ii = ii + 1
+
+    signal.signal( signal.SIGTERM, handleSigTERM )
+    signal.signal( signal.SIGINT, handleSigTERM )
+
+    sent = {}
+    while g_con:
+        devids = getPendingMsgs( g_con )
+        if 0 < len(devids):
+            sent = sendWithBackoff( g_con, devids, sent )
+            sent = pruneSent( devids, sent )
+        else: print "no messages found"
+        if 0 == loopInterval: break
+        time.sleep( loopInterval )
+        if g_debug: print
+
+    if g_con:
+        g_con.close()
+
+##############################################################################
+if __name__ == '__main__':
+    main()
