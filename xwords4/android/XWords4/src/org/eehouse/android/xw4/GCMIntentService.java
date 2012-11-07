@@ -52,7 +52,23 @@ public class GCMIntentService extends GCMBaseIntentService {
     protected void onMessage( Context context, Intent intent ) 
     {
         DbgUtils.logf( "GCMIntentService.onMessage(%s)", intent.toString() );
-        RelayReceiver.RestartTimer( context, true );
+        boolean doRestartTimer = true; // keep a few days...
+        String value = intent.getStringExtra( "msg" );
+        if ( null != value ) {
+            doRestartTimer = false; // expected key means new format
+
+            String title = intent.getStringExtra( "title" );
+            Utils.postNotification( context, null, title, value, 100000 );
+        }
+
+        value = intent.getStringExtra( "getMoves" );
+        if ( null != value && Boolean.parseBoolean( value ) ) {
+            doRestartTimer = true;
+        }
+
+        if ( doRestartTimer ) {
+            RelayReceiver.RestartTimer( context, true );
+        }
     }
 
     public static void init( Application app )
