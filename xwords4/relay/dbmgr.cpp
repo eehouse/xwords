@@ -75,6 +75,9 @@ DBMgr::DBMgr()
     /* } */
     /* PQclear(result); */
     /* logf( XW_LOGINFO, "%s: m_nextCID=%d", __func__, m_nextCID ); */
+
+    // I've seen rand returning the same series several times....
+    srand( time( NULL ) );
 }
  
 DBMgr::~DBMgr()
@@ -799,17 +802,19 @@ formatParams( char* paramValues[], int nParams, const char* fmt, char* buf,
     va_start( ap, bufLen );
 
     int len = vsnprintf( buf, bufLen, fmt, ap );
+    assert( buf[len] == '\0' );
 
-    int ii, pnum;
-    for ( pnum = 0, ii = 0; ii < len && pnum < nParams; ++pnum ) {
-        paramValues[pnum] = &buf[ii];
-        for ( ; ii < len; ++ii ) {
-            if ( buf[ii] == DELIM[0] ) {
-                buf[ii] = '\0';
-                ++ii;
-                break;
-            }
+    int pnum;
+    char* ptr = buf;
+    for ( pnum = 0; pnum < nParams; ++pnum ) {
+        paramValues[pnum] = ptr;
+        for ( ; *ptr != '\0' && *ptr != DELIM[0]; ++ptr ) {
+            // do nothing
+            assert( ptr < &buf[bufLen] );
         }
+        // we've found an end
+        *ptr = '\0';
+        ++ptr;
     }
     va_end(ap);
 }
