@@ -385,8 +385,10 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
                 unsigned char devIDType = 0;
                 if ( getNetByte( &bufp, end, &devIDType )
                      && 0 != devIDType ) {
-                    getNetString( &bufp, end, devID.m_devIDString );
-                    devID.m_devIDType = (DevIDType)devIDType;
+                    if ( getNetString( &bufp, end, devID.m_devIDString )
+                         && 0 < devID.m_devIDString.length() ) {
+                        devID.m_devIDType = (DevIDType)devIDType;
+                    }
                 }
             }
 
