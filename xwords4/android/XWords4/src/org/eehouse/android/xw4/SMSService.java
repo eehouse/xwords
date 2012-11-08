@@ -95,7 +95,7 @@ public class SMSService extends Service {
 
     public static void checkForInvites( Context context )
     {
-        if ( XWApp.SMSSUPPORTED ) {
+        if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS( context ) ) {
             Intent intent = getIntentTo( context, CHECK_MSGDB );
             context.startService( intent );
         }
