@@ -634,24 +634,26 @@ public class SMSService extends Service {
         ContentResolver resolver = getContentResolver();
         String[] columns = new String[] { "body","address" };
         Cursor cursor = resolver.query( uri, columns, null, null, null );
-        if ( 0 < cursor.getCount() ) {
-            try {
-                int bodyIndex = cursor.getColumnIndexOrThrow( "body" );
-                int phoneIndex = cursor.getColumnIndexOrThrow( "address" );
-                while ( cursor.moveToNext() ) {
-                    String msg = fromPublicFmt( cursor.getString( bodyIndex ) );
-                    if ( null != msg ) {
-                        String number = cursor.getString( phoneIndex );
-                        if ( null != number ) {
-                            handleFrom( this, msg, number );
+        if ( null != cursor ) {
+            if ( 0 < cursor.getCount() ) {
+                try {
+                    int bodyIndex = cursor.getColumnIndexOrThrow( "body" );
+                    int phoneIndex = cursor.getColumnIndexOrThrow( "address" );
+                    while ( cursor.moveToNext() ) {
+                        String msg = fromPublicFmt( cursor.getString( bodyIndex ) );
+                        if ( null != msg ) {
+                            String number = cursor.getString( phoneIndex );
+                            if ( null != number ) {
+                                handleFrom( this, msg, number );
+                            }
                         }
                     }
+                } catch ( Exception ee ) {
+                    DbgUtils.loge( ee );
                 }
-            } catch ( Exception ee ) {
-                DbgUtils.loge( ee );
             }
+            cursor.close();
         }
-        cursor.close();
     }
 
     private void sendResult( MultiEvent event, Object ... args )
