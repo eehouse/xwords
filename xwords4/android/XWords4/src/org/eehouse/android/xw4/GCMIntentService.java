@@ -37,12 +37,11 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onRegistered( Context context, String regId ) 
     {
-        DbgUtils.logf("GCMIntentService.onRegistered(%s)", regId );
         XWPrefs.setGCMDevID( context, regId );
     }
 
     @Override
-        protected void onUnregistered( Context context, String regId ) 
+    protected void onUnregistered( Context context, String regId ) 
     {
         DbgUtils.logf( "GCMIntentService.onUnregistered(%s)", regId );
         XWPrefs.clearGCMDevID( context );
@@ -51,22 +50,17 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onMessage( Context context, Intent intent ) 
     {
-        DbgUtils.logf( "GCMIntentService.onMessage(%s)", intent.toString() );
-        boolean doRestartTimer = true; // keep a few days...
         String value = intent.getStringExtra( "msg" );
         if ( null != value ) {
-            doRestartTimer = false; // expected key means new format
-
             String title = intent.getStringExtra( "title" );
-            Utils.postNotification( context, null, title, value, 100000 );
+            if ( null != title ) {
+                int code = value.hashCode() ^ title.hashCode();
+                Utils.postNotification( context, null, title, value, code );
+            }
         }
 
         value = intent.getStringExtra( "getMoves" );
         if ( null != value && Boolean.parseBoolean( value ) ) {
-            doRestartTimer = true;
-        }
-
-        if ( doRestartTimer ) {
             RelayReceiver.RestartTimer( context, true );
         }
     }
