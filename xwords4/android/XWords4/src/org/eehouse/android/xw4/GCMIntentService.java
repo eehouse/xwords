@@ -78,7 +78,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                 }
 
                 String curID = XWPrefs.getGCMDevID( app );
-                if ( ! curID.equals( regId ) ) {
+                if ( null == curID || ! curID.equals( regId ) ) {
                     XWPrefs.setGCMDevID( app, regId );
                 }
             } catch ( UnsupportedOperationException uoe ) {
