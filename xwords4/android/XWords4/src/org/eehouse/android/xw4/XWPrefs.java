@@ -191,7 +191,11 @@ public class XWPrefs {
 
     public static String getGCMDevID( Context context )
     {
-        return getPrefsString( context, R.string.key_gcm_regid );
+        String result = getPrefsString( context, R.string.key_gcm_regid );
+        if ( result.equals("") ) {
+            result = null;
+        }
+        return result;
     }
 
     public static void clearGCMDevID( Context context )

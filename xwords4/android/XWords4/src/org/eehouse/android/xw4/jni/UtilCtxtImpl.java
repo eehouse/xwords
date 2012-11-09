@@ -94,15 +94,19 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "setIsServer" );
     }
 
-    public String getDevID( /*out*/ byte[] typ )
+    public String getDevID( /*out*/ byte[] typa )
     {
+        byte typ = UtilCtxt.ID_TYPE_NONE;
         String result = XWPrefs.getRelayDevID( m_context );
         if ( null != result ) {
-            typ[0] = UtilCtxt.ID_TYPE_RELAY;
+            typ = UtilCtxt.ID_TYPE_RELAY;
         } else {
             result = XWPrefs.getGCMDevID( m_context );
-            typ[0] = UtilCtxt.ID_TYPE_ANDROID_GCM;
+            if ( null != result ) {
+                typ = UtilCtxt.ID_TYPE_ANDROID_GCM;
+            }
         }
+        typa[0] = typ;
         return result;
     }
 

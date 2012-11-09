@@ -57,6 +57,7 @@ public interface UtilCtxt {
     void setIsServer( boolean isServer );
 
     // Possible values for typ[0], these must match enum in xwrelay.sh
+    public static final int ID_TYPE_NONE = 0;
     public static final int ID_TYPE_RELAY = 1;
     public static final int ID_TYPE_ANDROID_GCM = 3;
 
