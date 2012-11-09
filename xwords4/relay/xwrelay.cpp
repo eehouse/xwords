@@ -242,6 +242,21 @@ getNetString( unsigned char** bufpp, const unsigned char* end, string& out )
     return success;
 }
 
+static void
+getDevID( unsigned char** bufpp, const unsigned char* end,
+          unsigned short flags, DevID* devID ) 
+{
+    if ( XWRELAY_PROTO_VERSION_CLIENTID <= flags ) {
+        unsigned char devIDType = 0;
+        if ( getNetByte( bufpp, end, &devIDType ) && 0 != devIDType ) {
+            if ( getNetString( bufpp, end, devID->m_devIDString )
+                 && 0 < devID->m_devIDString.length() ) {
+                devID->m_devIDType = (DevIDType)devIDType;
+            }
+        }
+    }
+}
+
 #ifdef RELAY_HEARTBEAT
 static bool
 processHeartbeat( unsigned char* buf, int bufLen, int socket )
@@ -381,16 +396,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
              && getNetByte( &bufp, end, &langCode ) ) {
 
             DevID devID;
-            if ( XWRELAY_PROTO_VERSION_CLIENTID <= flags ) {
-                unsigned char devIDType = 0;
-                if ( getNetByte( &bufp, end, &devIDType )
-                     && 0 != devIDType ) {
-                    if ( getNetString( &bufp, end, devID.m_devIDString )
-                         && 0 < devID.m_devIDString.length() ) {
-                        devID.m_devIDType = (DevIDType)devIDType;
-                    }
-                }
-            }
+            getDevID( &bufp, end, flags, &devID );
 
             logf( XW_LOGINFO, "%s(): langCode=%d; nPlayersT=%d; "
                   "wantsPublic=%d; seed=%.4X",
@@ -449,9 +455,12 @@ processReconnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
              && getNetByte( &bufp, end, &langCode )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
+            DevID devID;
+            getDevID( &bufp, end, flags, &devID );
+
             SafeCref scr( connName[0]? connName : NULL, 
-                          cookie, srcID, socket, clientVersion, nPlayersH, 
-                          nPlayersT, gameSeed, langCode,
+                          cookie, srcID, socket, clientVersion, &devID,
+                          nPlayersH, nPlayersT, gameSeed, langCode,
                           wantsPublic, makePublic );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
                                      gameSeed, addr, &err );

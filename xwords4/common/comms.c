@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1331,12 +1331,10 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
 #endif
 
 #ifdef XWFEATURE_DEVID
-    if ( !reconnected ) {
-        XP_UCHAR devID[MAX_DEVID_LEN + 1];
-        stringFromStreamHere( stream, devID, sizeof(devID) );
-        if ( devID[0] != '\0' ) {
-            util_deviceRegistered( comms->util, devID );
-        }
+    XP_UCHAR devID[MAX_DEVID_LEN + 1];
+    stringFromStreamHere( stream, devID, sizeof(devID) );
+    if ( devID[0] != '\0' ) {
+        util_deviceRegistered( comms->util, devID );
     }
 #endif
 
@@ -2157,6 +2155,7 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
             stringToStream( stream, comms->r.connName );
+            putDevID( comms, stream );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
 

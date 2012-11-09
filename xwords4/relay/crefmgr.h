@@ -177,8 +177,8 @@ class SafeCref {
               bool makePublic );
     /* for reconnect */
     SafeCref( const char* connName, const char* cookie, HostID hid, 
-              int socket, int clientVersion, int nPlayersH, int nPlayersS, 
-              unsigned short gameSeed, int langCode, 
+              int socket, int clientVersion, DevID* devID, int nPlayersH, 
+              int nPlayersS, unsigned short gameSeed, int langCode, 
               bool wantsPublic, bool makePublic );
     SafeCref( const char* const connName );
     SafeCref( CookieID cid, bool failOk = false );
