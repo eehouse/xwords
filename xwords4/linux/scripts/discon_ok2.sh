@@ -182,6 +182,9 @@ build_cmds() {
                 fi
             fi
 
+            # rememeber what the app can do
+            HELP="$(APPS[$COUNTER] --help 2>&1 || true)"
+
             PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
             [ $UNDO_PCT -gt 0 ] && PARAMS="$PARAMS --undo-pct $UNDO_PCT "
@@ -190,7 +193,9 @@ build_cmds() {
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
-            # PARAMS="$PARAMS --devid LINUX_TEST_$(printf %.5d ${COUNTER})"
+            if echo $HELP | grep -q '\-\-devid'; then
+                PARAMS="$PARAMS --devid LINUX_TEST_$(printf %.5d ${COUNTER})"
+            fi
             PARAMS="$PARAMS $PUBLIC"
             ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM
@@ -383,13 +388,16 @@ increment_drop() {
 
 set_relay_devid() {
     KEY=$1
-    CMD=${ARGS[$KEY]}
-    if [ "$CMD" != "${CMD/--devid //}" ]; then
-        RELAY_ID=$(grep 'deviceRegistered: new id: ' ${LOGS[$KEY]} | tail -n 1)
-        if [ -n "$RELAY_ID" ]; then
-            RELAY_ID=$(echo $RELAY_ID | sed 's,^.*new id: ,,')
+    HELP="$(${APPS[$KEY]} --help 2>&1 || true)"
+    if echo $HELP | grep -q '\-\-devid'; then
+        CMD=${ARGS[$KEY]}
+        if [ "$CMD" != "${CMD/--devid //}" ]; then
+            RELAY_ID=$(grep 'deviceRegistered: new id: ' ${LOGS[$KEY]} | tail -n 1)
+            if [ -n "$RELAY_ID" ]; then
+                RELAY_ID=$(echo $RELAY_ID | sed 's,^.*new id: ,,')
             # turn --devid <whatever> into --rdevid $RELAY_ID
-            ARGS[$KEY]=$(echo $CMD | sed 's,^\(.*\)--devid[ ]\+[^ ]\+\(.*\)$,\1--rdevid $RELAY_ID\2,')
+                ARGS[$KEY]=$(echo $CMD | sed 's,^\(.*\)--devid[ ]\+[^ ]\+\(.*\)$,\1--rdevid $RELAY_ID\2,')
+            fi
         fi
     fi
 }
@@ -423,7 +431,7 @@ run_cmds() {
             PIDS[$KEY]=0
             ROOM_PIDS[$ROOM]=0
             [ "$DROP_N" -ge 0 ] && increment_drop $KEY
-            # set_relay_devid $KEY
+            set_relay_devid $KEY
             check_game $KEY
         fi
     done
