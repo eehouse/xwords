@@ -311,7 +311,6 @@ public class NetUtils {
                                                  1024*8 );
                         success = DictUtils.saveDict( context, in, 
                                                       name, loc );
-                        DbgUtils.logf( "saveDict returned %b", success );
 
                     } catch ( java.net.MalformedURLException mue ) {
                         DbgUtils.loge( mue );
