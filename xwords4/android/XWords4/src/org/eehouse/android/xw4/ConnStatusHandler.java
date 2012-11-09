@@ -333,8 +333,8 @@ public class ConnStatusHandler {
                 try {
                     ObjectInputStream ois = 
                         new ObjectInputStream( new ByteArrayInputStream(bytes) );
-                    Object obj = ois.readObject();
-                    s_records = (HashMap<CommsConnType,SuccessRecord[]>)obj;
+                    s_records = 
+                        (HashMap<CommsConnType,SuccessRecord[]>)ois.readObject();
                 // } catch ( java.io.StreamCorruptedException sce ) {
                 //     DbgUtils.logf( "loadState: %s", sce.toString() );
                 // } catch ( java.io.OptionalDataException ode ) {
