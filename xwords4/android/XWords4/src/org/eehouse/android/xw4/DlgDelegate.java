@@ -25,6 +25,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,24 +59,17 @@ public class DlgDelegate {
     private static final String LANG = "lang";
     private static final String FORCELIST = "forcelist";
 
-    // Cache a couple of callback implementations that never change:
-    private DialogInterface.OnClickListener m_cbkOnClickLstnr = null;
-    private DialogInterface.OnDismissListener m_cbkOnDismissLstnr = null;
-
     public interface DlgClickNotify {
         void dlgButtonClicked( int id, int button );
     }
 
-    private int m_posButton;
-    private int m_cbckID = 0;   // if this can be set twice I have a
-                                // problem.  See asserts below.
-    private String m_msg;
-    private int m_prefsKey;
     private Activity m_activity;
     private DlgClickNotify m_clickCallback;
     private String m_dictName = null;
     private ProgressDialog m_progress;
     private Handler m_handler;
+
+    private DlgState m_dlgState;
 
     public DlgDelegate( Activity activity, DlgClickNotify callback,
                         Bundle bundle ) 
@@ -85,39 +79,40 @@ public class DlgDelegate {
         m_handler = new Handler();
 
         if ( null != bundle ) {
-            m_msg = bundle.getString( MSG );
-            m_cbckID = bundle.getInt( CALLBACK );
-            m_posButton = bundle.getInt( POSBUTTON );
-            m_prefsKey = bundle.getInt( PREFSKEY );
+            // m_msg = bundle.getString( MSG );
+            // m_cbckID = bundle.getInt( CALLBACK );
+            // m_posButton = bundle.getInt( POSBUTTON );
+            // m_prefsKey = bundle.getInt( PREFSKEY );
         }
     }
 
     public void onSaveInstanceState( Bundle outState ) 
     {
-        outState.putString( MSG, m_msg );
-        outState.putInt( CALLBACK, m_cbckID );
-        outState.putInt( POSBUTTON, m_posButton );
-        outState.putInt( PREFSKEY, m_prefsKey );
+        // outState.putString( MSG, m_msg );
+        // outState.putInt( CALLBACK, m_cbckID );
+        // outState.putInt( POSBUTTON, m_posButton );
+        // outState.putInt( PREFSKEY, m_prefsKey );
     }
     
     public Dialog onCreateDialog( int id )
     {
         Dialog dialog = null;
+        DlgState state = findForID( id );
         switch( id ) {
         case DIALOG_ABOUT:
             dialog = createAboutDialog();
             break;
         case DIALOG_OKONLY:
-            dialog = createOKDialog();
+            dialog = createOKDialog( state );
             break;
         case DIALOG_NOTAGAIN:
-            dialog = createNotAgainDialog();
+            dialog = createNotAgainDialog( state );
             break;
         case CONFIRM_THEN:
-            dialog = createConfirmThenDialog();
+            dialog = createConfirmThenDialog( state );
             break;
         case TEXT_OR_HTML_THEN:
-            dialog = createHtmlThenDialog();
+            dialog = createHtmlThenDialog( state );
             break;
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
@@ -129,7 +124,8 @@ public class DlgDelegate {
     public void onPrepareDialog( int id, Dialog dialog )
     {
         AlertDialog ad = (AlertDialog)dialog;
-        DialogInterface.OnClickListener lstnr;
+        OnClickListener lstnr;
+        DlgState state;
 
         switch( id ) {
         case DIALOG_ABOUT:
@@ -140,23 +136,27 @@ public class DlgDelegate {
             // showNotAgainDlgThen() is called
             // FALLTHRU
         case DIALOG_OKONLY:
-            ad.setMessage( m_msg );
+            state = findForID( id );
+            ad.setMessage( state.m_msg );
             break;
         case CONFIRM_THEN:
+            state = findForID( id );
             ad.getButton(AlertDialog.BUTTON_POSITIVE).
-                setText( m_activity.getString( m_posButton ) );
-            ad.setMessage( m_msg );
+                setText( m_activity.getString( state.m_posButton ) );
+            ad.setMessage( state.m_msg );
             break;
         }
     }
 
     public void showOKOnlyDialog( String msg, int callbackID )
     {
-        m_msg = msg;
-        if ( 0 != callbackID ) {
-            Assert.assertTrue( 0 == m_cbckID );
-            m_cbckID = callbackID;
-        }
+        Assert.assertNull( m_dlgState );
+        m_dlgState = new DlgState( DIALOG_OKONLY, msg, callbackID );
+        // m_msg = msg;
+        // if ( 0 != callbackID ) {
+        //     Assert.assertTrue( 0 == m_cbckID );
+        //     m_cbckID = callbackID;
+        // }
         m_activity.showDialog( DIALOG_OKONLY );
     }
 
@@ -179,21 +179,25 @@ public class DlgDelegate {
                                      int callbackID )
     {
         boolean set = XWPrefs.getPrefsBoolean( m_activity, prefsKey, false );
-        if ( set || 0 != m_cbckID ) {
-            // If it's set, do the action without bothering with the
-            // dialog
-            if ( SKIP_CALLBACK != callbackID ) {
-                m_clickCallback.dlgButtonClicked( callbackID, 
-                                                  AlertDialog.BUTTON_POSITIVE );
-            }
-        } else {
-            m_msg = m_activity.getString( msgID );
-            Assert.assertTrue( 0 != callbackID );
-            Assert.assertTrue( 0 == m_cbckID ); // fired
-            m_cbckID = callbackID;
-            m_prefsKey = prefsKey;
-            m_activity.showDialog( DIALOG_NOTAGAIN );
-        }
+        Assert.assertNull( m_dlgState );
+        m_dlgState = new DlgState( DIALOG_NOTAGAIN, msgID, callbackID, prefsKey );
+        m_activity.showDialog( DIALOG_NOTAGAIN );
+
+        // if ( set || 0 != m_cbckID ) {
+        //     // If it's set, do the action without bothering with the
+        //     // dialog
+        //     if ( SKIP_CALLBACK != callbackID ) {
+        //         m_clickCallback.dlgButtonClicked( callbackID, 
+        //                                           AlertDialog.BUTTON_POSITIVE );
+        //     }
+        // } else {
+        //     m_msg = m_activity.getString( msgID );
+        //     Assert.assertTrue( 0 != callbackID );
+        //     Assert.assertTrue( 0 == m_cbckID ); // fired
+        //     m_cbckID = callbackID;
+        //     m_prefsKey = prefsKey;
+        //     m_activity.showDialog( DIALOG_NOTAGAIN );
+        // }
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey )
@@ -210,26 +214,31 @@ public class DlgDelegate {
     {
         // FIX ME!! Need to store data per message rather than have
         // assertions failing or messages dropped.
-
-        if ( 0 != m_cbckID ) {
-            DbgUtils.logf( "showConfirmThen: busy with another message; "
-                           + "dropping \"%s\" in favor of \"%s\"", 
-                           msg, m_msg );
+        Assert.assertNull( m_dlgState );
+        if ( false /*0 != m_cbckID*/ ) {
+            // DbgUtils.logf( "showConfirmThen: busy with another message; "
+            //                + "dropping \"%s\" in favor of \"%s\"", 
+            //                msg, m_msg );
         } else {
-            m_msg = msg;
-            m_posButton = posButton;
-            Assert.assertTrue( 0 != callbackID );
-            m_cbckID = callbackID;
+            // m_msg = msg;
+            // m_posButton = posButton;
+            // Assert.assertTrue( 0 != callbackID );
+            // m_cbckID = callbackID;
+
+            m_dlgState = new DlgState( CONFIRM_THEN, msg, posButton, 
+                                       callbackID, 0 );
             m_activity.showDialog( CONFIRM_THEN );
         }
     }
 
     public void showEmailOrSMSThen( final int callbackID )
     {
-        Assert.assertTrue( 0 != callbackID );
-        Assert.assertTrue( 0 == m_cbckID );
+        // Assert.assertTrue( 0 != callbackID );
+        // Assert.assertTrue( 0 == m_cbckID );
         if ( Utils.deviceSupportsSMS( m_activity ) ) {
-            m_cbckID = callbackID;
+            Assert.assertNull( m_dlgState );
+            m_dlgState = new DlgState( TEXT_OR_HTML_THEN, callbackID );
+            // m_cbckID = callbackID;
             m_activity.showDialog( TEXT_OR_HTML_THEN );
         } else {
             post( new Runnable() {
@@ -337,7 +346,7 @@ public class DlgDelegate {
             .setTitle( R.string.app_name )
             .setView( view )
             .setPositiveButton( R.string.changes_button,
-                                new DialogInterface.OnClickListener() {
+                                new OnClickListener() {
                                     @Override
                                     public void onClick( DialogInterface dlg, 
                                                          int which )
@@ -348,30 +357,31 @@ public class DlgDelegate {
             .create();
     }
 
-    private Dialog createOKDialog()
+    private Dialog createOKDialog( DlgState state )
     {
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.info_title )
-            .setMessage( m_msg )
+            .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, null )
             .create();
-        if ( 0 != m_cbckID ) {
-            dialog = setCallbackDismissListener( dialog );
+        if ( 0 != state.m_cbckID ) {
+            dialog = setCallbackDismissListener( dialog, state );
         }
         return dialog;
     }
 
-    private Dialog createNotAgainDialog()
+    private Dialog createNotAgainDialog( final DlgState state )
     {
-        DialogInterface.OnClickListener lstnr_p = mkCallbackClickListener();
+        OnClickListener lstnr_p = mkCallbackClickListener( state );
 
-        DialogInterface.OnClickListener lstnr_n = 
-            new DialogInterface.OnClickListener() {
+        OnClickListener lstnr_n = 
+            new OnClickListener() {
                 public void onClick( DialogInterface dlg, int item ) {
-                    XWPrefs.setPrefsBoolean( m_activity, m_prefsKey, true );
-                    if ( SKIP_CALLBACK != m_cbckID ) {
+                    XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
+                                             true );
+                    if ( SKIP_CALLBACK != state.m_cbckID ) {
                         m_clickCallback.
-                            dlgButtonClicked( m_cbckID, 
+                            dlgButtonClicked( state.m_cbckID, 
                                               AlertDialog.BUTTON_POSITIVE );
                     }
                 }
@@ -379,17 +389,17 @@ public class DlgDelegate {
 
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.newbie_title )
-            .setMessage( m_msg )
+            .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, lstnr_p )
             .setNegativeButton( R.string.button_notagain, lstnr_n )
             .create();
 
-        return setCallbackDismissListener( dialog );
+        return setCallbackDismissListener( dialog, state );
     } // createNotAgainDialog
 
-    private Dialog createConfirmThenDialog()
+    private Dialog createConfirmThenDialog( DlgState state )
     {
-        DialogInterface.OnClickListener lstnr = mkCallbackClickListener();
+        OnClickListener lstnr = mkCallbackClickListener( state );
 
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
@@ -398,12 +408,12 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_cancel, lstnr )
             .create();
         
-        return setCallbackDismissListener( dialog );
+        return setCallbackDismissListener( dialog, state );
     }
 
-    private Dialog createHtmlThenDialog()
+    private Dialog createHtmlThenDialog( DlgState state )
     {
-        DialogInterface.OnClickListener lstnr = mkCallbackClickListener();
+        OnClickListener lstnr = mkCallbackClickListener( state );
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( R.string.sms_or_email )
@@ -411,7 +421,7 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_html, lstnr )
             .create();
 
-        return setCallbackDismissListener( dialog );
+        return setCallbackDismissListener( dialog, state );
     }
 
     private Dialog createDictGoneDialog()
@@ -431,37 +441,90 @@ public class DlgDelegate {
         return dialog;
     }
 
-    private DialogInterface.OnClickListener mkCallbackClickListener()
+    private OnClickListener mkCallbackClickListener( final DlgState state )
     {
-        if ( null == m_cbkOnClickLstnr ) {
-            m_cbkOnClickLstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int button ) {
-                        if ( SKIP_CALLBACK != m_cbckID ) {
-                            m_clickCallback.dlgButtonClicked( m_cbckID, 
-                                                              button );
-                        }
+        OnClickListener cbkOnClickLstnr;
+        cbkOnClickLstnr = new OnClickListener() {
+                public void onClick( DialogInterface dlg, int button ) {
+                    if ( SKIP_CALLBACK != state.m_cbckID ) {
+                        m_clickCallback.dlgButtonClicked( state.m_cbckID, 
+                                                          button );
                     }
-                };
-        }
-        return m_cbkOnClickLstnr;
+                }
+            };
+        return cbkOnClickLstnr;
     }
 
-    private Dialog setCallbackDismissListener( Dialog dialog )
+    private Dialog setCallbackDismissListener( Dialog dialog, 
+                                               final DlgState state )
     {
-        if ( null == m_cbkOnDismissLstnr ) {
-            m_cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
-                    public void onDismiss( DialogInterface di ) {
-                        int cbckID = m_cbckID;
-                        m_cbckID = 0;
-                        if ( SKIP_CALLBACK != cbckID ) {
-                            m_clickCallback.dlgButtonClicked( cbckID, 
-                                                              DISMISS_BUTTON );
-                        }
+        DialogInterface.OnDismissListener cbkOnDismissLstnr;
+        cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
+                public void onDismiss( DialogInterface di ) {
+                    dropState( state );
+                    if ( SKIP_CALLBACK != state.m_cbckID ) {
+                        m_clickCallback.dlgButtonClicked( state.m_cbckID, 
+                                                          DISMISS_BUTTON );
                     }
-                };
-        }
-        dialog.setOnDismissListener( m_cbkOnDismissLstnr );
+                }
+            };
+
+        dialog.setOnDismissListener( cbkOnDismissLstnr );
         return dialog;
+    }
+
+    private class DlgState {
+        public int m_id;
+        public String m_msg;
+        public int m_posButton;
+        public int m_cbckID = 0;
+        public int m_prefsKey;
+
+        public DlgState( int id, String msg, int cbckID )
+        {
+            this( id, msg, 0, cbckID, 0 );
+        }
+
+        public DlgState( int id, int msgID, int cbckID, int prefsKey )
+        {
+            this( id, m_activity.getString(msgID), 0, cbckID, prefsKey );
+        }
+
+        public DlgState( int id, String msg, int posButton, 
+                         int cbckID, int prefsKey )
+        {
+            m_id = id;
+            m_msg = msg;
+            m_posButton = posButton;
+            m_cbckID = cbckID;
+            m_prefsKey = prefsKey;
+            DbgUtils.logf( "DlgState(%d)=>%H", id, this );
+        }
+
+        public DlgState( int id, int cbckID )
+        {
+            this( id, null, 0, cbckID, 0 );
+        }
+
+    }
+
+    private DlgState findForID( int id )
+    {
+        DlgState state = null;
+        if ( m_dlgState.m_id == id ) {
+            state = m_dlgState;
+        }
+        DbgUtils.logf( "findForID(%d)=>%H", id, state );
+        return state;
+    }
+
+    private void dropState( DlgState state )
+    {
+        DbgUtils.logf( "dropState(%H) m_dlgState=%H", state, m_dlgState );
+        Assert.assertNotNull( m_dlgState );
+        Assert.assertNotNull( state );
+        Assert.assertTrue( m_dlgState == state ); // fired
+        m_dlgState = null;
     }
 
 }
