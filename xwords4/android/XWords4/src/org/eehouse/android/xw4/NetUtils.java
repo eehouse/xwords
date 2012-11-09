@@ -317,6 +317,9 @@ public class NetUtils {
                         DbgUtils.loge( mue );
                     } catch ( java.io.IOException ioe ) {
                         DbgUtils.loge( ioe );
+                    } catch ( Exception ce ) {
+                        // E.g. java.net.ConnectException; we failed
+                        // to download, ok.
                     } finally {
                         if ( null != urlConn ) {
                             urlConn.disconnect();
@@ -324,7 +327,10 @@ public class NetUtils {
                     }
 
                     sno.close();
-                    DictLangCache.inval( context, name, loc, true );
+
+                    if ( success ) {
+                        DictLangCache.inval( context, name, loc, true );
+                    }
                     if ( null != lstnr ) {
                         lstnr.downloadFinished( name, success );
                     }
