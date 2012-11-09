@@ -5,11 +5,13 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 54 release</b>
+<b>Crosswords 4.4 beta 55 release</b>
 <ul>
 
-  <li>Don't try to access directory OS says is for downloads when it
-    doesn't actually exist</li>
+  <li>Use "Google Cloud Messaging" for <em>much</em> faster relay move
+  notifications</li>
+
+  <li>Fix crashes on Kindle Fire</li>
 
 </ul>
 
