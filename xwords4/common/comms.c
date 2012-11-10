@@ -1331,10 +1331,14 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
 #endif
 
 #ifdef XWFEATURE_DEVID
-    XP_UCHAR devID[MAX_DEVID_LEN + 1];
-    stringFromStreamHere( stream, devID, sizeof(devID) );
-    if ( devID[0] != '\0' ) {
-        util_deviceRegistered( comms->util, devID );
+    DevIDType typ = stream_getU8( stream );
+    XP_UCHAR devID[MAX_DEVID_LEN + 1] = {0};
+    if ( ID_TYPE_NONE != typ ) {
+        stringFromStreamHere( stream, devID, sizeof(devID) );
+    }
+    if ( ID_TYPE_NONE == typ    /* error case */
+         || '\0' != devID[0] ) /* new info case */ {
+        util_deviceRegistered( comms->util, typ, devID );
     }
 #endif
 

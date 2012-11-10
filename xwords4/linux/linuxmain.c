@@ -1593,9 +1593,6 @@ main( int argc, char** argv )
     mainParams.allowPeek = XP_TRUE;
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
-#ifdef XWFEATURE_DEVID
-    mainParams.devID = "";
-#endif
 
     char* envDictPath = getenv( "XW_DICTSPATH" );
     if ( !!envDictPath ) {

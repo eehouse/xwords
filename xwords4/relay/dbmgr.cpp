@@ -253,13 +253,16 @@ DBMgr::DevIDRelay
 DBMgr::RegisterDevice( const DevID* host )
 {
     DBMgr::DevIDRelay devID;
-    assert( host->m_devIDType != ID_TYPE_RELAY );
+    assert( host->m_devIDType != ID_TYPE_NONE );
     int ii;
     bool success;
 
     // if it's already present, just return
     devID = getDevID( host );
-    if ( DEVID_NONE == devID ) {
+
+    // If it's not present *and* of type ID_TYPE_RELAY, we can do nothing.
+    // Fail.
+    if ( DEVID_NONE == devID && ID_TYPE_RELAY < host->m_devIDType ) {
         // loop until we're successful inserting the unique key.  Ship with this
         // coming from random, but test with increasing values initially to make
         // sure duplicates are detected.
@@ -641,16 +644,23 @@ DBMgr::getDevID( const DevID* devID )
 {
     DBMgr::DevIDRelay rDevID = DEVID_NONE;
     DevIDType devIDType = devID->m_devIDType;
+    char query[512] = {0};
     assert( ID_TYPE_NONE < devIDType );
     const char* asStr = devID->m_devIDString.c_str();
     if ( ID_TYPE_RELAY == devIDType ) {
-        rDevID = strtoul( asStr, NULL, 16 );
+        // confirm it's there
+        DBMgr::DevIDRelay cur = strtoul( asStr, NULL, 16 );
+        if ( DEVID_NONE != cur ) {
+            const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE id=%d";
+            snprintf( query, sizeof(query), fmt, cur );
+        }
     } else {
         const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE devtype=%d and devid = '%s'";
-        char query[512];
         snprintf( query, sizeof(query), fmt, devIDType, asStr );
-        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    }
 
+    if ( '\0' != query[0] ) {
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
         PGresult* result = PQexec( getThreadConn(), query );
         assert( 1 >= PQntuples( result ) );
         if ( 1 == PQntuples( result ) ) {
