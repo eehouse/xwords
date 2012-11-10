@@ -183,7 +183,7 @@ build_cmds() {
             fi
 
             # rememeber what the app can do
-            HELP="$(APPS[$COUNTER] --help 2>&1 || true)"
+            HELP="$(${APPS[$COUNTER]} --help 2>&1 || true)"
 
             PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
@@ -396,7 +396,7 @@ set_relay_devid() {
             if [ -n "$RELAY_ID" ]; then
                 RELAY_ID=$(echo $RELAY_ID | sed 's,^.*new id: ,,')
             # turn --devid <whatever> into --rdevid $RELAY_ID
-                ARGS[$KEY]=$(echo $CMD | sed 's,^\(.*\)--devid[ ]\+[^ ]\+\(.*\)$,\1--rdevid $RELAY_ID\2,')
+                ARGS[$KEY]=$(echo $CMD | sed "s,^\(.*\)--devid[ ]\+[^ ]\+\(.*\)$,\1--rdevid $RELAY_ID\2,")
             fi
         fi
     fi
