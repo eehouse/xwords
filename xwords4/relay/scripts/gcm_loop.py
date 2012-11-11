@@ -6,7 +6,7 @@
 #
 # Depends on the gcm module
 
-import getpass, sys, gcm, psycopg2, time, signal
+import getpass, sys, gcm, psycopg2, time, signal, shelve
 from time import gmtime, strftime
 
 # I'm not checking my key in...
@@ -25,50 +25,65 @@ import mykey
 # contact list if it is the target of at least one message in the msgs
 # table.
 
+k_shelfFile = "gcm_loop.shelf"
+k_SENT = 'SENT'
 g_con = None
+g_sent = None
 g_debug = False
 g_skipSend = False               # for debugging
-DEVTYPE = 3                     # 3 == GCM
+DEVTYPE_GCM = 3                     # 3 == GCM
 LINE_LEN = 76
 
 def init():
+    global g_sent
     try:
         con = psycopg2.connect(database='xwgames', user=getpass.getuser())
     except psycopg2.DatabaseError, e:
         print 'Error %s' % e 
         sys.exit(1)
+
+    shelf = shelve.open( k_shelfFile )
+    if k_SENT in shelf: g_sent = shelf[k_SENT]
+    else: g_sent = {}
+    shelf.close();
+    if g_debug: print 'g_sent:', g_sent
+
     return con
 
-def getPendingMsgs( con ):
+def getPendingMsgs( con, typ ):
     cur = con.cursor()
-    cur.execute("SELECT id, devid FROM msgs WHERE devid IN (SELECT id FROM devices WHERE devtype=%d)" % DEVTYPE)
+    query = """SELECT id, devid FROM msgs WHERE
+        devid IN (SELECT id FROM devices WHERE devtype=%d) 
+        AND NOT connname IN (SELECT connname FROM games WHERE dead); """
+    cur.execute(query % typ)
     result = cur.fetchall()
     if g_debug: print "getPendingMsgs=>", result
     return result
 
-def asGCMIds(con, devids):
+def asGCMIds(con, devids, typ):
     cur = con.cursor()
     query = "SELECT devid FROM devices WHERE devtype = %d AND id IN (%s)" \
-        % (DEVTYPE, ",".join([str(y) for y in devids]))
+        % (typ, ",".join([str(y) for y in devids]))
     cur.execute( query )
     return [elem[0] for elem in cur.fetchall()]
 
-def notifyGCM( devids ):
-    instance = gcm.GCM( mykey.myKey )
-    data = { 'getMoves': True, 
-             # 'title' : 'Msg from Darth',
-             # 'msg' : "I am your father, Luke.",
-             }
-    # JSON request
+def notifyGCM( devids, typ ):
+    if typ == DEVTYPE_GCM:
+        instance = gcm.GCM( mykey.myKey )
+        data = { 'getMoves': True, 
+                 # 'title' : 'Msg from Darth',
+                 # 'msg' : "I am your father, Luke.",
+                 }
+        response = instance.json_request( registration_ids = devids,
+                                          data = data )
 
-    response = instance.json_request( registration_ids = devids,
-                                      data = data )
-
-    if 'errors' in response:
-        for error, reg_ids in response.items():
-            print error
+        if 'errors' in response:
+            for error, reg_ids in response.items():
+                print error
+        else:
+            print 'no errors'
     else:
-        print 'no errors'
+        print "not sending to", len(devids), "devices because typ ==", typ
 
 def shouldSend(val):
     pow = 1
@@ -80,53 +95,68 @@ def shouldSend(val):
 # be sent/resent now and mark them as sent.  Backoff is based on
 # msgids: if the only messages a device has pending have been seen
 # before, backoff applies.
-def targetsAfterBackoff( msgs, sent ):
-    targets = []
+def targetsAfterBackoff( msgs ):
+    global g_sent
+    print 'sent:', g_sent
+    targets = {}
     for row in msgs:
         msgid = row[0]
-        if not msgid in sent:
-            sent[msgid] = 0
-        sent[msgid] += 1
-        if shouldSend( sent[msgid] ):
-            targets.append( row[1] )
-    return targets
+        devid = row[1]
+        if not msgid in g_sent:
+            g_sent[msgid] = 0
+        g_sent[msgid] += 1
+        if shouldSend( g_sent[msgid] ):
+            targets[devid] = True
+    return targets.keys()
 
 # devids is an array of (msgid, devid) tuples
-def pruneSent( devids, sent ):
-    if g_debug: print "pruneSent: before:", sent
-    lenBefore = len(sent)
+def pruneSent( devids ):
+    global g_sent
+    if g_debug: print "pruneSent: before:", g_sent
+    lenBefore = len(g_sent)
     msgids = []
     for row in devids:
         msgids.append(row[0])
-    for msgid in sent.keys():
+    for msgid in g_sent.keys():
         if not msgid in msgids:
-            del sent[msgid]
-    if g_debug: print "pruneSent: after:", sent
-    return sent
+            del g_sent[msgid]
+    if g_debug: print "pruneSent: after:", g_sent
+
+def cleanup():
+    global g_con, g_sent
+    if g_con: 
+        g_con.close()
+        g_con = None
+    shelf = shelve.open( k_shelfFile )
+    shelf[k_SENT] = g_sent
+    shelf.close();
 
 def handleSigTERM( one, two ):
     print 'handleSigTERM called: ', one, two
-    global g_con
-    if g_con:
-        g_con.close()
-        g_con = None
+    cleanup()
 
 def usage():
-    print "usage:", sys.argv[0], "[--loop]"
+    print "usage:", sys.argv[0], "[--loop <nSeconds>] [--type typ] [--verbose]"
     sys.exit();
 
 def main():
-    global g_con
+    global g_con, g_sent, g_debug
     loopInterval = 0
     g_con = init()
     emptyCount = 0
+    typ = DEVTYPE_GCM
 
     ii = 1
     while ii < len(sys.argv):
         arg = sys.argv[ii]
         if arg == '--loop':
-            ii = ii + 1
+            ii += 1
             loopInterval = float(sys.argv[ii])
+        elif arg == '--type':
+            ii += 1
+            typ = int(sys.argv[ii])
+        elif arg == '--verbose':
+            g_debug = True
         else:
             usage()
         ii = ii + 1
@@ -134,30 +164,29 @@ def main():
     signal.signal( signal.SIGTERM, handleSigTERM )
     signal.signal( signal.SIGINT, handleSigTERM )
 
-    sent = {}
     while g_con:
-        devids = getPendingMsgs( g_con )
+        if g_debug: print
+        devids = getPendingMsgs( g_con, typ )
         if 0 < len(devids):
-            targets = targetsAfterBackoff( devids, sent )
+            targets = targetsAfterBackoff( devids )
             if 0 < len(targets):
                 if 0 < emptyCount: print ""
                 emptyCount = 0
                 print strftime("%Y-%m-%d %H:%M:%S", gmtime()),
                 print "devices needing notification:", targets
-                if not g_skipSend:
-                    notifyGCM( asGCMIds( g_con, targets ) )
-                pruneSent( devids, sent )
+                notifyGCM( asGCMIds( g_con, targets, typ ), typ )
+                pruneSent( devids )
             else: 
-                sys.stdout.write('.')
-                sys.stdout.flush()
+                if not g_debug:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
                 emptyCount = emptyCount + 1
                 if 0 == (emptyCount % LINE_LEN): print ""
         if 0 == loopInterval: break
         time.sleep( loopInterval )
-        if g_debug: print
+        if not g_debug: print
 
-    if g_con:
-        g_con.close()
+    cleanup()
 
 ##############################################################################
 if __name__ == '__main__':
