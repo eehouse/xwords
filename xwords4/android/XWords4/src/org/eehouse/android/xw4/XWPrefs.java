@@ -187,6 +187,7 @@ public class XWPrefs {
     public static void setGCMDevID( Context context, String devID )
     {
         setPrefsString( context, R.string.key_gcm_regid, devID );
+        clearPrefsKey( context, R.string.key_relay_regid );
     }
 
     public static String getGCMDevID( Context context )
@@ -201,6 +202,7 @@ public class XWPrefs {
     public static void clearGCMDevID( Context context )
     {
         clearPrefsKey( context, R.string.key_gcm_regid );
+        clearRelayDevID( context );
     }
 
     public static String getRelayDevID( Context context )
@@ -215,6 +217,11 @@ public class XWPrefs {
     public static void setRelayDevID( Context context, String idRelay )
     {
         setPrefsString( context, R.string.key_relay_regid, idRelay );
+    }
+
+    public static void clearRelayDevID( Context context )
+    {
+        clearPrefsKey( context, R.string.key_relay_regid );
     }
 
     public static boolean getHaveCheckedSMS( Context context )

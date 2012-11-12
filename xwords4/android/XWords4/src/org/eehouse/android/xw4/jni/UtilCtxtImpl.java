@@ -110,9 +110,19 @@ public class UtilCtxtImpl implements UtilCtxt {
         return result;
     }
 
-    public void deviceRegistered( String idRelay )
+    public void deviceRegistered( int devIDType, String idRelay )
     {
-        XWPrefs.setRelayDevID( m_context, idRelay );
+        switch ( devIDType ) {
+        case UtilCtxt.ID_TYPE_RELAY:
+            XWPrefs.setRelayDevID( m_context, idRelay );
+            break;
+        case UtilCtxt.ID_TYPE_NONE:
+            XWPrefs.clearRelayDevID( m_context );
+            break;
+        default:
+            Assert.fail();
+            break;
+        }
     }
 
     public void bonusSquareHeld( int bonus )

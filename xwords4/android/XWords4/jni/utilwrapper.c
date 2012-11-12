@@ -552,6 +552,7 @@ static const XP_UCHAR*
 and_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
 {
     const XP_UCHAR* result = NULL;
+    *typ = ID_TYPE_NONE;
     UTIL_CBK_HEADER( "getDevID", "([B)Ljava/lang/String;" );
     jbyteArray jbarr = makeByteArray( env, 1, NULL );
     jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, jbarr );
@@ -581,11 +582,12 @@ and_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
 }
 
 static void
-and_util_deviceRegistered( XW_UtilCtxt* uc, const XP_UCHAR* idRelay )
+and_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ, 
+                           const XP_UCHAR* idRelay )
 {
-    UTIL_CBK_HEADER( "deviceRegistered", "(Ljava/lang/String;)V" );
+    UTIL_CBK_HEADER( "deviceRegistered", "(ILjava/lang/String;)V" );
     jstring jstr = (*env)->NewStringUTF( env, idRelay );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jstr );
+    (*env)->CallVoidMethod( env, util->jutil, mid, typ, jstr );
     deleteLocalRef( env, jstr );
     UTIL_CBK_TAIL();
 }

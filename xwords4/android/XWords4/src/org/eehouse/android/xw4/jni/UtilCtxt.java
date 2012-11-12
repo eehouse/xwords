@@ -62,7 +62,7 @@ public interface UtilCtxt {
     public static final int ID_TYPE_ANDROID_GCM = 3;
 
     String getDevID( /*out*/ byte[] typ );
-    void deviceRegistered( String idRelay );
+    void deviceRegistered( int devIDType, String idRelay );
 
     void bonusSquareHeld( int bonus );
     void playerScoreHeld( int player );
