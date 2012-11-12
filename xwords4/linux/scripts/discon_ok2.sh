@@ -29,6 +29,7 @@ declare -A PIDS
 declare -A APPS
 declare -A NEW_ARGS
 declare -A ARGS
+declare -A ARGS_DEVID
 declare -A ROOMS
 declare -A FILES
 declare -A LOGS
@@ -182,9 +183,6 @@ build_cmds() {
                 fi
             fi
 
-            # rememeber what the app can do
-            HELP="$(${APPS[$COUNTER]} --help 2>&1 || true)"
-
             PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
             [ $UNDO_PCT -gt 0 ] && PARAMS="$PARAMS --undo-pct $UNDO_PCT "
@@ -193,15 +191,14 @@ build_cmds() {
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
-            if echo $HELP | grep -q '\-\-devid'; then
-                PARAMS="$PARAMS --devid LINUX_TEST_$(printf %.5d ${COUNTER})"
-            fi
             PARAMS="$PARAMS $PUBLIC"
             ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM
             FILES[$COUNTER]=$FILE
             LOGS[$COUNTER]=$LOG
             PIDS[$COUNTER]=0
+            ARGS_DEVID[$COUNTER]=""
+            update_devid_cmd $COUNTER
 
             print_cmdline $COUNTER
 
@@ -244,7 +241,7 @@ read_resume_cmds() {
 launch() {
     LOG=${LOGS[$1]}
     APP="${APPS[$1]}"
-    PARAMS="${NEW_ARGS[$1]} ${ARGS[$1]}"
+    PARAMS="${NEW_ARGS[$1]} ${ARGS[$1]} ${ARGS_DEVID[$1]}"
     exec $APP $PARAMS >/dev/null 2>>$LOG
 }
 
@@ -282,6 +279,7 @@ close_device() {
     unset LOGS[$ID]
     unset ROOMS[$ID]
     unset APPS[$ID]
+    unset ARGS_DEVID[$ID]
 }
 
 OBITS=""
@@ -386,19 +384,42 @@ increment_drop() {
     fi
 }
 
-set_relay_devid() {
+get_relayid() {
+    KEY=$1
+    RELAY_ID=$(grep 'deviceRegistered: new id: ' ${LOGS[$KEY]} | tail -n 1)
+    if [ -n "$RELAY_ID" ]; then
+        RELAY_ID=$(echo $RELAY_ID | sed 's,^.*new id: ,,')
+    else
+        usage "new id string not in $LOG"
+    fi
+    echo $RELAY_ID
+}
+
+update_devid_cmd() {
     KEY=$1
     HELP="$(${APPS[$KEY]} --help 2>&1 || true)"
     if echo $HELP | grep -q '\-\-devid'; then
-        CMD=${ARGS[$KEY]}
-        if [ "$CMD" != "${CMD/--devid //}" ]; then
-            RELAY_ID=$(grep 'deviceRegistered: new id: ' ${LOGS[$KEY]} | tail -n 1)
-            if [ -n "$RELAY_ID" ]; then
-                RELAY_ID=$(echo $RELAY_ID | sed 's,^.*new id: ,,')
-            # turn --devid <whatever> into --rdevid $RELAY_ID
-                ARGS[$KEY]=$(echo $CMD | sed "s,^\(.*\)--devid[ ]\+[^ ]\+\(.*\)$,\1--rdevid $RELAY_ID\2,")
+        CMD="--devid LINUX_TEST_$(printf %.5d ${KEY})"
+        LOG=${LOGS[$KEY]}
+        if [ -z "${ARGS_DEVID[$KEY]}" -o ! -e $LOG ]; then # upgrade or first run
+            :
+        else
+            # otherwise, we should have successfully registered.  If
+            # we have AND the reg has been rejected, make without
+            # --rdevid so will reregister.
+            LAST_GOOD=$(grep -h -n 'linux_util_deviceRegistered: new id' $LOG | tail -n 1 | sed 's,:.*$,,')
+            LAST_REJ=$(grep -h -n 'linux_util_deviceRegistered: id rejected' $LOG | tail -n 1 | sed 's,:.*$,,')
+            # echo "LAST_GOOD: $LAST_GOOD; LAST_REJ: $LAST_REJ"
+            if [ -z "$LAST_GOOD" ]; then # not yet registered
+                :
+            elif [ -z "$LAST_REJ" ]; then
+                CMD="$CMD --rdevid $(get_relayid $KEY)"
+            elif [ "$LAST_REJ" -lt "$LAST_GOOD" ]; then # registered and not more recently rejected
+                CMD="$CMD --rdevid $(get_relayid $KEY)"
             fi
         fi
+        # echo $CMD
+        ARGS_DEVID[$KEY]=$CMD
     fi
 }
 
@@ -431,7 +452,7 @@ run_cmds() {
             PIDS[$KEY]=0
             ROOM_PIDS[$ROOM]=0
             [ "$DROP_N" -ge 0 ] && increment_drop $KEY
-            set_relay_devid $KEY
+            update_devid_cmd $KEY
             check_game $KEY
         fi
     done
