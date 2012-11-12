@@ -37,6 +37,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onRegistered( Context context, String regId ) 
     {
+        DbgUtils.logf( "GCMIntentService.onRegistered(%s)", regId );
         XWPrefs.setGCMDevID( context, regId );
     }
 
