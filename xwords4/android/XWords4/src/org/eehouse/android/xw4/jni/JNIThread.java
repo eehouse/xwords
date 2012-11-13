@@ -77,7 +77,7 @@ public class JNIThread extends Thread {
             CMD_COUNTS_VALUES,
             CMD_REMAINING,
             CMD_RESEND,
-            CMD_ACKANY,
+            // CMD_ACKANY,
             CMD_HISTORY,
             CMD_FINAL,
             CMD_ENDGAME,
@@ -497,9 +497,9 @@ public class JNIThread extends Thread {
                 XwJNI.comms_resendAll( m_jniGamePtr, 
                                        ((Boolean)args[0]).booleanValue() );
                 break;
-            case CMD_ACKANY:
-                XwJNI.comms_ackAny( m_jniGamePtr );
-                break;
+            // case CMD_ACKANY:
+            //     XwJNI.comms_ackAny( m_jniGamePtr );
+            //     break;
 
             case CMD_HISTORY:
                 boolean gameOver = XwJNI.server_getGameIsOver( m_jniGamePtr );
