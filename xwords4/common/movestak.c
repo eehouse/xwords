@@ -147,7 +147,7 @@ stack_getHash( const StackCtxt* stack )
     stream_copyBits( stack->data, 0, stack->top, buf, &len );
     // LOG_HEX( buf, len, __func__ );
     hash = finishHash( augmentHash( 0L, buf, len ) );
-    LOG_RETURNF( "%.8X", (unsigned int)hash );
+    // LOG_RETURNF( "%.8X", (unsigned int)hash );
     return hash;
 } /* stack_getHash */
 #endif

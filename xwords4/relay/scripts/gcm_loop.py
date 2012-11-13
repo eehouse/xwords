@@ -81,7 +81,9 @@ def notifyGCM( devids, typ ):
             for error, reg_ids in response.items():
                 print error
         else:
-            print 'no errors'
+            print 'no errors',
+            if g_debug: print ':', response
+            else: print
     else:
         print "not sending to", len(devids), "devices because typ ==", typ
 
@@ -176,15 +178,14 @@ def main():
                 print "devices needing notification:", targets
                 notifyGCM( asGCMIds( g_con, targets, typ ), typ )
                 pruneSent( devids )
-            else: 
-                if not g_debug:
-                    sys.stdout.write('.')
-                    sys.stdout.flush()
-                emptyCount = emptyCount + 1
-                if 0 == (emptyCount % LINE_LEN): print ""
+        else:
+            emptyCount += 1
+            if not g_debug:
+                sys.stdout.write('.')
+                sys.stdout.flush()
+            if 0 == (emptyCount % LINE_LEN): print ""
         if 0 == loopInterval: break
         time.sleep( loopInterval )
-        if not g_debug: print
 
     cleanup()
 

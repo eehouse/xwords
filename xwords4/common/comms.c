@@ -785,9 +785,11 @@ comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken )
     XP_LOGF( "%s(saveToken=%d)", __func__, saveToken );
     XP_ASSERT( !!comms );
     if ( saveToken == comms->lastSaveToken ) {
-        XP_LOGF( "%s: lastSave matches", __func__ );
         AddressRecord* rec;
         for ( rec = comms->recs; !!rec; rec = rec->next ) {
+            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved %ld to "
+                     "lastMsgRcd %ld", __func__, rec->lastMsgSaved, 
+                     rec->lastMsgRcd );
             rec->lastMsgSaved = rec->lastMsgRcd;
         }
 #ifdef XWFEATURE_COMMSACK
@@ -996,24 +998,28 @@ comms_getChannelSeed( CommsCtxt* comms )
 XP_S16
 comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
 {
-    XP_PlayerAddr channelNo = stream_getAddress( stream );
-    XP_LOGF( "%s: channelNo=%x", __func__, channelNo );
-    AddressRecord* rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
-    MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
-    MsgQueueElem* elem;
     XP_S16 result = -1;
+    if ( 0 == stream_getSize(stream) ) {
+        XP_LOGF( "%s: dropping 0-len message", __func__ );
+    } else {
+        XP_PlayerAddr channelNo = stream_getAddress( stream );
+        XP_LOGF( "%s: channelNo=%x", __func__, channelNo );
+        AddressRecord* rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
+        MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
+        MsgQueueElem* elem;
 
-    if ( 0 == channelNo ) {
-        channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
-    }
+        if ( 0 == channelNo ) {
+            channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
+        }
 
-    XP_DEBUGF( "%s: assigning msgID=" XP_LD " on chnl %x", __func__, 
-               msgID, channelNo );
+        XP_DEBUGF( "%s: assigning msgID=" XP_LD " on chnl %x", __func__, 
+                   msgID, channelNo );
 
-    elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
-    if ( NULL != elem ) {
-        addToQueue( comms, elem );
-        result = sendMsg( comms, elem );
+        elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
+        if ( NULL != elem ) {
+            addToQueue( comms, elem );
+            result = sendMsg( comms, elem );
+        }
     }
     return result;
 } /* comms_send */
@@ -1037,9 +1043,10 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
         XP_ASSERT( comms->queueLen > 0 );
     }
     ++comms->queueLen;
-    XP_LOGF( "%s: queueLen now %d after channelNo: %d; msgID: " XP_LD,
-             __func__, comms->queueLen,
-             newMsgElem->channelNo & CHANNEL_MASK, newMsgElem->msgID );
+    XP_LOGF( "%s: queueLen now %d after channelNo: %d; msgID: " XP_LD 
+             "; len: %d", __func__, comms->queueLen,
+             newMsgElem->channelNo & CHANNEL_MASK, newMsgElem->msgID, 
+             newMsgElem->len );
 } /* addToQueue */
 
 #ifdef DEBUG
@@ -1244,14 +1251,25 @@ comms_resendAll( CommsCtxt* comms )
 void
 comms_ackAny( CommsCtxt* comms )
 {
+#ifdef DEBUG
+    XP_Bool noneSent = XP_TRUE;
+#endif 
     AddressRecord* rec;
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
-            XP_LOGF( "%s: %ld < %ld: rec needs ack", __func__,
-                     rec->lastMsgAckd, rec->lastMsgRcd );
+#ifdef DEBUG
+            noneSent = XP_FALSE;
+#endif 
+            XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
+                     rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
             sendEmptyMsg( comms, rec );
         }
     }
+#ifdef DEBUG
+    if ( noneSent ) {
+        XP_LOGF( "%s: nothing to send", __func__ );
+    }
+#endif 
 }
 #endif
 
@@ -1845,7 +1863,7 @@ sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec )
                                          0 /*rec? rec->lastMsgRcd : 0*/,
                                          rec, 
                                          rec? rec->channelNo : 0, NULL );
-    sendMsg( comms, elem );
+    (void)sendMsg( comms, elem );
     freeElem( comms, elem );
 } /* sendEmptyMsg */
 #endif
