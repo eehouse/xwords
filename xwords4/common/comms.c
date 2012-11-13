@@ -785,9 +785,11 @@ comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken )
     XP_LOGF( "%s(saveToken=%d)", __func__, saveToken );
     XP_ASSERT( !!comms );
     if ( saveToken == comms->lastSaveToken ) {
-        XP_LOGF( "%s: lastSave matches", __func__ );
         AddressRecord* rec;
         for ( rec = comms->recs; !!rec; rec = rec->next ) {
+            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved %ld to "
+                     "lastMsgRcd %ld", __func__, rec->lastMsgSaved, 
+                     rec->lastMsgRcd );
             rec->lastMsgSaved = rec->lastMsgRcd;
         }
 #ifdef XWFEATURE_COMMSACK
@@ -1037,9 +1039,10 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
         XP_ASSERT( comms->queueLen > 0 );
     }
     ++comms->queueLen;
-    XP_LOGF( "%s: queueLen now %d after channelNo: %d; msgID: " XP_LD,
-             __func__, comms->queueLen,
-             newMsgElem->channelNo & CHANNEL_MASK, newMsgElem->msgID );
+    XP_LOGF( "%s: queueLen now %d after channelNo: %d; msgID: " XP_LD 
+             "; len: %d", __func__, comms->queueLen,
+             newMsgElem->channelNo & CHANNEL_MASK, newMsgElem->msgID, 
+             newMsgElem->len );
 } /* addToQueue */
 
 #ifdef DEBUG
@@ -1244,14 +1247,25 @@ comms_resendAll( CommsCtxt* comms )
 void
 comms_ackAny( CommsCtxt* comms )
 {
+#ifdef DEBUG
+    XP_Bool noneSent = XP_TRUE;
+#endif 
     AddressRecord* rec;
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
-            XP_LOGF( "%s: %ld < %ld: rec needs ack", __func__,
-                     rec->lastMsgAckd, rec->lastMsgRcd );
+#ifdef DEBUG
+            noneSent = XP_FALSE;
+#endif 
+            XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
+                     rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
             sendEmptyMsg( comms, rec );
         }
     }
+#ifdef DEBUG
+    if ( noneSent ) {
+        XP_LOGF( "%s: nothing to send", __func__ );
+    }
+#endif 
 }
 #endif
 
@@ -1845,7 +1859,7 @@ sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec )
                                          0 /*rec? rec->lastMsgRcd : 0*/,
                                          rec, 
                                          rec? rec->channelNo : 0, NULL );
-    sendMsg( comms, elem );
+    (void)sendMsg( comms, elem );
     freeElem( comms, elem );
 } /* sendEmptyMsg */
 #endif
