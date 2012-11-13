@@ -1314,7 +1314,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
     XP_ASSERT( !!comms );
     (void)comms_resendAll( comms );
     if ( thenAck ) {
+#ifdef XWFEATURE_COMMSACK
         comms_ackAny( comms );
+#endif
     }
     XWJNI_END();
 }
