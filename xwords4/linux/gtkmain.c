@@ -65,9 +65,6 @@
 #include "filestream.h"
 
 /* static guint gtkSetupClientSocket( GtkAppGlobals* globals, int sock ); */
-#ifndef XWFEATURE_STANDALONE_ONLY
-static void sendOnCloseGTK( XWStreamCtxt* stream, void* closure );
-#endif
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void new_game( GtkWidget* widget, GtkAppGlobals* globals );
 static void new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg );
@@ -508,8 +505,8 @@ createOrLoadObjects( GtkAppGlobals* globals )
 #ifndef XWFEATURE_STANDALONE_ONLY
         } else if ( !isServer ) {
             XWStreamCtxt* stream = 
-                mem_stream_make( MEMPOOL params->vtMgr, globals, CHANNEL_NONE,
-                                 sendOnCloseGTK );
+                mem_stream_make( MEMPOOL params->vtMgr, &globals->cGlobals, CHANNEL_NONE,
+                                 sendOnClose );
             server_initClientConnection( globals->cGlobals.game.server, 
                                          stream );
 #endif
@@ -814,11 +811,9 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
 
         if ( isClient ) {
             XWStreamCtxt* stream =
-                mem_stream_make( MEMPOOL 
-                                 globals->cGlobals.params->vtMgr,
-                                 globals, 
-                                 CHANNEL_NONE, 
-                                 sendOnCloseGTK );
+                mem_stream_make( MEMPOOL globals->cGlobals.params->vtMgr,
+                                 &globals->cGlobals, CHANNEL_NONE, 
+                                 sendOnClose );
             server_initClientConnection( globals->cGlobals.game.server, 
                                          stream );
         }
@@ -1747,8 +1742,8 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
     XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
                                             globals->cGlobals.params->vtMgr,
-                                            uc->closure, channelNo, 
-                                            sendOnCloseGTK );
+                                            &globals->cGlobals, channelNo, 
+                                            sendOnClose );
     return stream;
 } /* gtk_util_makeStreamFromAddr */
 
@@ -2269,15 +2264,6 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
         *storage = info;
     }
 } /* gtk_socket_acceptor */
-
-static void
-sendOnCloseGTK( XWStreamCtxt* stream, void* closure )
-{
-    GtkAppGlobals* globals = closure;
-
-    XP_LOGF( "sendOnClose called" );
-    (void)comms_send( globals->cGlobals.game.comms, stream );
-} /* sendOnClose */
 
 static void 
 drop_msg_toggle( GtkWidget* toggle, GtkAppGlobals* globals )
