@@ -474,6 +474,7 @@ onetime_idle( gpointer data )
         if ( !!globals->cGlobals.game.board ) {
             board_draw( globals->cGlobals.game.board );
         }
+        saveGame( &globals->cGlobals );
     }
     return FALSE;
 }
@@ -1219,7 +1220,7 @@ static XP_Bool
 blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 {
     XP_Bool result = XP_FALSE;
-    int numEvents;
+    int numEvents, ii;
     short fdIndex;
     XP_Bool redraw = XP_FALSE;
 
@@ -1334,12 +1335,15 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
             }
         }
 
-        redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw;
+        for ( ii = 0; ii < 5; ++ii ) {
+            redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw;
+        }
         if ( redraw ) {
             /* messages change a lot */
             board_invalAll( globals->cGlobals.game.board );
             board_draw( globals->cGlobals.game.board );
         }
+        saveGame( globals->cGlobals );
     }
     return result;
 } /* blocking_gotEvent */
