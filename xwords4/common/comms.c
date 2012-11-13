@@ -998,24 +998,28 @@ comms_getChannelSeed( CommsCtxt* comms )
 XP_S16
 comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
 {
-    XP_PlayerAddr channelNo = stream_getAddress( stream );
-    XP_LOGF( "%s: channelNo=%x", __func__, channelNo );
-    AddressRecord* rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
-    MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
-    MsgQueueElem* elem;
     XP_S16 result = -1;
+    if ( 0 == stream_getSize(stream) ) {
+        XP_LOGF( "%s: dropping 0-len message", __func__ );
+    } else {
+        XP_PlayerAddr channelNo = stream_getAddress( stream );
+        XP_LOGF( "%s: channelNo=%x", __func__, channelNo );
+        AddressRecord* rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
+        MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
+        MsgQueueElem* elem;
 
-    if ( 0 == channelNo ) {
-        channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
-    }
+        if ( 0 == channelNo ) {
+            channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
+        }
 
-    XP_DEBUGF( "%s: assigning msgID=" XP_LD " on chnl %x", __func__, 
-               msgID, channelNo );
+        XP_DEBUGF( "%s: assigning msgID=" XP_LD " on chnl %x", __func__, 
+                   msgID, channelNo );
 
-    elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
-    if ( NULL != elem ) {
-        addToQueue( comms, elem );
-        result = sendMsg( comms, elem );
+        elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
+        if ( NULL != elem ) {
+            addToQueue( comms, elem );
+            result = sendMsg( comms, elem );
+        }
     }
     return result;
 } /* comms_send */
