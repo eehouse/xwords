@@ -495,7 +495,8 @@ public class JNIThread extends Thread {
 
             case CMD_RESEND:
                 XwJNI.comms_resendAll( m_jniGamePtr, 
-                                       ((Boolean)args[0]).booleanValue() );
+                                       ((Boolean)args[0]).booleanValue(),
+                                       ((Boolean)args[1]).booleanValue() );
                 break;
             // case CMD_ACKANY:
             //     XwJNI.comms_ackAny( m_jniGamePtr );

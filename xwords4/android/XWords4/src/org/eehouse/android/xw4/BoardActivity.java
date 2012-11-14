@@ -777,7 +777,7 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.board_menu_game_resend:
-            m_jniThread.handle( JNICmd.CMD_RESEND, false );
+            m_jniThread.handle( JNICmd.CMD_RESEND, true, false );
             break;
 
         case R.id.gamel_menu_checkmoves:

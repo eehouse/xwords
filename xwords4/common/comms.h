@@ -203,7 +203,7 @@ void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
 void comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken );
 
 XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
-XP_Bool comms_resendAll( CommsCtxt* comms );
+XP_Bool comms_resendAll( CommsCtxt* comms, XP_Bool force );
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 
 #ifdef XWFEATURE_COMMSACK

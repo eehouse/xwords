@@ -708,7 +708,7 @@ public class GameUtils {
             FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
             int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
                     
-            XwJNI.comms_resendAll( gamePtr, false );
+            XwJNI.comms_resendAll( gamePtr, false, false );
 
             if ( null != msgs ) {
                 for ( byte[] msg : msgs ) {

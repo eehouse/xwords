@@ -110,6 +110,9 @@ struct CommsCtxt {
     XP_U16 queueLen;
     XP_U16 channelSeed;         /* tries to be unique per device to aid
                                    dupe elimination at start */
+    XP_U32 nextResend;
+    XP_U16 resendBackoff;
+
 #ifdef COMMS_HEARTBEAT
     XP_Bool doHeartbeat;
     XP_U32 lastMsgRcvdTime;
@@ -574,6 +577,10 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         comms->channelSeed = stream_getU16( stream );
         XP_LOGF( "%s: loaded seed: %.4X", __func__, comms->channelSeed );
     }
+    if ( STREAM_VERS_COMMSBACKOFF <= version ) {
+        comms->resendBackoff = stream_getU16( stream );
+        comms->nextResend = stream_getU32( stream );
+    }
     if ( addr.conType == COMMS_CONN_RELAY ) {
         comms->r.myHostID = stream_getU8( stream );
         stringFromStreamHere( stream, comms->r.connName, 
@@ -674,7 +681,7 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
     case COMMS_CONN_IP_DIRECT:
         /* This will only work on host side when there's a single guest! */
         (void)send_via_bt_or_ip( comms, BTIPMSG_RESET, CHANNEL_NONE, NULL, 0 );
-        (void)comms_resendAll( comms );
+        (void)comms_resendAll( comms, XP_FALSE );
         break;
 #endif
     default:
@@ -745,6 +752,8 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     stream_putU32( stream, comms->connID );
     stream_putU16( stream, comms->nextChannelNo );
     stream_putU16( stream, comms->channelSeed );
+    stream_putU16( stream, comms->resendBackoff );
+    stream_putU32( stream, comms->nextResend );
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         stream_putU8( stream, comms->r.myHostID );
         stringToStream( stream, comms->r.connName );
@@ -780,6 +789,14 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
     comms->lastSaveToken = saveToken;
 } /* comms_writeToStream */
+
+static void
+resetBackoff( CommsCtxt* comms )
+{
+    XP_LOGF( "%s: resetting backoff", __func__ );
+    comms->resendBackoff = 0;
+    comms->nextResend = 0;
+}
 
 void
 comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken )
@@ -1236,17 +1253,32 @@ send_ack( CommsCtxt* comms )
 }
 
 XP_Bool
-comms_resendAll( CommsCtxt* comms )
+comms_resendAll( CommsCtxt* comms, XP_Bool force )
 {
     XP_Bool success = XP_TRUE;
-    MsgQueueElem* msg;
-
     XP_ASSERT( !!comms );
 
-    for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
-        if ( 0 > sendMsg( comms, msg ) ) {
-            success = XP_FALSE;
-            break;
+    XP_U32 now = util_getCurSeconds( comms->util );
+    if ( !force && (now < comms->nextResend) ) {
+        XP_LOGF( "%s: aborting: %ld seconds left in backoff", __func__, 
+                 comms->nextResend - now );
+        success = XP_FALSE;
+    } else {
+        MsgQueueElem* msg;
+
+
+        for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
+            if ( 0 > sendMsg( comms, msg ) ) {
+                success = XP_FALSE;
+                break;
+            }
+        }
+
+        /* Now set resend values */
+        if ( success && !force ) {
+            comms->resendBackoff = 2 * (1 + comms->resendBackoff);
+            XP_LOGF( "%s: backoff now %d", __func__, comms->resendBackoff );
+            comms->nextResend = now + comms->resendBackoff;
         }
     }
     return success;
@@ -1391,7 +1423,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         break;
     case XWRELAY_RECONNECT_RESP:
         got_connect_cmd( comms, stream, XP_TRUE );
-        comms_resendAll( comms );
+        comms_resendAll( comms, XP_FALSE );
         break;
 
     case XWRELAY_ALLHERE:
@@ -1429,7 +1461,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
            on RECONNECTED, so removing the test for now to fix recon
            problems on android. */
         /* if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) { */
-        comms_resendAll( comms );
+        comms_resendAll( comms, XP_FALSE );
         /* } */
         if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
             (*comms->procs.rconnd)( comms->procs.closure, 
@@ -1538,7 +1570,7 @@ btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
     if ( consumed ) {
         /* This  is all there is so far */
         if ( typ == BTIPMSG_RESET ) {
-            (void)comms_resendAll( comms );
+            (void)comms_resendAll( comms, XP_FALSE );
         } else if ( typ == BTIPMSG_HB ) {
 /*             noteHBReceived( comms, addr ); */
         } else {
@@ -1805,6 +1837,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
                 stream_setAddress( stream, channelNo );
                 messageValid = payloadSize > 0;
+                resetBackoff( comms );
             }
         } else {
             XP_LOGF( "%s: message too small", __func__ );
