@@ -974,9 +974,7 @@ and_send_on_close( XWStreamCtxt* stream, void* closure )
     JNIState* state = (JNIState*)globals->state;
 
     XP_ASSERT( !!state->game.comms );
-    if ( stream_getSize( stream ) > 0 ) {
-        comms_send( state->game.comms, stream );
-    }
+    comms_send( state->game.comms, stream );
 }
 
 JNIEXPORT void JNICALL
