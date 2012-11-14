@@ -921,7 +921,7 @@ handle_resend( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     CommsCtxt* comms = globals->cGlobals.game.comms;
     if ( comms != NULL ) {
-        comms_resendAll( comms );
+        comms_resendAll( comms, XP_TRUE );
     }
 } /* handle_resend */
 
@@ -2199,7 +2199,7 @@ gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
     /* A hack for the bluetooth case. */
     CommsCtxt* comms = globals->cGlobals.game.comms;
     if ( (comms != NULL) && (comms_getConType(comms) == COMMS_CONN_BT) ) {
-        comms_resendAll( comms );
+        comms_resendAll( comms, XP_FALSE );
     }
     LOG_RETURN_VOID();
 } /* gtk_socket_changed */
