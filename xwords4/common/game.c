@@ -473,6 +473,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
     gi->boardSize = (XP_U8)stream_getBits( stream, nColsNBits );
     gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
+    XP_LOGF( "%s: read role of %d", __func__, gi->serverRole );
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
     if ( strVersion < STREAM_VERS_ROBOTIQ ) {
         (void)stream_getBits( stream, 2 );

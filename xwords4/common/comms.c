@@ -55,7 +55,9 @@ typedef struct MsgQueueElem {
     XP_U8* msg;
     XP_U16 len;
     XP_PlayerAddr channelNo;
+#ifdef DEBUG
     XP_U16 sendCount;           /* how many times sent? */
+#endif
     MsgID msgID;                /* saved for ease of deletion */
 #ifdef COMMS_CHECKSUM
     gchar* checksum;
@@ -607,7 +609,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
         msg->channelNo = stream_getU16( stream );
         msg->msgID = stream_getU32( stream );
-#ifdef COMMS_HEARTBEAT
+#ifdef DEBUG
         msg->sendCount = 0;
 #endif
         msg->len = stream_getU16( stream );
@@ -787,8 +789,8 @@ comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken )
     if ( saveToken == comms->lastSaveToken ) {
         AddressRecord* rec;
         for ( rec = comms->recs; !!rec; rec = rec->next ) {
-            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved %ld to "
-                     "lastMsgRcd %ld", __func__, rec->lastMsgSaved, 
+            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved (%ld) to "
+                     "lastMsgRcd (%ld)", __func__, rec->lastMsgSaved, 
                      rec->lastMsgRcd );
             rec->lastMsgSaved = rec->lastMsgRcd;
         }
@@ -944,7 +946,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
                                            sizeof( *newMsgElem ) );
     newMsgElem->channelNo = channelNo;
     newMsgElem->msgID = msgID;
-#ifdef COMMS_HEARTBEAT
+#ifdef DEBUG
     newMsgElem->sendCount = 0;
 #endif
 
@@ -1214,8 +1216,11 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     }
     
     if ( result == elem->len ) {
+#ifdef DEBUG
         ++elem->sendCount;
-        XP_LOGF( "%s: elem's sendCount now %d", __func__, elem->sendCount );
+#endif
+        XP_LOGF( "%s: elem's sendCount since load: %d", __func__, 
+                 elem->sendCount );
     }
 
     XP_LOGF( "%s(channelNo=%d;msgID=" XP_LD ")=>%d", __func__, 
@@ -1701,6 +1706,7 @@ validateInitialMessage( CommsCtxt* comms,
         rec = getRecordFor( comms, addr, *channelNo, XP_TRUE );
         if ( !!rec ) {
             /* reject: we've already seen init message on channel */
+            XP_LOGF( "%s: rejecting duplicate INIT message", __func__ );
             rec = NULL;
         } else {
             if ( comms->isServer ) {
@@ -2261,7 +2267,7 @@ sendNoConn( CommsCtxt* comms, const MsgQueueElem* elem, XWHostID destID )
         }
     }
 
-    LOG_RETURNF( "%d", success );
+    LOG_RETURNF( "%s", success?"TRUE":"FALSE" );
     return success;
 }
 
