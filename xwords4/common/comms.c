@@ -1263,9 +1263,9 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
         XP_LOGF( "%s: aborting: %ld seconds left in backoff", __func__, 
                  comms->nextResend - now );
         success = XP_FALSE;
-    } else {
-        MsgQueueElem* msg;
 
+    } else if ( !!comms->msgQueueHead ) {
+        MsgQueueElem* msg;
 
         for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
             if ( 0 > sendMsg( comms, msg ) ) {
