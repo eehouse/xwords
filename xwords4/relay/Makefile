@@ -45,6 +45,7 @@ CPPFLAGS += -DSPAWN_SELF -g -Wall \
 	-I $(shell pg_config --includedir) \
 	-DSVN_REV=\"$(shell cat $(GITINFO) 2>/dev/null || echo -n $(HASH) )\"
 # CPPFLAGS += -DDO_HTTP
+# CPPFLAGS += -DHAVE_SENDTIME
 
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS
