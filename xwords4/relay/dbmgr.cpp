@@ -47,6 +47,7 @@ static void formatParams( char* paramValues[], int nParams, const char* fmt,
 static int here_less_seed( const char* seeds, int perDeviceSum, 
                            unsigned short seed );
 static void destr_function( void* conn );
+static void string_printf( string& str, const char* fmt, ... );
 
 /* static */ DBMgr*
 DBMgr::Get() 
@@ -127,11 +128,11 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
     const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice, dead FROM " 
         GAMES_TABLE " WHERE connName = '%s'"
         " LIMIT 1";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, connName );
-    logf( XW_LOGINFO, "query: %s", query );
+    string query;
+    string_printf( query, fmt, connName );
+    logf( XW_LOGINFO, "query: %s", query.c_str() );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
@@ -234,11 +235,11 @@ DBMgr::AllDevsAckd( const char* const connName )
 {
     const char* cmd = "SELECT ntotal=sum_array(nperdevice) AND 'A'=ALL(ack) from " GAMES_TABLE
         " WHERE connName='%s'";
-    char query[256];
-    snprintf( query, sizeof(query), cmd, connName );
-    logf( XW_LOGINFO, "query: %s", query );
+    string query;
+    string_printf( query, cmd, connName );
+    logf( XW_LOGINFO, "query: %s", query.c_str() );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     int nTuples = PQntuples( result );
     assert( nTuples <= 1 );
     bool full = nTuples == 1 && 't' == PQgetvalue( result, 0, 0 )[0];
@@ -317,10 +318,11 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
     }
     assert( newID <= 4 );
 
-    char devIDBuf[512] = {0};
+    string devIDBuf;
     if ( DEVID_NONE != devID ) {
-        snprintf( devIDBuf, sizeof(devIDBuf),
-                  "devids[%d] = %d, ", newID, devID );
+        string_printf( devIDBuf, "devids[%d] = %d, ", newID, devID );
+    } else {
+        assert( 0 == strlen(devIDBuf.c_str()) );
     }
 
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
@@ -328,11 +330,11 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
         " seeds[%d] = %d, addrs[%d] = \'%s\', %s"
         " mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
-    char query[1024];
-    snprintf( query, sizeof(query), fmt, newID, nToAdd, newID, clientVersion,
-              newID, seed, newID, inet_ntoa(addr), devIDBuf, 
-              newID, newID, ackd?'A':'a', connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, newID, nToAdd, newID, clientVersion,
+                   newID, seed, newID, inet_ntoa(addr), devIDBuf.c_str(), 
+                   newID, newID, ackd?'A':'a', connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
 
@@ -342,11 +344,11 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
 void
 DBMgr::NoteAckd( const char* const connName, HostID id )
 {
-    char query[256];
     const char* fmt = "UPDATE " GAMES_TABLE " SET ack[%d]='A'"
         " WHERE connName = '%s'";
-    snprintf( query, sizeof(query), fmt, id, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, id, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
 }
@@ -356,9 +358,9 @@ DBMgr::RmDeviceByHid( const char* connName, HostID hid )
 {
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0, "
         "seeds[%d] = 0, ack[%d]='-', mtimes[%d]='now' WHERE connName = '%s'";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, hid, hid, hid, hid, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, hid, hid, hid, hid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     return execSql( query );
 }
@@ -371,10 +373,10 @@ DBMgr::HIDForSeed( const char* const connName, unsigned short seed )
     const char* fmt = "SELECT seeds FROM " GAMES_TABLE
         " WHERE connName = '%s'"
         " AND %d = ANY(seeds)";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, connName, seed );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
-    PGresult* result = PQexec( getThreadConn(), query );
+    string query;
+    string_printf( query, fmt, connName, seed );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     if ( 1 == PQntuples( result ) ) {
         snprintf( seeds, sizeof(seeds), "%s", PQgetvalue( result, 0, 0 ) );
     }
@@ -418,10 +420,10 @@ DBMgr::HaveDevice( const char* connName, HostID hid, int seed )
     bool found = false;
     const char* fmt = "SELECT * from " GAMES_TABLE 
         " WHERE connName = '%s' AND seeds[%d] = %d";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, connName, hid, seed );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
-    PGresult* result = PQexec( getThreadConn(), query );
+    string query;
+    string_printf( query, fmt, connName, hid, seed );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     found = 1 == PQntuples( result );
     PQclear( result );
     return found;
@@ -432,9 +434,9 @@ DBMgr::AddCID( const char* const connName, CookieID cid )
 {
     const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d "
         " WHERE connName = '%s' AND cid IS NULL";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, cid, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, cid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     bool result = execSql( query );
     logf( XW_LOGINFO, "%s(cid=%d)=>%d", __func__, cid, result );
@@ -446,9 +448,9 @@ DBMgr::ClearCID( const char* connName )
 {
     const char* fmt = "UPDATE " GAMES_TABLE " SET cid = null "
         "WHERE connName = '%s'";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
 }
@@ -460,9 +462,9 @@ DBMgr::RecordSent( const char* const connName, HostID hid, int nBytes )
     const char* fmt = "UPDATE " GAMES_TABLE " SET"
         " nsent = nsent + %d, mtimes[%d] = 'now'"
         " WHERE connName = '%s'";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, nBytes, hid, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, nBytes, hid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
 }
@@ -471,23 +473,19 @@ void
 DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
 {
     if ( nMsgIDs > 0 ) {
-        char buf[1024];
-        unsigned int offset = 0;
-        offset = snprintf( buf, sizeof(buf), "SELECT connname,hid,sum(msglen)"
-                           " FROM " MSGS_TABLE " WHERE id IN (" );
+        string query( "SELECT connname,hid,sum(msglen)"
+                      " FROM " MSGS_TABLE " WHERE id IN (" );
         for ( int ii = 0; ; ) {
-            offset += snprintf( &buf[offset], sizeof(buf) - offset, "%d,",
-                                msgIDs[ii] );
-            assert( offset < sizeof(buf) );
+            string_printf( query, "%d", msgIDs[ii] );
             if ( ++ii == nMsgIDs ) {
-                --offset;       /* back over comma */
                 break;
+            } else {
+                query.append( "," );
             }
         }
-        offset += snprintf( &buf[offset], sizeof(buf) - offset, 
-                            ") GROUP BY connname,hid" );
+        query.append( ") GROUP BY connname,hid" );
 
-        PGresult* result = PQexec( getThreadConn(), buf );
+        PGresult* result = PQexec( getThreadConn(), query.c_str() );
         if ( PGRES_TUPLES_OK == PQresultStatus( result ) ) {
             int ntuples = PQntuples( result );
             for ( int ii = 0; ii < ntuples; ++ii ) {
@@ -507,9 +505,9 @@ DBMgr::RecordAddress( const char* const connName, HostID hid,
     assert( hid >= 0 && hid <= 4 );
     const char* fmt = "UPDATE " GAMES_TABLE " SET addrs[%d] = \'%s\'"
         " WHERE connName = '%s'";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, hid, inet_ntoa(addr), connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, hid, inet_ntoa(addr), connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
 }
@@ -519,11 +517,11 @@ DBMgr::GetPlayerCounts( const char* const connName, int* nTotal, int* nHere )
 {
     const char* fmt = "SELECT ntotal, sum_array(nperdevice) FROM " GAMES_TABLE
         " WHERE connName = '%s'";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 == PQntuples( result ) );
     *nTotal = atoi( PQgetvalue( result, 0, 0 ) );
     *nHere = atoi( PQgetvalue( result, 0, 1 ) );
@@ -533,11 +531,11 @@ DBMgr::GetPlayerCounts( const char* const connName, int* nTotal, int* nHere )
 void
 DBMgr::KillGame( const char* const connName, int hid )
 {
-   const char* fmt = "UPDATE " GAMES_TABLE " SET dead = TRUE,"
-       " nperdevice[%d] = - nperdevice[%d]"
-       " WHERE connName = '%s'";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, hid, hid, connName );
+    const char* fmt = "UPDATE " GAMES_TABLE " SET dead = TRUE,"
+        " nperdevice[%d] = - nperdevice[%d]"
+        " WHERE connName = '%s'";
+    string query;
+    string_printf( query, fmt, hid, hid, connName );
     execSql( query );
 }
 
@@ -559,11 +557,11 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
         " AND nTotal>sum_array(nPerDevice)"
         " AND nTotal = %d";
 
-    char query[256];
-    snprintf( query, sizeof(query), fmt, lang, nPlayers );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, lang, nPlayers );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     int nTuples = PQntuples( result );
     for ( int ii = 0; ii < nTuples; ++ii ) {
         names.append( PQgetvalue( result, ii, 0 ) );
@@ -582,17 +580,23 @@ DBMgr::PendingMsgCount( const char* connName, int hid )
 {
     int count = 0;
     const char* fmt = "SELECT COUNT(*) FROM " MSGS_TABLE
-        " WHERE connName = '%s' AND hid = %d";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, connName, hid );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+        " WHERE connName = '%s' AND hid = %d ";
+    string query;
+    string_printf( query, fmt, connName, hid );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     if ( 1 == PQntuples( result ) ) {
         count = atoi( PQgetvalue( result, 0, 0 ) );
     }
     PQclear( result );
     return count;
+}
+
+bool
+DBMgr::execSql( const string& query )
+{
+    return execSql( query.c_str() );
 }
 
 bool
@@ -612,11 +616,11 @@ DBMgr::readArray( const char* const connName, int arr[]  ) /* len 4 */
 {
     const char* fmt = "SELECT nPerDevice FROM " GAMES_TABLE " WHERE connName='%s'";
 
-    char query[256];
-    snprintf( query, sizeof(query), fmt, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 == PQntuples( result ) );
     const char* arrStr = PQgetvalue( result, 0, 0 );
     sscanf( arrStr, "{%d,%d,%d,%d}", &arr[0], &arr[1], &arr[2], &arr[3] );
@@ -628,11 +632,11 @@ DBMgr::getDevID( const char* connName, int hid )
 {
     DBMgr::DevIDRelay devID;
     const char* fmt = "SELECT devids[%d] FROM " GAMES_TABLE " WHERE connName='%s'";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, hid, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, hid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 == PQntuples( result ) );
     devID = (DBMgr::DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
     PQclear( result );
@@ -644,7 +648,7 @@ DBMgr::getDevID( const DevID* devID )
 {
     DBMgr::DevIDRelay rDevID = DEVID_NONE;
     DevIDType devIDType = devID->m_devIDType;
-    char query[512] = {0};
+    string query;
     assert( ID_TYPE_NONE < devIDType );
     const char* asStr = devID->m_devIDString.c_str();
     if ( ID_TYPE_RELAY == devIDType ) {
@@ -652,16 +656,16 @@ DBMgr::getDevID( const DevID* devID )
         DBMgr::DevIDRelay cur = strtoul( asStr, NULL, 16 );
         if ( DEVID_NONE != cur ) {
             const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE id=%d";
-            snprintf( query, sizeof(query), fmt, cur );
+            string_printf( query, fmt, cur );
         }
     } else {
         const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE devtype=%d and devid = '%s'";
-        snprintf( query, sizeof(query), fmt, devIDType, asStr );
+        string_printf( query, fmt, devIDType, asStr );
     }
 
-    if ( '\0' != query[0] ) {
-        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
-        PGresult* result = PQexec( getThreadConn(), query );
+    if ( 0 < query.size() ) {
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+        PGresult* result = PQexec( getThreadConn(), query.c_str() );
         assert( 1 >= PQntuples( result ) );
         if ( 1 == PQntuples( result ) ) {
             rDevID = (DBMgr::DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
@@ -685,16 +689,14 @@ DBMgr::CountStoredMessages( const char* const connName, int hid )
     const char* fmt = "SELECT count(*) FROM " MSGS_TABLE 
         " WHERE connname = '%s' ";
 
-    char query[256];
-    int len = snprintf( query, sizeof(query), fmt, connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+    string query;
+    string_printf( query, fmt, connName );
 
     if ( hid != -1 ) {
-        snprintf( &query[len], sizeof(query)-len, "AND hid = %d",
-                  hid );
+        string_printf( query, "AND hid = %d", hid );
     }
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 == PQntuples( result ) );
     int count = atoi( PQgetvalue( result, 0, 0 ) );
     PQclear( result );
@@ -722,18 +724,13 @@ DBMgr::StoreMessage( const char* const connName, int hid,
                                               len, &newLen );
     assert( NULL != bytes );
     
-    char query[1024];
-    size_t siz = snprintf( query, sizeof(query), fmt, connName, hid,
-                           devID, bytes, len );
+    string query;
+    string_printf( query, fmt, connName, hid, devID, bytes, len );
 
     PQfreemem( bytes );
 
-    if ( siz < sizeof(query) ) {
-        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
-        execSql( query );
-    } else {
-        logf( XW_LOGERROR, "%s: buffer too small", __func__ );
-    }
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    execSql( query );
 }
 
 bool
@@ -742,12 +739,13 @@ DBMgr::GetNthStoredMessage( const char* const connName, int hid,
                             int* msgID )
 {
     const char* fmt = "SELECT id, msg, msglen FROM " MSGS_TABLE
-        " WHERE connName = '%s' AND hid = %d ORDER BY id LIMIT 1 OFFSET %d";
-    char query[256];
-    snprintf( query, sizeof(query), fmt, connName, hid, nn );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+        " WHERE connName = '%s' AND hid = %d "
+        "ORDER BY id LIMIT 1 OFFSET %d";
+    string query;
+    string_printf( query, fmt, connName, hid, nn );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
-    PGresult* result = PQexec( getThreadConn(), query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
     int nTuples = PQntuples( result );
     assert( nTuples <= 1 );
 
@@ -784,22 +782,23 @@ void
 DBMgr::RemoveStoredMessages( const int* msgIDs, int nMsgIDs )
 {
     if ( nMsgIDs > 0 ) {
-        char ids[1024];
+        string ids;
         size_t len = 0;
         int ii;
         for ( ii = 0; ; ) {
-            len += snprintf( ids + len, sizeof(ids) - len, "%d,", msgIDs[ii] );
+            string_printf( ids, "%d", msgIDs[ii] );
             assert( len < sizeof(ids) );
             if ( ++ii == nMsgIDs ) {
-                ids[len-1] = '\0';  /* overwrite last comma */
                 break;
+            } else {
+                ids.append( "," );
             }
         }
 
         const char* fmt = "DELETE from " MSGS_TABLE " WHERE id in (%s)";
-        char query[1024];
-        snprintf( query, sizeof(query), fmt, ids );
-        logf( XW_LOGINFO, "%s: query: %s", __func__, query );
+        string query;
+        string_printf( query, fmt, ids.c_str() );
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
         execSql( query );
     }
 }
@@ -861,4 +860,30 @@ DBMgr::getThreadConn( void )
         pthread_setspecific( m_conn_key, conn );
     }
     return conn;
+}
+
+/* From stack overflow, toward a snprintf with an expanding buffer.
+ */
+static void
+string_printf( string& str, const char* fmt, ... )
+{
+    const int origsiz = str.size();
+    int newsiz = 100;
+    va_list ap;
+    for ( ; ; ) {
+        str.resize( origsiz + newsiz );
+
+        va_start( ap, fmt );
+        int len = vsnprintf( (char *)str.c_str() + origsiz, newsiz, fmt, ap );
+        va_end( ap );
+
+        if ( len > newsiz ) {   // needs more space
+            newsiz = len + 1;
+        } else if ( -1 == len ) {
+            assert(0);          // should be impossible
+        } else {
+            str.resize( origsiz + len );
+            break;
+        }
+    }
 }
