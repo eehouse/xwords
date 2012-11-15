@@ -84,6 +84,9 @@ public class GCMIntentService extends GCMBaseIntentService {
                 }
             } catch ( UnsupportedOperationException uoe ) {
                 DbgUtils.logf( "Device can't do GCM." );
+            } catch ( Exception whatever ) {
+                // funky devices could do anything
+                DbgUtils.loge( whatever );
             }
         }
     }
