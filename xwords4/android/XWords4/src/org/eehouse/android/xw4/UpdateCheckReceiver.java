@@ -155,7 +155,10 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         if ( 0 < params.length() ) {
             HttpPost post = makePost( context, "getUpdates" );
             String json = runPost( post, params );
-            makeNotificationsIf( context, fromUI, json, pm, packageName, dals );
+            if ( null != json ) {
+                makeNotificationsIf( context, fromUI, json, pm, packageName, 
+                                     dals );
+            }
         }
     }
 
