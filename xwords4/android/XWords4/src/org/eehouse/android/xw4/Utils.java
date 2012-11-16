@@ -60,6 +60,7 @@ public class Utils {
     private static Boolean s_isFirstBootThisVersion = null;
     private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
+    private static Integer s_appVersion = null;
     private static HashMap<String,String> s_phonesHash = 
         new HashMap<String,String>();
     private static int s_nextCode = 0; // keep PendingIntents unique
@@ -405,16 +406,17 @@ public class Utils {
 
     public static int getAppVersion( Context context )
     {
-        int version;
-
-        try {
-            version = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), 0)
-                .versionCode;
-        } catch ( Exception e ) {
-            version = 0;
+        if ( null == s_appVersion ) {
+            try {
+                int version = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0)
+                    .versionCode;
+                s_appVersion = new Integer( version );
+            } catch ( Exception e ) {
+                DbgUtils.loge( e );
+            }
         }
-        return version;
+        return null == s_appVersion? 0 : s_appVersion;
     }
 
     private static void setFirstBootStatics( Context context )
