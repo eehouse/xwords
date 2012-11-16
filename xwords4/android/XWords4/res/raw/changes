@@ -6,13 +6,18 @@
 </head>
 <body>
 <b>Crosswords 4.4 beta 55 release</b>
-<ul>
+<ul>New with this release
 
   <li>Use "Google Cloud Messaging" for <em>much</em> faster relay move
   notifications</li>
 
   <li>Fix crashes on Kindle Fire</li>
 
+</ul>
+
+<ul>Next up
+  <li>Make invitations more reliable</li>
+  <li>Upgrade app without involving the browser</li>
 </ul>
 
 <p>(The full changelog 
