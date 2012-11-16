@@ -112,9 +112,9 @@ public class RelayService extends Service {
                 if ( 0 < idsWMsgs.size() ) {
                     String[] relayIDs = new String[idsWMsgs.size()];
                     idsWMsgs.toArray( relayIDs );
-                    if ( !DispatchNotify.tryHandle( relayIDs ) ) {
-                        setupNotification( relayIDs );
-                    }
+                    // if ( !DispatchNotify.tryHandle( relayIDs ) ) {
+                    setupNotification( relayIDs );
+                    // }
                 }
                 sink.send( this );
             }
