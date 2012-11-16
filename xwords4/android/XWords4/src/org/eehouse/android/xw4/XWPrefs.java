@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import com.google.android.gcm.GCMRegistrar;
 import java.util.ArrayList;
 import java.util.ArrayList;
 
@@ -112,6 +113,24 @@ public class XWPrefs {
         return result;
     }
 
+    public static int getPrefsInt( Context context, int keyID, int defaultValue )
+    {
+        String key = context.getString( keyID );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        return sp.getInt( key, defaultValue );
+    }
+
+    public static void setPrefsInt( Context context, int keyID, int newValue )
+    {
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        SharedPreferences.Editor editor = sp.edit();
+        String key = context.getString( keyID );
+        editor.putInt( key, newValue );
+        editor.commit();
+    }
+
     public static boolean getPrefsBoolean( Context context, int keyID,
                                            boolean defaultValue )
     {
@@ -186,22 +205,26 @@ public class XWPrefs {
 
     public static void setGCMDevID( Context context, String devID )
     {
-        setPrefsString( context, R.string.key_gcm_regid, devID );
+        int curVers = Utils.getAppVersion( context );
+        setPrefsInt( context, R.string.key_gcmvers_regid, curVers );
         clearPrefsKey( context, R.string.key_relay_regid );
     }
 
     public static String getGCMDevID( Context context )
     {
-        String result = getPrefsString( context, R.string.key_gcm_regid );
-        if ( result.equals("") ) {
-            result = null;
+        int curVers = Utils.getAppVersion( context );
+        int storedVers = getPrefsInt( context, R.string.key_gcmvers_regid, 0 );
+        String result;
+        if ( 0 != storedVers && storedVers < curVers ) {
+            result = "";        // Don't trust what registrar has
+        } else {
+            result = GCMRegistrar.getRegistrationId( context );
         }
         return result;
     }
 
     public static void clearGCMDevID( Context context )
     {
-        clearPrefsKey( context, R.string.key_gcm_regid );
         clearRelayDevID( context );
     }
 

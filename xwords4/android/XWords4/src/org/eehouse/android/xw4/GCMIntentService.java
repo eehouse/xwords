@@ -78,14 +78,9 @@ public class GCMIntentService extends GCMBaseIntentService {
             try {
                 GCMRegistrar.checkDevice( app );
                 // GCMRegistrar.checkManifest( app );
-                final String regId = GCMRegistrar.getRegistrationId( app );
+                String regId = XWPrefs.getGCMDevID( app );
                 if (regId.equals("")) {
                     GCMRegistrar.register( app, GCMConsts.SENDER_ID );
-                }
-
-                String curID = XWPrefs.getGCMDevID( app );
-                if ( null == curID || ! curID.equals( regId ) ) {
-                    XWPrefs.setGCMDevID( app, regId );
                 }
             } catch ( UnsupportedOperationException uoe ) {
                 DbgUtils.logf( "Device can't do GCM." );

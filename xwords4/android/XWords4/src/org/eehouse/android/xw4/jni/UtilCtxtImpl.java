@@ -102,7 +102,9 @@ public class UtilCtxtImpl implements UtilCtxt {
             typ = UtilCtxt.ID_TYPE_RELAY;
         } else {
             result = XWPrefs.getGCMDevID( m_context );
-            if ( null != result ) {
+            if ( result.equals("") ) {
+                result = null;
+            } else {
                 typ = UtilCtxt.ID_TYPE_ANDROID_GCM;
             }
         }
