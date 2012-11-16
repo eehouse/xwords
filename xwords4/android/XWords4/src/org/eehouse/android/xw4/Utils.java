@@ -403,17 +403,24 @@ public class Utils {
         return dict_url;
     }
 
-    private static void setFirstBootStatics( Context context )
+    public static int getAppVersion( Context context )
     {
-        int thisVersion = 0;
-        int prevVersion = 0;
+        int version;
 
         try {
-            thisVersion = context.getPackageManager()
+            version = context.getPackageManager()
                 .getPackageInfo(context.getPackageName(), 0)
                 .versionCode;
         } catch ( Exception e ) {
+            version = 0;
         }
+        return version;
+    }
+
+    private static void setFirstBootStatics( Context context )
+    {
+        int thisVersion = getAppVersion( context );
+        int prevVersion = 0;
 
         SharedPreferences prefs = null;
         if ( 0 < thisVersion ) {
