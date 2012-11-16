@@ -28,6 +28,11 @@ import com.google.android.gcm.GCMRegistrar;
 
 public class GCMIntentService extends GCMBaseIntentService {
 
+    public GCMIntentService()
+    {
+        super( GCMConsts.SENDER_ID );
+    }
+
 	@Override
     protected void onError( Context context, String error ) 
     {
