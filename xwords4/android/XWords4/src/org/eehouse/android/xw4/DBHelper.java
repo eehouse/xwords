@@ -141,21 +141,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return DB_NAME;
     }
 
-    private void createTable( SQLiteDatabase db, String name, String[] data ) 
-    {
-        StringBuilder query = 
-            new StringBuilder( String.format("CREATE TABLE %s (", name ) );
-
-        for ( int ii = 0; ii < data.length; ii += 2 ) {
-            String col = String.format( " %s %s,", data[ii], data[ii+1] );
-            query.append( col );
-        }
-        query.setLength(query.length() - 1); // nuke the last comma
-        query.append( ");" );
-
-        db.execSQL( query.toString() );
-    }
-
     @Override
     public void onCreate( SQLiteDatabase db ) 
     {
@@ -175,26 +160,26 @@ public class DBHelper extends SQLiteOpenHelper {
         case 5:
             createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
         case 6:
-            addColumn( db, TURN, "INTEGER" );
-            addColumn( db, GIFLAGS, "INTEGER" );
-            addColumn( db, CHAT_HISTORY, "TEXT" );
+            addSumColumn( db, TURN );
+            addSumColumn( db, GIFLAGS );
+            addSumColumn( db, CHAT_HISTORY );
         case 7:
-            addColumn( db, MISSINGPLYRS, "INTEGER" );
+            addSumColumn( db, MISSINGPLYRS );
         case 8:
-            addColumn( db, GAME_NAME, "TEXT" );
-            addColumn( db, CONTRACTED, "INTEGER" );
+            addSumColumn( db, GAME_NAME );
+            addSumColumn( db, CONTRACTED );
         case 9:
-            addColumn( db, DICTLIST, "TEXT" );
+            addSumColumn( db, DICTLIST );
         case 10:
-            addColumn( db, INVITEID, "TEXT" );
+            addSumColumn( db, INVITEID );
         case 11:
-            addColumn( db, REMOTEDEVS, "TEXT" );
+            addSumColumn( db, REMOTEDEVS );
         case 12:
             createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
             createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
 
         case 13:
-            addColumn( db, LASTMOVE, "INTEGER" );
+            addSumColumn( db, LASTMOVE );
             // nothing yet
             break;
         default:
@@ -206,10 +191,34 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    private void addColumn( SQLiteDatabase db, String colName, String colType )
+    private void addSumColumn( SQLiteDatabase db, String colName )
     {
+        String colType = null;
+        for ( int ii = 0; ii < s_summaryColsAndTypes.length; ii += 2 ) {
+            if ( s_summaryColsAndTypes[ii].equals( colName ) ) {
+                colType = s_summaryColsAndTypes[ii+1];
+                break;
+            }
+        }
+
         String cmd = String.format( "ALTER TABLE %s ADD COLUMN %s %s;",
                                     TABLE_NAME_SUM, colName, colType );
         db.execSQL( cmd );
     }
+
+    private void createTable( SQLiteDatabase db, String name, String[] data ) 
+    {
+        StringBuilder query = 
+            new StringBuilder( String.format("CREATE TABLE %s (", name ) );
+
+        for ( int ii = 0; ii < data.length; ii += 2 ) {
+            String col = String.format( " %s %s,", data[ii], data[ii+1] );
+            query.append( col );
+        }
+        query.setLength(query.length() - 1); // nuke the last comma
+        query.append( ");" );
+
+        db.execSQL( query.toString() );
+    }
+
 }
