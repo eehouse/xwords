@@ -45,9 +45,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String IN_USE = "IN_USE";
     public static final String SCORES = "SCORES";
     public static final String CHAT_HISTORY = "CHAT_HISTORY";
-    // GAMEID: this isn't used yet but we'll want it to look up games
-    // for which messages arrive.  Add now while changing the DB
-    // format
     public static final String GAMEID = "GAMEID";
     public static final String REMOTEDEVS = "REMOTEDEVS";
     public static final String DICTLANG = "DICTLANG";
@@ -76,12 +73,63 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String ITERPOS = "ITERPOS";
     public static final String ITERTOP = "ITERTOP";
     public static final String ITERPREFIX = "ITERPREFIX";
-
-    // not used yet
     public static final String CREATE_TIME = "CREATE_TIME";
-    // not used yet
     public static final String LASTPLAY_TIME = "LASTPLAY_TIME";
 
+    private static final String[] s_summaryColsAndTypes = {
+        GAME_NAME,    "TEXT"
+        ,NUM_MOVES,   "INTEGER"
+        ,TURN,        "INTEGER"
+        ,GIFLAGS,     "INTEGER"
+        ,NUM_PLAYERS, "INTEGER"
+        ,MISSINGPLYRS,"INTEGER"
+        ,PLAYERS,      "TEXT"
+        ,GAME_OVER,    "INTEGER"
+        ,SERVERROLE,   "INTEGER"
+        ,CONTYPE,      "INTEGER"
+        ,ROOMNAME,     "TEXT"
+        ,INVITEID,     "TEXT"
+        ,RELAYID,      "TEXT"
+        ,SEED,         "INTEGER"
+        ,DICTLANG,     "INTEGER"
+        ,DICTLIST,     "TEXT"
+        ,SMSPHONE,     "TEXT"
+        ,SCORES,       "TEXT"
+        ,CHAT_HISTORY, "TEXT"
+        ,GAMEID,       "INTEGER"
+        ,REMOTEDEVS,   "TEXT"
+        ,LASTMOVE,     "INTEGER DEFAULT 0"
+        // HASMSGS: sqlite doesn't have bool; use 0 and 1
+        ,HASMSGS,      "INTEGER DEFAULT 0"
+        ,CONTRACTED,   "INTEGER DEFAULT 0"
+        ,CREATE_TIME,  "INTEGER"
+        ,LASTPLAY_TIME,"INTEGER"
+        ,SNAPSHOT,     "BLOB"
+    };
+
+    private static final String[] s_obitsColsAndTypes = {
+        RELAYID, "TEXT"
+        ,SEED,   "INTEGER"
+    };
+
+    private static final String[] s_dictInfoColsAndTypes = {
+        DICTNAME, "TEXT"
+        ,LOC,      "UNSIGNED INTEGER(1)"
+        ,MD5SUM,   "TEXT(32)"
+        ,WORDCOUNT,"INTEGER"
+        ,LANGCODE, "INTEGER"
+    };
+
+    private static final String[] s_dictBrowseColsAndTypes = {
+        DICTNAME,    "TEXT"
+        ,LOC,        "UNSIGNED INTEGER(1)"
+        ,WORDCOUNTS, "TEXT"
+        ,ITERMIN,    "INTEGRE(4)"
+        ,ITERMAX,    "INTEGER(4)"
+        ,ITERPOS,    "INTEGER"
+        ,ITERTOP,    "INTEGER"
+        ,ITERPREFIX, "TEXT"
+    };
 
     public DBHelper( Context context )
     {
@@ -93,81 +141,28 @@ public class DBHelper extends SQLiteOpenHelper {
         return DB_NAME;
     }
 
-    private void onCreateSum( SQLiteDatabase db ) 
+    private void createTable( SQLiteDatabase db, String name, String[] data ) 
     {
-        db.execSQL( "CREATE TABLE " + TABLE_NAME_SUM + " ("
-                    + GAME_NAME   + " TEXT,"
-                    + NUM_MOVES   + " INTEGER,"
-                    + TURN        + " INTEGER,"
-                    + GIFLAGS     + " INTEGER,"
+        StringBuilder query = 
+            new StringBuilder( String.format("CREATE TABLE %s (", name ) );
 
-                    + NUM_PLAYERS + " INTEGER,"
-                    + MISSINGPLYRS + " INTEGER,"
-                    + PLAYERS     + " TEXT,"
-                    + GAME_OVER   + " INTEGER,"
+        for ( int ii = 0; ii < data.length; ii += 2 ) {
+            String col = String.format( " %s %s,", data[ii], data[ii+1] );
+            query.append( col );
+        }
+        query.setLength(query.length() - 1); // nuke the last comma
+        query.append( ");" );
 
-                    + SERVERROLE + " INTEGER,"
-                    + CONTYPE    + " INTEGER,"
-                    + ROOMNAME   + " TEXT,"
-                    + INVITEID   + " TEXT,"
-                    + RELAYID    + " TEXT,"
-                    + SEED       + " INTEGER,"
-                    + DICTLANG   + " INTEGER,"
-                    + DICTLIST   + " TEXT,"
-
-                    + SMSPHONE   + " TEXT,"
-                    + SCORES     + " TEXT,"
-                    + CHAT_HISTORY   + " TEXT,"
-                    + GAMEID     + " INTEGER,"
-                    + REMOTEDEVS + " TEXT,"
-                    + LASTMOVE   + " INTEGER DEFAULT 0,"
-                    // HASMSGS: sqlite doesn't have bool; use 0 and 1
-                    + HASMSGS    + " INTEGER DEFAULT 0,"
-                    + CONTRACTED + " INTEGER DEFAULT 0,"
-
-                    + CREATE_TIME + " INTEGER,"
-                    + LASTPLAY_TIME + " INTEGER,"
-
-                    + SNAPSHOT   + " BLOB);"
-                    );
-    }
-
-    private void onCreateObits( SQLiteDatabase db ) 
-    {
-        db.execSQL( "CREATE TABLE " + TABLE_NAME_OBITS + " ("
-                    + RELAYID    + " TEXT,"
-                    + SEED       + " INTEGER);"
-                    );
-    }
-
-    private void onCreateDictsDB( SQLiteDatabase db )
-    {
-        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTINFO + "(" 
-                    + DICTNAME     + " TEXT,"
-                    + LOC          + " UNSIGNED INTEGER(1),"
-                    + MD5SUM       + " TEXT(32),"
-                    + WORDCOUNT    + " INTEGER,"
-                    + LANGCODE     + " INTEGER);"
-                    );
-
-        db.execSQL( "CREATE TABLE " + TABLE_NAME_DICTBROWSE + "("
-                    + DICTNAME     + " TEXT,"
-                    + LOC          + " UNSIGNED INTEGER(1),"
-                    + WORDCOUNTS   + " TEXT,"
-                    + ITERMIN      + " INTEGER(4),"
-                    + ITERMAX      + " INTEGER(4),"
-                    + ITERPOS      + " INTEGER,"
-                    + ITERTOP      + " INTEGER,"
-                    + ITERPREFIX   + " TEXT);"
-                    );
+        db.execSQL( query.toString() );
     }
 
     @Override
     public void onCreate( SQLiteDatabase db ) 
     {
-        onCreateSum( db );
-        onCreateObits( db );
-        onCreateDictsDB( db );
+        createTable( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
+        createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
+        createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
+        createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
     }
 
     @Override
@@ -178,7 +173,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         switch( oldVersion ) {
         case 5:
-            onCreateObits(db);
+            createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
         case 6:
             addColumn( db, TURN, "INTEGER" );
             addColumn( db, GIFLAGS, "INTEGER" );
@@ -195,7 +190,9 @@ public class DBHelper extends SQLiteOpenHelper {
         case 11:
             addColumn( db, REMOTEDEVS, "TEXT" );
         case 12:
-            onCreateDictsDB( db );
+            createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
+            createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
+
         case 13:
             addColumn( db, LASTMOVE, "INTEGER" );
             // nothing yet
