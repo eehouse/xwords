@@ -27,6 +27,8 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -36,7 +38,9 @@ import java.io.FileInputStream;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;       // class is not synchronized
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -44,8 +48,9 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
-public class GameListAdapter extends XWListAdapter {
+public class GameListAdapter implements ExpandableListAdapter {
     private Context m_context;
     private LayoutInflater m_factory;
     private int m_fieldID;
@@ -112,7 +117,6 @@ public class GameListAdapter extends XWListAdapter {
     private HashMap<Long,ViewInfo> m_viewsCache;
     private DateFormat m_df;
     private LoadItemCB m_cb;
-
 
     public interface LoadItemCB {
         public void itemLoaded( long rowid );
@@ -268,7 +272,7 @@ public class GameListAdapter extends XWListAdapter {
     } // class LoadItemTask
 
     public GameListAdapter( Context context, Handler handler, LoadItemCB cb ) {
-        super( DBUtils.gamesList(context).length );
+        // super( DBUtils.gamesList(context).length );
         m_context = context;
         m_handler = handler;
         m_cb = cb;
@@ -278,14 +282,215 @@ public class GameListAdapter extends XWListAdapter {
 
         m_viewsCache = new HashMap<Long,ViewInfo>();
     }
+
+    public void inval( long rowid )
+    {
+        synchronized( m_viewsCache ) {
+            m_viewsCache.remove( rowid );
+        }
+    }
+
+    public void expandGroups( ExpandableListView view )
+    {
+        HashMap<String,GameGroupInfo> info = gameInfo();
+        String[] names = groupNames();
+        for ( int ii = 0; ii < names.length; ++ii ) {
+            GameGroupInfo ggi = info.get( names[ii] );
+            if ( ggi.m_expanded ) {
+                view.expandGroup( ii );
+            }
+        }
+    }
+
+    public void setField( String field )
+    {
+        int[] ids = {
+            R.string.game_summary_field_empty
+            ,R.string.game_summary_field_language
+            ,R.string.game_summary_field_opponents
+            ,R.string.game_summary_field_state
+        };
+        int result = -1;
+        for ( int id : ids ) {
+            if ( m_context.getString( id ).equals( field ) ) {
+                result = id;
+                break;
+            }
+        }
+        if ( m_fieldID != result ) {
+            m_viewsCache.clear();
+            m_fieldID = result;
+        }
+    }
+
+    public long getRowIDFor( int group, int child )
+    {
+        long rowid = DBUtils.ROWID_NOTFOUND;
+        String[] groupNames = groupNames();
+        if ( group < groupNames.length ) {
+            String name = groupNames()[group];
+            long[] rows = getRows( name );
+            if ( child < rows.length ) {
+                rowid = rows[child];
+            }
+        }
+        DbgUtils.logf( "getRowIDFor(%d,%d)=>%d", group, child, rowid );
+        return rowid;
+    }
+
+    public long getRowIDFor( long packedPosition )
+    {
+        int childPosition = ExpandableListView.
+            getPackedPositionChild( packedPosition );
+        int groupPosition = ExpandableListView.
+            getPackedPositionGroup( packedPosition );
+        return getRowIDFor( groupPosition, childPosition );
+    }
+
+    public long getGroupIDFor( int groupPos )
+    {
+        String name = groupNames()[groupPos];
+        GameGroupInfo ggi = gameInfo().get( name );
+        return ggi.m_id;
+    }
+
+    public String groupName( long groupid )
+    {
+        String result = null;
+        String[] names = groupNames();
+        int index;
+        for ( index = 0; index < names.length; ++index ) {
+            GameGroupInfo ggi = gameInfo().get( names[index] );
+            if ( groupid == ggi.m_id ) {
+                result = names[index];
+                break;
+            }
+        }
+        return result;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // ExpandableListAdapter interface
+    //////////////////////////////////////////////////////////////////////////
+    public long getCombinedGroupId( long groupId )
+    {
+        DbgUtils.logf( "GameListAdapter.getCombinedGroupId()" );
+        return groupId;
+    }
+
+    public long getCombinedChildId( long groupId, long childId )
+    {
+        return groupId << 16 | childId;
+    }
+
+    public boolean isEmpty() { return false; }
+
+    public void onGroupCollapsed( int groupPosition )
+    {
+        DbgUtils.logf( "GameListAdapter.onGroupCollapsed()" );
+        long groupid = getGroupIDFor( groupPosition );
+        DBUtils.setGroupExpanded( m_context, groupid, false );
+        // m_closedLangs.add( m_langs[groupPosition] );
+        // saveClosed();
+    }
+    public void onGroupExpanded( int groupPosition )
+    {
+        DbgUtils.logf( "GameListAdapter.onGroupExpanded()" );
+        long groupid = getGroupIDFor( groupPosition );
+        DBUtils.setGroupExpanded( m_context, groupid, true );
+        // m_closedLangs.add( m_langs[groupPosition] );
+        // saveClosed();
+    }
+
+    public boolean areAllItemsEnabled() { return false; }
+
+    public boolean isChildSelectable( int groupPosition, int childPosition ) 
+    { return true; }
+
+    public View getChildView( int groupPosition, int childPosition, 
+                              boolean isLastChild, View convertView, 
+                              ViewGroup parent)
+    {
+        DbgUtils.logf( "GameListAdapter.getChildView()" );
+        return getChildView( groupPosition, childPosition );
+    }
+
+    private View getChildView( int groupPosition, int childPosition )
+    {
+        DbgUtils.logf( "GameListAdapter.getChildView()" );
+        // String name = m_groupNames[groupPosition];
+        // long[] games = DBUtils.getGames( m_context, m_gameInfo.get(name).m_id );
+        long rowid = getRowIDFor( groupPosition, childPosition );
+        return getItem( rowid );
+    }
+
+    public View getGroupView( int groupPosition, boolean isExpanded, 
+                              View convertView, ViewGroup parent )
+    {
+        DbgUtils.logf( "GameListAdapter.getGroupView()" );
+        View row = 
+            Utils.inflate(m_context,
+                          android.R.layout.simple_expandable_list_item_1 );
+        TextView view = (TextView)row.findViewById( android.R.id.text1 );
+        String name = groupNames()[groupPosition];
+        if ( name.equals("") ) {
+            name = "<Unnamed>";
+        }
+        if ( !isExpanded ) {
+            name += " (%d/%d)";
+        }
+        view.setText( name );
+        return view;
+    }
+
+    public boolean hasStableIds() { return false; }
     
-    public int getCount() {
-        return DBUtils.gamesList(m_context).length;
+    public long getChildId( int groupPosition, int childPosition )
+    {
+        DbgUtils.logf( "GameListAdapter.getChildId()" );
+        return childPosition;
+    }
+
+    public long getGroupId( int groupPosition )
+    {
+        DbgUtils.logf( "GameListAdapter.getGroupId()" );
+        return groupPosition;
+    }
+
+    public Object getChild( int groupPosition, int childPosition )
+    {
+        DbgUtils.logf( "GameListAdapter.getChild()" );
+        String name = groupNames()[groupPosition];
+        long[] rows = getRows( name );
+        return rows[childPosition];
     }
     
-    public Object getItem( int position ) 
+    public Object getGroup( int groupPosition )
     {
-        final long rowid = DBUtils.gamesList(m_context)[position];
+        DbgUtils.logf("GameListAdapter.getGroup()");
+        return null;
+    }
+
+    public int getChildrenCount( int groupPosition )
+    {
+        DbgUtils.logf("GameListAdapter.getChildrenCount()");
+        String name = groupNames()[ groupPosition ];
+        long[] rows = getRows( name );
+        return rows.length;
+    }
+
+    public int getGroupCount()
+    {
+        // DbgUtils.logf("GameListAdapter.getGroupCount()");
+        return groupNames().length;
+    }
+
+    public void registerDataSetObserver( DataSetObserver obs ){}
+    public void unregisterDataSetObserver( DataSetObserver obs ){}
+
+    private View getItem( final long rowid ) 
+    {
+        DbgUtils.logf("GameListAdapter.getItem()");
         View layout;
         boolean haveLayout = false;
         synchronized( m_viewsCache ) {
@@ -318,36 +523,26 @@ public class GameListAdapter extends XWListAdapter {
         return layout;
     } // getItem
 
-    public View getView( int position, View convertView, ViewGroup parent ) {
-        return (View)getItem( position );
+    private long[] getRows( String group )
+    {
+        GameGroupInfo ggi = gameInfo().get(group);
+        long groupID = ggi.m_id;
+        long[] rows = DBUtils.getGames( m_context, groupID );
+        return rows;
     }
 
-    public void inval( long rowid )
+    public String[] groupNames()
     {
-        synchronized( m_viewsCache ) {
-            m_viewsCache.remove( rowid );
-        }
+        HashMap<String,GameGroupInfo> info = gameInfo();
+        Set<String> set = info.keySet();
+        String[] names = new String[ set.size() ];
+        set.toArray(names);
+        return names;
     }
 
-    public void setField( String field )
+    private HashMap<String,GameGroupInfo> gameInfo()
     {
-        int[] ids = {
-            R.string.game_summary_field_empty
-            ,R.string.game_summary_field_language
-            ,R.string.game_summary_field_opponents
-            ,R.string.game_summary_field_state
-        };
-        int result = -1;
-        for ( int id : ids ) {
-            if ( m_context.getString( id ).equals( field ) ) {
-                result = id;
-                break;
-            }
-        }
-        if ( m_fieldID != result ) {
-            m_viewsCache.clear();
-            m_fieldID = result;
-        }
+        return DBUtils.getGroups( m_context );
     }
 
 }

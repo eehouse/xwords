@@ -7,6 +7,9 @@
     <item android:id="@+id/list_item_rename"
           android:title="@string/list_item_rename"
           />
+    <item android:id="@+id/list_item_move"
+          android:title="@string/list_item_move"
+          />
     <item android:id="@+id/list_item_delete"
           android:title="@string/list_item_delete"
           />

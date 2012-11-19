@@ -364,18 +364,9 @@ public class DBUtils {
 
     private static void setInt( long rowid, String column, int value )
     {
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            String selection = String.format( ROW_ID_FMT, rowid );
-            ContentValues values = new ContentValues();
-            values.put( column, value );
-
-            int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                    values, selection, null );
-            Assert.assertTrue( result == 1 );
-            db.close();
-        }
+        ContentValues values = new ContentValues();
+        values.put( column, value );
+        updateRow( null, DBHelper.TABLE_NAME_SUM, rowid, values );
     }
 
     public static void setMsgFlags( long rowid, int flags )
@@ -687,6 +678,8 @@ public class DBUtils {
             long timestamp = new Date().getTime();
             values.put( DBHelper.CREATE_TIME, timestamp );
             values.put( DBHelper.LASTPLAY_TIME, timestamp );
+            values.put( DBHelper.GROUPID, 
+                        XWPrefs.getDefaultNewGameGroup( context ) );
 
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
 
@@ -834,21 +827,9 @@ public class DBUtils {
 
     public static void setName( Context context, long rowid, String name )
     {
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            String selection = String.format( ROW_ID_FMT, rowid );
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.GAME_NAME, name );
-
-            int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                    values, selection, null );
-            db.close();
-            if ( 0 == result ) {
-                DbgUtils.logf( "setName(%d,%s) failed", rowid, name );
-            }
-        }
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.GAME_NAME, name );
+        updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
     }
 
     public static HistoryPair[] getChatHistory( Context context, long rowid )
@@ -868,6 +849,163 @@ public class DBUtils {
         return result;
     }
 
+    // Groups stuff
+    public static class GameGroupInfo {
+        public long m_id;
+        public boolean m_expanded;
+        public GameGroupInfo( long id, boolean expanded ) {
+            m_id = id; m_expanded = expanded;
+        }
+    }
+
+    // Return map of string (group name) to info about all games in
+    // that group.
+    public static HashMap<String,GameGroupInfo> getGroups( Context context )
+    {
+        DbgUtils.logf("getGroupInfo called");
+        HashMap<String,GameGroupInfo> result = 
+            new HashMap<String,GameGroupInfo>();
+        initDB( context );
+        String[] columns = { ROW_ID, DBHelper.GROUPNAME, 
+                             DBHelper.EXPANDED };
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
+                                      null, // selection
+                                      null, // args
+                                      null, // groupBy
+                                      null, // having
+                                      null //orderby 
+                                      );
+            int idIndex = cursor.getColumnIndex( ROW_ID );
+            int nameIndex = cursor.getColumnIndex( DBHelper.GROUPNAME );
+            int expandedIndex = cursor.getColumnIndex( DBHelper.EXPANDED );
+
+            while ( cursor.moveToNext() ) {
+                String name = cursor.getString( nameIndex );
+                long id = cursor.getLong( idIndex );
+                Assert.assertNotNull( name );
+                DbgUtils.logf( "getGroups: got name %s, id %d", name, id );
+                boolean expanded = 0 != cursor.getInt( expandedIndex );
+                result.put( name, new GameGroupInfo( id, expanded ) );
+            }
+            cursor.close();
+            db.close();
+        }
+        DbgUtils.logf("getGroups=>size %d", result.size());
+        return result;
+    } // getGroups
+
+    public static long[] getGames( Context context, long groupID )
+    {
+        long[] result = null;
+        initDB( context );
+        String[] columns = { ROW_ID };
+        String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, // selection
+                                      null, // args
+                                      null, // groupBy
+                                      null, // having
+                                      ROW_ID //orderby 
+                                      );
+            int index = cursor.getColumnIndex( ROW_ID );
+            result = new long[ cursor.getCount() ];
+            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                long rowid = cursor.getInt( index );
+                result[ii] = rowid;
+            }
+            cursor.close();
+            db.close();
+        }
+
+        return result;
+    }
+
+    public static long addGroup( Context context, String name )
+    {
+        long rowid = ROWID_NOTFOUND;
+        if ( null != name && 0 < name.length() ) {
+            HashMap<String,GameGroupInfo> gameInfo = getGroups( context );
+            if ( null == gameInfo.get( name ) ) {
+                ContentValues values = new ContentValues();
+                values.put( DBHelper.GROUPNAME, name );
+                values.put( DBHelper.EXPANDED, 0 );
+
+                initDB( context );
+                synchronized( s_dbHelper ) {
+                    SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+                    rowid = db.insert( DBHelper.TABLE_NAME_GROUPS, null, 
+                                       values );
+                    db.close();
+                }
+            }
+        }
+        return rowid;
+    }
+    
+    public static void deleteGroup( Context context, long groupid )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            // Nuke games having this group id
+            String selection = 
+                String.format( "%s=%d", DBHelper.GROUPID, groupid );
+            db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
+
+            // And nuke the group record itself
+            selection = String.format( ROW_ID_FMT, groupid );
+            db.delete( DBHelper.TABLE_NAME_GROUPS, selection, null );
+
+            db.close();
+        }
+    }
+
+    public static void setGroupName( Context context, long groupid, 
+                                     String name )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.GROUPNAME, name );
+        updateRow( context, DBHelper.TABLE_NAME_GROUPS, groupid, values );
+    }
+
+    public static void setGroupExpanded( Context context, long groupid, 
+                                         boolean expanded )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.EXPANDED, expanded? 1 : 0 );
+        updateRow( context, DBHelper.TABLE_NAME_GROUPS, groupid, values );
+    }
+
+    // Change group id of a game
+    public static void moveGame( Context context, long gameid, long groupid )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.GROUPID, groupid );
+        updateRow( context, DBHelper.TABLE_NAME_SUM, gameid, values );
+    }
+
+    private static void updateRow( Context context, String table,
+                                   long rowid, ContentValues values )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            String selection = String.format( ROW_ID_FMT, rowid );
+
+            int result = db.update( table, values, selection, null );
+            db.close();
+            if ( 0 == result ) {
+                DbgUtils.logf( "updateRow failed" );
+            }
+        }
+    }
+    
     private static String getChatHistoryStr( Context context, long rowid )
     {
         String result = null;
@@ -1214,6 +1352,7 @@ public class DBUtils {
     private static void initDB( Context context )
     {
         if ( null == s_dbHelper ) {
+            Assert.assertNotNull( context );
             s_dbHelper = new DBHelper( context );
             // force any upgrade
             s_dbHelper.getWritableDatabase().close();

@@ -20,14 +20,15 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.ListActivity;
 import android.app.Dialog;
+import android.app.ExpandableListActivity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
 import junit.framework.Assert;
 
-public class XWListActivity extends ListActivity 
+
+public class XWExpandableListActivity extends ExpandableListActivity 
     implements DlgDelegate.DlgClickNotify, MultiService.BTEventListener {
 
     private DlgDelegate m_delegate;
@@ -38,48 +39,6 @@ public class XWListActivity extends ListActivity
         DbgUtils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
         super.onCreate( savedInstanceState );
         m_delegate = new DlgDelegate( this, this, savedInstanceState );
-    }
-
-    @Override
-    protected void onStart()
-    {
-        DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
-        super.onStart();
-        DispatchNotify.SetRunning( this );
-    }
-
-    @Override
-    protected void onResume()
-    {
-        DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
-        BTService.setListener( this );
-        SMSService.setListener( this );
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
-        BTService.setListener( null );
-        SMSService.setListener( null );
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop()
-    {
-        DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
-        DispatchNotify.ClearRunning( this );
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        DbgUtils.logf( "%s.onDestroy(this=%H); isFinishing=%b",
-                       getClass().getName(), this, isFinishing() );
-        super.onDestroy();
     }
 
     @Override
@@ -107,6 +66,16 @@ public class XWListActivity extends ListActivity
         m_delegate.onPrepareDialog( id, dialog );
     }
 
+    protected boolean post( Runnable runnable )
+    {
+        return m_delegate.post( runnable );
+    }
+
+    protected void doSyncMenuitem()
+    {
+        m_delegate.doSyncMenuitem();
+    }
+
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         int action )
     {
@@ -118,14 +87,10 @@ public class XWListActivity extends ListActivity
         m_delegate.showNotAgainDlgThen( msgID, prefsKey );
     }
 
-    protected void showOKOnlyDialogThen( String msg, int action )
+    // It sucks that these must be duplicated here and XWActivity
+    protected void showAboutDialog()
     {
-        m_delegate.showOKOnlyDialog( msg, action );
-    }
-
-    protected void showOKOnlyDialog( String msg )
-    {
-        m_delegate.showOKOnlyDialog( msg, 0 );
+        m_delegate.showAboutDialog();
     }
 
     protected void showOKOnlyDialog( int msgID )
@@ -153,25 +118,10 @@ public class XWListActivity extends ListActivity
         m_delegate.showConfirmThen( getString(msg), posButton, action );
     }
 
-    protected void doSyncMenuitem()
-    {
-        m_delegate.doSyncMenuitem();
-    }
-
-    protected void startProgress( int id )
-    {
-        m_delegate.startProgress( id );
-    }
-
-    protected void stopProgress()
-    {
-        m_delegate.stopProgress();
-    }
-
-    protected boolean post( Runnable runnable )
-    {
-        return m_delegate.post( runnable );
-    }
+    // protected void showConfirmThen( String msg, int action )
+    // {
+    //     m_delegate.showConfirmThen( msg, action );
+    // }
 
     // DlgDelegate.DlgClickNotify interface
     public void dlgButtonClicked( int id, int which )
@@ -179,15 +129,6 @@ public class XWListActivity extends ListActivity
         Assert.fail();
     }
 
-    protected void launchLookup( String[] words, int lang )
-    {
-        m_delegate.launchLookup( words, lang, false );
-    }
-
-    protected void launchLookup( String[] words, int lang, boolean forceList )
-    {
-        m_delegate.launchLookup( words, lang, forceList );
-    }
 
     // BTService.BTEventListener interface
     public void eventOccurred( MultiService.MultiEvent event, 
