@@ -52,11 +52,11 @@ public class NetLaunchInfo {
 
     public NetLaunchInfo( Bundle bundle )
     {
-        lang = bundle.getInt( LANG  );
+        lang = bundle.getInt( LANG );
         room = bundle.getString( ROOM );
         inviteID = bundle.getString( INVITEID );
-        nPlayers = bundle.getInt( NPLAYERS  );
-        m_valid = bundle.getBoolean( VALID  );
+        nPlayers = bundle.getInt( NPLAYERS );
+        m_valid = bundle.getBoolean( VALID );
     }
 
     public NetLaunchInfo( Uri data )
