@@ -551,10 +551,12 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             String[] columns = { ROW_ID };
-            String selection = DBHelper.ROOMNAME + "='" + nli.room + "' AND "
-                + DBHelper.INVITEID + "='" + nli.inviteID + "' AND "
-                + DBHelper.DICTLANG + "=" + nli.lang + " AND "
-                + DBHelper.NUM_PLAYERS + "=" + nli.nPlayers;
+            String selection = 
+                String.format( "%s='%s' AND %s='%s' AND %s=%d AND %s=%d",
+                               DBHelper.ROOMNAME, nli.room, 
+                               DBHelper.INVITEID, nli.inviteID, 
+                               DBHelper.DICTLANG, nli.lang, 
+                               DBHelper.NUM_PLAYERS, nli.nPlayers );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -566,10 +568,14 @@ public class DBUtils {
         return result;
     }
 
-    public static boolean isNewInvite( Context context, Uri data )
+    public static long getRowIDForOpen( Context context, Uri data )
     {
+        long rowid = ROWID_NOTFOUND;
         NetLaunchInfo nli = new NetLaunchInfo( data );
-        return null != nli && -1 == getRowIDForOpen( context, nli );
+        if ( null != nli ) {
+            rowid = getRowIDForOpen( context, nli );
+        }
+        return rowid;
     }
 
     public static String[] getRelayIDs( Context context, boolean noMsgs ) 
