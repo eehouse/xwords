@@ -527,7 +527,7 @@ public class GameListAdapter implements ExpandableListAdapter {
     {
         GameGroupInfo ggi = gameInfo().get(group);
         long groupID = ggi.m_id;
-        long[] rows = DBUtils.getGames( m_context, groupID );
+        long[] rows = DBUtils.getGroupGames( m_context, groupID );
         return rows;
     }
 

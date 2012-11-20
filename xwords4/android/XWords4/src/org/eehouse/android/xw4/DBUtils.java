@@ -864,45 +864,55 @@ public class DBUtils {
         }
     }
 
+    private static HashMap<String,GameGroupInfo> s_groupsCache = null;
+
+    private static void invalGroupsCache() 
+    {
+        s_groupsCache = null;
+    }
+
     // Return map of string (group name) to info about all games in
     // that group.
     public static HashMap<String,GameGroupInfo> getGroups( Context context )
     {
         DbgUtils.logf("getGroupInfo called");
-        HashMap<String,GameGroupInfo> result = 
-            new HashMap<String,GameGroupInfo>();
-        initDB( context );
-        String[] columns = { ROW_ID, DBHelper.GROUPNAME, 
-                             DBHelper.EXPANDED };
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
-                                      null, // selection
-                                      null, // args
-                                      null, // groupBy
-                                      null, // having
-                                      null //orderby 
-                                      );
-            int idIndex = cursor.getColumnIndex( ROW_ID );
-            int nameIndex = cursor.getColumnIndex( DBHelper.GROUPNAME );
-            int expandedIndex = cursor.getColumnIndex( DBHelper.EXPANDED );
+        if ( null == s_groupsCache ) {
+            HashMap<String,GameGroupInfo> result = 
+                new HashMap<String,GameGroupInfo>();
+            initDB( context );
+            String[] columns = { ROW_ID, DBHelper.GROUPNAME, 
+                                 DBHelper.EXPANDED };
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+                Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
+                                          null, // selection
+                                          null, // args
+                                          null, // groupBy
+                                          null, // having
+                                          null //orderby 
+                                          );
+                int idIndex = cursor.getColumnIndex( ROW_ID );
+                int nameIndex = cursor.getColumnIndex( DBHelper.GROUPNAME );
+                int expandedIndex = cursor.getColumnIndex( DBHelper.EXPANDED );
 
-            while ( cursor.moveToNext() ) {
-                String name = cursor.getString( nameIndex );
-                long id = cursor.getLong( idIndex );
-                Assert.assertNotNull( name );
-                DbgUtils.logf( "getGroups: got name %s, id %d", name, id );
-                boolean expanded = 0 != cursor.getInt( expandedIndex );
-                result.put( name, new GameGroupInfo( id, expanded ) );
+                while ( cursor.moveToNext() ) {
+                    String name = cursor.getString( nameIndex );
+                    long id = cursor.getLong( idIndex );
+                    Assert.assertNotNull( name );
+                    DbgUtils.logf( "getGroups: got name %s, id %d", name, id );
+                    boolean expanded = 0 != cursor.getInt( expandedIndex );
+                    result.put( name, new GameGroupInfo( id, expanded ) );
+                }
+                cursor.close();
+                db.close();
             }
-            cursor.close();
-            db.close();
+            DbgUtils.logf("getGroups=>size %d", result.size());
+            s_groupsCache = result;
         }
-        DbgUtils.logf("getGroups=>size %d", result.size());
-        return result;
+        return s_groupsCache;
     } // getGroups
 
-    public static long[] getGames( Context context, long groupID )
+    public static long[] getGroupGames( Context context, long groupID )
     {
         long[] result = null;
         initDB( context );
@@ -947,6 +957,7 @@ public class DBUtils {
                                        values );
                     db.close();
                 }
+                invalGroupsCache();
             }
         }
         return rowid;
@@ -969,6 +980,7 @@ public class DBUtils {
 
             db.close();
         }
+        invalGroupsCache();
     }
 
     public static void setGroupName( Context context, long groupid, 
@@ -977,6 +989,7 @@ public class DBUtils {
         ContentValues values = new ContentValues();
         values.put( DBHelper.GROUPNAME, name );
         updateRow( context, DBHelper.TABLE_NAME_GROUPS, groupid, values );
+        invalGroupsCache();
     }
 
     public static void setGroupExpanded( Context context, long groupid, 
@@ -985,6 +998,7 @@ public class DBUtils {
         ContentValues values = new ContentValues();
         values.put( DBHelper.EXPANDED, expanded? 1 : 0 );
         updateRow( context, DBHelper.TABLE_NAME_GROUPS, groupid, values );
+        invalGroupsCache();
     }
 
     // Change group id of a game
