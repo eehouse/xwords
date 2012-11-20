@@ -2145,4 +2145,7 @@
 
     <string name="rename_group_label">Change the name of this group to:</string>
     <string name="game_rename_group_title">Rename group</string>
+
+    <string name="cannot_delete_default_group">The default group
+    cannot be deleted."</string>
 </resources>

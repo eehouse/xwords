@@ -789,12 +789,16 @@ public class GamesList extends XWExpandableListActivity
         m_groupid = m_adapter.getGroupIDFor( groupPos );
         switch ( menuID ) {
         case R.id.list_group_delete:
-            String msg = getString( R.string.group_confirm_del );
-            int nGames = m_adapter.getChildrenCount( groupPos );
-            if ( 0 < nGames ) {
-                msg += getString( R.string.group_confirm_delf, nGames );
+            if ( m_groupid == XWPrefs.getDefaultNewGameGroup( this ) ) {
+                showOKOnlyDialog( R.string.cannot_delete_default_group );
+            } else {
+                String msg = getString( R.string.group_confirm_del );
+                int nGames = m_adapter.getChildrenCount( groupPos );
+                if ( 0 < nGames ) {
+                    msg += getString( R.string.group_confirm_delf, nGames );
+                }
+                showConfirmThen( msg, DELETE_GROUP_ACTION );
             }
-            showConfirmThen( msg, DELETE_GROUP_ACTION );
             break;
         case R.id.list_group_rename:
             showDialog( RENAME_GROUP );
