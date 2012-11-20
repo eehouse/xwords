@@ -1229,7 +1229,7 @@
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
     <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap
-    here\u003c/a\u003E (or raw the link below) to accept my invitation and
+    here\u003c/a\u003E (or the raw link below) to accept my invitation and
     join this game.
     \u003cbr \\\u003E
     \u003cbr \\\u003E
