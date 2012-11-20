@@ -264,7 +264,6 @@ public class GameListAdapter implements ExpandableListAdapter {
         @Override
         protected void onPostExecute( Void unused )
         {
-            // DbgUtils.logf( "onPostExecute(rowid=%d)", m_rowid );
             if ( -1 != m_rowid ) {
                 m_cb.itemLoaded( m_rowid );
             }
@@ -298,6 +297,8 @@ public class GameListAdapter implements ExpandableListAdapter {
             GameGroupInfo ggi = info.get( names[ii] );
             if ( ggi.m_expanded ) {
                 view.expandGroup( ii );
+            } else {
+                view.collapseGroup( ii );
             }
         }
     }
@@ -334,7 +335,6 @@ public class GameListAdapter implements ExpandableListAdapter {
                 rowid = rows[child];
             }
         }
-        DbgUtils.logf( "getRowIDFor(%d,%d)=>%d", group, child, rowid );
         return rowid;
     }
 
@@ -374,7 +374,6 @@ public class GameListAdapter implements ExpandableListAdapter {
     //////////////////////////////////////////////////////////////////////////
     public long getCombinedGroupId( long groupId )
     {
-        DbgUtils.logf( "GameListAdapter.getCombinedGroupId()" );
         return groupId;
     }
 
@@ -387,7 +386,6 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public void onGroupCollapsed( int groupPosition )
     {
-        DbgUtils.logf( "GameListAdapter.onGroupCollapsed()" );
         long groupid = getGroupIDFor( groupPosition );
         DBUtils.setGroupExpanded( m_context, groupid, false );
         // m_closedLangs.add( m_langs[groupPosition] );
@@ -395,7 +393,6 @@ public class GameListAdapter implements ExpandableListAdapter {
     }
     public void onGroupExpanded( int groupPosition )
     {
-        DbgUtils.logf( "GameListAdapter.onGroupExpanded()" );
         long groupid = getGroupIDFor( groupPosition );
         DBUtils.setGroupExpanded( m_context, groupid, true );
         // m_closedLangs.add( m_langs[groupPosition] );
@@ -411,15 +408,11 @@ public class GameListAdapter implements ExpandableListAdapter {
                               boolean isLastChild, View convertView, 
                               ViewGroup parent)
     {
-        DbgUtils.logf( "GameListAdapter.getChildView()" );
         return getChildView( groupPosition, childPosition );
     }
 
     private View getChildView( int groupPosition, int childPosition )
     {
-        DbgUtils.logf( "GameListAdapter.getChildView()" );
-        // String name = m_groupNames[groupPosition];
-        // long[] games = DBUtils.getGames( m_context, m_gameInfo.get(name).m_id );
         long rowid = getRowIDFor( groupPosition, childPosition );
         return getItem( rowid );
     }
@@ -427,7 +420,6 @@ public class GameListAdapter implements ExpandableListAdapter {
     public View getGroupView( int groupPosition, boolean isExpanded, 
                               View convertView, ViewGroup parent )
     {
-        DbgUtils.logf( "GameListAdapter.getGroupView()" );
         View row = 
             Utils.inflate(m_context,
                           android.R.layout.simple_expandable_list_item_1 );
@@ -437,7 +429,8 @@ public class GameListAdapter implements ExpandableListAdapter {
             name = "<Unnamed>";
         }
         if ( !isExpanded ) {
-            name += " (%d/%d)";
+            int nKids = getChildrenCount( groupPosition );
+            name += String.format( " (%d)", nKids );
         }
         view.setText( name );
         return view;
@@ -447,19 +440,16 @@ public class GameListAdapter implements ExpandableListAdapter {
     
     public long getChildId( int groupPosition, int childPosition )
     {
-        DbgUtils.logf( "GameListAdapter.getChildId()" );
         return childPosition;
     }
 
     public long getGroupId( int groupPosition )
     {
-        DbgUtils.logf( "GameListAdapter.getGroupId()" );
         return groupPosition;
     }
 
     public Object getChild( int groupPosition, int childPosition )
     {
-        DbgUtils.logf( "GameListAdapter.getChild()" );
         String name = groupNames()[groupPosition];
         long[] rows = getRows( name );
         return rows[childPosition];
@@ -467,13 +457,11 @@ public class GameListAdapter implements ExpandableListAdapter {
     
     public Object getGroup( int groupPosition )
     {
-        DbgUtils.logf("GameListAdapter.getGroup()");
         return null;
     }
 
     public int getChildrenCount( int groupPosition )
     {
-        DbgUtils.logf("GameListAdapter.getChildrenCount()");
         String name = groupNames()[ groupPosition ];
         long[] rows = getRows( name );
         return rows.length;
@@ -481,7 +469,6 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public int getGroupCount()
     {
-        // DbgUtils.logf("GameListAdapter.getGroupCount()");
         return groupNames().length;
     }
 
@@ -490,7 +477,6 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     private View getItem( final long rowid ) 
     {
-        DbgUtils.logf("GameListAdapter.getItem()");
         View layout;
         boolean haveLayout = false;
         synchronized( m_viewsCache ) {

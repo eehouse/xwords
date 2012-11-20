@@ -377,13 +377,6 @@ public class GamesList extends XWExpandableListActivity
     }
 
     @Override
-    protected void onResume()
-    {
-        super.onResume();
-        m_adapter.expandGroups( getExpandableListView() );
-    }
-
-    @Override
     protected void onStop()
     {
         // TelephonyManager mgr = 
@@ -568,6 +561,15 @@ public class GamesList extends XWExpandableListActivity
             default:
                 Assert.fail();
             }
+        }
+    }
+
+    @Override
+    public void onContentChanged()
+    {
+        super.onContentChanged();
+        if ( null != m_adapter ) {
+            m_adapter.expandGroups( getExpandableListView() );
         }
     }
 
