@@ -5,13 +5,9 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 55 release</b>
+<b>Crosswords 4.4 beta 56 release</b>
 <ul>New with this release
 
-  <li>Use "Google Cloud Messaging" for <em>much</em> faster relay move
-  notifications</li>
-
-  <li>Fix crashes on Kindle Fire</li>
 
 </ul>
 
