@@ -1233,11 +1233,20 @@
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
     <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap
-      here\u003c/a\u003E (%1$s) to accept my invitation and join this
-      game.\u003cbr\u003E \u003ca
-      href=\"http://eehouse.org/market_redir.php\"\u003E Tap
-      here\u003c/a\u003E (http://eehouse.org/market_redir.php) to
-      install Crosswords if you haven\'t already.</string>
+    here\u003c/a\u003E (or the raw link below) to accept my invitation and
+    join this game.
+    \u003cbr \\\u003E
+    \u003cbr \\\u003E
+    (raw link: %1$s)
+    \u003cbr \\\u003E 
+    \u003cbr \\\u003E 
+    \u003ca href=\"http://eehouse.org/market_redir.php\"\u003E Tap
+    here\u003c/a\u003E (or the raw link below) to
+    install Crosswords if you haven\'t already.
+    \u003cbr \\\u003E 
+    \u003cbr \\\u003E 
+    (raw link: http://eehouse.org/market_redir.php)
+    </string>
 
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and

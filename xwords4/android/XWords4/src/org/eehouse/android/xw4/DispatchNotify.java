@@ -29,6 +29,8 @@ import android.os.Bundle;
 import java.util.HashSet;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.jni.GameSummary;
+
 public class DispatchNotify extends Activity {
 
     public static final String RELAYIDS_EXTRA = "relayids";
@@ -63,12 +65,20 @@ public class DispatchNotify extends Activity {
                 mustLaunch = true;
             }
         } else if ( null != data  ) {
-            if ( DBUtils.isNewInvite( this, data ) ) {
+            long rowid = DBUtils.getRowIDForOpen( this, data );
+            if ( DBUtils.ROWID_NOTFOUND == rowid ) {
                 if ( !tryHandle( data ) ) {
                     mustLaunch = true;
                 }
             } else {
                 DbgUtils.logf( "DispatchNotify: dropping duplicate invite" );
+                GameSummary summary = DBUtils.getSummary( this, rowid );
+                if ( null != summary ) {
+                    gameID = summary.gameID;
+                    if ( !tryHandle( gameID ) ) {
+                        mustLaunch = true;
+                    }
+                }
             }
         }
 
