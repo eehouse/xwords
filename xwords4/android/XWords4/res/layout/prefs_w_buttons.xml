@@ -20,16 +20,12 @@
                 android:layout_weight="0"
                 >
     <Button android:id="@+id/revert_colors"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" 
             android:text="@string/button_revert_colors"
+            style="@style/spaced_buttons"
             />
     <Button android:id="@+id/revert_all"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" 
             android:text="@string/button_revert_all"
+            style="@style/spaced_buttons"
             />
   </LinearLayout>
 </LinearLayout>

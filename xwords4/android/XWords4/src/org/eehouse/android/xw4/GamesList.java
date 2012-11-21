@@ -81,6 +81,7 @@ public class GamesList extends XWExpandableListActivity
     private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
                                               , R.id.gamel_menu_storedb
                                               , R.id.gamel_menu_checkupdates
+                                              , R.id.gamel_menu_delete_all
     };
 
     private static boolean s_firstShown = false;
@@ -657,6 +658,10 @@ public class GamesList extends XWExpandableListActivity
         switch (item.getItemId()) {
         case R.id.gamel_menu_newgame:
             startNewGameActivity();
+            break;
+
+        case R.id.gamel_menu_newgroup:
+            showDialog( NEW_GROUP );
             break;
 
         case R.id.gamel_menu_delete_all:
