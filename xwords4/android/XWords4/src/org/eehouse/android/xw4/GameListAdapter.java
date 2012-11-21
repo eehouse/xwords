@@ -297,8 +297,6 @@ public class GameListAdapter implements ExpandableListAdapter {
             GameGroupInfo ggi = info.get( names[ii] );
             if ( ggi.m_expanded ) {
                 view.expandGroup( ii );
-            } else {
-                view.collapseGroup( ii );
             }
         }
     }
@@ -524,6 +522,20 @@ public class GameListAdapter implements ExpandableListAdapter {
         String[] names = new String[ set.size() ];
         set.toArray(names);
         return names;
+    }
+    
+    public int getGroupPosition( long groupid )
+    {
+        int pos;
+        String[] names = groupNames();
+        HashMap<String, GameGroupInfo> info = gameInfo();
+        for ( pos = 0; pos < names.length; ++pos ) {
+            GameGroupInfo ggi = info.get( names[pos] );
+            if ( ggi.m_id == groupid ) {
+                break;
+            }
+        }
+        return pos;
     }
 
     private HashMap<String,GameGroupInfo> gameInfo()

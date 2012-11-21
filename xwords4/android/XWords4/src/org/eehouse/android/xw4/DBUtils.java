@@ -875,7 +875,6 @@ public class DBUtils {
     // that group.
     public static HashMap<String,GameGroupInfo> getGroups( Context context )
     {
-        DbgUtils.logf("getGroupInfo called");
         if ( null == s_groupsCache ) {
             HashMap<String,GameGroupInfo> result = 
                 new HashMap<String,GameGroupInfo>();
@@ -899,14 +898,12 @@ public class DBUtils {
                     String name = cursor.getString( nameIndex );
                     long id = cursor.getLong( idIndex );
                     Assert.assertNotNull( name );
-                    DbgUtils.logf( "getGroups: got name %s, id %d", name, id );
                     boolean expanded = 0 != cursor.getInt( expandedIndex );
                     result.put( name, new GameGroupInfo( id, expanded ) );
                 }
                 cursor.close();
                 db.close();
             }
-            DbgUtils.logf("getGroups=>size %d", result.size());
             s_groupsCache = result;
         }
         return s_groupsCache;
@@ -937,6 +934,31 @@ public class DBUtils {
             db.close();
         }
 
+        return result;
+    }
+
+    public static long getGroupForGame( Context context, long rowid )
+    {
+        long result = ROWID_NOTFOUND;
+        initDB( context );
+        String[] columns = { DBHelper.GROUPID };
+        String selection = String.format( ROW_ID_FMT, rowid );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, // selection
+                                      null, // args
+                                      null, // groupBy
+                                      null, // having
+                                      null //orderby 
+                                      );
+            if ( cursor.moveToNext() ) {
+                int index = cursor.getColumnIndex( DBHelper.GROUPID );
+                result = cursor.getLong( index );
+            }
+            cursor.close();
+            db.close();
+        }
         return result;
     }
 

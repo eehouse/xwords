@@ -243,8 +243,10 @@ public class GamesList extends XWExpandableListActivity
                         }
                     };
                 String[] groups = m_adapter.groupNames();
+                long groupid = DBUtils.getGroupForGame( this, m_rowid );
+                int curGroupPos = m_adapter.getGroupPosition( groupid );
                 dialog = new AlertDialog.Builder( this )
-                    .setSingleChoiceItems( groups, -1, lstnr )
+                    .setSingleChoiceItems( groups, curGroupPos, lstnr )
                     .setPositiveButton( R.string.button_ok, lstnr2 )
                     .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
@@ -746,7 +748,11 @@ public class GamesList extends XWExpandableListActivity
                     showDialog( RENAME_GAME );
                     break;
                 case R.id.list_item_move:
-                    showDialog( CHANGE_GROUP );
+                    if ( 1 >= m_adapter.getGroupCount() ) {
+                        showOKOnlyDialog( R.string.no_move_onegroup );
+                    } else {
+                        showDialog( CHANGE_GROUP );
+                    }
                     break;
                 case R.id.list_item_new_from:
                     showNotAgainDlgThen( R.string.not_again_newfrom,

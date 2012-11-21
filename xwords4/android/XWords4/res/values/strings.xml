@@ -2157,4 +2157,7 @@
 
     <string name="cannot_delete_default_group">The group for new games
     cannot be deleted."</string>
+
+    <string name="no_move_onegroup">Moving is impossible until there
+    is more than one group.</string>
 </resources>
