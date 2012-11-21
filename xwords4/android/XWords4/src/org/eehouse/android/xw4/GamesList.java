@@ -557,7 +557,7 @@ public class GamesList extends XWExpandableListActivity
                 break;
 
             case DELETE_GROUP_ACTION:
-                DBUtils.deleteGroup( this, m_groupid );
+                GameUtils.deleteGroup( this, m_groupid );
                 onContentChanged();
                 break;
             default:
