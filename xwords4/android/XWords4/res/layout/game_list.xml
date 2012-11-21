@@ -47,16 +47,12 @@
                 android:layout_height="wrap_content"
                 >
     <Button android:id="@+id/new_game"
-            android:layout_width="wrap_content" 
-            android:layout_height="wrap_content" 
-            android:layout_gravity="right"
             android:text="@string/button_new_game" 
+            style="@style/spaced_buttons"
             />
     <Button android:id="@+id/new_group"
-            android:layout_width="wrap_content" 
-            android:layout_height="wrap_content" 
-            android:layout_gravity="left"
             android:text="@string/button_new_group" 
+            style="@style/spaced_buttons"
             />
   </LinearLayout>
 
