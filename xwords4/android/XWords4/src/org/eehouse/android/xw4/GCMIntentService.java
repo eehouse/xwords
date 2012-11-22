@@ -74,7 +74,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     public static void init( Application app )
     {
         int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
-        if ( 8 <= sdkVersion ) {
+        if ( 8 <= sdkVersion && 0 < GCMConsts.SENDER_ID.length() ) {
             try {
                 GCMRegistrar.checkDevice( app );
                 // GCMRegistrar.checkManifest( app );
