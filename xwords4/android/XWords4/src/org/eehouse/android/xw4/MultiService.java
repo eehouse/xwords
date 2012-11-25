@@ -31,6 +31,8 @@ public class MultiService {
     public static final String LANG = "LANG";
     public static final String DICT = "DICT";
     public static final String GAMEID = "GAMEID";
+    public static final String INVITEID = "INVITEID"; // relay only
+    public static final String ROOM = "ROOM";
     public static final String GAMENAME = "GAMENAME";
     public static final String NPLAYERST = "NPLAYERST";
     public static final String NPLAYERSH = "NPLAYERSH";
@@ -38,6 +40,7 @@ public class MultiService {
     public static final String OWNER = "OWNER";
 
     public static final int OWNER_SMS = 1;
+    public static final int OWNER_RELAY = 2;
 
     private BTEventListener m_li;
 
@@ -84,11 +87,39 @@ public class MultiService {
         }
     }
 
+    public static void fillInviteIntent( Intent intent, String gameName, 
+                                         int lang, String dict, 
+                                         int nPlayersT, int nPlayersH )
+    {
+        intent.putExtra( GAMENAME, gameName );
+        intent.putExtra( LANG, lang );
+        intent.putExtra( DICT, dict );
+        intent.putExtra( NPLAYERST, nPlayersT ); // both of these used
+        intent.putExtra( NPLAYERSH, nPlayersH );
+    }
+
+    public static Intent makeMissingDictIntent( Context context, String gameName, 
+                                                int lang, String dict, 
+                                                int nPlayersT, int nPlayersH )
+    {
+        Intent intent = new Intent( context, DictsActivity.class );
+        fillInviteIntent( intent, gameName, lang, dict, nPlayersT, nPlayersH );
+        return intent;
+    }
+
+    public static Intent makeMissingDictIntent( Context context, NetLaunchInfo nli )
+    {
+        Intent intent = makeMissingDictIntent( context, null, nli.lang, nli.dict, 
+                                               nli.nPlayersT, 1 );
+        intent.putExtra( ROOM, nli.room );
+        return intent;
+    }
+
     public static boolean isMissingDictIntent( Intent intent )
     {
         return intent.hasExtra( LANG )
-            && intent.hasExtra( DICT )
-            && intent.hasExtra( GAMEID )
+            // && intent.hasExtra( DICT )
+            && (intent.hasExtra( GAMEID ) || intent.hasExtra( ROOM ))
             && intent.hasExtra( GAMENAME )
             && intent.hasExtra( NPLAYERST )
             && intent.hasExtra( NPLAYERSH );
@@ -102,14 +133,23 @@ public class MultiService {
         String langStr = DictLangCache.getLangName( context, lang );
         String dict = intent.getStringExtra( DICT );
         String inviter = intent.getStringExtra( INVITER );
-        String msg = context.getString( R.string.invite_dict_missing_bodyf,
-                                        inviter, dict, langStr );
+        int msgID = (null == inviter) ? R.string.invite_dict_missing_body_nonamef
+            : R.string.invite_dict_missing_bodyf;
+        String msg = context.getString( msgID, inviter, dict, langStr );
+
         return new AlertDialog.Builder( context )
             .setTitle( R.string.invite_dict_missing_title )
             .setMessage( msg)
             .setPositiveButton( R.string.button_download, onDownload )
             .setNegativeButton( R.string.button_decline, onDecline )
             .create();
+    }
+
+    public static void postMissingDictNotification( Context content, 
+                                                    Intent intent, int id )
+    {
+        Utils.postNotification( content, intent, R.string.missing_dict_title, 
+                                R.string.missing_dict_detail, id );
     }
 
     // resend the intent, but only if the dict it names is here.  (If
@@ -123,11 +163,15 @@ public class MultiService {
             String dict = intent.getStringExtra( DICT );
             downloaded = DictLangCache.haveDict( context, lang, dict );
             if ( downloaded ) {
-                int owner = intent.getIntExtra( OWNER, -1 );
-                if ( owner == OWNER_SMS ) {
+                switch ( intent.getIntExtra( OWNER, -1 ) ) {
+                case OWNER_SMS:
                     SMSService.onGameDictDownload( context, intent );
-                } else {
-                    DbgUtils.logf( "unexpected OWNER: %d", owner );
+                    break;
+                case OWNER_RELAY:
+                    GamesList.onGameDictDownload( context, intent );
+                    break;
+                default:
+                    DbgUtils.logf( "unexpected OWNER" );
                 }
             }
         }

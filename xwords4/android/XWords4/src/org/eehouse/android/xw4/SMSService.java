@@ -424,17 +424,15 @@ public class SMSService extends Service {
                     makeForInvite( phone, gameID, gameName, lang, dict, 
                                    nPlayersT, nPlayersH );
                 } else {
-                    Intent intent = new Intent( this, DictsActivity.class );
-                    fillInviteIntent( intent, phone, gameID, gameName, lang, dict,
-                                      nPlayersT, nPlayersH );
+                    Intent intent = MultiService
+                        .makeMissingDictIntent( this, gameName, lang, dict, 
+                                                nPlayersT, nPlayersH );
+                    intent.putExtra( PHONE, phone );
                     intent.putExtra( MultiService.OWNER, 
                                      MultiService.OWNER_SMS );
                     intent.putExtra( MultiService.INVITER, 
                                      Utils.phoneToContact( this, phone, true ) );
-                    Utils.postNotification( this, intent, 
-                                            R.string.missing_dict_title, 
-                                            R.string.missing_dict_detail, 
-                                            gameID );
+                    MultiService.postMissingDictNotification( this, intent, gameID );
                 }
                 break;
             case DATA:
@@ -591,11 +589,8 @@ public class SMSService extends Service {
     {
         intent.putExtra( PHONE, phone );
         intent.putExtra( MultiService.GAMEID, gameID );
-        intent.putExtra( MultiService.GAMENAME, gameName );
-        intent.putExtra( MultiService.LANG, lang );
-        intent.putExtra( MultiService.DICT, dict );
-        intent.putExtra( MultiService.NPLAYERST, nPlayersT );
-        intent.putExtra( MultiService.NPLAYERSH, nPlayersH );
+        MultiService.fillInviteIntent( intent, gameName, lang, dict, 
+                                       nPlayersT, nPlayersH );
     }
 
     private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )

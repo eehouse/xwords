@@ -88,7 +88,7 @@ public class GamesList extends XWExpandableListActivity
 
     private GameListAdapter m_adapter;
     private String m_missingDict;
-    private String[] m_missingDictNames;
+    private String m_missingDictName;
     private long m_missingDictRowId;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
@@ -115,10 +115,15 @@ public class GamesList extends XWExpandableListActivity
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             // just do one
-                            NetUtils.downloadDictInBack( GamesList.this,
-                                                         m_missingDictLang,
-                                                         m_missingDictNames[0],
-                                                         GamesList.this );
+                            if ( null == m_missingDictName ) {
+                                DictsActivity.launchAndDownload( GamesList.this, 
+                                                                 m_missingDictLang );
+                            } else {
+                                NetUtils.downloadDictInBack( GamesList.this,
+                                                             m_missingDictLang,
+                                                             m_missingDictName,
+                                                             GamesList.this );
+                            }
                         }
                     };
                 String message;
@@ -130,7 +135,7 @@ public class GamesList extends XWExpandableListActivity
                                          gameName, langName );
                 } else {
                     message = getString( R.string.no_dict_substf,
-                                         gameName, m_missingDictNames[0], 
+                                         gameName, m_missingDictName, 
                                          langName );
                 }
 
@@ -163,8 +168,10 @@ public class GamesList extends XWExpandableListActivity
                             dict = DictLangCache.stripCount( dict );
                             GameUtils.replaceDicts( GamesList.this,
                                                     m_missingDictRowId,
-                                                    m_missingDictNames[0],
+                                                    m_missingDictName,
                                                     dict );
+                            GameUtils.launchGame( GamesList.this, 
+                                                  m_missingDictRowId );
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -404,7 +411,7 @@ public class GamesList extends XWExpandableListActivity
         super.onSaveInstanceState( outState );
         outState.putLong( SAVE_ROWID, m_rowid );
         outState.putLong( SAVE_GROUPID, m_groupid );
-        outState.putStringArray( SAVE_DICTNAMES, m_missingDictNames );
+        outState.putString( SAVE_DICTNAMES, m_missingDictName );
         if ( null != m_netLaunchInfo ) {
             m_netLaunchInfo.putSelf( outState );
         }
@@ -416,7 +423,7 @@ public class GamesList extends XWExpandableListActivity
             m_rowid = bundle.getLong( SAVE_ROWID );
             m_groupid = bundle.getLong( SAVE_GROUPID );
             m_netLaunchInfo = new NetLaunchInfo( bundle );
-            m_missingDictNames = bundle.getStringArray( SAVE_DICTNAMES );
+            m_missingDictName = bundle.getString( SAVE_DICTNAMES );
         }
     }
 
@@ -834,13 +841,21 @@ public class GamesList extends XWExpandableListActivity
                                                     missingNames, 
                                                     missingLang );
         if ( !hasDicts ) {
-            m_missingDictNames = missingNames[0];
             m_missingDictLang = missingLang[0];
+            if ( 0 < missingNames[0].length ) {
+                m_missingDictName = missingNames[0][0];
+            } else {
+                m_missingDictName = null;
+            }
             m_missingDictRowId = rowid;
             if ( 0 == DictLangCache.getLangCount( this, m_missingDictLang ) ) {
                 showDialog( WARN_NODICT );
-            } else {
+            } else if ( null != m_missingDictName ) {
                 showDialog( WARN_NODICT_SUBST );
+            } else {
+                String dict = DictLangCache.getHaveLang( this, m_missingDictLang)[0];
+                GameUtils.replaceDicts( this, m_missingDictRowId, null, dict );
+                GameUtils.launchGame( this, m_missingDictRowId );
             }
         }
         return hasDicts;
@@ -911,12 +926,17 @@ public class GamesList extends XWExpandableListActivity
 
     private void startNewNetGame( Intent intent )
     {
-        Uri data = intent.getData();
-        if ( null != data ) {
-            NetLaunchInfo info = new NetLaunchInfo( data );
-            if ( info.isValid() ) {
-                startNewNetGame( info );
+        NetLaunchInfo info = null;
+        if ( MultiService.isMissingDictIntent( intent ) ) {
+            info = new NetLaunchInfo( intent );
+        } else {
+            Uri data = intent.getData();
+            if ( null != data ) {
+                info = new NetLaunchInfo( data );
             }
+        }
+        if ( null != info && info.isValid() ) {
+            startNewNetGame( info );
         }
     } // startNewNetGame
 
@@ -972,4 +992,9 @@ public class GamesList extends XWExpandableListActivity
         return dialog;
     }
 
+    public static void onGameDictDownload( Context context, Intent intent )
+    {
+        intent.setClass( context, GamesList.class );
+        context.startActivity( intent );
+    }
 }

@@ -547,7 +547,7 @@ public class DBUtils {
                                DBHelper.ROOMNAME, nli.room, 
                                DBHelper.INVITEID, nli.inviteID, 
                                DBHelper.DICTLANG, nli.lang, 
-                               DBHelper.NUM_PLAYERS, nli.nPlayers );
+                               DBHelper.NUM_PLAYERS, nli.nPlayersT );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -563,7 +563,7 @@ public class DBUtils {
     {
         long rowid = ROWID_NOTFOUND;
         NetLaunchInfo nli = new NetLaunchInfo( data );
-        if ( null != nli ) {
+        if ( null != nli && nli.isValid() ) {
             rowid = getRowIDForOpen( context, nli );
         }
         return rowid;
