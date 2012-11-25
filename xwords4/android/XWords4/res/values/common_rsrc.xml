@@ -121,6 +121,8 @@
   <string name="name_dict_fmt">%1$s/%2$s</string>
   <string name="gamel_menu_storedb">Write DB to SD card</string>
   <string name="gamel_menu_loaddb">Load DB from SD card</string>
+  <string name="git_gcmvers_title">GCM Device ID</string>
+  <string name="git_relay_regid_title">Relay Device ID</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
