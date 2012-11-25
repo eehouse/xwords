@@ -1,3 +1,4 @@
+<!-- -*- mode: sgml; -*- -->
 <?php
 
 // script to work around URLs with custom schemes not being clickable in
@@ -10,10 +11,14 @@ $lang = $_REQUEST["lang"];
 $room = $_REQUEST["room"];
 $np = $_REQUEST["np"];
 $id = $_REQUEST["id"];
+$wl = $_REQUEST["wl"];
 
 $content = "0; url=$scheme://$host?room=$room&lang=$lang&np=$np";
 if ( $id != "" ) {
     $content .= "&id=$id";
+}
+if ( $wl != "" ) {
+    $content .= "&wl=$wl";
 }
 
 print <<<EOF
@@ -33,10 +38,15 @@ print <<<EOF
 
     <p>redirecting to Crosswords....</p>
 
-    <p>This page is meant to be viewed (briefly) on your Android device after which Crosswords should launch.
-    If this fails it's probably because you don't have a new enough version of Crosswords installed. 
+    <p>This page is meant to be viewed (briefly) on your Android
+      device after which Crosswords should launch.
+    </p>
+    <p>If this fails it's probably because you don't have a new enough
+      version of Crosswords installed. Or because your browser does
+      not allow URL redirects.
     </p>
 
+    <img src="./icon48x48.png">
     </div>
     </body>
 
