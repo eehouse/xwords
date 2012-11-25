@@ -408,7 +408,7 @@ public class GameUtils {
     }
 
     private static long makeNewMultiGame( Context context, CommsAddrRec addr,
-                                          int[] lang, String dict,
+                                          int[] lang, String[] dict,
                                           int nPlayersT, int nPlayersH, 
                                           String inviteID, int gameID,
                                           boolean isHost )
@@ -416,8 +416,9 @@ public class GameUtils {
         long rowid = -1;
 
         CurGameInfo gi = new CurGameInfo( context, true );
-        gi.setLang( lang[0], dict );
+        gi.setLang( lang[0], dict[0] );
         lang[0] = gi.dictLang;
+        dict[0] = gi.dictName;
         gi.setNPlayers( nPlayersT, nPlayersH );
         gi.juggle();
         if ( 0 != gameID ) {
@@ -442,7 +443,8 @@ public class GameUtils {
 
     public static long makeNewNetGame( Context context, String room,
                                        String inviteID, int[] lang,
-                                       int nPlayersT, int nPlayersH )
+                                       String[] dict, int nPlayersT, 
+                                       int nPlayersH )
     {
         long rowid = -1;
         String relayName = XWPrefs.getDefaultRelayHost( context );
@@ -450,21 +452,24 @@ public class GameUtils {
         CommsAddrRec addr = new CommsAddrRec( relayName, relayPort );
         addr.ip_relay_invite = room;
 
-        return makeNewMultiGame( context, addr, lang, null, nPlayersT, 
+        return makeNewMultiGame( context, addr, lang, dict, nPlayersT, 
                                  nPlayersH, inviteID, 0, false );
     }
 
     public static long makeNewNetGame( Context context, String room, 
-                                       String inviteID, int lang, int nPlayers )
+                                       String inviteID, int lang, String dict,
+                                       int nPlayers )
     {
         int[] langarr = { lang };
-        return makeNewNetGame( context, room, inviteID, langarr, nPlayers, 1 );
+        String[] dictArr = { dict };
+        return makeNewNetGame( context, room, inviteID, langarr, dictArr,
+                               nPlayers, 1 );
     }
 
     public static long makeNewNetGame( Context context, NetLaunchInfo info )
     {
         return makeNewNetGame( context, info.room, info.inviteID, info.lang, 
-                               info.nPlayers );
+                               info.dict, info.nPlayersT );
     }
 
     public static long makeNewBTGame( Context context, int gameID, 
@@ -488,11 +493,12 @@ public class GameUtils {
     {
         long rowid = -1;
         int[] langa = { lang };
+        String[] dicta = { dict };
         boolean isHost = null == addr;
         if ( isHost ) { 
             addr = new CommsAddrRec(CommsAddrRec.CommsConnType.COMMS_CONN_SMS);
         }
-        return makeNewMultiGame( context, addr, langa, dict, nPlayersT, 
+        return makeNewMultiGame( context, addr, langa, dicta, nPlayersT, 
                                  nPlayersH, null, gameID, isHost );
     }
 
@@ -515,13 +521,14 @@ public class GameUtils {
     public static void launchInviteActivity( Context context, 
                                              boolean choseEmail,
                                              String room, String inviteID,
-                                             int lang, int nPlayers )
+                                             int lang, String dict, 
+                                             int nPlayers )
     {
         if ( null == inviteID ) {
             inviteID = makeRandomID();
         }
         Uri gameUri = NetLaunchInfo.makeLaunchUri( context, room, inviteID,
-                                                   lang, nPlayers );
+                                                   lang, dict, nPlayers );
 
         if ( null != gameUri ) {
             int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;

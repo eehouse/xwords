@@ -790,12 +790,17 @@ public class GamesList extends XWListActivity
 
     private void startNewNetGame( Intent intent )
     {
-        Uri data = intent.getData();
-        if ( null != data ) {
-            NetLaunchInfo info = new NetLaunchInfo( data );
-            if ( info.isValid() ) {
-                startNewNetGame( info );
+        NetLaunchInfo info = null;
+        if ( MultiService.isMissingDictIntent( intent ) ) {
+            info = new NetLaunchInfo( intent );
+        } else {
+            Uri data = intent.getData();
+            if ( null != data ) {
+                info = new NetLaunchInfo( data );
             }
+        }
+        if ( null != info && info.isValid() ) {
+            startNewNetGame( info );
         }
     } // startNewNetGame
 
@@ -833,4 +838,11 @@ public class GamesList extends XWListActivity
             onContentChanged();
         }
     }
+
+    public static void onGameDictDownload( Context context, Intent intent )
+    {
+        intent.setClass( context, GamesList.class );
+        context.startActivity( intent );
+    }
+
 }
