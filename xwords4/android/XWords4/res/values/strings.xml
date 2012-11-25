@@ -2123,6 +2123,10 @@
     play Crosswords using the wordlist %2$s (for play in %3$s), but it
     is not installed.  Would you like to download the wordlist or
     decline the invitation?</string>
+    <string name="invite_dict_missing_body_nonamef">You have been invited to
+    play Crosswords using the wordlist %2$s (for play in %3$s), but it
+    is not installed.  Would you like to download the wordlist or
+    decline the invitation?</string>
     <string name="button_decline">Decline</string>
 
     <string name="downloadingf">Downloading %s...</string>
