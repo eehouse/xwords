@@ -21,31 +21,43 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.os.Bundle;
-import android.os.AsyncTask;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import java.io.InputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.URI;
 
 import junit.framework.Assert;
 
 public class DictImportActivity extends XWActivity {
 
+    public static final String APK_EXTRA = "APK";
+
     private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> {
         private String m_saved = null;
+        private boolean m_isApp = false;
+        private File m_appFile = null;
+
+        public DownloadFilesTask( boolean isApp )
+        {
+            super();
+            m_isApp = isApp;
+        }
+
         @Override
         protected Long doInBackground( Uri... uris )
         {
             m_saved = null;
+            m_appFile = null;
 
             int count = uris.length;
             Assert.assertTrue( 1 == count );
-            long totalSize = 0;
             for ( int ii = 0; ii < count; ii++ ) {
                 Uri uri = uris[ii];
                 DbgUtils.logf( "trying %s", uri );
@@ -55,7 +67,12 @@ public class DictImportActivity extends XWActivity {
                                         uri.getSchemeSpecificPart(), 
                                         uri.getFragment() );
                     InputStream is = jUri.toURL().openStream();
-                    m_saved = saveDict( is, uri.getPath() );
+                    String name = basename( uri.getPath() );
+                    if ( m_isApp ) {
+                        m_appFile = saveToDownloads( is, name );
+                    } else {
+                        m_saved = saveDict( is, name );
+                    }
                     is.close();
                 } catch ( java.net.URISyntaxException use ) {
                     DbgUtils.loge( use );
@@ -65,7 +82,7 @@ public class DictImportActivity extends XWActivity {
                     DbgUtils.loge( ioe );
                 }
             }
-            return totalSize;
+            return new Long(0);
         }
 
         @Override
@@ -77,6 +94,10 @@ public class DictImportActivity extends XWActivity {
                     XWPrefs.getDefaultLoc( DictImportActivity.this );
                 DictLangCache.inval( DictImportActivity.this, m_saved, 
                                      loc, true );
+            } else if ( null != m_appFile ) {
+                // launch the installer
+                Intent intent = Utils.makeInstallIntent( m_appFile );
+                startActivity( intent );
             }
             finish();
         }
@@ -86,6 +107,7 @@ public class DictImportActivity extends XWActivity {
 	protected void onCreate( Bundle savedInstanceState ) 
     {
 		super.onCreate( savedInstanceState );
+        DownloadFilesTask dft = null;
 
 		requestWindowFeature( Window.FEATURE_LEFT_ICON );
 		setContentView( R.layout.import_dict );
@@ -96,27 +118,60 @@ public class DictImportActivity extends XWActivity {
 
 		Intent intent = getIntent();
 		Uri uri = intent.getData();
-		if ( null != uri) {
-			if ( null != intent.getType() 
-                 && intent.getType().equals( "application/x-xwordsdict" ) ) {
-                DbgUtils.logf( "based on MIME type" );
-                new DownloadFilesTask().execute( uri );
-            } else if ( uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
-                String txt = getString( R.string.downloading_dictf,
-                                        basename( uri.getPath()) );
-                TextView view = (TextView)findViewById( R.id.dwnld_message );
-                view.setText( txt );
-                new DownloadFilesTask().execute( uri );
-			} else {
-                DbgUtils.logf( "bogus intent: %s/%s", intent.getType(), uri );
-				finish();
-			}
+        if ( null == uri ) {
+            String url = intent.getStringExtra( APK_EXTRA );
+            if ( null != url ) {
+                dft = new DownloadFilesTask( true );
+                uri = Uri.parse(url);
+            }
+        } else if ( null != intent.getType() 
+                    && intent.getType().equals( "application/x-xwordsdict" ) ) {
+            dft = new DownloadFilesTask( false );
+        } else if ( uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
+            String txt = getString( R.string.downloading_dictf,
+                                    basename( uri.getPath()) );
+            TextView view = (TextView)findViewById( R.id.dwnld_message );
+            view.setText( txt );
+            dft = new DownloadFilesTask( false );
+        }
+
+        if ( null == dft ) {
+            finish();
+        } else {
+            dft.execute( uri );
         }
 	}
 
-    private String saveDict( InputStream inputStream, String path )
+    private File saveToDownloads( InputStream is, String name )
     {
-        String name = basename( path );
+        boolean success = false;
+        File appFile = new File( DictUtils.getDownloadDir( this ), name );
+        Assert.assertNotNull( appFile );
+        
+        byte[] buf = new byte[1024*4];
+        try {
+            FileOutputStream fos = new FileOutputStream( appFile );
+            int nRead;
+            while ( 0 <= (nRead = is.read( buf, 0, buf.length )) ) {
+                fos.write( buf, 0, nRead );
+            }
+            fos.close();
+            success = true;
+        } catch ( java.io.FileNotFoundException fnf ) {
+            DbgUtils.loge( fnf );
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.loge( ioe );
+        }
+
+        if ( !success ) {
+            appFile.delete();
+            appFile = null;
+        }
+        return appFile;
+    }
+
+    private String saveDict( InputStream inputStream, String name )
+    {
         DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( this );
         if ( !DictUtils.saveDict( this, inputStream, name, loc ) ) {
             name = null;

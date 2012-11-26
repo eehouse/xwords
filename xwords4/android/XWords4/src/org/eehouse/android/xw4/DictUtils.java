@@ -566,7 +566,7 @@ public class DictUtils {
         return null != getDownloadDir( context );
     }
 
-    private static File getDownloadDir( Context context )
+    public static File getDownloadDir( Context context )
     {
         File result = null;
         if ( haveWriteableSD() ) {

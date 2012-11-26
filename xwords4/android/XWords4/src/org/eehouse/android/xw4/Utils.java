@@ -32,6 +32,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
@@ -43,8 +45,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import junit.framework.Assert;
 
@@ -417,6 +421,29 @@ public class Utils {
             }
         }
         return null == s_appVersion? 0 : s_appVersion;
+    }
+
+    public static Intent makeInstallIntent( File file )
+    {
+        Uri uri = Uri.parse( "file:/" + file.getPath() );
+        Intent intent = new Intent( Intent.ACTION_VIEW );
+        intent.setDataAndType( uri, XWConstants.APK_TYPE );
+        intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        return intent;
+    }
+
+    // Return whether there's an app installed that can install
+    public static boolean canInstall( Context context, File path )
+    {
+        boolean result = false;
+        PackageManager pm = context.getPackageManager();
+        Intent intent = makeInstallIntent( path );
+        List<ResolveInfo> doers =
+            pm.queryIntentActivities( intent, 
+                                      PackageManager.MATCH_DEFAULT_ONLY );
+        result = 0 < doers.size();
+        DbgUtils.logf( "canInstall()=>%b", result );
+        return result;
     }
 
     private static void setFirstBootStatics( Context context )
