@@ -66,36 +66,41 @@ public class DispatchNotify extends Activity {
             }
         } else if ( null != data ) { // relay invite redirected URL case
             NetLaunchInfo nli = new NetLaunchInfo( data );
-            long rowid = DBUtils.getRowIDForOpen( this, nli );
-            if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-                boolean haveDict;
-                if ( null == nli.dict ) { // can only test for language support
-                    haveDict = 
-                        0 < DictLangCache.getHaveLang( this, nli.lang ).length;
-                } else {
-                    haveDict = DictLangCache.haveDict( this, nli.lang, nli.dict );
-                }
-                if ( haveDict ) {
-                    if ( !tryHandle( data ) ) {
-                        mustLaunch = true;
+            if ( null != nli && nli.isValid() ) {
+                long rowid = DBUtils.getRowIDForOpen( this, nli );
+                if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+                    boolean haveDict;
+                    if ( null == nli.dict ) { // can only test for language support
+                        haveDict = 
+                            0 < DictLangCache.getHaveLang( this, 
+                                                           nli.lang ).length;
+                    } else {
+                        haveDict = 
+                            DictLangCache.haveDict( this, nli.lang, nli.dict );
+                    }
+                    if ( haveDict ) {
+                        if ( !tryHandle( data ) ) {
+                            mustLaunch = true;
+                        }
+                    } else {
+                        Intent intent = 
+                            MultiService.makeMissingDictIntent( this, nli );
+                        intent.putExtra( MultiService.OWNER, 
+                                         MultiService.OWNER_RELAY );
+                        // do we have gameID?
+                        MultiService.
+                            postMissingDictNotification( this, intent, 
+                                                         nli.inviteID
+                                                         .hashCode() );
                     }
                 } else {
-                    Intent intent = MultiService.makeMissingDictIntent( this, 
-                                                                        nli );
-                    intent.putExtra( MultiService.OWNER, 
-                                     MultiService.OWNER_RELAY );
-                    // do we have gameID?
-                    MultiService.
-                        postMissingDictNotification( this, intent, 
-                                                     nli.inviteID.hashCode() );
-                }
-            } else {
-                DbgUtils.logf( "DispatchNotify: dropping duplicate invite" );
-                GameSummary summary = DBUtils.getSummary( this, rowid );
-                if ( null != summary ) {
-                    gameID = summary.gameID;
-                    if ( !tryHandle( gameID ) ) {
-                        mustLaunch = true;
+                    DbgUtils.logf( "DispatchNotify: dropping duplicate invite" );
+                    GameSummary summary = DBUtils.getSummary( this, rowid );
+                    if ( null != summary ) {
+                        gameID = summary.gameID;
+                        if ( !tryHandle( gameID ) ) {
+                            mustLaunch = true;
+                        }
                     }
                 }
             }
