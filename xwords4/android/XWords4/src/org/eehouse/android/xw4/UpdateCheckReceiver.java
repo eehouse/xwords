@@ -29,6 +29,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.SystemClock;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -174,11 +175,33 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 if ( jobj.has( k_APP ) ) {
                     JSONObject app = jobj.getJSONObject( k_APP );
                     if ( app.has( k_URL ) ) {
-                        String url = app.getString( k_URL );
                         ApplicationInfo ai = pm.getApplicationInfo( packageName, 0);
                         String label = pm.getApplicationLabel( ai ).toString();
-                        Intent intent = 
-                            new Intent( Intent.ACTION_VIEW, Uri.parse(url) );
+
+                        // If there's a download dir AND an installer
+                        // app, handle this ourselves.  Otherwise just
+                        // launch the browser
+                        boolean useBrowser;
+                        File downloads = DictUtils.getDownloadDir( context );
+                        if ( null == downloads ) {
+                            useBrowser = true;
+                        } else {
+                            File tmp = new File( downloads, 
+                                                 "xx" + XWConstants.APK_EXTN );
+                            useBrowser = !Utils.canInstall( context, tmp );
+                        }
+
+                        Intent intent;
+                        String url = app.getString( k_URL );
+                        if ( useBrowser ) {
+                            intent = new Intent( Intent.ACTION_VIEW, 
+                                                 Uri.parse(url) );
+                        } else {
+                            intent = new Intent( context, 
+                                                 DictImportActivity.class );
+                            intent.putExtra( DictImportActivity.APK_EXTRA, url );
+                        }
+
                         String title = 
                             Utils.format( context, R.string.new_app_availf, label );
                         String body = context.getString( R.string.new_app_avail );
