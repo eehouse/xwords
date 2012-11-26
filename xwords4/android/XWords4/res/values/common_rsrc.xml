@@ -71,6 +71,7 @@
   <string name="key_gcmvers_regid">key_gcmvers_regid</string>
   <string name="key_relay_regid">key_relay_regid</string>
   <string name="key_checked_sms">key_checked_sms</string>
+  <string name="key_default_group">key_default_group</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>

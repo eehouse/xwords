@@ -151,6 +151,25 @@ public class XWPrefs {
         editor.commit();
     }
 
+    public static long getPrefsLong( Context context, int keyID,
+                                     long defaultValue )
+    {
+        String key = context.getString( keyID );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        return sp.getLong( key, defaultValue );
+    }
+
+    public static void setPrefsLong( Context context, int keyID, long newVal )
+    {
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        SharedPreferences.Editor editor = sp.edit();
+        String key = context.getString( keyID );
+        editor.putLong( key, newVal );
+        editor.commit();
+    }
+
     public static void setClosedLangs( Context context, String[] langs )
     {
         setPrefsString( context, R.string.key_closed_langs, 
@@ -273,6 +292,17 @@ public class XWPrefs {
     public static boolean getDefaultLocInternal( Context context )
     {
         return getPrefsBoolean( context, R.string.key_default_loc, true );
+    }
+
+    public static long getDefaultNewGameGroup( Context context )
+    {
+        return getPrefsLong( context, R.string.key_default_group,
+                             DBUtils.ROWID_NOTFOUND );
+    }
+
+    public static void setDefaultNewGameGroup( Context context, long val )
+    {
+        setPrefsLong( context, R.string.key_default_group, val );
     }
 
     protected static String getPrefsString( Context context, int keyID )

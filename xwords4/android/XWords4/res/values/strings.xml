@@ -2137,4 +2137,7 @@
     <string name="default_loc_summary">(Not in external/sdcard memory)</string>
 
     <string name="download_path_title">Downloads Directory</string>
+
+    <string name="group_cur_games">My games</string>
+    <string name="group_new_games">New games</string>
 </resources>

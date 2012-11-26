@@ -364,18 +364,9 @@ public class DBUtils {
 
     private static void setInt( long rowid, String column, int value )
     {
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            String selection = String.format( ROW_ID_FMT, rowid );
-            ContentValues values = new ContentValues();
-            values.put( column, value );
-
-            int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                    values, selection, null );
-            Assert.assertTrue( result == 1 );
-            db.close();
-        }
+        ContentValues values = new ContentValues();
+        values.put( column, value );
+        updateRow( null, DBHelper.TABLE_NAME_SUM, rowid, values );
     }
 
     public static void setMsgFlags( long rowid, int flags )
@@ -693,6 +684,8 @@ public class DBUtils {
             long timestamp = new Date().getTime();
             values.put( DBHelper.CREATE_TIME, timestamp );
             values.put( DBHelper.LASTPLAY_TIME, timestamp );
+            values.put( DBHelper.GROUPID, 
+                        XWPrefs.getDefaultNewGameGroup( context ) );
 
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
 
@@ -840,21 +833,9 @@ public class DBUtils {
 
     public static void setName( Context context, long rowid, String name )
     {
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            String selection = String.format( ROW_ID_FMT, rowid );
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.GAME_NAME, name );
-
-            int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                    values, selection, null );
-            db.close();
-            if ( 0 == result ) {
-                DbgUtils.logf( "setName(%d,%s) failed", rowid, name );
-            }
-        }
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.GAME_NAME, name );
+        updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
     }
 
     public static HistoryPair[] getChatHistory( Context context, long rowid )
@@ -874,6 +855,23 @@ public class DBUtils {
         return result;
     }
 
+    private static void updateRow( Context context, String table,
+                                   long rowid, ContentValues values )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            String selection = String.format( ROW_ID_FMT, rowid );
+
+            int result = db.update( table, values, selection, null );
+            db.close();
+            if ( 0 == result ) {
+                DbgUtils.logf( "updateRow failed" );
+            }
+        }
+    }
+    
     private static String getChatHistoryStr( Context context, long rowid )
     {
         String result = null;
@@ -1220,6 +1218,7 @@ public class DBUtils {
     private static void initDB( Context context )
     {
         if ( null == s_dbHelper ) {
+            Assert.assertNotNull( context );
             s_dbHelper = new DBHelper( context );
             // force any upgrade
             s_dbHelper.getWritableDatabase().close();

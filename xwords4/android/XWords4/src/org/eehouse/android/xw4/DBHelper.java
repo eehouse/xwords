@@ -20,9 +20,10 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -30,8 +31,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_OBITS = "obits";
     public static final String TABLE_NAME_DICTBROWSE = "dictbrowse";
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
+    public static final String TABLE_NAME_GROUPS = "groups";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 14;
+    private static final int DB_VERSION = 15;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -60,7 +62,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE";
     public static final String LASTMOVE = "LASTMOVE";
-    
+    public static final String GROUPID = "GROUPID";
 
     public static final String DICTNAME = "DICTNAME";
     public static final String MD5SUM = "MD5SUM";
@@ -75,6 +77,11 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String ITERPREFIX = "ITERPREFIX";
     public static final String CREATE_TIME = "CREATE_TIME";
     public static final String LASTPLAY_TIME = "LASTPLAY_TIME";
+
+    public static final String GROUPNAME = "GROUPNAME";
+    public static final String EXPANDED = "EXPANDED";
+
+    private Context m_context;
 
     private static final String[] s_summaryColsAndTypes = {
         GAME_NAME,    "TEXT"
@@ -99,6 +106,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,GAMEID,       "INTEGER"
         ,REMOTEDEVS,   "TEXT"
         ,LASTMOVE,     "INTEGER DEFAULT 0"
+        ,GROUPID,      "INTEGER"
         // HASMSGS: sqlite doesn't have bool; use 0 and 1
         ,HASMSGS,      "INTEGER DEFAULT 0"
         ,CONTRACTED,   "INTEGER DEFAULT 0"
@@ -131,9 +139,15 @@ public class DBHelper extends SQLiteOpenHelper {
         ,ITERPREFIX, "TEXT"
     };
 
+    private static final String[] s_groupsSchema = {
+        GROUPNAME,  "TEXT"
+        ,EXPANDED,  "INTEGER(1)"
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
+        m_context = context;
     }
 
     public static String getDBName()
@@ -148,6 +162,7 @@ public class DBHelper extends SQLiteOpenHelper {
         createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
         createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
         createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
+        createGroupsTable( db );
     }
 
     @Override
@@ -177,9 +192,11 @@ public class DBHelper extends SQLiteOpenHelper {
         case 12:
             createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
             createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
-
         case 13:
             addSumColumn( db, LASTMOVE );
+        case 14:
+            addSumColumn( db, GROUPID );
+            createGroupsTable( db );
             // nothing yet
             break;
         default:
@@ -219,6 +236,28 @@ public class DBHelper extends SQLiteOpenHelper {
         query.append( ");" );
 
         db.execSQL( query.toString() );
+    }
+
+    private void createGroupsTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_GROUPS, s_groupsSchema );
+
+        // Create an empty group name
+        ContentValues values = new ContentValues();
+        values.put( GROUPNAME, m_context.getString(R.string.group_cur_games) );
+        values.put( EXPANDED, 1 );
+        long curGroup = db.insert( TABLE_NAME_GROUPS, null, values );
+        values = new ContentValues();
+        values.put( GROUPNAME, m_context.getString(R.string.group_new_games) );
+        values.put( EXPANDED, 0 );
+        long newGroup = db.insert( TABLE_NAME_GROUPS, null, values );
+
+        // place all existing games in the initial unnamed group
+        values = new ContentValues();
+        values.put( GROUPID, curGroup );
+        db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
+
+        XWPrefs.setDefaultNewGameGroup( m_context, newGroup );
     }
 
 }
