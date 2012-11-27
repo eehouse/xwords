@@ -1229,27 +1229,18 @@
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
     <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap
-    here\u003c/a\u003E (or the raw link below) to accept my invitation and
+    here\u003c/a\u003E (or the full link below) to accept my invitation and
     join this game.
     \u003cbr \\\u003E
     \u003cbr \\\u003E
-    (raw link: %1$s)
-    \u003cbr \\\u003E 
-    \u003cbr \\\u003E 
-    \u003ca href=\"http://eehouse.org/market_redir.php\"\u003E Tap
-    here\u003c/a\u003E (or the raw link below) to
-    install Crosswords if you haven\'t already.
-    \u003cbr \\\u003E 
-    \u003cbr \\\u003E 
-    (raw link: http://eehouse.org/market_redir.php)
+    (full link: %1$s)
     </string>
 
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <string name="invite_txtf">Play Crosswords? Join this game: %1$s
-      . (But install Crosswords http://eehouse.org/market_redir.php
-      first if you haven\'t.)</string>
+    <string name="invite_txtf">Let\'s play Crosswords! Join this game:
+    %1$s .</string>
 
     <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
