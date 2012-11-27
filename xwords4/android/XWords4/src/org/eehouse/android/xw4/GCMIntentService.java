@@ -56,18 +56,24 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onMessage( Context context, Intent intent ) 
     {
-        String value = intent.getStringExtra( "msg" );
+        String value;
+
+        value = intent.getStringExtra( "getMoves" );
+        if ( null != value && Boolean.parseBoolean( value ) ) {
+            RelayReceiver.RestartTimer( context, true );
+        }
+        value = intent.getStringExtra( "checkUpdates" );
+        if ( null != value && Boolean.parseBoolean( value ) ) {
+            UpdateCheckReceiver.checkVersions( context, true );
+        }
+
+        value = intent.getStringExtra( "msg" );
         if ( null != value ) {
             String title = intent.getStringExtra( "title" );
             if ( null != title ) {
                 int code = value.hashCode() ^ title.hashCode();
                 Utils.postNotification( context, null, title, value, code );
             }
-        }
-
-        value = intent.getStringExtra( "getMoves" );
-        if ( null != value && Boolean.parseBoolean( value ) ) {
-            RelayReceiver.RestartTimer( context, true );
         }
     }
 
