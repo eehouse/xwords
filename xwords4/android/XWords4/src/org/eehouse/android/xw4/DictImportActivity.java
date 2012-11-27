@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.security.MessageDigest;
 import java.util.HashMap;
 
 import junit.framework.Assert;
@@ -183,16 +184,34 @@ public class DictImportActivity extends XWActivity {
         boolean success = false;
         File appFile = new File( DictUtils.getDownloadDir( this ), name );
         Assert.assertNotNull( appFile );
-        
+
+        // Get rid of this after debugging download/install problems
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch( Exception ex ) {
+            md = null;
+        }
+
         byte[] buf = new byte[1024*4];
         try {
+            int nTotal = 0;
             FileOutputStream fos = new FileOutputStream( appFile );
             int nRead;
             while ( 0 <= (nRead = is.read( buf, 0, buf.length )) ) {
                 fos.write( buf, 0, nRead );
+                if ( null != md ) {
+                    md.update( buf, 0, nRead );
+                }
+                nTotal += nRead;
             }
             fos.close();
             success = true;
+
+            String sum = null == md ? "<failed>" 
+                : Utils.digestToString( md.digest() );
+            DbgUtils.logf( "saveToDownloads: saved %d bytes to %s, md5sum=%s", 
+                           nTotal, appFile.getPath(), sum );
         } catch ( java.io.FileNotFoundException fnf ) {
             DbgUtils.loge( fnf );
         } catch ( java.io.IOException ioe ) {
