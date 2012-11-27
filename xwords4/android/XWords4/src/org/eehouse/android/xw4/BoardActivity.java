@@ -57,7 +57,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class BoardActivity extends XWActivity 
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
-               NetUtils.DownloadFinishedListener {
+               DictImportActivity.DownloadFinishedListener {
 
     public static final String INTENT_KEY_CHAT = "chat";
 
@@ -259,10 +259,11 @@ public class BoardActivity extends XWActivity
                             if ( DLG_USEDICT == id ) {
                                 setGotGameDict( m_getDict );
                             } else {
-                                NetUtils.downloadDictInBack( BoardActivity.this,
-                                                             m_gi.dictLang,
-                                                             m_getDict,
-                                                             BoardActivity.this );
+                                DictImportActivity
+                                    .downloadDictInBack( BoardActivity.this,
+                                                         m_gi.dictLang,
+                                                         m_getDict,
+                                                         BoardActivity.this );
                             }
                         }
                     };
@@ -1051,7 +1052,7 @@ public class BoardActivity extends XWActivity
     }
 
     //////////////////////////////////////////////////
-    // NetUtils.DownloadFinishedListener interface
+    // DictImportActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////
     public void downloadFinished( final String name, final boolean success )
     {

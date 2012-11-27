@@ -54,7 +54,7 @@ public class GamesList extends XWListActivity
     implements DispatchNotify.HandleRelaysIface,
                DBUtils.DBChangeListener,
                GameListAdapter.LoadItemCB, 
-               NetUtils.DownloadFinishedListener {
+               DictImportActivity.DownloadFinishedListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -103,15 +103,16 @@ public class GamesList extends XWListActivity
             case WARN_NODICT_SUBST:
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            // just do one
+                            // no name, so user must pick
                             if ( null == m_missingDictName ) {
                                 DictsActivity.launchAndDownload( GamesList.this, 
                                                                  m_missingDictLang );
                             } else {
-                                NetUtils.downloadDictInBack( GamesList.this,
-                                                             m_missingDictLang,
-                                                             m_missingDictName,
-                                                             GamesList.this );
+                                DictImportActivity
+                                    .downloadDictInBack( GamesList.this,
+                                                         m_missingDictLang,
+                                                         m_missingDictName,
+                                                         GamesList.this );
                             }
                         }
                     };
@@ -623,7 +624,7 @@ public class GamesList extends XWListActivity
         return handled;
     }
 
-    // NetUtils.DownloadFinishedListener interface
+    // DictImportActivity.DownloadFinishedListener interface
     public void downloadFinished( String name, final boolean success )
     {
         post( new Runnable() {
