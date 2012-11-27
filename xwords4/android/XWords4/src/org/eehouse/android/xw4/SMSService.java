@@ -664,11 +664,9 @@ public class SMSService extends Service {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) 
                 {
-                    DbgUtils.logf( "got MSG_DELIVERED" );
                     switch ( getResultCode() ) {
                     case Activity.RESULT_OK:
                         sendResult( MultiEvent.SMS_SEND_OK );
-                        DbgUtils.logf( "SUCCESS!!!" );
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
                         DbgUtils.showf( SMSService.this, "NO RADIO!!!" );
@@ -688,7 +686,6 @@ public class SMSService extends Service {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) 
                 {
-                    DbgUtils.logf( "got MSG_DELIVERED" );
                     if ( Activity.RESULT_OK == getResultCode() ) {
                         DbgUtils.logf( "SUCCESS!!!" );
                     } else {
