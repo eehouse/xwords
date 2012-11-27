@@ -99,11 +99,10 @@ public class NetLaunchInfo {
                                      String inviteID, int lang, 
                                      String dict, int nPlayersT )
     {
+        String host = context.getString( R.string.invite_host );
         Builder ub = new Builder();
         ub.scheme( "http" );
-        ub.path( context.getString( R.string.game_url_pathf, 
-                                    XWPrefs.getDefaultRedirHost( context ) ) );
-        
+        ub.path( context.getString( R.string.game_url_pathf, host ) );
         ub.appendQueryParameter( "lang", String.format("%d", lang ) );
         ub.appendQueryParameter( "np", String.format( "%d", nPlayersT ) );
         ub.appendQueryParameter( "room", room );

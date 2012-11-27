@@ -129,7 +129,7 @@
         <category android:name="android.intent.category.BROWSABLE" />
 
         <data android:scheme="http"
-              android:host="eehouse.org" android:pathPrefix="/and/" />
+              android:host="@string/invite_host" android:pathPrefix="/and/" />
       </intent-filter>
     </activity>
 

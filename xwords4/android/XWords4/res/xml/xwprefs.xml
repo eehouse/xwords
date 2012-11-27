@@ -324,11 +324,6 @@
 	   android:defaultValue="10998"
 	   android:numeric="decimal"
 	   />
-    <org.eehouse.android.xw4.XWEditTextPreference
-	   android:key="@string/key_redir_host"
-	   android:title="@string/redir_host"
-	   android:defaultValue="@string/default_host"
-	   />
 
     <org.eehouse.android.xw4.XWEditTextPreference
 	   android:key="@string/key_dict_host"
