@@ -126,7 +126,7 @@ public class ConnStatusHandler {
 
     private static HashMap<CommsConnType,SuccessRecord[]> s_records = 
         new HashMap<CommsConnType,SuccessRecord[]>();
-    private static Object s_lockObj = new Object();
+    private static Class s_lockObj = ConnStatusHandler.class;
     private static boolean s_needsSave = false;
 
     public static void setRect( int left, int top, int right, int bottom )

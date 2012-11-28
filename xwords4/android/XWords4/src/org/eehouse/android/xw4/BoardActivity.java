@@ -167,7 +167,7 @@ public class BoardActivity extends XWActivity
     private boolean m_haveInvited = false;
 
     private static BoardActivity s_this = null;
-    private static Object s_thisLocker = new Object();
+    private static Class s_thisLocker = BoardActivity.class;
 
     public static boolean feedMessage( int gameID, byte[] msg, 
                                        CommsAddrRec retAddr )
