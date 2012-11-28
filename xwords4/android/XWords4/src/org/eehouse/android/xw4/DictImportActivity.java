@@ -1,7 +1,7 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -41,7 +41,7 @@ import junit.framework.Assert;
 public class DictImportActivity extends XWActivity {
 
     // URIs coming in in intents
-    public static final String APK_EXTRA = "APK";
+    private static final String APK_EXTRA = "APK";
     private static final String DICT_EXTRA = "XWD";
 
     public interface DownloadFinishedListener {
@@ -183,35 +183,16 @@ public class DictImportActivity extends XWActivity {
     {
         boolean success = false;
         File appFile = new File( DictUtils.getDownloadDir( this ), name );
-        Assert.assertNotNull( appFile );
-
-        // Get rid of this after debugging download/install problems
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch( Exception ex ) {
-            md = null;
-        }
 
         byte[] buf = new byte[1024*4];
         try {
-            int nTotal = 0;
             FileOutputStream fos = new FileOutputStream( appFile );
             int nRead;
             while ( 0 <= (nRead = is.read( buf, 0, buf.length )) ) {
                 fos.write( buf, 0, nRead );
-                if ( null != md ) {
-                    md.update( buf, 0, nRead );
-                }
-                nTotal += nRead;
             }
             fos.close();
             success = true;
-
-            String sum = null == md ? "<failed>" 
-                : Utils.digestToString( md.digest() );
-            DbgUtils.logf( "saveToDownloads: saved %d bytes to %s, md5sum=%s", 
-                           nTotal, appFile.getPath(), sum );
         } catch ( java.io.FileNotFoundException fnf ) {
             DbgUtils.loge( fnf );
         } catch ( java.io.IOException ioe ) {
@@ -281,6 +262,14 @@ public class DictImportActivity extends XWActivity {
         intent.putExtra( DICT_EXTRA, url );
         context.startActivity( intent );
     }
+
+    public static Intent makeAppDownloadIntent( Context context, String url )
+    {
+        Intent intent = new Intent( context, DictImportActivity.class );
+        intent.putExtra( APK_EXTRA, url );
+        return intent;
+    }
+
 }
 
 
