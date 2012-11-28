@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri.Builder;
 import android.net.Uri;
 import android.os.Bundle;
 import java.net.URLEncoder;
@@ -99,14 +98,15 @@ public class NetLaunchInfo {
                                      String inviteID, int lang, 
                                      String dict, int nPlayersT )
     {
-        String host = context.getString( R.string.invite_host );
-        Builder ub = new Builder();
-        ub.scheme( "http" );
-        ub.path( context.getString( R.string.game_url_pathf, host ) );
-        ub.appendQueryParameter( "lang", String.format("%d", lang ) );
-        ub.appendQueryParameter( "np", String.format( "%d", nPlayersT ) );
-        ub.appendQueryParameter( "room", room );
-        ub.appendQueryParameter( "id", inviteID );
+        Uri.Builder ub = new Uri.Builder()
+            .scheme( "http" )
+            .path( String.format( "//%s%s", 
+                                  context.getString(R.string.invite_host),
+                                  context.getString(R.string.invite_prefix) ) )
+            .appendQueryParameter( "lang", String.format("%d", lang ) )
+            .appendQueryParameter( "np", String.format( "%d", nPlayersT ) )
+            .appendQueryParameter( "room", room )
+            .appendQueryParameter( "id", inviteID );
         if ( null != dict ) {
             ub.appendQueryParameter( "wl", dict );
         }
