@@ -425,7 +425,8 @@ public class Utils {
 
     public static Intent makeInstallIntent( File file )
     {
-        Uri uri = Uri.parse( "file:/" + file.getPath() );
+        String withScheme = "file://" + file.getPath();
+        Uri uri = Uri.parse( withScheme );
         Intent intent = new Intent( Intent.ACTION_VIEW );
         intent.setDataAndType( uri, XWConstants.APK_TYPE );
         intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
