@@ -57,9 +57,10 @@ public class GamesList extends XWListActivity
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
-    private static final int SHOW_SUBST        = WARN_NODICT + 2;
-    private static final int GET_NAME          = WARN_NODICT + 3;
-    private static final int RENAME_GAME       = WARN_NODICT + 4;
+    private static final int WARN_NODICT_NEW   = WARN_NODICT + 2;
+    private static final int SHOW_SUBST        = WARN_NODICT + 3;
+    private static final int GET_NAME          = WARN_NODICT + 4;
+    private static final int RENAME_GAME       = WARN_NODICT + 5;
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
@@ -102,6 +103,7 @@ public class GamesList extends XWListActivity
             AlertDialog.Builder ab;
             switch ( id ) {
             case WARN_NODICT:
+            case WARN_NODICT_NEW:
             case WARN_NODICT_SUBST:
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
@@ -125,6 +127,10 @@ public class GamesList extends XWListActivity
                 if ( WARN_NODICT == id ) {
                     message = getString( R.string.no_dictf,
                                          gameName, langName );
+                } else if ( WARN_NODICT_NEW == id ) {
+                    message = 
+                        getString( R.string.invite_dict_missing_body_nonamef,
+                                   null, m_missingDictName, langName );
                 } else {
                     message = getString( R.string.no_dict_substf,
                                          gameName, m_missingDictName, 
@@ -134,7 +140,7 @@ public class GamesList extends XWListActivity
                 ab = new AlertDialog.Builder( this )
                     .setTitle( R.string.no_dict_title )
                     .setMessage( message )
-                    .setPositiveButton( R.string.button_ok, null )
+                    .setPositiveButton( R.string.button_cancel, null )
                     .setNegativeButton( R.string.button_download, lstnr )
                     ;
                 if ( WARN_NODICT_SUBST == id ) {
@@ -691,7 +697,7 @@ public class GamesList extends XWListActivity
             m_netLaunchInfo = nli;
             m_missingDictLang = nli.lang;
             m_missingDictName = nli.dict;
-            showDialog( WARN_NODICT );
+            showDialog( WARN_NODICT_NEW );
         }
         return haveDict;
     }

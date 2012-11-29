@@ -1461,9 +1461,10 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-    <string name="no_dictf">Unable to open game \"%1$s\" because no
-      %2$s wordlist found. (It may have been deleted, or stored on
-      an external card that is no longer available.)</string>
+    <string name="no_dictf">You need to download a replacement %2$s
+    wordlist before you can open game \"%1$s\". (The original may have
+    been deleted or stored on an external card that is no longer
+    available.)</string>
 
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
@@ -2114,10 +2115,10 @@
     play Crosswords using the wordlist %2$s (for play in %3$s), but it
     is not installed.  Would you like to download the wordlist or
     decline the invitation?</string>
-    <string name="invite_dict_missing_body_nonamef">You have been invited to
-    play Crosswords using the wordlist %2$s (for play in %3$s), but it
-    is not installed.  Would you like to download the wordlist or
-    decline the invitation?</string>
+    <string name="invite_dict_missing_body_nonamef">You have been
+    invited to play Crosswords using the wordlist %2$s (for play in
+    %3$s), but it is not installed.  Would you like to download the
+    wordlist?</string>
     <string name="button_decline">Decline</string>
 
     <string name="downloadingf">Downloading %s...</string>
