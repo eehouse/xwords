@@ -311,6 +311,7 @@ public class GameUtils {
         GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
             tellDied( context, lock, informNow );
+            Utils.cancelNotification( context, (int)rowid );
             DBUtils.deleteGame( context, lock );
             lock.unlock();
         } else {

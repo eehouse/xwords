@@ -69,7 +69,7 @@ public class RelayService extends Service {
                     String msg = Utils.format( this, R.string.notify_bodyf, 
                                                GameUtils.getName( this, rowid ) );
                     Utils.postNotification( this, intent, R.string.notify_title,
-                                            msg, relayID.hashCode() );
+                                            msg, (int)rowid );
                 }
             }
         }

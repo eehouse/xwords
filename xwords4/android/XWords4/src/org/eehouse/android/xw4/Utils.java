@@ -174,7 +174,8 @@ public class Utils {
     }
 
     public static void postNotification( Context context, Intent intent, 
-                                         String title, String body, int id )
+                                         String title, String body, 
+                                         int id )
     {
         /* s_nextCode: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager

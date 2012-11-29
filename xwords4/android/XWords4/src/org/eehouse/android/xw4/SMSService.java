@@ -432,7 +432,8 @@ public class SMSService extends Service {
                                      MultiService.OWNER_SMS );
                     intent.putExtra( MultiService.INVITER, 
                                      Utils.phoneToContact( this, phone, true ) );
-                    MultiService.postMissingDictNotification( this, intent, gameID );
+                    MultiService.postMissingDictNotification( this, intent, 
+                                                              gameID );
                 }
                 break;
             case DATA:
@@ -542,7 +543,7 @@ public class SMSService extends Service {
         String owner = Utils.phoneToContact( this, phone, true );
         String body = Utils.format( this, R.string.new_name_bodyf, 
                                     owner );
-        postNotification( gameID, R.string.new_sms_title, body );
+        postNotification( gameID, R.string.new_sms_title, body, rowid );
 
         ackInvite( phone, gameID );
     }
@@ -607,18 +608,19 @@ public class SMSService extends Service {
                     if ( GameUtils.feedMessage( this, rowid, msg, addr, 
                                                 sink ) ) {
                         postNotification( gameID, R.string.new_smsmove_title, 
-                                          getString(R.string.new_move_body)
-                                          );
+                                          getString(R.string.new_move_body),
+                                          rowid );
                     }
                 }
             }
         }
     }
 
-    private void postNotification( int gameID, int title, String body )
+    private void postNotification( int gameID, int title, String body, 
+                                   long rowid )
     {
         Intent intent = GamesList.makeGameIDIntent( this, gameID );
-        Utils.postNotification( this, intent, title, body, gameID );
+        Utils.postNotification( this, intent, title, body, (int)rowid );
     }
 
     // Runs in separate thread

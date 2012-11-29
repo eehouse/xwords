@@ -1732,7 +1732,7 @@ public class BoardActivity extends XWActivity
                 if ( null != m_xport ) {
                     warnIfNoTransport();
                     trySendChats();
-                    removeNotifications();
+                    Utils.cancelNotification( this, (int)m_rowid );
                     m_xport.tickle( m_connType );
                     tryInvites();
                 }
@@ -1920,26 +1920,6 @@ public class BoardActivity extends XWActivity
                 m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
             }
             m_pendingChats.clear();
-        }
-    }
-
-    private void removeNotifications()
-    {
-        int id = 0;
-        switch( m_connType ) {
-        case COMMS_CONN_BT:
-        case COMMS_CONN_SMS:
-            id = m_gi.gameID;
-            break;
-        case COMMS_CONN_RELAY:
-            String relayID = DBUtils.getRelayID( this, m_rowid );
-            if ( null != relayID ) {
-                id = relayID.hashCode();
-            }
-            break;
-        }
-        if ( 0 != id ) {
-            Utils.cancelNotification( this, id );
         }
     }
 
