@@ -83,7 +83,7 @@ public class GamesList extends XWListActivity
     private GameListAdapter m_adapter;
     private String m_missingDict;
     private String m_missingDictName;
-    private long m_missingDictRowId;
+    private long m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
     private long m_rowid;
@@ -162,8 +162,7 @@ public class GamesList extends XWListActivity
                                                     m_missingDictRowId,
                                                     m_missingDictName,
                                                     dict );
-                            GameUtils.launchGame( GamesList.this, 
-                                                  m_missingDictRowId );
+                            launchGameIf();
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -596,7 +595,10 @@ public class GamesList extends XWListActivity
     {
         post( new Runnable() {
                 public void run() {
-                    boolean madeGame = success ? makeNewNetGameIf() : false;
+                    boolean madeGame = false;
+                    if ( success ) {
+                        madeGame = makeNewNetGameIf() || launchGameIf();
+                    }
                     if ( ! madeGame ) {
                         int id = success ? R.string.download_done 
                             : R.string.download_failed;
@@ -698,9 +700,8 @@ public class GamesList extends XWListActivity
     {
         String[][] missingNames = new String[1][];
         int[] missingLang = new int[1];
-        boolean hasDicts = GameUtils.gameDictsHere( this, rowid,
-                                                    missingNames, 
-                                                    missingLang );
+        boolean hasDicts = 
+            GameUtils.gameDictsHere( this, rowid, missingNames, missingLang );
         if ( !hasDicts ) {
             m_missingDictLang = missingLang[0];
             if ( 0 < missingNames[0].length ) {
@@ -716,7 +717,7 @@ public class GamesList extends XWListActivity
             } else {
                 String dict = DictLangCache.getHaveLang( this, m_missingDictLang)[0];
                 GameUtils.replaceDicts( this, m_missingDictRowId, null, dict );
-                GameUtils.launchGame( this, m_missingDictRowId );
+                launchGameIf();
             }
         }
         return hasDicts;
@@ -842,6 +843,16 @@ public class GamesList extends XWListActivity
         if ( madeGame ) {
             makeNewNetGame( m_netLaunchInfo );
             m_netLaunchInfo = null;
+        }
+        return madeGame;
+    }
+
+    private boolean launchGameIf()
+    {
+        boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
+        if ( madeGame ) {
+            GameUtils.launchGame( this, m_missingDictRowId );
+            m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
         }
         return madeGame;
     }
