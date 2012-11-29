@@ -48,7 +48,6 @@ public class XWActivity extends Activity
     {
         DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
         super.onStart();
-        DispatchNotify.SetRunning( this );
     }
 
     @Override
@@ -73,7 +72,6 @@ public class XWActivity extends Activity
     protected void onStop()
     {
         DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
-        DispatchNotify.ClearRunning( this );
         super.onStop();
     }
 

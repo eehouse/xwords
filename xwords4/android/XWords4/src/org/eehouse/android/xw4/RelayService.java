@@ -63,9 +63,9 @@ public class RelayService extends Service {
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
             if ( null != rowids ) {
                 for ( long rowid : rowids ) {
-                    Intent intent = new Intent( this, DispatchNotify.class );
-                    intent.putExtra( DispatchNotify.RELAYIDS_EXTRA, 
-                                     new String[] {relayID} );
+                    Intent intent = 
+                        GamesList.makeRelayIdsIntent( this,
+                                                      new String[] {relayID} );
                     String msg = Utils.format( this, R.string.notify_bodyf, 
                                                GameUtils.getName( this, rowid ) );
                     Utils.postNotification( this, intent, R.string.notify_title,

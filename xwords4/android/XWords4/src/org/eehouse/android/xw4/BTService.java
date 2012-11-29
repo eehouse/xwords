@@ -974,8 +974,7 @@ public class BTService extends Service {
 
     private void postNotification( int gameID, int title, String body )
     {
-        Intent intent = new Intent( this, DispatchNotify.class );
-        intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
+        Intent intent = GamesList.makeGameIDIntent( this, gameID );
         Utils.postNotification( this, intent, R.string.new_btmove_title, 
                                 body, gameID );
     }
