@@ -133,6 +133,15 @@
               android:pathPrefix="@string/invite_prefix"
               />
       </intent-filter>
+
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:mimeType="*/*"
+              android:scheme="content" 
+              />
+      </intent-filter>
     </activity>
 
     <!-- downloading dicts -->

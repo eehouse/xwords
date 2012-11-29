@@ -24,12 +24,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.Html;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Arrays;
-import java.util.concurrent.locks.Lock;
 import java.util.HashMap;
 import java.util.HashSet;
-import android.text.Html;
+import java.util.concurrent.locks.Lock;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import junit.framework.Assert;
 
@@ -539,11 +542,25 @@ public class GameUtils {
             Intent intent = new Intent();
             if ( choseEmail ) {
                 intent.setAction( Intent.ACTION_SEND );
-                intent.setType( "message/rfc822");
                 String subject =
                     Utils.format( context, R.string.invite_subjectf, room );
                 intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+
+                File tmpdir = DictUtils.getDownloadDir( context );
+                if ( null == tmpdir ) { // no attachment
+                    intent.setType( "message/rfc822");
+                } else {
+                    intent.setType( context.getString( R.string.invite_mime ) );
+
+                    File attach = makeJsonFor( tmpdir, room, inviteID, lang, 
+                                               dict, nPlayers );
+                    Uri uri = Uri.fromFile( attach );
+                    DbgUtils.logf( "using file uri for attachment: %s", 
+                                   uri.toString() );
+                    intent.putExtra( Intent.EXTRA_STREAM, uri );
+                }
+
                 choiceID = R.string.invite_chooser_email;
             } else {
                 intent.setAction( Intent.ACTION_VIEW );
@@ -901,5 +918,29 @@ public class GameUtils {
         }
     }
 
+    private static File makeJsonFor( File dir, String room, String inviteID,
+                                     int lang, String dict, int nPlayers )
+    {
+        File result = null;
+        JSONObject json = new JSONObject();
+        try {
+            json.put( MultiService.ROOM, room );
+            json.put( MultiService.INVITEID, inviteID );
+            json.put( MultiService.LANG, lang );
+            json.put( MultiService.DICT, dict );
+            json.put( MultiService.NPLAYERST, nPlayers );
+            byte[] data = json.toString().getBytes();
+
+            File file = new File( dir, 
+                                  String.format("invite_%s.json", room ) );
+            FileOutputStream fos = new FileOutputStream( file );
+            fos.write( data, 0, data.length );
+            fos.close();
+            result = file;
+        } catch ( Exception ex ) {
+            DbgUtils.loge( ex );
+        }
+        return result;
+    }
 
 }
