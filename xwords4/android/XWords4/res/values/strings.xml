@@ -1427,9 +1427,7 @@
       Guest wordlists; Host wins.</string>
 
 
-
-    <string name="downloading_dictf">Downloading Crosswords
-      wordlist %s...</string>
+    <string name="downloading_dictf">Downloading %s...</string>
 
     <!-- 
        ############################################################

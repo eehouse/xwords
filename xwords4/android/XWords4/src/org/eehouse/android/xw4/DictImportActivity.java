@@ -165,16 +165,17 @@ public class DictImportActivity extends XWActivity {
                     && intent.getType().equals( "application/x-xwordsdict" ) ) {
             dft = new DownloadFilesTask( false );
         } else if ( uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
-            String txt = getString( R.string.downloading_dictf,
-                                    basename( uri.getPath()) );
-            TextView view = (TextView)findViewById( R.id.dwnld_message );
-            view.setText( txt );
             dft = new DownloadFilesTask( uri.toString(), false );
         }
 
         if ( null == dft ) {
             finish();
         } else {
+            String showName = basename( uri.getPath() );
+            String msg = getString( R.string.downloading_dictf, showName );
+            TextView view = (TextView)findViewById( R.id.dwnld_message );
+            view.setText( msg );
+            
             dft.execute( uri );
         }
 	}
