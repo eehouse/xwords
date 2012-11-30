@@ -388,7 +388,6 @@ public class SMSService extends Service {
         int count = (msg.length() + (MAX_LEN_TEXT-1)) / MAX_LEN_TEXT;
         String[] result = new String[count];
         int msgID = ++s_nSent % 0x000000FF;
-        DbgUtils.logf( "preparing %d packets for msgid %x", count, msgID );
 
         int start = 0;
         int end = 0;
@@ -400,7 +399,6 @@ public class SMSService extends Service {
             end += len;
             result[ii] = String.format( "0:%X:%X:%X:%s", msgID, ii, count, 
                                         msg.substring( start, end ) );
-            DbgUtils.logf( "fragment[%d]: %s", ii, result[ii] );
             start = end;
         }
         return result;
@@ -505,7 +503,6 @@ public class SMSService extends Service {
 
     private void disAssemble( String senderPhone, String fullMsg )
     {
-        DbgUtils.logf( "disAssemble()" );
         byte[] data = XwJNI.base64Decode( fullMsg );
         DataInputStream dis = 
             new DataInputStream( new ByteArrayInputStream(data) );
@@ -564,8 +561,6 @@ public class SMSService extends Service {
             for ( String fragment : fragments ) {
                 String asPublic = toPublicFmt( fragment );
                 mgr.sendTextMessage( phone, null, asPublic, sent, delivery );
-                DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
-                               asPublic, asPublic.length(), phone );
             }
             if ( s_showToasts ) {
                 DbgUtils.showf( this, "sent %dth msg", s_nSent );
@@ -707,7 +702,6 @@ public class SMSService extends Service {
         public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
         {
             int nSent = -1;
-            DbgUtils.logf( "SMSMsgSink.transportSend()" );
             if ( null != addr ) {
                 nSent = sendPacket( addr.sms_phone, gameID, buf );
             } else {
@@ -750,7 +744,6 @@ public class SMSService extends Service {
         public boolean isComplete()
         {
             boolean complete = m_msgs.length == m_haveCount;
-            DbgUtils.logf( "isComplete(msg %d)=>%b", m_msgID, complete );
             return complete;
         }
 
