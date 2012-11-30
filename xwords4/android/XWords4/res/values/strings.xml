@@ -1552,8 +1552,8 @@
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. -->
     <string name="dup_game_queryf">You already have a game that seems
-      to have been created from the same invitation.  Are you sure you
-      want to open another?</string>
+    to have been created (on %1$s) from the same invitation.  Are you
+    sure you want to create another?</string>
 
     <!-- Title of generic dialog used to display information -->
     <string name="info_title">FYI...</string>

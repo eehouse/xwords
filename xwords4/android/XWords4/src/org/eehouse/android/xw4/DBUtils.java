@@ -535,13 +535,16 @@ public class DBUtils {
         }
     }
 
-    public static long getRowIDForOpen( Context context, NetLaunchInfo nli )
+    // Return creation time of newest game matching this nli, or null
+    // if none found.
+    public static Date getMostRecentCreate( Context context, 
+                                            NetLaunchInfo nli )
     {
-        long result = ROWID_NOTFOUND;
+        Date result = null;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { ROW_ID };
+            String[] columns = { DBHelper.CREATE_TIME };
             String selection = 
                 String.format( "%s='%s' AND %s='%s' AND %s=%d AND %s=%d",
                                DBHelper.ROOMNAME, nli.room, 
@@ -549,9 +552,12 @@ public class DBUtils {
                                DBHelper.DICTLANG, nli.lang, 
                                DBHelper.NUM_PLAYERS, nli.nPlayersT );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                      selection, null, null, null, null );
-            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                result = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
+                                      selection, null, null, null, 
+                                      DBHelper.CREATE_TIME + " DESC" ); // order by
+            while ( cursor.moveToNext() ) {
+                int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
+                result = new Date( cursor.getLong( indx ) );
+                break;
             }
             cursor.close();
             db.close();
@@ -559,14 +565,14 @@ public class DBUtils {
         return result;
     }
 
-    public static long getRowIDForOpen( Context context, Uri data )
+    public static Date getMostRecentCreate( Context context, Uri data )
     {
-        long rowid = ROWID_NOTFOUND;
+        Date result = null;
         NetLaunchInfo nli = new NetLaunchInfo( context, data );
         if ( null != nli && nli.isValid() ) {
-            rowid = getRowIDForOpen( context, nli );
+            result = getMostRecentCreate( context, nli );
         }
-        return rowid;
+        return result;
     }
 
     public static String[] getRelayIDs( Context context, boolean noMsgs ) 

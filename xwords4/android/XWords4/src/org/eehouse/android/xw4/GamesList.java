@@ -20,30 +20,31 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.ListActivity;
-import android.app.Dialog;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ListActivity;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Button;
-import android.view.MenuInflater;
 import java.io.File;
-import android.preference.PreferenceManager;
+import java.util.Date;
 // import android.telephony.PhoneStateListener;
 // import android.telephony.TelephonyManager;
 import junit.framework.Assert;
@@ -779,14 +780,15 @@ public class GamesList extends XWListActivity
 
     private void startNewNetGame( NetLaunchInfo nli )
     {
-        long rowid = DBUtils.getRowIDForOpen( this, nli );
+        Date create = DBUtils.getMostRecentCreate( this, nli );
 
-        if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+        if ( null == create ) {
             if ( checkWarnNoDict( nli ) ) {
                 makeNewNetGame( nli );
             }
         } else {
-            String msg = getString( R.string.dup_game_queryf, nli.room );
+            String msg = getString( R.string.dup_game_queryf, 
+                                    create.toString() );
             m_netLaunchInfo = nli;
             showConfirmThen( msg, NEW_NET_GAME_ACTION );
         }
