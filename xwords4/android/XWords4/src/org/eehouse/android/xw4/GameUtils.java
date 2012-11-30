@@ -549,7 +549,8 @@ public class GameUtils {
                 intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
-                File tmpdir = DictUtils.getDownloadDir( context );
+                File tmpdir = XWApp.ATTACH_SUPPORTED ? 
+                    DictUtils.getDownloadDir( context ) : null;
                 if ( null == tmpdir ) { // no attachment
                     intent.setType( "message/rfc822");
                 } else {
@@ -924,23 +925,25 @@ public class GameUtils {
                                      int lang, String dict, int nPlayers )
     {
         File result = null;
-        JSONObject json = new JSONObject();
-        try {
-            json.put( MultiService.ROOM, room );
-            json.put( MultiService.INVITEID, inviteID );
-            json.put( MultiService.LANG, lang );
-            json.put( MultiService.DICT, dict );
-            json.put( MultiService.NPLAYERST, nPlayers );
-            byte[] data = json.toString().getBytes();
+        if ( XWApp.ATTACH_SUPPORTED ) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put( MultiService.ROOM, room );
+                json.put( MultiService.INVITEID, inviteID );
+                json.put( MultiService.LANG, lang );
+                json.put( MultiService.DICT, dict );
+                json.put( MultiService.NPLAYERST, nPlayers );
+                byte[] data = json.toString().getBytes();
 
-            File file = new File( dir, 
-                                  String.format("invite_%s.json", room ) );
-            FileOutputStream fos = new FileOutputStream( file );
-            fos.write( data, 0, data.length );
-            fos.close();
-            result = file;
-        } catch ( Exception ex ) {
-            DbgUtils.loge( ex );
+                File file = new File( dir, 
+                                      String.format("invite_%s.json", room ) );
+                FileOutputStream fos = new FileOutputStream( file );
+                fos.write( data, 0, data.length );
+                fos.close();
+                result = file;
+            } catch ( Exception ex ) {
+                DbgUtils.loge( ex );
+            }
         }
         return result;
     }
