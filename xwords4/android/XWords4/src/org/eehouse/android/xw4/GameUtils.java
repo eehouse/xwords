@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.Html;
+import android.text.TextUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
@@ -348,7 +349,8 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         if ( pairs.anyMissing( dictNames ) ) {
-            DbgUtils.logf( "loadMakeGame() failing: dict unavailable" );
+            DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable", 
+                           TextUtils.join( ",", dictNames ) );
         } else {
             gamePtr = XwJNI.initJNI();
 
