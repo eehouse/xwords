@@ -800,7 +800,7 @@ public class GamesList extends XWListActivity
         } else {
             Uri data = intent.getData();
             if ( null != data ) {
-                nli = new NetLaunchInfo( data );
+                nli = new NetLaunchInfo( this, data );
             }
         }
         if ( null != nli && nli.isValid() ) {

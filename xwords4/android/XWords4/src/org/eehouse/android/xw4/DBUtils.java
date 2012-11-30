@@ -562,7 +562,7 @@ public class DBUtils {
     public static long getRowIDForOpen( Context context, Uri data )
     {
         long rowid = ROWID_NOTFOUND;
-        NetLaunchInfo nli = new NetLaunchInfo( data );
+        NetLaunchInfo nli = new NetLaunchInfo( context, data );
         if ( null != nli && nli.isValid() ) {
             rowid = getRowIDForOpen( context, nli );
         }

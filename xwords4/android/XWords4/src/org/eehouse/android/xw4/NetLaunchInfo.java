@@ -20,11 +20,15 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import java.net.URLEncoder;
+import java.io.InputStream;
+import org.json.JSONObject;
+import junit.framework.Assert;
 
 
 public class NetLaunchInfo {
@@ -63,18 +67,35 @@ public class NetLaunchInfo {
         m_valid = bundle.getBoolean( VALID );
     }
 
-    public NetLaunchInfo( Uri data )
+    public NetLaunchInfo( Context context, Uri data )
     {
         m_valid = false;
         if ( null != data ) {
+            String scheme = data.getScheme();
             try {
-                room = data.getQueryParameter( "room" );
-                inviteID = data.getQueryParameter( "id" );
-                dict = data.getQueryParameter( "wl" );
-                String langStr = data.getQueryParameter( "lang" );
-                lang = Integer.decode( langStr );
-                String np = data.getQueryParameter( "np" );
-                nPlayersT = Integer.decode( np );
+                if ( "content".equals(scheme) ) {
+                    Assert.assertNotNull( context );
+                    ContentResolver resolver = context.getContentResolver();
+                    InputStream is = resolver.openInputStream( data );
+                    int len = is.available();
+                    byte[] buf = new byte[len];
+                    is.read( buf );
+
+                    JSONObject json = new JSONObject( new String( buf ) );
+                    room = json.getString( MultiService.ROOM );
+                    inviteID = json.getString( MultiService.INVITEID );
+                    lang = json.getInt( MultiService.LANG );
+                    dict = json.getString( MultiService.DICT );
+                    nPlayersT = json.getInt( MultiService.NPLAYERST );
+                } else {
+                    room = data.getQueryParameter( "room" );
+                    inviteID = data.getQueryParameter( "id" );
+                    dict = data.getQueryParameter( "wl" );
+                    String langStr = data.getQueryParameter( "lang" );
+                    lang = Integer.decode( langStr );
+                    String np = data.getQueryParameter( "np" );
+                    nPlayersT = Integer.decode( np );
+                }
                 m_valid = true;
             } catch ( Exception e ) {
                 DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
