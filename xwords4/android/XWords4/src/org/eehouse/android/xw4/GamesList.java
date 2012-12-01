@@ -54,7 +54,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
-public class GamesList extends XWListActivity 
+public class GamesList extends XWExpandableListActivity 
     implements DBUtils.DBChangeListener,
                GameListAdapter.LoadItemCB, 
                DictImportActivity.DownloadFinishedListener {
