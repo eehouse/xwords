@@ -50,10 +50,12 @@ def init():
 
     return con
 
+#  WHERE stime IS NULL
+
 def getPendingMsgs( con, typ ):
     cur = con.cursor()
-    query = """SELECT id, devid FROM msgs WHERE
-        devid IN (SELECT id FROM devices WHERE devtype=%d) 
+    query = """SELECT id, devid FROM msgs 
+        WHERE devid IN (SELECT id FROM devices WHERE devtype=%d) 
         AND NOT connname IN (SELECT connname FROM games WHERE dead); """
     cur.execute(query % typ)
     result = cur.fetchall()
@@ -75,23 +77,28 @@ def notifyGCM( devids, typ ):
                  # 'msg' : "I am your father, Luke.",
                  }
         response = instance.json_request( registration_ids = devids,
-                                          data = data )
-
+                                          # restricted_package_name = 'org.eehouse.android.xw4',
+                                          data = data,
+                                          # collapse_key = 'NewMove',
+                                          )
         if 'errors' in response:
-            for error, reg_ids in response.items():
-                print error
+            response = response['errors']
+            if 'NotRegistered' in response:
+                for id in response['NotRegistered']:
+                    print 'need to remove "', id, '" from db'
+            else: 
+                print "got some kind of error"
         else:
-            print 'no errors',
-            if g_debug: print ':', response
-            else: print
+            if g_debug: print 'no errors:', response
     else:
         print "not sending to", len(devids), "devices because typ ==", typ
 
 def shouldSend(val):
-    pow = 1
-    while pow < val:
-        pow *= 2
-    return pow == val
+    return val == 1
+    # pow = 1
+    # while pow < val:
+    #     pow *= 3
+    # return pow == val
 
 # given a list of msgid, devid lists, figure out which messages should
 # be sent/resent now and mark them as sent.  Backoff is based on
@@ -99,7 +106,6 @@ def shouldSend(val):
 # before, backoff applies.
 def targetsAfterBackoff( msgs ):
     global g_sent
-    print 'sent:', g_sent
     targets = {}
     for row in msgs:
         msgid = row[0]
@@ -174,16 +180,16 @@ def main():
             if 0 < len(targets):
                 if 0 < emptyCount: print ""
                 emptyCount = 0
-                print strftime("%Y-%m-%d %H:%M:%S", gmtime()),
+                print strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                 print "devices needing notification:", targets
                 notifyGCM( asGCMIds( g_con, targets, typ ), typ )
                 pruneSent( devids )
         else:
             emptyCount += 1
-            if not g_debug:
+            if (0 == (emptyCount%5)) and not g_debug:
                 sys.stdout.write('.')
                 sys.stdout.flush()
-            if 0 == (emptyCount % LINE_LEN): print ""
+            if 0 == (emptyCount % (LINE_LEN*5)): print ""
         if 0 == loopInterval: break
         time.sleep( loopInterval )
 
