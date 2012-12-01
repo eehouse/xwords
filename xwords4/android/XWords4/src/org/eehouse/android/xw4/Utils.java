@@ -444,7 +444,6 @@ public class Utils {
             pm.queryIntentActivities( intent, 
                                       PackageManager.MATCH_DEFAULT_ONLY );
         result = 0 < doers.size();
-        DbgUtils.logf( "canInstall()=>%b", result );
         return result;
     }
 
