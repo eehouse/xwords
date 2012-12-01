@@ -581,8 +581,8 @@ DBMgr::PendingMsgCount( const char* connName, int hid )
     int count = 0;
     const char* fmt = "SELECT COUNT(*) FROM " MSGS_TABLE
         " WHERE connName = '%s' AND hid = %d "
-#ifdef HAVE_SENDTIME
-        "AND sendtime IS NULL"
+#ifdef HAVE_STIME
+        "AND stime IS NULL"
 #endif
         ;
     string query;
@@ -692,8 +692,8 @@ DBMgr::CountStoredMessages( const char* const connName, int hid )
 {
     const char* fmt = "SELECT count(*) FROM " MSGS_TABLE 
         " WHERE connname = '%s' "
-#ifdef HAVE_SENDTIME
-        "AND sendtime IS NULL"
+#ifdef HAVE_STIME
+        "AND stime IS NULL"
 #endif
         ;
 
@@ -748,8 +748,8 @@ DBMgr::GetNthStoredMessage( const char* const connName, int hid,
 {
     const char* fmt = "SELECT id, msg, msglen FROM " MSGS_TABLE
         " WHERE connName = '%s' AND hid = %d "
-#ifdef HAVE_SENDTIME
-        "AND sendtime IS NULL "
+#ifdef HAVE_STIME
+        "AND stime IS NULL "
 #endif
         "ORDER BY id LIMIT 1 OFFSET %d";
     string query;
@@ -807,8 +807,8 @@ DBMgr::RemoveStoredMessages( const int* msgIDs, int nMsgIDs )
         }
 
         const char* fmt = 
-#ifdef HAVE_SENDTIME
-        "UPDATE " MSGS_TABLE " SET sendtime='now' "
+#ifdef HAVE_STIME
+        "UPDATE " MSGS_TABLE " SET stime='now' "
 #else
         "DELETE FROM " MSGS_TABLE 
 #endif
