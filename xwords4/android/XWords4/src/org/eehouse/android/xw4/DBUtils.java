@@ -535,13 +535,16 @@ public class DBUtils {
         }
     }
 
-    public static long getRowIDForOpen( Context context, NetLaunchInfo nli )
+    // Return creation time of newest game matching this nli, or null
+    // if none found.
+    public static Date getMostRecentCreate( Context context, 
+                                            NetLaunchInfo nli )
     {
-        long result = ROWID_NOTFOUND;
+        Date result = null;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { ROW_ID };
+            String[] columns = { DBHelper.CREATE_TIME };
             String selection = 
                 String.format( "%s='%s' AND %s='%s' AND %s=%d AND %s=%d",
                                DBHelper.ROOMNAME, nli.room, 
@@ -549,9 +552,11 @@ public class DBUtils {
                                DBHelper.DICTLANG, nli.lang, 
                                DBHelper.NUM_PLAYERS, nli.nPlayersT );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                      selection, null, null, null, null );
-            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                result = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
+                                      selection, null, null, null, 
+                                      DBHelper.CREATE_TIME + " DESC" ); // order by
+            if ( cursor.moveToNext() ) {
+                int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
+                result = new Date( cursor.getLong( indx ) );
             }
             cursor.close();
             db.close();
@@ -559,14 +564,14 @@ public class DBUtils {
         return result;
     }
 
-    public static long getRowIDForOpen( Context context, Uri data )
+    public static Date getMostRecentCreate( Context context, Uri data )
     {
-        long rowid = ROWID_NOTFOUND;
-        NetLaunchInfo nli = new NetLaunchInfo( data );
+        Date result = null;
+        NetLaunchInfo nli = new NetLaunchInfo( context, data );
         if ( null != nli && nli.isValid() ) {
-            rowid = getRowIDForOpen( context, nli );
+            result = getMostRecentCreate( context, nli );
         }
-        return rowid;
+        return result;
     }
 
     public static String[] getRelayIDs( Context context, boolean noMsgs ) 
@@ -704,34 +709,20 @@ public class DBUtils {
     {
         Assert.assertTrue( lock.canWrite() );
         long rowid = lock.getRowid();
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-            String selection = String.format( ROW_ID_FMT, rowid );
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.SNAPSHOT, bytes );
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.SNAPSHOT, bytes );
 
-            long timestamp = new Date().getTime();
-            if ( setCreate ) {
-                values.put( DBHelper.CREATE_TIME, timestamp );
-            }
-            values.put( DBHelper.LASTPLAY_TIME, timestamp );
-
-            int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                    values, selection, null );
-            if ( 0 == result ) {
-                Assert.fail();
-                // values.put( DBHelper.FILE_NAME, path );
-                // rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
-                // DbgUtils.logf( "insert=>%d", rowid );
-                // Assert.assertTrue( row >= 0 );
-            }
-            db.close();
+        long timestamp = new Date().getTime();
+        if ( setCreate ) {
+            values.put( DBHelper.CREATE_TIME, timestamp );
         }
-        setCached( rowid, null ); // force reread
+        values.put( DBHelper.LASTPLAY_TIME, timestamp );
 
-        if ( -1 != rowid ) {
+        updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
+
+        setCached( rowid, null ); // force reread
+        if ( -1 != rowid ) {      // Is this possible? PENDING
             notifyListeners( rowid );
         }
         return rowid;
@@ -1370,25 +1361,14 @@ public class DBUtils {
     private static void saveChatHistory( Context context, long rowid,
                                          String history )
     {
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            String selection = String.format( ROW_ID_FMT, rowid );
-            ContentValues values = new ContentValues();
-            if ( null != history ) {
-                values.put( DBHelper.CHAT_HISTORY, history );
-            } else {
-                values.putNull( DBHelper.CHAT_HISTORY );
-            }
-
-            long timestamp = new Date().getTime();
-            values.put( DBHelper.LASTPLAY_TIME, timestamp );
-
-            int result = db.update( DBHelper.TABLE_NAME_SUM, 
-                                    values, selection, null );
-            db.close();
+        ContentValues values = new ContentValues();
+        if ( null != history ) {
+            values.put( DBHelper.CHAT_HISTORY, history );
+        } else {
+            values.putNull( DBHelper.CHAT_HISTORY );
         }
+        values.put( DBHelper.LASTPLAY_TIME, new Date().getTime() );
+        updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
     }
 
     private static void initDB( Context context )
@@ -1401,6 +1381,23 @@ public class DBUtils {
         }
     }
 
+    private static void updateRow( Context context, String table,
+                                   long rowid, ContentValues values )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            String selection = String.format( ROW_ID_FMT, rowid );
+
+            int result = db.update( table, values, selection, null );
+            db.close();
+            if ( 0 == result ) {
+                DbgUtils.logf( "updateRow failed" );
+            }
+        }
+    }
+    
     private static void notifyListeners( long rowid )
     {
         synchronized( s_listeners ) {

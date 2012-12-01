@@ -174,7 +174,8 @@ public class Utils {
     }
 
     public static void postNotification( Context context, Intent intent, 
-                                         String title, String body, int id )
+                                         String title, String body, 
+                                         int id )
     {
         /* s_nextCode: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
@@ -425,7 +426,8 @@ public class Utils {
 
     public static Intent makeInstallIntent( File file )
     {
-        Uri uri = Uri.parse( "file:/" + file.getPath() );
+        String withScheme = "file://" + file.getPath();
+        Uri uri = Uri.parse( withScheme );
         Intent intent = new Intent( Intent.ACTION_VIEW );
         intent.setDataAndType( uri, XWConstants.APK_TYPE );
         intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
@@ -442,7 +444,6 @@ public class Utils {
             pm.queryIntentActivities( intent, 
                                       PackageManager.MATCH_DEFAULT_ONLY );
         result = 0 < doers.size();
-        DbgUtils.logf( "canInstall()=>%b", result );
         return result;
     }
 

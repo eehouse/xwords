@@ -299,6 +299,11 @@
                         android:summary="Menuitems etc."
                         android:defaultValue="false"
                         />
+
+    <!-- For broken devices like my Blaze 4G that report a download
+         directory that doesn't exist, allow users to set it.  Mine:
+         /sdcard/external_sd/download     
+    -->
     <org.eehouse.android.xw4.XWEditTextPreference 
         android:key="@string/key_download_path"
         android:title="@string/download_path_title"
@@ -323,11 +328,6 @@
 	   android:title="@string/proxy_port"
 	   android:defaultValue="10998"
 	   android:numeric="decimal"
-	   />
-    <org.eehouse.android.xw4.XWEditTextPreference
-	   android:key="@string/key_redir_host"
-	   android:title="@string/redir_host"
-	   android:defaultValue="@string/default_host"
 	   />
 
     <org.eehouse.android.xw4.XWEditTextPreference

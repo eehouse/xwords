@@ -46,17 +46,18 @@ import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import java.io.File;
+import java.util.Date;
+
 // import android.telephony.PhoneStateListener;
 // import android.telephony.TelephonyManager;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
-public class GamesList extends XWExpandableListActivity 
-    implements DispatchNotify.HandleRelaysIface,
-               DBUtils.DBChangeListener,
+public class GamesList extends XWListActivity 
+    implements DBUtils.DBChangeListener,
                GameListAdapter.LoadItemCB, 
-               NetUtils.DownloadFinishedListener {
+               DictImportActivity.DownloadFinishedListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -66,10 +67,14 @@ public class GamesList extends XWExpandableListActivity
     private static final int NEW_GROUP         = WARN_NODICT + 5;
     private static final int RENAME_GROUP      = WARN_NODICT + 6;
     private static final int CHANGE_GROUP      = WARN_NODICT + 7;
+    private static final int WARN_NODICT_NEW   = WARN_NODICT + 8;
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
+
+    private static final String RELAYIDS_EXTRA = "relayids";
+    private static final String GAMEID_EXTRA = "gameid";
 
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
@@ -89,7 +94,7 @@ public class GamesList extends XWExpandableListActivity
     private GameListAdapter m_adapter;
     private String m_missingDict;
     private String m_missingDictName;
-    private long m_missingDictRowId;
+    private long m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
     private long m_rowid;
@@ -111,18 +116,20 @@ public class GamesList extends XWExpandableListActivity
             AlertDialog.Builder ab;
             switch ( id ) {
             case WARN_NODICT:
+            case WARN_NODICT_NEW:
             case WARN_NODICT_SUBST:
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            // just do one
+                            // no name, so user must pick
                             if ( null == m_missingDictName ) {
                                 DictsActivity.launchAndDownload( GamesList.this, 
                                                                  m_missingDictLang );
                             } else {
-                                NetUtils.downloadDictInBack( GamesList.this,
-                                                             m_missingDictLang,
-                                                             m_missingDictName,
-                                                             GamesList.this );
+                                DictImportActivity
+                                    .downloadDictInBack( GamesList.this,
+                                                         m_missingDictLang,
+                                                         m_missingDictName,
+                                                         GamesList.this );
                             }
                         }
                     };
@@ -133,6 +140,10 @@ public class GamesList extends XWExpandableListActivity
                 if ( WARN_NODICT == id ) {
                     message = getString( R.string.no_dictf,
                                          gameName, langName );
+                } else if ( WARN_NODICT_NEW == id ) {
+                    message = 
+                        getString( R.string.invite_dict_missing_body_nonamef,
+                                   null, m_missingDictName, langName );
                 } else {
                     message = getString( R.string.no_dict_substf,
                                          gameName, m_missingDictName, 
@@ -142,7 +153,7 @@ public class GamesList extends XWExpandableListActivity
                 ab = new AlertDialog.Builder( this )
                     .setTitle( R.string.no_dict_title )
                     .setMessage( message )
-                    .setPositiveButton( R.string.button_ok, null )
+                    .setPositiveButton( R.string.button_cancel, null )
                     .setNegativeButton( R.string.button_download, lstnr )
                     ;
                 if ( WARN_NODICT_SUBST == id ) {
@@ -170,8 +181,7 @@ public class GamesList extends XWExpandableListActivity
                                                     m_missingDictRowId,
                                                     m_missingDictName,
                                                     dict );
-                            GameUtils.launchGame( GamesList.this, 
-                                                  m_missingDictRowId );
+                            launchGameIf();
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -355,8 +365,7 @@ public class GamesList extends XWExpandableListActivity
     {
         super.onNewIntent( intent );
         Assert.assertNotNull( intent );
-        invalRelayIDs( intent.
-                       getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA ) );
+        invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         startFirstHasDict( intent );
         startNewNetGame( intent );
         startHasGameID( intent );
@@ -366,7 +375,6 @@ public class GamesList extends XWExpandableListActivity
     protected void onStart()
     {
         super.onStart();
-        DispatchNotify.SetRelayIDsHandler( this );
 
         boolean hide = CommonPrefs.getHideIntro( this );
         int hereOrGone = hide ? View.GONE : View.VISIBLE;
@@ -393,7 +401,6 @@ public class GamesList extends XWExpandableListActivity
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
         // m_phoneStateListener = null;
-        DispatchNotify.SetRelayIDsHandler( null );
 
         super.onStop();
     }
@@ -434,39 +441,6 @@ public class GamesList extends XWExpandableListActivity
         if ( hasFocus ) {
             updateField();
         }
-    }
-
-    // DispatchNotify.HandleRelaysIface interface
-    public void handleRelaysIDs( final String[] relayIDs )
-    {
-        post( new Runnable() {
-                public void run() {
-                    invalRelayIDs( relayIDs );
-                    startFirstHasDict( relayIDs );
-                }
-            } );
-    }
-
-    public void handleInvite( Uri invite )
-    {
-        final NetLaunchInfo nli = new NetLaunchInfo( invite );
-        if ( nli.isValid() ) {
-            post( new Runnable() {
-                    @Override
-                    public void run() {
-                        startNewNetGame( nli );
-                    }
-                } );
-        }
-    }
-
-    public void handleGameID( final int gameID )
-    {
-        post( new Runnable() {
-                public void run() {
-                    startHasGameID( gameID );
-                }
-            } );
     }
 
     // DBUtils.DBChangeListener interface
@@ -538,8 +512,9 @@ public class GamesList extends XWExpandableListActivity
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             switch( id ) {
             case NEW_NET_GAME_ACTION:
-                long rowid = GameUtils.makeNewNetGame( this, m_netLaunchInfo );
-                GameUtils.launchGame( this, rowid, true );
+                if ( checkWarnNoDict( m_netLaunchInfo ) ) {
+                    makeNewNetGameIf();
+                }
                 break;
             case RESET_GAME_ACTION:
                 GameUtils.resetGame( this, m_rowid );
@@ -724,14 +699,20 @@ public class GamesList extends XWExpandableListActivity
         return handled;
     }
 
-    // NetUtils.DownloadFinishedListener interface
+    // DictImportActivity.DownloadFinishedListener interface
     public void downloadFinished( String name, final boolean success )
     {
         post( new Runnable() {
                 public void run() {
-                    int id = success ? R.string.download_done 
-                        : R.string.download_failed;
-                    Utils.showToast( GamesList.this, id );
+                    boolean madeGame = false;
+                    if ( success ) {
+                        madeGame = makeNewNetGameIf() || launchGameIf();
+                    }
+                    if ( ! madeGame ) {
+                        int id = success ? R.string.download_done 
+                            : R.string.download_failed;
+                        Utils.showToast( GamesList.this, id );
+                    }
                 }
             } );
     }
@@ -833,13 +814,38 @@ public class GamesList extends XWExpandableListActivity
         return handled;
     }
 
+    private boolean checkWarnNoDict( NetLaunchInfo nli )
+    {
+        // check that we have the dict required
+        boolean haveDict;
+        if ( null == nli.dict ) { // can only test for language support
+            String[] dicts = DictLangCache.getHaveLang( this, nli.lang );
+            haveDict = 0 < dicts.length;
+            if ( haveDict ) {
+                // Just pick one -- good enough for the period when
+                // users aren't using new clients that include the
+                // dict name.
+                nli.dict = dicts[0]; 
+            }
+        } else {
+            haveDict = 
+                DictLangCache.haveDict( this, nli.lang, nli.dict );
+        }
+        if ( !haveDict ) {
+            m_netLaunchInfo = nli;
+            m_missingDictLang = nli.lang;
+            m_missingDictName = nli.dict;
+            showDialog( WARN_NODICT_NEW );
+        }
+        return haveDict;
+    }
+
     private boolean checkWarnNoDict( long rowid )
     {
         String[][] missingNames = new String[1][];
         int[] missingLang = new int[1];
-        boolean hasDicts = GameUtils.gameDictsHere( this, rowid,
-                                                    missingNames, 
-                                                    missingLang );
+        boolean hasDicts = 
+            GameUtils.gameDictsHere( this, rowid, missingNames, missingLang );
         if ( !hasDicts ) {
             m_missingDictLang = missingLang[0];
             if ( 0 < missingNames[0].length ) {
@@ -855,7 +861,7 @@ public class GamesList extends XWExpandableListActivity
             } else {
                 String dict = DictLangCache.getHaveLang( this, m_missingDictLang)[0];
                 GameUtils.replaceDicts( this, m_missingDictRowId, null, dict );
-                GameUtils.launchGame( this, m_missingDictRowId );
+                launchGameIf();
             }
         }
         return hasDicts;
@@ -899,8 +905,7 @@ public class GamesList extends XWExpandableListActivity
     private void startFirstHasDict( Intent intent )
     {
         if ( null != intent ) {
-            String[] relayIDs =
-                intent.getStringArrayExtra( DispatchNotify.RELAYIDS_EXTRA );
+            String[] relayIDs = intent.getStringArrayExtra( RELAYIDS_EXTRA );
             startFirstHasDict( relayIDs );
         }
     }
@@ -910,33 +915,35 @@ public class GamesList extends XWExpandableListActivity
         startActivity( new Intent( this, NewGameActivity.class ) );
     }
 
-    private void startNewNetGame( NetLaunchInfo info )
+    private void startNewNetGame( NetLaunchInfo nli )
     {
-        long rowid = DBUtils.getRowIDForOpen( this, info );
+        Date create = DBUtils.getMostRecentCreate( this, nli );
 
-        if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-            rowid = GameUtils.makeNewNetGame( this, info );
-            GameUtils.launchGame( this, rowid, true );
+        if ( null == create ) {
+            if ( checkWarnNoDict( nli ) ) {
+                makeNewNetGame( nli );
+            }
         } else {
-            String msg = getString( R.string.dup_game_queryf, info.room );
-            m_netLaunchInfo = info;
+            String msg = getString( R.string.dup_game_queryf, 
+                                    create.toString() );
+            m_netLaunchInfo = nli;
             showConfirmThen( msg, NEW_NET_GAME_ACTION );
         }
     } // startNewNetGame
 
     private void startNewNetGame( Intent intent )
     {
-        NetLaunchInfo info = null;
+        NetLaunchInfo nli = null;
         if ( MultiService.isMissingDictIntent( intent ) ) {
-            info = new NetLaunchInfo( intent );
+            nli = new NetLaunchInfo( intent );
         } else {
             Uri data = intent.getData();
             if ( null != data ) {
-                info = new NetLaunchInfo( data );
+                nli = new NetLaunchInfo( this, data );
             }
         }
-        if ( null != info && info.isValid() ) {
-            startNewNetGame( info );
+        if ( null != nli && nli.isValid() ) {
+            startNewNetGame( nli );
         }
     } // startNewNetGame
 
@@ -950,7 +957,7 @@ public class GamesList extends XWExpandableListActivity
 
     private void startHasGameID( Intent intent )
     {
-        int gameID = intent.getIntExtra( DispatchNotify.GAMEID_EXTRA, 0 );
+        int gameID = intent.getIntExtra( GAMEID_EXTRA, 0 );
         if ( 0 != gameID ) {
             startHasGameID( gameID );
         }
@@ -992,9 +999,65 @@ public class GamesList extends XWExpandableListActivity
         return dialog;
     }
 
+    private boolean makeNewNetGameIf()
+    {
+        boolean madeGame = null != m_netLaunchInfo;
+        if ( madeGame ) {
+            makeNewNetGame( m_netLaunchInfo );
+            m_netLaunchInfo = null;
+        }
+        return madeGame;
+    }
+
+    private boolean launchGameIf()
+    {
+        boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
+        if ( madeGame ) {
+            GameUtils.launchGame( this, m_missingDictRowId );
+            m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
+        }
+        return madeGame;
+    }
+
+    private void makeNewNetGame( NetLaunchInfo info )
+    {
+        long rowid = GameUtils.makeNewNetGame( this, info );
+        GameUtils.launchGame( this, rowid, true );
+    }
+
     public static void onGameDictDownload( Context context, Intent intent )
     {
         intent.setClass( context, GamesList.class );
+        context.startActivity( intent );
+    }
+
+    private static Intent makeSelfIntent( Context context )
+    {
+        Intent intent = new Intent( context, GamesList.class );
+        intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
+                         | Intent.FLAG_ACTIVITY_NEW_TASK );
+        return intent;
+    }
+
+    public static Intent makeRelayIdsIntent( Context context, 
+                                             String[] relayIDs )
+    {
+        Intent intent = makeSelfIntent( context );
+        intent.putExtra( RELAYIDS_EXTRA, relayIDs );
+        return intent;
+    }
+
+    public static Intent makeGameIDIntent( Context context, int gameID )
+    {
+        Intent intent = makeSelfIntent( context );
+        intent.putExtra( GAMEID_EXTRA, gameID );
+        return intent;
+    }
+
+    public static void openGame( Context context, Uri data )
+    {
+        Intent intent = makeSelfIntent( context );
+        intent.setData( data );
         context.startActivity( intent );
     }
 }

@@ -129,8 +129,19 @@
         <category android:name="android.intent.category.BROWSABLE" />
 
         <data android:scheme="http"
-              android:host="eehouse.org" android:pathPrefix="/and" />
+              android:host="@string/invite_host"
+              android:pathPrefix="@string/invite_prefix"
+              />
       </intent-filter>
+
+      <!-- <intent-filter> -->
+      <!--   <action android:name="android.intent.action.VIEW" /> -->
+      <!--   <category android:name="android.intent.category.DEFAULT" /> -->
+      <!--   <category android:name="android.intent.category.BROWSABLE" /> -->
+      <!--   <data android:mimeType="*/*" -->
+      <!--         android:scheme="content"  -->
+      <!--         /> -->
+      <!-- </intent-filter> -->
     </activity>
 
     <!-- downloading dicts -->

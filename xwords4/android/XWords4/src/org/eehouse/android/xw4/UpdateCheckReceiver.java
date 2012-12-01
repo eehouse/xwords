@@ -197,9 +197,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             intent = new Intent( Intent.ACTION_VIEW, 
                                                  Uri.parse(url) );
                         } else {
-                            intent = new Intent( context, 
-                                                 DictImportActivity.class );
-                            intent.putExtra( DictImportActivity.APK_EXTRA, url );
+                            intent = DictImportActivity
+                                .makeAppDownloadIntent( context, url );
                         }
 
                         String title = 

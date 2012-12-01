@@ -63,13 +63,13 @@ public class RelayService extends Service {
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
             if ( null != rowids ) {
                 for ( long rowid : rowids ) {
-                    Intent intent = new Intent( this, DispatchNotify.class );
-                    intent.putExtra( DispatchNotify.RELAYIDS_EXTRA, 
-                                     new String[] {relayID} );
+                    Intent intent = 
+                        GamesList.makeRelayIdsIntent( this,
+                                                      new String[] {relayID} );
                     String msg = Utils.format( this, R.string.notify_bodyf, 
                                                GameUtils.getName( this, rowid ) );
                     Utils.postNotification( this, intent, R.string.notify_title,
-                                            msg, relayID.hashCode() );
+                                            msg, (int)rowid );
                 }
             }
         }
@@ -112,9 +112,7 @@ public class RelayService extends Service {
                 if ( 0 < idsWMsgs.size() ) {
                     String[] relayIDs = new String[idsWMsgs.size()];
                     idsWMsgs.toArray( relayIDs );
-                    // if ( !DispatchNotify.tryHandle( relayIDs ) ) {
                     setupNotification( relayIDs );
-                    // }
                 }
                 sink.send( this );
             }

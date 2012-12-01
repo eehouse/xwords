@@ -141,7 +141,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String[] s_groupsSchema = {
         GROUPNAME,  "TEXT"
-        ,EXPANDED,  "INTEGER(0)"
+        ,EXPANDED,  "INTEGER(1)"
     };
 
     public DBHelper( Context context )

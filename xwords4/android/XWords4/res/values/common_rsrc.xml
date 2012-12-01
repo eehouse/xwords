@@ -30,7 +30,6 @@
   <string name="key_clr_bonushint">key_clr_bonushint</string>
 
   <string name="key_relay_host">key_relay_host</string>
-  <string name="key_redir_host">key_redir_host</string>
   <string name="key_relay_port">key_relay_port2</string>
   <string name="key_update_url">key_update_url</string>
   <string name="key_update_prerel">key_update_prerel</string>
@@ -103,9 +102,12 @@
   <!-- other -->
   <string name="default_host">eehouse.org</string>
 
-  <!-- <string name="default_host">10.0.2.2</string> -->
+  <string name="invite_host">eehouse.org</string>
+  <string name="invite_prefix">/and/</string>
+  <string name="invite_mime">application/x-xwordsinvite</string>
+  <!--string name="invite_mime">text/plain</string-->
+
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
-  <string name="game_url_pathf">//%1$s/and</string>
   <string name="expl_update_url">Update checks URL</string>
   <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
 

@@ -444,7 +444,7 @@ public class BTService extends Service {
                     result = BTCmd.INVITE_ACCPT;
                     String body = Utils.format( BTService.this, 
                                                 R.string.new_bt_bodyf, sender );
-                    postNotification( gameID, R.string.new_bt_title, body );
+                    postNotification( gameID, R.string.new_bt_title, body, rowid );
                 }
             } else {
                 result = BTCmd.INVITE_DUPID;
@@ -497,7 +497,7 @@ public class BTService extends Service {
                                                            buffer, addr, 
                                                            m_btMsgSink ) ) {
                             postNotification( gameID, R.string.new_btmove_title, 
-                                              R.string.new_move_body );
+                                              R.string.new_move_body, rowid );
                             // do nothing
                         } else {
                             DbgUtils.logf( "nobody took msg for gameID %X", 
@@ -967,17 +967,17 @@ public class BTService extends Service {
         return dos;
     }
 
-    private void postNotification( int gameID, int title, int body )
+    private void postNotification( int gameID, int title, int body, long rowid )
     {
-        postNotification( gameID, title, getString( body ) );
+        postNotification( gameID, title, getString( body ), rowid );
     }
 
-    private void postNotification( int gameID, int title, String body )
+    private void postNotification( int gameID, int title, String body, 
+                                   long rowid )
     {
-        Intent intent = new Intent( this, DispatchNotify.class );
-        intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
+        Intent intent = GamesList.makeGameIDIntent( this, gameID );
         Utils.postNotification( this, intent, R.string.new_btmove_title, 
-                                body, gameID );
+                                body, (int)rowid );
     }
 
     private Thread killSocketIn( final BluetoothSocket socket )

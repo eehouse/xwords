@@ -61,7 +61,7 @@ import org.eehouse.android.xw4.DictUtils.DictLoc;
 public class DictsActivity extends ExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
                MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify,
-               NetUtils.DownloadFinishedListener {
+               DictImportActivity.DownloadFinishedListener {
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
@@ -339,8 +339,9 @@ public class DictsActivity extends ExpandableListActivity
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
                         m_handler = new Handler();
-                        NetUtils.downloadDictInBack( DictsActivity.this, lang, 
-                                                     name, DictsActivity.this );
+                        DictImportActivity
+                            .downloadDictInBack( DictsActivity.this, lang, 
+                                                 name, DictsActivity.this );
                     }
                 };
             lstnr2 = new OnClickListener() {
@@ -555,10 +556,9 @@ public class DictsActivity extends ExpandableListActivity
     {
         int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
-            DictLoc loc = DictLoc.values()[loci];
             String url = 
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
-            NetUtils.downloadDictInBack( this, url, loc, null );
+            DictImportActivity.downloadDictInBack( this, url );
             finish();
         }
     }
@@ -769,7 +769,7 @@ public class DictsActivity extends ExpandableListActivity
         launchAndDownload( activity, 0, null );
     }
 
-    // NetUtils.DownloadFinishedListener interface
+    // DictImportActivity.DownloadFinishedListener interface
     public void downloadFinished( String name, final boolean success )
     {
         if ( m_launchedForMissing ) {

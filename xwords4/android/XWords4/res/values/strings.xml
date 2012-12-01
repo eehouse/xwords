@@ -1233,27 +1233,18 @@
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
     <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap
-    here\u003c/a\u003E (or the raw link below) to accept my invitation and
+    here\u003c/a\u003E (or the full link below) to accept my invitation and
     join this game.
     \u003cbr \\\u003E
     \u003cbr \\\u003E
-    (raw link: %1$s)
-    \u003cbr \\\u003E 
-    \u003cbr \\\u003E 
-    \u003ca href=\"http://eehouse.org/market_redir.php\"\u003E Tap
-    here\u003c/a\u003E (or the raw link below) to
-    install Crosswords if you haven\'t already.
-    \u003cbr \\\u003E 
-    \u003cbr \\\u003E 
-    (raw link: http://eehouse.org/market_redir.php)
+    (full link: %1$s)
     </string>
 
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <string name="invite_txtf">Play Crosswords? Join this game: %1$s
-      . (But install Crosswords http://eehouse.org/market_redir.php
-      first if you haven\'t.)</string>
+    <string name="invite_txtf">Let\'s play Crosswords! Join this game:
+    %1$s .</string>
 
     <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
@@ -1440,9 +1431,7 @@
       Guest wordlists; Host wins.</string>
 
 
-
-    <string name="downloading_dictf">Downloading Crosswords
-      wordlist %s...</string>
+    <string name="downloading_dictf">Downloading %s...</string>
 
     <!-- 
        ############################################################
@@ -1474,9 +1463,10 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-    <string name="no_dictf">Unable to open game \"%1$s\" because no
-      %2$s wordlist found. (It may have been deleted, or stored on
-      an external card that is no longer available.)</string>
+    <string name="no_dictf">You need to download a replacement %2$s
+    wordlist before you can open game \"%1$s\". (The original may have
+    been deleted or stored on an external card that is no longer
+    available.)</string>
 
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
@@ -1564,8 +1554,8 @@
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. -->
     <string name="dup_game_queryf">You already have a game that seems
-      to have been created from the same invitation.  Are you sure you
-      want to open another?</string>
+    to have been created (on %1$s) from the same invitation.  Are you
+    sure you want to create another?</string>
 
     <!-- Title of generic dialog used to display information -->
     <string name="info_title">FYI...</string>
@@ -2127,10 +2117,10 @@
     play Crosswords using the wordlist %2$s (for play in %3$s), but it
     is not installed.  Would you like to download the wordlist or
     decline the invitation?</string>
-    <string name="invite_dict_missing_body_nonamef">You have been invited to
-    play Crosswords using the wordlist %2$s (for play in %3$s), but it
-    is not installed.  Would you like to download the wordlist or
-    decline the invitation?</string>
+    <string name="invite_dict_missing_body_nonamef">You have been
+    invited to play Crosswords using the wordlist %2$s (for play in
+    %3$s), but it is not installed.  Would you like to download the
+    wordlist?</string>
     <string name="button_decline">Decline</string>
 
     <string name="downloadingf">Downloading %s...</string>

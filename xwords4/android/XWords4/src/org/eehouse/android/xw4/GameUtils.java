@@ -24,12 +24,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.Html;
+import android.text.TextUtils;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Arrays;
-import java.util.concurrent.locks.Lock;
 import java.util.HashMap;
 import java.util.HashSet;
-import android.text.Html;
+import java.util.concurrent.locks.Lock;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import junit.framework.Assert;
 
@@ -311,6 +315,7 @@ public class GameUtils {
         GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
             tellDied( context, lock, informNow );
+            Utils.cancelNotification( context, (int)rowid );
             DBUtils.deleteGame( context, lock );
             lock.unlock();
             success = true;
@@ -361,7 +366,8 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         if ( pairs.anyMissing( dictNames ) ) {
-            DbgUtils.logf( "loadMakeGame() failing: dict unavailable" );
+            DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable", 
+                           TextUtils.join( ",", dictNames ) );
         } else {
             gamePtr = XwJNI.initJNI();
 
@@ -555,11 +561,26 @@ public class GameUtils {
             Intent intent = new Intent();
             if ( choseEmail ) {
                 intent.setAction( Intent.ACTION_SEND );
-                intent.setType( "message/rfc822");
                 String subject =
                     Utils.format( context, R.string.invite_subjectf, room );
                 intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+
+                File tmpdir = XWApp.ATTACH_SUPPORTED ? 
+                    DictUtils.getDownloadDir( context ) : null;
+                if ( null == tmpdir ) { // no attachment
+                    intent.setType( "message/rfc822");
+                } else {
+                    intent.setType( context.getString( R.string.invite_mime ) );
+
+                    File attach = makeJsonFor( tmpdir, room, inviteID, lang, 
+                                               dict, nPlayers );
+                    Uri uri = Uri.fromFile( attach );
+                    DbgUtils.logf( "using file uri for attachment: %s", 
+                                   uri.toString() );
+                    intent.putExtra( Intent.EXTRA_STREAM, uri );
+                }
+
                 choiceID = R.string.invite_chooser_email;
             } else {
                 intent.setAction( Intent.ACTION_VIEW );
@@ -724,26 +745,27 @@ public class GameUtils {
             CurGameInfo gi = new CurGameInfo( context );
             FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
             int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
-                    
-            XwJNI.comms_resendAll( gamePtr, false, false );
+            if ( 0 != gamePtr ) {
+                XwJNI.comms_resendAll( gamePtr, false, false );
 
-            if ( null != msgs ) {
-                for ( byte[] msg : msgs ) {
-                    draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
-                        || draw;
+                if ( null != msgs ) {
+                    for ( byte[] msg : msgs ) {
+                        draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
+                            || draw;
+                    }
                 }
-            }
-            XwJNI.comms_ackAny( gamePtr );
+                XwJNI.comms_ackAny( gamePtr );
 
-            // update gi to reflect changes due to messages
-            XwJNI.game_getGi( gamePtr, gi );
-            saveGame( context, gamePtr, gi, lock, false );
-            summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+                // update gi to reflect changes due to messages
+                XwJNI.game_getGi( gamePtr, gi );
+                saveGame( context, gamePtr, gi, lock, false );
+                summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
 
-            int flags = setFromFeedImpl( feedImpl );
-            if ( GameSummary.MSG_FLAGS_NONE != flags ) {
-                draw = true;
-                DBUtils.setMsgFlags( rowid, flags );
+                int flags = setFromFeedImpl( feedImpl );
+                if ( GameSummary.MSG_FLAGS_NONE != flags ) {
+                    draw = true;
+                    DBUtils.setMsgFlags( rowid, flags );
+                }
             }
             lock.unlock();
         }
@@ -916,5 +938,31 @@ public class GameUtils {
         }
     }
 
+    private static File makeJsonFor( File dir, String room, String inviteID,
+                                     int lang, String dict, int nPlayers )
+    {
+        File result = null;
+        if ( XWApp.ATTACH_SUPPORTED ) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put( MultiService.ROOM, room );
+                json.put( MultiService.INVITEID, inviteID );
+                json.put( MultiService.LANG, lang );
+                json.put( MultiService.DICT, dict );
+                json.put( MultiService.NPLAYERST, nPlayers );
+                byte[] data = json.toString().getBytes();
+
+                File file = new File( dir, 
+                                      String.format("invite_%s.json", room ) );
+                FileOutputStream fos = new FileOutputStream( file );
+                fos.write( data, 0, data.length );
+                fos.close();
+                result = file;
+            } catch ( Exception ex ) {
+                DbgUtils.loge( ex );
+            }
+        }
+        return result;
+    }
 
 }

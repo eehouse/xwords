@@ -57,7 +57,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class BoardActivity extends XWActivity 
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
-               NetUtils.DownloadFinishedListener {
+               DictImportActivity.DownloadFinishedListener {
 
     public static final String INTENT_KEY_CHAT = "chat";
 
@@ -167,7 +167,7 @@ public class BoardActivity extends XWActivity
     private boolean m_haveInvited = false;
 
     private static BoardActivity s_this = null;
-    private static Object s_thisLocker = new Object();
+    private static Class s_thisLocker = BoardActivity.class;
 
     public static boolean feedMessage( int gameID, byte[] msg, 
                                        CommsAddrRec retAddr )
@@ -259,10 +259,11 @@ public class BoardActivity extends XWActivity
                             if ( DLG_USEDICT == id ) {
                                 setGotGameDict( m_getDict );
                             } else {
-                                NetUtils.downloadDictInBack( BoardActivity.this,
-                                                             m_gi.dictLang,
-                                                             m_getDict,
-                                                             BoardActivity.this );
+                                DictImportActivity
+                                    .downloadDictInBack( BoardActivity.this,
+                                                         m_gi.dictLang,
+                                                         m_getDict,
+                                                         BoardActivity.this );
                             }
                         }
                     };
@@ -1051,7 +1052,7 @@ public class BoardActivity extends XWActivity
     }
 
     //////////////////////////////////////////////////
-    // NetUtils.DownloadFinishedListener interface
+    // DictImportActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////
     public void downloadFinished( final String name, final boolean success )
     {
@@ -1731,7 +1732,7 @@ public class BoardActivity extends XWActivity
                 if ( null != m_xport ) {
                     warnIfNoTransport();
                     trySendChats();
-                    removeNotifications();
+                    Utils.cancelNotification( this, (int)m_rowid );
                     m_xport.tickle( m_connType );
                     tryInvites();
                 }
@@ -1919,26 +1920,6 @@ public class BoardActivity extends XWActivity
                 m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
             }
             m_pendingChats.clear();
-        }
-    }
-
-    private void removeNotifications()
-    {
-        int id = 0;
-        switch( m_connType ) {
-        case COMMS_CONN_BT:
-        case COMMS_CONN_SMS:
-            id = m_gi.gameID;
-            break;
-        case COMMS_CONN_RELAY:
-            String relayID = DBUtils.getRelayID( this, m_rowid );
-            if ( null != relayID ) {
-                id = relayID.hashCode();
-            }
-            break;
-        }
-        if ( 0 != id ) {
-            Utils.cancelNotification( this, id );
         }
     }
 
