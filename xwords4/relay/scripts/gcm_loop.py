@@ -55,12 +55,18 @@ def init():
 def getPendingMsgs( con, typ ):
     cur = con.cursor()
     query = """SELECT id, devid FROM msgs 
-        WHERE devid IN (SELECT id FROM devices WHERE devtype=%d) 
+        WHERE devid IN (SELECT id FROM devices WHERE devtype=%d and NOT unreg) 
         AND NOT connname IN (SELECT connname FROM games WHERE dead); """
     cur.execute(query % typ)
     result = cur.fetchall()
     if g_debug: print "getPendingMsgs=>", result
     return result
+
+def unregister( gcmid ):
+    global g_con
+    print "unregister(", gcmid, ")"
+    query = "UPDATE devices SET unreg=TRUE WHERE id = '%s'" % gcmid
+    g_con.cursor().execute( query )
 
 def asGCMIds(con, devids, typ):
     cur = con.cursor()
@@ -72,20 +78,15 @@ def asGCMIds(con, devids, typ):
 def notifyGCM( devids, typ ):
     if typ == DEVTYPE_GCM:
         instance = gcm.GCM( mykey.myKey )
-        data = { 'getMoves': True, 
-                 # 'title' : 'Msg from Darth',
-                 # 'msg' : "I am your father, Luke.",
-                 }
+        data = { 'getMoves': True, }
         response = instance.json_request( registration_ids = devids,
-                                          # restricted_package_name = 'org.eehouse.android.xw4',
                                           data = data,
-                                          # collapse_key = 'NewMove',
                                           )
         if 'errors' in response:
             response = response['errors']
             if 'NotRegistered' in response:
-                for id in response['NotRegistered']:
-                    print 'need to remove "', id, '" from db'
+                for gcmid in response['NotRegistered']:
+                    unregister( gcmid )
             else: 
                 print "got some kind of error"
         else:
@@ -184,6 +185,7 @@ def main():
                 print "devices needing notification:", targets
                 notifyGCM( asGCMIds( g_con, targets, typ ), typ )
                 pruneSent( devids )
+            elif g_debug: print "no targets after backoff"
         else:
             emptyCount += 1
             if (0 == (emptyCount%5)) and not g_debug:
