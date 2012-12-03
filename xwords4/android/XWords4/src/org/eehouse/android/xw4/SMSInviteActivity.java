@@ -32,9 +32,9 @@ import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract;
-import android.text.method.DialerKeyListener;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.DialerKeyListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
@@ -63,6 +63,14 @@ public class SMSInviteActivity extends InviteActivity {
     private String m_pendingName;
     private String m_pendingNumber;
     private boolean m_immobileConfirmed;
+
+    public static void launchForResult( Activity activity, int nMissing, 
+                                        int requestCode )
+    {
+        Intent intent = new Intent( activity, SMSInviteActivity.class );
+        intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+        activity.startActivityForResult( intent, requestCode );
+    }
 
     @Override
     protected void onCreate( Bundle savedInstanceState )

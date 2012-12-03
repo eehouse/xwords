@@ -357,7 +357,7 @@ public class NewGameActivity extends XWActivity {
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
             startActivityForResult( intent, CONFIG_FOR_BT );
         } else {
-            GameUtils.launchBTInviter( this, 1, INVITE_FOR_BT );
+            BTInviteActivity.launchForResult( this, 1, INVITE_FOR_BT );
         }
     }
 
@@ -378,7 +378,7 @@ public class NewGameActivity extends XWActivity {
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
             startActivityForResult( intent, CONFIG_FOR_SMS );
         } else {
-            GameUtils.launchSMSInviter( this, 1, INVITE_FOR_SMS );
+            SMSInviteActivity.launchForResult( this, 1, INVITE_FOR_SMS );
         }
     }
 

@@ -508,22 +508,6 @@ public class GameUtils {
                                  nPlayersH, null, gameID, isHost );
     }
 
-    public static void launchBTInviter( Activity activity, int nMissing, 
-                                        int requestCode )
-    {
-        Intent intent = new Intent( activity, BTInviteActivity.class );
-        intent.putExtra( BTInviteActivity.INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
-    }
-
-    public static void launchSMSInviter( Activity activity, int nMissing, 
-                                        int requestCode )
-    {
-        Intent intent = new Intent( activity, SMSInviteActivity.class );
-        intent.putExtra( SMSInviteActivity.INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
-    }
-
     public static void launchInviteActivity( Context context, 
                                              boolean choseEmail,
                                              String room, String inviteID,

@@ -847,12 +847,12 @@ public class BoardActivity extends XWActivity
                 doSyncMenuitem();
                 break;
             case BT_PICK_ACTION:
-                GameUtils.launchBTInviter( this, m_nMissingPlayers, 
-                                           BT_INVITE_RESULT );
+                BTInviteActivity.launchForResult( this, m_nMissingPlayers, 
+                                                  BT_INVITE_RESULT );
                 break;
             case SMS_PICK_ACTION:
-                GameUtils.launchSMSInviter( this, m_nMissingPlayers, 
-                                            SMS_INVITE_RESULT );
+                SMSInviteActivity.launchForResult( this, m_nMissingPlayers, 
+                                                   SMS_INVITE_RESULT );
                 break;
             case SMS_CONFIG_ACTION:
                 Utils.launchSettings( this );
