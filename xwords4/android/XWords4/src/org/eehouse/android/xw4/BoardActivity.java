@@ -75,7 +75,7 @@ public class BoardActivity extends XWActivity
     private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 11;
     private static final int DLG_USEDICT = DLG_OKONLY + 12;
     private static final int DLG_GETDICT = DLG_OKONLY + 13;
-                    
+    private static final int GAME_OVER = DLG_OKONLY + 14;
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
@@ -235,6 +235,7 @@ public class BoardActivity extends XWActivity
             case DLG_OKONLY:
             case DLG_BADWORDS:
             case DLG_RETRY:
+            case GAME_OVER:
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
@@ -247,6 +248,15 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
+                } else if ( GAME_OVER == id ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                Utils.notImpl( BoardActivity.this );
+                                finish();
+                            }
+                        };
+                    ab.setNegativeButton( R.string.button_rematch, lstnr );
                 }
                 dialog = ab.create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
@@ -1699,6 +1709,11 @@ public class BoardActivity extends XWActivity
                             case JNIThread.GOT_WORDS:
                                 launchLookup( wordsToArray((String)msg.obj), 
                                               m_gi.dictLang );
+                                break;
+                            case JNIThread.GAME_OVER:
+                                m_dlgBytes = (String)msg.obj;
+                                m_dlgTitle = msg.arg1;
+                                showDialog( GAME_OVER );
                                 break;
                             }
                         }

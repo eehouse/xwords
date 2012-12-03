@@ -2130,4 +2130,9 @@
 
     <string name="group_cur_games">My games</string>
     <string name="group_new_games">New games</string>
+
+    <!-- Button shown in game over dialog triggering creation of new
+         game with the same players and parameters as the one that
+         just ended. -->
+    <string name="button_rematch">Rematch</string>
 </resources>

@@ -94,6 +94,7 @@ public class JNIThread extends Thread {
     public static final int QUERY_ENDGAME = 4;
     public static final int TOOLBAR_STATES = 5;
     public static final int GOT_WORDS = 6;
+    public static final int GAME_OVER = 7;
 
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
@@ -528,8 +529,10 @@ public class JNIThread extends Thread {
                         ((Boolean)args[0]).booleanValue();
                     int titleID = auto? R.string.summary_gameover
                         : R.string.finalscores_title;
-                    sendForDialog( titleID,
-                                   XwJNI.server_writeFinalScores( m_jniGamePtr ) );
+                    
+                    String text = XwJNI.server_writeFinalScores( m_jniGamePtr );
+                    Message.obtain( m_handler, GAME_OVER, titleID, 0, text )
+                        .sendToTarget();
                 }
                 break;
 
