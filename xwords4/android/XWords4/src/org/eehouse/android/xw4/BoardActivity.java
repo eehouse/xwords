@@ -252,8 +252,7 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
-                                Utils.notImpl( BoardActivity.this );
-                                finish();
+                                doRematch();
                             }
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
@@ -2104,6 +2103,13 @@ public class BoardActivity extends XWActivity
         m_passwdLyt = (LinearLayout)Utils.inflate( BoardActivity.this,
                                                    R.layout.passwd_view );
         m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
+    }
+
+    private void doRematch()
+    {
+        Intent intent = GamesList.makeRematchIntent( this, m_gi, m_rowid );
+        startActivity( intent );
+        finish();
     }
 
 } // class BoardActivity

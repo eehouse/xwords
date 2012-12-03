@@ -68,6 +68,7 @@ public class GamesList extends XWListActivity
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String GAMEID_EXTRA = "gameid";
+    private static final String REMATCH_ROWID_EXTRA = "rowid";
 
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
@@ -291,6 +292,7 @@ public class GamesList extends XWListActivity
         startFirstHasDict( intent );
         startNewNetGame( intent );
         startHasGameID( intent );
+        startHasRowID( intent );
         askDefaultNameIf();
     } // onCreate
 
@@ -305,6 +307,7 @@ public class GamesList extends XWListActivity
         startFirstHasDict( intent );
         startNewNetGame( intent );
         startHasGameID( intent );
+        startHasRowID( intent );
     }
 
     @Override
@@ -826,6 +829,16 @@ public class GamesList extends XWListActivity
         }
     }
 
+    private void startHasRowID( Intent intent )
+    {
+        long rowid = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
+        if ( -1 != rowid ) {
+            // this will juggle if the preference is set
+            long newid = GameUtils.dupeGame( this, rowid );
+            GameUtils.launchGame( this, newid );
+        }
+    }
+
     private void askDefaultNameIf()
     {
         if ( null == CommonPrefs.getDefaultPlayerName( this, 0, false ) ) {
@@ -897,6 +910,20 @@ public class GamesList extends XWListActivity
     {
         Intent intent = makeSelfIntent( context );
         intent.putExtra( GAMEID_EXTRA, gameID );
+        return intent;
+    }
+
+    public static Intent makeRematchIntent( Context context, CurGameInfo gi,
+                                            long rowid )
+    {
+        Intent intent = makeSelfIntent( context );
+        
+        if ( CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
+            intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
+        } else {
+            Utils.notImpl( context );
+        }
+
         return intent;
     }
 
