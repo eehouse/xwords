@@ -524,7 +524,11 @@ public class JNIThread extends Thread {
 
             case CMD_POST_OVER:
                 if ( XwJNI.server_getGameIsOver( m_jniGamePtr ) ) {
-                    sendForDialog( R.string.finalscores_title,
+                    boolean auto = 0 < args.length &&
+                        ((Boolean)args[0]).booleanValue();
+                    int titleID = auto? R.string.summary_gameover
+                        : R.string.finalscores_title;
+                    sendForDialog( titleID,
                                    XwJNI.server_writeFinalScores( m_jniGamePtr ) );
                 }
                 break;

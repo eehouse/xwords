@@ -165,6 +165,7 @@ public class BoardActivity extends XWActivity
 
     private int m_missing;
     private boolean m_haveInvited = false;
+    private boolean m_overNotShown;
 
     private static BoardActivity s_this = null;
     private static Class s_thisLocker = BoardActivity.class;
@@ -500,6 +501,7 @@ public class BoardActivity extends XWActivity
         Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
+        m_overNotShown = true;
 
         setBackgroundColor();
         setKeepScreenOn();
@@ -692,7 +694,7 @@ public class BoardActivity extends XWActivity
         }
 
         return true;
-    }
+    } // onPrepareOptionsMenu
 
     public boolean onOptionsItemSelected( MenuItem item ) 
     {
@@ -1722,8 +1724,17 @@ public class BoardActivity extends XWActivity
                 if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
                     startChatActivity();
                 }
-                if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-                    m_jniThread.handle( JNICmd.CMD_POST_OVER );
+                if ( m_overNotShown ) {
+                    Boolean auto = null;
+                    if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+                        auto = new Boolean( false );
+                    } else if ( DBUtils.gameOver( this, m_rowid ) ) {
+                        auto = new Boolean( true );
+                    }
+                    if ( null != auto ) {
+                        m_overNotShown = false;
+                        m_jniThread.handle( JNICmd.CMD_POST_OVER, auto );
+                    }
                 }
                 if ( 0 != flags ) {
                     DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
