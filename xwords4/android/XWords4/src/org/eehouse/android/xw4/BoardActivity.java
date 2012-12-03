@@ -693,6 +693,11 @@ public class BoardActivity extends XWActivity
             item.setTitle( R.string.board_menu_game_final );
         }
 
+        if ( DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
+            Utils.setItemVisible( menu, R.id.board_menu_game_resend, false );
+            Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, false );
+        }
+
         return true;
     } // onPrepareOptionsMenu
 
