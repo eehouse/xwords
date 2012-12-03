@@ -129,7 +129,7 @@ public class DBUtils {
                                  DBHelper.TURN, DBHelper.GIFLAGS,
                                  DBHelper.CONTYPE, DBHelper.SERVERROLE,
                                  DBHelper.ROOMNAME, DBHelper.RELAYID, 
-                                 DBHelper.SMSPHONE, DBHelper.SEED, 
+                                 /*DBHelper.SMSPHONE,*/ DBHelper.SEED, 
                                  DBHelper.DICTLANG, DBHelper.GAMEID,
                                  DBHelper.SCORES, DBHelper.HASMSGS,
                                  DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,

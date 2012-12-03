@@ -60,7 +60,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String INVITEID = "INVITEID";
     public static final String RELAYID = "RELAYID";
     public static final String SEED = "SEED";
-    public static final String SMSPHONE = "SMSPHONE";
+    public static final String SMSPHONE = "SMSPHONE"; // unused -- so far
     public static final String LASTMOVE = "LASTMOVE";
     public static final String GROUPID = "GROUPID";
 
@@ -100,7 +100,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,SEED,         "INTEGER"
         ,DICTLANG,     "INTEGER"
         ,DICTLIST,     "TEXT"
-        ,SMSPHONE,     "TEXT"
+        ,SMSPHONE,     "TEXT"   // unused
         ,SCORES,       "TEXT"
         ,CHAT_HISTORY, "TEXT"
         ,GAMEID,       "INTEGER"
