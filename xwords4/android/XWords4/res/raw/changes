@@ -5,17 +5,14 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 56 release</b>
-<ul>New with this release
-  <li>Improve invitations: no more redirection through a website, and
-  confirm before creating duplicate games</li>
-  <li>(For sideloading users only) No more browser involvement in
-    updates: app can launch the installer directly to update
-    itself</li>
-  <li>Remove notifications when their games are deleted</li>
+<b>Crosswords 4.4 beta 57 release</b>
+
+<h3>New with this release</h3>
+<ul>
 </ul>
 
-<ul>Next up
+<h3>Next up</h3>
+<ul>
   <li>One more idea for improving invitations</li>
   <li>Allow grouping of games in collapsible user-defined categores: "Games with
   Kati", "Finished games", etc.</li>
