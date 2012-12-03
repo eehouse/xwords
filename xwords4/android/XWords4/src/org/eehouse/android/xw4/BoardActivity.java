@@ -1725,13 +1725,14 @@ public class BoardActivity extends XWActivity
                     startChatActivity();
                 }
                 if ( m_overNotShown ) {
-                    Boolean auto = null;
+                    boolean auto = false;
                     if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-                        auto = new Boolean( false );
+                        m_gameOver = true;
                     } else if ( DBUtils.gameOver( this, m_rowid ) ) {
-                        auto = new Boolean( true );
+                        m_gameOver = true;
+                        auto = true;
                     }
-                    if ( null != auto ) {
+                    if ( m_gameOver ) {
                         m_overNotShown = false;
                         m_jniThread.handle( JNICmd.CMD_POST_OVER, auto );
                     }
