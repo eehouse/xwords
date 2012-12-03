@@ -1,7 +1,7 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -249,7 +249,9 @@ public class GameListAdapter extends XWListAdapter {
                 ViewInfo vi = new ViewInfo( layout, m_rowid, expanded, 
                                             summary.lastMoveTime, haveATurn, 
                                             haveALocalTurn );
-
+                if ( XWApp.DEBUG ) {
+                    DbgUtils.logf( "created new view for rowid %d", m_rowid );
+                }
                 synchronized( m_viewsCache ) {
                     m_viewsCache.put( m_rowid, vi );
                 }
@@ -329,7 +331,7 @@ public class GameListAdapter extends XWListAdapter {
         }
     }
 
-    public void setField( String field )
+    public void setField( String fieldName )
     {
         int[] ids = {
             R.string.game_summary_field_empty
@@ -339,12 +341,21 @@ public class GameListAdapter extends XWListAdapter {
         };
         int result = -1;
         for ( int id : ids ) {
-            if ( m_context.getString( id ).equals( field ) ) {
+            if ( m_context.getString( id ).equals( fieldName ) ) {
                 result = id;
                 break;
             }
         }
-        if ( m_fieldID != result ) {
+        if ( -1 == result ) {
+            if ( XWApp.DEBUG ) {
+                DbgUtils.logf( "GameListAdapter.setField(): unable to match"
+                               + " fieldName %s", fieldName );
+            }
+        } else if ( m_fieldID != result ) {
+            if ( XWApp.DEBUG ) {
+                DbgUtils.logf( "setField: clearing views cache for change"
+                               + " from %d to %d", m_fieldID, result );
+            }
             m_viewsCache.clear();
             m_fieldID = result;
         }
