@@ -920,7 +920,7 @@ public class GameUtils {
                 byte[] data = json.toString().getBytes();
 
                 File file = new File( dir, 
-                                      String.format("invite_%s.json", room ) );
+                                      String.format("invite_%s", room ) );
                 FileOutputStream fos = new FileOutputStream( file );
                 fos.write( data, 0, data.length );
                 fos.close();
