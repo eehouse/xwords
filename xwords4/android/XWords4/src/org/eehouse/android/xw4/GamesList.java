@@ -90,7 +90,6 @@ public class GamesList extends XWListActivity
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
     private long m_rowid;
-    private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     // private String m_smsPhone;
 
@@ -851,10 +850,8 @@ public class GamesList extends XWListActivity
     private void updateField()
     {
         String newField = CommonPrefs.getSummaryField( this );
-        if ( ! newField.equals( m_nameField ) ) {
-            m_nameField = newField;
-            m_adapter.setField( newField );
-            onContentChanged();
+        if ( m_adapter.setField( newField ) ) {
+             onContentChanged();
         }
     }
 

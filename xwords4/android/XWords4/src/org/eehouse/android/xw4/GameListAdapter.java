@@ -331,8 +331,9 @@ public class GameListAdapter extends XWListAdapter {
         }
     }
 
-    public void setField( String fieldName )
+    public boolean setField( String fieldName )
     {
+        boolean changed = false;
         int[] ids = {
             R.string.game_summary_field_empty
             ,R.string.game_summary_field_language
@@ -358,7 +359,9 @@ public class GameListAdapter extends XWListAdapter {
             }
             m_viewsCache.clear();
             m_fieldID = result;
+            changed = true;
         }
+        return changed;
     }
 
 }
