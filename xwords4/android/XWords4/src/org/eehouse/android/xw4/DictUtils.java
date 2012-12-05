@@ -47,6 +47,20 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class DictUtils {
 
+    // Standard hack for using APIs from an SDK in code to ship on
+    // older devices that don't support it: prevent class loader from
+    // seeing something it'll barf on by loading it manually
+    private static interface SafeDirGetter {
+        public File getDownloadDir();
+    }
+    private static SafeDirGetter s_dirGetter = null;
+    static {
+        int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
+        if ( 8 <= sdkVersion ) {
+            s_dirGetter = new DirGetter();
+        }
+    }
+
     // keep in sync with loc_names string-array
     public enum DictLoc { UNKNOWN, BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
     public static final String INVITED = "invited";
@@ -566,10 +580,21 @@ public class DictUtils {
         return null != getDownloadDir( context );
     }
 
+    // The approved way to get this is to call Environment.
+    // getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+    // but at least on my Samsung Galaxy Blaze 4G it returns a
+    // directory that does not exist!  (FU, Samsung...)  So in that
+    // case fall back to using getExternalStorageDirectory and
+    // appending "download"
     public static File getDownloadDir( Context context )
     {
         File result = null;
-        if ( haveWriteableSD() ) {
+        if ( null != s_dirGetter ) {
+            result = s_dirGetter.getDownloadDir();
+        }
+        if ( null != result ) {
+            // we're done
+        } else if ( haveWriteableSD() ) {
             File file = null;
             String myPath = XWPrefs.getMyDownloadDir( context );
             if ( null != myPath && 0 < myPath.length() ) {
@@ -577,7 +602,11 @@ public class DictUtils {
             } else {
                 file = Environment.getExternalStorageDirectory();
                 if ( null != file ) {
-                    file = new File( file, "download/" );
+                    File child = new File( file, "download/" );
+                    if ( child.exists() && child.isDirectory()
+                         && child.canWrite() ) {
+                        file = child;
+                    }
                 }
             }
             if ( null != file && file.exists() && file.isDirectory() ) {
@@ -595,5 +624,17 @@ public class DictUtils {
             result = new File( dir, name );
         }
         return result;
+    }
+
+    private static class DirGetter implements SafeDirGetter {
+        public File getDownloadDir()
+        {
+            File path = Environment.
+                getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if ( null != path && !path.canWrite() ) {
+                path = null;
+            }
+            return path;
+        }
     }
 }
