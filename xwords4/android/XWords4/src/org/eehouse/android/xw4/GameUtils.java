@@ -533,18 +533,22 @@ public class GameUtils {
                 intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
+                File attach = null;
                 File tmpdir = XWApp.ATTACH_SUPPORTED ? 
                     DictUtils.getDownloadDir( context ) : null;
-                if ( null == tmpdir ) { // no attachment
+                if ( null != tmpdir ) { // no attachment
+                    attach = makeJsonFor( tmpdir, room, inviteID, lang, 
+                                          dict, nPlayers );
+                }
+
+                if ( null == attach ) { // no attachment
                     intent.setType( "message/rfc822");
                 } else {
-                    intent.setType( context.getString( R.string.invite_mime ) );
-
-                    File attach = makeJsonFor( tmpdir, room, inviteID, lang, 
-                                               dict, nPlayers );
+                    String mime = context.getString( R.string.invite_mime );
+                    intent.setType( mime );
                     Uri uri = Uri.fromFile( attach );
-                    DbgUtils.logf( "using file uri for attachment: %s", 
-                                   uri.toString() );
+                    DbgUtils.logf( "using file uri %s, type %s for attachment", 
+                                   uri.toString(), mime );
                     intent.putExtra( Intent.EXTRA_STREAM, uri );
                 }
 
