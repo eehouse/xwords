@@ -580,37 +580,45 @@ public class DictUtils {
         return null != getDownloadDir( context );
     }
 
-    // The approved way to get this is to call Environment.
-    // getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-    // but at least on my Samsung Galaxy Blaze 4G it returns a
-    // directory that does not exist!  (FU, Samsung...)  So in that
-    // case fall back to using getExternalStorageDirectory and
-    // appending "download"
+    // Loop through three ways of getting the directory until one
+    // produces a directory I can write to.
     public static File getDownloadDir( Context context )
     {
         File result = null;
-        if ( null != s_dirGetter ) {
-            result = s_dirGetter.getDownloadDir();
-        }
-        if ( null != result ) {
-            // we're done
-        } else if ( haveWriteableSD() ) {
-            File file = null;
-            String myPath = XWPrefs.getMyDownloadDir( context );
-            if ( null != myPath && 0 < myPath.length() ) {
-                file = new File( myPath );
-            } else {
-                file = Environment.getExternalStorageDirectory();
-                if ( null != file ) {
-                    File child = new File( file, "download/" );
-                    if ( child.exists() && child.isDirectory()
-                         && child.canWrite() ) {
-                        file = child;
-                    }
+        outer:
+        for ( int attempt = 0; attempt < 4; ++attempt ) {
+            switch ( attempt ) {
+            case 0:
+                String myPath = XWPrefs.getMyDownloadDir( context );
+                if ( null == myPath || 0 == myPath.length() ) {
+                    continue;
                 }
+                result = new File( myPath );
+                break;
+            case 1:
+                if ( null == s_dirGetter ) {
+                    continue;
+                }
+                result = s_dirGetter.getDownloadDir();
+                break;
+            case 2:
+            case 3:
+                if ( !haveWriteableSD() ) {
+                    continue;
+                }
+                result = Environment.getExternalStorageDirectory();
+                if ( 2 == attempt && null != result ) {
+                    // the old way...
+                    result = new File( result, "download/" );
+                }
+                break;
             }
-            if ( null != file && file.exists() && file.isDirectory() ) {
-                result = file;
+
+            // Exit test for loop
+            if ( null != result ) {
+                if ( result.exists() && result.isDirectory() && result.canWrite() ) {
+                    break outer;
+                }
             }
         }
         return result;
@@ -631,9 +639,6 @@ public class DictUtils {
         {
             File path = Environment.
                 getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            if ( null != path && !path.canWrite() ) {
-                path = null;
-            }
             return path;
         }
     }
