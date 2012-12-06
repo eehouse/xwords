@@ -53,6 +53,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static final int PINCH_THRESHOLD = 40;
     private static final int SCORE_HT_DROP = 2;
     private static final boolean DEBUG_DRAWFRAMES = false;
+    // this can be a preference
+    private static final boolean MAKETILESSQUARE = true;
 
     private Context m_context;
     private Paint m_drawPaint;
@@ -379,8 +381,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                     heightLeft = cellSize * 3 / 2;
                 }
                 heightLeft /= 3;
-                trayHt += heightLeft * 2;
                 scoreHt += heightLeft;
+
+                trayHt += heightLeft * 2;
+                if ( MAKETILESSQUARE && trayHt > width / 7 ) {
+                    trayHt = width / 7;
+                }
                 heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
             }
 
