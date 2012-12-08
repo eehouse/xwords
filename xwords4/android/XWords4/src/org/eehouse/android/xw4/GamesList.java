@@ -392,12 +392,11 @@ public class GamesList extends XWListActivity
     }
 
     // GameListAdapter.LoadItemCB interface
-    public void itemClicked( long rowid )
+    public void itemClicked( long rowid, GameSummary summary )
     {
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
-        GameSummary summary = DBUtils.getSummary( this, rowid );
         if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
              && summary.roomName.length() == 0 ) {
             // If it's unconfigured and of the type RelayGameActivity

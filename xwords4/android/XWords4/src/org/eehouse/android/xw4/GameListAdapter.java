@@ -67,7 +67,7 @@ public class GameListAdapter extends XWListAdapter {
     private HashSet<Long> m_loadedRows;
 
     public interface LoadItemCB {
-        public void itemClicked( long rowid );
+        public void itemClicked( long rowid, GameSummary summary );
     }
 
     private class LoadItemTask extends AsyncTask<Void, Void, GameSummary> {
@@ -225,7 +225,7 @@ public class GameListAdapter extends XWListAdapter {
         return result;
     }
 
-    private void setData( GameListItem layout, GameSummary summary )
+    private void setData( GameListItem layout, final GameSummary summary )
     {
         if ( null != summary ) {
             final long rowid = layout.getRowID();
@@ -263,7 +263,7 @@ public class GameListAdapter extends XWListAdapter {
             layout.setOnClickListener( new View.OnClickListener() {
                     @Override
                         public void onClick( View v ) {
-                        m_cb.itemClicked( rowid );
+                        m_cb.itemClicked( rowid, summary );
                     }
                 } );
 
