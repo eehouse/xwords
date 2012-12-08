@@ -282,7 +282,8 @@ public class GamesList extends XWListActivity
                 }
             });
 
-        m_adapter = new GameListAdapter( this, new Handler(), this );
+        String field = CommonPrefs.getSummaryField( this );
+        m_adapter = new GameListAdapter( this, new Handler(), this, field );
         setListAdapter( m_adapter );
 
         NetUtils.informOfDeaths( this );
@@ -391,11 +392,6 @@ public class GamesList extends XWListActivity
     }
 
     // GameListAdapter.LoadItemCB interface
-    public void itemLoaded( long rowid )
-    {
-        onContentChanged();
-    }
-
     public void itemClicked( long rowid )
     {
         // We need a way to let the user get back to the basic-config
