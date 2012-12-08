@@ -93,10 +93,12 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 #endif
                   )
 {
-    XP_U16 nPlayersHere, nPlayersTotal;
-
-    assertUtilOK( util );
+#ifndef XWFEATURE_STANDALONE_ONLY
+    XP_U16 nPlayersHere = 0;
+    XP_U16 nPlayersTotal = 0;
     checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
+#endif
+    assertUtilOK( util );
 
     gi->gameID = makeGameID( util );
 
@@ -137,15 +139,17 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
             CommonPrefs* cp, const TransportProcs* procs )
 {
     XP_U16 ii;
-    XP_U16 nPlayersHere, nPlayersTotal;
 
     XP_ASSERT( !!game->model );
     XP_ASSERT( !!gi );
 
-    checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
     gi->gameID = makeGameID( util );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    XP_U16 nPlayersHere = 0;
+    XP_U16 nPlayersTotal = 0;
+    checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
+
     if ( !!game->comms ) {
         if ( gi->serverRole == SERVER_STANDALONE ) {
             comms_destroy( game->comms );

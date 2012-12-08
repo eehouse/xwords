@@ -686,7 +686,7 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_Bool success = XP_TRUE;
     XP_U16 playersInMsg;
-    XP_S8 clientIndex;
+    XP_S8 clientIndex = 0;      /* quiet compiler */
     XP_U16 ii = 0;
     LOG_FUNC();
 
