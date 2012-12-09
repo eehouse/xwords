@@ -60,6 +60,7 @@ public class DBUtils {
 
     private static long s_cachedRowID = -1;
     private static byte[] s_cachedBytes = null;
+    private static long[] s_cachedRowIDs = null;
 
     public static interface DBChangeListener {
         public void gameSaved( long rowid );
@@ -314,6 +315,9 @@ public class DBUtils {
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );
                 Assert.assertTrue( result >= 0 );
+                if ( result != rowid ) { // new row added
+                    clearRowIDsCache();
+                }
             }
             notifyListeners( rowid );
             db.close();
@@ -675,7 +679,8 @@ public class DBUtils {
         }
     }
 
-    public static GameUtils.GameLock saveNewGame( Context context, byte[] bytes )
+    public static GameUtils.GameLock saveNewGame( Context context, 
+                                                  byte[] bytes )
     {
         GameUtils.GameLock lock = null;
 
@@ -695,9 +700,9 @@ public class DBUtils {
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
 
             setCached( rowid, null ); // force reread
+            clearRowIDsCache();
 
             lock = new GameUtils.GameLock( rowid, true ).lock();
-
             notifyListeners( rowid );
         }
 
@@ -771,32 +776,45 @@ public class DBUtils {
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }
+        clearRowIDsCache();
         notifyListeners( lock.getRowid() );
     }
 
     public static long[] gamesList( Context context )
     {
-        long[] result = null;
+        long[] result;
+        synchronized( DBUtils.class ) {
+            if ( null == s_cachedRowIDs ) {
+                initDB( context );
+                synchronized( s_dbHelper ) {
+                    SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-
-            String[] columns = { ROW_ID };
-            String orderBy = DBHelper.CREATE_TIME + " DESC";
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                      null, null, null, null, orderBy );
-            int count = cursor.getCount();
-            result = new long[count];
-            int index = cursor.getColumnIndex( ROW_ID );
-            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                result[ii] = cursor.getLong( index );
+                    String[] columns = { ROW_ID };
+                    String orderBy = DBHelper.CREATE_TIME + " DESC";
+                    Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, 
+                                              columns, null, null, null, 
+                                              null, orderBy );
+                    int count = cursor.getCount();
+                    s_cachedRowIDs = new long[count];
+                    int index = cursor.getColumnIndex( ROW_ID );
+                    for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                        s_cachedRowIDs[ii] = cursor.getLong( index );
+                    }
+                    cursor.close();
+                    db.close();
+                }
             }
-            cursor.close();
-            db.close();
+            result = s_cachedRowIDs;
         }
-
         return result;
+    }
+
+    private static void clearRowIDsCache()
+    {
+        DbgUtils.logf( "DBUtils.clearRowIDsCache()" );
+        synchronized( DBUtils.class ) {
+            s_cachedRowIDs = null;
+        }
     }
 
     // Get either the file name or game name, preferring the latter.
