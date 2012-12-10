@@ -53,8 +53,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static final int PINCH_THRESHOLD = 40;
     private static final int SCORE_HT_DROP = 2;
     private static final boolean DEBUG_DRAWFRAMES = false;
-    // this can be a preference
-    private static final boolean MAKETILESSQUARE = true;
 
     private Context m_context;
     private Paint m_drawPaint;
@@ -77,6 +75,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private boolean m_blackArrow;
     private boolean m_inTrade = false;
     private boolean m_hasSmallScreen;
+    private long m_rowid;
     // m_backgroundUsed: alpha not set ensures inequality
     private int m_backgroundUsed = 0x00000000;
     private boolean m_darkOnLight;
@@ -239,6 +238,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;             // required to get subsequent events
     }
 
+    public void setRowID( long rowid ) 
+    {
+        m_rowid = rowid;
+    }
+
     // private void printMode( String comment, int mode )
     // {
     //     comment += ": ";
@@ -384,7 +388,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 scoreHt += heightLeft;
 
                 trayHt += heightLeft * 2;
-                if ( MAKETILESSQUARE && trayHt > width / 7 ) {
+                if ( (1 == (m_rowid % 2)) && trayHt > width / 7 ) {
                     trayHt = width / 7;
                 }
                 heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
