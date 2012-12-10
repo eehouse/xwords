@@ -248,7 +248,7 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
-                } else if ( GAME_OVER == id ) {
+                } else if ( XWApp.REMATCH_SUPPORTED && GAME_OVER == id ) {
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
