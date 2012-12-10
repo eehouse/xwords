@@ -200,8 +200,7 @@ public class GamesList extends XWListActivity
                         public void onClick( DialogInterface dlg, int item ) {
                             String name = namerView.getName();
                             DBUtils.setName( GamesList.this, m_rowid, name );
-                            m_adapter.inval( m_rowid );
-                            onContentChanged();
+                            m_adapter.invalName( m_rowid );
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -283,7 +282,8 @@ public class GamesList extends XWListActivity
             });
 
         String field = CommonPrefs.getSummaryField( this );
-        m_adapter = new GameListAdapter( this, new Handler(), this, field );
+        m_adapter = new GameListAdapter( this, getListView(), new Handler(), 
+                                         this, field );
         setListAdapter( m_adapter );
 
         NetUtils.informOfDeaths( this );
@@ -381,12 +381,15 @@ public class GamesList extends XWListActivity
     }
 
     // DBUtils.DBChangeListener interface
-    public void gameSaved( final long rowid )
+    public void gameSaved( final long rowid, final boolean countChanged )
     {
         post( new Runnable() {
                 public void run() {
-                    m_adapter.inval( rowid );
-                    onContentChanged();
+                    if ( countChanged ) {
+                        onContentChanged();
+                    } else {
+                        m_adapter.inval( rowid );
+                    }
                 }
             } );
     }
@@ -457,7 +460,6 @@ public class GamesList extends XWListActivity
                 long[] games = DBUtils.gamesList( this );
                 for ( int ii = games.length - 1; ii >= 0; --ii ) {
                     GameUtils.deleteGame( this, games[ii], ii == 0  );
-                    m_adapter.inval( games[ii] );
                 }
                 break;
             case SYNC_MENU_ACTION:
@@ -738,7 +740,6 @@ public class GamesList extends XWListActivity
                     }
                 }
             }
-            onContentChanged();
         }
     }
 
@@ -846,7 +847,9 @@ public class GamesList extends XWListActivity
     {
         String newField = CommonPrefs.getSummaryField( this );
         if ( m_adapter.setField( newField ) ) {
-             onContentChanged();
+            // The adapter should be able to decide whether full
+            // content change is required.  PENDING
+            onContentChanged();
         }
     }
 

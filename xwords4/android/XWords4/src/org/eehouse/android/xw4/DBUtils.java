@@ -63,7 +63,7 @@ public class DBUtils {
     private static long[] s_cachedRowIDs = null;
 
     public static interface DBChangeListener {
-        public void gameSaved( long rowid );
+        public void gameSaved( long rowid, boolean countChanged );
     }
     private static HashSet<DBChangeListener> s_listeners = 
         new HashSet<DBChangeListener>();
@@ -319,8 +319,8 @@ public class DBUtils {
                     clearRowIDsCache();
                 }
             }
-            notifyListeners( rowid );
             db.close();
+            notifyListeners( rowid, false );
         }
     } // saveSummary
 
@@ -376,7 +376,7 @@ public class DBUtils {
     public static void setMsgFlags( long rowid, int flags )
     {
         setInt( rowid, DBHelper.HASMSGS, flags );
-        notifyListeners( rowid );
+        notifyListeners( rowid, false );
     }
 
     public static void setExpanded( long rowid, boolean expanded )
@@ -703,7 +703,7 @@ public class DBUtils {
             clearRowIDsCache();
 
             lock = new GameUtils.GameLock( rowid, true ).lock();
-            notifyListeners( rowid );
+            notifyListeners( rowid, true );
         }
 
         return lock;
@@ -727,8 +727,8 @@ public class DBUtils {
         updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
 
         setCached( rowid, null ); // force reread
-        if ( -1 != rowid ) {      // Is this possible? PENDING
-            notifyListeners( rowid );
+        if ( -1 != rowid ) {      // Means new game?
+            notifyListeners( rowid, false );
         }
         return rowid;
     }
@@ -777,7 +777,7 @@ public class DBUtils {
             db.close();
         }
         clearRowIDsCache();
-        notifyListeners( lock.getRowid() );
+        notifyListeners( lock.getRowid(), true );
     }
 
     public static long[] gamesList( Context context )
@@ -1223,12 +1223,12 @@ public class DBUtils {
         }
     }
     
-    private static void notifyListeners( long rowid )
+    private static void notifyListeners( long rowid, boolean countChanged )
     {
         synchronized( s_listeners ) {
             Iterator<DBChangeListener> iter = s_listeners.iterator();
             while ( iter.hasNext() ) {
-                iter.next().gameSaved( rowid );
+                iter.next().gameSaved( rowid, countChanged );
             }
         }
     }

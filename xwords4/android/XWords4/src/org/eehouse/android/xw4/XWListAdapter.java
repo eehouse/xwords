@@ -42,13 +42,13 @@ public abstract class XWListAdapter implements ListAdapter {
     public boolean isEnabled( int position ) { return true; }
     public int getCount() { return m_count; }
     public Object getItem( int position ) { return null; }
-    public long getItemId(int position) { return position; }
+    public long getItemId( int position ) { return position; }
     public int getItemViewType( int position ) { 
         return ListAdapter.IGNORE_ITEM_VIEW_TYPE; 
     }
     public int getViewTypeCount() { return 1; }
     public boolean hasStableIds() { return true; }
     public boolean isEmpty() { return getCount() == 0; }
-    public void registerDataSetObserver(DataSetObserver observer) {}
-    public void unregisterDataSetObserver(DataSetObserver observer) {}
+    public void registerDataSetObserver( DataSetObserver observer ) {}
+    public void unregisterDataSetObserver( DataSetObserver observer ) {}
 }
