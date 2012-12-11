@@ -147,7 +147,7 @@ public class BTService extends Service {
         }
     }
 
-    public static void setListener( MultiService.BTEventListener li )
+    public static void setListener( MultiService.MultiEventListener li )
     {
         if ( XWApp.BTSUPPORTED ) {
             if ( null == s_srcMgr ) {

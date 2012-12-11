@@ -924,7 +924,7 @@ public class BoardActivity extends XWActivity
     }
 
     //////////////////////////////////////////////////
-    // BTService.BTEventListener interface
+    // MultiService.MultiEventListener interface
     //////////////////////////////////////////////////
     @Override
     @SuppressWarnings("fallthrough")

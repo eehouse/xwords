@@ -419,7 +419,7 @@ public class GamesList extends XWListActivity
         }
     }
 
-    // BTService.BTEventListener interface
+    // BTService.MultiEventListener interface
     @Override
     public void eventOccurred( MultiService.MultiEvent event, 
                                final Object ... args )

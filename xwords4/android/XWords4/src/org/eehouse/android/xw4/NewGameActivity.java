@@ -256,7 +256,7 @@ public class NewGameActivity extends XWActivity {
         return dialog;
     }
 
-    // BTService.BTEventListener interface
+    // MultiService.MultiEventListener interface
     @Override
     public void eventOccurred( MultiService.MultiEvent event, 
                                final Object ... args )
@@ -299,7 +299,7 @@ public class NewGameActivity extends XWActivity {
             super.eventOccurred( event, args );
             break;
         }
-    } // BTService.BTEventListener.eventOccurred
+    } // MultiService.MultiEventListener.eventOccurred
 
     private void makeNewGame( boolean networked, boolean launch )
     {

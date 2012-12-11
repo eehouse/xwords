@@ -65,7 +65,7 @@ public class BTInviteActivity extends InviteActivity
         BTService.clearDevices( this, null ); // will return names
     }
 
-    // BTService.BTEventListener interface
+    // MultiService.MultiEventListener interface
     @Override
     public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
