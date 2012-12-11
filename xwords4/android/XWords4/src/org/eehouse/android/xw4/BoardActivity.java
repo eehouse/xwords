@@ -509,7 +509,6 @@ public class BoardActivity extends XWActivity
 
         Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
-        m_view.setRowID( m_rowid );
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
         m_overNotShown = true;
 

@@ -75,7 +75,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private boolean m_blackArrow;
     private boolean m_inTrade = false;
     private boolean m_hasSmallScreen;
-    private long m_rowid;
     // m_backgroundUsed: alpha not set ensures inequality
     private int m_backgroundUsed = 0x00000000;
     private boolean m_darkOnLight;
@@ -238,11 +237,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;             // required to get subsequent events
     }
 
-    public void setRowID( long rowid ) 
-    {
-        m_rowid = rowid;
-    }
-
     // private void printMode( String comment, int mode )
     // {
     //     comment += ": ";
@@ -388,7 +382,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 scoreHt += heightLeft;
 
                 trayHt += heightLeft * 2;
-                if ( (1 == (m_rowid % 2)) && trayHt > width / 7 ) {
+                if ( XWPrefs.getSquareTiles( m_context ) 
+                     && trayHt > (width / 7) ) {
                     trayHt = width / 7;
                 }
                 heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);

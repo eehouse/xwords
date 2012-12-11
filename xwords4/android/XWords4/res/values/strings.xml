@@ -2135,4 +2135,8 @@
          game with the same players and parameters as the one that
          just ended. -->
     <string name="button_rematch">Rematch</string>
+
+    <string name="square_tiles">Square rack tiles</string>
+    <string name="square_tiles_summary">Even if they can be taller</string>
+
 </resources>

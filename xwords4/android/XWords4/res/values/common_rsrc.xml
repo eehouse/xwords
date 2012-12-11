@@ -6,6 +6,7 @@
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
   <string name="key_show_arrow">key_show_arrow</string>
+  <string name="key_square_tiles">key_square_tiles</string>
   <string name="key_explain_robot">key_explain_robot</string>
   <string name="key_skip_confirm">key_skip_confirm</string>
   <string name="key_sort_tiles">key_sort_tiles</string>

@@ -132,6 +132,11 @@
                         android:summary="@string/show_arrow_summary"
                         android:defaultValue="true"
                         />
+    <CheckBoxPreference android:key="@string/key_square_tiles"
+                        android:title="@string/square_tiles"
+                        android:summary="@string/square_tiles_summary"
+                        android:defaultValue="false"
+                        />
     <CheckBoxPreference android:key="@string/key_keep_screenon"
                         android:title="@string/keep_screenon"
                         android:summary="@string/keep_screenon_summary"

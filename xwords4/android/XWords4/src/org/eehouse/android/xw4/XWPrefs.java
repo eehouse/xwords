@@ -83,6 +83,11 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_ringer_zoom, false );
     }
 
+    public static boolean getSquareTiles( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_square_tiles, false );
+    }
+
     public static int getDefaultPlayerMinutes( Context context )
     {
         String value = 
