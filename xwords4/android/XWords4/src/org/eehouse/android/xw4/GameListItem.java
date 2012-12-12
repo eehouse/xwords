@@ -250,7 +250,7 @@ public class GameListItem extends LinearLayout
         @Override
         protected GameSummary doInBackground( Void... unused ) 
         {
-            return DBUtils.getSummary( m_context, m_rowid, 1500 );
+            return DBUtils.getSummary( m_context, m_rowid, 150 );
         } // doInBackground
 
         @Override
