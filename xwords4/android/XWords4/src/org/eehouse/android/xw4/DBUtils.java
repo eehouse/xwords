@@ -451,10 +451,8 @@ public class DBUtils {
             String selection = DBHelper.RELAYID + "='" + relayID + "'";
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
+            result = new long[cursor.getCount()];
             for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                if ( null == result ) {
-                    result = new long[cursor.getCount()];
-                }
                 result[ii] = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
             }
             cursor.close();
@@ -473,11 +471,8 @@ public class DBUtils {
             String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
-
+            result = new long[cursor.getCount()];
             for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                if ( null == result ) {
-                    result = new long[cursor.getCount()];
-                }
                 result[ii] = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
             }
             cursor.close();
