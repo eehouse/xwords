@@ -452,6 +452,7 @@ public class GamesList extends XWListActivity
                 break;
             case RESET_GAME_ACTION:
                 GameUtils.resetGame( this, m_rowid );
+                onContentChanged(); // required because position may change
                 break;
             case DELETE_GAME_ACTION:
                 GameUtils.deleteGame( this, m_rowid, true );
