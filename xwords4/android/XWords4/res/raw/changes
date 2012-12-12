@@ -9,11 +9,17 @@
 
 <h3>New with this release</h3>
 <ul>
+  <li>Include attachment in email invites for devices that don't dispatch
+    URLs correctly (e.g. some by HTC) </li>
+  <li>Fix flickering in main screen (games list)</li>
+  <li>Add option, off by default, to keep rack tiles square even when
+    the screen is large enough that they can be taller</li>
+  <li>Show final scores alert whenever a finished game is opened -- to
+    make it more clear that it's finished</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>One more idea for improving invitations</li>
   <li>Allow grouping of games in collapsible user-defined categores: "Games with
   Kati", "Finished games", etc.</li>
 </ul>
