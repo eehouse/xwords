@@ -246,6 +246,8 @@ public class GameUtils {
         tellDied( context, lock, true );
         resetGame( context, lock, lock, false );
         lock.unlock();
+
+        Utils.cancelNotification( context, (int)rowidIn );
     }
 
     private static GameSummary summarizeAndClose( Context context, 
