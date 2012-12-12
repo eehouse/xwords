@@ -924,6 +924,7 @@ public class DBUtils {
 
     public static void loadDB( Context context )
     {
+        clearRowIDsCache();
         copyGameDB( context, false );
     }
 
