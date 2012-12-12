@@ -713,35 +713,35 @@ public class GameUtils {
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
-        GameLock lock = new GameLock( rowid, true );
-        if ( lock.tryLock() ) {
-            CurGameInfo gi = new CurGameInfo( context );
-            FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-            int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
-            if ( 0 != gamePtr ) {
-                XwJNI.comms_resendAll( gamePtr, false, false );
+        GameLock lock = new GameLock( rowid, true ).lock();
 
-                if ( null != msgs ) {
-                    for ( byte[] msg : msgs ) {
-                        draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
-                            || draw;
-                    }
-                }
-                XwJNI.comms_ackAny( gamePtr );
+        CurGameInfo gi = new CurGameInfo( context );
+        FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
+        int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+        if ( 0 != gamePtr ) {
+            XwJNI.comms_resendAll( gamePtr, false, false );
 
-                // update gi to reflect changes due to messages
-                XwJNI.game_getGi( gamePtr, gi );
-                saveGame( context, gamePtr, gi, lock, false );
-                summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
-
-                int flags = setFromFeedImpl( feedImpl );
-                if ( GameSummary.MSG_FLAGS_NONE != flags ) {
-                    draw = true;
-                    DBUtils.setMsgFlags( rowid, flags );
+            if ( null != msgs ) {
+                for ( byte[] msg : msgs ) {
+                    draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
+                        || draw;
                 }
             }
-            lock.unlock();
+            XwJNI.comms_ackAny( gamePtr );
+
+            // update gi to reflect changes due to messages
+            XwJNI.game_getGi( gamePtr, gi );
+            saveGame( context, gamePtr, gi, lock, false );
+            summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+
+            int flags = setFromFeedImpl( feedImpl );
+            if ( GameSummary.MSG_FLAGS_NONE != flags ) {
+                draw = true;
+                DBUtils.setMsgFlags( rowid, flags );
+            }
         }
+        lock.unlock();
+
         return draw;
     } // feedMessages
 
