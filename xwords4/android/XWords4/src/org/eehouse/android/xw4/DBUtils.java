@@ -573,7 +573,7 @@ public class DBUtils {
         return result;
     }
 
-    public static String[] getRelayIDs( Context context, boolean noMsgs ) 
+    public static String[] getRelayIDs( Context context, long[][] rowIDs ) 
     {
         String[] result = null;
         initDB( context );
@@ -581,26 +581,31 @@ public class DBUtils {
 
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.RELAYID };
+            String[] columns = { ROW_ID, DBHelper.RELAYID };
             String selection = DBHelper.RELAYID + " NOT null";
-            if ( noMsgs ) {
-                selection += " AND NOT " + DBHelper.HASMSGS;
-            }
 
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
+            int count = cursor.getCount();
+            if ( 0 < count ) {
+                result = new String[count];
+                if ( null != rowIDs ) {
+                    rowIDs[0] = new long[count];
+                }
 
-            while ( cursor.moveToNext() ) {
-                ids.add( cursor.getString( cursor.
-                                           getColumnIndex(DBHelper.RELAYID)) );
+                int idIndex = cursor.getColumnIndex(DBHelper.RELAYID);
+                int rowIndex = cursor.getColumnIndex(ROW_ID);
+                for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                    result[ii] = cursor.getString( idIndex );
+                    if ( null != rowIDs ) {
+                        rowIDs[0][ii] = cursor.getLong( rowIndex );
+                    }
+                }
             }
             cursor.close();
             db.close();
         }
 
-        if ( 0 < ids.size() ) {
-            result = ids.toArray( new String[ids.size()] );
-        }
         return result;
     }
 

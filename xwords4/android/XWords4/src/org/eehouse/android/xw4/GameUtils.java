@@ -111,16 +111,21 @@ public class GameUtils {
             final long assertTime = 2000;
             Assert.assertTrue( maxMillis < assertTime );
             long sleptTime = 0;
-            // DbgUtils.logf( "GameLock.lock(%s)", m_path );
-            // Utils.printStack();
+
+            if ( XWApp.DEBUG_LOCKS ) {
+                DbgUtils.logf( "lock %H (rowid:%d, maxMillis=%d)", 
+                               this, m_rowid, maxMillis );
+            }
+
             for ( ; ; ) {
                 if ( tryLock() ) {
                     result = this;
                     break;
                 }
                 if ( XWApp.DEBUG_LOCKS ) {
-                    DbgUtils.logf( "GameLock.lock() %H failed; sleeping", this );
-                    DbgUtils.printStack();
+                    DbgUtils.logf( "GameLock.lock() %H failed (rowid:%d); sleeping", 
+                                   this, m_rowid );
+                    // DbgUtils.printStack();
                 }
                 try {
                     Thread.sleep( 25 ); // milliseconds
@@ -130,12 +135,17 @@ public class GameUtils {
                     break;
                 }
 
+                if ( XWApp.DEBUG_LOCKS ) {
+                    DbgUtils.logf( "GameLock.lock() %H awake; "
+                                   + "sleptTime now %d millis", this, sleptTime );
+                }
+
                 if ( 0 < maxMillis && sleptTime >= maxMillis ) {
                     break;
                 } else if ( sleptTime >= assertTime ) {
                     if ( XWApp.DEBUG_LOCKS ) {
-                        DbgUtils.logf( "lock %H overlocked. lock holding stack:", 
-                                       this );
+                        DbgUtils.logf( "lock %H overlocked waiting for rowid:%d. "
+                                       + "lock holding stack:", m_rowid, this );
                         DbgUtils.printStack( m_lockTrace );
                         DbgUtils.logf( "lock %H seeking stack:", this );
                         DbgUtils.printStack();
@@ -158,8 +168,12 @@ public class GameUtils {
                     Assert.assertTrue( !m_isForWrite );
                 }
                 --m_lockCount;
+
+                if ( XWApp.DEBUG_LOCKS ) {
+                    DbgUtils.logf( "GameLock.unlock: this: %H (rowid:%d) "
+                                   + "unlocked", this, m_rowid );
+                }
             }
-            // DbgUtils.logf( "GameLock.unlock(%s) done", m_path );
         }
 
         public long getRowid() 
@@ -707,41 +721,46 @@ public class GameUtils {
         }
     }
 
-    private static boolean feedMessages( Context context, long rowid,
-                                         byte[][] msgs, CommsAddrRec ret,
-                                         MultiMsgSink sink )
+    public static boolean feedMessages( Context context, long rowid,
+                                        byte[][] msgs, CommsAddrRec ret,
+                                        MultiMsgSink sink )
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
-        GameLock lock = new GameLock( rowid, true ).lock();
+        if ( null != msgs ) {
+            // timed lock: If a game is opened by BoardActivity just
+            // as we're trying to deliver this message to it it'll
+            // have the lock and we'll never get it.  Better to drop
+            // the message than fire the hung-lock assert.  Messages
+            // belong in local pre-delivery storage anyway.
+            GameLock lock = new GameLock( rowid, true ).lock( 150 );
+            if ( null != lock ) {
+                CurGameInfo gi = new CurGameInfo( context );
+                FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
+                int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+                if ( 0 != gamePtr ) {
+                    XwJNI.comms_resendAll( gamePtr, false, false );
 
-        CurGameInfo gi = new CurGameInfo( context );
-        FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-        int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
-        if ( 0 != gamePtr ) {
-            XwJNI.comms_resendAll( gamePtr, false, false );
+                    for ( byte[] msg : msgs ) {
+                        draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
+                            || draw;
+                    }
+                    XwJNI.comms_ackAny( gamePtr );
 
-            if ( null != msgs ) {
-                for ( byte[] msg : msgs ) {
-                    draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
-                        || draw;
+                    // update gi to reflect changes due to messages
+                    XwJNI.game_getGi( gamePtr, gi );
+                    saveGame( context, gamePtr, gi, lock, false );
+                    summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+
+                    int flags = setFromFeedImpl( feedImpl );
+                    if ( GameSummary.MSG_FLAGS_NONE != flags ) {
+                        draw = true;
+                        DBUtils.setMsgFlags( rowid, flags );
+                    }
                 }
-            }
-            XwJNI.comms_ackAny( gamePtr );
-
-            // update gi to reflect changes due to messages
-            XwJNI.game_getGi( gamePtr, gi );
-            saveGame( context, gamePtr, gi, lock, false );
-            summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
-
-            int flags = setFromFeedImpl( feedImpl );
-            if ( GameSummary.MSG_FLAGS_NONE != flags ) {
-                draw = true;
-                DBUtils.setMsgFlags( rowid, flags );
+                lock.unlock();
             }
         }
-        lock.unlock();
-
         return draw;
     } // feedMessages
 
@@ -752,21 +771,6 @@ public class GameUtils {
         byte[][] msgs = new byte[1][];
         msgs[0] = msg;
         return feedMessages( context, rowid, msgs, ret, sink );
-    }
-
-    // Current assumption: this is the relay case where return address
-    // can be null.
-    public static boolean feedMessages( Context context, String relayID,
-                                        byte[][] msgs, MultiMsgSink sink )
-    {
-        boolean draw = false;
-        long[] rowids = DBUtils.getRowIDsFor( context, relayID );
-        if ( null != rowids ) {
-            for ( long rowid : rowids ) {
-                draw = feedMessages( context, rowid, msgs, null, sink ) || draw;
-            }
-        }
-        return draw;
     }
 
     // This *must* involve a reset if the language is changing!!!

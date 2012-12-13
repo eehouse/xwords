@@ -189,6 +189,27 @@ public class BoardActivity extends XWActivity
         return delivered;
     }
 
+    public static boolean feedMessages( long rowid, byte[][] msgs )
+    {
+        boolean delivered = false;
+        Assert.assertNotNull( msgs );
+        synchronized( s_thisLocker ) {
+            if ( null != s_this ) {
+                Assert.assertNotNull( s_this.m_gi );
+                Assert.assertNotNull( s_this.m_gameLock );
+                Assert.assertNotNull( s_this.m_jniThread );
+                if ( rowid == s_this.m_rowid ) {
+                    delivered = true; // even if no messages!
+                    for ( byte[] msg : msgs ) {
+                        s_this.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg,
+                                                   null );
+                    }
+                }
+            }
+        }
+        return delivered;
+    }
+
     private static void setThis( BoardActivity self )
     {
         synchronized( s_thisLocker ) {
@@ -509,6 +530,7 @@ public class BoardActivity extends XWActivity
 
         Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+        DbgUtils.logf( "BoardActivity: opening rowid %d", m_rowid );
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
         m_overNotShown = true;
 
