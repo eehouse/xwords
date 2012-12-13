@@ -261,7 +261,7 @@ public class GameListItem extends LinearLayout
             // setLoaded( m_view.getRowID() );
             setLoaded();
 
-            DbgUtils.logf( "LoadItemTask for row %d finished", m_rowid );
+            // DbgUtils.logf( "LoadItemTask for row %d finished", m_rowid );
         }
     } // class LoadItemTask
 
