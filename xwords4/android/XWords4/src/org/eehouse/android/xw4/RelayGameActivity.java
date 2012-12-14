@@ -41,7 +41,7 @@ public class RelayGameActivity extends XWActivity
 
     private long m_rowid;
     private CurGameInfo m_gi;
-    private GameUtils.GameLock m_gameLock;
+    private GameLock m_gameLock;
     private CommsAddrRec m_car;
     private Button m_playButton;
     private Button m_configButton;
@@ -68,7 +68,7 @@ public class RelayGameActivity extends XWActivity
         super.onStart();
 
         m_gi = new CurGameInfo( this );
-        m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
+        m_gameLock = new GameLock( m_rowid, true ).lock();
         int gamePtr = GameUtils.loadMakeGame( this, m_gi, m_gameLock );
         m_car = new CommsAddrRec();
         if ( XwJNI.game_hasComms( gamePtr ) ) {

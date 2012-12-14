@@ -34,6 +34,7 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.BoardDims;
+import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.Toolbar;
@@ -121,7 +122,7 @@ public class JNIThread extends Thread {
     private boolean m_stopped = false;
     private boolean m_saveOnStop = false;
     private int m_jniGamePtr;
-    private GameUtils.GameLock m_lock;
+    private GameLock m_lock;
     private Context m_context;
     private CurGameInfo m_gi;
     private Handler m_handler;
@@ -143,7 +144,7 @@ public class JNIThread extends Thread {
     }
 
     public JNIThread( int gamePtr, CurGameInfo gi, SyncedDraw drawer, 
-                      GameUtils.GameLock lock, Context context, Handler handler ) 
+                      GameLock lock, Context context, Handler handler ) 
     {
         m_jniGamePtr = gamePtr;
         m_gi = gi;

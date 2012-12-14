@@ -101,8 +101,7 @@ public class DBUtils {
                                           long maxMillis )
     {
         GameSummary result = null;
-        GameUtils.GameLock lock = 
-            new GameUtils.GameLock( rowid, false ).lock( maxMillis );
+        GameLock lock = new GameLock( rowid, false ).lock( maxMillis );
         if ( null != lock ) {
             result = getSummary( context, lock );
             lock.unlock();
@@ -116,7 +115,7 @@ public class DBUtils {
     }
 
     public static GameSummary getSummary( Context context, 
-                                          GameUtils.GameLock lock )
+                                          GameLock lock )
     {
         initDB( context );
         GameSummary summary = null;
@@ -248,13 +247,13 @@ public class DBUtils {
         return summary;
     } // getSummary
 
-    public static void saveSummary( Context context, GameUtils.GameLock lock,
+    public static void saveSummary( Context context, GameLock lock,
                                     GameSummary summary )
     {
         saveSummary( context, lock, summary, null );
     }
 
-    public static void saveSummary( Context context, GameUtils.GameLock lock,
+    public static void saveSummary( Context context, GameLock lock,
                                     GameSummary summary, String inviteID )
     {
         Assert.assertTrue( lock.canWrite() );
@@ -679,10 +678,10 @@ public class DBUtils {
         }
     }
 
-    public static GameUtils.GameLock saveNewGame( Context context, 
-                                                  byte[] bytes )
+    public static GameLock saveNewGame( Context context, 
+                                        byte[] bytes )
     {
-        GameUtils.GameLock lock = null;
+        GameLock lock = null;
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -702,14 +701,14 @@ public class DBUtils {
             setCached( rowid, null ); // force reread
             clearRowIDsCache();
 
-            lock = new GameUtils.GameLock( rowid, true ).lock();
+            lock = new GameLock( rowid, true ).lock();
             notifyListeners( rowid, true );
         }
 
         return lock;
     }
 
-    public static long saveGame( Context context, GameUtils.GameLock lock, 
+    public static long saveGame( Context context, GameLock lock, 
                                  byte[] bytes, boolean setCreate )
     {
         Assert.assertTrue( lock.canWrite() );
@@ -733,7 +732,7 @@ public class DBUtils {
         return rowid;
     }
 
-    public static byte[] loadGame( Context context, GameUtils.GameLock lock )
+    public static byte[] loadGame( Context context, GameLock lock )
     {
         long rowid = lock.getRowid();
         Assert.assertTrue( -1 != rowid );
@@ -761,12 +760,12 @@ public class DBUtils {
 
     public static void deleteGame( Context context, long rowid )
     {
-        GameUtils.GameLock lock = new GameUtils.GameLock( rowid, true ).lock();
+        GameLock lock = new GameLock( rowid, true ).lock();
         deleteGame( context, lock );
         lock.unlock();
     }
 
-    public static void deleteGame( Context context, GameUtils.GameLock lock )
+    public static void deleteGame( Context context, GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );
         initDB( context );

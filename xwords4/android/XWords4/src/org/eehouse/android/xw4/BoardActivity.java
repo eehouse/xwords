@@ -114,7 +114,7 @@ public class BoardActivity extends XWActivity
 
     private BoardView m_view;
     private int m_jniGamePtr;
-    private GameUtils.GameLock m_gameLock;
+    private GameLock m_gameLock;
     private CurGameInfo m_gi;
     private CommsTransport m_xport;
     private Handler m_handler = null;
@@ -1673,7 +1673,7 @@ public class BoardActivity extends XWActivity
                 showDictGoneFinish();
             } else {
                 Assert.assertNull( m_gameLock );
-                m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
+                m_gameLock = new GameLock( m_rowid, true ).lock();
 
                 byte[] stream = GameUtils.savedGame( this, m_gameLock );
                 m_gi = new CurGameInfo( this );

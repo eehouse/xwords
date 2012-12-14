@@ -651,8 +651,7 @@ public class GamesList extends XWListActivity
                         showOKOnlyDialog( R.string.no_copy_network );
                     } else {
                         byte[] stream = GameUtils.savedGame( this, m_rowid );
-                        GameUtils.GameLock lock = 
-                            GameUtils.saveNewGame( this, stream );
+                        GameLock lock = GameUtils.saveNewGame( this, stream );
                         DBUtils.saveSummary( this, lock, summary );
                         lock.unlock();
                     }
