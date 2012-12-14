@@ -538,7 +538,6 @@ public class GameUtils {
                                    boolean invited )
     {
         Intent intent = new Intent( activity, BoardActivity.class );
-        intent.setAction( Intent.ACTION_EDIT );
         intent.putExtra( INTENT_KEY_ROWID, rowid );
         if ( invited ) {
             intent.putExtra( INVITED, true );
