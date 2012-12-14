@@ -91,7 +91,7 @@ public class GamesList extends XWListActivity
     private int m_missingDictLang;
     private long m_rowid;
     private NetLaunchInfo m_netLaunchInfo;
-    // private String m_smsPhone;
+    private long m_invalRowID = DBUtils.ROWID_NOTFOUND;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -379,6 +379,10 @@ public class GamesList extends XWListActivity
         if ( hasFocus ) {
             updateField();
         }
+        if ( hasFocus && DBUtils.ROWID_NOTFOUND != m_invalRowID ) {
+            m_adapter.inval( m_invalRowID );
+            m_invalRowID = DBUtils.ROWID_NOTFOUND;
+        }
     }
 
     // DBUtils.DBChangeListener interface
@@ -415,7 +419,7 @@ public class GamesList extends XWListActivity
             GameUtils.doConfig( this, rowid, clazz );
         } else {
             if ( checkWarnNoDict( rowid ) ) {
-                GameUtils.launchGame( this, rowid );
+                launchGame( rowid );
             }
         }
     }
@@ -758,7 +762,7 @@ public class GamesList extends XWListActivity
                 if ( null != rowids ) {
                     for ( long rowid : rowids ) {
                         if ( GameUtils.gameDictsHere( this, rowid ) ) {
-                            GameUtils.launchGame( this, rowid );
+                            launchGame( rowid );
                             break outer;
                         }
                     }
@@ -816,7 +820,7 @@ public class GamesList extends XWListActivity
     {
         long[] rowids = DBUtils.getRowIDsFor( this, gameID );
         if ( null != rowids && 0 < rowids.length ) {
-            GameUtils.launchGame( this, rowids[0] );
+            launchGame( rowids[0] );
         }
     }
 
@@ -834,7 +838,7 @@ public class GamesList extends XWListActivity
         if ( -1 != rowid ) {
             // this will juggle if the preference is set
             long newid = GameUtils.dupeGame( this, rowid );
-            GameUtils.launchGame( this, newid );
+            launchGame( newid );
         }
     }
 
@@ -877,10 +881,21 @@ public class GamesList extends XWListActivity
         return madeGame;
     }
 
+    private void launchGame( long rowid, boolean invited )
+    {
+        m_invalRowID = rowid;
+        GameUtils.launchGame( this, rowid, invited );
+    }
+
+    private void launchGame( long rowid )
+    {
+        launchGame( rowid, false );
+    }
+
     private void makeNewNetGame( NetLaunchInfo info )
     {
         long rowid = GameUtils.makeNewNetGame( this, info );
-        GameUtils.launchGame( this, rowid, true );
+        launchGame( rowid, true );
     }
 
     public static void onGameDictDownload( Context context, Intent intent )
