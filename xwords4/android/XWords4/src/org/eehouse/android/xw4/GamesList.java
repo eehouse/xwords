@@ -165,11 +165,12 @@ public class GamesList extends XWListActivity
                                 getCheckedItemPosition();
                             String dict = m_sameLangDicts[pos];
                             dict = DictLangCache.stripCount( dict );
-                            GameUtils.replaceDicts( GamesList.this,
-                                                    m_missingDictRowId,
-                                                    m_missingDictName,
-                                                    dict );
-                            launchGameIf();
+                            if ( GameUtils.replaceDicts( GamesList.this,
+                                                         m_missingDictRowId,
+                                                         m_missingDictName,
+                                                         dict ) ) {
+                                launchGameIf();
+                            }
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -721,9 +722,12 @@ public class GamesList extends XWListActivity
             } else if ( null != m_missingDictName ) {
                 showDialog( WARN_NODICT_SUBST );
             } else {
-                String dict = DictLangCache.getHaveLang( this, m_missingDictLang)[0];
-                GameUtils.replaceDicts( this, m_missingDictRowId, null, dict );
-                launchGameIf();
+                String dict = 
+                    DictLangCache.getHaveLang( this, m_missingDictLang)[0];
+                if ( GameUtils.replaceDicts( this, m_missingDictRowId, 
+                                             null, dict ) ) {
+                    launchGameIf();
+                }
             }
         }
         return hasDicts;

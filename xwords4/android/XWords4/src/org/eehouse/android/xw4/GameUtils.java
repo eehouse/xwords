@@ -114,12 +114,16 @@ public class GameUtils {
 
     public static void resetGame( Context context, long rowidIn )
     {
-        GameLock lock = new GameLock( rowidIn, true ).lock();
-        tellDied( context, lock, true );
-        resetGame( context, lock, lock, false );
-        lock.unlock();
+        GameLock lock = new GameLock( rowidIn, true ).lock( 500 );
+        if ( null != lock ) {
+            tellDied( context, lock, true );
+            resetGame( context, lock, lock, false );
+            lock.unlock();
 
-        Utils.cancelNotification( context, (int)rowidIn );
+            Utils.cancelNotification( context, (int)rowidIn );
+        } else {
+            DbgUtils.logf( "resetGame: unable to open rowid %d", rowidIn );
+        }
     }
 
     private static GameSummary summarizeAndClose( Context context, 
@@ -172,12 +176,17 @@ public class GameUtils {
 
     public static long dupeGame( Context context, long rowidIn )
     {
-        boolean juggle = CommonPrefs.getAutoJuggle( context );
-        GameLock lockSrc = new GameLock( rowidIn, false ).lock();
-        GameLock lockDest = resetGame( context, lockSrc, null, juggle );
-        long rowid = lockDest.getRowid();
-        lockDest.unlock();
-        lockSrc.unlock();
+        long rowid = DBUtils.ROWID_NOTFOUND;
+        GameLock lockSrc = new GameLock( rowidIn, false ).lock( 300 );
+        if ( null != lockSrc ) {
+            boolean juggle = CommonPrefs.getAutoJuggle( context );
+            GameLock lockDest = resetGame( context, lockSrc, null, juggle );
+            rowid = lockDest.getRowid();
+            lockDest.unlock();
+            lockSrc.unlock();
+        } else {
+            DbgUtils.logf( "dupeGame: unable to open rowid %d", rowidIn );
+        }
         return rowid;
     }
 
@@ -634,34 +643,42 @@ public class GameUtils {
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new
     // dict have the same langauge code.
-    public static void replaceDicts( Context context, long rowid,
-                                     String oldDict, String newDict )
+    public static boolean replaceDicts( Context context, long rowid,
+                                        String oldDict, String newDict )
     {
-        GameLock lock = new GameLock( rowid, true ).lock();
-        byte[] stream = savedGame( context, lock );
-        CurGameInfo gi = new CurGameInfo( context );
-        XwJNI.gi_from_stream( gi, stream );
+        GameLock lock = new GameLock( rowid, true ).lock(300);
+        boolean success = null != lock;
+        if ( success ) {
+            byte[] stream = savedGame( context, lock );
+            CurGameInfo gi = new CurGameInfo( context );
+            XwJNI.gi_from_stream( gi, stream );
 
-        // first time required so dictNames() will work
-        gi.replaceDicts( newDict );
+            // first time required so dictNames() will work
+            gi.replaceDicts( newDict );
 
-        String[] dictNames = gi.dictNames();
-        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
+            String[] dictNames = gi.dictNames();
+            DictUtils.DictPairs pairs = DictUtils.openDicts( context, 
+                                                             dictNames );
         
-        int gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
-                                   pairs.m_bytes, pairs.m_paths,
-                                   gi.langName(), JNIUtilsImpl.get(context), 
-                                   CommonPrefs.get( context ) );
-        // second time required as game_makeFromStream can overwrite
-        gi.replaceDicts( newDict );
+            int gamePtr = XwJNI.initJNI();
+            XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
+                                       pairs.m_bytes, pairs.m_paths,
+                                       gi.langName(), 
+                                       JNIUtilsImpl.get(context), 
+                                       CommonPrefs.get( context ) );
+            // second time required as game_makeFromStream can overwrite
+            gi.replaceDicts( newDict );
 
-        saveGame( context, gamePtr, gi, lock, false );
+            saveGame( context, gamePtr, gi, lock, false );
 
-        summarizeAndClose( context, lock, gamePtr, gi );
+            summarizeAndClose( context, lock, gamePtr, gi );
 
-        lock.unlock();
-    }
+            lock.unlock();
+        } else {
+            DbgUtils.logf( "replaceDicts: unable to open rowid %d", rowid );
+        }
+        return success;
+    } // replaceDicts
 
     public static void applyChanges( Context context, CurGameInfo gi, 
                                      CommsAddrRec car, GameLock lock, 

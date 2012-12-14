@@ -678,8 +678,7 @@ public class DBUtils {
         }
     }
 
-    public static GameLock saveNewGame( Context context, 
-                                        byte[] bytes )
+    public static GameLock saveNewGame( Context context, byte[] bytes )
     {
         GameLock lock = null;
 
@@ -760,9 +759,13 @@ public class DBUtils {
 
     public static void deleteGame( Context context, long rowid )
     {
-        GameLock lock = new GameLock( rowid, true ).lock();
-        deleteGame( context, lock );
-        lock.unlock();
+        GameLock lock = new GameLock( rowid, true ).lock( 300 );
+        if ( null != lock ) {
+            deleteGame( context, lock );
+            lock.unlock();
+        } else {
+            DbgUtils.logf( "deleteGame: unable to lock rowid %d", rowid );
+        }
     }
 
     public static void deleteGame( Context context, GameLock lock )
