@@ -90,10 +90,11 @@ public class GameListAdapter extends XWListAdapter {
     public void inval( long rowid )
     {
         GameListItem child = getItemFor( rowid );
-        if ( null != child ) {
+        if ( null != child && child.getRowID() == rowid ) {
             child.forceReload();
         } else {
             DbgUtils.logf( "no child for rowid %d", rowid );
+            GameListItem.inval( rowid );
             m_list.invalidate();
         }
     }

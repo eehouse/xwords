@@ -21,8 +21,10 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Handler;
+// import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
@@ -31,12 +33,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashSet;
+// import java.util.Iterator;
 
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public class GameListItem extends LinearLayout 
     implements View.OnClickListener {
+
+    private static HashSet<Long> s_invalRows = new HashSet<Long>();
 
     private Context m_context;
     private boolean m_loaded;
@@ -50,6 +56,7 @@ public class GameListItem extends LinearLayout
     private GameSummary m_summary;
     private GameListAdapter.LoadItemCB m_cb;
     private int m_fieldID;
+    private int m_loadingCount;
 
     public GameListItem( Context cx, AttributeSet as ) 
     {
@@ -58,6 +65,7 @@ public class GameListItem extends LinearLayout
         m_loaded = false;
         m_rowid = DBUtils.ROWID_NOTFOUND;
         m_lastMoveTime = 0;
+        m_loadingCount = 0;
     }
 
     public void init( Handler handler, long rowid, int fieldID,
@@ -73,13 +81,32 @@ public class GameListItem extends LinearLayout
 
     public void forceReload()
     {
+        // DbgUtils.logf( "GameListItem.forceReload: rowid=%d", m_rowid );
         m_summary = null;
+        setLoaded( false );
+        // Apparently it's impossible to reliably cancel an existing
+        // AsyncTask, so let it complete, but drop the results as soon
+        // as we're back on the UI thread.
+        ++m_loadingCount;
         new LoadItemTask().execute();
     }
 
     public void invalName()
     {
         setName();
+    }
+
+    @Override
+    protected void onDraw( Canvas canvas ) 
+    {
+        super.onDraw( canvas );
+        if ( DBUtils.ROWID_NOTFOUND != m_rowid ) {
+            synchronized( s_invalRows ) {
+                if ( s_invalRows.contains( m_rowid ) ) {
+                    forceReload();
+                }
+            }
+        }
     }
 
     private void update( boolean expanded, long lastMoveTime, boolean haveTurn,
@@ -108,15 +135,15 @@ public class GameListItem extends LinearLayout
         showHide();
     }
 
-    private void setLoaded()
+    private void setLoaded( boolean loaded )
     {
-        if ( !m_loaded ) {
-            m_loaded = true;
+        if ( loaded != m_loaded ) {
+            m_loaded = loaded;
             // This should be enough to invalidate
             findViewById( R.id.view_unloaded )
-                .setVisibility( m_loaded ? View.GONE : View.VISIBLE );
+                .setVisibility( loaded ? View.GONE : View.VISIBLE );
             findViewById( R.id.view_loaded )
-                .setVisibility( m_loaded ? View.VISIBLE : View.GONE );
+                .setVisibility( loaded ? View.VISIBLE : View.GONE );
         }
     }
 
@@ -168,16 +195,16 @@ public class GameListItem extends LinearLayout
         return state;
     }
 
-    private void setData()
+    private void setData( final GameSummary summary )
     {
-        if ( null != m_summary ) {
+        if ( null != summary ) {
             TextView view;
             String state = setName();
 
             setOnClickListener( new View.OnClickListener() {
                     @Override
                     public void onClick( View v ) {
-                        m_cb.itemClicked( m_rowid, m_summary );
+                        m_cb.itemClicked( m_rowid, summary );
                     }
                 } );
 
@@ -187,14 +214,14 @@ public class GameListItem extends LinearLayout
             boolean haveATurn = false;
             boolean haveALocalTurn = false;
             boolean[] isLocal = new boolean[1];
-            for ( int ii = 0; ii < m_summary.nPlayers; ++ii ) {
+            for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
                 ExpiringLinearLayout tmp = (ExpiringLinearLayout)
                     Utils.inflate( m_context, R.layout.player_list_elem );
                 view = (TextView)tmp.findViewById( R.id.item_name );
-                view.setText( m_summary.summarizePlayer( ii ) );
+                view.setText( summary.summarizePlayer( ii ) );
                 view = (TextView)tmp.findViewById( R.id.item_score );
-                view.setText( String.format( "  %d", m_summary.scores[ii] ) );
-                boolean thisHasTurn = m_summary.isNextToPlay( ii, isLocal );
+                view.setText( String.format( "  %d", summary.scores[ii] ) );
+                boolean thisHasTurn = summary.isNextToPlay( ii, isLocal );
                 if ( thisHasTurn ) {
                     haveATurn = true;
                     if ( isLocal[0] ) {
@@ -202,14 +229,14 @@ public class GameListItem extends LinearLayout
                     }
                 }
                 tmp.setPct( m_handler, thisHasTurn, isLocal[0], 
-                            m_summary.lastMoveTime );
+                            summary.lastMoveTime );
                 list.addView( tmp, ii );
             }
 
             view = (TextView)findViewById( R.id.state );
             view.setText( state );
             view = (TextView)findViewById( R.id.modtime );
-            long lastMoveTime = m_summary.lastMoveTime;
+            long lastMoveTime = summary.lastMoveTime;
             lastMoveTime *= 1000;
 
             DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
@@ -219,7 +246,7 @@ public class GameListItem extends LinearLayout
             int iconID;
             ImageView marker =
                 (ImageView)findViewById( R.id.msg_marker );
-            CommsConnType conType = m_summary.conType;
+            CommsConnType conType = summary.conType;
             if ( CommsConnType.COMMS_CONN_RELAY == conType ) {
                 iconID = R.drawable.relaygame;
             } else if ( CommsConnType.COMMS_CONN_BT == conType ) {
@@ -232,7 +259,7 @@ public class GameListItem extends LinearLayout
             marker.setImageResource( iconID );
 
             view = (TextView)findViewById( R.id.role );
-            String roleSummary = m_summary.summarizeRole();
+            String roleSummary = summary.summarizeRole();
             if ( null != roleSummary ) {
                 view.setText( roleSummary );
             } else {
@@ -241,7 +268,7 @@ public class GameListItem extends LinearLayout
 
             boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
 
-            update( expanded, m_summary.lastMoveTime, haveATurn, 
+            update( expanded, summary.lastMoveTime, haveATurn, 
                     haveALocalTurn );
         }
     }
@@ -256,13 +283,40 @@ public class GameListItem extends LinearLayout
         @Override
         protected void onPostExecute( GameSummary summary )
         {
-            m_summary = summary;
-            setData();
-            // setLoaded( m_view.getRowID() );
-            setLoaded();
-
-            // DbgUtils.logf( "LoadItemTask for row %d finished", m_rowid );
+            if ( 0 == --m_loadingCount ) {
+                m_summary = summary;
+                setData( summary );
+                setLoaded( null != m_summary );
+                synchronized( s_invalRows ) {
+                    s_invalRows.remove( m_rowid );
+                }
+            }
+            // DbgUtils.logf( "LoadItemTask for row %d finished; "
+            //                + "inval rows now %s", 
+            //                m_rowid, invalRowsToString() );
         }
     } // class LoadItemTask
+
+    public static void inval( long rowid ) 
+    {
+        synchronized( s_invalRows ) {
+            s_invalRows.add( rowid );
+        }
+        // DbgUtils.logf( "GameListItem.inval(rowid=%d); inval rows now %s",
+        //                rowid, invalRowsToString() );
+    }
+
+    // private static String invalRowsToString()
+    // {
+    //     String[] strs;
+    //     synchronized( s_invalRows ) {
+    //         strs = new String[s_invalRows.size()];
+    //         Iterator<Long> iter = s_invalRows.iterator();
+    //         for ( int ii = 0; iter.hasNext(); ++ii ) {
+    //             strs[ii] = String.format("%d", iter.next() );
+    //         }
+    //     }
+    //     return TextUtils.join(",", strs );
+    // }
 
 }
