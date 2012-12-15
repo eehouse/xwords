@@ -194,7 +194,7 @@ public class ExpiringDelegate {
         if ( null == m_runnable ) {
             m_runnable = new Runnable() {
                     public void run() {
-                        if ( XWApp.DEBUG ) {
+                        if ( XWApp.DEBUG_EXP_TIMERS ) {
                             DbgUtils.logf( "ExpiringDelegate: timer fired"
                                            + " for %H", this );
                         }
@@ -204,7 +204,7 @@ public class ExpiringDelegate {
                                 m_back = null;
                                 setBackground();
                             }
-                            if ( XWApp.DEBUG ) {
+                            if ( XWApp.DEBUG_EXP_TIMERS ) {
                                 DbgUtils.logf( "ExpiringDelegate: invalidating"
                                                + " view %H", m_view );
                             }

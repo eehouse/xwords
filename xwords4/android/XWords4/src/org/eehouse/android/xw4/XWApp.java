@@ -35,6 +35,7 @@ public class XWApp extends Application {
     public static final boolean REMATCH_SUPPORTED = false;
     public static final boolean DEBUG = true;       // DON'T SHIP THIS WAY
     public static final boolean DEBUG_LOCKS = false && DEBUG;
+    public static final boolean DEBUG_EXP_TIMERS = false && DEBUG;
 
     public static final String SMS_PUBLIC_HEADER = "-XW4";
 
