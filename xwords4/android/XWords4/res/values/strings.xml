@@ -1229,8 +1229,10 @@
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
     <string name="invite_htmf">\u003ca href=\"%1$s\"\u003ETap
-    here\u003c/a\u003E (or the full link below) to accept my invitation and
-    join this game.
+    here\u003c/a\u003E (or tap the full link below, or, if you already
+    have Crosswords installed, open the attachment) to accept my
+    invitation and join this game.
+
     \u003cbr \\\u003E
     \u003cbr \\\u003E
     (full link: %1$s)
