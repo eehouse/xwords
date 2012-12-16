@@ -75,8 +75,8 @@ link in your invite email (or text) again, and this time let
 Crosswords handle it.</p>
 
 <p>(If you get tired of having to having to make that choice, Android
-will allow you to make Crosswords the default.  What you're saying is
-that Crosswords will be giving control of all URLs that start with
+will allow you to make Crosswords the default.  If you do that
+Crosswords will be given control of all URLs that start with
 "http://eehouse.org/and/" -- not all URLs of any type.)</p>
 
 <p>Have fun.  And as always, <a href="mailto:xwords@eehouse.org">let
