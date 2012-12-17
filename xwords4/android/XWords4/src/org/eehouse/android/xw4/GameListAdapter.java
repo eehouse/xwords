@@ -20,25 +20,14 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import android.database.DataSetObserver;
-import android.os.Build;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import java.io.FileInputStream;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Random;
 
 import junit.framework.Assert;
-
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
@@ -50,7 +39,6 @@ public class GameListAdapter extends XWListAdapter {
     private LayoutInflater m_factory;
     private int m_fieldID;
     private Handler m_handler;
-    private DateFormat m_df;
     private LoadItemCB m_cb;
 
     public interface LoadItemCB {
@@ -65,8 +53,6 @@ public class GameListAdapter extends XWListAdapter {
         m_handler = handler;
         m_cb = cb;
         m_factory = LayoutInflater.from( context );
-        m_df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
-                                               DateFormat.SHORT );
 
         m_fieldID = fieldToID( fieldName );
     }

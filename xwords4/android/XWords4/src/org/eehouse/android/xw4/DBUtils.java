@@ -813,7 +813,6 @@ public class DBUtils {
 
     private static void clearRowIDsCache()
     {
-        DbgUtils.logf( "DBUtils.clearRowIDsCache()" );
         synchronized( DBUtils.class ) {
             s_cachedRowIDs = null;
         }

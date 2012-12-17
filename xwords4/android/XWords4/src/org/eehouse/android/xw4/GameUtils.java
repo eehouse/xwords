@@ -430,8 +430,6 @@ public class GameUtils {
                     String mime = context.getString( R.string.invite_mime );
                     intent.setType( mime );
                     Uri uri = Uri.fromFile( attach );
-                    DbgUtils.logf( "using file uri %s, type %s for attachment", 
-                                   uri.toString(), mime );
                     intent.putExtra( Intent.EXTRA_STREAM, uri );
                 }
 
