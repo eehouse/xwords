@@ -202,7 +202,10 @@ public class GameListAdapter implements ExpandableListAdapter {
     private View getChildView( int groupPosition, int childPosition )
     {
         long rowid = getRowIDFor( groupPosition, childPosition );
-        return getItem( rowid );
+        GameListItem result = (GameListItem)
+            m_factory.inflate( R.layout.game_list_item, null );
+        result.init( m_handler, rowid, m_fieldID, m_cb );
+        return result;
     }
 
     public View getGroupView( int groupPosition, boolean isExpanded, 
@@ -372,9 +375,16 @@ public class GameListAdapter implements ExpandableListAdapter {
     private GameListItem getItemFor( long rowid )
     {
         GameListItem result = null;
-        int position = positionFor( rowid );
-        if ( 0 <= position ) {
-            result = (GameListItem)m_list.getChildAt( position );
+        int count = m_list.getChildCount();
+        for ( int ii = 0; ii < count; ++ii ) {
+            View view = m_list.getChildAt( ii );
+            if ( view instanceof GameListItem ) {
+                GameListItem tryme = (GameListItem)view;
+                if ( tryme.getRowID() == rowid ) {
+                    result = tryme;
+                    break;
+                }
+            }
         }
         return result;
     }
@@ -397,16 +407,22 @@ public class GameListAdapter implements ExpandableListAdapter {
         return result;
     }
 
-    private int positionFor( long rowid )
+    // private int positionFor( long rowid )
+    // {
+    //     int position = -1;
+    //     long[] rowids = DBUtils.gamesList( m_context );
+    //     for ( int ii = 0; ii < rowids.length; ++ii ) {
+    //         if ( rowids[ii] == rowid ) {
+    //             position = ii;
+    //             break;
+    //         }
+    //     }
+    //     return position;
+    // }
+
+    private HashMap<String,GameGroupInfo> gameInfo()
     {
-        int position = -1;
-        long[] rowids = DBUtils.gamesList( m_context );
-        for ( int ii = 0; ii < rowids.length; ++ii ) {
-            if ( rowids[ii] == rowid ) {
-                position = ii;
-                break;
-            }
-        }
-        return position;
+        return DBUtils.getGroups( m_context );
     }
+
 }

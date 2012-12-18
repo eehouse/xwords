@@ -347,8 +347,8 @@ public class GamesList extends XWExpandableListActivity
             });
 
         String field = CommonPrefs.getSummaryField( this );
-        m_adapter = new GameListAdapter( this, getListView(), new Handler(), 
-                                         this, field );
+        m_adapter = new GameListAdapter( this, getExpandableListView(),
+                                         new Handler(), this, field );
         setListAdapter( m_adapter );
 
         NetUtils.informOfDeaths( this );

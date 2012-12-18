@@ -29,7 +29,7 @@ import junit.framework.Assert;
 
 
 public class XWExpandableListActivity extends ExpandableListActivity 
-    implements DlgDelegate.DlgClickNotify, MultiService.BTEventListener {
+    implements DlgDelegate.DlgClickNotify, MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
 
