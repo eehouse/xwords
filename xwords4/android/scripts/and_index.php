@@ -30,16 +30,17 @@ function printNonAndroid($agent) {
     $subject = "Android device not identified"; 
 
     $body = htmlentities("My browser is running on an android device but"
-                         . " says its user agent is: \"$agent\".  Please fix your script to recognize"
+                         . " says its user agent is: \"$agent\"."
+                         . " Please fix your website to recognize"
                          . " this as an Android browser.");
     print <<<EOF
 <div class="center">
   <p>This page is meant to be viewed on an Android device.</p>
   <hr>
-    <p>(If you <em>are</em> viewing this on an Android device, you&apos;ve
-      found a bug!  Please <a href="mailto:
-                                    xwords@eehouse.org?subject=$subject&body=$body">email me</a> (and be
-      sure to leave the user agent string in the email body.) 
+    <p>(If you <em>are</em> viewing this on an Android device,
+      you&apos;ve found a bug!  Please <a href="mailto:
+      xwords@eehouse.org?subject=$subject&body=$body">email me</a>
+      (and be sure to leave the user agent string in the email body.)
     </p>
 </div>
 
@@ -72,6 +73,11 @@ invite email (or text) and tap the link again.</p>
 <p>In the second case, hit your browser&apos;s back button, click the
 link in your invite email (or text) again, and this time let
 Crosswords handle it.</p>
+
+<p>(If you get tired of having to having to make that choice, Android
+will allow you to make Crosswords the default.  If you do that
+Crosswords will be given control of all URLs that start with
+"http://eehouse.org/and/" -- not all URLs of any type.)</p>
 
 <p>Have fun.  And as always, <a href="mailto:xwords@eehouse.org">let
 me know</a> if you have problems or suggestions.</p>

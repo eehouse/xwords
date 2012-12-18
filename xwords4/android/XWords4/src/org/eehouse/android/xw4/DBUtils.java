@@ -60,9 +60,10 @@ public class DBUtils {
 
     private static long s_cachedRowID = -1;
     private static byte[] s_cachedBytes = null;
+    private static long[] s_cachedRowIDs = null;
 
     public static interface DBChangeListener {
-        public void gameSaved( long rowid );
+        public void gameSaved( long rowid, boolean countChanged );
     }
     private static HashSet<DBChangeListener> s_listeners = 
         new HashSet<DBChangeListener>();
@@ -100,8 +101,7 @@ public class DBUtils {
                                           long maxMillis )
     {
         GameSummary result = null;
-        GameUtils.GameLock lock = 
-            new GameUtils.GameLock( rowid, false ).lock( maxMillis );
+        GameLock lock = new GameLock( rowid, false ).lock( maxMillis );
         if ( null != lock ) {
             result = getSummary( context, lock );
             lock.unlock();
@@ -115,7 +115,7 @@ public class DBUtils {
     }
 
     public static GameSummary getSummary( Context context, 
-                                          GameUtils.GameLock lock )
+                                          GameLock lock )
     {
         initDB( context );
         GameSummary summary = null;
@@ -129,7 +129,7 @@ public class DBUtils {
                                  DBHelper.TURN, DBHelper.GIFLAGS,
                                  DBHelper.CONTYPE, DBHelper.SERVERROLE,
                                  DBHelper.ROOMNAME, DBHelper.RELAYID, 
-                                 DBHelper.SMSPHONE, DBHelper.SEED, 
+                                 /*DBHelper.SMSPHONE,*/ DBHelper.SEED, 
                                  DBHelper.DICTLANG, DBHelper.GAMEID,
                                  DBHelper.SCORES, DBHelper.HASMSGS,
                                  DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
@@ -247,13 +247,13 @@ public class DBUtils {
         return summary;
     } // getSummary
 
-    public static void saveSummary( Context context, GameUtils.GameLock lock,
+    public static void saveSummary( Context context, GameLock lock,
                                     GameSummary summary )
     {
         saveSummary( context, lock, summary, null );
     }
 
-    public static void saveSummary( Context context, GameUtils.GameLock lock,
+    public static void saveSummary( Context context, GameLock lock,
                                     GameSummary summary, String inviteID )
     {
         Assert.assertTrue( lock.canWrite() );
@@ -314,9 +314,12 @@ public class DBUtils {
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );
                 Assert.assertTrue( result >= 0 );
+                if ( result != rowid ) { // new row added
+                    clearRowIDsCache();
+                }
             }
-            notifyListeners( rowid );
             db.close();
+            notifyListeners( rowid, false );
         }
     } // saveSummary
 
@@ -372,7 +375,7 @@ public class DBUtils {
     public static void setMsgFlags( long rowid, int flags )
     {
         setInt( rowid, DBHelper.HASMSGS, flags );
-        notifyListeners( rowid );
+        notifyListeners( rowid, false );
     }
 
     public static void setExpanded( long rowid, boolean expanded )
@@ -447,10 +450,8 @@ public class DBUtils {
             String selection = DBHelper.RELAYID + "='" + relayID + "'";
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
+            result = new long[cursor.getCount()];
             for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                if ( null == result ) {
-                    result = new long[cursor.getCount()];
-                }
                 result[ii] = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
             }
             cursor.close();
@@ -469,11 +470,8 @@ public class DBUtils {
             String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
-
+            result = new long[cursor.getCount()];
             for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                if ( null == result ) {
-                    result = new long[cursor.getCount()];
-                }
                 result[ii] = cursor.getLong( cursor.getColumnIndex(ROW_ID) );
             }
             cursor.close();
@@ -574,7 +572,7 @@ public class DBUtils {
         return result;
     }
 
-    public static String[] getRelayIDs( Context context, boolean noMsgs ) 
+    public static String[] getRelayIDs( Context context, long[][] rowIDs ) 
     {
         String[] result = null;
         initDB( context );
@@ -582,26 +580,31 @@ public class DBUtils {
 
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.RELAYID };
+            String[] columns = { ROW_ID, DBHelper.RELAYID };
             String selection = DBHelper.RELAYID + " NOT null";
-            if ( noMsgs ) {
-                selection += " AND NOT " + DBHelper.HASMSGS;
-            }
 
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
+            int count = cursor.getCount();
+            if ( 0 < count ) {
+                result = new String[count];
+                if ( null != rowIDs ) {
+                    rowIDs[0] = new long[count];
+                }
 
-            while ( cursor.moveToNext() ) {
-                ids.add( cursor.getString( cursor.
-                                           getColumnIndex(DBHelper.RELAYID)) );
+                int idIndex = cursor.getColumnIndex(DBHelper.RELAYID);
+                int rowIndex = cursor.getColumnIndex(ROW_ID);
+                for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                    result[ii] = cursor.getString( idIndex );
+                    if ( null != rowIDs ) {
+                        rowIDs[0][ii] = cursor.getLong( rowIndex );
+                    }
+                }
             }
             cursor.close();
             db.close();
         }
 
-        if ( 0 < ids.size() ) {
-            result = ids.toArray( new String[ids.size()] );
-        }
         return result;
     }
 
@@ -675,9 +678,9 @@ public class DBUtils {
         }
     }
 
-    public static GameUtils.GameLock saveNewGame( Context context, byte[] bytes )
+    public static GameLock saveNewGame( Context context, byte[] bytes )
     {
-        GameUtils.GameLock lock = null;
+        GameLock lock = null;
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -695,16 +698,16 @@ public class DBUtils {
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
 
             setCached( rowid, null ); // force reread
+            clearRowIDsCache();
 
-            lock = new GameUtils.GameLock( rowid, true ).lock();
-
-            notifyListeners( rowid );
+            lock = new GameLock( rowid, true ).lock();
+            notifyListeners( rowid, true );
         }
 
         return lock;
     }
 
-    public static long saveGame( Context context, GameUtils.GameLock lock, 
+    public static long saveGame( Context context, GameLock lock, 
                                  byte[] bytes, boolean setCreate )
     {
         Assert.assertTrue( lock.canWrite() );
@@ -722,13 +725,13 @@ public class DBUtils {
         updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
 
         setCached( rowid, null ); // force reread
-        if ( -1 != rowid ) {      // Is this possible? PENDING
-            notifyListeners( rowid );
+        if ( -1 != rowid ) {      // Means new game?
+            notifyListeners( rowid, false );
         }
         return rowid;
     }
 
-    public static byte[] loadGame( Context context, GameUtils.GameLock lock )
+    public static byte[] loadGame( Context context, GameLock lock )
     {
         long rowid = lock.getRowid();
         Assert.assertTrue( -1 != rowid );
@@ -756,12 +759,16 @@ public class DBUtils {
 
     public static void deleteGame( Context context, long rowid )
     {
-        GameUtils.GameLock lock = new GameUtils.GameLock( rowid, true ).lock();
-        deleteGame( context, lock );
-        lock.unlock();
+        GameLock lock = new GameLock( rowid, true ).lock( 300 );
+        if ( null != lock ) {
+            deleteGame( context, lock );
+            lock.unlock();
+        } else {
+            DbgUtils.logf( "deleteGame: unable to lock rowid %d", rowid );
+        }
     }
 
-    public static void deleteGame( Context context, GameUtils.GameLock lock )
+    public static void deleteGame( Context context, GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );
         initDB( context );
@@ -771,32 +778,44 @@ public class DBUtils {
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }
-        notifyListeners( lock.getRowid() );
+        clearRowIDsCache();
+        notifyListeners( lock.getRowid(), true );
     }
 
     public static long[] gamesList( Context context )
     {
-        long[] result = null;
+        long[] result;
+        synchronized( DBUtils.class ) {
+            if ( null == s_cachedRowIDs ) {
+                initDB( context );
+                synchronized( s_dbHelper ) {
+                    SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-
-            String[] columns = { ROW_ID };
-            String orderBy = DBHelper.CREATE_TIME + " DESC";
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                      null, null, null, null, orderBy );
-            int count = cursor.getCount();
-            result = new long[count];
-            int index = cursor.getColumnIndex( ROW_ID );
-            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                result[ii] = cursor.getLong( index );
+                    String[] columns = { ROW_ID };
+                    String orderBy = DBHelper.CREATE_TIME + " DESC";
+                    Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, 
+                                              columns, null, null, null, 
+                                              null, orderBy );
+                    int count = cursor.getCount();
+                    s_cachedRowIDs = new long[count];
+                    int index = cursor.getColumnIndex( ROW_ID );
+                    for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                        s_cachedRowIDs[ii] = cursor.getLong( index );
+                    }
+                    cursor.close();
+                    db.close();
+                }
             }
-            cursor.close();
-            db.close();
+            result = s_cachedRowIDs;
         }
-
         return result;
+    }
+
+    private static void clearRowIDsCache()
+    {
+        synchronized( DBUtils.class ) {
+            s_cachedRowIDs = null;
+        }
     }
 
     // Get either the file name or game name, preferring the latter.
@@ -1099,6 +1118,7 @@ public class DBUtils {
 
     public static void loadDB( Context context )
     {
+        clearRowIDsCache();
         copyGameDB( context, false );
     }
 
@@ -1381,12 +1401,29 @@ public class DBUtils {
         }
     }
 
-    private static void notifyListeners( long rowid )
+    private static void updateRow( Context context, String table,
+                                   long rowid, ContentValues values )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            String selection = String.format( ROW_ID_FMT, rowid );
+
+            int result = db.update( table, values, selection, null );
+            db.close();
+            if ( 0 == result ) {
+                DbgUtils.logf( "updateRow failed" );
+            }
+        }
+    }
+    
+    private static void notifyListeners( long rowid, boolean countChanged )
     {
         synchronized( s_listeners ) {
             Iterator<DBChangeListener> iter = s_listeners.iterator();
             while ( iter.hasNext() ) {
-                iter.next().gameSaved( rowid );
+                iter.next().gameSaved( rowid, countChanged );
             }
         }
     }

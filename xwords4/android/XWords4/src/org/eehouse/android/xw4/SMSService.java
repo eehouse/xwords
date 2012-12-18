@@ -189,7 +189,7 @@ public class SMSService extends Service {
         return result;
     }
 
-    public static void setListener( MultiService.BTEventListener li )
+    public static void setListener( MultiService.MultiEventListener li )
     {
         if ( XWApp.SMSSUPPORTED ) {
             if ( null == s_srcMgr ) {

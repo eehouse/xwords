@@ -31,7 +31,7 @@ import android.widget.TextView;
 import junit.framework.Assert;
 
 public class XWActivity extends Activity
-    implements DlgDelegate.DlgClickNotify, MultiService.BTEventListener {
+    implements DlgDelegate.DlgClickNotify, MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
 
@@ -192,7 +192,7 @@ public class XWActivity extends Activity
         Assert.fail();
     }
 
-    // BTService.BTEventListener interface
+    // BTService.MultiEventListener interface
     public void eventOccurred( MultiService.MultiEvent event, 
                                final Object ... args )
     {

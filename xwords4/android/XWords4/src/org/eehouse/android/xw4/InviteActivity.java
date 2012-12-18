@@ -43,7 +43,7 @@ abstract class InviteActivity extends XWListActivity
     implements View.OnClickListener {
 
     public static final String DEVS = "DEVS";
-    public static final String INTENT_KEY_NMISSING = "NMISSING";
+    protected static final String INTENT_KEY_NMISSING = "NMISSING";
 
     protected int m_nMissing;
     protected Button m_okButton;

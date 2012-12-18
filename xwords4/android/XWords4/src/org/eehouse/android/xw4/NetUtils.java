@@ -130,8 +130,7 @@ public class NetUtils {
         }
     }
 
-    public static byte[][][] queryRelay( Context context, String[] ids,
-                                         int nBytes )
+    public static byte[][][] queryRelay( Context context, String[] ids )
     {
         byte[][][] msgs = null;
         try {
@@ -141,6 +140,7 @@ public class NetUtils {
                     new DataOutputStream( socket.getOutputStream() );
 
                 // total packet size
+                int nBytes = sumStrings( ids );
                 outStream.writeShort( 2 + nBytes + ids.length + 1 );
 
                 outStream.writeByte( NetUtils.PROTOCOL_VERSION );
@@ -263,4 +263,16 @@ public class NetUtils {
             DbgUtils.logf( "sendToRelay: null msgs" );
         }
     } // sendToRelay
+
+    private static int sumStrings( final String[] strs )
+    {
+        int len = 0;
+        if ( null != strs ) {
+            for ( String str : strs ) {
+                len += str.length();
+            }
+        }
+        return len;
+    }
+
 }

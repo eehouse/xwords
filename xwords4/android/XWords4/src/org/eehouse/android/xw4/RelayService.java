@@ -74,45 +74,40 @@ public class RelayService extends Service {
             }
         }
     }
-
-    private String[] collectIDs( int[] nBytes )
-    {
-        String[] ids = DBUtils.getRelayIDs( this, false );
-        int len = 0;
-        if ( null != ids ) {
-            for ( String id : ids ) {
-                len += id.length();
-            }
-        }
-        nBytes[0] = len;
-        return ids;
-    }
     
     private void fetchAndProcess()
     {
-        int[] nBytes = new int[1];
-        String[] ids = collectIDs( nBytes );
-        if ( null != ids && 0 < ids.length ) {
-            RelayMsgSink sink = new RelayMsgSink();
-            byte[][][] msgs =
-                NetUtils.queryRelay( this, ids, nBytes[0] );
+        long[][] rowIDss = new long[1][];
+        String[] relayIDs = DBUtils.getRelayIDs( this, rowIDss );
+        if ( null != relayIDs && 0 < relayIDs.length ) {
+            long[] rowIDs = rowIDss[0];
+            byte[][][] msgs = NetUtils.queryRelay( this, relayIDs );
 
             if ( null != msgs ) {
-                int nameCount = ids.length;
+                RelayMsgSink sink = new RelayMsgSink();
+                int nameCount = relayIDs.length;
                 ArrayList<String> idsWMsgs =
                     new ArrayList<String>( nameCount );
                 for ( int ii = 0; ii < nameCount; ++ii ) {
+                    byte[][] forOne = msgs[ii];
                     // if game has messages, open it and feed 'em
                     // to it.
-                    if ( GameUtils.feedMessages( this, ids[ii], 
-                                                 msgs[ii], sink ) ) {
-                        idsWMsgs.add( ids[ii] );
+                    if ( null == forOne ) {
+                        // Nothing for this relayID
+                    } else if ( BoardActivity.feedMessages( rowIDs[ii], forOne )
+                                || GameUtils.feedMessages( this, rowIDs[ii],
+                                                           forOne, null,
+                                                           sink ) ) {
+                        idsWMsgs.add( relayIDs[ii] );
+                    } else {
+                        DbgUtils.logf( "dropping message for %s (rowid %d)",
+                                       relayIDs[ii], rowIDs[ii] );
                     }
                 }
                 if ( 0 < idsWMsgs.size() ) {
-                    String[] relayIDs = new String[idsWMsgs.size()];
-                    idsWMsgs.toArray( relayIDs );
-                    setupNotification( relayIDs );
+                    String[] tmp = new String[idsWMsgs.size()];
+                    idsWMsgs.toArray( tmp );
+                    setupNotification( tmp );
                 }
                 sink.send( this );
             }

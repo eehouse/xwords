@@ -46,134 +46,6 @@ public class GameUtils {
     public static final String INTENT_KEY_ROWID = "rowid";
     public static final String INTENT_FORRESULT_ROWID = "forresult";
 
-    // Implements read-locks and write-locks per game.  A read lock is
-    // obtainable when other read locks are granted but not when a
-    // write lock is.  Write-locks are exclusive.
-    public static class GameLock {
-        private long m_rowid;
-        private boolean m_isForWrite;
-        private int m_lockCount;
-        StackTraceElement[] m_lockTrace;
-
-        private static HashMap<Long, GameLock> 
-            s_locks = new HashMap<Long,GameLock>();
-
-        public GameLock( long rowid, boolean isForWrite ) 
-        {
-            m_rowid = rowid;
-            m_isForWrite = isForWrite;
-            m_lockCount = 0;
-            if ( XWApp.DEBUG_LOCKS ) {
-                DbgUtils.logf( "GameLock.GameLock(rowid:%d,isForWrite:%b)=>"
-                               + "this: %H", rowid, isForWrite, this );
-                DbgUtils.printStack();
-            }
-        }
-
-        // This could be written to allow multiple read locks.  Let's
-        // see if not doing that causes problems.
-        public boolean tryLock()
-        {
-            boolean gotIt = false;
-            synchronized( s_locks ) {
-                GameLock owner = s_locks.get( m_rowid );
-                if ( null == owner ) { // unowned
-                    Assert.assertTrue( 0 == m_lockCount );
-                    s_locks.put( m_rowid, this );
-                    ++m_lockCount;
-                    gotIt = true;
-                    
-                    if ( XWApp.DEBUG_LOCKS ) {
-                        StackTraceElement[] trace = Thread.currentThread().
-                            getStackTrace();
-                        m_lockTrace = new StackTraceElement[trace.length];
-                        System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
-                    }
-                } else if ( this == owner && ! m_isForWrite ) {
-                    Assert.assertTrue( 0 == m_lockCount );
-                    ++m_lockCount;
-                    gotIt = true;
-                }
-            }
-            return gotIt;
-        }
-        
-        // Wait forever (but may assert if too long)
-        public GameLock lock()
-        {
-            return this.lock( 0 );
-        }
-
-        // Version that's allowed to return null -- if maxMillis > 0
-        public GameLock lock( long maxMillis )
-        {
-            GameLock result = null;
-            final long assertTime = 2000;
-            Assert.assertTrue( maxMillis < assertTime );
-            long sleptTime = 0;
-            // DbgUtils.logf( "GameLock.lock(%s)", m_path );
-            // Utils.printStack();
-            for ( ; ; ) {
-                if ( tryLock() ) {
-                    result = this;
-                    break;
-                }
-                if ( XWApp.DEBUG_LOCKS ) {
-                    DbgUtils.logf( "GameLock.lock() %H failed; sleeping", this );
-                    DbgUtils.printStack();
-                }
-                try {
-                    Thread.sleep( 25 ); // milliseconds
-                    sleptTime += 25;
-                } catch( InterruptedException ie ) {
-                    DbgUtils.loge( ie );
-                    break;
-                }
-
-                if ( 0 < maxMillis && sleptTime >= maxMillis ) {
-                    break;
-                } else if ( sleptTime >= assertTime ) {
-                    if ( XWApp.DEBUG_LOCKS ) {
-                        DbgUtils.logf( "lock %H overlocked. lock holding stack:", 
-                                       this );
-                        DbgUtils.printStack( m_lockTrace );
-                        DbgUtils.logf( "lock %H seeking stack:", this );
-                        DbgUtils.printStack();
-                    }
-                    Assert.fail();
-                }
-            }
-            // DbgUtils.logf( "GameLock.lock(%s) done", m_path );
-            return result;
-        }
-
-        public void unlock()
-        {
-            // DbgUtils.logf( "GameLock.unlock(%s)", m_path );
-            synchronized( s_locks ) {
-                Assert.assertTrue( this == s_locks.get(m_rowid) );
-                if ( 1 == m_lockCount ) {
-                    s_locks.remove( m_rowid );
-                } else {
-                    Assert.assertTrue( !m_isForWrite );
-                }
-                --m_lockCount;
-            }
-            // DbgUtils.logf( "GameLock.unlock(%s) done", m_path );
-        }
-
-        public long getRowid() 
-        {
-            return m_rowid;
-        }
-
-        // used only for asserts
-        public boolean canWrite()
-        {
-            return m_isForWrite && 1 == m_lockCount;
-        }
-    }
-
     private static Object s_syncObj = new Object();
 
     public static byte[] savedGame( Context context, long rowid )
@@ -242,10 +114,16 @@ public class GameUtils {
 
     public static void resetGame( Context context, long rowidIn )
     {
-        GameLock lock = new GameLock( rowidIn, true ).lock();
-        tellDied( context, lock, true );
-        resetGame( context, lock, lock, false );
-        lock.unlock();
+        GameLock lock = new GameLock( rowidIn, true ).lock( 500 );
+        if ( null != lock ) {
+            tellDied( context, lock, true );
+            resetGame( context, lock, lock, false );
+            lock.unlock();
+
+            Utils.cancelNotification( context, (int)rowidIn );
+        } else {
+            DbgUtils.logf( "resetGame: unable to open rowid %d", rowidIn );
+        }
     }
 
     private static GameSummary summarizeAndClose( Context context, 
@@ -298,12 +176,17 @@ public class GameUtils {
 
     public static long dupeGame( Context context, long rowidIn )
     {
-        boolean juggle = CommonPrefs.getAutoJuggle( context );
-        GameLock lockSrc = new GameLock( rowidIn, false ).lock();
-        GameLock lockDest = resetGame( context, lockSrc, null, juggle );
-        long rowid = lockDest.getRowid();
-        lockDest.unlock();
-        lockSrc.unlock();
+        long rowid = DBUtils.ROWID_NOTFOUND;
+        GameLock lockSrc = new GameLock( rowidIn, false ).lock( 300 );
+        if ( null != lockSrc ) {
+            boolean juggle = CommonPrefs.getAutoJuggle( context );
+            GameLock lockDest = resetGame( context, lockSrc, null, juggle );
+            rowid = lockDest.getRowid();
+            lockDest.unlock();
+            lockSrc.unlock();
+        } else {
+            DbgUtils.logf( "dupeGame: unable to open rowid %d", rowidIn );
+        }
         return rowid;
     }
 
@@ -525,22 +408,6 @@ public class GameUtils {
                                  nPlayersH, null, gameID, isHost );
     }
 
-    public static void launchBTInviter( Activity activity, int nMissing, 
-                                        int requestCode )
-    {
-        Intent intent = new Intent( activity, BTInviteActivity.class );
-        intent.putExtra( BTInviteActivity.INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
-    }
-
-    public static void launchSMSInviter( Activity activity, int nMissing, 
-                                        int requestCode )
-    {
-        Intent intent = new Intent( activity, SMSInviteActivity.class );
-        intent.putExtra( SMSInviteActivity.INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
-    }
-
     public static void launchInviteActivity( Context context, 
                                              boolean choseEmail,
                                              String room, String inviteID,
@@ -566,18 +433,20 @@ public class GameUtils {
                 intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
+                File attach = null;
                 File tmpdir = XWApp.ATTACH_SUPPORTED ? 
                     DictUtils.getDownloadDir( context ) : null;
-                if ( null == tmpdir ) { // no attachment
+                if ( null != tmpdir ) { // no attachment
+                    attach = makeJsonFor( tmpdir, room, inviteID, lang, 
+                                          dict, nPlayers );
+                }
+
+                if ( null == attach ) { // no attachment
                     intent.setType( "message/rfc822");
                 } else {
-                    intent.setType( context.getString( R.string.invite_mime ) );
-
-                    File attach = makeJsonFor( tmpdir, room, inviteID, lang, 
-                                               dict, nPlayers );
+                    String mime = context.getString( R.string.invite_mime );
+                    intent.setType( mime );
                     Uri uri = Uri.fromFile( attach );
-                    DbgUtils.logf( "using file uri for attachment: %s", 
-                                   uri.toString() );
                     intent.putExtra( Intent.EXTRA_STREAM, uri );
                 }
 
@@ -684,7 +553,6 @@ public class GameUtils {
                                    boolean invited )
     {
         Intent intent = new Intent( activity, BoardActivity.class );
-        intent.setAction( Intent.ACTION_EDIT );
         intent.putExtra( INTENT_KEY_ROWID, rowid );
         if ( invited ) {
             intent.putExtra( INVITED, true );
@@ -734,40 +602,45 @@ public class GameUtils {
         }
     }
 
-    private static boolean feedMessages( Context context, long rowid,
-                                         byte[][] msgs, CommsAddrRec ret,
-                                         MultiMsgSink sink )
+    public static boolean feedMessages( Context context, long rowid,
+                                        byte[][] msgs, CommsAddrRec ret,
+                                        MultiMsgSink sink )
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
-        GameLock lock = new GameLock( rowid, true );
-        if ( lock.tryLock() ) {
-            CurGameInfo gi = new CurGameInfo( context );
-            FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-            int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
-            if ( 0 != gamePtr ) {
-                XwJNI.comms_resendAll( gamePtr, false, false );
+        if ( null != msgs ) {
+            // timed lock: If a game is opened by BoardActivity just
+            // as we're trying to deliver this message to it it'll
+            // have the lock and we'll never get it.  Better to drop
+            // the message than fire the hung-lock assert.  Messages
+            // belong in local pre-delivery storage anyway.
+            GameLock lock = new GameLock( rowid, true ).lock( 150 );
+            if ( null != lock ) {
+                CurGameInfo gi = new CurGameInfo( context );
+                FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
+                int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+                if ( 0 != gamePtr ) {
+                    XwJNI.comms_resendAll( gamePtr, false, false );
 
-                if ( null != msgs ) {
                     for ( byte[] msg : msgs ) {
                         draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
                             || draw;
                     }
-                }
-                XwJNI.comms_ackAny( gamePtr );
+                    XwJNI.comms_ackAny( gamePtr );
 
-                // update gi to reflect changes due to messages
-                XwJNI.game_getGi( gamePtr, gi );
-                saveGame( context, gamePtr, gi, lock, false );
-                summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+                    // update gi to reflect changes due to messages
+                    XwJNI.game_getGi( gamePtr, gi );
+                    saveGame( context, gamePtr, gi, lock, false );
+                    summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
 
-                int flags = setFromFeedImpl( feedImpl );
-                if ( GameSummary.MSG_FLAGS_NONE != flags ) {
-                    draw = true;
-                    DBUtils.setMsgFlags( rowid, flags );
+                    int flags = setFromFeedImpl( feedImpl );
+                    if ( GameSummary.MSG_FLAGS_NONE != flags ) {
+                        draw = true;
+                        DBUtils.setMsgFlags( rowid, flags );
+                    }
                 }
+                lock.unlock();
             }
-            lock.unlock();
         }
         return draw;
     } // feedMessages
@@ -781,52 +654,45 @@ public class GameUtils {
         return feedMessages( context, rowid, msgs, ret, sink );
     }
 
-    // Current assumption: this is the relay case where return address
-    // can be null.
-    public static boolean feedMessages( Context context, String relayID,
-                                        byte[][] msgs, MultiMsgSink sink )
-    {
-        boolean draw = false;
-        long[] rowids = DBUtils.getRowIDsFor( context, relayID );
-        if ( null != rowids ) {
-            for ( long rowid : rowids ) {
-                draw = feedMessages( context, rowid, msgs, null, sink ) || draw;
-            }
-        }
-        return draw;
-    }
-
     // This *must* involve a reset if the language is changing!!!
     // Which isn't possible right now, so make sure the old and new
     // dict have the same langauge code.
-    public static void replaceDicts( Context context, long rowid,
-                                     String oldDict, String newDict )
+    public static boolean replaceDicts( Context context, long rowid,
+                                        String oldDict, String newDict )
     {
-        GameLock lock = new GameLock( rowid, true ).lock();
-        byte[] stream = savedGame( context, lock );
-        CurGameInfo gi = new CurGameInfo( context );
-        XwJNI.gi_from_stream( gi, stream );
+        GameLock lock = new GameLock( rowid, true ).lock(300);
+        boolean success = null != lock;
+        if ( success ) {
+            byte[] stream = savedGame( context, lock );
+            CurGameInfo gi = new CurGameInfo( context );
+            XwJNI.gi_from_stream( gi, stream );
 
-        // first time required so dictNames() will work
-        gi.replaceDicts( newDict );
+            // first time required so dictNames() will work
+            gi.replaceDicts( newDict );
 
-        String[] dictNames = gi.dictNames();
-        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
+            String[] dictNames = gi.dictNames();
+            DictUtils.DictPairs pairs = DictUtils.openDicts( context, 
+                                                             dictNames );
         
-        int gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
-                                   pairs.m_bytes, pairs.m_paths,
-                                   gi.langName(), JNIUtilsImpl.get(context), 
-                                   CommonPrefs.get( context ) );
-        // second time required as game_makeFromStream can overwrite
-        gi.replaceDicts( newDict );
+            int gamePtr = XwJNI.initJNI();
+            XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
+                                       pairs.m_bytes, pairs.m_paths,
+                                       gi.langName(), 
+                                       JNIUtilsImpl.get(context), 
+                                       CommonPrefs.get( context ) );
+            // second time required as game_makeFromStream can overwrite
+            gi.replaceDicts( newDict );
 
-        saveGame( context, gamePtr, gi, lock, false );
+            saveGame( context, gamePtr, gi, lock, false );
 
-        summarizeAndClose( context, lock, gamePtr, gi );
+            summarizeAndClose( context, lock, gamePtr, gi );
 
-        lock.unlock();
-    }
+            lock.unlock();
+        } else {
+            DbgUtils.logf( "replaceDicts: unable to open rowid %d", rowid );
+        }
+        return success;
+    } // replaceDicts
 
     public static void applyChanges( Context context, CurGameInfo gi, 
                                      CommsAddrRec car, GameLock lock, 
@@ -953,7 +819,7 @@ public class GameUtils {
                 byte[] data = json.toString().getBytes();
 
                 File file = new File( dir, 
-                                      String.format("invite_%s.json", room ) );
+                                      String.format("invite_%s", room ) );
                 FileOutputStream fos = new FileOutputStream( file );
                 fos.write( data, 0, data.length );
                 fos.close();

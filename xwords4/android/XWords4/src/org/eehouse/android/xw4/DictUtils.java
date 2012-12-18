@@ -47,6 +47,20 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class DictUtils {
 
+    // Standard hack for using APIs from an SDK in code to ship on
+    // older devices that don't support it: prevent class loader from
+    // seeing something it'll barf on by loading it manually
+    private static interface SafeDirGetter {
+        public File getDownloadDir();
+    }
+    private static SafeDirGetter s_dirGetter = null;
+    static {
+        int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
+        if ( 8 <= sdkVersion ) {
+            s_dirGetter = new DirGetter();
+        }
+    }
+
     // keep in sync with loc_names string-array
     public enum DictLoc { UNKNOWN, BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
     public static final String INVITED = "invited";
@@ -566,22 +580,45 @@ public class DictUtils {
         return null != getDownloadDir( context );
     }
 
+    // Loop through three ways of getting the directory until one
+    // produces a directory I can write to.
     public static File getDownloadDir( Context context )
     {
         File result = null;
-        if ( haveWriteableSD() ) {
-            File file = null;
-            String myPath = XWPrefs.getMyDownloadDir( context );
-            if ( null != myPath && 0 < myPath.length() ) {
-                file = new File( myPath );
-            } else {
-                file = Environment.getExternalStorageDirectory();
-                if ( null != file ) {
-                    file = new File( file, "download/" );
+        outer:
+        for ( int attempt = 0; attempt < 4; ++attempt ) {
+            switch ( attempt ) {
+            case 0:
+                String myPath = XWPrefs.getMyDownloadDir( context );
+                if ( null == myPath || 0 == myPath.length() ) {
+                    continue;
                 }
+                result = new File( myPath );
+                break;
+            case 1:
+                if ( null == s_dirGetter ) {
+                    continue;
+                }
+                result = s_dirGetter.getDownloadDir();
+                break;
+            case 2:
+            case 3:
+                if ( !haveWriteableSD() ) {
+                    continue;
+                }
+                result = Environment.getExternalStorageDirectory();
+                if ( 2 == attempt && null != result ) {
+                    // the old way...
+                    result = new File( result, "download/" );
+                }
+                break;
             }
-            if ( null != file && file.exists() && file.isDirectory() ) {
-                result = file;
+
+            // Exit test for loop
+            if ( null != result ) {
+                if ( result.exists() && result.isDirectory() && result.canWrite() ) {
+                    break outer;
+                }
             }
         }
         return result;
@@ -595,5 +632,14 @@ public class DictUtils {
             result = new File( dir, name );
         }
         return result;
+    }
+
+    private static class DirGetter implements SafeDirGetter {
+        public File getDownloadDir()
+        {
+            File path = Environment.
+                getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            return path;
+        }
     }
 }

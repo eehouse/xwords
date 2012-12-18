@@ -28,7 +28,7 @@ import android.os.Bundle;
 import junit.framework.Assert;
 
 public class XWListActivity extends ListActivity 
-    implements DlgDelegate.DlgClickNotify, MultiService.BTEventListener {
+    implements DlgDelegate.DlgClickNotify, MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
 
@@ -187,7 +187,7 @@ public class XWListActivity extends ListActivity
         m_delegate.launchLookup( words, lang, forceList );
     }
 
-    // BTService.BTEventListener interface
+    // MultiService.MultiEventListener interface
     public void eventOccurred( MultiService.MultiEvent event, 
                                final Object ... args )
     {

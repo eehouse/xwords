@@ -40,6 +40,8 @@ import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
 import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -343,6 +345,12 @@ public class Utils {
         } catch ( NumberFormatException nfe ) {
             return 0;
         }
+    }
+
+    public static void setItemVisible( Menu menu, int id, boolean enabled )
+    {
+        MenuItem item = menu.findItem( id );
+        item.setVisible( enabled );
     }
 
     public static boolean hasSmallScreen( Context context )

@@ -379,8 +379,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                     heightLeft = cellSize * 3 / 2;
                 }
                 heightLeft /= 3;
-                trayHt += heightLeft * 2;
                 scoreHt += heightLeft;
+
+                trayHt += heightLeft * 2;
+                if ( XWPrefs.getSquareTiles( m_context ) 
+                     && trayHt > (width / 7) ) {
+                    trayHt = width / 7;
+                }
                 heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
             }
 

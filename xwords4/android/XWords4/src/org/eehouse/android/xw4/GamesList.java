@@ -75,6 +75,7 @@ public class GamesList extends XWExpandableListActivity
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String GAMEID_EXTRA = "gameid";
+    private static final String REMATCH_ROWID_EXTRA = "rowid";
 
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
@@ -102,7 +103,6 @@ public class GamesList extends XWExpandableListActivity
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
-    // private String m_smsPhone;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -177,11 +177,12 @@ public class GamesList extends XWExpandableListActivity
                                 getCheckedItemPosition();
                             String dict = m_sameLangDicts[pos];
                             dict = DictLangCache.stripCount( dict );
-                            GameUtils.replaceDicts( GamesList.this,
-                                                    m_missingDictRowId,
-                                                    m_missingDictName,
-                                                    dict );
-                            launchGameIf();
+                            if ( GameUtils.replaceDicts( GamesList.this,
+                                                         m_missingDictRowId,
+                                                         m_missingDictName,
+                                                         dict ) ) {
+                                launchGameIf();
+                            }
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -202,8 +203,7 @@ public class GamesList extends XWExpandableListActivity
                         public void onClick( DialogInterface dlg, int item ) {
                             String name = m_namer.getName();
                             DBUtils.setName( GamesList.this, m_rowid, name );
-                            m_adapter.inval( m_rowid );
-                            onContentChanged();
+                            m_adapter.invalName( m_rowid );
                         }
                     };
                 dialog = buildNamerDlg( GameUtils.getName( this, m_rowid ),
@@ -346,7 +346,9 @@ public class GamesList extends XWExpandableListActivity
                 }
             });
 
-        m_adapter = new GameListAdapter( this, new Handler(), this );
+        String field = CommonPrefs.getSummaryField( this );
+        m_adapter = new GameListAdapter( this, getListView(), new Handler(), 
+                                         this, field );
         setListAdapter( m_adapter );
 
         NetUtils.informOfDeaths( this );
@@ -355,6 +357,7 @@ public class GamesList extends XWExpandableListActivity
         startFirstHasDict( intent );
         startNewNetGame( intent );
         startHasGameID( intent );
+        startHasRowID( intent );
         askDefaultNameIf();
     } // onCreate
 
@@ -369,6 +372,7 @@ public class GamesList extends XWExpandableListActivity
         startFirstHasDict( intent );
         startNewNetGame( intent );
         startHasGameID( intent );
+        startHasRowID( intent );
     }
 
     @Override
@@ -444,28 +448,25 @@ public class GamesList extends XWExpandableListActivity
     }
 
     // DBUtils.DBChangeListener interface
-    public void gameSaved( final long rowid )
+    public void gameSaved( final long rowid, final boolean countChanged )
     {
         post( new Runnable() {
                 public void run() {
-                    m_adapter.inval( rowid );
-                    onContentChanged();
+                    if ( countChanged ) {
+                        onContentChanged();
+                    } else {
+                        m_adapter.inval( rowid );
+                    }
                 }
             } );
     }
 
     // GameListAdapter.LoadItemCB interface
-    public void itemLoaded( long rowid )
-    {
-        onContentChanged();
-    }
-
-    public void itemClicked( long rowid )
+    public void itemClicked( long rowid, GameSummary summary )
     {
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
-        GameSummary summary = DBUtils.getSummary( this, rowid );
         if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
              && summary.roomName.length() == 0 ) {
             // If it's unconfigured and of the type RelayGameActivity
@@ -480,12 +481,12 @@ public class GamesList extends XWExpandableListActivity
             GameUtils.doConfig( this, rowid, clazz );
         } else {
             if ( checkWarnNoDict( rowid ) ) {
-                GameUtils.launchGame( this, rowid );
+                launchGame( rowid );
             }
         }
     }
 
-    // BTService.BTEventListener interface
+    // BTService.MultiEventListener interface
     @Override
     public void eventOccurred( MultiService.MultiEvent event, 
                                final Object ... args )
@@ -518,6 +519,7 @@ public class GamesList extends XWExpandableListActivity
                 break;
             case RESET_GAME_ACTION:
                 GameUtils.resetGame( this, m_rowid );
+                onContentChanged(); // required because position may change
                 break;
             case DELETE_GAME_ACTION:
                 GameUtils.deleteGame( this, m_rowid, true );
@@ -526,7 +528,6 @@ public class GamesList extends XWExpandableListActivity
                 long[] games = DBUtils.gamesList( this );
                 for ( int ii = games.length - 1; ii >= 0; --ii ) {
                     GameUtils.deleteGame( this, games[ii], ii == 0  );
-                    m_adapter.inval( games[ii] );
                 }
                 break;
             case SYNC_MENU_ACTION:
@@ -759,8 +760,7 @@ public class GamesList extends XWExpandableListActivity
                         showOKOnlyDialog( R.string.no_copy_network );
                     } else {
                         byte[] stream = GameUtils.savedGame( this, m_rowid );
-                        GameUtils.GameLock lock = 
-                            GameUtils.saveNewGame( this, stream );
+                        GameLock lock = GameUtils.saveNewGame( this, stream );
                         DBUtils.saveSummary( this, lock, summary );
                         lock.unlock();
                     }
@@ -859,9 +859,12 @@ public class GamesList extends XWExpandableListActivity
             } else if ( null != m_missingDictName ) {
                 showDialog( WARN_NODICT_SUBST );
             } else {
-                String dict = DictLangCache.getHaveLang( this, m_missingDictLang)[0];
-                GameUtils.replaceDicts( this, m_missingDictRowId, null, dict );
-                launchGameIf();
+                String dict = 
+                    DictLangCache.getHaveLang( this, m_missingDictLang)[0];
+                if ( GameUtils.replaceDicts( this, m_missingDictRowId, 
+                                             null, dict ) ) {
+                    launchGameIf();
+                }
             }
         }
         return hasDicts;
@@ -878,7 +881,6 @@ public class GamesList extends XWExpandableListActivity
                     }
                 }
             }
-            onContentChanged();
         }
     }
 
@@ -893,7 +895,7 @@ public class GamesList extends XWExpandableListActivity
                 if ( null != rowids ) {
                     for ( long rowid : rowids ) {
                         if ( GameUtils.gameDictsHere( this, rowid ) ) {
-                            GameUtils.launchGame( this, rowid );
+                            launchGame( rowid );
                             break outer;
                         }
                     }
@@ -951,7 +953,7 @@ public class GamesList extends XWExpandableListActivity
     {
         long[] rowids = DBUtils.getRowIDsFor( this, gameID );
         if ( null != rowids && 0 < rowids.length ) {
-            GameUtils.launchGame( this, rowids[0] );
+            launchGame( rowids[0] );
         }
     }
 
@@ -960,6 +962,16 @@ public class GamesList extends XWExpandableListActivity
         int gameID = intent.getIntExtra( GAMEID_EXTRA, 0 );
         if ( 0 != gameID ) {
             startHasGameID( gameID );
+        }
+    }
+
+    private void startHasRowID( Intent intent )
+    {
+        long rowid = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
+        if ( -1 != rowid ) {
+            // this will juggle if the preference is set
+            long newid = GameUtils.dupeGame( this, rowid );
+            launchGame( newid );
         }
     }
 
@@ -975,9 +987,9 @@ public class GamesList extends XWExpandableListActivity
     private void updateField()
     {
         String newField = CommonPrefs.getSummaryField( this );
-        if ( ! newField.equals( m_nameField ) ) {
-            m_nameField = newField;
-            m_adapter.setField( newField );
+        if ( m_adapter.setField( newField ) ) {
+            // The adapter should be able to decide whether full
+            // content change is required.  PENDING
             onContentChanged();
         }
     }
@@ -1019,10 +1031,20 @@ public class GamesList extends XWExpandableListActivity
         return madeGame;
     }
 
+    private void launchGame( long rowid, boolean invited )
+    {
+        GameUtils.launchGame( this, rowid, invited );
+    }
+
+    private void launchGame( long rowid )
+    {
+        launchGame( rowid, false );
+    }
+
     private void makeNewNetGame( NetLaunchInfo info )
     {
         long rowid = GameUtils.makeNewNetGame( this, info );
-        GameUtils.launchGame( this, rowid, true );
+        launchGame( rowid, true );
     }
 
     public static void onGameDictDownload( Context context, Intent intent )
@@ -1051,6 +1073,20 @@ public class GamesList extends XWExpandableListActivity
     {
         Intent intent = makeSelfIntent( context );
         intent.putExtra( GAMEID_EXTRA, gameID );
+        return intent;
+    }
+
+    public static Intent makeRematchIntent( Context context, CurGameInfo gi,
+                                            long rowid )
+    {
+        Intent intent = makeSelfIntent( context );
+        
+        if ( CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
+            intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
+        } else {
+            Utils.notImpl( context );
+        }
+
         return intent;
     }
 

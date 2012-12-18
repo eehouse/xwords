@@ -73,7 +73,7 @@ public class NetLaunchInfo {
         if ( null != data ) {
             String scheme = data.getScheme();
             try {
-                if ( "content".equals(scheme) ) {
+                if ( "content".equals(scheme) || "file".equals(scheme) ) {
                     Assert.assertNotNull( context );
                     ContentResolver resolver = context.getContentResolver();
                     InputStream is = resolver.openInputStream( data );

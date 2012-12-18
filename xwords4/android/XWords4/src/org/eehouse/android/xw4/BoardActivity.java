@@ -75,7 +75,7 @@ public class BoardActivity extends XWActivity
     private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 11;
     private static final int DLG_USEDICT = DLG_OKONLY + 12;
     private static final int DLG_GETDICT = DLG_OKONLY + 13;
-                    
+    private static final int GAME_OVER = DLG_OKONLY + 14;
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
@@ -114,7 +114,7 @@ public class BoardActivity extends XWActivity
 
     private BoardView m_view;
     private int m_jniGamePtr;
-    private GameUtils.GameLock m_gameLock;
+    private GameLock m_gameLock;
     private CurGameInfo m_gi;
     private CommsTransport m_xport;
     private Handler m_handler = null;
@@ -165,6 +165,7 @@ public class BoardActivity extends XWActivity
 
     private int m_missing;
     private boolean m_haveInvited = false;
+    private boolean m_overNotShown;
 
     private static BoardActivity s_this = null;
     private static Class s_thisLocker = BoardActivity.class;
@@ -182,6 +183,27 @@ public class BoardActivity extends XWActivity
                     s_this.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg,
                                                retAddr );
                     delivered = true;
+                }
+            }
+        }
+        return delivered;
+    }
+
+    public static boolean feedMessages( long rowid, byte[][] msgs )
+    {
+        boolean delivered = false;
+        Assert.assertNotNull( msgs );
+        synchronized( s_thisLocker ) {
+            if ( null != s_this ) {
+                Assert.assertNotNull( s_this.m_gi );
+                Assert.assertNotNull( s_this.m_gameLock );
+                Assert.assertNotNull( s_this.m_jniThread );
+                if ( rowid == s_this.m_rowid ) {
+                    delivered = true; // even if no messages!
+                    for ( byte[] msg : msgs ) {
+                        s_this.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg,
+                                                   null );
+                    }
                 }
             }
         }
@@ -234,6 +256,7 @@ public class BoardActivity extends XWActivity
             case DLG_OKONLY:
             case DLG_BADWORDS:
             case DLG_RETRY:
+            case GAME_OVER:
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
@@ -246,6 +269,14 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
+                } else if ( XWApp.REMATCH_SUPPORTED && GAME_OVER == id ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                doRematch();
+                            }
+                        };
+                    ab.setNegativeButton( R.string.button_rematch, lstnr );
                 }
                 dialog = ab.create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
@@ -499,7 +530,9 @@ public class BoardActivity extends XWActivity
 
         Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+        DbgUtils.logf( "BoardActivity: opening rowid %d", m_rowid );
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
+        m_overNotShown = true;
 
         setBackgroundColor();
         setKeepScreenOn();
@@ -691,8 +724,13 @@ public class BoardActivity extends XWActivity
             item.setTitle( R.string.board_menu_game_final );
         }
 
+        if ( DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
+            Utils.setItemVisible( menu, R.id.board_menu_game_resend, false );
+            Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, false );
+        }
+
         return true;
-    }
+    } // onPrepareOptionsMenu
 
     public boolean onOptionsItemSelected( MenuItem item ) 
     {
@@ -830,12 +868,12 @@ public class BoardActivity extends XWActivity
                 doSyncMenuitem();
                 break;
             case BT_PICK_ACTION:
-                GameUtils.launchBTInviter( this, m_nMissingPlayers, 
-                                           BT_INVITE_RESULT );
+                BTInviteActivity.launchForResult( this, m_nMissingPlayers, 
+                                                  BT_INVITE_RESULT );
                 break;
             case SMS_PICK_ACTION:
-                GameUtils.launchSMSInviter( this, m_nMissingPlayers, 
-                                            SMS_INVITE_RESULT );
+                SMSInviteActivity.launchForResult( this, m_nMissingPlayers, 
+                                                   SMS_INVITE_RESULT );
                 break;
             case SMS_CONFIG_ACTION:
                 Utils.launchSettings( this );
@@ -907,7 +945,7 @@ public class BoardActivity extends XWActivity
     }
 
     //////////////////////////////////////////////////
-    // BTService.BTEventListener interface
+    // MultiService.MultiEventListener interface
     //////////////////////////////////////////////////
     @Override
     @SuppressWarnings("fallthrough")
@@ -1635,7 +1673,7 @@ public class BoardActivity extends XWActivity
                 showDictGoneFinish();
             } else {
                 Assert.assertNull( m_gameLock );
-                m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
+                m_gameLock = new GameLock( m_rowid, true ).lock();
 
                 byte[] stream = GameUtils.savedGame( this, m_gameLock );
                 m_gi = new CurGameInfo( this );
@@ -1693,6 +1731,11 @@ public class BoardActivity extends XWActivity
                                 launchLookup( wordsToArray((String)msg.obj), 
                                               m_gi.dictLang );
                                 break;
+                            case JNIThread.GAME_OVER:
+                                m_dlgBytes = (String)msg.obj;
+                                m_dlgTitle = msg.arg1;
+                                showDialog( GAME_OVER );
+                                break;
                             }
                         }
                     };
@@ -1722,8 +1765,18 @@ public class BoardActivity extends XWActivity
                 if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
                     startChatActivity();
                 }
-                if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-                    m_jniThread.handle( JNICmd.CMD_POST_OVER );
+                if ( m_overNotShown ) {
+                    boolean auto = false;
+                    if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+                        m_gameOver = true;
+                    } else if ( DBUtils.gameOver( this, m_rowid ) ) {
+                        m_gameOver = true;
+                        auto = true;
+                    }
+                    if ( m_gameOver ) {
+                        m_overNotShown = false;
+                        m_jniThread.handle( JNICmd.CMD_POST_OVER, auto );
+                    }
                 }
                 if ( 0 != flags ) {
                     DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
@@ -2072,6 +2125,13 @@ public class BoardActivity extends XWActivity
         m_passwdLyt = (LinearLayout)Utils.inflate( BoardActivity.this,
                                                    R.layout.passwd_view );
         m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
+    }
+
+    private void doRematch()
+    {
+        Intent intent = GamesList.makeRematchIntent( this, m_gi, m_rowid );
+        startActivity( intent );
+        finish();
     }
 
 } // class BoardActivity

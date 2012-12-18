@@ -45,6 +45,14 @@ public class BTInviteActivity extends InviteActivity
     private boolean m_firstScan;
     private int m_checkCount;
 
+    public static void launchForResult( Activity activity, int nMissing, 
+                                        int requestCode )
+    {
+        Intent intent = new Intent( activity, BTInviteActivity.class );
+        intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+        activity.startActivityForResult( intent, requestCode );
+    }
+
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
@@ -57,7 +65,7 @@ public class BTInviteActivity extends InviteActivity
         BTService.clearDevices( this, null ); // will return names
     }
 
-    // BTService.BTEventListener interface
+    // MultiService.MultiEventListener interface
     @Override
     public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {

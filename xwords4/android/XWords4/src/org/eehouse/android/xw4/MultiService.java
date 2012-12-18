@@ -42,7 +42,7 @@ public class MultiService {
     public static final int OWNER_SMS = 1;
     public static final int OWNER_RELAY = 2;
 
-    private BTEventListener m_li;
+    private MultiEventListener m_li;
 
     public enum MultiEvent { BAD_PROTO
                           , BT_ENABLED
@@ -64,14 +64,14 @@ public class MultiService {
                           , SMS_SEND_FAILED_NORADIO
             };
 
-    public interface BTEventListener {
+    public interface MultiEventListener {
         public void eventOccurred( MultiEvent event, Object ... args );
     }
     // public interface MultiEventSrc {
     //     public void setBTEventListener( BTEventListener li );
     // }
 
-    public void setListener( BTEventListener li )
+    public void setListener( MultiEventListener li )
     {
         synchronized( this ) {
             m_li = li;
