@@ -91,7 +91,6 @@ public class GamesList extends XWListActivity
     private int m_missingDictLang;
     private long m_rowid;
     private NetLaunchInfo m_netLaunchInfo;
-    private long m_invalRowID = DBUtils.ROWID_NOTFOUND;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -378,10 +377,6 @@ public class GamesList extends XWListActivity
         super.onWindowFocusChanged( hasFocus );
         if ( hasFocus ) {
             updateField();
-        }
-        if ( hasFocus && DBUtils.ROWID_NOTFOUND != m_invalRowID ) {
-            m_adapter.inval( m_invalRowID );
-            m_invalRowID = DBUtils.ROWID_NOTFOUND;
         }
     }
 
@@ -883,7 +878,6 @@ public class GamesList extends XWListActivity
 
     private void launchGame( long rowid, boolean invited )
     {
-        m_invalRowID = rowid;
         GameUtils.launchGame( this, rowid, invited );
     }
 
