@@ -193,12 +193,12 @@ public class GameListAdapter implements ExpandableListAdapter {
             Utils.inflate(m_context,
                           android.R.layout.simple_expandable_list_item_1 );
         TextView view = (TextView)row.findViewById( android.R.id.text1 );
+
         String name = groupNames()[groupPosition];
-        if ( !isExpanded ) {
-            int nKids = getChildrenCount( groupPosition );
-            name = m_context.getString( R.string.group_namef, name, nKids );
-        }
+        int nKids = getChildrenCount( groupPosition );
+        name = m_context.getString( R.string.group_namef, name, nKids );
         view.setText( name );
+
         return view;
     }
 
