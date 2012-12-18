@@ -27,17 +27,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.TextView;
-import java.io.FileInputStream;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.HashMap;       // class is not synchronized
-import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 import junit.framework.Assert;
@@ -72,13 +63,6 @@ public class GameListAdapter implements ExpandableListAdapter {
         m_fieldID = fieldToID( fieldName );
     }
 
-    // public void inval( long rowid )
-    // {
-    //     synchronized( m_viewsCache ) {
-    //         m_viewsCache.remove( rowid );
-    //     }
-    // }
-
     public void expandGroups( ExpandableListView view )
     {
         HashMap<String,GameGroupInfo> info = gameInfo();
@@ -90,27 +74,6 @@ public class GameListAdapter implements ExpandableListAdapter {
             }
         }
     }
-
-    // public void setField( String field )
-    // {
-    //     int[] ids = {
-    //         R.string.game_summary_field_empty
-    //         ,R.string.game_summary_field_language
-    //         ,R.string.game_summary_field_opponents
-    //         ,R.string.game_summary_field_state
-    //     };
-    //     int result = -1;
-    //     for ( int id : ids ) {
-    //         if ( m_context.getString( id ).equals( field ) ) {
-    //             result = id;
-    //             break;
-    //         }
-    //     }
-    //     if ( m_fieldID != result ) {
-    //         m_viewsCache.clear();
-    //         m_fieldID = result;
-    //     }
-    // }
 
     public long getRowIDFor( int group, int child )
     {
@@ -406,19 +369,6 @@ public class GameListAdapter implements ExpandableListAdapter {
         }
         return result;
     }
-
-    // private int positionFor( long rowid )
-    // {
-    //     int position = -1;
-    //     long[] rowids = DBUtils.gamesList( m_context );
-    //     for ( int ii = 0; ii < rowids.length; ++ii ) {
-    //         if ( rowids[ii] == rowid ) {
-    //             position = ii;
-    //             break;
-    //         }
-    //     }
-    //     return position;
-    // }
 
     private HashMap<String,GameGroupInfo> gameInfo()
     {
