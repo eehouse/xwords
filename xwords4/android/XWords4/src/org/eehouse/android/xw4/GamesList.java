@@ -350,6 +350,7 @@ public class GamesList extends XWExpandableListActivity
         m_adapter = new GameListAdapter( this, getExpandableListView(),
                                          new Handler(), this, field );
         setListAdapter( m_adapter );
+        m_adapter.expandGroups( getExpandableListView() );
 
         NetUtils.informOfDeaths( this );
 
