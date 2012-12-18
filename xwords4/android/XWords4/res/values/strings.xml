@@ -2156,6 +2156,7 @@
 
     <string name="no_move_onegroup">Moving is impossible until there
     is more than one group.</string>
+    <string name="group_namef">%1$s (%2$d games)</string>
 
     <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that

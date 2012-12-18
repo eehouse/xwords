@@ -139,18 +139,15 @@ public class GameListAdapter implements ExpandableListAdapter {
     {
         long groupid = getGroupIDFor( groupPosition );
         DBUtils.setGroupExpanded( m_context, groupid, false );
-        // m_closedLangs.add( m_langs[groupPosition] );
-        // saveClosed();
     }
+
     public void onGroupExpanded( int groupPosition )
     {
         long groupid = getGroupIDFor( groupPosition );
         DBUtils.setGroupExpanded( m_context, groupid, true );
-        // m_closedLangs.add( m_langs[groupPosition] );
-        // saveClosed();
     }
 
-    public boolean areAllItemsEnabled() { return false; }
+    public boolean areAllItemsEnabled() { return true; }
 
     public boolean isChildSelectable( int groupPosition, int childPosition ) 
     { return true; }
@@ -159,7 +156,22 @@ public class GameListAdapter implements ExpandableListAdapter {
                               boolean isLastChild, View convertView, 
                               ViewGroup parent)
     {
-        return getChildView( groupPosition, childPosition );
+        View result = null;
+        if ( null != convertView ) {
+            DbgUtils.logf( "getChildView gave non-null convertView" );
+            if ( convertView instanceof GameListItem ) {
+                GameListItem child = (GameListItem)convertView;
+                long rowid = getRowIDFor( groupPosition, childPosition );
+                if ( child.getRowID() == rowid ) {
+                    DbgUtils.logf( "reusing child for rowid %d", rowid );
+                    result = child;
+                }
+            }
+        }
+        if ( null == result ) {
+            result = getChildView( groupPosition, childPosition );
+        }
+        return result;
     }
 
     private View getChildView( int groupPosition, int childPosition )
@@ -174,17 +186,17 @@ public class GameListAdapter implements ExpandableListAdapter {
     public View getGroupView( int groupPosition, boolean isExpanded, 
                               View convertView, ViewGroup parent )
     {
+        if ( null != convertView ) {
+            DbgUtils.logf( "getGroupView gave non-null convertView" );
+        }
         View row = 
             Utils.inflate(m_context,
                           android.R.layout.simple_expandable_list_item_1 );
         TextView view = (TextView)row.findViewById( android.R.id.text1 );
         String name = groupNames()[groupPosition];
-        if ( name.equals("") ) {
-            name = "<Unnamed>";
-        }
         if ( !isExpanded ) {
             int nKids = getChildrenCount( groupPosition );
-            name += String.format( " (%d)", nKids );
+            name = m_context.getString( R.string.group_namef, name, nKids );
         }
         view.setText( name );
         return view;
@@ -204,9 +216,10 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public Object getChild( int groupPosition, int childPosition )
     {
-        String name = groupNames()[groupPosition];
-        long[] rows = getRows( name );
-        return rows[childPosition];
+        return null;
+        // String name = groupNames()[groupPosition];
+        // long[] rows = getRows( name );
+        // return rows[childPosition];
     }
     
     public Object getGroup( int groupPosition )
@@ -228,38 +241,6 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public void registerDataSetObserver( DataSetObserver obs ){}
     public void unregisterDataSetObserver( DataSetObserver obs ){}
-
-    // private View getItem( final long rowid ) 
-    // {
-    //     View layout;
-    //     boolean haveLayout = false;
-    //     synchronized( m_viewsCache ) {
-    //         ViewInfo vi = m_viewsCache.get( rowid );
-    //         haveLayout = null != vi;
-    //         if ( haveLayout ) {
-    //             layout = vi.m_view;
-    //         } else {
-    //             layout = m_factory.inflate( R.layout.game_list_tmp, null );
-    //             vi = new ViewInfo( layout, rowid );
-    //             m_viewsCache.put( rowid, vi );
-    //         }
-    //     }
-    // }
-    // @Override
-    // public int getCount() {
-    //     return DBUtils.gamesList(m_context).length;
-    // }
-
-    // // Views.  A view depends on a summary, which takes time to load.
-    // // When one needs loading it's done via an async task.
-    // public View getView( int position, View convertView, ViewGroup parent ) 
-    // {
-    //     GameListItem result = (GameListItem)
-    //         m_factory.inflate( R.layout.game_list_item, null );
-    //     result.init( m_handler, DBUtils.gamesList(m_context)[position],
-    //                  m_fieldID, m_cb );
-    //     return result;
-    // }
 
     public void inval( long rowid )
     {
