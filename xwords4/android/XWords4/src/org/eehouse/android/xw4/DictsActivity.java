@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -33,7 +32,6 @@ import android.content.res.Resources;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
@@ -47,9 +45,7 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import junit.framework.Assert;
 
@@ -58,7 +54,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 
-public class DictsActivity extends ExpandableListActivity 
+public class DictsActivity extends XWExpandableListActivity 
     implements View.OnClickListener, XWListItem.DeleteCallback,
                MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify,
                DictImportActivity.DownloadFinishedListener {
@@ -86,10 +82,8 @@ public class DictsActivity extends ExpandableListActivity
     private String m_deleteDict = null;
     private String m_download;
     private ExpandableListView m_expView;
-    private DlgDelegate m_delegate;
     private String[] m_locNames;
     private DictListAdapter m_adapter;
-    private Handler m_handler;
 
     private long m_packedPosition;
     private DictLoc m_moveFromLoc;
@@ -338,7 +332,6 @@ public class DictsActivity extends ExpandableListActivity
                         int lang = intent.getIntExtra( MultiService.LANG, -1 );
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
-                        m_handler = new Handler();
                         DictImportActivity
                             .downloadDictInBack( DictsActivity.this, lang, 
                                                  name, DictsActivity.this );
@@ -355,7 +348,7 @@ public class DictsActivity extends ExpandableListActivity
             break;
 
         default:
-            dialog = m_delegate.onCreateDialog( id );
+            dialog = super.onCreateDialog( id );
             doRemove = false;
             break;
         }
@@ -371,7 +364,6 @@ public class DictsActivity extends ExpandableListActivity
     protected void onPrepareDialog( int id, Dialog dialog )
     {
         super.onPrepareDialog( id, dialog );
-        m_delegate.onPrepareDialog( id, dialog );
 
         if ( MOVE_DICT == id ) {
             // The move button should always start out disabled
@@ -399,7 +391,6 @@ public class DictsActivity extends ExpandableListActivity
         Resources res = getResources();
         m_locNames = res.getStringArray( R.array.loc_names );
 
-        m_delegate = new DlgDelegate( this, this, savedInstanceState );
         m_factory = LayoutInflater.from( this );
 
         m_download = getString( R.string.download_dicts );
@@ -447,7 +438,6 @@ public class DictsActivity extends ExpandableListActivity
     protected void onSaveInstanceState( Bundle outState ) 
     {
         super.onSaveInstanceState( outState );
-        m_delegate.onSaveInstanceState( outState );
 
         outState.putLong( PACKED_POSITION, m_packedPosition );
         outState.putString( NAME, m_name );
@@ -622,8 +612,7 @@ public class DictsActivity extends ExpandableListActivity
             }
         }
 
-        m_delegate.showConfirmThen( msg, R.string.button_delete, 
-                                    DELETE_DICT_ACTION );
+        showConfirmThen( msg, R.string.button_delete, DELETE_DICT_ACTION );
     }
 
     // MountEventReceiver.SDCardNotifiee interface
@@ -632,7 +621,7 @@ public class DictsActivity extends ExpandableListActivity
         DbgUtils.logf( "DictsActivity.cardMounted(%b)", nowMounted );
         // post so other SDCardNotifiee implementations get a chance
         // to process first: avoid race conditions
-        new Handler().post( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     mkListAdapter();
                     expandGroups();
@@ -773,7 +762,7 @@ public class DictsActivity extends ExpandableListActivity
     public void downloadFinished( String name, final boolean success )
     {
         if ( m_launchedForMissing ) {
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         if ( success ) {
                             Intent intent = getIntent();
