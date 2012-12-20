@@ -869,8 +869,13 @@ public class DBUtils {
     public static class GameGroupInfo {
         public long m_id;
         public boolean m_expanded;
+        public long m_lastMoveTime;
+        public boolean m_hasTurn;
+        public boolean m_turnLocal;
+
         public GameGroupInfo( long id, boolean expanded ) {
             m_id = id; m_expanded = expanded;
+            m_lastMoveTime = 0;
         }
     }
 
@@ -912,12 +917,71 @@ public class DBUtils {
                     result.put( name, new GameGroupInfo( id, expanded ) );
                 }
                 cursor.close();
+
+                Iterator<GameGroupInfo> iter = result.values().iterator();
+                while ( iter.hasNext() ) {
+                    GameGroupInfo ggi = iter.next();
+                    readTurnInfo( db, ggi );
+                }
+
                 db.close();
             }
             s_groupsCache = result;
         }
         return s_groupsCache;
     } // getGroups
+
+    private static void readTurnInfo( SQLiteDatabase db, GameGroupInfo ggi )
+    {
+        String[] columns = { DBHelper.LASTMOVE, DBHelper.GIFLAGS, 
+                             DBHelper.TURN };
+        String orderBy = DBHelper.LASTMOVE;
+        String selection = String.format( "%s=%d", DBHelper.GROUPID, ggi.m_id );
+        Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                  selection,
+                                  null, // args
+                                  null, // groupBy,
+                                  null, // having
+                                  orderBy
+                                  );
+        
+        // We want the earliest LASTPLAY_TIME (i.e. the first we see
+        // since they're in order) that's a local turn, if any,
+        // otherwise a non-local turn.
+        long lastPlayTimeLocal = 0;
+        long lastPlayTimeRemote = 0;
+        int indexLPT = cursor.getColumnIndex( DBHelper.LASTMOVE );
+        int indexFlags = cursor.getColumnIndex( DBHelper.GIFLAGS );
+        int turnFlags = cursor.getColumnIndex( DBHelper.TURN );
+        while ( cursor.moveToNext() && 0 == lastPlayTimeLocal ) {
+            int flags = cursor.getInt( indexFlags );
+            int turn = cursor.getInt( turnFlags );
+            Boolean isLocal = GameSummary.localTurnNext( flags, turn );
+            if ( null != isLocal ) {
+                long lpt = cursor.getLong( indexLPT );
+                if ( isLocal ) {
+                    lastPlayTimeLocal = lpt;
+                } else if ( 0 == lastPlayTimeRemote ) {
+                    lastPlayTimeRemote = lpt;
+                }
+            }
+        }
+        cursor.close();
+
+        ggi.m_hasTurn = 0 != lastPlayTimeLocal || 0 != lastPlayTimeRemote;
+        if ( ggi.m_hasTurn ) {
+            ggi.m_turnLocal = 0 != lastPlayTimeLocal;
+            if ( ggi.m_turnLocal ) {
+                ggi.m_lastMoveTime = lastPlayTimeLocal;
+            } else {
+                ggi.m_lastMoveTime = lastPlayTimeRemote;
+            }
+            // DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
+            //                                                 DateFormat.SHORT );
+            // DbgUtils.logf( "using last play time %s for", 
+            //                df.format( new Date( 1000 * ggi.m_lastMoveTime ) ) );
+        }
+    }
 
     public static long[] getGroupGames( Context context, long groupID )
     {

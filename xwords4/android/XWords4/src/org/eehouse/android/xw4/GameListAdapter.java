@@ -189,12 +189,15 @@ public class GameListAdapter implements ExpandableListAdapter {
         if ( null != convertView ) {
             DbgUtils.logf( "getGroupView gave non-null convertView" );
         }
-        View row = 
-            Utils.inflate(m_context,
-                          android.R.layout.simple_expandable_list_item_1 );
-        TextView view = (TextView)row.findViewById( android.R.id.text1 );
+        ExpiringTextView view = (ExpiringTextView)
+            Utils.inflate(m_context, R.layout.game_list_group );
 
         String name = groupNames()[groupPosition];
+
+        GameGroupInfo ggi = gameInfo().get( name );
+        view.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
+                    ggi.m_lastMoveTime );
+
         int nKids = getChildrenCount( groupPosition );
         name = m_context.getString( R.string.group_namef, name, nKids );
         view.setText( name );
