@@ -194,10 +194,11 @@ public class GameListAdapter implements ExpandableListAdapter {
 
         String name = groupNames()[groupPosition];
 
-        GameGroupInfo ggi = gameInfo().get( name );
-        view.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
-                    ggi.m_lastMoveTime );
-
+        if ( !isExpanded ) {
+            GameGroupInfo ggi = gameInfo().get( name );
+            view.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
+                         ggi.m_lastMoveTime );
+        }
         int nKids = getChildrenCount( groupPosition );
         name = m_context.getString( R.string.group_namef, name, nKids );
         view.setText( name );
