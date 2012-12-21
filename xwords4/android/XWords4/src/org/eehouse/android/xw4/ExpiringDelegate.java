@@ -79,6 +79,7 @@ public class ExpiringDelegate {
             if ( haveTurnLocal ) {
                 setBackground();
             } else {
+                m_view.setBackgroundDrawable( null );
                 m_view.setWillNotDraw( false );
             }
         }
