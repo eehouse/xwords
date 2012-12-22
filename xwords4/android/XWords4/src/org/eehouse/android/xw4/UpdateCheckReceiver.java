@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.SystemClock;
 import java.io.File;
 import java.util.ArrayList;
@@ -154,92 +155,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
 
         if ( 0 < params.length() ) {
-            HttpPost post = makePost( context, "getUpdates" );
-            String json = runPost( post, params );
-            if ( null != json ) {
-                makeNotificationsIf( context, fromUI, json, pm, packageName, 
-                                     dals );
-            }
-        }
-    }
-
-    private static void makeNotificationsIf( Context context, boolean fromUI, 
-                                             String jstr, PackageManager pm,
-                                             String packageName, 
-                                             DictUtils.DictAndLoc[] dals )
-    {
-        boolean gotOne = false;
-        try {
-            JSONObject jobj = new JSONObject( jstr );
-            if ( null != jobj ) {
-                if ( jobj.has( k_APP ) ) {
-                    JSONObject app = jobj.getJSONObject( k_APP );
-                    if ( app.has( k_URL ) ) {
-                        ApplicationInfo ai = pm.getApplicationInfo( packageName, 0);
-                        String label = pm.getApplicationLabel( ai ).toString();
-
-                        // If there's a download dir AND an installer
-                        // app, handle this ourselves.  Otherwise just
-                        // launch the browser
-                        boolean useBrowser;
-                        File downloads = DictUtils.getDownloadDir( context );
-                        if ( null == downloads ) {
-                            useBrowser = true;
-                        } else {
-                            File tmp = new File( downloads, 
-                                                 "xx" + XWConstants.APK_EXTN );
-                            useBrowser = !Utils.canInstall( context, tmp );
-                        }
-
-                        Intent intent;
-                        String url = app.getString( k_URL );
-                        if ( useBrowser ) {
-                            intent = new Intent( Intent.ACTION_VIEW, 
-                                                 Uri.parse(url) );
-                        } else {
-                            intent = DictImportActivity
-                                .makeAppDownloadIntent( context, url );
-                        }
-
-                        String title = 
-                            Utils.format( context, R.string.new_app_availf, label );
-                        String body = context.getString( R.string.new_app_avail );
-                        Utils.postNotification( context, intent, title, body,
-                                                url.hashCode() );
-                        gotOne = true;
-                    }
-                }
-                if ( jobj.has( k_DICTS ) ) {
-                    JSONArray dicts = jobj.getJSONArray( k_DICTS );
-                    for ( int ii = 0; ii < dicts.length(); ++ii ) {
-                        JSONObject dict = dicts.getJSONObject( ii );
-                        if ( dict.has( k_URL ) && dict.has( k_INDEX ) ) {
-                            String url = dict.getString( k_URL );
-                            int index = dict.getInt( k_INDEX );
-                            DictUtils.DictAndLoc dal = dals[index];
-                            Intent intent = 
-                                new Intent( context, DictsActivity.class );
-                            intent.putExtra( NEW_DICT_URL, url );
-                            intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
-                            String body = 
-                                Utils.format( context, R.string.new_dict_availf,
-                                              dal.name );
-                            Utils.postNotification( context, intent, 
-                                                    R.string.new_dict_avail, 
-                                                    body, url.hashCode() );
-                            gotOne = true;
-                        }
-                    }
-                }
-            }
-        } catch ( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
-        } catch ( PackageManager.NameNotFoundException nnfe ) {
-            DbgUtils.loge( nnfe );
-        }
-
-        if ( !gotOne && fromUI ) {
-            Utils.showToast( context, R.string.checkupdates_none_found );
+            new UpdateQueryTask( context, params, fromUI, pm, 
+                                 packageName, dals ).execute();
         }
     }
 
@@ -301,6 +218,123 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     {
         return XWPrefs.getPrefsBoolean( context, R.string.key_update_prerel,
                                         false );
+    }
+
+    private static class UpdateQueryTask extends AsyncTask<Void, Void, String> {
+        private Context m_context;
+        private JSONObject m_params;
+        private boolean m_fromUI;
+        private PackageManager m_pm;
+        private String m_packageName;
+        private DictUtils.DictAndLoc[] m_dals;
+
+        public UpdateQueryTask( Context context, JSONObject params, 
+                                boolean fromUI, PackageManager pm, 
+                                String packageName, 
+                                DictUtils.DictAndLoc[] dals )
+        {
+            m_context = context;
+            m_params = params;
+            m_fromUI = fromUI;
+            m_pm = pm;
+            m_packageName = packageName;
+            m_dals = dals;
+        }
+
+        @Override protected String doInBackground( Void... unused )
+        {
+            HttpPost post = makePost( m_context, "getUpdates" );
+            String json = runPost( post, m_params );
+            return json;
+        }
+
+        @Override protected void onPostExecute( String json )
+        {
+            if ( null != json ) {
+                makeNotificationsIf( json );
+            }
+        }
+
+        private void makeNotificationsIf( String jstr )
+        {
+            boolean gotOne = false;
+            try {
+                JSONObject jobj = new JSONObject( jstr );
+                if ( null != jobj ) {
+                    if ( jobj.has( k_APP ) ) {
+                        JSONObject app = jobj.getJSONObject( k_APP );
+                        if ( app.has( k_URL ) ) {
+                            ApplicationInfo ai = 
+                                m_pm.getApplicationInfo( m_packageName, 0);
+                            String label = m_pm.getApplicationLabel( ai ).toString();
+
+                            // If there's a download dir AND an installer
+                            // app, handle this ourselves.  Otherwise just
+                            // launch the browser
+                            boolean useBrowser;
+                            File downloads = DictUtils.getDownloadDir( m_context );
+                            if ( null == downloads ) {
+                                useBrowser = true;
+                            } else {
+                                File tmp = new File( downloads, 
+                                                     "xx" + XWConstants.APK_EXTN );
+                                useBrowser = !Utils.canInstall( m_context, tmp );
+                            }
+
+                            Intent intent;
+                            String url = app.getString( k_URL );
+                            if ( useBrowser ) {
+                                intent = new Intent( Intent.ACTION_VIEW, 
+                                                     Uri.parse(url) );
+                            } else {
+                                intent = DictImportActivity
+                                    .makeAppDownloadIntent( m_context, url );
+                            }
+
+                            String title = 
+                                Utils.format( m_context, R.string.new_app_availf,
+                                              label );
+                            String body = 
+                                m_context.getString( R.string.new_app_avail );
+                            Utils.postNotification( m_context, intent, title, 
+                                                    body, url.hashCode() );
+                            gotOne = true;
+                        }
+                    }
+                    if ( jobj.has( k_DICTS ) ) {
+                        JSONArray dicts = jobj.getJSONArray( k_DICTS );
+                        for ( int ii = 0; ii < dicts.length(); ++ii ) {
+                            JSONObject dict = dicts.getJSONObject( ii );
+                            if ( dict.has( k_URL ) && dict.has( k_INDEX ) ) {
+                                String url = dict.getString( k_URL );
+                                int index = dict.getInt( k_INDEX );
+                                DictUtils.DictAndLoc dal = m_dals[index];
+                                Intent intent = 
+                                    new Intent( m_context, DictsActivity.class );
+                                intent.putExtra( NEW_DICT_URL, url );
+                                intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
+                                String body = 
+                                    Utils.format( m_context, 
+                                                  R.string.new_dict_availf,
+                                                  dal.name );
+                                Utils.postNotification( m_context, intent, 
+                                                        R.string.new_dict_avail, 
+                                                        body, url.hashCode() );
+                                gotOne = true;
+                            }
+                        }
+                    }
+                }
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            } catch ( PackageManager.NameNotFoundException nnfe ) {
+                DbgUtils.loge( nnfe );
+            }
+
+            if ( !gotOne && m_fromUI ) {
+                Utils.showToast( m_context, R.string.checkupdates_none_found );
+            }
+        }
     }
 
 }
