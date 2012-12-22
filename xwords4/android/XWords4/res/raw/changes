@@ -5,24 +5,17 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 57 release</b>
+<b>Crosswords 4.4 beta 58 release</b>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Include new game information as an attachment in email invites
-    for use on devices that don't dispatch URLs correctly in received
-    email (e.g. some by HTC) </li>
-  <li>Show final scores alert whenever a finished game is opened -- to
-    make it more clear that it's finished</li>
-  <li>Fix flickering in main screen (games list)</li>
-  <li>Add option, off by default, to keep rack tiles square even when
-    the screen is large enough that they can be taller</li>
+    <li>Allow grouping of games in collapsible user-defined categores:
+        "Games with Kati", "Finished games", etc.</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Allow grouping of games in collapsible user-defined categores: "Games with
-  Kati", "Finished games", etc.</li>
+    <li>Improve communication with relay</li>
 </ul>
 
 <p>(The full changelog 

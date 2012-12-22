@@ -1739,8 +1739,9 @@ public class BoardActivity extends XWActivity
                             }
                         }
                     };
-                m_jniThread = new JNIThread( m_jniGamePtr, m_gi, m_view, 
-                                             m_gameLock, this, handler );
+                m_jniThread = 
+                    new JNIThread( m_jniGamePtr, stream, m_gi, 
+                                   m_view, m_gameLock, this, handler );
                 // see http://stackoverflow.com/questions/680180/where-to-stop-\
                 // destroy-threads-in-android-service-class
                 m_jniThread.setDaemon( true );
