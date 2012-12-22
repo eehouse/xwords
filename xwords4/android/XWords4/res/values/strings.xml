@@ -2166,4 +2166,5 @@
     <string name="square_tiles">Square rack tiles</string>
     <string name="square_tiles_summary">Even if they can be taller</string>
 
+    <string name="change_groupf">Move game %s</string>
 </resources>
