@@ -320,6 +320,7 @@ public class DBUtils {
             }
             db.close();
             notifyListeners( rowid, false );
+            invalGroupsCache();
         }
     } // saveSummary
 
@@ -728,6 +729,7 @@ public class DBUtils {
         if ( -1 != rowid ) {      // Means new game?
             notifyListeners( rowid, false );
         }
+        invalGroupsCache();
         return rowid;
     }
 

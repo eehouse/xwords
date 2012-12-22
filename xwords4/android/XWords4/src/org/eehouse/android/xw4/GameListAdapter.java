@@ -179,18 +179,19 @@ public class GameListAdapter implements ExpandableListAdapter {
         long rowid = getRowIDFor( groupPosition, childPosition );
         GameListItem result = (GameListItem)
             m_factory.inflate( R.layout.game_list_item, null );
-        result.init( m_handler, rowid, m_fieldID, m_cb );
+        result.init( m_handler, rowid, groupPosition, m_fieldID, m_cb );
         return result;
     }
 
     public View getGroupView( int groupPosition, boolean isExpanded, 
                               View convertView, ViewGroup parent )
     {
-        if ( null != convertView ) {
-            DbgUtils.logf( "getGroupView gave non-null convertView" );
-        }
-        ExpiringTextView view = (ExpiringTextView)
+        // if ( null != convertView ) {
+        //     DbgUtils.logf( "getGroupView gave non-null convertView" );
+        // }
+        GameListGroup view = (GameListGroup)
             Utils.inflate(m_context, R.layout.game_list_group );
+        view.setGroupPosition( groupPosition );
 
         String name = groupNames()[groupPosition];
 
@@ -248,19 +249,26 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public void inval( long rowid )
     {
-        GameListItem child = getItemFor( rowid );
+        GameListItem child = getGameItemFor( rowid );
+        int groupPosition;
         if ( null != child && child.getRowID() == rowid ) {
             child.forceReload();
+
+            groupPosition = child.getGroupPosition();
         } else {
             DbgUtils.logf( "no child for rowid %d", rowid );
             GameListItem.inval( rowid );
             m_list.invalidate();
+
+            long groupID = DBUtils.getGroupForGame( m_context, rowid );
+            groupPosition = getGroupPosition( groupID );
         }
+        reloadGroup( groupPosition );
     }
 
     public void invalName( long rowid )
     {
-        GameListItem item = getItemFor( rowid );
+        GameListItem item = getGameItemFor( rowid );
         if ( null != item ) {
             item.invalName();
         }
@@ -320,7 +328,13 @@ public class GameListAdapter implements ExpandableListAdapter {
         return changed;
     }
 
-    private GameListItem getItemFor( long rowid )
+    private GameGroupInfo getInfoForGroup( int groupPosition )
+    {
+        String name = groupNames()[groupPosition];
+        return gameInfo().get( name );
+    }
+
+    private GameListItem getGameItemFor( long rowid )
     {
         GameListItem result = null;
         int count = m_list.getChildCount();
@@ -329,6 +343,23 @@ public class GameListAdapter implements ExpandableListAdapter {
             if ( view instanceof GameListItem ) {
                 GameListItem tryme = (GameListItem)view;
                 if ( tryme.getRowID() == rowid ) {
+                    result = tryme;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private GameListGroup getGroupItemFor( int groupPosition )
+    {
+        GameListGroup result = null;
+        int count = m_list.getChildCount();
+        for ( int ii = 0; ii < count; ++ii ) {
+            View view = m_list.getChildAt( ii );
+            if ( view instanceof GameListGroup ) {
+                GameListGroup tryme = (GameListGroup)view;
+                if ( tryme.getGroupPosition() == groupPosition ) {
                     result = tryme;
                     break;
                 }
@@ -353,6 +384,15 @@ public class GameListAdapter implements ExpandableListAdapter {
             }
         }
         return result;
+    }
+
+    private void reloadGroup( int groupPosition )
+    {
+        GameListGroup group = getGroupItemFor( groupPosition );
+        if ( null != group ) {
+            GameGroupInfo ggi = getInfoForGroup( groupPosition );
+            group.setPct( ggi.m_hasTurn, ggi.m_turnLocal, ggi.m_lastMoveTime );
+        }
     }
 
     private HashMap<String,GameGroupInfo> gameInfo()
