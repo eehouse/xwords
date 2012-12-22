@@ -22,13 +22,14 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
-import java.lang.InterruptedException;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.Iterator;
-import android.os.Handler;
-import android.os.Message;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Handler;
+import android.os.Message;
+import java.lang.InterruptedException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DbgUtils;
@@ -122,6 +123,7 @@ public class JNIThread extends Thread {
     private boolean m_stopped = false;
     private boolean m_saveOnStop = false;
     private int m_jniGamePtr;
+    private byte[] m_gameAtStart;
     private GameLock m_lock;
     private Context m_context;
     private CurGameInfo m_gi;
@@ -143,10 +145,12 @@ public class JNIThread extends Thread {
         Object[] m_args;
     }
 
-    public JNIThread( int gamePtr, CurGameInfo gi, SyncedDraw drawer, 
-                      GameLock lock, Context context, Handler handler ) 
+    public JNIThread( int gamePtr, byte[] gameAtStart, CurGameInfo gi, 
+                      SyncedDraw drawer, GameLock lock, Context context, 
+                      Handler handler ) 
     {
         m_jniGamePtr = gamePtr;
+        m_gameAtStart = gameAtStart;
         m_gi = gi;
         m_drawer = drawer;
         m_lock = lock;
@@ -286,13 +290,17 @@ public class JNIThread extends Thread {
         if ( null != m_newDict ) {
             m_gi.dictName = m_newDict;
         }
-        GameSummary summary = new GameSummary( m_context, m_gi );
-        XwJNI.game_summarize( m_jniGamePtr, summary );
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
-        GameUtils.saveGame( m_context, state, m_lock, false );
-        DBUtils.saveSummary( m_context, m_lock, summary );
-        // There'd better be no way for saveGame above to fail!
-        XwJNI.game_saveSucceeded( m_jniGamePtr );
+        if ( Arrays.equals( m_gameAtStart, state ) ) {
+            DbgUtils.logf( "no change in game; can skip saving" );
+        } else {
+            GameSummary summary = new GameSummary( m_context, m_gi );
+            XwJNI.game_summarize( m_jniGamePtr, summary );
+            DBUtils.saveGame( m_context, m_lock, state, false );
+            DBUtils.saveSummary( m_context, m_lock, summary );
+            // There'd better be no way for saveGame above to fail!
+            XwJNI.game_saveSucceeded( m_jniGamePtr );
+        }
     }
 
     @SuppressWarnings("fallthrough")
