@@ -243,29 +243,34 @@ public class GamesList extends XWExpandableListActivity
                 break;
 
             case CHANGE_GROUP:
+                final long startGroup = DBUtils.getGroupForGame( this, m_rowid );
                 final int[] selItem = {-1}; // hack!!!!
                 lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
+                        public void onClick( DialogInterface dlgi, int item ) {
                             selItem[0] = item;
+                            AlertDialog dlg = (AlertDialog)dlgi;
+                            Button btn = 
+                                dlg.getButton( AlertDialog.BUTTON_POSITIVE );
+                            long newGroup = m_adapter.getGroupIDFor( item );
+                            btn.setEnabled( newGroup != startGroup );
                         }
                     };
                 lstnr2 = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            if ( -1 != selItem[0] ) {
-                                long groupid = 
-                                    m_adapter.getGroupIDFor( selItem[0] );
-                                DBUtils.moveGame( GamesList.this, m_rowid, 
-                                                  groupid );
-                                onContentChanged();
-                            }
+                            Assert.assertTrue( -1 != selItem[0] );
+                            long gid = m_adapter.getGroupIDFor( selItem[0] );
+                            DBUtils.moveGame( GamesList.this, m_rowid, gid );
+                            onContentChanged();
                         }
                     };
                 String[] groups = m_adapter.groupNames();
-                long groupid = DBUtils.getGroupForGame( this, m_rowid );
-                int curGroupPos = m_adapter.getGroupPosition( groupid );
+                int curGroupPos = m_adapter.getGroupPosition( startGroup );
+                String name = GameUtils.getName( this, m_rowid );
                 dialog = new AlertDialog.Builder( this )
+                    .setTitle( getString( R.string.change_groupf, name ) )
                     .setSingleChoiceItems( groups, curGroupPos, lstnr )
-                    .setPositiveButton( R.string.button_ok, lstnr2 )
+                    .setPositiveButton( R.string.button_move, lstnr2 )
+                    .setNegativeButton( R.string.button_cancel, null )
                     .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
@@ -305,6 +310,16 @@ public class GamesList extends XWExpandableListActivity
         }
         return dialog;
     } // onCreateDialog
+
+    @Override protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        super.onPrepareDialog( id, dialog );
+
+        if ( CHANGE_GROUP == id ) {
+            ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
+                .setEnabled( false );
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) 
