@@ -32,19 +32,25 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
 import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import junit.framework.Assert;
 
@@ -60,6 +66,7 @@ public class Utils {
     private static Boolean s_isFirstBootThisVersion = null;
     private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
+    private static Integer s_appVersion = null;
     private static HashMap<String,String> s_phonesHash = 
         new HashMap<String,String>();
     private static int s_nextCode = 0; // keep PendingIntents unique
@@ -169,7 +176,8 @@ public class Utils {
     }
 
     public static void postNotification( Context context, Intent intent, 
-                                         String title, String body, int id )
+                                         String title, String body, 
+                                         int id )
     {
         /* s_nextCode: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
@@ -339,6 +347,12 @@ public class Utils {
         }
     }
 
+    public static void setItemVisible( Menu menu, int id, boolean enabled )
+    {
+        MenuItem item = menu.findItem( id );
+        item.setVisible( enabled );
+    }
+
     public static boolean hasSmallScreen( Context context )
     {
         if ( null == s_hasSmallScreen ) {
@@ -403,17 +417,48 @@ public class Utils {
         return dict_url;
     }
 
+    public static int getAppVersion( Context context )
+    {
+        if ( null == s_appVersion ) {
+            try {
+                int version = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0)
+                    .versionCode;
+                s_appVersion = new Integer( version );
+            } catch ( Exception e ) {
+                DbgUtils.loge( e );
+            }
+        }
+        return null == s_appVersion? 0 : s_appVersion;
+    }
+
+    public static Intent makeInstallIntent( File file )
+    {
+        String withScheme = "file://" + file.getPath();
+        Uri uri = Uri.parse( withScheme );
+        Intent intent = new Intent( Intent.ACTION_VIEW );
+        intent.setDataAndType( uri, XWConstants.APK_TYPE );
+        intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        return intent;
+    }
+
+    // Return whether there's an app installed that can install
+    public static boolean canInstall( Context context, File path )
+    {
+        boolean result = false;
+        PackageManager pm = context.getPackageManager();
+        Intent intent = makeInstallIntent( path );
+        List<ResolveInfo> doers =
+            pm.queryIntentActivities( intent, 
+                                      PackageManager.MATCH_DEFAULT_ONLY );
+        result = 0 < doers.size();
+        return result;
+    }
+
     private static void setFirstBootStatics( Context context )
     {
-        int thisVersion = 0;
+        int thisVersion = getAppVersion( context );
         int prevVersion = 0;
-
-        try {
-            thisVersion = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), 0)
-                .versionCode;
-        } catch ( Exception e ) {
-        }
 
         SharedPreferences prefs = null;
         if ( 0 < thisVersion ) {

@@ -31,7 +31,7 @@ import android.widget.TextView;
 import junit.framework.Assert;
 
 public class XWActivity extends Activity
-    implements DlgDelegate.DlgClickNotify, MultiService.BTEventListener {
+    implements DlgDelegate.DlgClickNotify, MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
 
@@ -48,7 +48,6 @@ public class XWActivity extends Activity
     {
         DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
         super.onStart();
-        DispatchNotify.SetRunning( this );
     }
 
     @Override
@@ -73,7 +72,6 @@ public class XWActivity extends Activity
     protected void onStop()
     {
         DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
-        DispatchNotify.ClearRunning( this );
         super.onStop();
     }
 
@@ -194,7 +192,7 @@ public class XWActivity extends Activity
         Assert.fail();
     }
 
-    // BTService.BTEventListener interface
+    // BTService.MultiEventListener interface
     public void eventOccurred( MultiService.MultiEvent event, 
                                final Object ... args )
     {

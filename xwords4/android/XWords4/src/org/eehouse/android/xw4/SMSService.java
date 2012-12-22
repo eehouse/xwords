@@ -189,7 +189,7 @@ public class SMSService extends Service {
         return result;
     }
 
-    public static void setListener( MultiService.BTEventListener li )
+    public static void setListener( MultiService.MultiEventListener li )
     {
         if ( XWApp.SMSSUPPORTED ) {
             if ( null == s_srcMgr ) {
@@ -388,7 +388,6 @@ public class SMSService extends Service {
         int count = (msg.length() + (MAX_LEN_TEXT-1)) / MAX_LEN_TEXT;
         String[] result = new String[count];
         int msgID = ++s_nSent % 0x000000FF;
-        DbgUtils.logf( "preparing %d packets for msgid %x", count, msgID );
 
         int start = 0;
         int end = 0;
@@ -400,7 +399,6 @@ public class SMSService extends Service {
             end += len;
             result[ii] = String.format( "0:%X:%X:%X:%s", msgID, ii, count, 
                                         msg.substring( start, end ) );
-            DbgUtils.logf( "fragment[%d]: %s", ii, result[ii] );
             start = end;
         }
         return result;
@@ -424,17 +422,16 @@ public class SMSService extends Service {
                     makeForInvite( phone, gameID, gameName, lang, dict, 
                                    nPlayersT, nPlayersH );
                 } else {
-                    Intent intent = new Intent( this, DictsActivity.class );
-                    fillInviteIntent( intent, phone, gameID, gameName, lang, dict,
-                                      nPlayersT, nPlayersH );
+                    Intent intent = MultiService
+                        .makeMissingDictIntent( this, gameName, lang, dict, 
+                                                nPlayersT, nPlayersH );
+                    intent.putExtra( PHONE, phone );
                     intent.putExtra( MultiService.OWNER, 
                                      MultiService.OWNER_SMS );
                     intent.putExtra( MultiService.INVITER, 
                                      Utils.phoneToContact( this, phone, true ) );
-                    Utils.postNotification( this, intent, 
-                                            R.string.missing_dict_title, 
-                                            R.string.missing_dict_detail, 
-                                            gameID );
+                    MultiService.postMissingDictNotification( this, intent, 
+                                                              gameID );
                 }
                 break;
             case DATA:
@@ -506,7 +503,6 @@ public class SMSService extends Service {
 
     private void disAssemble( String senderPhone, String fullMsg )
     {
-        DbgUtils.logf( "disAssemble()" );
         byte[] data = XwJNI.base64Decode( fullMsg );
         DataInputStream dis = 
             new DataInputStream( new ByteArrayInputStream(data) );
@@ -544,7 +540,7 @@ public class SMSService extends Service {
         String owner = Utils.phoneToContact( this, phone, true );
         String body = Utils.format( this, R.string.new_name_bodyf, 
                                     owner );
-        postNotification( gameID, R.string.new_sms_title, body );
+        postNotification( gameID, R.string.new_sms_title, body, rowid );
 
         ackInvite( phone, gameID );
     }
@@ -565,8 +561,6 @@ public class SMSService extends Service {
             for ( String fragment : fragments ) {
                 String asPublic = toPublicFmt( fragment );
                 mgr.sendTextMessage( phone, null, asPublic, sent, delivery );
-                DbgUtils.logf( "Message \"%s\" of %d bytes sent to %s.", 
-                               asPublic, asPublic.length(), phone );
             }
             if ( s_showToasts ) {
                 DbgUtils.showf( this, "sent %dth msg", s_nSent );
@@ -591,11 +585,8 @@ public class SMSService extends Service {
     {
         intent.putExtra( PHONE, phone );
         intent.putExtra( MultiService.GAMEID, gameID );
-        intent.putExtra( MultiService.GAMENAME, gameName );
-        intent.putExtra( MultiService.LANG, lang );
-        intent.putExtra( MultiService.DICT, dict );
-        intent.putExtra( MultiService.NPLAYERST, nPlayersT );
-        intent.putExtra( MultiService.NPLAYERSH, nPlayersH );
+        MultiService.fillInviteIntent( intent, gameName, lang, dict, 
+                                       nPlayersT, nPlayersH );
     }
 
     private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
@@ -612,19 +603,19 @@ public class SMSService extends Service {
                     if ( GameUtils.feedMessage( this, rowid, msg, addr, 
                                                 sink ) ) {
                         postNotification( gameID, R.string.new_smsmove_title, 
-                                          getString(R.string.new_move_body)
-                                          );
+                                          getString(R.string.new_move_body),
+                                          rowid );
                     }
                 }
             }
         }
     }
 
-    private void postNotification( int gameID, int title, String body )
+    private void postNotification( int gameID, int title, String body, 
+                                   long rowid )
     {
-        Intent intent = new Intent( this, DispatchNotify.class );
-        intent.putExtra( DispatchNotify.GAMEID_EXTRA, gameID );
-        Utils.postNotification( this, intent, title, body, gameID );
+        Intent intent = GamesList.makeGameIDIntent( this, gameID );
+        Utils.postNotification( this, intent, title, body, (int)rowid );
     }
 
     // Runs in separate thread
@@ -669,11 +660,9 @@ public class SMSService extends Service {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) 
                 {
-                    DbgUtils.logf( "got MSG_DELIVERED" );
                     switch ( getResultCode() ) {
                     case Activity.RESULT_OK:
                         sendResult( MultiEvent.SMS_SEND_OK );
-                        DbgUtils.logf( "SUCCESS!!!" );
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
                         DbgUtils.showf( SMSService.this, "NO RADIO!!!" );
@@ -693,7 +682,6 @@ public class SMSService extends Service {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) 
                 {
-                    DbgUtils.logf( "got MSG_DELIVERED" );
                     if ( Activity.RESULT_OK == getResultCode() ) {
                         DbgUtils.logf( "SUCCESS!!!" );
                     } else {
@@ -714,7 +702,6 @@ public class SMSService extends Service {
         public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
         {
             int nSent = -1;
-            DbgUtils.logf( "SMSMsgSink.transportSend()" );
             if ( null != addr ) {
                 nSent = sendPacket( addr.sms_phone, gameID, buf );
             } else {
@@ -757,7 +744,6 @@ public class SMSService extends Service {
         public boolean isComplete()
         {
             boolean complete = m_msgs.length == m_haveCount;
-            DbgUtils.logf( "isComplete(msg %d)=>%b", m_msgID, complete );
             return complete;
         }
 

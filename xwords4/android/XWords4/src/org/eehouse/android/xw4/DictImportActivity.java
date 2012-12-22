@@ -1,7 +1,7 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,31 +21,72 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.os.Bundle;
-import android.os.AsyncTask;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import java.io.InputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.URI;
+import java.security.MessageDigest;
+import java.util.HashMap;
 
 import junit.framework.Assert;
 
 public class DictImportActivity extends XWActivity {
 
+    // URIs coming in in intents
+    private static final String APK_EXTRA = "APK";
+    private static final String DICT_EXTRA = "XWD";
+
+    public interface DownloadFinishedListener {
+        void downloadFinished( String name, boolean success );
+    }
+
+    // Track callbacks for downloads.
+    private static class ListenerData {
+        public ListenerData( String dictName, DownloadFinishedListener lstnr )
+        {
+            m_dictName = dictName;
+            m_lstnr = lstnr;
+        }
+        public String m_dictName;
+        public DownloadFinishedListener m_lstnr;
+    }
+    private static HashMap<String,ListenerData> s_listeners =
+        new HashMap<String,ListenerData>();
+
     private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> {
-        private String m_saved = null;
+        private String m_savedDict = null;
+        private String m_url = null;
+        private boolean m_isApp = false;
+        private File m_appFile = null;
+
+        public DownloadFilesTask( boolean isApp )
+        {
+            super();
+            m_isApp = isApp;
+        }
+
+        public DownloadFilesTask( String url, boolean isApp )
+        {
+            this( isApp );
+            m_url = url;
+        }
+
         @Override
         protected Long doInBackground( Uri... uris )
         {
-            m_saved = null;
+            m_savedDict = null;
+            m_appFile = null;
 
             int count = uris.length;
             Assert.assertTrue( 1 == count );
-            long totalSize = 0;
             for ( int ii = 0; ii < count; ii++ ) {
                 Uri uri = uris[ii];
                 DbgUtils.logf( "trying %s", uri );
@@ -55,7 +96,12 @@ public class DictImportActivity extends XWActivity {
                                         uri.getSchemeSpecificPart(), 
                                         uri.getFragment() );
                     InputStream is = jUri.toURL().openStream();
-                    m_saved = saveDict( is, uri.getPath() );
+                    String name = basename( uri.getPath() );
+                    if ( m_isApp ) {
+                        m_appFile = saveToDownloads( is, name );
+                    } else {
+                        m_savedDict = saveDict( is, name );
+                    }
                     is.close();
                 } catch ( java.net.URISyntaxException use ) {
                     DbgUtils.loge( use );
@@ -65,18 +111,26 @@ public class DictImportActivity extends XWActivity {
                     DbgUtils.loge( ioe );
                 }
             }
-            return totalSize;
+            return new Long(0);
         }
 
         @Override
         protected void onPostExecute( Long result )
         {
             DbgUtils.logf( "onPostExecute passed %d", result );
-            if ( null != m_saved ) {
+            if ( null != m_savedDict ) {
                 DictUtils.DictLoc loc = 
                     XWPrefs.getDefaultLoc( DictImportActivity.this );
-                DictLangCache.inval( DictImportActivity.this, m_saved, 
+                DictLangCache.inval( DictImportActivity.this, m_savedDict, 
                                      loc, true );
+                callListener( m_url, true );
+            } else if ( null != m_appFile ) {
+                // launch the installer
+                Intent intent = Utils.makeInstallIntent( m_appFile );
+                startActivity( intent );
+            } else {
+                // we failed at something....
+                callListener( m_url, false );
             }
             finish();
         }
@@ -86,6 +140,7 @@ public class DictImportActivity extends XWActivity {
 	protected void onCreate( Bundle savedInstanceState ) 
     {
 		super.onCreate( savedInstanceState );
+        DownloadFilesTask dft = null;
 
 		requestWindowFeature( Window.FEATURE_LEFT_ICON );
 		setContentView( R.layout.import_dict );
@@ -96,27 +151,64 @@ public class DictImportActivity extends XWActivity {
 
 		Intent intent = getIntent();
 		Uri uri = intent.getData();
-		if ( null != uri) {
-			if ( null != intent.getType() 
-                 && intent.getType().equals( "application/x-xwordsdict" ) ) {
-                DbgUtils.logf( "based on MIME type" );
-                new DownloadFilesTask().execute( uri );
-            } else if ( uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
-                String txt = getString( R.string.downloading_dictf,
-                                        basename( uri.getPath()) );
-                TextView view = (TextView)findViewById( R.id.dwnld_message );
-                view.setText( txt );
-                new DownloadFilesTask().execute( uri );
-			} else {
-                DbgUtils.logf( "bogus intent: %s/%s", intent.getType(), uri );
-				finish();
-			}
+        if ( null == uri ) {
+            String url = intent.getStringExtra( APK_EXTRA );
+            boolean isApp = null != url;
+            if ( !isApp ) {
+                url = intent.getStringExtra( DICT_EXTRA );
+            }
+            if ( null != url ) {
+                dft = new DownloadFilesTask( url, isApp );
+                uri = Uri.parse( url );
+            }
+        } else if ( null != intent.getType() 
+                    && intent.getType().equals( "application/x-xwordsdict" ) ) {
+            dft = new DownloadFilesTask( false );
+        } else if ( uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
+            dft = new DownloadFilesTask( uri.toString(), false );
+        }
+
+        if ( null == dft ) {
+            finish();
+        } else {
+            String showName = basename( uri.getPath() );
+            String msg = getString( R.string.downloading_dictf, showName );
+            TextView view = (TextView)findViewById( R.id.dwnld_message );
+            view.setText( msg );
+            
+            dft.execute( uri );
         }
 	}
 
-    private String saveDict( InputStream inputStream, String path )
+    private File saveToDownloads( InputStream is, String name )
     {
-        String name = basename( path );
+        boolean success = false;
+        File appFile = new File( DictUtils.getDownloadDir( this ), name );
+
+        byte[] buf = new byte[1024*4];
+        try {
+            FileOutputStream fos = new FileOutputStream( appFile );
+            int nRead;
+            while ( 0 <= (nRead = is.read( buf, 0, buf.length )) ) {
+                fos.write( buf, 0, nRead );
+            }
+            fos.close();
+            success = true;
+        } catch ( java.io.FileNotFoundException fnf ) {
+            DbgUtils.loge( fnf );
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.loge( ioe );
+        }
+
+        if ( !success ) {
+            appFile.delete();
+            appFile = null;
+        }
+        return appFile;
+    }
+
+    private String saveDict( InputStream inputStream, String name )
+    {
         DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( this );
         if ( !DictUtils.saveDict( this, inputStream, name, loc ) ) {
             name = null;
@@ -128,6 +220,57 @@ public class DictImportActivity extends XWActivity {
     {
         return new File(path).getName();
     }
+
+    private static void rememberListener( String url, String name, 
+                                          DownloadFinishedListener lstnr )
+    {
+        ListenerData ld = new ListenerData( name, lstnr );
+        synchronized( s_listeners ) {
+            s_listeners.put( url, ld );
+        }
+    }
+
+    private static void callListener( String url, boolean success ) 
+    {
+        if ( null != url ) {
+            ListenerData ld;
+            synchronized( s_listeners ) {
+                ld = s_listeners.get( url );
+                if ( null != ld ) {
+                    s_listeners.remove( url );
+                }
+            }
+            if ( null != ld ) {
+                ld.m_lstnr.downloadFinished( ld.m_dictName, success );
+            }
+        }
+    }
+
+    public static void downloadDictInBack( Context context, int lang, 
+                                           String name, 
+                                           DownloadFinishedListener lstnr )
+    {
+        String url = Utils.makeDictUrl( context, lang, name );
+        if ( null != lstnr ) {
+            rememberListener( url, name, lstnr );
+        }
+        downloadDictInBack( context, url );
+    }
+
+    public static void downloadDictInBack( Context context, String url )
+    {
+        Intent intent = new Intent( context, DictImportActivity.class );
+        intent.putExtra( DICT_EXTRA, url );
+        context.startActivity( intent );
+    }
+
+    public static Intent makeAppDownloadIntent( Context context, String url )
+    {
+        Intent intent = new Intent( context, DictImportActivity.class );
+        intent.putExtra( APK_EXTRA, url );
+        return intent;
+    }
+
 }
 
 

@@ -3,95 +3,114 @@
 
 
 <!-- top-level layout is hozontal, with an image and another layout -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:longClickable="true"
-              android:focusable="true"
-              android:clickable="true"
-              android:background="@android:drawable/list_selector_background"
-              >
+<org.eehouse.android.xw4.GameListItem
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     android:orientation="vertical"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:longClickable="true"
+     android:focusable="true"
+     android:clickable="true"
+     android:background="@android:drawable/list_selector_background"
+     >
 
-  <ImageView android:id="@+id/msg_marker"
-	         android:layout_width="wrap_content"
-	         android:layout_height="fill_parent"
-             android:layout_gravity="center_vertical|center_horizontal"
-             android:layout_weight="0"
-             />
+    <TextView android:id="@+id/view_unloaded"
+              android:layout_width="fill_parent" 
+	          android:layout_height="wrap_content"
+              android:textAppearance="?android:attr/textAppearanceLarge"
+              android:gravity="center"
+              android:paddingTop="10dp"
+              android:paddingBottom="10dp"
+              android:text="@string/game_list_tmp"
+              />
 
-  <!-- this layout is vertical, holds everything but the status
-       icon[s] (plural later) -->
-  <LinearLayout android:orientation="vertical"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                >
-
-    <!-- This is the game name and expander -->
-    <LinearLayout android:orientation="horizontal"
-                  android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  >
-
-      <org.eehouse.android.xw4.ExpiringTextView
-          android:id="@+id/game_name"
-          android:layout_width="wrap_content" 
-          android:layout_height="wrap_content"
-          android:gravity="center"
-          android:layout_weight="1"
-          android:singleLine="true"
-          android:textAppearance="?android:attr/textAppearanceMedium"
-          />
-
-      <ImageButton android:id="@+id/expander"
-                   android:layout_width="32dp" 
-	               android:layout_height="32dp"
-                   android:src="@drawable/expander_ic_maximized"
-                   />
-
-    </LinearLayout>
-
-    <!-- This is everything below the name (which can be hidden) -->
-    <LinearLayout android:id="@+id/hideable"
+    <LinearLayout android:id="@+id/view_loaded"
                   android:orientation="horizontal"
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
-                  android:padding="4sp">
+                  android:visibility="gone"
+                  >
 
-      <!-- Player list plus connection status -->
-      <LinearLayout android:id="@+id/player_list"
-                    android:orientation="vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    android:layout_weight="1"
-                    android:layout_marginRight="4dip"
-                    /> <!-- end players column -->
+        <ImageView android:id="@+id/msg_marker"
+	               android:layout_width="wrap_content"
+	               android:layout_height="fill_parent"
+                   android:layout_gravity="center_vertical|center_horizontal"
+                   android:layout_weight="0"
+                   />
 
-      <!-- holds right column.  Could hold more... -->
-      <LinearLayout android:orientation="vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    >
-        <TextView android:id="@+id/modtime"
-	              android:layout_width="wrap_content" 
-	              android:layout_height="wrap_content"
-	              android:gravity="right"
-                  />
-        <TextView android:id="@+id/state"
-	              android:layout_width="wrap_content" 
-	              android:layout_height="wrap_content"
-	              android:gravity="right"
-                  />
-      </LinearLayout>
+        <!-- this layout is vertical, holds everything but the status
+             icon[s] (plural later) -->
+        <LinearLayout android:orientation="vertical"
+                      android:layout_width="fill_parent"
+                      android:layout_height="wrap_content"
+                      >
 
+            <!-- This is the game name and expander -->
+            <LinearLayout android:orientation="horizontal"
+                          android:layout_width="fill_parent"
+                          android:layout_height="wrap_content"
+                          >
+
+                <org.eehouse.android.xw4.ExpiringTextView
+                     android:id="@+id/game_name"
+                     android:layout_width="wrap_content" 
+                     android:layout_height="wrap_content"
+                     android:gravity="center"
+                     android:layout_weight="1"
+                     android:singleLine="true"
+                     android:textAppearance="?android:attr/textAppearanceMedium"
+                     />
+
+                <ImageButton android:id="@+id/expander"
+                             android:layout_width="32dp" 
+	                         android:layout_height="32dp"
+                             android:src="@drawable/expander_ic_maximized"
+                             />
+
+            </LinearLayout>
+
+            <!-- This is everything below the name (which can be hidden) -->
+            <LinearLayout android:id="@+id/hideable"
+                          android:orientation="horizontal"
+                          android:layout_width="fill_parent"
+                          android:layout_height="wrap_content"
+                          android:padding="4sp">
+
+                <!-- Player list plus connection status -->
+                <LinearLayout android:id="@+id/player_list"
+                              android:orientation="vertical"
+                              android:layout_width="wrap_content"
+                              android:layout_height="fill_parent"
+                              android:layout_weight="1"
+                              android:layout_marginRight="4dip"
+                              /> <!-- end players column -->
+
+                <!-- holds right column.  Could hold more... -->
+                <LinearLayout android:orientation="vertical"
+                              android:layout_width="wrap_content"
+                              android:layout_height="fill_parent"
+                              >
+                    <TextView android:id="@+id/modtime"
+	                          android:layout_width="wrap_content" 
+	                          android:layout_height="wrap_content"
+	                          android:gravity="right"
+                              />
+                    <TextView android:id="@+id/state"
+	                          android:layout_width="wrap_content" 
+	                          android:layout_height="wrap_content"
+	                          android:gravity="right"
+                              />
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <TextView android:id="@+id/role"
+	                  android:layout_width="wrap_content" 
+	                  android:layout_height="wrap_content"
+                      android:layout_gravity="center_vertical|center_horizontal"
+                      />
+
+        </LinearLayout>
     </LinearLayout>
-
-
-    <TextView android:id="@+id/role"
-	          android:layout_width="wrap_content" 
-	          android:layout_height="wrap_content"
-              android:layout_gravity="center_vertical|center_horizontal"
-              />
-
-  </LinearLayout>
-</LinearLayout>
+</org.eehouse.android.xw4.GameListItem>

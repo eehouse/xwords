@@ -353,20 +353,37 @@ linux_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
     if ( !!cGlobals->params->rDevID ) {
         *typ = ID_TYPE_RELAY;
         result = cGlobals->params->rDevID;
-    } else {
+    } else if ( !!cGlobals->params->devID ) {
         *typ = ID_TYPE_LINUX;
         result = cGlobals->params->devID;
+    } else {
+        *typ = ID_TYPE_NONE;
+        result = NULL;
     }
     return result;
 }
 
 static void
-linux_util_deviceRegistered( XW_UtilCtxt* XP_UNUSED(uc), 
+linux_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ, 
                              const XP_UCHAR* idRelay )
 {
-    /* Script discon_ok2.sh is grepping for this in logs, so don't change
-       it! */
-    XP_LOGF( "%s: new id: %s", __func__, idRelay );
+    /* Script discon_ok2.sh is grepping for these strings in logs, so don't
+       change them! */
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    switch( typ ) {
+    case ID_TYPE_NONE: /* error case */
+        XP_LOGF( "%s: id rejected", __func__ );
+        cGlobals->params->rDevID = cGlobals->params->devID = NULL;
+        break;
+    case ID_TYPE_RELAY:
+        if ( 0 < strlen( idRelay ) ) {
+            XP_LOGF( "%s: new id: %s", __func__, idRelay );
+        }
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
+    }
 }
 #endif
 

@@ -5,12 +5,17 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 54 release</b>
+<b>Crosswords 4.4 beta 58 release</b>
+
+<h3>New with this release</h3>
 <ul>
+    <li>Allow grouping of games in collapsible user-defined categores:
+        "Games with Kati", "Finished games", etc.</li>
+</ul>
 
-  <li>Don't try to access directory OS says is for downloads when it
-    doesn't actually exist</li>
-
+<h3>Next up</h3>
+<ul>
+    <li>Improve communication with relay</li>
 </ul>
 
 <p>(The full changelog 

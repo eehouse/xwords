@@ -256,7 +256,7 @@ public class NewGameActivity extends XWActivity {
         return dialog;
     }
 
-    // BTService.BTEventListener interface
+    // MultiService.MultiEventListener interface
     @Override
     public void eventOccurred( MultiService.MultiEvent event, 
                                final Object ... args )
@@ -299,7 +299,7 @@ public class NewGameActivity extends XWActivity {
             super.eventOccurred( event, args );
             break;
         }
-    } // BTService.BTEventListener.eventOccurred
+    } // MultiService.MultiEventListener.eventOccurred
 
     private void makeNewGame( boolean networked, boolean launch )
     {
@@ -318,13 +318,14 @@ public class NewGameActivity extends XWActivity {
         String inviteID = null;
         long rowid;
         int[] lang = {0};
+        String[] dict = {null};
         final int nPlayers = 2; // hard-coded for no-configure case
 
         if ( networked ) {
             room = GameUtils.makeRandomID();
             inviteID = GameUtils.makeRandomID();
             rowid = GameUtils.makeNewNetGame( this, room, inviteID, lang, 
-                                              nPlayers, 1 );
+                                              dict, nPlayers, 1 );
         } else {
             rowid = GameUtils.saveNew( this, new CurGameInfo( this ) );
         }
@@ -333,7 +334,8 @@ public class NewGameActivity extends XWActivity {
             GameUtils.launchGame( this, rowid, networked );
             if ( networked ) {
                 GameUtils.launchInviteActivity( this, choseEmail, room, 
-                                                inviteID, lang[0], nPlayers );
+                                                inviteID, lang[0], dict[0], 
+                                                nPlayers );
             }
         } else {
             GameUtils.doConfig( this, rowid, GameConfig.class );
@@ -355,7 +357,7 @@ public class NewGameActivity extends XWActivity {
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
             startActivityForResult( intent, CONFIG_FOR_BT );
         } else {
-            GameUtils.launchBTInviter( this, 1, INVITE_FOR_BT );
+            BTInviteActivity.launchForResult( this, 1, INVITE_FOR_BT );
         }
     }
 
@@ -376,7 +378,7 @@ public class NewGameActivity extends XWActivity {
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
             startActivityForResult( intent, CONFIG_FOR_SMS );
         } else {
-            GameUtils.launchSMSInviter( this, 1, INVITE_FOR_SMS );
+            SMSInviteActivity.launchForResult( this, 1, INVITE_FOR_SMS );
         }
     }
 

@@ -974,9 +974,7 @@ and_send_on_close( XWStreamCtxt* stream, void* closure )
     JNIState* state = (JNIState*)globals->state;
 
     XP_ASSERT( !!state->game.comms );
-    if ( stream_getSize( stream ) > 0 ) {
-        comms_send( state->game.comms, stream );
-    }
+    comms_send( state->game.comms, stream );
 }
 
 JNIEXPORT void JNICALL
@@ -1307,14 +1305,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1changeDict
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
-( JNIEnv* env, jclass C, jint gamePtr, jboolean thenAck )
+( JNIEnv* env, jclass C, jint gamePtr, jboolean force, jboolean thenAck )
 {
     XWJNI_START();
     CommsCtxt* comms = state->game.comms;
     XP_ASSERT( !!comms );
-    (void)comms_resendAll( comms );
+    (void)comms_resendAll( comms, force );
     if ( thenAck ) {
+#ifdef XWFEATURE_COMMSACK
         comms_ackAny( comms );
+#endif
     }
     XWJNI_END();
 }

@@ -627,6 +627,7 @@ CookieRef::handleEvents()
     /* Assumption: has mutex!!!! */
     while ( m_eventQueue.size () > 0 ) {
         XW_RELAY_STATE nextState;
+        DBMgr::DevIDRelay devID;
         CRefEvent evt = m_eventQueue.front();
         m_eventQueue.pop_front();
 
@@ -642,7 +643,6 @@ CookieRef::handleEvents()
             case XWA_SEND_CONNRSP: 
                 {
                     HostID hid;
-                    DBMgr::DevIDRelay devID;
                     if ( increasePlayerCounts( &evt, false, &hid, &devID ) ) {
                         setAllConnectedTimer();
                         sendResponse( &evt, true, &devID );
@@ -668,8 +668,8 @@ CookieRef::handleEvents()
             /*     break; */
 
             case XWA_SEND_RERSP:
-                increasePlayerCounts( &evt, true, NULL, NULL );
-                sendResponse( &evt, false, NULL );
+                increasePlayerCounts( &evt, true, NULL, &devID );
+                sendResponse( &evt, false, &devID );
                 sendAnyStored( &evt );
                 postCheckAllHere();
                 break;
@@ -891,13 +891,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
         DevIDType devIDType = evt->u.con.devID->m_devIDType;
         // does client support devID
         if ( ID_TYPE_NONE != devIDType ) { 
-            // have we not already converted it?
-            if ( ID_TYPE_RELAY == devIDType ) {
-                devID = (DBMgr::DevIDRelay)strtoul( evt->u.con.devID->m_devIDString.c_str(), 
-                                                     NULL, 16 );
-            } else {
-                devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
-            }
+            devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
         }
         *devIDp = devID;
     }
@@ -1070,20 +1064,34 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial,
     memcpy( bufp, connName, len );
     bufp += len;
 
-    if ( initial ) {
-        // we always write at least empty string
-        char idbuf[MAX_DEVID_LEN + 1] = {0};
+    // we always write at least empty string
 
-        // If client supports devid, and we have one (response case), write it as
-        // 8-byte hex string plus a length byte -- but only if we didn't already
-        // receive it.
-        if ( !!devID && ID_TYPE_RELAY < evt->u.con.devID->m_devIDType ) { 
+    // If client supports devid, and we have one (response case), write it as
+    // 8-byte hex string plus a length byte -- but only if we didn't already
+    // receive it.
+
+    // there are three possibilities: it sent us a platform-specific ID and we
+    // need to return the relay version; or it sent us a valid relay version;
+    // or it sent us an invalid one (for whatever reason, e.g. we've wiped the
+    // devices table entry for a problematic GCM id to force reregistration.)
+    // In the first case, we return the new relay version.  In the second, we
+    // return that the type is ID_TYPE_RELAY but don't bother with the version
+    // string; and in the third, we return ID_TYPE_NONE.
+
+    if ( DBMgr::DEVID_NONE == *devID ) { // first case
+        *bufp++ = ID_TYPE_NONE;
+    } else {
+        *bufp++ = ID_TYPE_RELAY;
+
+        // Write an empty string if the client passed the ID to us, or the id
+        // if it's new to the client.
+        char idbuf[MAX_DEVID_LEN + 1];
+        if ( !!ID_TYPE_RELAY < evt->u.con.devID->m_devIDType ) { 
             len = snprintf( idbuf, sizeof(idbuf), "%.8X", *devID );
             assert( len < sizeof(idbuf) );
+        } else {
+            len = 0;
         }
-        
-        len = strlen( idbuf );
-        assert( len <= MAX_DEVID_LEN );
         *bufp++ = (char)len;
         if ( 0 < len ) {
             memcpy( bufp, idbuf, len );

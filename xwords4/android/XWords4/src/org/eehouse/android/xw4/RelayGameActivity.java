@@ -41,7 +41,7 @@ public class RelayGameActivity extends XWActivity
 
     private long m_rowid;
     private CurGameInfo m_gi;
-    private GameUtils.GameLock m_gameLock;
+    private GameLock m_gameLock;
     private CommsAddrRec m_car;
     private Button m_playButton;
     private Button m_configButton;
@@ -68,22 +68,28 @@ public class RelayGameActivity extends XWActivity
         super.onStart();
 
         m_gi = new CurGameInfo( this );
-        m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
-        int gamePtr = GameUtils.loadMakeGame( this, m_gi, m_gameLock );
-        m_car = new CommsAddrRec();
-        if ( XwJNI.game_hasComms( gamePtr ) ) {
-            XwJNI.comms_getAddr( gamePtr, m_car );
+        m_gameLock = new GameLock( m_rowid, true ).lock( 300 );
+        if ( null == m_gameLock ) {
+            DbgUtils.logf( "RelayGameActivity.onStart(): unable to lock rowid %d",
+                           m_rowid );
+            finish();
         } else {
-            Assert.fail();
-            // String relayName = CommonPrefs.getDefaultRelayHost( this );
-            // int relayPort = CommonPrefs.getDefaultRelayPort( this );
-            // XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
-        }
-        XwJNI.game_dispose( gamePtr );
+            int gamePtr = GameUtils.loadMakeGame( this, m_gi, m_gameLock );
+            m_car = new CommsAddrRec();
+            if ( XwJNI.game_hasComms( gamePtr ) ) {
+                XwJNI.comms_getAddr( gamePtr, m_car );
+            } else {
+                Assert.fail();
+                // String relayName = CommonPrefs.getDefaultRelayHost( this );
+                // int relayPort = CommonPrefs.getDefaultRelayPort( this );
+                // XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
+            }
+            XwJNI.game_dispose( gamePtr );
 
-        String lang = DictLangCache.getLangName( this, m_gi.dictLang );
-        TextView text = (TextView)findViewById( R.id.explain );
-        text.setText( getString( R.string.relay_game_explainf, lang ) );
+            String lang = DictLangCache.getLangName( this, m_gi.dictLang );
+            TextView text = (TextView)findViewById( R.id.explain );
+            text.setText( getString( R.string.relay_game_explainf, lang ) );
+        }
     }
 
     @Override

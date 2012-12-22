@@ -22,18 +22,20 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
-import java.lang.InterruptedException;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.Iterator;
-import android.os.Handler;
-import android.os.Message;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Handler;
+import android.os.Message;
+import java.lang.InterruptedException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.BoardDims;
+import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.Toolbar;
@@ -77,7 +79,7 @@ public class JNIThread extends Thread {
             CMD_COUNTS_VALUES,
             CMD_REMAINING,
             CMD_RESEND,
-            CMD_ACKANY,
+            // CMD_ACKANY,
             CMD_HISTORY,
             CMD_FINAL,
             CMD_ENDGAME,
@@ -94,6 +96,7 @@ public class JNIThread extends Thread {
     public static final int QUERY_ENDGAME = 4;
     public static final int TOOLBAR_STATES = 5;
     public static final int GOT_WORDS = 6;
+    public static final int GAME_OVER = 7;
 
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
@@ -120,7 +123,8 @@ public class JNIThread extends Thread {
     private boolean m_stopped = false;
     private boolean m_saveOnStop = false;
     private int m_jniGamePtr;
-    private GameUtils.GameLock m_lock;
+    private byte[] m_gameAtStart;
+    private GameLock m_lock;
     private Context m_context;
     private CurGameInfo m_gi;
     private Handler m_handler;
@@ -141,10 +145,12 @@ public class JNIThread extends Thread {
         Object[] m_args;
     }
 
-    public JNIThread( int gamePtr, CurGameInfo gi, SyncedDraw drawer, 
-                      GameUtils.GameLock lock, Context context, Handler handler ) 
+    public JNIThread( int gamePtr, byte[] gameAtStart, CurGameInfo gi, 
+                      SyncedDraw drawer, GameLock lock, Context context, 
+                      Handler handler ) 
     {
         m_jniGamePtr = gamePtr;
+        m_gameAtStart = gameAtStart;
         m_gi = gi;
         m_drawer = drawer;
         m_lock = lock;
@@ -284,13 +290,17 @@ public class JNIThread extends Thread {
         if ( null != m_newDict ) {
             m_gi.dictName = m_newDict;
         }
-        GameSummary summary = new GameSummary( m_context, m_gi );
-        XwJNI.game_summarize( m_jniGamePtr, summary );
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
-        GameUtils.saveGame( m_context, state, m_lock, false );
-        DBUtils.saveSummary( m_context, m_lock, summary );
-        // There'd better be no way for saveGame above to fail!
-        XwJNI.game_saveSucceeded( m_jniGamePtr );
+        if ( Arrays.equals( m_gameAtStart, state ) ) {
+            DbgUtils.logf( "no change in game; can skip saving" );
+        } else {
+            GameSummary summary = new GameSummary( m_context, m_gi );
+            XwJNI.game_summarize( m_jniGamePtr, summary );
+            DBUtils.saveGame( m_context, m_lock, state, false );
+            DBUtils.saveSummary( m_context, m_lock, summary );
+            // There'd better be no way for saveGame above to fail!
+            XwJNI.game_saveSucceeded( m_jniGamePtr );
+        }
     }
 
     @SuppressWarnings("fallthrough")
@@ -495,11 +505,12 @@ public class JNIThread extends Thread {
 
             case CMD_RESEND:
                 XwJNI.comms_resendAll( m_jniGamePtr, 
-                                       ((Boolean)args[0]).booleanValue() );
+                                       ((Boolean)args[0]).booleanValue(),
+                                       ((Boolean)args[1]).booleanValue() );
                 break;
-            case CMD_ACKANY:
-                XwJNI.comms_ackAny( m_jniGamePtr );
-                break;
+            // case CMD_ACKANY:
+            //     XwJNI.comms_ackAny( m_jniGamePtr );
+            //     break;
 
             case CMD_HISTORY:
                 boolean gameOver = XwJNI.server_getGameIsOver( m_jniGamePtr );
@@ -523,8 +534,14 @@ public class JNIThread extends Thread {
 
             case CMD_POST_OVER:
                 if ( XwJNI.server_getGameIsOver( m_jniGamePtr ) ) {
-                    sendForDialog( R.string.finalscores_title,
-                                   XwJNI.server_writeFinalScores( m_jniGamePtr ) );
+                    boolean auto = 0 < args.length &&
+                        ((Boolean)args[0]).booleanValue();
+                    int titleID = auto? R.string.summary_gameover
+                        : R.string.finalscores_title;
+                    
+                    String text = XwJNI.server_writeFinalScores( m_jniGamePtr );
+                    Message.obtain( m_handler, GAME_OVER, titleID, 0, text )
+                        .sendToTarget();
                 }
                 break;
 

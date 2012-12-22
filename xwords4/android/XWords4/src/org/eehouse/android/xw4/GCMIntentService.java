@@ -28,6 +28,11 @@ import com.google.android.gcm.GCMRegistrar;
 
 public class GCMIntentService extends GCMBaseIntentService {
 
+    public GCMIntentService()
+    {
+        super( GCMConsts.SENDER_ID );
+    }
+
 	@Override
     protected void onError( Context context, String error ) 
     {
@@ -37,12 +42,12 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onRegistered( Context context, String regId ) 
     {
-        DbgUtils.logf("GCMIntentService.onRegistered(%s)", regId );
+        DbgUtils.logf( "GCMIntentService.onRegistered(%s)", regId );
         XWPrefs.setGCMDevID( context, regId );
     }
 
     @Override
-        protected void onUnregistered( Context context, String regId ) 
+    protected void onUnregistered( Context context, String regId ) 
     {
         DbgUtils.logf( "GCMIntentService.onUnregistered(%s)", regId );
         XWPrefs.clearGCMDevID( context );
@@ -51,44 +56,43 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onMessage( Context context, Intent intent ) 
     {
-        DbgUtils.logf( "GCMIntentService.onMessage(%s)", intent.toString() );
-        boolean doRestartTimer = true; // keep a few days...
-        String value = intent.getStringExtra( "msg" );
-        if ( null != value ) {
-            doRestartTimer = false; // expected key means new format
-
-            String title = intent.getStringExtra( "title" );
-            Utils.postNotification( context, null, title, value, 100000 );
-        }
+        String value;
 
         value = intent.getStringExtra( "getMoves" );
         if ( null != value && Boolean.parseBoolean( value ) ) {
-            doRestartTimer = true;
+            RelayReceiver.RestartTimer( context, true );
+        }
+        value = intent.getStringExtra( "checkUpdates" );
+        if ( null != value && Boolean.parseBoolean( value ) ) {
+            UpdateCheckReceiver.checkVersions( context, true );
         }
 
-        if ( doRestartTimer ) {
-            RelayReceiver.RestartTimer( context, true );
+        value = intent.getStringExtra( "msg" );
+        if ( null != value ) {
+            String title = intent.getStringExtra( "title" );
+            if ( null != title ) {
+                int code = value.hashCode() ^ title.hashCode();
+                Utils.postNotification( context, null, title, value, code );
+            }
         }
     }
 
     public static void init( Application app )
     {
         int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
-        if ( 8 <= sdkVersion ) {
+        if ( 8 <= sdkVersion && 0 < GCMConsts.SENDER_ID.length() ) {
             try {
                 GCMRegistrar.checkDevice( app );
                 // GCMRegistrar.checkManifest( app );
-                final String regId = GCMRegistrar.getRegistrationId( app );
+                String regId = XWPrefs.getGCMDevID( app );
                 if (regId.equals("")) {
                     GCMRegistrar.register( app, GCMConsts.SENDER_ID );
                 }
-
-                String curID = XWPrefs.getGCMDevID( app );
-                if ( ! curID.equals( regId ) ) {
-                    XWPrefs.setGCMDevID( app, regId );
-                }
             } catch ( UnsupportedOperationException uoe ) {
                 DbgUtils.logf( "Device can't do GCM." );
+            } catch ( Exception whatever ) {
+                // funky devices could do anything
+                DbgUtils.loge( whatever );
             }
         }
     }

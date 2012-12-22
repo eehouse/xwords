@@ -60,6 +60,8 @@ XP_UCHAR* strFromStream( XWStreamCtxt* stream );
 
 void catGameHistory( CommonGlobals* cGlobals );
 void catOnClose( XWStreamCtxt* stream, void* closure );
+void sendOnClose( XWStreamCtxt* stream, void* closure );
+
 void catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter );
 XP_Bool file_exists( const char* fileName );
 XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name, 

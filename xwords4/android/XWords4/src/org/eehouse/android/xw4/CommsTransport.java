@@ -233,23 +233,21 @@ public class CommsTransport implements TransportProcs,
 
     public void tickle( CommsConnType connType )
     {
-        m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, true );
-        // CommsAddrRec addr = new CommsAddrRec( m_context );
-        // XwJNI.comms_getAddr( m_jniGamePtr, addr );
-        // switch( addr.conType ) {
-        // case COMMS_CONN_RELAY:
-        //     // do nothing
-        //     break;
-        // case COMMS_CONN_BT:
-        //     // Let other know I'm here
-        //     m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
-        //     break;
-        // case COMMS_CONN_SMS:
-        // default:
-        //     DbgUtils.logf( "tickle: unexpected type %s", 
-        //                    addr.conType.toString() );
-        //     Assert.fail();
-        // }
+        switch( connType ) {
+        case COMMS_CONN_RELAY:
+            // do nothing
+            // break;     // Try skipping the resend -- later
+        case COMMS_CONN_BT:
+        case COMMS_CONN_SMS:
+            // Let other know I'm here
+            DbgUtils.logf( "tickle calling comms_resendAll" );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
+            break;
+        default:
+            DbgUtils.logf( "tickle: unexpected type %s", 
+                           connType.toString() );
+            Assert.fail();
+        }
     }
 
     private synchronized void putOut( final byte[] buf )

@@ -21,26 +21,13 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import android.os.Handler;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import javax.net.SocketFactory;
 
 public class NetUtils {
-
-    private static final int MAX_SEND = 1024;
-    private static final int MAX_BUF = MAX_SEND - 2;
 
     public static final byte PROTOCOL_VERSION = 0;
     // from xwrelay.h
@@ -49,10 +36,6 @@ public class NetUtils {
     public static byte PRX_DEVICE_GONE = 3;
     public static byte PRX_GET_MSGS = 4;
     public static byte PRX_PUT_MSGS = 5;
-
-    public interface DownloadFinishedListener {
-        void downloadFinished( String name, boolean success );
-    }
 
     public static Socket makeProxySocket( Context context, 
                                           int timeoutMillis )
@@ -140,8 +123,7 @@ public class NetUtils {
         }
     }
 
-    public static byte[][][] queryRelay( Context context, String[] ids,
-                                         int nBytes )
+    public static byte[][][] queryRelay( Context context, String[] ids )
     {
         byte[][][] msgs = null;
         try {
@@ -151,6 +133,7 @@ public class NetUtils {
                     new DataOutputStream( socket.getOutputStream() );
 
                 // total packet size
+                int nBytes = sumStrings( ids );
                 outStream.writeShort( 2 + nBytes + ids.length + 1 );
 
                 outStream.writeByte( NetUtils.PROTOCOL_VERSION );
@@ -204,132 +187,15 @@ public class NetUtils {
         return msgs;
     } // queryRelay
 
-    public static void sendToRelay( Context context,
-                                    HashMap<String,ArrayList<byte[]>> msgHash )
+    private static int sumStrings( final String[] strs )
     {
-        // format: total msg lenth: 2
-        //         number-of-relayIDs: 2
-        //         for-each-relayid: relayid + '\n': varies
-        //                           message count: 1
-        //                           for-each-message: length: 2
-        //                                             message: varies
-
-        if ( null != msgHash ) {
-            try {
-                // Build up a buffer containing everything but the total
-                // message length and number of relayIDs in the message.
-                ByteArrayOutputStream store = 
-                    new ByteArrayOutputStream( MAX_BUF ); // mem
-                DataOutputStream outBuf = new DataOutputStream( store );
-                int msgLen = 4;          // relayID count + protocol stuff
-                int nRelayIDs = 0;
-        
-                Iterator<String> iter = msgHash.keySet().iterator();
-                while ( iter.hasNext() ) {
-                    String relayID = iter.next();
-                    int thisLen = 1 + relayID.length(); // string and '\n'
-                    thisLen += 2;                        // message count
-
-                    ArrayList<byte[]> msgs = msgHash.get( relayID );
-                    for ( byte[] msg : msgs ) {
-                        thisLen += 2 + msg.length;
-                    }
-
-                    if ( msgLen + thisLen > MAX_BUF ) {
-                        // Need to deal with this case by sending multiple
-                        // packets.  It WILL happen.
-                        break;
-                    }
-                    // got space; now write it
-                    ++nRelayIDs;
-                    outBuf.writeBytes( relayID );
-                    outBuf.write( '\n' );
-                    outBuf.writeShort( msgs.size() );
-                    for ( byte[] msg : msgs ) {
-                        outBuf.writeShort( msg.length );
-                        outBuf.write( msg );
-                    }
-                    msgLen += thisLen;
-                }
-
-                // Now open a real socket, write size and proto, and
-                // copy in the formatted buffer
-                Socket socket = makeProxySocket( context, 8000 );
-                if ( null != socket ) {
-                    DataOutputStream outStream = 
-                        new DataOutputStream( socket.getOutputStream() );
-                    outStream.writeShort( msgLen );
-                    outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-                    outStream.writeByte( NetUtils.PRX_PUT_MSGS );
-                    outStream.writeShort( nRelayIDs );
-                    outStream.write( store.toByteArray() );
-                    outStream.flush();
-                    socket.close();
-                }
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+        int len = 0;
+        if ( null != strs ) {
+            for ( String str : strs ) {
+                len += str.length();
             }
-        } else {
-            DbgUtils.logf( "sendToRelay: null msgs" );
         }
-    } // sendToRelay
-
-    static void downloadDictInBack( Context context, int lang, String name,
-                                    DownloadFinishedListener lstnr )
-    {
-        DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( context );
-        downloadDictInBack( context, lang, name, loc, lstnr );
-    }
-
-    static void downloadDictInBack( Context context, int lang, String name,
-                                    DictUtils.DictLoc loc,
-                                    DownloadFinishedListener lstnr )
-    {
-        String url = Utils.makeDictUrl( context, lang, name );
-        downloadDictInBack( context, url, loc, lstnr );
-    }
-
-    static void downloadDictInBack( final Context context, final String urlStr,
-                                    final DictUtils.DictLoc loc,
-                                    final DownloadFinishedListener lstnr )
-    {
-        String tmp = Utils.dictFromURL( context, urlStr );
-        final String name = DictUtils.removeDictExtn( tmp );
-        String msg = context.getString( R.string.downloadingf, name );
-        final StatusNotifier sno = 
-            new StatusNotifier( context, msg, R.string.download_done );
-
-        new Thread( new Runnable() {
-                public void run() {
-                    boolean success = false;
-                    HttpURLConnection urlConn = null;
-                    try {
-                        URL url = new URL( urlStr );
-                        urlConn = (HttpURLConnection)url.openConnection();
-                        InputStream in = new
-                            BufferedInputStream( urlConn.getInputStream(), 
-                                                 1024*8 );
-                        success = DictUtils.saveDict( context, in, 
-                                                      name, loc );
-                        DbgUtils.logf( "saveDict returned %b", success );
-
-                    } catch ( java.net.MalformedURLException mue ) {
-                        DbgUtils.loge( mue );
-                    } catch ( java.io.IOException ioe ) {
-                        DbgUtils.loge( ioe );
-                    } finally {
-                        if ( null != urlConn ) {
-                            urlConn.disconnect();
-                        }
-                    }
-
-                    sno.close();
-                    DictLangCache.inval( context, name, loc, true );
-                    if ( null != lstnr ) {
-                        lstnr.downloadFinished( name, success );
-                    }
-                }
-            } ).start();
+        return len;
     }
 
 }

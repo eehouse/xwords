@@ -251,7 +251,7 @@ public class DlgDelegate {
 
     public void doSyncMenuitem()
     {
-        if ( null == DBUtils.getRelayIDs( m_activity, false ) ) {
+        if ( null == DBUtils.getRelayIDs( m_activity, null ) ) {
             showOKOnlyDialog( R.string.no_games_to_refresh );
         } else {
             RelayReceiver.RestartTimer( m_activity, true );

@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -55,7 +55,9 @@ typedef struct MsgQueueElem {
     XP_U8* msg;
     XP_U16 len;
     XP_PlayerAddr channelNo;
+#ifdef DEBUG
     XP_U16 sendCount;           /* how many times sent? */
+#endif
     MsgID msgID;                /* saved for ease of deletion */
 #ifdef COMMS_CHECKSUM
     gchar* checksum;
@@ -108,6 +110,9 @@ struct CommsCtxt {
     XP_U16 queueLen;
     XP_U16 channelSeed;         /* tries to be unique per device to aid
                                    dupe elimination at start */
+    XP_U32 nextResend;
+    XP_U16 resendBackoff;
+
 #ifdef COMMS_HEARTBEAT
     XP_Bool doHeartbeat;
     XP_U32 lastMsgRcvdTime;
@@ -572,6 +577,10 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         comms->channelSeed = stream_getU16( stream );
         XP_LOGF( "%s: loaded seed: %.4X", __func__, comms->channelSeed );
     }
+    if ( STREAM_VERS_COMMSBACKOFF <= version ) {
+        comms->resendBackoff = stream_getU16( stream );
+        comms->nextResend = stream_getU32( stream );
+    }
     if ( addr.conType == COMMS_CONN_RELAY ) {
         comms->r.myHostID = stream_getU8( stream );
         stringFromStreamHere( stream, comms->r.connName, 
@@ -607,7 +616,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
         msg->channelNo = stream_getU16( stream );
         msg->msgID = stream_getU32( stream );
-#ifdef COMMS_HEARTBEAT
+#ifdef DEBUG
         msg->sendCount = 0;
 #endif
         msg->len = stream_getU16( stream );
@@ -672,7 +681,7 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
     case COMMS_CONN_IP_DIRECT:
         /* This will only work on host side when there's a single guest! */
         (void)send_via_bt_or_ip( comms, BTIPMSG_RESET, CHANNEL_NONE, NULL, 0 );
-        (void)comms_resendAll( comms );
+        (void)comms_resendAll( comms, XP_FALSE );
         break;
 #endif
     default:
@@ -743,6 +752,8 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     stream_putU32( stream, comms->connID );
     stream_putU16( stream, comms->nextChannelNo );
     stream_putU16( stream, comms->channelSeed );
+    stream_putU16( stream, comms->resendBackoff );
+    stream_putU32( stream, comms->nextResend );
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         stream_putU8( stream, comms->r.myHostID );
         stringToStream( stream, comms->r.connName );
@@ -779,15 +790,25 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     comms->lastSaveToken = saveToken;
 } /* comms_writeToStream */
 
+static void
+resetBackoff( CommsCtxt* comms )
+{
+    XP_LOGF( "%s: resetting backoff", __func__ );
+    comms->resendBackoff = 0;
+    comms->nextResend = 0;
+}
+
 void
 comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken )
 {
     XP_LOGF( "%s(saveToken=%d)", __func__, saveToken );
     XP_ASSERT( !!comms );
     if ( saveToken == comms->lastSaveToken ) {
-        XP_LOGF( "%s: lastSave matches", __func__ );
         AddressRecord* rec;
         for ( rec = comms->recs; !!rec; rec = rec->next ) {
+            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved (%ld) to "
+                     "lastMsgRcd (%ld)", __func__, rec->lastMsgSaved, 
+                     rec->lastMsgRcd );
             rec->lastMsgSaved = rec->lastMsgRcd;
         }
 #ifdef XWFEATURE_COMMSACK
@@ -942,7 +963,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
                                            sizeof( *newMsgElem ) );
     newMsgElem->channelNo = channelNo;
     newMsgElem->msgID = msgID;
-#ifdef COMMS_HEARTBEAT
+#ifdef DEBUG
     newMsgElem->sendCount = 0;
 #endif
 
@@ -996,24 +1017,28 @@ comms_getChannelSeed( CommsCtxt* comms )
 XP_S16
 comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
 {
-    XP_PlayerAddr channelNo = stream_getAddress( stream );
-    XP_LOGF( "%s: channelNo=%x", __func__, channelNo );
-    AddressRecord* rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
-    MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
-    MsgQueueElem* elem;
     XP_S16 result = -1;
+    if ( 0 == stream_getSize(stream) ) {
+        XP_LOGF( "%s: dropping 0-len message", __func__ );
+    } else {
+        XP_PlayerAddr channelNo = stream_getAddress( stream );
+        XP_LOGF( "%s: channelNo=%x", __func__, channelNo );
+        AddressRecord* rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
+        MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
+        MsgQueueElem* elem;
 
-    if ( 0 == channelNo ) {
-        channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
-    }
+        if ( 0 == channelNo ) {
+            channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
+        }
 
-    XP_DEBUGF( "%s: assigning msgID=" XP_LD " on chnl %x", __func__, 
-               msgID, channelNo );
+        XP_DEBUGF( "%s: assigning msgID=" XP_LD " on chnl %x", __func__, 
+                   msgID, channelNo );
 
-    elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
-    if ( NULL != elem ) {
-        addToQueue( comms, elem );
-        result = sendMsg( comms, elem );
+        elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
+        if ( NULL != elem ) {
+            addToQueue( comms, elem );
+            result = sendMsg( comms, elem );
+        }
     }
     return result;
 } /* comms_send */
@@ -1037,9 +1062,10 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
         XP_ASSERT( comms->queueLen > 0 );
     }
     ++comms->queueLen;
-    XP_LOGF( "%s: queueLen now %d after channelNo: %d; msgID: " XP_LD,
-             __func__, comms->queueLen,
-             newMsgElem->channelNo & CHANNEL_MASK, newMsgElem->msgID );
+    XP_LOGF( "%s: queueLen now %d after channelNo: %d; msgID: " XP_LD 
+             "; len: %d", __func__, comms->queueLen,
+             newMsgElem->channelNo & CHANNEL_MASK, newMsgElem->msgID, 
+             newMsgElem->len );
 } /* addToQueue */
 
 #ifdef DEBUG
@@ -1207,8 +1233,11 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     }
     
     if ( result == elem->len ) {
+#ifdef DEBUG
         ++elem->sendCount;
-        XP_LOGF( "%s: elem's sendCount now %d", __func__, elem->sendCount );
+#endif
+        XP_LOGF( "%s: elem's sendCount since load: %d", __func__, 
+                 elem->sendCount );
     }
 
     XP_LOGF( "%s(channelNo=%d;msgID=" XP_LD ")=>%d", __func__, 
@@ -1224,17 +1253,32 @@ send_ack( CommsCtxt* comms )
 }
 
 XP_Bool
-comms_resendAll( CommsCtxt* comms )
+comms_resendAll( CommsCtxt* comms, XP_Bool force )
 {
     XP_Bool success = XP_TRUE;
-    MsgQueueElem* msg;
-
     XP_ASSERT( !!comms );
 
-    for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
-        if ( 0 > sendMsg( comms, msg ) ) {
-            success = XP_FALSE;
-            break;
+    XP_U32 now = util_getCurSeconds( comms->util );
+    if ( !force && (now < comms->nextResend) ) {
+        XP_LOGF( "%s: aborting: %ld seconds left in backoff", __func__, 
+                 comms->nextResend - now );
+        success = XP_FALSE;
+
+    } else if ( !!comms->msgQueueHead ) {
+        MsgQueueElem* msg;
+
+        for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
+            if ( 0 > sendMsg( comms, msg ) ) {
+                success = XP_FALSE;
+                break;
+            }
+        }
+
+        /* Now set resend values */
+        if ( success && !force ) {
+            comms->resendBackoff = 2 * (1 + comms->resendBackoff);
+            XP_LOGF( "%s: backoff now %d", __func__, comms->resendBackoff );
+            comms->nextResend = now + comms->resendBackoff;
         }
     }
     return success;
@@ -1244,14 +1288,25 @@ comms_resendAll( CommsCtxt* comms )
 void
 comms_ackAny( CommsCtxt* comms )
 {
+#ifdef DEBUG
+    XP_Bool noneSent = XP_TRUE;
+#endif 
     AddressRecord* rec;
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
-            XP_LOGF( "%s: %ld < %ld: rec needs ack", __func__,
-                     rec->lastMsgAckd, rec->lastMsgRcd );
+#ifdef DEBUG
+            noneSent = XP_FALSE;
+#endif 
+            XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
+                     rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
             sendEmptyMsg( comms, rec );
         }
     }
+#ifdef DEBUG
+    if ( noneSent ) {
+        XP_LOGF( "%s: nothing to send", __func__ );
+    }
+#endif 
 }
 #endif
 
@@ -1331,12 +1386,14 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
 #endif
 
 #ifdef XWFEATURE_DEVID
-    if ( !reconnected ) {
-        XP_UCHAR devID[MAX_DEVID_LEN + 1];
+    DevIDType typ = stream_getU8( stream );
+    XP_UCHAR devID[MAX_DEVID_LEN + 1] = {0};
+    if ( ID_TYPE_NONE != typ ) {
         stringFromStreamHere( stream, devID, sizeof(devID) );
-        if ( devID[0] != '\0' ) {
-            util_deviceRegistered( comms->util, devID );
-        }
+    }
+    if ( ID_TYPE_NONE == typ    /* error case */
+         || '\0' != devID[0] ) /* new info case */ {
+        util_deviceRegistered( comms->util, typ, devID );
     }
 #endif
 
@@ -1366,7 +1423,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         break;
     case XWRELAY_RECONNECT_RESP:
         got_connect_cmd( comms, stream, XP_TRUE );
-        comms_resendAll( comms );
+        comms_resendAll( comms, XP_FALSE );
         break;
 
     case XWRELAY_ALLHERE:
@@ -1404,7 +1461,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
            on RECONNECTED, so removing the test for now to fix recon
            problems on android. */
         /* if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) { */
-        comms_resendAll( comms );
+        comms_resendAll( comms, XP_FALSE );
         /* } */
         if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
             (*comms->procs.rconnd)( comms->procs.closure, 
@@ -1513,7 +1570,7 @@ btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
     if ( consumed ) {
         /* This  is all there is so far */
         if ( typ == BTIPMSG_RESET ) {
-            (void)comms_resendAll( comms );
+            (void)comms_resendAll( comms, XP_FALSE );
         } else if ( typ == BTIPMSG_HB ) {
 /*             noteHBReceived( comms, addr ); */
         } else {
@@ -1681,6 +1738,7 @@ validateInitialMessage( CommsCtxt* comms,
         rec = getRecordFor( comms, addr, *channelNo, XP_TRUE );
         if ( !!rec ) {
             /* reject: we've already seen init message on channel */
+            XP_LOGF( "%s: rejecting duplicate INIT message", __func__ );
             rec = NULL;
         } else {
             if ( comms->isServer ) {
@@ -1779,6 +1837,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
                 stream_setAddress( stream, channelNo );
                 messageValid = payloadSize > 0;
+                resetBackoff( comms );
             }
         } else {
             XP_LOGF( "%s: message too small", __func__ );
@@ -1843,7 +1902,7 @@ sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec )
                                          0 /*rec? rec->lastMsgRcd : 0*/,
                                          rec, 
                                          rec? rec->channelNo : 0, NULL );
-    sendMsg( comms, elem );
+    (void)sendMsg( comms, elem );
     freeElem( comms, elem );
 } /* sendEmptyMsg */
 #endif
@@ -2157,6 +2216,7 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
             stringToStream( stream, comms->r.connName );
+            putDevID( comms, stream );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
 
@@ -2240,7 +2300,7 @@ sendNoConn( CommsCtxt* comms, const MsgQueueElem* elem, XWHostID destID )
         }
     }
 
-    LOG_RETURNF( "%d", success );
+    LOG_RETURNF( "%s", success?"TRUE":"FALSE" );
     return success;
 }
 

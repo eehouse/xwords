@@ -92,7 +92,7 @@ public class GameConfig extends XWActivity
     private boolean m_forResult;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
-    private GameUtils.GameLock m_gameLock;
+    private GameLock m_gameLock;
     private int m_whichPlayer;
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
@@ -473,7 +473,7 @@ public class GameConfig extends XWActivity
 
             // Lock in case we're going to config.  We *could* re-get the
             // lock once the user decides to make changes.  PENDING.
-            m_gameLock = new GameUtils.GameLock( m_rowid, true ).lock();
+            m_gameLock = new GameLock( m_rowid, true ).lock();
             int gamePtr = GameUtils.loadMakeGame( this, m_giOrig, m_gameLock );
             if ( 0 == gamePtr ) {
                 showDictGoneFinish();

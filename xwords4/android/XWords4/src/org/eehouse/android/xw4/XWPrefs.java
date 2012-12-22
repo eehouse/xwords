@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import com.google.android.gcm.GCMRegistrar;
 import java.util.ArrayList;
 import java.util.ArrayList;
 
@@ -42,11 +43,6 @@ public class XWPrefs {
     public static String getDefaultRelayHost( Context context )
     {
         return getPrefsString( context, R.string.key_relay_host );
-    }
-
-    public static String getDefaultRedirHost( Context context )
-    {
-        return getPrefsString( context, R.string.key_redir_host );
     }
 
     public static int getDefaultRelayPort( Context context )
@@ -87,6 +83,11 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_ringer_zoom, false );
     }
 
+    public static boolean getSquareTiles( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_square_tiles, false );
+    }
+
     public static int getDefaultPlayerMinutes( Context context )
     {
         String value = 
@@ -112,6 +113,24 @@ public class XWPrefs {
         return result;
     }
 
+    public static int getPrefsInt( Context context, int keyID, int defaultValue )
+    {
+        String key = context.getString( keyID );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        return sp.getInt( key, defaultValue );
+    }
+
+    public static void setPrefsInt( Context context, int keyID, int newValue )
+    {
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        SharedPreferences.Editor editor = sp.edit();
+        String key = context.getString( keyID );
+        editor.putInt( key, newValue );
+        editor.commit();
+    }
+
     public static boolean getPrefsBoolean( Context context, int keyID,
                                            boolean defaultValue )
     {
@@ -129,6 +148,25 @@ public class XWPrefs {
         SharedPreferences.Editor editor = sp.edit();
         String key = context.getString( keyID );
         editor.putBoolean( key, newValue );
+        editor.commit();
+    }
+
+    public static long getPrefsLong( Context context, int keyID,
+                                     long defaultValue )
+    {
+        String key = context.getString( keyID );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        return sp.getLong( key, defaultValue );
+    }
+
+    public static void setPrefsLong( Context context, int keyID, long newVal )
+    {
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        SharedPreferences.Editor editor = sp.edit();
+        String key = context.getString( keyID );
+        editor.putLong( key, newVal );
         editor.commit();
     }
 
@@ -186,17 +224,27 @@ public class XWPrefs {
 
     public static void setGCMDevID( Context context, String devID )
     {
-        setPrefsString( context, R.string.key_gcm_regid, devID );
+        int curVers = Utils.getAppVersion( context );
+        setPrefsInt( context, R.string.key_gcmvers_regid, curVers );
+        clearPrefsKey( context, R.string.key_relay_regid );
     }
 
     public static String getGCMDevID( Context context )
     {
-        return getPrefsString( context, R.string.key_gcm_regid );
+        int curVers = Utils.getAppVersion( context );
+        int storedVers = getPrefsInt( context, R.string.key_gcmvers_regid, 0 );
+        String result;
+        if ( 0 != storedVers && storedVers < curVers ) {
+            result = "";        // Don't trust what registrar has
+        } else {
+            result = GCMRegistrar.getRegistrationId( context );
+        }
+        return result;
     }
 
     public static void clearGCMDevID( Context context )
     {
-        clearPrefsKey( context, R.string.key_gcm_regid );
+        clearRelayDevID( context );
     }
 
     public static String getRelayDevID( Context context )
@@ -211,6 +259,11 @@ public class XWPrefs {
     public static void setRelayDevID( Context context, String idRelay )
     {
         setPrefsString( context, R.string.key_relay_regid, idRelay );
+    }
+
+    public static void clearRelayDevID( Context context )
+    {
+        clearPrefsKey( context, R.string.key_relay_regid );
     }
 
     public static boolean getHaveCheckedSMS( Context context )
@@ -239,6 +292,17 @@ public class XWPrefs {
     public static boolean getDefaultLocInternal( Context context )
     {
         return getPrefsBoolean( context, R.string.key_default_loc, true );
+    }
+
+    public static long getDefaultNewGameGroup( Context context )
+    {
+        return getPrefsLong( context, R.string.key_default_group,
+                             DBUtils.ROWID_NOTFOUND );
+    }
+
+    public static void setDefaultNewGameGroup( Context context, long val )
+    {
+        setPrefsLong( context, R.string.key_default_group, val );
     }
 
     protected static String getPrefsString( Context context, int keyID )

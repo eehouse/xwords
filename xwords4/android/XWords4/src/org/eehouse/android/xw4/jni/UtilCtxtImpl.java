@@ -94,21 +94,37 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "setIsServer" );
     }
 
-    public String getDevID( /*out*/ byte[] typ )
+    public String getDevID( /*out*/ byte[] typa )
     {
+        byte typ = UtilCtxt.ID_TYPE_NONE;
         String result = XWPrefs.getRelayDevID( m_context );
         if ( null != result ) {
-            typ[0] = UtilCtxt.ID_TYPE_RELAY;
+            typ = UtilCtxt.ID_TYPE_RELAY;
         } else {
             result = XWPrefs.getGCMDevID( m_context );
-            typ[0] = UtilCtxt.ID_TYPE_ANDROID_GCM;
+            if ( result.equals("") ) {
+                result = null;
+            } else {
+                typ = UtilCtxt.ID_TYPE_ANDROID_GCM;
+            }
         }
+        typa[0] = typ;
         return result;
     }
 
-    public void deviceRegistered( String idRelay )
+    public void deviceRegistered( int devIDType, String idRelay )
     {
-        XWPrefs.setRelayDevID( m_context, idRelay );
+        switch ( devIDType ) {
+        case UtilCtxt.ID_TYPE_RELAY:
+            XWPrefs.setRelayDevID( m_context, idRelay );
+            break;
+        case UtilCtxt.ID_TYPE_NONE:
+            XWPrefs.clearRelayDevID( m_context );
+            break;
+        default:
+            Assert.fail();
+            break;
+        }
     }
 
     public void bonusSquareHeld( int bonus )

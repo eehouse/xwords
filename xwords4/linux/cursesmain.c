@@ -474,6 +474,7 @@ onetime_idle( gpointer data )
         if ( !!globals->cGlobals.game.board ) {
             board_draw( globals->cGlobals.game.board );
         }
+        saveGame( &globals->cGlobals );
     }
     return FALSE;
 }
@@ -579,7 +580,7 @@ static XP_Bool
 handleResend( CursesAppGlobals* globals )
 {
     if ( !!globals->cGlobals.game.comms ) {
-        comms_resendAll( globals->cGlobals.game.comms );
+        comms_resendAll( globals->cGlobals.game.comms, XP_TRUE );
     }
     return XP_TRUE;
 }
@@ -1219,7 +1220,7 @@ static XP_Bool
 blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 {
     XP_Bool result = XP_FALSE;
-    int numEvents;
+    int numEvents, ii;
     short fdIndex;
     XP_Bool redraw = XP_FALSE;
 
@@ -1334,12 +1335,15 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
             }
         }
 
-        redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw;
+        for ( ii = 0; ii < 5; ++ii ) {
+            redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw;
+        }
         if ( redraw ) {
             /* messages change a lot */
             board_invalAll( globals->cGlobals.game.board );
             board_draw( globals->cGlobals.game.board );
         }
+        saveGame( globals->cGlobals );
     }
     return result;
 } /* blocking_gotEvent */
@@ -1486,25 +1490,15 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-static void
-cursesSendOnClose( XWStreamCtxt* stream, void* closure )
-{
-    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
-
-    XP_LOGF( "cursesSendOnClose called" );
-    (void)comms_send( globals->cGlobals.game.comms, stream );
-} /* cursesSendOnClose */
-
 static XWStreamCtxt*
 curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     LaunchParams* params = globals->cGlobals.params;
 
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool)
-                                            params->vtMgr,
-                                            uc->closure, channelNo,
-                                            cursesSendOnClose );
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool) params->vtMgr,
+                                            &globals->cGlobals, channelNo,
+                                            sendOnClose );
     return stream;
 } /* curses_util_makeStreamFromAddr */
 #endif
@@ -1543,17 +1537,6 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 
     util->closure = globals;
 } /* setupCursesUtilCallbacks */
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-static void
-sendOnClose( XWStreamCtxt* stream, void* closure )
-{
-    CursesAppGlobals* globals = closure;
-    XP_LOGF( "curses sendOnClose called" );
-    XP_ASSERT( !!globals->cGlobals.game.comms );
-    comms_send( globals->cGlobals.game.comms, stream );
-} /* sendOnClose */
-#endif
 
 static CursesMenuHandler
 getHandlerForKey( const MenuList* list, char ch )
@@ -1871,7 +1854,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                 server_initClientConnection( g_globals.cGlobals.game.server, 
                                              mem_stream_make( MEMPOOL
                                                               params->vtMgr,
-                                                              &g_globals,
+                                                              &g_globals.cGlobals,
                                                               (XP_PlayerAddr)0,
                                                               sendOnClose ) );
             } else {

@@ -197,6 +197,14 @@ catOnClose( XWStreamCtxt* stream, void* XP_UNUSED(closure) )
 } /* catOnClose */
 
 void
+sendOnClose( XWStreamCtxt* stream, void* closure )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)closure;
+    XP_LOGF( "%s called with msg of len %d", __func__, stream_getSize(stream) );
+    (void)comms_send( cGlobals->game.comms, stream );
+}
+
+void
 catGameHistory( CommonGlobals* cGlobals )
 {
     if ( !!cGlobals->game.model ) {
@@ -1593,9 +1601,6 @@ main( int argc, char** argv )
     mainParams.allowPeek = XP_TRUE;
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
-#ifdef XWFEATURE_DEVID
-    mainParams.devID = "";
-#endif
 
     char* envDictPath = getenv( "XW_DICTSPATH" );
     if ( !!envDictPath ) {

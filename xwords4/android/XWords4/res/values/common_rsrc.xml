@@ -6,6 +6,7 @@
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
   <string name="key_show_arrow">key_show_arrow</string>
+  <string name="key_square_tiles">key_square_tiles</string>
   <string name="key_explain_robot">key_explain_robot</string>
   <string name="key_skip_confirm">key_skip_confirm</string>
   <string name="key_sort_tiles">key_sort_tiles</string>
@@ -30,7 +31,6 @@
   <string name="key_clr_bonushint">key_clr_bonushint</string>
 
   <string name="key_relay_host">key_relay_host</string>
-  <string name="key_redir_host">key_redir_host</string>
   <string name="key_relay_port">key_relay_port2</string>
   <string name="key_update_url">key_update_url</string>
   <string name="key_update_prerel">key_update_prerel</string>
@@ -68,9 +68,10 @@
   <string name="key_sms_phones">key_sms_phones</string>
   <string name="key_connstat_data">key_connstat_data</string>
   <string name="key_dev_id">key_dev_id</string>
-  <string name="key_gcm_regid">key_gcm_regid</string>
+  <string name="key_gcmvers_regid">key_gcmvers_regid</string>
   <string name="key_relay_regid">key_relay_regid</string>
   <string name="key_checked_sms">key_checked_sms</string>
+  <string name="key_default_group">key_default_group</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
@@ -102,9 +103,12 @@
   <!-- other -->
   <string name="default_host">eehouse.org</string>
 
-  <!-- <string name="default_host">10.0.2.2</string> -->
+  <string name="invite_host">eehouse.org</string>
+  <string name="invite_prefix">/and/</string>
+  <string name="invite_mime">application/x-xwordsinvite</string>
+  <!--string name="invite_mime">text/plain</string-->
+
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
-  <string name="game_url_pathf">//%1$s/newgame.php</string>
   <string name="expl_update_url">Update checks URL</string>
   <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
 
