@@ -27,10 +27,6 @@
           android:icon="@android:drawable/ic_menu_send"
           />
 
-    <item android:id="@+id/gamel_menu_delete_all"
-          android:title="@string/gamel_menu_delete_all"
-          android:icon="@android:drawable/ic_menu_delete"
-          />
     <item android:id="@+id/gamel_menu_checkmoves"
           android:title="@string/gamel_menu_checkmoves"
           android:icon="@drawable/stat_notify_sync"

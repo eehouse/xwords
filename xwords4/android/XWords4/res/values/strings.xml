@@ -185,12 +185,6 @@
       game? Resetting erases all moves and any connection
       information.</string>
 
-    <!-- Text of confirmation dialog posted when gamel_menu_delete_all
-         button is pressed -->
-    <string name="confirm_delete_all">Are you sure you want to delete
-      all games?</string>
-
-
     <!--
        ############################################################
        # :Screens:
