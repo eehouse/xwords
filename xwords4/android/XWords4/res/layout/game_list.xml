@@ -4,8 +4,8 @@
               android:orientation="vertical"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
-              android:paddingLeft="8dp"
-              android:paddingRight="8dp">
+              android:paddingLeft="4dp"
+              android:paddingRight="4dp">
 
   <LinearLayout android:id="@+id/empty_games_list"
                 android:orientation="vertical"

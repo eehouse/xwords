@@ -12,6 +12,7 @@
      android:focusable="true"
      android:clickable="true"
      android:background="@android:drawable/list_selector_background"
+     android:paddingLeft="12dp"
      >
 
     <TextView android:id="@+id/view_unloaded"
