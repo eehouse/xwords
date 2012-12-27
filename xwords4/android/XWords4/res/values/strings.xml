@@ -2130,9 +2130,11 @@
 
     <string name="newgroup_label">Name your new group:</string>
 
-    <string name="list_group_delete">Delete group</string>
-    <string name="list_group_rename">Rename group</string>
+    <string name="list_group_delete">Delete</string>
+    <string name="list_group_rename">Rename</string>
     <string name="list_group_default">Put new games here</string>
+    <string name="list_group_moveup">Move up</string>
+    <string name="list_group_movedown">Move down</string>
 
     <string name="group_cur_games">My games</string>
     <string name="group_new_games">New games</string>

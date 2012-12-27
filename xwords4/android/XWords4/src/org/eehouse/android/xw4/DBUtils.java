@@ -869,19 +869,19 @@ public class DBUtils {
 
     // Groups stuff
     public static class GameGroupInfo {
-        public long m_id;
+        public String m_name;
         public boolean m_expanded;
         public long m_lastMoveTime;
         public boolean m_hasTurn;
         public boolean m_turnLocal;
 
-        public GameGroupInfo( long id, boolean expanded ) {
-            m_id = id; m_expanded = expanded;
+        public GameGroupInfo( String name, boolean expanded ) {
+            m_name = name; m_expanded = expanded;
             m_lastMoveTime = 0;
         }
     }
 
-    private static HashMap<String,GameGroupInfo> s_groupsCache = null;
+    private static HashMap<Long,GameGroupInfo> s_groupsCache = null;
 
     private static void invalGroupsCache() 
     {
@@ -890,11 +890,11 @@ public class DBUtils {
 
     // Return map of string (group name) to info about all games in
     // that group.
-    public static HashMap<String,GameGroupInfo> getGroups( Context context )
+    public static HashMap<Long,GameGroupInfo> getGroups( Context context )
     {
         if ( null == s_groupsCache ) {
-            HashMap<String,GameGroupInfo> result = 
-                new HashMap<String,GameGroupInfo>();
+            HashMap<Long,GameGroupInfo> result = 
+                new HashMap<Long,GameGroupInfo>();
             initDB( context );
             String[] columns = { ROW_ID, DBHelper.GROUPNAME, 
                                  DBHelper.EXPANDED };
@@ -916,14 +916,15 @@ public class DBUtils {
                     long id = cursor.getLong( idIndex );
                     Assert.assertNotNull( name );
                     boolean expanded = 0 != cursor.getInt( expandedIndex );
-                    result.put( name, new GameGroupInfo( id, expanded ) );
+                    result.put( id, new GameGroupInfo( name, expanded ) );
                 }
                 cursor.close();
 
-                Iterator<GameGroupInfo> iter = result.values().iterator();
+                Iterator<Long> iter = result.keySet().iterator();
                 while ( iter.hasNext() ) {
-                    GameGroupInfo ggi = iter.next();
-                    readTurnInfo( db, ggi );
+                    Long id = iter.next();
+                    GameGroupInfo ggi = result.get( id );
+                    readTurnInfo( db, id, ggi );
                 }
 
                 db.close();
@@ -933,12 +934,13 @@ public class DBUtils {
         return s_groupsCache;
     } // getGroups
 
-    private static void readTurnInfo( SQLiteDatabase db, GameGroupInfo ggi )
+    private static void readTurnInfo( SQLiteDatabase db, long id, 
+                                      GameGroupInfo ggi )
     {
         String[] columns = { DBHelper.LASTMOVE, DBHelper.GIFLAGS, 
                              DBHelper.TURN };
         String orderBy = DBHelper.LASTMOVE;
-        String selection = String.format( "%s=%d", DBHelper.GROUPID, ggi.m_id );
+        String selection = String.format( "%s=%d", DBHelper.GROUPID, id );
         Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                   selection,
                                   null, // args
@@ -1042,7 +1044,7 @@ public class DBUtils {
     {
         long rowid = ROWID_NOTFOUND;
         if ( null != name && 0 < name.length() ) {
-            HashMap<String,GameGroupInfo> gameInfo = getGroups( context );
+            HashMap<Long,GameGroupInfo> gameInfo = getGroups( context );
             if ( null == gameInfo.get( name ) ) {
                 ContentValues values = new ContentValues();
                 values.put( DBHelper.GROUPNAME, name );

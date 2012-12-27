@@ -29,6 +29,7 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 import java.util.HashMap;       // class is not synchronized
+import java.util.Iterator;
 import java.util.Set;
 
 import junit.framework.Assert;
@@ -45,30 +46,58 @@ public class GameListAdapter implements ExpandableListAdapter {
     private int m_fieldID;
     private Handler m_handler;
     private LoadItemCB m_cb;
+    private long[] m_positions;
 
     public interface LoadItemCB {
         public void itemClicked( long rowid, GameSummary summary );
     }
 
     public GameListAdapter( Context context, ExpandableListView list, 
-                            Handler handler, LoadItemCB cb, String fieldName ) 
+                            Handler handler, LoadItemCB cb, long[] positions,
+                            String fieldName ) 
     {
-        // super( DBUtils.gamesList(context).length );
         m_context = context;
         m_list = list;
         m_handler = handler;
         m_cb = cb;
+        m_positions = positions;
         m_factory = LayoutInflater.from( context );
 
         m_fieldID = fieldToID( fieldName );
     }
 
+    public long[] getPositions()
+    {
+        HashMap<Long,GameGroupInfo> info = gameInfo();
+        if ( null == m_positions || info.size() != m_positions.length ) {
+            m_positions = new long[info.size()];
+            Iterator<Long> iter = info.keySet().iterator();
+            for ( int ii = 0; ii < m_positions.length; ++ii ) {
+                m_positions[ii] = iter.next();
+            }
+        }
+        return m_positions;
+    }
+
+    public boolean moveGroup( long groupid, int moveBy )
+    {
+        int src = getGroupPosition( groupid );
+        int dest = src + moveBy;
+        long[] positions = getPositions();
+        boolean success = 0 <= dest && dest < positions.length;
+        if ( success ) {
+            long tmp = positions[src];
+            positions[src] = positions[dest];
+            positions[dest] = tmp;
+        }
+        return success;
+    }
+
     public void expandGroups( ExpandableListView view )
     {
-        HashMap<String,GameGroupInfo> info = gameInfo();
-        String[] names = groupNames();
-        for ( int ii = 0; ii < names.length; ++ii ) {
-            GameGroupInfo ggi = info.get( names[ii] );
+        HashMap<Long,GameGroupInfo> info = gameInfo();
+        for ( int ii = 0; ii < info.size(); ++ii ) {
+            GameGroupInfo ggi = getInfoForGroup( ii );
             if ( ggi.m_expanded ) {
                 view.expandGroup( ii );
             }
@@ -78,13 +107,9 @@ public class GameListAdapter implements ExpandableListAdapter {
     public long getRowIDFor( int group, int child )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
-        String[] groupNames = groupNames();
-        if ( group < groupNames.length ) {
-            String name = groupNames()[group];
-            long[] rows = getRows( name );
-            if ( child < rows.length ) {
-                rowid = rows[child];
-            }
+        long[] rows = getRows( getPositions()[group] );
+        if ( child < rows.length ) {
+            rowid = rows[child];
         }
         return rowid;
     }
@@ -100,24 +125,15 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public long getGroupIDFor( int groupPos )
     {
-        String name = groupNames()[groupPos];
-        GameGroupInfo ggi = gameInfo().get( name );
-        return ggi.m_id;
+        long id = getPositions()[groupPos];
+        return id;
     }
 
     public String groupName( long groupid )
     {
-        String result = null;
-        String[] names = groupNames();
-        int index;
-        for ( index = 0; index < names.length; ++index ) {
-            GameGroupInfo ggi = gameInfo().get( names[index] );
-            if ( groupid == ggi.m_id ) {
-                result = names[index];
-                break;
-            }
-        }
-        return result;
+        HashMap<Long,GameGroupInfo> info = gameInfo();
+        GameGroupInfo ggi = info.get( groupid );
+        return ggi.m_name;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -158,7 +174,7 @@ public class GameListAdapter implements ExpandableListAdapter {
     {
         View result = null;
         if ( null != convertView ) {
-            DbgUtils.logf( "getChildView gave non-null convertView" );
+            // DbgUtils.logf( "getChildView gave non-null convertView" );
             if ( convertView instanceof GameListItem ) {
                 GameListItem child = (GameListItem)convertView;
                 long rowid = getRowIDFor( groupPosition, childPosition );
@@ -193,15 +209,15 @@ public class GameListAdapter implements ExpandableListAdapter {
             Utils.inflate(m_context, R.layout.game_list_group );
         view.setGroupPosition( groupPosition );
 
-        String name = groupNames()[groupPosition];
-
         if ( !isExpanded ) {
-            GameGroupInfo ggi = gameInfo().get( name );
+            GameGroupInfo ggi = getInfoForGroup( groupPosition );
             view.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
                          ggi.m_lastMoveTime );
         }
+
         int nKids = getChildrenCount( groupPosition );
-        name = m_context.getString( R.string.group_namef, name, nKids );
+        String name = m_context.getString( R.string.group_namef, 
+                                           groupNames()[groupPosition], nKids );
         view.setText( name );
 
         return view;
@@ -222,9 +238,6 @@ public class GameListAdapter implements ExpandableListAdapter {
     public Object getChild( int groupPosition, int childPosition )
     {
         return null;
-        // String name = groupNames()[groupPosition];
-        // long[] rows = getRows( name );
-        // return rows[childPosition];
     }
     
     public Object getGroup( int groupPosition )
@@ -234,14 +247,13 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public int getChildrenCount( int groupPosition )
     {
-        String name = groupNames()[ groupPosition ];
-        long[] rows = getRows( name );
+        long[] rows = getRows( getPositions()[groupPosition] );
         return rows.length;
     }
 
     public int getGroupCount()
     {
-        return groupNames().length;
+        return gameInfo().size();
     }
 
     public void registerDataSetObserver( DataSetObserver obs ){}
@@ -256,7 +268,7 @@ public class GameListAdapter implements ExpandableListAdapter {
 
             groupPosition = child.getGroupPosition();
         } else {
-            DbgUtils.logf( "no child for rowid %d", rowid );
+            // DbgUtils.logf( "no child for rowid %d", rowid );
             GameListItem.inval( rowid );
             m_list.invalidate();
 
@@ -274,31 +286,28 @@ public class GameListAdapter implements ExpandableListAdapter {
         }
     }
 
-    private long[] getRows( String group )
+    private long[] getRows( long groupID )
     {
-        GameGroupInfo ggi = gameInfo().get(group);
-        long groupID = ggi.m_id;
-        long[] rows = DBUtils.getGroupGames( m_context, groupID );
-        return rows;
+        return DBUtils.getGroupGames( m_context, groupID );
     }
 
     public String[] groupNames()
     {
-        HashMap<String,GameGroupInfo> info = gameInfo();
-        Set<String> set = info.keySet();
-        String[] names = new String[ set.size() ];
-        set.toArray(names);
+        HashMap<Long,GameGroupInfo> info = gameInfo();
+        long[] positions = getPositions();
+        String[] names = new String[ positions.length ];
+        for ( int ii = 0; ii < names.length; ++ii ) {
+            names[ii] = info.get(positions[ii]).m_name;
+        }
         return names;
     }
     
     public int getGroupPosition( long groupid )
     {
-        int pos;
-        String[] names = groupNames();
-        HashMap<String, GameGroupInfo> info = gameInfo();
-        for ( pos = 0; pos < names.length; ++pos ) {
-            GameGroupInfo ggi = info.get( names[pos] );
-            if ( ggi.m_id == groupid ) {
+        int pos = -1;
+        long[] positions = getPositions();
+        for ( pos = 0; pos < positions.length; ++pos ) {
+            if ( positions[pos] == groupid ) {
                 break;
             }
         }
@@ -310,15 +319,9 @@ public class GameListAdapter implements ExpandableListAdapter {
         boolean changed = false;
         int newID = fieldToID( fieldName );
         if ( -1 == newID ) {
-            if ( XWApp.DEBUG ) {
-                DbgUtils.logf( "GameListAdapter.setField(): unable to match"
-                               + " fieldName %s", fieldName );
-            }
+            DbgUtils.logf( "GameListAdapter.setField(): unable to match"
+                           + " fieldName %s", fieldName );
         } else if ( m_fieldID != newID ) {
-            if ( XWApp.DEBUG ) {
-                DbgUtils.logf( "setField: clearing views cache for change"
-                               + " from %d to %d", m_fieldID, newID );
-            }
             m_fieldID = newID;
             // return true so caller will do onContentChanged.
             // There's no other way to signal GameListItem instances
@@ -330,8 +333,7 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     private GameGroupInfo getInfoForGroup( int groupPosition )
     {
-        String name = groupNames()[groupPosition];
-        return gameInfo().get( name );
+        return gameInfo().get( getPositions()[groupPosition] );
     }
 
     private GameListItem getGameItemFor( long rowid )
@@ -395,9 +397,8 @@ public class GameListAdapter implements ExpandableListAdapter {
         }
     }
 
-    private HashMap<String,GameGroupInfo> gameInfo()
+    private HashMap<Long,GameGroupInfo> gameInfo()
     {
         return DBUtils.getGroups( m_context );
     }
-
 }

@@ -361,8 +361,10 @@ public class GamesList extends XWExpandableListActivity
             });
 
         String field = CommonPrefs.getSummaryField( this );
+        long[] positions = XWPrefs.getGroupPositions( this );
         m_adapter = new GameListAdapter( this, getExpandableListView(),
-                                         new Handler(), this, field );
+                                         new Handler(), this, positions, 
+                                         field );
         setListAdapter( m_adapter );
         m_adapter.expandGroups( getExpandableListView() );
 
@@ -420,7 +422,8 @@ public class GamesList extends XWExpandableListActivity
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
         // m_phoneStateListener = null;
-
+        long[] positions = m_adapter.getPositions();
+        XWPrefs.setGroupPositions( this, positions );
         super.onStop();
     }
 
@@ -583,18 +586,22 @@ public class GamesList extends XWExpandableListActivity
         long packedPos = info.packedPosition;
         int childPos = ExpandableListView.getPackedPositionChild( packedPos );
 
+        String name;
         if ( 0 <= childPos ) {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate( R.menu.games_list_item_menu, menu );
 
             long rowid = m_adapter.getRowIDFor( packedPos );
-            String title = GameUtils.getName( this, rowid );
-            menu.setHeaderTitle( getString( R.string.game_item_menu_titlef, 
-                                            title ) );
+            name = GameUtils.getName( this, rowid );
         } else {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate( R.menu.games_list_group_menu, menu );
+            
+            int pos = ExpandableListView.getPackedPositionGroup( packedPos );
+            name = m_adapter.groupNames()[pos];
         }
+        menu.setHeaderTitle( getString( R.string.game_item_menu_titlef, 
+                                        name ) );
     }
         
     @Override
@@ -815,6 +822,18 @@ public class GamesList extends XWExpandableListActivity
         case R.id.list_group_default:
             XWPrefs.setDefaultNewGameGroup( this, m_groupid );
             break;
+
+        case R.id.list_group_moveup:
+            if ( m_adapter.moveGroup( m_groupid, -1 ) ) {
+                onContentChanged();
+            }
+            break;
+        case R.id.list_group_movedown:
+            if ( m_adapter.moveGroup( m_groupid, 1 ) ) {
+                onContentChanged();
+            }
+            break;
+
         default:
             handled = false;
         }
