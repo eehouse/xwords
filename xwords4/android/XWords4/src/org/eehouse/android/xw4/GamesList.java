@@ -587,18 +587,30 @@ public class GamesList extends XWExpandableListActivity
         int childPos = ExpandableListView.getPackedPositionChild( packedPos );
 
         String name;
-        if ( 0 <= childPos ) {
+        if ( 0 <= childPos ) {  // game case
             MenuInflater inflater = getMenuInflater();
             inflater.inflate( R.menu.games_list_item_menu, menu );
 
             long rowid = m_adapter.getRowIDFor( packedPos );
             name = GameUtils.getName( this, rowid );
-        } else {
+        } else {                // group case
             MenuInflater inflater = getMenuInflater();
             inflater.inflate( R.menu.games_list_group_menu, menu );
-            
+
             int pos = ExpandableListView.getPackedPositionGroup( packedPos );
             name = m_adapter.groupNames()[pos];
+
+            if ( 0 == pos ) {
+                Utils.setItemEnabled( menu, R.id.list_group_moveup, false );
+            }
+            if ( pos + 1 == m_adapter.getGroupCount() ) {
+                Utils.setItemEnabled( menu, R.id.list_group_movedown, false );
+            }
+            if ( XWPrefs.getDefaultNewGameGroup( this ) 
+                 == m_adapter.getGroupIDFor( pos ) ) {
+                Utils.setItemEnabled( menu, R.id.list_group_default, false );
+                Utils.setItemEnabled( menu, R.id.list_group_delete, false );
+            }
         }
         menu.setHeaderTitle( getString( R.string.game_item_menu_titlef, 
                                         name ) );
@@ -641,7 +653,7 @@ public class GamesList extends XWExpandableListActivity
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        boolean visible = XWPrefs.getDebugEnabled( this ) ;
+        boolean visible = XWPrefs.getDebugEnabled( this );
         for ( int id : DEBUGITEMS ) {
             MenuItem item = menu.findItem( id );
             item.setVisible( visible );
