@@ -80,7 +80,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String LASTPLAY_TIME = "LASTPLAY_TIME";
 
     public static final String GROUPNAME = "GROUPNAME";
-    public static final String POSITION = "POSITION";
     public static final String EXPANDED = "EXPANDED";
 
     private Context m_context;
@@ -143,7 +142,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String[] s_groupsSchema = {
         GROUPNAME,  "TEXT"
-        ,POSITION,  "INTEGER"
         ,EXPANDED,  "INTEGER(1)"
     };
 
@@ -202,7 +200,6 @@ public class DBHelper extends SQLiteOpenHelper {
             createGroupsTable( db );
         case 15:
             moveToCurGames( db );
-            addGroupsColumn( db, POSITION );
             // nothing yet
             break;
         default:
@@ -214,31 +211,18 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    private String typeFor( String[] schema, String colName )
+    private void addSumColumn( SQLiteDatabase db, String colName )
     {
-        String result = null;
-        for ( int ii = 0; ii < schema.length; ii += 2 ) {
-            if ( schema[ii].equals( colName ) ) {
-                result = schema[ii+1];
+        String colType = null;
+        for ( int ii = 0; ii < s_summaryColsAndTypes.length; ii += 2 ) {
+            if ( s_summaryColsAndTypes[ii].equals( colName ) ) {
+                colType = s_summaryColsAndTypes[ii+1];
                 break;
             }
         }
-        return result;
-    }
 
-    private void addSumColumn( SQLiteDatabase db, String colName )
-    {
-        String colType = typeFor( s_summaryColsAndTypes, colName );
         String cmd = String.format( "ALTER TABLE %s ADD COLUMN %s %s;",
                                     TABLE_NAME_SUM, colName, colType );
-        db.execSQL( cmd );
-    }
-
-    private void addGroupsColumn( SQLiteDatabase db, String colName )
-    {
-        String colType = typeFor( s_groupsSchema, colName );
-        String cmd = String.format( "ALTER TABLE %s ADD COLUMN %s %s;",
-                                    TABLE_NAME_GROUPS, colName, colType );
         db.execSQL( cmd );
     }
 
