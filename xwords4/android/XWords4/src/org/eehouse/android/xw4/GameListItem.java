@@ -24,16 +24,15 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Handler;
+// import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 // import java.util.Iterator;
 
@@ -43,9 +42,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 public class GameListItem extends LinearLayout 
     implements View.OnClickListener {
 
-    // private static HashSet<Long> s_invalRows = new HashSet<Long>();
-    private static HashMap<Long, WeakReference<GameListItem>> s_itemsCache = 
-        new HashMap<Long, WeakReference<GameListItem>>();
+    private static HashSet<Long> s_invalRows = new HashSet<Long>();
 
     private Context m_context;
     private boolean m_loaded;
@@ -72,10 +69,11 @@ public class GameListItem extends LinearLayout
         m_loadingCount = 0;
     }
 
-    private void init( Handler handler, int groupPosition,
-                       int fieldID, GameListAdapter.LoadItemCB cb )
+    public void init( Handler handler, long rowid, int groupPosition,
+                      int fieldID, GameListAdapter.LoadItemCB cb )
     {
         m_handler = handler;
+        m_rowid = rowid;
         m_groupPosition = groupPosition;
         m_fieldID = fieldID;
         m_cb = cb;
@@ -100,18 +98,18 @@ public class GameListItem extends LinearLayout
         setName();
     }
 
-    // @Override
-    // protected void onDraw( Canvas canvas ) 
-    // {
-    //     super.onDraw( canvas );
-    //     if ( DBUtils.ROWID_NOTFOUND != m_rowid ) {
-    //         synchronized( s_invalRows ) {
-    //             if ( s_invalRows.contains( m_rowid ) ) {
-    //                 forceReload();
-    //             }
-    //         }
-    //     }
-    // }
+    @Override
+    protected void onDraw( Canvas canvas ) 
+    {
+        super.onDraw( canvas );
+        if ( DBUtils.ROWID_NOTFOUND != m_rowid ) {
+            synchronized( s_invalRows ) {
+                if ( s_invalRows.contains( m_rowid ) ) {
+                    forceReload();
+                }
+            }
+        }
+    }
 
     private void update( boolean expanded, long lastMoveTime, boolean haveTurn,
                          boolean haveTurnLocal )
@@ -130,11 +128,6 @@ public class GameListItem extends LinearLayout
     public long getRowID()
     {
         return m_rowid;
-    }
-
-    private void setRowID( long rowid )
-    {
-        m_rowid = rowid;
     }
 
     public int getGroupPosition()
@@ -301,9 +294,9 @@ public class GameListItem extends LinearLayout
                 m_summary = summary;
                 setData( summary );
                 setLoaded( null != m_summary );
-                // synchronized( s_invalRows ) {
-                //     s_invalRows.remove( m_rowid );
-                // }
+                synchronized( s_invalRows ) {
+                    s_invalRows.remove( m_rowid );
+                }
             }
             // DbgUtils.logf( "LoadItemTask for row %d finished; "
             //                + "inval rows now %s", 
@@ -313,37 +306,11 @@ public class GameListItem extends LinearLayout
 
     public static void inval( long rowid ) 
     {
-        // synchronized( s_invalRows ) {
-        //     s_invalRows.add( rowid );
-        // }
-        synchronized( s_itemsCache ) {
-            s_itemsCache.remove( rowid );
+        synchronized( s_invalRows ) {
+            s_invalRows.add( rowid );
         }
         // DbgUtils.logf( "GameListItem.inval(rowid=%d); inval rows now %s",
         //                rowid, invalRowsToString() );
-    }
-
-    public static GameListItem makeForRowID( Context context, long rowid,
-                                             Handler handler, int groupPosition,
-                                             int fieldID, 
-                                             GameListAdapter.LoadItemCB cb )
-    {
-        GameListItem result = null;
-        synchronized( s_itemsCache ) {
-            WeakReference<GameListItem> ref = s_itemsCache.get( rowid );
-            if ( null != ref ) {
-                result = ref.get();
-            }
-            if ( null == result ) {
-                result = (GameListItem)
-                    Utils.inflate( context, R.layout.game_list_item );
-                result.init( handler, groupPosition, fieldID, cb );
-                ref = new WeakReference<GameListItem>(result);
-                s_itemsCache.put( rowid, ref );
-                result.setRowID( rowid );
-            }
-        }
-        return result;
     }
 
     // private static String invalRowsToString()

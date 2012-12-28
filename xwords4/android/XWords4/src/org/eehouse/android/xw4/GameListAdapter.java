@@ -193,9 +193,9 @@ public class GameListAdapter implements ExpandableListAdapter {
     private View getChildView( int groupPosition, int childPosition )
     {
         long rowid = getRowIDFor( groupPosition, childPosition );
-        GameListItem result = 
-            GameListItem.makeForRowID( m_context, rowid, m_handler, 
-                                       groupPosition, m_fieldID, m_cb );
+        GameListItem result = (GameListItem)
+            m_factory.inflate( R.layout.game_list_item, null );
+        result.init( m_handler, rowid, groupPosition, m_fieldID, m_cb );
         return result;
     }
 
