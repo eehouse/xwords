@@ -23,28 +23,22 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.text.method.DialerKeyListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import junit.framework.Assert;
 
 public class SMSInviteActivity extends InviteActivity {
 
@@ -251,31 +245,30 @@ public class SMSInviteActivity extends InviteActivity {
         // long time to return.  Be safe.
         if ( null != cursor && !cursor.isClosed() ) {
             if ( cursor.moveToFirst() ) {
-                    String name = 
-                        cursor.getString( cursor.
-                                          getColumnIndex( Phone.DISPLAY_NAME));
-                    String number = 
-                        cursor.getString( cursor.
-                                          getColumnIndex( Phone.NUMBER ) );
+                String name = 
+                    cursor.getString( cursor.
+                                      getColumnIndex( Phone.DISPLAY_NAME));
+                String number = 
+                    cursor.getString( cursor.
+                                      getColumnIndex( Phone.NUMBER ) );
 
-                    int type = cursor.getInt( cursor.
-                                              getColumnIndex( Phone.TYPE ) );
-                    m_pendingName = name;
-                    m_pendingNumber = number;
-                    if ( Phone.TYPE_MOBILE == type ) {
-                        showConfirmThen( R.string.warn_unlimited, 
-                                         R.string.button_yes, 
-                                         POST_WARNING_ACTION );
-                    } else {
-                        m_immobileConfirmed = false;
-                        String msg = 
-                            Utils.format( this, R.string.warn_nomobilef,
-                                          number, name );
-                        showConfirmThen( msg, R.string.button_yes, 
-                                         USE_IMMOBILE_ACTION );
-                    }
+                int type = cursor.getInt( cursor.
+                                          getColumnIndex( Phone.TYPE ) );
+                m_pendingName = name;
+                m_pendingNumber = number;
+                if ( Phone.TYPE_MOBILE == type ) {
+                    showConfirmThen( R.string.warn_unlimited, 
+                                     R.string.button_yes, 
+                                     POST_WARNING_ACTION );
+                } else {
+                    m_immobileConfirmed = false;
+                    String msg = 
+                        Utils.format( this, R.string.warn_nomobilef,
+                                      number, name );
+                    showConfirmThen( msg, R.string.button_yes, 
+                                     USE_IMMOBILE_ACTION );
+                }
             }
-            cursor.close();
         }
     } // addPhoneNumbers
 
