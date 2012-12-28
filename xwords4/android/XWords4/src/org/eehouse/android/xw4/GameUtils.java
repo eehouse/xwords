@@ -516,13 +516,6 @@ public class GameUtils {
         return allHere;
     }
 
-    public static boolean gameDictsHere( Context context, int indx, 
-                                         String[][] name, int[] lang )
-    {
-        long rowid = DBUtils.gamesList( context )[indx];
-        return gameDictsHere( context, rowid, name, lang );
-    }
-
     public static String newName( Context context ) 
     {
         return "untitled";

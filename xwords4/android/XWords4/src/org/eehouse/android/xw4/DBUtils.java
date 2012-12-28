@@ -784,35 +784,6 @@ public class DBUtils {
         notifyListeners( lock.getRowid(), true );
     }
 
-    public static long[] gamesList( Context context )
-    {
-        long[] result;
-        synchronized( DBUtils.class ) {
-            if ( null == s_cachedRowIDs ) {
-                initDB( context );
-                synchronized( s_dbHelper ) {
-                    SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-
-                    String[] columns = { ROW_ID };
-                    String orderBy = DBHelper.CREATE_TIME + " DESC";
-                    Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, 
-                                              columns, null, null, null, 
-                                              null, orderBy );
-                    int count = cursor.getCount();
-                    s_cachedRowIDs = new long[count];
-                    int index = cursor.getColumnIndex( ROW_ID );
-                    for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                        s_cachedRowIDs[ii] = cursor.getLong( index );
-                    }
-                    cursor.close();
-                    db.close();
-                }
-            }
-            result = s_cachedRowIDs;
-        }
-        return result;
-    }
-
     private static void clearRowIDsCache()
     {
         synchronized( DBUtils.class ) {
@@ -995,12 +966,13 @@ public class DBUtils {
         String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String orderBy = DBHelper.CREATE_TIME + " DESC";
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, // selection
                                       null, // args
                                       null, // groupBy
                                       null, // having
-                                      ROW_ID //orderby 
+                                      orderBy
                                       );
             int index = cursor.getColumnIndex( ROW_ID );
             result = new long[ cursor.getCount() ];
