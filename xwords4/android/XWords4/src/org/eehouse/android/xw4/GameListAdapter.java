@@ -27,6 +27,8 @@ import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import java.util.HashMap;       // class is not synchronized
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Iterator;
 
 import junit.framework.Assert;
@@ -56,20 +58,36 @@ public class GameListAdapter implements ExpandableListAdapter {
         m_list = list;
         m_handler = handler;
         m_cb = cb;
-        m_positions = positions;
+        m_positions = checkPositions( positions );
 
         m_fieldID = fieldToID( fieldName );
     }
 
     public long[] getPositions()
     {
-        HashMap<Long,GameGroupInfo> info = gameInfo();
-        if ( null == m_positions || info.size() != m_positions.length ) {
-            m_positions = new long[info.size()];
-            Iterator<Long> iter = info.keySet().iterator();
-            for ( int ii = 0; ii < m_positions.length; ++ii ) {
-                m_positions[ii] = iter.next();
+        Set<Long> keys = gameInfo().keySet(); // do not modify!!!!
+        if ( null == m_positions || m_positions.length != keys.size() ) {
+            HashSet<Long> unused = new HashSet<Long>( keys );
+            long[] newArray = new long[unused.size()];
+
+            // First copy the existing values, in order
+            int nextIndx = 0;
+            if ( null != m_positions ) {
+                for ( long id: m_positions ) {
+                    if ( unused.contains( id ) ) {
+                        newArray[nextIndx++] = id;
+                        unused.remove( id );
+                    }
+                }
             }
+
+            // Then copy in what's left
+            Iterator<Long> iter = unused.iterator();
+            while ( iter.hasNext() ) {
+                long id = iter.next();
+                newArray[nextIndx++] = id;
+            }
+            m_positions = newArray;
         }
         return m_positions;
     }
@@ -86,19 +104,6 @@ public class GameListAdapter implements ExpandableListAdapter {
             positions[dest] = tmp;
         }
         return success;
-    }
-
-    public boolean removeGroup( long groupid )
-    {
-        long[] newArray = new long[m_positions.length - 1];
-        int destIndex = 0;
-        for ( long id : m_positions ) {
-            if ( id != groupid ) {
-                newArray[destIndex++] = id;
-            }
-        }
-        m_positions = newArray;
-        return true;
     }
 
     public void expandGroups( ExpandableListView view )
@@ -408,5 +413,20 @@ public class GameListAdapter implements ExpandableListAdapter {
     private HashMap<Long,GameGroupInfo> gameInfo()
     {
         return DBUtils.getGroups( m_context );
+    }
+
+    private long[] checkPositions( long[] positions )
+    {
+        long[] result = positions;
+        if ( null != positions ) {
+            Set<Long> posns = gameInfo().keySet();
+            for ( long id : positions ) {
+                if ( ! posns.contains( id ) ) {
+                    result = null;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 }

@@ -554,9 +554,7 @@ public class GamesList extends XWExpandableListActivity
 
             case DELETE_GROUP_ACTION:
                 GameUtils.deleteGroup( this, m_groupid );
-                if ( m_adapter.removeGroup( m_groupid ) ) {
-                    onContentChanged();
-                }
+                onContentChanged();
                 break;
             default:
                 Assert.fail();
