@@ -238,6 +238,7 @@ public class GamesList extends XWExpandableListActivity
                 dialog = buildNamerDlg( "", R.string.newgroup_label,
                                         R.string.game_rename_title,
                                         lstnr, RENAME_GROUP );
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
 
             case CHANGE_GROUP:
