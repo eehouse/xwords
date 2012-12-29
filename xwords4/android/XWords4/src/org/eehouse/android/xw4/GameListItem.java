@@ -69,8 +69,8 @@ public class GameListItem extends LinearLayout
         m_loadingCount = 0;
     }
 
-    public void init( Handler handler, long rowid, int groupPosition,
-                      int fieldID, GameListAdapter.LoadItemCB cb )
+    private void init( Handler handler, long rowid, int groupPosition,
+                       int fieldID, GameListAdapter.LoadItemCB cb )
     {
         m_handler = handler;
         m_rowid = rowid;
@@ -303,6 +303,17 @@ public class GameListItem extends LinearLayout
             //                m_rowid, invalRowsToString() );
         }
     } // class LoadItemTask
+
+    public static GameListItem makeForRow( Context context, long rowid, 
+                                           Handler handler, int groupPosition,
+                                           int fieldID, 
+                                           GameListAdapter.LoadItemCB cb )
+    {
+        GameListItem result = 
+            (GameListItem)Utils.inflate( context, R.layout.game_list_item );
+        result.init( handler, rowid, groupPosition, fieldID, cb );
+        return result;
+    }
 
     public static void inval( long rowid ) 
     {

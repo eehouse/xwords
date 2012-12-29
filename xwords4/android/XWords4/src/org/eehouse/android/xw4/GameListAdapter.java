@@ -22,15 +22,12 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
 import java.util.HashMap;       // class is not synchronized
 import java.util.Iterator;
-import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -42,7 +39,6 @@ import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 public class GameListAdapter implements ExpandableListAdapter {
     private Context m_context;
     private ExpandableListView m_list;
-    private LayoutInflater m_factory;
     private int m_fieldID;
     private Handler m_handler;
     private LoadItemCB m_cb;
@@ -61,7 +57,6 @@ public class GameListAdapter implements ExpandableListAdapter {
         m_handler = handler;
         m_cb = cb;
         m_positions = positions;
-        m_factory = LayoutInflater.from( context );
 
         m_fieldID = fieldToID( fieldName );
     }
@@ -193,9 +188,9 @@ public class GameListAdapter implements ExpandableListAdapter {
     private View getChildView( int groupPosition, int childPosition )
     {
         long rowid = getRowIDFor( groupPosition, childPosition );
-        GameListItem result = (GameListItem)
-            m_factory.inflate( R.layout.game_list_item, null );
-        result.init( m_handler, rowid, groupPosition, m_fieldID, m_cb );
+        GameListItem result = 
+            GameListItem.makeForRow( m_context, rowid, m_handler, 
+                                     groupPosition, m_fieldID, m_cb );
         return result;
     }
 
