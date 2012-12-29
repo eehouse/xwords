@@ -10,4 +10,6 @@
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:paddingTop="3dp"
     android:paddingBottom="3dp"
+    android:textStyle="italic"
+    android:background="#FF7F7F7F"
     />
