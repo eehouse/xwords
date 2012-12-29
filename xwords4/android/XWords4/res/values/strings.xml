@@ -628,7 +628,8 @@
 
     <!-- Appended to the above in the phonies_warn case.  User may
          ignore the warning -->
-    <string name="badwords_accept">  Do you still want to accept this move?</string>
+    <string name="badwords_accept">\u0020Do you still want to accept
+    this move?</string>
     <!-- Appended to the above in the phonies_disallow case.  User has
          lost his turn. -->
     <string name="badwords_lost">  Turn lost.</string>
