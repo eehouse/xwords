@@ -222,7 +222,7 @@ public class GamesList extends XWExpandableListActivity
                     };
                 dialog = buildNamerDlg( m_adapter.groupName( m_groupid ),
                                         R.string.rename_group_label,
-                                        R.string.game_rename_group_title,
+                                        R.string.game_name_group_title,
                                         lstnr, RENAME_GROUP );
                 break;
 
@@ -236,7 +236,7 @@ public class GamesList extends XWExpandableListActivity
                         }
                     };
                 dialog = buildNamerDlg( "", R.string.newgroup_label,
-                                        R.string.game_rename_title,
+                                        R.string.game_name_group_title,
                                         lstnr, RENAME_GROUP );
                 Utils.setRemoveOnDismiss( this, dialog, id );
                 break;

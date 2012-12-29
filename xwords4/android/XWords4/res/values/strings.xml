@@ -2146,7 +2146,7 @@
     which will also be deleted.)</string>
 
     <string name="rename_group_label">Change the name of this group to:</string>
-    <string name="game_rename_group_title">Rename group</string>
+    <string name="game_name_group_title">Name group</string>
 
     <string name="cannot_delete_default_group">The group for new games
     cannot be deleted."</string>
