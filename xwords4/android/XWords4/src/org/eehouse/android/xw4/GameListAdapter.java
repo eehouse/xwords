@@ -88,6 +88,19 @@ public class GameListAdapter implements ExpandableListAdapter {
         return success;
     }
 
+    public boolean removeGroup( long groupid )
+    {
+        long[] newArray = new long[m_positions.length - 1];
+        int destIndex = 0;
+        for ( long id : m_positions ) {
+            if ( id != groupid ) {
+                newArray[destIndex++] = id;
+            }
+        }
+        m_positions = newArray;
+        return true;
+    }
+
     public void expandGroups( ExpandableListView view )
     {
         HashMap<Long,GameGroupInfo> info = gameInfo();
