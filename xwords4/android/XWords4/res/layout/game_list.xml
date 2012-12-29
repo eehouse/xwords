@@ -4,9 +4,7 @@
               android:orientation="vertical"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
-              android:paddingLeft="4dp"
-              android:paddingRight="4dp">
-
+              >
   <LinearLayout android:id="@+id/empty_games_list"
                 android:orientation="vertical"
                 android:layout_width="fill_parent"
@@ -18,12 +16,16 @@
               android:textAppearance="?android:attr/textAppearanceMedium"
               android:background="#FF202020"
               android:gravity="center"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp"
               />
     <TextView android:layout_height="wrap_content"
               android:layout_width="wrap_content"
               android:text="@string/empty_games_list2"
               android:background="#FF202020"
               android:gravity="center"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp"
               />
   </LinearLayout>
 
@@ -45,6 +47,8 @@
                 android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
                 >
     <Button android:id="@+id/new_game"
             android:text="@string/button_new_game" 
