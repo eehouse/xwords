@@ -1081,23 +1081,6 @@ public class DBUtils {
         updateRow( context, DBHelper.TABLE_NAME_SUM, gameid, values );
     }
 
-    private static void updateRow( Context context, String table,
-                                   long rowid, ContentValues values )
-    {
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            String selection = String.format( ROW_ID_FMT, rowid );
-
-            int result = db.update( table, values, selection, null );
-            db.close();
-            if ( 0 == result ) {
-                DbgUtils.logf( "updateRow failed" );
-            }
-        }
-    }
-    
     private static String getChatHistoryStr( Context context, long rowid )
     {
         String result = null;
@@ -1441,6 +1424,23 @@ public class DBUtils {
         }
     }
 
+    private static void updateRow( Context context, String table,
+                                   long rowid, ContentValues values )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            String selection = String.format( ROW_ID_FMT, rowid );
+
+            int result = db.update( table, values, selection, null );
+            db.close();
+            if ( 0 == result ) {
+                DbgUtils.logf( "updateRow failed" );
+            }
+        }
+    }
+    
     private static void notifyListeners( long rowid, boolean countChanged )
     {
         synchronized( s_listeners ) {
