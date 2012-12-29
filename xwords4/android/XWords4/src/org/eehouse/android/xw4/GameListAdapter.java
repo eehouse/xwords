@@ -84,8 +84,7 @@ public class GameListAdapter implements ExpandableListAdapter {
             // Then copy in what's left
             Iterator<Long> iter = unused.iterator();
             while ( iter.hasNext() ) {
-                long id = iter.next();
-                newArray[nextIndx++] = id;
+                newArray[nextIndx++] = iter.next();
             }
             m_positions = newArray;
         }
@@ -317,14 +316,15 @@ public class GameListAdapter implements ExpandableListAdapter {
     
     public int getGroupPosition( long groupid )
     {
-        int pos = -1;
+        int result = -1;
         long[] positions = getPositions();
-        for ( pos = 0; pos < positions.length; ++pos ) {
+        for ( int pos = 0; pos < positions.length; ++pos ) {
             if ( positions[pos] == groupid ) {
+                result = pos;
                 break;
             }
         }
-        return pos;
+        return result;
     }
 
     public boolean setField( String fieldName )

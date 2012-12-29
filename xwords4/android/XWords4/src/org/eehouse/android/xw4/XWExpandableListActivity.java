@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2010 - 2011 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -103,11 +103,6 @@ public class XWExpandableListActivity extends ExpandableListActivity
         m_delegate.showConfirmThen( msg, action );
     }
 
-    protected void showConfirmThen( int msg, int action )
-    {
-        showConfirmThen( getString(msg), action );
-    }
-
     protected void showConfirmThen( String msg, int posButton, int action )
     {
         m_delegate.showConfirmThen( msg, posButton, action );
@@ -118,17 +113,11 @@ public class XWExpandableListActivity extends ExpandableListActivity
         m_delegate.showConfirmThen( getString(msg), posButton, action );
     }
 
-    // protected void showConfirmThen( String msg, int action )
-    // {
-    //     m_delegate.showConfirmThen( msg, action );
-    // }
-
     // DlgDelegate.DlgClickNotify interface
     public void dlgButtonClicked( int id, int which )
     {
         Assert.fail();
     }
-
 
     // BTService.BTEventListener interface
     public void eventOccurred( MultiService.MultiEvent event, 
