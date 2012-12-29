@@ -2088,7 +2088,7 @@
     <!--  -->
     <string name="new_app_availf">New version of %s</string>
     <!--  -->
-    <string name="new_app_avail">Tap to download</string>
+    <string name="new_app_avail">Tap to download and install</string>
     <!-- Used in formatting final scores display -->
     <string name="str_resigned">Resigned</string>
     <!-- Used in formatting final scores display -->
