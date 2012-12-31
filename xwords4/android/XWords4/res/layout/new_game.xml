@@ -51,16 +51,12 @@
                   android:layout_height="wrap_content"
                   >
       <Button android:id="@+id/newgame_local"
-              android:layout_width="fill_parent" 
-              android:layout_weight="1" 
-              android:layout_height="wrap_content"
               android:text="@string/newgame_local" 
+              style="@style/spaced_buttons"
               />
       <Button android:id="@+id/newgame_local_config"
-              android:layout_width="fill_parent" 
-              android:layout_weight="1" 
-              android:layout_height="wrap_content"
               android:text="@string/newgame_local_config" 
+              style="@style/spaced_buttons"
               />
     </LinearLayout>
 
@@ -93,17 +89,13 @@
                   android:layout_height="wrap_content"
                   >
       <Button android:id="@+id/newgame_invite"
-              android:layout_width="fill_parent" 
-              android:layout_weight="1" 
-              android:layout_height="wrap_content"
               android:text="@string/newgame_invite" 
+              style="@style/spaced_buttons"
               />
 
       <Button android:id="@+id/newgame_net_config"
-              android:layout_width="fill_parent" 
-              android:layout_weight="1" 
-              android:layout_height="wrap_content"
               android:text="@string/newgame_net_config" 
+              style="@style/spaced_buttons"
               />
     </LinearLayout>
 
@@ -160,17 +152,13 @@
                     android:layout_height="wrap_content"
                     >
         <Button android:id="@+id/newgame_invite_sms"
-                android:layout_width="fill_parent" 
-                android:layout_weight="1" 
-                android:layout_height="wrap_content"
                 android:text="@string/newgame_invite" 
+                style="@style/spaced_buttons"
                 />
 
         <Button android:id="@+id/newgame_sms_config"
-                android:layout_width="fill_parent" 
-                android:layout_weight="1" 
-                android:layout_height="wrap_content"
                 android:text="@string/newgame_net_config" 
+                style="@style/spaced_buttons"
                 />
       </LinearLayout>
     </LinearLayout>
@@ -228,17 +216,13 @@
                     android:layout_height="wrap_content"
                     >
         <Button android:id="@+id/newgame_invite_bt"
-                android:layout_width="fill_parent" 
-                android:layout_weight="1" 
-                android:layout_height="wrap_content"
                 android:text="@string/newgame_invite" 
+                style="@style/spaced_buttons"
                 />
 
         <Button android:id="@+id/newgame_bt_config"
-                android:layout_width="fill_parent" 
-                android:layout_weight="1" 
-                android:layout_height="wrap_content"
                 android:text="@string/newgame_net_config" 
+                style="@style/spaced_buttons"
                 />
       </LinearLayout>
     </LinearLayout>

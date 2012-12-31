@@ -743,12 +743,14 @@ warnBadWords( const XP_UCHAR* word, XP_Bool isLegal,
 {
     XP_Bool ok = XP_TRUE;
     if ( !isLegal ) {
-        BadWordInfo bwi;
+        BadWordInfo bwi = {0};
         BoardCtxt* board = (BoardCtxt*)closure;
         XP_S16 turn = server_getCurrentTurn( board->server );
 
         bwi.nWords = 1;
         bwi.words[0] = word;
+        bwi.dictName = 
+            dict_getShortName( model_getPlayerDict( board->model, turn ) );
 
         ok = !board->badWordRejected
             && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );

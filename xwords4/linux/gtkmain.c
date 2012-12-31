@@ -1708,8 +1708,8 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
         result = XP_TRUE;
     } else {
         XP_ASSERT( bwi->nWords == 1 );
-        sprintf( buf, "Word \"%s\" not in the current dictionary. "
-                 "Use it anyway?", bwi->words[0] );
+        sprintf( buf, "Word \"%s\" not in the current dictionary (%s). "
+                 "Use it anyway?", bwi->words[0], bwi->dictName );
         result = gtkask( globals->window, buf, GTK_BUTTONS_YES_NO );
     }
 

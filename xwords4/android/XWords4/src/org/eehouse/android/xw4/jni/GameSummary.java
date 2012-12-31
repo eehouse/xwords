@@ -224,9 +224,9 @@ public class GameSummary {
                  && serverRole != DeviceRole.SERVER_STANDALONE );
     }
 
-    private boolean isLocal( int indx ) {
-        int flag = 2 << (indx * 2);
-        return 0 == (m_giFlags & flag);
+    private boolean isLocal( int indx )
+    {
+        return localTurnNextImpl( m_giFlags, indx );
     }
 
     private boolean isRobot( int indx ) {
@@ -326,6 +326,21 @@ public class GameSummary {
             list = TextUtils.join( separator, names );
         }
         return String.format( "%s%s%s", separator, list, separator );
+    }
+
+    private static boolean localTurnNextImpl( int flags, int turn )
+    {
+        int flag = 2 << (turn * 2);
+        return 0 == (flags & flag);
+    }
+
+    public static Boolean localTurnNext( int flags, int turn )
+    {
+        Boolean result = null;
+        if ( 0 <= turn ) {
+            result = new Boolean( localTurnNextImpl( flags, turn ) );
+        }
+        return result;
     }
 
 }

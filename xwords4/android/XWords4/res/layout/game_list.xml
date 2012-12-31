@@ -4,9 +4,7 @@
               android:orientation="vertical"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
-              android:paddingLeft="8dp"
-              android:paddingRight="8dp">
-
+              >
   <LinearLayout android:id="@+id/empty_games_list"
                 android:orientation="vertical"
                 android:layout_width="fill_parent"
@@ -18,21 +16,25 @@
               android:textAppearance="?android:attr/textAppearanceMedium"
               android:background="#FF202020"
               android:gravity="center"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp"
               />
     <TextView android:layout_height="wrap_content"
               android:layout_width="wrap_content"
               android:text="@string/empty_games_list2"
               android:background="#FF202020"
               android:gravity="center"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp"
               />
   </LinearLayout>
 
-  <ListView android:id="@id/android:list"
-            android:layout_width="fill_parent" 
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:drawSelectorOnTop="false"
-            />
+  <ExpandableListView android:id="@id/android:list"
+                      android:layout_width="fill_parent" 
+                      android:layout_height="fill_parent"
+                      android:layout_weight="1"
+                      android:drawSelectorOnTop="false"
+                      />
   <TextView android:id="@+id/empty_list_msg"
             android:layout_width="fill_parent" 
             android:layout_height="fill_parent"
@@ -41,11 +43,21 @@
             android:text="@string/empty_list_msg" 
             />
 
-  <Button android:id="@+id/new_game"
-          android:layout_width="fill_parent" 
-          android:layout_height="wrap_content" 
-          android:layout_gravity="right"
-          android:text="@string/button_new_game" 
-          />
+  <LinearLayout android:id="@+id/new_buttons"
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                >
+    <Button android:id="@+id/new_game"
+            android:text="@string/button_new_game" 
+            style="@style/spaced_buttons"
+            />
+    <Button android:id="@+id/new_group"
+            android:text="@string/button_new_group" 
+            style="@style/spaced_buttons"
+            />
+  </LinearLayout>
 
 </LinearLayout>

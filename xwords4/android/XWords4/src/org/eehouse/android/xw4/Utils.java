@@ -353,6 +353,12 @@ public class Utils {
         item.setVisible( enabled );
     }
 
+    public static void setItemEnabled( Menu menu, int id, boolean enabled )
+    {
+        MenuItem item = menu.findItem( id );
+        item.setEnabled( enabled );
+    }
+
     public static boolean hasSmallScreen( Context context )
     {
         if ( null == s_hasSmallScreen ) {

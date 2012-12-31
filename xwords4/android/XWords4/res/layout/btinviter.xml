@@ -26,9 +26,7 @@
                 >
       <Button android:id="@+id/button_rescan"
               android:text="@string/bt_pick_rescan_button"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:layout_weight="1" 
+              style="@style/spaced_buttons"
               />
       <!-- <Button android:id="@+id/button_reconfigure" -->
       <!--         android:text="@string/bt_pick_reconfig_button" -->
@@ -38,9 +36,7 @@
       <!--         /> -->
       <Button android:id="@+id/button_clear"
               android:text="@string/bt_pick_clear_button"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
+              style="@style/spaced_buttons"
               />
   </LinearLayout>
 

@@ -27,6 +27,7 @@
          menuitem in main games-list screen's menu.  (The botton can
          be hidden in the same way as the above text.) -->
     <string name="button_new_game">Add game</string>
+    <string name="button_new_group">Add group</string>
 
     <!-- When the game list is empty and the above messages and button
          are hidden via preferences, this text is shown -->
@@ -142,6 +143,9 @@
     <string name="list_item_config">Game settings...</string>
     <!-- pulls up dialog to rename (change name of) the selected game -->
     <string name="list_item_rename">Rename...</string>
+    <!-- pulls up dialog to change the group of the selected game -->
+    <string name="list_item_move">Move to group...</string>
+
     <!-- pulls up dialog to delete the selected game -->
     <string name="list_item_delete">Delete</string>
     <!-- pulls up dialog to reset the selected game, that is to remove
@@ -180,12 +184,6 @@
     <string name="confirm_reset">Are you sure you want to reset this
       game? Resetting erases all moves and any connection
       information.</string>
-
-    <!-- Text of confirmation dialog posted when gamel_menu_delete_all
-         button is pressed -->
-    <string name="confirm_delete_all">Are you sure you want to delete
-      all games?</string>
-
 
     <!--
        ############################################################
@@ -630,7 +628,8 @@
 
     <!-- Appended to the above in the phonies_warn case.  User may
          ignore the warning -->
-    <string name="badwords_accept">  Do you still want to accept this move?</string>
+    <string name="badwords_accept">\u0020Do you still want to accept
+    this move?</string>
     <!-- Appended to the above in the phonies_disallow case.  User has
          lost his turn. -->
     <string name="badwords_lost">  Turn lost.</string>
@@ -1235,7 +1234,7 @@
 
     \u003cbr \\\u003E
     \u003cbr \\\u003E
-    (full link: %1$s)
+    (full link: %1$s )
     </string>
 
     <!-- This is the body of the text version of the invitation. A URL
@@ -2089,7 +2088,7 @@
     <!--  -->
     <string name="new_app_availf">New version of %s</string>
     <!--  -->
-    <string name="new_app_avail">Tap to download</string>
+    <string name="new_app_avail">Tap to download and install</string>
     <!-- Used in formatting final scores display -->
     <string name="str_resigned">Resigned</string>
     <!-- Used in formatting final scores display -->
@@ -2130,8 +2129,31 @@
 
     <string name="download_path_title">Downloads Directory</string>
 
+    <string name="newgroup_label">Name your new group:</string>
+
+    <string name="list_group_delete">Delete</string>
+    <string name="list_group_rename">Rename</string>
+    <string name="list_group_default">Put new games here</string>
+    <string name="list_group_moveup">Move up</string>
+    <string name="list_group_movedown">Move down</string>
+
     <string name="group_cur_games">My games</string>
     <string name="group_new_games">New games</string>
+
+    <string name="group_confirm_del">Are you sure you want to delete
+    this group?</string>
+    <string name="group_confirm_delf">\u0020(It contains %d game[s],
+    which will also be deleted.)</string>
+
+    <string name="rename_group_label">Change the name of this group to:</string>
+    <string name="game_name_group_title">Name group</string>
+
+    <string name="cannot_delete_default_group">The group for new games
+    cannot be deleted."</string>
+
+    <string name="no_move_onegroup">Moving is impossible until there
+    is more than one group.</string>
+    <string name="group_namef">%1$s (%2$d games)</string>
 
     <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
@@ -2141,4 +2163,5 @@
     <string name="square_tiles">Square rack tiles</string>
     <string name="square_tiles_summary">Even if they can be taller</string>
 
+    <string name="change_groupf">Move game %s</string>
 </resources>

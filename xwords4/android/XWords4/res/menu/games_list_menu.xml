@@ -5,6 +5,10 @@
           android:title="@string/button_new_game"
           android:icon="@android:drawable/ic_menu_add"
           />
+    <item android:id="@+id/gamel_menu_newgroup"
+          android:title="@string/button_new_group"
+          android:icon="@android:drawable/ic_menu_add"
+          />
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/menu_prefs"
           android:icon="@android:drawable/ic_menu_preferences"
@@ -23,10 +27,6 @@
           android:icon="@android:drawable/ic_menu_send"
           />
 
-    <item android:id="@+id/gamel_menu_delete_all"
-          android:title="@string/gamel_menu_delete_all"
-          android:icon="@android:drawable/ic_menu_delete"
-          />
     <item android:id="@+id/gamel_menu_checkmoves"
           android:title="@string/gamel_menu_checkmoves"
           android:icon="@drawable/stat_notify_sync"

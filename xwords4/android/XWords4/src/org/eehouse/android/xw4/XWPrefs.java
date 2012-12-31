@@ -26,7 +26,6 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import com.google.android.gcm.GCMRegistrar;
 import java.util.ArrayList;
-import java.util.ArrayList;
 
 public class XWPrefs {
 
@@ -303,6 +302,29 @@ public class XWPrefs {
     public static void setDefaultNewGameGroup( Context context, long val )
     {
         setPrefsLong( context, R.string.key_default_group, val );
+    }
+
+    public static void setGroupPositions( Context context, long[] posns )
+    {
+        String[] asStrs = new String[posns.length];
+        for ( int ii = 0; ii < posns.length; ++ii ) {
+            asStrs[ii] = String.format( "%d", posns[ii] );
+        }
+        setPrefsStringArray( context, R.string.key_group_posns, asStrs );
+    }
+
+    public static long[] getGroupPositions( Context context )
+    {
+        long[] posns = null;
+        String[] longStrs = getPrefsStringArray( context, 
+                                                 R.string.key_group_posns );
+        if ( null != longStrs ) {
+            posns = new long[longStrs.length];
+            for ( int ii = 0; ii < longStrs.length; ++ii ) {
+                posns[ii] = Long.parseLong(longStrs[ii]);
+            }
+        }
+        return posns;
     }
 
     protected static String getPrefsString( Context context, int keyID )

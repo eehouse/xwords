@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -33,7 +34,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
     public static final String TABLE_NAME_GROUPS = "groups";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 15;
+    private static final int DB_VERSION = 16;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
@@ -197,6 +198,8 @@ public class DBHelper extends SQLiteOpenHelper {
         case 14:
             addSumColumn( db, GROUPID );
             createGroupsTable( db );
+        case 15:
+            moveToCurGames( db );
             // nothing yet
             break;
         default:
@@ -260,4 +263,21 @@ public class DBHelper extends SQLiteOpenHelper {
         XWPrefs.setDefaultNewGameGroup( m_context, newGroup );
     }
 
+    // Move all existing games to the row previously named "cur games'
+    private void moveToCurGames( SQLiteDatabase db )
+    {
+        String name = m_context.getString( R.string.group_cur_games );
+        String[] columns = { "rowid" };
+        String selection = String.format( "%s = '%s'", GROUPNAME, name );
+        Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
+                                  selection, null, null, null, null );
+        if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+            long rowid = cursor.getLong( cursor.getColumnIndex("rowid") );
+
+            ContentValues values = new ContentValues();
+            values.put( GROUPID, rowid );
+            db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
+        }
+        cursor.close();
+    }
 }

@@ -41,29 +41,36 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
+import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import java.io.File;
 import java.util.Date;
+
 // import android.telephony.PhoneStateListener;
 // import android.telephony.TelephonyManager;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
-public class GamesList extends XWListActivity 
+public class GamesList extends XWExpandableListActivity 
     implements DBUtils.DBChangeListener,
                GameListAdapter.LoadItemCB, 
                DictImportActivity.DownloadFinishedListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
-    private static final int WARN_NODICT_NEW   = WARN_NODICT + 2;
-    private static final int SHOW_SUBST        = WARN_NODICT + 3;
-    private static final int GET_NAME          = WARN_NODICT + 4;
-    private static final int RENAME_GAME       = WARN_NODICT + 5;
+    private static final int SHOW_SUBST        = WARN_NODICT + 2;
+    private static final int GET_NAME          = WARN_NODICT + 3;
+    private static final int RENAME_GAME       = WARN_NODICT + 4;
+    private static final int NEW_GROUP         = WARN_NODICT + 5;
+    private static final int RENAME_GROUP      = WARN_NODICT + 6;
+    private static final int CHANGE_GROUP      = WARN_NODICT + 7;
+    private static final int WARN_NODICT_NEW   = WARN_NODICT + 8;
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
+    private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
 
     private static final String RELAYIDS_EXTRA = "relayids";
@@ -73,9 +80,9 @@ public class GamesList extends XWListActivity
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
     private static final int DELETE_GAME_ACTION = 3;
-    private static final int DELETE_ALL_ACTION = 4;
-    private static final int SYNC_MENU_ACTION = 5;
-    private static final int NEW_FROM_ACTION = 6;
+    private static final int SYNC_MENU_ACTION = 4;
+    private static final int NEW_FROM_ACTION = 5;
+    private static final int DELETE_GROUP_ACTION = 6;
     private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
                                               , R.id.gamel_menu_storedb
                                               , R.id.gamel_menu_checkupdates
@@ -90,12 +97,16 @@ public class GamesList extends XWListActivity
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
     private long m_rowid;
+    private long m_groupid;
+    private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
+    private GameNamer m_namer;
 
     @Override
     protected Dialog onCreateDialog( int id )
     {
         DialogInterface.OnClickListener lstnr;
+        DialogInterface.OnClickListener lstnr2;
         LinearLayout layout;
 
         Dialog dialog = super.onCreateDialog( id );
@@ -178,36 +189,87 @@ public class GamesList extends XWListActivity
                     .setNegativeButton( R.string.button_cancel, null )
                     .setSingleChoiceItems( m_sameLangDicts, 0, null )
                     .create();
-                    ;
                 // Force destruction so onCreateDialog() will get
                 // called next time and we can insert a different
                 // list.  There seems to be no way to change the list
                 // inside onPrepareDialog().
-                dialog.setOnDismissListener(new DialogInterface.
-                                            OnDismissListener() {
-                        public void onDismiss(DialogInterface dlg) {
-                            removeDialog( SHOW_SUBST );
-                        }
-                    });
+                Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
 
             case RENAME_GAME:
-                final GameNamer namerView =
-                    (GameNamer)Utils.inflate( this, R.layout.rename_game );
-                namerView.setName( GameUtils.getName( this, m_rowid ) );
-                namerView.setLabel( R.string.rename_label );
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            String name = namerView.getName();
+                            String name = m_namer.getName();
                             DBUtils.setName( GamesList.this, m_rowid, name );
                             m_adapter.invalName( m_rowid );
                         }
                     };
+                dialog = buildNamerDlg( GameUtils.getName( this, m_rowid ),
+                                        R.string.rename_label,
+                                        R.string.game_rename_title,
+                                        lstnr, RENAME_GAME );
+                break;
+
+            case RENAME_GROUP:
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            String name = m_namer.getName();
+                            DBUtils.setGroupName( GamesList.this, m_groupid, 
+                                                  name );
+                            m_adapter.inval( m_rowid );
+                            onContentChanged();
+                        }
+                    };
+                dialog = buildNamerDlg( m_adapter.groupName( m_groupid ),
+                                        R.string.rename_group_label,
+                                        R.string.game_name_group_title,
+                                        lstnr, RENAME_GROUP );
+                break;
+
+            case NEW_GROUP:
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            String name = m_namer.getName();
+                            DBUtils.addGroup( GamesList.this, name );
+                            // m_adapter.inval();
+                            onContentChanged();
+                        }
+                    };
+                dialog = buildNamerDlg( "", R.string.newgroup_label,
+                                        R.string.game_name_group_title,
+                                        lstnr, RENAME_GROUP );
+                Utils.setRemoveOnDismiss( this, dialog, id );
+                break;
+
+            case CHANGE_GROUP:
+                final long startGroup = DBUtils.getGroupForGame( this, m_rowid );
+                final int[] selItem = {-1}; // hack!!!!
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlgi, int item ) {
+                            selItem[0] = item;
+                            AlertDialog dlg = (AlertDialog)dlgi;
+                            Button btn = 
+                                dlg.getButton( AlertDialog.BUTTON_POSITIVE );
+                            long newGroup = m_adapter.getGroupIDFor( item );
+                            btn.setEnabled( newGroup != startGroup );
+                        }
+                    };
+                lstnr2 = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            Assert.assertTrue( -1 != selItem[0] );
+                            long gid = m_adapter.getGroupIDFor( selItem[0] );
+                            DBUtils.moveGame( GamesList.this, m_rowid, gid );
+                            onContentChanged();
+                        }
+                    };
+                String[] groups = m_adapter.groupNames();
+                int curGroupPos = m_adapter.getGroupPosition( startGroup );
+                String name = GameUtils.getName( this, m_rowid );
                 dialog = new AlertDialog.Builder( this )
-                    .setTitle( R.string.game_rename_title )
+                    .setTitle( getString( R.string.change_groupf, name ) )
+                    .setSingleChoiceItems( groups, curGroupPos, lstnr )
+                    .setPositiveButton( R.string.button_move, lstnr2 )
                     .setNegativeButton( R.string.button_cancel, null )
-                    .setPositiveButton( R.string.button_ok, lstnr )
-                    .setView( namerView )
                     .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
                 break;
@@ -248,6 +310,16 @@ public class GamesList extends XWListActivity
         return dialog;
     } // onCreateDialog
 
+    @Override protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        super.onPrepareDialog( id, dialog );
+
+        if ( CHANGE_GROUP == id ) {
+            ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
+                .setEnabled( false );
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
@@ -258,7 +330,7 @@ public class GamesList extends XWListActivity
         getBundledData( savedInstanceState );
 
         setContentView(R.layout.game_list);
-        registerForContextMenu( getListView() );
+        registerForContextMenu( getExpandableListView() );
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( this );
@@ -280,11 +352,21 @@ public class GamesList extends XWListActivity
                     //                  R.string.key_notagain_newgame );
                 }
             });
+        newGameB = (Button)findViewById(R.id.new_group);
+        newGameB.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick( View v ) {
+                    showDialog( NEW_GROUP );
+                }
+            });
 
         String field = CommonPrefs.getSummaryField( this );
-        m_adapter = new GameListAdapter( this, getListView(), new Handler(), 
-                                         this, field );
+        long[] positions = XWPrefs.getGroupPositions( this );
+        m_adapter = new GameListAdapter( this, getExpandableListView(),
+                                         new Handler(), this, positions, 
+                                         field );
         setListAdapter( m_adapter );
+        m_adapter.expandGroups( getExpandableListView() );
 
         NetUtils.informOfDeaths( this );
 
@@ -318,13 +400,13 @@ public class GamesList extends XWListActivity
         boolean hide = CommonPrefs.getHideIntro( this );
         int hereOrGone = hide ? View.GONE : View.VISIBLE;
         for ( int id : new int[]{ R.id.empty_games_list, 
-                                  R.id.new_game } ) {
+                                  R.id.new_buttons } ) {
             View view = findViewById( id );
             view.setVisibility( hereOrGone );
         }
         View empty = findViewById( R.id.empty_list_msg );
         empty.setVisibility( hide ? View.VISIBLE : View.GONE );
-        getListView().setEmptyView( hide? empty : null );
+        getExpandableListView().setEmptyView( hide? empty : null );
 
         // TelephonyManager mgr = 
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
@@ -340,7 +422,8 @@ public class GamesList extends XWListActivity
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
         // m_phoneStateListener = null;
-
+        long[] positions = m_adapter.getPositions();
+        XWPrefs.setGroupPositions( this, positions );
         super.onStop();
     }
 
@@ -356,6 +439,7 @@ public class GamesList extends XWListActivity
     {
         super.onSaveInstanceState( outState );
         outState.putLong( SAVE_ROWID, m_rowid );
+        outState.putLong( SAVE_GROUPID, m_groupid );
         outState.putString( SAVE_DICTNAMES, m_missingDictName );
         if ( null != m_netLaunchInfo ) {
             m_netLaunchInfo.putSelf( outState );
@@ -366,6 +450,7 @@ public class GamesList extends XWListActivity
     {
         if ( null != bundle ) {
             m_rowid = bundle.getLong( SAVE_ROWID );
+            m_groupid = bundle.getLong( SAVE_GROUPID );
             m_netLaunchInfo = new NetLaunchInfo( bundle );
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );
         }
@@ -457,12 +542,6 @@ public class GamesList extends XWListActivity
             case DELETE_GAME_ACTION:
                 GameUtils.deleteGame( this, m_rowid, true );
                 break;
-            case DELETE_ALL_ACTION:
-                long[] games = DBUtils.gamesList( this );
-                for ( int ii = games.length - 1; ii >= 0; --ii ) {
-                    GameUtils.deleteGame( this, games[ii], ii == 0  );
-                }
-                break;
             case SYNC_MENU_ACTION:
                 doSyncMenuitem();
                 break;
@@ -472,6 +551,11 @@ public class GamesList extends XWListActivity
                     m_adapter.inval( newid );
                 }
                 break;
+
+            case DELETE_GROUP_ACTION:
+                GameUtils.deleteGroup( this, m_groupid );
+                onContentChanged();
+                break;
             default:
                 Assert.fail();
             }
@@ -479,33 +563,76 @@ public class GamesList extends XWListActivity
     }
 
     @Override
+    public void onContentChanged()
+    {
+        super.onContentChanged();
+        if ( null != m_adapter ) {
+            m_adapter.expandGroups( getExpandableListView() );
+        }
+    }
+
+    @Override
     public void onCreateContextMenu( ContextMenu menu, View view, 
                                      ContextMenuInfo menuInfo ) 
     {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.games_list_item_menu, menu );
+        ExpandableListView.ExpandableListContextMenuInfo info
+            = (ExpandableListView.ExpandableListContextMenuInfo)menuInfo;
+        long packedPos = info.packedPosition;
+        int childPos = ExpandableListView.getPackedPositionChild( packedPos );
 
-        AdapterView.AdapterContextMenuInfo info = 
-            (AdapterView.AdapterContextMenuInfo)menuInfo;
-        int position = info.position;
-        long rowid = DBUtils.gamesList( this )[position];
-        String title = GameUtils.getName( this, rowid );
+        String name;
+        if ( 0 <= childPos ) {  // game case
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate( R.menu.games_list_item_menu, menu );
+
+            long rowid = m_adapter.getRowIDFor( packedPos );
+            name = GameUtils.getName( this, rowid );
+        } else {                // group case
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate( R.menu.games_list_group_menu, menu );
+
+            int pos = ExpandableListView.getPackedPositionGroup( packedPos );
+            name = m_adapter.groupNames()[pos];
+
+            if ( 0 == pos ) {
+                Utils.setItemEnabled( menu, R.id.list_group_moveup, false );
+            }
+            if ( pos + 1 == m_adapter.getGroupCount() ) {
+                Utils.setItemEnabled( menu, R.id.list_group_movedown, false );
+            }
+            if ( XWPrefs.getDefaultNewGameGroup( this ) 
+                 == m_adapter.getGroupIDFor( pos ) ) {
+                Utils.setItemEnabled( menu, R.id.list_group_default, false );
+                Utils.setItemEnabled( menu, R.id.list_group_delete, false );
+            }
+        }
         menu.setHeaderTitle( getString( R.string.game_item_menu_titlef, 
-                                        title ) );
+                                        name ) );
     }
         
     @Override
     public boolean onContextItemSelected( MenuItem item ) 
     {
-        AdapterView.AdapterContextMenuInfo info;
+        ExpandableListContextMenuInfo info;
         try {
-            info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            info = (ExpandableListContextMenuInfo)item.getMenuInfo();
         } catch (ClassCastException cce) {
             DbgUtils.loge( cce );
             return false;
         }
 
-        return handleMenuItem( item.getItemId(), info.position );
+        long packedPos = info.packedPosition;
+        int childPos = ExpandableListView.getPackedPositionChild( packedPos );
+        int groupPos = ExpandableListView.getPackedPositionGroup(packedPos);
+        int menuID = item.getItemId();
+        boolean handled;
+        if ( 0 <= childPos ) {
+            long rowid = m_adapter.getRowIDFor( groupPos, childPos );
+            handled = handleGameMenuItem( menuID, rowid );
+        } else {
+            handled = handleGroupMenuItem( menuID, groupPos );
+        }
+        return handled;
     } // onContextItemSelected
 
     @Override
@@ -520,7 +647,7 @@ public class GamesList extends XWListActivity
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        boolean visible = XWPrefs.getDebugEnabled( this ) ;
+        boolean visible = XWPrefs.getDebugEnabled( this );
         for ( int id : DEBUGITEMS ) {
             MenuItem item = menu.findItem( id );
             item.setVisible( visible );
@@ -544,12 +671,8 @@ public class GamesList extends XWListActivity
             startNewGameActivity();
             break;
 
-        case R.id.gamel_menu_delete_all:
-            if ( DBUtils.gamesList( this ).length > 0 ) {
-                showConfirmThen( R.string.confirm_delete_all, 
-                                 R.string.button_delete, DELETE_ALL_ACTION );
-            }
-            handled = true;
+        case R.id.gamel_menu_newgroup:
+            showDialog( NEW_GROUP );
             break;
 
         case R.id.gamel_menu_dicts:
@@ -615,12 +738,12 @@ public class GamesList extends XWListActivity
             } );
     }
 
-    private boolean handleMenuItem( int menuID, int position ) 
+    private boolean handleGameMenuItem( int menuID, long rowid ) 
     {
         boolean handled = true;
         DialogInterface.OnClickListener lstnr;
 
-        m_rowid = DBUtils.gamesList( this )[position];
+        m_rowid = rowid;
         
         if ( R.id.list_item_delete == menuID ) {
             showConfirmThen( R.string.confirm_delete, R.string.button_delete, 
@@ -638,7 +761,13 @@ public class GamesList extends XWListActivity
                 case R.id.list_item_rename:
                     showDialog( RENAME_GAME );
                     break;
-
+                case R.id.list_item_move:
+                    if ( 1 >= m_adapter.getGroupCount() ) {
+                        showOKOnlyDialog( R.string.no_move_onegroup );
+                    } else {
+                        showDialog( CHANGE_GROUP );
+                    }
+                    break;
                 case R.id.list_item_new_from:
                     showNotAgainDlgThen( R.string.not_again_newfrom,
                                          R.string.key_notagain_newfrom, 
@@ -674,7 +803,48 @@ public class GamesList extends XWListActivity
         }
 
         return handled;
-    } // handleMenuItem
+    } // handleGameMenuItem
+
+    private boolean handleGroupMenuItem( int menuID, int groupPos )
+    {
+        boolean handled = true;
+        m_groupid = m_adapter.getGroupIDFor( groupPos );
+        switch ( menuID ) {
+        case R.id.list_group_delete:
+            if ( m_groupid == XWPrefs.getDefaultNewGameGroup( this ) ) {
+                showOKOnlyDialog( R.string.cannot_delete_default_group );
+            } else {
+                String msg = getString( R.string.group_confirm_del );
+                int nGames = m_adapter.getChildrenCount( groupPos );
+                if ( 0 < nGames ) {
+                    msg += getString( R.string.group_confirm_delf, nGames );
+                }
+                showConfirmThen( msg, DELETE_GROUP_ACTION );
+            }
+            break;
+        case R.id.list_group_rename:
+            showDialog( RENAME_GROUP );
+            break;
+        case R.id.list_group_default:
+            XWPrefs.setDefaultNewGameGroup( this, m_groupid );
+            break;
+
+        case R.id.list_group_moveup:
+            if ( m_adapter.moveGroup( m_groupid, -1 ) ) {
+                onContentChanged();
+            }
+            break;
+        case R.id.list_group_movedown:
+            if ( m_adapter.moveGroup( m_groupid, 1 ) ) {
+                onContentChanged();
+            }
+            break;
+
+        default:
+            handled = false;
+        }
+        return handled;
+    }
 
     private boolean checkWarnNoDict( NetLaunchInfo nli )
     {
@@ -854,6 +1024,23 @@ public class GamesList extends XWListActivity
             // content change is required.  PENDING
             onContentChanged();
         }
+    }
+
+    private Dialog buildNamerDlg( String curname, int labelID, int titleID,
+                                  DialogInterface.OnClickListener lstnr, 
+                                  int dlgID )
+    {
+        m_namer = (GameNamer)Utils.inflate( this, R.layout.rename_game );
+        m_namer.setName( curname );
+        m_namer.setLabel( labelID );
+        Dialog dialog = new AlertDialog.Builder( this )
+            .setTitle( titleID )
+            .setNegativeButton( R.string.button_cancel, null )
+            .setPositiveButton( R.string.button_ok, lstnr )
+            .setView( m_namer )
+            .create();
+        Utils.setRemoveOnDismiss( this, dialog, dlgID );
+        return dialog;
     }
 
     private boolean makeNewNetGameIf()

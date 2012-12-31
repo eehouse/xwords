@@ -57,6 +57,7 @@ public class GameListItem extends LinearLayout
     private GameListAdapter.LoadItemCB m_cb;
     private int m_fieldID;
     private int m_loadingCount;
+    private int m_groupPosition;
 
     public GameListItem( Context cx, AttributeSet as ) 
     {
@@ -68,11 +69,12 @@ public class GameListItem extends LinearLayout
         m_loadingCount = 0;
     }
 
-    public void init( Handler handler, long rowid, int fieldID,
-                      GameListAdapter.LoadItemCB cb )
+    private void init( Handler handler, long rowid, int groupPosition,
+                       int fieldID, GameListAdapter.LoadItemCB cb )
     {
         m_handler = handler;
         m_rowid = rowid;
+        m_groupPosition = groupPosition;
         m_fieldID = fieldID;
         m_cb = cb;
 
@@ -126,6 +128,11 @@ public class GameListItem extends LinearLayout
     public long getRowID()
     {
         return m_rowid;
+    }
+
+    public int getGroupPosition()
+    {
+        return m_groupPosition;
     }
 
     // View.OnClickListener interface
@@ -296,6 +303,17 @@ public class GameListItem extends LinearLayout
             //                m_rowid, invalRowsToString() );
         }
     } // class LoadItemTask
+
+    public static GameListItem makeForRow( Context context, long rowid, 
+                                           Handler handler, int groupPosition,
+                                           int fieldID, 
+                                           GameListAdapter.LoadItemCB cb )
+    {
+        GameListItem result = 
+            (GameListItem)Utils.inflate( context, R.layout.game_list_item );
+        result.init( handler, rowid, groupPosition, fieldID, cb );
+        return result;
+    }
 
     public static void inval( long rowid ) 
     {

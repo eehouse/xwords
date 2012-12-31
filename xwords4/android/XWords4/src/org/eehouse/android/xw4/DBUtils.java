@@ -320,6 +320,7 @@ public class DBUtils {
             }
             db.close();
             notifyListeners( rowid, false );
+            invalGroupsCache();
         }
     } // saveSummary
 
@@ -728,6 +729,7 @@ public class DBUtils {
         if ( -1 != rowid ) {      // Means new game?
             notifyListeners( rowid, false );
         }
+        invalGroupsCache();
         return rowid;
     }
 
@@ -782,35 +784,6 @@ public class DBUtils {
         notifyListeners( lock.getRowid(), true );
     }
 
-    public static long[] gamesList( Context context )
-    {
-        long[] result;
-        synchronized( DBUtils.class ) {
-            if ( null == s_cachedRowIDs ) {
-                initDB( context );
-                synchronized( s_dbHelper ) {
-                    SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-
-                    String[] columns = { ROW_ID };
-                    String orderBy = DBHelper.CREATE_TIME + " DESC";
-                    Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, 
-                                              columns, null, null, null, 
-                                              null, orderBy );
-                    int count = cursor.getCount();
-                    s_cachedRowIDs = new long[count];
-                    int index = cursor.getColumnIndex( ROW_ID );
-                    for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                        s_cachedRowIDs[ii] = cursor.getLong( index );
-                    }
-                    cursor.close();
-                    db.close();
-                }
-            }
-            result = s_cachedRowIDs;
-        }
-        return result;
-    }
-
     private static void clearRowIDsCache()
     {
         synchronized( DBUtils.class ) {
@@ -863,6 +836,249 @@ public class DBUtils {
             }
         }
         return result;
+    }
+
+    // Groups stuff
+    public static class GameGroupInfo {
+        public String m_name;
+        public boolean m_expanded;
+        public long m_lastMoveTime;
+        public boolean m_hasTurn;
+        public boolean m_turnLocal;
+
+        public GameGroupInfo( String name, boolean expanded ) {
+            m_name = name; m_expanded = expanded;
+            m_lastMoveTime = 0;
+        }
+    }
+
+    private static HashMap<Long,GameGroupInfo> s_groupsCache = null;
+
+    private static void invalGroupsCache() 
+    {
+        s_groupsCache = null;
+    }
+
+    // Return map of string (group name) to info about all games in
+    // that group.
+    public static HashMap<Long,GameGroupInfo> getGroups( Context context )
+    {
+        if ( null == s_groupsCache ) {
+            HashMap<Long,GameGroupInfo> result = 
+                new HashMap<Long,GameGroupInfo>();
+            initDB( context );
+            String[] columns = { ROW_ID, DBHelper.GROUPNAME, 
+                                 DBHelper.EXPANDED };
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+                Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
+                                          null, // selection
+                                          null, // args
+                                          null, // groupBy
+                                          null, // having
+                                          null //orderby 
+                                          );
+                int idIndex = cursor.getColumnIndex( ROW_ID );
+                int nameIndex = cursor.getColumnIndex( DBHelper.GROUPNAME );
+                int expandedIndex = cursor.getColumnIndex( DBHelper.EXPANDED );
+
+                while ( cursor.moveToNext() ) {
+                    String name = cursor.getString( nameIndex );
+                    long id = cursor.getLong( idIndex );
+                    Assert.assertNotNull( name );
+                    boolean expanded = 0 != cursor.getInt( expandedIndex );
+                    result.put( id, new GameGroupInfo( name, expanded ) );
+                }
+                cursor.close();
+
+                Iterator<Long> iter = result.keySet().iterator();
+                while ( iter.hasNext() ) {
+                    Long id = iter.next();
+                    GameGroupInfo ggi = result.get( id );
+                    readTurnInfo( db, id, ggi );
+                }
+
+                db.close();
+            }
+            s_groupsCache = result;
+        }
+        return s_groupsCache;
+    } // getGroups
+
+    private static void readTurnInfo( SQLiteDatabase db, long id, 
+                                      GameGroupInfo ggi )
+    {
+        String[] columns = { DBHelper.LASTMOVE, DBHelper.GIFLAGS, 
+                             DBHelper.TURN };
+        String orderBy = DBHelper.LASTMOVE;
+        String selection = String.format( "%s=%d", DBHelper.GROUPID, id );
+        Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                  selection,
+                                  null, // args
+                                  null, // groupBy,
+                                  null, // having
+                                  orderBy
+                                  );
+        
+        // We want the earliest LASTPLAY_TIME (i.e. the first we see
+        // since they're in order) that's a local turn, if any,
+        // otherwise a non-local turn.
+        long lastPlayTimeLocal = 0;
+        long lastPlayTimeRemote = 0;
+        int indexLPT = cursor.getColumnIndex( DBHelper.LASTMOVE );
+        int indexFlags = cursor.getColumnIndex( DBHelper.GIFLAGS );
+        int turnFlags = cursor.getColumnIndex( DBHelper.TURN );
+        while ( cursor.moveToNext() && 0 == lastPlayTimeLocal ) {
+            int flags = cursor.getInt( indexFlags );
+            int turn = cursor.getInt( turnFlags );
+            Boolean isLocal = GameSummary.localTurnNext( flags, turn );
+            if ( null != isLocal ) {
+                long lpt = cursor.getLong( indexLPT );
+                if ( isLocal ) {
+                    lastPlayTimeLocal = lpt;
+                } else if ( 0 == lastPlayTimeRemote ) {
+                    lastPlayTimeRemote = lpt;
+                }
+            }
+        }
+        cursor.close();
+
+        ggi.m_hasTurn = 0 != lastPlayTimeLocal || 0 != lastPlayTimeRemote;
+        if ( ggi.m_hasTurn ) {
+            ggi.m_turnLocal = 0 != lastPlayTimeLocal;
+            if ( ggi.m_turnLocal ) {
+                ggi.m_lastMoveTime = lastPlayTimeLocal;
+            } else {
+                ggi.m_lastMoveTime = lastPlayTimeRemote;
+            }
+            // DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
+            //                                                 DateFormat.SHORT );
+            // DbgUtils.logf( "using last play time %s for", 
+            //                df.format( new Date( 1000 * ggi.m_lastMoveTime ) ) );
+        }
+    }
+
+    public static long[] getGroupGames( Context context, long groupID )
+    {
+        long[] result = null;
+        initDB( context );
+        String[] columns = { ROW_ID };
+        String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String orderBy = DBHelper.CREATE_TIME + " DESC";
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, // selection
+                                      null, // args
+                                      null, // groupBy
+                                      null, // having
+                                      orderBy
+                                      );
+            int index = cursor.getColumnIndex( ROW_ID );
+            result = new long[ cursor.getCount() ];
+            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                long rowid = cursor.getInt( index );
+                result[ii] = rowid;
+            }
+            cursor.close();
+            db.close();
+        }
+
+        return result;
+    }
+
+    public static long getGroupForGame( Context context, long rowid )
+    {
+        long result = ROWID_NOTFOUND;
+        initDB( context );
+        String[] columns = { DBHelper.GROUPID };
+        String selection = String.format( ROW_ID_FMT, rowid );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, // selection
+                                      null, // args
+                                      null, // groupBy
+                                      null, // having
+                                      null //orderby 
+                                      );
+            if ( cursor.moveToNext() ) {
+                int index = cursor.getColumnIndex( DBHelper.GROUPID );
+                result = cursor.getLong( index );
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static long addGroup( Context context, String name )
+    {
+        long rowid = ROWID_NOTFOUND;
+        if ( null != name && 0 < name.length() ) {
+            HashMap<Long,GameGroupInfo> gameInfo = getGroups( context );
+            if ( null == gameInfo.get( name ) ) {
+                ContentValues values = new ContentValues();
+                values.put( DBHelper.GROUPNAME, name );
+                values.put( DBHelper.EXPANDED, 0 );
+
+                initDB( context );
+                synchronized( s_dbHelper ) {
+                    SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+                    rowid = db.insert( DBHelper.TABLE_NAME_GROUPS, null, 
+                                       values );
+                    db.close();
+                }
+                invalGroupsCache();
+            }
+        }
+        return rowid;
+    }
+    
+    public static void deleteGroup( Context context, long groupid )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+            // Nuke games having this group id
+            String selection = 
+                String.format( "%s=%d", DBHelper.GROUPID, groupid );
+            db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
+
+            // And nuke the group record itself
+            selection = String.format( ROW_ID_FMT, groupid );
+            db.delete( DBHelper.TABLE_NAME_GROUPS, selection, null );
+
+            db.close();
+        }
+        invalGroupsCache();
+    }
+
+    public static void setGroupName( Context context, long groupid, 
+                                     String name )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.GROUPNAME, name );
+        updateRow( context, DBHelper.TABLE_NAME_GROUPS, groupid, values );
+        invalGroupsCache();
+    }
+
+    public static void setGroupExpanded( Context context, long groupid, 
+                                         boolean expanded )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.EXPANDED, expanded? 1 : 0 );
+        updateRow( context, DBHelper.TABLE_NAME_GROUPS, groupid, values );
+        invalGroupsCache();
+    }
+
+    // Change group id of a game
+    public static void moveGame( Context context, long gameid, long groupid )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.GROUPID, groupid );
+        updateRow( context, DBHelper.TABLE_NAME_SUM, gameid, values );
     }
 
     private static String getChatHistoryStr( Context context, long rowid )

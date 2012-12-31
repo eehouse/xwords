@@ -292,7 +292,7 @@ public class JNIThread extends Thread {
         }
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
         if ( Arrays.equals( m_gameAtStart, state ) ) {
-            DbgUtils.logf( "no change in game; can skip saving" );
+            // DbgUtils.logf( "no change in game; can skip saving" );
         } else {
             GameSummary summary = new GameSummary( m_context, m_gi );
             XwJNI.game_summarize( m_jniGamePtr, summary );

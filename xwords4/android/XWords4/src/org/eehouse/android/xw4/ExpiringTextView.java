@@ -41,7 +41,17 @@ class ExpiringTextView extends TextView {
         if ( null == m_delegate ) {
             m_delegate = new ExpiringDelegate( m_context, this, handler );
         }
-        m_delegate.configure( haveTurn, haveTurnLocal, startSecs );
+        setPct( haveTurn, haveTurnLocal, startSecs );
+    }
+
+    public void setPct( boolean haveTurn, boolean haveTurnLocal, 
+                        long startSecs )
+    {
+        if ( null != m_delegate ) {
+            m_delegate.configure( haveTurn, haveTurnLocal, startSecs );
+        } else {
+            DbgUtils.logf( "m_delegate null; skipping" );
+        }
     }
 
     @Override

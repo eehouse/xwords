@@ -25,16 +25,12 @@
                 android:layout_height="wrap_content"
                 >
     <Button android:id="@+id/exchange_commit"
-            android:layout_width="fill_parent" 
-            android:layout_weight="1" 
-            android:layout_height="wrap_content"
             android:text="@string/button_trade_commit" 
+            style="@style/spaced_buttons"
             />
     <Button android:id="@+id/exchange_cancel"
-            android:layout_width="fill_parent" 
-            android:layout_weight="1" 
-            android:layout_height="wrap_content"
             android:text="@string/button_trade_cancel" 
+            style="@style/spaced_buttons"
             />
   </LinearLayout>
 

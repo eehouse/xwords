@@ -190,10 +190,10 @@ public class GameUtils {
         return rowid;
     }
 
-    public static void deleteGame( Context context, long rowid, 
-                                   boolean informNow )
+    public static boolean deleteGame( Context context, long rowid, 
+                                      boolean informNow )
     {
-        DbgUtils.logf( "deleteGame(rowid=%d)", rowid );
+        boolean success;
         // does this need to be synchronized?
         GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
@@ -201,8 +201,25 @@ public class GameUtils {
             Utils.cancelNotification( context, (int)rowid );
             DBUtils.deleteGame( context, lock );
             lock.unlock();
+            success = true;
         } else {
             DbgUtils.logf( "deleteGame: unable to delete rowid %d", rowid );
+            success = false;
+        }
+        return success;
+    }
+
+    public static void deleteGroup( Context context, long groupid )
+    {
+        int nSuccesses = 0;
+        long[] rowids = DBUtils.getGroupGames( context, groupid );
+        for ( int ii = rowids.length - 1; ii >= 0; --ii ) {
+            if ( deleteGame( context, rowids[ii], ii == 0 ) ) {
+                ++nSuccesses;
+            }
+        }
+        if ( rowids.length == nSuccesses ) {
+            DBUtils.deleteGroup( context, groupid );
         }
     }
 
@@ -497,13 +514,6 @@ public class GameUtils {
         }
 
         return allHere;
-    }
-
-    public static boolean gameDictsHere( Context context, int indx, 
-                                         String[][] name, int[] lang )
-    {
-        long rowid = DBUtils.gamesList( context )[indx];
-        return gameDictsHere( context, rowid, name, lang );
     }
 
     public static String newName( Context context ) 
