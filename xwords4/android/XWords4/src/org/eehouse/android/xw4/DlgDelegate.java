@@ -96,6 +96,7 @@ public class DlgDelegate {
     
     public Dialog onCreateDialog( int id )
     {
+        DbgUtils.logf("onCreateDialog(id=%d)", id );
         Dialog dialog = null;
         DlgState state = findForID( id );
         switch( id ) {
@@ -103,16 +104,16 @@ public class DlgDelegate {
             dialog = createAboutDialog();
             break;
         case DIALOG_OKONLY:
-            dialog = createOKDialog( state );
+            dialog = createOKDialog( state, id );
             break;
         case DIALOG_NOTAGAIN:
-            dialog = createNotAgainDialog( state );
+            dialog = createNotAgainDialog( state, id );
             break;
         case CONFIRM_THEN:
-            dialog = createConfirmThenDialog( state );
+            dialog = createConfirmThenDialog( state, id );
             break;
         case TEXT_OR_HTML_THEN:
-            dialog = createHtmlThenDialog( state );
+            dialog = createHtmlThenDialog( state, id );
             break;
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
@@ -123,6 +124,7 @@ public class DlgDelegate {
 
     public void onPrepareDialog( int id, Dialog dialog )
     {
+        DbgUtils.logf("onPrepareDialog(id=%d)", id );
         AlertDialog ad = (AlertDialog)dialog;
         OnClickListener lstnr;
         DlgState state;
@@ -357,7 +359,7 @@ public class DlgDelegate {
             .create();
     }
 
-    private Dialog createOKDialog( DlgState state )
+    private Dialog createOKDialog( DlgState state, int id )
     {
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.info_title )
@@ -365,12 +367,12 @@ public class DlgDelegate {
             .setPositiveButton( R.string.button_ok, null )
             .create();
         if ( 0 != state.m_cbckID ) {
-            dialog = setCallbackDismissListener( dialog, state );
+            dialog = setCallbackDismissListener( dialog, state, id );
         }
         return dialog;
     }
 
-    private Dialog createNotAgainDialog( final DlgState state )
+    private Dialog createNotAgainDialog( final DlgState state, int id )
     {
         OnClickListener lstnr_p = mkCallbackClickListener( state );
 
@@ -394,10 +396,10 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_notagain, lstnr_n )
             .create();
 
-        return setCallbackDismissListener( dialog, state );
+        return setCallbackDismissListener( dialog, state, id );
     } // createNotAgainDialog
 
-    private Dialog createConfirmThenDialog( DlgState state )
+    private Dialog createConfirmThenDialog( DlgState state, int id )
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
 
@@ -408,10 +410,10 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_cancel, lstnr )
             .create();
         
-        return setCallbackDismissListener( dialog, state );
+        return setCallbackDismissListener( dialog, state, id );
     }
 
-    private Dialog createHtmlThenDialog( DlgState state )
+    private Dialog createHtmlThenDialog( DlgState state, int id )
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
         Dialog dialog = new AlertDialog.Builder( m_activity )
@@ -421,7 +423,7 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_html, lstnr )
             .create();
 
-        return setCallbackDismissListener( dialog, state );
+        return setCallbackDismissListener( dialog, state, id );
     }
 
     private Dialog createDictGoneDialog()
@@ -455,8 +457,9 @@ public class DlgDelegate {
         return cbkOnClickLstnr;
     }
 
-    private Dialog setCallbackDismissListener( Dialog dialog, 
-                                               final DlgState state )
+    private Dialog setCallbackDismissListener( final Dialog dialog, 
+                                               final DlgState state,
+                                               final int id )
     {
         DialogInterface.OnDismissListener cbkOnDismissLstnr;
         cbkOnDismissLstnr = new DialogInterface.OnDismissListener() {
@@ -466,6 +469,7 @@ public class DlgDelegate {
                         m_clickCallback.dlgButtonClicked( state.m_cbckID, 
                                                           DISMISS_BUTTON );
                     }
+                    m_activity.removeDialog( id );
                 }
             };
 
@@ -511,7 +515,7 @@ public class DlgDelegate {
     private DlgState findForID( int id )
     {
         DlgState state = null;
-        if ( m_dlgState.m_id == id ) {
+        if ( null != m_dlgState && m_dlgState.m_id == id ) {
             state = m_dlgState;
         }
         DbgUtils.logf( "findForID(%d)=>%H", id, state );
@@ -523,7 +527,7 @@ public class DlgDelegate {
         DbgUtils.logf( "dropState(%H) m_dlgState=%H", state, m_dlgState );
         Assert.assertNotNull( m_dlgState );
         Assert.assertNotNull( state );
-        Assert.assertTrue( m_dlgState == state ); // fired
+        Assert.assertTrue( m_dlgState == state );
         m_dlgState = null;
     }
 
