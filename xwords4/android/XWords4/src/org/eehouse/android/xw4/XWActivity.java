@@ -101,13 +101,6 @@ public class XWActivity extends Activity
         return dialog;
     }
 
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog ); // docs say should call through
-        m_delegate.onPrepareDialog( id, dialog );
-    }
-
     // these are duplicated in XWListActivity -- sometimes multiple
     // inheritance would be nice to have...
     protected void showAboutDialog()

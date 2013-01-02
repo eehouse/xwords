@@ -98,13 +98,6 @@ public class XWListActivity extends ListActivity
         return dialog;
     }
 
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_delegate.onPrepareDialog( id, dialog );
-    }
-
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         int action )
     {

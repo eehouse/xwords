@@ -59,13 +59,6 @@ public class XWExpandableListActivity extends ExpandableListActivity
         return dialog;
     }
 
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_delegate.onPrepareDialog( id, dialog );
-    }
-
     protected boolean post( Runnable runnable )
     {
         return m_delegate.post( runnable );
