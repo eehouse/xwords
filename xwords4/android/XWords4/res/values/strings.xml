@@ -19,9 +19,9 @@
       game. Tap an existing game to play it or long-tap it for other
       options.</string>
       <!--  -->
-    <string name="empty_games_list2">You can hide this and the button
+    <string name="empty_games_list2">You can hide this and the buttons
       below in the Appearance section of Settings (accessed via your
-      device\'s menu key).</string>
+      device\'s menu key.)</string>
 
     <!-- Text of button at bottom of main games-list screen and of
          menuitem in main games-list screen's menu.  (The botton can
