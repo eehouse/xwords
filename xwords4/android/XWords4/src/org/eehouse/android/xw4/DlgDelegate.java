@@ -33,6 +33,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
@@ -51,13 +52,8 @@ public class DlgDelegate {
     public static final int DISMISS_BUTTON = 0;
     public static final int SKIP_CALLBACK = -1;
 
-    private static final String MSG = "msg";
-    private static final String CALLBACK = "callback";
-    private static final String PREFSKEY = "prefskey";
-    private static final String POSBUTTON = "posbutton";
-    private static final String WORDS = "words";
-    private static final String LANG = "lang";
-    private static final String FORCELIST = "forcelist";
+    private static final String IDS = "IDS";
+    private static final String STATE_KEYF = "STATE_%d";
 
     public interface DlgClickNotify {
         void dlgButtonClicked( int id, int button );
@@ -80,19 +76,28 @@ public class DlgDelegate {
         m_dlgStates = new HashMap<Integer,DlgState>();
 
         if ( null != bundle ) {
-            // m_msg = bundle.getString( MSG );
-            // m_cbckID = bundle.getInt( CALLBACK );
-            // m_posButton = bundle.getInt( POSBUTTON );
-            // m_prefsKey = bundle.getInt( PREFSKEY );
+            int[] ids = bundle.getIntArray( IDS );
+            for ( int id : ids ) {
+                String key = String.format( STATE_KEYF, id );
+                addState( (DlgState)bundle.getSerializable( key ) );
+            }
         }
     }
 
     public void onSaveInstanceState( Bundle outState ) 
     {
-        // outState.putString( MSG, m_msg );
-        // outState.putInt( CALLBACK, m_cbckID );
-        // outState.putInt( POSBUTTON, m_posButton );
-        // outState.putInt( PREFSKEY, m_prefsKey );
+        int[] ids = new int[m_dlgStates.size()];
+        if ( 0 < ids.length ) {
+            int indx = 0;
+            Iterator<DlgState> iter = m_dlgStates.values().iterator();
+            while ( iter.hasNext() ) {
+                DlgState state = iter.next();
+                String key = String.format( STATE_KEYF, state.m_id );
+                outState.putSerializable( key, state );
+                ids[indx++] = state.m_id;
+            }
+        }
+        outState.putIntArray( IDS, ids );
     }
     
     public Dialog onCreateDialog( int id )
@@ -436,7 +441,7 @@ public class DlgDelegate {
         return dialog;
     }
 
-    private class DlgState {
+    private class DlgState implements java.io.Serializable {
         public int m_id;
         public String m_msg;
         public int m_posButton;
