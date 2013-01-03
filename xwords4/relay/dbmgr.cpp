@@ -47,7 +47,6 @@ static void formatParams( char* paramValues[], int nParams, const char* fmt,
 static int here_less_seed( const char* seeds, int perDeviceSum, 
                            unsigned short seed );
 static void destr_function( void* conn );
-static void string_printf( string& str, const char* fmt, ... );
 
 /* static */ DBMgr*
 DBMgr::Get() 
@@ -507,7 +506,7 @@ DBMgr::RecordAddress( const char* const connName, HostID hid,
         " WHERE connName = '%s'";
     string query;
     string_printf( query, fmt, hid, inet_ntoa(addr), connName );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    logf( XW_LOGVERBOSE0, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
 }
@@ -587,7 +586,7 @@ DBMgr::PendingMsgCount( const char* connName, int hid )
         ;
     string query;
     string_printf( query, fmt, connName, hid );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    logf( XW_LOGVERBOSE0, "%s: query: %s", __func__, query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     if ( 1 == PQntuples( result ) ) {
@@ -877,30 +876,4 @@ DBMgr::getThreadConn( void )
         pthread_setspecific( m_conn_key, conn );
     }
     return conn;
-}
-
-/* From stack overflow, toward a snprintf with an expanding buffer.
- */
-static void
-string_printf( string& str, const char* fmt, ... )
-{
-    const int origsiz = str.size();
-    int newsiz = 100;
-    va_list ap;
-    for ( ; ; ) {
-        str.resize( origsiz + newsiz );
-
-        va_start( ap, fmt );
-        int len = vsnprintf( (char *)str.c_str() + origsiz, newsiz, fmt, ap );
-        va_end( ap );
-
-        if ( len > newsiz ) {   // needs more space
-            newsiz = len + 1;
-        } else if ( -1 == len ) {
-            assert(0);          // should be impossible
-        } else {
-            str.resize( origsiz + len );
-            break;
-        }
-    }
 }

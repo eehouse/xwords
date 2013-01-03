@@ -81,6 +81,7 @@ void
 XWThreadPool::Setup( int nThreads, packet_func pFunc, kill_func kFunc )
 {
     m_nThreads = nThreads;
+    m_threadInfos = (ThreadInfo*)malloc( nThreads * sizeof(*m_threadInfos) );
     m_pFunc = pFunc;
     m_kFunc = kFunc;
 
@@ -88,7 +89,9 @@ XWThreadPool::Setup( int nThreads, packet_func pFunc, kill_func kFunc )
 
     int ii;
     for ( ii = 0; ii < nThreads; ++ii ) {
-        int result = pthread_create( &thread, NULL, tpool_main, this );
+	ThreadInfo* tip = &m_threadInfos[ii];
+	tip->me = this;
+        int result = pthread_create( &thread, NULL, tpool_main, tip );
         assert( result == 0 );
         pthread_detach( thread );
     }
@@ -122,6 +125,8 @@ XWThreadPool::AddSocket( int socket, SockType stype, in_addr& from )
         si.m_type = stype;
         si.m_addr = from;
         m_activeSockets.push_back( pair<int,SockInfo>(socket, si) );
+	logf( XW_LOGINFO, "%s: %d sockets active", __func__, 
+	      m_activeSockets.size() );
     }
     interrupt_poll();
 }
@@ -142,6 +147,8 @@ XWThreadPool::RemoveSocket( int socket )
             }
             ++iter;
         }
+	logf( XW_LOGINFO, "%s: %d sockets active", __func__, 
+	      m_activeSockets.size() );
     }
     return found;
 } /* RemoveSocket */
@@ -203,23 +210,25 @@ XWThreadPool::get_process_packet( int socket, SockType stype, in_addr& addr )
     return success;
 } /* get_process_packet */
 
-/* static */ void*
+void*
 XWThreadPool::tpool_main( void* closure )
 {
     blockSignals();
 
-    XWThreadPool* me = (XWThreadPool*)closure;
-    return me->real_tpool_main();
+    ThreadInfo* tip = (ThreadInfo*)closure;
+    return tip->me->real_tpool_main( tip );
 }
 
 void*
-XWThreadPool::real_tpool_main()
+XWThreadPool::real_tpool_main( ThreadInfo* tip )
 {
     logf( XW_LOGINFO, "tpool worker thread starting" );
     int socket = -1;
     for ( ; ; ) {
         pthread_mutex_lock( &m_queueMutex );
-        release_socket_locked( socket );
+	tip->recentTime = 0;
+
+	release_socket_locked( socket );
 
         while ( !m_timeToDie && m_queue.size() == 0 ) {
             pthread_cond_wait( &m_queueCondVar, &m_queueMutex );
@@ -234,6 +243,7 @@ XWThreadPool::real_tpool_main()
         QueuePr pr;
         grab_elem_locked( &pr );
 
+	tip->recentTime = time( NULL );
         pthread_mutex_unlock( &m_queueMutex );
 
         if ( pr.m_socket >= 0 ) {
@@ -415,6 +425,7 @@ XWThreadPool::enqueue( int socket, SockInfo si, QAction act )
     m_queue.push_back( pr );
 
     pthread_cond_signal( &m_queueCondVar );
+    log_hung_threads();
 }
 
 void
@@ -451,12 +462,34 @@ XWThreadPool::release_socket_locked( int socket )
 void
 XWThreadPool::print_in_use( void )
 {
-    char buf[32] = {0};
-    int len = 0;
+    string str;
     set<int>::iterator iter;
 
     for ( iter = m_sockets_in_use.begin(); 
           iter != m_sockets_in_use.end(); ++iter ) {
-        len += snprintf( &buf[len], sizeof(buf)-len, "%d ", *iter );
+	string_printf( str, "%d ", *iter );
+    }
+    if ( 0 < str.size() ) {
+	logf( XW_LOGINFO, "Sockets in use: %s", str.c_str() );
+    }
+}
+
+// We have the mutex when this is called
+void
+XWThreadPool::log_hung_threads( void )
+{
+    const time_t HUNG_THREASHHOLD = 5; // seconds
+    int ii;
+    time_t now = time( NULL );
+    for ( ii = 0; ii < m_nThreads; ++ii ) {
+	ThreadInfo* tip = &m_threadInfos[ii];
+	time_t recentTime = tip->recentTime;
+	if ( 0 != recentTime ) {
+	    time_t howLong = now - recentTime;
+	    if ( HUNG_THREASHHOLD < howLong ) {
+		logf( XW_LOGERROR, "thread %d stopped for %d seconds!", ii, howLong );
+		tip->recentTime = 0;   // only log once
+	    }
+	}
     }
 }

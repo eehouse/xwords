@@ -851,7 +851,7 @@ handleMsgsMsg( int sock, in_addr& addr, bool sendFull,
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
         ssize_t nwritten = write( sock, &out[0], out.size() );
-        logf( XW_LOGINFO, "%s: wrote %d bytes", __func__, nwritten );
+	logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
             dbmgr->RemoveStoredMessages( &msgIDs[0], msgIDs.size() );
@@ -964,7 +964,7 @@ handleProxyMsgs( int sock, in_addr& addr, unsigned char* bufp, unsigned char* en
 void
 handle_proxy_packet( unsigned char* buf, int len, int sock, in_addr& addr )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
+    logf( XW_LOGVERBOSE0, "%s()", __func__ );
     if ( len > 0 ) {
         unsigned char* bufp = buf;
         unsigned char* end = bufp + len;
@@ -1035,6 +1035,32 @@ handle_proxy_packet( unsigned char* buf, int len, int sock, in_addr& addr )
         }
     }
 } /* handle_proxy_packet */
+
+/* From stack overflow, toward a snprintf with an expanding buffer.
+ */
+void
+string_printf( string& str, const char* fmt, ... )
+{
+    const int origsiz = str.size();
+    int newsiz = 100;
+    va_list ap;
+    for ( ; ; ) {
+        str.resize( origsiz + newsiz );
+
+        va_start( ap, fmt );
+        int len = vsnprintf( (char *)str.c_str() + origsiz, newsiz, fmt, ap );
+        va_end( ap );
+
+        if ( len > newsiz ) {   // needs more space
+            newsiz = len + 1;
+        } else if ( -1 == len ) {
+            assert(0);          // should be impossible
+        } else {
+            str.resize( origsiz + len );
+            break;
+        }
+    }
+}
 
 static void
 set_timeouts( int sock )
@@ -1400,6 +1426,11 @@ main( int argc, char** argv )
                               errno, strerror(errno) );
                         assert( 0 ); // we're leaking files or load has grown
                     } else {
+			// I've seen a bug where we accept but never service
+			// connections.  Sockets are not closed, and so the
+			// number goes up.  Probably need a watchdog instead,
+			// but this will work around it.
+                        assert( 100 > newSock ); 
 
                         /* Set timeout so send and recv won't block forever */
                         set_timeouts( newSock );

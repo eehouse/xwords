@@ -22,6 +22,7 @@
 #ifndef _XWRELAY_PRIV_H_
 #define _XWRELAY_PRIV_H_
 
+#include <string>
 #include <time.h>
 #include <netinet/in.h>
 #include "lstnrmgr.h"
@@ -48,6 +49,8 @@ void blockSignals( void );      /* call from all but main thread */
 int GetNSpawns(void);
 
 int make_socket( unsigned long addr, unsigned short port );
+
+void string_printf( std::string& str, const char* fmt, ... );
 
 int read_packet( int sock, unsigned char* buf, int buflen );
 void handle_proxy_packet( unsigned char* buf, int bufLen, int socket,

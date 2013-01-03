@@ -42,6 +42,11 @@ class XWThreadPool {
         in_addr m_addr;
     } SockInfo;
 
+    typedef struct _ThreadInfo {
+        XWThreadPool* me;
+        time_t recentTime;
+    } ThreadInfo;
+
     static XWThreadPool* GetTPool();
     typedef bool (*packet_func)( unsigned char* buf, int bufLen, int socket,
                                  in_addr& addr );
@@ -72,11 +77,12 @@ class XWThreadPool {
     void release_socket_locked( int socket );
     void grab_elem_locked( QueuePr* qpp );
     void print_in_use( void );
+    void log_hung_threads( void );
 
     bool get_process_packet( int socket, SockType stype, in_addr& addr );
     void interrupt_poll();
 
-    void* real_tpool_main();
+    void* real_tpool_main( ThreadInfo* tsp );
     static void* tpool_main( void* closure );
 
     void* real_listener();
@@ -100,6 +106,7 @@ class XWThreadPool {
     int m_nThreads;
     packet_func m_pFunc;
     kill_func m_kFunc;
+    ThreadInfo* m_threadInfos;
 
     static XWThreadPool* g_instance;
 };
