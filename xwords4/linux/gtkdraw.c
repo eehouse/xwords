@@ -1380,16 +1380,17 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     allocAndSet( map, &dctx->white, 0xFFFF, 0xFFFF, 0xFFFF );
 
     {
-        GdkWindow *window = NULL;
-        if ( GTK_WIDGET_FLAGS(GTK_WIDGET(drawing_area)) & GTK_NO_WINDOW ) {
-            /* XXX I'm not sure about this function because I never used it.
-             * (the name seems to indicate what you want though).
-             */
-            window = gtk_widget_get_parent_window( GTK_WIDGET(drawing_area) );
-        } else {
-            window = GTK_WIDGET(drawing_area)->window;
-        }
-        window = GTK_WIDGET(drawing_area)->window;
+        // GdkWindow *window = NULL;
+        /* if ( GTK_WIDGET_FLAGS(GTK_WIDGET(drawing_area)) & GTK_NO_WINDOW ) { */
+        /*     /\* XXX I'm not sure about this function because I never used it. */
+        /*      * (the name seems to indicate what you want though). */
+        /*      *\/ */
+        /*     window = gtk_widget_get_parent_window( GTK_WIDGET(drawing_area) ); */
+        /* } else { */
+        /*     window = GTK_WIDGET(drawing_area)->window; */
+        /* } */
+        GdkWindow* window = GTK_WIDGET(drawing_area)->window;
+        XP_ASSERT( !!window );
 #ifdef USE_CAIRO
         dctx->cr = gdk_cairo_create( window );
         XP_LOGF( "dctx->cr=%p", dctx->cr );
