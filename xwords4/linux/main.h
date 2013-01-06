@@ -25,6 +25,8 @@
 # include <bluetooth/bluetooth.h> /* for bdaddr_t, which should move */
 #endif
 
+#include <sqlite3.h>
+
 #include "comtypes.h"
 #include "util.h"
 #include "game.h"
@@ -167,9 +169,11 @@ struct CommonGlobals {
     CommonPrefs cp;
 
     XWGame game;
+    sqlite3_int64 rowid;
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
     XP_Bool manualFinal;        /* use asked for final scores */
+    sqlite3* pDb;
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;

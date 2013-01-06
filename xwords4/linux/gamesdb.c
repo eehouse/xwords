@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*-mode:  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -18,10 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <sqlite3.h>
-
-#include "comtypes.h"
 #include "gamesdb.h"
+#include "main.h"
 
 #define DB_NAME "games.db"
 
@@ -50,4 +48,43 @@ closeGamesDB( sqlite3* pDb )
 {
     sqlite3_close( pDb );
     XP_LOGF( "%s finished", __func__ );
+}
+
+void
+writeToDB( XWStreamCtxt* stream, void* closure )
+{
+    int result;
+    CommonGlobals* cGlobals = (CommonGlobals*)closure;
+    sqlite3_int64 rowid = cGlobals->rowid;
+    sqlite3* pDb = cGlobals->pDb;
+    XP_U16 len = stream_getSize( stream );
+
+    sqlite3_stmt* stmt = NULL;
+    if ( 0 == rowid ) {         /* new row; need to insert blob first */
+        const char* txt = "INSERT INTO games (game) VALUES (?)";
+        result = sqlite3_prepare_v2( pDb, txt, -1, &stmt, NULL );        
+        XP_ASSERT( SQLITE_OK == result );
+        result = sqlite3_bind_zeroblob( stmt, 1 /*col 0 ??*/, len );
+        XP_ASSERT( SQLITE_OK == result );
+        result = sqlite3_step( stmt );
+        XP_ASSERT( SQLITE_DONE == result );
+
+        rowid = sqlite3_last_insert_rowid( pDb );
+        XP_LOGF( "%s: new rowid: %lld", __func__, rowid );
+        cGlobals->rowid = rowid;
+        sqlite3_finalize( stmt );
+    }
+
+    sqlite3_blob* blob;
+    result = sqlite3_blob_open( pDb, "main", "games", "game",
+                                rowid, 1 /*flags: writeable*/, &blob );
+    XP_ASSERT( SQLITE_OK == result );
+    const XP_U8* ptr = stream_getPtr( stream );
+    result = sqlite3_blob_write( blob, ptr, len, 0 );
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_blob_close( blob );
+    XP_ASSERT( SQLITE_OK == result );
+    if ( !!stmt ) {
+        sqlite3_finalize( stmt );
+    }
 }

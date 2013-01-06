@@ -57,6 +57,7 @@
 #include "linuxudp.h"
 #include "dictiter.h"
 #include "main.h"
+#include "gamesdb.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
 #endif
@@ -130,7 +131,8 @@ streamFromDB( CommonGlobals* cGlobals, void* closure )
             XP_U8 buf[size];
             res = sqlite3_blob_read( ppBlob, buf, size, 0 );
             if ( SQLITE_OK == res ) {
-                stream = mem_stream_make( MPPARM(params->util->mpool) params->vtMgr, 
+                stream = mem_stream_make( MPPARM(params->util->mpool) 
+                                          params->vtMgr, 
                                           closure, CHANNEL_NONE, NULL );
                 stream_putBytes( stream, buf, size );
             }
@@ -255,23 +257,26 @@ strFromStream( XWStreamCtxt* stream )
 void
 saveGame( CommonGlobals* cGlobals )
 {
-    if ( !!cGlobals->params->fileName ) {
+    LOG_FUNC();
+    if ( !!cGlobals->params->fileName || !!cGlobals->pDb ) {
         XP_Bool doSave = XP_TRUE;
-        if ( 0 < cGlobals->params->saveFailPct
-             /* don't fail to save first time!  */
-             && file_exists( cGlobals->params->fileName ) ) {
+        XP_Bool newGame = !file_exists( cGlobals->params->fileName )
+            || 0 == cGlobals->rowid;
+        /* don't fail to save first time!  */
+        if ( 0 < cGlobals->params->saveFailPct && !newGame ) {
             XP_U16 pct = XP_RANDOM() % 100;
             doSave = pct >= cGlobals->params->saveFailPct;
         }
 
         if ( doSave ) {
             XWStreamCtxt* outStream;
-
+            MemStreamCloseCallback onClose = !!cGlobals->pDb?
+                writeToDB : writeToFile;
             outStream = 
                 mem_stream_make_sized( MPPARM(cGlobals->params->util->mpool)
                                        cGlobals->params->vtMgr, 
                                        cGlobals->lastStreamSize,
-                                       cGlobals, 0, writeToFile );
+                                       cGlobals, 0, onClose );
             stream_open( outStream );
 
             game_saveToStream( &cGlobals->game, 
@@ -1507,14 +1512,13 @@ listDicts( const LaunchParams *params )
     return result;
 }
 
-void
+static void
 initParams( LaunchParams* params )
 {
     memset( params, 0, sizeof(*params) );
 
-    params->util = malloc( sizeof(params->util) );
-
-    XP_MEMSET( params->util, 0, sizeof(params->util) );
+    params->util = calloc( 1, sizeof(*params->util) );
+    /* XP_MEMSET( params->util, 0, sizeof(params->util) ); */
 
 #ifdef MEM_DEBUG
     params->util->mpool = mpool_make();
@@ -1529,11 +1533,11 @@ initParams( LaunchParams* params )
 #endif
 }
 
-void
+static void
 freeParams( LaunchParams* params )
 {
-    vtmgr_destroy( MPPARM(params->util->mpool) params->vtMgr );
     linux_util_vt_destroy( params->util );
+    vtmgr_destroy( MPPARM(params->util->mpool) params->vtMgr );
 
     mpool_destroy( params->util->mpool );
 
@@ -1596,8 +1600,6 @@ main( int argc, char** argv )
 #endif
 
     initParams( &mainParams );
-    /*     fprintf( stdout, "press <RET> to start\n" ); */
-    /*     (void)fgetc( stdin ); */
 
     /* defaults */
 #ifdef XWFEATURE_RELAY

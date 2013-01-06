@@ -23,7 +23,11 @@
 
 #include <sqlite3.h>
 
+#include "comtypes.h"
+
 sqlite3* openGamesDB( void );
 void closeGamesDB( sqlite3* dbp );
+
+void writeToDB( XWStreamCtxt* stream, void* closure );
 
 #endif

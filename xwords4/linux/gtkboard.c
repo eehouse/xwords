@@ -395,8 +395,6 @@ createOrLoadObjects( GtkAppGlobals* globals )
     XP_Bool opened = XP_FALSE;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    DeviceRole serverRole = globals->cGlobals.params->serverRole;
-    XP_Bool isServer = serverRole != SERVER_ISCLIENT;
 #endif
     LaunchParams* params = globals->cGlobals.params;
 
@@ -500,15 +498,20 @@ createOrLoadObjects( GtkAppGlobals* globals )
         params->gi.allowHintRect = params->allowHintRect;
 #endif
 
+
         if ( params->needsNewGame ) {
             new_game_impl( globals, XP_FALSE );
 #ifndef XWFEATURE_STANDALONE_ONLY
-        } else if ( !isServer ) {
-            XWStreamCtxt* stream = 
-                mem_stream_make( MEMPOOL params->vtMgr, &globals->cGlobals, CHANNEL_NONE,
-                                 sendOnClose );
-            server_initClientConnection( globals->cGlobals.game.server, 
-                                         stream );
+        } else {
+            DeviceRole serverRole = globals->cGlobals.params->gi.serverRole;
+            if ( serverRole == SERVER_ISCLIENT ) {
+                XWStreamCtxt* stream = 
+                    mem_stream_make( MEMPOOL params->vtMgr, 
+                                     &globals->cGlobals, CHANNEL_NONE,
+                                     sendOnClose );
+                server_initClientConnection( globals->cGlobals.game.server, 
+                                             stream );
+            }
 #endif
         }
     }
@@ -670,9 +673,12 @@ handle_client_event( GtkWidget *widget, GdkEventClient *event,
 #endif
 
 static void
-quit( void )
+destroy_window( GtkWidget* XP_UNUSED(widget), gpointer data )
 {
-    gtk_main_quit();
+    LOG_FUNC();
+    GtkAppGlobals* globals = (GtkAppGlobals*)data;
+    saveGame( &globals->cGlobals );
+    // gtk_main_quit();
 }
 
 static void
@@ -786,9 +792,9 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
         comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
     }
 
-    success = newGameDialog( globals, &addr, XP_TRUE, fireConnDlg );
+    CurGameInfo* gi = &globals->cGlobals.params->gi;
+    success = newGameDialog( globals, gi, &addr, XP_TRUE, fireConnDlg );
     if ( success ) {
-        CurGameInfo* gi = &globals->cGlobals.params->gi;
 #ifndef XWFEATURE_STANDALONE_ONLY
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
 #endif
@@ -803,22 +809,22 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
         if ( !game_reset( MEMPOOL &globals->cGlobals.game, gi,
                           globals->cGlobals.params->util,
                           &globals->cGlobals.cp, &procs ) ) {
-            if ( NULL == globals->draw ) {
-                globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area,
-                                                              globals );
-            }
-            game_makeNewGame( MEMPOOL &globals->cGlobals.game, gi,
-                              globals->cGlobals.params->util,
-                              (DrawCtx*)globals->draw,
-                              &globals->cGlobals.cp, &procs, 
-                              globals->cGlobals.params->gameSeed );
-            ModelCtxt* model = globals->cGlobals.game.model;
-            if ( NULL == model_getDictionary( model ) ) {
-                DictionaryCtxt* dict =
-                    linux_dictionary_make( MEMPOOL globals->cGlobals.params,
-                                           gi->dictName, XP_TRUE );
-                model_setDictionary( model, dict );
-            }
+            /* if ( NULL == globals->draw ) { */
+            /*     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area, */
+            /*                                                   globals ); */
+            /* } */
+            /* game_makeNewGame( MEMPOOL &globals->cGlobals.game, gi, */
+            /*                   globals->cGlobals.params->util, */
+            /*                   (DrawCtx*)globals->draw, */
+            /*                   &globals->cGlobals.cp, &procs,  */
+            /*                   globals->cGlobals.params->gameSeed ); */
+            /* ModelCtxt* model = globals->cGlobals.game.model; */
+            /* if ( NULL == model_getDictionary( model ) ) { */
+            /*     DictionaryCtxt* dict = */
+            /*         linux_dictionary_make( MEMPOOL globals->cGlobals.params, */
+            /*                                gi->dictName, XP_TRUE ); */
+            /*     model_setDictionary( model, dict ); */
+            /* } */
         }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -858,7 +864,8 @@ game_info( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 
     /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
        server_do in case one's become a robot. */
-    if ( newGameDialog( globals, &addr, XP_FALSE, XP_FALSE ) ) {
+    CurGameInfo* gi = &globals->cGlobals.params->gi;
+    if ( newGameDialog( globals, gi, &addr, XP_FALSE, XP_FALSE ) ) {
         if ( server_do( globals->cGlobals.game.server ) ) {
             board_draw( globals->cGlobals.game.board );
         }
@@ -868,11 +875,13 @@ game_info( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 static void
 load_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
 {
+    XP_ASSERT(0);
 } /* load_game */
 
 static void
 save_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
 {
+    XP_ASSERT(0);
 } /* save_game */
 
 #ifdef XWFEATURE_CHANGEDICT
@@ -1478,7 +1487,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
 
     if ( cGlobals->params->quitAfter >= 0 ) {
         sleep( cGlobals->params->quitAfter );
-        quit();
+        destroy_window( NULL, globals );
     } else if ( cGlobals->params->undoWhenDone ) {
         server_handleUndo( cGlobals->game.server, 0 );
         board_draw( cGlobals->game.board );
@@ -2298,25 +2307,25 @@ handle_sigintterm( int XP_UNUSED(sig) )
     gtk_main_quit();
 }
 
-int
-board_main( LaunchParams* params )
-{
-    GtkAppGlobals globals;
-    initGlobals( &globals, params );
+/* int */
+/* board_main( LaunchParams* params ) */
+/* { */
+/*     GtkAppGlobals globals; */
+/*     initGlobals( &globals, params ); */
 
-    if ( !!params->pipe && !!params->fileName ) {
-        read_pipe_then_close( &globals.cGlobals, NULL );
-    } else {
-        gtk_widget_show( globals.window );
+/*     if ( !!params->pipe && !!params->fileName ) { */
+/*         read_pipe_then_close( &globals.cGlobals, NULL ); */
+/*     } else { */
+/*         gtk_widget_show( globals.window ); */
 
-        gtk_main();
-    }
-    /*      MONCONTROL(1); */
+/*         gtk_main(); */
+/*     } */
+/*     /\*      MONCONTROL(1); *\/ */
 
-    cleanup( &globals );
+/*     cleanup( &globals ); */
 
-    return 0;
-} /* gtkmain */
+/*     return 0; */
+/* } */
 
 void
 initGlobals( GtkAppGlobals* globals, LaunchParams* params )
@@ -2379,7 +2388,7 @@ initGlobals( GtkAppGlobals* globals, LaunchParams* params )
     gtk_widget_show( vbox );
 
     g_signal_connect( G_OBJECT (window), "destroy",
-                      G_CALLBACK( quit ), &globals );
+                      G_CALLBACK( destroy_window ), globals );
 
     menubar = makeMenus( globals );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
@@ -2387,7 +2396,7 @@ initGlobals( GtkAppGlobals* globals, LaunchParams* params )
 #ifndef XWFEATURE_STANDALONE_ONLY
     dropCheck = gtk_check_button_new_with_label( "drop incoming messages" );
     g_signal_connect( GTK_OBJECT(dropCheck),
-                      "toggled", G_CALLBACK(drop_msg_toggle), &globals );
+                      "toggled", G_CALLBACK(drop_msg_toggle), globals );
     gtk_box_pack_start( GTK_BOX(vbox), dropCheck, FALSE, TRUE, 0);
     gtk_widget_show( dropCheck );
 #endif
@@ -2479,7 +2488,21 @@ freeGlobals( GtkAppGlobals* globals )
 XP_Bool
 makeNewGame( GtkAppGlobals* globals )
 {
-    return new_game_impl( globals, XP_FALSE );
+    CommsAddrRec addr;
+    if ( !!globals->cGlobals.game.comms ) {
+        comms_getAddr( globals->cGlobals.game.comms, &addr );
+    } else {
+        comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
+    }
+
+    CurGameInfo* gi = &globals->cGlobals.params->gi;
+    XP_Bool success = newGameDialog( globals, gi, &addr, XP_TRUE, XP_FALSE );
+    if ( success && !!gi->dictName && !globals->cGlobals.params->dict ) {
+        globals->cGlobals.params->dict =
+            linux_dictionary_make( MEMPOOL globals->cGlobals.params,
+                                   gi->dictName, XP_TRUE );
+    }
+    return success;
 }
 
 #endif /* PLATFORM_GTK */

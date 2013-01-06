@@ -1,6 +1,6 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -26,8 +26,9 @@
 
 #include "gtkboard.h"
 
-gboolean newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr,
-                        XP_Bool isNewGame, XP_Bool fireConnDlg );
+gboolean newGameDialog( GtkAppGlobals* globals, CurGameInfo* gi, 
+                        CommsAddrRec* addr, XP_Bool isNewGame, 
+                        XP_Bool fireConnDlg );
 
 #endif /* _GTKNEWGAME_H_ */
 #endif /* PLATFORM_GTK */

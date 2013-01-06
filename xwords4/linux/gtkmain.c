@@ -25,14 +25,12 @@
 #include "gtkboard.h"
 #include "linuxmain.h"
 
-enum { NAME_ITEM, N_ITEMS };
+enum { ROW_ITEM, N_ITEMS };
 
 typedef struct _GTKGamesGlobals {
     sqlite3* pDb;
-    GtkAppGlobals globals;
     LaunchParams* params;
 } GTKGamesGlobals;
-
 
 static void
 init_games_list( GtkWidget* list )
@@ -40,7 +38,7 @@ init_games_list( GtkWidget* list )
     GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
     GtkTreeViewColumn* column = 
         gtk_tree_view_column_new_with_attributes( "Games", renderer, 
-                                                  "text", NAME_ITEM, NULL );
+                                                  "row", ROW_ITEM, NULL );
     gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
     GtkListStore* store = gtk_list_store_new( N_ITEMS, G_TYPE_STRING );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
@@ -53,14 +51,34 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
     GTKGamesGlobals* gg = (GTKGamesGlobals*)closure;
     XP_LOGF( "%s called", __func__ );
     GtkAppGlobals* globals = malloc( sizeof(*globals) );
+    gg->params->needsNewGame = XP_FALSE;
     initGlobals( globals, gg->params );
     if ( !makeNewGame( globals ) ) {
         freeGlobals( globals );
     } else {
         GtkWidget* gameWindow = globals->window;
+        globals->cGlobals.pDb = gg->pDb;
         gtk_widget_show( gameWindow );
     }
 }
+
+static void
+handle_quit_button( GtkWidget* XP_UNUSED(widget), gpointer data )
+{
+    GTKGamesGlobals* gg = (GTKGamesGlobals*)data;
+    gg = gg;
+    gtk_main_quit();
+}
+
+static void
+handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
+{
+    LOG_FUNC();
+    GTKGamesGlobals* gg = (GTKGamesGlobals*)data;
+    gg = gg;
+    gtk_main_quit();
+}
+
 
 static GtkWidget* 
 makeGamesWindow( GTKGamesGlobals* gg ) 
@@ -68,17 +86,30 @@ makeGamesWindow( GTKGamesGlobals* gg )
     GtkWidget* window;
 
     window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
-
+    g_signal_connect( G_OBJECT(window), "destroy",
+                      G_CALLBACK(handle_destroy), gg );
+    
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
     gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
     GtkWidget* list = gtk_tree_view_new();
     gtk_container_add( GTK_CONTAINER(vbox), list );
     init_games_list( list );
+    gtk_widget_show( list );
+
+    GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+    gtk_widget_show( hbox );
+    gtk_container_add( GTK_CONTAINER(vbox), hbox );
     GtkWidget* button = gtk_button_new_with_label( "New Game" );
-    gtk_container_add( GTK_CONTAINER(vbox), button );
+    gtk_container_add( GTK_CONTAINER(hbox), button );
     g_signal_connect( GTK_OBJECT(button), "clicked",
                       G_CALLBACK(handle_newgame_button), gg );
+    gtk_widget_show( button );
+    
+    button = gtk_button_new_with_label( "Quit" );
+    gtk_container_add( GTK_CONTAINER(hbox), button );
+    g_signal_connect( GTK_OBJECT(button), "clicked",
+                      G_CALLBACK(handle_quit_button), gg );
     gtk_widget_show( button );
 
     gtk_widget_show( window );

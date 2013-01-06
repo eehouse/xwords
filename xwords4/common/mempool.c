@@ -78,19 +78,21 @@ checkIsText( MemPoolEntry* entry )
 {
     unsigned char* txt = (unsigned char*)entry->ptr;
     XP_U32 len = entry->size;
+    char* result = NULL;
 
-    while ( len-- ) {
-        unsigned char c = *txt++;
-        if ( c < 32 || c > 127 ) {
-            if ( len == 0 && c == '\0' ) {
-                return (char*)entry->ptr;
-            } else {
-                return (char*)NULL;
+    if ( 0 < len ) {
+        while ( len-- ) {
+            unsigned char c = *txt++;
+            if ( c < 32 || c > 127 ) {
+                if ( len == 0 && c == '\0' ) {
+                    result = (char*)entry->ptr;
+                }
+                break;
             }
         }
     }
 
-    return (char*)NULL;
+    return result;
 } /* checkIsText */
 #endif
 
