@@ -61,6 +61,7 @@
 # include "cursesmain.h"
 #endif
 #ifdef PLATFORM_GTK
+# include "gtkboard.h"
 # include "gtkmain.h"
 #endif
 #include "model.h"
@@ -1214,6 +1215,7 @@ static void
 tmp_noop_sigintterm( int XP_UNUSED(sig) )
 {
     LOG_FUNC();
+    exit(0);
 }
 
 #ifdef XWFEATURE_WALKDICT
@@ -1505,6 +1507,39 @@ listDicts( const LaunchParams *params )
     return result;
 }
 
+void
+initParams( LaunchParams* params )
+{
+    memset( params, 0, sizeof(*params) );
+
+    params->util = malloc( sizeof(params->util) );
+
+    XP_MEMSET( params->util, 0, sizeof(params->util) );
+
+#ifdef MEM_DEBUG
+    params->util->mpool = mpool_make();
+#endif
+
+    params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->util->mpool));
+    linux_util_vt_init( MPPARM(params->util->mpool) params->util );
+#ifndef XWFEATURE_STANDALONE_ONLY
+    params->util->vtable->m_util_informMissing = linux_util_informMissing;
+    params->util->vtable->m_util_addrChange = linux_util_addrChange;
+    params->util->vtable->m_util_setIsServer = linux_util_setIsServer;
+#endif
+}
+
+void
+freeParams( LaunchParams* params )
+{
+    vtmgr_destroy( MPPARM(params->util->mpool) params->vtMgr );
+    linux_util_vt_destroy( params->util );
+
+    mpool_destroy( params->util->mpool );
+
+    free( params->util );
+}
+
 int
 main( int argc, char** argv )
 {
@@ -1560,17 +1595,7 @@ main( int argc, char** argv )
     }
 #endif
 
-    memset( &mainParams, 0, sizeof(mainParams) );
-
-    mainParams.util = malloc( sizeof(*mainParams.util) );
-    XP_MEMSET( mainParams.util, 0, sizeof(*mainParams.util) );
-
-#ifdef MEM_DEBUG
-    mainParams.util->mpool = mpool_make();
-#endif
-
-    mainParams.vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mainParams.util->mpool));
-
+    initParams( &mainParams );
     /*     fprintf( stdout, "press <RET> to start\n" ); */
     /*     (void)fgetc( stdin ); */
 
@@ -2074,14 +2099,6 @@ main( int argc, char** argv )
 
     mainParams.util->gameInfo = &mainParams.gi;
 
-    linux_util_vt_init( MPPARM(mainParams.util->mpool) mainParams.util );
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-    mainParams.util->vtable->m_util_informMissing = linux_util_informMissing;
-    mainParams.util->vtable->m_util_addrChange = linux_util_addrChange;
-    mainParams.util->vtable->m_util_setIsServer = linux_util_setIsServer;
-#endif
-
     srandom( seed );	/* init linux random number generator */
     XP_LOGF( "seeded srandom with %d", seed );
 
@@ -2114,19 +2131,14 @@ main( int argc, char** argv )
 #endif
     } else if ( !useCurses ) {
 #if defined PLATFORM_GTK
-        gtkmain( &mainParams, argc, argv );
+        gtk_init( &argc, &argv );
+        gtkmain( &mainParams );
 #endif
     } else {
         usage( argv[0], "rtfm" );
     }
 
-    vtmgr_destroy( MPPARM(mainParams.util->mpool) mainParams.vtMgr );
-
-    linux_util_vt_destroy( mainParams.util );
-
-    mpool_destroy( mainParams.util->mpool );
-
-    free( mainParams.util );
+    freeParams( &mainParams );
 
     XP_LOGF( "%s exiting main", argv[0] );
     return 0;

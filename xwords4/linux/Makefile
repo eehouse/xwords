@@ -169,6 +169,7 @@ INCLUDES += ${EXTRAINCS}
 ifdef DO_GTK
 GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkmain.o \
+	$(BUILD_PLAT_DIR)/gtkboard.o \
 	$(BUILD_PLAT_DIR)/gtkdraw.o \
 	$(BUILD_PLAT_DIR)/gtkask.o \
 	$(BUILD_PLAT_DIR)/gtkletterask.o \
@@ -201,6 +202,7 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/linuxsms.o \
 	$(BUILD_PLAT_DIR)/linuxdict.o \
 	$(BUILD_PLAT_DIR)/linuxutl.o \
+	$(BUILD_PLAT_DIR)/gamesdb.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
 LIBS = -lm -luuid $(GPROFFLAG)

@@ -94,4 +94,7 @@ void setOneSecondTimer( CommonGlobals* cGlobals );
 # define setOneSecondTimer( cGlobals )
 #endif
 
+void initParams( LaunchParams* params );
+void freeParams( LaunchParams* params );
+
 #endif

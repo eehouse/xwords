@@ -26,7 +26,7 @@
 
 #include <gdk/gdkdrawable.h>
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 #include "draw.h"
 #include "board.h"
 #include "linuxmain.h"

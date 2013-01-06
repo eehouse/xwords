@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,15 +18,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _GTKCHAT_H_
-#define _GTKCHAT_H_
+#ifndef _GAMESDB_H_
+#define _GAMESDB_H_
 
-#ifdef PLATFORM_GTK
+#include <sqlite3.h>
 
-#include <glib.h>
-#include "gtkboard.h"
-
-gchar* gtkGetChatMessage( GtkAppGlobals* globals );
+sqlite3* openGamesDB( void );
+void closeGamesDB( sqlite3* dbp );
 
 #endif
-#endif  /* #ifndef _GTKCHAT_H_ */

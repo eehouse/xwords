@@ -24,7 +24,7 @@
 #ifndef _GTKNEWGAME_H_
 #define _GTKNEWGAME_H_
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 
 gboolean newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr,
                         XP_Bool isNewGame, XP_Bool fireConnDlg );

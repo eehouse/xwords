@@ -23,7 +23,7 @@
 #ifndef _GTKASKDICT_H_
 #define _GTKASKDICT_H_
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 
 gchar* gtkaskdict( GSList* dicts, gchar* buf, gint buflen );
 

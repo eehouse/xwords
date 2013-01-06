@@ -133,62 +133,67 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
     board_prefsChanged( game->board, cp );
 } /* game_makeNewGame */
 
-void
+XP_Bool
 game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, 
             XW_UtilCtxt* XP_UNUSED_STANDALONE(util), 
             CommonPrefs* cp, const TransportProcs* procs )
 {
+    XP_Bool result = XP_FALSE;
     XP_U16 ii;
 
-    XP_ASSERT( !!game->model );
-    XP_ASSERT( !!gi );
+    if ( !!game->model ) {
+        XP_ASSERT( !!game->model );
+        XP_ASSERT( !!gi );
 
-    gi->gameID = makeGameID( util );
+        gi->gameID = makeGameID( util );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    XP_U16 nPlayersHere = 0;
-    XP_U16 nPlayersTotal = 0;
-    checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
+        XP_U16 nPlayersHere = 0;
+        XP_U16 nPlayersTotal = 0;
+        checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
 
-    if ( !!game->comms ) {
-        if ( gi->serverRole == SERVER_STANDALONE ) {
-            comms_destroy( game->comms );
-            game->comms = NULL;
-        } else {
-            comms_reset( game->comms, gi->serverRole != SERVER_ISCLIENT,
-                         nPlayersHere, nPlayersTotal );
-        }
-    } else if ( gi->serverRole != SERVER_STANDALONE ) {
-        game->comms = comms_make( MPPARM(mpool) util,
-                                  gi->serverRole != SERVER_ISCLIENT, 
-                                  nPlayersHere, nPlayersTotal, procs
+        if ( !!game->comms ) {
+            if ( gi->serverRole == SERVER_STANDALONE ) {
+                comms_destroy( game->comms );
+                game->comms = NULL;
+            } else {
+                comms_reset( game->comms, gi->serverRole != SERVER_ISCLIENT,
+                             nPlayersHere, nPlayersTotal );
+            }
+        } else if ( gi->serverRole != SERVER_STANDALONE ) {
+            game->comms = comms_make( MPPARM(mpool) util,
+                                      gi->serverRole != SERVER_ISCLIENT, 
+                                      nPlayersHere, nPlayersTotal, procs
 #ifdef SET_GAMESEED
-                                  , 0
+                                      , 0
 #endif
-                                  );
-    }
+                                      );
+        }
 #else
 # ifdef DEBUG
-    mpool = mpool;              /* quash unused formal warning */
+        mpool = mpool;              /* quash unused formal warning */
 # endif
 #endif
 
-    model_setSize( game->model, gi->boardSize );
-    server_reset( game->server, 
+        model_setSize( game->model, gi->boardSize );
+        server_reset( game->server, 
 #ifndef XWFEATURE_STANDALONE_ONLY
-                  game->comms
+                      game->comms
 #else
-                  NULL
+                      NULL
 #endif
-                  );
-    board_reset( game->board );
+                      );
+        board_reset( game->board );
 
-    for ( ii = 0; ii < gi->nPlayers; ++ii ) {
-        gi->players[ii].secondsUsed = 0;
+        for ( ii = 0; ii < gi->nPlayers; ++ii ) {
+            gi->players[ii].secondsUsed = 0;
+        }
+
+        server_prefsChanged( game->server, cp );
+        board_prefsChanged( game->board, cp );
+        result = XP_TRUE;
     }
-
-    server_prefsChanged( game->server, cp );
-    board_prefsChanged( game->board, cp );
+    return result;
 } /* game_reset */
 
 #ifdef XWFEATURE_CHANGEDICT

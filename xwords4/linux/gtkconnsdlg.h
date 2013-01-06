@@ -24,7 +24,7 @@
 #ifndef _GTKCONNSDLG_H_
 #define _GTKCONNSDLG_H_
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 
 gboolean gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr,
                       DeviceRole role, XP_Bool readOnly );
