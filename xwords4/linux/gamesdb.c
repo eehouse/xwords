@@ -88,3 +88,43 @@ writeToDB( XWStreamCtxt* stream, void* closure )
         sqlite3_finalize( stmt );
     }
 }
+
+GSList*
+listGames( GTKGamesGlobals* gg )
+{
+    GSList* list = NULL;
+    
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( gg->pDb, 
+                                     "SELECT rowid FROM games ORDER BY rowid", -1,
+                                     &ppStmt, NULL );
+    XP_ASSERT( SQLITE_OK == result );
+    while ( NULL != ppStmt ) {
+        switch( sqlite3_step( ppStmt ) ) {
+        case SQLITE_ROW:        /* have data */
+        {
+            sqlite3_int64* data = g_malloc( sizeof( *data ) );
+            *data = sqlite3_column_int64( ppStmt, 0 );
+            XP_LOGF( "%s: got a row; id=%lld", __func__, *data );
+            list = g_slist_append( list, data );
+        }
+        break;
+        case SQLITE_DONE:
+            sqlite3_finalize( ppStmt );
+            ppStmt = NULL;
+            break;
+        default:
+            XP_ASSERT( 0 );
+            break;
+        }
+    }
+    return list;
+}
+
+void
+getGameName( GTKGamesGlobals* XP_UNUSED(gg), const sqlite3_int64* rowid, 
+             XP_UCHAR* buf, XP_U16 len )
+{
+    snprintf( buf, len, "Game %lld", *rowid );
+    LOG_RETURNF( "%s", buf );
+}

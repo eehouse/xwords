@@ -209,4 +209,9 @@ struct CommonGlobals {
     XP_U16 curSaveToken;
 };
 
+typedef struct _GTKGamesGlobals {
+    sqlite3* pDb;
+    LaunchParams* params;
+} GTKGamesGlobals;
+
 #endif

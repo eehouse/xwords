@@ -25,24 +25,43 @@
 #include "gtkboard.h"
 #include "linuxmain.h"
 
-enum { ROW_ITEM, N_ITEMS };
-
-typedef struct _GTKGamesGlobals {
-    sqlite3* pDb;
-    LaunchParams* params;
-} GTKGamesGlobals;
+enum { ROW_ITEM, NAME_ITEM, N_ITEMS };
 
 static void
 init_games_list( GtkWidget* list )
 {
     GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
     GtkTreeViewColumn* column = 
-        gtk_tree_view_column_new_with_attributes( "Games", renderer, 
-                                                  "row", ROW_ITEM, NULL );
+        gtk_tree_view_column_new_with_attributes( "Row", renderer, "text", 
+                                                  ROW_ITEM, NULL );
     gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
-    GtkListStore* store = gtk_list_store_new( N_ITEMS, G_TYPE_STRING );
+
+    renderer = gtk_cell_renderer_text_new();
+    column = gtk_tree_view_column_new_with_attributes( "Name", renderer, "text",
+                                                       NAME_ITEM, NULL );
+    gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
+
+    GtkListStore* store = gtk_list_store_new( N_ITEMS, // G_TYPE_INT64, 
+                                              G_TYPE_STRING, G_TYPE_STRING );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
+}
+
+static void
+add_to_list( GtkWidget* list, sqlite3_int64* rowid, const gchar* str )
+{
+    GtkListStore* store = 
+        GTK_LIST_STORE( gtk_tree_view_get_model(GTK_TREE_VIEW(list)));
+    GtkTreeIter iter;
+    gtk_list_store_append( store, &iter );
+    XP_LOGF( "adding %lld, %s", *rowid, str );
+    gchar buf[16];
+    snprintf( buf, sizeof(buf), "%lld", *rowid );
+    gtk_list_store_set( store, &iter, 
+                        ROW_ITEM, buf,
+                        NAME_ITEM, str,
+                        -1 );
+    XP_LOGF( "DONE adding" );
 }
 
 static void
@@ -96,6 +115,15 @@ makeGamesWindow( GTKGamesGlobals* gg )
     gtk_container_add( GTK_CONTAINER(vbox), list );
     init_games_list( list );
     gtk_widget_show( list );
+
+    GSList* games = listGames( gg );
+    for ( GSList* iter = games; !!iter; iter = iter->next ) {
+        XP_UCHAR name[128];
+        sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
+        getGameName( gg, rowid, name, VSIZE(name) );
+        add_to_list( list, rowid, name );
+    }
+    g_slist_free( games );
 
     GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
     gtk_widget_show( hbox );

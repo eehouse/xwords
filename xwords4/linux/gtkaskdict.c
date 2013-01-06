@@ -41,9 +41,9 @@ init_list( GtkWidget* list )
 }
 
 static void
-add_to_list( GtkWidget *list, const gchar *str )
+add_to_list( GtkWidget* list, const gchar* str )
 {
-    GtkListStore *store = 
+    GtkListStore* store = 
         GTK_LIST_STORE( gtk_tree_view_get_model(GTK_TREE_VIEW(list)));
     GtkTreeIter iter;
     gtk_list_store_append( store, &iter );

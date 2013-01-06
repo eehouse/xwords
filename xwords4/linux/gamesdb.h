@@ -22,12 +22,20 @@
 #define _GAMESDB_H_
 
 #include <sqlite3.h>
+#include <glib.h>
 
+#include "main.h" 
 #include "comtypes.h"
 
 sqlite3* openGamesDB( void );
 void closeGamesDB( sqlite3* dbp );
 
 void writeToDB( XWStreamCtxt* stream, void* closure );
+
+/* Return GSList whose data is (ptrs to) rowids */
+GSList* listGames( GTKGamesGlobals* gg );
+void getGameName( GTKGamesGlobals* gg, const sqlite3_int64* rowid, 
+                  XP_UCHAR* buf, XP_U16 len );
+
 
 #endif
