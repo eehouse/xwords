@@ -55,29 +55,37 @@ writeToDB( XWStreamCtxt* stream, void* closure )
 {
     int result;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
-    sqlite3_int64 rowid = cGlobals->rowid;
+    sqlite3_int64 selRow = cGlobals->selRow;
     sqlite3* pDb = cGlobals->pDb;
     XP_U16 len = stream_getSize( stream );
+    char buf[256];
+    char* query;
 
     sqlite3_stmt* stmt = NULL;
-    if ( 0 == rowid ) {         /* new row; need to insert blob first */
-        const char* txt = "INSERT INTO games (game) VALUES (?)";
-        result = sqlite3_prepare_v2( pDb, txt, -1, &stmt, NULL );        
-        XP_ASSERT( SQLITE_OK == result );
-        result = sqlite3_bind_zeroblob( stmt, 1 /*col 0 ??*/, len );
-        XP_ASSERT( SQLITE_OK == result );
-        result = sqlite3_step( stmt );
-        XP_ASSERT( SQLITE_DONE == result );
+    if ( -1 == selRow ) {         /* new row; need to insert blob first */
+        query = "INSERT INTO games (game) VALUES (?)";
+    } else {
+        const char* fmt = "UPDATE games SET game=? where rowid=%lld";
+        snprintf( buf, sizeof(buf), fmt, selRow );
+        query = buf;
+    }
 
-        rowid = sqlite3_last_insert_rowid( pDb );
-        XP_LOGF( "%s: new rowid: %lld", __func__, rowid );
-        cGlobals->rowid = rowid;
-        sqlite3_finalize( stmt );
+    result = sqlite3_prepare_v2( pDb, query, -1, &stmt, NULL );        
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_bind_zeroblob( stmt, 1 /*col 0 ??*/, len );
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_step( stmt );
+    XP_ASSERT( SQLITE_DONE == result );
+
+    if ( -1 == selRow ) {         /* new row; need to insert blob first */
+        selRow = sqlite3_last_insert_rowid( pDb );
+        XP_LOGF( "%s: new rowid: %lld", __func__, selRow );
+        cGlobals->selRow = selRow;
     }
 
     sqlite3_blob* blob;
     result = sqlite3_blob_open( pDb, "main", "games", "game",
-                                rowid, 1 /*flags: writeable*/, &blob );
+                                selRow, 1 /*flags: writeable*/, &blob );
     XP_ASSERT( SQLITE_OK == result );
     const XP_U8* ptr = stream_getPtr( stream );
     result = sqlite3_blob_write( blob, ptr, len, 0 );
@@ -127,4 +135,22 @@ getGameName( GTKGamesGlobals* XP_UNUSED(gg), const sqlite3_int64* rowid,
 {
     snprintf( buf, len, "Game %lld", *rowid );
     LOG_RETURNF( "%s", buf );
+}
+
+XP_Bool
+loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+{
+    char buf[256];
+    snprintf( buf, sizeof(buf), "SELECT game from games WHERE rowid = %lld", rowid );
+
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_step( ppStmt );
+    XP_ASSERT( SQLITE_ROW == result );
+    const void* ptr = sqlite3_column_blob( ppStmt, 0 );
+    int size = sqlite3_column_bytes( ppStmt, 0 );
+    stream_putBytes( stream, ptr, size );
+    sqlite3_finalize( ppStmt );
+    return XP_TRUE;
 }

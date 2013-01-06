@@ -261,7 +261,7 @@ saveGame( CommonGlobals* cGlobals )
     if ( !!cGlobals->params->fileName || !!cGlobals->pDb ) {
         XP_Bool doSave = XP_TRUE;
         XP_Bool newGame = !file_exists( cGlobals->params->fileName )
-            || 0 == cGlobals->rowid;
+            || -1 == cGlobals->selRow;
         /* don't fail to save first time!  */
         if ( 0 < cGlobals->params->saveFailPct && !newGame ) {
             XP_U16 pct = XP_RANDOM() % 100;

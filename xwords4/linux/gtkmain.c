@@ -27,9 +27,29 @@
 
 enum { ROW_ITEM, NAME_ITEM, N_ITEMS };
 
-static void
-init_games_list( GtkWidget* list )
+/* Prototype for selection handler callback */
+static void 
+tree_selection_changed_cb( GtkTreeSelection* selection, gpointer data )
 {
+    LOG_FUNC();
+    GTKGamesGlobals* gg = (GTKGamesGlobals*)data;
+
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+    gchar *row;
+
+    if ( gtk_tree_selection_get_selected( selection, &model, &iter ) ) {
+        gtk_tree_model_get( model, &iter, ROW_ITEM, &row, -1 );
+        sscanf( row, "%lld", &gg->selRow );
+        g_print ("You selected row %s (parsed: %lld)\n", row, gg->selRow );
+        g_free( row );
+    }
+}
+
+static GtkWidget*
+init_games_list( GTKGamesGlobals* gg )
+{
+    GtkWidget* list = gtk_tree_view_new();
     GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
     GtkTreeViewColumn* column = 
         gtk_tree_view_column_new_with_attributes( "Row", renderer, "text", 
@@ -45,6 +65,13 @@ init_games_list( GtkWidget* list )
                                               G_TYPE_STRING, G_TYPE_STRING );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
+
+    GtkTreeSelection* select = 
+        gtk_tree_view_get_selection( GTK_TREE_VIEW (list) );
+    gtk_tree_selection_set_mode( select, GTK_SELECTION_SINGLE );
+    g_signal_connect( G_OBJECT(select), "changed",
+                      G_CALLBACK (tree_selection_changed_cb), gg );
+    return list;
 }
 
 static void
@@ -77,7 +104,22 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
     } else {
         GtkWidget* gameWindow = globals->window;
         globals->cGlobals.pDb = gg->pDb;
+        globals->cGlobals.selRow = -1;
         gtk_widget_show( gameWindow );
+    }
+}
+
+static void
+handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GTKGamesGlobals* gg = (GTKGamesGlobals*)closure;
+    if ( -1 != gg->selRow ) {
+        gg->params->needsNewGame = XP_FALSE;
+        GtkAppGlobals* globals = malloc( sizeof(*globals) );
+        initGlobals( globals, gg->params );
+        globals->cGlobals.pDb = gg->pDb;
+        globals->cGlobals.selRow = gg->selRow;
+        gtk_widget_show( globals->window );
     }
 }
 
@@ -111,9 +153,9 @@ makeGamesWindow( GTKGamesGlobals* gg )
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
     gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
-    GtkWidget* list = gtk_tree_view_new();
+    GtkWidget* list = init_games_list( gg );
     gtk_container_add( GTK_CONTAINER(vbox), list );
-    init_games_list( list );
+    
     gtk_widget_show( list );
 
     GSList* games = listGames( gg );
@@ -134,6 +176,11 @@ makeGamesWindow( GTKGamesGlobals* gg )
                       G_CALLBACK(handle_newgame_button), gg );
     gtk_widget_show( button );
     
+    button = gtk_button_new_with_label( "Open" );
+    gtk_container_add( GTK_CONTAINER(hbox), button );
+    g_signal_connect( GTK_OBJECT(button), "clicked",
+                      G_CALLBACK(handle_open_button), gg );
+    gtk_widget_show( button );
     button = gtk_button_new_with_label( "Quit" );
     gtk_container_add( GTK_CONTAINER(hbox), button );
     g_signal_connect( GTK_OBJECT(button), "clicked",
@@ -148,6 +195,7 @@ int
 gtkmain( LaunchParams* params )
 {
     GTKGamesGlobals gg = {0};
+    gg.selRow = -1;
     gg.params = params;
     XP_LOGF( "%s: I'M HERE!!! (calling makeGamesDB())", __func__ );
     gg.pDb = openGamesDB();

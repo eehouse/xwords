@@ -36,6 +36,6 @@ void writeToDB( XWStreamCtxt* stream, void* closure );
 GSList* listGames( GTKGamesGlobals* gg );
 void getGameName( GTKGamesGlobals* gg, const sqlite3_int64* rowid, 
                   XP_UCHAR* buf, XP_U16 len );
-
+XP_Bool loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
 
 #endif

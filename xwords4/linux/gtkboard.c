@@ -63,6 +63,7 @@
 #include "gtkdraw.h"
 #include "memstream.h"
 #include "filestream.h"
+#include "gamesdb.h"
 
 /* static guint gtkSetupClientSocket( GtkAppGlobals* globals, int sock ); */
 static void setCtrlsForTray( GtkAppGlobals* globals );
@@ -396,7 +397,8 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 #endif
-    LaunchParams* params = globals->cGlobals.params;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    LaunchParams* params = cGlobals->params;
 
     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area,
                                                   globals );
@@ -415,11 +417,19 @@ createOrLoadObjects( GtkAppGlobals* globals )
     };
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
-        stream = streamFromFile( &globals->cGlobals, params->fileName, globals );
+        stream = streamFromFile( cGlobals, params->fileName, globals );
 #ifdef USE_SQLITE
     } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
-        stream = streamFromDB( &globals->cGlobals, globals );
+        stream = streamFromDB( cGlobals, globals );
 #endif
+    } else if ( !!cGlobals->pDb && 0 <= cGlobals->selRow ) {
+        stream = mem_stream_make( MPPARM(params->util->mpool) 
+                                  params->vtMgr, 
+                                  cGlobals, CHANNEL_NONE, NULL );
+        if ( !loadGame( stream, cGlobals->pDb, cGlobals->selRow ) ) {
+            stream_destroy( stream );
+            stream = NULL;
+        }
     }
 
     if ( !!stream ) {
@@ -2501,6 +2511,8 @@ makeNewGame( GtkAppGlobals* globals )
         globals->cGlobals.params->dict =
             linux_dictionary_make( MEMPOOL globals->cGlobals.params,
                                    gi->dictName, XP_TRUE );
+    } else {
+        success = XP_FALSE;
     }
     return success;
 }

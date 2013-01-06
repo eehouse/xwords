@@ -169,11 +169,11 @@ struct CommonGlobals {
     CommonPrefs cp;
 
     XWGame game;
-    sqlite3_int64 rowid;
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
     XP_Bool manualFinal;        /* use asked for final scores */
     sqlite3* pDb;
+    sqlite3_int64 selRow;
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
@@ -211,6 +211,7 @@ struct CommonGlobals {
 
 typedef struct _GTKGamesGlobals {
     sqlite3* pDb;
+    sqlite3_int64 selRow;
     LaunchParams* params;
 } GTKGamesGlobals;
 
