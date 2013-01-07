@@ -25,5 +25,6 @@
 
 int gtkmain( LaunchParams* params );
 void windowDestroyed( GtkAppGlobals* globals );
+void newGameSaved( void* closure );
 
 #endif

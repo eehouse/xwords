@@ -27,7 +27,7 @@
 #include "main.h" 
 #include "comtypes.h"
 
-sqlite3* openGamesDB( void );
+sqlite3* openGamesDB( const char* dbName );
 void closeGamesDB( sqlite3* dbp );
 
 void writeToDB( XWStreamCtxt* stream, void* closure );

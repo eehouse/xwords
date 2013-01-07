@@ -21,13 +21,11 @@
 #include "gamesdb.h"
 #include "main.h"
 
-#define DB_NAME "games.db"
-
 sqlite3* 
-openGamesDB( void )
+openGamesDB( const char* dbName )
 {
     sqlite3* pDb = NULL;
-    int result = sqlite3_open( DB_NAME, &pDb );
+    int result = sqlite3_open( dbName, &pDb );
     XP_ASSERT( SQLITE_OK == result );
 
     const char* createStr = 
@@ -62,7 +60,8 @@ writeToDB( XWStreamCtxt* stream, void* closure )
     char* query;
 
     sqlite3_stmt* stmt = NULL;
-    if ( -1 == selRow ) {         /* new row; need to insert blob first */
+    XP_Bool newGame = -1 == selRow;
+    if ( newGame ) {         /* new row; need to insert blob first */
         query = "INSERT INTO games (game) VALUES (?)";
     } else {
         const char* fmt = "UPDATE games SET game=? where rowid=%lld";
@@ -77,7 +76,7 @@ writeToDB( XWStreamCtxt* stream, void* closure )
     result = sqlite3_step( stmt );
     XP_ASSERT( SQLITE_DONE == result );
 
-    if ( -1 == selRow ) {         /* new row; need to insert blob first */
+    if ( newGame ) {         /* new row; need to insert blob first */
         selRow = sqlite3_last_insert_rowid( pDb );
         XP_LOGF( "%s: new rowid: %lld", __func__, selRow );
         cGlobals->selRow = selRow;
@@ -94,6 +93,10 @@ writeToDB( XWStreamCtxt* stream, void* closure )
     XP_ASSERT( SQLITE_OK == result );
     if ( !!stmt ) {
         sqlite3_finalize( stmt );
+    }
+
+    if ( newGame ) {
+        (*cGlobals->firstSave)( cGlobals->firstSaveClosure );
     }
 }
 

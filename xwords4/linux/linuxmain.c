@@ -74,7 +74,7 @@
 #include "memstream.h"
 #include "LocalizedStrIncludes.h"
 
-#define DEFAULT_PORT 10999
+#define DEFAULT_PORT 10997
 #define DEFAULT_LISTEN_PORT 4998
 
 XP_Bool
@@ -523,6 +523,7 @@ typedef enum {
 #endif
     ,CMD_GAMESEED
     ,CMD_GAMEFILE
+    ,CMD_DBFILE
     ,CMD_SAVEFAIL_PCT
 #ifdef USE_SQLITE
     ,CMD_GAMEDB_FILE
@@ -620,6 +621,7 @@ static CmdInfoRec CmdInfoRecs[] = {
 #endif
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
+    ,{ CMD_DBFILE, true, "db", "sqlite3 db to store game data" }
     ,{ CMD_SAVEFAIL_PCT, true, "savefail-pct", "How often, at random, does save fail?" }
 #ifdef USE_SQLITE
     ,{ CMD_GAMEDB_FILE, true, "game-db-file",
@@ -1735,6 +1737,9 @@ main( int argc, char** argv )
             break;
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;
+            break;
+        case CMD_DBFILE:
+            mainParams.dbName = optarg;
             break;
         case CMD_SAVEFAIL_PCT:
             mainParams.saveFailPct = atoi( optarg );

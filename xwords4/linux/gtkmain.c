@@ -183,7 +183,7 @@ addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
 }
 
 static GtkWidget* 
-makeGamesWindow( GTKGamesGlobals* gg ) 
+makeGamesWindow( GTKGamesGlobals* gg )
 {
     GtkWidget* window;
 
@@ -195,6 +195,7 @@ makeGamesWindow( GTKGamesGlobals* gg )
     gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
     GtkWidget* list = init_games_list( gg );
+    gg->listWidget = list;
     gtk_container_add( GTK_CONTAINER(vbox), list );
     
     gtk_widget_show( list );
@@ -238,6 +239,17 @@ windowDestroyed( GtkAppGlobals* globals )
     (void)g_idle_add( freeGameGlobals, globals );
 }
 
+void
+newGameSaved( void* closure )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)closure;
+    GTKGamesGlobals* gg = globals->gg;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    XP_UCHAR buf[128];
+    getGameName( gg, &cGlobals->selRow, buf, sizeof(buf) );
+    add_to_list( gg->listWidget, &cGlobals->selRow, buf );
+}
+
 int
 gtkmain( LaunchParams* params )
 {
@@ -245,7 +257,7 @@ gtkmain( LaunchParams* params )
     gg.selRow = -1;
     gg.params = params;
     XP_LOGF( "%s: I'M HERE!!! (calling makeGamesDB())", __func__ );
-    gg.pDb = openGamesDB();
+    gg.pDb = openGamesDB( params->dbName );
 
     (void)makeGamesWindow( &gg );
     gtk_main();

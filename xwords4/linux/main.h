@@ -50,6 +50,7 @@ typedef struct LaunchParams {
 
     GSList* dictDirs;
     char* fileName;
+    char* dbName;
     XP_U16 saveFailPct;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE
@@ -162,6 +163,8 @@ typedef struct _TimerInfo {
 #endif
 } TimerInfo;
 
+typedef void (*FirstSaveFunc)(void* closure);
+
 struct CommonGlobals {
     LaunchParams* params;
     CommonPrefs cp;
@@ -169,6 +172,7 @@ struct CommonGlobals {
 
     XWGame game;
     CurGameInfo gi;
+    CommsAddrRec addr;
     DictionaryCtxt* dict;
     PlayerDicts dicts;
     XP_U16 lastNTilesToUse;
@@ -179,6 +183,8 @@ struct CommonGlobals {
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
+    FirstSaveFunc firstSave;
+    void* firstSaveClosure;
 
     CommsRelayState state;
 
@@ -216,6 +222,7 @@ typedef struct _GTKGamesGlobals {
     sqlite3_int64 selRow;
     LaunchParams* params;
     GSList* globalsList;
+    GtkWidget* listWidget;
 } GTKGamesGlobals;
 
 #endif

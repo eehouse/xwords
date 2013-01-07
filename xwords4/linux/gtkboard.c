@@ -456,35 +456,34 @@ createOrLoadObjects( GtkAppGlobals* globals )
     }
 
     if ( !opened ) {
-        CommsAddrRec addr;
+        CommsAddrRec addr = cGlobals->addr;
 
-        XP_MEMSET( &addr, 0, sizeof(addr) );
-        addr.conType = params->conType;
+        /* XP_MEMSET( &addr, 0, sizeof(addr) ); */
+        /* addr.conType = cGlobals->addr.conType; */
 
 #ifdef XWFEATURE_RELAY
-        if ( addr.conType == COMMS_CONN_RELAY ) {
-            XP_ASSERT( !!params->connInfo.relay.relayName );
-            globals->cGlobals.defaultServerName
-                = params->connInfo.relay.relayName;
-        }
+        /* if ( addr.conType == COMMS_CONN_RELAY ) { */
+        /*     XP_ASSERT( !!params->connInfo.relay.relayName ); */
+        /*     globals->cGlobals.defaultServerName */
+        /*         = params->connInfo.relay.relayName; */
+        /* } */
 #endif
-        CommonGlobals* cGlobals = &globals->cGlobals;
         game_makeNewGame( MEMPOOL &cGlobals->game, &cGlobals->gi,
                           cGlobals->util, (DrawCtx*)globals->draw,
                           &cGlobals->cp, &procs, params->gameSeed );
 
-        addr.conType = params->conType;
+        // addr.conType = params->conType;
         if ( 0 ) {
 #ifdef XWFEATURE_RELAY
         } else if ( addr.conType == COMMS_CONN_RELAY ) {
-            addr.u.ip_relay.ipAddr = 0;
-            addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
-            addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
-            addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-            XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
-                        sizeof(addr.u.ip_relay.hostName) - 1 );
-            XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
-                        sizeof(addr.u.ip_relay.invite) - 1 );
+            /* addr.u.ip_relay.ipAddr = 0; */
+            /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
+            /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
+            /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
+            /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
+            /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
+            /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
+            /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
 #endif
 #ifdef XWFEATURE_BLUETOOTH
         } else if ( addr.conType == COMMS_CONN_BT ) {
@@ -2385,6 +2384,8 @@ initGlobals( GtkAppGlobals* globals, LaunchParams* params )
 
     globals->cGlobals.socketChanged = gtk_socket_changed;
     globals->cGlobals.socketChangedClosure = globals;
+    globals->cGlobals.firstSave = newGameSaved;
+    globals->cGlobals.firstSaveClosure = globals;
     globals->cGlobals.addAcceptor = gtk_socket_acceptor;
 #endif
 
@@ -2521,18 +2522,20 @@ freeGlobals( GtkAppGlobals* globals )
 XP_Bool
 makeNewGame( GtkAppGlobals* globals )
 {
-    CommsAddrRec addr;
-    if ( !!globals->cGlobals.game.comms ) {
-        comms_getAddr( globals->cGlobals.game.comms, &addr );
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    if ( !!cGlobals->game.comms ) {
+        comms_getAddr( cGlobals->game.comms, &cGlobals->addr );
     } else {
-        comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
+        comms_getInitialAddr( &cGlobals->addr, RELAY_NAME_DEFAULT, 
+                              RELAY_PORT_DEFAULT );
     }
 
-    CurGameInfo* gi = &globals->cGlobals.gi;
-    XP_Bool success = newGameDialog( globals, gi, &addr, XP_TRUE, XP_FALSE );
-    if ( success && !!gi->dictName && !globals->cGlobals.dict ) {
-        globals->cGlobals.dict =
-            linux_dictionary_make( MEMPOOL globals->cGlobals.params,
+    CurGameInfo* gi = &cGlobals->gi;
+    XP_Bool success = newGameDialog( globals, gi, &cGlobals->addr, 
+                                     XP_TRUE, XP_FALSE );
+    if ( success && !!gi->dictName && !cGlobals->dict ) {
+        cGlobals->dict =
+            linux_dictionary_make( MEMPOOL cGlobals->params,
                                    gi->dictName, XP_TRUE );
     }
     LOG_RETURNF( "%d", success );
