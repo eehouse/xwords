@@ -712,9 +712,6 @@ cleanup( GtkAppGlobals* globals )
 {
     saveGame( &globals->cGlobals );
 
-    game_dispose( &globals->cGlobals.game ); /* takes care of the dict */
-    gi_disposePlayerInfo( MEMPOOL &globals->cGlobals.gi );
-
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &globals->cGlobals );
 #endif
@@ -727,6 +724,9 @@ cleanup( GtkAppGlobals* globals )
 #ifdef XWFEATURE_RELAY
     linux_close_socket( &globals->cGlobals );
 #endif
+    game_dispose( &globals->cGlobals.game ); /* takes care of the dict */
+    gi_disposePlayerInfo( MEMPOOL &globals->cGlobals.gi );
+
     linux_util_vt_destroy( globals->cGlobals.util );
 } /* cleanup */
 
@@ -2384,7 +2384,7 @@ initGlobals( GtkAppGlobals* globals, LaunchParams* params )
 # endif
 
     globals->cGlobals.socketChanged = gtk_socket_changed;
-    globals->cGlobals.socketChangedClosure = &globals;
+    globals->cGlobals.socketChangedClosure = globals;
     globals->cGlobals.addAcceptor = gtk_socket_acceptor;
 #endif
 

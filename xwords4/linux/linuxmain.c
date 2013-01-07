@@ -967,7 +967,7 @@ linux_close_socket( CommonGlobals* cGlobals )
     (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
                                 socket, -1, &cGlobals->storage );
 
-    XP_ASSERT(  -1 == cGlobals->socket );
+    XP_ASSERT( -1 == cGlobals->socket );
 
     XP_LOGF( "linux_close_socket" );
     close( socket );

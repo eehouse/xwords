@@ -25,6 +25,31 @@
 #include "gtkboard.h"
 #include "linuxmain.h"
 
+static void
+recordOpened( GTKGamesGlobals* gg, GtkAppGlobals* globals )
+{
+    gg->globalsList = g_slist_prepend( gg->globalsList, globals );
+    globals->gg = gg;
+}
+
+static void
+recordClosed( GTKGamesGlobals* gg, GtkAppGlobals* globals )
+{
+    gg->globalsList = g_slist_remove( gg->globalsList, globals );
+}
+
+static XP_Bool
+gameIsOpen( GTKGamesGlobals* gg, sqlite3_int64 rowid )
+{
+    XP_Bool found = XP_FALSE;
+    GSList* iter;
+    for ( iter = gg->globalsList; !!iter && !found; iter = iter->next ) {
+        GtkAppGlobals* globals = (GtkAppGlobals*)iter->data;
+        found = globals->cGlobals.selRow == rowid;
+    }
+    return found;
+}
+
 enum { ROW_ITEM, NAME_ITEM, N_ITEMS };
 
 /* Prototype for selection handler callback */
@@ -105,7 +130,7 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
         GtkWidget* gameWindow = globals->window;
         globals->cGlobals.pDb = gg->pDb;
         globals->cGlobals.selRow = -1;
-        globals->gg = gg;
+        recordOpened( gg, globals );
         gtk_widget_show( gameWindow );
     }
 }
@@ -114,13 +139,13 @@ static void
 handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GTKGamesGlobals* gg = (GTKGamesGlobals*)closure;
-    if ( -1 != gg->selRow ) {
+    if ( -1 != gg->selRow && !gameIsOpen( gg, gg->selRow ) ) {
         gg->params->needsNewGame = XP_FALSE;
         GtkAppGlobals* globals = malloc( sizeof(*globals) );
         initGlobals( globals, gg->params );
         globals->cGlobals.pDb = gg->pDb;
         globals->cGlobals.selRow = gg->selRow;
-        globals->gg = gg;
+        recordOpened( gg, globals );
         gtk_widget_show( globals->window );
     }
 }
@@ -138,7 +163,12 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
 {
     LOG_FUNC();
     GTKGamesGlobals* gg = (GTKGamesGlobals*)data;
-    gg = gg;
+    GSList* iter;
+    for ( iter = gg->globalsList; !!iter; iter = iter->next ) {
+        GtkAppGlobals* globals = (GtkAppGlobals*)iter->data;
+        freeGlobals( globals );
+    }
+    g_slist_free( gg->globalsList );
     gtk_main_quit();
 }
 
@@ -195,7 +225,8 @@ freeGameGlobals( gpointer data )
 {
     LOG_FUNC();
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
-    // GTKGamesGlobals* gg = globals->gg;
+    GTKGamesGlobals* gg = globals->gg;
+    recordClosed( gg, globals );
     freeGlobals( globals );
     return 0;                   /* don't run again */
 }
