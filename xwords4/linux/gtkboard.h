@@ -87,7 +87,7 @@ typedef struct GtkAppGlobals {
     CommonGlobals cGlobals;
     GtkWidget* window;
     GtkDrawCtx* draw;
-
+    GTKGamesGlobals* gg;
 /*     GdkPixmap* pixmap; */
     GtkWidget* drawing_area;
 

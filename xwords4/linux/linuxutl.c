@@ -148,7 +148,7 @@ setSquareBonuses( const CommonGlobals* cGlobals )
 {
     XP_U16 nBonuses;
     XWBonusType* bonuses = 
-        bonusesFor( cGlobals->params->gi.boardSize, &nBonuses );
+        bonusesFor( cGlobals->gi.boardSize, &nBonuses );
     if ( !!bonuses ) {
         model_setSquareBonuses( cGlobals->game.model, bonuses, nBonuses );
     }
@@ -390,6 +390,9 @@ linux_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ,
 void
 linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 {
+#ifdef MEM_DEBUG
+    util->mpool = mpool;
+#endif
     util->vtable = XP_MALLOC( mpool, sizeof(UtilVtable) );
 
     util->vtable->m_util_makeEmptyDict = linux_util_makeEmptyDict;
@@ -611,7 +614,7 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
         XP_ASSERT( 0 < nMsgs );
 
         XWStreamCtxt* stream = 
-            mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+            mem_stream_make( MPPARM(cGlobals->util->mpool)
                              cGlobals->params->vtMgr,
                              cGlobals, CHANNEL_NONE, NULL );
         stream_putU16( stream, 1 ); /* number of relayIDs */

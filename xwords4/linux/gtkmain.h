@@ -1,5 +1,5 @@
-/* -*- mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
-/* Copyright 1997 - 2005 by Eric House (xwords@eehouse.org) All rights
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* Copyright 1997 - 2013 by Eric House (xwords@eehouse.org) All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -21,7 +21,9 @@
 #define _GTKMAIN_H_
 
 #include "main.h"
+#include "gtkboard.h"
 
 int gtkmain( LaunchParams* params );
+void windowDestroyed( GtkAppGlobals* globals );
 
 #endif

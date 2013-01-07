@@ -103,7 +103,7 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
     }
     fclose( f );
 
-    stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+    stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
                               cGlobals->params->vtMgr, 
                               closure, CHANNEL_NONE, NULL );
     stream_putBytes( stream, buf, statBuf.st_size );
@@ -131,7 +131,7 @@ streamFromDB( CommonGlobals* cGlobals, void* closure )
             XP_U8 buf[size];
             res = sqlite3_blob_read( ppBlob, buf, size, 0 );
             if ( SQLITE_OK == res ) {
-                stream = mem_stream_make( MPPARM(params->util->mpool) 
+                stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
                                           params->vtMgr, 
                                           closure, CHANNEL_NONE, NULL );
                 stream_putBytes( stream, buf, size );
@@ -213,7 +213,7 @@ catGameHistory( CommonGlobals* cGlobals )
     if ( !!cGlobals->game.model ) {
         XP_Bool gameOver = server_getGameIsOver( cGlobals->game.server );
         XWStreamCtxt* stream = 
-            mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+            mem_stream_make( MPPARM(cGlobals->util->mpool)
                              cGlobals->params->vtMgr,
                              NULL, CHANNEL_NONE, catOnClose );
         model_writeGameHistory( cGlobals->game.model, stream, 
@@ -227,15 +227,15 @@ void
 catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
 {
     XWStreamCtxt* stream;
-    XP_ASSERT( quitter < cGlobals->params->gi.nPlayers );
+    XP_ASSERT( quitter < cGlobals->gi.nPlayers );
 
-    stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+    stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
                               cGlobals->params->vtMgr,
                               NULL, CHANNEL_NONE, catOnClose );
     if ( -1 != quitter ) {
         XP_UCHAR buf[128];
         XP_SNPRINTF( buf, VSIZE(buf), "Player %s resigned\n",
-                     cGlobals->params->gi.players[quitter].name );
+                     cGlobals->gi.players[quitter].name );
         stream_catString( stream, buf );
     }
     server_writeFinalScores( cGlobals->game.server, stream );
@@ -273,14 +273,14 @@ saveGame( CommonGlobals* cGlobals )
             MemStreamCloseCallback onClose = !!cGlobals->pDb?
                 writeToDB : writeToFile;
             outStream = 
-                mem_stream_make_sized( MPPARM(cGlobals->params->util->mpool)
+                mem_stream_make_sized( MPPARM(cGlobals->util->mpool)
                                        cGlobals->params->vtMgr, 
                                        cGlobals->lastStreamSize,
                                        cGlobals, 0, onClose );
             stream_open( outStream );
 
             game_saveToStream( &cGlobals->game, 
-                               &cGlobals->params->gi, 
+                               &cGlobals->gi, 
                                outStream, ++cGlobals->curSaveToken );
             cGlobals->lastStreamSize = stream_getSize( outStream );
             stream_destroy( outStream );
@@ -305,10 +305,10 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
 #ifdef DEBUG
     XP_Bool opened = 
 #endif
-        game_makeFromStream( MPPARM(cGlobals->params->util->mpool) 
+        game_makeFromStream( MPPARM(cGlobals->util->mpool) 
                              stream, &cGlobals->game, 
-                             &params->gi, params->dict, 
-                             &params->dicts, params->util, 
+                             &cGlobals->gi, cGlobals->dict, 
+                             &cGlobals->dicts, cGlobals->util, 
                              NULL /*draw*/,
                              &cGlobals->cp, procs );
     XP_ASSERT( opened );
@@ -333,7 +333,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
             XP_LOGF( "%s: 2: unexpected nRead: %d", __func__, nRead );
             break;
         }
-        stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool) 
+        stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
                                   params->vtMgr, cGlobals, CHANNEL_NONE, 
                                   NULL );
         stream_putBytes( stream, buf, len );
@@ -366,10 +366,10 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
 #ifdef DEBUG
     XP_Bool opened = 
 #endif
-        game_makeFromStream( MPPARM(cGlobals->params->util->mpool) 
+        game_makeFromStream( MPPARM(cGlobals->util->mpool) 
                              stream, &cGlobals->game, 
-                             &params->gi, params->dict, 
-                             &params->dicts, params->util, 
+                             &cGlobals->gi, cGlobals->dict, 
+                             &cGlobals->dicts, cGlobals->util, 
                              NULL /*draw*/,
                              &cGlobals->cp, procs );
     XP_ASSERT( opened );
@@ -397,7 +397,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                 XP_LOGF( "%s: 2: unexpected nRead: %d", __func__, nRead );
                 break;
             }
-            stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool) 
+            stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
                                       params->vtMgr, cGlobals, CHANNEL_NONE, 
                                       NULL );
             stream_putBytes( stream, buf, len );
@@ -1039,7 +1039,7 @@ stream_from_msgbuf( CommonGlobals* globals, unsigned char* bufPtr,
                     XP_U16 nBytes )
 {
     XWStreamCtxt* result;
-    result = mem_stream_make( MPPARM(globals->params->util->mpool)
+    result = mem_stream_make( MPPARM(globals->util->mpool)
                               globals->params->vtMgr,
                               globals, CHANNEL_NONE, NULL );
     stream_putBytes( result, bufPtr, nBytes );
@@ -1137,7 +1137,7 @@ linux_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     DeviceRole newRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
     cGlobals->params->serverRole = newRole;
-    cGlobals->params->gi.serverRole = newRole;
+    cGlobals->gi.serverRole = newRole;
 }
 #endif
 
@@ -1263,8 +1263,7 @@ testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
 }
 
 static void
-walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params), 
-                const DictionaryCtxt* dict, 
+walk_dict_test( MPFORMAL const DictionaryCtxt* dict, 
                 GSList* testPrefixes, const char* testMinMax )
 {
     /* This is just to test that the dict-iterating code works.  The words are
@@ -1337,18 +1336,18 @@ walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params),
         XP_U16 maxCount = dict_numTileFaces( dict );
         IndexData data;
         data.count = maxCount * maxCount;
-        data.indices = XP_MALLOC( params->util->mpool, 
+        data.indices = XP_MALLOC( mpool,
                                   data.count * depth * sizeof(data.indices[0]) );
-        data.prefixes = XP_MALLOC( params->util->mpool, 
+        data.prefixes = XP_MALLOC( mpool,
                                    depth * data.count * sizeof(data.prefixes[0]) );
 
         XP_LOGF( "making index..." );
         dict_makeIndex( &iter, depth, &data );
         XP_LOGF( "DONE making index" );
 
-        data.indices = XP_REALLOC( params->util->mpool, data.indices, 
+        data.indices = XP_REALLOC( mpool, data.indices, 
                                    data.count * depth * sizeof(*data.indices) );
-        data.prefixes = XP_REALLOC( params->util->mpool, data.prefixes,
+        data.prefixes = XP_REALLOC( mpool, data.prefixes,
                                     depth * data.count * sizeof(*data.prefixes) );
 #if 0
         for ( ii = 0; ii < nIndices; ++ii ) {
@@ -1403,14 +1402,14 @@ walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params),
             }
 
         }
-        XP_FREE( params->util->mpool, data.indices );
-        XP_FREE( params->util->mpool, data.prefixes );
+        XP_FREE( mpool, data.indices );
+        XP_FREE( mpool, data.prefixes );
     }
     XP_LOGF( "done" );
 }
 
 static void
-walk_dict_test_all( const LaunchParams* params, GSList* testDicts, 
+walk_dict_test_all( MPFORMAL const LaunchParams* params, GSList* testDicts, 
                     GSList* testPrefixes, const char* testMinMax )
 {
     int ii;
@@ -1418,11 +1417,11 @@ walk_dict_test_all( const LaunchParams* params, GSList* testDicts,
     for ( ii = 0; ii < count; ++ii ) {
         gchar* name = (gchar*)g_slist_nth_data( testDicts, ii );
         DictionaryCtxt* dict = 
-            linux_dictionary_make( MPPARM(params->util->mpool) params, name,
+            linux_dictionary_make( MPPARM(mpool) params, name,
                                    params->useMmap );
         if ( NULL != dict ) {
             XP_LOGF( "walk_dict_test(%s)", name );
-            walk_dict_test( params, dict, testPrefixes, testMinMax );
+            walk_dict_test( MPPARM(mpool) dict, testPrefixes, testMinMax );
             dict_destroy( dict );
         }
     }
@@ -1482,7 +1481,7 @@ getDictPath( const LaunchParams *params, const char* name,
             break;
         }
     }
-    LOG_RETURNF( "%d", success );
+    XP_LOGF( "%s(%s)=>%d", __func__, name, success );
     return success;
 }
 
@@ -1512,36 +1511,46 @@ listDicts( const LaunchParams *params )
     return result;
 }
 
+void
+setupLinuxUtilCallbacks( XW_UtilCtxt* util )
+{
+#ifndef XWFEATURE_STANDALONE_ONLY
+    util->vtable->m_util_informMissing = linux_util_informMissing;
+    util->vtable->m_util_addrChange = linux_util_addrChange;
+    util->vtable->m_util_setIsServer = linux_util_setIsServer;
+#endif
+}
+
 static void
 initParams( LaunchParams* params )
 {
     memset( params, 0, sizeof(*params) );
 
-    params->util = calloc( 1, sizeof(*params->util) );
+    // params->util = calloc( 1, sizeof(*params->util) );
     /* XP_MEMSET( params->util, 0, sizeof(params->util) ); */
 
 #ifdef MEM_DEBUG
-    params->util->mpool = mpool_make();
+    params->mpool = mpool_make();
 #endif
 
-    params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->util->mpool));
-    linux_util_vt_init( MPPARM(params->util->mpool) params->util );
+    params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->mpool));
+    // linux_util_vt_init( MPPARM(params->mpool) params->util );
 #ifndef XWFEATURE_STANDALONE_ONLY
-    params->util->vtable->m_util_informMissing = linux_util_informMissing;
-    params->util->vtable->m_util_addrChange = linux_util_addrChange;
-    params->util->vtable->m_util_setIsServer = linux_util_setIsServer;
+    /* params->util->vtable->m_util_informMissing = linux_util_informMissing; */
+    /* params->util->vtable->m_util_addrChange = linux_util_addrChange; */
+    /* params->util->vtable->m_util_setIsServer = linux_util_setIsServer; */
 #endif
 }
 
 static void
 freeParams( LaunchParams* params )
 {
-    linux_util_vt_destroy( params->util );
-    vtmgr_destroy( MPPARM(params->util->mpool) params->vtMgr );
+    // linux_util_vt_destroy( params->util );
+    vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
 
-    mpool_destroy( params->util->mpool );
+    mpool_destroy( params->mpool );
 
-    free( params->util );
+    // free( params->util );
 }
 
 int
@@ -1558,7 +1567,7 @@ main( int argc, char** argv )
     LaunchParams mainParams;
     XP_U16 nPlayerDicts = 0;
     XP_U16 robotCount = 0;
-    XP_U16 ii;
+    /* XP_U16 ii; */
 #ifdef XWFEATURE_WALKDICT
     GSList* testDicts = NULL;
     GSList* testPrefixes = NULL;
@@ -1610,13 +1619,13 @@ main( int argc, char** argv )
     mainParams.connInfo.ip.port = DEFAULT_PORT;
     mainParams.connInfo.ip.hostName = "localhost";
 #endif
-    mainParams.gi.boardSize = 15;
+    mainParams.pgi.boardSize = 15;
     mainParams.quitAfter = -1;
     mainParams.sleepOnAnchor = XP_FALSE;
     mainParams.printHistory = XP_FALSE;
     mainParams.undoWhenDone = XP_FALSE;
-    mainParams.gi.timerEnabled = XP_FALSE;
-    mainParams.gi.dictLang = -1;
+    mainParams.pgi.timerEnabled = XP_FALSE;
+    mainParams.pgi.dictLang = -1;
     mainParams.noHeartbeat = XP_FALSE;
     mainParams.nHidden = 0;
     mainParams.needsNewGame = XP_FALSE;
@@ -1682,7 +1691,7 @@ main( int argc, char** argv )
             break;
         case CMD_DICT:
             trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
-            mainParams.gi.dictName = copyString( mainParams.util->mpool, dict );
+            mainParams.pgi.dictName = copyString( mainParams.mpool, dict );
             if ( !path ) {
                 path = ".";
             }
@@ -1759,13 +1768,13 @@ main( int argc, char** argv )
             mainParams.skipWarnings = 1;
             break;
         case CMD_LOCALPWD:
-            mainParams.gi.players[mainParams.nLocalPlayers-1].password
+            mainParams.pgi.players[mainParams.nLocalPlayers-1].password
                 = (XP_UCHAR*)optarg;
             break;
         case CMD_LOCALSMARTS:
-            index = mainParams.gi.nPlayers - 1;
-            XP_ASSERT( LP_IS_ROBOT( &mainParams.gi.players[index] ) );
-            mainParams.gi.players[index].robotIQ = atoi(optarg);
+            index = mainParams.pgi.nPlayers - 1;
+            XP_ASSERT( LP_IS_ROBOT( &mainParams.pgi.players[index] ) );
+            mainParams.pgi.players[index].robotIQ = atoi(optarg);
             break;
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
@@ -1781,22 +1790,22 @@ main( int argc, char** argv )
             mainParams.dropNthRcvd = atoi( optarg );
             break;
         case CMD_NOHINTS:
-            mainParams.gi.hintsNotAllowed = XP_TRUE;
+            mainParams.pgi.hintsNotAllowed = XP_TRUE;
             break;
         case CMD_PICKTILESFACEUP:
-            mainParams.gi.allowPickTiles = XP_TRUE;
+            mainParams.pgi.allowPickTiles = XP_TRUE;
             break;
         case CMD_PLAYERNAME:
-            index = mainParams.gi.nPlayers++;
+            index = mainParams.pgi.nPlayers++;
             ++mainParams.nLocalPlayers;
-            mainParams.gi.players[index].robotIQ = 0; /* means human */
-            mainParams.gi.players[index].isLocal = XP_TRUE;
-            mainParams.gi.players[index].name = 
-                copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
+            mainParams.pgi.players[index].robotIQ = 0; /* means human */
+            mainParams.pgi.players[index].isLocal = XP_TRUE;
+            mainParams.pgi.players[index].name = 
+                copyString( mainParams.mpool, (XP_UCHAR*)optarg);
             break;
         case CMD_REMOTEPLAYER:
-            index = mainParams.gi.nPlayers++;
-            mainParams.gi.players[index].isLocal = XP_FALSE;
+            index = mainParams.pgi.nPlayers++;
+            mainParams.pgi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
         case CMD_PORT:
@@ -1805,12 +1814,12 @@ main( int argc, char** argv )
             break;
         case CMD_ROBOTNAME:
             ++robotCount;
-            index = mainParams.gi.nPlayers++;
+            index = mainParams.pgi.nPlayers++;
             ++mainParams.nLocalPlayers;
-            mainParams.gi.players[index].robotIQ = 1; /* real smart by default */
-            mainParams.gi.players[index].isLocal = XP_TRUE;
-            mainParams.gi.players[index].name = 
-                copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
+            mainParams.pgi.players[index].robotIQ = 1; /* real smart by default */
+            mainParams.pgi.players[index].isLocal = XP_TRUE;
+            mainParams.pgi.players[index].name = 
+                copyString( mainParams.mpool, (XP_UCHAR*)optarg);
             break;
         case CMD_SORTNEW:
             mainParams.sortNewTiles = XP_TRUE;
@@ -1822,8 +1831,8 @@ main( int argc, char** argv )
             mainParams.sleepOnAnchor = XP_TRUE;
             break;
         case CMD_TIMERMINUTES:
-            mainParams.gi.gameSeconds = atoi(optarg) * 60;
-            mainParams.gi.timerEnabled = XP_TRUE;
+            mainParams.pgi.gameSeconds = atoi(optarg) * 60;
+            mainParams.pgi.timerEnabled = XP_TRUE;
             break;
         case CMD_UNDOWHENDONE:
             mainParams.undoWhenDone = XP_TRUE;
@@ -1849,13 +1858,13 @@ main( int argc, char** argv )
         case CMD_PHONIES:
             switch( atoi(optarg) ) {
             case 0:
-                mainParams.gi.phoniesAction = PHONIES_IGNORE;
+                mainParams.pgi.phoniesAction = PHONIES_IGNORE;
                 break;
             case 1:
-                mainParams.gi.phoniesAction = PHONIES_WARN;
+                mainParams.pgi.phoniesAction = PHONIES_WARN;
                 break;
             case 2:
-                mainParams.gi.phoniesAction = PHONIES_DISALLOW;
+                mainParams.pgi.phoniesAction = PHONIES_DISALLOW;
                 break;
             default:
                 usage( argv[0], "phonies takes 0 or 1 or 2" );
@@ -1872,7 +1881,7 @@ main( int argc, char** argv )
             mainParams.quitAfter = atoi(optarg);
             break;
         case CMD_BOARDSIZE:
-            mainParams.gi.boardSize = atoi(optarg);
+            mainParams.pgi.boardSize = atoi(optarg);
             break;
 #ifdef XWFEATURE_BLUETOOTH
         case CMD_BTADDR:
@@ -1951,17 +1960,17 @@ main( int argc, char** argv )
         }
     }
 
-    XP_ASSERT( mainParams.gi.nPlayers == mainParams.nLocalPlayers
+    XP_ASSERT( mainParams.pgi.nPlayers == mainParams.nLocalPlayers
                + mainParams.info.serverInfo.nRemotePlayers );
 
     if ( isServer ) {
         if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
-            mainParams.gi.serverRole = SERVER_STANDALONE;
+            mainParams.pgi.serverRole = SERVER_STANDALONE;
         } else {
-            mainParams.gi.serverRole = SERVER_ISSERVER;
+            mainParams.pgi.serverRole = SERVER_ISSERVER;
         }
     } else {
-        mainParams.gi.serverRole = SERVER_ISCLIENT;
+        mainParams.pgi.serverRole = SERVER_ISCLIENT;
     }
 
     /* sanity checks */
@@ -1978,21 +1987,21 @@ main( int argc, char** argv )
         }
     }
 
-    if ( !!mainParams.gi.dictName ) {
+    if ( !!mainParams.pgi.dictName ) {
         /* char path[256]; */
         /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
-        mainParams.dict = 
-            linux_dictionary_make( MPPARM(mainParams.util->mpool) &mainParams,
-                                   mainParams.gi.dictName,
-                                   mainParams.useMmap );
-        XP_ASSERT( !!mainParams.dict );
-        mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
+        /* mainParams.dict =  */
+        /*     linux_dictionary_make( MPPARM(mainParams.mpool) &mainParams, */
+        /*                            mainParams.pgi.dictName, */
+        /*                            mainParams.useMmap ); */
+        /* XP_ASSERT( !!mainParams.dict ); */
+        /* mainParams.pgi.dictLang = dict_getLangCode( mainParams.dict ); */
     } else if ( isServer ) {
 #ifdef STUBBED_DICT
         mainParams.dict = make_stubbed_dict( 
             MPPARM_NOCOMMA(mainParams.util->mpool) );
         XP_WARNF( "no dictionary provided: using English stub dict\n" );
-        mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
+        mainParams.pgi.dictLang = dict_getLangCode( mainParams.dict );
 #else
         if ( 0 == nPlayerDicts ) {
             mainParams.needsNewGame = XP_TRUE;
@@ -2003,7 +2012,7 @@ main( int argc, char** argv )
     }
 
     if ( 0 < mainParams.info.serverInfo.nRemotePlayers
-         && SERVER_STANDALONE == mainParams.gi.serverRole ) {
+         && SERVER_STANDALONE == mainParams.pgi.serverRole ) {
         mainParams.needsNewGame = XP_TRUE;
     }
 
@@ -2011,20 +2020,20 @@ main( int argc, char** argv )
        given.  It's an error to give too many, or not to give enough if
        there's no game-dict */
     if ( 0 < nPlayerDicts ) {
-        XP_U16 nextDict = 0;
-        for ( ii = 0; ii < mainParams.gi.nPlayers; ++ii ) {
-            if ( mainParams.gi.players[ii].isLocal ) {
-                const XP_UCHAR* name = mainParams.playerDictNames[nextDict++];
-                XP_ASSERT( !!name );
-                mainParams.dicts.dicts[ii] = 
-                    linux_dictionary_make( MPPARM(mainParams.util->mpool) 
-                                           &mainParams, name, mainParams.useMmap );
-            }
-        }
-        if ( nextDict < nPlayerDicts ) {
-            usage( argv[0], " --player-dict used more times than there are "
-                   "local players" );
-        }
+        /* XP_U16 nextDict = 0; */
+        /* for ( ii = 0; ii < mainParams.pgi.nPlayers; ++ii ) { */
+            /* if ( mainParams.pgi.players[ii].isLocal ) { */
+                /* const XP_UCHAR* name = mainParams.playerDictNames[nextDict++]; */
+                /* XP_ASSERT( !!name ); */
+                /* mainParams.dicts.dicts[ii] =  */
+                /*     linux_dictionary_make( MPPARM(mainParams.mpool)  */
+                /*                            &mainParams, name, mainParams.useMmap ); */
+            /* } */
+        /* } */
+        /* if ( nextDict < nPlayerDicts ) { */
+        /*     usage( argv[0], " --player-dict used more times than there are " */
+        /*            "local players" ); */
+        /* } */
     }
 
     /* if ( !isServer ) { */
@@ -2034,7 +2043,7 @@ main( int argc, char** argv )
     /* } */
 #ifdef XWFEATURE_WALKDICT
     if ( !!testDicts ) {
-        walk_dict_test_all( &mainParams, testDicts, testPrefixes, testMinMax );
+        walk_dict_test_all( mainParams.mpool, &mainParams, testDicts, testPrefixes, testMinMax );
         exit( 0 );
     }
 #endif
@@ -2099,7 +2108,7 @@ main( int argc, char** argv )
     /*     mainParams.util->vtable->m_util_makeStreamFromAddr =  */
     /* 	linux_util_makeStreamFromAddr; */
 
-    mainParams.util->gameInfo = &mainParams.gi;
+    // mainParams.util->gameInfo = &mainParams.pgi;
 
     srandom( seed );	/* init linux random number generator */
     XP_LOGF( "seeded srandom with %d", seed );
@@ -2122,8 +2131,8 @@ main( int argc, char** argv )
     }
 
     if ( mainParams.needsNewGame ) {
-        gi_initPlayerInfo( MPPARM(mainParams.util->mpool) 
-                           &mainParams.gi, NULL );
+        gi_initPlayerInfo( MPPARM(mainParams.mpool) 
+                           &mainParams.pgi, NULL );
     }
 
     /* curses doesn't have newgame dialog */

@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "make -j MEMDEBUG=TRUE";-*- */ 
+/* -*- compile-command: "make -j MEMDEBUG=TRUE";-*- */ 
 /* 
  * Copyright 2006-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -93,7 +93,7 @@ linux_sms_init( CommonGlobals* globals, const CommsAddrRec* addr )
 {
     LinSMSData* data = globals->smsData;
     if ( !data ) {
-        data = XP_MALLOC( globals->params->util->mpool, sizeof(*data) );
+        data = XP_MALLOC( globals->util->mpool, sizeof(*data) );
         XP_ASSERT( !!data );
         XP_MEMSET( data, 0, sizeof(*data) );
         globals->smsData = data;
@@ -125,7 +125,7 @@ linux_sms_close( CommonGlobals* globals )
 {
     LinSMSData* data = globals->smsData;
     if ( !!data ) {
-        XP_FREE( globals->params->util->mpool, data );
+        XP_FREE( globals->util->mpool, data );
         globals->smsData = NULL;
     }
 } /* linux_sms_close */

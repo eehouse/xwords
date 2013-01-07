@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -105,6 +105,7 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
         GtkWidget* gameWindow = globals->window;
         globals->cGlobals.pDb = gg->pDb;
         globals->cGlobals.selRow = -1;
+        globals->gg = gg;
         gtk_widget_show( gameWindow );
     }
 }
@@ -119,6 +120,7 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
         initGlobals( globals, gg->params );
         globals->cGlobals.pDb = gg->pDb;
         globals->cGlobals.selRow = gg->selRow;
+        globals->gg = gg;
         gtk_widget_show( globals->window );
     }
 }
@@ -140,6 +142,15 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
     gtk_main_quit();
 }
 
+static void
+addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
+{
+    GtkWidget* button = gtk_button_new_with_label( label );
+    gtk_container_add( GTK_CONTAINER(parent), button );
+    g_signal_connect( GTK_OBJECT(button), "clicked",
+                      G_CALLBACK(proc), closure );
+    gtk_widget_show( button );
+}
 
 static GtkWidget* 
 makeGamesWindow( GTKGamesGlobals* gg ) 
@@ -170,25 +181,30 @@ makeGamesWindow( GTKGamesGlobals* gg )
     GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
     gtk_widget_show( hbox );
     gtk_container_add( GTK_CONTAINER(vbox), hbox );
-    GtkWidget* button = gtk_button_new_with_label( "New Game" );
-    gtk_container_add( GTK_CONTAINER(hbox), button );
-    g_signal_connect( GTK_OBJECT(button), "clicked",
-                      G_CALLBACK(handle_newgame_button), gg );
-    gtk_widget_show( button );
-    
-    button = gtk_button_new_with_label( "Open" );
-    gtk_container_add( GTK_CONTAINER(hbox), button );
-    g_signal_connect( GTK_OBJECT(button), "clicked",
-                      G_CALLBACK(handle_open_button), gg );
-    gtk_widget_show( button );
-    button = gtk_button_new_with_label( "Quit" );
-    gtk_container_add( GTK_CONTAINER(hbox), button );
-    g_signal_connect( GTK_OBJECT(button), "clicked",
-                      G_CALLBACK(handle_quit_button), gg );
-    gtk_widget_show( button );
+
+    addButton( "New game", hbox, G_CALLBACK(handle_newgame_button), gg );
+    addButton( "Open", hbox, G_CALLBACK(handle_open_button), gg );
+    addButton( "Quit", hbox, G_CALLBACK(handle_quit_button), gg );
 
     gtk_widget_show( window );
     return window;
+}
+
+static gint
+freeGameGlobals( gpointer data )
+{
+    LOG_FUNC();
+    GtkAppGlobals* globals = (GtkAppGlobals*)data;
+    // GTKGamesGlobals* gg = globals->gg;
+    freeGlobals( globals );
+    return 0;                   /* don't run again */
+}
+
+void
+windowDestroyed( GtkAppGlobals* globals )
+{
+    /* schedule to run after we're back to main loop */
+    (void)g_idle_add( freeGameGlobals, globals );
 }
 
 int

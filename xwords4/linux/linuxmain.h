@@ -94,6 +94,8 @@ void setOneSecondTimer( CommonGlobals* cGlobals );
 # define setOneSecondTimer( cGlobals )
 #endif
 
+void setupLinuxUtilCallbacks( XW_UtilCtxt* util );
+
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */
 

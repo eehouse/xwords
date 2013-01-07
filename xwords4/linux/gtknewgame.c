@@ -552,10 +552,9 @@ newGameDialog( GtkAppGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
 
     state.globals = globals;
     state.gi = gi;
-    state.newGameCtxt = newg_make( MPPARM(globals->cGlobals.params
-                                          ->util->mpool) 
+    state.newGameCtxt = newg_make( MPPARM(globals->cGlobals.util->mpool) 
                                    isNewGame,
-                                   globals->cGlobals.params->util,
+                                   globals->cGlobals.util,
                                    gtk_newgame_col_enable,
                                    gtk_newgame_attr_enable,
                                    gtk_newgame_col_get,
@@ -585,7 +584,7 @@ newGameDialog( GtkAppGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
         if ( !state.cancelled && !state.revert ) {
             if ( newg_store( state.newGameCtxt, gi, XP_TRUE ) ) {
                 gi->boardSize = state.nCols;
-                replaceStringIfDifferent( globals->cGlobals.params->util->mpool,
+                replaceStringIfDifferent( globals->cGlobals.util->mpool,
                                           &gi->dictName, state.dict );
             } else {
                 /* Do it again if we warned user of inconsistency. */

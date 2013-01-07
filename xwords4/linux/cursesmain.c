@@ -206,7 +206,7 @@ static CursesMenuHandler getHandlerForKey( const MenuList* list, char ch );
 
 
 #ifdef MEM_DEBUG
-# define MEMPOOL params->util->mpool,
+# define MEMPOOL cGlobals->util->mpool,
 #else
 # define MEMPOOL
 #endif
@@ -235,7 +235,7 @@ curses_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
     XP_S16 index;
-    char* playerName = globals->cGlobals.params->gi.players[playerNum].name;
+    char* playerName = globals->cGlobals.gi.players[playerNum].name;
 
     snprintf( query, sizeof(query), 
               "Pick tile for %s! (Tab or type letter to select "
@@ -253,7 +253,7 @@ curses_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi),
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
     XP_S16 index;
-    char* playerName = globals->cGlobals.params->gi.players[playerNum].name;
+    char* playerName = globals->cGlobals.gi.players[playerNum].name;
 
     snprintf( query, sizeof(query), 
               "Pick tile for %s! (Tab or type letter to select "
@@ -341,7 +341,7 @@ cursesShowFinalScores( CursesAppGlobals* globals )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make( MPPARM(globals->cGlobals.params->util->mpool)
+    stream = mem_stream_make( MPPARM(globals->cGlobals.util->mpool)
                               globals->cGlobals.params->vtMgr,
                               globals, CHANNEL_NONE, NULL );
     server_writeFinalScores( globals->cGlobals.game.server, stream );
@@ -1083,7 +1083,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
                that on the screen before giving the server another
                shot.  So just call the idle proc. */
             if ( redraw ) {
-                curses_util_requestTime( globals->cGlobals.params->util );
+                curses_util_requestTime( globals->cGlobals.util );
             }
         }
     }
@@ -1477,7 +1477,7 @@ curses_util_remSelected( XW_UtilCtxt* uc )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make( MPPARM(globals->cGlobals.params->util->mpool)
+    stream = mem_stream_make( MPPARM(globals->cGlobals.util->mpool)
                               globals->cGlobals.params->vtMgr,
                               globals, CHANNEL_NONE, NULL );
     board_formatRemainingTiles( globals->cGlobals.game.board, stream );
@@ -1581,7 +1581,7 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
     BoardCtxt* board = globals->cGlobals.game.board;
     int remWidth = width;
-    int nRows = globals->cGlobals.params->gi.boardSize;
+    int nRows = globals->cGlobals.gi.boardSize;
 
     cellWidth = CURSES_CELL_WIDTH;
     cellHt = CURSES_CELL_HT;
@@ -1693,6 +1693,7 @@ void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
     int width, height;
+    CommonGlobals* cGlobals = &g_globals.cGlobals;
 
     memset( &g_globals, 0, sizeof(g_globals) );
 
@@ -1723,7 +1724,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.cp.robotTradePct = params->robotTradePct;
 #endif
 
-    setupCursesUtilCallbacks( &g_globals, params->util );
+    setupCursesUtilCallbacks( &g_globals, g_globals.cGlobals.util );
 
 #ifdef XWFEATURE_RELAY
     if ( params->conType == COMMS_CONN_RELAY ) {
@@ -1788,26 +1789,26 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 
         if ( !!stream ) {
-            (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
-                                       &params->gi, params->dict, &params->dicts,
-                                       params->util, 
+            (void)game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
+                                       &cGlobals->gi, cGlobals->dict, &cGlobals->dicts,
+                                       cGlobals->util, 
                                        (DrawCtx*)g_globals.draw, 
                                        &g_globals.cGlobals.cp, &procs );
 
             stream_destroy( stream );
-            if ( !isServer && params->gi.serverRole == SERVER_ISSERVER ) {
+            if ( !isServer && cGlobals->gi.serverRole == SERVER_ISSERVER ) {
                 isServer = XP_TRUE;
             }
             opened = XP_TRUE;
         }
         if ( !opened ) {
-            game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
-                              params->util, (DrawCtx*)g_globals.draw,
+            game_makeNewGame( MEMPOOL &cGlobals->game, &cGlobals->gi,
+                              cGlobals->util, (DrawCtx*)g_globals.draw,
                               &g_globals.cGlobals.cp, &procs, params->gameSeed );
         }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        if ( g_globals.cGlobals.game.comms ) {
+        if ( cGlobals->game.comms ) {
             CommsAddrRec addr = {0};
 
             if ( 0 ) {
@@ -1839,22 +1840,22 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                            sizeof(params->connInfo.bt.hostAddr) );
 # endif
             }
-            comms_setAddr( g_globals.cGlobals.game.comms, &addr );
+            comms_setAddr( cGlobals->game.comms, &addr );
         }
 #endif
 
-        model_setDictionary( g_globals.cGlobals.game.model, params->dict );
-        setSquareBonuses( &g_globals.cGlobals );
+        model_setDictionary( cGlobals->game.model, cGlobals->dict );
+        setSquareBonuses( cGlobals );
         positionSizeStuff( &g_globals, width, height );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* send any events that need to get off before the event loop begins */
         if ( !isServer ) {
             if ( 1 /* stream_open( params->info.clientInfo.stream )  */) {
-                server_initClientConnection( g_globals.cGlobals.game.server, 
+                server_initClientConnection( cGlobals->game.server, 
                                              mem_stream_make( MEMPOOL
                                                               params->vtMgr,
-                                                              &g_globals.cGlobals,
+                                                              cGlobals,
                                                               (XP_PlayerAddr)0,
                                                               sendOnClose ) );
             } else {
@@ -1896,7 +1897,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     saveGame( &g_globals.cGlobals );
 
     game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
-    gi_disposePlayerInfo( MEMPOOL &g_globals.cGlobals.params->gi );
+    gi_disposePlayerInfo( MEMPOOL &cGlobals->gi );
     
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &g_globals.cGlobals );

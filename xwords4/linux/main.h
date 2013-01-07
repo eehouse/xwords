@@ -46,10 +46,8 @@ typedef struct LinuxUtilCtxt {
 
 typedef struct LaunchParams {
 /*     CommPipeCtxt* pipe; */
-    XW_UtilCtxt* util;
-    DictionaryCtxt* dict;
-    CurGameInfo gi;
-    PlayerDicts dicts;
+    CurGameInfo pgi;
+
     GSList* dictDirs;
     char* fileName;
     XP_U16 saveFailPct;
@@ -139,7 +137,7 @@ typedef struct LaunchParams {
         ServerInfo serverInfo;
         ClientInfo clientInfo;
     } info;
-
+    MPSLOT
 } LaunchParams;
 
 typedef struct CommonGlobals CommonGlobals;
@@ -167,8 +165,12 @@ typedef struct _TimerInfo {
 struct CommonGlobals {
     LaunchParams* params;
     CommonPrefs cp;
+    XW_UtilCtxt* util;
 
     XWGame game;
+    CurGameInfo gi;
+    DictionaryCtxt* dict;
+    PlayerDicts dicts;
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
     XP_Bool manualFinal;        /* use asked for final scores */
@@ -213,6 +215,7 @@ typedef struct _GTKGamesGlobals {
     sqlite3* pDb;
     sqlite3_int64 selRow;
     LaunchParams* params;
+    GSList* globalsList;
 } GTKGamesGlobals;
 
 #endif
