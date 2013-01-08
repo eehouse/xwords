@@ -50,10 +50,9 @@ gameIsOpen( GTKGamesGlobals* gg, sqlite3_int64 rowid )
     return found;
 }
 
-enum { ROW_ITEM, NAME_ITEM, N_ITEMS };
+enum { CHECK_ITEM, ROW_ITEM, NAME_ITEM, N_ITEMS };
 
-/* Prototype for selection handler callback */
-static void 
+static void
 tree_selection_changed_cb( GtkTreeSelection* selection, gpointer data )
 {
     GTKGamesGlobals* gg = (GTKGamesGlobals*)data;
@@ -70,8 +69,19 @@ static GtkWidget*
 init_games_list( GTKGamesGlobals* gg )
 {
     GtkWidget* list = gtk_tree_view_new();
-    GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
-    GtkTreeViewColumn* column = 
+    GtkCellRenderer* renderer;
+    GtkTreeViewColumn* column;
+
+    renderer = gtk_cell_renderer_toggle_new();
+    /* gtk_cell_renderer_toggle_set_activatable( GTK_CELL_RENDERER_TOGGLE(renderer), */
+    /*                                           TRUE ); */
+    column = 
+        gtk_tree_view_column_new_with_attributes( "<sel>", renderer, "active", 
+                                                  CHECK_ITEM, NULL );
+    gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
+
+    renderer = gtk_cell_renderer_text_new();
+    column = 
         gtk_tree_view_column_new_with_attributes( "Row", renderer, "text", 
                                                   ROW_ITEM, NULL );
     gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
@@ -81,12 +91,12 @@ init_games_list( GTKGamesGlobals* gg )
                                                        NAME_ITEM, NULL );
     gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
 
-    GtkListStore* store = gtk_list_store_new( N_ITEMS, G_TYPE_INT64, 
+    GtkListStore* store = gtk_list_store_new( N_ITEMS, G_TYPE_BOOLEAN, G_TYPE_INT64, 
                                               G_TYPE_STRING );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
 
-    GtkTreeSelection* select = 
+    GtkTreeSelection* select =
         gtk_tree_view_get_selection( GTK_TREE_VIEW (list) );
     gtk_tree_selection_set_mode( select, GTK_SELECTION_SINGLE );
     g_signal_connect( G_OBJECT(select), "changed",
