@@ -95,6 +95,11 @@ void setOneSecondTimer( CommonGlobals* cGlobals );
 #endif
 
 void setupLinuxUtilCallbacks( XW_UtilCtxt* util );
+void initFromParams( CommonGlobals* cGlobals, LaunchParams* params );
+void setupUtil( CommonGlobals* cGlobals );
+
+DictionaryCtxt* makeDictForStream( CommonGlobals* cGlobals, 
+                                   XWStreamCtxt* stream );
 
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */

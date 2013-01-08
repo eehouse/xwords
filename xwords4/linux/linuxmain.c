@@ -58,6 +58,7 @@
 #include "dictiter.h"
 #include "main.h"
 #include "gamesdb.h"
+#include "linuxdict.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
 #endif
@@ -150,6 +151,25 @@ streamFromDB( CommonGlobals* cGlobals, void* closure )
     return stream;
 }
 #endif
+
+DictionaryCtxt*
+makeDictForStream( CommonGlobals* cGlobals, XWStreamCtxt* stream ) 
+{
+    CurGameInfo gi = {0};
+    XWStreamPos pos = stream_getPos( stream, POS_READ );
+    if ( !game_makeFromStream( MPPARM(cGlobals->util->mpool) stream, NULL, &gi,
+                               NULL, NULL, NULL, NULL, NULL, NULL ) ) {
+        XP_ASSERT(0);
+    }
+    stream_setPos( stream, POS_READ, pos );
+
+    DictionaryCtxt* dict =
+        linux_dictionary_make( MPPARM(cGlobals->util->mpool) cGlobals->params, 
+                               gi.dictName, XP_TRUE );
+    gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
+    XP_ASSERT( !!dict );
+    return dict;
+}
 
 void
 writeToFile( XWStreamCtxt* stream, void* closure )
@@ -1521,6 +1541,60 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
     util->vtable->m_util_addrChange = linux_util_addrChange;
     util->vtable->m_util_setIsServer = linux_util_setIsServer;
 #endif
+}
+
+/* Set up cGlobals->gi and cGlobals->addr based on params fields */
+void
+initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
+{
+    LOG_FUNC();
+    /* CurGameInfo */
+    cGlobals->gi = params->pgi;
+
+    /* addr */
+    CommsAddrRec* addr = &cGlobals->addr;
+    XP_MEMSET( addr, 0, sizeof(*addr) );
+    if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+    } else if ( params->conType == COMMS_CONN_RELAY ) {
+        addr->conType = COMMS_CONN_RELAY;
+        addr->u.ip_relay.ipAddr = 0;       /* ??? */
+        addr->u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+        addr->u.ip_relay.seeksPublicRoom = 
+            params->connInfo.relay.seeksPublicRoom;
+        addr->u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
+        XP_STRNCPY( addr->u.ip_relay.hostName, 
+                    params->connInfo.relay.relayName,
+                    sizeof(addr->u.ip_relay.hostName) - 1 );
+        XP_STRNCPY( addr->u.ip_relay.invite, params->connInfo.relay.invite,
+                    sizeof(addr->u.ip_relay.invite) - 1 );
+#endif
+#ifdef XWFEATURE_SMS
+    } else if ( params->conType == COMMS_CONN_SMS ) {
+        addr->conType = COMMS_CONN_SMS;
+        XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.serverPhone,
+                    sizeof(addr->u.sms.phone) - 1 );
+        addr->u.sms.port = params->connInfo.sms.port;
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( params->conType == COMMS_CONN_BT ) {
+        addr->conType = COMMS_CONN_BT;
+        XP_ASSERT( sizeof(addr->u.bt.btAddr) 
+                   >= sizeof(params->connInfo.bt.hostAddr));
+        XP_MEMCPY( &addr->u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                   sizeof(params->connInfo.bt.hostAddr) );
+#endif
+    }
+}
+
+void
+setupUtil( CommonGlobals* cGlobals )
+{
+    XW_UtilCtxt* util = calloc( 1, sizeof(*util) );
+    cGlobals->util = util;
+    linux_util_vt_init( MPPARM(cGlobals->params->mpool) util );
+    util->gameInfo = &cGlobals->gi;
+    setupLinuxUtilCallbacks( util );
 }
 
 static void

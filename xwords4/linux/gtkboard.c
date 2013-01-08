@@ -59,6 +59,7 @@
 #include "gtkpasswdask.h"
 #include "gtkntilesask.h"
 #include "gtkaskdict.h"
+#include "linuxdict.h"
 /* #include "undo.h" */
 #include "gtkdraw.h"
 #include "memstream.h"
@@ -434,16 +435,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
     if ( !!stream ) {
         if ( NULL == cGlobals->dict ) {
-            CurGameInfo gi = {0};
-            XWStreamPos pos = stream_getPos( stream, POS_READ );
-            if ( !game_makeFromStream( MEMPOOL stream, NULL, &gi, NULL, NULL, 
-                                       NULL, NULL, NULL, NULL ) ) {
-                XP_ASSERT(0);
-            }
-            stream_setPos( stream, POS_READ, pos );
-            cGlobals->dict = linux_dictionary_make( MEMPOOL params, gi.dictName, XP_TRUE );
-            gi_disposePlayerInfo( MEMPOOL &gi );
-            XP_ASSERT( !!cGlobals->dict );
+            cGlobals->dict = makeDictForStream( cGlobals, stream );
         }
 
         opened = game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
@@ -2405,12 +2397,8 @@ initGlobals( GtkAppGlobals* globals, LaunchParams* params )
     globals->cGlobals.cp.hideCrosshairs = params->hideCrosshairs;
 #endif
 
-    XW_UtilCtxt* util = calloc( 1, sizeof(*globals->cGlobals.util) );
-    globals->cGlobals.util = util;
-    linux_util_vt_init( MPPARM(params->mpool) util );
-    util->gameInfo = &globals->cGlobals.gi;
-    setupLinuxUtilCallbacks( util );
-    setupGtkUtilCallbacks( globals, util );
+    setupUtil( &globals->cGlobals );
+    setupGtkUtilCallbacks( globals, globals->cGlobals.util );
 
     globals->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     if ( !!params->fileName ) {

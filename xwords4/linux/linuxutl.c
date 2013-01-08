@@ -31,6 +31,7 @@
 
 #include "linuxutl.h"
 #include "main.h"
+#include "linuxdict.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef DEBUG

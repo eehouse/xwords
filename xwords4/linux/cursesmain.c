@@ -40,6 +40,7 @@
 
 #include "linuxmain.h"
 #include "linuxutl.h"
+#include "linuxdict.h"
 #include "cursesmain.h"
 #include "cursesask.h"
 #include "cursesletterask.h"
@@ -1724,7 +1725,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.cp.robotTradePct = params->robotTradePct;
 #endif
 
+    setupUtil( &g_globals.cGlobals );
     setupCursesUtilCallbacks( &g_globals, g_globals.cGlobals.util );
+
+    initFromParams( &g_globals.cGlobals, params );
 
 #ifdef XWFEATURE_RELAY
     if ( params->conType == COMMS_CONN_RELAY ) {
@@ -1789,6 +1793,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 
         if ( !!stream ) {
+            if ( NULL == cGlobals->dict ) {
+                cGlobals->dict = makeDictForStream( cGlobals, stream );
+            }
             (void)game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
                                        &cGlobals->gi, cGlobals->dict, &cGlobals->dicts,
                                        cGlobals->util, 
@@ -1844,6 +1851,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 #endif
 
+        if ( NULL == cGlobals->dict ) {
+            cGlobals->dict = 
+                linux_dictionary_make( MEMPOOL params, 
+                                       cGlobals->gi.dictName, XP_TRUE );
+        }
         model_setDictionary( cGlobals->game.model, cGlobals->dict );
         setSquareBonuses( cGlobals );
         positionSizeStuff( &g_globals, width, height );
@@ -1910,5 +1922,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 
     endwin();
+
+    linux_util_vt_destroy( g_globals.cGlobals.util );
 } /* cursesmain */
 #endif /* PLATFORM_NCURSES */
