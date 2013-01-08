@@ -56,18 +56,13 @@ enum { ROW_ITEM, NAME_ITEM, N_ITEMS };
 static void 
 tree_selection_changed_cb( GtkTreeSelection* selection, gpointer data )
 {
-    LOG_FUNC();
     GTKGamesGlobals* gg = (GTKGamesGlobals*)data;
 
     GtkTreeIter iter;
     GtkTreeModel *model;
-    gchar *row;
 
     if ( gtk_tree_selection_get_selected( selection, &model, &iter ) ) {
-        gtk_tree_model_get( model, &iter, ROW_ITEM, &row, -1 );
-        sscanf( row, "%lld", &gg->selRow );
-        g_print ("You selected row %s (parsed: %lld)\n", row, gg->selRow );
-        g_free( row );
+        gtk_tree_model_get( model, &iter, ROW_ITEM, &gg->selRow, -1 );
     }
 }
 
@@ -86,8 +81,8 @@ init_games_list( GTKGamesGlobals* gg )
                                                        NAME_ITEM, NULL );
     gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
 
-    GtkListStore* store = gtk_list_store_new( N_ITEMS, // G_TYPE_INT64, 
-                                              G_TYPE_STRING, G_TYPE_STRING );
+    GtkListStore* store = gtk_list_store_new( N_ITEMS, G_TYPE_INT64, 
+                                              G_TYPE_STRING );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
 
@@ -106,11 +101,11 @@ add_to_list( GtkWidget* list, sqlite3_int64* rowid, const gchar* str )
         GTK_LIST_STORE( gtk_tree_view_get_model(GTK_TREE_VIEW(list)));
     GtkTreeIter iter;
     gtk_list_store_append( store, &iter );
-    XP_LOGF( "adding %lld, %s", *rowid, str );
-    gchar buf[16];
-    snprintf( buf, sizeof(buf), "%lld", *rowid );
+    /* XP_LOGF( "adding %lld, %s", *rowid, str ); */
+    /* gchar buf[16]; */
+    /* snprintf( buf, sizeof(buf), "%lld", *rowid ); */
     gtk_list_store_set( store, &iter, 
-                        ROW_ITEM, buf,
+                        ROW_ITEM, *rowid,
                         NAME_ITEM, str,
                         -1 );
     XP_LOGF( "DONE adding" );
