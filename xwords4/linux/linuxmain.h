@@ -100,6 +100,8 @@ void setupUtil( CommonGlobals* cGlobals );
 
 DictionaryCtxt* makeDictForStream( CommonGlobals* cGlobals, 
                                    XWStreamCtxt* stream );
+void linuxSetIsServer( CommonGlobals* cGlobals, XP_Bool isServer );
+void linuxChangeRoles( CommonGlobals* cGlobals );
 
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */

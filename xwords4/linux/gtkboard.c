@@ -1534,6 +1534,22 @@ gtk_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
     (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
 }
 
+static gint
+changeRoles( gpointer data )
+{
+    linuxChangeRoles( (CommonGlobals*)data );
+    return 0;
+}
+
+static void
+gtk_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    linuxSetIsServer( cGlobals, isServer );
+
+    (void)g_idle_add( changeRoles, cGlobals );
+}
+
 /* define this to prevent user events during debugging from stopping the engine */
 /* #define DONT_ABORT_ENGINE */
 
@@ -1604,7 +1620,7 @@ pen_timer_func( gpointer data )
     }
 
     return XP_FALSE;
-} /* pentimer_idle_func */
+} /* pen_timer_func */
 
 static gint
 score_timer_func( gpointer data )
@@ -2061,6 +2077,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_informUndo = gtk_util_informUndo;
     util->vtable->m_util_notifyGameOver = gtk_util_notifyGameOver;
     util->vtable->m_util_informNetDict = gtk_util_informNetDict;
+    util->vtable->m_util_setIsServer = gtk_util_setIsServer;
 #ifdef XWFEATURE_HILITECELL
     util->vtable->m_util_hiliteCell = gtk_util_hiliteCell;
 #endif

@@ -1152,14 +1152,27 @@ linux_util_addrChange( XW_UtilCtxt* uc,
     }
 }
 
-static void
-linux_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
+void
+linuxSetIsServer( CommonGlobals* cGlobals, XP_Bool isServer )
 {
-    XP_LOGF( "%s(%d)", __func__, isServer );
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    XP_LOGF( "%s(isServer=%d)", __func__, isServer );
     DeviceRole newRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
     cGlobals->params->serverRole = newRole;
     cGlobals->gi.serverRole = newRole;
+}
+
+void 
+linuxChangeRoles( CommonGlobals* cGlobals )
+{
+    ServerCtxt* server = cGlobals->game.server;
+    server_reset( server, cGlobals->game.comms );
+    if ( SERVER_ISCLIENT == cGlobals->gi.serverRole ) {
+        XWStreamCtxt* stream =
+            mem_stream_make( MPPARM(cGlobals->util->mpool) cGlobals->params->vtMgr,
+                             cGlobals, CHANNEL_NONE, sendOnClose );
+        server_initClientConnection( server, stream );
+    }
+    (void)server_do( server );
 }
 #endif
 
@@ -1539,7 +1552,6 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_informMissing = linux_util_informMissing;
     util->vtable->m_util_addrChange = linux_util_addrChange;
-    util->vtable->m_util_setIsServer = linux_util_setIsServer;
 #endif
 }
 

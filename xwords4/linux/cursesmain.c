@@ -407,6 +407,14 @@ curses_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
     XP_LOGF( "%s: %s => %s (cksum: %s)", __func__, oldName, newName, newSum );
 }
 
+static void
+curses_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
+{
+    LOG_FUNC();
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    linuxSetIsServer( cGlobals, isServer );
+}
+
 #ifdef XWFEATURE_HILITECELL
 static XP_Bool
 curses_util_hiliteCell( XW_UtilCtxt* uc, 
@@ -1526,6 +1534,8 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_informUndo = curses_util_informUndo;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
     util->vtable->m_util_informNetDict = curses_util_informNetDict;
+    util->vtable->m_util_setIsServer = curses_util_setIsServer;
+
 #ifdef XWFEATURE_HILITECELL
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
 #endif
