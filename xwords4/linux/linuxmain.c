@@ -307,6 +307,10 @@ saveGame( CommonGlobals* cGlobals )
 
             game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
             XP_LOGF( "%s: saved", __func__ );
+
+            if ( !!cGlobals->pDb ) {
+                summarize( cGlobals );
+            }
         } else {
             XP_LOGF( "%s: simulating save failure", __func__ );
         }

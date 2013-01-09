@@ -2393,8 +2393,8 @@ initGlobals( GtkAppGlobals* globals, LaunchParams* params )
 
     globals->cGlobals.socketChanged = gtk_socket_changed;
     globals->cGlobals.socketChangedClosure = globals;
-    globals->cGlobals.firstSave = newGameSaved;
-    globals->cGlobals.firstSaveClosure = globals;
+    globals->cGlobals.onSave = onGameSaved;
+    globals->cGlobals.onSaveClosure = globals;
     globals->cGlobals.addAcceptor = gtk_socket_acceptor;
 #endif
 

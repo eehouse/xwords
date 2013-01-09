@@ -27,15 +27,25 @@
 #include "main.h" 
 #include "comtypes.h"
 
+typedef struct _GameInfo {
+    XP_UCHAR name[128];
+    XP_UCHAR room[128];
+    XP_S16 nMoves;
+    XP_Bool gameOver;
+    XP_S16 turn;
+    XP_S16 nMissing;
+} GameInfo;
+
+
 sqlite3* openGamesDB( const char* dbName );
 void closeGamesDB( sqlite3* dbp );
 
 void writeToDB( XWStreamCtxt* stream, void* closure );
+void summarize( CommonGlobals* cGlobals );
 
 /* Return GSList whose data is (ptrs to) rowids */
 GSList* listGames( GTKGamesGlobals* gg );
-void getGameName( GTKGamesGlobals* gg, const sqlite3_int64* rowid, 
-                  XP_UCHAR* buf, XP_U16 len );
+XP_Bool getGameInfo( GTKGamesGlobals* gg, sqlite3_int64 rowid, GameInfo* gib );
 XP_Bool loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
 
 #endif

@@ -20,10 +20,14 @@
 
 #ifdef PLATFORM_GTK
 
+#include "xptypes.h"
 #include "main.h"
 #include "gamesdb.h"
 #include "gtkboard.h"
 #include "linuxmain.h"
+
+static void onNewData( GTKGamesGlobals* gg, sqlite3_int64 rowid, 
+                       XP_Bool isNew );
 
 static void
 recordOpened( GTKGamesGlobals* gg, GtkAppGlobals* globals )
@@ -50,7 +54,8 @@ gameIsOpen( GTKGamesGlobals* gg, sqlite3_int64 rowid )
     return found;
 }
 
-enum { CHECK_ITEM, ROW_ITEM, NAME_ITEM, N_ITEMS };
+enum { CHECK_ITEM, ROW_ITEM, NAME_ITEM, ROOM_ITEM, OVER_ITEM, TURN_ITEM, NMOVES_ITEM, MISSING_ITEM,
+       N_ITEMS };
 
 static void
 tree_selection_changed_cb( GtkTreeSelection* selection, gpointer data )
@@ -65,6 +70,16 @@ tree_selection_changed_cb( GtkTreeSelection* selection, gpointer data )
     }
 }
 
+static void
+addTextColumn( GtkWidget* list, const gchar* title, int item )
+{
+    GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
+    GtkTreeViewColumn* column =
+        gtk_tree_view_column_new_with_attributes( title, renderer, "text", 
+                                                  item, NULL );
+    gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
+}
+
 static GtkWidget*
 init_games_list( GTKGamesGlobals* gg )
 {
@@ -73,26 +88,24 @@ init_games_list( GTKGamesGlobals* gg )
     GtkTreeViewColumn* column;
 
     renderer = gtk_cell_renderer_toggle_new();
-    /* gtk_cell_renderer_toggle_set_activatable( GTK_CELL_RENDERER_TOGGLE(renderer), */
-    /*                                           TRUE ); */
     column = 
         gtk_tree_view_column_new_with_attributes( "<sel>", renderer, "active", 
                                                   CHECK_ITEM, NULL );
     gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
 
-    renderer = gtk_cell_renderer_text_new();
-    column = 
-        gtk_tree_view_column_new_with_attributes( "Row", renderer, "text", 
-                                                  ROW_ITEM, NULL );
-    gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
+    addTextColumn( list, "Row", ROW_ITEM );
+    addTextColumn( list, "Name", NAME_ITEM );
+    addTextColumn( list, "Room", ROOM_ITEM );
+    addTextColumn( list, "Ended", OVER_ITEM );
+    addTextColumn( list, "Turn", TURN_ITEM );
+    addTextColumn( list, "NMoves", NMOVES_ITEM );
+    addTextColumn( list, "NMissing", MISSING_ITEM );
 
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes( "Name", renderer, "text",
-                                                       NAME_ITEM, NULL );
-    gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
-
-    GtkListStore* store = gtk_list_store_new( N_ITEMS, G_TYPE_BOOLEAN, G_TYPE_INT64, 
-                                              G_TYPE_STRING );
+    GtkListStore* store = gtk_list_store_new( N_ITEMS, G_TYPE_BOOLEAN, 
+                                              G_TYPE_INT64, G_TYPE_STRING, 
+                                              G_TYPE_STRING, G_TYPE_BOOLEAN, 
+                                              G_TYPE_INT, G_TYPE_INT, 
+                                              G_TYPE_INT );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
 
@@ -105,18 +118,34 @@ init_games_list( GTKGamesGlobals* gg )
 }
 
 static void
-add_to_list( GtkWidget* list, sqlite3_int64* rowid, const gchar* str )
+add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew, 
+             const GameInfo* gib )
 {
-    GtkListStore* store = 
-        GTK_LIST_STORE( gtk_tree_view_get_model(GTK_TREE_VIEW(list)));
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(list));
+    GtkListStore* store = GTK_LIST_STORE( model );
     GtkTreeIter iter;
-    gtk_list_store_append( store, &iter );
-    /* XP_LOGF( "adding %lld, %s", *rowid, str ); */
-    /* gchar buf[16]; */
-    /* snprintf( buf, sizeof(buf), "%lld", *rowid ); */
+    if ( isNew ) {
+        gtk_list_store_append( store, &iter );
+    } else {
+        gboolean valid;
+        for ( valid = gtk_tree_model_get_iter_first( model, &iter );
+              valid;
+              valid = gtk_tree_model_iter_next( model, &iter ) ) {
+            sqlite3_int64 tmpid;
+            gtk_tree_model_get( model, &iter, ROW_ITEM, &tmpid, -1 );
+            if ( tmpid == rowid ) {
+                break;
+            }
+        }
+    }
     gtk_list_store_set( store, &iter, 
-                        ROW_ITEM, *rowid,
-                        NAME_ITEM, str,
+                        ROW_ITEM, rowid,
+                        NAME_ITEM, gib->name,
+                        ROOM_ITEM, gib->room,
+                        OVER_ITEM, gib->gameOver,
+                        TURN_ITEM, gib->turn,
+                        NMOVES_ITEM, gib->nMoves,
+                        MISSING_ITEM, gib->nMissing,
                         -1 );
     XP_LOGF( "DONE adding" );
 }
@@ -207,10 +236,8 @@ makeGamesWindow( GTKGamesGlobals* gg )
 
     GSList* games = listGames( gg );
     for ( GSList* iter = games; !!iter; iter = iter->next ) {
-        XP_UCHAR name[128];
         sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
-        getGameName( gg, rowid, name, VSIZE(name) );
-        add_to_list( list, rowid, name );
+        onNewData( gg, *rowid, XP_TRUE );
     }
     g_slist_free( games );
 
@@ -244,15 +271,22 @@ windowDestroyed( GtkAppGlobals* globals )
     (void)g_idle_add( freeGameGlobals, globals );
 }
 
+static void
+onNewData( GTKGamesGlobals* gg, sqlite3_int64 rowid, XP_Bool isNew )
+{
+    GameInfo gib;
+    if ( getGameInfo( gg, rowid, &gib ) ) {
+        add_to_list( gg->listWidget, rowid, isNew, &gib );
+    }
+}
+
 void
-newGameSaved( void* closure )
+onGameSaved( void* closure, sqlite3_int64 rowid, 
+             XP_Bool firstTime )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)closure;
     GTKGamesGlobals* gg = globals->gg;
-    CommonGlobals* cGlobals = &globals->cGlobals;
-    XP_UCHAR buf[128];
-    getGameName( gg, &cGlobals->selRow, buf, sizeof(buf) );
-    add_to_list( gg->listWidget, &cGlobals->selRow, buf );
+    onNewData( gg, rowid, firstTime );
 }
 
 int
@@ -261,7 +295,6 @@ gtkmain( LaunchParams* params )
     GTKGamesGlobals gg = {0};
     gg.selRow = -1;
     gg.params = params;
-    XP_LOGF( "%s: I'M HERE!!! (calling makeGamesDB())", __func__ );
     gg.pDb = openGamesDB( params->dbName );
 
     (void)makeGamesWindow( &gg );
@@ -269,7 +302,6 @@ gtkmain( LaunchParams* params )
 
     closeGamesDB( gg.pDb );
 
-    XP_LOGF( "%s: I'M BACK!!!", __func__ );
     return 0;
 } /* gtkmain */
 

@@ -163,7 +163,8 @@ typedef struct _TimerInfo {
 #endif
 } TimerInfo;
 
-typedef void (*FirstSaveFunc)(void* closure);
+typedef void (*OnSaveFunc)( void* closure, sqlite3_int64 rowid,
+                            XP_Bool firstTime );
 
 struct CommonGlobals {
     LaunchParams* params;
@@ -183,8 +184,8 @@ struct CommonGlobals {
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
-    FirstSaveFunc firstSave;
-    void* firstSaveClosure;
+    OnSaveFunc onSave;
+    void* onSaveClosure;
 
     CommsRelayState state;
 

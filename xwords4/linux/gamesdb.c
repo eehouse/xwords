@@ -1,4 +1,4 @@
-/* -*-mode:  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -21,6 +21,10 @@
 #include "gamesdb.h"
 #include "main.h"
 
+static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
+                           int len );
+
+
 sqlite3* 
 openGamesDB( const char* dbName )
 {
@@ -32,6 +36,10 @@ openGamesDB( const char* dbName )
         "CREATE TABLE games ( "
         "game BLOB"
         ",room VARCHAR(32)"
+        ",ended INT(1)"
+        ",turn INT(2)"
+        ",nmoves INT"
+        ",nmissing INT(2)"
         ")";
 
     result = sqlite3_exec( pDb, createStr, NULL, NULL, NULL );
@@ -95,9 +103,39 @@ writeToDB( XWStreamCtxt* stream, void* closure )
         sqlite3_finalize( stmt );
     }
 
-    if ( newGame ) {
-        (*cGlobals->firstSave)( cGlobals->firstSaveClosure );
+    (*cGlobals->onSave)( cGlobals->onSaveClosure, selRow, newGame );
+}
+
+void
+summarize( CommonGlobals* cGlobals )
+{
+    XP_S16 nMoves = model_getNMoves( cGlobals->game.model );
+    XP_Bool gameOver = server_getGameIsOver( cGlobals->game.server );
+    XP_S16 turn = server_getCurrentTurn( cGlobals->game.server );
+    XP_S16 nMissing = 0;
+    CommsAddrRec addr = {0};
+    gchar* room = "";
+
+    if ( !!cGlobals->game.comms ) {
+        nMissing = server_getMissingPlayers( cGlobals->game.server );
+        comms_getAddr( cGlobals->game.comms, &addr );
+        if ( COMMS_CONN_RELAY == addr.conType ) {
+            room = addr.u.ip_relay.invite;
+        }
     }
+
+    const char* fmt = "UPDATE games SET room='%s', ended=%d, turn=%d, nmissing=%d, nmoves=%d"
+        " where rowid=%lld";
+    XP_UCHAR buf[256];
+    snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, nMissing, nMoves,
+              cGlobals->selRow );
+    XP_LOGF( "query: %s", buf );
+    sqlite3_stmt* stmt = NULL;
+    int result = sqlite3_prepare_v2( cGlobals->pDb, buf, -1, &stmt, NULL );        
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_step( stmt );
+    XP_ASSERT( SQLITE_DONE == result );
+    sqlite3_finalize( stmt );
 }
 
 GSList*
@@ -132,12 +170,30 @@ listGames( GTKGamesGlobals* gg )
     return list;
 }
 
-void
-getGameName( GTKGamesGlobals* XP_UNUSED(gg), const sqlite3_int64* rowid, 
-             XP_UCHAR* buf, XP_U16 len )
+XP_Bool
+getGameInfo( GTKGamesGlobals* gg, sqlite3_int64 rowid, GameInfo* gib )
 {
-    snprintf( buf, len, "Game %lld", *rowid );
-    LOG_RETURNF( "%s", buf );
+    XP_Bool success = XP_FALSE;
+    const char* fmt = "SELECT room, ended, turn, nmoves, nmissing "
+        "FROM games WHERE rowid = %lld";
+    XP_UCHAR query[256];
+    snprintf( query, sizeof(query), fmt, rowid );
+
+    sqlite3_stmt* ppStmt;
+    int result = sqlite3_prepare_v2( gg->pDb, query, -1, &ppStmt, NULL );
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_step( ppStmt );
+    if ( SQLITE_ROW == result ) {
+        success = XP_TRUE;
+        getColumnText( ppStmt, 0, gib->room, sizeof(gib->room) );
+        gib->gameOver = 1 == sqlite3_column_int( ppStmt, 1 );
+        gib->turn = sqlite3_column_int( ppStmt, 2 );
+        gib->nMoves = sqlite3_column_int( ppStmt, 3 );
+        gib->nMissing = sqlite3_column_int( ppStmt, 4 );
+        snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
+    }
+    sqlite3_finalize( ppStmt );
+    return success;
 }
 
 XP_Bool
@@ -156,4 +212,14 @@ loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
     stream_putBytes( stream, ptr, size );
     sqlite3_finalize( ppStmt );
     return XP_TRUE;
+}
+
+static void
+getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, int len )
+{
+    const unsigned char* txt = sqlite3_column_text( ppStmt, iCol );
+    int needLen = sqlite3_column_bytes( ppStmt, iCol );
+    XP_ASSERT( needLen < len );
+    XP_MEMCPY( buf, txt, needLen );
+    buf[needLen] = '\0';
 }
