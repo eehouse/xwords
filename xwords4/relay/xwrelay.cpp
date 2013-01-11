@@ -77,6 +77,7 @@
 #include "dbmgr.h"
 
 static int s_nSpawns = 0;
+static int g_maxsocks = -1;
 
 void
 logf( XW_LogLevel level, const char* format, ... )
@@ -667,6 +668,7 @@ usage( char* arg0 )
              "\t-h                   (print this help)\\\n"
              "\t-i <idfile>          (file where next global id stored)\\\n"
              "\t-l <logfile>         (write logs here, not stderr)\\\n"
+             "\t-m <num_sockets>     (max number of simultaneous sockets to have open)\\\n"
              "\t-n <serverName>      (used in permID generation)\\\n"
              "\t-p <port>            (port to listen on)\\\n"
 #ifdef DO_HTTP
@@ -1146,7 +1148,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:f:l:t:s:w:"
+       int opt = getopt(argc, argv, "h?c:p:m:n:f:l:t:s:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -1188,6 +1190,9 @@ main( int argc, char** argv )
        case 'l':
            logFile = optarg;
            break;
+       case 'm':
+           g_maxsocks = atoi( optarg );
+           break;
        case 'n':
            serverName = optarg;
            break;
@@ -1226,6 +1231,11 @@ main( int argc, char** argv )
 #endif
     if ( nWorkerThreads == 0 ) {
         (void)cfg->GetValueFor( "NTHREADS", &nWorkerThreads );
+    }
+    if ( g_maxsocks == -1 ) {
+        (void)cfg->GetValueFor( "MAXSOCKS", &g_maxsocks );
+    } else {
+        g_maxsocks = 100;
     }
     char serverNameBuf[128];
     if ( serverName == NULL ) {
@@ -1430,7 +1440,7 @@ main( int argc, char** argv )
 			// connections.  Sockets are not closed, and so the
 			// number goes up.  Probably need a watchdog instead,
 			// but this will work around it.
-                        assert( 100 > newSock ); 
+                        assert( g_maxsocks > newSock );
 
                         /* Set timeout so send and recv won't block forever */
                         set_timeouts( newSock );
