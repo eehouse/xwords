@@ -85,17 +85,15 @@ XWThreadPool::Setup( int nThreads, packet_func pFunc, kill_func kFunc )
     m_pFunc = pFunc;
     m_kFunc = kFunc;
 
-    pthread_t thread;
-
-    int ii;
-    for ( ii = 0; ii < nThreads; ++ii ) {
+    for ( int ii = 0; ii < nThreads; ++ii ) {
 	ThreadInfo* tip = &m_threadInfos[ii];
 	tip->me = this;
-        int result = pthread_create( &thread, NULL, tpool_main, tip );
+        int result = pthread_create( &tip->thread, NULL, tpool_main, tip );
         assert( result == 0 );
-        pthread_detach( thread );
+        pthread_detach( tip->thread );
     }
 
+    pthread_t thread;
     int result = pthread_create( &thread, NULL, listener_main, this );
     assert( result == 0 );
     result = pthread_detach( thread );
@@ -478,7 +476,7 @@ XWThreadPool::print_in_use( void )
 void
 XWThreadPool::log_hung_threads( void )
 {
-    const time_t HUNG_THREASHHOLD = 5; // seconds
+    const time_t HUNG_THREASHHOLD = 300; // seconds
     int ii;
     time_t now = time( NULL );
     for ( ii = 0; ii < m_nThreads; ++ii ) {
@@ -487,8 +485,10 @@ XWThreadPool::log_hung_threads( void )
 	if ( 0 != recentTime ) {
 	    time_t howLong = now - recentTime;
 	    if ( HUNG_THREASHHOLD < howLong ) {
-		logf( XW_LOGERROR, "thread %d stopped for %d seconds!", ii, howLong );
+		logf( XW_LOGERROR, "thread %d (%p) stopped for %d seconds!",
+		      ii, tip->thread, howLong );
 		tip->recentTime = 0;   // only log once
+		assert(0);
 	    }
 	}
     }

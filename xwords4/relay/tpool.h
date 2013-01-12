@@ -44,6 +44,7 @@ class XWThreadPool {
 
     typedef struct _ThreadInfo {
         XWThreadPool* me;
+        pthread_t thread;
         time_t recentTime;
     } ThreadInfo;
 

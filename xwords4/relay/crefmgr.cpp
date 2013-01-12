@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "crefmgr.h"
 #include "cref.h"
@@ -413,6 +414,8 @@ CRefMgr::getCookieRef( CookieID cid, bool failOk )
             break;
         }
         m_cidlock->Relinquish( cinfo, true );
+        logf( XW_LOGINFO, "%s: sleeping after failing to get cinfo", __func__ );
+        usleep(200000);         /* 2/10 second */
     }
     return cinfo;
 } /* getCookieRef */
