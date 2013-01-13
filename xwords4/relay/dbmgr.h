@@ -65,7 +65,7 @@ class DBMgr {
     DevIDRelay RegisterDevice( const DevID* hosts );
 
     HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
-                      int nToAdd, unsigned short seed, const in_addr& addr, 
+                      int nToAdd, unsigned short seed, const AddrInfo* addr,
                       DevIDRelay devID, bool unAckd );
     void NoteAckd( const char* const connName, HostID id );
     HostID HIDForSeed( const char* const connName, unsigned short seed );
@@ -77,7 +77,7 @@ class DBMgr {
     void RecordSent( const char* const connName, HostID hid, int nBytes );
     void RecordSent( const int* msgID, int nMsgIDs );
     void RecordAddress( const char* const connName, HostID hid, 
-                        const in_addr& addr );
+                        const AddrInfo* addr );
     void GetPlayerCounts( const char* const connName, int* nTotal,
                           int* nHere );
 

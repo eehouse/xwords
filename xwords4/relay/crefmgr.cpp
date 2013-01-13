@@ -216,7 +216,7 @@ CRefMgr::getFromFreeList( void )
 
 /* connect case */
 CidInfo*
-CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket, 
+CRefMgr::getMakeCookieRef( const char* cookie, HostID hid,
                            int nPlayersH, int nPlayersT, int langCode, 
                            int seed, bool wantsPublic, 
                            bool makePublic, bool* seenSeed )
@@ -287,9 +287,8 @@ CRefMgr::getMakeCookieRef( const char* cookie, HostID hid, int socket,
 /* reconnect case */
 CidInfo*
 CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
-                           HostID hid, int socket, int nPlayersH, 
-                           int nPlayersS, int seed, int langCode, 
-                           bool isPublic, bool* isDead )
+                           HostID hid, int nPlayersH, int nPlayersS, int seed, 
+                           int langCode, bool isPublic, bool* isDead )
 {
     CookieRef* cref = NULL;
     CidInfo* cinfo;
@@ -378,11 +377,11 @@ CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
 }
 
 void 
-CRefMgr::RemoveSocketRefs( int socket )
+CRefMgr::RemoveSocketRefs( const AddrInfo* addr )
 {
     {    
-        SafeCref scr( socket );
-        scr.Remove( socket );
+        SafeCref scr( addr );
+        scr.Remove( addr );
     }
 }
 
@@ -421,9 +420,9 @@ CRefMgr::getCookieRef( CookieID cid, bool failOk )
 } /* getCookieRef */
 
 CidInfo*
-CRefMgr::getCookieRef( int socket )
+CRefMgr::getCookieRef( const AddrInfo* addr )
 {
-    CidInfo* cinfo = m_cidlock->ClaimSocket( socket );
+    CidInfo* cinfo = m_cidlock->ClaimSocket( addr );
 
     assert( NULL == cinfo || NULL != cinfo->GetRef() );
     return cinfo;
@@ -592,21 +591,21 @@ CookieMapIterator::Next()
 //////////////////////////////////////////////////////////////////////////////
 
 /* connect case */
-SafeCref::SafeCref( const char* cookie, int socket, int clientVersion,
+SafeCref::SafeCref( const char* cookie, const AddrInfo* addr, int clientVers,
                     DevID* devID, int nPlayersH, int nPlayersS, 
                     unsigned short gameSeed, int langCode, bool wantsPublic, 
                     bool makePublic )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
-    , m_clientVersion( clientVersion )
+    , m_addr( *addr )
+    , m_clientVersion( clientVers )
     , m_devID( devID )
     , m_isValid( false )
     , m_seenSeed( false )
 {
     CidInfo* cinfo;
 
-    cinfo = m_mgr->getMakeCookieRef( cookie, 0, socket,
-                                     nPlayersH, nPlayersS, langCode,
+    cinfo = m_mgr->getMakeCookieRef( cookie, 0, nPlayersH, nPlayersS, langCode,
                                      gameSeed, wantsPublic, makePublic,
                                      &m_seenSeed );
     if ( cinfo != NULL ) {
@@ -619,12 +618,13 @@ SafeCref::SafeCref( const char* cookie, int socket, int clientVersion,
 
 /* REconnect case */
 SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid, 
-                    int socket, int clientVersion, DevID* devID, int nPlayersH,
+                    const AddrInfo* addr, int clientVers, DevID* devID, int nPlayersH,
                     int nPlayersS, unsigned short gameSeed, int langCode, 
                     bool wantsPublic, bool makePublic )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
-    , m_clientVersion( clientVersion )
+    , m_addr( *addr )
+    , m_clientVersion( clientVers )
     , m_devID( devID )
     , m_isValid( false )
 {
@@ -632,7 +632,7 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
     assert( hid <= 4 );         /* no more than 4 hosts */
 
     bool isDead = false;
-    cinfo = m_mgr->getMakeCookieRef( connName, cookie, hid, socket, nPlayersH, 
+    cinfo = m_mgr->getMakeCookieRef( connName, cookie, hid, nPlayersH, 
                                      nPlayersS, gameSeed, langCode,
                                      wantsPublic || makePublic, &isDead );
     if ( cinfo != NULL ) {
@@ -679,17 +679,18 @@ SafeCref::SafeCref( CookieID cid, bool failOk )
     }
 }
 
-SafeCref::SafeCref( int socket )
+SafeCref::SafeCref( const AddrInfo* addr )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
+    , m_addr( *addr )
     , m_isValid( false )
 {
-    CidInfo* cinfo = m_mgr->getCookieRef( socket );
+    CidInfo* cinfo = m_mgr->getCookieRef( addr );
     if ( cinfo != NULL ) {       /* known socket? */
         CookieRef* cref = cinfo->GetRef();
         assert( cinfo->GetCid() == cref->GetCid() );
         m_locked = cref->Lock();
-        m_isValid = m_locked && cref->HasSocket_locked( socket );
+        m_isValid = m_locked && cref->HasSocket_locked( addr );
         m_cinfo = cinfo;
     }
 }

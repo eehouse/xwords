@@ -43,8 +43,9 @@ class CookieMapIterator;        /* forward */
 
 struct HostRec {
 public:
-HostRec(HostID hostID, int nPlayersH, int seed, bool ackPending ) 
+HostRec(HostID hostID, const AddrInfo* addr, int nPlayersH, int seed, bool ackPending ) 
         : m_hostID(hostID) 
+        , m_addr(*addr) 
         , m_nPlayersH(nPlayersH) 
         , m_seed(seed) 
         , m_lastHeartbeat(uptime()) 
@@ -53,6 +54,7 @@ HostRec(HostID hostID, int nPlayersH, int seed, bool ackPending )
             ::logf( XW_LOGINFO, "created HostRec with id %d", m_hostID);
         }
     HostID m_hostID;
+    AddrInfo m_addr;
     int m_nPlayersH;
     int m_seed;
     time_t m_lastHeartbeat;
@@ -67,7 +69,7 @@ public:
 
 class CookieRef {
  public:
-    set<int> GetSockets();
+    vector<AddrInfo> GetAddrs( void );
 
  private:
     /* These classes have access to CookieRef.  All others should go through
@@ -96,19 +98,19 @@ class CookieRef {
     bool HaveRoom( int nPlayers );
 
     int CountSockets() { return m_sockets.size(); }
-    bool HasSocket( int socket );
-    bool HasSocket_locked( int socket );
+    bool HasSocket( const AddrInfo* addr );
+    bool HasSocket_locked( const AddrInfo* addr );
     const char* Cookie() const { return m_cookie.c_str(); }
     const char* ConnName() { return m_connName.c_str(); }
 
     int GetHeartbeat() { return m_heatbeat; }
-    int SocketForHost( HostID dest );
-    HostID HostForSocket( int sock );
+    const AddrInfo* SocketForHost( HostID dest );
+    HostID HostForSocket( const AddrInfo* addr );
 
     /* connect case */
-    bool AlreadyHere( unsigned short seed, int socket, HostID* prevHostID );
+    bool AlreadyHere( unsigned short seed, const AddrInfo* addr, HostID* prevHostID );
     /* reconnect case */
-    bool AlreadyHere( HostID hid, unsigned short seed, int socket, bool* spotTaken );
+    bool AlreadyHere( HostID hid, unsigned short seed, const AddrInfo* addr, bool* spotTaken );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -121,21 +123,23 @@ class CookieRef {
     static void Delete( CookieID cid );
     static void Delete( const char* name );
 
-    bool _Connect( int socket, int clientVersion, DevID* devID,
+    bool _Connect( int clientVersion, DevID* devID,
                    int nPlayersH, int nPlayersS, int seed, bool seenSeed, 
-                   in_addr& addr );
-    bool _Reconnect( int socket, int clientVersion, DevID* devID,
+                   const AddrInfo* addr );
+    bool _Reconnect( int clientVersion, DevID* devID,
                      HostID srcID, int nPlayersH, int nPlayersS,
-                     int seed, in_addr& addr, bool gameDead );
+                     int seed, const AddrInfo* addr, bool gameDead );
     void _HandleAck( HostID hostID );
-    void _PutMsg( HostID srcID, in_addr& addr, HostID destID, unsigned char* buf, int buflen );
-    void _Disconnect(int socket, HostID hostID );
+    void _PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
+                  unsigned char* buf, int buflen );
+    void _Disconnect( const AddrInfo* addr, HostID hostID );
     void _DeviceGone( HostID hostID, int seed );
     void _Shutdown();
-    void _HandleHeartbeat( HostID id, int socket );
+    void _HandleHeartbeat( HostID id, const AddrInfo* addr );
     void _CheckHeartbeats( time_t now );
-    void _Forward( HostID src, in_addr& addr, HostID dest, unsigned char* buf, int buflen );
-    void _Remove( int socket );
+    void _Forward( HostID src, const AddrInfo* addr, HostID dest, 
+                   unsigned char* buf, int buflen );
+    void _Remove( const AddrInfo* addr );
     void _CheckAllConnected();
     void _CheckNotAcked( HostID hid );
 
@@ -148,30 +152,28 @@ class CookieRef {
     public:
         CRefEvent() { type = XWE_NONE; }
         CRefEvent( XW_RELAY_EVENT typ ) { type = typ; }
+        CRefEvent( XW_RELAY_EVENT typ, const AddrInfo* addrp ) { type = typ; addr = *addrp; }
         XW_RELAY_EVENT type;
+        AddrInfo addr;  /* sender's address */
         union {
             struct {
                 HostID src;
                 HostID dest;
                 unsigned char* buf;
                 int buflen;
-                in_addr addr;
             } fwd;
             struct {
-                int socket;
                 int clientVersion;
                 DevID* devID;
                 int nPlayersH;
                 int nPlayersS;
                 int seed;
                 HostID srcID;
-                in_addr addr;
             } con;
             struct {
                 HostID srcID;
             } ack;
             struct {
-                int socket;
                 HostID srcID;
             } discon;
             struct {
@@ -180,42 +182,39 @@ class CookieRef {
             } devgone;
             struct {
                 HostID id;
-                int socket;
             } heart;
             struct {
                 time_t now;
             } htime;
             struct {
-                int socket;
             } rmsock;
             struct {
-                int socket;
                 XWREASON why;
             } disnote;
         } u;
     };
 
-    bool send_with_length( int socket, unsigned char* buf, int bufLen,
-                           bool cascade );
-    void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
-                   bool cascade );
-    void pushConnectEvent( int socket, int clientVersion, DevID* devID,
+    bool send_with_length( const AddrInfo* addr,
+                           unsigned char* buf, int bufLen, bool cascade );
+    void send_msg( const AddrInfo* addr, HostID id, 
+                   XWRelayMsg msg, XWREASON why, bool cascade );
+    void pushConnectEvent( int clientVersion, DevID* devID,
                            int nPlayersH, int nPlayersS,
-                           int seed, in_addr& addr );
-    void pushReconnectEvent( int socket, int clientVersion, DevID* devID,
+                           int seed, const AddrInfo* addr );
+    void pushReconnectEvent( int clientVersion, DevID* devID,
                              HostID srcID, int nPlayersH, int nPlayersS,
-                             int seed, in_addr& addr );
-    void pushHeartbeatEvent( HostID id, int socket );
-    void pushHeartFailedEvent( int socket );
+                             int seed, const AddrInfo* addr );
+    void pushHeartbeatEvent( HostID id, const AddrInfo* addr );
+    void pushHeartFailedEvent( const AddrInfo* addr );
     
-    void pushForwardEvent( HostID src, in_addr& addr, HostID dest, unsigned char* buf, 
-                           int buflen );
+    void pushForwardEvent( HostID src, const AddrInfo* addr, 
+                           HostID dest, unsigned char* buf, int buflen );
     void pushDestBadEvent();
     void pushLastSocketGoneEvent();
-    void pushGameDead( int socket );
+    void pushGameDead( const AddrInfo* addr );
     void checkHaveRoom( const CRefEvent* evt );
-    void pushRemoveSocketEvent( int socket );
-    void pushNotifyDisconEvent( int socket, XWREASON why );
+    void pushRemoveSocketEvent( const AddrInfo* addr );
+    void pushNotifyDisconEvent( const AddrInfo* addr, XWREASON why );
 
     void handleEvents();
 
@@ -231,8 +230,6 @@ class CookieRef {
     void postCheckAllHere();
     void postDropDevice( HostID hostID );
 
-    void reducePlayerCounts( int socket );
-
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
     void setAckTimer( HostID hid );
@@ -242,15 +239,15 @@ class CookieRef {
     void send_denied( const CRefEvent* evt, XWREASON why );
 
     void checkFromServer( const CRefEvent* evt );
-    void notifyOthers( int socket, XWRelayMsg msg, XWREASON why );
-    void notifyGameDead( int socket );
+    void notifyOthers( const AddrInfo* addr, XWRelayMsg msg, XWREASON why );
+    void notifyGameDead( const AddrInfo* addr );
 
     void disconnectSockets( XWREASON why );
-    void disconnectSocket( int socket, XWREASON why );
+    void disconnectSocket( const AddrInfo* addr, XWREASON why );
     void removeDevice( const CRefEvent* const evt );
     void noteHeartbeat(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
-    void removeSocket( int socket );
+    void removeSocket( const AddrInfo* addr );
     void sendAllHere( bool initial );
 
     void assignConnName( void );
@@ -262,19 +259,18 @@ class CookieRef {
 
     void store_message( HostID dest, const unsigned char* buf, 
                         unsigned int len );
-    void send_stored_messages( HostID dest, int socket );
+    void send_stored_messages( HostID dest, const AddrInfo* addr );
 
     void printSeeds( const char* caller );
-
-    void AddSocket( int socket );
-    void RmSocket( int socket );
 
     /* timer callback */
     static void s_checkAllConnected( void* closure );
     static void s_checkAck( void* closure );
     
+    /* Track sockets (= current connections with games on devices) in this
+       game.  There will never be more than four of these */
     pthread_rwlock_t m_socketsRWLock;
-    map<int, HostRec> m_sockets;
+    vector<HostRec> m_sockets;
 
     int m_heatbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */
