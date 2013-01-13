@@ -269,6 +269,8 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
                 CloseSocket( &pr.m_info.m_addr );
                 break;
             }
+        } else {
+            socket = -1;
         }
     }
     logf( XW_LOGINFO, "tpool worker thread exiting" );
