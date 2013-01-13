@@ -152,14 +152,15 @@ class CookieRef {
     public:
         CRefEvent() { type = XWE_NONE; }
         CRefEvent( XW_RELAY_EVENT typ ) { type = typ; }
+        CRefEvent( XW_RELAY_EVENT typ, const AddrInfo* addrp ) { type = typ; addr = *addrp; }
         XW_RELAY_EVENT type;
+        AddrInfo addr;  /* sender's address */
         union {
             struct {
                 HostID src;
                 HostID dest;
                 unsigned char* buf;
                 int buflen;
-                AddrInfo addr;  /* sender's address */
             } fwd;
             struct {
                 int clientVersion;
@@ -168,13 +169,11 @@ class CookieRef {
                 int nPlayersS;
                 int seed;
                 HostID srcID;
-                AddrInfo addr;
             } con;
             struct {
                 HostID srcID;
             } ack;
             struct {
-                AddrInfo addr;
                 HostID srcID;
             } discon;
             struct {
@@ -183,16 +182,13 @@ class CookieRef {
             } devgone;
             struct {
                 HostID id;
-                AddrInfo addr;
             } heart;
             struct {
                 time_t now;
             } htime;
             struct {
-                AddrInfo addr;
             } rmsock;
             struct {
-                AddrInfo addr;
                 XWREASON why;
             } disnote;
         } u;

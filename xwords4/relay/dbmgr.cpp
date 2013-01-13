@@ -330,7 +330,7 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
         " mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
     string query;
-    char* ntoa = inet_ntoa( ((sockaddr_in*)addr)->sin_addr );
+    char* ntoa = inet_ntoa( addr->sin_addr() );
     string_printf( query, fmt, newID, nToAdd, newID, clientVersion,
                    newID, seed, newID, ntoa, devIDBuf.c_str(), newID, 
                    newID, ackd?'A':'a', connName );
@@ -506,7 +506,7 @@ DBMgr::RecordAddress( const char* const connName, HostID hid,
     const char* fmt = "UPDATE " GAMES_TABLE " SET addrs[%d] = \'%s\'"
         " WHERE connName = '%s'";
     string query;
-    char* ntoa = inet_ntoa( ((sockaddr_in*)addr)->sin_addr );
+    char* ntoa = inet_ntoa( addr->sin_addr() );
     string_printf( query, fmt, hid, ntoa, connName );
     logf( XW_LOGVERBOSE0, "%s: query: %s", __func__, query.c_str() );
 

@@ -23,23 +23,41 @@
 #define _ADDRINFO_H_
 
 #include <netinet/in.h>
+#include <string.h>
 
 class AddrInfo {
  public:
- /* AddrInfo() : m_clientToken(0), m_socket(-1) { } */
-    union {
+    typedef union _AddrUnion {
         struct sockaddr addr;
         struct sockaddr_in addr_in;
-    } u;
-    int m_socket;
+    } AddrUnion;
+
+    AddrInfo() { 
+        memset( this, 0, sizeof(*this) ); 
+        m_socket = -1; 
+        m_isValid = false; 
+    }
+
+    AddrInfo( bool isTCP, int socket, const AddrUnion* saddr ) {
+        m_isValid = true;
+        m_isTCP = isTCP;
+        m_socket = socket;
+        memcpy( &m_saddr, saddr, sizeof(m_saddr) );
+    }
 
     void setIsTCP( bool val ) { m_isTCP = val; }
     bool isTCP() const { return m_isTCP; } /* later UDP will be here too */
+    int socket() const { assert(m_isValid); return m_socket; }
+    struct in_addr sin_addr() const { return m_saddr.addr_in.sin_addr; }
 
     bool equals( const AddrInfo& other ) const;
 
  private:
+    // AddrInfo& operator=(const AddrInfo&);      // Prevent assignment
+    int m_socket;
     bool m_isTCP;
+    bool m_isValid;
+    AddrUnion m_saddr;
 };
 
 #endif

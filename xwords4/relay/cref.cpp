@@ -263,12 +263,11 @@ void
 CookieRef::_PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
                     unsigned char* buf, int buflen )
 {
-    CRefEvent evt( XWE_PROXYMSG );
+    CRefEvent evt( XWE_PROXYMSG, addr );
     evt.u.fwd.src = srcID;
     evt.u.fwd.dest = destID;
     evt.u.fwd.buf = buf;
     evt.u.fwd.buflen = buflen;
-    evt.u.fwd.addr = *addr;
 
     m_eventQueue.push_back( evt );
     handleEvents();
@@ -279,8 +278,7 @@ CookieRef::_Disconnect( const AddrInfo* addr, HostID hostID )
 {
     logf( XW_LOGINFO, "%s(socket=%d, hostID=%d)", __func__, socket, hostID );
 
-    CRefEvent evt( XWE_DISCONN );
-    evt.u.discon.addr = *addr;
+    CRefEvent evt( XWE_DISCONN, addr );
     evt.u.discon.srcID = hostID;
     m_eventQueue.push_back( evt );
 
@@ -406,13 +404,13 @@ CookieRef::notifyDisconn( const CRefEvent* evt )
         evt->u.disnote.why 
     };
 
-    send_with_length( &evt->u.disnote.addr, buf, sizeof(buf), true );
+    send_with_length( &evt->addr, buf, sizeof(buf), true );
 } /* notifyDisconn */
 
 void
 CookieRef::removeSocket( const AddrInfo* addr )
 {
-    logf( XW_LOGINFO, "%s(socket=%d)", __func__, addr->m_socket );
+    logf( XW_LOGINFO, "%s(socket=%d)", __func__, addr->socket() );
     bool found = false;
     ASSERT_LOCKED();
 
@@ -542,9 +540,7 @@ CookieRef::pushConnectEvent( int clientVersion, DevID* devID,
                              int nPlayersH, int nPlayersS,
                              int seed, const AddrInfo* addr )
 {
-    CRefEvent evt;
-    evt.type = XWE_DEVCONNECT;
-    evt.u.con.addr = *addr;
+    CRefEvent evt( XWE_DEVCONNECT, addr );
     evt.u.con.clientVersion = clientVersion;
     evt.u.con.devID = devID;
     evt.u.con.srcID = HOST_ID_NONE;
@@ -559,8 +555,7 @@ CookieRef::pushReconnectEvent( int clientVersion, DevID* devID,
                                HostID srcID, int nPlayersH, int nPlayersS, 
                                int seed, const AddrInfo* addr )
 {
-    CRefEvent evt( XWE_RECONNECT );
-    evt.u.con.addr = *addr;
+    CRefEvent evt( XWE_RECONNECT, addr );
     evt.u.con.clientVersion = clientVersion;
     evt.u.con.devID = devID;
     evt.u.con.srcID = srcID;
@@ -595,28 +590,25 @@ CookieRef::pushForwardEvent( HostID src, const AddrInfo* addr, HostID dest,
                              unsigned char* buf, int buflen )
 {
     logf( XW_LOGVERBOSE1, "pushForwardEvent: %d -> %d", src, dest );
-    CRefEvent evt( XWE_FORWARDMSG );
+    CRefEvent evt( XWE_FORWARDMSG, addr );
     evt.u.fwd.src = src;
     evt.u.fwd.dest = dest;
     evt.u.fwd.buf = buf;
     evt.u.fwd.buflen = buflen;
-    evt.u.fwd.addr = *addr;
     m_eventQueue.push_back( evt );
 }
 
 void
 CookieRef::pushRemoveSocketEvent( const AddrInfo* addr )
 {
-    CRefEvent evt( XWE_REMOVESOCKET );
-    evt.u.rmsock.addr = *addr;
+    CRefEvent evt( XWE_REMOVESOCKET, addr );
     m_eventQueue.push_back( evt );
 }
 
 void
 CookieRef::pushNotifyDisconEvent( const AddrInfo* addr, XWREASON why )
 {
-    CRefEvent evt( XWE_NOTIFYDISCON );
-    evt.u.disnote.addr = *addr;
+    CRefEvent evt( XWE_NOTIFYDISCON, addr );
     evt.u.disnote.why = why;
     m_eventQueue.push_back( evt );
 }
@@ -631,8 +623,7 @@ CookieRef::pushLastSocketGoneEvent()
 void
 CookieRef::pushGameDead( const AddrInfo* addr )
 {
-    CRefEvent evt( XWE_GAMEDEAD );
-    evt.u.discon.addr = *addr;
+    CRefEvent evt( XWE_GAMEDEAD, addr );
     m_eventQueue.push_back( evt );
 }
 
@@ -697,11 +688,11 @@ CookieRef::handleEvents()
                 break;
             case XWA_SEND_DUP_ROOM:
                 send_denied( &evt, XWRELAY_ERROR_DUP_ROOM );
-                removeSocket( &evt.u.rmsock.addr );
+                removeSocket( &evt.addr );
                 break;
             case XWA_SEND_TOO_MANY:
                 send_denied( &evt, XWRELAY_ERROR_TOO_MANY );
-                removeSocket( &evt.u.rmsock.addr );
+                removeSocket( &evt.addr );
                 break;
 
             case XWA_FWD:
@@ -721,20 +712,19 @@ CookieRef::handleEvents()
                 break;
 
             case XWA_HEARTDISCONN:
-                notifyOthers( &evt.u.heart.addr, XWRELAY_DISCONNECT_OTHER, 
+                notifyOthers( &evt.addr, XWRELAY_DISCONNECT_OTHER, 
                               XWRELAY_ERROR_HEART_OTHER );
                 setAllConnectedTimer();
                 // reducePlayerCounts( evt.u.discon.socket );
-                disconnectSocket( &evt.u.heart.addr, 
-                                  XWRELAY_ERROR_HEART_YOU );
+                disconnectSocket( &evt.addr, XWRELAY_ERROR_HEART_YOU );
                 break;
 
             case XWA_DISCONNECT:
                 setAllConnectedTimer();
                 // reducePlayerCounts( evt.u.discon.socket );
-                notifyOthers( &evt.u.discon.addr, XWRELAY_DISCONNECT_OTHER,
+                notifyOthers( &evt.addr, XWRELAY_DISCONNECT_OTHER,
                               XWRELAY_ERROR_OTHER_DISCON );
-                removeSocket( &evt.u.discon.addr );
+                removeSocket( &evt.addr );
                 /* Don't notify.  This is a normal part of a game ending. */
                 break;
 
@@ -743,7 +733,7 @@ CookieRef::handleEvents()
                 break;
 
             case XWA_TELLGAMEDEAD:
-                notifyGameDead( &evt.u.discon.addr );
+                notifyGameDead( &evt.addr );
                 break;
 
             case XWA_NOTEHEART:
@@ -760,10 +750,10 @@ CookieRef::handleEvents()
             case XWA_REMOVESOCK_1:
                 // reducePlayerCounts( evt.u.rmsock.socket );
                 if ( XWA_REMOVESOCK_2 == takeAction ) {
-                    notifyOthers( &evt.u.rmsock.addr, XWRELAY_DISCONNECT_OTHER,
+                    notifyOthers( &evt.addr, XWRELAY_DISCONNECT_OTHER,
                                   XWRELAY_ERROR_LOST_OTHER );
                 }
-                removeSocket( &evt.u.rmsock.addr );
+                removeSocket( &evt.addr );
                 break;
 
             case XWA_SENDALLHERE:
@@ -857,7 +847,7 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
     logf( XW_LOGVERBOSE0, "%s(dest=%d)", __func__, dest );
 
     assert( dest > 0 && dest <= 4 );
-    assert( -1 != addr->m_socket );
+    assert( -1 != addr->socket() );
     assert( addr->isTCP() );
 
     for ( ; ; ) {
@@ -917,7 +907,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
     evt->u.con.srcID =
         DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID, 
                                  evt->u.con.clientVersion, nPlayersH, seed, 
-                                 &evt->u.con.addr, devID, reconn );
+                                 &evt->addr, devID, reconn );
 
     HostID hostid = evt->u.con.srcID;
     if ( NULL != hidp ) {
@@ -933,7 +923,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
 
     {
         RWWriteLock rwl( &m_socketsRWLock );
-        HostRec hr( hostid, &evt->u.con.addr, nPlayersH, seed, !reconn );
+        HostRec hr( hostid, &evt->addr, nPlayersH, seed, !reconn );
         m_sockets.push_back( hr );
     }
 
@@ -1115,7 +1105,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial,
         }
     }
 
-    send_with_length( &evt->u.con.addr, buf, bufp - buf, true );
+    send_with_length( &evt->addr, buf, bufp - buf, true );
     logf( XW_LOGVERBOSE0, "sent %s", cmdToStr( XWRELAY_Cmd(buf[0]) ) );
 } /* sendResponse */
 
@@ -1124,7 +1114,7 @@ CookieRef::sendAnyStored( const CRefEvent* evt )
 {
     HostID dest = evt->u.con.srcID;
     if ( HOST_ID_NONE != dest ) {
-        send_stored_messages( dest, &evt->u.con.addr );
+        send_stored_messages( dest, &evt->addr );
     }
 }
 
@@ -1159,7 +1149,7 @@ CookieRef::forward_or_store( const CRefEvent* evt )
 
         /* also note that we've heard from src recently */
         HostID src = evt->u.fwd.src;
-        DBMgr::Get()->RecordAddress( ConnName(), src, &evt->u.fwd.addr );
+        DBMgr::Get()->RecordAddress( ConnName(), src, &evt->addr );
 #ifdef RELAY_HEARTBEAT
         pushHeartbeatEvent( src, SocketForHost(src) );
 #endif
@@ -1169,7 +1159,7 @@ CookieRef::forward_or_store( const CRefEvent* evt )
 void
 CookieRef::send_denied( const CRefEvent* evt, XWREASON why )
 {
-    denyConnection( &evt->u.con.addr, why );
+    denyConnection( &evt->addr, why );
 }
 
 void
@@ -1200,7 +1190,7 @@ CookieRef::send_msg( const AddrInfo* addr, HostID id,
 void
 CookieRef::notifyOthers( const AddrInfo* addr, XWRelayMsg msg, XWREASON why )
 {
-    assert( addr->m_socket != 0 );
+    assert( addr->socket() != 0 );
     assert( addr->isTCP() );
 
     ASSERT_LOCKED();
@@ -1308,7 +1298,7 @@ CookieRef::disconnectSockets( XWREASON why )
     vector<HostRec>::const_iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         const AddrInfo* addr = &iter->m_addr;
-        if ( addr->m_socket != 0 ) {
+        if ( addr->socket() != 0 ) {
             disconnectSocket( addr, why );
         } else {
             assert( 0 );
@@ -1343,7 +1333,7 @@ CookieRef::removeDevice( const CRefEvent* const evt )
 void
 CookieRef::noteHeartbeat( const CRefEvent* evt )
 {
-    const AddrInfo& addr = evt->u.heart.addr;
+    const AddrInfo& addr = evt->addr;
     HostID id = evt->u.heart.id;
 
     ASSERT_LOCKED();
@@ -1360,7 +1350,7 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
                    connection.  An attack is the most likely explanation.  But:
                    now it's happening after a crash and clients reconnect. */
                 logf( XW_LOGERROR, "wrong socket record for HostID %x; "
-                      "wanted %d, found %d", id, addr.m_socket, iter->m_addr.m_socket );
+                      "wanted %d, found %d", id, addr.socket(), iter->m_addr.socket() );
             }
             break;
         }
@@ -1424,7 +1414,7 @@ CookieRef::printSeeds( const char* caller )
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         len += snprintf( &buf[len], sizeof(buf)-len, "[%d]%.4x(%d)/%d/%c ", 
                          iter->m_hostID, iter->m_seed, 
-                         iter->m_seed, iter->m_addr.m_socket, 
+                         iter->m_seed, iter->m_addr.socket(), 
                          iter->m_ackPending?'a':'A' );
     }
     logf( XW_LOGINFO, "seeds/sockets/ack'd after %s(): %s", caller, buf );
@@ -1484,7 +1474,7 @@ CookieRef::_PrintCookieInfo( string& out )
     vector<HostRec>::const_iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         snprintf( buf, sizeof(buf), "  HostID=%d; socket=%d;last hbeat=%ld\n", 
-                  iter->m_hostID, iter->m_addr.m_socket, 
+                  iter->m_hostID, iter->m_addr.socket(), 
                   iter->m_lastHeartbeat );
         out += buf;
     }
@@ -1512,7 +1502,7 @@ CookieRef::_FormatHostInfo( string* hostIds, string* seeds, string* addrs )
         }
 
         if ( !!addrs ) {
-            int socket = iter->m_addr.m_socket;
+            int socket = iter->m_addr.socket();
             sockaddr_in name;
             socklen_t siz = sizeof(name);
             if ( 0 == getpeername( socket, (struct sockaddr*)&name, &siz) ) {

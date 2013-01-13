@@ -78,7 +78,7 @@ class XWThreadPool {
     void enqueue( QAction act = Q_READ );
     void enqueue( SockInfo si, QAction act = Q_READ );
     void release_socket_locked( int socket );
-    void grab_elem_locked( QueuePr* qpp );
+    bool grab_elem_locked( QueuePr* qpp );
     void print_in_use( void );
     void log_hung_threads( void );
 

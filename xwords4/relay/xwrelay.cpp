@@ -342,7 +342,7 @@ send_with_length_unsafe( const AddrInfo* addr, unsigned char* buf,
 {
     assert( !!addr );
     bool ok = false;
-    int socket = addr->m_socket;
+    int socket = addr->socket();
     assert ( addr->isTCP() );
     unsigned short len = htons( bufLen );
     ssize_t nSent = send( socket, &len, 2, 0 );
@@ -521,7 +521,7 @@ processDisconnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
 static void
 killSocket( const AddrInfo* addr )
 {
-    logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->m_socket );
+    logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->socket() );
     CRefMgr::Get()->RemoveSocketRefs( addr );
 }
 
@@ -857,7 +857,7 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
         memcpy( &out[0], &tmp, sizeof(tmp) );
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
-        ssize_t nwritten = write( addr->m_socket, &out[0], out.size() );
+        ssize_t nwritten = write( addr->socket(), &out[0], out.size() );
         logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
@@ -975,7 +975,7 @@ handle_proxy_packet( unsigned char* buf, int len, const AddrInfo* addr )
     logf( XW_LOGVERBOSE0, "%s()", __func__ );
     if ( len > 0 ) {
         assert( addr->isTCP() );
-        int socket = addr->m_socket;
+        int socket = addr->socket();
         unsigned char* bufp = buf;
         unsigned char* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
@@ -1435,10 +1435,9 @@ main( int argc, char** argv )
                 }
 
                 if ( FD_ISSET( listener, &rfds ) ) {
-                    AddrInfo addr;
-                    memset( &addr, 0, sizeof(addr) );
-                    socklen_t siz = sizeof(addr.u.addr_in);
-                    int newSock = accept( listener, &addr.u.addr, &siz );
+                    AddrInfo::AddrUnion saddr;
+                    socklen_t siz = sizeof(saddr.addr_in);
+                    int newSock = accept( listener, &saddr.addr, &siz );
                     if ( newSock < 0 ) {
                         logf( XW_LOGERROR, "accept failed: errno(%d)=%s",
                               errno, strerror(errno) );
@@ -1457,10 +1456,9 @@ main( int argc, char** argv )
 
                         logf( XW_LOGINFO, 
                               "%s: accepting connection from %s on socket %d", 
-                              __func__, inet_ntoa(addr.u.addr_in.sin_addr), newSock );
+                              __func__, inet_ntoa(saddr.addr_in.sin_addr), newSock );
 
-                        addr.m_socket = newSock;
-                        addr.setIsTCP( true );
+                        AddrInfo addr( true, newSock, &saddr );
                         tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME 
                                           : XWThreadPool::STYPE_PROXY,
                                           &addr );

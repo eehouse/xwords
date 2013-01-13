@@ -86,8 +86,8 @@ XWThreadPool::Setup( int nThreads, packet_func pFunc, kill_func kFunc )
     m_kFunc = kFunc;
 
     for ( int ii = 0; ii < nThreads; ++ii ) {
-	ThreadInfo* tip = &m_threadInfos[ii];
-	tip->me = this;
+        ThreadInfo* tip = &m_threadInfos[ii];
+        tip->me = this;
         int result = pthread_create( &tip->thread, NULL, tpool_main, tip );
         assert( result == 0 );
         pthread_detach( tip->thread );
@@ -109,7 +109,6 @@ XWThreadPool::Stop()
     for ( ii = 0; ii < m_nThreads; ++ii ) {
         SockInfo si;
         si.m_type = STYPE_UNKNOWN;
-        si.m_addr.m_socket = 0;
         enqueue( si );
     }
 
@@ -175,7 +174,7 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
         }
     }
     logf( XW_LOGINFO, "CLOSING socket %d", socket );
-    close( addr->m_socket );
+    close( addr->socket() );
 /*     if ( do_interrupt ) { */
     /* We always need to interrupt the poll because the socket we're closing
        will be in the list being listened to.  That or we need to drop sockets
@@ -205,7 +204,7 @@ XWThreadPool::get_process_packet( SockType stype, const AddrInfo* addr )
     assert( sizeof(packetSize) == 2 );
 
     unsigned char buf[MAX_MSG_LEN+1];
-    int nRead = read_packet( addr->m_socket, buf, sizeof(buf) );
+    int nRead = read_packet( addr->socket(), buf, sizeof(buf) );
     if ( nRead < 0 ) {
         EnqueueKill( addr, "bad packet" );
     } else if ( STYPE_GAME == stype ) {
@@ -250,17 +249,17 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
         }
 
         QueuePr pr;
-        grab_elem_locked( &pr );
+        bool gotOne = grab_elem_locked( &pr );
 
         tip->recentTime = time( NULL );
         pthread_mutex_unlock( &m_queueMutex );
 
-        socket = pr.m_info.m_addr.m_socket;
-        if ( socket >= 0 ) {
-            logf( XW_LOGINFO, "worker thread got socket %d from queue", 
-                  socket );
+        if ( gotOne ) {
+            socket = pr.m_info.m_addr.socket();
+            logf( XW_LOGINFO, "worker thread got socket %d from queue", socket );
             switch ( pr.m_act ) {
             case Q_READ:
+                assert( socket >= 0 );
                 if ( get_process_packet( pr.m_info.m_type, &pr.m_info.m_addr ) ) {
                     AddSocket( pr.m_info.m_type, &pr.m_info.m_addr );
                 }
@@ -332,7 +331,7 @@ XWThreadPool::real_listener()
         vector<SockInfo>::iterator iter;
         for ( iter = m_activeSockets.begin(); iter != m_activeSockets.end(); 
               ++iter ) {
-            fds[curfd].fd = iter->m_addr.m_socket;
+            fds[curfd].fd = iter->m_addr.socket();
             sinfos[curfd] = *iter;
             fds[curfd].events = flags;
 #ifdef LOG_POLL
@@ -386,7 +385,7 @@ XWThreadPool::real_listener()
                 if ( fds[curfd].revents != 0 ) {
                     int socket = fds[curfd].fd;
                     const AddrInfo* addr = &sinfos[curfd].m_addr;
-                    assert( socket == addr->m_socket );
+                    assert( socket == addr->socket() );
                     if ( !RemoveSocket( addr ) ) {
                         /* no further processing if it's been removed while
                            we've been sleeping in poll */
@@ -439,14 +438,13 @@ XWThreadPool::enqueue( SockInfo si, QAction act )
     log_hung_threads();
 }
 
-void
+bool
 XWThreadPool::grab_elem_locked( QueuePr* prp )
 {
     bool found = false;
-    prp->m_info.m_addr.m_socket = -1;
     deque<QueuePr>::iterator iter;
     for ( iter = m_queue.begin(); !found && iter != m_queue.end(); ++iter ) {
-        int socket = iter->m_info.m_addr.m_socket;
+        int socket = iter->m_info.m_addr.socket();
         /* If NOT found */
         if ( m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
             *prp = *iter;
@@ -457,6 +455,7 @@ XWThreadPool::grab_elem_locked( QueuePr* prp )
     }
 
     print_in_use();
+    return found;
 } /* grab_elem_locked */
 
 void
@@ -493,16 +492,16 @@ XWThreadPool::log_hung_threads( void )
     int ii;
     time_t now = time( NULL );
     for ( ii = 0; ii < m_nThreads; ++ii ) {
-	ThreadInfo* tip = &m_threadInfos[ii];
-	time_t recentTime = tip->recentTime;
-	if ( 0 != recentTime ) {
-	    time_t howLong = now - recentTime;
-	    if ( HUNG_THREASHHOLD < howLong ) {
-		logf( XW_LOGERROR, "thread %d (%p) stopped for %d seconds!",
-		      ii, tip->thread, howLong );
-		tip->recentTime = 0;   // only log once
-		assert(0);
-	    }
-	}
+        ThreadInfo* tip = &m_threadInfos[ii];
+        time_t recentTime = tip->recentTime;
+        if ( 0 != recentTime ) {
+            time_t howLong = now - recentTime;
+            if ( HUNG_THREASHHOLD < howLong ) {
+                logf( XW_LOGERROR, "thread %d (%p) stopped for %d seconds!",
+                      ii, tip->thread, howLong );
+                tip->recentTime = 0;   // only log once
+                assert(0);
+            }
+        }
     }
 }
