@@ -27,11 +27,11 @@
 
 // #define CIDLOCK_DEBUG
 
-const set<int>
-CidInfo::GetSockets( void )
+const vector<AddrInfo>
+CidInfo::GetAddrs( void )
 {
     return 0 == m_owner || NULL == m_cref ? 
-        m_sockets : m_cref->GetSockets();
+        m_addrs : m_cref->GetAddrs();
 }
 
 CidLock* CidLock::s_instance = NULL;
@@ -117,7 +117,7 @@ CidLock::Claim( CookieID cid )
 } /* CidLock::Claim */
 
 CidInfo* 
-CidLock::ClaimSocket( int sock )
+CidLock::ClaimSocket( const AddrInfo* addr )
 {
     CidInfo* info = NULL;
 #ifdef CIDLOCK_DEBUG
@@ -126,16 +126,19 @@ CidLock::ClaimSocket( int sock )
     for ( ; ; ) {
         MutexLock ml( &m_infos_mutex );
 
-        map< CookieID, CidInfo*>::iterator iter;
-        for ( iter = m_infos.begin(); iter != m_infos.end(); ++iter ) {
-            const set<int>& sockets = iter->second->GetSockets();
-            if ( sockets.end() != sockets.find( sock ) ) {
-                if ( 0 == iter->second->GetOwner() ) {
-                    info = iter->second;
-                    info->SetOwner( pthread_self() );
-                    PRINT_CLAIMED();
+        map<CookieID, CidInfo*>::iterator iter;
+        for ( iter = m_infos.begin(); NULL == info && iter != m_infos.end(); ++iter ) {
+            const vector<AddrInfo>& addrs = iter->second->GetAddrs();
+            vector<AddrInfo>::const_iterator iter2;
+            for ( iter2 = addrs.begin(); iter2 != addrs.end(); ++iter2 ) {
+                if ( iter2->equals(*addr) ) {
+                    if ( 0 == iter->second->GetOwner() ) {
+                        info = iter->second;
+                        info->SetOwner( pthread_self() );
+                        PRINT_CLAIMED();
+                    }
+                    break;
                 }
-                break;
             }
         }
 
@@ -177,7 +180,7 @@ CidLock::Relinquish( CidInfo* claim, bool drop )
     } else {
         CookieRef* ref = claim->GetRef();
         if ( NULL != ref ) {
-            claim->SetSockets( ref->GetSockets() ); /* cache these */
+            claim->SetAddrs( ref->GetAddrs() ); /* cache these */
         }
         claim->SetOwner( 0 );
     }

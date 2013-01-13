@@ -301,7 +301,7 @@ DBMgr::RegisterDevice( const DevID* host )
 
 HostID
 DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion, 
-                  int nToAdd, unsigned short seed, const in_addr& addr, 
+                  int nToAdd, unsigned short seed, const AddrInfo* addr,
                   DevIDRelay devID, bool ackd )
 {
     HostID newID = curID;
@@ -330,9 +330,10 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
         " mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
     string query;
+    char* ntoa = inet_ntoa( ((sockaddr_in*)addr)->sin_addr );
     string_printf( query, fmt, newID, nToAdd, newID, clientVersion,
-                   newID, seed, newID, inet_ntoa(addr), devIDBuf.c_str(), 
-                   newID, newID, ackd?'A':'a', connName );
+                   newID, seed, newID, ntoa, devIDBuf.c_str(), newID, 
+                   newID, ackd?'A':'a', connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
@@ -499,13 +500,14 @@ DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
 
 void
 DBMgr::RecordAddress( const char* const connName, HostID hid, 
-                      const in_addr& addr )
+                      const AddrInfo* addr )
 {
     assert( hid >= 0 && hid <= 4 );
     const char* fmt = "UPDATE " GAMES_TABLE " SET addrs[%d] = \'%s\'"
         " WHERE connName = '%s'";
     string query;
-    string_printf( query, fmt, hid, inet_ntoa(addr), connName );
+    char* ntoa = inet_ntoa( ((sockaddr_in*)addr)->sin_addr );
+    string_printf( query, fmt, hid, ntoa, connName );
     logf( XW_LOGVERBOSE0, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
@@ -741,9 +743,8 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 }
 
 bool
-DBMgr::GetNthStoredMessage( const char* const connName, int hid, 
-                            int nn, unsigned char* buf, size_t* buflen, 
-                            int* msgID )
+DBMgr::GetNthStoredMessage( const char* const connName, int hid, int nn, 
+                            unsigned char* buf, size_t* buflen, int* msgID )
 {
     const char* fmt = "SELECT id, msg, msglen FROM " MSGS_TABLE
         " WHERE connName = '%s' AND hid = %d "
@@ -782,7 +783,7 @@ DBMgr::GetNthStoredMessage( const char* const connName, int hid,
 }
 
 bool
-DBMgr::GetStoredMessage( const char* const connName, int hid, 
+DBMgr::GetStoredMessage( const char* const connName, int hid,
                          unsigned char* buf, size_t* buflen, int* msgID )
 {
     return GetNthStoredMessage( connName, hid, 0, buf, buflen, msgID );

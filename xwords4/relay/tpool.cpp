@@ -107,59 +107,66 @@ XWThreadPool::Stop()
 
     int ii;
     for ( ii = 0; ii < m_nThreads; ++ii ) {
-        SockInfo si = { STYPE_UNKNOWN, {0} };
-        enqueue( 0, si );
+        SockInfo si;
+        si.m_type = STYPE_UNKNOWN;
+        si.m_addr.m_socket = 0;
+        enqueue( si );
     }
 
     interrupt_poll();
 }
 
 void
-XWThreadPool::AddSocket( int socket, SockType stype, in_addr& from )
+XWThreadPool::AddSocket( SockType stype, const AddrInfo* from )
 {
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
         SockInfo si;
         si.m_type = stype;
-        si.m_addr = from;
-        m_activeSockets.push_back( pair<int,SockInfo>(socket, si) );
-	logf( XW_LOGINFO, "%s: %d sockets active", __func__, 
-	      m_activeSockets.size() );
+        si.m_addr = *from;
+        m_activeSockets.push_back( si );
+        logf( XW_LOGINFO, "%s: %d sockets active", __func__, 
+              m_activeSockets.size() );
     }
     interrupt_poll();
 }
 
 bool
-XWThreadPool::RemoveSocket( int socket )
+XWThreadPool::RemoveSocket( const AddrInfo* addr )
 {
+    assert( addr->isTCP() );
     bool found = false;
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
 
-        vector< pair<int,SockInfo> >::iterator iter = m_activeSockets.begin();
-        while ( iter != m_activeSockets.end() ) {
-            if ( iter->first == socket ) {
+        logf( XW_LOGINFO, "%s: START: %d sockets active", __func__, 
+              m_activeSockets.size() );
+
+        vector<SockInfo>::iterator iter;
+        for ( iter = m_activeSockets.begin(); 
+              iter != m_activeSockets.end(); ++iter ) {
+            if ( iter->m_addr.equals( *addr ) ) {
                 m_activeSockets.erase( iter );
                 found = true;
                 break;
             }
-            ++iter;
         }
-	logf( XW_LOGINFO, "%s: %d sockets active", __func__, 
-	      m_activeSockets.size() );
+        logf( XW_LOGINFO, "%s: AFTER: %d sockets active", __func__, 
+              m_activeSockets.size() );
     }
     return found;
 } /* RemoveSocket */
 
 void
-XWThreadPool::CloseSocket( int socket )
+XWThreadPool::CloseSocket( const AddrInfo* addr )
 {
 /*     bool do_interrupt = false; */
-    if ( !RemoveSocket( socket ) ) {
+    assert( addr->isTCP() );
+    if ( !RemoveSocket( addr ) ) {
         MutexLock ml( &m_queueMutex );
         deque<QueuePr>::iterator iter = m_queue.begin();
         while ( iter != m_queue.end() ) {
-            if ( iter->m_socket == socket ) {
+            if ( iter->m_info.m_addr.equals( *addr ) ) {
                 m_queue.erase( iter );
 /*                 do_interrupt = true; */
                 break;
@@ -168,7 +175,7 @@ XWThreadPool::CloseSocket( int socket )
         }
     }
     logf( XW_LOGINFO, "CLOSING socket %d", socket );
-    close( socket );
+    close( addr->m_socket );
 /*     if ( do_interrupt ) { */
     /* We always need to interrupt the poll because the socket we're closing
        will be in the list being listened to.  That or we need to drop sockets
@@ -179,31 +186,35 @@ XWThreadPool::CloseSocket( int socket )
 }
 
 void
-XWThreadPool::EnqueueKill( int socket, const char* const why )
+XWThreadPool::EnqueueKill( const AddrInfo* addr, const char* const why )
 {
     logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, socket, why );
-    SockInfo si = { STYPE_UNKNOWN, {0} };
-    enqueue( socket, si, Q_KILL );
+    if ( addr->isTCP() ) {
+        SockInfo si;
+        si.m_type = STYPE_UNKNOWN;
+        si.m_addr = *addr;
+        enqueue( si, Q_KILL );
+    }
 }
 
 bool
-XWThreadPool::get_process_packet( int socket, SockType stype, in_addr& addr )
+XWThreadPool::get_process_packet( SockType stype, const AddrInfo* addr )
 {
     bool success = false;
     short packetSize;
     assert( sizeof(packetSize) == 2 );
 
     unsigned char buf[MAX_MSG_LEN+1];
-    int nRead = read_packet( socket, buf, sizeof(buf) );
+    int nRead = read_packet( addr->m_socket, buf, sizeof(buf) );
     if ( nRead < 0 ) {
-        EnqueueKill( socket, "bad packet" );
+        EnqueueKill( addr, "bad packet" );
     } else if ( STYPE_GAME == stype ) {
         logf( XW_LOGINFO, "calling m_pFunc" );
-        success = (*m_pFunc)( buf, nRead, socket, addr );
+        success = (*m_pFunc)( buf, nRead, addr );
     } else {
         buf[nRead] = '\0';
-        handle_proxy_packet( buf, nRead, socket, addr );
-        CloseSocket( socket );
+        handle_proxy_packet( buf, nRead, addr );
+        CloseSocket( addr );
     }
     return success;
 } /* get_process_packet */
@@ -224,9 +235,9 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
     int socket = -1;
     for ( ; ; ) {
         pthread_mutex_lock( &m_queueMutex );
-	tip->recentTime = 0;
+        tip->recentTime = 0;
 
-	release_socket_locked( socket );
+        release_socket_locked( socket );
 
         while ( !m_timeToDie && m_queue.size() == 0 ) {
             pthread_cond_wait( &m_queueCondVar, &m_queueMutex );
@@ -241,25 +252,25 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
         QueuePr pr;
         grab_elem_locked( &pr );
 
-	tip->recentTime = time( NULL );
+        tip->recentTime = time( NULL );
         pthread_mutex_unlock( &m_queueMutex );
 
-        if ( pr.m_socket >= 0 ) {
+        socket = pr.m_info.m_addr.m_socket;
+        if ( socket >= 0 ) {
             logf( XW_LOGINFO, "worker thread got socket %d from queue", 
-                  pr.m_socket );
+                  socket );
             switch ( pr.m_act ) {
             case Q_READ:
-                if ( get_process_packet( pr.m_socket, pr.m_info.m_type, pr.m_info.m_addr ) ) {
-                    AddSocket( pr.m_socket, pr.m_info.m_type, pr.m_info.m_addr );
+                if ( get_process_packet( pr.m_info.m_type, &pr.m_info.m_addr ) ) {
+                    AddSocket( pr.m_info.m_type, &pr.m_info.m_addr );
                 }
                 break;
             case Q_KILL:
-                (*m_kFunc)( pr.m_socket );
-                CloseSocket( pr.m_socket );
+                (*m_kFunc)( &pr.m_info.m_addr );
+                CloseSocket( &pr.m_info.m_addr );
                 break;
             }
         }
-        socket = pr.m_socket;
     }
     logf( XW_LOGINFO, "tpool worker thread exiting" );
     return NULL;
@@ -318,11 +329,11 @@ XWThreadPool::real_listener()
 #endif
         ++curfd;
 
-        vector< pair<int,SockInfo> >::iterator iter;
+        vector<SockInfo>::iterator iter;
         for ( iter = m_activeSockets.begin(); iter != m_activeSockets.end(); 
               ++iter ) {
-            fds[curfd].fd = iter->first;
-            sinfos[curfd] = iter->second;
+            fds[curfd].fd = iter->m_addr.m_socket;
+            sinfos[curfd] = *iter;
             fds[curfd].events = flags;
 #ifdef LOG_POLL
             if ( logCapacity > logLen ) {
@@ -374,7 +385,9 @@ XWThreadPool::real_listener()
 
                 if ( fds[curfd].revents != 0 ) {
                     int socket = fds[curfd].fd;
-                    if ( !RemoveSocket( socket ) ) {
+                    const AddrInfo* addr = &sinfos[curfd].m_addr;
+                    assert( socket == addr->m_socket );
+                    if ( !RemoveSocket( addr ) ) {
                         /* no further processing if it's been removed while
                            we've been sleeping in poll */
                         --nEvents;
@@ -382,11 +395,11 @@ XWThreadPool::real_listener()
                     }
 
                     if ( 0 != (fds[curfd].revents & (POLLIN | POLLPRI)) ) {
-                        enqueue( socket, sinfos[curfd] );
+                        enqueue( sinfos[curfd] );
                     } else {
                         logf( XW_LOGERROR, "odd revents: %x", 
                               fds[curfd].revents );
-                        EnqueueKill( socket, "error/hup in poll()" ); 
+                        EnqueueKill( addr, "error/hup in poll()" ); 
                     }
                     --nEvents;
                 }
@@ -416,9 +429,9 @@ XWThreadPool::listener_main( void* closure )
 }
 
 void
-XWThreadPool::enqueue( int socket, SockInfo si, QAction act ) 
+XWThreadPool::enqueue( SockInfo si, QAction act ) 
 {
-    QueuePr pr = { act, socket, si };
+    QueuePr pr = { act, si };
     MutexLock ml( &m_queueMutex );
     m_queue.push_back( pr );
 
@@ -430,10 +443,10 @@ void
 XWThreadPool::grab_elem_locked( QueuePr* prp )
 {
     bool found = false;
-    prp->m_socket = -1;
+    prp->m_info.m_addr.m_socket = -1;
     deque<QueuePr>::iterator iter;
     for ( iter = m_queue.begin(); !found && iter != m_queue.end(); ++iter ) {
-        int socket = iter->m_socket;
+        int socket = iter->m_info.m_addr.m_socket;
         /* If NOT found */
         if ( m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
             *prp = *iter;
