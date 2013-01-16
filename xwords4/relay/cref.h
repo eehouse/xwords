@@ -219,11 +219,11 @@ class CookieRef {
     void handleEvents();
 
     void sendResponse( const CRefEvent* evt, bool initial, 
-                       const DBMgr::DevIDRelay* devID );
+                       const DevIDRelay* devID );
     void sendAnyStored( const CRefEvent* evt );
     void initPlayerCounts( const CRefEvent* evt );
     bool increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp, 
-                               DBMgr::DevIDRelay* devID );
+                               DevIDRelay* devID );
     void updateAck( HostID hostID, bool keep );
     void dropPending( int seed );
 

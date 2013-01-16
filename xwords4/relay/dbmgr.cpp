@@ -249,10 +249,10 @@ DBMgr::AllDevsAckd( const char* const connName )
 
 // Return DevIDRelay for device, adding it to devices table IFF it's not
 // already there.
-DBMgr::DevIDRelay
+DevIDRelay
 DBMgr::RegisterDevice( const DevID* host )
 {
-    DBMgr::DevIDRelay devID;
+    DevIDRelay devID;
     assert( host->m_devIDType != ID_TYPE_NONE );
     int ii;
     bool success;
@@ -261,7 +261,7 @@ DBMgr::RegisterDevice( const DevID* host )
     devID = getDevID( host );
 
     // If it's not present *and* of type ID_TYPE_RELAY, we can do nothing.
-    // Fail.
+    // Otherwise proceed.
     if ( DEVID_NONE == devID && ID_TYPE_RELAY < host->m_devIDType ) {
         // loop until we're successful inserting the unique key.  Ship with this
         // coming from random, but test with increasing values initially to make
@@ -269,7 +269,7 @@ DBMgr::RegisterDevice( const DevID* host )
         for ( success = false, ii = 0; !success; ++ii ) {
             assert( 10 > ii );  // better to check that we're looping BECAUSE
                                 // of uniqueness problem.
-            devID = (DBMgr::DevIDRelay)random();
+            devID = (DevIDRelay)random();
             if ( DEVID_NONE == devID ) {
                 continue;
             }
@@ -327,13 +327,14 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
         " clntVers[%d] = %d,"
         " seeds[%d] = %d, addrs[%d] = \'%s\', %s"
-        " mtimes[%d]='now', ack[%d]=\'%c\'"
+        " tokens[%d] = %d, mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
     string query;
     char* ntoa = inet_ntoa( addr->sin_addr() );
     string_printf( query, fmt, newID, nToAdd, newID, clientVersion,
-                   newID, seed, newID, ntoa, devIDBuf.c_str(), newID, 
-                   newID, ackd?'A':'a', connName );
+                   newID, seed, newID, ntoa, devIDBuf.c_str(), 
+                   newID, addr->clientToken(), newID, newID, ackd?'A':'a', 
+                   connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
@@ -632,10 +633,10 @@ DBMgr::readArray( const char* const connName, int arr[]  ) /* len 4 */
     PQclear( result );
 }
 
-DBMgr::DevIDRelay 
+DevIDRelay 
 DBMgr::getDevID( const char* connName, int hid )
 {
-    DBMgr::DevIDRelay devID;
+    DevIDRelay devID;
     const char* fmt = "SELECT devids[%d] FROM " GAMES_TABLE " WHERE connName='%s'";
     string query;
     string_printf( query, fmt, hid, connName );
@@ -643,29 +644,28 @@ DBMgr::getDevID( const char* connName, int hid )
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 == PQntuples( result ) );
-    devID = (DBMgr::DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
+    devID = (DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
     PQclear( result );
     return devID;
 }
 
-DBMgr::DevIDRelay 
+DevIDRelay 
 DBMgr::getDevID( const DevID* devID )
 {
-    DBMgr::DevIDRelay rDevID = DEVID_NONE;
+    DevIDRelay rDevID = DEVID_NONE;
     DevIDType devIDType = devID->m_devIDType;
     string query;
     assert( ID_TYPE_NONE < devIDType );
-    const char* asStr = devID->m_devIDString.c_str();
     if ( ID_TYPE_RELAY == devIDType ) {
         // confirm it's there
-        DBMgr::DevIDRelay cur = strtoul( asStr, NULL, 16 );
+        DevIDRelay cur = devID->asRelayID();
         if ( DEVID_NONE != cur ) {
             const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE id=%d";
             string_printf( query, fmt, cur );
         }
     } else {
         const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE devtype=%d and devid = '%s'";
-        string_printf( query, fmt, devIDType, asStr );
+        string_printf( query, fmt, devIDType, devID->m_devIDString.c_str() );
     }
 
     if ( 0 < query.size() ) {
@@ -673,7 +673,7 @@ DBMgr::getDevID( const DevID* devID )
         PGresult* result = PQexec( getThreadConn(), query.c_str() );
         assert( 1 >= PQntuples( result ) );
         if ( 1 == PQntuples( result ) ) {
-            rDevID = (DBMgr::DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
+            rDevID = (DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
         }
         PQclear( result );
     }

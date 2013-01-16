@@ -32,7 +32,10 @@ AddrInfo::equals( const AddrInfo& other ) const
         if ( isTCP() ) {
             equal = m_socket == other.m_socket;
         } else {
-            assert(0);          /* later.... */
+            assert( m_socket == other.m_socket ); /* both same UDP socket */
+            /* what does equal mean on udp addresses?  Same host, or same host AND game */
+            equal = m_clientToken == other.m_clientToken
+                && 0 == memcmp( &m_saddr, &other.m_saddr, sizeof(m_saddr) );
         }
     }
     return equal;

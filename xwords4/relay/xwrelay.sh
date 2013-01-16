@@ -58,6 +58,7 @@ cid integer
 ,mtimes TIMESTAMP(0)[]
 ,addrs INET[]
 ,devids INTEGER[]
+,tokens INTEGER[]
 );
 EOF
 

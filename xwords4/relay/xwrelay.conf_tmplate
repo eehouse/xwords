@@ -26,11 +26,15 @@ GAME_PORTS=10997
 # What ports do we listen on for per-device incoming connections?
 DEVICE_PORTS=10998
 
+# Port for per-device UDP interface (experimental)
+UDPPORT=10997
+
 # default 5
 SOCK_TIMEOUT_SECONDS=5
 
 # And the control port is?
 CTLPORT=11000
+
 
 # port for web interface
 WWW_PORT=11001

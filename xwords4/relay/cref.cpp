@@ -276,7 +276,7 @@ CookieRef::_PutMsg( HostID srcID, const AddrInfo* addr, HostID destID,
 void
 CookieRef::_Disconnect( const AddrInfo* addr, HostID hostID )
 {
-    logf( XW_LOGINFO, "%s(socket=%d, hostID=%d)", __func__, socket, hostID );
+    logf( XW_LOGINFO, "%s(hostID=%d)", __func__, hostID );
 
     CRefEvent evt( XWE_DISCONN, addr );
     evt.u.discon.srcID = hostID;
@@ -636,7 +636,7 @@ CookieRef::handleEvents()
     /* Assumption: has mutex!!!! */
     while ( m_eventQueue.size () > 0 ) {
         XW_RELAY_STATE nextState;
-        DBMgr::DevIDRelay devID;
+        DevIDRelay devID;
         CRefEvent evt = m_eventQueue.front();
         m_eventQueue.pop_front();
 
@@ -848,7 +848,6 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
 
     assert( dest > 0 && dest <= 4 );
     assert( -1 != addr->socket() );
-    assert( addr->isTCP() );
 
     for ( ; ; ) {
         unsigned char buf[MAX_MSG_LEN];
@@ -867,9 +866,9 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
 
 bool
 CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp, 
-                                 DBMgr::DevIDRelay* devIDp )
+                                 DevIDRelay* devIDp )
 {
-    DBMgr::DevIDRelay devID = DBMgr::DEVID_NONE;
+    DevIDRelay devID = DBMgr::DEVID_NONE;
     int nPlayersH = evt->u.con.nPlayersH;
     int seed = evt->u.con.seed;
 
@@ -1038,7 +1037,7 @@ CookieRef::cancelAllConnectedTimer()
 
 void
 CookieRef::sendResponse( const CRefEvent* evt, bool initial, 
-                         const DBMgr::DevIDRelay* devID )
+                         const DevIDRelay* devID )
 {
     /* Now send the response */
     unsigned char buf[1       /* cmd */
@@ -1191,7 +1190,6 @@ void
 CookieRef::notifyOthers( const AddrInfo* addr, XWRelayMsg msg, XWREASON why )
 {
     assert( addr->socket() != 0 );
-    assert( addr->isTCP() );
 
     ASSERT_LOCKED();
     RWReadLock rrl( &m_socketsRWLock );

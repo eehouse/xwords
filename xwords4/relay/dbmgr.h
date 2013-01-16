@@ -36,7 +36,6 @@ class DBMgr {
     /* DevIDs on various platforms are stored in devices table.  This is the
        key, and used in msgs and games tables as a shorter way to refer to
        them. */
-    typedef unsigned int DevIDRelay;
     static const DevIDRelay DEVID_NONE = 0;
 
     static DBMgr* Get();
@@ -62,7 +61,7 @@ class DBMgr {
                        char* connNameBuf, int bufLen, int* nPlayersHP );
     bool AllDevsAckd( const char* const connName );
 
-    DevIDRelay RegisterDevice( const DevID* hosts );
+    DevIDRelay RegisterDevice( const DevID* host );
 
     HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const AddrInfo* addr,

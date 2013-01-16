@@ -27,6 +27,37 @@
 /* Set if device is acting a server; cleared if as client */
 #define FLAGS_SERVER_BIT 0x01
 
+/* message types for the udp-based per-device (not per-game) protocol */
+#define XWREG_PROTO_VERSION 0
+#ifndef CANT_DO_TYPEDEF
+typedef
+#endif
+enum { XWRREG_NONE             /* 0 is an illegal value */
+       ,XWRREG_REG             /* dev->relay: device registers self and
+                                  self-selected (e.g. gcm) or assigned devid
+                                  format: proto: 1; this enum: 1; idType: 1,
+                                  idLen: 2, id: <idLen> */
+
+       ,XWRREG_REGRSP          /* relay->device: if non-relay-assigned devid
+                                  type was given, this gives the
+                                  relay-assigned one to be used from now on.
+                                  format: proto: 1, this enum: 1, idLen: 2, id: <idLen>
+                                */
+
+       ,XWRREG_PING             /* device->relay: keep the UDP connection
+                                   open.  format: proto: 1, this enum: 1. */
+
+       ,XWRREG_MSG             /* dev->relay and relay->dev: norm: a message from a game to
+                                  the relay format: proto: 1, this enum: 1,
+                                  clientToken: 4, message<varies>*/
+
+       ,XWRREG_MSGRSP           /* relay->dev: conveys error on receipt of XWRREG_MSG */
+}
+#ifndef CANT_DO_TYPEDEF
+ XWRelayReg
+#endif
+;
+
 #ifndef CANT_DO_TYPEDEF
 typedef
 #endif

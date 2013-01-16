@@ -76,9 +76,11 @@
 #include "lstnrmgr.h"
 #include "dbmgr.h"
 #include "addrinfo.h"
+#include "devmgr.h"
 
 static int s_nSpawns = 0;
 static int g_maxsocks = -1;
+static int g_udpsock = -1;
 
 void
 logf( XW_LogLevel level, const char* format, ... )
@@ -334,6 +336,15 @@ denyConnection( const AddrInfo* addr, XWREASON err )
     send_with_length_unsafe( addr, buf, sizeof(buf) );
 }
 
+static ssize_t
+send_via_udp( int socket, const struct sockaddr *dest_addr, 
+              const unsigned char* buf, int buflen )
+{
+    ssize_t nSent = sendto( socket, buf, buflen,
+                            0, /* flags */ dest_addr, sizeof(*dest_addr) );
+    return nSent;
+}
+
 /* No mutex here.  Caller better be ensuring no other thread can access this
  * socket. */
 bool
@@ -343,15 +354,29 @@ send_with_length_unsafe( const AddrInfo* addr, unsigned char* buf,
     assert( !!addr );
     bool ok = false;
     int socket = addr->socket();
-    assert ( addr->isTCP() );
-    unsigned short len = htons( bufLen );
-    ssize_t nSent = send( socket, &len, 2, 0 );
-    if ( nSent == 2 ) {
-        nSent = send( socket, buf, bufLen, 0 );
-        if ( nSent == ssize_t(bufLen) ) {
-            logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
-            ok = true;
+    if ( addr->isTCP() ) {
+        unsigned short len = htons( bufLen );
+        ssize_t nSent = send( socket, &len, 2, 0 );
+        if ( nSent == 2 ) {
+            nSent = send( socket, buf, bufLen, 0 );
+            if ( nSent == ssize_t(bufLen) ) {
+                logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
+                ok = true;
+            }
         }
+    } else {
+        uint32_t clientToken = addr->clientToken();
+        assert( 0 != clientToken );
+        unsigned char tmpbuf[1 + 1 + sizeof(clientToken) + bufLen];
+        tmpbuf[0] = XWREG_PROTO_VERSION;
+        tmpbuf[1] = XWRREG_MSG;
+        clientToken = htonl(clientToken);
+        memcpy( &tmpbuf[2], &clientToken, sizeof(clientToken) );
+        memcpy( &tmpbuf[2 + sizeof(clientToken)], buf, bufLen );
+        const struct sockaddr* saddr = addr->sockaddr();
+        send_via_udp( g_udpsock, saddr, tmpbuf, sizeof(tmpbuf) );
+        logf( XW_LOGINFO, "sent %d bytes on UDP socket %d", bufLen, socket );
+        ok = true;
     }
 
     if ( !ok ) {
@@ -1046,6 +1071,94 @@ handle_proxy_packet( unsigned char* buf, int len, const AddrInfo* addr )
     }
 } /* handle_proxy_packet */
 
+static void 
+registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
+{
+    DevIDRelay relayID;
+    if ( ID_TYPE_RELAY != devID->m_devIDType ) { // known to us; just update the time
+        relayID = DBMgr::Get()->RegisterDevice( devID );
+        if ( ID_TYPE_NONE != relayID ) {
+            // send it back to the device
+            char idbuf[9];
+            int len = snprintf( idbuf, sizeof(idbuf), "%.8X", relayID );
+            logf( XW_LOGERROR, "%s: len(%s) => %d", __func__, idbuf, len );
+            unsigned char buf[1 + 1 + 2 + len];
+            buf[0] = XWREG_PROTO_VERSION;
+            buf[1] = XWRREG_REGRSP;
+            short lenNBO = htons(len);
+            memcpy( &buf[2], &lenNBO, sizeof(lenNBO));
+            memcpy( &buf[4], idbuf, len );
+            send_via_udp( g_udpsock, &saddr->addr, buf, sizeof(buf) );
+        }
+    } else {
+        relayID = devID->asRelayID();
+    }
+    // Now let's map the address to the devid for future sending purposes.
+    DevMgr::Get()->Remember( relayID, saddr );
+}
+
+// This will need to be done in a thread before there can be simulaneous
+// connections.
+static void
+handle_udp_packet( int udpsock )
+{
+    bool success = false;
+    logf( XW_LOGINFO, "%s()", __func__ );
+    unsigned char buf[512];
+    AddrInfo::AddrUnion saddr;
+    memset( &saddr, 0, sizeof(saddr) );
+    socklen_t fromlen = sizeof(saddr.addr_in);
+
+    ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
+                              &saddr.addr, &fromlen );
+    if ( 2 <= nRead ) {
+        unsigned char* ptr = buf;
+        unsigned char* end = buf + nRead;
+        logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
+
+        unsigned char proto = *ptr++;
+        if ( XWREG_PROTO_VERSION != 0 ) {
+            logf( XW_LOGERROR, "unexpected proto %d", __func__, (int) proto );
+        } else {
+            int msg = *ptr++;
+            switch( msg ) {
+            case XWRREG_REG: {
+                DevIDType typ = (DevIDType)*ptr++;
+                unsigned short idLen;
+                if ( !getNetShort( &ptr, end, &idLen ) ) {
+                    break;
+                }
+                if ( end - ptr > idLen ) {
+                    logf( XW_LOGERROR, "full devID not received" );
+                    break;
+                }
+                DevID devID( typ );
+                devID.m_devIDString.append( (const char*)ptr, idLen );
+                ptr += idLen;
+                registerDevice( &devID, &saddr );
+            }
+                break;
+            case XWRREG_MSG: {
+                uint32_t clientToken;
+                memcpy( &clientToken, ptr, sizeof(clientToken) );
+                ptr += sizeof(clientToken);
+                clientToken = ntohl( clientToken );
+                if ( 0 != clientToken ) {
+                    AddrInfo addr( udpsock, clientToken, &saddr );
+                    success = processMessage( ptr, end - ptr, &addr );
+                } else {
+                    logf( XW_LOGERROR, "%s: dropping packet with token of 0" );
+                }
+            }
+                break;
+            default:
+                logf( XW_LOGERROR, "%s: unexpected msg %d", __func__, msg );
+            }
+        }
+    } 
+    logf( XW_LOGINFO, "%s()=>%d", __func__, success );
+}
+
 /* From stack overflow, toward a snprintf with an expanding buffer.
  */
 void
@@ -1134,6 +1247,7 @@ main( int argc, char** argv )
 {
     int port = 0;
     int ctrlport = 0;
+    int udpport = 0;
 #ifdef DO_HTTP
     int httpport = 0;
     const char* cssFile = NULL;
@@ -1156,7 +1270,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:m:n:f:l:t:s:w:"
+       int opt = getopt(argc, argv, "h?c:p:m:n:f:l:t:s:u:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -1210,6 +1324,9 @@ main( int argc, char** argv )
        case 't':
            nWorkerThreads = atoi( optarg );
            break;
+       case 'u':
+           udpport = atoi( optarg );
+           break;
        default:
            usage( argv[0] );
            exit( 1 );
@@ -1231,6 +1348,9 @@ main( int argc, char** argv )
 
     if ( ctrlport == 0 ) {
         (void)cfg->GetValueFor( "CTLPORT", &ctrlport );
+    }
+    if ( 0 == udpport ) {
+        (void)cfg->GetValueFor( "UDPPORT", &udpport );
     }
 #ifdef DO_HTTP
     if ( httpport == 0 ) {
@@ -1371,6 +1491,19 @@ main( int argc, char** argv )
         exit( 1 );
     }
 
+    if ( 0 != udpport ) {
+        struct sockaddr_in saddr;
+        g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+        saddr.sin_family = PF_INET;
+        saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        saddr.sin_port = htons(udpport);
+        int err = bind( g_udpsock, (struct sockaddr*)&saddr, sizeof(saddr) );
+        if ( 0 != err ) {
+            logf( XW_LOGERROR, "bind()=>%s", strerror(errno) );
+            g_udpsock = -1;
+        }
+    }
+
 #ifdef DO_HTTP
     HttpState http_state;
     int addr;
@@ -1404,6 +1537,9 @@ main( int argc, char** argv )
         FD_ZERO(&rfds);
         g_listeners.AddToFDSet( &rfds );
         FD_SET( g_control, &rfds );
+        if ( -1 != g_udpsock ) {
+            FD_SET( g_udpsock, &rfds );
+        }
 #ifdef DO_HTTP
         if ( -1 != g_http ) {
             FD_SET( g_http, &rfds );
@@ -1412,6 +1548,9 @@ main( int argc, char** argv )
         int highest = g_listeners.GetHighest();
         if ( g_control > highest ) {
             highest = g_control;
+        }
+        if ( g_udpsock > highest ) {
+            highest = g_udpsock;
         }
 #ifdef DO_HTTP
         if ( g_http > highest ) {
@@ -1458,7 +1597,7 @@ main( int argc, char** argv )
                               "%s: accepting connection from %s on socket %d", 
                               __func__, inet_ntoa(saddr.addr_in.sin_addr), newSock );
 
-                        AddrInfo addr( true, newSock, &saddr );
+                        AddrInfo addr( newSock, &saddr );
                         tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME 
                                           : XWThreadPool::STYPE_PROXY,
                                           &addr );
@@ -1469,6 +1608,12 @@ main( int argc, char** argv )
             if ( FD_ISSET( g_control, &rfds ) ) {
                 assert(0);      // not working; don't use until fixed
                 // run_ctrl_thread( g_control );
+                --retval;
+            }
+            if ( FD_ISSET( g_udpsock, &rfds ) ) {
+                // This will need to be done in a separate thread, or pushed
+                // to the existing thread pool
+                handle_udp_packet( g_udpsock );
                 --retval;
             }
 #ifdef DO_HTTP

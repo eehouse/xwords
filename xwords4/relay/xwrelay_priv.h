@@ -25,11 +25,14 @@
 #include <string>
 #include <time.h>
 #include <netinet/in.h>
+#include <stdint.h>
+
 #include "lstnrmgr.h"
 #include "xwrelay.h"
 #include "addrinfo.h"
 
 typedef unsigned char HostID;   /* see HOST_ID_SERVER */
+typedef uint32_t DevIDRelay;
 
 typedef enum {
     XW_LOGERROR
