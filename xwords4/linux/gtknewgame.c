@@ -32,7 +32,7 @@
 #define MAX_SIZE_CHOICES 32
 
 typedef struct GtkNewGameState {
-    GtkAppGlobals* globals;
+    GtkGameGlobals* globals;
     CurGameInfo* gi;
     NewGameCtx* newGameCtxt;
 
@@ -544,7 +544,7 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
 }
 
 gboolean
-newGameDialog( GtkAppGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr, 
+newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr, 
                XP_Bool isNewGame, XP_Bool fireConnDlg )
 {
     GtkNewGameState state;

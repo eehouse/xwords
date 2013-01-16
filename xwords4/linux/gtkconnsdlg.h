@@ -26,7 +26,7 @@
 
 #include "gtkboard.h"
 
-gboolean gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr,
+gboolean gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
                       DeviceRole role, XP_Bool readOnly );
 
 #endif /* _GTKCONNSDLG_H_ */

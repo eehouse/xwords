@@ -24,7 +24,7 @@
 #include "gtkboard.h"
 
 int gtkmain( LaunchParams* params );
-void windowDestroyed( GtkAppGlobals* globals );
+void windowDestroyed( GtkGameGlobals* globals );
 void onGameSaved( void* closure, sqlite3_int64 rowid, XP_Bool firstTime );
 
 #endif

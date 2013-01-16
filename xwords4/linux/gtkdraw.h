@@ -22,7 +22,7 @@
 
 #include "draw.h"
 
-DrawCtx* gtkDrawCtxtMake( GtkWidget *widget, GtkAppGlobals* globals );
+DrawCtx* gtkDrawCtxtMake( GtkWidget *widget, GtkGameGlobals* globals );
 
 void draw_gtk_status( GtkDrawCtx* draw, char ch );
 

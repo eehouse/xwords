@@ -45,7 +45,7 @@ typedef struct GtkDrawCtx {
 
 /*     GdkDrawable* pixmap; */
     GtkWidget* drawing_area;
-    struct GtkAppGlobals* globals;
+    struct GtkGameGlobals* globals;
 
 #ifdef USE_CAIRO
     cairo_t* cr;
@@ -83,11 +83,11 @@ typedef struct ClientStreamRec {
     int sock;
 } ClientStreamRec;
 
-typedef struct GtkAppGlobals {
+typedef struct GtkGameGlobals {
     CommonGlobals cGlobals;
     GtkWidget* window;
     GtkDrawCtx* draw;
-    GTKGamesGlobals* gg;
+    GtkAppGlobals* apg;
 /*     GdkPixmap* pixmap; */
     GtkWidget* drawing_area;
 
@@ -127,7 +127,7 @@ typedef struct GtkAppGlobals {
 #ifdef KEYBOARD_NAV
     XP_Bool keyDown;
 #endif
-} GtkAppGlobals;
+} GtkGameGlobals;
 
 /* DictionaryCtxt* gtk_dictionary_make(); */
 #define GTK_MIN_SCALE 12		/* was 14 */
@@ -166,9 +166,9 @@ typedef struct GtkAppGlobals {
 #define GTK_BOTTOM_MARGIN GTK_TOP_MARGIN
 #define GTK_RIGHT_MARGIN GTK_BOARD_LEFT_MARGIN
 
-void initGlobals( GtkAppGlobals* globals, LaunchParams* params );
-void freeGlobals( GtkAppGlobals* globals );
-XP_Bool makeNewGame( GtkAppGlobals* globals );
+void initGlobals( GtkGameGlobals* globals, LaunchParams* params );
+void freeGlobals( GtkGameGlobals* globals );
+XP_Bool makeNewGame( GtkGameGlobals* globals );
 
 
 #endif /* PLATFORM_GTK */

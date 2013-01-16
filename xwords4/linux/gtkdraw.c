@@ -1305,7 +1305,7 @@ allocAndSet( GdkColormap* map, GdkColor* color, unsigned short red,
 } /* allocAndSet */
 
 DrawCtx* 
-gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
+gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 {
     GtkDrawCtx* dctx = g_malloc0( sizeof(GtkDrawCtx) );
     GdkColormap* map;
@@ -1427,7 +1427,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
 void
 draw_gtk_status( GtkDrawCtx* dctx, char ch )
 {
-    GtkAppGlobals* globals = dctx->globals;
+    GtkGameGlobals* globals = dctx->globals;
 
     XP_Rect rect = {
         .left = globals->netStatLeft,
