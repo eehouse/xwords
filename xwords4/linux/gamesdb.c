@@ -32,7 +32,7 @@ openGamesDB( const char* dbName )
     int result = sqlite3_open( dbName, &pDb );
     XP_ASSERT( SQLITE_OK == result );
 
-    const char* createStr = 
+    const char* createGamesStr = 
         "CREATE TABLE games ( "
         "game BLOB"
         ",room VARCHAR(32)"
@@ -41,10 +41,12 @@ openGamesDB( const char* dbName )
         ",nmoves INT"
         ",nmissing INT(2)"
         ")";
+    result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
 
-    result = sqlite3_exec( pDb, createStr, NULL, NULL, NULL );
+    const char* createValuesStr = 
+        "CREATE TABLE pairs ( key TEXT UNIQUE,value TEXT )";
+    result = sqlite3_exec( pDb, createValuesStr, NULL, NULL, NULL );
     XP_LOGF( "sqlite3_exec=>%d", result );
-    // XP_ASSERT( SQLITE_OK == result );
 
     return pDb;
 }
@@ -212,6 +214,39 @@ loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
     stream_putBytes( stream, ptr, size );
     sqlite3_finalize( ppStmt );
     return XP_TRUE;
+}
+
+void
+store( sqlite3* pDb, const gchar* key, const gchar* value )
+{
+    char buf[256];
+    snprintf( buf, sizeof(buf),
+              "INSERT OR REPLACE INTO pairs (key, value) VALUES ('%s', '%s')",
+              key, value );
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_step( ppStmt );
+    XP_ASSERT( SQLITE_DONE == result );
+    sqlite3_finalize( ppStmt );
+}
+
+void
+fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen )
+{
+    char query[256];
+    snprintf( query, sizeof(query),
+              "SELECT value from pairs where key = '%s'", key );
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_step( ppStmt );
+    if ( SQLITE_ROW == result ) {
+        getColumnText( ppStmt, 0, buf, buflen );
+    } else {
+        buf[0] = '\0';
+    }
+    sqlite3_finalize( ppStmt );
 }
 
 static void

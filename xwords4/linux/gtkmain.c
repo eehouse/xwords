@@ -20,11 +20,12 @@
 
 #ifdef PLATFORM_GTK
 
-#include "xptypes.h"
 #include "main.h"
+#include "gtkmain.h"
 #include "gamesdb.h"
 #include "gtkboard.h"
 #include "linuxmain.h"
+#include "relaycon.h"
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
@@ -52,6 +53,22 @@ gameIsOpen( GtkAppGlobals* apg, sqlite3_int64 rowid )
         found = globals->cGlobals.selRow == rowid;
     }
     return found;
+}
+
+static GtkGameGlobals*
+findGame( const GtkAppGlobals* apg, XP_U32 clientToken )
+{
+    GtkGameGlobals* result = NULL;
+    GSList* iter;
+    for ( iter = apg->globalsList; !!iter; iter = iter->next ) {
+        GtkGameGlobals* globals = (GtkGameGlobals*)iter->data;
+        CommonGlobals* cGlobals = &globals->cGlobals;
+        if ( cGlobals->selRow == clientToken ) {
+            result = globals;
+            break;
+        }
+    }
+    return result;
 }
 
 enum { CHECK_ITEM, ROW_ITEM, NAME_ITEM, ROOM_ITEM, OVER_ITEM, TURN_ITEM, NMOVES_ITEM, MISSING_ITEM,
@@ -279,6 +296,66 @@ onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
     }
 }
 
+static gboolean
+app_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    if ( 0 != (G_IO_IN & condition) ) {
+        GtkAppGlobals* apg = (GtkAppGlobals*)data;
+        int socket = g_io_channel_unix_get_fd( source );
+        GList* iter;
+        for ( iter = apg->sources; !!iter; iter = iter->next ) {
+            SourceData* sd = (SourceData*)iter->data;
+            if ( sd->channel == source ) {
+                (*sd->proc)( sd->procClosure, socket );
+                break;
+            }
+        }
+        XP_ASSERT( !!iter );    /* didn't fail to find it */
+    }
+    return TRUE;
+}
+
+static void
+socketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), SockReceiver proc,
+               void* procClosure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    SourceData* sd = g_malloc( sizeof(*sd) );
+    sd->channel = g_io_channel_unix_new( newSock );
+    sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR, app_socket_proc, apg );
+    sd->proc = proc;
+    sd->procClosure = procClosure;
+    apg->sources = g_list_append( apg->sources, sd );
+}
+
+static void
+gtkGotBuf( void* closure, XP_U8* buf, XP_U16 len )
+{
+    LOG_FUNC();
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    XP_U32 gameToken;
+    XP_ASSERT( sizeof(gameToken) < len );
+    gameToken = ntohl(*(XP_U32*)&buf[0]);
+    buf += sizeof(gameToken);
+    len -= sizeof(gameToken);
+
+    GtkGameGlobals* globals = findGame( apg, gameToken );
+    if ( !!globals ) {
+        gameGotBuf( globals, buf, len );
+    } else {
+        XP_LOGF( "%s: game with token %lu not found; not open or deleted", 
+                 __func__, gameToken );
+    }
+}
+
+static void
+gtkDevIDChanged( void* closure, const XP_UCHAR* devID )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    XP_LOGF( "%s(devID=%s)", __func__, devID );
+    store( apg->pDb, KEY_RDEVID, devID );
+}
+
 void
 onGameSaved( void* closure, sqlite3_int64 rowid, 
              XP_Bool firstTime )
@@ -295,11 +372,39 @@ gtkmain( LaunchParams* params )
     apg.selRow = -1;
     apg.params = params;
     apg.pDb = openGamesDB( params->dbName );
+    params->socketChanged = socketChanged;
+    params->socketChangedClosure = &apg;
+
+    RelayConnProcs procs = {
+        .msgReceived = gtkGotBuf,
+        .devIDChanged = gtkDevIDChanged,
+    };
+
+    XP_UCHAR devIDBuf[64] = {0};
+    XP_UCHAR* devID;
+    DevIDType typ = ID_TYPE_RELAY;
+    if ( !!params->rDevID ) {
+        devID = params->rDevID;
+    } else {
+        fetch( apg.pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+        if ( '\0' != devIDBuf[0] ) {
+            devID = devIDBuf;
+        } else {
+            devID = params->devID;
+            typ = ID_TYPE_LINUX;
+        }
+    }
+
+    relaycon_init( params, &procs, &apg, 
+                   params->connInfo.relay.relayName,
+                   params->connInfo.relay.defaultSendPort,
+                   devID, typ );
 
     (void)makeGamesWindow( &apg );
     gtk_main();
 
     closeGamesDB( apg.pDb );
+    relaycon_cleanup( params );
 
     return 0;
 } /* gtkmain */

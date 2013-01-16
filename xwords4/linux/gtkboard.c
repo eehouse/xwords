@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -498,6 +499,9 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #endif
         }
 
+        /* Need to save in order to have a valid selRow for the first send */
+        saveGame( cGlobals );
+
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* This may trigger network activity */
         if ( !!cGlobals->game.comms ) {
@@ -528,6 +532,12 @@ createOrLoadObjects( GtkGameGlobals* globals )
             }
 #endif
         }
+    }
+
+    if ( !params->fileName ) {
+        XP_UCHAR buf[64];
+        snprintf( buf, sizeof(buf), "clientToken: %lld", cGlobals->selRow );
+        gtk_window_set_title( GTK_WINDOW(globals->window), buf );
     }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -693,6 +703,7 @@ destroy_window( GtkWidget* XP_UNUSED(widget), gpointer data )
 {
     LOG_FUNC();
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
+    comms_stop( globals->cGlobals.game.comms );
     saveGame( &globals->cGlobals );
     windowDestroyed( globals );
     // gtk_main_quit();
@@ -2219,7 +2230,7 @@ newConnectionInput( GIOChannel *source,
     return keepSource;                /* FALSE means to remove event source */
 } /* newConnectionInput */
 
-typedef struct SockInfo {
+typedef struct _SockInfo {
     GIOChannel* channel;
     guint watch;
     int socket;
@@ -2545,6 +2556,39 @@ makeNewGame( GtkGameGlobals* globals )
     }
     LOG_RETURNF( "%d", success );
     return success;
+}
+
+void
+gameGotBuf( GtkGameGlobals* globals, XP_U8* buf, XP_U16 len )
+{
+    XP_Bool redraw = XP_FALSE;
+
+    XWStreamCtxt* stream = stream_from_msgbuf( &globals->cGlobals, buf, len );
+    if ( !!stream ) {
+        if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
+                                        stream, NULL ) ) {
+            redraw =
+                server_receiveMessage( globals->cGlobals.game.server,
+                                       stream );
+            if ( redraw ) {
+                saveGame( &globals->cGlobals );
+            }
+        }
+        stream_destroy( stream );
+    }
+
+    /* if there's something to draw resulting from the message, we
+       need to give the main loop time to reflect that on the screen
+       before giving the server another shot.  So just call the idle
+       proc. */
+    if ( redraw ) {
+        gtk_util_requestTime( globals->cGlobals.util );
+    } else {
+        redraw = server_do( globals->cGlobals.game.server );
+    }
+    if ( redraw ) {
+        board_draw( globals->cGlobals.game.board );
+    }
 }
 
 #endif /* PLATFORM_GTK */

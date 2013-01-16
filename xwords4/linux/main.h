@@ -44,6 +44,10 @@ typedef struct LinuxUtilCtxt {
     UtilVtable* vtable;
 } LinuxUtilCtxt;
 
+typedef void (*SockReceiver)( void* closure, int socket );
+typedef void (*NewSocketProc)( void* closure, int newSock, int oldSock, 
+                               SockReceiver proc, void* procClosure );
+
 typedef struct LaunchParams {
 /*     CommPipeCtxt* pipe; */
     CurGameInfo pgi;
@@ -51,12 +55,15 @@ typedef struct LaunchParams {
     GSList* dictDirs;
     char* fileName;
     char* dbName;
+    NewSocketProc socketChanged;
+    void* socketChangedClosure;
     XP_U16 saveFailPct;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE
     char* dbFileName;
     XP_U32 dbFileID;
 #endif
+    void* relayConStorage;      /* opaque outside of relaycon.c */
     char* pipe;
     char* nbs;
     char* bonusFile;
@@ -218,11 +225,19 @@ struct CommonGlobals {
     XP_U16 curSaveToken;
 };
 
+typedef struct _SourceData {
+    GIOChannel* channel;
+    gint watch;
+    SockReceiver proc;
+    void* procClosure;
+} SourceData;
+
 typedef struct _GtkAppGlobals {
     sqlite3* pDb;
     sqlite3_int64 selRow;
     LaunchParams* params;
     GSList* globalsList;
+    GList* sources;
     GtkWidget* listWidget;
 } GtkAppGlobals;
 

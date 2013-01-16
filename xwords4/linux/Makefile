@@ -204,6 +204,7 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/linuxdict.o \
 	$(BUILD_PLAT_DIR)/linuxutl.o \
 	$(BUILD_PLAT_DIR)/gamesdb.o \
+	$(BUILD_PLAT_DIR)/relaycon.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
 LIBS = -lm -luuid $(GPROFFLAG)

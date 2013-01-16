@@ -59,6 +59,7 @@
 #include "main.h"
 #include "gamesdb.h"
 #include "linuxdict.h"
+#include "relaycon.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
 #endif
@@ -849,44 +850,49 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
 } /* linux_init_relay_socket */
 
 static XP_S16
-linux_tcp_send( const XP_U8* buf, XP_U16 buflen, 
-                CommonGlobals* globals, const CommsAddrRec* addrRec )
+linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen, 
+                const CommsAddrRec* addrRec )
 {
     XP_S16 result = 0;
-    int sock = globals->socket;
-    
-    if ( sock == -1 ) {
-        XP_LOGF( "%s: socket uninitialized", __func__ );
-        sock = linux_init_relay_socket( globals, addrRec );
-        if ( sock != -1 ) {
-            assert( globals->socket == sock );
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       -1, sock, &globals->storage );
-        }
-    }
-
-    if ( sock != -1 ) {
-        XP_U16 netLen = htons( buflen );
-        errno = 0;
-
-        result = send( sock, &netLen, sizeof(netLen), 0 );
-        if ( result == sizeof(netLen) ) {
-            result = send( sock, buf, buflen, 0 ); 
-        }
-        if ( result <= 0 ) {
-            XP_STATUSF( "closing non-functional socket" );
-            close( sock );
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       sock, -1, &globals->storage );
-            globals->socket = -1;
-        }
-
-        XP_STATUSF( "%s: send(sock=%d) returned %d of %d (err=%d)", 
-                    __func__, sock, result, buflen, errno );
+    if ( !!cGlobals->pDb ) {
+        XP_ASSERT( -1 != cGlobals->selRow );
+        result = relaycon_send( cGlobals->params, buf, buflen, 
+                                cGlobals->selRow, addrRec );
     } else {
-        XP_LOGF( "%s: socket still -1", __func__ );
+        int sock = cGlobals->socket;
+    
+        if ( sock == -1 ) {
+            XP_LOGF( "%s: socket uninitialized", __func__ );
+            sock = linux_init_relay_socket( cGlobals, addrRec );
+            if ( sock != -1 ) {
+                assert( cGlobals->socket == sock );
+                (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
+                                           -1, sock, &cGlobals->storage );
+            }
+        }
+
+        if ( sock != -1 ) {
+            XP_U16 netLen = htons( buflen );
+            errno = 0;
+
+            result = send( sock, &netLen, sizeof(netLen), 0 );
+            if ( result == sizeof(netLen) ) {
+                result = send( sock, buf, buflen, 0 ); 
+            }
+            if ( result <= 0 ) {
+                XP_STATUSF( "closing non-functional socket" );
+                close( sock );
+                (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
+                                           sock, -1, &cGlobals->storage );
+                cGlobals->socket = -1;
+            }
+
+            XP_STATUSF( "%s: send(sock=%d) returned %d of %d (err=%d)", 
+                        __func__, sock, result, buflen, errno );
+        } else {
+            XP_LOGF( "%s: socket still -1", __func__ );
+        }
     }
- 
     return result;
 } /* linux_tcp_send */
 #endif  /* XWFEATURE_RELAY */
@@ -928,54 +934,53 @@ linux_reset( void* closure )
 #endif
 
 XP_S16
-linux_send( const XP_U8* buf, XP_U16 buflen, 
-            const CommsAddrRec* addrRec, 
+linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
             XP_U32 XP_UNUSED(gameID), void* closure )
 {
     XP_S16 nSent = -1;
-    CommonGlobals* globals = (CommonGlobals*)closure;   
+    CommonGlobals* cGlobals = (CommonGlobals*)closure;   
     CommsConnType conType;
 
     if ( !!addrRec ) {
         conType = addrRec->conType;
     } else {
-        conType = globals->params->conType;
+        conType = cGlobals->params->conType;
     }
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
-        nSent = linux_tcp_send( buf, buflen, globals, addrRec );
-        if ( nSent == buflen && globals->params->duplicatePackets ) {
+        nSent = linux_tcp_send( cGlobals, buf, buflen, addrRec );
+        if ( nSent == buflen && cGlobals->params->duplicatePackets ) {
 #ifdef DEBUG
             XP_S16 sentAgain = 
 #endif
-                linux_tcp_send( buf, buflen, globals, addrRec );
+                linux_tcp_send( cGlobals, buf, buflen, addrRec );
             XP_ASSERT( sentAgain == nSent );
         }
 
 #endif
 #if defined XWFEATURE_BLUETOOTH
     } else if ( conType == COMMS_CONN_BT ) {
-        XP_Bool isServer = comms_getIsServer( globals->game.comms );
-        linux_bt_open( globals, isServer );
-        nSent = linux_bt_send( buf, buflen, addrRec, globals );
+        XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
+        linux_bt_open( cGlobals, isServer );
+        nSent = linux_bt_send( buf, buflen, addrRec, cGlobals );
 #endif
 #if defined XWFEATURE_IP_DIRECT
     } else if ( conType == COMMS_CONN_IP_DIRECT ) {
         CommsAddrRec addr;
-        comms_getAddr( globals->game.comms, &addr );
-        linux_udp_open( globals, &addr );
-        nSent = linux_udp_send( buf, buflen, addrRec, globals );
+        comms_getAddr( cGlobals->game.comms, &addr );
+        linux_udp_open( cGlobals, &addr );
+        nSent = linux_udp_send( buf, buflen, addrRec, cGlobals );
 #endif
 #if defined XWFEATURE_SMS
     } else if ( COMMS_CONN_SMS == conType ) {
         CommsAddrRec addr;
         if ( !addrRec ) {
-            comms_getAddr( globals->game.comms, &addr );
+            comms_getAddr( cGlobals->game.comms, &addr );
             addrRec = &addr;
         }
-        nSent = linux_sms_send( globals, buf, buflen, 
+        nSent = linux_sms_send( cGlobals, buf, buflen, 
                                 addrRec->u.sms.phone, addrRec->u.sms.port );
 #endif
     } else {

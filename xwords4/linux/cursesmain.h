@@ -94,13 +94,6 @@ struct CursesAppGlobals {
 #endif
 };
 
-#ifdef USE_GLIBLOOP
-typedef struct _SourceData {
-    GIOChannel* channel;
-    gint watch;
-} SourceData;
-#endif
-
 DrawCtx* cursesDrawCtxtMake( WINDOW* boardWin );
 
 /* Ports: Client and server pick a port at startup on which they'll listen.

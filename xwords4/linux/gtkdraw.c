@@ -515,7 +515,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect rectInset = *rect;
-    XP_Bool showGrid = dctx->globals->gridOn;
+    GtkGameGlobals* globals = dctx->globals;
+    XP_Bool showGrid = globals->gridOn;
     XP_Bool highlight = (flags & CELL_HIGHLIGHT) != 0;
     GdkColor* cursor = 
         ((flags & CELL_ISCURSOR) != 0) ? &dctx->cursor : NULL;
