@@ -198,6 +198,7 @@ CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream,
                                  XW_UtilCtxt* util, 
                                  const TransportProcs* procs );
 void comms_start( CommsCtxt* comms );
+void comms_stop( CommsCtxt* comms );
 void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
                           XP_U16 saveToken );
 void comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken );

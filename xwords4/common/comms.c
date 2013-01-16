@@ -462,8 +462,11 @@ comms_transportFailed( CommsCtxt* comms  )
 void
 comms_destroy( CommsCtxt* comms )
 {
-    CommsAddrRec aNew;
-    aNew.conType = COMMS_CONN_NONE;
+    /* did I call comms_stop()? */
+    XP_ASSERT( COMMS_CONN_RELAY != comms->addr.conType
+               || COMMS_RELAYSTATE_UNCONNECTED == comms->r.relayState );
+
+    CommsAddrRec aNew = { .conType = COMMS_CONN_NONE };
     util_addrChange( comms->util, &comms->addr, &aNew );
 
     cleanupInternal( comms );
@@ -659,6 +662,15 @@ comms_start( CommsCtxt* comms )
     setDoHeartbeat( comms );
     sendConnect( comms, XP_FALSE );
 } /* comms_start */
+
+void
+comms_stop( CommsCtxt* comms )
+{
+    if ( COMMS_CONN_RELAY == comms->addr.conType
+         && COMMS_RELAYSTATE_DENIED != comms->r.relayState ) {
+        relayDisconnect( comms );
+    }
+}
 
 static void
 sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
@@ -2172,7 +2184,7 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         case XWRELAY_MSG_TORELAY_NOCONN:
             stream_putU8( stream, comms->r.myHostID );
             stream_putU8( stream, destID );
-            XP_LOGF( "%s: wrote ids %d, %d", __func__, 
+            XP_LOGF( "%s: wrote ids src %d, dest %d", __func__, 
                      comms->r.myHostID, destID );
             if ( data != NULL && datalen > 0 ) {
                 stream_putBytes( stream, data, datalen );
