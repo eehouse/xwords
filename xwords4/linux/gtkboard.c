@@ -2349,14 +2349,6 @@ drop_msg_toggle( GtkWidget* toggle, GtkGameGlobals* globals )
 } /* drop_msg_toggle */
 #endif
 
-static GtkGameGlobals* g_globals_for_signal;
-static void
-handle_sigintterm( int XP_UNUSED(sig) )
-{
-    LOG_FUNC();
-    gtk_main_quit();
-}
-
 /* int */
 /* board_main( LaunchParams* params ) */
 /* { */
@@ -2390,11 +2382,6 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
 #ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* dropCheck;
 #endif
-
-    g_globals_for_signal = globals;
-    struct sigaction act = { .sa_handler = handle_sigintterm };
-    sigaction( SIGINT, &act, NULL );
-    sigaction( SIGTERM, &act, NULL );
 
     memset( globals, 0, sizeof(*globals) );
 

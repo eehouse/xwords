@@ -429,10 +429,24 @@ getSelRow( const GtkAppGlobals* apg )
     return result;
 }
 
+static GtkAppGlobals* g_globals_for_signal;
+static void
+handle_sigintterm( int XP_UNUSED(sig) )
+{
+    LOG_FUNC();
+    handle_destroy( NULL, g_globals_for_signal );
+}
+
 int
 gtkmain( LaunchParams* params )
 {
     GtkAppGlobals apg = {0};
+
+    g_globals_for_signal = &apg;
+    struct sigaction act = { .sa_handler = handle_sigintterm };
+    sigaction( SIGINT, &act, NULL );
+    sigaction( SIGTERM, &act, NULL );
+
     apg.selRows = g_array_new( FALSE, FALSE, sizeof( sqlite3_int64 ) );
     apg.params = params;
     apg.pDb = openGamesDB( params->dbName );
