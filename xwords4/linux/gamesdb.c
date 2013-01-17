@@ -217,6 +217,19 @@ loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
 }
 
 void
+deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
+{
+    char query[256];
+    snprintf( query, sizeof(query), "DELETE FROM games WHERE rowid = %lld", rowid );
+    sqlite3_stmt* ppStmt;
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );        
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_step( ppStmt );
+    XP_ASSERT( SQLITE_DONE == result );
+    sqlite3_finalize( ppStmt );
+}
+
+void
 store( sqlite3* pDb, const gchar* key, const gchar* value )
 {
     char buf[256];

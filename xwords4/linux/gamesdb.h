@@ -47,6 +47,7 @@ void summarize( CommonGlobals* cGlobals );
 GSList* listGames( GtkAppGlobals* apg );
 XP_Bool getGameInfo( GtkAppGlobals* apg, sqlite3_int64 rowid, GameInfo* gib );
 XP_Bool loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
+void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 
 #define KEY_RDEVID "RDEVID"
 
