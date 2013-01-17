@@ -234,11 +234,15 @@ typedef struct _SourceData {
 
 typedef struct _GtkAppGlobals {
     sqlite3* pDb;
-    sqlite3_int64 selRow;
+    GArray* selRows;
     LaunchParams* params;
     GSList* globalsList;
     GList* sources;
     GtkWidget* listWidget;
+    GtkWidget* openButton;
+    GtkWidget* deleteButton;
 } GtkAppGlobals;
+
+sqlite3_int64 getSelRow( const GtkAppGlobals* apg );
 
 #endif

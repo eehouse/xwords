@@ -534,9 +534,10 @@ createOrLoadObjects( GtkGameGlobals* globals )
         }
     }
 
-    if ( !params->fileName ) {
+    if ( !params->fileName && !!params->dbName ) {
         XP_UCHAR buf[64];
-        snprintf( buf, sizeof(buf), "clientToken: %lld", cGlobals->selRow );
+        snprintf( buf, sizeof(buf), "%s / %lld", params->dbName,
+                  cGlobals->selRow );
         gtk_window_set_title( GTK_WINDOW(globals->window), buf );
     }
 
@@ -703,7 +704,9 @@ destroy_window( GtkWidget* XP_UNUSED(widget), gpointer data )
 {
     LOG_FUNC();
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
-    comms_stop( globals->cGlobals.game.comms );
+    if ( !!globals->cGlobals.game.comms ) {
+        comms_stop( globals->cGlobals.game.comms );
+    }
     saveGame( &globals->cGlobals );
     windowDestroyed( globals );
     // gtk_main_quit();

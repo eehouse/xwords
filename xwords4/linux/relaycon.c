@@ -46,7 +46,7 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     storage->procsClosure = procsClosure;
 
     storage->socket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-    (*params->socketChanged)( params, storage->socket, -1,
+    (*params->socketChanged)( params->socketChangedClosure, storage->socket, -1,
                               relaycon_receive, params );
 
     XP_ASSERT( !!devID );

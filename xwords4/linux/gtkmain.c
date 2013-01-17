@@ -29,6 +29,7 @@
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
+static void updateButtons( GtkAppGlobals* apg );
 
 static void
 recordOpened( GtkAppGlobals* apg, GtkGameGlobals* globals )
@@ -71,19 +72,46 @@ findGame( const GtkAppGlobals* apg, XP_U32 clientToken )
     return result;
 }
 
-enum { CHECK_ITEM, ROW_ITEM, NAME_ITEM, ROOM_ITEM, OVER_ITEM, TURN_ITEM, NMOVES_ITEM, MISSING_ITEM,
-       N_ITEMS };
+enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, OVER_ITEM, TURN_ITEM, NMOVES_ITEM, 
+       MISSING_ITEM, N_ITEMS };
+
+static void
+foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
+             GtkTreeIter* iter, gpointer data )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)data;
+    sqlite3_int64 rowid;
+    gtk_tree_model_get( model, iter, ROW_ITEM, &rowid, -1 );
+    apg->selRows = g_array_append_val( apg->selRows, rowid );
+}
 
 static void
 tree_selection_changed_cb( GtkTreeSelection* selection, gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
 
-    GtkTreeIter iter;
-    GtkTreeModel *model;
+    apg->selRows = g_array_set_size( apg->selRows, 0 );
+    gtk_tree_selection_selected_foreach( selection, foreachProc, apg );
 
-    if ( gtk_tree_selection_get_selected( selection, &model, &iter ) ) {
-        gtk_tree_model_get( model, &iter, ROW_ITEM, &apg->selRow, -1 );
+    updateButtons( apg );
+}
+
+static void
+removeRow( GtkAppGlobals* apg, sqlite3_int64 rowid )
+{
+    GtkTreeModel* model = 
+        gtk_tree_view_get_model(GTK_TREE_VIEW(apg->listWidget));
+    GtkTreeIter iter;
+    gboolean valid;
+    for ( valid = gtk_tree_model_get_iter_first( model, &iter );
+          valid;
+          valid = gtk_tree_model_iter_next( model, &iter ) ) {
+        sqlite3_int64 tmpid;
+        gtk_tree_model_get( model, &iter, ROW_ITEM, &tmpid, -1 );
+        if ( tmpid == rowid ) {
+            gtk_list_store_remove( GTK_LIST_STORE(model), &iter );
+            break;
+        }
     }
 }
 
@@ -101,14 +129,6 @@ static GtkWidget*
 init_games_list( GtkAppGlobals* apg )
 {
     GtkWidget* list = gtk_tree_view_new();
-    GtkCellRenderer* renderer;
-    GtkTreeViewColumn* column;
-
-    renderer = gtk_cell_renderer_toggle_new();
-    column = 
-        gtk_tree_view_column_new_with_attributes( "<sel>", renderer, "active", 
-                                                  CHECK_ITEM, NULL );
-    gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
 
     addTextColumn( list, "Row", ROW_ITEM );
     addTextColumn( list, "Name", NAME_ITEM );
@@ -118,7 +138,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "NMoves", NMOVES_ITEM );
     addTextColumn( list, "NMissing", MISSING_ITEM );
 
-    GtkListStore* store = gtk_list_store_new( N_ITEMS, G_TYPE_BOOLEAN, 
+    GtkListStore* store = gtk_list_store_new( N_ITEMS, 
                                               G_TYPE_INT64, G_TYPE_STRING, 
                                               G_TYPE_STRING, G_TYPE_BOOLEAN, 
                                               G_TYPE_INT, G_TYPE_INT, 
@@ -128,9 +148,9 @@ init_games_list( GtkAppGlobals* apg )
 
     GtkTreeSelection* select =
         gtk_tree_view_get_selection( GTK_TREE_VIEW (list) );
-    gtk_tree_selection_set_mode( select, GTK_SELECTION_SINGLE );
+    gtk_tree_selection_set_mode( select, GTK_SELECTION_MULTIPLE );
     g_signal_connect( G_OBJECT(select), "changed",
-                      G_CALLBACK (tree_selection_changed_cb), apg );
+                      G_CALLBACK(tree_selection_changed_cb), apg );
     return list;
 }
 
@@ -167,6 +187,14 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
     XP_LOGF( "DONE adding" );
 }
 
+static void updateButtons( GtkAppGlobals* apg )
+{
+    guint count = apg->selRows->len;
+
+    gtk_widget_set_sensitive( apg->openButton, 1 == count );
+    gtk_widget_set_sensitive( apg->deleteButton, 1 <= count );
+}
+
 static void
 handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
@@ -190,22 +218,31 @@ static void
 handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    if ( -1 != apg->selRow && !gameIsOpen( apg, apg->selRow ) ) {
+    sqlite3_int64 selRow = getSelRow( apg );
+    if ( -1 != selRow && !gameIsOpen( apg, selRow ) ) {
         apg->params->needsNewGame = XP_FALSE;
         GtkGameGlobals* globals = malloc( sizeof(*globals) );
         initGlobals( globals, apg->params );
         globals->cGlobals.pDb = apg->pDb;
-        globals->cGlobals.selRow = apg->selRow;
+        globals->cGlobals.selRow = selRow;
         recordOpened( apg, globals );
         gtk_widget_show( globals->window );
     }
 }
 
 static void
-handle_quit_button( GtkWidget* XP_UNUSED(widget), gpointer XP_UNUSED(data) )
+handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
-    // GtkAppGlobals* apg = (GtkAppGlobals*)data;
-    gtk_main_quit();
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    guint len = apg->selRows->len;
+    for ( guint ii = 0; ii < len; ++ii ) {
+        sqlite3_int64 rowid = g_array_index( apg->selRows, sqlite3_int64, ii );
+        removeRow( apg, rowid );
+        deleteGame( apg->pDb, rowid );
+    }
+    apg->selRows = g_array_set_size( apg->selRows, 0 );
+    updateButtons( apg );
+    /* Need now to update the selection and sync the buttons */
 }
 
 static void
@@ -223,6 +260,13 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
 }
 
 static void
+handle_quit_button( GtkWidget* XP_UNUSED(widget), gpointer data )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)data;
+    handle_destroy( NULL, apg );
+}
+
+static GtkWidget*
 addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
 {
     GtkWidget* button = gtk_button_new_with_label( label );
@@ -230,6 +274,7 @@ addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
     g_signal_connect( GTK_OBJECT(button), "clicked",
                       G_CALLBACK(proc), closure );
     gtk_widget_show( button );
+    return button;
 }
 
 static GtkWidget* 
@@ -240,6 +285,10 @@ makeGamesWindow( GtkAppGlobals* apg )
     window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     g_signal_connect( G_OBJECT(window), "destroy",
                       G_CALLBACK(handle_destroy), apg );
+
+    if ( !!apg->params->dbName ) {
+        gtk_window_set_title( GTK_WINDOW(window), apg->params->dbName );
+    }
     
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
     gtk_container_add( GTK_CONTAINER(window), vbox );
@@ -261,9 +310,13 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_widget_show( hbox );
     gtk_container_add( GTK_CONTAINER(vbox), hbox );
 
-    addButton( "New game", hbox, G_CALLBACK(handle_newgame_button), apg );
-    addButton( "Open", hbox, G_CALLBACK(handle_open_button), apg );
-    addButton( "Quit", hbox, G_CALLBACK(handle_quit_button), apg );
+    (void)addButton( "New game", hbox, G_CALLBACK(handle_newgame_button), apg );
+    apg->openButton = addButton( "Open", hbox, 
+                                 G_CALLBACK(handle_open_button), apg );
+    apg->deleteButton = addButton( "Delete", hbox, 
+                                   G_CALLBACK(handle_delete_button), apg );
+    (void)addButton( "Quit", hbox, G_CALLBACK(handle_quit_button), apg );
+    updateButtons( apg );
 
     gtk_widget_show( window );
     return window;
@@ -316,8 +369,8 @@ app_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
 }
 
 static void
-socketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), SockReceiver proc,
-               void* procClosure )
+socketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
+               SockReceiver proc, void* procClosure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     SourceData* sd = g_malloc( sizeof(*sd) );
@@ -365,11 +418,22 @@ onGameSaved( void* closure, sqlite3_int64 rowid,
     onNewData( apg, rowid, firstTime );
 }
 
+sqlite3_int64
+getSelRow( const GtkAppGlobals* apg )
+{
+    sqlite3_int64 result = -1;
+    guint len = apg->selRows->len;
+    if ( 1 == len ) {
+        result = g_array_index( apg->selRows, sqlite3_int64, 0 );
+    }
+    return result;
+}
+
 int
 gtkmain( LaunchParams* params )
 {
     GtkAppGlobals apg = {0};
-    apg.selRow = -1;
+    apg.selRows = g_array_new( FALSE, FALSE, sizeof( sqlite3_int64 ) );
     apg.params = params;
     apg.pDb = openGamesDB( params->dbName );
     params->socketChanged = socketChanged;
