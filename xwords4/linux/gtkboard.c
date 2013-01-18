@@ -391,6 +391,47 @@ relay_error_gtk( void* closure, XWREASON relayErr )
     }
 }
 
+static XP_Bool 
+relay_sendNoConn_gtk( const XP_U8* XP_UNUSED(msg), XP_U16 XP_UNUSED(len),
+                      const XP_UCHAR* XP_UNUSED(relayID), void* closure )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
+    XP_Bool success = XP_FALSE;
+    if ( !!globals->cGlobals.pDb && !globals->draw ) {
+        XP_ASSERT( 0 );         /* implement me!!! */
+    }
+    return success;
+} /* relay_sendNoConn_gtk */
+
+#ifdef COMMS_XPORT_FLAGSPROC
+static XP_U32
+gtk_getFlags( void* closure )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
+    return (!!globals->draw) ? COMMS_XPORT_FLAGS_NONE
+        : COMMS_XPORT_FLAGS_HASNOCONN;
+}
+#endif
+
+static void
+setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals ) 
+{
+    procs->closure = globals;
+    procs->send = LINUX_SEND;
+#ifdef COMMS_XPORT_FLAGSPROC
+    procs->getFlags = gtk_getFlags;
+#endif
+#ifdef COMMS_HEARTBEAT
+    procs->reset = linux_reset;
+#endif
+#ifdef XWFEATURE_RELAY
+    procs->rstatus = relay_status_gtk;
+    procs->rconnd = relay_connd_gtk;
+    procs->rerror = relay_error_gtk;
+    procs->sendNoConn = relay_sendNoConn_gtk;
+#endif
+}
+
 static void
 createOrLoadObjects( GtkGameGlobals* globals )
 {
@@ -405,18 +446,8 @@ createOrLoadObjects( GtkGameGlobals* globals )
     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area,
                                                   globals );
 
-    TransportProcs procs = {
-        .closure = globals,
-        .send = LINUX_SEND,
-#ifdef COMMS_HEARTBEAT
-        .reset = linux_reset,
-#endif
-#ifdef XWFEATURE_RELAY
-        .rstatus = relay_status_gtk,
-        .rconnd = relay_connd_gtk,
-        .rerror = relay_error_gtk,
-#endif
-    };
+    TransportProcs procs;
+    setTransportProcs( &procs, globals );
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
         stream = streamFromFile( cGlobals, params->fileName, globals );
@@ -699,11 +730,10 @@ handle_client_event( GtkWidget *widget, GdkEventClient *event,
 } /* handle_client_event */
 #endif
 
-static void
-destroy_window( GtkWidget* XP_UNUSED(widget), gpointer data )
+void
+destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     LOG_FUNC();
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
     if ( !!globals->cGlobals.game.comms ) {
         comms_stop( globals->cGlobals.game.comms );
     }
@@ -1520,7 +1550,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
 
     if ( cGlobals->params->quitAfter >= 0 ) {
         sleep( cGlobals->params->quitAfter );
-        destroy_window( NULL, globals );
+        destroy_board_window( NULL, globals );
     } else if ( cGlobals->params->undoWhenDone ) {
         server_handleUndo( cGlobals->game.server, 0 );
         board_draw( cGlobals->game.board );
@@ -1734,7 +1764,8 @@ idle_func( gpointer data )
        and bad things can happen.  So kill the idle proc asap. */
     gtk_idle_remove( globals->idleID );
 
-    if ( server_do( globals->cGlobals.game.server ) ) {
+    ServerCtxt* server = globals->cGlobals.game.server;
+    if ( !!server && server_do( server ) ) {
         if ( !!globals->cGlobals.game.board ) {
             board_draw( globals->cGlobals.game.board );
         }
@@ -2369,20 +2400,9 @@ drop_msg_toggle( GtkWidget* toggle, GtkGameGlobals* globals )
 /*     return 0; */
 /* } */
 
-void
-initGlobals( GtkGameGlobals* globals, LaunchParams* params )
+static void
+initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
 {
-    short width, height;
-    GtkWidget* window;
-    GtkWidget* drawing_area;
-    GtkWidget* menubar;
-    GtkWidget* buttonbar;
-    GtkWidget* vbox;
-    GtkWidget* hbox;
-#ifndef XWFEATURE_STANDALONE_ONLY
-    GtkWidget* dropCheck;
-#endif
-
     memset( globals, 0, sizeof(*globals) );
 
     globals->cGlobals.params = params;
@@ -2418,6 +2438,24 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
     setupUtil( &globals->cGlobals );
     setupGtkUtilCallbacks( globals, globals->cGlobals.util );
 
+}
+
+void
+initGlobals( GtkGameGlobals* globals, LaunchParams* params )
+{
+    short width, height;
+    GtkWidget* window;
+    GtkWidget* drawing_area;
+    GtkWidget* menubar;
+    GtkWidget* buttonbar;
+    GtkWidget* vbox;
+    GtkWidget* hbox;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    GtkWidget* dropCheck;
+#endif
+
+    initGlobalsNoDraw( globals, params );
+
     globals->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     if ( !!params->fileName ) {
         gtk_window_set_title( GTK_WINDOW(window), params->fileName );
@@ -2428,7 +2466,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
     gtk_widget_show( vbox );
 
     g_signal_connect( G_OBJECT (window), "destroy",
-                      G_CALLBACK( destroy_window ), globals );
+                      G_CALLBACK( destroy_board_window ), globals );
 
     menubar = makeMenus( globals );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
@@ -2526,6 +2564,44 @@ freeGlobals( GtkGameGlobals* globals )
 }
 
 XP_Bool
+loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
+                sqlite3* pDb, sqlite3_int64 rowid )
+{
+    LOG_FUNC();
+    initGlobalsNoDraw( globals, params );
+
+    TransportProcs procs;
+    setTransportProcs( &procs, globals );
+
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    cGlobals->selRow = rowid;
+    cGlobals->pDb = pDb;
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
+                                            params->vtMgr, cGlobals, 
+                                            CHANNEL_NONE, NULL );
+    XP_Bool loaded = loadGame( stream, cGlobals->pDb, rowid );
+    if ( loaded ) {
+        if ( NULL == cGlobals->dict ) {
+            cGlobals->dict = makeDictForStream( cGlobals, stream );
+        }
+        loaded = game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
+                                      &cGlobals->gi, 
+                                      cGlobals->dict, &cGlobals->dicts, cGlobals->util, 
+                                      (DrawCtx*)NULL, &cGlobals->cp, &procs );
+        if ( loaded ) {
+            XP_LOGF( "%s: game loaded", __func__ );
+#ifndef XWFEATURE_STANDALONE_ONLY
+            if ( !!globals->cGlobals.game.comms ) {
+                comms_resendAll( globals->cGlobals.game.comms, XP_FALSE );
+            }
+#endif
+        }
+    }
+    stream_destroy( stream );
+    return loaded;
+}
+
+XP_Bool
 makeNewGame( GtkGameGlobals* globals )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -2549,35 +2625,35 @@ makeNewGame( GtkGameGlobals* globals )
 }
 
 void
-gameGotBuf( GtkGameGlobals* globals, XP_U8* buf, XP_U16 len )
+gameGotBuf( GtkGameGlobals* globals, XP_Bool hasDraw, XP_U8* buf, XP_U16 len )
 {
+    XP_LOGF( "%s(hasDraw=%d)", __func__, hasDraw );
     XP_Bool redraw = XP_FALSE;
-
+    XWGame* game = &globals->cGlobals.game;
     XWStreamCtxt* stream = stream_from_msgbuf( &globals->cGlobals, buf, len );
     if ( !!stream ) {
-        if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
-                                        stream, NULL ) ) {
-            redraw =
-                server_receiveMessage( globals->cGlobals.game.server,
-                                       stream );
+        if ( comms_checkIncomingStream( game->comms, stream, NULL ) ) {
+            redraw = server_receiveMessage( game->server, stream );
             if ( redraw ) {
                 saveGame( &globals->cGlobals );
             }
         }
         stream_destroy( stream );
-    }
 
-    /* if there's something to draw resulting from the message, we
-       need to give the main loop time to reflect that on the screen
-       before giving the server another shot.  So just call the idle
-       proc. */
-    if ( redraw ) {
-        gtk_util_requestTime( globals->cGlobals.util );
-    } else {
-        redraw = server_do( globals->cGlobals.game.server );
-    }
-    if ( redraw ) {
-        board_draw( globals->cGlobals.game.board );
+        /* if there's something to draw resulting from the message, we
+           need to give the main loop time to reflect that on the screen
+           before giving the server another shot.  So just call the idle
+           proc. */
+        if ( hasDraw && redraw ) {
+            gtk_util_requestTime( globals->cGlobals.util );
+        } else {
+            for ( int ii = 0; ii < 4; ++ii ) {
+                redraw = server_do( game->server ) || redraw;
+            }
+        }
+        if ( hasDraw && redraw ) {
+            board_draw( game->board );
+        }
     }
 }
 

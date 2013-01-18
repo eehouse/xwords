@@ -253,7 +253,8 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
     GSList* iter;
     for ( iter = apg->globalsList; !!iter; iter = iter->next ) {
         GtkGameGlobals* globals = (GtkGameGlobals*)iter->data;
-        freeGlobals( globals );
+        destroy_board_window( NULL, globals );
+        // freeGlobals( globals );
     }
     g_slist_free( apg->globalsList );
     gtk_main_quit();
@@ -394,10 +395,14 @@ gtkGotBuf( void* closure, XP_U8* buf, XP_U16 len )
 
     GtkGameGlobals* globals = findGame( apg, gameToken );
     if ( !!globals ) {
-        gameGotBuf( globals, buf, len );
+        gameGotBuf( globals, XP_TRUE, buf, len );
     } else {
-        XP_LOGF( "%s: game with token %lu not found; not open or deleted", 
-                 __func__, gameToken );
+        GtkGameGlobals tmpGlobals;
+        if ( loadGameNoDraw( &tmpGlobals, apg->params, apg->pDb, gameToken ) ) {
+            gameGotBuf( &tmpGlobals, XP_FALSE, buf, len );
+            saveGame( &tmpGlobals.cGlobals );
+        }
+        freeGlobals( &tmpGlobals );
     }
 }
 
@@ -415,7 +420,10 @@ onGameSaved( void* closure, sqlite3_int64 rowid,
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     GtkAppGlobals* apg = globals->apg;
-    onNewData( apg, rowid, firstTime );
+    /* May not be recorded */
+    if ( !!apg ) {
+        onNewData( apg, rowid, firstTime );
+    }
 }
 
 sqlite3_int64

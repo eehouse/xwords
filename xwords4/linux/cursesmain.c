@@ -1700,6 +1700,14 @@ handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
 }
 #endif
 
+#ifdef COMMS_XPORT_FLAGSPROC
+static XP_U32
+curses_getFlags( void* XP_UNUSED(closure) )
+{
+    return COMMS_XPORT_FLAGS_HASNOCONN;
+}
+#endif
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
@@ -1776,7 +1784,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         .rconnd = relay_connd_curses,
         .rerror = relay_error_curses,
         .sendNoConn = relay_sendNoConn_curses,
-        .flags = COMMS_XPORT_FLAGS_HASNOCONN,
+# ifdef COMMS_XPORT_FLAGSPROC
+        .getFlags = curses_getFlags,
+# endif
 #endif
     };
 
