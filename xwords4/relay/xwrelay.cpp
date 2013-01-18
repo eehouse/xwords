@@ -1163,7 +1163,7 @@ handle_udp_packet( int udpsock )
 
     ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
                               &saddr.addr, &fromlen );
-    logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, utc->len() );
+    logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
     if ( 0 < nRead ) {
         UdpQueue::get()->handle( &saddr, buf, nRead, udp_thread_proc );
     }
