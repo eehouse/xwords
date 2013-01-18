@@ -1134,9 +1134,9 @@ CookieRef::forward_or_store( const CRefEvent* evt )
     do {
         int buflen = evt->u.fwd.buflen;
         unsigned char buf[buflen];
-        if ( *buf == XWRELAY_MSG_TORELAY ) {
+        if ( *cbuf == XWRELAY_MSG_TORELAY ) {
             buf[0] = XWRELAY_MSG_FROMRELAY;
-        } else if ( *buf == XWRELAY_MSG_TORELAY_NOCONN ) {
+        } else if ( *cbuf == XWRELAY_MSG_TORELAY_NOCONN ) {
             *buf = XWRELAY_MSG_FROMRELAY_NOCONN;
         } else {
             logf( XW_LOGERROR, "%s: got XWRELAY type of %d", __func__,
