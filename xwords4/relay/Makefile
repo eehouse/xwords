@@ -32,6 +32,7 @@ SRC = \
 	cidlock.cpp \
 	addrinfo.cpp \
 	devmgr.cpp \
+	udpqueue.cpp \
 	xwrelay.cpp \
 
 # STATIC ?= -static
