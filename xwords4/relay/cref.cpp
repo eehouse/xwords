@@ -40,6 +40,7 @@
 #include "timermgr.h"
 #include "configs.h"
 #include "crefmgr.h"
+#include "devmgr.h"
 #include "permid.h"
 
 using namespace std;
@@ -261,7 +262,7 @@ CookieRef::_HandleAck( HostID hostID )
 
 void
 CookieRef::_PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
-                    unsigned char* buf, int buflen )
+                    const unsigned char* buf, int buflen )
 {
     CRefEvent evt( XWE_PROXYMSG, addr );
     evt.u.fwd.src = srcID;
@@ -308,14 +309,14 @@ CookieRef::_Shutdown()
 HostID
 CookieRef::HostForSocket( const AddrInfo* addr )
 {
-    HostID hid = -1;
+    HostID hid = HOST_ID_NONE;
     ASSERT_LOCKED();
     RWReadLock rrl( &m_socketsRWLock );
     vector<HostRec>::const_iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         if ( iter->m_addr.equals( *addr ) ) {
             hid = iter->m_hostID;
-            logf( XW_LOGINFO, "%s: assigning hid of %d", __func__, hid );
+            assert( HOST_ID_NONE != hid );
             break;
         }
     }
@@ -404,7 +405,7 @@ CookieRef::notifyDisconn( const CRefEvent* evt )
         evt->u.disnote.why 
     };
 
-    send_with_length( &evt->addr, buf, sizeof(buf), true );
+    send_with_length( &evt->addr, HOST_ID_NONE, buf, sizeof(buf), true );
 } /* notifyDisconn */
 
 void
@@ -522,7 +523,7 @@ CookieRef::_CheckHeartbeats( time_t now )
 
 void
 CookieRef::_Forward( HostID src, const AddrInfo* addr, 
-                     HostID dest, unsigned char* buf, int buflen )
+                     HostID dest, const unsigned char* buf, int buflen )
 {
     pushForwardEvent( src, addr, dest, buf, buflen );
     handleEvents();
@@ -587,7 +588,7 @@ CookieRef::pushHeartFailedEvent( int socket )
 
 void
 CookieRef::pushForwardEvent( HostID src, const AddrInfo* addr, HostID dest, 
-                             unsigned char* buf, int buflen )
+                             const unsigned char* buf, int buflen )
 {
     logf( XW_LOGVERBOSE1, "pushForwardEvent: %d -> %d", src, dest );
     CRefEvent evt( XWE_FORWARDMSG, addr );
@@ -807,12 +808,19 @@ CookieRef::handleEvents()
 } /* handleEvents */
 
 bool
-CookieRef::send_with_length( const AddrInfo* addr,
-                             unsigned char* buf, int bufLen, bool cascade )
+CookieRef::send_with_length( const AddrInfo* addr, HostID dest, 
+                             const unsigned char* buf, int bufLen, bool cascade )
 {
     bool failed = false;
     if ( send_with_length_unsafe( addr, buf, bufLen ) ) {
-        DBMgr::Get()->RecordSent( ConnName(), HostForSocket(addr), bufLen );
+        if ( HOST_ID_NONE == dest ) {
+            dest = HostForSocket(addr);
+        }
+        if ( HOST_ID_NONE != dest ) {
+            DBMgr::Get()->RecordSent( ConnName(), dest, bufLen );
+        } else {
+            logf( XW_LOGERROR, "%s: no hid for addr", __func__ );
+        }
     } else {
         failed = true;
     }
@@ -857,7 +865,7 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
                                               buf, &buflen, &msgID ) ) {
             break;
         }
-        if ( ! send_with_length( addr, buf, buflen, true ) ) {
+        if ( ! send_with_length( addr, dest, buf, buflen, true ) ) {
             break;
         }
         DBMgr::Get()->RemoveStoredMessages( &msgID, 1 );
@@ -908,6 +916,8 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
                                  evt->u.con.clientVersion, nPlayersH, seed, 
                                  &evt->addr, devID, reconn );
 
+    DevMgr::Get()->Remember( devID, &evt->addr );
+
     HostID hostid = evt->u.con.srcID;
     if ( NULL != hidp ) {
         *hidp = hostid;
@@ -915,8 +925,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
 
     /* first add the rec here, whether it'll get ack'd or not */
     logf( XW_LOGINFO, "%s: remembering pair: hostid=%x, "
-          "socket=%d (size=%d)", 
-          __func__, hostid, socket, m_sockets.size());
+          "(size=%d)", __func__, hostid, m_sockets.size());
 
     assert( m_sockets.size() < 4 );
 
@@ -1104,7 +1113,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial,
         }
     }
 
-    send_with_length( &evt->addr, buf, bufp - buf, true );
+    send_with_length( &evt->addr, evt->u.con.srcID, buf, bufp - buf, true );
     logf( XW_LOGVERBOSE0, "sent %s", cmdToStr( XWRELAY_Cmd(buf[0]) ) );
 } /* sendResponse */
 
@@ -1120,11 +1129,13 @@ CookieRef::sendAnyStored( const CRefEvent* evt )
 void
 CookieRef::forward_or_store( const CRefEvent* evt )
 {
-    unsigned char* buf = evt->u.fwd.buf;
+    AddrInfo addr;              // invalid unless assigned to
+    const unsigned char* cbuf = evt->u.fwd.buf;
     do {
-        /* This is an ugly hack!!!! */
+        int buflen = evt->u.fwd.buflen;
+        unsigned char buf[buflen];
         if ( *buf == XWRELAY_MSG_TORELAY ) {
-            *buf = XWRELAY_MSG_FROMRELAY;
+            buf[0] = XWRELAY_MSG_FROMRELAY;
         } else if ( *buf == XWRELAY_MSG_TORELAY_NOCONN ) {
             *buf = XWRELAY_MSG_FROMRELAY_NOCONN;
         } else {
@@ -1133,7 +1144,8 @@ CookieRef::forward_or_store( const CRefEvent* evt )
             break;
         }
 
-        int buflen = evt->u.fwd.buflen;
+        memcpy( &buf[1], &cbuf[1], buflen-1 );
+
         HostID dest = evt->u.fwd.dest;
         const AddrInfo* destAddr = SocketForHost( dest );
 
@@ -1141,8 +1153,22 @@ CookieRef::forward_or_store( const CRefEvent* evt )
             usleep( m_delayMicros );
         }
 
+        // If recipient GAME isn't connected, see if owner device is and can
+        // receive
+        if ( NULL == destAddr) {
+            DevIDRelay devid;
+            AddrInfo::ClientToken token;
+            if ( DBMgr::Get()->TokenFor( ConnName(), dest, &devid, &token ) ) {
+                const AddrInfo::AddrUnion* saddr = DevMgr::Get()->get( devid );
+                if ( !!saddr ) {
+                    addr.init( -1, token, saddr );
+                    destAddr = &addr;
+                }
+            }
+        }
+
         if ( (NULL == destAddr)
-             || !send_with_length( destAddr, buf, buflen, true ) ) {
+             || !send_with_length( destAddr, dest, buf, buflen, true ) ) {
             store_message( dest, buf, buflen );
         }
 
@@ -1162,7 +1188,7 @@ CookieRef::send_denied( const CRefEvent* evt, XWREASON why )
 }
 
 void
-CookieRef::send_msg( const AddrInfo* addr, HostID id, 
+CookieRef::send_msg( const AddrInfo* addr, HostID hid, 
                      XWRelayMsg msg, XWREASON why, bool cascade )
 {
     unsigned char buf[10];
@@ -1173,7 +1199,7 @@ CookieRef::send_msg( const AddrInfo* addr, HostID id,
     switch ( msg ) {
     case XWRELAY_DISCONNECT_OTHER:
         buf[len++] = why;
-        tmp = htons( id );
+        tmp = htons( hid );
         memcpy( &buf[len], &tmp, 2 );
         len += 2;
         break;
@@ -1183,7 +1209,7 @@ CookieRef::send_msg( const AddrInfo* addr, HostID id,
     }
 
     assert( len <= sizeof(buf) );
-    send_with_length( addr, buf, len, cascade );
+    send_with_length( addr, HOST_ID_NONE, buf, len, cascade );
 } /* send_msg */
 
 void
@@ -1210,7 +1236,7 @@ CookieRef::notifyGameDead( const AddrInfo* addr )
         ,XWRELAY_ERROR_DELETED
     };
 
-    send_with_length( addr, buf, sizeof(buf), true );
+    send_with_length( addr, HOST_ID_NONE, buf, sizeof(buf), true );
 }
 
 /* void */
@@ -1263,7 +1289,7 @@ CookieRef::sendAllHere( bool initial )
             vector<HostRec>::const_iterator iter;
             for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) { 
                 if ( iter->m_hostID == dest ) {
-                    sent = send_with_length( &iter->m_addr, buf, bufp-buf, true );
+                    sent = send_with_length( &iter->m_addr, dest, buf, bufp-buf, true );
                     break;
                 }
             }

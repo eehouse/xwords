@@ -577,6 +577,32 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     *nNames = nTuples;
 }
 
+bool 
+DBMgr::TokenFor( const char* const connName, int hid, DevIDRelay* devid,
+                 AddrInfo::ClientToken* token )
+{
+    bool found = false;
+    const char* fmt = "SELECT tokens[%d], devids[%d] FROM " GAMES_TABLE
+        " WHERE connName='%s'";
+    string query;
+    string_printf( query, fmt, hid, hid, connName );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    if ( 1 == PQntuples( result ) ) {
+        AddrInfo::ClientToken token_tmp = atoi( PQgetvalue( result, 0, 0 ) );
+        DevIDRelay devid_tmp = atoi( PQgetvalue( result, 0, 1 ) );
+        if ( 0 != token_tmp   // 0 is illegal (legacy/unset) value
+             && 0 != devid_tmp ) {
+            *token = token_tmp;
+            *devid = devid_tmp;
+            found = true;
+        }
+    }
+    PQclear( result );
+    logf( XW_LOGINFO, "%s(%s,%d)=>%s (%d, %d)", __func__, connName, hid, 
+          (found?"true":"false"), *devid, *token );
+    return found;
+}
+
 int
 DBMgr::PendingMsgCount( const char* connName, int hid )
 {

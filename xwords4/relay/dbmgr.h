@@ -88,6 +88,10 @@ class DBMgr {
        queries.*/
     void PublicRooms( int lang, int nPlayers, int* nNames, string& names );
 
+    /* Get stored address info, if available and valid */
+    bool TokenFor( const char* const connName, int hid, DevIDRelay* devid,
+                   AddrInfo::ClientToken* token );
+
     /* Return number of messages pending for connName:hostid pair passed in */
     int PendingMsgCount( const char* const connName, int hid );
 

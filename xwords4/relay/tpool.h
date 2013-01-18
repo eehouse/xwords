@@ -51,7 +51,7 @@ class XWThreadPool {
     } ThreadInfo;
 
     static XWThreadPool* GetTPool();
-    typedef bool (*packet_func)( unsigned char* buf, int bufLen, 
+    typedef bool (*packet_func)( const unsigned char* buf, int bufLen, 
                                  const AddrInfo* from );
     typedef void (*kill_func)( const AddrInfo* addr );
 

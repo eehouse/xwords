@@ -28,6 +28,8 @@
 
 class AddrInfo {
  public:
+    typedef uint32_t ClientToken;
+
     typedef union _AddrUnion {
         struct sockaddr addr;
         struct sockaddr_in addr_in;
@@ -43,7 +45,11 @@ class AddrInfo {
         construct( socket, saddr, true );
     }
 
-    AddrInfo( int socket, uint32_t clientToken, const AddrUnion* saddr ) {
+    AddrInfo( int socket, ClientToken clientToken, const AddrUnion* saddr ) {
+        init( socket, clientToken, saddr );
+    }
+
+    void init( int socket, ClientToken clientToken, const AddrUnion* saddr ) {
         construct( socket, saddr, false );
         m_clientToken = clientToken;
     }
@@ -51,9 +57,10 @@ class AddrInfo {
     void setIsTCP( bool val ) { m_isTCP = val; }
     bool isTCP() const { return m_isTCP; } /* later UDP will be here too */
     int socket() const { assert(m_isValid); return m_socket; }
-    uint32_t clientToken() const { assert(m_isValid); return m_clientToken; }
+    ClientToken clientToken() const { assert(m_isValid); return m_clientToken; }
     struct in_addr sin_addr() const { return m_saddr.addr_in.sin_addr; }
     const struct sockaddr* sockaddr() const { assert(m_isValid); return &m_saddr.addr; }
+    const AddrUnion* saddr() const { assert(m_isValid); return &m_saddr; }
 
     bool equals( const AddrInfo& other ) const;
 
@@ -71,7 +78,7 @@ class AddrInfo {
     int m_socket;
     bool m_isTCP;
     bool m_isValid;
-    uint32_t m_clientToken;   /* must be 32 bit */
+    ClientToken m_clientToken;   /* must be 32 bit */
     AddrUnion m_saddr;
 };
 

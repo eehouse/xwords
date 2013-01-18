@@ -45,7 +45,7 @@ void logf( XW_LogLevel level, const char* format, ... );
 
 void denyConnection( const AddrInfo* addr, XWREASON err );
 bool send_with_length_unsafe( const AddrInfo* addr, 
-                              unsigned char* buf, size_t bufLen );
+                              const unsigned char* buf, size_t bufLen );
 
 time_t uptime(void);
 

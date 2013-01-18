@@ -26,7 +26,7 @@ static DevMgr* s_instance = NULL;
 /* static */ DevMgr*
 DevMgr::Get() 
 {
-    if ( s_instance == NULL ) {
+    if ( NULL == s_instance ) {
         s_instance = new DevMgr();
     }
     return s_instance;
@@ -35,27 +35,33 @@ DevMgr::Get()
 void
 DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
 {
+    logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
     time_t now = time( NULL );
-    MutexLock ml( &m_mapLock );
     UDPAddrRec rec( saddr, now );
+    MutexLock ml( &m_mapLock );
     m_devAddrMap.insert( pair<DevIDRelay,UDPAddrRec>( devid, rec ) );
     logf( XW_LOGINFO, "dev->addr map now contains %d entries", m_devAddrMap.size() );
 }
 
-#if 0                        // not used yet
+void
+DevMgr::Remember( DevIDRelay devid, const AddrInfo* addr )
+{
+    Remember( devid, addr->saddr() );
+}
+
 const AddrInfo::AddrUnion* 
 DevMgr::get( DevIDRelay devid )
 {
     const AddrInfo::AddrUnion* result = NULL;
     MutexLock ml( &m_mapLock );
-    map<DevIDRelay,UDPAddrRec>::iterator iter;
+    map<DevIDRelay,UDPAddrRec>::const_iterator iter;
     iter = m_devAddrMap.find( devid );
     if ( m_devAddrMap.end() != iter ) {
         result = &iter->second.m_addr;
         logf( XW_LOGINFO, "%s: found addr for %.8x; is %d seconds old", __func__,
               devid, time(NULL) - iter->second.m_added );
     }
+    logf( XW_LOGINFO, "%s(devid=%d)=>%p", __func__, devid, result );
     return result;
 }
-#endif
 

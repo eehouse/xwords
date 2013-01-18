@@ -405,11 +405,11 @@ CidInfo*
 CRefMgr::getCookieRef( CookieID cid, bool failOk )
 {
     CidInfo* cinfo = NULL;
-    for ( ; ; ) {
+    for ( int count = 0; ; ++count ) {
         cinfo = m_cidlock->Claim( cid );
         if ( NULL != cinfo->GetRef() ) {
             break;
-        } else if ( failOk ) {
+        } else if ( failOk || count > 20 ) {
             break;
         }
         m_cidlock->Relinquish( cinfo, true );

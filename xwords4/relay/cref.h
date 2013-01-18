@@ -33,6 +33,7 @@
 #include "devid.h"
 #include "dbmgr.h"
 #include "states.h"
+#include "addrinfo.h"
 
 typedef vector<unsigned char> MsgBuffer;
 typedef deque<MsgBuffer*> MsgBufQueue;
@@ -131,14 +132,14 @@ class CookieRef {
                      int seed, const AddrInfo* addr, bool gameDead );
     void _HandleAck( HostID hostID );
     void _PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
-                  unsigned char* buf, int buflen );
+                  const unsigned char* buf, int buflen );
     void _Disconnect( const AddrInfo* addr, HostID hostID );
     void _DeviceGone( HostID hostID, int seed );
     void _Shutdown();
     void _HandleHeartbeat( HostID id, const AddrInfo* addr );
     void _CheckHeartbeats( time_t now );
     void _Forward( HostID src, const AddrInfo* addr, HostID dest, 
-                   unsigned char* buf, int buflen );
+                   const unsigned char* buf, int buflen );
     void _Remove( const AddrInfo* addr );
     void _CheckAllConnected();
     void _CheckNotAcked( HostID hid );
@@ -159,7 +160,7 @@ class CookieRef {
             struct {
                 HostID src;
                 HostID dest;
-                unsigned char* buf;
+                const unsigned char* buf;
                 int buflen;
             } fwd;
             struct {
@@ -194,8 +195,8 @@ class CookieRef {
         } u;
     };
 
-    bool send_with_length( const AddrInfo* addr,
-                           unsigned char* buf, int bufLen, bool cascade );
+    bool send_with_length( const AddrInfo* addr, HostID hid,
+                           const unsigned char* buf, int bufLen, bool cascade );
     void send_msg( const AddrInfo* addr, HostID id, 
                    XWRelayMsg msg, XWREASON why, bool cascade );
     void pushConnectEvent( int clientVersion, DevID* devID,
@@ -208,7 +209,7 @@ class CookieRef {
     void pushHeartFailedEvent( const AddrInfo* addr );
     
     void pushForwardEvent( HostID src, const AddrInfo* addr, 
-                           HostID dest, unsigned char* buf, int buflen );
+                           HostID dest, const unsigned char* buf, int buflen );
     void pushDestBadEvent();
     void pushLastSocketGoneEvent();
     void pushGameDead( const AddrInfo* addr );
