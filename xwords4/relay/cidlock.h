@@ -39,8 +39,8 @@ class CidInfo {
     CookieID GetCid( void ) { return m_cid; }
     CookieRef* GetRef( void ) { return m_cref; }
     pthread_t GetOwner( void ) { return m_owner; }
-    const set<int> GetSockets( void );
-    void SetSockets( set<int> sockets ) { m_sockets = sockets; };
+    const vector<AddrInfo> GetAddrs( void );
+    void SetAddrs( vector<AddrInfo> addrs ) { m_addrs = addrs; };
 
     void SetRef( CookieRef* cref ) { m_cref = cref; }
     void SetOwner( pthread_t owner ) { m_owner = owner; }
@@ -49,7 +49,7 @@ class CidInfo {
     CookieID m_cid;
     CookieRef* m_cref;
     pthread_t m_owner;
-    set<int> m_sockets;
+    vector<AddrInfo> m_addrs;
 };
 
 class CidLock {
@@ -65,7 +65,7 @@ class CidLock {
 
     CidInfo* Claim( void ) { return Claim(0); }
     CidInfo* Claim( CookieID cid );
-    CidInfo* ClaimSocket( int sock );
+    CidInfo* ClaimSocket( const AddrInfo* addr );
     void Relinquish( CidInfo* claim, bool drop );
 
  private:

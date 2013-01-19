@@ -31,6 +31,8 @@
 #include <deque>
 #include <set>
 
+#include "addrinfo.h" 
+
 using namespace std;
 
 class XWThreadPool {
@@ -39,13 +41,19 @@ class XWThreadPool {
     typedef enum { STYPE_UNKNOWN, STYPE_GAME, STYPE_PROXY } SockType;
     typedef struct _SockInfo {
         SockType m_type;
-        in_addr m_addr;
+        AddrInfo m_addr;
     } SockInfo;
 
+    typedef struct _ThreadInfo {
+        XWThreadPool* me;
+        pthread_t thread;
+        time_t recentTime;
+    } ThreadInfo;
+
     static XWThreadPool* GetTPool();
-    typedef bool (*packet_func)( unsigned char* buf, int bufLen, int socket,
-                                 in_addr& addr );
-    typedef void (*kill_func)( int socket );
+    typedef bool (*packet_func)( unsigned char* buf, int bufLen, 
+                                 const AddrInfo* from );
+    typedef void (*kill_func)( const AddrInfo* addr );
 
     XWThreadPool();
     ~XWThreadPool();
@@ -54,36 +62,37 @@ class XWThreadPool {
     void Stop();
 
     /* Add to set being listened on */
-    void AddSocket( int socket, SockType stype, in_addr& fromAddr );
+    void AddSocket( SockType stype, const AddrInfo* from );
     /* remove from tpool altogether, and close */
-    void CloseSocket( int socket );
+    void CloseSocket( const AddrInfo* addr );
 
-    void EnqueueKill( int socket, const char* const why );
+    void EnqueueKill( const AddrInfo* addr, const char* const why );
 
  private:
     typedef enum { Q_READ, Q_KILL } QAction;
-    typedef struct { QAction m_act; int m_socket; SockInfo m_info; } QueuePr;
+    typedef struct { QAction m_act; SockInfo m_info; } QueuePr;
 
     /* Remove from set being listened on */
-    bool RemoveSocket( int socket );
+    bool RemoveSocket( const AddrInfo* addr );
 
-    void enqueue( int socket, QAction act = Q_READ );
-    void enqueue( int socket, SockInfo si, QAction act = Q_READ );
+    void enqueue( QAction act = Q_READ );
+    void enqueue( SockInfo si, QAction act = Q_READ );
     void release_socket_locked( int socket );
-    void grab_elem_locked( QueuePr* qpp );
+    bool grab_elem_locked( QueuePr* qpp );
     void print_in_use( void );
+    void log_hung_threads( void );
 
-    bool get_process_packet( int socket, SockType stype, in_addr& addr );
+    bool get_process_packet( SockType stype, const AddrInfo* from );
     void interrupt_poll();
 
-    void* real_tpool_main();
+    void* real_tpool_main( ThreadInfo* tsp );
     static void* tpool_main( void* closure );
 
     void* real_listener();
     static void* listener_main( void* closure );
 
     /* Sockets main thread listens on */
-    vector< pair<int,SockInfo> >m_activeSockets;
+    vector<SockInfo>m_activeSockets;
     pthread_rwlock_t m_activeSocketsRWLock;
 
     /* Sockets waiting for a thread to read 'em */
@@ -100,6 +109,7 @@ class XWThreadPool {
     int m_nThreads;
     packet_func m_pFunc;
     kill_func m_kFunc;
+    ThreadInfo* m_threadInfos;
 
     static XWThreadPool* g_instance;
 };

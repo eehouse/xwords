@@ -75,8 +75,10 @@
 #include "permid.h"
 #include "lstnrmgr.h"
 #include "dbmgr.h"
+#include "addrinfo.h"
 
 static int s_nSpawns = 0;
+static int g_maxsocks = -1;
 
 void
 logf( XW_LogLevel level, const char* format, ... )
@@ -322,27 +324,31 @@ flagsOK( unsigned char** bufp, unsigned char const* end,
 } /* flagsOK */
 
 void
-denyConnection( int socket, XWREASON err )
+denyConnection( const AddrInfo* addr, XWREASON err )
 {
     unsigned char buf[2];
 
     buf[0] = XWRELAY_CONNECTDENIED;
     buf[1] = err;
 
-    send_with_length_unsafe( socket, buf, sizeof(buf) );
+    send_with_length_unsafe( addr, buf, sizeof(buf) );
 }
 
 /* No mutex here.  Caller better be ensuring no other thread can access this
  * socket. */
 bool
-send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
+send_with_length_unsafe( const AddrInfo* addr, unsigned char* buf, 
+                         size_t bufLen )
 {
+    assert( !!addr );
     bool ok = false;
+    int socket = addr->socket();
+    assert ( addr->isTCP() );
     unsigned short len = htons( bufLen );
     ssize_t nSent = send( socket, &len, 2, 0 );
     if ( nSent == 2 ) {
         nSent = send( socket, buf, bufLen, 0 );
-        if ( nSent == bufLen ) {
+        if ( nSent == ssize_t(bufLen) ) {
             logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
             ok = true;
         }
@@ -368,7 +374,7 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
  * game?
  */
 static bool
-processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
+processConnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
 {
     char cookie[MAX_INVITE_LEN+1];
     unsigned char* end = bufp + bufLen;
@@ -407,25 +413,25 @@ processConnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
             static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
             MutexLock ml( &s_newCookieLock );
 
-            SafeCref scr( cookie, socket, clientVersion, &devID, 
+            SafeCref scr( cookie, addr, clientVersion, &devID, 
                           nPlayersH, nPlayersT, seed, langCode, 
                           wantsPublic, makePublic );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
-            success = scr.Connect( socket, nPlayersH, nPlayersT, seed, addr );
+            success = scr.Connect( nPlayersH, nPlayersT, seed );
         } else {
             err = XWRELAY_ERROR_BADPROTO;
         }
     }
 
     if ( err != XWRELAY_ERROR_NONE ) {
-        denyConnection( socket, err );
+        denyConnection( addr, err );
     }
     return success;
 } /* processConnect */
 
 static bool
-processReconnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
+processReconnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
 {
     unsigned char* end = bufp + bufLen;
     bool success = false;
@@ -459,11 +465,11 @@ processReconnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
             getDevID( &bufp, end, flags, &devID );
 
             SafeCref scr( connName[0]? connName : NULL, 
-                          cookie, srcID, socket, clientVersion, &devID,
+                          cookie, srcID, addr, clientVersion, &devID,
                           nPlayersH, nPlayersT, gameSeed, langCode,
                           wantsPublic, makePublic );
-            success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
-                                     gameSeed, addr, &err );
+            success = scr.Reconnect( srcID, nPlayersH, nPlayersT, gameSeed, 
+                                     &err );
             if ( !success ) {
                 assert( err != XWRELAY_ERROR_NONE );
             }
@@ -473,27 +479,27 @@ processReconnect( unsigned char* bufp, int bufLen, int socket, in_addr& addr )
     }
 
     if ( err != XWRELAY_ERROR_NONE ) {
-        denyConnection( socket, err );
+        denyConnection( addr, err );
     }
 
     return success;
 } /* processReconnect */
 
 static bool
-processAck( unsigned char* bufp, int bufLen, int socket )
+processAck( unsigned char* bufp, int bufLen, const AddrInfo* addr )
 {
     bool success = false;
     unsigned char* end = bufp + bufLen;
     HostID srcID;
     if ( getNetByte( &bufp, end, &srcID ) ) {
-        SafeCref scr( socket );
+        SafeCref scr( addr );
         success = scr.HandleAck( srcID );
     }
     return success;
 }
 
 static bool
-processDisconnect( unsigned char* bufp, int bufLen, int socket )
+processDisconnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
 {
     unsigned char* end = bufp + bufLen;
     CookieID cookieID;
@@ -503,8 +509,8 @@ processDisconnect( unsigned char* bufp, int bufLen, int socket )
     if ( getNetShort( &bufp, end, &cookieID ) 
          && getNetByte( &bufp, end, &hostID ) ) {
 
-        SafeCref scr( socket );
-        scr.Disconnect( socket, hostID );
+        SafeCref scr( addr );
+        scr.Disconnect( addr, hostID );
         success = true;
     } else {
         logf( XW_LOGERROR, "dropping XWRELAY_GAME_DISCONNECT; wrong length" );
@@ -513,10 +519,10 @@ processDisconnect( unsigned char* bufp, int bufLen, int socket )
 } /* processDisconnect */
 
 static void
-killSocket( int socket )
+killSocket( const AddrInfo* addr )
 {
-    logf( XW_LOGINFO, "%s(%d)", __func__, socket );
-    CRefMgr::Get()->RemoveSocketRefs( socket );
+    logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->socket() );
+    CRefMgr::Get()->RemoveSocketRefs( addr );
 }
 
 time_t
@@ -546,7 +552,7 @@ GetNSpawns(void)
 /* forward the message.  Need only change the command after looking up the
  * socket and it's ready to go. */
 static bool
-forwardMessage( unsigned char* buf, int buflen, int srcSocket, in_addr& addr )
+forwardMessage( unsigned char* buf, int buflen, const AddrInfo* addr )
 {
     bool success = false;
     unsigned char* bufp = buf + 1; /* skip cmd */
@@ -561,7 +567,7 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket, in_addr& addr )
         logf( XW_LOGINFO, "cookieID = %d", cookieID );
 
         if ( COOKIE_ID_NONE == cookieID ) {
-            SafeCref scr( srcSocket );
+            SafeCref scr( addr );
             success = scr.Forward( src, addr, dest, buf, buflen );
         } else {
             SafeCref scr( cookieID ); /* won't work if not allcon; will be 0 */
@@ -572,7 +578,7 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket, in_addr& addr )
 } /* forwardMessage */
 
 static bool
-processMessage( unsigned char* buf, int bufLen, int socket, in_addr& addr )
+processMessage( unsigned char* buf, int bufLen, const AddrInfo* addr )
 {
     bool success = false;            /* default is failure */
     XWRELAY_Cmd cmd = *buf;
@@ -581,16 +587,16 @@ processMessage( unsigned char* buf, int bufLen, int socket, in_addr& addr )
 
     switch( cmd ) {
     case XWRELAY_GAME_CONNECT: 
-        success = processConnect( buf+1, bufLen-1, socket, addr );
+        success = processConnect( buf+1, bufLen-1, addr );
         break;
     case XWRELAY_GAME_RECONNECT: 
-        success = processReconnect( buf+1, bufLen-1, socket, addr );
+        success = processReconnect( buf+1, bufLen-1, addr );
         break;
     case XWRELAY_ACK:
-        success = processAck( buf+1, bufLen-1, socket );
+        success = processAck( buf+1, bufLen-1, addr );
         break;
     case XWRELAY_GAME_DISCONNECT:
-        success = processDisconnect( buf+1, bufLen-1, socket );
+        success = processDisconnect( buf+1, bufLen-1, addr );
         break;
 #ifdef RELAY_HEARTBEAT
     case XWRELAY_HEARTBEAT:
@@ -598,7 +604,7 @@ processMessage( unsigned char* buf, int bufLen, int socket, in_addr& addr )
         break;
 #endif
     case XWRELAY_MSG_TORELAY:
-        success = forwardMessage( buf, bufLen, socket, addr );
+        success = forwardMessage( buf, bufLen, addr );
         break;
     default:
         logf( XW_LOGERROR, "%s bad: %d", __func__, cmd );
@@ -607,7 +613,7 @@ processMessage( unsigned char* buf, int bufLen, int socket, in_addr& addr )
     }
 
     if ( !success ) {
-        XWThreadPool::GetTPool()->EnqueueKill( socket, "failure" );
+        XWThreadPool::GetTPool()->EnqueueKill( addr, "failure" );
     }
 
     return success;
@@ -628,7 +634,7 @@ make_socket( unsigned long addr, unsigned short port )
         return -1;
     }
 
-    struct sockaddr_in sockAddr;
+    sockaddr_in sockAddr;
     sockAddr.sin_family = AF_INET;
     sockAddr.sin_addr.s_addr = htonl(addr);
     sockAddr.sin_port = htons(port);
@@ -667,6 +673,7 @@ usage( char* arg0 )
              "\t-h                   (print this help)\\\n"
              "\t-i <idfile>          (file where next global id stored)\\\n"
              "\t-l <logfile>         (write logs here, not stderr)\\\n"
+             "\t-m <num_sockets>     (max number of simultaneous sockets to have open)\\\n"
              "\t-n <serverName>      (used in permID generation)\\\n"
              "\t-p <port>            (port to listen on)\\\n"
 #ifdef DO_HTTP
@@ -806,7 +813,7 @@ pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName,
 }
 
 static void
-handleMsgsMsg( int sock, in_addr& addr, bool sendFull,
+handleMsgsMsg( const AddrInfo* addr, bool sendFull,
                unsigned char* bufp, const unsigned char* end )
 {
     unsigned short nameCount;
@@ -850,8 +857,8 @@ handleMsgsMsg( int sock, in_addr& addr, bool sendFull,
         memcpy( &out[0], &tmp, sizeof(tmp) );
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
-        ssize_t nwritten = write( sock, &out[0], out.size() );
-        logf( XW_LOGINFO, "%s: wrote %d bytes", __func__, nwritten );
+        ssize_t nwritten = write( addr->socket(), &out[0], out.size() );
+        logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
             dbmgr->RemoveStoredMessages( &msgIDs[0], msgIDs.size() );
@@ -907,7 +914,8 @@ log_hex( const unsigned char* memp, int len, const char* tag )
 } // log_hex
 
 static void
-handleProxyMsgs( int sock, in_addr& addr, unsigned char* bufp, unsigned char* end )
+handleProxyMsgs( int sock, const AddrInfo* addr, unsigned char* bufp, 
+                 unsigned char* end )
 {
     // log_hex( bufp, end-bufp, __func__ );
     unsigned short nameCount;
@@ -962,10 +970,12 @@ handleProxyMsgs( int sock, in_addr& addr, unsigned char* bufp, unsigned char* en
 } // handleProxyMsgs
 
 void
-handle_proxy_packet( unsigned char* buf, int len, int sock, in_addr& addr )
+handle_proxy_packet( unsigned char* buf, int len, const AddrInfo* addr )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
+    logf( XW_LOGVERBOSE0, "%s()", __func__ );
     if ( len > 0 ) {
+        assert( addr->isTCP() );
+        int socket = addr->socket();
         unsigned char* bufp = buf;
         unsigned char* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
@@ -985,21 +995,21 @@ handle_proxy_packet( unsigned char* buf, int len, int sock, in_addr& addr )
                     DBMgr::Get()->PublicRooms( lang, nPlayers, &nNames, names );
                     unsigned short netshort = htons( names.size()
                                                      + sizeof(unsigned short) );
-                    write( sock, &netshort, sizeof(netshort) );
+                    write( socket, &netshort, sizeof(netshort) );
                     netshort = htons( (unsigned short)nNames );
-                    write( sock, &netshort, sizeof(netshort) );
-                    write( sock, names.c_str(), names.size() );
+                    write( socket, &netshort, sizeof(netshort) );
+                    write( socket, names.c_str(), names.size() );
                 }
                 break;
             case PRX_HAS_MSGS:
             case PRX_GET_MSGS:
                 if ( len >= 2 ) {
-                    handleMsgsMsg( sock, addr, PRX_GET_MSGS == cmd, bufp, end );
+                    handleMsgsMsg( addr, PRX_GET_MSGS == cmd, bufp, end );
                 }
                 break;          /* PRX_HAS_MSGS */
 
             case PRX_PUT_MSGS:
-                handleProxyMsgs( sock, addr, bufp, end );
+                handleProxyMsgs( socket, addr, bufp, end );
                 break;
 
             case PRX_DEVICE_GONE:
@@ -1026,7 +1036,7 @@ handle_proxy_packet( unsigned char* buf, int len, int sock, in_addr& addr )
                     }
                 }
                 len = 0;        /* return a 0-length message */
-                write( sock, &len, sizeof(len) );
+                write( socket, &len, sizeof(len) );
                 break;          /* PRX_DEVICE_GONE */
             default:
                 logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
@@ -1035,6 +1045,32 @@ handle_proxy_packet( unsigned char* buf, int len, int sock, in_addr& addr )
         }
     }
 } /* handle_proxy_packet */
+
+/* From stack overflow, toward a snprintf with an expanding buffer.
+ */
+void
+string_printf( string& str, const char* fmt, ... )
+{
+    const int origsiz = str.size();
+    int newsiz = 100;
+    va_list ap;
+    for ( ; ; ) {
+        str.resize( origsiz + newsiz );
+
+        va_start( ap, fmt );
+        int len = vsnprintf( (char *)str.c_str() + origsiz, newsiz, fmt, ap );
+        va_end( ap );
+
+        if ( len > newsiz ) {   // needs more space
+            newsiz = len + 1;
+        } else if ( -1 == len ) {
+            assert(0);          // should be impossible
+        } else {
+            str.resize( origsiz + len );
+            break;
+        }
+    }
+}
 
 static void
 set_timeouts( int sock )
@@ -1120,7 +1156,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:f:l:t:s:w:"
+       int opt = getopt(argc, argv, "h?c:p:m:n:f:l:t:s:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -1162,6 +1198,9 @@ main( int argc, char** argv )
        case 'l':
            logFile = optarg;
            break;
+       case 'm':
+           g_maxsocks = atoi( optarg );
+           break;
        case 'n':
            serverName = optarg;
            break;
@@ -1200,6 +1239,11 @@ main( int argc, char** argv )
 #endif
     if ( nWorkerThreads == 0 ) {
         (void)cfg->GetValueFor( "NTHREADS", &nWorkerThreads );
+    }
+    if ( g_maxsocks == -1 ) {
+        (void)cfg->GetValueFor( "MAXSOCKS", &g_maxsocks );
+    } else {
+        g_maxsocks = 100;
     }
     char serverNameBuf[128];
     if ( serverName == NULL ) {
@@ -1391,15 +1435,19 @@ main( int argc, char** argv )
                 }
 
                 if ( FD_ISSET( listener, &rfds ) ) {
-                    struct sockaddr_in newaddr;
-                    socklen_t siz = sizeof(newaddr);
-                    int newSock = accept( listener, (sockaddr*)&newaddr,
-                                          &siz );
+                    AddrInfo::AddrUnion saddr;
+                    socklen_t siz = sizeof(saddr.addr_in);
+                    int newSock = accept( listener, &saddr.addr, &siz );
                     if ( newSock < 0 ) {
                         logf( XW_LOGERROR, "accept failed: errno(%d)=%s",
                               errno, strerror(errno) );
                         assert( 0 ); // we're leaking files or load has grown
                     } else {
+			// I've seen a bug where we accept but never service
+			// connections.  Sockets are not closed, and so the
+			// number goes up.  Probably need a watchdog instead,
+			// but this will work around it.
+                        assert( g_maxsocks > newSock );
 
                         /* Set timeout so send and recv won't block forever */
                         set_timeouts( newSock );
@@ -1408,12 +1456,12 @@ main( int argc, char** argv )
 
                         logf( XW_LOGINFO, 
                               "%s: accepting connection from %s on socket %d", 
-                              __func__, inet_ntoa(newaddr.sin_addr), newSock );
+                              __func__, inet_ntoa(saddr.addr_in.sin_addr), newSock );
 
-                        tPool->AddSocket( newSock,
-                                          perGame ? XWThreadPool::STYPE_GAME 
+                        AddrInfo addr( true, newSock, &saddr );
+                        tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME 
                                           : XWThreadPool::STYPE_PROXY,
-                                          newaddr.sin_addr );
+                                          &addr );
                     }
                     --retval;
                 }

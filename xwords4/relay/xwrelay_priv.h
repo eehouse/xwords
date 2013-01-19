@@ -22,10 +22,12 @@
 #ifndef _XWRELAY_PRIV_H_
 #define _XWRELAY_PRIV_H_
 
+#include <string>
 #include <time.h>
 #include <netinet/in.h>
 #include "lstnrmgr.h"
 #include "xwrelay.h"
+#include "addrinfo.h"
 
 typedef unsigned char HostID;   /* see HOST_ID_SERVER */
 
@@ -38,8 +40,9 @@ typedef enum {
 
 void logf( XW_LogLevel level, const char* format, ... );
 
-void denyConnection( int socket, XWREASON err );
-bool send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
+void denyConnection( const AddrInfo* addr, XWREASON err );
+bool send_with_length_unsafe( const AddrInfo* addr, 
+                              unsigned char* buf, size_t bufLen );
 
 time_t uptime(void);
 
@@ -49,9 +52,11 @@ int GetNSpawns(void);
 
 int make_socket( unsigned long addr, unsigned short port );
 
+void string_printf( std::string& str, const char* fmt, ... );
+
 int read_packet( int sock, unsigned char* buf, int buflen );
-void handle_proxy_packet( unsigned char* buf, int bufLen, int socket,
-                          in_addr& addr );
+void handle_proxy_packet( unsigned char* buf, int bufLen,
+                          const AddrInfo* addr );
 
 const char* cmdToStr( XWRELAY_Cmd cmd );
 

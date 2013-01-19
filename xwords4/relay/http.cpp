@@ -238,7 +238,7 @@ http_thread_main( void* arg )
         struct sockaddr_in name;
         socklen_t namelen = sizeof(name);
 
-        bool isLocal = 0 == getpeername( sock, (struct sockaddr*)&name, 
+        bool isLocal = 0 == getpeername( sock, (AddrInfo*)&name, 
                                          &namelen );
         if ( isLocal ) {
             in_addr_t s_addr = name.sin_addr.s_addr;

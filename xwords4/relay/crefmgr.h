@@ -89,7 +89,7 @@ class CRefMgr {
 
     void MoveSockets( vector<int> sockets, CookieRef* cref );
     pthread_mutex_t* GetWriteMutexForSocket( int socket );
-    void RemoveSocketRefs( int socket );
+    void RemoveSocketRefs( const AddrInfo* addr );
     void PrintSocketInfo( int socket, string& out );
 
     void IncrementFullCount( void );
@@ -117,22 +117,21 @@ class CRefMgr {
     CookieRef* getFromFreeList( void );
 
     /* connect case */
-    CidInfo* getMakeCookieRef( const char* cookie, 
-                               HostID hid, int socket, int nPlayersH,
+    CidInfo* getMakeCookieRef( const char* cookie, HostID hid, int nPlayersH,
                                int nPlayersS, int langCode, int seed,
                                bool wantsPublic, bool makePublic, 
                                bool* seenSeed );
 
     /* reconnect case; just the stuff we don't have in db */
     CidInfo* getMakeCookieRef( const char* connName, const char* cookie, 
-                               HostID hid, int socket, int nPlayersH, 
+                               HostID hid, int nPlayersH, 
                                int nPlayersS, int seed, int langCode, 
                                bool isPublic, bool* isDead );
 
     CidInfo* getMakeCookieRef( const char* const connName, bool* isDead );
 
     CidInfo* getCookieRef( CookieID cid, bool failOk = false );
-    CidInfo* getCookieRef( int socket );
+    CidInfo* getCookieRef( const AddrInfo* addr );
     bool checkCookieRef_locked( CookieRef* cref );
     CidInfo* getCookieRef_impl( CookieID cid );
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID cid,
@@ -171,23 +170,23 @@ class SafeCref {
 
  public:
     /* for connect */
-    SafeCref( const char* cookie, int socket, int clientVersion, 
+    SafeCref( const char* cookie, const AddrInfo* addr, int clientVers, 
               DevID* devID, int nPlayersH, int nPlayersS, 
               unsigned short gameSeed, int langCode, bool wantsPublic, 
               bool makePublic );
     /* for reconnect */
     SafeCref( const char* connName, const char* cookie, HostID hid, 
-              int socket, int clientVersion, DevID* devID, int nPlayersH, 
-              int nPlayersS, unsigned short gameSeed, int langCode, 
-              bool wantsPublic, bool makePublic );
+              const AddrInfo* addr, int clientVersion, DevID* devID, 
+              int nPlayersH, int nPlayersS, unsigned short gameSeed, 
+              int langCode, bool wantsPublic, bool makePublic );
     SafeCref( const char* const connName );
     SafeCref( CookieID cid, bool failOk = false );
-    SafeCref( int socket );
+    SafeCref( const AddrInfo* addr );
     /* SafeCref( CookieRef* cref ); */
     ~SafeCref();
 
-    bool Forward( HostID src, in_addr& addr, HostID dest, unsigned char* buf, 
-                  int buflen ) {
+    bool Forward( HostID src, const AddrInfo* addr, HostID dest, 
+                  unsigned char* buf, int buflen ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
@@ -198,8 +197,8 @@ class SafeCref {
         }
     }
 
-    void PutMsg( HostID srcID, in_addr& addr, HostID destID, unsigned char* buf,
-                 int buflen ) {
+    void PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
+                 unsigned char* buf, int buflen ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
@@ -207,20 +206,19 @@ class SafeCref {
         }
     }
 
-    bool Connect( int socket, int nPlayersH, int nPlayersS, int seed, 
-                  in_addr& addr ) {
+    bool Connect( int nPlayersH, int nPlayersS, int seed ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            return cref->_Connect( socket, m_clientVersion, m_devID,
+            return cref->_Connect( m_clientVersion, m_devID,
                                    nPlayersH, nPlayersS, seed, 
-                                   m_seenSeed, addr );
+                                   m_seenSeed, &m_addr );
         } else {
             return false;
         }
     }
-    bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
-                    int seed, in_addr& addr, XWREASON* errp ) {
+    bool Reconnect( HostID srcID, int nPlayersH, int nPlayersS,
+                    int seed, XWREASON* errp ) {
         bool success = false;
         *errp = XWRELAY_ERROR_NONE;
         if ( IsValid() ) {
@@ -229,18 +227,18 @@ class SafeCref {
             if ( m_dead ) {
                 *errp = XWRELAY_ERROR_DEADGAME;
             } else {
-                success = cref->_Reconnect( socket, m_clientVersion, m_devID,
+                success = cref->_Reconnect( m_clientVersion, m_devID,
                                             srcID, nPlayersH, nPlayersS, seed, 
-                                            addr, m_dead );
+                                            &m_addr, m_dead );
             }
         }
         return success;
     }
-    void Disconnect(int socket, HostID hostID ) {
+    void Disconnect( const AddrInfo* addr, HostID hostID ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            cref->_Disconnect( socket, hostID );
+            cref->_Disconnect( addr, hostID );
         }
     }
 
@@ -270,11 +268,11 @@ class SafeCref {
             cref->_Shutdown();
         }
     }
-    void Remove( int socket ) {
+    void Remove( const AddrInfo* addr ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            cref->_Remove( socket );
+            cref->_Remove( addr );
         }
     }
 
@@ -390,6 +388,7 @@ class SafeCref {
  private:
     CidInfo* m_cinfo;
     CRefMgr* m_mgr;
+    AddrInfo m_addr;
     int m_clientVersion;
     DevID* m_devID;
     bool m_isValid;

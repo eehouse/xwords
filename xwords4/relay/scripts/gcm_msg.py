@@ -1,30 +1,32 @@
 #!/usr/bin/python
 
-import sys, gcm, psycopg2, json
+import sys, psycopg2, json, urllib, urllib2
 
 # I'm not checking my key in...
 import mykey
+
+GCM_URL = 'https://android.googleapis.com/gcm/send'
 
 def usage():
     print 'usage:', sys.argv[0], '[--to <name>] msg'
     sys.exit()
 
-def msgViaGCM( devid, msg ):
-    instance = gcm.GCM( mykey.myKey )
-    data = { 'title' : 'Msg from Darth',
-             'msg' : msg,
-             }
-    
-    response = instance.json_request( registration_ids = [devid],
-                                      data = data )
-    if 'errors' in response:
-        response = response['errors']
-        if 'NotRegistered' in response:
-            ids = response['NotRegistered']
-            for id in ids:
-                print 'need to remove "', id, '" from db'
-    else:
-        print 'no errors'
+def sendMsg( devid, msg ):
+    values = {
+        'registration_ids': [ devid ],
+        'data' : { 'title' : 'Msg from Darth2',
+                   'msg' : msg,
+                   }
+        }
+    params = json.dumps( values )
+    req = urllib2.Request("https://android.googleapis.com/gcm/send", params )
+    req.add_header( 'Content-Type' , 'application/x-www-form-urlencoded;charset=UTF-8' )
+    req.add_header( 'Authorization' , 'key=' + mykey.myKey )
+    req.add_header('Content-Type', 'application/json' )
+    response = urllib2.urlopen( req )
+
+    response = response.read()
+    print response
 
 def main():
     to = None
@@ -40,7 +42,7 @@ def main():
     if not to: usage()
     devid = mykey.devids[to]
     print 'sending: "%s" to' % msg, to
-    msgViaGCM( devid, msg )
+    sendMsg( devid, msg )
 
 ##############################################################################
 if __name__ == '__main__':
