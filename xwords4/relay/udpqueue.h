@@ -22,6 +22,7 @@
 #define _UDPQUEUE_H_
 
 #include <pthread.h>
+#include <deque>
 
 #include "xwrelay_priv.h"
 #include "addrinfo.h"
@@ -35,17 +36,22 @@ public:
         m_buf = new unsigned char[len]; 
         memcpy( m_buf, buf, len ); 
         m_len = len;
+        m_created = time( NULL );
     }
     ~UdpThreadClosure() { delete m_buf; }
 
     const unsigned char* buf() const { return m_buf; } 
     int len() const { return m_len; }
     const AddrInfo::AddrUnion* saddr() const { return &m_saddr; }
+    void noteDequeued() { m_dequed = time( NULL ); }
+    void logStats();
 
  private:
     unsigned char* m_buf;
     int m_len;
     AddrInfo::AddrUnion m_saddr;
+    time_t m_created;
+    time_t m_dequed;
 };
 
 typedef void (*QueueCallback)( UdpThreadClosure* closure );
@@ -53,10 +59,21 @@ typedef void (*QueueCallback)( UdpThreadClosure* closure );
 class UdpQueue {
  public:
     static UdpQueue* get();
+    UdpQueue();
+    ~UdpQueue();
     void handle( const AddrInfo::AddrUnion* saddr, unsigned char* buf, int len,
                  QueueCallback cb );
 
  private:
+    static void* thread_main_static( void* closure );
+    void* thread_main();
+    void setCB( QueueCallback cb );
+
+    pthread_mutex_t m_queueMutex;
+    pthread_cond_t m_queueCondVar;
+    deque<UdpThreadClosure*> m_queue;
+
+    QueueCallback m_cb;
 };
 
 #endif

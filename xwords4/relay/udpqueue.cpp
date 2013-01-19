@@ -20,9 +20,39 @@
  */
 
 #include "udpqueue.h"
+#include "mlock.h"
+
 
 static UdpQueue* s_instance = NULL;
 
+
+void 
+UdpThreadClosure::logStats()
+{
+    time_t now = time( NULL );
+    if ( 1 < now - m_created ) {
+        logf( XW_LOGERROR, "packet waited %d s for processing which then took %d s",
+              m_dequed - m_created, now - m_dequed );
+    }
+}
+
+UdpQueue::UdpQueue() 
+{
+    pthread_mutex_init ( &m_queueMutex, NULL );
+    pthread_cond_init( &m_queueCondVar, NULL );
+
+    pthread_t thread;
+    int result = pthread_create( &thread, NULL, thread_main_static, this );
+    assert( result == 0 );
+    result = pthread_detach( thread );
+    assert( result == 0 );
+}
+
+UdpQueue::~UdpQueue() 
+{
+    pthread_cond_destroy( &m_queueCondVar );
+    pthread_mutex_destroy ( &m_queueMutex );
+}
 
 UdpQueue* 
 UdpQueue::get()
@@ -37,7 +67,45 @@ void
 UdpQueue::handle( const AddrInfo::AddrUnion* saddr, unsigned char* buf, int len, 
                   QueueCallback cb )
 {
-    logf( XW_LOGINFO, "%s: still running in same thread!!!", __func__ );
-    UdpThreadClosure closure( saddr, buf, len );
-    (*cb)( &closure );
+    UdpThreadClosure* utc = new UdpThreadClosure( saddr, buf, len );
+    MutexLock ml( &m_queueMutex );
+    setCB( cb );
+    m_queue.push_back( utc );
+    pthread_cond_signal( &m_queueCondVar );
+}
+
+void* 
+UdpQueue::thread_main()
+{
+    for ( ; ; ) {
+        pthread_mutex_lock( &m_queueMutex );
+        while ( m_queue.size() == 0 ) {
+            pthread_cond_wait( &m_queueCondVar, &m_queueMutex );
+        }
+        UdpThreadClosure* utc = m_queue.front();
+        m_queue.pop_front();
+        pthread_mutex_unlock( &m_queueMutex );
+
+        utc->noteDequeued();
+        (*m_cb)( utc );
+        utc->logStats();
+        delete utc;
+    }
+    return NULL;
+}
+
+/* static */ void*
+UdpQueue::thread_main_static( void* closure )
+{
+    blockSignals();
+
+    UdpQueue* me = (UdpQueue*)closure;
+    return me->thread_main();
+}
+
+void
+UdpQueue::setCB( QueueCallback cb )
+{
+    assert( cb == m_cb || !m_cb );
+    m_cb = cb;
 }
