@@ -736,6 +736,7 @@ usage( char* arg0 )
              "\t-h                   (print this help)\\\n"
              "\t-i <idfile>          (file where next global id stored)\\\n"
              "\t-l <logfile>         (write logs here, not stderr)\\\n"
+             "\t-M <message>         (Put in maintenance mode, and return this string to all callers)\\\n"
              "\t-m <num_sockets>     (max number of simultaneous sockets to have open)\\\n"
              "\t-n <serverName>      (used in permID generation)\\\n"
              "\t-p <port>            (port to listen on)\\\n"
@@ -1415,12 +1416,51 @@ enable_keepalive( int sock )
       */
 }
 
+static void
+maint_str_loop( int udpsock, const char* str )
+{
+    assert( -1 != udpsock );
+    int len = 1 + strlen(str);
+
+    fd_set rfds;
+    for ( ; ; ) {
+        FD_ZERO(&rfds);
+        FD_SET( udpsock, &rfds );
+        int retval = select( udpsock + 1, &rfds, NULL, NULL, NULL );
+        if ( 0 > retval ) {
+            logf( XW_LOGERROR, "%s: select=>%d (errno=%d/%s)", __func__, retval,
+                  errno, strerror(errno) );
+            break;
+        }
+        if ( FD_ISSET( udpsock, &rfds ) ) {
+            unsigned char buf[512];
+            AddrInfo::AddrUnion saddr;
+            memset( &saddr, 0, sizeof(saddr) );
+            socklen_t fromlen = sizeof(saddr.addr_in);
+
+            ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
+                                      &saddr.addr, &fromlen );
+
+            if ( 2 <= nRead ) {
+                if ( buf[0] == XWPDEV_PROTO_VERSION && buf[1] == XWPDEV_REG ) {
+                    // reply, reusing buffer
+                    buf[1] = XWPDEV_MSGRSP;
+                    memcpy( &buf[2], str, len );
+                    send_via_udp( udpsock, &saddr.addr, buf, 2 + len );
+                }
+            }
+        }
+
+    }
+
+}
+
 int
 main( int argc, char** argv )
 {
     int port = 0;
     int ctrlport = 0;
-    int udpport = 0;
+    int udpport = -1;
 #ifdef DO_HTTP
     int httpport = 0;
     const char* cssFile = NULL;
@@ -1430,6 +1470,7 @@ main( int argc, char** argv )
     const char* serverName = NULL;
     // const char* idFileName = NULL;
     const char* logFile = NULL;
+    const char* maint_str = NULL;
     bool doDaemon = true;
     bool doFork = true;
 
@@ -1443,7 +1484,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:m:n:f:l:t:s:u:w:"
+       int opt = getopt(argc, argv, "h?c:p:M:m:n:f:l:t:s:u:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -1485,6 +1526,9 @@ main( int argc, char** argv )
        case 'l':
            logFile = optarg;
            break;
+       case 'M':
+           maint_str = optarg;
+           break;
        case 'm':
            g_maxsocks = atoi( optarg );
            break;
@@ -1522,7 +1566,7 @@ main( int argc, char** argv )
     if ( ctrlport == 0 ) {
         (void)cfg->GetValueFor( "CTLPORT", &ctrlport );
     }
-    if ( 0 == udpport ) {
+    if ( -1 == udpport ) {
         (void)cfg->GetValueFor( "UDPPORT", &udpport );
     }
 #ifdef DO_HTTP
@@ -1581,7 +1625,7 @@ main( int argc, char** argv )
 
 #ifdef SPAWN_SELF
     /* loop forever, relaunching children as they die. */
-    while ( doFork ) {
+    while ( doFork && !maint_str ) {
         ++s_nSpawns;             /* increment in parent *before* copy */
         pid_t pid = fork();
         if ( pid == 0 ) {       /* child */
@@ -1602,6 +1646,26 @@ main( int argc, char** argv )
         }
     }
 #endif
+
+    if ( 0 != udpport ) {
+        struct sockaddr_in saddr;
+        g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+        saddr.sin_family = PF_INET;
+        saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        saddr.sin_port = htons(udpport);
+        int err = bind( g_udpsock, (struct sockaddr*)&saddr, sizeof(saddr) );
+        if ( 0 == err ) {
+            err = fcntl( g_udpsock, F_SETFL, O_NONBLOCK );
+        } else {
+            logf( XW_LOGERROR, "bind()=>%s", strerror(errno) );
+            g_udpsock = -1;
+        }
+    }
+
+    if ( !!maint_str ) {
+        maint_str_loop( g_udpsock, maint_str );
+        exit( 0 );
+    }
 
     /* Needs to be reset after a crash/respawn */
     PermID::SetStartTime( time(NULL) );
@@ -1662,21 +1726,6 @@ main( int argc, char** argv )
     g_control = make_socket( INADDR_LOOPBACK, ctrlport );
     if ( g_control == -1 ) {
         exit( 1 );
-    }
-
-    if ( 0 != udpport ) {
-        struct sockaddr_in saddr;
-        g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-        saddr.sin_family = PF_INET;
-        saddr.sin_addr.s_addr = htonl(INADDR_ANY);
-        saddr.sin_port = htons(udpport);
-        int err = bind( g_udpsock, (struct sockaddr*)&saddr, sizeof(saddr) );
-        if ( 0 == err ) {
-            err = fcntl( g_udpsock, F_SETFL, O_NONBLOCK );
-        } else {
-            logf( XW_LOGERROR, "bind()=>%s", strerror(errno) );
-            g_udpsock = -1;
-        }
     }
 
 #ifdef DO_HTTP
