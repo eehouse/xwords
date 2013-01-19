@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001-2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -238,6 +238,7 @@ typedef struct _GtkAppGlobals {
     LaunchParams* params;
     GSList* globalsList;
     GList* sources;
+    GtkWidget* window;
     GtkWidget* listWidget;
     GtkWidget* openButton;
     GtkWidget* deleteButton;

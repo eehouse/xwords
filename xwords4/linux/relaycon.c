@@ -189,6 +189,9 @@ relaycon_receive( void* closure, int socket )
             (*storage->procs.msgNoticeReceived)( storage->procsClosure, ntohl(gameToken) );
             break;
         }
+        case XWPDEV_MSGRSP:
+            (*storage->procs.msgErrorMsg)( storage->procsClosure, (XP_UCHAR*)ptr );
+            break;
         default:
             XP_LOGF( "%s: Unexpected cmd %d", __func__, cmd );
             XP_ASSERT( 0 );

@@ -26,6 +26,7 @@
 #include "gtkboard.h"
 #include "linuxmain.h"
 #include "relaycon.h"
+#include "gtkask.h"
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
@@ -443,6 +444,13 @@ gtkDevIDChanged( void* closure, const XP_UCHAR* devID )
     }
 }
 
+static void
+gtkErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    (void)gtkask( apg->window, msg, GTK_BUTTONS_OK );
+}
+
 void
 onGameSaved( void* closure, sqlite3_int64 rowid, 
              XP_Bool firstTime )
@@ -515,6 +523,7 @@ gtkmain( LaunchParams* params )
         .msgReceived = gtkGotBuf,
         .msgNoticeReceived = gtkNoticeRcvd,
         .devIDChanged = gtkDevIDChanged,
+        .msgErrorMsg = gtkErrorMsgRcvd,
     };
 
     relaycon_init( params, &procs, &apg, 
@@ -522,7 +531,7 @@ gtkmain( LaunchParams* params )
                    params->connInfo.relay.defaultSendPort );
     sendRelayReg( &apg );
 
-    (void)makeGamesWindow( &apg );
+    apg.window = makeGamesWindow( &apg );
     gtk_main();
 
     closeGamesDB( apg.pDb );
