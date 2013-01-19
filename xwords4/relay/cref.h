@@ -230,6 +230,7 @@ class CookieRef {
 
     void postCheckAllHere();
     void postDropDevice( HostID hostID );
+    void postTellHaveMsgs( const AddrInfo* addr );
 
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
@@ -238,6 +239,7 @@ class CookieRef {
 
     void forward_or_store( const CRefEvent* evt );
     void send_denied( const CRefEvent* evt, XWREASON why );
+    void send_trytell( const CRefEvent* evt );
 
     void checkFromServer( const CRefEvent* evt );
     void notifyOthers( const AddrInfo* addr, XWRelayMsg msg, XWREASON why );

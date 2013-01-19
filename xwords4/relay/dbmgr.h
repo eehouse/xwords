@@ -62,6 +62,7 @@ class DBMgr {
     bool AllDevsAckd( const char* const connName );
 
     DevIDRelay RegisterDevice( const DevID* host );
+    bool updateDevice( DevIDRelay relayID, bool check );
 
     HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const AddrInfo* addr,
@@ -98,13 +99,20 @@ class DBMgr {
     /* message storage -- different DB */
     int CountStoredMessages( const char* const connName );
     int CountStoredMessages( const char* const connName, int hid );
+    int CountStoredMessages( DevIDRelay relayID );
     void StoreMessage( const char* const connName, int hid, 
                        const unsigned char* const buf, int len );
+    void GetStoredMessageIDs( DevIDRelay relayID, vector<int>& ids );
+
     bool GetStoredMessage( const char* const connName, int hid, 
                            unsigned char* buf, size_t* buflen, int* msgID );
     bool GetNthStoredMessage( const char* const connName, int hid, int nn,
                               unsigned char* buf, size_t* buflen, int* msgID );
+    bool GetStoredMessage( int msgID, unsigned char* buf, size_t* buflen, 
+                           AddrInfo::ClientToken* token );
+
     void RemoveStoredMessages( const int* msgID, int nMsgIDs );
+    void RemoveStoredMessages( vector<int>& ids );
 
  private:
     DBMgr();
@@ -113,6 +121,8 @@ class DBMgr {
     void readArray( const char* const connName, int arr[] );
     DevIDRelay getDevID( const char* connName, int hid );
     DevIDRelay getDevID( const DevID* devID );
+    int getCountWhere( const char* table, string& test );
+    void RemoveStoredMessages( string& msgIDs );
 
     PGconn* getThreadConn( void );
 

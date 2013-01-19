@@ -590,7 +590,7 @@ void
 CookieRef::pushForwardEvent( HostID src, const AddrInfo* addr, HostID dest, 
                              const unsigned char* buf, int buflen )
 {
-    logf( XW_LOGVERBOSE1, "pushForwardEvent: %d -> %d", src, dest );
+    logf( XW_LOGVERBOSE1, "%s: %d -> %d", __func__, src, dest );
     CRefEvent evt( XWE_FORWARDMSG, addr );
     evt.u.fwd.src = src;
     evt.u.fwd.dest = dest;
@@ -702,6 +702,10 @@ CookieRef::handleEvents()
 
             case XWA_PROXYMSG:
                 forward_or_store/*_proxy*/( &evt );
+                break;
+
+            case XWA_TRYTELL:
+                send_havemsgs( &evt.addr );
                 break;
 
             case XWA_TIMERDISCONN:
@@ -994,6 +998,14 @@ CookieRef::postDropDevice( HostID hostID )
 }
 
 void
+CookieRef::postTellHaveMsgs( const AddrInfo* addr )
+{
+    CRefEvent evt( XWE_TRYTELL, addr );
+    m_eventQueue.push_back( evt );
+    assert( m_in_handleEvents );
+}
+
+void
 CookieRef::setAllConnectedTimer()
 {
     time_t inHowLong;
@@ -1129,7 +1141,6 @@ CookieRef::sendAnyStored( const CRefEvent* evt )
 void
 CookieRef::forward_or_store( const CRefEvent* evt )
 {
-    AddrInfo addr;              // invalid unless assigned to
     const unsigned char* cbuf = evt->u.fwd.buf;
     do {
         int buflen = evt->u.fwd.buflen;
@@ -1153,6 +1164,11 @@ CookieRef::forward_or_store( const CRefEvent* evt )
             usleep( m_delayMicros );
         }
 
+        if ( (NULL == destAddr)
+             || !send_with_length( destAddr, dest, buf, buflen, true ) ) {
+            store_message( dest, buf, buflen );
+        }
+
         // If recipient GAME isn't connected, see if owner device is and can
         // receive
         if ( NULL == destAddr) {
@@ -1161,15 +1177,10 @@ CookieRef::forward_or_store( const CRefEvent* evt )
             if ( DBMgr::Get()->TokenFor( ConnName(), dest, &devid, &token ) ) {
                 const AddrInfo::AddrUnion* saddr = DevMgr::Get()->get( devid );
                 if ( !!saddr ) {
-                    addr.init( -1, token, saddr );
-                    destAddr = &addr;
+                    AddrInfo addr( -1, token, saddr );
+                    postTellHaveMsgs( &addr );
                 }
             }
-        }
-
-        if ( (NULL == destAddr)
-             || !send_with_length( destAddr, dest, buf, buflen, true ) ) {
-            store_message( dest, buf, buflen );
         }
 
         /* also note that we've heard from src recently */

@@ -208,6 +208,20 @@ parseRelayID( const unsigned char** const inp, const unsigned char* const end,
 }
 
 static bool
+getNetLong( const unsigned char** bufpp, const unsigned char* end, 
+            uint32_t* out )
+{
+    uint32_t tmp;
+    bool ok = *bufpp + sizeof(tmp) <= end;
+    if ( ok ) {
+        memcpy( &tmp, *bufpp, sizeof(tmp) );
+        *bufpp += sizeof(tmp);
+        *out = ntohl( tmp );
+    }
+    return ok;
+} /* getNetShort */
+
+static bool
 getNetShort( const unsigned char** bufpp, const unsigned char* end, 
              unsigned short* out )
 {
@@ -343,6 +357,7 @@ send_via_udp( int socket, const struct sockaddr *dest_addr,
 {
     ssize_t nSent = sendto( socket, buf, buflen,
                             0, /* flags */ dest_addr, sizeof(*dest_addr) );
+    logf( XW_LOGINFO, "%s()=>%d", __func__, nSent );
     return nSent;
 }
 
@@ -370,8 +385,8 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
         AddrInfo::ClientToken clientToken = addr->clientToken();
         assert( 0 != clientToken );
         unsigned char tmpbuf[1 + 1 + sizeof(clientToken) + bufLen];
-        tmpbuf[0] = XWREG_PROTO_VERSION;
-        tmpbuf[1] = XWRREG_MSG;
+        tmpbuf[0] = XWPDEV_PROTO_VERSION;
+        tmpbuf[1] = XWPDEV_MSG;
         clientToken = htonl(clientToken);
         memcpy( &tmpbuf[2], &clientToken, sizeof(clientToken) );
         memcpy( &tmpbuf[2 + sizeof(clientToken)], buf, bufLen );
@@ -392,6 +407,23 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
     return ok;
 } /* send_with_length_unsafe */
 
+void
+send_havemsgs( const AddrInfo* addr )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    int socket = addr->socket();
+    if ( -1 == socket ) {
+        socket = g_udpsock;
+    }
+
+    AddrInfo::ClientToken clientToken = htonl(addr->clientToken());
+    unsigned char tmpbuf[1 + 1 + sizeof(clientToken)];
+    tmpbuf[0] = XWPDEV_PROTO_VERSION;
+    tmpbuf[1] = XWPDEV_HAVEMSGS;
+    memcpy( &tmpbuf[2], &clientToken, sizeof(clientToken) );
+
+    send_via_udp( socket, addr->sockaddr(), tmpbuf, sizeof(tmpbuf) );
+}
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
  * associate with one participant in a relayed session.  We'll store this
@@ -944,6 +976,31 @@ log_hex( const unsigned char* memp, int len, const char* tag )
     }
 } // log_hex
 
+static bool
+handlePutMessage( SafeCref& scr, HostID hid, const AddrInfo* addr, 
+                  unsigned short len, const unsigned char** bufp, 
+                  const unsigned char* end )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    bool success = false;
+    const unsigned char* start = *bufp;
+    HostID src;
+    HostID dest;
+    XWRELAY_Cmd cmd;
+    // sanity check that cmd and hostids are there
+    if ( getNetByte( bufp, end, &cmd )
+         && getNetByte( bufp, end, &src )
+         && getNetByte( bufp, end, &dest ) ) {
+        assert( cmd == XWRELAY_MSG_TORELAY_NOCONN );
+        assert( hid == dest );
+        scr.PutMsg( src, addr, dest, start, len );
+        *bufp = start + len;
+        success = true;
+    }
+    logf( XW_LOGINFO, "%s()=>%d", __func__, success );
+    return success;
+}
+
 static void
 handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp, 
                  const unsigned char* end )
@@ -975,20 +1032,10 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
             unsigned short nMsgs;
             if ( getNetShort( &bufp, end, &nMsgs ) ) {
                 SafeCref scr( connName );
-                while ( nMsgs-- > 0 ) {
+                while ( scr.IsValid() && nMsgs-- > 0 ) {
                     unsigned short len;
-                    HostID src;
-                    HostID dest;
-                    XWRELAY_Cmd cmd;
                     if ( getNetShort( &bufp, end, &len ) ) {
-                        const unsigned char* start = bufp;
-                        if ( getNetByte( &bufp, end, &cmd )
-                             && getNetByte( &bufp, end, &src )
-                             && getNetByte( &bufp, end, &dest ) ) {
-                            assert( cmd == XWRELAY_MSG_TORELAY_NOCONN );
-                            assert( hid == dest );
-                            scr.PutMsg( src, addr, dest, start, len );
-                            bufp = start + len;
+                        if ( handlePutMessage( scr, hid, addr, len, &bufp, end ) ) {
                             continue;
                         }
                     }
@@ -1077,30 +1124,106 @@ handle_proxy_packet( unsigned char* buf, int len, const AddrInfo* addr )
     }
 } /* handle_proxy_packet */
 
+static short
+addRegID( unsigned char* ptr, DevIDRelay relayID )
+{
+    short used = 0;
+    char idbuf[9];
+    int idLen = snprintf( idbuf, sizeof(idbuf), "%.8X", relayID );
+    short lenNBO = htons(idLen);
+    memcpy( &ptr[used], &lenNBO, sizeof(lenNBO) );
+    used += sizeof(lenNBO);
+    memcpy( &ptr[used], idbuf, idLen );
+    used += idLen;
+    return used;
+}
+
 static void 
 registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
 {
     DevIDRelay relayID;
-    if ( ID_TYPE_RELAY != devID->m_devIDType ) { // known to us; just update the time
-        relayID = DBMgr::Get()->RegisterDevice( devID );
-        if ( ID_TYPE_NONE != relayID ) {
+    DBMgr* dbMgr = DBMgr::Get();
+    short indx = 0;
+    unsigned char buf[32];
+    if ( ID_TYPE_RELAY == devID->m_devIDType ) { // known to us; just update the time
+        relayID = devID->asRelayID();
+        if ( dbMgr->updateDevice( relayID, true ) ) {
+            int nMsgs = dbMgr->CountStoredMessages( relayID );
+            if ( 0 < nMsgs ) {
+                AddrInfo addr( -1, 0, saddr );
+                send_havemsgs( &addr );
+            }
+        } else {
+            relayID = DBMgr::DEVID_NONE;
+
+            buf[indx++] = XWPDEV_PROTO_VERSION;
+            buf[indx++] = XWPDEV_BADREG;
+            indx += addRegID( &buf[indx], relayID );
+            send_via_udp( g_udpsock, &saddr->addr, buf, indx );
+        } 
+    } else {
+        relayID = dbMgr->RegisterDevice( devID );
+        if ( DBMgr::DEVID_NONE != relayID ) {
             // send it back to the device
-            char idbuf[9];
-            int len = snprintf( idbuf, sizeof(idbuf), "%.8X", relayID );
-            logf( XW_LOGERROR, "%s: len(%s) => %d", __func__, idbuf, len );
-            unsigned char buf[1 + 1 + 2 + len];
-            buf[0] = XWREG_PROTO_VERSION;
-            buf[1] = XWRREG_REGRSP;
-            short lenNBO = htons(len);
-            memcpy( &buf[2], &lenNBO, sizeof(lenNBO));
-            memcpy( &buf[4], idbuf, len );
+            buf[indx++] = XWPDEV_PROTO_VERSION;
+            buf[indx++] = XWPDEV_REGRSP;
+            indx += addRegID( &buf[indx], relayID );
             send_via_udp( g_udpsock, &saddr->addr, buf, sizeof(buf) );
         }
-    } else {
-        relayID = devID->asRelayID();
     }
+
     // Now let's map the address to the devid for future sending purposes.
-    DevMgr::Get()->Remember( relayID, saddr );
+    if ( DBMgr::DEVID_NONE != relayID ) {
+        DevMgr::Get()->Remember( relayID, saddr );
+    }
+}
+
+static void
+retrieveMessages( DevID& devID, const AddrInfo::AddrUnion* saddr )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    DBMgr* dbMgr = DBMgr::Get();
+    vector<int> ids;
+    vector<int> sentIDs;
+    dbMgr->GetStoredMessageIDs( devID.asRelayID(), ids );
+    vector<int>::const_iterator iter;
+    for ( iter = ids.begin(); iter != ids.end(); ++iter ) {
+        unsigned char buf[MAX_MSG_LEN];
+        size_t buflen = sizeof(buf);
+        AddrInfo::ClientToken clientToken;
+        if ( dbMgr->GetStoredMessage( *iter, buf, &buflen, &clientToken ) ) {
+            AddrInfo addr( -1, clientToken, saddr );
+            if ( ! send_with_length_unsafe( &addr, buf, buflen ) ) {
+                break;
+            }
+            sentIDs.push_back( *iter );
+        }
+    }
+    dbMgr->RemoveStoredMessages( sentIDs );
+}
+
+static const char*
+msgToStr( XWRelayReg msg )
+{
+    const char* str;
+# define CASE_STR(c)  case c: str = #c; break
+    switch( msg ) {
+    CASE_STR(XWPDEV_REG);
+    CASE_STR(XWPDEV_REGRSP);
+    CASE_STR(XWPDEV_PING);
+    CASE_STR(XWPDEV_HAVEMSGS);
+    CASE_STR(XWPDEV_RQSTMSGS);
+    CASE_STR(XWPDEV_MSG);
+    CASE_STR(XWPDEV_MSGNOCONN);
+    CASE_STR(XWPDEV_MSGRSP);
+    CASE_STR(XWPDEV_BADREG);
+    default:
+        assert(0);
+        break;
+    }
+# undef CASE_STR
+    return str;
+
 }
 
 static void
@@ -1110,12 +1233,13 @@ udp_thread_proc( UdpThreadClosure* utc )
     const unsigned char* end = ptr + utc->len();
 
     unsigned char proto = *ptr++;
-    if ( XWREG_PROTO_VERSION != 0 ) {
+    if ( XWPDEV_PROTO_VERSION != 0 ) {
         logf( XW_LOGERROR, "unexpected proto %d", __func__, (int) proto );
     } else {
-        int msg = *ptr++;
+        XWRelayReg msg = (XWRelayReg)*ptr++;
+        logf( XW_LOGINFO, "%s(msg=%s)", __func__, msgToStr( msg ) );
         switch( msg ) {
-        case XWRREG_REG: {
+        case XWPDEV_REG: {
             DevIDType typ = (DevIDType)*ptr++;
             unsigned short idLen;
             if ( !getNetShort( &ptr, end, &idLen ) ) {
@@ -1131,7 +1255,7 @@ udp_thread_proc( UdpThreadClosure* utc )
             registerDevice( &devID, utc->saddr() );
         }
             break;
-        case XWRREG_MSG: {
+        case XWPDEV_MSG: {
             AddrInfo::ClientToken clientToken;
             memcpy( &clientToken, ptr, sizeof(clientToken) );
             ptr += sizeof(clientToken);
@@ -1142,8 +1266,48 @@ udp_thread_proc( UdpThreadClosure* utc )
             } else {
                 logf( XW_LOGERROR, "%s: dropping packet with token of 0" );
             }
-        }
             break;
+        }
+        case XWPDEV_MSGNOCONN: {
+            AddrInfo::ClientToken clientToken;
+            if ( getNetLong( &ptr, end, &clientToken ) ) {
+                HostID hid;
+                char connName[MAX_CONNNAME_LEN+1];
+                if ( !parseRelayID( &ptr, end, connName, 
+                                    sizeof( connName ), &hid ) ) {
+                    logf( XW_LOGERROR, "parse failed!!!" );
+                    break;
+                }
+                SafeCref scr( connName );
+                if ( scr.IsValid() ) {
+                    AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
+                    handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
+                    assert( ptr == end ); // DON'T CHECK THIS IN!!!
+                } else {
+                    logf( XW_LOGERROR, "%s: invalid scr for %s", __func__, connName );
+                }
+            } else {
+                logf( XW_LOGERROR, "no clientToken found!!!" );
+            }
+            break;
+        }
+
+        case XWPDEV_RQSTMSGS: {
+            unsigned short idLen;
+            if ( !getNetShort( &ptr, end, &idLen ) ) {
+                break;
+            }
+            if ( end - ptr > idLen ) {
+                logf( XW_LOGERROR, "full devID not received" );
+                break;
+            }
+            DevID devID( ID_TYPE_RELAY );
+            devID.m_devIDString.append( (const char*)ptr, idLen );
+            ptr += idLen;
+            retrieveMessages( devID, utc->saddr() );
+            break;
+        }
+
         default:
             logf( XW_LOGERROR, "%s: unexpected msg %d", __func__, msg );
         }
@@ -1155,7 +1319,6 @@ udp_thread_proc( UdpThreadClosure* utc )
 static void
 handle_udp_packet( int udpsock )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
     unsigned char buf[512];
     AddrInfo::AddrUnion saddr;
     memset( &saddr, 0, sizeof(saddr) );

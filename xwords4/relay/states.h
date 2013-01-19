@@ -86,6 +86,7 @@ typedef enum {
                                this object */
 
     ,XWE_PROXYMSG           /* msg when game may not be connected */
+    ,XWE_TRYTELL            /* tell the addressee to check for stored messages */
 
     ,XWE_GOTONEACK
     ,XWE_GOTLASTACK
@@ -146,6 +147,8 @@ typedef enum {
     ,XWA_FWD             /* Forward a message */
 
     ,XWA_PROXYMSG        /* out-of-band message */
+
+    ,XWA_TRYTELL         /* Tell the addresses to check for messages */
 
     ,XWA_NOTEHEART       /* Record heartbeat received */
 

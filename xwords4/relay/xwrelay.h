@@ -28,30 +28,48 @@
 #define FLAGS_SERVER_BIT 0x01
 
 /* message types for the udp-based per-device (not per-game) protocol */
-#define XWREG_PROTO_VERSION 0
+#define XWPDEV_PROTO_VERSION 0
 #ifndef CANT_DO_TYPEDEF
 typedef
 #endif
-enum { XWRREG_NONE             /* 0 is an illegal value */
-       ,XWRREG_REG             /* dev->relay: device registers self and
+enum { XWPDEV_NONE             /* 0 is an illegal value */
+       ,XWPDEV_REG             /* dev->relay: device registers self and
                                   self-selected (e.g. gcm) or assigned devid
                                   format: proto: 1; this enum: 1; idType: 1,
                                   idLen: 2, id: <idLen> */
 
-       ,XWRREG_REGRSP          /* relay->device: if non-relay-assigned devid
+       ,XWPDEV_REGRSP          /* relay->device: if non-relay-assigned devid
                                   type was given, this gives the
                                   relay-assigned one to be used from now on.
                                   format: proto: 1, this enum: 1, idLen: 2, id: <idLen>
                                 */
 
-       ,XWRREG_PING             /* device->relay: keep the UDP connection
+       ,XWPDEV_PING             /* device->relay: keep the UDP connection
                                    open.  format: proto: 1, this enum: 1. */
 
-       ,XWRREG_MSG             /* dev->relay and relay->dev: norm: a message from a game to
+       ,XWPDEV_HAVEMSGS         /* Relay->device: check messages for this
+                                   game. format: proto: 1, this enum: 1; clientToken: 4 */
+
+       ,XWPDEV_RQSTMSGS         /* device->relay: got any messages for me?
+                                   format: proto: 1, this enum 1, devID: 4 [, clientToken: 4]
+                                 */
+
+       ,XWPDEV_MSG             /* dev->relay and relay->dev: norm: a message from a game to
                                   the relay format: proto: 1, this enum: 1,
                                   clientToken: 4, message<varies>*/
 
-       ,XWRREG_MSGRSP           /* relay->dev: conveys error on receipt of XWRREG_MSG */
+       ,XWPDEV_MSGNOCONN        /* dev->relay in the proxy format that
+                                   includes relayID (connname:hid) and seems
+                                   to be reserved for relay FWD messages.
+                                   format: proto: 1, this enum: 1,
+                                   clientToken: 4; <cr>-terminated-connname:
+                                   varies, message: varies */
+
+       ,XWPDEV_MSGRSP           /* relay->dev: conveys error on receipt of XWPDEV_MSG */
+
+       ,XWPDEV_BADREG           /* relay->dev.  You sent me a relayID via
+                                   XWPDEV_REG but I've never heard of it */
+
 }
 #ifndef CANT_DO_TYPEDEF
  XWRelayReg
