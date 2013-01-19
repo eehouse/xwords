@@ -30,6 +30,7 @@
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
 static void updateButtons( GtkAppGlobals* apg );
+static void sendRelayReg( GtkAppGlobals* apg );
 
 static void
 recordOpened( GtkAppGlobals* apg, GtkGameGlobals* globals )
@@ -406,12 +407,40 @@ gtkGotBuf( void* closure, XP_U8* buf, XP_U16 len )
     }
 }
 
+static gint
+requestMsgs( gpointer data )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)data;
+    XP_UCHAR devIDBuf[64] = {0};
+    db_fetch( apg->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    if ( '\0' != devIDBuf[0] ) {
+        relaycon_requestMsgs( apg->params, devIDBuf );
+    } else {
+        XP_LOGF( "%s: not requesting messages as don't have relay id", __func__ );
+    }
+    return 0;                   /* don't run again */
+}
+
+static void 
+gtkNoticeRcvd( void* closure, XP_U32 XP_UNUSED(gameToken) )
+{
+    LOG_FUNC();
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    (void)g_idle_add( requestMsgs, apg );
+}
+
 static void
 gtkDevIDChanged( void* closure, const XP_UCHAR* devID )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    XP_LOGF( "%s(devID=%s)", __func__, devID );
-    store( apg->pDb, KEY_RDEVID, devID );
+    if ( !!devID ) {
+        XP_LOGF( "%s(devID=%s)", __func__, devID );
+        db_store( apg->pDb, KEY_RDEVID, devID );
+    } else {
+        XP_LOGF( "%s: bad relayid", __func__ );
+        db_remove( apg->pDb, KEY_RDEVID );
+        sendRelayReg( apg );
+    }
 }
 
 void
@@ -445,6 +474,27 @@ handle_sigintterm( int XP_UNUSED(sig) )
     handle_destroy( NULL, g_globals_for_signal );
 }
 
+static void
+sendRelayReg( GtkAppGlobals* apg )
+{
+    LaunchParams* params = apg->params;
+    XP_UCHAR devIDBuf[64] = {0};
+    XP_UCHAR* devID;
+    DevIDType typ = ID_TYPE_RELAY;
+    if ( !!params->rDevID ) {
+        devID = params->rDevID;
+    } else {
+        db_fetch( apg->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+        if ( '\0' != devIDBuf[0] ) {
+            devID = devIDBuf;
+        } else {
+            devID = params->devID;
+            typ = ID_TYPE_LINUX;
+        }
+    }
+    relaycon_reg( params, devID, typ );
+}
+
 int
 gtkmain( LaunchParams* params )
 {
@@ -463,28 +513,14 @@ gtkmain( LaunchParams* params )
 
     RelayConnProcs procs = {
         .msgReceived = gtkGotBuf,
+        .msgNoticeReceived = gtkNoticeRcvd,
         .devIDChanged = gtkDevIDChanged,
     };
 
-    XP_UCHAR devIDBuf[64] = {0};
-    XP_UCHAR* devID;
-    DevIDType typ = ID_TYPE_RELAY;
-    if ( !!params->rDevID ) {
-        devID = params->rDevID;
-    } else {
-        fetch( apg.pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
-        if ( '\0' != devIDBuf[0] ) {
-            devID = devIDBuf;
-        } else {
-            devID = params->devID;
-            typ = ID_TYPE_LINUX;
-        }
-    }
-
     relaycon_init( params, &procs, &apg, 
                    params->connInfo.relay.relayName,
-                   params->connInfo.relay.defaultSendPort,
-                   devID, typ );
+                   params->connInfo.relay.defaultSendPort );
+    sendRelayReg( &apg );
 
     (void)makeGamesWindow( &apg );
     gtk_main();

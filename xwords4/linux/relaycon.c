@@ -27,18 +27,18 @@ typedef struct _RelayConStorage {
     int socket;
     RelayConnProcs procs;
     void* procsClosure;
+    struct sockaddr_in saddr;
 } RelayConStorage;
 
 static RelayConStorage* getStorage( LaunchParams* params );
-static void addressToServer( struct sockaddr_in* to, const CommsAddrRec* addr );
-static XP_U32 addrForHost( const CommsAddrRec* addr );
 static XP_U32 hostNameToIP( const XP_UCHAR* name );
 static void relaycon_receive( void* closure, int socket );
+static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len );
+static size_t addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str );
 
 void
 relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 
-               void* procsClosure, const char* host, int port, 
-               const XP_UCHAR* devID, DevIDType typ )
+               void* procsClosure, const char* host, int port )
 {
     XP_ASSERT( !params->relayConStorage );
     RelayConStorage* storage = getStorage( params );
@@ -49,48 +49,98 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     (*params->socketChanged)( params->socketChangedClosure, storage->socket, -1,
                               relaycon_receive, params );
 
+    XP_MEMSET( &storage->saddr, 0, sizeof(storage->saddr) );
+    storage->saddr.sin_family = PF_INET;
+    storage->saddr.sin_addr.s_addr = htonl( hostNameToIP(host) );
+    storage->saddr.sin_port = htons(port);
+}
+
+void
+relaycon_reg( LaunchParams* params, const XP_UCHAR* devID, DevIDType typ )
+{
+    LOG_FUNC();
+    XP_U8 tmpbuf[32];
+    int indx = 0;
+    
+    RelayConStorage* storage = getStorage( params );
     XP_ASSERT( !!devID );
     XP_U16 idLen = XP_STRLEN( devID );
     XP_U16 lenNBO = XP_HTONS( idLen );
-    XP_U8 tmpbuf[1 + 1 + 1 + sizeof(lenNBO) + idLen];
-    tmpbuf[0] = XWREG_PROTO_VERSION;
-    tmpbuf[1] = XWRREG_REG;
-    tmpbuf[2] = typ;
-    XP_MEMCPY( &tmpbuf[3], &lenNBO, sizeof(lenNBO) );
-    XP_MEMCPY( &tmpbuf[5], devID, idLen );
+    tmpbuf[indx++] = XWPDEV_PROTO_VERSION;
+    tmpbuf[indx++] = XWPDEV_REG;
+    tmpbuf[indx++] = typ;
+    XP_MEMCPY( &tmpbuf[indx], &lenNBO, sizeof(lenNBO) );
+    indx += sizeof(lenNBO);
+    XP_MEMCPY( &tmpbuf[indx], devID, idLen );
+    indx += idLen;
 
-    struct sockaddr_in to = {0};
-    to.sin_family = PF_INET;
-    to.sin_addr.s_addr = htonl( hostNameToIP(host) );
-    to.sin_port = htons(port);
-
-    (void)sendto( storage->socket, tmpbuf, sizeof(tmpbuf), 0, /* flags */
-                  (struct sockaddr*)&to, sizeof(to) );
+    sendIt( storage, tmpbuf, indx );
 }
 
 XP_S16
 relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
-               XP_U32 gameToken, const CommsAddrRec* addrRec )
+               XP_U32 gameToken, const CommsAddrRec* XP_UNUSED(addrRec) )
 {
     ssize_t nSent = -1;
     RelayConStorage* storage = getStorage( params );
 
-    struct sockaddr_in to = {0};
-    addressToServer( &to, addrRec );
-
     XP_U8 tmpbuf[1 + 1 + sizeof(gameToken) + buflen];
-    tmpbuf[0] = XWREG_PROTO_VERSION;
-    tmpbuf[1] = XWRREG_MSG;
+    tmpbuf[0] = XWPDEV_PROTO_VERSION;
+    tmpbuf[1] = XWPDEV_MSG;
     XP_U32 inNBO = htonl(gameToken);
     XP_MEMCPY( &tmpbuf[2], &inNBO, sizeof(inNBO) );
     XP_MEMCPY( &tmpbuf[1 + 1 + sizeof(gameToken)], buf, buflen );
-    nSent = sendto( storage->socket, tmpbuf, sizeof(tmpbuf), 0, /* flags */
-                    (struct sockaddr*)&to, sizeof(to) );
-    if ( 1 + 1 + sizeof(gameToken) < nSent ) {
-        nSent -= 1 + 1 + sizeof(gameToken);
+    nSent = sendIt( storage, tmpbuf, sizeof(tmpbuf) );
+    if ( nSent > buflen ) {
+        nSent = buflen;
     }
     LOG_RETURNF( "%d", nSent );
     return nSent;
+}
+
+XP_S16 
+relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
+                     const XP_UCHAR* relayID, XP_U32 gameToken )
+{
+    XP_LOGF( "%s(relayID=%s)", __func__, relayID );
+    XP_U16 indx = 0;
+    ssize_t nSent = -1;
+    RelayConStorage* storage = getStorage( params );
+
+    XP_U16 idLen = XP_STRLEN( relayID );
+    XP_U8 tmpbuf[1 + 1 + 
+                 1 + idLen +
+                 sizeof(gameToken) + buflen];
+    tmpbuf[indx++] = XWPDEV_PROTO_VERSION;
+    tmpbuf[indx++] = XWPDEV_MSGNOCONN;
+    gameToken = htonl( gameToken );
+    XP_MEMCPY( &tmpbuf[indx], &gameToken, sizeof(gameToken) );
+    indx += sizeof(gameToken);
+    XP_MEMCPY( &tmpbuf[indx], relayID, idLen );
+    indx += idLen;
+    tmpbuf[indx++] = '\n';
+    XP_MEMCPY( &tmpbuf[indx], buf, buflen );
+    nSent = sendIt( storage, tmpbuf, sizeof(tmpbuf) );
+    if ( nSent > buflen ) {
+        nSent = buflen;
+    }
+    LOG_RETURNF( "%d", nSent );
+    return nSent;
+}
+
+void
+relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID )
+{
+    XP_LOGF( "%s(devID=%s)", __func__, devID );
+    RelayConStorage* storage = getStorage( params );
+
+    XP_U8 tmpbuf[128];
+    int indx = 0;
+    tmpbuf[indx++] = XWPDEV_PROTO_VERSION;
+    tmpbuf[indx++] = XWPDEV_RQSTMSGS;
+    indx += addStrWithLength( &tmpbuf[indx], tmpbuf + sizeof(tmpbuf), devID );
+
+    sendIt( storage, tmpbuf, indx );
 }
 
 static void 
@@ -111,10 +161,10 @@ relaycon_receive( void* closure, int socket )
     if ( 0 <= nRead ) {
         XP_U8* ptr = buf;
         const XP_U8* end = buf + nRead;
-        XP_ASSERT( XWREG_PROTO_VERSION == *ptr++ );
+        XP_ASSERT( XWPDEV_PROTO_VERSION == *ptr++ );
         XWRelayReg cmd = *ptr++;
         switch( cmd ) {
-        case XWRREG_REGRSP: {
+        case XWPDEV_REGRSP: {
             XP_U16 len;
             XP_MEMCPY( &len, ptr, sizeof(len) );
             len = ntohs( len );
@@ -125,10 +175,20 @@ relaycon_receive( void* closure, int socket )
             (*storage->procs.devIDChanged)( storage->procsClosure, devID );
         }
             break;
-        case XWRREG_MSG:
+        case XWPDEV_MSG:
             (*storage->procs.msgReceived)( storage->procsClosure, 
                                            ptr, end - ptr );
             break;
+        case XWPDEV_BADREG:
+            (*storage->procs.devIDChanged)( storage->procsClosure, NULL );
+            break;
+        case XWPDEV_HAVEMSGS: {
+            XP_U32 gameToken;
+            XP_MEMCPY( &gameToken, ptr, sizeof(gameToken) );
+            ptr += sizeof( gameToken );
+            (*storage->procs.msgNoticeReceived)( storage->procsClosure, ntohl(gameToken) );
+            break;
+        }
         default:
             XP_LOGF( "%s: Unexpected cmd %d", __func__, cmd );
             XP_ASSERT( 0 );
@@ -157,24 +217,6 @@ getStorage( LaunchParams* params )
     return storage;
 }
 
-static void
-addressToServer( struct sockaddr_in* to, const CommsAddrRec* addr )
-{
-    to->sin_family = PF_INET;
-    to->sin_addr.s_addr = htonl( addrForHost(addr) );
-    to->sin_port = htons(addr->u.ip_relay.port);
-}
-
-static XP_U32
-addrForHost( const CommsAddrRec* addr )
-{
-    XP_U32 ip = addr->u.ip_relay.ipAddr;
-    if ( 0L == ip ) {
-        ip = hostNameToIP( addr->u.ip_relay.hostName );
-    }
-    return ip;
-} /* addrForHost */
-
 static XP_U32
 hostNameToIP( const XP_UCHAR* name )
 {
@@ -190,4 +232,24 @@ hostNameToIP( const XP_UCHAR* name )
     }
     XP_LOGF( "%s found %lx for %s", __func__, ip, name );
     return ip;
+}
+
+static ssize_t
+sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
+{
+    return sendto( storage->socket, msgbuf, len, 0, /* flags */
+                   (struct sockaddr*)&storage->saddr, sizeof(storage->saddr) );
+}
+
+static size_t
+addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str )
+{
+    XP_U16 len = XP_STRLEN( str );
+    if ( buf + len + sizeof(len) <= end ) {
+        XP_U16 lenNBO = htons( len );
+        XP_MEMCPY( buf, &lenNBO, sizeof(lenNBO) );
+        buf += sizeof(lenNBO);
+        XP_MEMCPY( buf, str, len );
+    }
+    return len + sizeof(len);
 }

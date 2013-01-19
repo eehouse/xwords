@@ -66,6 +66,7 @@
 #include "memstream.h"
 #include "filestream.h"
 #include "gamesdb.h"
+#include "relaycon.h"
 
 /* static guint gtkSetupClientSocket( GtkGameGlobals* globals, int sock ); */
 static void setCtrlsForTray( GtkGameGlobals* globals );
@@ -392,13 +393,15 @@ relay_error_gtk( void* closure, XWREASON relayErr )
 }
 
 static XP_Bool 
-relay_sendNoConn_gtk( const XP_U8* XP_UNUSED(msg), XP_U16 XP_UNUSED(len),
-                      const XP_UCHAR* XP_UNUSED(relayID), void* closure )
+relay_sendNoConn_gtk( const XP_U8* msg, XP_U16 len, const XP_UCHAR* relayID, 
+                      void* closure )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     XP_Bool success = XP_FALSE;
     if ( !!globals->cGlobals.pDb && !globals->draw ) {
-        XP_ASSERT( 0 );         /* implement me!!! */
+        XP_S16 nSent = relaycon_sendnoconn( globals->cGlobals.params, msg, len, 
+                                            relayID, globals->cGlobals.selRow );
+        success = nSent == len;
     }
     return success;
 } /* relay_sendNoConn_gtk */

@@ -208,12 +208,14 @@ loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
     int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
     XP_ASSERT( SQLITE_OK == result );
     result = sqlite3_step( ppStmt );
-    XP_ASSERT( SQLITE_ROW == result );
-    const void* ptr = sqlite3_column_blob( ppStmt, 0 );
-    int size = sqlite3_column_bytes( ppStmt, 0 );
-    stream_putBytes( stream, ptr, size );
+    XP_Bool success = SQLITE_ROW == result;
+    if ( success ) {
+        const void* ptr = sqlite3_column_blob( ppStmt, 0 );
+        int size = sqlite3_column_bytes( ppStmt, 0 );
+        stream_putBytes( stream, ptr, size );
+    }
     sqlite3_finalize( ppStmt );
-    return XP_TRUE;
+    return success;
 }
 
 void
@@ -230,7 +232,7 @@ deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
 }
 
 void
-store( sqlite3* pDb, const gchar* key, const gchar* value )
+db_store( sqlite3* pDb, const gchar* key, const gchar* value )
 {
     char buf[256];
     snprintf( buf, sizeof(buf),
@@ -245,7 +247,7 @@ store( sqlite3* pDb, const gchar* key, const gchar* value )
 }
 
 void
-fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen )
+db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen )
 {
     char query[256];
     snprintf( query, sizeof(query),
@@ -259,6 +261,19 @@ fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen )
     } else {
         buf[0] = '\0';
     }
+    sqlite3_finalize( ppStmt );
+}
+
+void
+db_remove( sqlite3* pDb, const gchar* key )
+{
+    char query[256];
+    snprintf( query, sizeof(query), "DELETE FROM pairs WHERE key = '%s'", key );
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_step( ppStmt );
+    XP_ASSERT( SQLITE_DONE == result );
     sqlite3_finalize( ppStmt );
 }
 
