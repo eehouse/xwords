@@ -1512,10 +1512,10 @@ getDictPath( const LaunchParams *params, const char* name,
              char* result, int resultLen )
 {
     XP_Bool success = XP_FALSE;
-    GSList* dictDirs;
+    GSList* iter;
     result[0] = '\0';
-    for ( dictDirs = params->dictDirs; !!dictDirs; dictDirs = dictDirs->next ) {
-        const char* path = dictDirs->data;
+    for ( iter = params->dictDirs; !!iter; iter = iter->next ) {
+        const char* path = iter->data;
         char buf[256];
         int len = snprintf( buf, VSIZE(buf), "%s/%s.xwd", path, name );
         if ( len < VSIZE(buf) && file_exists( buf ) ) {
@@ -1734,7 +1734,8 @@ main( int argc, char** argv )
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
 
-    char* envDictPath = getenv( "XW_DICTSPATH" );
+    char* envDictPath = getenv( "XW_DICTDIR" );
+    XP_LOGF( "%s: envDictPath=%s", __func__, envDictPath );
     if ( !!envDictPath ) {
         char *saveptr;
         for ( ; ; ) {

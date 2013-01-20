@@ -357,17 +357,15 @@ makeNewGameDialog( GtkNewGameState* state )
     for ( iter = dicts, ii = 0; !!iter; iter = iter->next, ++ii ) {
         const gchar* name = iter->data;
         gtk_combo_box_append_text( GTK_COMBO_BOX(dictCombo), name );
-        if ( !!gi->dictName && !strcmp( name, gi->dictName ) ) {
+        if ( !!gi->dictName ) {
+            if ( !strcmp( name, gi->dictName ) ) {
+                gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
+            }
+        } else if ( 0 == ii ) {
             gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
         }
     }
 	g_slist_free( dicts );
-
-    /* if ( !!gi->dictName ) { */
-    /*     gtk_box_pack_start( GTK_BOX(hbox),  */
-    /*                         gtk_label_new(gi->dictName), */
-    /*                         FALSE, TRUE, 0 ); */
-    /* } */
 
     gtk_widget_show( hbox );
 
@@ -571,6 +569,9 @@ newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
         state.revert = FALSE;
         state.loaded = XP_FALSE;
         state.nCols = gi->boardSize;
+        if ( 0 == state.nCols ) {
+            state.nCols = globals->cGlobals.params->pgi.boardSize;
+        }
         state.role = gi->serverRole;
 
         XP_MEMCPY( &state.addr, addr, sizeof(state.addr) );
