@@ -377,16 +377,14 @@ public class CommsTransport implements TransportProcs,
 
         switch ( addr.conType ) {
         case COMMS_CONN_RELAY:
-            nSent = RelayService.sendPacket( m_context, addr.sms_phone, 
-                                             gameID, buf );
-            // if ( NetStateCache.netAvail( m_context ) ) {
-            //     putOut( buf );      // add to queue
-            //     if ( null == m_thread ) {
-            //         m_thread = new CommsThread();
-            //         m_thread.start();
-            //     }
-            //     nSent = buf.length;
-            // }
+            if ( NetStateCache.netAvail( m_context ) ) {
+                putOut( buf );      // add to queue
+                if ( null == m_thread ) {
+                    m_thread = new CommsThread();
+                    m_thread.start();
+                }
+                nSent = buf.length;
+            }
             break;
         case COMMS_CONN_SMS:
             nSent = SMSService.sendPacket( m_context, addr.sms_phone, 
