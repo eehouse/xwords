@@ -33,6 +33,11 @@
 typedef
 #endif
 enum { XWPDEV_NONE             /* 0 is an illegal value */
+       ,XWPDEV_ALERT           /* relay->device: provides a string message to
+                                  present to the user (with device allowed not
+                                  to present the same string more than once)
+                                  format: proto: 1, this enum: 1,
+                                  null-terminnated string: varies */
        ,XWPDEV_REG             /* dev->relay: device registers self and
                                   self-selected (e.g. gcm) or assigned devid
                                   format: proto: 1; this enum: 1; idType: 1,

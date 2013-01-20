@@ -1421,6 +1421,10 @@ maint_str_loop( int udpsock, const char* str )
 {
     assert( -1 != udpsock );
     int len = 1 + strlen(str);
+    unsigned char outbuf[len + 2];
+    outbuf[0] = XWPDEV_PROTO_VERSION;
+    outbuf[1] = XWPDEV_ALERT;
+    memcpy( &outbuf[2], str, len );
 
     fd_set rfds;
     for ( ; ; ) {
@@ -1441,18 +1445,11 @@ maint_str_loop( int udpsock, const char* str )
             ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
                                       &saddr.addr, &fromlen );
 
-            if ( 2 <= nRead ) {
-                if ( buf[0] == XWPDEV_PROTO_VERSION && buf[1] == XWPDEV_REG ) {
-                    // reply, reusing buffer
-                    buf[1] = XWPDEV_MSGRSP;
-                    memcpy( &buf[2], str, len );
-                    send_via_udp( udpsock, &saddr.addr, buf, 2 + len );
-                }
+            if ( 2 <= nRead && buf[0] == XWPDEV_PROTO_VERSION ) {
+                send_via_udp( udpsock, &saddr.addr, outbuf, sizeof(outbuf) );
             }
         }
-
-    }
-
+    } // for
 }
 
 int
@@ -1662,7 +1659,7 @@ main( int argc, char** argv )
 
     if ( !!maint_str ) {
         maint_str_loop( g_udpsock, maint_str );
-        exit( 0 );
+        exit( 1 );              // should never exit
     }
 
     /* Needs to be reset after a crash/respawn */
