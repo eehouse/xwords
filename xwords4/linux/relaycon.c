@@ -35,6 +35,8 @@ static XP_U32 hostNameToIP( const XP_UCHAR* name );
 static void relaycon_receive( void* closure, int socket );
 static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len );
 static size_t addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str );
+static void getNetString( XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
+static XP_U16 getNetShort( XP_U8** ptr );
 
 void
 relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 
@@ -165,13 +167,9 @@ relaycon_receive( void* closure, int socket )
         XWRelayReg cmd = *ptr++;
         switch( cmd ) {
         case XWPDEV_REGRSP: {
-            XP_U16 len;
-            XP_MEMCPY( &len, ptr, sizeof(len) );
-            len = ntohs( len );
-            ptr += sizeof( len );
+            XP_U16 len = getNetShort( &ptr );
             XP_UCHAR devID[len+1];
-            XP_MEMCPY( devID, ptr, len );
-            devID[len] = '\0';
+            getNetString( &ptr, len, devID );
             (*storage->procs.devIDChanged)( storage->procsClosure, devID );
         }
             break;
@@ -190,9 +188,13 @@ relaycon_receive( void* closure, int socket )
                                                  ntohl(gameToken) );
             break;
         }
-        case XWPDEV_ALERT:
-            (*storage->procs.msgErrorMsg)( storage->procsClosure, (XP_UCHAR*)ptr );
+        case XWPDEV_ALERT: {
+            XP_U16 len = getNetShort( &ptr );
+            XP_UCHAR buf[len+1];
+            getNetString( &ptr, len, buf );
+            (*storage->procs.msgErrorMsg)( storage->procsClosure, buf );
             break;
+        }
         default:
             XP_LOGF( "%s: Unexpected cmd %d", __func__, cmd );
             XP_ASSERT( 0 );
@@ -259,4 +261,21 @@ addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str )
         XP_MEMCPY( buf, str, len );
     }
     return len + sizeof(len);
+}
+
+static XP_U16
+getNetShort( XP_U8** ptr )
+{
+    XP_U16 result;
+    memcpy( &result, *ptr, sizeof(result) );
+    *ptr += sizeof(result);
+    return ntohs( result );
+}
+
+static void
+getNetString( XP_U8** ptr, XP_U16 len, XP_UCHAR* buf )
+{
+    memcpy( buf, *ptr, len );
+    *ptr += len;
+    buf[len] = '\0';
 }
