@@ -66,7 +66,7 @@ public class SMSService extends Service {
     private static final int INVITE = 2;
     private static final int SEND = 3;
     private static final int REMOVE = 4;
-    private static final int MESG_GAMEGONE = 5;
+    // private static final int MESG_GAMEGONE = 5;
     private static final int CHECK_MSGDB = 6;
     private static final int ADDED_MISSING = 7;
 
