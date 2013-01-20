@@ -186,10 +186,11 @@ relaycon_receive( void* closure, int socket )
             XP_U32 gameToken;
             XP_MEMCPY( &gameToken, ptr, sizeof(gameToken) );
             ptr += sizeof( gameToken );
-            (*storage->procs.msgNoticeReceived)( storage->procsClosure, ntohl(gameToken) );
+            (*storage->procs.msgNoticeReceived)( storage->procsClosure, 
+                                                 ntohl(gameToken) );
             break;
         }
-        case XWPDEV_MSGRSP:
+        case XWPDEV_ALERT:
             (*storage->procs.msgErrorMsg)( storage->procsClosure, (XP_UCHAR*)ptr );
             break;
         default:
@@ -240,8 +241,11 @@ hostNameToIP( const XP_UCHAR* name )
 static ssize_t
 sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 {
-    return sendto( storage->socket, msgbuf, len, 0, /* flags */
-                   (struct sockaddr*)&storage->saddr, sizeof(storage->saddr) );
+    ssize_t nSent =  sendto( storage->socket, msgbuf, len, 0, /* flags */
+                             (struct sockaddr*)&storage->saddr, 
+                             sizeof(storage->saddr) );
+    XP_LOGF( "%s()=>%d", __func__, nSent );
+    return nSent;
 }
 
 static size_t
