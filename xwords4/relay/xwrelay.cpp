@@ -1577,9 +1577,7 @@ main( int argc, char** argv )
     if ( nWorkerThreads == 0 ) {
         (void)cfg->GetValueFor( "NTHREADS", &nWorkerThreads );
     }
-    if ( g_maxsocks == -1 ) {
-        (void)cfg->GetValueFor( "MAXSOCKS", &g_maxsocks );
-    } else {
+    if ( g_maxsocks == -1 && !cfg->GetValueFor( "MAXSOCKS", &g_maxsocks ) ) {
         g_maxsocks = 100;
     }
     char serverNameBuf[128];
