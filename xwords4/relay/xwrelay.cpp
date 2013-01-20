@@ -1420,11 +1420,13 @@ static void
 maint_str_loop( int udpsock, const char* str )
 {
     assert( -1 != udpsock );
-    int len = 1 + strlen(str);
-    unsigned char outbuf[len + 2];
+    short len = strlen(str);
+    unsigned char outbuf[2 + sizeof(len) + len];
     outbuf[0] = XWPDEV_PROTO_VERSION;
     outbuf[1] = XWPDEV_ALERT;
-    memcpy( &outbuf[2], str, len );
+    short lenNS = htons( len );
+    memcpy( &outbuf[2], &lenNS, sizeof(lenNS) );
+    memcpy( &outbuf[2+sizeof(len)], str, len );
 
     fd_set rfds;
     for ( ; ; ) {
