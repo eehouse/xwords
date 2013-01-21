@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.IBinder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -41,8 +40,9 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
 
-public class RelayService extends Service {
+public class RelayService extends XWService {
     private static final int MAX_SEND = 1024;
     private static final int MAX_BUF = MAX_SEND - 2;
 
@@ -84,12 +84,6 @@ public class RelayService extends Service {
     {
         super.onCreate();
         startFetchThreadIf();
-    }
-
-    @Override
-    public IBinder onBind( Intent intent )
-    {
-        return null;
     }
 
     @Override
@@ -276,8 +270,7 @@ public class RelayService extends Service {
                     short len = dis.readShort();
                     byte[] tmp = new byte[len];
                     dis.read( tmp );
-                    String msg = new String( tmp );
-                    DbgUtils.logf( "got message: %s", msg );
+                    sendResult( MultiEvent.RELAY_ALERT, new String( tmp ) );
                     break;
                 default:
                     DbgUtils.logf( "RelayService: Unhandled cmd: %d", cmd );

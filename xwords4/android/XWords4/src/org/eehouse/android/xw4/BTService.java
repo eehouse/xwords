@@ -29,7 +29,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.IBinder;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
@@ -49,7 +48,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 
-public class BTService extends Service {
+public class BTService extends XWService {
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
@@ -76,8 +75,6 @@ public class BTService extends Service {
     private static final String LANG_STR = "LNG";
     private static final String NTO_STR = "TOT";
     private static final String NHE_STR = "HER";
-
-    private static MultiService s_srcMgr = null;
 
     private enum BTCmd { 
             PING,
@@ -144,16 +141,6 @@ public class BTService extends Service {
     {
         if ( XWApp.BTSUPPORTED ) {
             context.startService( new Intent( context, BTService.class ) );
-        }
-    }
-
-    public static void setListener( MultiService.MultiEventListener li )
-    {
-        if ( XWApp.BTSUPPORTED ) {
-            if ( null == s_srcMgr ) {
-                s_srcMgr = new MultiService();
-            }
-            s_srcMgr.setListener( li );
         }
     }
 
@@ -314,12 +301,6 @@ public class BTService extends Service {
             result = Service.START_STICKY_COMPATIBILITY;
         }
         return result;
-    }
-
-    @Override
-    public IBinder onBind( Intent intent )
-    {
-        return null;
     }
 
     private class BTListenerThread extends Thread {
@@ -850,11 +831,6 @@ public class BTService extends Service {
     private void sendNames()
     {
         sendResult( MultiEvent.SCAN_DONE, (Object)(names()) );
-    }
-
-    private void sendResult( MultiEvent event, Object ... args )
-    {
-        s_srcMgr.sendResult( event, args );
     }
 
     private void listLocalBTGames( boolean force )

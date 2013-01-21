@@ -272,6 +272,11 @@ public class DlgDelegate {
                                 (String)args[0] );
             asToast = false;
             break;
+        case RELAY_ALERT:
+            msg = (String)args[0];
+            asToast = false;
+            break;
+
         default:
             DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
         }
