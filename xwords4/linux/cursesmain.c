@@ -1926,6 +1926,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 #endif
     }
+    if ( !!g_globals.cGlobals.game.comms ) {
+        comms_stop( g_globals.cGlobals.game.comms );
+    }
     saveGame( &g_globals.cGlobals );
 
     game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
