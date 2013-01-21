@@ -1419,6 +1419,7 @@ enable_keepalive( int sock )
 static void
 maint_str_loop( int udpsock, const char* str )
 {
+    logf( XW_LOGINFO, "%s()", __func__ );
     assert( -1 != udpsock );
     short len = strlen(str);
     unsigned char outbuf[2 + sizeof(len) + len];
@@ -1446,9 +1447,12 @@ maint_str_loop( int udpsock, const char* str )
 
             ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
                                       &saddr.addr, &fromlen );
+            logf( XW_LOGINFO, "%s(); got %d bytes", __func__, nRead);
 
-            if ( 2 <= nRead && buf[0] == XWPDEV_PROTO_VERSION ) {
+            if ( 1 <= nRead && buf[0] == XWPDEV_PROTO_VERSION ) {
                 send_via_udp( udpsock, &saddr.addr, outbuf, sizeof(outbuf) );
+            } else {
+                logf( XW_LOGERROR, "unexpected data" );
             }
         }
     } // for
@@ -1644,7 +1648,7 @@ main( int argc, char** argv )
     }
 #endif
 
-    if ( 0 != udpport ) {
+    if ( -1 != udpport ) {
         struct sockaddr_in saddr;
         g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
         saddr.sin_family = PF_INET;
