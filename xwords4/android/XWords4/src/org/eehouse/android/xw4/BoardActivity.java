@@ -189,6 +189,23 @@ public class BoardActivity extends XWActivity
         return delivered;
     }
 
+    public static boolean feedMessage( long rowid, byte[] msg )
+    {
+        boolean delivered = false;
+        synchronized( s_thisLocker ) {
+            if ( null != s_this ) {
+                Assert.assertNotNull( s_this.m_gi );
+                Assert.assertNotNull( s_this.m_gameLock );
+                Assert.assertNotNull( s_this.m_jniThread );
+                if ( rowid == s_this.m_rowid ) {
+                    s_this.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, null );
+                    delivered = true;
+                }
+            }
+        }
+        return delivered;
+    }
+
     public static boolean feedMessages( long rowid, byte[][] msgs )
     {
         boolean delivered = false;
@@ -1686,7 +1703,7 @@ public class BoardActivity extends XWActivity
 
                 if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                     m_xport = new CommsTransport( m_jniGamePtr, this, this, 
-                                                  m_gi.serverRole );
+                                                  m_rowid, m_gi.serverRole );
                 }
 
                 CommonPrefs cp = CommonPrefs.get( this );
