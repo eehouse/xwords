@@ -533,9 +533,9 @@ processReconnect( const unsigned char* bufp, int bufLen, const AddrInfo* addr )
                           wantsPublic, makePublic );
             success = scr.Reconnect( srcID, nPlayersH, nPlayersT, gameSeed, 
                                      &err );
-            if ( !success ) {
-                assert( err != XWRELAY_ERROR_NONE );
-            }
+            // if ( !success ) {
+            //     assert( err != XWRELAY_ERROR_NONE );
+            // }
         } else { 
             err = XWRELAY_ERROR_BADPROTO;
         }
@@ -1218,8 +1218,9 @@ msgToStr( XWRelayReg msg )
     CASE_STR(XWPDEV_MSGNOCONN);
     CASE_STR(XWPDEV_MSGRSP);
     CASE_STR(XWPDEV_BADREG);
+    CASE_STR(XWPDEV_ALERT);     // should not receive this....
     default:
-        assert(0);
+        str = "<unknown>";
         break;
     }
 # undef CASE_STR
