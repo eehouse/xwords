@@ -666,8 +666,7 @@ comms_start( CommsCtxt* comms )
 void
 comms_stop( CommsCtxt* comms )
 {
-    if ( COMMS_CONN_RELAY == comms->addr.conType
-         && COMMS_RELAYSTATE_DENIED != comms->r.relayState ) {
+    if ( COMMS_CONN_RELAY == comms->addr.conType ) {
         relayDisconnect( comms );
     }
 }
