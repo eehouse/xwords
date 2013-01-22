@@ -128,6 +128,7 @@ class DBMgr {
 
     void conn_key_alloc();
     pthread_key_t m_conn_key;
+    bool m_useB64;
 
 }; /* DBMgr */
 

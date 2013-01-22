@@ -27,6 +27,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <glib.h>
+
 #include "dbmgr.h"
 #include "mlock.h"
 #include "configs.h"
@@ -60,6 +62,7 @@ DBMgr::Get()
 DBMgr::DBMgr()
 {
     logf( XW_LOGINFO, "%s called", __func__ );
+    m_useB64 = false;
 
     pthread_key_create( &m_conn_key, destr_function );
 
@@ -785,30 +788,67 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 
     size_t newLen;
     const char* fmt = "INSERT INTO " MSGS_TABLE 
-        " (connname, hid, devid, token, msg, msglen)"
+        " (connname, hid, devid, token, %s, msglen)"
         " VALUES( '%s', %d, %d, "
         "(SELECT tokens[%d] from " GAMES_TABLE " where connname='%s'), "
-        "E'%s', %d)";
-
-    unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
-                                              len, &newLen );
-    assert( NULL != bytes );
+        "%s'%s', %d)";
     
     string query;
-    string_printf( query, fmt, connName, hid, devID, hid, connName, 
-                   bytes, len );
-
-    PQfreemem( bytes );
+    if ( m_useB64 ) {
+        gchar* b64 = g_base64_encode( buf, len );
+        string_printf( query, fmt, "msg64", connName, hid, devID, hid, connName, 
+                       "", b64, len );
+        g_free( b64 );
+    } else {
+        unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
+                                              len, &newLen );
+        assert( NULL != bytes );
+    
+        string_printf( query, fmt, "msg", connName, hid, devID, hid, connName, 
+                       "E", bytes, len );
+        PQfreemem( bytes );
+    }
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
     execSql( query );
+}
+
+void
+decodeMessage( PGresult* result, bool useB64, int b64indx, int byteaIndex, 
+               unsigned char* buf, size_t* buflen )
+{
+    const char* from = NULL;
+    if ( useB64 ) {
+        from = PQgetvalue( result, 0, b64indx );
+    }
+    if ( NULL == from ) {
+        useB64 = false;
+        from = PQgetvalue( result, 0, byteaIndex );
+    }
+
+    size_t to_length;
+    if ( useB64 ) {
+        gsize out_len;
+        guchar* txt = g_base64_decode( (const gchar*)from, &out_len );
+        to_length = out_len;
+        assert( to_length <= *buflen );
+        memcpy( buf, txt, to_length );
+        g_free( txt );
+    } else {
+        unsigned char* bytes = PQunescapeBytea( (const unsigned char*)from, 
+                                                &to_length );
+        assert( to_length <= *buflen );
+        memcpy( buf, bytes, to_length );
+        PQfreemem( bytes );
+    }
+    *buflen = to_length;
 }
 
 bool
 DBMgr::GetNthStoredMessage( const char* const connName, int hid, int nn, 
                             unsigned char* buf, size_t* buflen, int* msgID )
 {
-    const char* fmt = "SELECT id, msg, msglen FROM " MSGS_TABLE
+    const char* fmt = "SELECT id, msg, msg64, msglen FROM " MSGS_TABLE
         " WHERE connName = '%s' AND hid = %d "
 #ifdef HAVE_STIME
         "AND stime IS NULL "
@@ -827,18 +867,9 @@ DBMgr::GetNthStoredMessage( const char* const connName, int hid, int nn,
         if ( NULL != msgID ) {
             *msgID = atoi( PQgetvalue( result, 0, 0 ) );
         }
-        size_t msglen = atoi( PQgetvalue( result, 0, 2 ) );
-
-        /* int len = PQgetlength( result, 0, 1 ); */
-        const unsigned char* from =
-            (const unsigned char* )PQgetvalue( result, 0, 1 );
-        size_t to_length;
-        unsigned char* bytes = PQunescapeBytea( from, &to_length );
-        assert( to_length <= *buflen );
-        memcpy( buf, bytes, to_length );
-        PQfreemem( bytes );
-        *buflen = to_length;
-        assert( 0 == msglen || to_length == msglen );
+        size_t msglen = atoi( PQgetvalue( result, 0, 3 ) );
+        decodeMessage( result, m_useB64, 2, 1, buf, buflen );
+        assert( 0 == msglen || msglen == *buflen );
     }
     PQclear( result );
     return found;
@@ -855,7 +886,7 @@ bool
 DBMgr::GetStoredMessage( int msgID, unsigned char* buf, size_t* buflen, 
                          AddrInfo::ClientToken* token )
 {
-    const char* fmt = "SELECT token, msg, msglen FROM " MSGS_TABLE
+    const char* fmt = "SELECT token, msg, msg64, msglen FROM " MSGS_TABLE
         " WHERE id = %d "
 #ifdef HAVE_STIME
         "AND stime IS NULL "
@@ -872,16 +903,9 @@ DBMgr::GetStoredMessage( int msgID, unsigned char* buf, size_t* buflen,
     bool found = nTuples == 1;
     if ( found ) {
         *token = atoi( PQgetvalue( result, 0, 0 ) );
-        size_t msglen = atoi( PQgetvalue( result, 0, 2 ) );
-        const unsigned char* from =
-            (const unsigned char* )PQgetvalue( result, 0, 1 );
-        size_t to_length;
-        unsigned char* bytes = PQunescapeBytea( from, &to_length );
-        assert( to_length <= *buflen );
-        memcpy( buf, bytes, to_length );
-        PQfreemem( bytes );
-        *buflen = to_length;
-        assert( 0 == msglen || to_length == msglen );
+        size_t msglen = atoi( PQgetvalue( result, 0, 3 ) );
+        decodeMessage( result, m_useB64, 2, 1, buf, buflen );
+        assert( 0 == msglen || *buflen == msglen );
     }
     PQclear( result );
     return found;

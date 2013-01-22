@@ -72,6 +72,7 @@ id SERIAL
 ,stime TIMESTAMP DEFAULT NULL
 ,devid INTEGER
 ,msg BYTEA
+,msg64 TEXT
 ,msglen INTEGER
 ,UNIQUE ( connName, hid, msg )
 );
