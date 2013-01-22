@@ -123,6 +123,8 @@ class DBMgr {
     DevIDRelay getDevID( const DevID* devID );
     int getCountWhere( const char* table, string& test );
     void RemoveStoredMessages( string& msgIDs );
+    void decodeMessage( PGresult* result, bool useB64, int b64indx, 
+                        int byteaIndex, unsigned char* buf, size_t* buflen );
 
     PGconn* getThreadConn( void );
 

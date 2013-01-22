@@ -814,14 +814,14 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 }
 
 void
-decodeMessage( PGresult* result, bool useB64, int b64indx, int byteaIndex, 
-               unsigned char* buf, size_t* buflen )
+DBMgr::decodeMessage( PGresult* result, bool useB64, int b64indx, int byteaIndex, 
+                      unsigned char* buf, size_t* buflen )
 {
     const char* from = NULL;
     if ( useB64 ) {
         from = PQgetvalue( result, 0, b64indx );
     }
-    if ( NULL == from ) {
+    if ( NULL == from || '\0' == from[0] ) {
         useB64 = false;
         from = PQgetvalue( result, 0, byteaIndex );
     }
