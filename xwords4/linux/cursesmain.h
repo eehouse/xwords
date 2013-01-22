@@ -86,6 +86,7 @@ struct CursesAppGlobals {
 #ifdef USE_GLIBLOOP
     GMainLoop* loop;
     GList* sources;
+    int quitPipe[2];
 #else
     XP_Bool timeToExit;
     short fdCount;

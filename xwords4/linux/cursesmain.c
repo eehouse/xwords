@@ -969,7 +969,7 @@ SIGWINCH_handler( int signal )
 static void 
 SIGINTTERM_handler( int XP_UNUSED(signal) )
 {
-    (void)handleQuit( &g_globals );
+    write( g_globals.quitPipe[1], "0", 1 );
 }
 
 static void
@@ -1672,6 +1672,15 @@ relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED_DBG(relayErr) )
 
 #ifdef USE_GLIBLOOP
 static gboolean
+read_quit( GIOChannel* XP_UNUSED(source), GIOCondition XP_UNUSED(condition), 
+           gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    handleQuit( globals );
+    return TRUE;    
+}
+
+static gboolean
 handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition, 
               gpointer data )
 {
@@ -1758,6 +1767,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #ifdef USE_GLIBLOOP
     cursesListenOnSocket( &g_globals, 0, handle_stdin );
     setOneSecondTimer( &g_globals.cGlobals );
+
+    int result = pipe( g_globals.quitPipe );
+    assert( 0 == result );
+    cursesListenOnSocket( &g_globals, g_globals.quitPipe[0], read_quit );
 #else
     cursesListenOnSocket( &g_globals, 0 ); /* stdin */
 
