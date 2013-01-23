@@ -385,7 +385,7 @@ socketChanged( void* closure, int newSock, int XP_UNUSED(oldSock),
 }
 
 static void
-gtkGotBuf( void* closure, XP_U8* buf, XP_U16 len )
+gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
 {
     LOG_FUNC();
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;

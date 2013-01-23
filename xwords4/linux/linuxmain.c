@@ -1065,7 +1065,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
    information specific to our platform's comms layer (return address, say)
  */
 XWStreamCtxt*
-stream_from_msgbuf( CommonGlobals* globals, unsigned char* bufPtr, 
+stream_from_msgbuf( CommonGlobals* globals, const unsigned char* bufPtr, 
                     XP_U16 nBytes )
 {
     XWStreamCtxt* result;

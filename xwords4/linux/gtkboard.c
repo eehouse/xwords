@@ -539,6 +539,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* This may trigger network activity */
         if ( !!cGlobals->game.comms ) {
+            XP_ASSERT( COMMS_CONN_RELAY == addr.conType );
             comms_setAddr( cGlobals->game.comms, &addr );
         }
 #endif
@@ -2622,13 +2623,15 @@ makeNewGame( GtkGameGlobals* globals )
         cGlobals->dict =
             linux_dictionary_make( MEMPOOL cGlobals->params,
                                    gi->dictName, XP_TRUE );
+        gi->dictLang = dict_getLangCode( cGlobals->dict );
     }
     LOG_RETURNF( "%d", success );
     return success;
 }
 
 void
-gameGotBuf( GtkGameGlobals* globals, XP_Bool hasDraw, XP_U8* buf, XP_U16 len )
+gameGotBuf( GtkGameGlobals* globals, XP_Bool hasDraw, const XP_U8* buf, 
+            XP_U16 len )
 {
     XP_LOGF( "%s(hasDraw=%d)", __func__, hasDraw );
     XP_Bool redraw = XP_FALSE;

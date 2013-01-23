@@ -23,7 +23,7 @@
 #include "main.h"
 
 typedef struct _Procs {
-    void (*msgReceived)( void* closure, XP_U8* buf, XP_U16 len );
+    void (*msgReceived)( void* closure, const XP_U8* buf, XP_U16 len );
     void (*msgNoticeReceived)( void* closure, XP_U32 gameToken );
     void (*devIDChanged)( void* closure, const XP_UCHAR* devID );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );

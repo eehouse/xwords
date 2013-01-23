@@ -19,6 +19,7 @@
 
 #include <netdb.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include "relaycon.h"
 #include "comtypes.h"
@@ -30,13 +31,20 @@ typedef struct _RelayConStorage {
     struct sockaddr_in saddr;
 } RelayConStorage;
 
+typedef struct _MsgHeader {
+    XWRelayReg cmd;
+    uint32_t packetID;
+} MsgHeader;
+
 static RelayConStorage* getStorage( LaunchParams* params );
 static XP_U32 hostNameToIP( const XP_UCHAR* name );
 static void relaycon_receive( void* closure, int socket );
 static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len );
 static size_t addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str );
-static void getNetString( XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
-static XP_U16 getNetShort( XP_U8** ptr );
+static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
+static XP_U16 getNetShort( const XP_U8** ptr );
+static int writeHeader( XP_U8* dest, XWRelayReg cmd );
+static bool readHeader( const XP_U8** buf, MsgHeader* header );
 
 void
 relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 
@@ -68,8 +76,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* devID, DevIDType typ )
     XP_ASSERT( !!devID );
     XP_U16 idLen = XP_STRLEN( devID );
     XP_U16 lenNBO = XP_HTONS( idLen );
-    tmpbuf[indx++] = XWPDEV_PROTO_VERSION;
-    tmpbuf[indx++] = XWPDEV_REG;
+    indx += writeHeader( tmpbuf, XWPDEV_REG );
     tmpbuf[indx++] = typ;
     XP_MEMCPY( &tmpbuf[indx], &lenNBO, sizeof(lenNBO) );
     indx += sizeof(lenNBO);
@@ -86,13 +93,15 @@ relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     ssize_t nSent = -1;
     RelayConStorage* storage = getStorage( params );
 
-    XP_U8 tmpbuf[1 + 1 + sizeof(gameToken) + buflen];
-    tmpbuf[0] = XWPDEV_PROTO_VERSION;
-    tmpbuf[1] = XWPDEV_MSG;
+    XP_U8 tmpbuf[1 + 4 + 1 + sizeof(gameToken) + buflen];
+    int indx = 0;
+    indx += writeHeader( tmpbuf, XWPDEV_MSG );
     XP_U32 inNBO = htonl(gameToken);
-    XP_MEMCPY( &tmpbuf[2], &inNBO, sizeof(inNBO) );
-    XP_MEMCPY( &tmpbuf[1 + 1 + sizeof(gameToken)], buf, buflen );
-    nSent = sendIt( storage, tmpbuf, sizeof(tmpbuf) );
+    XP_MEMCPY( &tmpbuf[indx], &inNBO, sizeof(inNBO) );
+    indx += sizeof(inNBO);
+    XP_MEMCPY( &tmpbuf[indx], buf, buflen );
+    indx += buflen;
+    nSent = sendIt( storage, tmpbuf, indx );
     if ( nSent > buflen ) {
         nSent = buflen;
     }
@@ -110,11 +119,10 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     RelayConStorage* storage = getStorage( params );
 
     XP_U16 idLen = XP_STRLEN( relayID );
-    XP_U8 tmpbuf[1 + 1 + 
+    XP_U8 tmpbuf[1 + 4 + 1 +
                  1 + idLen +
                  sizeof(gameToken) + buflen];
-    tmpbuf[indx++] = XWPDEV_PROTO_VERSION;
-    tmpbuf[indx++] = XWPDEV_MSGNOCONN;
+    indx += writeHeader( tmpbuf, XWPDEV_MSGNOCONN );
     gameToken = htonl( gameToken );
     XP_MEMCPY( &tmpbuf[indx], &gameToken, sizeof(gameToken) );
     indx += sizeof(gameToken);
@@ -138,11 +146,23 @@ relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID )
 
     XP_U8 tmpbuf[128];
     int indx = 0;
-    tmpbuf[indx++] = XWPDEV_PROTO_VERSION;
-    tmpbuf[indx++] = XWPDEV_RQSTMSGS;
+    indx += writeHeader( tmpbuf, XWPDEV_RQSTMSGS );
     indx += addStrWithLength( &tmpbuf[indx], tmpbuf + sizeof(tmpbuf), devID );
 
     sendIt( storage, tmpbuf, indx );
+}
+
+static void
+sendAckIf( RelayConStorage* storage, const MsgHeader* header )
+{
+    if ( header->cmd != XWPDEV_ACK ) {
+        XP_U8 tmpbuf[16];
+        int indx = writeHeader( tmpbuf, XWPDEV_ACK );
+        uint32_t msgID = htonl( header->packetID );
+        memcpy( &tmpbuf[indx], &msgID, sizeof(msgID) );
+        indx += sizeof(msgID);
+        sendIt( storage, tmpbuf, indx );
+    }
 }
 
 static void 
@@ -161,43 +181,45 @@ relaycon_receive( void* closure, int socket )
                               (struct sockaddr*)&from, &fromlen );
     XP_LOGF( "%s: read %d bytes", __func__, nRead );
     if ( 0 <= nRead ) {
-        XP_U8* ptr = buf;
+        const XP_U8* ptr = buf;
         const XP_U8* end = buf + nRead;
-        XP_ASSERT( XWPDEV_PROTO_VERSION == *ptr++ );
-        XWRelayReg cmd = *ptr++;
-        switch( cmd ) {
-        case XWPDEV_REGRSP: {
-            XP_U16 len = getNetShort( &ptr );
-            XP_UCHAR devID[len+1];
-            getNetString( &ptr, len, devID );
-            (*storage->procs.devIDChanged)( storage->procsClosure, devID );
-        }
-            break;
-        case XWPDEV_MSG:
-            (*storage->procs.msgReceived)( storage->procsClosure, 
-                                           ptr, end - ptr );
-            break;
-        case XWPDEV_BADREG:
-            (*storage->procs.devIDChanged)( storage->procsClosure, NULL );
-            break;
-        case XWPDEV_HAVEMSGS: {
-            XP_U32 gameToken;
-            XP_MEMCPY( &gameToken, ptr, sizeof(gameToken) );
-            ptr += sizeof( gameToken );
-            (*storage->procs.msgNoticeReceived)( storage->procsClosure, 
-                                                 ntohl(gameToken) );
-            break;
-        }
-        case XWPDEV_ALERT: {
-            XP_U16 len = getNetShort( &ptr );
-            XP_UCHAR buf[len+1];
-            getNetString( &ptr, len, buf );
-            (*storage->procs.msgErrorMsg)( storage->procsClosure, buf );
-            break;
-        }
-        default:
-            XP_LOGF( "%s: Unexpected cmd %d", __func__, cmd );
-            XP_ASSERT( 0 );
+        MsgHeader header;
+        if ( readHeader( &ptr, &header ) ) {
+            sendAckIf( storage, &header );
+            switch( header.cmd ) {
+            case XWPDEV_REGRSP: {
+                XP_U16 len = getNetShort( &ptr );
+                XP_UCHAR devID[len+1];
+                getNetString( &ptr, len, devID );
+                (*storage->procs.devIDChanged)( storage->procsClosure, devID );
+            }
+                break;
+            case XWPDEV_MSG:
+                (*storage->procs.msgReceived)( storage->procsClosure, 
+                                               ptr, end - ptr );
+                break;
+            case XWPDEV_BADREG:
+                (*storage->procs.devIDChanged)( storage->procsClosure, NULL );
+                break;
+            case XWPDEV_HAVEMSGS: {
+                XP_U32 gameToken;
+                XP_MEMCPY( &gameToken, ptr, sizeof(gameToken) );
+                ptr += sizeof( gameToken );
+                (*storage->procs.msgNoticeReceived)( storage->procsClosure, 
+                                                     ntohl(gameToken) );
+                break;
+            }
+            case XWPDEV_ALERT: {
+                XP_U16 len = getNetShort( &ptr );
+                XP_UCHAR buf[len+1];
+                getNetString( &ptr, len, buf );
+                (*storage->procs.msgErrorMsg)( storage->procsClosure, buf );
+                break;
+            }
+            default:
+                XP_LOGF( "%s: Unexpected cmd %d", __func__, header.cmd );
+                XP_ASSERT( 0 );
+            }
         }
     } else {
         XP_LOGF( "%s: error reading udp socket: %d (%s)", __func__, 
@@ -264,7 +286,7 @@ addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str )
 }
 
 static XP_U16
-getNetShort( XP_U8** ptr )
+getNetShort( const XP_U8** ptr )
 {
     XP_U16 result;
     memcpy( &result, *ptr, sizeof(result) );
@@ -273,9 +295,37 @@ getNetShort( XP_U8** ptr )
 }
 
 static void
-getNetString( XP_U8** ptr, XP_U16 len, XP_UCHAR* buf )
+getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf )
 {
     memcpy( buf, *ptr, len );
     *ptr += len;
     buf[len] = '\0';
+}
+
+static int
+writeHeader( XP_U8* dest, XWRelayReg cmd )
+{
+    int indx = 0;
+    dest[indx++] = XWPDEV_PROTO_VERSION;
+    uint32_t packetNum = htonl(0);
+    memcpy( &dest[indx], &packetNum, sizeof(packetNum) );
+    indx += sizeof(packetNum);
+    dest[indx++] = cmd;
+    return indx;
+}
+
+static bool
+readHeader( const XP_U8** buf, MsgHeader* header )
+{
+    const XP_U8* ptr = *buf;
+    bool ok = XWPDEV_PROTO_VERSION == *ptr++;
+    assert( ok );
+    uint32_t packetID;
+    memcpy( &packetID, ptr, sizeof(packetID) );
+    ptr += sizeof(packetID);
+    header->packetID = ntohl( packetID );
+    XP_LOGF( "%s: got packet %d", __func__, header->packetID );
+    header->cmd = *ptr++;
+    *buf = ptr;
+    return ok;
 }
