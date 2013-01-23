@@ -49,8 +49,6 @@ class ExpiringTextView extends TextView {
     {
         if ( null != m_delegate ) {
             m_delegate.configure( haveTurn, haveTurnLocal, startSecs );
-        } else {
-            DbgUtils.logf( "m_delegate null; skipping" );
         }
     }
 
