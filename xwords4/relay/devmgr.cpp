@@ -38,8 +38,17 @@ DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
     logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
     time_t now = time( NULL );
     UDPAddrRec rec( saddr, now );
+
     MutexLock ml( &m_mapLock );
-    m_devAddrMap.insert( pair<DevIDRelay,UDPAddrRec>( devid, rec ) );
+
+    // C++'s insert doesn't replace, but the result tells whether the key was
+    // already there and provides an iterator via which it can be updated
+    pair<map<DevIDRelay,UDPAddrRec>::iterator, bool> result = 
+        m_devAddrMap.insert( pair<DevIDRelay,UDPAddrRec>( devid, rec ) );
+    if ( !result.second ) {
+        result.first->second = rec;
+    }
+
     logf( XW_LOGINFO, "dev->addr map now contains %d entries", m_devAddrMap.size() );
 }
 
