@@ -78,6 +78,7 @@
 #include "addrinfo.h"
 #include "devmgr.h"
 #include "udpqueue.h"
+#include "udpack.h"
 
 static int s_nSpawns = 0;
 static int g_maxsocks = -1;
@@ -353,10 +354,44 @@ denyConnection( const AddrInfo* addr, XWREASON err )
 
 static ssize_t
 send_via_udp( int socket, const struct sockaddr *dest_addr, 
-              const unsigned char* buf, int buflen )
+              XWRelayReg cmd, ... )
 {
-    ssize_t nSent = sendto( socket, buf, buflen,
-                            0, /* flags */ dest_addr, sizeof(*dest_addr) );
+    uint32_t packetNum = UDPAckTrack::nextPacketID();
+    struct iovec vec[10];
+    int iocount = 0;
+
+    unsigned char header[1 + 1 + sizeof(packetNum)];
+    header[0] = XWPDEV_PROTO_VERSION;
+    packetNum = htonl( packetNum );
+    memcpy( &header[1], &packetNum, sizeof(packetNum) );
+    header[5] = cmd;
+    vec[iocount].iov_base = header;
+    vec[iocount].iov_len = sizeof(header);
+    ++iocount;
+
+    va_list ap;
+    va_start( ap, cmd );
+    for ( ; ; ) {
+        unsigned char* ptr = va_arg(ap, unsigned char*);
+        if ( !ptr ) {
+            break;
+        }
+        vec[iocount].iov_base = ptr;
+        vec[iocount].iov_len = va_arg(ap, int);
+        ++iocount;
+    }
+    va_end( ap );
+
+    struct msghdr mhdr = {0};
+    mhdr.msg_iov = vec;
+    mhdr.msg_iovlen = iocount;
+    mhdr.msg_name = (void*)dest_addr;
+    mhdr.msg_namelen = sizeof(*dest_addr);
+
+    ssize_t nSent = sendmsg( socket, &mhdr, 0 /* flags */);
+    if ( 0 > nSent ) {
+        logf( XW_LOGERROR, "sendmsg->errno %d (%s)", errno, strerror(errno) );
+    }
     logf( XW_LOGINFO, "%s()=>%d", __func__, nSent );
     return nSent;
 }
@@ -384,18 +419,14 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
     } else {
         AddrInfo::ClientToken clientToken = addr->clientToken();
         assert( 0 != clientToken );
-        unsigned char tmpbuf[1 + 1 + sizeof(clientToken) + bufLen];
-        tmpbuf[0] = XWPDEV_PROTO_VERSION;
-        tmpbuf[1] = XWPDEV_MSG;
         clientToken = htonl(clientToken);
-        memcpy( &tmpbuf[2], &clientToken, sizeof(clientToken) );
-        memcpy( &tmpbuf[2 + sizeof(clientToken)], buf, bufLen );
         const struct sockaddr* saddr = addr->sockaddr();
         assert( g_udpsock == socket || socket == -1 );
         if ( -1 == socket ) {
             socket = g_udpsock;
         }
-        send_via_udp( socket, saddr, tmpbuf, sizeof(tmpbuf) );
+        send_via_udp( socket, saddr, XWPDEV_MSG, &clientToken, 
+                      sizeof(clientToken), buf, bufLen, NULL );
         logf( XW_LOGINFO, "sent %d bytes on UDP socket %d", bufLen, socket );
         ok = true;
     }
@@ -417,12 +448,9 @@ send_havemsgs( const AddrInfo* addr )
     }
 
     AddrInfo::ClientToken clientToken = htonl(addr->clientToken());
-    unsigned char tmpbuf[1 + 1 + sizeof(clientToken)];
-    tmpbuf[0] = XWPDEV_PROTO_VERSION;
-    tmpbuf[1] = XWPDEV_HAVEMSGS;
-    memcpy( &tmpbuf[2], &clientToken, sizeof(clientToken) );
-
-    send_via_udp( socket, addr->sockaddr(), tmpbuf, sizeof(tmpbuf) );
+    send_via_udp( socket, addr->sockaddr(), XWPDEV_HAVEMSGS,
+                  &clientToken, sizeof(clientToken), 
+                  NULL );
 }
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
@@ -1146,6 +1174,7 @@ registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
     DBMgr* dbMgr = DBMgr::Get();
     short indx = 0;
     unsigned char buf[32];
+
     if ( ID_TYPE_RELAY == devID->m_devIDType ) { // known to us; just update the time
         relayID = devID->asRelayID();
         if ( dbMgr->updateDevice( relayID, true ) ) {
@@ -1155,21 +1184,19 @@ registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
                 send_havemsgs( &addr );
             }
         } else {
-            relayID = DBMgr::DEVID_NONE;
-
-            buf[indx++] = XWPDEV_PROTO_VERSION;
-            buf[indx++] = XWPDEV_BADREG;
             indx += addRegID( &buf[indx], relayID );
-            send_via_udp( g_udpsock, &saddr->addr, buf, indx );
+            send_via_udp( g_udpsock, &saddr->addr, XWPDEV_BADREG, buf, indx, 
+                          NULL );
+
+            relayID = DBMgr::DEVID_NONE;
         } 
     } else {
         relayID = dbMgr->RegisterDevice( devID );
         if ( DBMgr::DEVID_NONE != relayID ) {
             // send it back to the device
-            buf[indx++] = XWPDEV_PROTO_VERSION;
-            buf[indx++] = XWPDEV_REGRSP;
             indx += addRegID( &buf[indx], relayID );
-            send_via_udp( g_udpsock, &saddr->addr, buf, sizeof(buf) );
+            send_via_udp( g_udpsock, &saddr->addr, XWPDEV_REGRSP, buf, 
+                          indx, NULL );
         }
     }
 
@@ -1219,6 +1246,7 @@ msgToStr( XWRelayReg msg )
     CASE_STR(XWPDEV_MSGRSP);
     CASE_STR(XWPDEV_BADREG);
     CASE_STR(XWPDEV_ALERT);     // should not receive this....
+    CASE_STR(XWPDEV_ACK);
     default:
         str = "<unknown>";
         break;
@@ -1238,6 +1266,7 @@ udp_thread_proc( UdpThreadClosure* utc )
     if ( XWPDEV_PROTO_VERSION != 0 ) {
         logf( XW_LOGERROR, "unexpected proto %d", __func__, (int) proto );
     } else {
+        ptr += 4;               // skip msgid
         XWRelayReg msg = (XWRelayReg)*ptr++;
         logf( XW_LOGINFO, "%s(msg=%s)", __func__, msgToStr( msg ) );
         switch( msg ) {
@@ -1286,7 +1315,8 @@ udp_thread_proc( UdpThreadClosure* utc )
                     handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
                     assert( ptr == end ); // DON'T CHECK THIS IN!!!
                 } else {
-                    logf( XW_LOGERROR, "%s: invalid scr for %s", __func__, connName );
+                    logf( XW_LOGERROR, "%s: invalid scr for %s", __func__, 
+                          connName );
                 }
             } else {
                 logf( XW_LOGERROR, "no clientToken found!!!" );
@@ -1309,7 +1339,13 @@ udp_thread_proc( UdpThreadClosure* utc )
             retrieveMessages( devID, utc->saddr() );
             break;
         }
-
+        case XWPDEV_ACK: {
+            uint32_t packetID;
+            if ( getNetLong( &ptr, end, &packetID ) ) {
+                UDPAckTrack::recordAck( packetID );
+            }
+            break;
+        }
         default:
             logf( XW_LOGERROR, "%s: unexpected msg %d", __func__, msg );
         }
@@ -1423,12 +1459,10 @@ maint_str_loop( int udpsock, const char* str )
     logf( XW_LOGINFO, "%s()", __func__ );
     assert( -1 != udpsock );
     short len = strlen(str);
-    unsigned char outbuf[2 + sizeof(len) + len];
-    outbuf[0] = XWPDEV_PROTO_VERSION;
-    outbuf[1] = XWPDEV_ALERT;
+    unsigned char outbuf[sizeof(len) + len];
     short lenNS = htons( len );
-    memcpy( &outbuf[2], &lenNS, sizeof(lenNS) );
-    memcpy( &outbuf[2+sizeof(len)], str, len );
+    memcpy( &outbuf[0], &lenNS, sizeof(lenNS) );
+    memcpy( &outbuf[0+sizeof(len)], str, len );
 
     fd_set rfds;
     for ( ; ; ) {
@@ -1451,7 +1485,8 @@ maint_str_loop( int udpsock, const char* str )
             logf( XW_LOGINFO, "%s(); got %d bytes", __func__, nRead);
 
             if ( 1 <= nRead && buf[0] == XWPDEV_PROTO_VERSION ) {
-                send_via_udp( udpsock, &saddr.addr, outbuf, sizeof(outbuf) );
+                send_via_udp( udpsock, &saddr.addr, XWPDEV_ALERT,
+                              outbuf, sizeof(outbuf), NULL );
             } else {
                 logf( XW_LOGERROR, "unexpected data" );
             }

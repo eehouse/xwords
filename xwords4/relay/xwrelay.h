@@ -75,6 +75,8 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
        ,XWPDEV_BADREG           /* relay->dev.  You sent me a relayID via
                                    XWPDEV_REG but I've never heard of it */
 
+       ,XWPDEV_ACK
+
 }
 #ifndef CANT_DO_TYPEDEF
  XWRelayReg
@@ -164,6 +166,7 @@ typedef enum {
     ,ID_TYPE_RELAY              /* assigned by relay as replacement for one of the below */
     ,ID_TYPE_LINUX
     ,ID_TYPE_ANDROID_GCM
+    ,ID_TYPE_ANDROID_OTHER
 
     ,ID_TYPE_NTYPES
 } DevIDType;
