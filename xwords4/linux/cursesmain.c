@@ -2107,6 +2107,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     endwin();
 
+    if ( !!params->dbName ) {
+        closeGamesDB( g_globals.cGlobals.pDb );
+    }
+    relaycon_cleanup( params );
+
     linux_util_vt_destroy( g_globals.cGlobals.util );
 } /* cursesmain */
 #endif /* PLATFORM_NCURSES */
