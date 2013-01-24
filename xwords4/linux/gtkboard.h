@@ -169,8 +169,6 @@ typedef struct GtkGameGlobals {
 void initGlobals( GtkGameGlobals* globals, LaunchParams* params );
 void freeGlobals( GtkGameGlobals* globals );
 XP_Bool makeNewGame( GtkGameGlobals* globals );
-void gameGotBuf( GtkGameGlobals* globals, XP_Bool haveDraw, 
-                 const XP_U8* buf, XP_U16 len );
 XP_Bool loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
                         sqlite3* pDb, sqlite3_int64 rowid );
 void destroy_board_window( GtkWidget* widget, GtkGameGlobals* globals );

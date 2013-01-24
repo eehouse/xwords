@@ -70,7 +70,7 @@ measureAskText( const XP_UCHAR* question, int width, FormatInfo* fip )
 
 void
 drawButtons( WINDOW* win, XP_U16 line, short spacePerButton, 
-             short numButtons, short curSelButton, char** button1 )
+             short numButtons, short curSelButton, const char** button1 )
 {
     short i;
     for ( i = 0; i < numButtons; ++i ) {

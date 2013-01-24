@@ -32,8 +32,8 @@
 /* Figure out how many lines there are and how wide the widest is.
  */
 short
-cursesask( CursesAppGlobals* globals, char* question, short numButtons, 
-           char* button1, ... )
+cursesask( CursesAppGlobals* globals, const char* question, short numButtons, 
+           const char* button1, ... )
 {
     WINDOW* confWin;
     int x, y, rows, row, nLines;

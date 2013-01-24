@@ -31,7 +31,6 @@
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
 static void updateButtons( GtkAppGlobals* apg );
-static void sendRelayReg( GtkAppGlobals* apg );
 
 static void
 recordOpened( GtkAppGlobals* apg, GtkGameGlobals* globals )
@@ -302,7 +301,7 @@ makeGamesWindow( GtkAppGlobals* apg )
     
     gtk_widget_show( list );
 
-    GSList* games = listGames( apg );
+    GSList* games = listGames( apg->pDb );
     for ( GSList* iter = games; !!iter; iter = iter->next ) {
         sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
         onNewData( apg, *rowid, XP_TRUE );
@@ -347,13 +346,13 @@ static void
 onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
 {
     GameInfo gib;
-    if ( getGameInfo( apg, rowid, &gib ) ) {
+    if ( getGameInfo( apg->pDb, rowid, &gib ) ) {
         add_to_list( apg->listWidget, rowid, isNew, &gib );
     }
 }
 
 static gboolean
-app_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
+gtk_app_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
 {
     if ( 0 != (G_IO_IN & condition) ) {
         GtkAppGlobals* apg = (GtkAppGlobals*)data;
@@ -372,13 +371,14 @@ app_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
 }
 
 static void
-socketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
-               SockReceiver proc, void* procClosure )
+gtkSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
+                  SockReceiver proc, void* procClosure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     SourceData* sd = g_malloc( sizeof(*sd) );
     sd->channel = g_io_channel_unix_new( newSock );
-    sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR, app_socket_proc, apg );
+    sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR, 
+                                gtk_app_socket_proc, apg );
     sd->proc = proc;
     sd->procClosure = procClosure;
     apg->sources = g_list_append( apg->sources, sd );
@@ -397,11 +397,11 @@ gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
 
     GtkGameGlobals* globals = findGame( apg, gameToken );
     if ( !!globals ) {
-        gameGotBuf( globals, XP_TRUE, buf, len );
+        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
     } else {
         GtkGameGlobals tmpGlobals;
         if ( loadGameNoDraw( &tmpGlobals, apg->params, apg->pDb, gameToken ) ) {
-            gameGotBuf( &tmpGlobals, XP_FALSE, buf, len );
+            gameGotBuf( &tmpGlobals.cGlobals, XP_FALSE, buf, len );
             saveGame( &tmpGlobals.cGlobals );
         }
         freeGlobals( &tmpGlobals );
@@ -440,7 +440,7 @@ gtkDevIDChanged( void* closure, const XP_UCHAR* devID )
     } else {
         XP_LOGF( "%s: bad relayid", __func__ );
         db_remove( apg->pDb, KEY_RDEVID );
-        sendRelayReg( apg );
+        sendRelayReg( apg->params, apg->pDb );
     }
 }
 
@@ -482,27 +482,6 @@ handle_sigintterm( int XP_UNUSED(sig) )
     handle_destroy( NULL, g_globals_for_signal );
 }
 
-static void
-sendRelayReg( GtkAppGlobals* apg )
-{
-    LaunchParams* params = apg->params;
-    XP_UCHAR devIDBuf[64] = {0};
-    XP_UCHAR* devID;
-    DevIDType typ = ID_TYPE_RELAY;
-    if ( !!params->rDevID ) {
-        devID = params->rDevID;
-    } else {
-        db_fetch( apg->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
-        if ( '\0' != devIDBuf[0] ) {
-            devID = devIDBuf;
-        } else {
-            devID = params->devID;
-            typ = ID_TYPE_LINUX;
-        }
-    }
-    relaycon_reg( params, devID, typ );
-}
-
 int
 gtkmain( LaunchParams* params )
 {
@@ -516,20 +495,19 @@ gtkmain( LaunchParams* params )
     apg.selRows = g_array_new( FALSE, FALSE, sizeof( sqlite3_int64 ) );
     apg.params = params;
     apg.pDb = openGamesDB( params->dbName );
-    params->socketChanged = socketChanged;
-    params->socketChangedClosure = &apg;
 
     RelayConnProcs procs = {
         .msgReceived = gtkGotBuf,
         .msgNoticeReceived = gtkNoticeRcvd,
         .devIDChanged = gtkDevIDChanged,
         .msgErrorMsg = gtkErrorMsgRcvd,
+        .socketChanged = gtkSocketChanged,
     };
 
     relaycon_init( params, &procs, &apg, 
                    params->connInfo.relay.relayName,
                    params->connInfo.relay.defaultSendPort );
-    sendRelayReg( &apg );
+    sendRelayReg( params, apg.pDb );
 
     apg.window = makeGamesWindow( &apg );
     gtk_main();

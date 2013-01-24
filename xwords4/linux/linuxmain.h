@@ -103,6 +103,12 @@ DictionaryCtxt* makeDictForStream( CommonGlobals* cGlobals,
 void linuxSetIsServer( CommonGlobals* cGlobals, XP_Bool isServer );
 void linuxChangeRoles( CommonGlobals* cGlobals );
 
+void sendRelayReg( LaunchParams* params, sqlite3* pDb );
+void gameGotBuf( CommonGlobals* globals, XP_Bool haveDraw, 
+                 const XP_U8* buf, XP_U16 len );
+gboolean app_socket_proc( GIOChannel* source, GIOCondition condition, 
+                          gpointer data );
+
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */
 

@@ -44,8 +44,8 @@ void writeToDB( XWStreamCtxt* stream, void* closure );
 void summarize( CommonGlobals* cGlobals );
 
 /* Return GSList whose data is (ptrs to) rowids */
-GSList* listGames( GtkAppGlobals* apg );
-XP_Bool getGameInfo( GtkAppGlobals* apg, sqlite3_int64 rowid, GameInfo* gib );
+GSList* listGames( sqlite3* dbp );
+XP_Bool getGameInfo( sqlite3* dbp, sqlite3_int64 rowid, GameInfo* gib );
 XP_Bool loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
 void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 

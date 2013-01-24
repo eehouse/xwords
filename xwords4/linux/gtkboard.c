@@ -2629,38 +2629,4 @@ makeNewGame( GtkGameGlobals* globals )
     return success;
 }
 
-void
-gameGotBuf( GtkGameGlobals* globals, XP_Bool hasDraw, const XP_U8* buf, 
-            XP_U16 len )
-{
-    XP_LOGF( "%s(hasDraw=%d)", __func__, hasDraw );
-    XP_Bool redraw = XP_FALSE;
-    XWGame* game = &globals->cGlobals.game;
-    XWStreamCtxt* stream = stream_from_msgbuf( &globals->cGlobals, buf, len );
-    if ( !!stream ) {
-        if ( comms_checkIncomingStream( game->comms, stream, NULL ) ) {
-            redraw = server_receiveMessage( game->server, stream );
-            if ( redraw ) {
-                saveGame( &globals->cGlobals );
-            }
-        }
-        stream_destroy( stream );
-
-        /* if there's something to draw resulting from the message, we
-           need to give the main loop time to reflect that on the screen
-           before giving the server another shot.  So just call the idle
-           proc. */
-        if ( hasDraw && redraw ) {
-            gtk_util_requestTime( globals->cGlobals.util );
-        } else {
-            for ( int ii = 0; ii < 4; ++ii ) {
-                redraw = server_do( game->server ) || redraw;
-            }
-        }
-        if ( hasDraw && redraw ) {
-            board_draw( game->board );
-        }
-    }
-}
-
 #endif /* PLATFORM_GTK */

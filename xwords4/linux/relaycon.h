@@ -27,6 +27,9 @@ typedef struct _Procs {
     void (*msgNoticeReceived)( void* closure, XP_U32 gameToken );
     void (*devIDChanged)( void* closure, const XP_UCHAR* devID );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
+    void (*socketChanged)( void* closure, int newSock, int oldSock, 
+                           SockReceiver proc, void* procClosure );
+
 } RelayConnProcs;
 
 void relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 

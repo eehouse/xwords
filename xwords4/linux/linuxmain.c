@@ -173,6 +173,54 @@ makeDictForStream( CommonGlobals* cGlobals, XWStreamCtxt* stream )
 }
 
 void
+gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf, 
+            XP_U16 len )
+{
+    XP_LOGF( "%s(hasDraw=%d)", __func__, hasDraw );
+    XP_Bool redraw = XP_FALSE;
+    XWGame* game = &cGlobals->game;
+    XWStreamCtxt* stream = stream_from_msgbuf( cGlobals, buf, len );
+    if ( !!stream ) {
+        if ( comms_checkIncomingStream( game->comms, stream, NULL ) ) {
+            redraw = server_receiveMessage( game->server, stream );
+            if ( redraw ) {
+                saveGame( cGlobals );
+            }
+        }
+        stream_destroy( stream );
+
+        /* if there's something to draw resulting from the message, we
+           need to give the main loop time to reflect that on the screen
+           before giving the server another shot.  So just call the idle
+           proc. */
+        if ( hasDraw && redraw ) {
+            util_requestTime( cGlobals->util );
+        } else {
+            for ( int ii = 0; ii < 4; ++ii ) {
+                redraw = server_do( game->server ) || redraw;
+            }
+        }
+        if ( hasDraw && redraw ) {
+            board_draw( game->board );
+        }
+    }
+}
+
+gint
+requestMsgsIdle( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+    XP_UCHAR devIDBuf[64] = {0};
+    db_fetch( cGlobals->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    if ( '\0' != devIDBuf[0] ) {
+        relaycon_requestMsgs( cGlobals->params, devIDBuf );
+    } else {
+        XP_LOGF( "%s: not requesting messages as don't have relay id", __func__ );
+    }
+    return 0;                   /* don't run again */
+}
+
+void
 writeToFile( XWStreamCtxt* stream, void* closure )
 {
     void* buf;
@@ -800,6 +848,26 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
     return handled;
 } /* linShiftFocus */
 #endif
+
+void
+sendRelayReg( LaunchParams* params, sqlite3* pDb )
+{
+    XP_UCHAR devIDBuf[64] = {0};
+    XP_UCHAR* devID;
+    DevIDType typ = ID_TYPE_RELAY;
+    if ( !!params->rDevID ) {
+        devID = params->rDevID;
+    } else {
+        db_fetch( pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+        if ( '\0' != devIDBuf[0] ) {
+            devID = devIDBuf;
+        } else {
+            devID = params->devID;
+            typ = ID_TYPE_LINUX;
+        }
+    }
+    relaycon_reg( params, devID, typ );
+}
 
 #ifdef XWFEATURE_RELAY
 static int

@@ -60,6 +60,8 @@
 #include "dbgutil.h"
 #include "linuxsms.h"
 #include "linuxudp.h"
+#include "gamesdb.h"
+#include "relaycon.h"
 
 #ifdef CURSES_SMALL_SCREEN
 # define MENU_WINDOW_HEIGHT 1
@@ -1121,6 +1123,15 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
 #endif
 } /* curses_socket_changed */
 
+static void
+curses_onGameSaved( void* closure, sqlite3_int64 rowid, 
+                    XP_Bool XP_UNUSED(firstTime) )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    /* May not be recorded */
+    globals->cGlobals.selRow = rowid;
+}
+
 #ifdef USE_GLIBLOOP
 static gboolean
 fire_acceptor( GIOChannel* source, GIOCondition condition, gpointer data )
@@ -1717,6 +1728,107 @@ curses_getFlags( void* XP_UNUSED(closure) )
 }
 #endif
 
+static void
+cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    XP_U32 gameToken;
+    XP_ASSERT( sizeof(gameToken) < len );
+    gameToken = ntohl(*(XP_U32*)&buf[0]);
+    buf += sizeof(gameToken);
+    len -= sizeof(gameToken);
+
+    gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
+}
+
+static gint
+curses_requestMsgs( gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    XP_UCHAR devIDBuf[64] = {0};
+    db_fetch( globals->cGlobals.pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    if ( '\0' != devIDBuf[0] ) {
+        relaycon_requestMsgs( globals->cGlobals.params, devIDBuf );
+    } else {
+        XP_LOGF( "%s: not requesting messages as don't have relay id", __func__ );
+    }
+    return 0;                   /* don't run again */
+}
+
+
+static void 
+cursesNoticeRcvd( void* closure, XP_U32 XP_UNUSED(gameToken) )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    (void)g_idle_add( curses_requestMsgs, globals );
+}
+
+static void
+cursesDevIDChanged( void* closure, const XP_UCHAR* devID )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    sqlite3* pDb = globals->cGlobals.pDb;
+    if ( !!devID ) {
+        XP_LOGF( "%s(devID=%s)", __func__, devID );
+        db_store( pDb, KEY_RDEVID, devID );
+    } else {
+        XP_LOGF( "%s: bad relayid", __func__ );
+        db_remove( pDb, KEY_RDEVID );
+        sendRelayReg( globals->cGlobals.params, pDb );
+    }
+}
+
+static void
+cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    if ( !!globals->lastErr && 0 == strcmp( globals->lastErr, msg ) ) {
+        XP_LOGF( "skipping error message from relay" );
+    } else {
+        g_free( globals->lastErr );
+        globals->lastErr = g_strdup( msg );
+        (void)cursesask( globals, msg, 1, "Ok" );
+    }
+}
+
+
+static gboolean
+curses_app_socket_proc( GIOChannel* source, GIOCondition condition, 
+                        gpointer data )
+{
+    if ( 0 != (G_IO_IN & condition) ) {
+        CursesAppGlobals* globals = (CursesAppGlobals*)data;
+        int socket = g_io_channel_unix_get_fd( source );
+        GList* iter;
+        for ( iter = globals->sources; !!iter; iter = iter->next ) {
+            SourceData* sd = (SourceData*)iter->data;
+            if ( sd->channel == source ) {
+                (*sd->proc)( sd->procClosure, socket );
+                break;
+            }
+        }
+        XP_ASSERT( !!iter );    /* didn't fail to find it */
+    }
+    return TRUE;
+}
+
+static void
+cursesUDPSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
+                        SockReceiver proc, void* procClosure )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+
+    SourceData* sd = g_malloc( sizeof(*sd) );
+    sd->channel = g_io_channel_unix_new( newSock );
+    sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR, 
+                                curses_app_socket_proc, globals );
+    sd->proc = proc;
+    sd->procClosure = procClosure;
+    globals->sources = g_list_append( globals->sources, sd );
+}
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
@@ -1737,6 +1849,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     g_globals.cGlobals.socketChanged = curses_socket_changed;
     g_globals.cGlobals.socketChangedClosure = &g_globals;
+    g_globals.cGlobals.onSave = curses_onGameSaved;
+    g_globals.cGlobals.onSaveClosure = &g_globals;
+
     g_globals.cGlobals.addAcceptor = curses_socket_acceptor;
 
     g_globals.cGlobals.cp.showBoardArrow = XP_TRUE;
@@ -1816,7 +1931,38 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             cursesDrawCtxtMake( g_globals.boardWin );
 
         XWStreamCtxt* stream = NULL;
-        if ( !!params->fileName && file_exists( params->fileName ) ) {
+        if ( !!params->dbName ) {
+            g_globals.cGlobals.pDb = openGamesDB( params->dbName );
+
+            RelayConnProcs procs = {
+                .msgReceived = cursesGotBuf,
+                .msgNoticeReceived = cursesNoticeRcvd,
+                .devIDChanged = cursesDevIDChanged,
+                .msgErrorMsg = cursesErrorMsgRcvd,
+                .socketChanged = cursesUDPSocketChanged,
+            };
+
+            relaycon_init( params, &procs, &g_globals,
+                           params->connInfo.relay.relayName,
+                           params->connInfo.relay.defaultSendPort );
+            sendRelayReg( params, g_globals.cGlobals.pDb );
+
+            GSList* games = listGames( g_globals.cGlobals.pDb );
+            if ( !!games ) {
+                stream = mem_stream_make( MEMPOOL params->vtMgr,
+                                          &g_globals.cGlobals, CHANNEL_NONE,
+                                          NULL );
+                sqlite3_int64 selRow = *(sqlite3_int64*)games->data;
+                if ( loadGame( stream, g_globals.cGlobals.pDb, selRow ) ) {
+                    g_globals.cGlobals.selRow = selRow;
+                } else {
+                    stream_destroy( stream );
+                    stream = NULL;
+                }
+                g_slist_free( games );
+            }
+                
+        } else if ( !!params->fileName && file_exists( params->fileName ) ) {
             stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
                                      &g_globals );
 #ifdef USE_SQLITE
@@ -1830,8 +1976,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                 cGlobals->dict = makeDictForStream( cGlobals, stream );
             }
             (void)game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
-                                       &cGlobals->gi, cGlobals->dict, &cGlobals->dicts,
-                                       cGlobals->util, 
+                                       &cGlobals->gi, cGlobals->dict, 
+                                       &cGlobals->dicts, cGlobals->util, 
                                        (DrawCtx*)g_globals.draw, 
                                        &g_globals.cGlobals.cp, &procs );
 
@@ -1845,6 +1991,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             game_makeNewGame( MEMPOOL &cGlobals->game, &cGlobals->gi,
                               cGlobals->util, (DrawCtx*)g_globals.draw,
                               &g_globals.cGlobals.cp, &procs, params->gameSeed );
+            g_globals.cGlobals.selRow = -1;
+            saveGame( &g_globals.cGlobals );
         }
 
 #ifndef XWFEATURE_STANDALONE_ONLY

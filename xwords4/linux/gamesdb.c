@@ -141,14 +141,14 @@ summarize( CommonGlobals* cGlobals )
 }
 
 GSList*
-listGames( GtkAppGlobals* apg )
+listGames( sqlite3* pDb )
 {
     GSList* list = NULL;
     
     sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( apg->pDb, 
-                                     "SELECT rowid FROM games ORDER BY rowid", -1,
-                                     &ppStmt, NULL );
+    int result = sqlite3_prepare_v2( pDb, 
+                                     "SELECT rowid FROM games ORDER BY rowid", 
+                                     -1, &ppStmt, NULL );
     XP_ASSERT( SQLITE_OK == result );
     while ( NULL != ppStmt ) {
         switch( sqlite3_step( ppStmt ) ) {
@@ -173,7 +173,7 @@ listGames( GtkAppGlobals* apg )
 }
 
 XP_Bool
-getGameInfo( GtkAppGlobals* apg, sqlite3_int64 rowid, GameInfo* gib )
+getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT room, ended, turn, nmoves, nmissing "
@@ -182,7 +182,7 @@ getGameInfo( GtkAppGlobals* apg, sqlite3_int64 rowid, GameInfo* gib )
     snprintf( query, sizeof(query), fmt, rowid );
 
     sqlite3_stmt* ppStmt;
-    int result = sqlite3_prepare_v2( apg->pDb, query, -1, &ppStmt, NULL );
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
     XP_ASSERT( SQLITE_OK == result );
     result = sqlite3_step( ppStmt );
     if ( SQLITE_ROW == result ) {

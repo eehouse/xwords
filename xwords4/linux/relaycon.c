@@ -56,8 +56,8 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     storage->procsClosure = procsClosure;
 
     storage->socket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-    (*params->socketChanged)( params->socketChangedClosure, storage->socket, -1,
-                              relaycon_receive, params );
+    (*procs->socketChanged)( procsClosure, storage->socket, -1,
+                             relaycon_receive, params );
 
     XP_MEMSET( &storage->saddr, 0, sizeof(storage->saddr) );
     storage->saddr.sin_family = PF_INET;

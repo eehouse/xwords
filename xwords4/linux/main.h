@@ -55,8 +55,6 @@ typedef struct LaunchParams {
     GSList* dictDirs;
     char* fileName;
     char* dbName;
-    NewSocketProc socketChanged;
-    void* socketChangedClosure;
     XP_U16 saveFailPct;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE

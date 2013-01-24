@@ -68,6 +68,7 @@ struct CursesAppGlobals {
     XP_Bool doDraw;
     const struct MenuList* menuList;
     XP_U16 nLinesMenu;
+    gchar* lastErr;
 
     union {
         struct {
