@@ -4,6 +4,7 @@ set -u -e
 APP_NEW=""
 APP_NEW_PARAMS=""
 NGAMES=""
+USE_UDP=""
 UPGRADE_ODDS=""
 NROOMS=""
 HOST=""
@@ -166,7 +167,11 @@ build_cmds() {
         DEV=0
         for NLOCALS in ${LOCALS[@]}; do
             DEV=$((DEV + 1))
-            FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
+            if [ -n "$USE_UDP" ]; then
+                FILE="${LOGDIR}/GAME_${GAME}_${DEV}.sql3"
+            else
+                FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
+            fi
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             > $LOG # clear the log
 
@@ -187,7 +192,12 @@ build_cmds() {
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
             [ $UNDO_PCT -gt 0 ] && PARAMS="$PARAMS --undo-pct $UNDO_PCT "
             PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
-            PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
+            PARAMS="$PARAMS --slow-robot 1:3 --skip-confirm"
+            if [ -n "$USE_UDP" ]; then
+                PARAMS="$PARAMS --db $FILE"
+            else
+                PARAMS="$PARAMS --file $FILE"
+            fi
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
@@ -514,6 +524,7 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
+    echo "    [--via-udp]                                             \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--old-app <path/to/app]*                               \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
@@ -538,6 +549,9 @@ function usage() {
 
 while [ "$#" -gt 0 ]; do
     case $1 in
+        --via-udp)
+            USE_UDP=true
+            ;;
         --num-games)
             NGAMES=$(getArg $*)
             shift
