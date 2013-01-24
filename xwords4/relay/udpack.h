@@ -21,16 +21,31 @@
 #define _UDPACK_H_
 
 #include "xwrelay_priv.h"
+#include "xwrelay.h"
+
+class AckRecord {
+ public: 
+    AckRecord() { m_createTime = time( NULL ); }
+    time_t m_createTime;
+};
 
 class UDPAckTrack {
  public:
-    static uint32_t nextPacketID() { return ++s_nextID; }
-    static void recordAck( uint32_t packetID ) {
-        logf( XW_LOGINFO, "received ack for %d", packetID );
-    }
+    static uint32_t nextPacketID( XWRelayReg cmd );
+    static void recordAck( uint32_t packetID ); 
 
  private:
-    static uint32_t s_nextID;
+    static UDPAckTrack* get();
+    static void* thread_main( void* arg );
+    UDPAckTrack();
+    uint32_t nextPacketIDImpl( XWRelayReg cmd );
+    void recordAckImpl( uint32_t packetID ); 
+    void* threadProc();
+
+    static UDPAckTrack* s_self;
+    uint32_t m_nextID;
+    pthread_mutex_t m_mutex;
+    map<uint32_t, AckRecord> m_pendings;
 };
 
 #endif

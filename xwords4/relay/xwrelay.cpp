@@ -80,6 +80,12 @@
 #include "udpqueue.h"
 #include "udpack.h"
 
+typedef struct _UDPHeader {
+    uint32_t packetID;
+    unsigned char proto;
+    XWRelayReg cmd;
+} UDPHeader;
+
 static int s_nSpawns = 0;
 static int g_maxsocks = -1;
 static int g_udpsock = -1;
@@ -262,6 +268,23 @@ getNetString( const unsigned char** bufpp, const unsigned char* end, string& out
     return success;
 }
 
+static bool
+getHeader( const unsigned char** bufpp, const unsigned char* end,
+           UDPHeader* header )
+{
+    unsigned char byt;
+    bool success = getNetByte( bufpp, end, &header->proto )
+        && getNetLong( bufpp, end, &header->packetID )
+        && getNetByte( bufpp, end, &byt )
+        && XWPDEV_PROTO_VERSION == header->proto;
+    if ( success ) {
+        header->cmd = (XWRelayReg)byt;
+    } else {
+        logf( XW_LOGERROR, "%s: bad packet header", __func__ );
+    }
+    return success;
+}
+
 static void
 getDevID( const unsigned char** bufpp, const unsigned char* end,
           unsigned short flags, DevID* devID ) 
@@ -356,7 +379,7 @@ static ssize_t
 send_via_udp( int socket, const struct sockaddr *dest_addr, 
               XWRelayReg cmd, ... )
 {
-    uint32_t packetNum = UDPAckTrack::nextPacketID();
+    uint32_t packetNum = UDPAckTrack::nextPacketID( cmd );
     struct iovec vec[10];
     int iocount = 0;
 
@@ -1262,14 +1285,10 @@ udp_thread_proc( UdpThreadClosure* utc )
     const unsigned char* ptr = utc->buf();
     const unsigned char* end = ptr + utc->len();
 
-    unsigned char proto = *ptr++;
-    if ( XWPDEV_PROTO_VERSION != 0 ) {
-        logf( XW_LOGERROR, "unexpected proto %d", __func__, (int) proto );
-    } else {
-        ptr += 4;               // skip msgid
-        XWRelayReg msg = (XWRelayReg)*ptr++;
-        logf( XW_LOGINFO, "%s(msg=%s)", __func__, msgToStr( msg ) );
-        switch( msg ) {
+    UDPHeader header;
+    if ( getHeader( &ptr, end, &header ) ) {
+        logf( XW_LOGINFO, "%s(msg=%s)", __func__, msgToStr( header.cmd ) );
+        switch( header.cmd ) {
         case XWPDEV_REG: {
             DevIDType typ = (DevIDType)*ptr++;
             unsigned short idLen;
@@ -1347,7 +1366,7 @@ udp_thread_proc( UdpThreadClosure* utc )
             break;
         }
         default:
-            logf( XW_LOGERROR, "%s: unexpected msg %d", __func__, msg );
+            logf( XW_LOGERROR, "%s: unexpected msg %d", __func__, header.cmd );
         }
     }
 }
@@ -1484,7 +1503,9 @@ maint_str_loop( int udpsock, const char* str )
                                       &saddr.addr, &fromlen );
             logf( XW_LOGINFO, "%s(); got %d bytes", __func__, nRead);
 
-            if ( 1 <= nRead && buf[0] == XWPDEV_PROTO_VERSION ) {
+            UDPHeader header;
+            const unsigned char* ptr = buf;
+            if ( getHeader( &ptr, ptr + nRead, &header ) ) {
                 send_via_udp( udpsock, &saddr.addr, XWPDEV_ALERT,
                               outbuf, sizeof(outbuf), NULL );
             } else {

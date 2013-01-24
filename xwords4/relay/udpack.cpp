@@ -18,6 +18,113 @@
  */
 
 #include "udpack.h"
+#include "mlock.h" 
 
-uint32_t UDPAckTrack::s_nextID = 0;
+UDPAckTrack* UDPAckTrack::s_self = NULL;
 
+
+/* static*/ uint32_t
+UDPAckTrack::nextPacketID( XWRelayReg cmd )
+{
+    return get()->nextPacketIDImpl( cmd );
+}
+
+/* static*/ void
+UDPAckTrack::recordAck( uint32_t packetID )
+{
+    get()->recordAckImpl( packetID );
+}
+
+/* static */ UDPAckTrack*
+UDPAckTrack::get()
+{
+    if ( NULL == s_self ) {
+        s_self = new UDPAckTrack();
+    }
+    return s_self;
+}
+
+UDPAckTrack::UDPAckTrack()
+{
+    m_nextID = 0;
+    pthread_mutex_init( &m_mutex, NULL );
+
+    pthread_t thread;
+    pthread_create( &thread, NULL, thread_main, (void*)this );
+    pthread_detach( thread );
+}
+
+uint32_t
+UDPAckTrack::nextPacketIDImpl( XWRelayReg cmd )
+{
+    uint32_t result;
+    if ( XWPDEV_ACK == cmd || XWPDEV_ALERT == cmd ) {
+        result = 0;
+    } else {
+        MutexLock ml( &m_mutex );
+        AckRecord record;
+        result = ++m_nextID;
+        m_pendings.insert( pair<uint32_t,AckRecord>(result, record) );
+    }
+    return result;
+}
+
+void
+UDPAckTrack::recordAckImpl( uint32_t packetID )
+{
+    map<uint32_t, AckRecord>::iterator iter;
+    MutexLock ml( &m_mutex );
+    iter = m_pendings.find( packetID );
+    if ( m_pendings.end() == iter ) {
+        logf( XW_LOGERROR, "%s: packet ID %d not found", __func__, packetID );
+    } else {
+        time_t took = time( NULL ) - iter->second.m_createTime;
+        if ( 5 < took  ) {
+            logf( XW_LOGERROR, "%s: packet ID %d took %d seconds to get acked", __func__, packetID );
+        }
+        m_pendings.erase( iter );
+    }
+}
+
+void*
+UDPAckTrack::threadProc()
+{
+    for ( ; ; ) {
+        sleep( 30 );
+        time_t now = time( NULL );
+        vector<uint32_t> older;
+        {
+            MutexLock ml( &m_mutex );
+            map<uint32_t, AckRecord>::iterator iter;
+            for ( iter = m_pendings.begin(); iter != m_pendings.end(); ++iter ) {
+                time_t took = now - iter->second.m_createTime;
+                if ( 60 < took ) {
+                    older.push_back( iter->first );
+                    m_pendings.erase( iter );
+                }
+            }
+        }
+        if ( 0 < older.size() ) {
+            string leaked;
+            vector<uint32_t>::const_iterator iter = older.begin();
+            for ( ; ; ) {
+                string_printf( leaked, "%d", *iter );
+                if ( ++iter == older.end() ) {
+                    break;
+                }
+                string_printf( leaked, ", " );
+            }
+            logf( XW_LOGERROR, "these packets leaked: %s", leaked.c_str() );
+        } else {
+            logf( XW_LOGINFO, "no packets leaked" );
+        }
+    }
+    return NULL;
+}
+
+/* static */ void*
+UDPAckTrack::thread_main( void* arg )
+{
+    UDPAckTrack* self = (UDPAckTrack*)arg;
+    return self->threadProc();
+}
