@@ -29,15 +29,23 @@
 
 using namespace std;
 
+class UdpThreadClosure;
+
+typedef void (*QueueCallback)( UdpThreadClosure* closure );
+
 class UdpThreadClosure {
 public:
-    UdpThreadClosure( const AddrInfo::AddrUnion* saddr, unsigned char* buf, int len ) { 
-        m_saddr = *saddr;
-        m_buf = new unsigned char[len]; 
-        memcpy( m_buf, buf, len ); 
-        m_len = len;
-        m_created = time( NULL );
-    }
+    UdpThreadClosure( const AddrInfo::AddrUnion* saddr, unsigned char* buf, 
+                      int len, QueueCallback cb )
+        : m_buf(new unsigned char[len])
+        , m_len(len)
+        , m_saddr(*saddr)
+        , m_cb(cb)
+        , m_created(time( NULL ))
+        { 
+            memcpy( m_buf, buf, len ); 
+        }
+
     ~UdpThreadClosure() { delete m_buf; }
 
     const unsigned char* buf() const { return m_buf; } 
@@ -45,16 +53,16 @@ public:
     const AddrInfo::AddrUnion* saddr() const { return &m_saddr; }
     void noteDequeued() { m_dequed = time( NULL ); }
     void logStats();
+    const QueueCallback cb() const { return m_cb; }
 
  private:
     unsigned char* m_buf;
     int m_len;
     AddrInfo::AddrUnion m_saddr;
+    QueueCallback m_cb;
     time_t m_created;
     time_t m_dequed;
 };
-
-typedef void (*QueueCallback)( UdpThreadClosure* closure );
 
 class UdpQueue {
  public:
@@ -67,13 +75,11 @@ class UdpQueue {
  private:
     static void* thread_main_static( void* closure );
     void* thread_main();
-    void setCB( QueueCallback cb );
 
     pthread_mutex_t m_queueMutex;
     pthread_cond_t m_queueCondVar;
     deque<UdpThreadClosure*> m_queue;
 
-    QueueCallback m_cb;
 };
 
 #endif

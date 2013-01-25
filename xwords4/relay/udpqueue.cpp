@@ -37,7 +37,6 @@ UdpThreadClosure::logStats()
 }
 
 UdpQueue::UdpQueue() 
-    :m_cb(NULL)
 {
     pthread_mutex_init ( &m_queueMutex, NULL );
     pthread_cond_init( &m_queueCondVar, NULL );
@@ -68,9 +67,8 @@ void
 UdpQueue::handle( const AddrInfo::AddrUnion* saddr, unsigned char* buf, int len, 
                   QueueCallback cb )
 {
-    UdpThreadClosure* utc = new UdpThreadClosure( saddr, buf, len );
+    UdpThreadClosure* utc = new UdpThreadClosure( saddr, buf, len, cb );
     MutexLock ml( &m_queueMutex );
-    setCB( cb );
     m_queue.push_back( utc );
     pthread_cond_signal( &m_queueCondVar );
 }
@@ -88,7 +86,7 @@ UdpQueue::thread_main()
         pthread_mutex_unlock( &m_queueMutex );
 
         utc->noteDequeued();
-        (*m_cb)( utc );
+        (*utc->cb())( utc );
         utc->logStats();
         delete utc;
     }
@@ -104,9 +102,3 @@ UdpQueue::thread_main_static( void* closure )
     return me->thread_main();
 }
 
-void
-UdpQueue::setCB( QueueCallback cb )
-{
-    assert( cb == m_cb || !m_cb );
-    m_cb = cb;
-}
