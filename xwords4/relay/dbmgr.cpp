@@ -766,7 +766,8 @@ void
 DBMgr::GetStoredMessageIDs( DevIDRelay relayID, vector<int>& ids )
 {
     const char* fmt = "SELECT id FROM " MSGS_TABLE " WHERE devid=%d "
-        "AND connname IN (SELECT connname FROM games WHERE NOT game.dead)";
+        "AND connname IN (SELECT connname FROM " GAMES_TABLE 
+        " WHERE NOT " GAMES_TABLE ".dead)";
     string query;
     string_printf( query, fmt, relayID );
     // logf( XW_LOGINFO, "%s: query=\"%s\"", __func__, query.c_str() );
