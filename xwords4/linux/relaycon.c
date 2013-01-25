@@ -90,6 +90,7 @@ XP_S16
 relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
                XP_U32 gameToken, const CommsAddrRec* XP_UNUSED(addrRec) )
 {
+    XP_ASSERT( 0 != gameToken );
     ssize_t nSent = -1;
     RelayConStorage* storage = getStorage( params );
 
@@ -114,6 +115,7 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
                      const XP_UCHAR* relayID, XP_U32 gameToken )
 {
     XP_LOGF( "%s(relayID=%s)", __func__, relayID );
+    XP_ASSERT( 0 != gameToken );
     XP_U16 indx = 0;
     ssize_t nSent = -1;
     RelayConStorage* storage = getStorage( params );
@@ -202,11 +204,7 @@ relaycon_receive( void* closure, int socket )
                 (*storage->procs.devIDChanged)( storage->procsClosure, NULL );
                 break;
             case XWPDEV_HAVEMSGS: {
-                XP_U32 gameToken;
-                XP_MEMCPY( &gameToken, ptr, sizeof(gameToken) );
-                ptr += sizeof( gameToken );
-                (*storage->procs.msgNoticeReceived)( storage->procsClosure, 
-                                                     ntohl(gameToken) );
+                (*storage->procs.msgNoticeReceived)( storage->procsClosure );
                 break;
             }
             case XWPDEV_ALERT: {

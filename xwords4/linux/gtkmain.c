@@ -423,7 +423,7 @@ requestMsgs( gpointer data )
 }
 
 static void 
-gtkNoticeRcvd( void* closure, XP_U32 XP_UNUSED(gameToken) )
+gtkNoticeRcvd( void* closure )
 {
     LOG_FUNC();
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;

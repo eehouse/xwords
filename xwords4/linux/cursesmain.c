@@ -1758,7 +1758,7 @@ curses_requestMsgs( gpointer data )
 
 
 static void 
-cursesNoticeRcvd( void* closure, XP_U32 XP_UNUSED(gameToken) )
+cursesNoticeRcvd( void* closure )
 {
     LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
