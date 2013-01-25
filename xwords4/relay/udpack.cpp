@@ -26,7 +26,13 @@ UDPAckTrack* UDPAckTrack::s_self = NULL;
 /* static*/ uint32_t
 UDPAckTrack::nextPacketID( XWRelayReg cmd )
 {
-    return get()->nextPacketIDImpl( cmd );
+    uint32_t result;
+    if ( XWPDEV_ACK == cmd || XWPDEV_ALERT == cmd ) {
+        result = 0;
+    } else {
+        result = get()->nextPacketIDImpl();
+    }
+    return result;
 }
 
 /* static*/ void
@@ -55,17 +61,12 @@ UDPAckTrack::UDPAckTrack()
 }
 
 uint32_t
-UDPAckTrack::nextPacketIDImpl( XWRelayReg cmd )
+UDPAckTrack::nextPacketIDImpl()
 {
-    uint32_t result;
-    if ( XWPDEV_ACK == cmd || XWPDEV_ALERT == cmd ) {
-        result = 0;
-    } else {
-        MutexLock ml( &m_mutex );
-        AckRecord record;
-        result = ++m_nextID;
-        m_pendings.insert( pair<uint32_t,AckRecord>(result, record) );
-    }
+    MutexLock ml( &m_mutex );
+    AckRecord record;
+    uint32_t result = ++m_nextID;
+    m_pendings.insert( pair<uint32_t,AckRecord>(result, record) );
     return result;
 }
 

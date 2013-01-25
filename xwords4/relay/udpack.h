@@ -38,7 +38,7 @@ class UDPAckTrack {
     static UDPAckTrack* get();
     static void* thread_main( void* arg );
     UDPAckTrack();
-    uint32_t nextPacketIDImpl( XWRelayReg cmd );
+    uint32_t nextPacketIDImpl();
     void recordAckImpl( uint32_t packetID ); 
     void* threadProc();
 
