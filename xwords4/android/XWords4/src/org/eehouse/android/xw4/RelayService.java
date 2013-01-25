@@ -38,9 +38,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.UtilCtxt;
-import org.eehouse.android.xw4.MultiService.MultiEvent;
 
 public class RelayService extends XWService {
     private static final int MAX_SEND = 1024;
@@ -149,7 +150,7 @@ public class RelayService extends XWService {
                 DbgUtils.logf( "RelayService::onStartCommand::UDP_CHANGED" );
                 if ( XWPrefs.getUDPEnabled( this ) ) {
                     stopFetchThreadIf();
-                    startUDPThreads();
+                    startUDPThreadsIfNot();
                     registerWithRelay();
                 } else {
                     stopUDPThreadsIf();
@@ -158,6 +159,7 @@ public class RelayService extends XWService {
                 break;
             case SEND:
             case RECEIVE:
+                startUDPThreadsIfNot();
                 long rowid = intent.getLongExtra( ROWID, -1 );
                 byte[] msg = intent.getByteArrayExtra( BINBUFFER );
                 if ( SEND == cmd ) {
@@ -220,87 +222,86 @@ public class RelayService extends XWService {
         }
     }
 
-    private void startUDPThreads()
+    private void startUDPThreadsIfNot()
     {
-        DbgUtils.logf( "startUDPThreads" );
-        Assert.assertTrue( XWPrefs.getUDPEnabled( this ) );
-
-        if ( null == m_UDPSocket ) {
-            int port = XWPrefs.getDefaultRelayPort( RelayService.this );
-            String host = XWPrefs.getDefaultRelayHost( RelayService.this );
-            try { 
-                m_UDPSocket = new DatagramSocket();
-                InetAddress addr = InetAddress.getByName( host );
-                m_UDPSocket.connect( addr, port ); // meaning: remember this address
-            } catch( java.net.SocketException se ) {
-                DbgUtils.loge( se );
-                Assert.fail();
-            } catch( java.net.UnknownHostException uhe ) {
-                DbgUtils.loge( uhe );
+        if ( XWPrefs.getUDPEnabled( this ) ) {
+            if ( null == m_UDPSocket ) {
+                int port = XWPrefs.getDefaultRelayPort( RelayService.this );
+                String host = XWPrefs.getDefaultRelayHost( RelayService.this );
+                try { 
+                    m_UDPSocket = new DatagramSocket();
+                    InetAddress addr = InetAddress.getByName( host );
+                    m_UDPSocket.connect( addr, port ); // remember this address
+                } catch( java.net.SocketException se ) {
+                    DbgUtils.loge( se );
+                    Assert.fail();
+                } catch( java.net.UnknownHostException uhe ) {
+                    DbgUtils.loge( uhe );
+                }
+            } else {
+                Assert.assertTrue( m_UDPSocket.isConnected() );
+                DbgUtils.logf( "m_UDPSocket not null" );
             }
-        } else {
-            Assert.assertTrue( m_UDPSocket.isConnected() );
-            DbgUtils.logf( "m_UDPSocket not null" );
-        }
 
-        if ( null == m_UDPReadThread ) {
-            m_UDPReadThread = new Thread( null, new Runnable() {
-                    public void run() {
-                        DbgUtils.logf( "read thread running" );
-                        byte[] buf = new byte[1024];
-                        for ( ; ; ) {
-                            DatagramPacket packet = 
-                                new DatagramPacket( buf, buf.length );
-                            try {
-                                DbgUtils.logf( "UPD read thread blocking on receive" );
-                                m_UDPSocket.receive( packet );
-                                DbgUtils.logf( "UPD read thread: receive returned" );
-                            } catch( java.io.IOException ioe ) {
-                                DbgUtils.loge( ioe );
-                                break; // ???
+            if ( null == m_UDPReadThread ) {
+                m_UDPReadThread = new Thread( null, new Runnable() {
+                        public void run() {
+                            DbgUtils.logf( "read thread running" );
+                            byte[] buf = new byte[1024];
+                            for ( ; ; ) {
+                                DatagramPacket packet = 
+                                    new DatagramPacket( buf, buf.length );
+                                try {
+                                    DbgUtils.logf( "UPD read thread blocking on receive" );
+                                    m_UDPSocket.receive( packet );
+                                    DbgUtils.logf( "UPD read thread: receive returned" );
+                                } catch( java.io.IOException ioe ) {
+                                    DbgUtils.loge( ioe );
+                                    break; // ???
+                                }
+                                DbgUtils.logf( "received %d bytes", packet.getLength() );
+                                gotPacket( packet );
                             }
-                            DbgUtils.logf( "received %d bytes", packet.getLength() );
-                            gotPacket( packet );
+                            DbgUtils.logf( "read thread exiting" );
                         }
-                        DbgUtils.logf( "read thread exiting" );
-                    }
-                }, getClass().getName() );
-            m_UDPReadThread.start();
-        } else {
-            DbgUtils.logf( "m_UDPReadThread not null and assumed to be running" );
-        }
+                    }, getClass().getName() );
+                m_UDPReadThread.start();
+            } else {
+                DbgUtils.logf( "m_UDPReadThread not null and assumed to be running" );
+            }
 
-        if ( null == m_UDPWriteThread ) {
-            m_queue = new LinkedBlockingQueue<DatagramPacket>();
-            m_UDPWriteThread = new Thread( null, new Runnable() {
-                    public void run() {
-                        DbgUtils.logf( "write thread running" );
-                        for ( ; ; ) {
-                            DatagramPacket outPacket;
-                            try {
-                                outPacket = m_queue.take();
-                            } catch ( InterruptedException ie ) {
-                                DbgUtils.logf( "RelayService; write thread killed" );
-                                break;
+            if ( null == m_UDPWriteThread ) {
+                m_queue = new LinkedBlockingQueue<DatagramPacket>();
+                m_UDPWriteThread = new Thread( null, new Runnable() {
+                        public void run() {
+                            DbgUtils.logf( "write thread running" );
+                            for ( ; ; ) {
+                                DatagramPacket outPacket;
+                                try {
+                                    outPacket = m_queue.take();
+                                } catch ( InterruptedException ie ) {
+                                    DbgUtils.logf( "RelayService; write thread killed" );
+                                    break;
+                                }
+                                if ( null == outPacket || 0 == outPacket.getLength() ) {
+                                    DbgUtils.logf( "stopping write thread" );
+                                    break;
+                                }
+                                DbgUtils.logf( "Sending udp packet of length %d", 
+                                               outPacket.getLength() );
+                                try {
+                                    m_UDPSocket.send( outPacket );
+                                } catch ( java.io.IOException ioe ) {
+                                    DbgUtils.loge( ioe );
+                                }
                             }
-                            if ( null == outPacket || 0 == outPacket.getLength() ) {
-                                DbgUtils.logf( "stopping write thread" );
-                                break;
-                            }
-                            DbgUtils.logf( "Sending udp packet of length %d", 
-                                           outPacket.getLength() );
-                            try {
-                                m_UDPSocket.send( outPacket );
-                            } catch ( java.io.IOException ioe ) {
-                                DbgUtils.loge( ioe );
-                            }
+                            DbgUtils.logf( "write thread exiting" );
                         }
-                        DbgUtils.logf( "write thread exiting" );
-                    }
-                }, getClass().getName() );
-            m_UDPWriteThread.start();
-        } else {
-            DbgUtils.logf( "m_UDPWriteThread not null and assumed to be running" );
+                    }, getClass().getName() );
+                m_UDPWriteThread.start();
+            } else {
+                DbgUtils.logf( "m_UDPWriteThread not null and assumed to be running" );
+            }
         }
     }
 
@@ -681,6 +682,14 @@ public class RelayService extends XWService {
         }
 
         /***** TransportProcs interface *****/
+
+        public int transportSend( byte[] buf, final CommsAddrRec addr, 
+                                  int gameID )
+        {
+            Assert.assertTrue( -1 != m_rowid );
+            sendPacket( RelayService.this, m_rowid, buf );
+            return buf.length;
+        }
 
         public boolean relayNoConnProc( byte[] buf, String relayID )
         {
