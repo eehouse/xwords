@@ -39,6 +39,7 @@
   <string name="key_dict_host">key_dict_host3</string>
   <string name="key_logging_on">key_logging_on</string>
   <string name="key_udp_relay">key_udp_relay</string>
+  <string name="key_drop_gcm">key_drop_gcm</string>
   <string name="key_show_sms">key_show_sms</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
   <string name="key_init_nethintsallowed">key_init_nethintsallowed</string>
@@ -128,6 +129,7 @@
   <string name="gamel_menu_storedb">Write DB to SD card</string>
   <string name="gamel_menu_loaddb">Load DB from SD card</string>
   <string name="udp_relay">New/Experimental relay connection</string>
+  <string name="drop_gcm">Ignore GCM notices (for testing)</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
