@@ -470,10 +470,7 @@ send_havemsgs( const AddrInfo* addr )
         socket = g_udpsock;
     }
 
-    AddrInfo::ClientToken clientToken = htonl(addr->clientToken());
-    send_via_udp( socket, addr->sockaddr(), XWPDEV_HAVEMSGS,
-                  &clientToken, sizeof(clientToken), 
-                  NULL );
+    send_via_udp( socket, addr->sockaddr(), XWPDEV_HAVEMSGS, NULL );
 }
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
@@ -1203,7 +1200,7 @@ registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
         if ( dbMgr->updateDevice( relayID, true ) ) {
             int nMsgs = dbMgr->CountStoredMessages( relayID );
             if ( 0 < nMsgs ) {
-                AddrInfo addr( -1, 0, saddr );
+                AddrInfo addr( -1, -1, saddr );
                 send_havemsgs( &addr );
             }
         } else {
@@ -1320,7 +1317,7 @@ udp_thread_proc( UdpThreadClosure* utc )
         }
         case XWPDEV_MSGNOCONN: {
             AddrInfo::ClientToken clientToken;
-            if ( getNetLong( &ptr, end, &clientToken ) ) {
+            if ( getNetLong( &ptr, end, &clientToken ) && 0 != clientToken ) {
                 HostID hid;
                 char connName[MAX_CONNNAME_LEN+1];
                 if ( !parseRelayID( &ptr, end, connName, 
