@@ -4,7 +4,7 @@ set -u -e
 APP_NEW=""
 APP_NEW_PARAMS=""
 NGAMES=""
-USE_UDP=""
+UDP_PCT=0
 UPGRADE_ODDS=""
 NROOMS=""
 HOST=""
@@ -167,10 +167,12 @@ build_cmds() {
         DEV=0
         for NLOCALS in ${LOCALS[@]}; do
             DEV=$((DEV + 1))
-            if [ -n "$USE_UDP" ]; then
-                FILE="${LOGDIR}/GAME_${GAME}_${DEV}.sql3"
-            else
+            if [ $((RANDOM % 100)) -gt $UDP_PCT ]; then
                 FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
+                USE_UDP=""
+            else
+                FILE="${LOGDIR}/GAME_${GAME}_${DEV}.sql3"
+                USE_UDP=1
             fi
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             > $LOG # clear the log
@@ -524,7 +526,7 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
-    echo "    [--via-udp]                                             \\" >&2
+    echo "    [--via-udp <pct>]                                       \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--old-app <path/to/app]*                               \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
@@ -550,7 +552,8 @@ function usage() {
 while [ "$#" -gt 0 ]; do
     case $1 in
         --via-udp)
-            USE_UDP=true
+            UDP_PCT=$(getArg $*)
+            shift
             ;;
         --num-games)
             NGAMES=$(getArg $*)
