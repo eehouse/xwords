@@ -37,6 +37,7 @@ UdpThreadClosure::logStats()
 }
 
 UdpQueue::UdpQueue() 
+    :m_cb(NULL)
 {
     pthread_mutex_init ( &m_queueMutex, NULL );
     pthread_cond_init( &m_queueCondVar, NULL );
