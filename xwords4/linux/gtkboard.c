@@ -750,6 +750,7 @@ static void
 cleanup( GtkGameGlobals* globals )
 {
     saveGame( &globals->cGlobals );
+    g_source_remove( globals->idleID );
 
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &globals->cGlobals );
@@ -767,6 +768,7 @@ cleanup( GtkGameGlobals* globals )
     gi_disposePlayerInfo( MEMPOOL &globals->cGlobals.gi );
 
     linux_util_vt_destroy( globals->cGlobals.util );
+    free( globals->cGlobals.util );
 } /* cleanup */
 
 GtkWidget*
@@ -1766,7 +1768,7 @@ idle_func( gpointer data )
     /* remove before calling server_do.  If server_do puts up a dialog that
        calls gtk_main, then this idle proc will also apply to that event loop
        and bad things can happen.  So kill the idle proc asap. */
-    gtk_idle_remove( globals->idleID );
+    g_source_remove( globals->idleID );
 
     ServerCtxt* server = globals->cGlobals.game.server;
     if ( !!server && server_do( server ) ) {
@@ -1781,7 +1783,7 @@ static void
 gtk_util_requestTime( XW_UtilCtxt* uc ) 
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    globals->idleID = gtk_idle_add( idle_func, globals );
+    globals->idleID = g_idle_add( idle_func, globals );
 } /* gtk_util_requestTime */
 
 static XP_Bool
@@ -2441,7 +2443,6 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
 
     setupUtil( &globals->cGlobals );
     setupGtkUtilCallbacks( globals, globals->cGlobals.util );
-
 }
 
 void
