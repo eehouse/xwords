@@ -462,7 +462,9 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 
     ref->assignConnName();
 
-    m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCid(), ref ) );
+    pair<CookieMap::iterator,bool> result =
+        m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCid(), ref ) );
+    assert( result.second );
     logf( XW_LOGINFO, "%s: paired cookie %s/connName %s with cid %d", __func__, 
           (cookie?cookie:"NULL"), connName, ref->GetCid() );
 

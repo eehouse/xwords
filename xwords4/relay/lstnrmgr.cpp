@@ -171,7 +171,9 @@ ListenerMgr::addOne( int port, bool perGame )
     success = sock != -1;
     if ( success ) {
         pair<int,bool>entry(port, perGame);
-        m_socks_to_ports.insert( pair<int,pair<int,bool> >(sock, entry ) );
+        pair<map<int,pair<int,bool> >::iterator, bool> result
+            = m_socks_to_ports.insert( pair<int,pair<int,bool> >(sock, entry ) );
+        assert( result.second );
     }
     return success;
 }
