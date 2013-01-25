@@ -78,10 +78,12 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
        ,XWPDEV_BADREG           /* relay->dev.  You sent me a relayID via
                                    XWPDEV_REG but I've never heard of it */
 
-       ,XWPDEV_ACK              /* tells recipient its message has been
-                                   received.  This is for debugging, and maybe
-                                   later for timing keepAlives based on
-                                   firewall timeouts.  format: header, msgID: 4
+       ,XWPDEV_ACK              /* relay->dev (maybe) and dev->relay
+                                   (definitely). Tells recipient its message
+                                   has been received.  This is for debugging,
+                                   and maybe later for timing keepAlives based
+                                   on firewall timeouts.  format: header,
+                                   msgID: 4
                                 */
 
 }
