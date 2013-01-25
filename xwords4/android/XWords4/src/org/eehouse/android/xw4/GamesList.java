@@ -76,7 +76,7 @@ public class GamesList extends XWExpandableListActivity
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
-    private static final String REMATCH_ROWID_EXTRA = "rowid";
+    private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
 
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
