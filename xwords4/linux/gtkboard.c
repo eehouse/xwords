@@ -2177,7 +2177,7 @@ newConnectionInput( GIOChannel *source,
 
     if ( (condition & G_IO_IN) != 0 ) {
         ssize_t nRead;
-        unsigned char buf[512];
+        unsigned char buf[1024];
         CommsAddrRec* addrp = NULL;
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_SMS
         CommsAddrRec addr;
