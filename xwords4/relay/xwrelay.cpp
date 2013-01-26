@@ -1096,9 +1096,22 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
     }
 } // handleProxyMsgs
 
-void
-handle_proxy_packet( unsigned char* buf, int len, const AddrInfo* addr )
+static void
+game_thread_proc( UdpThreadClosure* utc )
 {
+    if ( !processMessage( utc->buf(), utc->len(), utc->addr() ) ) {
+        XWThreadPool::GetTPool()->CloseSocket( utc->addr() );
+    }
+}
+
+static void
+proxy_thread_proc( UdpThreadClosure* utc )
+{
+    int len = utc->len();
+    const AddrInfo* addr = utc->addr();
+    const unsigned char* buf = utc->buf();
+
+    logf( XW_LOGINFO, "%s called", __func__ );
     logf( XW_LOGVERBOSE0, "%s()", __func__ );
     if ( len > 0 ) {
         assert( addr->isTCP() );
@@ -1171,7 +1184,8 @@ handle_proxy_packet( unsigned char* buf, int len, const AddrInfo* addr )
             }
         }
     }
-} /* handle_proxy_packet */
+    XWThreadPool::GetTPool()->CloseSocket( addr );
+}
 
 static short
 addRegID( unsigned char* ptr, DevIDRelay relayID )
@@ -1373,7 +1387,7 @@ udp_thread_proc( UdpThreadClosure* utc )
 static void
 handle_udp_packet( int udpsock )
 {
-    unsigned char buf[512];
+    unsigned char buf[MAX_MSG_LEN];
     AddrInfo::AddrUnion saddr;
     memset( &saddr, 0, sizeof(saddr) );
     socklen_t fromlen = sizeof(saddr.addr_in);
@@ -1382,7 +1396,8 @@ handle_udp_packet( int udpsock )
                               &saddr.addr, &fromlen );
     logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
     if ( 0 < nRead ) {
-        UdpQueue::get()->handle( &saddr, buf, nRead, udp_thread_proc );
+        AddrInfo addr( udpsock, &saddr, false );
+        UdpQueue::get()->handle( &addr, buf, nRead, udp_thread_proc );
     }
 }
 
@@ -1808,7 +1823,7 @@ main( int argc, char** argv )
     (void)sigaction( SIGINT, &act, NULL );
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
-    tPool->Setup( nWorkerThreads, processMessage, killSocket );
+    tPool->Setup( nWorkerThreads, killSocket );
 
     /* set up select call */
     fd_set rfds;
@@ -1876,9 +1891,11 @@ main( int argc, char** argv )
                               "%s: accepting connection from %s on socket %d", 
                               __func__, inet_ntoa(saddr.addr_in.sin_addr), newSock );
 
-                        AddrInfo addr( newSock, &saddr );
-                        tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME 
+                        AddrInfo addr( newSock, &saddr, true );
+                        tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME
                                           : XWThreadPool::STYPE_PROXY,
+                                          perGame ? game_thread_proc
+                                          : proxy_thread_proc,
                                           &addr );
                     }
                     --retval;

@@ -64,10 +64,10 @@ UdpQueue::get()
 }
 
 void 
-UdpQueue::handle( const AddrInfo::AddrUnion* saddr, unsigned char* buf, int len, 
+UdpQueue::handle( const AddrInfo* addr, unsigned char* buf, int len, 
                   QueueCallback cb )
 {
-    UdpThreadClosure* utc = new UdpThreadClosure( saddr, buf, len, cb );
+    UdpThreadClosure* utc = new UdpThreadClosure( addr, buf, len, cb );
     MutexLock ml( &m_queueMutex );
     m_queue.push_back( utc );
     pthread_cond_signal( &m_queueCondVar );

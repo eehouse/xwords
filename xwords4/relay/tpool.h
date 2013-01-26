@@ -32,6 +32,7 @@
 #include <set>
 
 #include "addrinfo.h" 
+#include "udpqueue.h"
 
 using namespace std;
 
@@ -41,6 +42,7 @@ class XWThreadPool {
     typedef enum { STYPE_UNKNOWN, STYPE_GAME, STYPE_PROXY } SockType;
     typedef struct _SockInfo {
         SockType m_type;
+        QueueCallback m_proc;
         AddrInfo m_addr;
     } SockInfo;
 
@@ -51,18 +53,16 @@ class XWThreadPool {
     } ThreadInfo;
 
     static XWThreadPool* GetTPool();
-    typedef bool (*packet_func)( const unsigned char* buf, int bufLen, 
-                                 const AddrInfo* from );
     typedef void (*kill_func)( const AddrInfo* addr );
 
     XWThreadPool();
     ~XWThreadPool();
 
-    void Setup( int nThreads, packet_func pFunc, kill_func kFunc );
+    void Setup( int nThreads, kill_func kFunc );
     void Stop();
 
     /* Add to set being listened on */
-    void AddSocket( SockType stype, const AddrInfo* from );
+    void AddSocket( SockType stype, QueueCallback proc, const AddrInfo* from );
     /* remove from tpool altogether, and close */
     void CloseSocket( const AddrInfo* addr );
 
@@ -82,7 +82,7 @@ class XWThreadPool {
     void print_in_use( void );
     void log_hung_threads( void );
 
-    bool get_process_packet( SockType stype, const AddrInfo* from );
+    bool get_process_packet( SockType stype, QueueCallback proc, const AddrInfo* from );
     void interrupt_poll();
 
     void* real_tpool_main( ThreadInfo* tsp );
@@ -107,7 +107,6 @@ class XWThreadPool {
 
     bool m_timeToDie;
     int m_nThreads;
-    packet_func m_pFunc;
     kill_func m_kFunc;
     ThreadInfo* m_threadInfos;
 

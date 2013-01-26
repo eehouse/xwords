@@ -35,11 +35,11 @@ typedef void (*QueueCallback)( UdpThreadClosure* closure );
 
 class UdpThreadClosure {
 public:
-    UdpThreadClosure( const AddrInfo::AddrUnion* saddr, unsigned char* buf, 
+    UdpThreadClosure( const AddrInfo* addr, unsigned char* buf, 
                       int len, QueueCallback cb )
         : m_buf(new unsigned char[len])
         , m_len(len)
-        , m_saddr(*saddr)
+        , m_addr(*addr)
         , m_cb(cb)
         , m_created(time( NULL ))
         { 
@@ -50,7 +50,8 @@ public:
 
     const unsigned char* buf() const { return m_buf; } 
     int len() const { return m_len; }
-    const AddrInfo::AddrUnion* saddr() const { return &m_saddr; }
+    const AddrInfo::AddrUnion* saddr() const { return m_addr.saddr(); }
+    const AddrInfo* addr() const { return &m_addr; }
     void noteDequeued() { m_dequed = time( NULL ); }
     void logStats();
     const QueueCallback cb() const { return m_cb; }
@@ -58,7 +59,7 @@ public:
  private:
     unsigned char* m_buf;
     int m_len;
-    AddrInfo::AddrUnion m_saddr;
+    AddrInfo m_addr;
     QueueCallback m_cb;
     time_t m_created;
     time_t m_dequed;
@@ -69,7 +70,7 @@ class UdpQueue {
     static UdpQueue* get();
     UdpQueue();
     ~UdpQueue();
-    void handle( const AddrInfo::AddrUnion* saddr, unsigned char* buf, int len,
+    void handle( const AddrInfo* addr, unsigned char* buf, int len,
                  QueueCallback cb );
 
  private:

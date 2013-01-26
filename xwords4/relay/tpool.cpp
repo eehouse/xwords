@@ -78,11 +78,10 @@ XWThreadPool::~XWThreadPool()
 } /* ~XWThreadPool */
 
 void
-XWThreadPool::Setup( int nThreads, packet_func pFunc, kill_func kFunc )
+XWThreadPool::Setup( int nThreads, kill_func kFunc )
 {
     m_nThreads = nThreads;
     m_threadInfos = (ThreadInfo*)malloc( nThreads * sizeof(*m_threadInfos) );
-    m_pFunc = pFunc;
     m_kFunc = kFunc;
 
     for ( int ii = 0; ii < nThreads; ++ii ) {
@@ -116,12 +115,13 @@ XWThreadPool::Stop()
 }
 
 void
-XWThreadPool::AddSocket( SockType stype, const AddrInfo* from )
+XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* from )
 {
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
         SockInfo si;
         si.m_type = stype;
+        si.m_proc = proc;
         si.m_addr = *from;
         m_activeSockets.push_back( si );
         logf( XW_LOGINFO, "%s: %d sockets active", __func__, 
@@ -197,7 +197,7 @@ XWThreadPool::EnqueueKill( const AddrInfo* addr, const char* const why )
 }
 
 bool
-XWThreadPool::get_process_packet( SockType stype, const AddrInfo* addr )
+XWThreadPool::get_process_packet( SockType stype, QueueCallback proc, const AddrInfo* addr )
 {
     bool success = false;
     short packetSize;
@@ -207,13 +207,14 @@ XWThreadPool::get_process_packet( SockType stype, const AddrInfo* addr )
     int nRead = read_packet( addr->socket(), buf, sizeof(buf) );
     if ( nRead < 0 ) {
         EnqueueKill( addr, "bad packet" );
-    } else if ( STYPE_GAME == stype ) {
-        logf( XW_LOGINFO, "calling m_pFunc" );
-        success = (*m_pFunc)( buf, nRead, addr );
-    } else {
+    } else if ( STYPE_PROXY == stype && NULL != proc ) {
         buf[nRead] = '\0';
-        handle_proxy_packet( buf, nRead, addr );
-        CloseSocket( addr );
+        UdpQueue::get()->handle( addr, buf, nRead+1, proc );
+    } else if ( STYPE_GAME == stype && NULL != proc ) {
+        UdpQueue::get()->handle( addr, buf, nRead, proc );
+        success = true;
+    } else {
+        assert(0);
     }
     return success;
 } /* get_process_packet */
@@ -260,8 +261,8 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
             switch ( pr.m_act ) {
             case Q_READ:
                 assert( socket >= 0 );
-                if ( get_process_packet( pr.m_info.m_type, &pr.m_info.m_addr ) ) {
-                    AddSocket( pr.m_info.m_type, &pr.m_info.m_addr );
+                if ( get_process_packet( pr.m_info.m_type, pr.m_info.m_proc, &pr.m_info.m_addr ) ) {
+                    AddSocket( pr.m_info.m_type, pr.m_info.m_proc, &pr.m_info.m_addr );
                 }
                 break;
             case Q_KILL:

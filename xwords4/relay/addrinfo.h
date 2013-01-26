@@ -41,8 +41,8 @@ class AddrInfo {
         m_isValid = false; 
     }
 
-    AddrInfo( int socket, const AddrUnion* saddr ) {
-        construct( socket, saddr, true );
+    AddrInfo( int socket, const AddrUnion* saddr, bool isTCP ) {
+        construct( socket, saddr, isTCP );
     }
 
     AddrInfo( int socket, ClientToken clientToken, const AddrUnion* saddr ) {

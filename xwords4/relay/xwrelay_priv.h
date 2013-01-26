@@ -59,8 +59,6 @@ int make_socket( unsigned long addr, unsigned short port );
 void string_printf( std::string& str, const char* fmt, ... );
 
 int read_packet( int sock, unsigned char* buf, int buflen );
-void handle_proxy_packet( unsigned char* buf, int bufLen,
-                          const AddrInfo* addr );
 
 const char* cmdToStr( XWRELAY_Cmd cmd );
 
