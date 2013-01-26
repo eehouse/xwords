@@ -1072,26 +1072,35 @@ linux_close_socket( CommonGlobals* cGlobals )
 }
 
 int
-blocking_read( int fd, unsigned char* buf, int len )
+blocking_read( int fd, unsigned char* buf, const int len )
 {
     int nRead = 0;
-    while ( nRead < len ) {
-        XP_LOGF( "%s: blocking for %d bytes", __func__, len );
-        ssize_t siz = read( fd, buf + nRead, len - nRead );
-        if ( siz <= 0 ) {
-            XP_LOGF( "read => %d, errno=%d (\"%s\")", nRead, 
-                     errno, strerror(errno) );
-            nRead = -1;
+    int tries;
+    for ( tries = 5; nRead < len && tries > 0; --tries ) {
+        // XP_LOGF( "%s: blocking for %d bytes", __func__, len );
+        ssize_t nGot = read( fd, buf + nRead, len - nRead );
+        if ( nGot == 0 ) {
+            XP_LOGF( "%s: read 0; let's try again (%d more times)", __func__, tries );
+            usleep( 10000 );
+        } else if ( nGot < 0 ) {
+            XP_LOGF( "read => %d (wanted %d), errno=%d (\"%s\")", nRead, 
+                     len - nRead, errno, strerror(errno) );
             break;
         }
-        nRead += siz;
+        nRead += nGot;
     }
+
+    if ( nRead < len ) {
+        nRead = -1;
+    }
+
     return nRead;
 }
 
 int
 linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
+    LOG_FUNC();
     int sock = cGlobals->socket;
     unsigned short tmp;
     ssize_t nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
@@ -1101,6 +1110,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
         nRead = -1;
     } else {
         unsigned short packetSize = ntohs( tmp );
+        XP_LOGF( "%s: got packet of size %d", __func__, packetSize );
         assert( packetSize <= bufSize );
         nRead = blocking_read( sock, buf, packetSize );
         if ( nRead == packetSize ) {
