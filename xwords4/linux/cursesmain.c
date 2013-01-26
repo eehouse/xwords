@@ -1046,7 +1046,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
     if ( 0 != (G_IO_IN & condition) ) {
         CursesAppGlobals* globals = (CursesAppGlobals*)data;
         int fd = g_io_channel_unix_get_fd( source );
-        unsigned char buf[256];
+        unsigned char buf[1024];
         int nBytes;
         CommsAddrRec addrRec;
         CommsAddrRec* addrp = NULL;
@@ -1292,7 +1292,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                                                    globals );
                 } else {
 #ifndef XWFEATURE_STANDALONE_ONLY
-                    unsigned char buf[256];
+                    unsigned char buf[1024];
                     int nBytes;
                     CommsAddrRec addrRec;
                     CommsAddrRec* addrp = NULL;
@@ -1971,10 +1971,18 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
         }
 
-        if ( !!stream ) {
-            if ( NULL == cGlobals->dict ) {
+        if ( NULL == cGlobals->dict ) {
+            if ( !!stream ) {
                 cGlobals->dict = makeDictForStream( cGlobals, stream );
+            } else {
+                cGlobals->dict = 
+                    linux_dictionary_make( MEMPOOL params, 
+                                           cGlobals->gi.dictName, XP_TRUE );
             }
+        }
+        cGlobals->gi.dictLang = dict_getLangCode( cGlobals->dict );
+
+        if ( !!stream ) {
             (void)game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
                                        &cGlobals->gi, cGlobals->dict, 
                                        &cGlobals->dicts, cGlobals->util, 
@@ -2032,11 +2040,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 #endif
 
-        if ( NULL == cGlobals->dict ) {
-            cGlobals->dict = 
-                linux_dictionary_make( MEMPOOL params, 
-                                       cGlobals->gi.dictName, XP_TRUE );
-        }
         model_setDictionary( cGlobals->game.model, cGlobals->dict );
         setSquareBonuses( cGlobals );
         positionSizeStuff( &g_globals, width, height );
