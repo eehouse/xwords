@@ -347,7 +347,7 @@ bool
 CookieRef::AlreadyHere( unsigned short seed, const AddrInfo* addr, 
                         HostID* prevHostID )
 {
-    logf( XW_LOGINFO, "%s(seed=%x(%d),socket=%d)", __func__, seed, seed, socket );
+    logf( XW_LOGINFO, "%s(seed=%x(%d))", __func__, seed, seed );
     bool here = false;
 
     RWReadLock rrl( &m_socketsRWLock );
