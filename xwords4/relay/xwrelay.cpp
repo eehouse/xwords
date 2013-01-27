@@ -211,6 +211,9 @@ parseRelayID( const unsigned char** const inp, const unsigned char* const end,
         }
         *inp = (unsigned char*)endptr;
     }
+    if ( !ok ) {
+	logf( XW_LOGERROR, "%s failed", __func__ );
+    }
     return ok;
 }
 
@@ -1030,7 +1033,6 @@ handlePutMessage( SafeCref& scr, HostID hid, const AddrInfo* addr,
                   unsigned short len, const unsigned char** bufp, 
                   const unsigned char* end )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
     bool success = false;
     const unsigned char* start = *bufp;
     HostID src;
@@ -1039,9 +1041,9 @@ handlePutMessage( SafeCref& scr, HostID hid, const AddrInfo* addr,
     // sanity check that cmd and hostids are there
     if ( getNetByte( bufp, end, &cmd )
          && getNetByte( bufp, end, &src )
-         && getNetByte( bufp, end, &dest ) ) {
-        assert( cmd == XWRELAY_MSG_TORELAY_NOCONN );
-        assert( hid == dest );
+         && getNetByte( bufp, end, &dest )
+	 && ( cmd == XWRELAY_MSG_TORELAY_NOCONN )
+	 && ( hid == dest ) ) {
         scr.PutMsg( src, addr, dest, start, len );
         *bufp = start + len;
         success = true;
@@ -1058,8 +1060,6 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
     unsigned short nameCount;
     int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
-        vector<unsigned char> out(4); /* space for len and n_msgs */
-        assert( out.size() == 4 );
         for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
 
             // See NetUtils.java for reply format
@@ -1092,7 +1092,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
                 }
             }
         }
-	if ( bufp != end ) {
+	if ( end - bufp != 1 ) {
 	    logf( XW_LOGERROR, "%s: buf != end: %p vs %p", __func__, bufp, end );
 	}
         // assert( bufp == end );  // don't ship with this!!!
