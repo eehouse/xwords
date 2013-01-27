@@ -1386,8 +1386,11 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     {
         XP_UCHAR connName[MAX_CONNNAME_LEN+1];
         stringFromStreamHere( stream, connName, sizeof(connName) );
-        XP_ASSERT( comms->r.connName[0] == '\0' 
-                   || 0 == XP_STRCMP( comms->r.connName, connName ) );
+        if ( comms->r.connName[0] != '\0' 
+             && 0 != XP_STRCMP( comms->r.connName, connName ) ) {
+            XP_LOGF( "%s: we're replacing connNames: %s overwritten by %s",
+                     __func__, comms->r.connName, connName );
+        }
         XP_MEMCPY( comms->r.connName, connName, sizeof(comms->r.connName) );
         XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
     }
@@ -1454,8 +1457,11 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         {
             XP_UCHAR connName[MAX_CONNNAME_LEN+1];
             stringFromStreamHere( stream, connName, sizeof(connName) );
-            XP_ASSERT( comms->r.connName[0] == '\0' 
-                       || 0 == XP_STRCMP( comms->r.connName, connName ) );
+            if ( comms->r.connName[0] != '\0' 
+                 && 0 != XP_STRCMP( comms->r.connName, connName ) ) {
+                XP_LOGF( "%s: we're replacing connNames: %s overwritten by %s",
+                         __func__, comms->r.connName, connName );
+            }
             XP_MEMCPY( comms->r.connName, connName, 
                        sizeof(comms->r.connName) );
             XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
