@@ -79,6 +79,8 @@
 #define DEFAULT_PORT 10997
 #define DEFAULT_LISTEN_PORT 4998
 
+static int blocking_read( int fd, unsigned char* buf, int len );
+
 XP_Bool
 file_exists( const char* fileName )
 {
@@ -1071,7 +1073,7 @@ linux_close_socket( CommonGlobals* cGlobals )
     close( socket );
 }
 
-int
+static int
 blocking_read( int fd, unsigned char* buf, const int len )
 {
     int nRead = 0;

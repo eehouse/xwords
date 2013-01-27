@@ -73,8 +73,6 @@ XP_Bool getDictPath( const LaunchParams *params, const char* name,
 GSList* listDicts( const LaunchParams *params );
 void saveGame( CommonGlobals* cGlobals );
 
-int blocking_read( int fd, unsigned char* buf, int len );
-
 void linux_close_socket( CommonGlobals* cGlobals );
 
 #ifdef KEYBOARD_NAV
