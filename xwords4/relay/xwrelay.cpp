@@ -1092,7 +1092,10 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
                 }
             }
         }
-        assert( bufp == end );  // don't ship with this!!!
+	if ( bufp != end ) {
+	    logf( XW_LOGERROR, "%s: buf != end: %p vs %p", __func__, bufp, end );
+	}
+        // assert( bufp == end );  // don't ship with this!!!
     }
 } // handleProxyMsgs
 
