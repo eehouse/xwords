@@ -203,6 +203,7 @@ XWThreadPool::get_process_packet( SockType stype, QueueCallback proc, const Addr
     short packetSize;
     assert( sizeof(packetSize) == 2 );
 
+    // Fix this to return an allocated buffer
     unsigned char buf[MAX_MSG_LEN+1];
     int nRead = read_packet( addr->socket(), buf, sizeof(buf) );
     if ( nRead < 0 ) {

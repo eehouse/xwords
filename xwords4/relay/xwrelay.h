@@ -188,7 +188,7 @@ typedef unsigned char XWRELAY_Cmd;
 #define HOST_ID_SERVER 1
 
 #define MAX_INVITE_LEN 31
-#define MAX_MSG_LEN    1024     /* Used for proxy too! */
+#define MAX_MSG_LEN    2048     /* Used for proxy too! */
 #define MAX_CONNNAME_LEN 48     /* host ID, boot time, and seeds as hex? */
 #define MAX_DEVID_LEN 8         /* 32-bit number as hex */
 
