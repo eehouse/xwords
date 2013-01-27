@@ -15,7 +15,7 @@ HEARTBEAT=60
 # How many worker threads in the thread pool?  Default is five.  Let's
 # keep this at 1 until the race condition is fixed.  All interaction
 # with crefs should be from this one thread, including proxy stuff.
-NTHREADS=5
+NTHREADS=1
 
 # How many seconds to wait for device to ack new connName
 DEVACK=3
