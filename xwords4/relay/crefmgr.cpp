@@ -413,8 +413,10 @@ CRefMgr::getCookieRef( CookieID cid, bool failOk )
             break;
         }
         m_cidlock->Relinquish( cinfo, true );
-        logf( XW_LOGINFO, "%s: sleeping after failing to get cinfo", __func__ );
+        logf( XW_LOGINFO, "%s: (count=%d) sleeping after "
+              "failing to get cinfo", __func__, count );
         usleep(200000);         /* 2/10 second */
+        cinfo = NULL;
     }
     return cinfo;
 } /* getCookieRef */
