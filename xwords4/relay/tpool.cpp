@@ -173,7 +173,7 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
             ++iter;
         }
     }
-    logf( XW_LOGINFO, "CLOSING socket %d", socket );
+    logf( XW_LOGINFO, "CLOSING socket %d", addr->socket() );
     close( addr->socket() );
 /*     if ( do_interrupt ) { */
     /* We always need to interrupt the poll because the socket we're closing
@@ -187,7 +187,7 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
 void
 XWThreadPool::EnqueueKill( const AddrInfo* addr, const char* const why )
 {
-    logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, socket, why );
+    logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, addr->socket(), why );
     if ( addr->isTCP() ) {
         SockInfo si;
         si.m_type = STYPE_UNKNOWN;

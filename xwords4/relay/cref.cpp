@@ -373,7 +373,7 @@ CookieRef::AlreadyHere( HostID hid, unsigned short seed, const AddrInfo* addr,
                         bool* spotTaken )
 {
     logf( XW_LOGINFO, "%s(hid=%d,seed=%x(%d),socket=%d)", __func__, 
-          hid, seed, seed, socket );
+          hid, seed, seed, addr->socket() );
     bool here = false;
 
     RWWriteLock rwl( &m_socketsRWLock );
