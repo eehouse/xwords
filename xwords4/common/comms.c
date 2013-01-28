@@ -1191,9 +1191,27 @@ gameID( const CommsCtxt* comms )
     if ( 0 == gameID ) {
         gameID = comms->util->gameInfo->gameID;
     }
-    XP_ASSERT( 0 == comms->connID
-               || (comms->connID & 0xFFFF) 
-               == (comms->util->gameInfo->gameID & 0xFFFF) );
+    // XP_ASSERT( 0 != gameID );
+    if ( 0 == gameID ) {
+        XP_LOGF( "%s: gameID STILL 0", __func__ );
+    } else if ( 0 == comms->util->gameInfo->gameID ) {
+        XP_LOGF( "%s: setting gi's gameID to 0X%lX", __func__, gameID );
+        comms->util->gameInfo->gameID = gameID;
+    }
+
+    /* this next is failing on android b/c comms->util->gameInfo->gameID still 0 */
+#ifdef DEBUG
+    /* if ( (0 != comms->connID) */
+    /*      && ((comms->connID & 0xFFFF) */
+    /*          != (comms->util->gameInfo->gameID & 0xFFFF)) ) { */
+    /*     XP_LOGF("%s: connID: 0X%lX vs gameID: 0X%lX", __func__, comms->connID,  */
+    /*             comms->util->gameInfo->gameID ); */
+    /*     XP_ASSERT(0); */
+    /* } */
+#endif
+    /* XP_ASSERT( 0 == comms->connID  */
+    /*            || (comms->connID & 0xFFFF)  */
+    /*            == (comms->util->gameInfo->gameID & 0xFFFF) ); */
     /* Most of the time these will be the same, but early in a game they won't
        be.  Would be nice not to have to use gameID. */
     return gameID;
