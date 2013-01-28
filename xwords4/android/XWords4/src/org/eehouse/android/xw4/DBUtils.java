@@ -695,6 +695,7 @@ public class DBUtils {
             values.put( DBHelper.LASTPLAY_TIME, timestamp );
             values.put( DBHelper.GROUPID, 
                         XWPrefs.getDefaultNewGameGroup( context ) );
+            values.put( DBHelper.VISID, maxVISID( db ) );
 
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
 
@@ -789,6 +790,28 @@ public class DBUtils {
         synchronized( DBUtils.class ) {
             s_cachedRowIDs = null;
         }
+    }
+
+    public static int getVisID( Context context, long rowid )
+    {
+        int result = -1;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+
+            String[] columns = { DBHelper.VISID };
+            String selection = String.format( ROW_ID_FMT, rowid );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = cursor.getInt( cursor
+                                        .getColumnIndex(DBHelper.VISID));
+            }
+            cursor.close();
+            db.close();
+        }
+
+        return result;
     }
 
     // Get either the file name or game name, preferring the latter.
@@ -1380,6 +1403,15 @@ public class DBUtils {
         return sdcardDB.exists();
     }
 
+    public static String[] getColumns( SQLiteDatabase db, String name )
+    {
+        String query = String.format( "SELECT * FROM %s LIMIT 1", name );
+        Cursor cursor = db.rawQuery( query, null );
+        String[] colNames = cursor.getColumnNames();
+        cursor.close();
+        return colNames;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
@@ -1439,6 +1471,25 @@ public class DBUtils {
                 DbgUtils.logf( "updateRow failed" );
             }
         }
+    }
+
+    private static int maxVISID( SQLiteDatabase db )
+    {
+        int result = 1;
+        String query = String.format( "SELECT max(%s) FROM %s", DBHelper.VISID,
+                                      DBHelper.TABLE_NAME_SUM );
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery( query, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result = 1 + cursor.getInt( 0 );
+            }
+        } finally {
+            if ( null != cursor ) {
+                cursor.close();
+            }
+        }
+        return result;
     }
     
     private static void notifyListeners( long rowid, boolean countChanged )

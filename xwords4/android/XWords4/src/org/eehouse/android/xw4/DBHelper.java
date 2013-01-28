@@ -25,6 +25,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -34,9 +37,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
     public static final String TABLE_NAME_GROUPS = "groups";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 16;
+    private static final int DB_VERSION = 17;
 
     public static final String GAME_NAME = "GAME_NAME";
+    public static final String VISID = "VISID";
     public static final String NUM_MOVES = "NUM_MOVES";
     public static final String TURN = "TURN";
     public static final String GIFLAGS = "GIFLAGS";
@@ -85,7 +89,9 @@ public class DBHelper extends SQLiteOpenHelper {
     private Context m_context;
 
     private static final String[] s_summaryColsAndTypes = {
-        GAME_NAME,    "TEXT"
+        "rowid",      "INTEGER PRIMARY KEY AUTOINCREMENT"
+        ,VISID,        "INTEGER"
+        ,GAME_NAME,    "TEXT"
         ,NUM_MOVES,   "INTEGER"
         ,TURN,        "INTEGER"
         ,GIFLAGS,     "INTEGER"
@@ -200,6 +206,10 @@ public class DBHelper extends SQLiteOpenHelper {
             createGroupsTable( db );
         case 15:
             moveToCurGames( db );
+        case 16:
+            addSumColumn( db, VISID );
+            setColumnsEqual( db, TABLE_NAME_SUM, VISID, "rowid" );
+            makeAutoincrement( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
             // nothing yet
             break;
         default:
@@ -279,5 +289,48 @@ public class DBHelper extends SQLiteOpenHelper {
             db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
         }
         cursor.close();
+    }
+
+    private void makeAutoincrement( SQLiteDatabase db, String name, String[] data )
+    {
+        db.beginTransaction();
+        try {
+            String query;
+            String[] columnNames = DBUtils.getColumns( db, name );
+            if ( null != columnNames ) { // no data means no need to copy
+                query = String.format( "ALTER table %s RENAME TO 'temp_%s'",
+                                              name, name );
+                db.execSQL( query );
+            }
+            createTable( db, name, data );
+            
+            if ( null != columnNames ) {
+                ArrayList<String> oldCols = 
+                    new ArrayList<String>( Arrays.asList( columnNames ) );
+                String[] newColNames = DBUtils.getColumns( db, name );
+                ArrayList<String> newCols = 
+                    new ArrayList<String>( Arrays.asList( newColNames ) );
+                oldCols.retainAll( newCols );
+
+                String cols = TextUtils.join( ",", oldCols );
+                query = 
+                    String.format( "INSERT INTO %s (%s) SELECT %s from temp_%s",
+                                   name, cols, cols, name );
+                db.execSQL( query );
+            }
+            db.execSQL( String.format( "DROP table temp_%s", name ) );
+            
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private void setColumnsEqual( SQLiteDatabase db, String table, 
+                                  String dest, String src )
+    {
+        String query = String.format( "UPDATE %s set %s = %s", table, 
+                                      dest, src );
+        db.execSQL( query );
     }
 }
