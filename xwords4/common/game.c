@@ -340,6 +340,7 @@ game_dispose( XWGame* game )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!game->comms ) {
+        comms_stop( game->comms );
         comms_destroy( game->comms );
         game->comms = NULL;
     }
