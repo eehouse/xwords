@@ -1294,6 +1294,18 @@ msgToStr( XWRelayReg msg )
 }
 
 static void
+ackPacketIf( const UDPHeader* header, const AddrInfo* addr )
+{
+    if ( UDPAckTrack::shouldAck( header->cmd ) ) {
+        uint32_t packetID = header->packetID;
+        logf( XW_LOGINFO, "acking packet %d", packetID );
+        packetID = htonl( packetID );
+        send_via_udp( addr->socket(), addr->sockaddr(), XWPDEV_ACK, 
+                      &packetID, sizeof(packetID), NULL );
+    }
+}
+
+static void
 udp_thread_proc( UdpThreadClosure* utc )
 {
     const unsigned char* ptr = utc->buf();
@@ -1302,6 +1314,7 @@ udp_thread_proc( UdpThreadClosure* utc )
     UDPHeader header;
     if ( getHeader( &ptr, end, &header ) ) {
         logf( XW_LOGINFO, "%s(msg=%s)", __func__, msgToStr( header.cmd ) );
+        ackPacketIf( &header, utc->addr() );
         switch( header.cmd ) {
         case XWPDEV_REG: {
             DevIDType typ = (DevIDType)*ptr++;
@@ -1375,6 +1388,7 @@ udp_thread_proc( UdpThreadClosure* utc )
         case XWPDEV_ACK: {
             uint32_t packetID;
             if ( getNetLong( &ptr, end, &packetID ) ) {
+                logf( XW_LOGINFO, "ack for packet %d", packetID );
                 UDPAckTrack::recordAck( packetID );
             }
             break;

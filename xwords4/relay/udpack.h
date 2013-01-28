@@ -33,6 +33,7 @@ class UDPAckTrack {
  public:
     static uint32_t nextPacketID( XWRelayReg cmd );
     static void recordAck( uint32_t packetID ); 
+    static bool shouldAck( XWRelayReg cmd );
 
  private:
     static UDPAckTrack* get();
