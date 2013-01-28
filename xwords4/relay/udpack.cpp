@@ -23,13 +23,17 @@
 UDPAckTrack* UDPAckTrack::s_self = NULL;
 
 
+/* static*/ bool
+UDPAckTrack::shouldAck( XWRelayReg cmd )
+{
+    return ( XWPDEV_ACK != cmd && XWPDEV_ALERT != cmd );
+}
+
 /* static*/ uint32_t
 UDPAckTrack::nextPacketID( XWRelayReg cmd )
 {
-    uint32_t result;
-    if ( XWPDEV_ACK == cmd || XWPDEV_ALERT == cmd ) {
-        result = 0;
-    } else {
+    uint32_t result = 0;
+    if ( shouldAck( cmd ) ) {
         result = get()->nextPacketIDImpl();
     }
     return result;
@@ -115,9 +119,10 @@ UDPAckTrack::threadProc()
                 }
                 string_printf( leaked, ", " );
             }
-            logf( XW_LOGERROR, "these packets leaked: %s", leaked.c_str() );
+            logf( XW_LOGERROR, "%s: these packets leaked: %s", __func__, 
+                  leaked.c_str() );
         } else {
-            logf( XW_LOGINFO, "no packets leaked" );
+            logf( XW_LOGINFO, "%s: no packets leaked", __func__ );
         }
     }
     return NULL;
