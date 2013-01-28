@@ -34,7 +34,8 @@ openGamesDB( const char* dbName )
 
     const char* createGamesStr = 
         "CREATE TABLE games ( "
-        "game BLOB"
+        "rowid INTEGER PRIMARY KEY AUTOINCREMENT"
+        ",game BLOB"
         ",room VARCHAR(32)"
         ",ended INT(1)"
         ",turn INT(2)"
