@@ -227,7 +227,8 @@ public class GameUtils {
     {
         String result = DBUtils.getName( context, rowid );
         if ( null == result || 0 == result.length() ) {
-            result = context.getString( R.string.gamef, rowid );
+            int visID = DBUtils.getVisID( context, rowid );
+            result = context.getString( R.string.gamef, visID );
         }
         return result;
     }
