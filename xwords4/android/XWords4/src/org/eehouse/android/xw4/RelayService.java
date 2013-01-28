@@ -33,6 +33,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -54,6 +55,9 @@ public class RelayService extends XWService {
     
     private static final String ROWID = "ROWID";
     private static final String BINBUFFER = "BINBUFFER";
+
+    private static HashSet<Integer> s_packetsSent = new HashSet<Integer>();
+    private static int s_nextPacketID = 1;
 
     private Thread m_fetchThread = null;
     private Thread m_UDPReadThread = null;
@@ -378,6 +382,9 @@ public class RelayService extends XWService {
                     dis.read( msg );
                     postData( RelayService.this, token, msg );
                     break;
+                case XWPDEV_ACK:
+                    noteAck( dis.readInt() );
+                    break;
                 default:
                     DbgUtils.logf( "RelayService: Unhandled cmd: %d", 
                                    header.m_cmd );
@@ -503,7 +510,7 @@ public class RelayService extends XWService {
     {
         DataOutputStream out = new DataOutputStream( bas );
         out.writeByte( XWPDEV_PROTO_VERSION );
-        out.writeInt( 0 );    // packetID
+        out.writeInt( nextPacketID( cmd ) );    // packetID
         out.writeByte( cmd.ordinal() );
         return out;
     }
@@ -708,6 +715,28 @@ public class RelayService extends XWService {
                 list.add( buf );
             }
             return true;
+        }
+    }
+
+    private static int nextPacketID( XWRelayReg cmd )
+    {
+        int nextPacketID = 0;
+        synchronized( s_packetsSent ) {
+            if ( XWRelayReg.XWPDEV_ACK != cmd ) {
+                nextPacketID = s_nextPacketID++;
+                s_packetsSent.add( nextPacketID );
+            }
+        }
+        DbgUtils.logf( "nextPacketID(%s)=>%d", cmd.toString(), nextPacketID );
+        return nextPacketID;
+    }
+
+    private static void noteAck( int packetID )
+    {
+        synchronized( s_packetsSent ) {
+            s_packetsSent.remove( packetID );
+            DbgUtils.logf( "Got ack for %d; there are %d unacked packets", 
+                           packetID, s_packetsSent.size() );
         }
     }
 
