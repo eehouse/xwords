@@ -169,6 +169,7 @@ public class DBHelper extends SQLiteOpenHelper {
         createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
         createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
         createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
+        forceRowidHigh( db, TABLE_NAME_SUM );
         createGroupsTable( db );
     }
 
@@ -303,6 +304,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 db.execSQL( query );
             }
             createTable( db, name, data );
+            forceRowidHigh( db, name );
             
             if ( null != columnNames ) {
                 ArrayList<String> oldCols = 
@@ -331,6 +333,18 @@ public class DBHelper extends SQLiteOpenHelper {
     {
         String query = String.format( "UPDATE %s set %s = %s", table, 
                                       dest, src );
+        db.execSQL( query );
+    }
+
+    private void forceRowidHigh( SQLiteDatabase db, String name )
+    {
+        long now = Utils.getCurSeconds();
+        // knock 20 years off; whose clock can be that far back?
+        now -= 622080000;
+        String query = String.format( "INSERT INTO %s (rowid) VALUES (%d)",
+                                      name, now );
+        db.execSQL( query );
+        query = String.format( "DELETE FROM %s", name );
         db.execSQL( query );
     }
 }
