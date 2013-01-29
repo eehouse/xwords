@@ -1769,14 +1769,18 @@ static void
 cursesDevIDChanged( void* closure, const XP_UCHAR* devID )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
-    sqlite3* pDb = globals->cGlobals.pDb;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    sqlite3* pDb = cGlobals->pDb;
     if ( !!devID ) {
         XP_LOGF( "%s(devID=%s)", __func__, devID );
         db_store( pDb, KEY_RDEVID, devID );
     } else {
         XP_LOGF( "%s: bad relayid", __func__ );
         db_remove( pDb, KEY_RDEVID );
-        sendRelayReg( globals->cGlobals.params, pDb );
+
+        DevIDType typ;
+        const XP_UCHAR* devID = linux_getDevID( cGlobals->params, &typ );
+        relaycon_reg( cGlobals->params, devID, typ );
     }
 }
 
@@ -1945,7 +1949,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             relaycon_init( params, &procs, &g_globals,
                            params->connInfo.relay.relayName,
                            params->connInfo.relay.defaultSendPort );
-            sendRelayReg( params, g_globals.cGlobals.pDb );
+            DevIDType typ;
+            const XP_UCHAR* devID = linux_getDevID( params, &typ );
+            relaycon_reg( params, devID, typ );
 
             GSList* games = listGames( g_globals.cGlobals.pDb );
             if ( !!games ) {

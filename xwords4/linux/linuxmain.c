@@ -580,7 +580,8 @@ setOneSecondTimer( CommonGlobals* cGlobals )
 #endif
 
 typedef enum {
-    CMD_SKIP_GAMEOVER
+    CMD_HELP
+    ,CMD_SKIP_GAMEOVER
     ,CMD_SHOW_OTHERSCORES
     ,CMD_HOSTIP
     ,CMD_DICT
@@ -595,6 +596,7 @@ typedef enum {
 #ifdef XWFEATURE_DEVID
     ,CMD_DEVID
     ,CMD_RDEVID
+    ,CMD_NOANONDEVID
 #endif
     ,CMD_GAMESEED
     ,CMD_GAMEFILE
@@ -678,7 +680,8 @@ typedef struct _CmdInfoRec {
 } CmdInfoRec;
 
 static CmdInfoRec CmdInfoRecs[] = {
-    { CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
+    { CMD_HELP, false, "help", "print usage" }
+    ,{ CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
     ,{ CMD_SHOW_OTHERSCORES, false, "show-other", "show robot/remote scores" }
     ,{ CMD_HOSTIP, true, "hostip", "remote host ip address (for direct connect)" }
     ,{ CMD_DICT, true, "game-dict", "dictionary name for game" }
@@ -693,6 +696,8 @@ static CmdInfoRec CmdInfoRecs[] = {
 #ifdef XWFEATURE_DEVID
     ,{ CMD_DEVID, true, "devid", "device ID (for testing GCM stuff)" }
     ,{ CMD_RDEVID, true, "rdevid", "relay's converted device ID (for testing GCM stuff)" }
+    ,{CMD_NOANONDEVID, false, "no-anon-devid",
+      "override default of using anonymous devid registration when no id provided" }
 #endif
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
     ,{ CMD_GAMEFILE, true, "file", "file to save to/read from" }
@@ -851,24 +856,28 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
 } /* linShiftFocus */
 #endif
 
-void
-sendRelayReg( LaunchParams* params, sqlite3* pDb )
+const XP_UCHAR*
+linux_getDevID( LaunchParams* params, DevIDType* typ )
 {
-    XP_UCHAR devIDBuf[64] = {0};
-    XP_UCHAR* devID;
-    DevIDType typ = ID_TYPE_RELAY;
+    const XP_UCHAR* result = NULL;
+
+    /* commandline takes precedence over stored values */
+
     if ( !!params->rDevID ) {
-        devID = params->rDevID;
-    } else {
-        db_fetch( pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
-        if ( '\0' != devIDBuf[0] ) {
-            devID = devIDBuf;
-        } else {
-            devID = params->devID;
-            typ = ID_TYPE_LINUX;
-        }
+        result = params->rDevID;
+        *typ = ID_TYPE_RELAY;
+    } else if ( !!params->devID ) {
+        result = params->devID;
+        *typ = ID_TYPE_LINUX;
+    } else if ( db_fetch( params->pDb, KEY_RDEVID, params->devIDStore, 
+                          sizeof(params->devIDStore) ) ) {
+        result = params->devIDStore;
+        *typ = ID_TYPE_RELAY;
+    } else if ( !params->noAnonDevid ) {
+        *typ = ID_TYPE_ANON;
+        result = "";
     }
-    relaycon_reg( params, devID, typ );
+    return result;
 }
 
 #ifdef XWFEATURE_RELAY
@@ -1843,7 +1852,7 @@ main( int argc, char** argv )
         short index;
         opt = getopt_long_only( argc, argv, "", longopts, NULL );
         switch ( opt ) {
-        case '?':
+        case CMD_HELP:
             usage(argv[0], NULL);
             break;
         case CMD_SKIP_GAMEOVER:
@@ -1906,6 +1915,8 @@ main( int argc, char** argv )
         case CMD_RDEVID:
             mainParams.rDevID = optarg;
             break;
+        case CMD_NOANONDEVID:
+            mainParams.noAnonDevid = true;
 #endif
         case CMD_GAMESEED:
             mainParams.gameSeed = atoi(optarg);

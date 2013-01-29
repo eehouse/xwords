@@ -32,6 +32,7 @@
 #include "linuxutl.h"
 #include "main.h"
 #include "linuxdict.h"
+#include "linuxmain.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef DEBUG
@@ -349,19 +350,8 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
 static const XP_UCHAR*
 linux_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
 {
-    XP_UCHAR* result;
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    if ( !!cGlobals->params->rDevID ) {
-        *typ = ID_TYPE_RELAY;
-        result = cGlobals->params->rDevID;
-    } else if ( !!cGlobals->params->devID ) {
-        *typ = ID_TYPE_LINUX;
-        result = cGlobals->params->devID;
-    } else {
-        *typ = ID_TYPE_NONE;
-        result = NULL;
-    }
-    return result;
+    return linux_getDevID( cGlobals->params, typ );
 }
 
 static void

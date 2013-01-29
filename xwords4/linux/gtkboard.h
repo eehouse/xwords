@@ -170,7 +170,7 @@ void initGlobals( GtkGameGlobals* globals, LaunchParams* params );
 void freeGlobals( GtkGameGlobals* globals );
 XP_Bool makeNewGame( GtkGameGlobals* globals );
 XP_Bool loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
-                        sqlite3* pDb, sqlite3_int64 rowid );
+                        sqlite3_int64 rowid );
 void destroy_board_window( GtkWidget* widget, GtkGameGlobals* globals );
 
 #endif /* PLATFORM_GTK */

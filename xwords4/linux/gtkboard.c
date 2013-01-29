@@ -310,9 +310,11 @@ relay_status_gtk( void* closure, CommsRelayState state )
 {
     XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
-    globals->cGlobals.state = state;
-    globals->stateChar = 'A' + COMMS_RELAYSTATE_ALLCONNECTED - state;
-    draw_gtk_status( globals->draw, globals->stateChar );
+    if ( !!globals->draw ) {
+        globals->cGlobals.state = state;
+        globals->stateChar = 'A' + COMMS_RELAYSTATE_ALLCONNECTED - state;
+        draw_gtk_status( globals->draw, globals->stateChar );
+    }
 }
 
 static void
@@ -2570,9 +2572,10 @@ freeGlobals( GtkGameGlobals* globals )
 
 XP_Bool
 loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
-                sqlite3* pDb, sqlite3_int64 rowid )
+                sqlite3_int64 rowid )
 {
     LOG_FUNC();
+    sqlite3* pDb = params->pDb;
     initGlobalsNoDraw( globals, params );
 
     TransportProcs procs;

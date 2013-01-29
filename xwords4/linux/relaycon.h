@@ -40,6 +40,8 @@ XP_S16 relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
 XP_S16 relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
                             const XP_UCHAR* relayID, XP_U32 gameToken );
 void relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID );
+void relaycon_deleted( LaunchParams* params, const XP_UCHAR* devID, 
+                       XP_U32 gameToken );
 
 void relaycon_cleanup( LaunchParams* params );
 #endif

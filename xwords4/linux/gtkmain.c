@@ -208,7 +208,7 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
         freeGlobals( globals );
     } else {
         GtkWidget* gameWindow = globals->window;
-        globals->cGlobals.pDb = apg->pDb;
+        globals->cGlobals.pDb = apg->params->pDb;
         globals->cGlobals.selRow = -1;
         recordOpened( apg, globals );
         gtk_widget_show( gameWindow );
@@ -224,7 +224,7 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
         apg->params->needsNewGame = XP_FALSE;
         GtkGameGlobals* globals = malloc( sizeof(*globals) );
         initGlobals( globals, apg->params );
-        globals->cGlobals.pDb = apg->pDb;
+        globals->cGlobals.pDb = apg->params->pDb;
         globals->cGlobals.selRow = selRow;
         recordOpened( apg, globals );
         gtk_widget_show( globals->window );
@@ -235,11 +235,20 @@ static void
 handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->params;
     guint len = apg->selRows->len;
     for ( guint ii = 0; ii < len; ++ii ) {
         sqlite3_int64 rowid = g_array_index( apg->selRows, sqlite3_int64, ii );
         removeRow( apg, rowid );
-        deleteGame( apg->pDb, rowid );
+        deleteGame( params->pDb, rowid );
+
+        XP_UCHAR devIDBuf[64] = {0};
+        db_fetch( params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+        if ( '\0' != devIDBuf[0] ) {
+            relaycon_deleted( params, devIDBuf, rowid );
+        } else {
+            XP_LOGF( "%s: not calling relaycon_deleted: no relayID", __func__ );
+        }
     }
     apg->selRows = g_array_set_size( apg->selRows, 0 );
     updateButtons( apg );
@@ -301,7 +310,7 @@ makeGamesWindow( GtkAppGlobals* apg )
     
     gtk_widget_show( list );
 
-    GSList* games = listGames( apg->pDb );
+    GSList* games = listGames( apg->params->pDb );
     for ( GSList* iter = games; !!iter; iter = iter->next ) {
         sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
         onNewData( apg, *rowid, XP_TRUE );
@@ -346,7 +355,7 @@ static void
 onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
 {
     GameInfo gib;
-    if ( getGameInfo( apg->pDb, rowid, &gib ) ) {
+    if ( getGameInfo( apg->params->pDb, rowid, &gib ) ) {
         add_to_list( apg->listWidget, rowid, isNew, &gib );
     }
 }
@@ -400,7 +409,7 @@ gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
         gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
     } else {
         GtkGameGlobals tmpGlobals;
-        if ( loadGameNoDraw( &tmpGlobals, apg->params, apg->pDb, gameToken ) ) {
+        if ( loadGameNoDraw( &tmpGlobals, apg->params, gameToken ) ) {
             gameGotBuf( &tmpGlobals.cGlobals, XP_FALSE, buf, len );
             saveGame( &tmpGlobals.cGlobals );
         }
@@ -413,7 +422,7 @@ requestMsgs( gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch( apg->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    db_fetch( apg->params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( apg->params, devIDBuf );
     } else {
@@ -434,13 +443,17 @@ static void
 gtkDevIDChanged( void* closure, const XP_UCHAR* devID )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->params;
     if ( !!devID ) {
         XP_LOGF( "%s(devID=%s)", __func__, devID );
-        db_store( apg->pDb, KEY_RDEVID, devID );
+        db_store( params->pDb, KEY_RDEVID, devID );
     } else {
         XP_LOGF( "%s: bad relayid", __func__ );
-        db_remove( apg->pDb, KEY_RDEVID );
-        sendRelayReg( apg->params, apg->pDb );
+        db_remove( params->pDb, KEY_RDEVID );
+
+        DevIDType typ;
+        const XP_UCHAR* devID = linux_getDevID( params, &typ );
+        relaycon_reg( params, devID, typ );
     }
 }
 
@@ -494,7 +507,7 @@ gtkmain( LaunchParams* params )
 
     apg.selRows = g_array_new( FALSE, FALSE, sizeof( sqlite3_int64 ) );
     apg.params = params;
-    apg.pDb = openGamesDB( params->dbName );
+    params->pDb = openGamesDB( params->dbName );
 
     RelayConnProcs procs = {
         .msgReceived = gtkGotBuf,
@@ -507,12 +520,15 @@ gtkmain( LaunchParams* params )
     relaycon_init( params, &procs, &apg, 
                    params->connInfo.relay.relayName,
                    params->connInfo.relay.defaultSendPort );
-    sendRelayReg( params, apg.pDb );
+
+    DevIDType typ;
+    const XP_UCHAR* devID = linux_getDevID( params, &typ );
+    relaycon_reg( params, devID, typ );
 
     apg.window = makeGamesWindow( &apg );
     gtk_main();
 
-    closeGamesDB( apg.pDb );
+    closeGamesDB( params->pDb );
     relaycon_cleanup( params );
 
     return 0;

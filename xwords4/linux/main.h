@@ -55,6 +55,7 @@ typedef struct LaunchParams {
     GSList* dictDirs;
     char* fileName;
     char* dbName;
+    sqlite3* pDb;               /* null unless opened */
     XP_U16 saveFailPct;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE
@@ -68,6 +69,8 @@ typedef struct LaunchParams {
 #ifdef XWFEATURE_DEVID
     char* devID;
     char* rDevID;
+    XP_Bool noAnonDevid;
+    XP_UCHAR devIDStore[16];
 #endif
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
@@ -231,7 +234,6 @@ typedef struct _SourceData {
 } SourceData;
 
 typedef struct _GtkAppGlobals {
-    sqlite3* pDb;
     GArray* selRows;
     LaunchParams* params;
     GSList* globalsList;
