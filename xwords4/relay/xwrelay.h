@@ -27,7 +27,12 @@
 /* Set if device is acting a server; cleared if as client */
 #define FLAGS_SERVER_BIT 0x01
 
-/* message types for the udp-based per-device (not per-game) protocol */
+/* message types for the udp-based per-device (not per-game) protocol 
+ *
+ * A number of these rely on a "clientToken", which is a 32-bit value the
+ * client provides and that it guarantees uniquely identifies a game on the
+ * device.  A database rowid works great as long as they aren't reused.
+ */
 #define XWPDEV_PROTO_VERSION 0
 #ifndef CANT_DO_TYPEDEF
 typedef
@@ -85,6 +90,9 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
                                    on firewall timeouts.  format: header,
                                    msgID: 4
                                 */
+
+       ,XWPDEV_DELGAME          /* dev->relay: game's been deleted.  format:
+                                   header, relayid: 4, clientToken: 4 */
 
 }
 #ifndef CANT_DO_TYPEDEF
@@ -176,6 +184,7 @@ typedef enum {
     ,ID_TYPE_LINUX
     ,ID_TYPE_ANDROID_GCM
     ,ID_TYPE_ANDROID_OTHER
+    ,ID_TYPE_ANON               /* please assign me one based on nothing */
 
     ,ID_TYPE_NTYPES
 } DevIDType;

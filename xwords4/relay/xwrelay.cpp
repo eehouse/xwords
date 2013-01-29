@@ -272,6 +272,24 @@ getNetString( const unsigned char** bufpp, const unsigned char* end, string& out
 }
 
 static bool
+getRelayDevID( const unsigned char** bufpp, const unsigned char* end, 
+               DevID& devID )
+{
+    bool success = false;
+    unsigned short idLen;
+    if ( getNetShort( bufpp, end, &idLen ) ) {
+        if ( end - *bufpp < idLen/* && ID_TYPE_ANON != typ*/ ) {
+            logf( XW_LOGERROR, "full devID not received" );
+        } else {
+            devID.m_devIDString.append( (const char*)*bufpp, idLen );
+            *bufpp += idLen;
+            success = true;
+        }
+    }
+    return success;
+}
+
+static bool
 getHeader( const unsigned char** bufpp, const unsigned char* end,
            UDPHeader* header )
 {
@@ -1284,6 +1302,7 @@ msgToStr( XWRelayReg msg )
     CASE_STR(XWPDEV_BADREG);
     CASE_STR(XWPDEV_ALERT);     // should not receive this....
     CASE_STR(XWPDEV_ACK);
+    CASE_STR(XWPDEV_DELGAME);
     default:
         str = "<unknown>";
         break;
@@ -1318,20 +1337,12 @@ udp_thread_proc( UdpThreadClosure* utc )
         switch( header.cmd ) {
         case XWPDEV_REG: {
             DevIDType typ = (DevIDType)*ptr++;
-            unsigned short idLen;
-            if ( !getNetShort( &ptr, end, &idLen ) ) {
-                break;
-            }
-            if ( end - ptr > idLen ) {
-                logf( XW_LOGERROR, "full devID not received" );
-                break;
-            }
             DevID devID( typ );
-            devID.m_devIDString.append( (const char*)ptr, idLen );
-            ptr += idLen;
-            registerDevice( &devID, utc->saddr() );
-        }
+            if ( getRelayDevID( &ptr, end, devID ) ) {
+                registerDevice( &devID, utc->saddr() );
+            }
             break;
+        }
         case XWPDEV_MSG: {
             AddrInfo::ClientToken clientToken;
             memcpy( &clientToken, ptr, sizeof(clientToken) );
@@ -1393,14 +1404,30 @@ udp_thread_proc( UdpThreadClosure* utc )
             }
             break;
         }
+        case XWPDEV_DELGAME: {
+            DevID devID( ID_TYPE_RELAY );
+            if ( !getRelayDevID( &ptr, end, devID ) ) {
+                break;
+            }
+            AddrInfo::ClientToken clientToken;
+            if ( getNetLong( &ptr, end, &clientToken ) && 0 != clientToken ) {
+                unsigned short seed;
+                HostID hid;
+                string connName;
+                if ( DBMgr::Get()->FindPlayer( devID.asRelayID(), clientToken, 
+                                               connName, &hid, &seed ) ) {
+                    SafeCref scr( connName.c_str() );
+                    scr.DeviceGone( hid, seed );
+                }
+            }
+            break;
+        }
         default:
             logf( XW_LOGERROR, "%s: unexpected msg %d", __func__, header.cmd );
         }
     }
 }
 
-// This will need to be done in a thread before there can be simulaneous
-// connections.
 static void
 handle_udp_packet( int udpsock )
 {

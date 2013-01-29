@@ -47,6 +47,9 @@ class DBMgr {
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
                  int langCode, int nPlayersT, bool isPublic );
 
+    bool FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken, 
+                     string& connName, HostID* hid, unsigned short* seed );
+
     CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
                        int* langP, int* nPlayersTP, int* nPlayersHP,
                        bool* isDead );

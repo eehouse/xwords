@@ -43,6 +43,7 @@
 static DBMgr* s_instance = NULL;
 
 #define DELIM "\1"
+#define MAX_NUM_PLAYERS 4
 
 static void formatParams( char* paramValues[], int nParams, const char* fmt, 
                           char* buf, int bufLen, ... );
@@ -148,6 +149,54 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
     logf( XW_LOGINFO, "%s(%s)=>%d", __func__, connName, cid );
     return cid;
 } /* FindGame */
+
+bool
+DBMgr::FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken token, 
+                   string& connName, HostID* hidp, unsigned short* seed )
+{
+    int nSuccesses = 0;
+
+    const char* fmt = 
+        "SELECT connName FROM %s WHERE %d = ANY(devids) AND %d = ANY(tokens)";
+    string query;
+    string_printf( query, fmt, GAMES_TABLE, relayID, token );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    int nTuples = PQntuples( result );
+    vector<string> names(nTuples);
+    for ( int ii = 0; ii < nTuples; ++ii ) {
+        string name( PQgetvalue( result, ii, 0 ) );
+        names.push_back( name );
+    }
+    PQclear( result );
+
+    for ( vector<string>::const_iterator iter = names.begin();
+          iter != names.end(); ++iter ) {
+        const char* name = iter->c_str();
+        for ( HostID hid = 1; hid <= MAX_NUM_PLAYERS; ++hid ) {
+            fmt = "SELECT seeds[%d] FROM %s WHERE connname = '%s' "
+                "AND devids[%d] = %d AND tokens[%d] = %d";
+            string query;
+            string_printf( query, fmt, hid, GAMES_TABLE, name,
+                           hid, relayID, hid, token );
+            result = PQexec( getThreadConn(), query.c_str() );
+            int nTuples2 = PQntuples( result );
+            for ( int jj = 0; jj < nTuples2; ++jj ) {
+                connName = name;
+                *hidp = hid;
+                *seed = atoi( PQgetvalue( result, 0, 0 ) );
+                ++nSuccesses;
+            }
+            PQclear( result );
+        }
+    }
+
+    if ( 1 < nSuccesses ) {
+        logf( XW_LOGERROR, "%s found %d matches!!!", __func__, nSuccesses );
+    }
+
+    return nSuccesses >= 1;
+} // FindPlayer
 
 bool
 DBMgr::SeenSeed( const char* cookie, unsigned short seed,
@@ -295,7 +344,8 @@ DBMgr::RegisterDevice( const DevID* host )
                                              NULL, NULL, 0 );
             success = PGRES_COMMAND_OK == PQresultStatus(result);
             if ( !success ) {
-                logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), 
+                logf( XW_LOGERROR, "PQexec=>%s;%s", 
+                      PQresStatus(PQresultStatus(result)), 
                       PQresultErrorMessage(result) );
             }
             PQclear( result );
@@ -315,7 +365,8 @@ DBMgr::updateDevice( DevIDRelay relayID, bool check )
     }
 
     if ( exists ) {
-        const char* fmt = "UPDATE " DEVICES_TABLE " SET mtime='now' WHERE id = %d";
+        const char* fmt = 
+            "UPDATE " DEVICES_TABLE " SET mtime='now' WHERE id = %d";
         string query;
         string_printf( query, fmt, relayID );
         execSql( query );
