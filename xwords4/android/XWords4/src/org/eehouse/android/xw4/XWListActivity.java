@@ -116,7 +116,7 @@ public class XWListActivity extends ListActivity
 
     protected void showOKOnlyDialog( String msg )
     {
-        m_delegate.showOKOnlyDialog( msg, 0 );
+        m_delegate.showOKOnlyDialog( msg );
     }
 
     protected void showOKOnlyDialog( int msgID )

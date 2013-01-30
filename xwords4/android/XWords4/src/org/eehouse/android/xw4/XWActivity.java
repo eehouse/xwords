@@ -126,7 +126,7 @@ public class XWActivity extends Activity
 
     protected void showOKOnlyDialog( String msg )
     {
-        m_delegate.showOKOnlyDialog( msg, 0 );
+        m_delegate.showOKOnlyDialog( msg );
     }
 
     protected void showDictGoneFinish()

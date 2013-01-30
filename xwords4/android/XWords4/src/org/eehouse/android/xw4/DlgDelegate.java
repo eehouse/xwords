@@ -128,6 +128,11 @@ public class DlgDelegate {
         return dialog;
     }
 
+    public void showOKOnlyDialog( String msg )
+    {
+        showOKOnlyDialog( msg, SKIP_CALLBACK );
+    }
+
     public void showOKOnlyDialog( String msg, int callbackID )
     {
         // Assert.assertNull( m_dlgStates );
@@ -143,7 +148,7 @@ public class DlgDelegate {
 
     public void showOKOnlyDialog( int msgID )
     {
-        showOKOnlyDialog( m_activity.getString( msgID ), 0 );
+        showOKOnlyDialog( m_activity.getString( msgID ), SKIP_CALLBACK );
     }
 
     public void showDictGoneFinish()
@@ -282,7 +287,7 @@ public class DlgDelegate {
             post( new Runnable() {
                     public void run() {
                         if ( asDlg ) {
-                            showOKOnlyDialog( fmsg, 0 );
+                            showOKOnlyDialog( fmsg, SKIP_CALLBACK );
                         } else {
                             DbgUtils.showf( m_activity, fmsg );
                         }
@@ -330,9 +335,8 @@ public class DlgDelegate {
             .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, null )
             .create();
-        if ( 0 != state.m_cbckID ) {
-            dialog = setCallbackDismissListener( dialog, state, id );
-        }
+        dialog = setCallbackDismissListener( dialog, state, id );
+
         return dialog;
     }
 
@@ -485,11 +489,12 @@ public class DlgDelegate {
 
     private void dropState( DlgState state )
     {
+        int nDlgs = m_dlgStates.size();
         Assert.assertNotNull( state );
         Assert.assertTrue( state == m_dlgStates.get( state.m_id ) );
         m_dlgStates.remove( state.m_id );
-        DbgUtils.logf( "dropState: there are now %d active dialogs", 
-                       m_dlgStates.size() );
+        DbgUtils.logf( "dropState: active dialogs now %d from %d ", 
+                       m_dlgStates.size(), nDlgs );
     }
 
     private void addState( DlgState state )

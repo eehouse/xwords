@@ -51,7 +51,6 @@ public class XWExpandableListActivity extends ExpandableListActivity
     @Override
     protected Dialog onCreateDialog( final int id )
     {
-        DbgUtils.logf( "%s.onCreateDialog() called", getClass().getName() );
         Dialog dialog = m_delegate.onCreateDialog( id );
         if ( null == dialog ) {
             dialog = super.onCreateDialog( id );
