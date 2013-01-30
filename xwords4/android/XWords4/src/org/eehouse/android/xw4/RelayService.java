@@ -532,8 +532,8 @@ public class RelayService extends XWService {
             if ( null != devid && 0 < devid.length() ) {
                 typ = UtilCtxt.ID_TYPE_ANDROID_GCM;
             } else {
-                devid = "DO NOT SHIP WITH ME";
-                typ = UtilCtxt.ID_TYPE_ANDROID_OTHER;
+                devid = "";
+                typ = UtilCtxt.ID_TYPE_ANON;
             }
         }
         if ( null != typp ) {

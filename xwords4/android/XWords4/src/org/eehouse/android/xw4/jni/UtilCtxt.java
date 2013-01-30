@@ -61,6 +61,7 @@ public interface UtilCtxt {
     public static final int ID_TYPE_RELAY = 1;
     public static final int ID_TYPE_ANDROID_GCM = 3;
     public static final int ID_TYPE_ANDROID_OTHER = 4;
+    public static final int ID_TYPE_ANON = 5;
 
     String getDevID( /*out*/ byte[] typ );
     void deviceRegistered( int devIDType, String idRelay );
