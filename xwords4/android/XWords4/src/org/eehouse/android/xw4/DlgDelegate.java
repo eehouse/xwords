@@ -79,7 +79,7 @@ public class DlgDelegate {
             int[] ids = bundle.getIntArray( IDS );
             for ( int id : ids ) {
                 String key = String.format( STATE_KEYF, id );
-                addState( (DlgState)bundle.getSerializable( key ) );
+                addState( (DlgState)bundle.getParcelable( key ) );
             }
         }
     }
@@ -93,7 +93,7 @@ public class DlgDelegate {
             while ( iter.hasNext() ) {
                 DlgState state = iter.next();
                 String key = String.format( STATE_KEYF, state.m_id );
-                outState.putSerializable( key, state );
+                outState.putParcelable( key, state );
                 ids[indx++] = state.m_id;
             }
         }
@@ -172,8 +172,9 @@ public class DlgDelegate {
                                                   AlertDialog.BUTTON_POSITIVE );
             }
         } else {
-            DlgState state = new DlgState( DIALOG_NOTAGAIN, msgID, callbackID, 
-                                           prefsKey );
+            String msg = m_activity.getString( msgID );
+            DlgState state = 
+                new DlgState( DIALOG_NOTAGAIN, msg, callbackID, prefsKey );
             addState( state );
             m_activity.showDialog( DIALOG_NOTAGAIN );
         }
@@ -443,41 +444,6 @@ public class DlgDelegate {
 
         dialog.setOnDismissListener( cbkOnDismissLstnr );
         return dialog;
-    }
-
-    private class DlgState implements java.io.Serializable {
-        public int m_id;
-        public String m_msg;
-        public int m_posButton;
-        public int m_cbckID = 0;
-        public int m_prefsKey;
-
-        public DlgState( int id, String msg, int cbckID )
-        {
-            this( id, msg, 0, cbckID, 0 );
-        }
-
-        public DlgState( int id, int msgID, int cbckID, int prefsKey )
-        {
-            this( id, m_activity.getString(msgID), 0, cbckID, prefsKey );
-        }
-
-        public DlgState( int id, String msg, int posButton, 
-                         int cbckID, int prefsKey )
-        {
-            m_id = id;
-            m_msg = msg;
-            m_posButton = posButton;
-            m_cbckID = cbckID;
-            m_prefsKey = prefsKey;
-            DbgUtils.logf( "DlgState(%d)=>%H", id, this );
-        }
-
-        public DlgState( int id, int cbckID )
-        {
-            this( id, null, 0, cbckID, 0 );
-        }
-
     }
 
     private DlgState findForID( int id )
