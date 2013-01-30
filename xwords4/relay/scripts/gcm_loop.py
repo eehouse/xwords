@@ -65,7 +65,7 @@ def getPendingMsgs( con, typ ):
 def unregister( gcmid ):
     global g_con
     print "unregister(", gcmid, ")"
-    query = "UPDATE devices SET unreg=TRUE WHERE id = '%s'" % gcmid
+    query = "UPDATE devices SET unreg=TRUE WHERE devid = '%s'" % gcmid
     g_con.cursor().execute( query )
 
 def asGCMIds(con, devids, typ):
