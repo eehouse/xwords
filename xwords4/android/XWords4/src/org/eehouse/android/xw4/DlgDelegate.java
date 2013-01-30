@@ -499,9 +499,17 @@ public class DlgDelegate {
 
     private void addState( DlgState state )
     {
+        // I'm getting serialization failures on devices pointing at
+        // DlgState but the code below says the object's fine (as it
+        // should be.)  Just to have a record....
+        // 
+        // Bundle bundle = new Bundle();
+        // DbgUtils.logf( "addState: testing serializable" );
+        // bundle.putSerializable( "foo", state );
+        // state = (DlgState)bundle.getSerializable( "foo" );
+        // DbgUtils.logf( "addState: serializable is ok" );
+
         m_dlgStates.put( state.m_id, state );
-        DbgUtils.logf( "addState: there are now %d active dialogs", 
-                       m_dlgStates.size() );
     }
 
 }
