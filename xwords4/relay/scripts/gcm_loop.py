@@ -6,8 +6,9 @@
 #
 # Depends on the gcm module
 
-import getpass, sys, gcm, psycopg2, time, signal, shelve
+import getpass, sys, psycopg2, time, signal, shelve, json, urllib2
 from time import gmtime, strftime
+from os import path
 
 # I'm not checking my key in...
 import mykey
@@ -25,7 +26,7 @@ import mykey
 # contact list if it is the target of at least one message in the msgs
 # table.
 
-k_shelfFile = "gcm_loop.shelf"
+k_shelfFile = path.splitext( path.basename( sys.argv[0]) )[0] + ".shelf"
 k_SENT = 'SENT'
 g_con = None
 g_sent = None
@@ -65,7 +66,7 @@ def getPendingMsgs( con, typ ):
 def unregister( gcmid ):
     global g_con
     print "unregister(", gcmid, ")"
-    query = "UPDATE devices SET unreg=TRUE WHERE devid = '%s'" % gcmid
+    query = "UPDATE devices SET unreg=TRUE WHERE devid = '%s' and devtype = 3" % gcmid
     g_con.cursor().execute( query )
 
 def asGCMIds(con, devids, typ):
@@ -77,20 +78,23 @@ def asGCMIds(con, devids, typ):
 
 def notifyGCM( devids, typ ):
     if typ == DEVTYPE_GCM:
-        instance = gcm.GCM( mykey.myKey )
-        data = { 'getMoves': True, }
-        response = instance.json_request( registration_ids = devids,
-                                          data = data,
-                                          )
-        if 'errors' in response:
-            response = response['errors']
-            if 'NotRegistered' in response:
-                for gcmid in response['NotRegistered']:
-                    unregister( gcmid )
-            else: 
-                print "got some kind of error"
+        values = {
+            'data' : { 'getMoves': True, },
+            'registration_ids': devids,
+            }
+        params = json.dumps( values )
+        req = urllib2.Request("https://android.googleapis.com/gcm/send", params )
+        req.add_header( 'Content-Type' , 'application/x-www-form-urlencoded;charset=UTF-8' )
+        req.add_header( 'Authorization' , 'key=' + mykey.myKey )
+        req.add_header('Content-Type', 'application/json' )
+        response = urllib2.urlopen( req ).read()
+        asJson = json.loads( response  )
+
+        if 'success' in asJson and 'failure' in asJson and len(devids) == asJson['success'] and 0 == asJson['failure']:
+            print "OK"
         else:
-            if g_debug: print 'no errors:', response
+            print "Errors: "
+            print response
     else:
         print "not sending to", len(devids), "devices because typ ==", typ
 
@@ -182,7 +186,7 @@ def main():
                 if 0 < emptyCount: print ""
                 emptyCount = 0
                 print strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-                print "devices needing notification:", targets
+                print "devices needing notification:", targets, '=>',
                 notifyGCM( asGCMIds( g_con, targets, typ ), typ )
                 pruneSent( devids )
             elif g_debug: print "no targets after backoff"
