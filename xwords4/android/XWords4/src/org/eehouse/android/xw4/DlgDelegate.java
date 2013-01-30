@@ -79,7 +79,7 @@ public class DlgDelegate {
             int[] ids = bundle.getIntArray( IDS );
             for ( int id : ids ) {
                 String key = String.format( STATE_KEYF, id );
-                addState( (DlgState)bundle.getSerializable( key ) );
+                addState( (DlgState)bundle.getParcelable( key ) );
             }
         }
     }
@@ -93,7 +93,7 @@ public class DlgDelegate {
             while ( iter.hasNext() ) {
                 DlgState state = iter.next();
                 String key = String.format( STATE_KEYF, state.m_id );
-                outState.putSerializable( key, state );
+                outState.putParcelable( key, state );
                 ids[indx++] = state.m_id;
             }
         }
@@ -128,6 +128,11 @@ public class DlgDelegate {
         return dialog;
     }
 
+    public void showOKOnlyDialog( String msg )
+    {
+        showOKOnlyDialog( msg, SKIP_CALLBACK );
+    }
+
     public void showOKOnlyDialog( String msg, int callbackID )
     {
         // Assert.assertNull( m_dlgStates );
@@ -143,7 +148,7 @@ public class DlgDelegate {
 
     public void showOKOnlyDialog( int msgID )
     {
-        showOKOnlyDialog( m_activity.getString( msgID ), 0 );
+        showOKOnlyDialog( m_activity.getString( msgID ), SKIP_CALLBACK );
     }
 
     public void showDictGoneFinish()
@@ -167,8 +172,9 @@ public class DlgDelegate {
                                                   AlertDialog.BUTTON_POSITIVE );
             }
         } else {
-            DlgState state = new DlgState( DIALOG_NOTAGAIN, msgID, callbackID, 
-                                           prefsKey );
+            String msg = m_activity.getString( msgID );
+            DlgState state = 
+                new DlgState( DIALOG_NOTAGAIN, msg, callbackID, prefsKey );
             addState( state );
             m_activity.showDialog( DIALOG_NOTAGAIN );
         }
@@ -287,7 +293,7 @@ public class DlgDelegate {
             post( new Runnable() {
                     public void run() {
                         if ( asDlg ) {
-                            showOKOnlyDialog( fmsg, 0 );
+                            showOKOnlyDialog( fmsg, SKIP_CALLBACK );
                         } else {
                             DbgUtils.showf( m_activity, fmsg );
                         }
@@ -335,9 +341,8 @@ public class DlgDelegate {
             .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, null )
             .create();
-        if ( 0 != state.m_cbckID ) {
-            dialog = setCallbackDismissListener( dialog, state, id );
-        }
+        dialog = setCallbackDismissListener( dialog, state, id );
+
         return dialog;
     }
 
@@ -446,41 +451,6 @@ public class DlgDelegate {
         return dialog;
     }
 
-    private class DlgState implements java.io.Serializable {
-        public int m_id;
-        public String m_msg;
-        public int m_posButton;
-        public int m_cbckID = 0;
-        public int m_prefsKey;
-
-        public DlgState( int id, String msg, int cbckID )
-        {
-            this( id, msg, 0, cbckID, 0 );
-        }
-
-        public DlgState( int id, int msgID, int cbckID, int prefsKey )
-        {
-            this( id, m_activity.getString(msgID), 0, cbckID, prefsKey );
-        }
-
-        public DlgState( int id, String msg, int posButton, 
-                         int cbckID, int prefsKey )
-        {
-            m_id = id;
-            m_msg = msg;
-            m_posButton = posButton;
-            m_cbckID = cbckID;
-            m_prefsKey = prefsKey;
-            DbgUtils.logf( "DlgState(%d)=>%H", id, this );
-        }
-
-        public DlgState( int id, int cbckID )
-        {
-            this( id, null, 0, cbckID, 0 );
-        }
-
-    }
-
     private DlgState findForID( int id )
     {
         DlgState state = m_dlgStates.get( id );
@@ -490,11 +460,12 @@ public class DlgDelegate {
 
     private void dropState( DlgState state )
     {
+        int nDlgs = m_dlgStates.size();
         Assert.assertNotNull( state );
         Assert.assertTrue( state == m_dlgStates.get( state.m_id ) );
         m_dlgStates.remove( state.m_id );
-        DbgUtils.logf( "dropState: there are now %d active dialogs", 
-                       m_dlgStates.size() );
+        DbgUtils.logf( "dropState: active dialogs now %d from %d ", 
+                       m_dlgStates.size(), nDlgs );
     }
 
     private void addState( DlgState state )
