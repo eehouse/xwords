@@ -375,7 +375,7 @@ public class DlgDelegate {
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( state.m_msg )
-            .setPositiveButton( R.string.button_ok, lstnr )
+            .setPositiveButton( state.m_posButton, lstnr )
             .setNegativeButton( R.string.button_cancel, lstnr )
             .create();
         
@@ -457,7 +457,7 @@ public class DlgDelegate {
     {
         int nDlgs = m_dlgStates.size();
         Assert.assertNotNull( state );
-        Assert.assertTrue( state == m_dlgStates.get( state.m_id ) );
+        // Assert.assertTrue( state == m_dlgStates.get( state.m_id ) );
         m_dlgStates.remove( state.m_id );
         DbgUtils.logf( "dropState: active dialogs now %d from %d ", 
                        m_dlgStates.size(), nDlgs );

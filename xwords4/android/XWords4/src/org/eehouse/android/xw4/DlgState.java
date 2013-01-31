@@ -32,12 +32,12 @@ public class DlgState implements Parcelable {
 
     public DlgState( int id, String msg, int cbckID )
     {
-        this( id, msg, 0, cbckID, 0 );
+        this( id, msg, R.string.button_ok, cbckID, 0 );
     }
 
     public DlgState( int id, String msg, int cbckID, int prefsKey )
     {
-        this( id, msg, 0, cbckID, prefsKey );
+        this( id, msg, R.string.button_ok, cbckID, prefsKey );
     }
 
     public DlgState( int id, String msg, int posButton, 
