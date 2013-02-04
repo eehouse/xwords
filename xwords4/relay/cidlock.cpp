@@ -52,9 +52,9 @@ CidLock::~CidLock()
 void 
 CidLock::print_claimed( const char* caller )
 {
-    char buf[512] = {0};
     int unclaimed = 0;
-    int len = snprintf( buf, sizeof(buf), "after %s: ", caller );
+    string str;
+    string_printf( str, "after %s: ", caller );
     // Assume we have the mutex!!!!
     map< CookieID, CidInfo*>::iterator iter;
     for ( iter = m_infos.begin(); iter != m_infos.end(); ++iter ) {
@@ -62,13 +62,11 @@ CidLock::print_claimed( const char* caller )
         if ( 0 == info->GetOwner() ) {
             ++unclaimed;
         } else {
-            len += snprintf( &buf[len], sizeof(buf)-len, "%d,", 
-                             info->GetCid() );
+            string_printf( str, "%d,", info->GetCid() );
         }
     }
-    len += snprintf( &buf[len], sizeof(buf)-len, " (plus %d unclaimed.)", 
-                     unclaimed );
-    logf( XW_LOGINFO, "%s: claimed: %s", __func__, buf );
+    string_printf( str, "%d,", " (plus %d unclaimed.)", unclaimed );
+    logf( XW_LOGINFO, "%s: claimed: %s", __func__, str.c_str() );
 }
 #else
 # define PRINT_CLAIMED()

@@ -31,6 +31,9 @@ SRC = \
 	tpool.cpp \
 	cidlock.cpp \
 	addrinfo.cpp \
+	devmgr.cpp \
+	udpqueue.cpp \
+	udpack.cpp \
 	xwrelay.cpp \
 
 # STATIC ?= -static
@@ -39,12 +42,14 @@ HASH=$(shell git describe)
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
-LDFLAGS += -pthread -g $(STATIC) \
-	-L$(shell pg_config --libdir)
+LDFLAGS += -pthread -g $(STATIC)
+LDFLAGS += 	-L$(shell pg_config --libdir)
+LDFLAGS += $(shell pkg-config --libs glib-2.0)
 
-CPPFLAGS += -DSPAWN_SELF -g -Wall \
-	-I $(shell pg_config --includedir) \
-	-DSVN_REV=\"$(shell cat $(GITINFO) 2>/dev/null || echo -n $(HASH) )\"
+CPPFLAGS += -DSPAWN_SELF -g -Wall
+CPPFLAGS += -I $(shell pg_config --includedir)
+CPPFLAGS +=	-DSVN_REV=\"$(shell cat $(GITINFO) 2>/dev/null || echo -n $(HASH) )\"
+CPPFLAGS += $(shell pkg-config --cflags glib-2.0)
 # CPPFLAGS += -DDO_HTTP
 # CPPFLAGS += -DHAVE_STIME
 
@@ -56,7 +61,7 @@ memdebug all: xwrelay rq
 # Manual config in order to place -lpq after the .obj files as
 # required by something Ubuntu did upgrading natty to oneiric
 xwrelay: $(OBJ)
-	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o $@ $^ -lpq
+	$(CXX) $(CPPFLAGS) -o $@ $^ -lpq $(LDFLAGS)
 
 rq: rq.c
 

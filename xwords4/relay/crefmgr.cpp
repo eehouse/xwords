@@ -405,16 +405,18 @@ CidInfo*
 CRefMgr::getCookieRef( CookieID cid, bool failOk )
 {
     CidInfo* cinfo = NULL;
-    for ( ; ; ) {
+    for ( int count = 0; ; ++count ) {
         cinfo = m_cidlock->Claim( cid );
         if ( NULL != cinfo->GetRef() ) {
             break;
-        } else if ( failOk ) {
+        } else if ( failOk || count > 20 ) {
             break;
         }
         m_cidlock->Relinquish( cinfo, true );
-        logf( XW_LOGINFO, "%s: sleeping after failing to get cinfo", __func__ );
+        logf( XW_LOGINFO, "%s: (count=%d) sleeping after "
+              "failing to get cinfo", __func__, count );
         usleep(200000);         /* 2/10 second */
+        cinfo = NULL;
     }
     return cinfo;
 } /* getCookieRef */
@@ -462,7 +464,9 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
 
     ref->assignConnName();
 
-    m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCid(), ref ) );
+    pair<CookieMap::iterator,bool> result =
+        m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCid(), ref ) );
+    assert( result.second );
     logf( XW_LOGINFO, "%s: paired cookie %s/connName %s with cid %d", __func__, 
           (cookie?cookie:"NULL"), connName, ref->GetCid() );
 

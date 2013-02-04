@@ -36,7 +36,6 @@ class DBMgr {
     /* DevIDs on various platforms are stored in devices table.  This is the
        key, and used in msgs and games tables as a shorter way to refer to
        them. */
-    typedef unsigned int DevIDRelay;
     static const DevIDRelay DEVID_NONE = 0;
 
     static DBMgr* Get();
@@ -47,6 +46,9 @@ class DBMgr {
 
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
                  int langCode, int nPlayersT, bool isPublic );
+
+    bool FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken, 
+                     string& connName, HostID* hid, unsigned short* seed );
 
     CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
                        int* langP, int* nPlayersTP, int* nPlayersHP,
@@ -62,7 +64,8 @@ class DBMgr {
                        char* connNameBuf, int bufLen, int* nPlayersHP );
     bool AllDevsAckd( const char* const connName );
 
-    DevIDRelay RegisterDevice( const DevID* hosts );
+    DevIDRelay RegisterDevice( const DevID* host );
+    bool updateDevice( DevIDRelay relayID, bool check );
 
     HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const AddrInfo* addr,
@@ -89,19 +92,30 @@ class DBMgr {
        queries.*/
     void PublicRooms( int lang, int nPlayers, int* nNames, string& names );
 
+    /* Get stored address info, if available and valid */
+    bool TokenFor( const char* const connName, int hid, DevIDRelay* devid,
+                   AddrInfo::ClientToken* token );
+
     /* Return number of messages pending for connName:hostid pair passed in */
     int PendingMsgCount( const char* const connName, int hid );
 
     /* message storage -- different DB */
     int CountStoredMessages( const char* const connName );
     int CountStoredMessages( const char* const connName, int hid );
+    int CountStoredMessages( DevIDRelay relayID );
     void StoreMessage( const char* const connName, int hid, 
                        const unsigned char* const buf, int len );
+    void GetStoredMessageIDs( DevIDRelay relayID, vector<int>& ids );
+
     bool GetStoredMessage( const char* const connName, int hid, 
                            unsigned char* buf, size_t* buflen, int* msgID );
     bool GetNthStoredMessage( const char* const connName, int hid, int nn,
                               unsigned char* buf, size_t* buflen, int* msgID );
+    bool GetStoredMessage( int msgID, unsigned char* buf, size_t* buflen, 
+                           AddrInfo::ClientToken* token );
+
     void RemoveStoredMessages( const int* msgID, int nMsgIDs );
+    void RemoveStoredMessages( vector<int>& ids );
 
  private:
     DBMgr();
@@ -110,11 +124,16 @@ class DBMgr {
     void readArray( const char* const connName, int arr[] );
     DevIDRelay getDevID( const char* connName, int hid );
     DevIDRelay getDevID( const DevID* devID );
+    int getCountWhere( const char* table, string& test );
+    void RemoveStoredMessages( string& msgIDs );
+    void decodeMessage( PGresult* result, bool useB64, int b64indx, 
+                        int byteaIndex, unsigned char* buf, size_t* buflen );
 
     PGconn* getThreadConn( void );
 
     void conn_key_alloc();
     pthread_key_t m_conn_key;
+    bool m_useB64;
 
 }; /* DBMgr */
 

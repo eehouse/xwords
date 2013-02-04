@@ -133,7 +133,9 @@ RelayConfigs::SetValueFor( const char* key, const char* value )
         m_values.erase(iter);
     }
 
-    m_values.insert( pair<const char*,const char*>(strdup(key),strdup(value) ) );
+    pair<map<const char*,const char*>::iterator,bool> result = 
+        m_values.insert( pair<const char*,const char*>(strdup(key),strdup(value) ) );
+    assert( result.second );
 }
 
 ino_t

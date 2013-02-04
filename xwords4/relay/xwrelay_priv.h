@@ -25,11 +25,14 @@
 #include <string>
 #include <time.h>
 #include <netinet/in.h>
+#include <stdint.h>
+
 #include "lstnrmgr.h"
 #include "xwrelay.h"
 #include "addrinfo.h"
 
 typedef unsigned char HostID;   /* see HOST_ID_SERVER */
+typedef uint32_t DevIDRelay;
 
 typedef enum {
     XW_LOGERROR
@@ -42,7 +45,8 @@ void logf( XW_LogLevel level, const char* format, ... );
 
 void denyConnection( const AddrInfo* addr, XWREASON err );
 bool send_with_length_unsafe( const AddrInfo* addr, 
-                              unsigned char* buf, size_t bufLen );
+                              const unsigned char* buf, size_t bufLen );
+void send_havemsgs( const AddrInfo* addr );
 
 time_t uptime(void);
 
@@ -55,8 +59,6 @@ int make_socket( unsigned long addr, unsigned short port );
 void string_printf( std::string& str, const char* fmt, ... );
 
 int read_packet( int sock, unsigned char* buf, int buflen );
-void handle_proxy_packet( unsigned char* buf, int bufLen,
-                          const AddrInfo* addr );
 
 const char* cmdToStr( XWRELAY_Cmd cmd );
 

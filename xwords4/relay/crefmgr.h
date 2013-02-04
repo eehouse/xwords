@@ -186,7 +186,7 @@ class SafeCref {
     ~SafeCref();
 
     bool Forward( HostID src, const AddrInfo* addr, HostID dest, 
-                  unsigned char* buf, int buflen ) {
+                  const unsigned char* buf, int buflen ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
@@ -198,7 +198,7 @@ class SafeCref {
     }
 
     void PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
-                 unsigned char* buf, int buflen ) {
+                 const unsigned char* buf, int buflen ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );

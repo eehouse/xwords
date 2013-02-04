@@ -22,6 +22,8 @@
 #define _DEVID_H_
 
 #include <string>
+#include <stdlib.h>
+
 #include "xwrelay.h"
 
 /* DevID protocol.
@@ -52,11 +54,18 @@
 *
 */
 
+#include <assert.h>
+
 using namespace std;
 
 class DevID {
  public:
     DevID() { m_devIDType = ID_TYPE_NONE; }
+    DevID(DevIDType typ) { m_devIDType = typ; }
+    DevIDRelay asRelayID() const { 
+        assert( ID_TYPE_RELAY == m_devIDType );
+        return strtoul( m_devIDString.c_str(), NULL, 16 ); 
+    }
     string m_devIDString;
     DevIDType m_devIDType;
 };

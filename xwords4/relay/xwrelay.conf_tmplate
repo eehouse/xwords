@@ -15,7 +15,7 @@ HEARTBEAT=60
 # How many worker threads in the thread pool?  Default is five.  Let's
 # keep this at 1 until the race condition is fixed.  All interaction
 # with crefs should be from this one thread, including proxy stuff.
-NTHREADS=5
+NTHREADS=1
 
 # How many seconds to wait for device to ack new connName
 DEVACK=3
@@ -26,11 +26,15 @@ GAME_PORTS=10997
 # What ports do we listen on for per-device incoming connections?
 DEVICE_PORTS=10998
 
+# Port for per-device UDP interface (experimental)
+UDPPORT=10997
+
 # default 5
 SOCK_TIMEOUT_SECONDS=5
 
 # And the control port is?
 CTLPORT=11000
+
 
 # port for web interface
 WWW_PORT=11001

@@ -27,6 +27,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <glib.h>
+
 #include "dbmgr.h"
 #include "mlock.h"
 #include "configs.h"
@@ -41,6 +43,7 @@
 static DBMgr* s_instance = NULL;
 
 #define DELIM "\1"
+#define MAX_NUM_PLAYERS 4
 
 static void formatParams( char* paramValues[], int nParams, const char* fmt, 
                           char* buf, int bufLen, ... );
@@ -60,6 +63,7 @@ DBMgr::Get()
 DBMgr::DBMgr()
 {
     logf( XW_LOGINFO, "%s called", __func__ );
+    m_useB64 = false;
 
     pthread_key_create( &m_conn_key, destr_function );
 
@@ -145,6 +149,54 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
     logf( XW_LOGINFO, "%s(%s)=>%d", __func__, connName, cid );
     return cid;
 } /* FindGame */
+
+bool
+DBMgr::FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken token, 
+                   string& connName, HostID* hidp, unsigned short* seed )
+{
+    int nSuccesses = 0;
+
+    const char* fmt = 
+        "SELECT connName FROM %s WHERE %d = ANY(devids) AND %d = ANY(tokens)";
+    string query;
+    string_printf( query, fmt, GAMES_TABLE, relayID, token );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    int nTuples = PQntuples( result );
+    vector<string> names(nTuples);
+    for ( int ii = 0; ii < nTuples; ++ii ) {
+        string name( PQgetvalue( result, ii, 0 ) );
+        names.push_back( name );
+    }
+    PQclear( result );
+
+    for ( vector<string>::const_iterator iter = names.begin();
+          iter != names.end(); ++iter ) {
+        const char* name = iter->c_str();
+        for ( HostID hid = 1; hid <= MAX_NUM_PLAYERS; ++hid ) {
+            fmt = "SELECT seeds[%d] FROM %s WHERE connname = '%s' "
+                "AND devids[%d] = %d AND tokens[%d] = %d";
+            string query;
+            string_printf( query, fmt, hid, GAMES_TABLE, name,
+                           hid, relayID, hid, token );
+            result = PQexec( getThreadConn(), query.c_str() );
+            int nTuples2 = PQntuples( result );
+            for ( int jj = 0; jj < nTuples2; ++jj ) {
+                connName = name;
+                *hidp = hid;
+                *seed = atoi( PQgetvalue( result, 0, 0 ) );
+                ++nSuccesses;
+            }
+            PQclear( result );
+        }
+    }
+
+    if ( 1 < nSuccesses ) {
+        logf( XW_LOGERROR, "%s found %d matches!!!", __func__, nSuccesses );
+    }
+
+    return nSuccesses >= 1;
+} // FindPlayer
 
 bool
 DBMgr::SeenSeed( const char* cookie, unsigned short seed,
@@ -249,10 +301,10 @@ DBMgr::AllDevsAckd( const char* const connName )
 
 // Return DevIDRelay for device, adding it to devices table IFF it's not
 // already there.
-DBMgr::DevIDRelay
+DevIDRelay
 DBMgr::RegisterDevice( const DevID* host )
 {
-    DBMgr::DevIDRelay devID;
+    DevIDRelay devID;
     assert( host->m_devIDType != ID_TYPE_NONE );
     int ii;
     bool success;
@@ -261,15 +313,17 @@ DBMgr::RegisterDevice( const DevID* host )
     devID = getDevID( host );
 
     // If it's not present *and* of type ID_TYPE_RELAY, we can do nothing.
-    // Fail.
-    if ( DEVID_NONE == devID && ID_TYPE_RELAY < host->m_devIDType ) {
+    // Otherwise proceed.
+    if ( DEVID_NONE != devID ) {
+        (void)updateDevice( devID, false );
+    } else if ( ID_TYPE_RELAY < host->m_devIDType ) {
         // loop until we're successful inserting the unique key.  Ship with this
         // coming from random, but test with increasing values initially to make
         // sure duplicates are detected.
         for ( success = false, ii = 0; !success; ++ii ) {
             assert( 10 > ii );  // better to check that we're looping BECAUSE
                                 // of uniqueness problem.
-            devID = (DBMgr::DevIDRelay)random();
+            devID = (DevIDRelay)random();
             if ( DEVID_NONE == devID ) {
                 continue;
             }
@@ -290,13 +344,34 @@ DBMgr::RegisterDevice( const DevID* host )
                                              NULL, NULL, 0 );
             success = PGRES_COMMAND_OK == PQresultStatus(result);
             if ( !success ) {
-                logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), 
+                logf( XW_LOGERROR, "PQexec=>%s;%s", 
+                      PQresStatus(PQresultStatus(result)), 
                       PQresultErrorMessage(result) );
             }
             PQclear( result );
         }
     }
     return devID;
+}
+
+bool
+DBMgr::updateDevice( DevIDRelay relayID, bool check )
+{
+    bool exists = !check;
+    if ( !exists ) {
+        string test;
+        string_printf( test, "id = %d", relayID );
+        exists = 1 == getCountWhere( DEVICES_TABLE, test );
+    }
+
+    if ( exists ) {
+        const char* fmt = 
+            "UPDATE " DEVICES_TABLE " SET mtime='now' WHERE id = %d";
+        string query;
+        string_printf( query, fmt, relayID );
+        execSql( query );
+    }
+    return exists;
 }
 
 HostID
@@ -327,13 +402,14 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
         " clntVers[%d] = %d,"
         " seeds[%d] = %d, addrs[%d] = \'%s\', %s"
-        " mtimes[%d]='now', ack[%d]=\'%c\'"
+        " tokens[%d] = %d, mtimes[%d]='now', ack[%d]=\'%c\'"
         " WHERE connName = '%s'";
     string query;
     char* ntoa = inet_ntoa( addr->sin_addr() );
     string_printf( query, fmt, newID, nToAdd, newID, clientVersion,
-                   newID, seed, newID, ntoa, devIDBuf.c_str(), newID, 
-                   newID, ackd?'A':'a', connName );
+                   newID, seed, newID, ntoa, devIDBuf.c_str(), 
+                   newID, addr->clientToken(), newID, newID, ackd?'A':'a', 
+                   connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
@@ -576,26 +652,41 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
     *nNames = nTuples;
 }
 
+bool 
+DBMgr::TokenFor( const char* const connName, int hid, DevIDRelay* devid,
+                 AddrInfo::ClientToken* token )
+{
+    bool found = false;
+    const char* fmt = "SELECT tokens[%d], devids[%d] FROM " GAMES_TABLE
+        " WHERE connName='%s'";
+    string query;
+    string_printf( query, fmt, hid, hid, connName );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    if ( 1 == PQntuples( result ) ) {
+        AddrInfo::ClientToken token_tmp = atoi( PQgetvalue( result, 0, 0 ) );
+        DevIDRelay devid_tmp = atoi( PQgetvalue( result, 0, 1 ) );
+        if ( 0 != token_tmp   // 0 is illegal (legacy/unset) value
+             && 0 != devid_tmp ) {
+            *token = token_tmp;
+            *devid = devid_tmp;
+            found = true;
+        }
+    }
+    PQclear( result );
+    logf( XW_LOGINFO, "%s(%s,%d)=>%s (%d, %d)", __func__, connName, hid, 
+          (found?"true":"false"), *devid, *token );
+    return found;
+}
+
 int
 DBMgr::PendingMsgCount( const char* connName, int hid )
 {
-    int count = 0;
-    const char* fmt = "SELECT COUNT(*) FROM " MSGS_TABLE
-        " WHERE connName = '%s' AND hid = %d "
+    string test;
+    string_printf( test, "connName = '%s' AND hid = %d ", connName, hid );
 #ifdef HAVE_STIME
-        "AND stime IS NULL"
+    string_printf( test, " AND stime IS NULL" );
 #endif
-        ;
-    string query;
-    string_printf( query, fmt, connName, hid );
-    logf( XW_LOGVERBOSE0, "%s: query: %s", __func__, query.c_str() );
-
-    PGresult* result = PQexec( getThreadConn(), query.c_str() );
-    if ( 1 == PQntuples( result ) ) {
-        count = atoi( PQgetvalue( result, 0, 0 ) );
-    }
-    PQclear( result );
-    return count;
+    return getCountWhere( MSGS_TABLE, test );
 }
 
 bool
@@ -632,10 +723,10 @@ DBMgr::readArray( const char* const connName, int arr[]  ) /* len 4 */
     PQclear( result );
 }
 
-DBMgr::DevIDRelay 
+DevIDRelay 
 DBMgr::getDevID( const char* connName, int hid )
 {
-    DBMgr::DevIDRelay devID;
+    DevIDRelay devID;
     const char* fmt = "SELECT devids[%d] FROM " GAMES_TABLE " WHERE connName='%s'";
     string query;
     string_printf( query, fmt, hid, connName );
@@ -643,29 +734,28 @@ DBMgr::getDevID( const char* connName, int hid )
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 == PQntuples( result ) );
-    devID = (DBMgr::DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
+    devID = (DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
     PQclear( result );
     return devID;
 }
 
-DBMgr::DevIDRelay 
+DevIDRelay 
 DBMgr::getDevID( const DevID* devID )
 {
-    DBMgr::DevIDRelay rDevID = DEVID_NONE;
+    DevIDRelay rDevID = DEVID_NONE;
     DevIDType devIDType = devID->m_devIDType;
     string query;
     assert( ID_TYPE_NONE < devIDType );
-    const char* asStr = devID->m_devIDString.c_str();
     if ( ID_TYPE_RELAY == devIDType ) {
         // confirm it's there
-        DBMgr::DevIDRelay cur = strtoul( asStr, NULL, 16 );
+        DevIDRelay cur = devID->asRelayID();
         if ( DEVID_NONE != cur ) {
             const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE id=%d";
             string_printf( query, fmt, cur );
         }
     } else {
         const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE devtype=%d and devid = '%s'";
-        string_printf( query, fmt, devIDType, asStr );
+        string_printf( query, fmt, devIDType, devID->m_devIDString.c_str() );
     }
 
     if ( 0 < query.size() ) {
@@ -673,10 +763,12 @@ DBMgr::getDevID( const DevID* devID )
         PGresult* result = PQexec( getThreadConn(), query.c_str() );
         assert( 1 >= PQntuples( result ) );
         if ( 1 == PQntuples( result ) ) {
-            rDevID = (DBMgr::DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
+            rDevID = (DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
         }
         PQclear( result );
     }
+    logf( XW_LOGINFO, "%s(in=%s)=>%d (0x.8X)", __func__, 
+          devID->m_devIDString.c_str(), rDevID, rDevID );
     return rDevID;
 }
 
@@ -691,25 +783,16 @@ DBMgr::getDevID( const DevID* devID )
 int
 DBMgr::CountStoredMessages( const char* const connName, int hid )
 {
-    const char* fmt = "SELECT count(*) FROM " MSGS_TABLE 
-        " WHERE connname = '%s' "
+    string test;
+    string_printf( test, "connname = '%s'", connName );
 #ifdef HAVE_STIME
-        "AND stime IS NULL"
+    string_printf( test, " AND stime IS NULL" );
 #endif
-        ;
-
-    string query;
-    string_printf( query, fmt, connName );
-
     if ( hid != -1 ) {
-        string_printf( query, "AND hid = %d", hid );
+        string_printf( test, " AND hid = %d", hid );
     }
 
-    PGresult* result = PQexec( getThreadConn(), query.c_str() );
-    assert( 1 == PQntuples( result ) );
-    int count = atoi( PQgetvalue( result, 0, 0 ) );
-    PQclear( result );
-    return count;
+    return getCountWhere( MSGS_TABLE, test );
 }
 
 int
@@ -717,6 +800,38 @@ DBMgr::CountStoredMessages( const char* const connName )
 {
     return CountStoredMessages( connName, -1 );
 } /* CountStoredMessages */
+
+int
+DBMgr::CountStoredMessages( DevIDRelay relayID )
+{
+    string test;
+    string_printf( test, "devid = %d", relayID );
+#ifdef HAVE_STIME
+    string_printf( test, "AND stime IS NULL" );
+#endif
+
+    return getCountWhere( MSGS_TABLE, test );
+}
+
+void
+DBMgr::GetStoredMessageIDs( DevIDRelay relayID, vector<int>& ids )
+{
+    const char* fmt = "SELECT id FROM " MSGS_TABLE " WHERE devid=%d "
+        "AND connname IN (SELECT connname FROM " GAMES_TABLE 
+        " WHERE NOT " GAMES_TABLE ".dead)";
+    string query;
+    string_printf( query, fmt, relayID );
+    // logf( XW_LOGINFO, "%s: query=\"%s\"", __func__, query.c_str() );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    int nTuples = PQntuples( result );
+    for ( int ii = 0; ii < nTuples; ++ii ) {
+        int id = atoi( PQgetvalue( result, ii, 0 ) );
+        // logf( XW_LOGINFO, "%s: adding id %d", __func__, id );
+        ids.push_back( id );
+    }
+    PQclear( result );
+    logf( XW_LOGINFO, "%s(relayID=%d)=>%d ids", __func__, relayID, ids.size() );
+}
 
 void
 DBMgr::StoreMessage( const char* const connName, int hid, 
@@ -726,27 +841,67 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 
     size_t newLen;
     const char* fmt = "INSERT INTO " MSGS_TABLE 
-        " (connname, hid, devid, msg, msglen)"
-        " VALUES( '%s', %d, %d, E'%s', %d)";
-
-    unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
-                                              len, &newLen );
-    assert( NULL != bytes );
+        " (connname, hid, devid, token, %s, msglen)"
+        " VALUES( '%s', %d, %d, "
+        "(SELECT tokens[%d] from " GAMES_TABLE " where connname='%s'), "
+        "%s'%s', %d)";
     
     string query;
-    string_printf( query, fmt, connName, hid, devID, bytes, len );
-
-    PQfreemem( bytes );
+    if ( m_useB64 ) {
+        gchar* b64 = g_base64_encode( buf, len );
+        string_printf( query, fmt, "msg64", connName, hid, devID, hid, connName, 
+                       "", b64, len );
+        g_free( b64 );
+    } else {
+        unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
+                                              len, &newLen );
+        assert( NULL != bytes );
+    
+        string_printf( query, fmt, "msg", connName, hid, devID, hid, connName, 
+                       "E", bytes, len );
+        PQfreemem( bytes );
+    }
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
     execSql( query );
+}
+
+void
+DBMgr::decodeMessage( PGresult* result, bool useB64, int b64indx, int byteaIndex, 
+                      unsigned char* buf, size_t* buflen )
+{
+    const char* from = NULL;
+    if ( useB64 ) {
+        from = PQgetvalue( result, 0, b64indx );
+    }
+    if ( NULL == from || '\0' == from[0] ) {
+        useB64 = false;
+        from = PQgetvalue( result, 0, byteaIndex );
+    }
+
+    size_t to_length;
+    if ( useB64 ) {
+        gsize out_len;
+        guchar* txt = g_base64_decode( (const gchar*)from, &out_len );
+        to_length = out_len;
+        assert( to_length <= *buflen );
+        memcpy( buf, txt, to_length );
+        g_free( txt );
+    } else {
+        unsigned char* bytes = PQunescapeBytea( (const unsigned char*)from, 
+                                                &to_length );
+        assert( to_length <= *buflen );
+        memcpy( buf, bytes, to_length );
+        PQfreemem( bytes );
+    }
+    *buflen = to_length;
 }
 
 bool
 DBMgr::GetNthStoredMessage( const char* const connName, int hid, int nn, 
                             unsigned char* buf, size_t* buflen, int* msgID )
 {
-    const char* fmt = "SELECT id, msg, msglen FROM " MSGS_TABLE
+    const char* fmt = "SELECT id, msg, msg64, msglen FROM " MSGS_TABLE
         " WHERE connName = '%s' AND hid = %d "
 #ifdef HAVE_STIME
         "AND stime IS NULL "
@@ -765,18 +920,9 @@ DBMgr::GetNthStoredMessage( const char* const connName, int hid, int nn,
         if ( NULL != msgID ) {
             *msgID = atoi( PQgetvalue( result, 0, 0 ) );
         }
-        size_t msglen = atoi( PQgetvalue( result, 0, 2 ) );
-
-        /* int len = PQgetlength( result, 0, 1 ); */
-        const unsigned char* from =
-            (const unsigned char* )PQgetvalue( result, 0, 1 );
-        size_t to_length;
-        unsigned char* bytes = PQunescapeBytea( from, &to_length );
-        assert( to_length <= *buflen );
-        memcpy( buf, bytes, to_length );
-        PQfreemem( bytes );
-        *buflen = to_length;
-        assert( 0 == msglen || to_length == msglen );
+        size_t msglen = atoi( PQgetvalue( result, 0, 3 ) );
+        decodeMessage( result, m_useB64, 2, 1, buf, buflen );
+        assert( 0 == msglen || msglen == *buflen );
     }
     PQclear( result );
     return found;
@@ -787,6 +933,51 @@ DBMgr::GetStoredMessage( const char* const connName, int hid,
                          unsigned char* buf, size_t* buflen, int* msgID )
 {
     return GetNthStoredMessage( connName, hid, 0, buf, buflen, msgID );
+}
+
+bool
+DBMgr::GetStoredMessage( int msgID, unsigned char* buf, size_t* buflen, 
+                         AddrInfo::ClientToken* token )
+{
+    const char* fmt = "SELECT token, msg, msg64, msglen FROM " MSGS_TABLE
+        " WHERE id = %d "
+#ifdef HAVE_STIME
+        "AND stime IS NULL "
+#endif
+        ;
+    string query;
+    string_printf( query, fmt, msgID );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    int nTuples = PQntuples( result );
+    assert( nTuples <= 1 );
+
+    bool found = nTuples == 1;
+    if ( found ) {
+        *token = atoi( PQgetvalue( result, 0, 0 ) );
+        size_t msglen = atoi( PQgetvalue( result, 0, 3 ) );
+        decodeMessage( result, m_useB64, 2, 1, buf, buflen );
+        assert( 0 == msglen || *buflen == msglen );
+    }
+    PQclear( result );
+    return found;
+}
+
+void
+DBMgr::RemoveStoredMessages( string& msgids )
+{
+    const char* fmt = 
+#ifdef HAVE_STIME
+        "UPDATE " MSGS_TABLE " SET stime='now' "
+#else
+        "DELETE FROM " MSGS_TABLE 
+#endif
+        " WHERE id IN (%s)";
+    string query;
+    string_printf( query, fmt, msgids.c_str() );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    execSql( query );
 }
 
 void
@@ -805,19 +996,39 @@ DBMgr::RemoveStoredMessages( const int* msgIDs, int nMsgIDs )
                 ids.append( "," );
             }
         }
-
-        const char* fmt = 
-#ifdef HAVE_STIME
-        "UPDATE " MSGS_TABLE " SET stime='now' "
-#else
-        "DELETE FROM " MSGS_TABLE 
-#endif
-            " WHERE id IN (%s)";
-        string query;
-        string_printf( query, fmt, ids.c_str() );
-        logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-        execSql( query );
+        RemoveStoredMessages( ids );
     }
+}
+
+void 
+DBMgr::RemoveStoredMessages( vector<int>& idv )
+{
+    if ( 0 < idv.size() ) {
+        string ids;
+        vector<int>::const_iterator iter = idv.begin();
+        for ( ; ; ) {
+            string_printf( ids, "%d", *iter );
+            if ( ++iter == idv.end() ) {
+                break;
+            }
+            string_printf( ids, "," );
+        }
+        RemoveStoredMessages( ids );
+    }
+}
+
+int
+DBMgr::getCountWhere( const char* table, string& test )
+{
+    string query;
+    string_printf( query, "SELECT count(*) FROM %s WHERE %s", table, test.c_str() );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    assert( 1 == PQntuples( result ) );
+    int count = atoi( PQgetvalue( result, 0, 0 ) );
+    PQclear( result );
+    logf( XW_LOGINFO, "%s(%s)=>%d", __func__, query.c_str(), count );
+    return count;
 }
 
 static void

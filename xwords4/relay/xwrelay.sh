@@ -58,6 +58,7 @@ cid integer
 ,mtimes TIMESTAMP(0)[]
 ,addrs INET[]
 ,devids INTEGER[]
+,tokens INTEGER[]
 );
 EOF
 
@@ -66,10 +67,12 @@ CREATE TABLE msgs (
 id SERIAL
 ,connName VARCHAR(64)
 ,hid INTEGER
+,token INTEGER
 ,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ,stime TIMESTAMP DEFAULT NULL
 ,devid INTEGER
 ,msg BYTEA
+,msg64 TEXT
 ,msglen INTEGER
 ,UNIQUE ( connName, hid, msg )
 );
@@ -81,6 +84,7 @@ id INTEGER UNIQUE PRIMARY KEY
 ,devType INTEGER
 ,devid TEXT
 ,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+,mtime TIMESTAMP
 ,unreg BOOLEAN DEFAULT FALSE
 );
 EOF

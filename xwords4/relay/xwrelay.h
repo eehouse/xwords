@@ -27,6 +27,79 @@
 /* Set if device is acting a server; cleared if as client */
 #define FLAGS_SERVER_BIT 0x01
 
+/* message types for the udp-based per-device (not per-game) protocol 
+ *
+ * A number of these rely on a "clientToken", which is a 32-bit value the
+ * client provides and that it guarantees uniquely identifies a game on the
+ * device.  A database rowid works great as long as they aren't reused.
+ */
+#define XWPDEV_PROTO_VERSION 0
+#ifndef CANT_DO_TYPEDEF
+typedef
+#endif
+enum { XWPDEV_NONE             /* 0 is an illegal value */
+       /* All messages have the following six-byte header 
+        *    proto: 1 byte
+        *    msgID: 4 byte unsigned long, 0 an illegal value
+        *    cmd:   1 byte, one of the values below.
+        */
+
+       ,XWPDEV_ALERT           /* relay->device: provides a string message to
+                                  present to the user (with device allowed not
+                                  to present the same string more than once)
+                                  format: header, null-terminnated string: varies */
+       ,XWPDEV_REG             /* dev->relay: device registers self and
+                                  self-selected (e.g. gcm) or assigned devid
+                                  format: header, idType: 1,
+                                  idLen: 2, id: <idLen> */
+
+       ,XWPDEV_REGRSP          /* relay->device: if non-relay-assigned devid
+                                  type was given, this gives the
+                                  relay-assigned one to be used from now on.
+                                  format: header, idLen: 2, id: <idLen>
+                                */
+
+       ,XWPDEV_PING             /* device->relay: keep the UDP connection
+                                   open.  header. */
+
+       ,XWPDEV_HAVEMSGS         /* Relay->device: check messages for this
+                                   game. format: header */
+
+       ,XWPDEV_RQSTMSGS         /* device->relay: got any messages for me?
+                                   format: header, devID: 4 [, clientToken: 4]
+                                 */
+
+       ,XWPDEV_MSG             /* dev->relay and relay->dev: norm: a message from a game to
+                                  the relay format: header, clientToken: 4, message<varies>*/
+
+       ,XWPDEV_MSGNOCONN        /* dev->relay in the proxy format that
+                                   includes relayID (connname:hid) and seems
+                                   to be reserved for relay FWD messages.
+                                   format: header, clientToken: 4; <cr>-terminated-connname:
+                                   varies, message: varies */
+
+       ,XWPDEV_MSGRSP           /* relay->dev: conveys error on receipt of XWPDEV_MSG */
+
+       ,XWPDEV_BADREG           /* relay->dev.  You sent me a relayID via
+                                   XWPDEV_REG but I've never heard of it */
+
+       ,XWPDEV_ACK              /* relay->dev (maybe) and dev->relay
+                                   (definitely). Tells recipient its message
+                                   has been received.  This is for debugging,
+                                   and maybe later for timing keepAlives based
+                                   on firewall timeouts.  format: header,
+                                   msgID: 4
+                                */
+
+       ,XWPDEV_DELGAME          /* dev->relay: game's been deleted.  format:
+                                   header, relayid: 4, clientToken: 4 */
+
+}
+#ifndef CANT_DO_TYPEDEF
+ XWRelayReg
+#endif
+;
+
 #ifndef CANT_DO_TYPEDEF
 typedef
 #endif
@@ -110,6 +183,8 @@ typedef enum {
     ,ID_TYPE_RELAY              /* assigned by relay as replacement for one of the below */
     ,ID_TYPE_LINUX
     ,ID_TYPE_ANDROID_GCM
+    ,ID_TYPE_ANDROID_OTHER
+    ,ID_TYPE_ANON               /* please assign me one based on nothing */
 
     ,ID_TYPE_NTYPES
 } DevIDType;

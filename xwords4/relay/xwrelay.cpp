@@ -76,9 +76,19 @@
 #include "lstnrmgr.h"
 #include "dbmgr.h"
 #include "addrinfo.h"
+#include "devmgr.h"
+#include "udpqueue.h"
+#include "udpack.h"
+
+typedef struct _UDPHeader {
+    uint32_t packetID;
+    unsigned char proto;
+    XWRelayReg cmd;
+} UDPHeader;
 
 static int s_nSpawns = 0;
 static int g_maxsocks = -1;
+static int g_udpsock = -1;
 
 void
 logf( XW_LogLevel level, const char* format, ... )
@@ -178,7 +188,7 @@ cmdToStr( XWRELAY_Cmd cmd )
 }
 
 static bool
-parseRelayID( unsigned char** const inp, const unsigned char* const end,
+parseRelayID( const unsigned char** const inp, const unsigned char* const end,
               char* buf, int buflen, HostID* hid )
 {
     const char* hidp = strchr( (char*)*inp, '/' );
@@ -201,11 +211,28 @@ parseRelayID( unsigned char** const inp, const unsigned char* const end,
         }
         *inp = (unsigned char*)endptr;
     }
+    if ( !ok ) {
+	logf( XW_LOGERROR, "%s failed", __func__ );
+    }
     return ok;
 }
 
 static bool
-getNetShort( unsigned char** bufpp, const unsigned char* end, 
+getNetLong( const unsigned char** bufpp, const unsigned char* end, 
+            uint32_t* out )
+{
+    uint32_t tmp;
+    bool ok = *bufpp + sizeof(tmp) <= end;
+    if ( ok ) {
+        memcpy( &tmp, *bufpp, sizeof(tmp) );
+        *bufpp += sizeof(tmp);
+        *out = ntohl( tmp );
+    }
+    return ok;
+} /* getNetShort */
+
+static bool
+getNetShort( const unsigned char** bufpp, const unsigned char* end, 
              unsigned short* out )
 {
     unsigned short tmp;
@@ -219,7 +246,7 @@ getNetShort( unsigned char** bufpp, const unsigned char* end,
 } /* getNetShort */
 
 static bool
-getNetByte( unsigned char** bufpp, const unsigned char* end, 
+getNetByte( const unsigned char** bufpp, const unsigned char* end, 
             unsigned char* out )
 {
     bool ok = *bufpp < end;
@@ -231,7 +258,7 @@ getNetByte( unsigned char** bufpp, const unsigned char* end,
 } /* getNetByte */
 
 static bool
-getNetString( unsigned char** bufpp, const unsigned char* end, string& out )
+getNetString( const unsigned char** bufpp, const unsigned char* end, string& out )
 {
     char* str = (char*)*bufpp;
     size_t len = 1 + strlen( str );
@@ -244,8 +271,43 @@ getNetString( unsigned char** bufpp, const unsigned char* end, string& out )
     return success;
 }
 
+static bool
+getRelayDevID( const unsigned char** bufpp, const unsigned char* end, 
+               DevID& devID )
+{
+    bool success = false;
+    unsigned short idLen;
+    if ( getNetShort( bufpp, end, &idLen ) ) {
+        if ( end - *bufpp < idLen/* && ID_TYPE_ANON != typ*/ ) {
+            logf( XW_LOGERROR, "full devID not received" );
+        } else {
+            devID.m_devIDString.append( (const char*)*bufpp, idLen );
+            *bufpp += idLen;
+            success = true;
+        }
+    }
+    return success;
+}
+
+static bool
+getHeader( const unsigned char** bufpp, const unsigned char* end,
+           UDPHeader* header )
+{
+    unsigned char byt;
+    bool success = getNetByte( bufpp, end, &header->proto )
+        && getNetLong( bufpp, end, &header->packetID )
+        && getNetByte( bufpp, end, &byt )
+        && XWPDEV_PROTO_VERSION == header->proto;
+    if ( success ) {
+        header->cmd = (XWRelayReg)byt;
+    } else {
+        logf( XW_LOGERROR, "%s: bad packet header", __func__ );
+    }
+    return success;
+}
+
 static void
-getDevID( unsigned char** bufpp, const unsigned char* end,
+getDevID( const unsigned char** bufpp, const unsigned char* end,
           unsigned short flags, DevID* devID ) 
 {
     if ( XWRELAY_PROTO_VERSION_CLIENTID <= flags ) {
@@ -283,7 +345,7 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
 #endif
 
 static bool
-readStr( unsigned char** bufp, const unsigned char* end, 
+readStr( const unsigned char** bufp, const unsigned char* end, 
          char* outBuf, int bufLen )
 {
     unsigned char clen = **bufp;
@@ -298,7 +360,7 @@ readStr( unsigned char** bufp, const unsigned char* end,
 } /* readStr */
 
 static XWREASON
-flagsOK( unsigned char** bufp, unsigned char const* end, 
+flagsOK( const unsigned char** bufp, unsigned char const* end, 
          unsigned short* clientVersion, unsigned short* flagsp )
 {
     XWREASON err = XWRELAY_ERROR_OLDFLAGS;
@@ -334,24 +396,83 @@ denyConnection( const AddrInfo* addr, XWREASON err )
     send_with_length_unsafe( addr, buf, sizeof(buf) );
 }
 
+static ssize_t
+send_via_udp( int socket, const struct sockaddr *dest_addr, 
+              XWRelayReg cmd, ... )
+{
+    uint32_t packetNum = UDPAckTrack::nextPacketID( cmd );
+    struct iovec vec[10];
+    int iocount = 0;
+
+    unsigned char header[1 + 1 + sizeof(packetNum)];
+    header[0] = XWPDEV_PROTO_VERSION;
+    packetNum = htonl( packetNum );
+    memcpy( &header[1], &packetNum, sizeof(packetNum) );
+    header[5] = cmd;
+    vec[iocount].iov_base = header;
+    vec[iocount].iov_len = sizeof(header);
+    ++iocount;
+
+    va_list ap;
+    va_start( ap, cmd );
+    for ( ; ; ) {
+        unsigned char* ptr = va_arg(ap, unsigned char*);
+        if ( !ptr ) {
+            break;
+        }
+        vec[iocount].iov_base = ptr;
+        vec[iocount].iov_len = va_arg(ap, int);
+        ++iocount;
+    }
+    va_end( ap );
+
+    struct msghdr mhdr = {0};
+    mhdr.msg_iov = vec;
+    mhdr.msg_iovlen = iocount;
+    mhdr.msg_name = (void*)dest_addr;
+    mhdr.msg_namelen = sizeof(*dest_addr);
+
+    ssize_t nSent = sendmsg( socket, &mhdr, 0 /* flags */);
+    if ( 0 > nSent ) {
+        logf( XW_LOGERROR, "sendmsg->errno %d (%s)", errno, strerror(errno) );
+    }
+    logf( XW_LOGINFO, "%s()=>%d", __func__, nSent );
+    return nSent;
+}
+
 /* No mutex here.  Caller better be ensuring no other thread can access this
  * socket. */
 bool
-send_with_length_unsafe( const AddrInfo* addr, unsigned char* buf, 
+send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf, 
                          size_t bufLen )
 {
     assert( !!addr );
     bool ok = false;
     int socket = addr->socket();
-    assert ( addr->isTCP() );
-    unsigned short len = htons( bufLen );
-    ssize_t nSent = send( socket, &len, 2, 0 );
-    if ( nSent == 2 ) {
-        nSent = send( socket, buf, bufLen, 0 );
-        if ( nSent == ssize_t(bufLen) ) {
-            logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
-            ok = true;
+
+    if ( addr->isTCP() ) {
+        unsigned short len = htons( bufLen );
+        ssize_t nSent = send( socket, &len, 2, 0 );
+        if ( nSent == 2 ) {
+            nSent = send( socket, buf, bufLen, 0 );
+            if ( nSent == ssize_t(bufLen) ) {
+                logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
+                ok = true;
+            }
         }
+    } else {
+        AddrInfo::ClientToken clientToken = addr->clientToken();
+        assert( 0 != clientToken );
+        clientToken = htonl(clientToken);
+        const struct sockaddr* saddr = addr->sockaddr();
+        assert( g_udpsock == socket || socket == -1 );
+        if ( -1 == socket ) {
+            socket = g_udpsock;
+        }
+        send_via_udp( socket, saddr, XWPDEV_MSG, &clientToken, 
+                      sizeof(clientToken), buf, bufLen, NULL );
+        logf( XW_LOGINFO, "sent %d bytes on UDP socket %d", bufLen, socket );
+        ok = true;
     }
 
     if ( !ok ) {
@@ -361,6 +482,17 @@ send_with_length_unsafe( const AddrInfo* addr, unsigned char* buf,
     return ok;
 } /* send_with_length_unsafe */
 
+void
+send_havemsgs( const AddrInfo* addr )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    int socket = addr->socket();
+    if ( -1 == socket ) {
+        socket = g_udpsock;
+    }
+
+    send_via_udp( socket, addr->sockaddr(), XWPDEV_HAVEMSGS, NULL );
+}
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
  * associate with one participant in a relayed session.  We'll store this
@@ -374,10 +506,10 @@ send_with_length_unsafe( const AddrInfo* addr, unsigned char* buf,
  * game?
  */
 static bool
-processConnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
+processConnect( const unsigned char* bufp, int bufLen, const AddrInfo* addr )
 {
     char cookie[MAX_INVITE_LEN+1];
-    unsigned char* end = bufp + bufLen;
+    const unsigned char* end = bufp + bufLen;
     bool success = false;
 
     cookie[0] = '\0';
@@ -431,9 +563,9 @@ processConnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
 } /* processConnect */
 
 static bool
-processReconnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
+processReconnect( const unsigned char* bufp, int bufLen, const AddrInfo* addr )
 {
-    unsigned char* end = bufp + bufLen;
+    const unsigned char* end = bufp + bufLen;
     bool success = false;
 
     logf( XW_LOGINFO, "%s()", __func__ );
@@ -470,9 +602,9 @@ processReconnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
                           wantsPublic, makePublic );
             success = scr.Reconnect( srcID, nPlayersH, nPlayersT, gameSeed, 
                                      &err );
-            if ( !success ) {
-                assert( err != XWRELAY_ERROR_NONE );
-            }
+            // if ( !success ) {
+            //     assert( err != XWRELAY_ERROR_NONE );
+            // }
         } else { 
             err = XWRELAY_ERROR_BADPROTO;
         }
@@ -486,10 +618,10 @@ processReconnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
 } /* processReconnect */
 
 static bool
-processAck( unsigned char* bufp, int bufLen, const AddrInfo* addr )
+processAck( const unsigned char* bufp, int bufLen, const AddrInfo* addr )
 {
     bool success = false;
-    unsigned char* end = bufp + bufLen;
+    const unsigned char* end = bufp + bufLen;
     HostID srcID;
     if ( getNetByte( &bufp, end, &srcID ) ) {
         SafeCref scr( addr );
@@ -499,9 +631,9 @@ processAck( unsigned char* bufp, int bufLen, const AddrInfo* addr )
 }
 
 static bool
-processDisconnect( unsigned char* bufp, int bufLen, const AddrInfo* addr )
+processDisconnect( const unsigned char* bufp, int bufLen, const AddrInfo* addr )
 {
-    unsigned char* end = bufp + bufLen;
+    const unsigned char* end = bufp + bufLen;
     CookieID cookieID;
     HostID hostID;
     bool success = false;
@@ -552,11 +684,11 @@ GetNSpawns(void)
 /* forward the message.  Need only change the command after looking up the
  * socket and it's ready to go. */
 static bool
-forwardMessage( unsigned char* buf, int buflen, const AddrInfo* addr )
+forwardMessage( const unsigned char* buf, int buflen, const AddrInfo* addr )
 {
     bool success = false;
-    unsigned char* bufp = buf + 1; /* skip cmd */
-    unsigned char* end = buf + buflen;
+    const unsigned char* bufp = buf + 1; /* skip cmd */
+    const unsigned char* end = buf + buflen;
     CookieID cookieID;
     HostID src;
     HostID dest;
@@ -578,7 +710,7 @@ forwardMessage( unsigned char* buf, int buflen, const AddrInfo* addr )
 } /* forwardMessage */
 
 static bool
-processMessage( unsigned char* buf, int bufLen, const AddrInfo* addr )
+processMessage( const unsigned char* buf, int bufLen, const AddrInfo* addr )
 {
     bool success = false;            /* default is failure */
     XWRELAY_Cmd cmd = *buf;
@@ -673,6 +805,7 @@ usage( char* arg0 )
              "\t-h                   (print this help)\\\n"
              "\t-i <idfile>          (file where next global id stored)\\\n"
              "\t-l <logfile>         (write logs here, not stderr)\\\n"
+             "\t-M <message>         (Put in maintenance mode, and return this string to all callers)\\\n"
              "\t-m <num_sockets>     (max number of simultaneous sockets to have open)\\\n"
              "\t-n <serverName>      (used in permID generation)\\\n"
              "\t-p <port>            (port to listen on)\\\n"
@@ -814,7 +947,7 @@ pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName,
 
 static void
 handleMsgsMsg( const AddrInfo* addr, bool sendFull,
-               unsigned char* bufp, const unsigned char* end )
+               const unsigned char* bufp, const unsigned char* end )
 {
     unsigned short nameCount;
     int ii;
@@ -913,16 +1046,38 @@ log_hex( const unsigned char* memp, int len, const char* tag )
     }
 } // log_hex
 
+static bool
+handlePutMessage( SafeCref& scr, HostID hid, const AddrInfo* addr, 
+                  unsigned short len, const unsigned char** bufp, 
+                  const unsigned char* end )
+{
+    bool success = false;
+    const unsigned char* start = *bufp;
+    HostID src;
+    HostID dest;
+    XWRELAY_Cmd cmd;
+    // sanity check that cmd and hostids are there
+    if ( getNetByte( bufp, end, &cmd )
+         && getNetByte( bufp, end, &src )
+         && getNetByte( bufp, end, &dest )
+	 && ( cmd == XWRELAY_MSG_TORELAY_NOCONN )
+	 && ( hid == dest ) ) {
+        scr.PutMsg( src, addr, dest, start, len );
+        *bufp = start + len;
+        success = true;
+    }
+    logf( XW_LOGINFO, "%s()=>%d", __func__, success );
+    return success;
+}
+
 static void
-handleProxyMsgs( int sock, const AddrInfo* addr, unsigned char* bufp, 
-                 unsigned char* end )
+handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp, 
+                 const unsigned char* end )
 {
     // log_hex( bufp, end-bufp, __func__ );
     unsigned short nameCount;
     int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
-        vector<unsigned char> out(4); /* space for len and n_msgs */
-        assert( out.size() == 4 );
         for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
 
             // See NetUtils.java for reply format
@@ -944,20 +1099,10 @@ handleProxyMsgs( int sock, const AddrInfo* addr, unsigned char* bufp,
             unsigned short nMsgs;
             if ( getNetShort( &bufp, end, &nMsgs ) ) {
                 SafeCref scr( connName );
-                while ( nMsgs-- > 0 ) {
+                while ( scr.IsValid() && nMsgs-- > 0 ) {
                     unsigned short len;
-                    HostID src;
-                    HostID dest;
-                    XWRELAY_Cmd cmd;
                     if ( getNetShort( &bufp, end, &len ) ) {
-                        unsigned char* start = bufp;
-                        if ( getNetByte( &bufp, end, &cmd )
-                             && getNetByte( &bufp, end, &src )
-                             && getNetByte( &bufp, end, &dest ) ) {
-                            assert( cmd == XWRELAY_MSG_TORELAY_NOCONN );
-                            assert( hid == dest );
-                            scr.PutMsg( src, addr, dest, start, len );
-                            bufp = start + len;
+                        if ( handlePutMessage( scr, hid, addr, len, &bufp, end ) ) {
                             continue;
                         }
                     }
@@ -965,19 +1110,35 @@ handleProxyMsgs( int sock, const AddrInfo* addr, unsigned char* bufp,
                 }
             }
         }
-        assert( bufp == end );  // don't ship with this!!!
+	if ( end - bufp != 1 ) {
+	    logf( XW_LOGERROR, "%s: buf != end: %p vs %p", __func__, bufp, end );
+	}
+        // assert( bufp == end );  // don't ship with this!!!
     }
 } // handleProxyMsgs
 
-void
-handle_proxy_packet( unsigned char* buf, int len, const AddrInfo* addr )
+static void
+game_thread_proc( UdpThreadClosure* utc )
 {
+    if ( !processMessage( utc->buf(), utc->len(), utc->addr() ) ) {
+        XWThreadPool::GetTPool()->CloseSocket( utc->addr() );
+    }
+}
+
+static void
+proxy_thread_proc( UdpThreadClosure* utc )
+{
+    int len = utc->len();
+    const AddrInfo* addr = utc->addr();
+    const unsigned char* buf = utc->buf();
+
+    logf( XW_LOGINFO, "%s called", __func__ );
     logf( XW_LOGVERBOSE0, "%s()", __func__ );
     if ( len > 0 ) {
         assert( addr->isTCP() );
         int socket = addr->socket();
-        unsigned char* bufp = buf;
-        unsigned char* end = bufp + len;
+        const unsigned char* bufp = buf;
+        const unsigned char* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
             XWPRXYCMD cmd = (XWPRXYCMD)*bufp++;
             switch( cmd ) {
@@ -1044,7 +1205,245 @@ handle_proxy_packet( unsigned char* buf, int len, const AddrInfo* addr )
             }
         }
     }
-} /* handle_proxy_packet */
+    XWThreadPool::GetTPool()->CloseSocket( addr );
+}
+
+static short
+addRegID( unsigned char* ptr, DevIDRelay relayID )
+{
+    short used = 0;
+    char idbuf[9];
+    int idLen = snprintf( idbuf, sizeof(idbuf), "%.8X", relayID );
+    short lenNBO = htons(idLen);
+    memcpy( &ptr[used], &lenNBO, sizeof(lenNBO) );
+    used += sizeof(lenNBO);
+    memcpy( &ptr[used], idbuf, idLen );
+    used += idLen;
+    return used;
+}
+
+static void 
+registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
+{
+    DevIDRelay relayID;
+    DBMgr* dbMgr = DBMgr::Get();
+    short indx = 0;
+    unsigned char buf[32];
+
+    if ( ID_TYPE_RELAY == devID->m_devIDType ) { // known to us; just update the time
+        relayID = devID->asRelayID();
+        if ( dbMgr->updateDevice( relayID, true ) ) {
+            int nMsgs = dbMgr->CountStoredMessages( relayID );
+            if ( 0 < nMsgs ) {
+                AddrInfo addr( -1, -1, saddr );
+                send_havemsgs( &addr );
+            }
+        } else {
+            indx += addRegID( &buf[indx], relayID );
+            send_via_udp( g_udpsock, &saddr->addr, XWPDEV_BADREG, buf, indx, 
+                          NULL );
+
+            relayID = DBMgr::DEVID_NONE;
+        } 
+    } else {
+        relayID = dbMgr->RegisterDevice( devID );
+        if ( DBMgr::DEVID_NONE != relayID ) {
+            // send it back to the device
+            indx += addRegID( &buf[indx], relayID );
+            send_via_udp( g_udpsock, &saddr->addr, XWPDEV_REGRSP, buf, 
+                          indx, NULL );
+        }
+    }
+
+    // Now let's map the address to the devid for future sending purposes.
+    if ( DBMgr::DEVID_NONE != relayID ) {
+        DevMgr::Get()->Remember( relayID, saddr );
+    }
+}
+
+static void
+retrieveMessages( DevID& devID, const AddrInfo::AddrUnion* saddr )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    DBMgr* dbMgr = DBMgr::Get();
+    vector<int> ids;
+    vector<int> sentIDs;
+    dbMgr->GetStoredMessageIDs( devID.asRelayID(), ids );
+    vector<int>::const_iterator iter;
+    for ( iter = ids.begin(); iter != ids.end(); ++iter ) {
+        unsigned char buf[MAX_MSG_LEN];
+        size_t buflen = sizeof(buf);
+        AddrInfo::ClientToken clientToken;
+        if ( dbMgr->GetStoredMessage( *iter, buf, &buflen, &clientToken ) ) {
+            AddrInfo addr( -1, clientToken, saddr );
+            if ( ! send_with_length_unsafe( &addr, buf, buflen ) ) {
+                break;
+            }
+            sentIDs.push_back( *iter );
+        }
+    }
+    dbMgr->RemoveStoredMessages( sentIDs );
+}
+
+static const char*
+msgToStr( XWRelayReg msg )
+{
+    const char* str;
+# define CASE_STR(c)  case c: str = #c; break
+    switch( msg ) {
+    CASE_STR(XWPDEV_REG);
+    CASE_STR(XWPDEV_REGRSP);
+    CASE_STR(XWPDEV_PING);
+    CASE_STR(XWPDEV_HAVEMSGS);
+    CASE_STR(XWPDEV_RQSTMSGS);
+    CASE_STR(XWPDEV_MSG);
+    CASE_STR(XWPDEV_MSGNOCONN);
+    CASE_STR(XWPDEV_MSGRSP);
+    CASE_STR(XWPDEV_BADREG);
+    CASE_STR(XWPDEV_ALERT);     // should not receive this....
+    CASE_STR(XWPDEV_ACK);
+    CASE_STR(XWPDEV_DELGAME);
+    default:
+        str = "<unknown>";
+        break;
+    }
+# undef CASE_STR
+    return str;
+
+}
+
+static void
+ackPacketIf( const UDPHeader* header, const AddrInfo* addr )
+{
+    if ( UDPAckTrack::shouldAck( header->cmd ) ) {
+        uint32_t packetID = header->packetID;
+        logf( XW_LOGINFO, "acking packet %d", packetID );
+        packetID = htonl( packetID );
+        send_via_udp( addr->socket(), addr->sockaddr(), XWPDEV_ACK, 
+                      &packetID, sizeof(packetID), NULL );
+    }
+}
+
+static void
+udp_thread_proc( UdpThreadClosure* utc )
+{
+    const unsigned char* ptr = utc->buf();
+    const unsigned char* end = ptr + utc->len();
+
+    UDPHeader header;
+    if ( getHeader( &ptr, end, &header ) ) {
+        logf( XW_LOGINFO, "%s(msg=%s)", __func__, msgToStr( header.cmd ) );
+        ackPacketIf( &header, utc->addr() );
+        switch( header.cmd ) {
+        case XWPDEV_REG: {
+            DevIDType typ = (DevIDType)*ptr++;
+            DevID devID( typ );
+            if ( getRelayDevID( &ptr, end, devID ) ) {
+                registerDevice( &devID, utc->saddr() );
+            }
+            break;
+        }
+        case XWPDEV_MSG: {
+            AddrInfo::ClientToken clientToken;
+            memcpy( &clientToken, ptr, sizeof(clientToken) );
+            ptr += sizeof(clientToken);
+            clientToken = ntohl( clientToken );
+            if ( 0 != clientToken ) {
+                AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
+                (void)processMessage( ptr, end - ptr, &addr );
+            } else {
+                logf( XW_LOGERROR, "%s: dropping packet with token of 0" );
+            }
+            break;
+        }
+        case XWPDEV_MSGNOCONN: {
+            AddrInfo::ClientToken clientToken;
+            if ( getNetLong( &ptr, end, &clientToken ) && 0 != clientToken ) {
+                HostID hid;
+                char connName[MAX_CONNNAME_LEN+1];
+                if ( !parseRelayID( &ptr, end, connName, 
+                                    sizeof( connName ), &hid ) ) {
+                    logf( XW_LOGERROR, "parse failed!!!" );
+                    break;
+                }
+                SafeCref scr( connName );
+                if ( scr.IsValid() ) {
+                    AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
+                    handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
+                    assert( ptr == end ); // DON'T CHECK THIS IN!!!
+                } else {
+                    logf( XW_LOGERROR, "%s: invalid scr for %s", __func__, 
+                          connName );
+                }
+            } else {
+                logf( XW_LOGERROR, "no clientToken found!!!" );
+            }
+            break;
+        }
+
+        case XWPDEV_RQSTMSGS: {
+            unsigned short idLen;
+            if ( !getNetShort( &ptr, end, &idLen ) ) {
+                break;
+            }
+            if ( end - ptr > idLen ) {
+                logf( XW_LOGERROR, "full devID not received" );
+                break;
+            }
+            DevID devID( ID_TYPE_RELAY );
+            devID.m_devIDString.append( (const char*)ptr, idLen );
+            ptr += idLen;
+            retrieveMessages( devID, utc->saddr() );
+            break;
+        }
+        case XWPDEV_ACK: {
+            uint32_t packetID;
+            if ( getNetLong( &ptr, end, &packetID ) ) {
+                logf( XW_LOGINFO, "ack for packet %d", packetID );
+                UDPAckTrack::recordAck( packetID );
+            }
+            break;
+        }
+        case XWPDEV_DELGAME: {
+            DevID devID( ID_TYPE_RELAY );
+            if ( !getRelayDevID( &ptr, end, devID ) ) {
+                break;
+            }
+            AddrInfo::ClientToken clientToken;
+            if ( getNetLong( &ptr, end, &clientToken ) && 0 != clientToken ) {
+                unsigned short seed;
+                HostID hid;
+                string connName;
+                if ( DBMgr::Get()->FindPlayer( devID.asRelayID(), clientToken, 
+                                               connName, &hid, &seed ) ) {
+                    SafeCref scr( connName.c_str() );
+                    scr.DeviceGone( hid, seed );
+                }
+            }
+            break;
+        }
+        default:
+            logf( XW_LOGERROR, "%s: unexpected msg %d", __func__, header.cmd );
+        }
+    }
+}
+
+static void
+handle_udp_packet( int udpsock )
+{
+    unsigned char buf[MAX_MSG_LEN];
+    AddrInfo::AddrUnion saddr;
+    memset( &saddr, 0, sizeof(saddr) );
+    socklen_t fromlen = sizeof(saddr.addr_in);
+
+    ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
+                              &saddr.addr, &fromlen );
+    logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
+    if ( 0 < nRead ) {
+        AddrInfo addr( udpsock, &saddr, false );
+        UdpQueue::get()->handle( &addr, buf, nRead, udp_thread_proc );
+    }
+}
 
 /* From stack overflow, toward a snprintf with an expanding buffer.
  */
@@ -1129,11 +1528,55 @@ enable_keepalive( int sock )
       */
 }
 
+static void
+maint_str_loop( int udpsock, const char* str )
+{
+    logf( XW_LOGINFO, "%s()", __func__ );
+    assert( -1 != udpsock );
+    short len = strlen(str);
+    unsigned char outbuf[sizeof(len) + len];
+    short lenNS = htons( len );
+    memcpy( &outbuf[0], &lenNS, sizeof(lenNS) );
+    memcpy( &outbuf[0+sizeof(len)], str, len );
+
+    fd_set rfds;
+    for ( ; ; ) {
+        FD_ZERO(&rfds);
+        FD_SET( udpsock, &rfds );
+        int retval = select( udpsock + 1, &rfds, NULL, NULL, NULL );
+        if ( 0 > retval ) {
+            logf( XW_LOGERROR, "%s: select=>%d (errno=%d/%s)", __func__, retval,
+                  errno, strerror(errno) );
+            break;
+        }
+        if ( FD_ISSET( udpsock, &rfds ) ) {
+            unsigned char buf[512];
+            AddrInfo::AddrUnion saddr;
+            memset( &saddr, 0, sizeof(saddr) );
+            socklen_t fromlen = sizeof(saddr.addr_in);
+
+            ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
+                                      &saddr.addr, &fromlen );
+            logf( XW_LOGINFO, "%s(); got %d bytes", __func__, nRead);
+
+            UDPHeader header;
+            const unsigned char* ptr = buf;
+            if ( getHeader( &ptr, ptr + nRead, &header ) ) {
+                send_via_udp( udpsock, &saddr.addr, XWPDEV_ALERT,
+                              outbuf, sizeof(outbuf), NULL );
+            } else {
+                logf( XW_LOGERROR, "unexpected data" );
+            }
+        }
+    } // for
+}
+
 int
 main( int argc, char** argv )
 {
     int port = 0;
     int ctrlport = 0;
+    int udpport = -1;
 #ifdef DO_HTTP
     int httpport = 0;
     const char* cssFile = NULL;
@@ -1143,6 +1586,7 @@ main( int argc, char** argv )
     const char* serverName = NULL;
     // const char* idFileName = NULL;
     const char* logFile = NULL;
+    const char* maint_str = NULL;
     bool doDaemon = true;
     bool doFork = true;
 
@@ -1156,7 +1600,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:m:n:f:l:t:s:w:"
+       int opt = getopt(argc, argv, "h?c:p:M:m:n:f:l:t:s:u:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -1198,6 +1642,9 @@ main( int argc, char** argv )
        case 'l':
            logFile = optarg;
            break;
+       case 'M':
+           maint_str = optarg;
+           break;
        case 'm':
            g_maxsocks = atoi( optarg );
            break;
@@ -1209,6 +1656,9 @@ main( int argc, char** argv )
            break;
        case 't':
            nWorkerThreads = atoi( optarg );
+           break;
+       case 'u':
+           udpport = atoi( optarg );
            break;
        default:
            usage( argv[0] );
@@ -1232,6 +1682,9 @@ main( int argc, char** argv )
     if ( ctrlport == 0 ) {
         (void)cfg->GetValueFor( "CTLPORT", &ctrlport );
     }
+    if ( -1 == udpport ) {
+        (void)cfg->GetValueFor( "UDPPORT", &udpport );
+    }
 #ifdef DO_HTTP
     if ( httpport == 0 ) {
         (void)cfg->GetValueFor( "WWW_PORT", &httpport );
@@ -1240,11 +1693,9 @@ main( int argc, char** argv )
     if ( nWorkerThreads == 0 ) {
         (void)cfg->GetValueFor( "NTHREADS", &nWorkerThreads );
     }
-
     if ( g_maxsocks == -1 && !cfg->GetValueFor( "MAXSOCKS", &g_maxsocks ) ) {
         g_maxsocks = 100;
     }
-
     char serverNameBuf[128];
     if ( serverName == NULL ) {
         if ( cfg->GetValueFor( "SERVERNAME", serverNameBuf, 
@@ -1288,7 +1739,7 @@ main( int argc, char** argv )
 
 #ifdef SPAWN_SELF
     /* loop forever, relaunching children as they die. */
-    while ( doFork ) {
+    while ( doFork && !maint_str ) {
         ++s_nSpawns;             /* increment in parent *before* copy */
         pid_t pid = fork();
         if ( pid == 0 ) {       /* child */
@@ -1309,6 +1760,26 @@ main( int argc, char** argv )
         }
     }
 #endif
+
+    if ( -1 != udpport ) {
+        struct sockaddr_in saddr;
+        g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+        saddr.sin_family = PF_INET;
+        saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        saddr.sin_port = htons(udpport);
+        int err = bind( g_udpsock, (struct sockaddr*)&saddr, sizeof(saddr) );
+        if ( 0 == err ) {
+            err = fcntl( g_udpsock, F_SETFL, O_NONBLOCK );
+        } else {
+            logf( XW_LOGERROR, "bind()=>%s", strerror(errno) );
+            g_udpsock = -1;
+        }
+    }
+
+    if ( !!maint_str ) {
+        maint_str_loop( g_udpsock, maint_str );
+        exit( 1 );              // should never exit
+    }
 
     /* Needs to be reset after a crash/respawn */
     PermID::SetStartTime( time(NULL) );
@@ -1396,7 +1867,7 @@ main( int argc, char** argv )
     (void)sigaction( SIGINT, &act, NULL );
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
-    tPool->Setup( nWorkerThreads, processMessage, killSocket );
+    tPool->Setup( nWorkerThreads, killSocket );
 
     /* set up select call */
     fd_set rfds;
@@ -1404,6 +1875,9 @@ main( int argc, char** argv )
         FD_ZERO(&rfds);
         g_listeners.AddToFDSet( &rfds );
         FD_SET( g_control, &rfds );
+        if ( -1 != g_udpsock ) {
+            FD_SET( g_udpsock, &rfds );
+        }
 #ifdef DO_HTTP
         if ( -1 != g_http ) {
             FD_SET( g_http, &rfds );
@@ -1412,6 +1886,9 @@ main( int argc, char** argv )
         int highest = g_listeners.GetHighest();
         if ( g_control > highest ) {
             highest = g_control;
+        }
+        if ( g_udpsock > highest ) {
+            highest = g_udpsock;
         }
 #ifdef DO_HTTP
         if ( g_http > highest ) {
@@ -1458,9 +1935,11 @@ main( int argc, char** argv )
                               "%s: accepting connection from %s on socket %d", 
                               __func__, inet_ntoa(saddr.addr_in.sin_addr), newSock );
 
-                        AddrInfo addr( true, newSock, &saddr );
-                        tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME 
+                        AddrInfo addr( newSock, &saddr, true );
+                        tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME
                                           : XWThreadPool::STYPE_PROXY,
+                                          perGame ? game_thread_proc
+                                          : proxy_thread_proc,
                                           &addr );
                     }
                     --retval;
@@ -1469,6 +1948,12 @@ main( int argc, char** argv )
             if ( FD_ISSET( g_control, &rfds ) ) {
                 assert(0);      // not working; don't use until fixed
                 // run_ctrl_thread( g_control );
+                --retval;
+            }
+            if ( FD_ISSET( g_udpsock, &rfds ) ) {
+                // This will need to be done in a separate thread, or pushed
+                // to the existing thread pool
+                handle_udp_packet( g_udpsock );
                 --retval;
             }
 #ifdef DO_HTTP
