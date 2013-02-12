@@ -3,9 +3,11 @@
 set -u -e
 
 DO_MD5=""
+DICT_PATH=.
 
 usage() {
-    echo "usage: $0 [--md5] /path/to/dicts"
+    [ $# -ge 1 ] && echo "ERROR: $1"
+    echo "usage: $0 [--md5] --path /path/to/dicts"
     echo "   write to stdout an html file that serves up all .xwd files inside /path/to/dicts"
     echo "   optionally, write dictName.md5 in dir for every dict."
     exit 1
@@ -36,16 +38,28 @@ do_lang() {
     cd ..
 }
 
-if [ $# -eq 2 ]; then
-    [ $1 = "--md5" ] || usage
-    DO_MD5=1
+while [ $# -ge 1 ]; do
+    echo $1
+    case $1 in
+	--md5)
+	    DO_MD5=1
+	    ;;
+	--path)
+	    shift
+	    DICT_PATH=$1
+	    ;;
+	--help)
+	    usage
+	    ;;
+	*)
+	    usage "Unexpected param $1"
+	    ;;
+    esac
     shift
-fi
-
-[ $# -eq 1 ] || usage
+done
 
 WD=$(pwd)
-cd $1
+cd $DICT_PATH
 
 DIRS=""
 for DIR in $(ls); do
