@@ -1075,9 +1075,9 @@ disenable_buttons( GtkAppGlobals* globals )
     XP_Bool canToggle = board_canTogglePending( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->toggle_undo_button, canToggle );
 
-    XP_Bool canHing = board_canHint( globals->cGlobals.game.board );
-    gtk_widget_set_sensitive( globals->prevhint_button, canHing );
-    gtk_widget_set_sensitive( globals->nexthint_button, canHing );
+    XP_Bool canHint = board_canHint( globals->cGlobals.game.board );
+    gtk_widget_set_sensitive( globals->prevhint_button, canHint );
+    gtk_widget_set_sensitive( globals->nexthint_button, canHint );
 
 #ifdef XWFEATURE_CHAT
     XP_Bool canChat = !!globals->cGlobals.game.comms
