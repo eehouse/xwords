@@ -71,6 +71,18 @@ BoardObjectType_2str( BoardObjectType obj )
     }
 }
 
+const char*
+StackMoveType_2str( StackMoveType typ )
+{
+    switch( typ ) {
+        CASESTR(ASSIGN_TYPE);
+        CASESTR(MOVE_TYPE);
+        CASESTR(TRADE_TYPE); 
+        CASESTR(PHONY_TYPE);
+    default: return FUNC(__func__) " unknown";
+    }
+}
+
 #undef CASESTR
 
 #endif /* ENABLE_LOGGING */
