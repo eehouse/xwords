@@ -909,8 +909,9 @@ writeOutStartNode( const char* startNodeOut, int firstRootChildOffset )
     fclose( nodeout );
 } // writeOutStartNode
 
-// build the hash for translating.  I'm using a hash assuming it'll be
-// fast.  Key is the letter; value is the 0..31 value to be output.
+// build the hash for translating.  I'm using a hash assuming it'll be fast.
+// Key is the letter; value is the 0..31 value to be output.  Note that input
+// may be in the format "A a" rather than just "A"
 static void
 makeTableHash( void )
 {
@@ -923,19 +924,24 @@ makeTableHash( void )
     // Fill the 0th space since references are one-based
     gRevMap.push_back(0);
 
-    for ( ii = 0; ; ++ii ) {
+    for ( ii = 0; ; ) {
         wchar_t ch = getWideChar( TABLEFILE );
         if ( EOF == ch ) {
             break;
+        }
+        if ( ' ' == ch ) {
+            // discard a synonym
+            (void)getWideChar( TABLEFILE );
+            continue;
         }
 
         fprintf( stderr, "adding %lc/%x\n", ch, ch );
         gRevMap.push_back(ch);
 
         if ( ch == 0 ) {	// blank
-            gBlankIndex = ii;
             // we want to increment i when blank seen since it is a
             // tile value
+            gBlankIndex = ii++;
             continue;
         }
         // die "$0: $gTableFile too large\n" 
@@ -946,7 +952,7 @@ makeTableHash( void )
         // Add 1 to i so no tile-strings contain 0 and we can treat as
         // null-terminated.  The 1 is subtracted again in
         // outputNode().
-        gTableHash[ch] = ii + 1;
+        gTableHash[ch] = ++ii;
     }
 
     fclose( TABLEFILE );

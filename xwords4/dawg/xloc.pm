@@ -100,6 +100,16 @@ sub GetValue($$) {
     return ${$hashR}{$name};
 }
 
+sub printLetters($$) {
+    my ( $str, $fhr ) = @_;
+    my @letters = split( /\|/, $str );
+    $str = join( " ", @letters );
+    for ( my $key = 0; $key < length($str); ++$key ) {
+        my $chr = substr( $str, $key, 1 );
+        print $fhr pack( "U", ord($chr) );
+    }
+}
+
 sub WriteMapFile($$$) {
     my ( $hashR, $unicode, $fhr ) = @_;
 
@@ -109,9 +119,8 @@ sub WriteMapFile($$$) {
         my $tileR = GetNthTile( $hashR, $i );
         my $str = ${$tileR}[2];
 
-        if ( $str =~ /\'(.)\'/ ) {
-            print $fhr pack( "U", ord($1) );
-#            printf STDERR "ord: %x ($1)\n", ord($1);
+        if ( $str =~ /\'(.(\|.)*)\'/ ) {
+            printLetters( $1, $fhr );
         } elsif ( $str =~ /\"(.+)\"/ ) {
             print $fhr pack( "c", $specialCount++ );
         } elsif ( $str =~ /(\d+)/ ) {
