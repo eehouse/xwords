@@ -201,11 +201,18 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
     for ( ii = 0; ii < nFaces; ++ii ) {
         ptrs[ii] = next;
         if ( isUTF8 ) {
-            gchar* cp = g_utf8_offset_to_pointer( bytes, 1 );
-            XP_U16 len = cp - bytes;
-            XP_MEMCPY( next, bytes, len );
-            next += len;
-            bytes += len;
+            for ( ; ; ) {
+                gchar* cp = g_utf8_offset_to_pointer( bytes, 1 );
+                XP_U16 len = cp - bytes;
+                XP_MEMCPY( next, bytes, len );
+                next += len;
+                bytes += len;
+                if ( ' ' != bytes[0] ) {
+                    break;
+                }
+                ++bytes;        /* skip delimiter */
+                *next++ = '\0';
+            }
         } else {
             XP_ASSERT( 0 == *bytes );
             ++bytes;            /* skip empty */
@@ -216,6 +223,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
     }
     XP_ASSERT( !dict->faces );
     dict->faces = faces;
+    dict->facesEnd = faces + nFaces + nBytes;
     XP_ASSERT( !dict->facePtrs );
     dict->facePtrs = ptrs;
 } /* dict_splitFaces */
