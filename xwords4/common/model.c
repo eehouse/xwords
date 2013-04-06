@@ -83,6 +83,14 @@ static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal,
                            const MoveInfo* movei, XP_U16 start, XP_U16 end,
 #endif
                            void* clsur );
+#ifdef DEBUG 
+typedef struct _DiffTurnState {
+    XP_S16 lastPlayerNum;
+    XP_S16 lastMoveNum;
+} DiffTurnState;
+static void assertDiffTurn( ModelCtxt* model, XP_U16 turn, 
+                            const StackEntry* entry, void* closure);
+#endif
 
 /*****************************************************************************
  *
@@ -165,10 +173,19 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 
     stack_loadFromStream( model->vol.stack, stream );
 
+
+    MovePrintFuncPre pre = NULL;
+    MovePrintFuncPost post = NULL;
+    void* closure = NULL;
+#ifdef DEBUG
+    pre = assertDiffTurn;
+    DiffTurnState state = { -1, -1 };
+    closure = &state;
+#endif
+
     buildModelFromStack( model, model->vol.stack, XP_FALSE, 0, 
                          (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL,
-                         (MovePrintFuncPre)NULL, (MovePrintFuncPost)NULL, 
-                         NULL );
+                         pre, post, closure );
 
     for ( ii = 0; ii < model->nPlayers; ++ii ) {
         loadPlayerCtxt( model, stream, version, &model->players[ii] );
@@ -2472,6 +2489,23 @@ setContains( const TrayTileSet* tiles, Tile tile )
     }
     return result;
 }
+
+#ifdef DEBUG 
+static void 
+assertDiffTurn( ModelCtxt* model, XP_U16 XP_UNUSED(turn), 
+                const StackEntry* entry, void* closure)
+{
+    if ( 1 < model->nPlayers ) {
+        DiffTurnState* state = (DiffTurnState*)closure;
+        if ( -1 != state->lastPlayerNum ) {
+            XP_ASSERT( state->lastPlayerNum != entry->playerNum );
+            XP_ASSERT( state->lastMoveNum + 1 == entry->moveNum );
+        }
+        state->lastPlayerNum = entry->playerNum;
+        state->lastMoveNum = entry->moveNum;
+    }
+}
+#endif
 
 #ifdef CPLUS
 }
