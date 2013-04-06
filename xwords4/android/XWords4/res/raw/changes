@@ -9,10 +9,13 @@
 
 <h3>New with this release</h3>
 <ul>
+  <li>Fix crash when wordlists downloaded to certain devices</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
+  <li>Allow for "synonyms" when searching for words, e.g. "A" and "a"</li>
+  <li>Improve communication with relay</li>
 </ul>
 
 <p>(The full changelog 
