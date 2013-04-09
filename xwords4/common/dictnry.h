@@ -81,6 +81,7 @@ struct DictionaryCtxt {
 
     SpecialBitmaps* bitmaps;
     XP_UCHAR** chars;
+    XP_UCHAR** charEnds;
     XP_U32 nWords;
 
     XP_LangCode langCode;
