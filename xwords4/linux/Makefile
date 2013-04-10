@@ -257,6 +257,9 @@ debcheck:
 
 all: debcheck $(TARGET)
 
+dawg2dict: $(TARGET)
+	ln -sf $< $@
+
 help:
 	@echo "make [MEMDEBUG=TRUE] [CURSES_ONLY=TRUE] [GTK_ONLY=TRUE]"
 
