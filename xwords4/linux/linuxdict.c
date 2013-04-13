@@ -477,9 +477,8 @@ freeSpecials( LinuxDictionaryCtxt* ctxt )
     if ( !!ctxt->super.bitmaps ) {
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
-    if ( !!ctxt->super.chars ) {
-        XP_FREE( ctxt->super.mpool, ctxt->super.chars );
-    }
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.chars );
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.charEnds );
 } /* freeSpecials */
 
 static void
