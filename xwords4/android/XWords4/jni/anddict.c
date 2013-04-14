@@ -163,10 +163,14 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
     XP_U8 const* ptr = *ptrp;
     Tile ii;
     XP_UCHAR** texts;
+    XP_UCHAR** textEnds;
     SpecialBitmaps* bitmaps;
 
     texts = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
                                    nSpecials * sizeof(*texts) );
+    textEnds = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
+                                      nSpecials * sizeof(*textEnds) );
+
     bitmaps = (SpecialBitmaps*)
         XP_CALLOC( ctxt->super.mpool, nSpecials * sizeof(*bitmaps) );
 
@@ -180,10 +184,19 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
             CHECK_PTR( ptr, txtlen, end );
             XP_UCHAR* text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
             texts[(int)*facep] = text;
+            textEnds[(int)*facep] = text + txtlen + 1;
             XP_MEMCPY( text, ptr, txtlen );
             ptr += txtlen;
             text[txtlen] = '\0';
             XP_ASSERT( *facep < nSpecials ); /* firing */
+
+            /* 0 is never part of a multi-byte utf8 char, so this little hack
+               is safe */
+            for ( ; '\0' != *text; ++text ) {
+                if ( *text == SYNONYM_DELIM ) {
+                    *text = '\0';
+                }
+            }
 
             if ( !andMakeBitmap( ctxt, &ptr, end, 
                                  &bitmaps[(int)*facep].largeBM ) ) {
@@ -201,6 +214,7 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
     success = XP_FALSE;
  done:
     ctxt->super.chars = texts;
+    ctxt->super.charEnds = textEnds;
     ctxt->super.bitmaps = bitmaps;
 
     *ptrp = ptr;
@@ -483,6 +497,8 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         }
         XP_FREE( ctxt->super.mpool, ctxt->super.chars );
     }
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.charEnds );
+
     if ( !!ctxt->super.bitmaps ) {
         for ( ii = 0; ii < nSpecials; ++ii ) {
             jobject bitmap = ctxt->super.bitmaps[ii].largeBM;
