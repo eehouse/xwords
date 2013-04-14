@@ -25,6 +25,6 @@ import android.graphics.drawable.BitmapDrawable;
 public interface JNIUtils {
 
     // Stuff I can't do in C....
-    String[] splitFaces( byte[] chars, boolean isUTF8 );
+    String[][] splitFaces( byte[] chars, boolean isUTF8 );
     String getMD5SumFor( String dictName, byte[] bytes );
 }

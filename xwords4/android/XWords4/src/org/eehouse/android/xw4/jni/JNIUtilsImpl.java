@@ -28,9 +28,13 @@ import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.*;
 
 public class JNIUtilsImpl implements JNIUtils {
+
+    private static final char SYNONYM_DELIM = ' ';
 
     private static JNIUtilsImpl s_impl = null;
     private Context m_context;
@@ -51,10 +55,15 @@ public class JNIUtilsImpl implements JNIUtils {
      * convert into individual strings.  The 0 is the problem: it's
      * not valid utf8.  So turn it and the other nums into strings and
      * catch them on the other side.
+     *
+     * Changes for "synonyms" (A and a being the same tile): return an
+     * array of Strings for each face.  Each face is
+     * <letter>[<delim><letter]*, so for each loop until the delim
+     * isn't found.
      */
-    public String[] splitFaces( byte[] chars, boolean isUTF8 )
+    public String[][] splitFaces( byte[] chars, boolean isUTF8 )
     {
-        ArrayList<String> al = new ArrayList<String>();
+        ArrayList<String[]> faces = new ArrayList<String[]>();
         ByteArrayInputStream bais = new ByteArrayInputStream( chars );
         InputStreamReader isr;
         try {
@@ -66,6 +75,9 @@ public class JNIUtilsImpl implements JNIUtils {
         
         int[] codePoints = new int[1];
 
+        // "A aB bC c"
+        boolean lastWasDelim = false;
+        ArrayList<String> face = null;
         for ( ; ; ) {
             int chr = -1;
             try {
@@ -74,7 +86,12 @@ public class JNIUtilsImpl implements JNIUtils {
                 DbgUtils.logf( ioe.toString() );
             }
             if ( -1 == chr ) {
+                addFace( faces, face );
                 break;
+            } else if ( SYNONYM_DELIM == chr ) {
+                Assert.assertNotNull( face );
+                lastWasDelim = true;
+                continue;
             } else {
                 String letter;
                 if ( chr < 32 ) {
@@ -83,12 +100,33 @@ public class JNIUtilsImpl implements JNIUtils {
                     codePoints[0] = chr;
                     letter = new String( codePoints, 0, 1 );
                 }
-                al.add( letter );
+                // Ok, we have a letter.  Is it part of an existing
+                // one or the start of a new?  If the latter, insert
+                // what we have before starting over.
+                if ( null == face ) { // start of a new, clearly
+                    // do nothing
+                } else {
+                    Assert.assertTrue( 0 < face.size() );
+                    if ( !lastWasDelim ) {
+                        addFace( faces, face );
+                        face = null;
+                    }
+                }
+                lastWasDelim = false;
+                if ( null == face ) {
+                    face = new ArrayList<String>();
+                }
+                face.add( letter );
             }
         }
         
-        String[] result = al.toArray( new String[al.size()] );
+        String[][] result = faces.toArray( new String[faces.size()][] );
         return result;
+    }
+
+    private void addFace( ArrayList<String[]> faces, ArrayList<String> face )
+    {
+        faces.add( face.toArray( new String[face.size()] ) );
     }
 
     public String getMD5SumFor( String dictName, byte[] bytes )
