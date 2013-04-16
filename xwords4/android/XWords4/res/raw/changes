@@ -5,16 +5,21 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 59 release</b>
+<b>Crosswords 4.4 beta 60 release</b>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Fix crash when wordlists downloaded to certain devices</li>
+
+  <li>Allow alternate spellings for tiles in Find field in wordlist
+  browser, e.g. 'a' for 'A' and 'L-L' for 'L&middot;L' (in Catalan). The new
+  wordlist format requires this upgrade, so I will release new
+  wordlists in a few weeks. </li>
+
+  <li>Don't list the same wordlist more than once</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Allow for "synonyms" when searching for words, e.g. "A" and "a"</li>
   <li>Improve communication with relay</li>
 </ul>
 
