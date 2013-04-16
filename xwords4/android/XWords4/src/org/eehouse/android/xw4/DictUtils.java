@@ -128,10 +128,13 @@ public class DictUtils {
         // changes?
     }
 
-    private static void tryDir( Context context, File dir, boolean strict, 
+    private static void tryDir( Context context, HashSet<File> seen,
+                                File dir, boolean strict, 
                                 DictLoc loc, ArrayList<DictAndLoc> al )
     {
-        if ( null != dir ) {
+        if ( null != dir && !seen.contains( dir ) ) {
+            seen.add( dir );
+
             String[] list = dir.list();
             if ( null != list ) {
                 for ( String file : list ) {
@@ -162,8 +165,12 @@ public class DictUtils {
                 }
             }
 
-            tryDir( context, getSDDir( context ), false, DictLoc.EXTERNAL, al );
-            tryDir( context, getDownloadDir( context ), true, 
+            HashSet<File> dirs = new HashSet<File>();
+            dirs.add( context.getFilesDir() );
+
+            tryDir( context, dirs, getSDDir( context ), false, 
+                    DictLoc.EXTERNAL, al );
+            tryDir( context, dirs, getDownloadDir( context ), true, 
                     DictLoc.DOWNLOAD, al );
 
             s_dictListCache = 
