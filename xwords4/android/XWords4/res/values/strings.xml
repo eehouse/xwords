@@ -1948,7 +1948,7 @@
     you start your SMS game. (You\'ll have a chance to send
     invites later.)</string>
     <!--  -->
-    <string name="sms_disabled">Playing vis SMS is currently disabled.
+    <string name="sms_disabled">Playing via SMS is currently disabled.
     You can enable it in Settings->Network game settings.</string>
     <!--  -->
     <string name="newgame_enable_sms">Launch Settings</string>
