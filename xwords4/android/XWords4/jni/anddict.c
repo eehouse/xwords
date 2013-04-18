@@ -190,8 +190,10 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
             text[txtlen] = '\0';
             XP_ASSERT( *facep < nSpecials ); /* firing */
 
-            /* 0 is never part of a multi-byte utf8 char, so this little hack
-               is safe */
+            /* This little hack is safe because all bytes but the first in a
+               multi-byte utf-8 char have the high bit set.  SYNONYM_DELIM
+               does not have its high bit set */
+            XP_ASSERT( 0 == (SYNONYM_DELIM & 0x80) );
             for ( ; '\0' != *text; ++text ) {
                 if ( *text == SYNONYM_DELIM ) {
                     *text = '\0';

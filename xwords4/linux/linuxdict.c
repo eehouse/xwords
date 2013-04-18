@@ -181,6 +181,7 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, const XP_U8** ptrp )
             
             /* Now replace the delimiter char with \0.  It must be one byte in
                length and of course equal to the delimiter */
+            XP_ASSERT( 0 == (SYNONYM_DELIM & 0x80) );
             while ( '\0' != *text ) {
                 XP_UCHAR* cp = g_utf8_offset_to_pointer( text, 1 );
                 if ( 1 == (cp - text) && *text == SYNONYM_DELIM ) {
