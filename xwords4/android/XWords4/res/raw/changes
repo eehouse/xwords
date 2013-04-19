@@ -10,12 +10,12 @@
 <h3>New with this release</h3>
 <ul>
 
-  <li>Allow alternate spellings for tiles in Find field in wordlist
-  browser, e.g. 'a' for 'A' and 'L-L' for 'L&middot;L' (in Catalan). The new
-  wordlist format requires this upgrade, so I will release new
-  wordlists in a few weeks. </li>
+  <li>Allow alternate spellings for tiles in the Find field in the
+  wordlist browser, e.g. 'a' for 'A' and 'L-L' for 'L&middot;L' (in
+  Catalan). The new wordlist format requires this upgrade, so I will
+  wait a few weeks before releasing new wordlists. </li>
 
-  <li>Don't list the same wordlist more than once</li>
+  <li>Upgrade built-in English wordlists.</li>
 </ul>
 
 <h3>Next up</h3>
