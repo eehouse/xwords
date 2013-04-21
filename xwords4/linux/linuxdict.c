@@ -298,6 +298,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
         flags &= ~DICT_HEADER_MASK;
         XP_DEBUGF( "has header!" );
     }
+
+    flags &= ~DICT_SYNONYMS_MASK;
+
     if ( flags == 0x0001 ) {
         dctx->super.nodeSize = 3;
         charSize = 1;

@@ -339,6 +339,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         ptr += headerLen;
     }
 
+    flags &= ~DICT_SYNONYMS_MASK;
     if ( flags == 0x0002 ) {
         nodeSize = 3;
     } else if ( flags == 0x0003 ) {
