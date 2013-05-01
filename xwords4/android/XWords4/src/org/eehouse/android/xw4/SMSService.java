@@ -444,6 +444,7 @@ public class SMSService extends Service {
                                      MultiService.OWNER_SMS );
                     intent.putExtra( MultiService.INVITER, 
                                      Utils.phoneToContact( this, phone, true ) );
+                    intent.putExtra( MultiService.GAMEID, gameID );
                     MultiService.postMissingDictNotification( this, intent, 
                                                               gameID );
                 }
