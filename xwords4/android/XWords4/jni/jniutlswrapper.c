@@ -82,7 +82,7 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
     JNIEnv* env = *jniutil->envp;
     jmethodID mid
         = getMethodID( env, jniutil->jjniutil, "splitFaces",
-                       "([BZ)[Ljava/lang/String;" );
+                       "([BZ)[[Ljava/lang/String;" );
 
     jbyteArray jbytes = makeByteArray( env, len, (jbyte*)bytes );
     strarray = 

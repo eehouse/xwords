@@ -165,6 +165,7 @@ public class PrefsActivity extends PreferenceActivity
             if ( sp.getBoolean( key, true ) ) {
                 SMSService.checkForInvites( this );
             } else {
+                SMSService.stopService( this );
                 XWPrefs.setHaveCheckedSMS( this, false );
             }
         } else if ( key.equals( m_downloadPath ) ) {

@@ -163,10 +163,14 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
     XP_U8 const* ptr = *ptrp;
     Tile ii;
     XP_UCHAR** texts;
+    XP_UCHAR** textEnds;
     SpecialBitmaps* bitmaps;
 
     texts = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
                                    nSpecials * sizeof(*texts) );
+    textEnds = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
+                                      nSpecials * sizeof(*textEnds) );
+
     bitmaps = (SpecialBitmaps*)
         XP_CALLOC( ctxt->super.mpool, nSpecials * sizeof(*bitmaps) );
 
@@ -180,10 +184,21 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
             CHECK_PTR( ptr, txtlen, end );
             XP_UCHAR* text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
             texts[(int)*facep] = text;
+            textEnds[(int)*facep] = text + txtlen + 1;
             XP_MEMCPY( text, ptr, txtlen );
             ptr += txtlen;
             text[txtlen] = '\0';
             XP_ASSERT( *facep < nSpecials ); /* firing */
+
+            /* This little hack is safe because all bytes but the first in a
+               multi-byte utf-8 char have the high bit set.  SYNONYM_DELIM
+               does not have its high bit set */
+            XP_ASSERT( 0 == (SYNONYM_DELIM & 0x80) );
+            for ( ; '\0' != *text; ++text ) {
+                if ( *text == SYNONYM_DELIM ) {
+                    *text = '\0';
+                }
+            }
 
             if ( !andMakeBitmap( ctxt, &ptr, end, 
                                  &bitmaps[(int)*facep].largeBM ) ) {
@@ -201,6 +216,7 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
     success = XP_FALSE;
  done:
     ctxt->super.chars = texts;
+    ctxt->super.charEnds = textEnds;
     ctxt->super.bitmaps = bitmaps;
 
     *ptrp = ptr;
@@ -216,36 +232,42 @@ static void
 splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr, 
                      int nFaceBytes, int nFaces, XP_Bool isUTF8 )
 {
-    XP_UCHAR facesBuf[nFaces*4]; /* seems a reasonable upper bound... */
+    XP_UCHAR facesBuf[nFaces*16]; /* seems a reasonable upper bound... */
     int indx = 0;
     int offsets[nFaces];
     int nBytes;
-    int ii;
+    int ii, jj;
 
     jobject jstrarr = and_util_splitFaces( ctxt->jniutil, ptr, nFaceBytes,
                                            isUTF8 );
     XP_ASSERT( (*env)->GetArrayLength( env, jstrarr ) == nFaces );
 
     for ( ii = 0; ii < nFaces; ++ii ) {
-        jobject jstr = (*env)->GetObjectArrayElement( env, jstrarr, ii );
+        jobject jstrs = (*env)->GetObjectArrayElement( env, jstrarr, ii );
         offsets[ii] = indx;
-        nBytes = (*env)->GetStringUTFLength( env, jstr );
+        int nAlternates = (*env)->GetArrayLength( env, jstrs );
+        for ( jj = 0; jj < nAlternates; ++jj ) {
+            jobject jstr = (*env)->GetObjectArrayElement( env, jstrs, jj );
+            nBytes = (*env)->GetStringUTFLength( env, jstr );
 
-        const char* bytes = (*env)->GetStringUTFChars( env, jstr, NULL );
-        char* end;
-        long numval = strtol( bytes, &end, 10 );
-        if ( end > bytes ) {
-            XP_ASSERT( numval < 32 );
-            nBytes = 1;
-            facesBuf[indx] = (XP_UCHAR)numval;
-        } else {
-            XP_MEMCPY( &facesBuf[indx], bytes, nBytes );
+            const char* bytes = (*env)->GetStringUTFChars( env, jstr, NULL );
+            char* end;
+            long numval = strtol( bytes, &end, 10 );
+            if ( end > bytes ) {
+                XP_ASSERT( numval < 32 );
+                XP_ASSERT( jj == 0 );
+                nBytes = 1;
+                facesBuf[indx] = (XP_UCHAR)numval;
+            } else {
+                XP_MEMCPY( &facesBuf[indx], bytes, nBytes );
+            }
+            (*env)->ReleaseStringUTFChars( env, jstr, bytes );
+            deleteLocalRef( env, jstr );
+            indx += nBytes;
+            facesBuf[indx++] = '\0';
         }
-        (*env)->ReleaseStringUTFChars( env, jstr, bytes );
-        deleteLocalRef( env, jstr );
 
-        indx += nBytes;
-        facesBuf[indx++] = '\0';
+        deleteLocalRef( env, jstrs );
         XP_ASSERT( indx < VSIZE(facesBuf) );
     }
     deleteLocalRef( env, jstrarr );
@@ -261,6 +283,7 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
 
     XP_ASSERT( !ctxt->super.faces );
     ctxt->super.faces = faces;
+    ctxt->super.facesEnd = faces + indx;
     XP_ASSERT( !ctxt->super.facePtrs );
     ctxt->super.facePtrs = ptrs;
 } /* splitFaces_via_java */
@@ -316,6 +339,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         ptr += headerLen;
     }
 
+    flags &= ~DICT_SYNONYMS_MASK;
     if ( flags == 0x0002 ) {
         nodeSize = 3;
     } else if ( flags == 0x0003 ) {
@@ -348,16 +372,30 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         JNIEnv* env = ctxt->env;
         jstring jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name,
                                               NULL, 0 );
+        XP_UCHAR* md5Sum = NULL;
+        /* If we have a cached sum, check that it's correct. */
+        if ( NULL != jsum && NULL != ctxt->super.md5Sum ) {
+            md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );
+            if ( 0 != XP_STRCMP( ctxt->super.md5Sum, md5Sum ) ) {
+                deleteLocalRef( env, jsum );
+                jsum = NULL;
+                XP_FREE( ctxt->super.mpool, md5Sum );
+                md5Sum = NULL;
+            }
+        }
+
         if ( NULL == jsum ) {
             jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name,
                                           ptr, end - ptr );
         }
-        XP_UCHAR* md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );
+        if ( NULL == md5Sum ) {
+            md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );
+        }
         deleteLocalRef( env, jsum );
+
         if ( NULL == ctxt->super.md5Sum ) {
             ctxt->super.md5Sum = md5Sum;
         } else {
-            XP_ASSERT( 0 == XP_STRCMP( ctxt->super.md5Sum, md5Sum ) );
             XP_FREE( ctxt->super.mpool, md5Sum );
         }
     }
@@ -462,6 +500,8 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         }
         XP_FREE( ctxt->super.mpool, ctxt->super.chars );
     }
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.charEnds );
+
     if ( !!ctxt->super.bitmaps ) {
         for ( ii = 0; ii < nSpecials; ++ii ) {
             jobject bitmap = ctxt->super.bitmaps[ii].largeBM;

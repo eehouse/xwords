@@ -206,21 +206,29 @@ findStartsWithChars( DictIter* iter, const XP_UCHAR* chars, XP_U16 charsOffset,
     } else {
         const DictionaryCtxt* dict = iter->dict;
         XP_U16 nodeSize = dict->nodeSize;
-        for ( ; ; ) {
+        for ( ; ; ) {       /* for all the tiles */
             Tile tile = EDGETILE( dict, edge );
-            const XP_UCHAR* facep = dict_getTileString( dict, tile );
-            XP_U16 faceLen = XP_STRLEN( facep );
-            if ( faceLen > charsLen ) {
-                faceLen = charsLen;
-            } 
-            if ( 0 == XP_STRNCMP( facep, &chars[charsOffset], faceLen ) ) {
-                XP_S16 newOffset = findStartsWithChars( iter, chars, 
-                                                        charsOffset + faceLen, 
-                                                        dict_follow( dict, edge ), 
-                                                        nTilesUsed + 1 );
-                if ( result < newOffset ) {
-                    iter->edges[nTilesUsed] = edge;
-                    result = newOffset;
+            const XP_UCHAR* facep = NULL;
+            for ( ; ; ) {       /* for each string that tile can be */
+                facep = dict_getNextTileString( dict, tile, facep );
+                if ( NULL == facep ) {
+                    break;
+                }
+                XP_U16 faceLen = XP_STRLEN( facep );
+                if ( faceLen > charsLen ) {
+                    faceLen = charsLen;
+                } 
+                if ( 0 == XP_STRNCMP( facep, &chars[charsOffset], faceLen ) ) {
+                    XP_S16 newOffset = 
+                        findStartsWithChars( iter, chars, 
+                                             charsOffset + faceLen, 
+                                             dict_follow( dict, edge ), 
+                                             nTilesUsed + 1 );
+                    if ( result < newOffset ) {
+                        iter->edges[nTilesUsed] = edge;
+                        result = newOffset;
+                    }
+                    break;
                 }
             }
             if ( IS_LAST_EDGE( dict, edge ) ) {

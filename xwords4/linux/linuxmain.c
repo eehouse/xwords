@@ -1377,7 +1377,8 @@ walk_dict_test( const LaunchParams* XP_UNUSED_DBG(params),
                     XP_UCHAR bufPrev[32] = {0};
                     dict_wordToString( &iter, buf, VSIZE(buf) );
 
-                    XP_ASSERT( 0 == strncmp( buf, prefix, lenMatched ) );
+                    /* This doesn't work with synonyms like "L-L" for "L·L" */
+                    // XP_ASSERT( 0 == strncasecmp( buf, prefix, lenMatched ) );
 
                     DictPosition pos = dict_getPosition( &iter );
                     XP_ASSERT( 0 == strcmp( buf, words[pos] ) );

@@ -20,17 +20,23 @@
 
 package org.eehouse.android.xw4;
 
-import java.lang.Thread;
-import java.util.Formatter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
+import java.lang.Thread;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.Set;
 
 public class DbgUtils {
     private static final String TAG = "XW4";
@@ -112,6 +118,22 @@ public class DbgUtils {
             printStack( Thread.currentThread().getStackTrace() );
         }
     }
+
+    // public static void printIntent( Intent intent )
+    // {
+    //     if ( s_doLog ) {
+    //         Bundle bundle = intent.getExtras();
+    //         ArrayList<String> al = new ArrayList<String>();
+    //         if ( null != bundle ) {
+    //             Set<String> keys = bundle.keySet();
+    //             Iterator<String> iter = keys.iterator();
+    //             while ( iter.hasNext() ) {
+    //                 al.add( iter.next() );
+    //             }
+    //         }
+    //         DbgUtils.logf( "intent extras: %s", TextUtils.join( ", ", al ) );
+    //     }
+    // }
 
     public static void dumpCursor( Cursor cursor ) 
     {

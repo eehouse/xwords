@@ -220,12 +220,14 @@ $(XWLANG)%.$(FRANK_EXT): dawg$(XWLANG)%.stamp $(XWLANG)%_flags.bin $(XWLANG)%_ne
 # 1: old-style DAWG.
 # 2: new-style DAWG, three bytes per node.
 # 3: new-style DAWG, four bytes per node
+# 4: had dict-header
+# 5: has new (2013) synonyms feature, e.g. 'a' for 'A'
 $(XWLANG)%_flags.bin: dawg$(XWLANG)%.stamp
 ifdef NEWDAWG
 	if [ 3 = $$(cat $(XWLANG)$*_nodesize.bin) ] ; \
-		then perl -e "print pack(\"n\",0x000C)" > $@; echo "flags=4"; \
+		then perl -e "print pack(\"n\",0x001C)" > $@; echo "flags=4"; \
 	elif [ 4 = $$(cat $(XWLANG)$*_nodesize.bin) ] ; \
-		then perl -e "print pack(\"n\",0x000D)" > $@; echo "flags=5"; \
+		then perl -e "print pack(\"n\",0x001D)" > $@; echo "flags=5"; \
 	elif true; \
 		then echo "Unexpected node size"; exit 1; \
 	fi
