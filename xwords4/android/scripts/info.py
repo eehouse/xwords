@@ -27,7 +27,7 @@ k_SUMS = 'sums'
 k_COUNT = 'count'
 
 # Version for those sticking with RELEASES
-k_REL_REV = 'android_beta_59'
+k_REL_REV = 'android_beta_60'
 
 # Version for those getting intermediate builds
 k_DBG_REV = 'android_beta_58-33-ga18fb62'
@@ -38,8 +38,8 @@ k_filebase = "/var/www/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
 k_urlbase = "http://eehouse.org/"
 k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 50,
-        k_AVERS : 50,
+        'version' : 52,
+        k_AVERS : 52,
         k_URL : 'xw4/android/XWords4-release_' + k_REL_REV + '.apk',
         },
                }
