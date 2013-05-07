@@ -1730,8 +1730,14 @@ initParams( LaunchParams* params )
 static void
 freeParams( LaunchParams* params )
 {
+    XP_U16 ii;
     // linux_util_vt_destroy( params->util );
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
+
+    XP_FREEP( params->mpool, &params->pgi.dictName );
+    for ( ii = 0; ii < params->nLocalPlayers; ++ii ) {
+        XP_FREEP( params->mpool, &params->pgi.players[ii].name );
+    }
 
     mpool_destroy( params->mpool );
 
@@ -1798,6 +1804,7 @@ main( int argc, char** argv )
     /* defaults */
 #ifdef XWFEATURE_RELAY
     mainParams.connInfo.relay.defaultSendPort = DEFAULT_PORT;
+    mainParams.connInfo.relay.relayName = "localhost";
     mainParams.connInfo.relay.invite = "INVITE";
 #endif
 #ifdef XWFEATURE_IP_DIRECT
