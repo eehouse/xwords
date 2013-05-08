@@ -203,6 +203,15 @@ public class DictUtils {
             }
         }
 
+        if ( null == loc ) {
+            File file = getDownloadsPathFor( context, name );
+            if ( null != file && file.exists() ) {
+                loc = DictLoc.DOWNLOAD;
+            }
+        }
+
+        // DbgUtils.logf( "getDictLoc(%s)=>%h(%s)", name, loc, 
+        //                ((null != loc)?loc.toString():"UNKNOWN") );
         return loc;
     }
 

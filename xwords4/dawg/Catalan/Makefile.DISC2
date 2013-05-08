@@ -20,7 +20,7 @@ LANGCODE=ca_ES
 TARGET_TYPE ?= WINCE
 ENC = UTF-8
 
-DICTNOTE = "Built from DISC 2.0.7.\nSee http://escrable.montane.cat/diccionari for more information."
+DICTNOTE = "Built from DISC 2.0.8.\nSee http://escrable.montane.cat/diccionari for more information."
 
 
 ifeq ($(TARGET_TYPE),PALM)
@@ -35,10 +35,11 @@ endif
 endif
 endif
 
+
 LANG_SPECIAL_INFO = \
-		"L·L" $(PBITMS)/large_ll.pbitm $(PBITMS)/small_ll.pbitm \
-		"NY" $(PBITMS)/large_ny.pbitm $(PBITMS)/small_ny.pbitm \
-		"QU" $(PBITMS)/large_qu.pbitm $(PBITMS)/small_qu.pbitm \
+		"L·L L·l l·L l·l L-L L-l l-L l-l ĿL ŀl" $(PBITMS)/large_ll.pbitm $(PBITMS)/small_ll.pbitm \
+		"NY Ny nY ny" $(PBITMS)/large_ny.pbitm $(PBITMS)/small_ny.pbitm \
+		"QU Qu qU qu" $(PBITMS)/large_qu.pbitm $(PBITMS)/small_qu.pbitm \
 
 include ../Makefile.langcommon
 

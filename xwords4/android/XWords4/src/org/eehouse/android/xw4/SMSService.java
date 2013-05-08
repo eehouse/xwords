@@ -68,6 +68,7 @@ public class SMSService extends XWService {
     // private static final int MESG_GAMEGONE = 5;
     private static final int CHECK_MSGDB = 6;
     private static final int ADDED_MISSING = 7;
+    private static final int STOP_SELF = 8;
 
     private static final String CMD_STR = "CMD";
     private static final String BUFFER = "BUFFER";
@@ -97,6 +98,12 @@ public class SMSService extends XWService {
             Intent intent = getIntentTo( context, CHECK_MSGDB );
             context.startService( intent );
         }
+    }
+
+    public static void stopService( Context context )
+    {
+        Intent intent = getIntentTo( context, STOP_SELF );
+        context.startService( intent );
     }
 
     public static void handleFrom( Context context, String buffer, 
@@ -214,10 +221,13 @@ public class SMSService extends XWService {
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
-        int result;
+        int result = Service.START_NOT_STICKY;
         if ( XWApp.SMSSUPPORTED && null != intent ) {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
             switch( cmd ) {
+            case STOP_SELF:
+                stopSelf();
+                break;
             case CHECK_MSGDB:
                 if ( ! XWPrefs.getHaveCheckedSMS( this ) ) {
                     XWPrefs.setHaveCheckedSMS( this, true );
@@ -271,9 +281,13 @@ public class SMSService extends XWService {
             }
 
             result = Service.START_STICKY;
-        } else {
-            result = Service.START_STICKY_COMPATIBILITY;
         }
+        
+        if ( Service.START_NOT_STICKY == result 
+             || !XWPrefs.getSMSEnabled( this ) ) {
+            stopSelf( startId );
+        }
+
         return result;
     } // onStartCommand
 
@@ -412,6 +426,7 @@ public class SMSService extends XWService {
                                      MultiService.OWNER_SMS );
                     intent.putExtra( MultiService.INVITER, 
                                      Utils.phoneToContact( this, phone, true ) );
+                    intent.putExtra( MultiService.GAMEID, gameID );
                     MultiService.postMissingDictNotification( this, intent, 
                                                               gameID );
                 }

@@ -1515,7 +1515,8 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
                     XP_UCHAR bufPrev[32] = {0};
                     dict_wordToString( &iter, buf, VSIZE(buf) );
 
-                    XP_ASSERT( 0 == strncmp( buf, prefix, lenMatched ) );
+                    /* This doesn't work with synonyms like "L-L" for "L·L" */
+                    // XP_ASSERT( 0 == strncasecmp( buf, prefix, lenMatched ) );
 
                     DictPosition pos = dict_getPosition( &iter );
                     XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
@@ -1559,6 +1560,20 @@ walk_dict_test_all( MPFORMAL const LaunchParams* params, GSList* testDicts,
     }
 }
 #endif
+
+static void
+dumpDict( DictionaryCtxt* dict )
+{
+    DictIter iter;
+    dict_initIter( &iter, dict, 0, MAX_COLS_DICT );
+    for ( XP_Bool result = dict_firstWord( &iter ); 
+          result; 
+          result = dict_getNextWord( &iter ) ) {
+        XP_UCHAR buf[32];
+        dict_wordToString( &iter, buf, VSIZE(buf) );
+        fprintf( stdout, "%s\n", buf );
+    }
+}
 
 static void
 trimDictPath( const char* input, char* buf, int bufsiz, char** path, char** dict )
@@ -1742,6 +1757,23 @@ freeParams( LaunchParams* params )
     mpool_destroy( params->mpool );
 
     // free( params->util );
+}
+
+static int
+dawg2dict( const LaunchParams* params, GSList* testDicts )
+{
+    guint count = g_slist_length( testDicts );
+    for ( int ii = 0; ii < count; ++ii ) {
+        DictionaryCtxt* dict = 
+            linux_dictionary_make( MPPARM(params->util->mpool) params, 
+                                   g_slist_nth_data( testDicts, ii ),
+                                   params->useMmap );
+        if ( NULL != dict ) {
+            dumpDict( dict );
+            dict_destroy( dict );
+        }
+    }
+    return 0;
 }
 
 int
@@ -2158,6 +2190,7 @@ main( int argc, char** argv )
         }
     }
 
+<<<<<<< HEAD
     XP_ASSERT( mainParams.pgi.nPlayers == mainParams.nLocalPlayers
                + mainParams.info.serverInfo.nRemotePlayers );
 
@@ -2170,21 +2203,40 @@ main( int argc, char** argv )
     } else {
         mainParams.pgi.serverRole = SERVER_ISCLIENT;
     }
+=======
+    int result;
+    if ( g_str_has_suffix( argv[0], "dawg2dict" ) ) {
+        result = dawg2dict( &mainParams, testDicts );
+    } else {
+        XP_ASSERT( mainParams.gi.nPlayers == mainParams.nLocalPlayers
+                   + mainParams.info.serverInfo.nRemotePlayers );
 
-    /* sanity checks */
-    totalPlayerCount = mainParams.nLocalPlayers 
-        + mainParams.info.serverInfo.nRemotePlayers;
-    if ( !mainParams.fileName
-#ifdef USE_SQLITE
-         && !mainParams.dbFileName 
-#endif
-         ) {
-        if ( (totalPlayerCount < 1) || 
-             (totalPlayerCount > MAX_NUM_PLAYERS) ) {
-            mainParams.needsNewGame = XP_TRUE;
+        if ( isServer ) {
+            if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
+                mainParams.gi.serverRole = SERVER_STANDALONE;
+            } else {
+                mainParams.gi.serverRole = SERVER_ISSERVER;
+            }
+        } else {
+            mainParams.gi.serverRole = SERVER_ISCLIENT;
         }
-    }
+>>>>>>> android_branch
 
+        /* sanity checks */
+        totalPlayerCount = mainParams.nLocalPlayers 
+            + mainParams.info.serverInfo.nRemotePlayers;
+        if ( !mainParams.fileName
+#ifdef USE_SQLITE
+             && !mainParams.dbFileName 
+#endif
+             ) {
+            if ( (totalPlayerCount < 1) || 
+                 (totalPlayerCount > MAX_NUM_PLAYERS) ) {
+                mainParams.needsNewGame = XP_TRUE;
+            }
+        }
+
+<<<<<<< HEAD
     if ( !!mainParams.pgi.dictName ) {
         /* char path[256]; */
         /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
@@ -2200,15 +2252,33 @@ main( int argc, char** argv )
             MPPARM_NOCOMMA(mainParams.util->mpool) );
         XP_WARNF( "no dictionary provided: using English stub dict\n" );
         mainParams.pgi.dictLang = dict_getLangCode( mainParams.dict );
+=======
+        if ( !!mainParams.gi.dictName ) {
+            /* char path[256]; */
+            /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
+            mainParams.dict = 
+                linux_dictionary_make( MPPARM(mainParams.util->mpool) &mainParams,
+                                       mainParams.gi.dictName,
+                                       mainParams.useMmap );
+            XP_ASSERT( !!mainParams.dict );
+            mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
+        } else if ( isServer ) {
+#ifdef STUBBED_DICT
+            mainParams.dict = make_stubbed_dict( 
+                                                MPPARM_NOCOMMA(mainParams.util->mpool) );
+            XP_WARNF( "no dictionary provided: using English stub dict\n" );
+            mainParams.gi.dictLang = dict_getLangCode( mainParams.dict );
+>>>>>>> android_branch
 #else
-        if ( 0 == nPlayerDicts ) {
+            if ( 0 == nPlayerDicts ) {
+                mainParams.needsNewGame = XP_TRUE;
+            }
+#endif
+        } else if ( robotCount > 0 ) {
             mainParams.needsNewGame = XP_TRUE;
         }
-#endif
-    } else if ( robotCount > 0 ) {
-        mainParams.needsNewGame = XP_TRUE;
-    }
 
+<<<<<<< HEAD
     if ( 0 < mainParams.info.serverInfo.nRemotePlayers
          && SERVER_STANDALONE == mainParams.pgi.serverRole ) {
         mainParams.needsNewGame = XP_TRUE;
@@ -2233,123 +2303,192 @@ main( int argc, char** argv )
         /*            "local players" ); */
         /* } */
     }
+=======
+        if ( 0 < mainParams.info.serverInfo.nRemotePlayers
+             && SERVER_STANDALONE == mainParams.gi.serverRole ) {
+            mainParams.needsNewGame = XP_TRUE;
+        }
 
-    /* if ( !isServer ) { */
-    /*     if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) { */
-    /*         mainParams.needsNewGame = XP_TRUE; */
-    /*     }	     */
-    /* } */
+        /* per-player dicts are for local players only.  Assign in the order
+           given.  It's an error to give too many, or not to give enough if
+           there's no game-dict */
+        if ( 0 < nPlayerDicts ) {
+            XP_U16 nextDict = 0;
+            for ( ii = 0; ii < mainParams.gi.nPlayers; ++ii ) {
+                if ( mainParams.gi.players[ii].isLocal ) {
+                    const XP_UCHAR* name = mainParams.playerDictNames[nextDict++];
+                    XP_ASSERT( !!name );
+                    mainParams.dicts.dicts[ii] = 
+                        linux_dictionary_make( MPPARM(mainParams.util->mpool) 
+                                               &mainParams, name, mainParams.useMmap );
+                }
+            }
+            if ( nextDict < nPlayerDicts ) {
+                usage( argv[0], " --player-dict used more times than there are "
+                       "local players" );
+            }
+        }
+>>>>>>> android_branch
+
+        /* if ( !isServer ) { */
+        /*     if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) { */
+        /*         mainParams.needsNewGame = XP_TRUE; */
+        /*     }	     */
+        /* } */
 #ifdef XWFEATURE_WALKDICT
+<<<<<<< HEAD
     if ( !!testDicts ) {
         walk_dict_test_all( mainParams.mpool, &mainParams, testDicts, testPrefixes, testMinMax );
         exit( 0 );
     }
-#endif
-    if ( 0 ) {
-#ifdef XWFEATURE_RELAY
-    } else if ( conType == COMMS_CONN_RELAY ) {
-        mainParams.connInfo.relay.relayName = hostName;
-        if ( NULL == portNum ) {
-            portNum = "10997";
+=======
+        if ( !!testDicts ) {
+            walk_dict_test_all( &mainParams, testDicts, testPrefixes, testMinMax );
+            exit( 0 );
         }
-        mainParams.connInfo.relay.defaultSendPort = atoi( portNum );
+>>>>>>> android_branch
+#endif
+        if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+        } else if ( conType == COMMS_CONN_RELAY ) {
+            mainParams.connInfo.relay.relayName = hostName;
+            if ( NULL == portNum ) {
+                portNum = "10997";
+            }
+            mainParams.connInfo.relay.defaultSendPort = atoi( portNum );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-    } else if ( conType == COMMS_CONN_IP_DIRECT ) {
-        mainParams.connInfo.ip.hostName = hostName;
-        if ( NULL == portNum ) {
-            portNum = "10999";
-        }
-        mainParams.connInfo.ip.port = atoi( portNum );
+        } else if ( conType == COMMS_CONN_IP_DIRECT ) {
+            mainParams.connInfo.ip.hostName = hostName;
+            if ( NULL == portNum ) {
+                portNum = "10999";
+            }
+            mainParams.connInfo.ip.port = atoi( portNum );
 #endif
 #ifdef XWFEATURE_SMS
-    } else if ( conType == COMMS_CONN_SMS ) {
-        mainParams.connInfo.sms.serverPhone = serverPhone;
-        if ( !portNum ) {
-            portNum = "1";
-        }
-        mainParams.connInfo.sms.port = atoi(portNum);
+        } else if ( conType == COMMS_CONN_SMS ) {
+            mainParams.connInfo.sms.serverPhone = serverPhone;
+            if ( !portNum ) {
+                portNum = "1";
+            }
+            mainParams.connInfo.sms.port = atoi(portNum);
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-    } else if ( conType == COMMS_CONN_BT ) {
-        bdaddr_t ba;
-        XP_Bool success;
-        XP_ASSERT( btaddr );
-        if ( isServer ) {
-            success = XP_TRUE;
-            /* any format is ok */
-        } else if ( btaddr[1] == ':' ) {
-            success = XP_FALSE;
-            if ( btaddr[0] == 'n' ) {
-                if ( !nameToBtAddr( btaddr+2, &ba ) ) {
-                    fprintf( stderr, "fatal error: unable to find device %s\n",
-                             btaddr + 2 );
-                    exit(0);
-                }
+        } else if ( conType == COMMS_CONN_BT ) {
+            bdaddr_t ba;
+            XP_Bool success;
+            XP_ASSERT( btaddr );
+            if ( isServer ) {
                 success = XP_TRUE;
-            } else if ( btaddr[0] == 'a' ) {
-                success = 0 == str2ba( &btaddr[2], &ba );
-                XP_ASSERT( success );
+                /* any format is ok */
+            } else if ( btaddr[1] == ':' ) {
+                success = XP_FALSE;
+                if ( btaddr[0] == 'n' ) {
+                    if ( !nameToBtAddr( btaddr+2, &ba ) ) {
+                        fprintf( stderr, "fatal error: unable to find device %s\n",
+                                 btaddr + 2 );
+                        exit(0);
+                    }
+                    success = XP_TRUE;
+                } else if ( btaddr[0] == 'a' ) {
+                    success = 0 == str2ba( &btaddr[2], &ba );
+                    XP_ASSERT( success );
+                }
+            }
+            if ( !success ) {
+                usage( argv[0], "bad format for -B param" );
+            }
+            XP_MEMCPY( &mainParams.connInfo.bt.hostAddr, &ba, 
+                       sizeof(mainParams.connInfo.bt.hostAddr) );
+#endif
+        }
+        mainParams.conType = conType;
+
+        /*     mainParams.pipe = linuxCommPipeCtxtMake( isServer ); */
+
+        /*     mainParams.util->vtable->m_util_makeStreamFromAddr =  */
+        /* 	linux_util_makeStreamFromAddr; */
+
+<<<<<<< HEAD
+    // mainParams.util->gameInfo = &mainParams.pgi;
+=======
+        mainParams.util->gameInfo = &mainParams.gi;
+
+        linux_util_vt_init( MPPARM(mainParams.util->mpool) mainParams.util );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+        mainParams.util->vtable->m_util_informMissing = linux_util_informMissing;
+        mainParams.util->vtable->m_util_addrChange = linux_util_addrChange;
+        mainParams.util->vtable->m_util_setIsServer = linux_util_setIsServer;
+#endif
+>>>>>>> android_branch
+
+        srandom( seed );	/* init linux random number generator */
+        XP_LOGF( "seeded srandom with %d", seed );
+
+        if ( closeStdin ) {
+            fclose( stdin );
+            if ( mainParams.quitAfter < 0 ) {
+                fprintf( stderr, "stdin closed; you'll need some way to quit\n" );
             }
         }
-        if ( !success ) {
-            usage( argv[0], "bad format for -B param" );
-        }
-        XP_MEMCPY( &mainParams.connInfo.bt.hostAddr, &ba, 
-                   sizeof(mainParams.connInfo.bt.hostAddr) );
-#endif
-    }
-    mainParams.conType = conType;
 
-    /*     mainParams.pipe = linuxCommPipeCtxtMake( isServer ); */
-
-    /*     mainParams.util->vtable->m_util_makeStreamFromAddr =  */
-    /* 	linux_util_makeStreamFromAddr; */
-
-    // mainParams.util->gameInfo = &mainParams.pgi;
-
-    srandom( seed );	/* init linux random number generator */
-    XP_LOGF( "seeded srandom with %d", seed );
-
-    if ( closeStdin ) {
-        fclose( stdin );
-        if ( mainParams.quitAfter < 0 ) {
-            fprintf( stderr, "stdin closed; you'll need some way to quit\n" );
-        }
-    }
-
-    if ( isServer ) {
-        if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
-            mainParams.serverRole = SERVER_STANDALONE;
+        if ( isServer ) {
+            if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
+                mainParams.serverRole = SERVER_STANDALONE;
+            } else {
+                mainParams.serverRole = SERVER_ISSERVER;
+            }	    
         } else {
-            mainParams.serverRole = SERVER_ISSERVER;
-        }	    
-    } else {
-        mainParams.serverRole = SERVER_ISCLIENT;
-    }
+            mainParams.serverRole = SERVER_ISCLIENT;
+        }
 
+<<<<<<< HEAD
     if ( mainParams.needsNewGame ) {
         gi_disposePlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi );
         gi_initPlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi, NULL );
     }
+=======
+        if ( mainParams.needsNewGame ) {
+            gi_initPlayerInfo( MPPARM(mainParams.util->mpool) 
+                               &mainParams.gi, NULL );
+        }
+>>>>>>> android_branch
 
-    /* curses doesn't have newgame dialog */
-    if ( useCurses && !mainParams.needsNewGame ) {
+        /* curses doesn't have newgame dialog */
+        if ( useCurses && !mainParams.needsNewGame ) {
 #if defined PLATFORM_NCURSES
-        cursesmain( isServer, &mainParams );
+            cursesmain( isServer, &mainParams );
 #endif
-    } else if ( !useCurses ) {
+        } else if ( !useCurses ) {
 #if defined PLATFORM_GTK
+<<<<<<< HEAD
         gtk_init( &argc, &argv );
         gtkmain( &mainParams );
+=======
+            gtkmain( &mainParams, argc, argv );
+>>>>>>> android_branch
 #endif
-    } else {
-        usage( argv[0], "rtfm" );
-    }
+        } else {
+            usage( argv[0], "rtfm" );
+        }
 
+<<<<<<< HEAD
     freeParams( &mainParams );
+=======
+        vtmgr_destroy( MPPARM(mainParams.util->mpool) mainParams.vtMgr );
+
+        linux_util_vt_destroy( mainParams.util );
+
+        mpool_destroy( mainParams.util->mpool );
+
+        free( mainParams.util );
+
+        result = 0;
+    }
+>>>>>>> android_branch
 
     XP_LOGF( "%s exiting main", argv[0] );
-    return 0;
+    return result;
 } /* main */
 

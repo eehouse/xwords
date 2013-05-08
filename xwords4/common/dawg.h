@@ -83,4 +83,6 @@ typedef struct Xloc_specialEntry {
     short hasSmall;
 } Xloc_specialEntry;
 
+#define SYNONYM_DELIM ' '
+
 #endif /* _DAWG_H_ */

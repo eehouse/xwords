@@ -26,33 +26,29 @@ k_URL = 'url'
 k_SUMS = 'sums'
 k_COUNT = 'count'
 
+# Version for those sticking with RELEASES
+k_REL_REV = 'android_beta_60'
+
+# Version for those getting intermediate builds
+k_DBG_REV = 'android_beta_58-33-ga18fb62'
+k_DBG_REV = 'android_beta_59-24-gc31a1d9'
+
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
 k_urlbase = "http://eehouse.org/"
 k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 43,
-        k_AVERS : 43,
-        k_URL : 'xw4/android/XWords4-release_android_beta_51.apk',
-        },
-               'org.eehouse.android.xw4sms' : {
-        'version' : 43,
-        k_AVERS : 43,
-        k_URL : 'xw4/android/sms/XWords4-release_android_beta_51.apk',
+        'version' : 52,
+        k_AVERS : 52,
+        k_URL : 'xw4/android/XWords4-release_' + k_REL_REV + '.apk',
         },
                }
 
 k_versions_dbg = { 'org.eehouse.android.xw4': {
-        'version' : 43,
-        k_AVERS : 43,
-        k_GVERS : 'android_beta_51',
-        k_URL : 'xw4/android/XWords4-release_android_beta_51.apk',
-        },
-               'org.eehouse.android.xw4sms' : {
-        'version' : 43,
-        k_AVERS : 43,
-        k_GVERS : 'android_beta_51-50-g0ccc233',
-        k_URL : 'xw4/android/sms/XWords4-release_android_beta_51-50-g0ccc233.apk',
+        'version' : 52,
+        k_AVERS : 52,
+        k_GVERS : k_DBG_REV,
+        k_URL : 'xw4/android/XWords4-release_' + k_DBG_REV + '.apk',
         },
                }
 s_shelf = None
@@ -80,18 +76,27 @@ def getInternalSum( filePath ):
 
 def md5Checksums( sums, filePath ):
     if not filePath.endswith(k_suffix): filePath += k_suffix
-    if not filePath in sums:
+    if filePath in sums:
+        result = sums[filePath]
+    else:
         logging.debug( "opening %s" % (k_filebase + "and_wordlists/" + filePath))
-        file = open( k_filebase + "and_wordlists/" + filePath, 'rb' )
-        md5 = hashlib.md5()
-        while True:
-            buffer = file.read(128)
-            if not buffer:  break
-            md5.update( buffer )
+        try:
+            file = open( k_filebase + "and_wordlists/" + filePath, 'rb' )
+            md5 = hashlib.md5()
+            while True:
+                buffer = file.read(128)
+                if not buffer:  break
+                md5.update( buffer )
 
-        sums[filePath] = [ md5.hexdigest(), getInternalSum( filePath ) ]
-        logging.debug( "figured sum for %s" % filePath )
-    return sums[filePath]
+            sums[filePath] = [ md5.hexdigest(), 
+                               getInternalSum( filePath ) ]
+            logging.debug( "figured sum for %s: %s" % (filePath, 
+                                                       sums[filePath] ) )
+            result = sums[filePath]
+        except:
+            # logging.debug( "Unexpected error: " + sys.exc_info()[0] )
+            result = None
+    return result
 
 def getDictSums():
     global s_shelf

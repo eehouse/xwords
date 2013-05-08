@@ -109,16 +109,25 @@ sub readXWDFaces($$$) {
         }
     } else {
         binmode( $fh, ":encoding(utf8)" ) or die "binmode(:utf-8) failed\n";
-        sysread( $fh, $buf, $nChars );
-        length($buf) == $nChars or die "didn't read expected number of bytes\n";
+        sysread( $fh, $buf, $nBytes );
+        length($buf) == $nBytes or die "didn't read expected number of bytes\n";
         binmode( $fh ) or die "binmode failed\n";
 
         print STDERR "string now: $buf\n";
         my @faces;
-        for ( my $ii = 0; $ii < $nChars; ++$ii ) {
-            my $chr = substr( $buf, $ii, 1 );
+        my $index = 0;
+        for ( my $nFound = 0; $nFound < $nChars; ) {
+            my $chr = substr( $buf, $index++, 1 );
+            if ( $chr eq ' ' ) {
+                # For testing, this next line uses last rather than
+                # first alternate
+                # $faces[$#faces] = substr( $buf, $index, 1 );
+                ++$index;
+                next;
+            }
             print STDERR "pushing $chr \n";
             push( @faces, $chr );
+            ++$nFound;
         }
 
         printf STDERR "at 0x%x after reading faces\n", systell($fh);

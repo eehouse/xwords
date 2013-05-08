@@ -1059,12 +1059,12 @@ handlePutMessage( SafeCref& scr, HostID hid, const AddrInfo* addr,
     // sanity check that cmd and hostids are there
     if ( getNetByte( bufp, end, &cmd )
          && getNetByte( bufp, end, &src )
-         && getNetByte( bufp, end, &dest )
-	 && ( cmd == XWRELAY_MSG_TORELAY_NOCONN )
-	 && ( hid == dest ) ) {
-        scr.PutMsg( src, addr, dest, start, len );
+         && getNetByte( bufp, end, &dest ) ) {
+        success = true;		// meaning, buffer content looks ok
         *bufp = start + len;
-        success = true;
+        if ( ( cmd == XWRELAY_MSG_TORELAY_NOCONN ) && ( hid == dest ) ) {
+            scr.PutMsg( src, addr, dest, start, len );
+        }
     }
     logf( XW_LOGINFO, "%s()=>%d", __func__, success );
     return success;
@@ -1104,7 +1104,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
                     if ( getNetShort( &bufp, end, &len ) ) {
                         if ( handlePutMessage( scr, hid, addr, len, &bufp, end ) ) {
                             continue;
-                        }
+			}
                     }
                     break;
                 }
@@ -1128,16 +1128,13 @@ game_thread_proc( UdpThreadClosure* utc )
 static void
 proxy_thread_proc( UdpThreadClosure* utc )
 {
-    int len = utc->len();
+    const int len = utc->len();
     const AddrInfo* addr = utc->addr();
-    const unsigned char* buf = utc->buf();
 
-    logf( XW_LOGINFO, "%s called", __func__ );
-    logf( XW_LOGVERBOSE0, "%s()", __func__ );
     if ( len > 0 ) {
         assert( addr->isTCP() );
         int socket = addr->socket();
-        const unsigned char* bufp = buf;
+        const unsigned char* bufp = utc->buf();
         const unsigned char* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
             XWPRXYCMD cmd = (XWPRXYCMD)*bufp++;
@@ -1173,7 +1170,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
                 handleProxyMsgs( socket, addr, bufp, end );
                 break;
 
-            case PRX_DEVICE_GONE:
+            case PRX_DEVICE_GONE: {
                 logf( XW_LOGINFO, "%s: got PRX_DEVICE_GONE", __func__ );
                 if ( len >= 2 ) {
                     unsigned short nameCount;
@@ -1196,9 +1193,10 @@ proxy_thread_proc( UdpThreadClosure* utc )
                         }
                     }
                 }
-                len = 0;        /* return a 0-length message */
-                write( socket, &len, sizeof(len) );
+                int olen = 0;        /* return a 0-length message */
+                write( socket, &olen, sizeof(olen) );
                 break;          /* PRX_DEVICE_GONE */
+	    }
             default:
                 logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
                 break;
@@ -1206,7 +1204,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
         }
     }
     XWThreadPool::GetTPool()->CloseSocket( addr );
-}
+} // proxy_thread_proc
 
 static short
 addRegID( unsigned char* ptr, DevIDRelay relayID )

@@ -21,10 +21,12 @@
 #define _DBGUTIL_H_
 
 #include "board.h"
+#include "movestak.h"
 
 const char* XP_Key_2str( XP_Key key );
 const char* DrawFocusState_2str( DrawFocusState dfs );
 const char* BoardObjectType_2str( BoardObjectType dfs );
+const char* StackMoveType_2str( StackMoveType typ );
 
 # ifdef DEBUG
 void dbg_logstream( const XWStreamCtxt* stream, const char* func, int line );

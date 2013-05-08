@@ -100,6 +100,39 @@ dict_getTileString( const DictionaryCtxt* dict, Tile tile )
     return facep;
 }
 
+const XP_UCHAR* 
+dict_getNextTileString( const DictionaryCtxt* dict, Tile tile, 
+                        const XP_UCHAR* cur )
+{
+    const XP_UCHAR* result = NULL;
+    if ( NULL == cur ) {
+        result = dict_getTileString( dict, tile );
+    } else {
+        cur += XP_STRLEN( cur ) + 1;
+        XP_Bool isSpecial = dict_faceIsBitmap( dict, tile );
+        if ( isSpecial ) {
+            const XP_UCHAR* facep = dict_getTileStringRaw( dict, tile );
+            if ( cur < dict->charEnds[(XP_U16)*facep] ) {
+                result = cur;
+            }
+        } else {
+            /* use cur only if it is is not now off the end or pointing to to the
+               next tile */
+            if ( ++tile == dict->nFaces ) {
+                if ( cur < dict->facesEnd ) {
+                    result = cur;
+                }
+            } else {
+                const XP_UCHAR* nxt = dict_getTileStringRaw( dict, tile );
+                if ( nxt != cur ) {
+                    result = cur;
+                }
+            }
+        }
+    }
+    return result;
+}
+
 XP_U16
 dict_numTiles( const DictionaryCtxt* dict, Tile tile )
 {

@@ -36,6 +36,7 @@ extern "C" {
 #define IS_SPECIAL(face) ((XP_U16)(face) < 0x0020)
 
 #define DICT_HEADER_MASK 0x08
+#define DICT_SYNONYMS_MASK 0x10
 
 typedef XP_U8 XP_LangCode;
 
@@ -72,14 +73,16 @@ struct DictionaryCtxt {
                          necessarily the entry point for search!! */
     XP_UCHAR* name;
     XP_UCHAR* langName;
-    XP_UCHAR* faces;
+    XP_UCHAR* faces;            /* storage for faces */
+    XP_UCHAR* facesEnd;
     XP_UCHAR* desc;
     XP_UCHAR* md5Sum;
-    const XP_UCHAR** facePtrs;
+    const XP_UCHAR** facePtrs;  /* elems point into faces, above */
     XP_U8* countsAndValues;
 
     SpecialBitmaps* bitmaps;
     XP_UCHAR** chars;
+    XP_UCHAR** charEnds;
     XP_U32 nWords;
 
     XP_LangCode langCode;
@@ -150,6 +153,8 @@ XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
 XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
                            XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize );
 const XP_UCHAR* dict_getTileString( const DictionaryCtxt* ctxt, Tile tile );
+const XP_UCHAR* dict_getNextTileString( const DictionaryCtxt* ctxt, Tile tile,
+                                        const XP_UCHAR* cur );
 const XP_UCHAR* dict_getName( const DictionaryCtxt* ctxt );
 const XP_UCHAR* dict_getLangName(const DictionaryCtxt* ctxt );
 

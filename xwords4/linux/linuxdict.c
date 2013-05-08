@@ -146,6 +146,7 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, const XP_U8** ptrp )
     XP_U16 nSpecials;
     XP_UCHAR* text;
     XP_UCHAR** texts;
+    XP_UCHAR** textEnds;
     SpecialBitmaps* bitmaps;
     Tile tile;
     const XP_U8* ptr = *ptrp;
@@ -154,6 +155,8 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, const XP_U8** ptrp )
 
     texts = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
                                    nSpecials * sizeof(*texts) );
+    textEnds = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
+                                      nSpecials * sizeof(*textEnds) );
     bitmaps = (SpecialBitmaps*)XP_MALLOC( ctxt->super.mpool, 
                                           nSpecials * sizeof(*bitmaps) );
     XP_MEMSET( bitmaps, 0, nSpecials * sizeof(*bitmaps) );
@@ -167,23 +170,36 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, const XP_U8** ptrp )
             XP_ASSERT( *facep < nSpecials );
 
             /* get the string */
-	    txtlen = *ptr++;
-	    text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
-	    memcpy( text, ptr, txtlen );
-	    ptr += txtlen;
+            txtlen = *ptr++;
+            text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
+            memcpy( text, ptr, txtlen );
+            ptr += txtlen;
 
-	    text[txtlen] = '\0';
-	    texts[(XP_U16)*facep] = text;
+            text[txtlen] = '\0';
+            texts[(XP_U16)*facep] = text;
+            textEnds[(XP_U16)*facep] = text + txtlen + 1;
+            
+            /* Now replace the delimiter char with \0.  It must be one byte in
+               length and of course equal to the delimiter */
+            XP_ASSERT( 0 == (SYNONYM_DELIM & 0x80) );
+            while ( '\0' != *text ) {
+                XP_UCHAR* cp = g_utf8_offset_to_pointer( text, 1 );
+                if ( 1 == (cp - text) && *text == SYNONYM_DELIM ) {
+                    *text = '\0';
+                }
+                text = cp;
+            }
 
-	    XP_DEBUGF( "skipping bitmaps for " XP_S, texts[asIndex] );
+            XP_DEBUGF( "skipping bitmaps for " XP_S, texts[asIndex] );
 
-	    bitmaps[asIndex].largeBM = skipBitmap( ctxt, &ptr );
-	    bitmaps[asIndex].smallBM = skipBitmap( ctxt, &ptr );
+            bitmaps[asIndex].largeBM = skipBitmap( ctxt, &ptr );
+            bitmaps[asIndex].smallBM = skipBitmap( ctxt, &ptr );
         }
     }
     *ptrp = ptr;
 
     ctxt->super.chars = texts;
+    ctxt->super.charEnds = textEnds;
     ctxt->super.bitmaps = bitmaps;
 } /* skipBitmaps */
 
@@ -201,11 +217,18 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
     for ( ii = 0; ii < nFaces; ++ii ) {
         ptrs[ii] = next;
         if ( isUTF8 ) {
-            gchar* cp = g_utf8_offset_to_pointer( bytes, 1 );
-            XP_U16 len = cp - bytes;
-            XP_MEMCPY( next, bytes, len );
-            next += len;
-            bytes += len;
+            for ( ; ; ) {
+                gchar* cp = g_utf8_offset_to_pointer( bytes, 1 );
+                XP_U16 len = cp - bytes;
+                XP_MEMCPY( next, bytes, len );
+                next += len;
+                bytes += len;
+                if ( SYNONYM_DELIM != bytes[0] ) {
+                    break;
+                }
+                ++bytes;        /* skip delimiter */
+                *next++ = '\0';
+            }
         } else {
             XP_ASSERT( 0 == *bytes );
             ++bytes;            /* skip empty */
@@ -216,6 +239,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
     }
     XP_ASSERT( !dict->faces );
     dict->faces = faces;
+    dict->facesEnd = faces + nFaces + nBytes;
     XP_ASSERT( !dict->facePtrs );
     dict->facePtrs = ptrs;
 } /* dict_splitFaces */
@@ -274,6 +298,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
         flags &= ~DICT_HEADER_MASK;
         XP_DEBUGF( "has header!" );
     }
+
+    flags &= ~DICT_SYNONYMS_MASK;
+
     if ( flags == 0x0001 ) {
         dctx->super.nodeSize = 3;
         charSize = 1;
@@ -454,9 +481,8 @@ freeSpecials( LinuxDictionaryCtxt* ctxt )
     if ( !!ctxt->super.bitmaps ) {
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
-    if ( !!ctxt->super.chars ) {
-        XP_FREE( ctxt->super.mpool, ctxt->super.chars );
-    }
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.chars );
+    XP_FREEP( ctxt->super.mpool, &ctxt->super.charEnds );
 } /* freeSpecials */
 
 static void
