@@ -2329,8 +2329,8 @@ main( int argc, char** argv )
     }
 
     if ( mainParams.needsNewGame ) {
-        gi_initPlayerInfo( MPPARM(mainParams.mpool) 
-                           &mainParams.pgi, NULL );
+        gi_disposePlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi );
+        gi_initPlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi, NULL );
     }
 
     /* curses doesn't have newgame dialog */
