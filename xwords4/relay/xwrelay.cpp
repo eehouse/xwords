@@ -1104,7 +1104,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
                     if ( getNetShort( &bufp, end, &len ) ) {
                         if ( handlePutMessage( scr, hid, addr, len, &bufp, end ) ) {
                             continue;
-			}
+                        }
                     }
                     break;
                 }
@@ -1196,7 +1196,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
                 int olen = 0;        /* return a 0-length message */
                 write( socket, &olen, sizeof(olen) );
                 break;          /* PRX_DEVICE_GONE */
-	    }
+            }
             default:
                 logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
                 break;
