@@ -300,7 +300,8 @@
 			            android:defaultValue="false"
 			            />
     <CheckBoxPreference android:key="@string/key_drop_gcm"
-			            android:title="@string/drop_gcm"
+			            android:title="@string/drop_gcm_title"
+			            android:summary="@string/drop_gcm_summary"
 			            android:defaultValue="false"
 			            />
     <CheckBoxPreference android:key="@string/key_logging_on"
