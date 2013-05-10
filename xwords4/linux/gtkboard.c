@@ -1573,17 +1573,19 @@ gtk_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
                         const XP_UCHAR* newName, const XP_UCHAR* newSum,
                         XWPhoniesChoice phoniesAction )
 {
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    gchar buf[512];
-
-    int offset = snprintf( buf, VSIZE(buf),
-                           "dict changing from %s to %s (sum=%s).", 
-                           oldName, newName, newSum );
-    if ( PHONIES_DISALLOW == phoniesAction ) {
-        snprintf( &buf[offset], VSIZE(buf)-offset, "%s",
-                  "\nPHONIES_DISALLOW is set so this may lead to some surprises." );
+    if ( 0 != strcmp( oldName, newName ) ) {
+        GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+        gchar buf[512];
+        int offset = snprintf( buf, VSIZE(buf),
+                               "dict changing from %s to %s (sum=%s).", 
+                               oldName, newName, newSum );
+        if ( PHONIES_DISALLOW == phoniesAction ) {
+            snprintf( &buf[offset], VSIZE(buf)-offset, "%s",
+                      "\nPHONIES_DISALLOW is set so this may "
+                      "lead to some surprises." );
+        }
+        (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
     }
-    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
 }
 
 static gint
