@@ -2415,6 +2415,8 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
 {
     memset( globals, 0, sizeof(*globals) );
 
+    gi_copy( MPPARM(params->mpool) &globals->cGlobals.gi, &params->pgi );
+
     globals->cGlobals.params = params;
     globals->cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -2618,8 +2620,16 @@ makeNewGame( GtkGameGlobals* globals )
     if ( !!cGlobals->game.comms ) {
         comms_getAddr( cGlobals->game.comms, &cGlobals->addr );
     } else {
-        comms_getInitialAddr( &cGlobals->addr, RELAY_NAME_DEFAULT, 
-                              RELAY_PORT_DEFAULT );
+        LaunchParams* params = globals->cGlobals.params;
+        const XP_UCHAR* relayName = params->connInfo.relay.relayName;
+        if ( !relayName ) {
+            relayName = RELAY_NAME_DEFAULT;
+        }
+        XP_U16 relayPort = params->connInfo.relay.defaultSendPort;
+        if ( 0 == relayPort ) {
+            relayPort = RELAY_PORT_DEFAULT;
+        }
+        comms_getInitialAddr( &cGlobals->addr, relayName, relayPort );
     }
 
     CurGameInfo* gi = &cGlobals->gi;

@@ -87,7 +87,7 @@ file_exists( const char* fileName )
     struct stat statBuf;
 
     int statResult = stat( fileName, &statBuf );
-    XP_LOGF( "%s(%s)=>%d", __func__, fileName, statResult == 0 );
+    // XP_LOGF( "%s(%s)=>%d", __func__, fileName, statResult == 0 );
     return statResult == 0;
 } /* file_exists */
 
@@ -1906,6 +1906,7 @@ main( int argc, char** argv )
                        conType == COMMS_CONN_RELAY );
             mainParams.connInfo.relay.invite = optarg;
             conType = COMMS_CONN_RELAY;
+            isServer = XP_TRUE; /* implicit */
             break;
 #endif
         case CMD_HOSTIP:
@@ -2365,23 +2366,25 @@ main( int argc, char** argv )
             mainParams.serverRole = SERVER_ISCLIENT;
         }
 
-        if ( mainParams.needsNewGame ) {
-            gi_disposePlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi );
-            gi_initPlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi, NULL );
-        }
+        /* if ( mainParams.needsNewGame ) { */
+        /*     gi_disposePlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi ); */
+        /*     gi_initPlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi, NULL ); */
+        /* } */
 
-        /* curses doesn't have newgame dialog */
-        if ( useCurses && !mainParams.needsNewGame ) {
+        if ( useCurses ) {
+            if ( mainParams.needsNewGame ) {
+                /* curses doesn't have newgame dialog */
+                usage( argv[0], "game params required for curses version" );
+            } else {
 #if defined PLATFORM_NCURSES
-            cursesmain( isServer, &mainParams );
+                cursesmain( isServer, &mainParams );
 #endif
-        } else if ( !useCurses ) {
+            }
+        } else {
 #if defined PLATFORM_GTK
             gtk_init( &argc, &argv );
             gtkmain( &mainParams );
 #endif
-        } else {
-            usage( argv[0], "rtfm" );
         }
 
         freeParams( &mainParams );
