@@ -63,3 +63,8 @@ LOGFILE_PATH=./xwrelay.log
 # Delay sending packets so devices/emulators on the same machine as
 # relay have a bit more natural experience
 # SEND_DELAY_MILLIS=500
+
+# Use base64 encoding rather than PQescapeByteaConn for stored
+# messages.  The latter doesn't seem as reliable with newer psql
+# servers.  Anything but 0 is treated as true.
+USE_B64=1

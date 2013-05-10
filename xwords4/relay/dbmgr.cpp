@@ -62,8 +62,9 @@ DBMgr::Get()
 
 DBMgr::DBMgr()
 {
-    logf( XW_LOGINFO, "%s called", __func__ );
-    m_useB64 = false;
+    int tmp;
+    RelayConfigs::GetConfigs()->GetValueFor( "USE_B64", &tmp );
+    m_useB64 = tmp != 0;
 
     pthread_key_create( &m_conn_key, destr_function );
 
