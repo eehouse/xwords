@@ -110,7 +110,7 @@ dict_getNextTileString( const DictionaryCtxt* dict, Tile tile,
     } else {
         cur += XP_STRLEN( cur ) + 1;
         XP_Bool isSpecial = dict_faceIsBitmap( dict, tile );
-        if ( isSpecial ) {
+        if ( isSpecial || tile == dict->blankTile ) {
             const XP_UCHAR* facep = dict_getTileStringRaw( dict, tile );
             if ( cur < dict->charEnds[(XP_U16)*facep] ) {
                 result = cur;
