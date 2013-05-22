@@ -114,7 +114,7 @@ def notifyGCM( devids, typ, target ):
     if typ == DEVTYPE_GCM:
         if 3 <= target['clntVers']:
             connname = "%s/%d" % (target['connname'], target['hid'])
-            data = { 'msg64': target['msg64'],
+            data = { 'msgs64': [ target['msg64'] ],
                      'connname': connname,
                      }
         else:
