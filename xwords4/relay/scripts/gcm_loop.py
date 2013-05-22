@@ -70,6 +70,16 @@ def getPendingMsgs( con, typ ):
     if g_debug: print "getPendingMsgs=>", result
     return result
 
+def addClntVers( con, rows ):
+    query = """select clntVers[%s] from games where connname = '%s';"""
+    cur = con.cursor()
+    for row in rows:
+        cur.execute( query % (row['hid'], row['connname']))
+        if cur.rowcount == 1: row['clntVers'] = cur.fetchone()[0]
+        else: print "bad row count: ", cur.rowcount
+    con.commit()
+    return rows
+
 def deleteMsgs( con, msgIDs ):
     if 0 < len( msgIDs ):
         query = "DELETE from msgs where id in (%s);" % ",".join(msgIDs)
@@ -99,18 +109,22 @@ def asGCMIds(con, devids, typ):
     cur.execute( query )
     return [elem[0] for elem in cur.fetchall()]
 
-def notifyGCM( devids, typ, msg, connname, hid ):
+def notifyGCM( target, devids, typ, msg, connname, hid ):
     success = False
     if typ == DEVTYPE_GCM:
-        connname = "%s/%d" % (connname, hid)
+        if 3 <= target['clntVers']:
+            connname = "%s/%d" % (connname, hid)
+            data = { 'msg64': msg,
+                     'connname': connname,
+                     }
+        else:
+            data = { 'getMoves': True, }
         values = {
-            'data' : { 'getMoves': True, 
-                       'msg64': msg,
-                       'connname': connname,
-                       },
+            'data' : data,
             'registration_ids': devids,
             }
         params = json.dumps( values )
+
         req = urllib2.Request("https://android.googleapis.com/gcm/send", params )
         req.add_header( 'Content-Type' , 'application/x-www-form-urlencoded;charset=UTF-8' )
         req.add_header( 'Authorization' , 'key=' + mykey.myKey )
@@ -211,6 +225,7 @@ def main():
         if g_debug: print
         devids = getPendingMsgs( g_con, typ )
         if 0 < len(devids):
+            devids = addClntVers( g_con, devids )
             targets = targetsAfterBackoff( devids )
             if 0 < len(targets):
                 if 0 < emptyCount: print ""
@@ -223,7 +238,9 @@ def main():
                     connname = target['connname']
                     hid = target['hid']
                     msg = target['msg64']
-                    if notifyGCM( asGCMIds( g_con, [devid], typ ), typ, msg, connname, hid ):
+                    if notifyGCM( target, asGCMIds( g_con, [devid], typ ), \
+                                      typ, msg, connname, hid ) \
+                                      and 3 <= target['clntVers']:
                         toDelete.append( str(target['id']) )
                 pruneSent( devids )
                 deleteMsgs( g_con, toDelete )
