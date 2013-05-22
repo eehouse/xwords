@@ -62,6 +62,15 @@ public class GCMIntentService extends GCMBaseIntentService {
         if ( null != value && Boolean.parseBoolean( value ) ) {
             RelayReceiver.RestartTimer( context, true );
         }
+
+        value = intent.getStringExtra( "msg64" );
+        if ( null != value ) {
+            String connname = intent.getStringExtra( "connname" );
+            if ( null != connname ) {
+                RelayService.processMsg( context, connname, value );
+            }
+        }
+
         value = intent.getStringExtra( "checkUpdates" );
         if ( null != value && Boolean.parseBoolean( value ) ) {
             UpdateCheckReceiver.checkVersions( context, true );
