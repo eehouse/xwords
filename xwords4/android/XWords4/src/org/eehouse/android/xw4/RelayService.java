@@ -40,16 +40,15 @@ public class RelayService extends Service {
     private static final int MAX_BUF = MAX_SEND - 2;
 
     private static final String CMD_STR = "CMD";
-    private static final int PROCESS_MSG = 1;
-    private static final String MSG = "MSG";
+    private static final int PROCESS_MSGS = 1;
+    private static final String MSGS = "MSGS";
     private static final String RELAY_ID = "RELAY_ID";
 
-    public static void processMsg( Context context, String relayId, 
-                                   String msg64 )
+    public static void processMsgs( Context context, String relayId, 
+                                    String[] msgs64 )
     {
-        byte[] msg = XwJNI.base64Decode( msg64 );
-        Intent intent = getIntentTo( context, PROCESS_MSG )
-            .putExtra( MSG, msg )
+        Intent intent = getIntentTo( context, PROCESS_MSGS )
+            .putExtra( MSGS, msgs64 )
             .putExtra( RELAY_ID, relayId );
         context.startService( intent );
     }
@@ -86,13 +85,18 @@ public class RelayService extends Service {
     {
         int cmd = intent.getIntExtra( CMD_STR, -1 );
         switch( cmd ) {
-        case PROCESS_MSG:
+        case PROCESS_MSGS:
             String[] relayIDs = new String[1];
             relayIDs[0] = intent.getStringExtra( RELAY_ID );
             long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
             if ( 0 < rowIDs.length ) {
-                byte[][][] msgs = new byte[1][1][1];
-                msgs[0][0] = intent.getByteArrayExtra( MSG );
+                String[] msgs64 = intent.getStringArrayExtra( MSGS );
+                int count = msgs64.length;
+
+                byte[][][] msgs = new byte[1][count][];
+                for ( int ii = 0; ii < count; ++ii ) {
+                    msgs[0][ii] = XwJNI.base64Decode( msgs64[ii] );
+                }
                 process( msgs, rowIDs, relayIDs );
             }
             break;

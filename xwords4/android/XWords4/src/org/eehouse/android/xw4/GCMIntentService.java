@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
+import org.json.JSONArray;
 
 public class GCMIntentService extends GCMBaseIntentService {
 
@@ -63,11 +64,20 @@ public class GCMIntentService extends GCMBaseIntentService {
             RelayReceiver.RestartTimer( context, true );
         }
 
-        value = intent.getStringExtra( "msg64" );
+        value = intent.getStringExtra( "msgs64" );
         if ( null != value ) {
             String connname = intent.getStringExtra( "connname" );
             if ( null != connname ) {
-                RelayService.processMsg( context, connname, value );
+                try {
+                    JSONArray msgs64 = new JSONArray( value );
+                    String[] strs64 = new String[msgs64.length()];
+                    for ( int ii = 0; ii < strs64.length; ++ii ) {
+                        strs64[ii] = msgs64.optString(ii);
+                    }
+                    RelayService.processMsgs( context, connname, strs64 );
+                } catch (org.json.JSONException jse ) {
+                    DbgUtils.loge( jse );
+                }
             }
         }
 
