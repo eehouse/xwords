@@ -95,7 +95,6 @@ public class GCMIntentService extends GCMBaseIntentService {
                 if ( null != title ) {
                     int code = value.hashCode() ^ title.hashCode();
                     Utils.postNotification( context, null, title, value, code );
-
                 }
             }
         }

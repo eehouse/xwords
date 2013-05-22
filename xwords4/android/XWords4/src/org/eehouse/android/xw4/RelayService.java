@@ -23,12 +23,9 @@ package org.eehouse.android.xw4;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-<<<<<<< HEAD
-import java.io.ByteArrayInputStream;
-=======
 import android.os.AsyncTask;
 import android.os.IBinder;
->>>>>>> android_branch
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -169,6 +166,21 @@ public class RelayService extends XWService {
             switch( cmd ) {
             case -1:
                 break;
+            case PROCESS_MSGS:
+                String[] relayIDs = new String[1];
+                relayIDs[0] = intent.getStringExtra( RELAY_ID );
+                long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
+                if ( 0 < rowIDs.length ) {
+                    String[] msgs64 = intent.getStringArrayExtra( MSGS );
+                    int count = msgs64.length;
+
+                    byte[][][] msgs = new byte[1][count][];
+                    for ( int ii = 0; ii < count; ++ii ) {
+                        msgs[0][ii] = XwJNI.base64Decode( msgs64[ii] );
+                    }
+                    process( msgs, rowIDs, relayIDs );
+                }
+                break;
             case UDP_CHANGED:
                 DbgUtils.logf( "RelayService::onStartCommand::UDP_CHANGED" );
                 if ( XWPrefs.getUDPEnabled( this ) ) {
@@ -200,31 +212,6 @@ public class RelayService extends XWService {
             result = Service.START_STICKY_COMPATIBILITY;
         }
         return result;
-    }
-
-    @Override
-    public int onStartCommand( Intent intent, int flags, int startId )
-    {
-        int cmd = intent.getIntExtra( CMD_STR, -1 );
-        switch( cmd ) {
-        case PROCESS_MSGS:
-            String[] relayIDs = new String[1];
-            relayIDs[0] = intent.getStringExtra( RELAY_ID );
-            long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
-            if ( 0 < rowIDs.length ) {
-                String[] msgs64 = intent.getStringArrayExtra( MSGS );
-                int count = msgs64.length;
-
-                byte[][][] msgs = new byte[1][count][];
-                for ( int ii = 0; ii < count; ++ii ) {
-                    msgs[0][ii] = XwJNI.base64Decode( msgs64[ii] );
-                }
-                process( msgs, rowIDs, relayIDs );
-            }
-            break;
-        }
-        stopSelf( startId );
-        return Service.START_NOT_STICKY;
     }
 
     private void setupNotification( String[] relayIDs )
