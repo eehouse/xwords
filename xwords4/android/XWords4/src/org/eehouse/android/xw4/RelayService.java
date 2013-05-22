@@ -23,7 +23,12 @@ package org.eehouse.android.xw4;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+<<<<<<< HEAD
 import java.io.ByteArrayInputStream;
+=======
+import android.os.AsyncTask;
+import android.os.IBinder;
+>>>>>>> android_branch
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -43,16 +48,21 @@ import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.jni.XwJNI;
 
 public class RelayService extends XWService {
     private static final int MAX_SEND = 1024;
     private static final int MAX_BUF = MAX_SEND - 2;
 
     private static final String CMD_STR = "CMD";
-    private static final int UDP_CHANGED = 1;
-    private static final int SEND = 2;
-    private static final int RECEIVE = 3;
-    
+
+    private static final int PROCESS_MSGS = 1;
+    private static final int UDP_CHANGED = 2;
+    private static final int SEND = 3;
+    private static final int RECEIVE = 4;
+
+    private static final String MSGS = "MSGS";
+    private static final String RELAY_ID = "RELAY_ID";
     private static final String ROWID = "ROWID";
     private static final String BINBUFFER = "BINBUFFER";
 
@@ -103,9 +113,9 @@ public class RelayService extends XWService {
 
     public static int sendPacket( Context context, long rowid, byte[] buf )
     {
-        Intent intent = getIntentTo( context, SEND );
-        intent.putExtra( ROWID, rowid );
-        intent.putExtra( BINBUFFER, buf );
+        Intent intent = getIntentTo( context, SEND )
+            .putExtra( ROWID, rowid )
+            .putExtra( BINBUFFER, buf );
         context.startService( intent );
         return buf.length;
     }
@@ -115,15 +125,24 @@ public class RelayService extends XWService {
     {
         DbgUtils.logf( "RelayService::postData: packet of length %d for token %d", 
                        msg.length, rowid );
-        Intent intent = getIntentTo( context, RECEIVE );
-        intent.putExtra( ROWID, rowid );
-        intent.putExtra( BINBUFFER, msg );
+        Intent intent = getIntentTo( context, RECEIVE )
+            .putExtra( ROWID, rowid )
+            .putExtra( BINBUFFER, msg );
         context.startService( intent );
     }
 
     public static void udpChanged( Context context )
     {
         startService( context );
+    }
+
+    public static void processMsgs( Context context, String relayId, 
+                                    String[] msgs64 )
+    {
+        Intent intent = getIntentTo( context, PROCESS_MSGS )
+            .putExtra( MSGS, msgs64 )
+            .putExtra( RELAY_ID, relayId );
+        context.startService( intent );
     }
 
     private static Intent getIntentTo( Context context, int cmd )
@@ -181,6 +200,31 @@ public class RelayService extends XWService {
             result = Service.START_STICKY_COMPATIBILITY;
         }
         return result;
+    }
+
+    @Override
+    public int onStartCommand( Intent intent, int flags, int startId )
+    {
+        int cmd = intent.getIntExtra( CMD_STR, -1 );
+        switch( cmd ) {
+        case PROCESS_MSGS:
+            String[] relayIDs = new String[1];
+            relayIDs[0] = intent.getStringExtra( RELAY_ID );
+            long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
+            if ( 0 < rowIDs.length ) {
+                String[] msgs64 = intent.getStringArrayExtra( MSGS );
+                int count = msgs64.length;
+
+                byte[][][] msgs = new byte[1][count][];
+                for ( int ii = 0; ii < count; ++ii ) {
+                    msgs[0][ii] = XwJNI.base64Decode( msgs64[ii] );
+                }
+                process( msgs, rowIDs, relayIDs );
+            }
+            break;
+        }
+        stopSelf( startId );
+        return Service.START_NOT_STICKY;
     }
 
     private void setupNotification( String[] relayIDs )
@@ -568,67 +612,80 @@ public class RelayService extends XWService {
         long[][] rowIDss = new long[1][];
         String[] relayIDs = DBUtils.getRelayIDs( this, rowIDss );
         if ( null != relayIDs && 0 < relayIDs.length ) {
-            long[] rowIDs = rowIDss[0];
             byte[][][] msgs = NetUtils.queryRelay( this, relayIDs );
-
-            if ( null != msgs ) {
-                RelayMsgSink sink = new RelayMsgSink();
-                int nameCount = relayIDs.length;
-                ArrayList<String> idsWMsgs =
-                    new ArrayList<String>( nameCount );
-                for ( int ii = 0; ii < nameCount; ++ii ) {
-                    byte[][] forOne = msgs[ii];
-                    // if game has messages, open it and feed 'em
-                    // to it.
-                    if ( null == forOne ) {
-                        // Nothing for this relayID
-                    } else if ( BoardActivity.feedMessages( rowIDs[ii], forOne )
-                                || GameUtils.feedMessages( this, rowIDs[ii],
-                                                           forOne, null,
-                                                           sink ) ) {
-                        idsWMsgs.add( relayIDs[ii] );
-                    } else {
-                        DbgUtils.logf( "dropping message for %s (rowid %d)",
-                                       relayIDs[ii], rowIDs[ii] );
-                    }
-                }
-                if ( 0 < idsWMsgs.size() ) {
-                    String[] tmp = new String[idsWMsgs.size()];
-                    idsWMsgs.toArray( tmp );
-                    setupNotification( tmp );
-                }
-                sink.send( this );
-            }
+            process( msgs, rowIDss[0], relayIDs );
         }
     }
 
-    private static void sendToRelay( Context context,
-                                     HashMap<String,ArrayList<byte[]>> msgHash )
+    private void process( byte[][][] msgs, long[] rowIDs, String[] relayIDs )
     {
-        // format: total msg lenth: 2
-        //         number-of-relayIDs: 2
-        //         for-each-relayid: relayid + '\n': varies
-        //                           message count: 1
-        //                           for-each-message: length: 2
-        //                                             message: varies
+        if ( null != msgs ) {
+            RelayMsgSink sink = new RelayMsgSink();
+            int nameCount = relayIDs.length;
+            ArrayList<String> idsWMsgs = new ArrayList<String>( nameCount );
 
-        if ( null != msgHash ) {
+            for ( int ii = 0; ii < nameCount; ++ii ) {
+                byte[][] forOne = msgs[ii];
+
+                // if game has messages, open it and feed 'em to it.
+                if ( null == forOne ) {
+                    // Nothing for this relayID
+                } else if ( BoardActivity.feedMessages( rowIDs[ii], forOne )
+                            || GameUtils.feedMessages( this, rowIDs[ii],
+                                                       forOne, null,
+                                                       sink ) ) {
+                    idsWMsgs.add( relayIDs[ii] );
+                } else {
+                    DbgUtils.logf( "message for %s (rowid %d) not consumed",
+                                   relayIDs[ii], rowIDs[ii] );
+                }
+            }
+            if ( 0 < idsWMsgs.size() ) {
+                String[] tmp = new String[idsWMsgs.size()];
+                idsWMsgs.toArray( tmp );
+                setupNotification( tmp );
+            }
+            sink.send( this );
+        }
+    }
+
+    private static class AsyncSender extends AsyncTask<Void, Void, Void> {
+        private Context m_context;
+        private HashMap<String,ArrayList<byte[]>> m_msgHash;
+
+        public AsyncSender( Context context, 
+                            HashMap<String,ArrayList<byte[]>> msgHash )
+        {
+            m_context = context;
+            m_msgHash = msgHash;
+        }
+
+        @Override
+        protected Void doInBackground( Void... ignored )
+        {
+            // format: total msg lenth: 2
+            //         number-of-relayIDs: 2
+            //         for-each-relayid: relayid + '\n': varies
+            //                           message count: 1
+            //                           for-each-message: length: 2
+            //                                             message: varies
+
+            // Build up a buffer containing everything but the total
+            // message length and number of relayIDs in the message.
             try {
-                // Build up a buffer containing everything but the total
-                // message length and number of relayIDs in the message.
                 ByteArrayOutputStream store = 
                     new ByteArrayOutputStream( MAX_BUF ); // mem
                 DataOutputStream outBuf = new DataOutputStream( store );
                 int msgLen = 4;          // relayID count + protocol stuff
                 int nRelayIDs = 0;
         
-                Iterator<String> iter = msgHash.keySet().iterator();
+                Iterator<String> iter = m_msgHash.keySet().iterator();
                 while ( iter.hasNext() ) {
                     String relayID = iter.next();
                     int thisLen = 1 + relayID.length(); // string and '\n'
                     thisLen += 2;                        // message count
 
-                    ArrayList<byte[]> msgs = msgHash.get( relayID );
+                    ArrayList<byte[]> msgs = m_msgHash.get( relayID );
                     for ( byte[] msg : msgs ) {
                         thisLen += 2 + msg.length;
                     }
@@ -649,10 +706,9 @@ public class RelayService extends XWService {
                     }
                     msgLen += thisLen;
                 }
-
                 // Now open a real socket, write size and proto, and
                 // copy in the formatted buffer
-                Socket socket = NetUtils.makeProxySocket( context, 8000 );
+                Socket socket = NetUtils.makeProxySocket( m_context, 8000 );
                 if ( null != socket ) {
                     DataOutputStream outStream = 
                         new DataOutputStream( socket.getOutputStream() );
@@ -667,6 +723,15 @@ public class RelayService extends XWService {
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
             }
+            return null;
+        } // doInBackground
+    }
+
+    private static void sendToRelay( Context context,
+                                     HashMap<String,ArrayList<byte[]>> msgHash )
+    {
+        if ( null != msgHash ) {
+            new AsyncSender( context, msgHash ).execute();
         } else {
             DbgUtils.logf( "sendToRelay: null msgs" );
         }

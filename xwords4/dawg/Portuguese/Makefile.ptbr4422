@@ -19,6 +19,7 @@
 XWLANG = PTBR4422
 LANGCODE = pt_PT
 ENC = UTF-8
+DICTNOTE = "Lista com as 4422 palavras mais frequentes nas legendas em português brasileiro do site www.opensubtitles.org."
 
 TARGET_TYPE ?= WINCE
 

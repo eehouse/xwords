@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
+import org.json.JSONArray;
 
 public class GCMIntentService extends GCMBaseIntentService {
 
@@ -61,13 +62,31 @@ public class GCMIntentService extends GCMBaseIntentService {
         if ( ignoreIt ) {
             DbgUtils.logf( "received GCM but ignoring it" );
         } else {
+            value = intent.getStringExtra( "checkUpdates" );
+            if ( null != value && Boolean.parseBoolean( value ) ) {
+                UpdateCheckReceiver.checkVersions( context, true );
+            }
+
             value = intent.getStringExtra( "getMoves" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
                 RelayReceiver.RestartTimer( context, true );
             }
-            value = intent.getStringExtra( "checkUpdates" );
-            if ( null != value && Boolean.parseBoolean( value ) ) {
-                UpdateCheckReceiver.checkVersions( context, true );
+
+            value = intent.getStringExtra( "msgs64" );
+            if ( null != value ) {
+                String connname = intent.getStringExtra( "connname" );
+                if ( null != connname ) {
+                    try {
+                        JSONArray msgs64 = new JSONArray( value );
+                        String[] strs64 = new String[msgs64.length()];
+                        for ( int ii = 0; ii < strs64.length; ++ii ) {
+                            strs64[ii] = msgs64.optString(ii);
+                        }
+                        RelayService.processMsgs( context, connname, strs64 );
+                    } catch (org.json.JSONException jse ) {
+                        DbgUtils.loge( jse );
+                    }
+                }
             }
 
             value = intent.getStringExtra( "msg" );
@@ -76,6 +95,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                 if ( null != title ) {
                     int code = value.hashCode() ^ title.hashCode();
                     Utils.postNotification( context, null, title, value, code );
+
                 }
             }
         }

@@ -2856,17 +2856,27 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
     nChars = dict_numTileFaces( dict );
 
     for ( tile = 0, nPrinted = 0; ; ) {
-        XP_UCHAR buf[24];
+        XP_UCHAR buf[128];
         XP_U16 count, value;
 
         count = dict_numTiles( dict, tile );
 
         if ( count > 0 ) {
-            const XP_UCHAR* face = dict_getTileString( dict, tile );
+            const XP_UCHAR* face = NULL;
+            XP_UCHAR faces[48] = {0};
+            XP_U16 len = 0;
+            for ( ; ; ) {
+                face = dict_getNextTileString( dict, tile, face );
+                if ( !face ) {
+                    break;
+                }
+                const XP_UCHAR* fmt = len == 0? "%s" : ",%s";
+                len += XP_SNPRINTF( faces + len, sizeof(faces) - len, fmt, face );
+            }
             value = dict_getTileValue( dict, tile );
 
             XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d/%d", 
-                         face, count, value );
+                         faces, count, value );
             stream_catString( stream, buf );
         }
 
