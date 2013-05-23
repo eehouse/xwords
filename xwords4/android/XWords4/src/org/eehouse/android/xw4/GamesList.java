@@ -101,6 +101,7 @@ public class GamesList extends XWExpandableListActivity
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
+    private boolean m_gameLaunched = false;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -462,6 +463,7 @@ public class GamesList extends XWExpandableListActivity
         super.onWindowFocusChanged( hasFocus );
         if ( hasFocus ) {
             updateField();
+            m_gameLaunched = false;
         }
     }
 
@@ -1065,7 +1067,10 @@ public class GamesList extends XWExpandableListActivity
 
     private void launchGame( long rowid, boolean invited )
     {
-        GameUtils.launchGame( this, rowid, invited );
+        if ( !m_gameLaunched ) {
+            m_gameLaunched = true;
+            GameUtils.launchGame( this, rowid, invited );
+        }
     }
 
     private void launchGame( long rowid )
