@@ -385,6 +385,7 @@ public class GamesList extends XWExpandableListActivity
     protected void onNewIntent( Intent intent )
     {
         super.onNewIntent( intent );
+        m_gameLaunched = false;
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         startFirstHasDict( intent );
@@ -487,21 +488,23 @@ public class GamesList extends XWExpandableListActivity
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
-        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
-             && summary.roomName.length() == 0 ) {
-            // If it's unconfigured and of the type RelayGameActivity
-            // can handle send it there, otherwise use the full-on
-            // config.
-            Class clazz;
-            if ( RelayGameActivity.isSimpleGame( summary ) ) {
-                clazz = RelayGameActivity.class;
+        if ( !m_gameLaunched ) {
+            if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
+                 && summary.roomName.length() == 0 ) {
+                // If it's unconfigured and of the type RelayGameActivity
+                // can handle send it there, otherwise use the full-on
+                // config.
+                Class clazz;
+                if ( RelayGameActivity.isSimpleGame( summary ) ) {
+                    clazz = RelayGameActivity.class;
+                } else {
+                    clazz = GameConfig.class;
+                }
+                GameUtils.doConfig( this, rowid, clazz );
             } else {
-                clazz = GameConfig.class;
-            }
-            GameUtils.doConfig( this, rowid, clazz );
-        } else {
-            if ( checkWarnNoDict( rowid ) ) {
-                launchGame( rowid );
+                if ( checkWarnNoDict( rowid ) ) {
+                    launchGame( rowid );
+                }
             }
         }
     }
