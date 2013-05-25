@@ -960,7 +960,9 @@ SIGWINCH_handler( int signal )
 static void 
 SIGINTTERM_handler( int XP_UNUSED(signal) )
 {
-    (void)handleQuit( &g_globals );
+    if ( 1 != write( g_globals.quitpipe[1], "!", 1 ) ) {
+        XP_ASSERT(0);
+    }
 }
 
 static void
@@ -1113,6 +1115,14 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
 } /* curses_socket_changed */
 
 #ifdef USE_GLIBLOOP
+static gboolean
+handle_quitwrite( GIOChannel* XP_UNUSED(source), GIOCondition XP_UNUSED(condition), gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    handleQuit( globals );
+    return TRUE;
+}
+
 static gboolean
 fire_acceptor( GIOChannel* source, GIOCondition condition, gpointer data )
 {
@@ -1735,6 +1745,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #ifdef USE_GLIBLOOP
     cursesListenOnSocket( &g_globals, 0, handle_stdin );
     setOneSecondTimer( &g_globals.cGlobals );
+    int piperesult = pipe( g_globals.quitpipe );
+    XP_ASSERT( piperesult == 0 );
+    cursesListenOnSocket( &g_globals, g_globals.quitpipe[0], handle_quitwrite );
 #else
     cursesListenOnSocket( &g_globals, 0 ); /* stdin */
 
