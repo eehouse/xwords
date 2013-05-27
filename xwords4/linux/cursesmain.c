@@ -1745,7 +1745,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #ifdef USE_GLIBLOOP
     cursesListenOnSocket( &g_globals, 0, handle_stdin );
     setOneSecondTimer( &g_globals.cGlobals );
-    int piperesult = pipe( g_globals.quitpipe );
+# ifdef DEBUG
+    int piperesult = 
+# endif
+        pipe( g_globals.quitpipe );
     XP_ASSERT( piperesult == 0 );
     cursesListenOnSocket( &g_globals, g_globals.quitpipe[0], handle_quitwrite );
 #else
