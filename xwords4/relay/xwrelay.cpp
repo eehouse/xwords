@@ -1948,7 +1948,7 @@ main( int argc, char** argv )
                 // run_ctrl_thread( g_control );
                 --retval;
             }
-            if ( FD_ISSET( g_udpsock, &rfds ) ) {
+            if ( -1 != g_udpsock && FD_ISSET( g_udpsock, &rfds ) ) {
                 // This will need to be done in a separate thread, or pushed
                 // to the existing thread pool
                 handle_udp_packet( g_udpsock );
