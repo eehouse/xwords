@@ -1,4 +1,4 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make -j3"; -*- */
 /* 
  * Copyright 2013 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <unistd.h>
 #include "udpack.h"
 #include "mlock.h" 
 

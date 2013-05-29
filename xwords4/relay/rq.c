@@ -144,8 +144,8 @@ do_rooms( int sockfd, int lang, int nPlayers )
 {
     unsigned char msg[] = { 0,      /* protocol */
                             PRX_PUB_ROOMS,
-                            lang,
-                            nPlayers };
+                            (unsigned char)lang,
+                            (unsigned char)nPlayers };
     unsigned short len = htons( sizeof(msg) );
     write( sockfd, &len, sizeof(len) );
     write( sockfd, msg, sizeof(msg) );
@@ -184,7 +184,7 @@ write_connnames( int sockfd, char cmd,
         len += 1 + strlen( connNames[ii] );
     }
 
-    unsigned char hdr[] = { 0, cmd };
+    unsigned char hdr[] = { 0, (unsigned char)cmd };
     unsigned short netNConnNames = htons( nConnNames );
     netlen = sizeof(hdr) + sizeof( netNConnNames ) + len;
     netlen = htons( netlen );
@@ -277,6 +277,7 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
     unsigned char reply[1024];
     int nRead = read_packet( sockfd, reply, sizeof(reply) );
     if ( nRead > 2 ) {
+        int ii;
         const unsigned char* bufp = reply;
         const unsigned char* const end = bufp + nRead;
 
@@ -292,7 +293,7 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
            STDOUT -- e.g. by passing in named pipes to correspond to each
            deviceid provided */
 
-        for ( int ii = 0; ii < count && bufp < end; ++ii ) {
+        for ( ii = 0; ii < count && bufp < end; ++ii ) {
             int fd = STDOUT_FILENO;
             int nbsfd = -1;
             unsigned short countPerDev;
@@ -350,7 +351,6 @@ do_fetch( int sockfd, const char** connNames, int nConnNames,
             nwritten = write( fd, &len, sizeof(len) );
             assert( nwritten == sizeof(len) );
 
-            int ii;
             for ( ii = 0; -1 != nbsfd; ++ii ) {
                 short len;
                 ssize_t nRead = read( nbsfd, &len, sizeof(len) );
