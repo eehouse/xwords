@@ -486,7 +486,7 @@ and_draw_drawTrayDivider( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 static void
 and_draw_score_pendingScore( DrawCtx* dctx, const XP_Rect* rect, 
                              XP_S16 score, XP_U16 playerNum,
-                             CellFlags flags )
+                             XP_S16 curTurn, CellFlags flags )
 {
     DRAW_CBK_HEADER( "score_pendingScore", "(Landroid/graphics/Rect;III)V" );
 

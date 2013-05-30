@@ -1123,8 +1123,8 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
 
 static void
 gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
-                             XP_S16 score, XP_U16 XP_UNUSED(playerNum),
-                             CellFlags flags )
+                             XP_S16 score, XP_U16 playerNum,
+                             XP_S16 curTurn, CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_UCHAR buf[5];
@@ -1132,6 +1132,7 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_Rect localR;
     GdkColor* cursor = ((flags & CELL_ISCURSOR) != 0) 
         ? &dctx->cursor : NULL;
+    GdkColor* txtColor;
 
     if ( score >= 0 ) {
 		XP_SNPRINTF( buf, VSIZE(buf), "%.3d", score );
@@ -1151,12 +1152,11 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     }
 
 	ht = localR.height >> 2;
+    txtColor = (playerNum == curTurn) ? &dctx->black : &dctx->grey;
     draw_string_at( dctx, NULL, "Pts:", ht,
-                    &localR, XP_GTK_JUST_TOPLEFT,
-                    &dctx->black, cursor );
+                    &localR, XP_GTK_JUST_TOPLEFT, txtColor, cursor );
     draw_string_at( dctx, NULL, buf, ht,
-                    &localR, XP_GTK_JUST_BOTTOMRIGHT,
-                    &dctx->black, cursor );
+                    &localR, XP_GTK_JUST_BOTTOMRIGHT, txtColor, cursor );
 
 } /* gtk_draw_score_pendingScore */
 
@@ -1374,11 +1374,6 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     dctx->drawing_area = drawing_area;
     dctx->globals = globals;
 
-    map = gdk_colormap_get_system();
-
-    allocAndSet( map, &dctx->black, 0x0000, 0x0000, 0x0000 );
-    allocAndSet( map, &dctx->white, 0xFFFF, 0xFFFF, 0xFFFF );
-
     {
         // GdkWindow *window = NULL;
         /* if ( GTK_WIDGET_FLAGS(GTK_WIDGET(drawing_area)) & GTK_NO_WINDOW ) { */
@@ -1405,6 +1400,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     map = gdk_colormap_get_system();
 
     allocAndSet( map, &dctx->black, 0x0000, 0x0000, 0x0000 );
+    allocAndSet( map, &dctx->grey, 0x7FFF, 0x7FFF, 0x7FFF );
     allocAndSet( map, &dctx->white, 0xFFFF, 0xFFFF, 0xFFFF );
 
     allocAndSet( map, &dctx->bonusColors[0], 0xFFFF, 0xAFFF, 0xAFFF );
