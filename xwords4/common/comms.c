@@ -1180,11 +1180,16 @@ gameID( const CommsCtxt* comms )
     if ( 0 == gameID ) {
         gameID = comms->util->gameInfo->gameID;
     }
-    XP_ASSERT( 0 == comms->connID
-               || (comms->connID & 0xFFFF) 
-               == (comms->util->gameInfo->gameID & 0xFFFF) );
+
     /* Most of the time these will be the same, but early in a game they won't
        be.  Would be nice not to have to use gameID. */
+    if ( 0 == gameID ) {
+        XP_LOGF( "%s: gameID STILL 0", __func__ );
+    } else if ( 0 == comms->util->gameInfo->gameID ) {
+        XP_LOGF( "%s: setting gi's gameID to 0X%lX", __func__, gameID );
+        comms->util->gameInfo->gameID = gameID;
+    }
+
     return gameID;
 }
 
@@ -1375,8 +1380,11 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     {
         XP_UCHAR connName[MAX_CONNNAME_LEN+1];
         stringFromStreamHere( stream, connName, sizeof(connName) );
-        XP_ASSERT( comms->r.connName[0] == '\0' 
-                   || 0 == XP_STRCMP( comms->r.connName, connName ) );
+        if ( comms->r.connName[0] != '\0' 
+             && 0 != XP_STRCMP( comms->r.connName, connName ) ) {
+            XP_LOGF( "%s: we're replacing connNames: %s overwritten by %s",
+                     __func__, comms->r.connName, connName );
+        }
         XP_MEMCPY( comms->r.connName, connName, sizeof(comms->r.connName) );
         XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
     }
@@ -1443,8 +1451,11 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         {
             XP_UCHAR connName[MAX_CONNNAME_LEN+1];
             stringFromStreamHere( stream, connName, sizeof(connName) );
-            XP_ASSERT( comms->r.connName[0] == '\0' 
-                       || 0 == XP_STRCMP( comms->r.connName, connName ) );
+            if ( comms->r.connName[0] != '\0' 
+                 && 0 != XP_STRCMP( comms->r.connName, connName ) ) {
+                XP_LOGF( "%s: we're replacing connNames: %s overwritten by %s",
+                         __func__, comms->r.connName, connName );
+            }
             XP_MEMCPY( comms->r.connName, connName, 
                        sizeof(comms->r.connName) );
             XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
@@ -2172,7 +2183,7 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         case XWRELAY_MSG_TORELAY_NOCONN:
             stream_putU8( stream, comms->r.myHostID );
             stream_putU8( stream, destID );
-            XP_LOGF( "%s: wrote ids %d, %d", __func__, 
+            XP_LOGF( "%s: wrote ids src %d, dest %d", __func__, 
                      comms->r.myHostID, destID );
             if ( data != NULL && datalen > 0 ) {
                 stream_putBytes( stream, data, datalen );
