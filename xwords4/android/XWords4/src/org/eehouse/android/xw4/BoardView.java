@@ -888,14 +888,19 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     }
 
     public void score_pendingScore( Rect rect, int score, int playerNum, 
-                                    int flags ) 
+                                    int curTurn, int flags ) 
     {
         String text = score >= 0? String.format( "%d", score ) : "??";
         int otherIndx = (0 == (flags & CELL_ISCURSOR)) 
             ? CommonPrefs.COLOR_BACKGRND : CommonPrefs.COLOR_FOCUS;
         ++rect.top;
         fillRectOther( rect, otherIndx );
-        m_fillPaint.setColor( m_playerColors[playerNum] );
+
+        int playerColor = m_playerColors[playerNum];
+        if ( playerNum != curTurn ) {
+            playerColor = dimColor( playerColor );
+        }
+        m_fillPaint.setColor( playerColor );
 
         rect.bottom -= rect.height() / 2;
         drawCentered( text, rect, null );
@@ -1256,6 +1261,19 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
         }
         return zoomDir;
+    }
+
+    private int dimColor( int playerColor ) 
+    {
+        int newColor = 0;
+        for ( int ii = 0; ii < 4; ++ii ) {
+            int byt = (playerColor >> 24) & 0xFF;
+            playerColor <<= 8;
+            byt += (0xFF - byt) / 2;
+            newColor <<= 8;
+            newColor |= byt;
+        }
+        return newColor;
     }
 
 }

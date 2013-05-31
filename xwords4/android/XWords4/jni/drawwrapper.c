@@ -488,12 +488,12 @@ and_draw_score_pendingScore( DrawCtx* dctx, const XP_Rect* rect,
                              XP_S16 score, XP_U16 playerNum,
                              XP_S16 curTurn, CellFlags flags )
 {
-    DRAW_CBK_HEADER( "score_pendingScore", "(Landroid/graphics/Rect;III)V" );
+    DRAW_CBK_HEADER( "score_pendingScore", "(Landroid/graphics/Rect;IIII)V" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, score, playerNum, flags );
+                            jrect, score, playerNum, curTurn, flags );
 }
 
 static void

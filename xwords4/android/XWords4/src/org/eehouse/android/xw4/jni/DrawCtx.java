@@ -68,7 +68,8 @@ public interface DrawCtx {
                            int flags );
     void drawTileBack( Rect rect, int flags );
     void drawTrayDivider( Rect rect, int flags );
-    void score_pendingScore( Rect rect, int score, int playerNum, int flags );
+    void score_pendingScore( Rect rect, int score, int playerNum, int curTurn, 
+                             int flags );
 
     public static final int BONUS_NONE = 0;
     public static final int BONUS_DOUBLE_LETTER = 1;
