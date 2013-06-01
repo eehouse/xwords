@@ -50,6 +50,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private static Bitmap s_bitmap;    // the board
     private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
+    private static final int NOT_TURN_ALPHA = 0x3FFFFFFF;
     private static final int PINCH_THRESHOLD = 40;
     private static final int SCORE_HT_DROP = 2;
     private static final boolean DEBUG_DRAWFRAMES = false;
@@ -898,7 +899,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         int playerColor = m_playerColors[playerNum];
         if ( playerNum != curTurn ) {
-            playerColor = dimColor( playerColor );
+            playerColor &= NOT_TURN_ALPHA;
         }
         m_fillPaint.setColor( playerColor );
 
@@ -1261,19 +1262,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
         }
         return zoomDir;
-    }
-
-    private int dimColor( int playerColor ) 
-    {
-        int newColor = 0;
-        for ( int ii = 0; ii < 4; ++ii ) {
-            int byt = (playerColor >> 24) & 0xFF;
-            playerColor <<= 8;
-            byt += (0xFF - byt) / 2;
-            newColor <<= 8;
-            newColor |= byt;
-        }
-        return newColor;
     }
 
 }
