@@ -1860,6 +1860,9 @@
     <string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>
       <!--  -->
+    <string name="not_again_browseall">This button opens the wordlist
+      browser on the wordlist of your choice.</string>
+      <!--  -->
     <string name="alert_empty_dictf">The wordlist %s contains only
       tile information.  There are no words to browse.</string>
 
@@ -2149,7 +2152,7 @@
     <string name="game_name_group_title">Name group</string>
 
     <string name="cannot_delete_default_group">The group for new games
-    cannot be deleted."</string>
+    cannot be deleted.</string>
 
     <string name="no_move_onegroup">Moving is impossible until there
     is more than one group.</string>
@@ -2164,4 +2167,7 @@
     <string name="square_tiles_summary">Even if they can be taller</string>
 
     <string name="change_groupf">Move game %s</string>
+
+    <string name="needs_newer">This feature requires a newer version 
+        of Android.</string>
 </resources>

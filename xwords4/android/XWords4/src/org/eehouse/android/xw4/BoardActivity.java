@@ -102,6 +102,7 @@ public class BoardActivity extends XWActivity
     private static final int BT_PICK_ACTION = 17;
     private static final int SMS_PICK_ACTION = 18;
     private static final int SMS_CONFIG_ACTION = 19;
+    private static final int BUTTON_BROWSEALL_ACTION = 20;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -889,6 +890,15 @@ public class BoardActivity extends XWActivity
             case BUTTON_BROWSE_ACTION:
                 String dictName = m_gi.dictName( m_view.getCurPlayer() );
                 DictBrowseActivity.launch( this, dictName );
+                break;
+            case BUTTON_BROWSEALL_ACTION:
+                View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
+                if ( !DictsActivity.handleDictsPopup( this, button ) ) {
+                    // HACK: a static method can't easily call
+                    // showOKOnlyDialog, so assume we know the reason
+                    // for failure.
+                    showOKOnlyDialog( R.string.needs_newer );
+                }
                 break;
             case PREV_HINT_ACTION:
                 cmd = JNICmd.CMD_PREV_HINT;
@@ -1807,6 +1817,10 @@ public class BoardActivity extends XWActivity
                                R.string.not_again_browse,
                                R.string.key_na_browse,
                                BUTTON_BROWSE_ACTION );
+        m_toolbar.setLongClickListener( Toolbar.BUTTON_BROWSE_DICT,
+                                        R.string.not_again_browseall,
+                                        R.string.key_na_browseall,
+                                        BUTTON_BROWSEALL_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
                                R.string.not_again_hintprev,
                                R.string.key_notagain_hintprev,

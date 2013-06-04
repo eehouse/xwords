@@ -36,6 +36,7 @@ import android.preference.PreferenceManager;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,9 +45,12 @@ import android.widget.Button;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ExpandableListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
@@ -58,6 +62,11 @@ public class DictsActivity extends XWExpandableListActivity
     implements View.OnClickListener, XWListItem.DeleteCallback,
                MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify,
                DictImportActivity.DownloadFinishedListener {
+
+    private static interface SafePopup {
+        public void doPopup( Context context, View button );
+    }
+    private static SafePopup s_safePopup = null;
 
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
@@ -76,6 +85,11 @@ public class DictsActivity extends XWExpandableListActivity
     private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 1;
     private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 2;
     private static final int DICT_OR_DECLINE = DlgDelegate.DIALOG_LAST + 3;
+
+    // I can't provide a subclass of MenuItem to hold DictAndLoc, so
+    // settle for a hash on the side.
+    private static HashMap<MenuItem, DictAndLoc> s_itemData;
+
     private int m_lang = 0;
     private String[] m_langs;
     private String m_name = null;
@@ -779,5 +793,48 @@ public class DictsActivity extends XWExpandableListActivity
         }
     }
 
+    private static class SafePopupImpl implements SafePopup {
+        public void doPopup( final Context context, View button ) {
+
+            MenuItem.OnMenuItemClickListener listener = 
+                new MenuItem.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick( MenuItem item )
+                    {
+                        DictAndLoc dal = s_itemData.get( item );
+                        s_itemData = null;
+                        DictBrowseActivity.launch( context, dal.name, dal.loc );
+                    
+                        return true;
+                    }
+                };
+
+            s_itemData = new HashMap<MenuItem, DictAndLoc>();
+            PopupMenu popup = new PopupMenu( context, button );
+            Menu menu = popup.getMenu();
+            DictAndLoc[] dals = DictUtils.dictList( context );
+            for ( DictAndLoc dal : dals ) {
+                MenuItem item = menu.add( dal.name );
+                item.setOnMenuItemClickListener( listener );
+                s_itemData.put( item, dal );
+            }
+            popup.show();
+        }
+    }
+
+    public static boolean handleDictsPopup( Context context, View button )
+    {
+        if ( null == s_safePopup ) {
+            int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
+            if ( 11 <= sdkVersion ) {
+                s_safePopup = new SafePopupImpl();
+            }
+        }
+
+        boolean canHandle = null != s_safePopup;
+        if ( canHandle ) {
+            s_safePopup.doPopup( context, button );
+        }
+        return canHandle;
+    }
 
 }
