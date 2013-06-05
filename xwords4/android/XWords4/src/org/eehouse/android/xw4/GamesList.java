@@ -135,7 +135,7 @@ public class GamesList extends XWExpandableListActivity
                 String message;
                 String langName = 
                     DictLangCache.getLangName( this, m_missingDictLang );
-                String gameName = GameUtils.getName( this, m_rowid );
+                String gameName = GameUtils.getName( this, m_missingDictRowId );
                 if ( WARN_NODICT == id ) {
                     message = getString( R.string.no_dictf,
                                          gameName, langName );
