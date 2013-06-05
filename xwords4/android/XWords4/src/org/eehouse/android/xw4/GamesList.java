@@ -669,7 +669,6 @@ public class GamesList extends XWExpandableListActivity
     public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
-        Intent intent;
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_newgame:
@@ -681,8 +680,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.gamel_menu_dicts:
-            intent = new Intent( this, DictsActivity.class );
-            startActivity( intent );
+            DictsActivity.start( this );
             break;
 
         case R.id.gamel_menu_checkmoves:

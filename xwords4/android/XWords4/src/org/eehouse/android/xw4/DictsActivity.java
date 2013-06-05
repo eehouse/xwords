@@ -64,7 +64,7 @@ public class DictsActivity extends XWExpandableListActivity
                DictImportActivity.DownloadFinishedListener {
 
     private static interface SafePopup {
-        public void doPopup( Context context, View button );
+        public void doPopup( Context context, View button, String curDict );
     }
     private static SafePopup s_safePopup = null;
 
@@ -794,7 +794,8 @@ public class DictsActivity extends XWExpandableListActivity
     }
 
     private static class SafePopupImpl implements SafePopup {
-        public void doPopup( final Context context, View button ) {
+        public void doPopup( final Context context, View button, 
+                             String curDict ) {
 
             MenuItem.OnMenuItemClickListener listener = 
                 new MenuItem.OnMenuItemClickListener() {
@@ -802,8 +803,13 @@ public class DictsActivity extends XWExpandableListActivity
                     {
                         DictAndLoc dal = s_itemData.get( item );
                         s_itemData = null;
-                        DictBrowseActivity.launch( context, dal.name, dal.loc );
-                    
+
+                        if ( null == dal ) {
+                            DictsActivity.start( context );
+                        } else {
+                            DictBrowseActivity.launch( context, dal.name, 
+                                                       dal.loc );
+                        }
                         return true;
                     }
                 };
@@ -811,9 +817,16 @@ public class DictsActivity extends XWExpandableListActivity
             s_itemData = new HashMap<MenuItem, DictAndLoc>();
             PopupMenu popup = new PopupMenu( context, button );
             Menu menu = popup.getMenu();
+            menu.add( R.string.show_wordlist_browser )
+                .setOnMenuItemClickListener( listener );
+
+            // Add at top but save until have dal info
+            MenuItem curItem = menu.add( curDict );
+
             DictAndLoc[] dals = DictUtils.dictList( context );
             for ( DictAndLoc dal : dals ) {
-                MenuItem item = menu.add( dal.name );
+                MenuItem item = dal.name.equals(curDict)
+                    ? curItem : menu.add( dal.name );
                 item.setOnMenuItemClickListener( listener );
                 s_itemData.put( item, dal );
             }
@@ -821,7 +834,8 @@ public class DictsActivity extends XWExpandableListActivity
         }
     }
 
-    public static boolean handleDictsPopup( Context context, View button )
+    public static boolean handleDictsPopup( Context context, View button,
+                                            String curDict )
     {
         if ( null == s_safePopup ) {
             int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
@@ -832,9 +846,15 @@ public class DictsActivity extends XWExpandableListActivity
 
         boolean canHandle = null != s_safePopup;
         if ( canHandle ) {
-            s_safePopup.doPopup( context, button );
+            s_safePopup.doPopup( context, button, curDict );
         }
         return canHandle;
+    }
+
+    public static void start( Context context )
+    {
+        Intent intent = new Intent( context, DictsActivity.class );
+        context.startActivity( intent );
     }
 
 }

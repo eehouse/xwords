@@ -2168,6 +2168,5 @@
 
     <string name="change_groupf">Move game %s</string>
 
-    <string name="needs_newer">This feature requires a newer version 
-        of Android.</string>
+    <string name="show_wordlist_browser">Wordlist browser</string>
 </resources>

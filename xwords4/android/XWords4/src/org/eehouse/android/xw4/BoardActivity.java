@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2013 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -887,18 +887,15 @@ public class BoardActivity extends XWActivity
                 Utils.showToast( BoardActivity.this, m_toastStr );
                 m_toastStr = null;
                 break;
-            case BUTTON_BROWSE_ACTION:
-                String dictName = m_gi.dictName( m_view.getCurPlayer() );
-                DictBrowseActivity.launch( this, dictName );
-                break;
             case BUTTON_BROWSEALL_ACTION:
+            case BUTTON_BROWSE_ACTION:
+                String curDict = m_gi.dictName( m_view.getCurPlayer() );
                 View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
-                if ( !DictsActivity.handleDictsPopup( this, button ) ) {
-                    // HACK: a static method can't easily call
-                    // showOKOnlyDialog, so assume we know the reason
-                    // for failure.
-                    showOKOnlyDialog( R.string.needs_newer );
+                if ( BUTTON_BROWSEALL_ACTION == id &&
+                     DictsActivity.handleDictsPopup( this, button, curDict ) ) {
+                    break;
                 }
+                DictBrowseActivity.launch( this, curDict );
                 break;
             case PREV_HINT_ACTION:
                 cmd = JNICmd.CMD_PREV_HINT;
@@ -1814,13 +1811,13 @@ public class BoardActivity extends XWActivity
     private void populateToolbar()
     {
         m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
-                               R.string.not_again_browse,
-                               R.string.key_na_browse,
-                               BUTTON_BROWSE_ACTION );
+                               R.string.not_again_browseall,
+                               R.string.key_na_browseall,
+                               BUTTON_BROWSEALL_ACTION );
         m_toolbar.setLongClickListener( Toolbar.BUTTON_BROWSE_DICT,
-                                        R.string.not_again_browseall,
-                                        R.string.key_na_browseall,
-                                        BUTTON_BROWSEALL_ACTION );
+                                        R.string.not_again_browse,
+                                        R.string.key_na_browse,
+                                        BUTTON_BROWSE_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
                                R.string.not_again_hintprev,
                                R.string.key_notagain_hintprev,
