@@ -5,26 +5,25 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 60 release</b>
+<b>Crosswords 4.4 beta 61 release</b>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Allow alternate spellings for tiles in the Find field in the
-  wordlist browser, e.g. 'a' for 'A' and 'L-L' for 'L&middot;L' (in
-  Catalan). The new wordlist format requires this upgrade, so I will
-  wait a few weeks before releasing new wordlists. </li>
+  <li>Reduce amount of network traffic required to get moves</li>
 
-  <li>Upgrade built-in English wordlists.</li>
+  <li>Make all wordlists available from wordlists button below board
+  (on Android 3.0 and above)</li>
 
-  <li>Don&apos;t run SMSService if play via SSM is disabled</li>
+  <li>Dim pending score counter (at right end of tray) when it's not
+  that player's turn or game's over</li>
 
-  <li>Fix bug with invites to SMS games where invitee is missing
-    wordlist</li> 
+  <li>Fix a few bugs</li>
+
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Improve communication with relay</li>
+  <li>Improve communication with relay, part 2</li>
 </ul>
 
 <p>(The full changelog 
