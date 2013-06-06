@@ -37,48 +37,48 @@ public class FirstRunDialog {
     {
         String page = null;
         InputStream inputStream = null;
-		try {
+        try {
             inputStream = context.getResources()
                 .openRawResource(R.raw.changes);
-			
-			final char[] buf = new char[0x1000];
-			StringBuilder stringBuilder = new StringBuilder();
-			Reader reader = new InputStreamReader( inputStream, "UTF-8" );
-			int nRead;
-			do {
+   
+            final char[] buf = new char[0x1000];
+            StringBuilder stringBuilder = new StringBuilder();
+            Reader reader = new InputStreamReader( inputStream, "UTF-8" );
+            int nRead;
+            do {
                 nRead = reader.read( buf, 0, buf.length );
                 if ( nRead > 0 ) {
                     stringBuilder.append( buf, 0, nRead );
                 }
-			} while ( nRead >= 0 );
-			
-			page = stringBuilder.toString();
-		}
-		catch ( IOException ioe ) {
-			DbgUtils.loge( ioe );
-		}
-		finally {
+            } while ( nRead >= 0 );
+   
+            page = stringBuilder.toString();
+        }
+        catch ( IOException ioe ) {
+            DbgUtils.loge( ioe );
+        }
+        finally {
             // could just catch NPE....
-			if ( null != inputStream ) {
-				try {
-					inputStream.close();
-				} catch ( IOException ioe ) {
+            if ( null != inputStream ) {
+                try {
+                    inputStream.close();
+                } catch ( IOException ioe ) {
                     DbgUtils.loge( ioe );
-				}
-			}
-		}
-		
+                }
+            }
+        }
+  
         // This won't support e.g mailto refs.  Probably want to
         // launch the browser with an intent eventually.
-		WebView view = new WebView( context );
-		view.loadData( page, "text/html", "utf-8" );
+        WebView view = new WebView( context );
+        view.loadData( page, "text/html", "utf-8" );
 
-		AlertDialog dialog = new AlertDialog.Builder( context )
+        AlertDialog dialog = new AlertDialog.Builder( context )
             .setIcon(android.R.drawable.ic_menu_info_details)
             .setTitle( R.string.changes_title )
             .setView( view )
             .setPositiveButton( R.string.button_ok, null)
             .create();
-		dialog.show();
+        dialog.show();
     }
 }

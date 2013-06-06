@@ -150,7 +150,7 @@ public class BoardActivity extends XWActivity
     private boolean m_gameOver = false;
 
     // call startActivityForResult synchronously
-	private Semaphore m_forResultWait = new Semaphore(0);
+    private Semaphore m_forResultWait = new Semaphore(0);
     private int m_resultCode;
 
     private Thread m_blockingThread;
