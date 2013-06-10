@@ -349,7 +349,7 @@ XWThreadPool::real_listener()
         }
         pthread_rwlock_unlock( &m_activeSocketsRWLock );
 
-        int nMillis = tmgr->GetPollTimeout();
+        int nMillis = tmgr->GetPollTimeoutMillis();
 
 #ifdef LOG_POLL
         logf( XW_LOGINFO, "polling %s nmillis=%d", log, nMillis );

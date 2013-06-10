@@ -41,7 +41,7 @@ class TimerMgr {
                    int interval ); /* 0 means non-recurring */
     void ClearTimer( TimerProc proc, void* closure );
   
-    time_t GetPollTimeout();
+    time_t GetPollTimeoutMillis();
     void FireElapsedTimers();
 
  private:

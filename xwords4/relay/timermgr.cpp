@@ -44,14 +44,14 @@ TimerMgr::GetTimerMgr()
 }
 
 void
-TimerMgr::SetTimer( time_t inMillis, TimerProc proc, void* closure,
+TimerMgr::SetTimer( time_t inSeconds, TimerProc proc, void* closure,
                     int interval )
 {
     logf( XW_LOGINFO, "%s: uptime = %ld", __func__, uptime() );
     TimerInfo ti;
     ti.proc = proc;
     ti.closure = closure;
-    ti.when = uptime() + inMillis;
+    ti.when = uptime() + inSeconds;
     ti.interval = interval;
 
     MutexLock ml( &m_timersMutex );
@@ -68,7 +68,7 @@ TimerMgr::SetTimer( time_t inMillis, TimerProc proc, void* closure,
 }
 
 time_t 
-TimerMgr::GetPollTimeout()
+TimerMgr::GetPollTimeoutMillis()
 {
     MutexLock ml( &m_timersMutex );
 
@@ -80,10 +80,10 @@ TimerMgr::GetPollTimeout()
         if ( tout < 0 ) {
             tout = 0;
         }
-        tout *= 1000;
+        tout *= 1000;           /* convert to milliseconds */
     }
     return tout;
-} /* GetPollTimeout */
+} /* GetPollTimeoutMillis */
 
 bool
 TimerMgr::getTimer( TimerProc proc, void* closure )
