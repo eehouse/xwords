@@ -1546,7 +1546,6 @@ main( int argc, char** argv )
     XP_Bool isServer = XP_FALSE;
     char* portNum = NULL;
     char* hostName = "localhost";
-    XP_Bool closeStdin = XP_FALSE;
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 nPlayerDicts = 0;
@@ -1871,7 +1870,7 @@ main( int argc, char** argv )
             break;
 #endif
         case CMD_CLOSESTDIN:
-            closeStdin = XP_TRUE;
+            mainParams.closeStdin = XP_TRUE;
             break;
         case CMD_QUITAFTER:
             mainParams.quitAfter = atoi(optarg);
@@ -2121,7 +2120,7 @@ main( int argc, char** argv )
         srandom( seed );	/* init linux random number generator */
         XP_LOGF( "seeded srandom with %d", seed );
 
-        if ( closeStdin ) {
+        if ( mainParams.closeStdin ) {
             fclose( stdin );
             if ( mainParams.quitAfter < 0 ) {
                 fprintf( stderr, "stdin closed; you'll need some way to quit\n" );

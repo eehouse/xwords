@@ -1743,7 +1743,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 
 #ifdef USE_GLIBLOOP
-    cursesListenOnSocket( &g_globals, 0, handle_stdin );
+    if ( !params->closeStdin ) {
+        cursesListenOnSocket( &g_globals, 0, handle_stdin );
+    }
     setOneSecondTimer( &g_globals.cGlobals );
 # ifdef DEBUG
     int piperesult = 
