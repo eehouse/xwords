@@ -34,6 +34,22 @@ CidInfo::GetAddrs( void )
         m_addrs : m_cref->GetAddrs();
 }
 
+void
+CidInfo::SetOwner( pthread_t owner )
+{
+    if ( 0 == owner ) {
+        if ( 0 == --m_ownerCount ) {
+            m_owner = 0;
+        }
+    } else {
+        ++m_ownerCount;
+        assert( 0 == m_owner || owner == m_owner );
+        m_owner = owner; 
+    }
+    assert( 0 <= m_ownerCount );
+    logf( XW_LOGINFO, "%s(owner=%d); m_ownerCount=%d", __func__, owner, m_ownerCount );
+}
+
 CidLock* CidLock::s_instance = NULL;
 
 CidLock::CidLock() : m_nextCID(0)
@@ -79,6 +95,7 @@ CidLock::Claim( CookieID cid )
     logf( XW_LOGINFO, "%s(%d)", __func__, cid );
 #endif
     CidInfo* info = NULL;
+    pthread_t self = pthread_self();
     for ( ; ; ) {
         MutexLock ml( &m_infos_mutex );
 
@@ -92,13 +109,14 @@ CidLock::Claim( CookieID cid )
             info = new CidInfo( cid );
             m_infos.insert( pair<CookieID, CidInfo*>( cid, info ) );
         } else {
-            if ( 0 == iter->second->GetOwner() ) {
+            pthread_t owner = iter->second->GetOwner();
+            if ( 0 == owner || self == owner ) {
                 info = iter->second;
             }
         }
 
         if ( NULL != info ) {   // we're done
-            info->SetOwner( pthread_self() );
+            info->SetOwner( self );
             PRINT_CLAIMED();
             break;
         }
@@ -174,6 +192,7 @@ CidLock::Relinquish( CidInfo* claim, bool drop )
         logf( XW_LOGINFO, "%s: deleting %p", __func__, iter->second );
 #endif
         m_infos.erase( iter );
+        claim->SetOwner( 0 );
         delete claim;
     } else {
         CookieRef* ref = claim->GetRef();
