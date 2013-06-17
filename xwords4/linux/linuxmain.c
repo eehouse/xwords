@@ -999,7 +999,9 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
         unsigned short packetSize = ntohs( tmp );
         assert( packetSize <= bufSize );
         nRead = blocking_read( sock, buf, packetSize );
-        if ( nRead == packetSize ) {
+        if ( nRead != packetSize ) {
+            nRead = -1;
+        } else {
             LaunchParams* params = cGlobals->params;
             ++params->nPacketsRcvd;
             if ( params->dropNthRcvd == 0 ) {
