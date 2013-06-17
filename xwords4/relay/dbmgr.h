@@ -121,7 +121,7 @@ class DBMgr {
     DBMgr();
     bool execSql( const string& query );
     bool execSql( const char* const query ); /* no-results query */
-    void readArray( const char* const connName, int arr[] );
+    void readArray( const char* const connName, const char* column, int arr[] );
     DevIDRelay getDevID( const char* connName, int hid );
     DevIDRelay getDevID( const DevID* devID );
     int getCountWhere( const char* table, string& test );

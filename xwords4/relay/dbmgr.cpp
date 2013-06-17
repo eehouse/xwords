@@ -384,7 +384,7 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
 
     if ( newID == HOST_ID_NONE ) {
         int arr[4] = {0};
-        readArray( connName, arr );
+        readArray( connName, "nPerDevice", arr );
         for ( newID = HOST_ID_SERVER; newID <= 4; ++newID ) {
             if ( arr[newID-1] == 0 ) {
                 break;
@@ -709,12 +709,12 @@ DBMgr::execSql( const char* const query )
 }
 
 void
-DBMgr::readArray( const char* const connName, int arr[]  ) /* len 4 */
+DBMgr::readArray( const char* const connName, const char* column, int arr[]  ) /* len 4 */
 {
-    const char* fmt = "SELECT nPerDevice FROM " GAMES_TABLE " WHERE connName='%s'";
+    const char* fmt = "SELECT %s FROM " GAMES_TABLE " WHERE connName='%s'";
 
     string query;
-    string_printf( query, fmt, connName );
+    string_printf( query, fmt, column, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -768,7 +768,7 @@ DBMgr::getDevID( const DevID* devID )
         }
         PQclear( result );
     }
-    logf( XW_LOGINFO, "%s(in=%s)=>%d (0x.8X)", __func__, 
+    logf( XW_LOGINFO, "%s(in=%s)=>%d (0x%.8X)", __func__, 
           devID->m_devIDString.c_str(), rDevID, rDevID );
     return rDevID;
 }
