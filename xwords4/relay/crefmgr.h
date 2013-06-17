@@ -187,14 +187,15 @@ class SafeCref {
 
     bool Forward( HostID src, const AddrInfo* addr, HostID dest, 
                   const unsigned char* buf, int buflen ) {
-        if ( IsValid() ) {
+        bool success = IsValid();
+        if ( success ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
             cref->_Forward( src, addr, dest, buf, buflen );
-            return true;
         } else {
-            return false;
+            logf( XW_LOGINFO, "%s: unable to forward", __func__ );
         }
+        return success;
     }
 
     void PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
@@ -252,14 +253,14 @@ class SafeCref {
     }
 
     bool HandleAck(HostID hostID ) {
-        if ( IsValid() ) {
+        bool handled = IsValid(); 
+        if ( handled ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
             cref->_HandleAck( hostID );
-            return true;
-        } else {
-            return false;
         }
+        logf( XW_LOGINFO, "%s => %d", __func__, handled );
+        return handled;
     }
     void Shutdown() {
         if ( IsValid() ) {
