@@ -304,6 +304,7 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
                                        &curLangCode, &nPlayersT, &nAlreadyHere,
                                        isDead );
         if ( 0 != cid ) {           /* already open */
+            assert( nPlayersT == nPlayersS );
             cinfo = m_cidlock->Claim( cid );
             if ( NULL == cinfo->GetRef() ) {
                 m_cidlock->Relinquish( cinfo, true );
@@ -327,6 +328,7 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
                 cookie = curCookie;
             }
 
+            assert( nPlayersT == nPlayersS );
             cref = AddNew( cookie, connName, cid, curLangCode, nPlayersT, 
                            nAlreadyHere );
             cinfo->SetRef( cref );
@@ -402,12 +404,12 @@ CRefMgr::PrintSocketInfo( int socket, string& out )
 }
 
 CidInfo*
-CRefMgr::getCookieRef( CookieID cid, bool failOk )
+CRefMgr::getCookieRef( CookieID cid, bool failOk /* = false */ )
 {
     CidInfo* cinfo = NULL;
     for ( int count = 0; ; ++count ) {
         cinfo = m_cidlock->Claim( cid );
-        if ( NULL != cinfo->GetRef() ) {
+        if ( NULL != cinfo->GetRef() ) { /* What's it mean to get a cinfo back but have it be empty??? */
             break;
         } else if ( failOk || count > 20 ) {
             break;
@@ -666,7 +668,7 @@ SafeCref::SafeCref( const char* const connName )
     }
 }
 
-SafeCref::SafeCref( CookieID cid, bool failOk )
+SafeCref::SafeCref( CookieID cid, bool failOk /* = false */ )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
