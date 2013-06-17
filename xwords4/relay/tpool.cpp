@@ -131,6 +131,31 @@ XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* fro
 }
 
 bool
+XWThreadPool::SocketFound( const AddrInfo* addr )
+{
+    assert( addr->isTCP() );
+    bool found = false;
+    {
+        RWWriteLock ml( &m_activeSocketsRWLock );
+
+        logf( XW_LOGINFO, "%s: START: %d sockets active", __func__, 
+              m_activeSockets.size() );
+
+        vector<SockInfo>::iterator iter;
+        for ( iter = m_activeSockets.begin(); 
+              iter != m_activeSockets.end(); ++iter ) {
+            if ( iter->m_addr.equals( *addr ) ) {
+                found = true;
+                break;
+            }
+        }
+        logf( XW_LOGINFO, "%s: AFTER: %d sockets active", __func__, 
+              m_activeSockets.size() );
+    }
+    return found;
+}
+
+bool
 XWThreadPool::RemoveSocket( const AddrInfo* addr )
 {
     assert( addr->isTCP() );
@@ -196,29 +221,29 @@ XWThreadPool::EnqueueKill( const AddrInfo* addr, const char* const why )
     }
 }
 
-bool
-XWThreadPool::get_process_packet( SockType stype, QueueCallback proc, const AddrInfo* addr )
-{
-    bool success = false;
-    short packetSize;
-    assert( sizeof(packetSize) == 2 );
+// bool
+// XWThreadPool::get_process_packet( SockType stype, QueueCallback proc, const AddrInfo* addr )
+// {
+//     bool success = false;
+//     short packetSize;
+//     assert( sizeof(packetSize) == 2 );
 
-    // Fix this to return an allocated buffer
-    unsigned char buf[MAX_MSG_LEN+1];
-    int nRead = read_packet( addr->socket(), buf, sizeof(buf) );
-    if ( nRead < 0 ) {
-        EnqueueKill( addr, "bad packet" );
-    } else if ( STYPE_PROXY == stype && NULL != proc ) {
-        buf[nRead] = '\0';
-        UdpQueue::get()->handle( addr, buf, nRead+1, proc );
-    } else if ( STYPE_GAME == stype && NULL != proc ) {
-        UdpQueue::get()->handle( addr, buf, nRead, proc );
-        success = true;
-    } else {
-        assert(0);
-    }
-    return success;
-} /* get_process_packet */
+//     // Fix this to return an allocated buffer
+//     unsigned char buf[MAX_MSG_LEN+1];
+//     int nRead = read_packet( addr->socket(), buf, sizeof(buf) );
+//     if ( nRead < 0 ) {
+//         EnqueueKill( addr, "bad packet" );
+//     } else if ( STYPE_PROXY == stype && NULL != proc ) {
+//         buf[nRead] = '\0';
+//         UdpQueue::get()->handle( addr, buf, nRead+1, proc );
+//     } else if ( STYPE_GAME == stype && NULL != proc ) {
+//         UdpQueue::get()->handle( addr, buf, nRead, proc );
+//         success = true;
+//     } else {
+//         assert(0);
+//     }
+//     return success;
+// } /* get_process_packet */
 
 void*
 XWThreadPool::tpool_main( void* closure )
@@ -261,10 +286,11 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
             logf( XW_LOGINFO, "worker thread got socket %d from queue", socket );
             switch ( pr.m_act ) {
             case Q_READ:
-                assert( socket >= 0 );
-                if ( get_process_packet( pr.m_info.m_type, pr.m_info.m_proc, &pr.m_info.m_addr ) ) {
-                    AddSocket( pr.m_info.m_type, pr.m_info.m_proc, &pr.m_info.m_addr );
-                }
+                assert( 0 );
+                // assert( socket >= 0 );
+                // if ( get_process_packet( pr.m_info.m_type, pr.m_info.m_proc, &pr.m_info.m_addr ) ) {
+                //     AddSocket( pr.m_info.m_type, pr.m_info.m_proc, &pr.m_info.m_addr );
+                // }
                 break;
             case Q_KILL:
                 (*m_kFunc)( &pr.m_info.m_addr );
@@ -387,10 +413,12 @@ XWThreadPool::real_listener()
             for ( ii = 0; ii < nSockets && nEvents > 0; ++ii ) {
 
                 if ( fds[curfd].revents != 0 ) {
-                    int socket = fds[curfd].fd;
-                    const AddrInfo* addr = &sinfos[curfd].m_addr;
-                    assert( socket == addr->socket() );
-                    if ( !RemoveSocket( addr ) ) {
+                    // int socket = fds[curfd].fd;
+                    SockInfo* sinfo = &sinfos[curfd];
+                    const AddrInfo* addr = &sinfo->m_addr;
+
+                    assert( fds[curfd].fd == addr->socket() );
+                    if ( !SocketFound( addr ) ) {
                         /* no further processing if it's been removed while
                            we've been sleeping in poll */
                         --nEvents;
@@ -398,10 +426,14 @@ XWThreadPool::real_listener()
                     }
 
                     if ( 0 != (fds[curfd].revents & (POLLIN | POLLPRI)) ) {
-                        enqueue( sinfos[curfd] );
+                        if ( !UdpQueue::get()->handle( addr, sinfo->m_proc ) ) {
+                            RemoveSocket( addr );
+                            EnqueueKill( addr, "bad packet" );
+                        }
                     } else {
                         logf( XW_LOGERROR, "odd revents: %x", 
                               fds[curfd].revents );
+                        RemoveSocket( addr );
                         EnqueueKill( addr, "error/hup in poll()" ); 
                     }
                     --nEvents;

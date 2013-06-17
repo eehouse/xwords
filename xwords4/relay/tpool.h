@@ -74,6 +74,8 @@ class XWThreadPool {
 
     /* Remove from set being listened on */
     bool RemoveSocket( const AddrInfo* addr );
+    /* test if is in set being listened on */
+    bool SocketFound( const AddrInfo* addr );
 
     void enqueue( QAction act = Q_READ );
     void enqueue( SockInfo si, QAction act = Q_READ );

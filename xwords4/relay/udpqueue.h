@@ -55,6 +55,8 @@ public:
     void noteDequeued() { m_dequed = time( NULL ); }
     void logStats();
     const QueueCallback cb() const { return m_cb; }
+    void setID( int id ) { m_id = id; }
+    int getID( void ) { return m_id; }
 
  private:
     unsigned char* m_buf;
@@ -63,6 +65,7 @@ public:
     QueueCallback m_cb;
     time_t m_created;
     time_t m_dequed;
+    int m_id;
 };
 
 class UdpQueue {
@@ -70,6 +73,7 @@ class UdpQueue {
     static UdpQueue* get();
     UdpQueue();
     ~UdpQueue();
+    bool handle( const AddrInfo* addr, QueueCallback cb );
     void handle( const AddrInfo* addr, unsigned char* buf, int len,
                  QueueCallback cb );
 
@@ -80,7 +84,7 @@ class UdpQueue {
     pthread_mutex_t m_queueMutex;
     pthread_cond_t m_queueCondVar;
     deque<UdpThreadClosure*> m_queue;
-
+    int m_nextID;
 };
 
 #endif

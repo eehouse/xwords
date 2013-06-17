@@ -19,6 +19,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <errno.h>
 #include "udpqueue.h"
 #include "mlock.h"
 
@@ -38,6 +39,7 @@ UdpThreadClosure::logStats()
 
 UdpQueue::UdpQueue() 
 {
+    m_nextID = 0;
     pthread_mutex_init ( &m_queueMutex, NULL );
     pthread_cond_init( &m_queueCondVar, NULL );
 
@@ -63,12 +65,47 @@ UdpQueue::get()
     return s_instance;
 }
 
+bool
+UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
+{
+    bool success = false;
+    int sock = addr->socket();
+    unsigned short msgLen;
+    ssize_t nRead = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
+    if ( 0 == nRead ) {
+        logf( XW_LOGINFO, "%s: recv(sock=%d) => 0: remote closed", __func__, sock );
+    } else if ( nRead != sizeof(msgLen) ) {
+        logf( XW_LOGERROR, "%s: first recv => %d: %s", __func__, 
+              nRead, strerror(errno) );
+    } else {
+        msgLen = ntohs( msgLen );
+        if ( MAX_MSG_LEN <= msgLen ) {
+            logf( XW_LOGERROR, "%s: message of len %d too large; dropping", __func__, msgLen );
+        } else {
+            unsigned char buf[msgLen];
+            nRead = recv( sock, buf, msgLen, MSG_WAITALL );
+            if ( nRead == msgLen ) {
+                logf( XW_LOGINFO, "%s: read %d bytes on socket %d", __func__, nRead, sock );
+                handle( addr, buf, msgLen, cb );
+                success = true;
+            } else {
+                logf( XW_LOGERROR, "%s: second recv failed: %s", __func__, 
+                      strerror(errno) );
+            }
+        }
+    }
+    return success;
+}
+
 void 
 UdpQueue::handle( const AddrInfo* addr, unsigned char* buf, int len, 
                   QueueCallback cb )
 {
     UdpThreadClosure* utc = new UdpThreadClosure( addr, buf, len, cb );
     MutexLock ml( &m_queueMutex );
+    int id = ++m_nextID;
+    utc->setID( id );
+    logf( XW_LOGINFO, "%s: enqueuing packet %d", __func__, id );
     m_queue.push_back( utc );
     pthread_cond_signal( &m_queueCondVar );
 }
@@ -86,6 +123,7 @@ UdpQueue::thread_main()
         pthread_mutex_unlock( &m_queueMutex );
 
         utc->noteDequeued();
+        logf( XW_LOGINFO, "%s: dispatching packet %d", __func__, utc->getID() );
         (*utc->cb())( utc );
         utc->logStats();
         delete utc;
