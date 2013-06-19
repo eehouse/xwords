@@ -324,10 +324,10 @@ DBMgr::RegisterDevice( const DevID* host )
         for ( success = false, ii = 0; !success; ++ii ) {
             assert( 10 > ii );  // better to check that we're looping BECAUSE
                                 // of uniqueness problem.
-            devID = (DevIDRelay)random();
-            if ( DEVID_NONE == devID ) {
-                continue;
-            }
+            do {
+                devID = (DevIDRelay)random();
+            } while ( DEVID_NONE != devID );
+
             const char* command = "INSERT INTO " DEVICES_TABLE
                 " (id, devType, devid)"
                 " VALUES( $1, $2, $3 )";
