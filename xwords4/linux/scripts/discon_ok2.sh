@@ -1,6 +1,7 @@
 #!/bin/bash
 set -u -e
 
+LOGDIR=$(basename $0)_logs
 APP_NEW=""
 APP_NEW_PARAMS=""
 NGAMES=""
@@ -38,6 +39,13 @@ declare -A ROOM_PIDS
 declare -a APPS_OLD
 declare -a DICTS
 declare -A CHECKED_ROOMS
+
+function cleanup() {
+    echo "cleaning everything up...."
+    rm -f $(dirname $0)/../../relay/xwrelay.log
+    rm -rf ${LOGDIR}
+    echo "delete from games;" | psql -q -t xwgames
+}
 
 function connName() {
     LOG=$1
@@ -514,6 +522,7 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
+    echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--old-app <path/to/app]*                               \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
@@ -538,6 +547,9 @@ function usage() {
 
 while [ "$#" -gt 0 ]; do
     case $1 in
+        --clean-start)
+            cleanup
+            ;;
         --num-games)
             NGAMES=$(getArg $*)
             shift
@@ -620,7 +632,6 @@ done
 [ -n "$SEED" ] && RANDOM=$SEED
 [ -z "$ONEPER" -a $NROOMS -lt $NGAMES ] && usage "use --one-per if --num-rooms < --num-games"
 
-LOGDIR=$(basename $0)_logs
 RESUME=""
 for FILE in $(ls $LOGDIR/*.{xwg,txt} 2>/dev/null); do
     if [ -e $FILE ]; then
