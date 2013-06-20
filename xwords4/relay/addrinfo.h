@@ -57,6 +57,7 @@ class AddrInfo {
     void setIsTCP( bool val ) { m_isTCP = val; }
     bool isTCP() const { return m_isTCP; } /* later UDP will be here too */
     int socket() const { assert(m_isValid); return m_socket; }
+    void invalSocket() { m_socket = -1; }
     ClientToken clientToken() const { assert(m_isValid); return m_clientToken; }
     struct in_addr sin_addr() const { return m_saddr.addr_in.sin_addr; }
     const struct sockaddr* sockaddr() const { assert(m_isValid); return &m_saddr.addr; }

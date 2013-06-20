@@ -186,6 +186,7 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
 {
 /*     bool do_interrupt = false; */
     assert( addr->isTCP() );
+    UdpQueue::get()->forgetSocket( addr );
     if ( !RemoveSocket( addr ) ) {
         MutexLock ml( &m_queueMutex );
         deque<QueuePr>::iterator iter = m_queue.begin();
@@ -482,7 +483,8 @@ XWThreadPool::grab_elem_locked( QueuePr* prp )
     for ( iter = m_queue.begin(); !found && iter != m_queue.end(); ++iter ) {
         int socket = iter->m_info.m_addr.socket();
         /* If NOT found */
-        if ( m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
+        if ( -1 != socket
+             && m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
             *prp = *iter;
             m_queue.erase( iter ); /* this was a double-free once! */
             m_sockets_in_use.insert( socket );
@@ -513,10 +515,10 @@ XWThreadPool::print_in_use( void )
 
     for ( iter = m_sockets_in_use.begin(); 
           iter != m_sockets_in_use.end(); ++iter ) {
-	string_printf( str, "%d ", *iter );
+        string_printf( str, "%d ", *iter );
     }
     if ( 0 < str.size() ) {
-	logf( XW_LOGINFO, "Sockets in use: %s", str.c_str() );
+        logf( XW_LOGINFO, "Sockets in use: %s", str.c_str() );
     }
 }
 

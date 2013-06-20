@@ -23,6 +23,7 @@
 
 #include <pthread.h>
 #include <deque>
+#include <map>
 
 #include "xwrelay_priv.h"
 #include "addrinfo.h"
@@ -57,6 +58,7 @@ public:
     const QueueCallback cb() const { return m_cb; }
     void setID( int id ) { m_id = id; }
     int getID( void ) { return m_id; }
+    void invalSocket() { m_addr.invalSocket(); }
 
  private:
     unsigned char* m_buf;
@@ -76,6 +78,7 @@ class UdpQueue {
     bool handle( const AddrInfo* addr, QueueCallback cb );
     void handle( const AddrInfo* addr, unsigned char* buf, int len,
                  QueueCallback cb );
+    void forgetSocket( const AddrInfo* addr );
 
  private:
     static void* thread_main_static( void* closure );
@@ -84,6 +87,7 @@ class UdpQueue {
     pthread_mutex_t m_queueMutex;
     pthread_cond_t m_queueCondVar;
     deque<UdpThreadClosure*> m_queue;
+    map<int, vector<UdpThreadClosure*> > m_bySocket;
     int m_nextID;
 };
 
