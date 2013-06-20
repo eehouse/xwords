@@ -859,20 +859,20 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
     logf( XW_LOGVERBOSE0, "%s(dest=%d)", __func__, dest );
 
     assert( dest > 0 && dest <= 4 );
-    assert( -1 != addr->socket() );
-
-    for ( ; ; ) {
-        unsigned char buf[MAX_MSG_LEN];
-        size_t buflen = sizeof(buf);
-        int msgID;
-        if ( !DBMgr::Get()->GetStoredMessage( ConnName(), dest, 
-                                              buf, &buflen, &msgID ) ) {
-            break;
+    if ( -1 != addr->socket() ) {
+        for ( ; ; ) {
+            unsigned char buf[MAX_MSG_LEN];
+            size_t buflen = sizeof(buf);
+            int msgID;
+            if ( !DBMgr::Get()->GetStoredMessage( ConnName(), dest, 
+                                                  buf, &buflen, &msgID ) ) {
+                break;
+            }
+            if ( ! send_with_length( addr, dest, buf, buflen, true ) ) {
+                break;
+            }
+            DBMgr::Get()->RemoveStoredMessages( &msgID, 1 );
         }
-        if ( ! send_with_length( addr, dest, buf, buflen, true ) ) {
-            break;
-        }
-        DBMgr::Get()->RemoveStoredMessages( &msgID, 1 );
     }
 } /* send_stored_messages */
 
