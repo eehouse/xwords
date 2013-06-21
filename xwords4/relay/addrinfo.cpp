@@ -44,6 +44,14 @@ AddrInfo::construct( int socket, const AddrUnion* saddr, bool isTCP )
 }
 
 bool
+AddrInfo::isCurrent() const 
+{ 
+    return XWThreadPool::GetTPool()->IsCurrent( this ); 
+}
+
+
+
+bool
 AddrInfo::equals( const AddrInfo& other ) const
 { 
     bool equal = other.isTCP() == isTCP();

@@ -62,9 +62,7 @@ class AddrInfo {
     const struct sockaddr* sockaddr() const { assert(m_isValid); return &m_saddr.addr; }
     const AddrUnion* saddr() const { assert(m_isValid); return &m_saddr; }
     uint32_t created() const { return m_created; }
-    bool isCurrent() const { 
-        return XWThreadPool::GetTPool()->IsCurrent( this ); 
-    }
+    bool isCurrent() const;
 
     bool equals( const AddrInfo& other ) const;
 
