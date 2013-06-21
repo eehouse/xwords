@@ -47,7 +47,7 @@ public:
             memcpy( m_buf, buf, len ); 
         }
 
-    ~UdpThreadClosure() { delete m_buf; }
+    ~UdpThreadClosure() { delete[] m_buf; }
 
     const unsigned char* buf() const { return m_buf; } 
     int len() const { return m_len; }
