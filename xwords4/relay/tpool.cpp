@@ -232,30 +232,6 @@ XWThreadPool::IsCurrent( const AddrInfo* addr )
     return result;
 }
 
-// bool
-// XWThreadPool::get_process_packet( SockType stype, QueueCallback proc, const AddrInfo* addr )
-// {
-//     bool success = false;
-//     short packetSize;
-//     assert( sizeof(packetSize) == 2 );
-
-//     // Fix this to return an allocated buffer
-//     unsigned char buf[MAX_MSG_LEN+1];
-//     int nRead = read_packet( addr->socket(), buf, sizeof(buf) );
-//     if ( nRead < 0 ) {
-//         EnqueueKill( addr, "bad packet" );
-//     } else if ( STYPE_PROXY == stype && NULL != proc ) {
-//         buf[nRead] = '\0';
-//         UdpQueue::get()->handle( addr, buf, nRead+1, proc );
-//     } else if ( STYPE_GAME == stype && NULL != proc ) {
-//         UdpQueue::get()->handle( addr, buf, nRead, proc );
-//         success = true;
-//     } else {
-//         assert(0);
-//     }
-//     return success;
-// } /* get_process_packet */
-
 void*
 XWThreadPool::tpool_main( void* closure )
 {
