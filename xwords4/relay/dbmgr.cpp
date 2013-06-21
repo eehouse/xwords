@@ -674,8 +674,15 @@ DBMgr::TokenFor( const char* const connName, int hid, DevIDRelay* devid,
         }
     }
     PQclear( result );
-    logf( XW_LOGINFO, "%s(%s,%d)=>%s (%d, %d)", __func__, connName, hid, 
-          (found?"true":"false"), *devid, *token );
+
+
+    if ( found ) {
+        logf( XW_LOGINFO, "%s(%s,%d)=>true (%d, %d)", __func__, connName, hid, 
+              *devid, *token );
+    } else {
+        logf( XW_LOGINFO, "%s(%s,%d)=>false", __func__, connName, hid );
+    }
+
     return found;
 }
 
