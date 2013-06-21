@@ -859,7 +859,7 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
     logf( XW_LOGVERBOSE0, "%s(dest=%d)", __func__, dest );
 
     assert( dest > 0 && dest <= 4 );
-    if ( -1 != addr->socket() ) {
+    if ( addr->isCurrent() ) {
         for ( ; ; ) {
             unsigned char buf[MAX_MSG_LEN];
             size_t buflen = sizeof(buf);
@@ -936,6 +936,8 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
     {
         RWWriteLock rwl( &m_socketsRWLock );
         HostRec hr( hostid, &evt->addr, nPlayersH, seed, !reconn );
+        logf( XW_LOGINFO, "%s: adding socket rec with ts %lx", __func__, 
+              evt->addr.created() );
         m_sockets.push_back( hr );
     }
 

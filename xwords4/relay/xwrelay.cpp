@@ -448,23 +448,32 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
 {
     assert( !!addr );
     bool ok = false;
-    int socket = addr->socket();
 
     if ( addr->isTCP() ) {
-        unsigned short len = htons( bufLen );
-        ssize_t nSent = send( socket, &len, 2, 0 );
-        if ( nSent == 2 ) {
-            nSent = send( socket, buf, bufLen, 0 );
-            if ( nSent == ssize_t(bufLen) ) {
-                logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
-                ok = true;
+        if ( addr->isCurrent() ) {
+            int socket = addr->socket();
+            unsigned short len = htons( bufLen );
+            ssize_t nSent = send( socket, &len, 2, 0 );
+            if ( nSent == 2 ) {
+                nSent = send( socket, buf, bufLen, 0 );
+                if ( nSent == ssize_t(bufLen) ) {
+                    logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
+                    ok = true;
+                } else {
+                    logf( XW_LOGERROR, "%s: send failed: %s (errno=%d)", __func__, 
+                          strerror(errno), errno );
+                }
             }
+        } else {
+            logf( XW_LOGINFO, "%s: dropping packet: socket %d reused", 
+                  __func__, socket );
         }
     } else {
         AddrInfo::ClientToken clientToken = addr->clientToken();
         assert( 0 != clientToken );
         clientToken = htonl(clientToken);
         const struct sockaddr* saddr = addr->sockaddr();
+        int socket = addr->socket();
         assert( g_udpsock == socket || socket == -1 );
         if ( -1 == socket ) {
             socket = g_udpsock;
@@ -887,37 +896,6 @@ handlePipe( int sig )
     logf( XW_LOGINFO, "%s", __func__ );
 }
 
-int
-read_packet( int sock, unsigned char* buf, int buflen )
-{
-    int result = -1;
-    ssize_t nread;
-    unsigned short msgLen;
-    nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
-    if ( 0 == nread ) {
-        logf( XW_LOGINFO, "%s: recv => 0: remote closed", __func__ );
-    } else if ( nread != sizeof(msgLen) ) {
-        logf( XW_LOGERROR, "%s: first recv => %d: %s", __func__, 
-              nread, strerror(errno) );
-    } else {
-        msgLen = ntohs( msgLen );
-        if ( msgLen >= buflen ) {
-            logf( XW_LOGERROR, "%s: buf too small; need %d but have %d", 
-                  __func__, msgLen, buflen );
-        } else {
-            nread = recv( sock, buf, msgLen, MSG_WAITALL );
-            if ( nread == msgLen ) {
-                result = nread;
-            } else {
-                logf( XW_LOGERROR, "%s: second recv failed: %s", __func__, 
-                      strerror(errno) );
-            }
-        }
-    }
-
-    return result;
-} /* read_packet */
-
 static void
 pushShort( vector<unsigned char>& out, unsigned short num )
 {
@@ -1104,7 +1082,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
                     if ( getNetShort( &bufp, end, &len ) ) {
                         if ( handlePutMessage( scr, hid, addr, len, &bufp, end ) ) {
                             continue;
-			}
+                        }
                     }
                     break;
                 }
@@ -1427,7 +1405,7 @@ udp_thread_proc( UdpThreadClosure* utc )
 }
 
 static void
-handle_udp_packet( int udpsock )
+read_udp_packet( int udpsock )
 {
     unsigned char buf[MAX_MSG_LEN];
     AddrInfo::AddrUnion saddr;
@@ -1951,7 +1929,7 @@ main( int argc, char** argv )
             if ( -1 != g_udpsock && FD_ISSET( g_udpsock, &rfds ) ) {
                 // This will need to be done in a separate thread, or pushed
                 // to the existing thread pool
-                handle_udp_packet( g_udpsock );
+                read_udp_packet( g_udpsock );
                 --retval;
             }
 #ifdef DO_HTTP

@@ -68,6 +68,8 @@ class XWThreadPool {
 
     void EnqueueKill( const AddrInfo* addr, const char* const why );
 
+    bool IsCurrent( const AddrInfo* addr );
+
  private:
     typedef enum { Q_READ, Q_KILL } QAction;
     typedef struct { QAction m_act; SockInfo m_info; } QueuePr;
@@ -94,7 +96,7 @@ class XWThreadPool {
     static void* listener_main( void* closure );
 
     /* Sockets main thread listens on */
-    vector<SockInfo>m_activeSockets;
+    map<int, SockInfo>m_activeSockets;
     pthread_rwlock_t m_activeSocketsRWLock;
 
     /* Sockets waiting for a thread to read 'em */

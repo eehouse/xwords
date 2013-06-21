@@ -118,13 +118,14 @@ void
 XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* from )
 {
     {
+        int sock = from->socket();
         RWWriteLock ml( &m_activeSocketsRWLock );
         SockInfo si;
         si.m_type = stype;
         si.m_proc = proc;
         si.m_addr = *from;
-        m_activeSockets.push_back( si );
-        logf( XW_LOGINFO, "%s: %d sockets active", __func__, 
+        m_activeSockets.insert( pair<int, SockInfo>( sock, si ) );
+        logf( XW_LOGINFO, "%s(sock=%d): %d sockets active", __func__, sock,
               m_activeSockets.size() );
     }
     interrupt_poll();
@@ -138,19 +139,11 @@ XWThreadPool::SocketFound( const AddrInfo* addr )
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
 
-        logf( XW_LOGINFO, "%s: START: %d sockets active", __func__, 
-              m_activeSockets.size() );
-
-        vector<SockInfo>::iterator iter;
-        for ( iter = m_activeSockets.begin(); 
-              iter != m_activeSockets.end(); ++iter ) {
-            if ( iter->m_addr.equals( *addr ) ) {
-                found = true;
-                break;
-            }
+        map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->socket() );
+        if ( m_activeSockets.end() != iter 
+             && iter->second.m_addr.equals( *addr ) ) {
+            found = true;
         }
-        logf( XW_LOGINFO, "%s: AFTER: %d sockets active", __func__, 
-              m_activeSockets.size() );
     }
     return found;
 }
@@ -166,14 +159,10 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
         logf( XW_LOGINFO, "%s: START: %d sockets active", __func__, 
               m_activeSockets.size() );
 
-        vector<SockInfo>::iterator iter;
-        for ( iter = m_activeSockets.begin(); 
-              iter != m_activeSockets.end(); ++iter ) {
-            if ( iter->m_addr.equals( *addr ) ) {
-                m_activeSockets.erase( iter );
-                found = true;
-                break;
-            }
+        map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->socket() ); 
+        if ( m_activeSockets.end() != iter && iter->second.m_addr.equals( *addr ) ) {
+            m_activeSockets.erase( iter );
+            found = true;
         }
         logf( XW_LOGINFO, "%s: AFTER: %d sockets active", __func__, 
               m_activeSockets.size() );
@@ -186,7 +175,6 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
 {
 /*     bool do_interrupt = false; */
     assert( addr->isTCP() );
-    UdpQueue::get()->forgetSocket( addr );
     if ( !RemoveSocket( addr ) ) {
         MutexLock ml( &m_queueMutex );
         deque<QueuePr>::iterator iter = m_queue.begin();
@@ -220,6 +208,28 @@ XWThreadPool::EnqueueKill( const AddrInfo* addr, const char* const why )
         si.m_addr = *addr;
         enqueue( si, Q_KILL );
     }
+}
+
+// return true if the addr passed in has a timestamp >= what we have as the
+// creation time of the now-open socket.  If the socket isn't open, return false.
+bool
+XWThreadPool::IsCurrent( const AddrInfo* addr )
+{
+    bool result = false;
+    bool sockFound = false;     // for debugging
+    int sock = addr->socket();
+    if ( -1 != sock ) {
+        RWReadLock ml( &m_activeSocketsRWLock );
+        map<int, SockInfo>::const_iterator iter = m_activeSockets.find( sock ); 
+        if ( iter != m_activeSockets.end() ) {
+            assert( !sockFound );
+            sockFound = true;
+            result = iter->second.m_addr.created() <= addr->created();
+            logf( XW_LOGINFO, "%s(sock=%d)=>%d (%lx vs %lx)", __func__, sock, result,
+                  iter->second.m_addr.created(), addr->created() );
+        }
+    }
+    return result;
 }
 
 // bool
@@ -359,11 +369,11 @@ XWThreadPool::real_listener()
 #endif
         ++curfd;
 
-        vector<SockInfo>::iterator iter;
+        map<int, SockInfo>::iterator iter;
         for ( iter = m_activeSockets.begin(); iter != m_activeSockets.end(); 
               ++iter ) {
-            fds[curfd].fd = iter->m_addr.socket();
-            sinfos[curfd] = *iter;
+            fds[curfd].fd = iter->first;
+            sinfos[curfd] = iter->second;
             fds[curfd].events = flags;
 #ifdef LOG_POLL
             if ( logCapacity > logLen ) {

@@ -57,23 +57,19 @@ class AddrInfo {
     void setIsTCP( bool val ) { m_isTCP = val; }
     bool isTCP() const { return m_isTCP; } /* later UDP will be here too */
     int socket() const { assert(m_isValid); return m_socket; }
-    void invalSocket() { m_socket = -1; }
     ClientToken clientToken() const { assert(m_isValid); return m_clientToken; }
     struct in_addr sin_addr() const { return m_saddr.addr_in.sin_addr; }
     const struct sockaddr* sockaddr() const { assert(m_isValid); return &m_saddr.addr; }
     const AddrUnion* saddr() const { assert(m_isValid); return &m_saddr; }
+    uint32_t created() const { return m_created; }
+    bool isCurrent() const { 
+        return XWThreadPool::GetTPool()->IsCurrent( this ); 
+    }
 
     bool equals( const AddrInfo& other ) const;
 
  private:
-    void construct( int socket, const AddrUnion* saddr, bool isTCP ) {
-        memset( this, 0, sizeof(*this) ); 
-
-        m_socket = socket;
-        m_isTCP = isTCP;
-        memcpy( &m_saddr, saddr, sizeof(m_saddr) );
-        m_isValid = true;
-    }
+    void construct( int socket, const AddrUnion* saddr, bool isTCP );
 
     // AddrInfo& operator=(const AddrInfo&);      // Prevent assignment
     int m_socket;
@@ -81,6 +77,7 @@ class AddrInfo {
     bool m_isValid;
     ClientToken m_clientToken;   /* must be 32 bit */
     AddrUnion m_saddr;
+    uint32_t m_created;              /* microseconds since boot, from clock_gettime() */
 };
 
 #endif

@@ -58,7 +58,6 @@ public:
     const QueueCallback cb() const { return m_cb; }
     void setID( int id ) { m_id = id; }
     int getID( void ) { return m_id; }
-    void invalSocket() { m_addr.invalSocket(); }
 
  private:
     unsigned char* m_buf;
@@ -87,7 +86,7 @@ class UdpQueue {
     pthread_mutex_t m_queueMutex;
     pthread_cond_t m_queueCondVar;
     deque<UdpThreadClosure*> m_queue;
-    map<int, vector<UdpThreadClosure*> > m_bySocket;
+    // map<int, vector<UdpThreadClosure*> > m_bySocket;
     int m_nextID;
 };
 

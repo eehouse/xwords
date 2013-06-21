@@ -108,53 +108,7 @@ UdpQueue::handle( const AddrInfo* addr, unsigned char* buf, int len,
     logf( XW_LOGINFO, "%s: enqueuing packet %d", __func__, id );
     m_queue.push_back( utc );
 
-    int sock = addr->socket();
-    map<int, vector<UdpThreadClosure*> >::iterator iter = m_bySocket.find( sock );
-    if ( iter == m_bySocket.end() ) {
-        logf( XW_LOGINFO, "%s: creating vector for socket %d", __func__, sock );
-        vector<UdpThreadClosure*> vect;
-        vect.push_back( utc );
-        m_bySocket.insert( pair<int, vector<UdpThreadClosure*> >(sock, vect) );
-    } else {
-        iter->second.push_back( utc );
-        logf( XW_LOGINFO, "%s: now have %d packets for socket %d", 
-              __func__, iter->second.size(), sock );
-    }
-
     pthread_cond_signal( &m_queueCondVar );
-}
-
-void
-UdpQueue::forgetSocket( const AddrInfo* addr )
-{
-    assert( addr->isTCP() );
-    int sock = addr->socket();
-    MutexLock ml( &m_queueMutex );
-
-    map<int, vector<UdpThreadClosure*> >::iterator iter = m_bySocket.find( sock );
-    if ( m_bySocket.end() != iter ) {
-        vector<UdpThreadClosure*>& vect = iter->second;
-        vector<UdpThreadClosure*>::iterator iter2;
-        for ( iter2 = vect.begin(); vect.end() != iter2; ++ iter2 ) {
-            UdpThreadClosure* utc = *iter2;
-            assert( -1 != utc->addr()->socket() );
-            utc->invalSocket();
-            logf( XW_LOGINFO, "%s: invalidating socket %d in packet %d",
-                  __func__, sock, utc->getID() );
-            // vect.erase( iter2 );
-        }
-        vect.clear();
-    }
-
-    // deque<UdpThreadClosure*>::iterator iter;
-    // for ( iter = m_queue.begin(); iter != m_queue.end(); ++iter ) {
-    //     const AddrInfo* addr = (*iter)->addr();
-    //     if ( sock == addr->socket() ) {
-    //         logf( XW_LOGINFO, "%s: invalidating socket %d in packet %d",
-    //               __func__, sock, (*iter)->getID() );
-    //         (*iter)->invalSocket();
-    //     }
-    // }
 }
 
 void* 
@@ -168,16 +122,6 @@ UdpQueue::thread_main()
         UdpThreadClosure* utc = m_queue.front();
         m_queue.pop_front();
 
-        int sock = utc->addr()->socket();
-        if ( -1 != sock ) {
-            map<int, vector<UdpThreadClosure*> >::iterator iter = m_bySocket.find( sock );
-            assert ( iter != m_bySocket.end() );
-            vector<UdpThreadClosure*>& vect = iter->second;
-            assert( utc == *vect.begin() );
-            vect.erase( vect.begin() );
-            logf( XW_LOGINFO, "%s: %d packets remaining for socket %d", 
-                  __func__, vect.size(), sock );
-        }
         pthread_mutex_unlock( &m_queueMutex );
 
         utc->noteDequeued();
