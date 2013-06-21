@@ -449,6 +449,7 @@ run_cmds() {
             try_upgrade $KEY
             launch $KEY &
             PID=$!
+            renice +1 $PID >/dev/null
             PIDS[$KEY]=$PID
             ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
