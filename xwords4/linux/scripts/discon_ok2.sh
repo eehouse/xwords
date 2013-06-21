@@ -3,6 +3,7 @@ set -u -e
 
 LOGDIR=$(basename $0)_logs
 APP_NEW=""
+DO_CLEAN=""
 APP_NEW_PARAMS=""
 NGAMES=""
 UPGRADE_ODDS=""
@@ -41,6 +42,12 @@ declare -a DICTS
 declare -A CHECKED_ROOMS
 
 function cleanup() {
+    APP="$(basename $APP_NEW)"
+    while pidof $APP; do
+        echo "killing existing $APP instances..."
+        killall -9 $APP
+        sleep 1
+    done
     echo "cleaning everything up...."
     rm -f $(dirname $0)/../../relay/xwrelay.log
     rm -rf ${LOGDIR}
@@ -549,7 +556,7 @@ function usage() {
 while [ "$#" -gt 0 ]; do
     case $1 in
         --clean-start)
-            cleanup
+            DO_CLEAN=1
             ;;
         --num-games)
             NGAMES=$(getArg $*)
@@ -632,6 +639,8 @@ done
 [ 0 -eq $UPGRADE_ODDS ] && UPGRADE_ODDS=1
 [ -n "$SEED" ] && RANDOM=$SEED
 [ -z "$ONEPER" -a $NROOMS -lt $NGAMES ] && usage "use --one-per if --num-rooms < --num-games"
+
+[ -n "$DO_CLEAN" ] && cleanup
 
 RESUME=""
 for FILE in $(ls $LOGDIR/*.{xwg,txt} 2>/dev/null); do
