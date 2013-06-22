@@ -422,8 +422,8 @@ CookieRef::removeSocket( const AddrInfo* addr )
             if ( iter->m_addr.equals( *addr ) ) {
                 if ( iter->m_ackPending ) {
                     logf( XW_LOGINFO,
-                          "Never got ack; removing hid %d from DB",
-                          iter->m_hostID );
+                          "%s: Never got ack; removing hid %d from DB",
+                          __func__, iter->m_hostID );
                     DBMgr::Get()->RmDeviceByHid( ConnName(), 
                                                  iter->m_hostID );
                     m_nPlayersHere -= iter->m_nPlayersH;
@@ -860,18 +860,17 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
 
     assert( dest > 0 && dest <= 4 );
     if ( addr->isCurrent() ) {
+        DBMgr* dbmgr = DBMgr::Get();
+        const char* cname = ConnName();
         for ( ; ; ) {
             unsigned char buf[MAX_MSG_LEN];
             size_t buflen = sizeof(buf);
             int msgID;
-            if ( !DBMgr::Get()->GetStoredMessage( ConnName(), dest, 
-                                                  buf, &buflen, &msgID ) ) {
+            if ( !dbmgr->GetStoredMessage( cname, dest, buf, &buflen, &msgID )
+                 || ! send_with_length( addr, dest, buf, buflen, true ) ) {
                 break;
             }
-            if ( ! send_with_length( addr, dest, buf, buflen, true ) ) {
-                break;
-            }
-            DBMgr::Get()->RemoveStoredMessages( &msgID, 1 );
+            dbmgr->RemoveStoredMessages( &msgID, 1 );
         }
     }
 } /* send_stored_messages */
@@ -1463,7 +1462,7 @@ CookieRef::logf( XW_LogLevel level, const char* format, ... )
     char buf[256];
     int len;
 
-    len = snprintf( buf, sizeof(buf), "cid:%d ", m_cid );
+    len = snprintf( buf, sizeof(buf), "cid:%d(%s) ", m_cid, m_connName.c_str() );
 
     va_list ap;
     va_start( ap, format );
