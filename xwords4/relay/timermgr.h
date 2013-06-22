@@ -51,6 +51,7 @@ class TimerMgr {
         void* closure;
         time_t when;
         int interval;
+        uint32_t id;
     } TimerInfo;
   
 
@@ -65,6 +66,7 @@ class TimerMgr {
     list<TimerInfo> m_timers;
 
     time_t m_nextFireTime;
+    uint32_t m_nextID;
 };
 
 #endif

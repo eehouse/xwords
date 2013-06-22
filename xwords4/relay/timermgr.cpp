@@ -29,6 +29,7 @@
 
 TimerMgr::TimerMgr()
     : m_nextFireTime(0)
+    ,m_nextID(0)
 {
     pthread_mutex_init( &m_timersMutex, NULL );
 }
@@ -55,6 +56,7 @@ TimerMgr::SetTimer( time_t inSeconds, TimerProc proc, void* closure,
     ti.interval = interval;
 
     MutexLock ml( &m_timersMutex );
+    ti.id = ++m_nextID;
 
     if ( getTimer( proc, closure ) ) {
         logf( XW_LOGINFO, "%s: clearing old timer", __func__ );
@@ -145,6 +147,7 @@ TimerMgr::FireElapsedTimers()
 
     vector<TimerProc> procs;
     vector<void*> closures;
+    vector<uint32_t> ids;
     {
         MutexLock ml( &m_timersMutex );
         /* loop until we get through without firing a single one.  Only fire one
@@ -157,6 +160,7 @@ TimerMgr::FireElapsedTimers()
 
                 procs.push_back(tip->proc);
                 closures.push_back(tip->closure);
+                ids.push_back(tip->id);
 
                 if ( tip->interval ) {
                     tip->when += tip->interval;
@@ -167,10 +171,12 @@ TimerMgr::FireElapsedTimers()
         }
     }
 
-    vector<TimerProc>::iterator iter1 = procs.begin();
-    vector<void*>::iterator iter2 = closures.begin();
-    while ( iter1 != procs.end() ) {
-        (*iter1++)(*iter2++);
+    vector<TimerProc>::const_iterator procs_iter = procs.begin();
+    vector<void*>::const_iterator closures_iter = closures.begin();
+    vector<uint32_t>::const_iterator ids_iter = ids.begin();
+    while ( procs_iter != procs.end() ) {
+        logf( XW_LOGINFO, "%s: firing timer id=%d", __func__, *ids_iter++ );
+        (*procs_iter++)(*closures_iter++);
     }
 
     MutexLock ml( &m_timersMutex );
@@ -184,6 +190,7 @@ TimerMgr::clearTimerImpl( TimerProc proc, void* closure )
     for ( iter = m_timers.begin(); iter != m_timers.end(); ++iter ) {
         TimerInfo* tip = &(*iter);
         if ( tip->proc == proc && tip->closure == closure ) {
+            logf( XW_LOGINFO, "clearing timer id=%d", tip->id );
             m_timers.erase(iter);
             break;
         }
