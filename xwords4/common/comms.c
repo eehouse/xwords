@@ -1386,7 +1386,8 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
                      __func__, comms->r.connName, connName );
         }
         XP_MEMCPY( comms->r.connName, connName, sizeof(comms->r.connName) );
-        XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
+        XP_LOGF( "%s: connName: \"%s\" (reconnect=%d)", __func__, connName, 
+                 reconnected );
     }
 #else
     stringFromStreamHere( stream, comms->r.connName, 
