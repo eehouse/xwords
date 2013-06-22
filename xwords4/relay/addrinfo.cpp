@@ -49,8 +49,6 @@ AddrInfo::isCurrent() const
     return XWThreadPool::GetTPool()->IsCurrent( this ); 
 }
 
-
-
 bool
 AddrInfo::equals( const AddrInfo& other ) const
 { 
