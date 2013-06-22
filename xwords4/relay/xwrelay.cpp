@@ -704,14 +704,15 @@ forwardMessage( const unsigned char* buf, int buflen, const AddrInfo* addr )
 
     if ( getNetShort( &bufp, end, &cookieID )
          && getNetByte( &bufp, end, &src ) 
-         && getNetByte( &bufp, end, &dest ) ) {
-        logf( XW_LOGINFO, "cookieID = %d", cookieID );
+         && getNetByte( &bufp, end, &dest ) 
+         && 0 < src && 0 < dest  ) {
 
         if ( COOKIE_ID_NONE == cookieID ) {
             SafeCref scr( addr );
             success = scr.Forward( src, addr, dest, buf, buflen );
         } else {
-            SafeCref scr( cookieID ); /* won't work if not allcon; will be 0 */
+            /* won't work if not allcon; will be 0 */
+            SafeCref scr( cookieID /*, true*/ );
             success = scr.Forward( src, addr, dest, buf, buflen );
         }
     }
@@ -1478,7 +1479,7 @@ enable_keepalive( int sock )
     int optval = 1;
     if ( 0 > setsockopt( sock, SOL_SOCKET, SO_KEEPALIVE, 
                          &optval, sizeof( optval ) ) ) {
-        logf( XW_LOGERROR, "setsockopt(SO_KEEPALIVE)=>%d (%s)", errno, 
+        logf( XW_LOGERROR, "setsockopt(sock=%d, SO_KEEPALIVE)=>%d (%s)", sock, errno, 
               strerror(errno) );
         assert( 0 );
     }
