@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- -*- */
 
 /* 
  * Copyright 2005-2011 by Eric House (xwords@eehouse.org).  All rights
@@ -148,12 +148,13 @@ CidLock::ClaimSocket( const AddrInfo* addr )
             vector<AddrInfo>::const_iterator iter2;
             for ( iter2 = addrs.begin(); iter2 != addrs.end(); ++iter2 ) {
                 if ( iter2->equals(*addr) ) {
+                    assert( !info ); // I hit this -- twice!!!!
                     if ( 0 == iter->second->GetOwner() ) {
                         info = iter->second;
                         info->SetOwner( pthread_self() );
                         PRINT_CLAIMED();
                     }
-                    break;
+                    // break;
                 }
             }
         }
