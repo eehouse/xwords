@@ -131,12 +131,14 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
 
     const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice, dead FROM " 
         GAMES_TABLE " WHERE connName = '%s'"
-        " LIMIT 1";
+        // " LIMIT 1"
+        ;
     string query;
     string_printf( query, fmt, connName );
     logf( XW_LOGINFO, "query: %s", query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    assert( 1 >= PQntuples( result ) );
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
@@ -390,6 +392,7 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
                 break;
             }
         }
+        logf( XW_LOGINFO, "%s: set newID = %d", __func__, newID );
     }
     assert( newID <= 4 );
 
@@ -727,6 +730,7 @@ DBMgr::readArray( const char* const connName, const char* column, int arr[]  ) /
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 == PQntuples( result ) );
     const char* arrStr = PQgetvalue( result, 0, 0 );
+    logf( XW_LOGINFO, "%s: arrStr=\"%s\"", __func__, arrStr );
     sscanf( arrStr, "{%d,%d,%d,%d}", &arr[0], &arr[1], &arr[2], &arr[3] );
     PQclear( result );
 }
