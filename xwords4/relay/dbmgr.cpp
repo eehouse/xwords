@@ -328,7 +328,7 @@ DBMgr::RegisterDevice( const DevID* host )
                                 // of uniqueness problem.
             do {
                 devID = (DevIDRelay)random();
-            } while ( DEVID_NONE != devID );
+            } while ( DEVID_NONE == devID );
 
             const char* command = "INSERT INTO " DEVICES_TABLE
                 " (id, devType, devid)"
@@ -767,15 +767,17 @@ DBMgr::getDevID( const DevID* devID )
             string_printf( query, fmt, cur );
         }
     } else {
-        const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE devtype=%d and devid = '%s'";
+        const char* fmt = "SELECT id FROM " DEVICES_TABLE 
+            " WHERE devtype=%d and devid = '%s'";
         string_printf( query, fmt, devIDType, devID->m_devIDString.c_str() );
     }
 
     if ( 0 < query.size() ) {
         logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
         PGresult* result = PQexec( getThreadConn(), query.c_str() );
-        assert( 1 >= PQntuples( result ) );
-        if ( 1 == PQntuples( result ) ) {
+        int nTuples = PQntuples( result );
+        assert( 1 >= nTuples );
+        if ( 1 == nTuples ) {
             rDevID = (DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
         }
         PQclear( result );
@@ -852,7 +854,8 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 {
     DevIDRelay devID = getDevID( connName, hid );
     if ( DEVID_NONE == devID ) {
-        logf( XW_LOGERROR, "%s: devid not found for connName=%s, hid=%d", __func__, connName, hid );
+        logf( XW_LOGERROR, "%s: aborting: devid not found for connName=%s, hid=%d",
+              __func__, connName, hid );
     } else {
         size_t newLen;
         const char* fmt = "INSERT INTO " MSGS_TABLE 
