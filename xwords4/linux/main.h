@@ -90,6 +90,7 @@ typedef struct LaunchParams {
     XP_Bool skipGameOver;
     XP_Bool useMmap;
     XP_Bool closeStdin;
+    XP_Bool splitPackets;
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
 #endif

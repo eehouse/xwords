@@ -549,6 +549,7 @@ typedef enum {
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
     ,CMD_NOPEEK
+    ,CMD_SPLITPACKETS
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
 #endif
@@ -649,6 +650,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
+    ,{ CMD_SPLITPACKETS, false, "split-packets", "send tcp packets in "
+       "sections to test relay reassembly" }
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
        "don't show crosshairs on board" }
@@ -839,7 +842,14 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
 
         result = send( sock, &netLen, sizeof(netLen), 0 );
         if ( result == sizeof(netLen) ) {
-            result = send( sock, buf, buflen, 0 ); 
+            if ( globals->params->splitPackets ) {
+                int halflen = buflen / 2;
+                result = send( sock, buf, halflen, 0 ); 
+                sleep( 1 );
+                result += send( sock, buf + halflen, buflen - halflen, 0 ); 
+            } else {
+                result = send( sock, buf, buflen, 0 ); 
+            }
         }
         if ( result <= 0 ) {
             XP_STATUSF( "closing non-functional socket" );
@@ -1899,6 +1909,9 @@ main( int argc, char** argv )
             break;
         case CMD_NOPEEK:
             mainParams.allowPeek = XP_FALSE;
+            break;
+        case CMD_SPLITPACKETS:
+            mainParams.splitPackets = XP_TRUE;
             break;
 #ifdef XWFEATURE_CROSSHAIRS
         case CMD_NOCROSSHAIRS:
