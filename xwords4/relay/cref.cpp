@@ -102,7 +102,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID cid,
     } else {
         m_delayMicros = 0;
     }
-    RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
+    RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heartbeat );
     logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
           m_cookie.c_str(), m_connName.c_str() );
 

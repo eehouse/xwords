@@ -104,7 +104,7 @@ class CookieRef {
     const char* Cookie() const { return m_cookie.c_str(); }
     const char* ConnName() { return m_connName.c_str(); }
 
-    int GetHeartbeat() { return m_heatbeat; }
+    int GetHeartbeat() { return m_heartbeat; }
     const AddrInfo* SocketForHost( HostID dest );
     HostID HostForSocket( const AddrInfo* addr );
 
@@ -275,7 +275,7 @@ class CookieRef {
     pthread_rwlock_t m_socketsRWLock;
     vector<HostRec> m_sockets;
 
-    int m_heatbeat;           /* might change per carrier or something. */
+    int m_heartbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */
     string m_connName;          /* globally unique name */
     CookieID m_cid;        /* Unique among current games on this server */
