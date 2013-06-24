@@ -58,7 +58,7 @@ function connName() {
     LOG=$1
     grep 'got_connect_cmd: connName' $LOG | \
         tail -n 1 | \
-        sed 's,^.*connName: \"\(.*\)\"$,\1,'
+        sed 's,^.*connName: \"\(.*\)\" (reconnect=.)$,\1,'
 }
 
 function check_room() {
