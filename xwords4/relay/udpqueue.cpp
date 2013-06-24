@@ -37,9 +37,41 @@ UdpThreadClosure::logStats()
     }
 }
 
+bool
+PartialPacket::stillGood() const
+{
+    return 0 == m_errno
+        || EAGAIN == m_errno
+        || EWOULDBLOCK == m_errno;
+}
+
+bool
+PartialPacket::readAtMost( int len )
+{
+    bool success = false;
+    uint8_t tmp[len];
+    ssize_t nRead = recv( m_sock, tmp, len, 0 );
+    if ( 0 > nRead ) {          // error case
+        m_errno = errno;
+        logf( XW_LOGERROR, "%s(len=%d): recv failed: %d (%s)", __func__, len,
+              m_errno, strerror(m_errno) );
+    } else if ( 0 == nRead ) {  // remote socket closed
+        logf( XW_LOGINFO, "%s: remote closed", __func__ );
+        m_errno = -1;           // so stillGood will fail
+    } else {
+        m_errno = 0;
+        success = len == nRead;
+        int curSize = m_buf.size();
+        m_buf.resize( nRead + curSize );
+        memcpy( &m_buf[curSize], tmp, nRead );
+    }
+    return success;
+}
+
 UdpQueue::UdpQueue() 
 {
     m_nextID = 0;
+    pthread_mutex_init ( &m_partialsMutex, NULL );
     pthread_mutex_init ( &m_queueMutex, NULL );
     pthread_cond_init( &m_queueCondVar, NULL );
 
@@ -54,6 +86,7 @@ UdpQueue::~UdpQueue()
 {
     pthread_cond_destroy( &m_queueCondVar );
     pthread_mutex_destroy ( &m_queueMutex );
+    pthread_mutex_destroy ( &m_partialsMutex );
 }
 
 UdpQueue* 
@@ -65,50 +98,83 @@ UdpQueue::get()
     return s_instance;
 }
 
+// return false if socket should no longer be used
 bool
 UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
 {
-    bool success = false;
+    PartialPacket* packet;
+
     int sock = addr->socket();
-    unsigned short msgLen;
-    ssize_t nRead = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
-    if ( 0 == nRead ) {
-        logf( XW_LOGINFO, "%s: recv(sock=%d) => 0: remote closed", __func__, sock );
-    } else if ( nRead != sizeof(msgLen) ) {
-        logf( XW_LOGERROR, "%s: first recv => %d: %s", __func__, 
-              nRead, strerror(errno) );
+
+    // Hang onto this mutex for as long as we may be writing to the packet
+    // since having it deleted while in use would be bad.
+    MutexLock ml( &m_partialsMutex );
+
+    map<int, PartialPacket*>::iterator iter = m_partialPackets.find( sock );
+    if ( m_partialPackets.end() == iter ) {
+        packet = new PartialPacket( sock );
+        m_partialPackets.insert( pair<int, PartialPacket*>( sock, packet ) );
     } else {
-        msgLen = ntohs( msgLen );
-        if ( MAX_MSG_LEN <= msgLen ) {
-            logf( XW_LOGERROR, "%s: message of len %d too large; dropping", __func__, msgLen );
-        } else {
-            unsigned char buf[msgLen];
-            nRead = recv( sock, buf, msgLen, MSG_WAITALL );
-            if ( nRead == msgLen ) {
-                logf( XW_LOGINFO, "%s: read %d bytes on socket %d", __func__, nRead, sock );
-                handle( addr, buf, msgLen, cb );
-                success = true;
-            } else {
-                logf( XW_LOGERROR, "%s: second recv failed: %s", __func__, 
-                      strerror(errno) );
-            }
+        packet = iter->second;
+    }
+
+    // First see if we've read the length bytes
+    if ( packet->readSoFar() < sizeof( packet->m_len ) ) {
+        if ( packet->readAtMost( sizeof(packet->m_len) - packet->readSoFar() ) ) {
+            packet->m_len = ntohs(*(unsigned short*)packet->data());
         }
     }
-    return success;
+
+    if ( packet->readSoFar() >= sizeof( packet->m_len ) ) {
+        assert( 0 < packet->m_len );
+        int leftToRead = 
+            packet->m_len - (packet->readSoFar() - sizeof(packet->m_len));
+        if ( packet->readAtMost( leftToRead ) ) {
+            handle( addr, packet->data() + sizeof(packet->m_len), 
+                    packet->m_len, cb );
+            packet = NULL;
+            newSocket_locked( sock );
+        }
+    }
+
+    return NULL == packet || packet->stillGood();
 }
 
 void 
-UdpQueue::handle( const AddrInfo* addr, unsigned char* buf, int len, 
+UdpQueue::handle( const AddrInfo* addr, const uint8_t* buf, int len, 
                   QueueCallback cb )
 {
     UdpThreadClosure* utc = new UdpThreadClosure( addr, buf, len, cb );
     MutexLock ml( &m_queueMutex );
     int id = ++m_nextID;
     utc->setID( id );
-    logf( XW_LOGINFO, "%s: enqueuing packet %d", __func__, id );
+    logf( XW_LOGINFO, "%s: enqueuing packet %d (len %d)", __func__, id, len );
     m_queue.push_back( utc );
 
     pthread_cond_signal( &m_queueCondVar );
+}
+
+void
+UdpQueue::newSocket_locked( int sock )
+{
+    map<int, PartialPacket*>::iterator iter = m_partialPackets.find( sock );
+    if ( m_partialPackets.end() != iter ) {
+        delete iter->second;
+        m_partialPackets.erase( iter );
+    }
+}
+void
+UdpQueue::newSocket( int sock )
+{
+    MutexLock ml( &m_partialsMutex );
+    newSocket_locked( sock );
+}
+
+void
+UdpQueue::newSocket( const AddrInfo* addr )
+{
+    assert( addr->isTCP() );
+    newSocket( addr->socket() );
 }
 
 void* 

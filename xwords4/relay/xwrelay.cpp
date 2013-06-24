@@ -453,8 +453,8 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
         if ( addr->isCurrent() ) {
             int socket = addr->socket();
             unsigned short len = htons( bufLen );
-            ssize_t nSent = send( socket, &len, 2, 0 );
-            if ( nSent == 2 ) {
+            ssize_t nSent = send( socket, &len, sizeof(len), 0 );
+            if ( nSent == sizeof(len) ) {
                 nSent = send( socket, buf, bufLen, 0 );
                 if ( nSent == ssize_t(bufLen) ) {
                     logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
@@ -1408,7 +1408,7 @@ udp_thread_proc( UdpThreadClosure* utc )
 static void
 read_udp_packet( int udpsock )
 {
-    unsigned char buf[MAX_MSG_LEN];
+    uint8_t buf[MAX_MSG_LEN];
     AddrInfo::AddrUnion saddr;
     memset( &saddr, 0, sizeof(saddr) );
     socklen_t fromlen = sizeof(saddr.addr_in);
@@ -1448,6 +1448,8 @@ string_printf( string& str, const char* fmt, ... )
     }
 }
 
+// Going with non-blocking instead
+#if 0
 static void
 set_timeouts( int sock )
 {
@@ -1472,6 +1474,7 @@ set_timeouts( int sock )
         assert( 0 );
     }
 }
+#endif
 
 static void
 enable_keepalive( int sock )
@@ -1897,15 +1900,17 @@ main( int argc, char** argv )
                               errno, strerror(errno) );
                         assert( 0 ); // we're leaking files or load has grown
                     } else {
-			// I've seen a bug where we accept but never service
-			// connections.  Sockets are not closed, and so the
-			// number goes up.  Probably need a watchdog instead,
-			// but this will work around it.
+                        // I've seen a bug where we accept but never service
+                        // connections.  Sockets are not closed, and so the
+                        // number goes up.  Probably need a watchdog instead,
+                        // but this will work around it.
                         assert( g_maxsocks > newSock );
 
                         /* Set timeout so send and recv won't block forever */
-                        set_timeouts( newSock );
-                        
+                        // set_timeouts( newSock );
+
+                        int err = fcntl( newSock, F_SETFL, O_NONBLOCK );
+                        assert( 0 == err );
                         enable_keepalive( newSock );
 
                         logf( XW_LOGINFO, 
@@ -1918,6 +1923,7 @@ main( int argc, char** argv )
                                           perGame ? game_thread_proc
                                           : proxy_thread_proc,
                                           &addr );
+                        UdpQueue::get()->newSocket( &addr );
                     }
                     --retval;
                 }
