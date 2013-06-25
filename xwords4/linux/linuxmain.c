@@ -550,6 +550,7 @@ typedef enum {
     ,CMD_VERTICALSCORE
     ,CMD_NOPEEK
     ,CMD_SPLITPACKETS
+    ,CMD_CHAT
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
 #endif
@@ -652,6 +653,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
     ,{ CMD_SPLITPACKETS, false, "split-packets", "send tcp packets in "
        "sections to test relay reassembly" }
+    ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
        "don't show crosshairs on board" }
@@ -1912,6 +1914,9 @@ main( int argc, char** argv )
             break;
         case CMD_SPLITPACKETS:
             mainParams.splitPackets = XP_TRUE;
+            break;
+        case CMD_CHAT:
+            mainParams.chatsInterval = atoi(optarg);
             break;
 #ifdef XWFEATURE_CROSSHAIRS
         case CMD_NOCROSSHAIRS:
