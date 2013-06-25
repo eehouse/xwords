@@ -72,7 +72,7 @@ CidLock::print_claimed( const char* caller )
     string str;
     string_printf( str, "after %s: ", caller );
     // Assume we have the mutex!!!!
-    map< CookieID, CidInfo*>::iterator iter;
+    map< CookieID, CidInfo*>::const_iterator iter;
     for ( iter = m_infos.begin(); iter != m_infos.end(); ++iter ) {
         CidInfo* info = iter->second;
         if ( 0 == info->GetOwner() ) {
@@ -81,7 +81,7 @@ CidLock::print_claimed( const char* caller )
             string_printf( str, "%d,", info->GetCid() );
         }
     }
-    string_printf( str, "%d,", " (plus %d unclaimed.)", unclaimed );
+    string_printf( str, " (plus %d unclaimed.)", unclaimed );
     logf( XW_LOGINFO, "%s: claimed: %s", __func__, str.c_str() );
 }
 #else
@@ -137,13 +137,14 @@ CidLock::ClaimSocket( const AddrInfo* addr )
 {
     CidInfo* info = NULL;
 #ifdef CIDLOCK_DEBUG
-    logf( XW_LOGINFO, "%s(sock=%d)", __func__, sock );
+    logf( XW_LOGINFO, "%s(sock=%d)", __func__, addr->socket() );
 #endif
     for ( ; ; ) {
         MutexLock ml( &m_infos_mutex );
 
-        map<CookieID, CidInfo*>::iterator iter;
-        for ( iter = m_infos.begin(); NULL == info && iter != m_infos.end(); ++iter ) {
+        map<CookieID, CidInfo*>::const_iterator iter;
+        for ( iter = m_infos.begin(); NULL == info && iter != m_infos.end(); 
+              ++iter ) {
             const vector<AddrInfo>& addrs = iter->second->GetAddrs();
             vector<AddrInfo>::const_iterator iter2;
             for ( iter2 = addrs.begin(); iter2 != addrs.end(); ++iter2 ) {
@@ -164,7 +165,7 @@ CidLock::ClaimSocket( const AddrInfo* addr )
             break;
         }
 #ifdef CIDLOCK_DEBUG
-        logf( XW_LOGINFO, "%s(sock=%d): waiting....", __func__, sock );
+        logf( XW_LOGINFO, "%s(sock=%d): waiting....", __func__, addr->socket() );
 #endif
         pthread_cond_wait( &m_infos_condvar, &m_infos_mutex );
     }
