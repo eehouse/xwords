@@ -27,6 +27,8 @@
 #include "xwrelay_priv.h"
 #include "tpool.h"
 
+// static uint32_t s_prevCreated = 0L;
+
 void
 AddrInfo::construct( int socket, const AddrUnion* saddr, bool isTCP ) 
 {
@@ -34,8 +36,12 @@ AddrInfo::construct( int socket, const AddrUnion* saddr, bool isTCP )
         
     struct timespec tp;
     clock_gettime( CLOCK_MONOTONIC, &tp );
-    m_created = (tp.tv_sec * 1000) + (tp.tv_nsec / 1000);
-    logf( XW_LOGINFO, "%s: m_created for socket %d: 0x%lx", __func__, socket, m_created );
+    /* convert to milliseconds */
+    m_created = (tp.tv_sec * 1000) + (tp.tv_nsec / 1000000);
+    logf( XW_LOGINFO, "%s: m_created for socket %d: %lx",
+          __func__, socket, m_created );
+    /* assert( m_created >= s_prevCreated ); */
+    /* s_prevCreated = m_created; */
 
     m_socket = socket;
     m_isTCP = isTCP;
