@@ -549,6 +549,7 @@ typedef enum {
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
     ,CMD_NOPEEK
+    ,CMD_CHAT
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
 #endif
@@ -649,6 +650,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
+    ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
        "don't show crosshairs on board" }
@@ -1897,6 +1899,9 @@ main( int argc, char** argv )
             break;
         case CMD_NOPEEK:
             mainParams.allowPeek = XP_FALSE;
+            break;
+        case CMD_CHAT:
+            mainParams.chatsInterval = atoi(optarg);
             break;
 #ifdef XWFEATURE_CROSSHAIRS
         case CMD_NOCROSSHAIRS:

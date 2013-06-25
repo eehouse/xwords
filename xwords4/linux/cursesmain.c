@@ -23,6 +23,8 @@
 #include <signal.h>
 #include <assert.h>
 #include <ctype.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include <netdb.h>		/* gethostbyname */
 #include <errno.h>
@@ -1513,6 +1515,15 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 } /* curses_util_makeStreamFromAddr */
 #endif
 
+#ifdef XWFEATURE_CHAT
+static void
+curses_util_showChat( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* const msg )
+{
+    XP_LOGF( "%s: got \"%s\"", __func__, msg );
+}
+#endif
+
+
 static void
 setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 {
@@ -1526,6 +1537,10 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr;
 #endif
+#ifdef XWFEATURE_CHAT
+    util->vtable->m_util_showChat = curses_util_showChat;
+#endif
+
     util->vtable->m_util_userQuery = curses_util_userQuery;
     util->vtable->m_util_confirmTrade = curses_util_confirmTrade;
     util->vtable->m_util_userPickTileBlank = curses_util_userPickTileBlank;
@@ -1699,6 +1714,32 @@ handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
 }
 #endif
 
+static gboolean
+chatsTimerFired( gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+
+    GameStateInfo gsi;
+    game_getState( &globals->cGlobals.game, &gsi );
+
+    if ( gsi.gameIsConnected ) {
+        XP_UCHAR msg[128];
+        struct tm* timp;
+        struct timeval tv;
+        struct timezone tz;
+
+        gettimeofday( &tv, &tz );
+        timp = localtime( &tv.tv_sec );
+
+        snprintf( msg, sizeof(msg), "Saying hi via chat at %.2d:%.2d:%.2d:", 
+                  timp->tm_hour, timp->tm_min, timp->tm_sec );
+        server_sendChat( globals->cGlobals.game.server, msg );
+        XP_LOGF( "%s: sent \"%s\"", __func__, msg );
+    }
+
+    return TRUE;
+}
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
@@ -1788,6 +1829,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     } else if ( !!params->nbs && !!params->fileName ) {
         do_nbs_then_close( &g_globals.cGlobals, &procs );
     } else {
+        if ( 0 != params->chatsInterval ) {
+            (void)g_timeout_add_seconds( params->chatsInterval, chatsTimerFired, 
+                                         &g_globals );
+        }
+
         XP_Bool opened = XP_FALSE;
         initCurses( &g_globals );
         getmaxyx( g_globals.boardWin, height, width );
