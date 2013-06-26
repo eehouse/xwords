@@ -53,10 +53,10 @@ PartialPacket::readAtMost( int len )
     ssize_t nRead = recv( m_sock, tmp, len, 0 );
     if ( 0 > nRead ) {          // error case
         m_errno = errno;
-        logf( XW_LOGERROR, "%s(len=%d): recv failed: %d (%s)", __func__, len,
-              m_errno, strerror(m_errno) );
+        logf( XW_LOGERROR, "%s(len=%d, socket=%d): recv failed: %d (%s)", __func__, 
+              len, m_sock, m_errno, strerror(m_errno) );
     } else if ( 0 == nRead ) {  // remote socket closed
-        logf( XW_LOGINFO, "%s: remote closed", __func__ );
+        logf( XW_LOGINFO, "%s: remote closed (socket=%d)", __func__, m_sock );
         m_errno = -1;           // so stillGood will fail
     } else {
         m_errno = 0;
@@ -148,7 +148,8 @@ UdpQueue::handle( const AddrInfo* addr, const uint8_t* buf, int len,
     MutexLock ml( &m_queueMutex );
     int id = ++m_nextID;
     utc->setID( id );
-    logf( XW_LOGINFO, "%s: enqueuing packet %d (len %d)", __func__, id, len );
+    logf( XW_LOGINFO, "%s: enqueuing packet %d (socket %d, len %d)", 
+          __func__, id, addr->socket(), len );
     m_queue.push_back( utc );
 
     pthread_cond_signal( &m_queueCondVar );
@@ -191,7 +192,8 @@ UdpQueue::thread_main()
         pthread_mutex_unlock( &m_queueMutex );
 
         utc->noteDequeued();
-        logf( XW_LOGINFO, "%s: dispatching packet %d", __func__, utc->getID() );
+        logf( XW_LOGINFO, "%s: dispatching packet %d (socket %d)", __func__, 
+              utc->getID(), utc->addr()->socket() );
         (*utc->cb())( utc );
         utc->logStats();
         delete utc;
