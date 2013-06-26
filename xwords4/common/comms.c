@@ -1437,8 +1437,11 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 
     case XWRELAY_ALLHERE:
         srcID = (XWHostID)stream_getU8( stream );
-        XP_ASSERT( comms->r.myHostID == HOST_ID_NONE
-                   || comms->r.myHostID == srcID );
+        if ( comms->r.myHostID != HOST_ID_NONE
+             && comms->r.myHostID != srcID ) {
+            XP_LOGF( "%s: changing hostid from %d to %d", __func__, 
+                     comms->r.myHostID, srcID );
+        }
 
         if ( 0 == comms->r.cookieID ) {
             XP_LOGF( "%s: cookieID still 0; background send?", 
