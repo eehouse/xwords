@@ -2190,6 +2190,9 @@ gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
                                        globals );
         info->channel = channel;
         info->watch = result;
+        if ( !!*storage ) {
+            XP_FREE( globals->cGlobals.params->util->mpool, *storage );
+        }
         *storage = info;
         XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
     }
@@ -2273,12 +2276,11 @@ drop_msg_toggle( GtkWidget* toggle, GtkAppGlobals* globals )
 } /* drop_msg_toggle */
 #endif
 
-static GtkAppGlobals* g_globals_for_signal;
 static void
 handle_sigintterm( int XP_UNUSED(sig) )
 {
     LOG_FUNC();
-    gtk_main_quit();
+    gtk_main_quit();            /* ok to call from signal handler?  I bet not. */
 }
 
 int
@@ -2296,7 +2298,6 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     GtkWidget* dropCheck;
 #endif
 
-    g_globals_for_signal = &globals;
     struct sigaction act = { .sa_handler = handle_sigintterm };
     sigaction( SIGINT, &act, NULL );
     sigaction( SIGTERM, &act, NULL );
