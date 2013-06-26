@@ -31,6 +31,8 @@ UDPPORT=10997
 
 # default 5
 SOCK_TIMEOUT_SECONDS=5
+# How many tcp sockets at once (to prevent leaks).  default: 100
+MAXSOCKS=256
 
 # And the control port is?
 CTLPORT=11000
