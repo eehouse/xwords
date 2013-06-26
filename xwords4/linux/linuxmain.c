@@ -499,7 +499,8 @@ setOneSecondTimer( CommonGlobals* cGlobals )
 #endif
 
 typedef enum {
-    CMD_SKIP_GAMEOVER
+    CMD_HELP
+    ,CMD_SKIP_GAMEOVER
     ,CMD_SHOW_OTHERSCORES
     ,CMD_HOSTIP
     ,CMD_DICT
@@ -598,7 +599,8 @@ typedef struct _CmdInfoRec {
 } CmdInfoRec;
 
 static CmdInfoRec CmdInfoRecs[] = {
-    { CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
+    { CMD_HELP, false, "help", "print this message" }
+    ,{ CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
     ,{ CMD_SHOW_OTHERSCORES, false, "show-other", "show robot/remote scores" }
     ,{ CMD_HOSTIP, true, "hostip", "remote host ip address (for direct connect)" }
     ,{ CMD_DICT, true, "game-dict", "dictionary name for game" }
@@ -1004,36 +1006,43 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     unsigned short tmp;
     ssize_t nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
     if ( nRead != 2 ) {
-        linux_close_socket( cGlobals );
-        comms_transportFailed( cGlobals->game.comms );
         nRead = -1;
     } else {
         unsigned short packetSize = ntohs( tmp );
-        assert( packetSize <= bufSize );
-        nRead = blocking_read( sock, buf, packetSize );
-        if ( nRead != packetSize ) {
+        if ( 0 == packetSize || bufSize <= packetSize ) {
             nRead = -1;
         } else {
-            LaunchParams* params = cGlobals->params;
-            ++params->nPacketsRcvd;
-            if ( params->dropNthRcvd == 0 ) {
-                /* do nothing */
-            } else if ( params->dropNthRcvd > 0 ) {
-                if ( params->nPacketsRcvd == params->dropNthRcvd ) {
-                    XP_LOGF( "%s: dropping %dth packet per --drop-nth-packet",
-                             __func__, params->nPacketsRcvd );
-                    nRead = -1;
-                }
+            nRead = blocking_read( sock, buf, packetSize );
+            if ( nRead != packetSize ) {
+                nRead = -1;
             } else {
-                if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
-                    XP_LOGF( "%s: RANDOMLY dropping %dth packet "
-                             "per --drop-nth-packet",
-                             __func__, params->nPacketsRcvd );
-                    nRead = -1;
+                LaunchParams* params = cGlobals->params;
+                ++params->nPacketsRcvd;
+                if ( params->dropNthRcvd == 0 ) {
+                    /* do nothing */
+                } else if ( params->dropNthRcvd > 0 ) {
+                    if ( params->nPacketsRcvd == params->dropNthRcvd ) {
+                        XP_LOGF( "%s: dropping %dth packet per --drop-nth-packet",
+                                 __func__, params->nPacketsRcvd );
+                        nRead = -1;
+                    }
+                } else {
+                    if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
+                        XP_LOGF( "%s: RANDOMLY dropping %dth packet "
+                                 "per --drop-nth-packet",
+                                 __func__, params->nPacketsRcvd );
+                        nRead = -1;
+                    }
                 }
             }
         }
     }
+
+    if ( -1 == nRead ) {
+        linux_close_socket( cGlobals );
+        comms_transportFailed( cGlobals->game.comms );
+    }
+
     XP_LOGF( "%s=>%d", __func__, nRead );
     return nRead;
 } /* linux_relay_receive */
@@ -1675,7 +1684,7 @@ main( int argc, char** argv )
         short index;
         opt = getopt_long_only( argc, argv, "", longopts, NULL );
         switch ( opt ) {
-        case '?':
+        case CMD_HELP:
             usage(argv[0], NULL);
             break;
         case CMD_SKIP_GAMEOVER:
