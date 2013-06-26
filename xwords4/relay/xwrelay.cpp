@@ -450,8 +450,8 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
     bool ok = false;
 
     if ( addr->isTCP() ) {
+        int socket = addr->socket();
         if ( addr->isCurrent() ) {
-            int socket = addr->socket();
             unsigned short len = htons( bufLen );
             ssize_t nSent = send( socket, &len, sizeof(len), 0 );
             if ( nSent == sizeof(len) ) {
@@ -609,7 +609,7 @@ processReconnect( const unsigned char* bufp, int bufLen, const AddrInfo* addr )
                           cookie, srcID, addr, clientVersion, &devID,
                           nPlayersH, nPlayersT, gameSeed, langCode,
                           wantsPublic, makePublic );
-            success = scr.Reconnect( srcID, nPlayersH, nPlayersT, gameSeed, 
+            success = scr.Reconnect( nPlayersH, nPlayersT, gameSeed, 
                                      &err );
             // if ( !success ) {
             //     assert( err != XWRELAY_ERROR_NONE );
@@ -712,7 +712,7 @@ forwardMessage( const unsigned char* buf, int buflen, const AddrInfo* addr )
             success = scr.Forward( src, addr, dest, buf, buflen );
         } else {
             /* won't work if not allcon; will be 0 */
-            SafeCref scr( cookieID /*, true*/ );
+            SafeCref scr( cookieID, true );
             success = scr.Forward( src, addr, dest, buf, buflen );
         }
     }

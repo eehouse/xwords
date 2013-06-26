@@ -54,6 +54,11 @@ class DBMgr {
                        int* langP, int* nPlayersTP, int* nPlayersHP,
                        bool* isDead );
 
+    bool FindGameFor( const char* connName, char* cookieBuf, int bufLen,
+                      unsigned short seed, HostID hid,
+                      int nPlayersH, int nPlayersS,
+                      int* langP, bool* isDead, CookieID* cidp );
+
     bool SeenSeed( const char* cookie, unsigned short seed,
                    int langCode, int nPlayersT, bool wantsPublic, 
                    char* connNameBuf, int bufLen, int* nPlayersHP,

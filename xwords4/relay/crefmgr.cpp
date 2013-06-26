@@ -216,9 +216,8 @@ CRefMgr::getFromFreeList( void )
 
 /* connect case */
 CidInfo*
-CRefMgr::getMakeCookieRef( const char* cookie, HostID hid,
-                           int nPlayersH, int nPlayersT, int langCode, 
-                           int seed, bool wantsPublic, 
+CRefMgr::getMakeCookieRef( const char* cookie, int nPlayersH, int nPlayersT, 
+                           int langCode, int seed, bool wantsPublic, 
                            bool makePublic, bool* seenSeed )
 {
     CidInfo* cinfo;
@@ -291,20 +290,22 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
                            int langCode, bool isPublic, bool* isDead )
 {
     CookieRef* cref = NULL;
-    CidInfo* cinfo;
+    CidInfo* cinfo = NULL;
 
     for ( ; ; ) {               /* for: see comment above */
         /* fetch these from DB */
         char curCookie[MAX_INVITE_LEN+1];
         int curLangCode;
-        int nPlayersT = 0;
-        int nAlreadyHere = 0;
+        int nAlreadyHere = nPlayersH;
 
-        CookieID cid = m_db->FindGame( connName, curCookie, sizeof(curCookie),
-                                       &curLangCode, &nPlayersT, &nAlreadyHere,
-                                       isDead );
+        CookieID cid;
+        if ( !m_db->FindGameFor( connName, curCookie, sizeof(curCookie),
+                                 seed, hid, nPlayersH, nPlayersS,
+                                 &curLangCode, isDead, &cid ) ) {
+            break;
+        }
+
         if ( 0 != cid ) {           /* already open */
-            assert( nPlayersT == nPlayersS );
             cinfo = m_cidlock->Claim( cid );
             if ( NULL == cinfo->GetRef() ) {
                 m_cidlock->Relinquish( cinfo, true );
@@ -316,26 +317,19 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
             cinfo = m_cidlock->Claim();
             cid = cinfo->GetCid();
 
-            if ( nPlayersT == 0 ) { /* wasn't in the DB */
-                m_db->AddNew( cookie, connName, cid, langCode, nPlayersS, isPublic );
-                curLangCode = langCode;
-                nPlayersT = nPlayersS;
-            } else {
-                if ( !m_db->AddCID( connName, cid ) ) {
-                    m_cidlock->Relinquish( cinfo, true );
-                    continue;
-                }
-                cookie = curCookie;
+            if ( !m_db->AddCID( connName, cid ) ) {
+                m_cidlock->Relinquish( cinfo, true );
+                continue;
             }
+            cookie = curCookie;
 
-            assert( nPlayersT == nPlayersS );
-            cref = AddNew( cookie, connName, cid, curLangCode, nPlayersT, 
+            cref = AddNew( cookie, connName, cid, curLangCode, nPlayersS, 
                            nAlreadyHere );
             cinfo->SetRef( cref );
         }
         break;
     } /* for */
-    assert( cinfo->GetRef() );
+    assert( NULL == cinfo || cinfo->GetRef() );
     return cinfo;
 } /* getMakeCookieRef */
 
@@ -612,8 +606,8 @@ SafeCref::SafeCref( const char* cookie, const AddrInfo* addr, int clientVers,
 {
     CidInfo* cinfo;
 
-    cinfo = m_mgr->getMakeCookieRef( cookie, 0, nPlayersH, nPlayersS, langCode,
-                                     gameSeed, wantsPublic, makePublic,
+    cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
+                                     langCode, gameSeed, wantsPublic, makePublic,
                                      &m_seenSeed );
     if ( cinfo != NULL ) {
         CookieRef* cref = cinfo->GetRef();
@@ -623,16 +617,23 @@ SafeCref::SafeCref( const char* cookie, const AddrInfo* addr, int clientVers,
     }
 }
 
-/* REconnect case */
+/* Reconnect case
+ *
+ * Device thinks it's connected, but we may disagree, e.g. if it sent an ACK
+ * we didn't receive in time.  So we may actually wind up creating a new row,
+ * with a new connname, in the games DB in response to this!
+ *
+ */
 SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid, 
-                    const AddrInfo* addr, int clientVers, DevID* devID, int nPlayersH,
-                    int nPlayersS, unsigned short gameSeed, int langCode, 
-                    bool wantsPublic, bool makePublic )
+                    const AddrInfo* addr, int clientVers, DevID* devID, 
+                    int nPlayersH, int nPlayersS, unsigned short gameSeed, 
+                    int langCode, bool wantsPublic, bool makePublic )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_addr( *addr )
     , m_clientVersion( clientVers )
     , m_devID( devID )
+    , m_hid( hid )
     , m_isValid( false )
 {
     CidInfo* cinfo;
@@ -642,6 +643,15 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
     cinfo = m_mgr->getMakeCookieRef( connName, cookie, hid, nPlayersH, 
                                      nPlayersS, gameSeed, langCode,
                                      wantsPublic || makePublic, &isDead );
+
+    /* If the reconnect doesn't check out, treat it as a connect */
+    if ( NULL == cinfo ) {
+        logf( XW_LOGINFO, "%s: taking a second crack", __func__ );
+        m_hid = HOST_ID_NONE;
+        cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
+                                         langCode, gameSeed, 
+                                         wantsPublic, makePublic, &m_seenSeed );
+    }
     if ( cinfo != NULL ) {
         assert( cinfo->GetCid() == cinfo->GetRef()->GetCid() );
         m_locked = cinfo->GetRef()->Lock();

@@ -123,6 +123,39 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     PQclear( result );
 }
 
+/* Grab the row for a connname.  If the params don't check out, return false.
+ */
+bool
+DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
+                    unsigned short seed, HostID hid,
+                    int nPlayersH, int nPlayersS,
+                    int* langP, bool* isDead, CookieID* cidp )
+{
+    bool found = false;
+
+    const char* fmt = "SELECT cid, room, lang, nPerDevice, dead FROM " 
+        GAMES_TABLE " WHERE connName = '%s' AND nTotal = %d "
+        "AND %d = seeds[%d] AND 'A' = ack[%d] "
+        ;
+    string query;
+    string_printf( query, fmt, connName, nPlayersS, seed, hid, hid );
+    logf( XW_LOGINFO, "query: %s", query.c_str() );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    assert( 1 >= PQntuples( result ) );
+    found = 1 == PQntuples( result );
+    if ( found ) {
+        *cidp = atoi( PQgetvalue( result, 0, 0 ) );
+        snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
+        *langP = atoi( PQgetvalue( result, 0, 2 ) );
+        *isDead = 't' == PQgetvalue( result, 0, 4 )[0];
+    }
+    PQclear( result );
+
+    logf( XW_LOGINFO, "%s(%s)=>%d", __func__, connName, found );
+    return found;
+} /* FindGameFor */
+
 CookieID
 DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
                  int* langP, int* nPlayersTP, int* nPlayersHP, bool* isDead )
@@ -385,12 +418,24 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
     HostID newID = curID;
 
     if ( newID == HOST_ID_NONE ) {
-        int arr[4] = {0};
-        readArray( connName, "nPerDevice", arr );
+        int ackArr[4] = {0};
+        int seedArr[4] = {0};
+        readArray( connName, "nPerDevice", ackArr );
+        readArray( connName, "seeds", seedArr );
+
+        // If our seed's already there, grab that slot.  Otherwise grab the
+        // first empty one.
+        HostID firstEmpty = HOST_ID_NONE;
         for ( newID = HOST_ID_SERVER; newID <= 4; ++newID ) {
-            if ( arr[newID-1] == 0 ) {
+            if ( seedArr[newID-1] == seed ) {
                 break;
+            } else if ( HOST_ID_NONE == firstEmpty && 0 == ackArr[newID-1] ) {
+                firstEmpty = newID;
             }
+        }
+
+        if ( 4 < newID && HOST_ID_NONE != firstEmpty ) {
+            newID = firstEmpty;
         }
         logf( XW_LOGINFO, "%s: set newID = %d", __func__, newID );
     }

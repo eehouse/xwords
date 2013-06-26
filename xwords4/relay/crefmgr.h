@@ -117,7 +117,7 @@ class CRefMgr {
     CookieRef* getFromFreeList( void );
 
     /* connect case */
-    CidInfo* getMakeCookieRef( const char* cookie, HostID hid, int nPlayersH,
+    CidInfo* getMakeCookieRef( const char* cookie, int nPlayersH,
                                int nPlayersS, int langCode, int seed,
                                bool wantsPublic, bool makePublic, 
                                bool* seenSeed );
@@ -218,8 +218,7 @@ class SafeCref {
             return false;
         }
     }
-    bool Reconnect( HostID srcID, int nPlayersH, int nPlayersS,
-                    int seed, XWREASON* errp ) {
+    bool Reconnect( int nPlayersH, int nPlayersS, int seed, XWREASON* errp ) {
         bool success = false;
         *errp = XWRELAY_ERROR_NONE;
         if ( IsValid() ) {
@@ -229,7 +228,7 @@ class SafeCref {
                 *errp = XWRELAY_ERROR_DEADGAME;
             } else {
                 success = cref->_Reconnect( m_clientVersion, m_devID,
-                                            srcID, nPlayersH, nPlayersS, seed, 
+                                            m_hid, nPlayersH, nPlayersS, seed, 
                                             &m_addr, m_dead );
             }
         }
@@ -392,6 +391,7 @@ class SafeCref {
     AddrInfo m_addr;
     int m_clientVersion;
     DevID* m_devID;
+    HostID m_hid;
     bool m_isValid;
     bool m_locked;
     bool m_dead;
