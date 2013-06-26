@@ -1292,7 +1292,7 @@ CookieRef::sendAllHere( bool initial )
        message for it.  Would be better if could look up rather than run
        through the vector each time. */
     HostID dest;
-    for ( dest = 1; dest <= m_nPlayersHere; ++dest ) {
+    for ( dest = 1; dest <= m_nPlayersSought; ++dest ) {
         bool sent = false;
         *idLoc = dest;   /* write in this target's hostId */
 
