@@ -234,6 +234,22 @@ connect_socket( void )
     to_sock.sin_family = AF_INET;
     to_sock.sin_port = htons( g_port );
 
+    struct timeval tv;
+    tv.tv_sec = 5;          /* seconds */
+    tv.tv_usec = 0;         /* microseconds */
+
+    int result = setsockopt( sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv) );
+    if ( 0 != result ) {
+        fprintf( stderr, "setsockopt=>%d (%s)", errno, strerror(errno) );
+        assert( 0 );
+    }
+    result = setsockopt( sockfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv) );
+    if ( 0 != result ) {
+        fprintf( stderr, "setsockopt=>%d (%s)", errno, strerror(errno) );
+        assert( 0 );
+    }
+
+
     struct hostent* hostip;
     hostip = gethostbyname( g_host );
     memcpy( &(to_sock.sin_addr.s_addr), hostip->h_addr_list[0],  
