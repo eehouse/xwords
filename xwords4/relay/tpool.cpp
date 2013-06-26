@@ -225,7 +225,8 @@ XWThreadPool::IsCurrent( const AddrInfo* addr )
             assert( !sockFound );
             sockFound = true;
             result = iter->second.m_addr.created() <= addr->created();
-            logf( XW_LOGINFO, "%s(sock=%d)=>%d (%lx vs %lx)", __func__, sock, result,
+            logf( XW_LOGINFO, "%s(sock=%d)=>%d (%lx vs %lx)",
+                  __func__, sock, result,
                   iter->second.m_addr.created(), addr->created() );
         }
     }

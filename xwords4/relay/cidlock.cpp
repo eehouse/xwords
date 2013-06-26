@@ -89,10 +89,11 @@ CidLock::print_claimed( const char* caller )
 #endif
 
 CidInfo* 
-CidLock::Claim( CookieID cid )
+CidLock::Claim( const CookieID origCid )
 {
+    CookieID cid = origCid;
 #ifdef CIDLOCK_DEBUG
-    logf( XW_LOGINFO, "%s(%d)", __func__, cid );
+    logf( XW_LOGINFO, "%s(%d)", __func__, origCid );
 #endif
     CidInfo* info = NULL;
     pthread_t self = pthread_self();
@@ -127,7 +128,7 @@ CidLock::Claim( CookieID cid )
         pthread_cond_wait( &m_infos_condvar, &m_infos_mutex );
     }
 #ifdef CIDLOCK_DEBUG
-    logf( XW_LOGINFO, "%s(%d): DONE", __func__, cid );
+    logf( XW_LOGINFO, "%s(%d): DONE", __func__, origCid );
 #endif
     return info;
 } /* CidLock::Claim */
@@ -191,7 +192,8 @@ CidLock::Relinquish( CidInfo* claim, bool drop )
     assert( claim->GetOwner() == pthread_self() );
     if ( drop ) {
 #ifdef CIDLOCK_DEBUG
-        logf( XW_LOGINFO, "%s: deleting %p", __func__, iter->second );
+        logf( XW_LOGINFO, "%s: deleting %p (cid=%d)",
+              __func__, claim, claim->GetCid() );
 #endif
         m_infos.erase( iter );
         claim->SetOwner( 0 );
