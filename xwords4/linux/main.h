@@ -90,7 +90,7 @@ typedef struct LaunchParams {
     XP_Bool skipGameOver;
     XP_Bool useMmap;
     XP_Bool closeStdin;
-    XP_Bool splitPackets;
+    XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
@@ -176,6 +176,8 @@ struct CommonGlobals {
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
+    GSList* packetQueue;
+    XP_U32 nextPacketID;        /* for debugging */
 
     CommsRelayState state;
 

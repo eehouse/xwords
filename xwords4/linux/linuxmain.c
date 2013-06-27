@@ -653,8 +653,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
-    ,{ CMD_SPLITPACKETS, false, "split-packets", "send tcp packets in "
-       "sections to test relay reassembly" }
+    ,{ CMD_SPLITPACKETS, true, "split-packets", "send tcp packets in "
+       "sections every random MOD <n> seconds to test relay reassembly" }
     ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
@@ -823,6 +823,92 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
     return sock;
 } /* linux_init_relay_socket */
 
+typedef struct _SendQueueElem {
+    XP_U32 id;
+    size_t len;
+    XP_U8* buf;
+} SendQueueElem;
+
+static bool
+send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
+{
+    size_t nSent = send( cGlobals->socket, buf, len, 0 );
+    bool success = len == nSent;
+    if ( !success ) {
+        close( cGlobals->socket );
+        (*cGlobals->socketChanged)( cGlobals->socketChangedClosure,
+                                    cGlobals->socket, -1, 
+                                    &cGlobals->storage );
+        cGlobals->socket = -1;
+
+        /* delete all pending packets since the socket's bad */
+        GSList* iter;
+        for ( iter = cGlobals->packetQueue; !!iter; iter = iter->next ) {
+            SendQueueElem* elem = (SendQueueElem*)iter->data;
+            free( elem->buf );
+            free( elem );
+        }
+    }
+    LOG_RETURNF( "%d", success );
+    return success;
+}
+
+static gboolean
+sendTimerFired( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+    if ( !!cGlobals->packetQueue ) {
+        guint listLen = g_slist_length( cGlobals->packetQueue );
+        assert( 0 < listLen );
+        SendQueueElem* elem = (SendQueueElem*)cGlobals->packetQueue->data;
+        cGlobals->packetQueue = cGlobals->packetQueue->next;
+
+        XP_LOGF( "%s: sending packet %ld of len %d (%d left)", __func__, 
+                 elem->id, elem->len, listLen - 1 );
+        bool sent = send_or_close( cGlobals, elem->buf, elem->len );
+        free( elem->buf );
+        free( elem );
+
+        if ( sent && 1 < listLen ) {
+            int when = XP_RANDOM() % (1 + cGlobals->params->splitPackets);
+            (void)g_timeout_add_seconds( when, sendTimerFired, cGlobals );
+        }
+    }
+
+    return FALSE;
+}
+
+static bool
+send_per_params( const XP_U8* buf, const XP_U16 buflen, 
+                 CommonGlobals* cGlobals )
+{
+    bool success;
+    if ( 0 == cGlobals->params->splitPackets ) {
+        success = send_or_close( cGlobals, buf, buflen );
+    } else {
+        for ( int nSent = 0; nSent < buflen;  ) {
+            int toSend = buflen / 2;
+            if ( toSend > buflen - nSent ) {
+                toSend = buflen - nSent;
+            }
+            SendQueueElem* elem = malloc( sizeof(*elem) );
+            elem->id = ++cGlobals->nextPacketID;
+            elem->buf = malloc( toSend );
+            XP_MEMCPY( elem->buf, &buf[nSent], toSend );
+            elem->len = toSend;
+            cGlobals->packetQueue = 
+                g_slist_append( cGlobals->packetQueue, elem );
+            nSent += toSend;
+            XP_LOGF( "%s: added packet %ld of len %d", __func__,
+                     elem->id, elem->len );
+        }
+        int when = XP_RANDOM() % (1 + cGlobals->params->splitPackets);
+        (void)g_timeout_add_seconds( when, sendTimerFired, cGlobals );
+        success = TRUE;
+    }
+    return success;
+}
+
 static XP_S16
 linux_tcp_send( const XP_U8* buf, XP_U16 buflen, 
                 CommonGlobals* globals, const CommsAddrRec* addrRec )
@@ -842,29 +928,13 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
 
     if ( sock != -1 ) {
         XP_U16 netLen = htons( buflen );
-        errno = 0;
+        XP_U8 tmp[buflen + sizeof(netLen)];
+        XP_MEMCPY( &tmp[0], &netLen, sizeof(netLen) );
+        XP_MEMCPY( &tmp[sizeof(netLen)], buf, buflen );
 
-        result = send( sock, &netLen, sizeof(netLen), 0 );
-        if ( result == sizeof(netLen) ) {
-            if ( globals->params->splitPackets ) {
-                int halflen = buflen / 2;
-                result = send( sock, buf, halflen, 0 ); 
-                sleep( 1 );
-                result += send( sock, buf + halflen, buflen - halflen, 0 ); 
-            } else {
-                result = send( sock, buf, buflen, 0 ); 
-            }
+        if ( send_per_params( tmp, buflen + sizeof(netLen), globals ) ) {
+            result = buflen;
         }
-        if ( result <= 0 ) {
-            XP_STATUSF( "closing non-functional socket" );
-            close( sock );
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       sock, -1, &globals->storage );
-            globals->socket = -1;
-        }
-
-        XP_STATUSF( "%s: send(sock=%d) returned %d of %d (err=%d)", 
-                    __func__, sock, result, buflen, errno );
     } else {
         XP_LOGF( "%s: socket still -1", __func__ );
     }
@@ -1922,7 +1992,7 @@ main( int argc, char** argv )
             mainParams.allowPeek = XP_FALSE;
             break;
         case CMD_SPLITPACKETS:
-            mainParams.splitPackets = XP_TRUE;
+            mainParams.splitPackets = atoi( optarg );
             break;
         case CMD_CHAT:
             mainParams.chatsInterval = atoi(optarg);
