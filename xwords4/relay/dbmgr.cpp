@@ -585,10 +585,10 @@ DBMgr::RecordSent( const char* const connName, HostID hid, int nBytes )
 {
     assert( hid >= 0 && hid <= 4 );
     const char* fmt = "UPDATE " GAMES_TABLE " SET"
-        " nsent = nsent + %d, mtimes[%d] = 'now'"
+        " nsents[%d] = nsents[%d] + %d, mtimes[%d] = 'now'"
         " WHERE connName = '%s'";
     string query;
-    string_printf( query, fmt, nBytes, hid, connName );
+    string_printf( query, fmt, hid, hid, nBytes, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
