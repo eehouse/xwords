@@ -27,7 +27,7 @@ echo -n "Device (pid) count: $(pidof xwords | wc | awk '{print $2}')"
 echo ";   relay pid[s]: $(pidof xwrelay)"
 echo "Row count:" $(psql -t xwgames -c "select count(*) FROM games $QUERY;")
 
-echo "SELECT dead,connname,cid,room,lang as lg,clntVers as cv ,ntotal as tot,nperdevice as nPerDev,seeds,addrs,tokens,devids,ack,nsent as snt "\
+echo "SELECT dead,connname,cid,room,lang as lg,clntVers as cv ,ntotal as tot,nperdevice as nPerDev,seeds,tokens,ack,nsents as snts "\
      "FROM games $QUERY ORDER BY NOT dead, connname LIMIT $LIMIT;" \
     | psql xwgames
 
