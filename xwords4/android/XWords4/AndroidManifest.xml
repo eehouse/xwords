@@ -22,7 +22,7 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4"
-          android:versionCode="53"
+          android:versionCode="54"
           android:versionName="@string/app_version"
           >
 
@@ -45,16 +45,7 @@
   <uses-permission android:name="android.permission.READ_SMS" />
   <uses-permission android:name="android.permission.READ_CONTACTS" />
 
-  <uses-feature android:name="android.permission.VIBRATE"
-                android:required = "false"
-                /> 
-  <uses-feature android:name="android.permission.RECEIVE_SMS"
-                android:required = "false"
-                /> 
-  <uses-feature android:name="android.permission.SEND_SMS"
-                android:required = "false"
-                /> 
-  <uses-feature android:name="android.permission.READ_SMS"
+  <uses-feature android:name="android.hardware.telephony"
                 android:required = "false"
                 /> 
 

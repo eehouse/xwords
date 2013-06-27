@@ -5,13 +5,13 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 61 release</b>
+<b>Crosswords 4.4 beta 62 release</b>
 
 <h3>New with this release</h3>
 <ul>
 
-  <li>Change manifest to make SMS optional, allowing installation on
-  tablets and other devices without phones.</li>
+  <li>Change manifest to make phone hardware optional, allowing
+  installation on tablets and other devices without phones.</li>
 
 </ul>
 
