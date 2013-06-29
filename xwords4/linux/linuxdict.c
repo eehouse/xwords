@@ -32,6 +32,7 @@
 #include "dictnryp.h"
 #include "linuxmain.h"
 #include "strutils.h"
+#include "linuxutl.h"
 
 typedef struct DictStart {
     XP_U32 numNodes;
@@ -374,16 +375,16 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
              ) {
             XP_U32 curPos = ptr - dctx->dictBase;
             gssize dictLength = dctx->dictLength - curPos;
-            GChecksum* cksum = g_checksum_new( G_CHECKSUM_MD5 );
-            g_checksum_update( cksum, ptr, dictLength );
-            const gchar* sum = g_checksum_get_string( cksum );
-            XP_LOGF( "calculated sum on %d bytes: %s", dictLength, sum );
+
+            XP_UCHAR buf[128];
+            XP_U16 buflen = VSIZE(buf);
+            figureMD5Sum( ptr, dictLength, buf, &buflen );
+            assert( buflen < VSIZE(buf) );
             if ( NULL == dctx->super.md5Sum ) {
-                dctx->super.md5Sum = copyString( dctx->super.mpool, sum );
+                dctx->super.md5Sum = copyString( dctx->super.mpool, buf );
             } else {
-                XP_ASSERT( 0 == XP_STRCMP( dctx->super.md5Sum, sum ) );
+                XP_ASSERT( 0 == XP_STRCMP( dctx->super.md5Sum, buf ) );
             }
-            g_checksum_free( cksum );
         }
 
         dctx->super.nFaces = numFaces;
