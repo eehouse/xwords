@@ -204,6 +204,8 @@ build_cmds() {
             PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
             PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
+            # PARAMS="$PARAMS --split-packets 2"
+            # PARAMS="$PARAMS --send-chat 2"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
@@ -461,10 +463,13 @@ run_cmds() {
             ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
         else
-            SLEEP=$((${MINEND[$KEY]} - $NOW))
-            [ $SLEEP -gt 0 ] && sleep $SLEEP
-            kill ${PIDS[$KEY]} || true
-            wait ${PIDS[$KEY]}
+            PID=${PIDS[$KEY]}
+            if [ -d /proc/$PID ]; then
+                SLEEP=$((${MINEND[$KEY]} - $NOW))
+                [ $SLEEP -gt 0 ] && sleep $SLEEP
+                kill $PID || true
+                wait $PID
+            fi
             PIDS[$KEY]=0
             ROOM_PIDS[$ROOM]=0
             [ "$DROP_N" -ge 0 ] && increment_drop $KEY
