@@ -829,6 +829,14 @@ typedef struct _SendQueueElem {
     XP_U8* buf;
 } SendQueueElem;
 
+static void
+free_elem_proc( gpointer data )
+{
+    SendQueueElem* elem = (SendQueueElem*)data;
+    free( elem->buf );
+    free( elem );
+}
+
 static bool
 send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
 {
@@ -842,12 +850,8 @@ send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
         cGlobals->socket = -1;
 
         /* delete all pending packets since the socket's bad */
-        GSList* iter;
-        for ( iter = cGlobals->packetQueue; !!iter; iter = iter->next ) {
-            SendQueueElem* elem = (SendQueueElem*)iter->data;
-            free( elem->buf );
-            free( elem );
-        }
+        g_slist_free_full( cGlobals->packetQueue, free_elem_proc );
+        cGlobals->packetQueue = NULL;
     }
     LOG_RETURNF( "%d", success );
     return success;
@@ -1056,7 +1060,7 @@ blocking_read( int fd, unsigned char* buf, int len )
 {
     int nRead = 0;
     while ( nRead < len ) {
-        XP_LOGF( "%s: blocking for %d bytes", __func__, len );
+        XP_LOGF( "%s(fd=%d): blocking for %d bytes", __func__, fd, len );
         ssize_t siz = read( fd, buf + nRead, len - nRead );
         if ( siz <= 0 ) {
             XP_LOGF( "read => %d, errno=%d (\"%s\")", nRead, 
