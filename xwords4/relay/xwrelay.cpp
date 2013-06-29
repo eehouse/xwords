@@ -1428,17 +1428,17 @@ void
 string_printf( string& str, const char* fmt, ... )
 {
     const int origsiz = str.size();
-    int newsiz = 100;
+    int addsiz = 100;
     va_list ap;
     for ( ; ; ) {
-        str.resize( origsiz + newsiz );
+        str.resize( origsiz + addsiz );
 
         va_start( ap, fmt );
-        int len = vsnprintf( (char *)str.c_str() + origsiz, newsiz, fmt, ap );
+        int len = vsnprintf( (char *)str.c_str() + origsiz, addsiz, fmt, ap );
         va_end( ap );
 
-        if ( len > newsiz ) {   // needs more space
-            newsiz = len + 1;
+        if ( len >= addsiz ) {   // needs more space
+            addsiz = len + 1;
         } else if ( -1 == len ) {
             assert(0);          // should be impossible
         } else {
