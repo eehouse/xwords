@@ -103,6 +103,7 @@ bool
 UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
 {
     PartialPacket* packet;
+    bool success = true;
 
     int sock = addr->socket();
 
@@ -122,10 +123,11 @@ UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
     if ( packet->readSoFar() < sizeof( packet->m_len ) ) {
         if ( packet->readAtMost( sizeof(packet->m_len) - packet->readSoFar() ) ) {
             packet->m_len = ntohs(*(unsigned short*)packet->data());
+            success = 0 < packet->m_len;
         }
     }
 
-    if ( packet->readSoFar() >= sizeof( packet->m_len ) ) {
+    if ( success && packet->readSoFar() >= sizeof( packet->m_len ) ) {
         assert( 0 < packet->m_len );
         int leftToRead = 
             packet->m_len - (packet->readSoFar() - sizeof(packet->m_len));
@@ -137,7 +139,8 @@ UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
         }
     }
 
-    return NULL == packet || packet->stillGood();
+    success = success && (NULL == packet || packet->stillGood());
+    return success;
 }
 
 void 
