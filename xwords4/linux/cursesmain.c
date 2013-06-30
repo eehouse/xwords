@@ -1732,7 +1732,7 @@ chatsTimerFired( gpointer data )
         gettimeofday( &tv, &tz );
         timp = localtime( &tv.tv_sec );
 
-        snprintf( msg, sizeof(msg), "Saying hi via chat at %.2d:%.2d:%.2d:", 
+        snprintf( msg, sizeof(msg), "Saying hi via chat at %.2d:%.2d:%.2d", 
                   timp->tm_hour, timp->tm_min, timp->tm_sec );
         server_sendChat( globals->cGlobals.game.server, msg );
         XP_LOGF( "%s: sent \"%s\"", __func__, msg );
