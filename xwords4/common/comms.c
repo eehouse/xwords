@@ -1204,6 +1204,11 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 
     channelNo = elem->channelNo;
 
+#ifdef COMMS_CHECKSUM
+    XP_LOGF( "%s: sending message of len %d with sum %s", __func__, elem->len, 
+             elem->checksum );
+#endif
+
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
@@ -1809,12 +1814,26 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XP_Bool usingRelay = XP_FALSE;
 
     XP_ASSERT( retAddr == NULL || comms->addr.conType == retAddr->conType );
+#ifdef COMMS_CHECKSUM
+    XP_U16 initialLen = stream_getSize( stream );
+#endif
 
     if ( !preProcess( comms, stream, &usingRelay, &senderID ) ) {
         XP_U32 connID;
         XP_PlayerAddr channelNo;
         MsgID msgID;
         MsgID lastMsgRcd;
+
+#ifdef COMMS_CHECKSUM
+        {
+            XP_U16 len = stream_getSize( stream );
+            // stream_getPtr pts at base, but sum excludes relay header
+            const XP_U8* ptr = initialLen - len + stream_getPtr( stream );
+            gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
+            XP_LOGF( "%s: got message of len %d with sum %s", __func__, len, sum );
+            g_free( sum );
+        }
+#endif
 
         /* reject too-small message */
         if ( stream_getSize( stream ) >=
