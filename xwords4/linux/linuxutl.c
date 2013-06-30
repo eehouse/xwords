@@ -652,7 +652,7 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
 } /* writeNoConnMsgs */
 
 void
-figureMD5Sum( const XP_U8* data, XP_U16 datalen, XP_UCHAR* buf, XP_U16* buflen )
+figureMD5Sum( const XP_U8* data, gssize datalen, XP_UCHAR* buf, XP_U16* buflen )
 {
     GChecksum* cksum = g_checksum_new( G_CHECKSUM_MD5 );
     g_checksum_update( cksum, data, datalen );
