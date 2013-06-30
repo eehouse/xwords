@@ -651,21 +651,6 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
     cGlobals->noConnMsgs = NULL;
 } /* writeNoConnMsgs */
 
-void
-figureMD5Sum( const XP_U8* data, gssize datalen, XP_UCHAR* buf, XP_U16* buflen )
-{
-    GChecksum* cksum = g_checksum_new( G_CHECKSUM_MD5 );
-    g_checksum_update( cksum, data, datalen );
-    const gchar* sum = g_checksum_get_string( cksum );
-    XP_LOGF( "%s calculated sum on %d bytes: %s", __func__, datalen, sum );
-    int sumlen = strlen( sum );
-    if ( sumlen < *buflen ) {
-        (void)snprintf( buf, *buflen, "%s", sum );
-    }
-    *buflen = sumlen;
-    g_checksum_free( cksum );
-}
-
 #ifdef TEXT_MODEL
 /* This is broken for UTF-8, even Spanish */
 void

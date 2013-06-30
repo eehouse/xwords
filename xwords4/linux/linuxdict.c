@@ -376,15 +376,13 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
             XP_U32 curPos = ptr - dctx->dictBase;
             gssize dictLength = dctx->dictLength - curPos;
 
-            XP_UCHAR buf[128];
-            XP_U16 buflen = VSIZE(buf);
-            figureMD5Sum( ptr, dictLength, buf, &buflen );
-            assert( buflen < VSIZE(buf) );
+	    gchar* checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, dictLength );
             if ( NULL == dctx->super.md5Sum ) {
-                dctx->super.md5Sum = copyString( dctx->super.mpool, buf );
+                dctx->super.md5Sum = copyString( dctx->super.mpool, checksum );
             } else {
-                XP_ASSERT( 0 == XP_STRCMP( dctx->super.md5Sum, buf ) );
+                XP_ASSERT( 0 == XP_STRCMP( dctx->super.md5Sum, checksum ) );
             }
+	    g_free( checksum );
         }
 
         dctx->super.nFaces = numFaces;

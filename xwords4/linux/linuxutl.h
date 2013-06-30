@@ -49,10 +49,6 @@ XP_Bool storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 len,
                         const XP_UCHAR* relayID );
 void writeNoConnMsgs( CommonGlobals* cGlobals, int fd );
 
-void figureMD5Sum( const XP_U8* data, gssize datalen, 
-                   XP_UCHAR* buf, XP_U16* buflen );
-
-
 #ifdef STREAM_VERS_BIGBOARD
 void setSquareBonuses( const CommonGlobals* cGlobals );
 #else
