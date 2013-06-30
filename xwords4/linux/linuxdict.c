@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 1997 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -93,8 +93,6 @@ getNullTermParam( LinuxDictionaryCtxt* XP_UNUSED_DBG(dctx), const XP_U8** ptr,
     XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
     XP_UCHAR* result = XP_MALLOC( dctx->super.mpool, len );
     XP_MEMCPY( result, *ptr, len );
-    XP_LOGF( "%s: got param of len %d: \"%s\"", __func__, 
-             len, result );
     *ptr += len;
     *headerLen -= len;
     return result;
@@ -376,13 +374,13 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
             XP_U32 curPos = ptr - dctx->dictBase;
             gssize dictLength = dctx->dictLength - curPos;
 
-	    gchar* checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, dictLength );
+            gchar* checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, dictLength );
             if ( NULL == dctx->super.md5Sum ) {
                 dctx->super.md5Sum = copyString( dctx->super.mpool, checksum );
             } else {
                 XP_ASSERT( 0 == XP_STRCMP( dctx->super.md5Sum, checksum ) );
             }
-	    g_free( checksum );
+            g_free( checksum );
         }
 
         dctx->super.nFaces = numFaces;
