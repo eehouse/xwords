@@ -26,6 +26,7 @@ SEED=""
 BOARD_SIZES_OLD=(15)
 BOARD_SIZES_NEW=(15)
 NAMES=(UNUSED Brynn Ariela Kati Eric)
+SEND_CHAT=''
 
 declare -A PIDS
 declare -A APPS
@@ -49,8 +50,14 @@ function cleanup() {
         sleep 1
     done
     echo "cleaning everything up...."
-    rm -f $(dirname $0)/../../relay/xwrelay.log
-    rm -rf ${LOGDIR}
+    if [ -d $LOGDIR ]; then
+	mv $LOGDIR /tmp/${LOGDIR}_$$
+    fi
+    if [ -e $(dirname $0)/../../relay/xwrelay.log ]; then
+	mkdir -p /tmp/${LOGDIR}_$$
+	mv $(dirname $0)/../../relay/xwrelay.log /tmp/${LOGDIR}_$$
+    fi
+
     echo "delete from games;" | psql -q -t xwgames
 }
 
@@ -205,7 +212,9 @@ build_cmds() {
             PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --split-packets 2"
-            # PARAMS="$PARAMS --send-chat 2"
+	    if [ -n $SEND_CHAT ]; then
+		PARAMS="$PARAMS --send-chat $SEND_CHAT"
+	    fi
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
@@ -549,6 +558,8 @@ function usage() {
     echo "    [--port <int>]                                          \\" >&2
     echo "    [--seed <int>]                                          \\" >&2
     echo "    [--undo-pct <int>]                                      \\" >&2
+    echo "    [--send-chat <interval-in-seconds>                      \\" >&2
+    echo "    [--resign-ratio <0 <= n <=1000 >                        \\" >&2
     echo "    [--help]                                                \\" >&2
 
     exit 1
@@ -615,6 +626,14 @@ while [ "$#" -gt 0 ]; do
             UNDO_PCT=$(getArg $*)
             shift
             ;;
+	--send-chat)
+	    SEND_CHAT=$(getArg $*)
+	    shift
+	    ;;
+	--resign-ratio)
+	    RESIGN_RATIO=$(getArg $*)
+	    shift
+	    ;;
         --help)
             usage
             ;;
