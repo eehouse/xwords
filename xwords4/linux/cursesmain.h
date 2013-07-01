@@ -81,6 +81,7 @@ struct CursesAppGlobals {
 
     short statusLine;
     XWGameState state;
+    CommsRelayState commsRelayState; 
 
     struct sockaddr_in listenerSockAddr;
 #ifdef USE_GLIBLOOP

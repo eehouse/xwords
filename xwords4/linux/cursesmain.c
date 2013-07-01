@@ -1661,9 +1661,10 @@ relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
 } /* relay_sendNoConn_curses */
 
 static void
-relay_status_curses( void* XP_UNUSED(closure), 
-                     CommsRelayState XP_UNUSED_DBG(state) )
+relay_status_curses( void* closure, CommsRelayState state )
 {
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    globals->commsRelayState = state;
     XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
 }
 
@@ -1720,14 +1721,13 @@ chatsTimerFired( gpointer data )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
 
-    GameStateInfo gsi;
-    game_getState( &globals->cGlobals.game, &gsi );
-
-    if ( gsi.gameIsConnected ) {
+    if ( COMMS_RELAYSTATE_ALLCONNECTED == globals->commsRelayState ) {
         XP_UCHAR msg[128];
         struct tm* timp;
         struct timeval tv;
         struct timezone tz;
+
+        XP_LOGF( "%s: sending \"%s\"", __func__, msg );
 
         gettimeofday( &tv, &tz );
         timp = localtime( &tv.tv_sec );
@@ -1735,7 +1735,6 @@ chatsTimerFired( gpointer data )
         snprintf( msg, sizeof(msg), "Saying hi via chat at %.2d:%.2d:%.2d", 
                   timp->tm_hour, timp->tm_min, timp->tm_sec );
         server_sendChat( globals->cGlobals.game.server, msg );
-        XP_LOGF( "%s: sent \"%s\"", __func__, msg );
     }
 
     return TRUE;

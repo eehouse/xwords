@@ -48,8 +48,6 @@
 # include <bluetooth/hci_lib.h>
 #endif
 
-/* #include <pthread.h> */
-
 #include "linuxmain.h"
 #include "linuxutl.h"
 #include "linuxbt.h"
