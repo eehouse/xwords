@@ -51,11 +51,11 @@ function cleanup() {
     done
     echo "cleaning everything up...."
     if [ -d $LOGDIR ]; then
-	mv $LOGDIR /tmp/${LOGDIR}_$$
+    mv $LOGDIR /tmp/${LOGDIR}_$$
     fi
     if [ -e $(dirname $0)/../../relay/xwrelay.log ]; then
-	mkdir -p /tmp/${LOGDIR}_$$
-	mv $(dirname $0)/../../relay/xwrelay.log /tmp/${LOGDIR}_$$
+    mkdir -p /tmp/${LOGDIR}_$$
+    mv $(dirname $0)/../../relay/xwrelay.log /tmp/${LOGDIR}_$$
     fi
 
     echo "delete from games;" | psql -q -t xwgames
@@ -212,9 +212,9 @@ build_cmds() {
             PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --split-packets 2"
-	    if [ -n $SEND_CHAT ]; then
-		PARAMS="$PARAMS --send-chat $SEND_CHAT"
-	    fi
+            if [ -n $SEND_CHAT ]; then
+                   PARAMS="$PARAMS --send-chat $SEND_CHAT"
+            fi
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
@@ -626,14 +626,14 @@ while [ "$#" -gt 0 ]; do
             UNDO_PCT=$(getArg $*)
             shift
             ;;
-	--send-chat)
-	    SEND_CHAT=$(getArg $*)
-	    shift
-	    ;;
-	--resign-ratio)
-	    RESIGN_RATIO=$(getArg $*)
-	    shift
-	    ;;
+    --send-chat)
+            SEND_CHAT=$(getArg $*)
+            shift
+            ;;
+    --resign-ratio)
+        RESIGN_RATIO=$(getArg $*)
+        shift
+        ;;
         --help)
             usage
             ;;
