@@ -71,17 +71,17 @@ public:
 
 class PartialPacket {
  public:
-    PartialPacket(int sock) {
-        m_sock = sock;
-        m_len = 0;
-        m_errno = 0;
-    }
+    PartialPacket(int sock)
+        :m_len(0)
+        ,m_sock(sock)
+        ,m_errno(0)
+        {}
     bool stillGood() const ;
     bool readAtMost( int len );
     size_t readSoFar() const { return m_buf.size(); }
     const uint8_t* data() const { return m_buf.data(); }
 
-    unsigned short m_len;
+    unsigned short m_len;       /* decoded via ntohs from the first 2 bytes */
  private:
 
     vector<uint8_t> m_buf;
