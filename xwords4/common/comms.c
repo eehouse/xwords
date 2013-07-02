@@ -287,7 +287,9 @@ static void
 init_relay( CommsCtxt* comms, XP_U16 nPlayersHere, XP_U16 nPlayersTotal )
 {
     comms->r.myHostID = comms->isServer? HOST_ID_SERVER: HOST_ID_NONE;
-    XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
+    if ( HOST_ID_NONE != comms->r.myHostID ) {
+        XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
+    }
     set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
     comms->r.nPlayersHere = nPlayersHere;
     comms->r.nPlayersTotal = nPlayersTotal;
@@ -953,6 +955,8 @@ static MsgQueueElem*
 makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec, 
                 XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
+    XP_LOGF( "%s(channelNo=%x)", __func__, channelNo );
+    // XP_ASSERT( 0 == (channelNo & CHANNEL_MASK) );
     XP_U16 headerLen;
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
     MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
@@ -1634,7 +1638,7 @@ preProcess( CommsCtxt* comms, XWStreamCtxt* stream,
 
 static AddressRecord* 
 getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr, 
-              XP_PlayerAddr channelNo, XP_Bool maskChannel )
+              const XP_PlayerAddr channelNo, XP_Bool maskChannel )
 {
     CommsConnType conType;
     AddressRecord* rec;
@@ -1688,6 +1692,8 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
             break;
         }
     }
+    XP_LOGF( "%s(channelNo=%x, maskChannel=%s) => %p", __func__, 
+             channelNo, maskChannel? "true":"false", rec );
     return rec;
 } /* getRecordFor */
 

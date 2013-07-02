@@ -1,7 +1,7 @@
 /* -*- compile-command: "make -k -j3"; -*- */
 
 /* 
- * Copyright 2010-2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2010-2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -122,7 +122,9 @@ UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
     // First see if we've read the length bytes
     if ( packet->readSoFar() < sizeof( packet->m_len ) ) {
         if ( packet->readAtMost( sizeof(packet->m_len) - packet->readSoFar() ) ) {
-            packet->m_len = ntohs(*(unsigned short*)packet->data());
+            uint16_t tmp;
+            memcpy( &tmp, packet->data(), sizeof(tmp) );
+            packet->m_len = ntohs(tmp);
             success = 0 < packet->m_len;
         }
     }

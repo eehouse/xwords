@@ -1171,13 +1171,17 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
         RemoteAddress* addr; 
         addr = &server->nv.addresses[server->nv.nDevices];
 
-        deviceIndex = server->nv.nDevices++;
-
         XP_ASSERT( channelNo != 0 );
         addr->channelNo = channelNo;
+        XP_LOGF( "%s: set channelNo to %x for device %d", __func__,
+                 channelNo, server->nv.nDevices );
+
+        deviceIndex = server->nv.nDevices++;
 #ifdef STREAM_VERS_BIGBOARD
         addr->streamVersion = STREAM_SAVE_PREVWORDS;
 #endif
+    } else {
+        XP_LOGF( "%s: deviceIndex already set", __func__ );
     }
 
     player->deviceIndex = deviceIndex;
@@ -1272,11 +1276,12 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         channelNo = stream_getAddress( stream );
         XP_ASSERT( channelNo != 0 );
         server->nv.addresses[0].channelNo = channelNo;
+        XP_LOGF( "%s: assigning channelNo %x for 0", __func__, channelNo );
 
         model_setSize( model, nCols );
 
         nPlayers = localGI.nPlayers;
-        XP_STATUSF( "reading in %d players", localGI.nPlayers );
+        XP_LOGF( "%s: reading in %d players", __func__, localGI.nPlayers );
 
         gi_disposePlayerInfo( MPPARM(server->mpool) &localGI );
 
