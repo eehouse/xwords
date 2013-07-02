@@ -757,7 +757,9 @@ DBMgr::execSql( const char* const query )
     PGresult* result = PQexec( getThreadConn(), query );
     bool ok = PGRES_COMMAND_OK == PQresultStatus(result);
     if ( !ok ) {
-        logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), PQresultErrorMessage(result) );
+        logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), 
+              PQresultErrorMessage(result) );
+        assert( 0 );
     }
     PQclear( result );
     return ok;
@@ -1143,12 +1145,19 @@ DBMgr::getThreadConn( void )
 
     if ( NULL == conn ) {
         char buf[128];
-        int len = snprintf( buf, sizeof(buf), "dbname = " );
-        if ( !RelayConfigs::GetConfigs()->
-             GetValueFor( "DB_NAME", &buf[len], sizeof(buf)-len ) ) {
+        int port;
+        if ( !RelayConfigs::GetConfigs()->GetValueFor( "DB_NAME", buf, 
+                                                       sizeof(buf) ) ) {
             assert( 0 );
         }
-        conn = PQconnectdb( buf );
+        if ( !RelayConfigs::GetConfigs()->GetValueFor( "DB_PORT", &port ) ) {
+            assert( 0 );
+        }
+        string params;
+        string_printf( params, "dbname = %s ", buf );
+        string_printf( params, "port = %d ", port );
+
+        conn = PQconnectdb( params.c_str() );
         pthread_setspecific( m_conn_key, conn );
     }
     return conn;

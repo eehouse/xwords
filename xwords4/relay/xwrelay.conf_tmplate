@@ -56,6 +56,8 @@ SERVERNAME=eehouse.org
 
 # name of the database.  (Table names are hard-coded.)
 DB_NAME=xwgames
+# UDP port postgres server is listening on
+DB_PORT=5433
 
 # Initial level of logging.  See xwrelay_priv.h for values.  Currently
 # 0 means errors only, 1 info, 2 verbose and 3 very verbose.
