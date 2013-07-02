@@ -1727,13 +1727,12 @@ chatsTimerFired( gpointer data )
         struct timeval tv;
         struct timezone tz;
 
-        XP_LOGF( "%s: sending \"%s\"", __func__, msg );
-
         gettimeofday( &tv, &tz );
         timp = localtime( &tv.tv_sec );
 
         snprintf( msg, sizeof(msg), "Saying hi via chat at %.2d:%.2d:%.2d", 
                   timp->tm_hour, timp->tm_min, timp->tm_sec );
+        XP_LOGF( "%s: sending \"%s\"", __func__, msg );
         server_sendChat( globals->cGlobals.game.server, msg );
     }
 
