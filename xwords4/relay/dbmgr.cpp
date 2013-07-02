@@ -754,14 +754,19 @@ DBMgr::execSql( const string& query )
 bool
 DBMgr::execSql( const char* const query )
 {
-    PGresult* result = PQexec( getThreadConn(), query );
-    bool ok = PGRES_COMMAND_OK == PQresultStatus(result);
-    if ( !ok ) {
-        logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), 
-              PQresultErrorMessage(result) );
-        assert( 0 );
+    bool ok = false;
+    for ( int ii = 0; !ok && ii < 3; ++ii ) {
+        PGresult* result = PQexec( getThreadConn(), query );
+        ok = PGRES_COMMAND_OK == PQresultStatus(result);
+        if ( !ok ) {
+            logf( XW_LOGERROR, "%s: PQexec=>%s;%s", __func__,
+                  PQresStatus(PQresultStatus(result)), 
+                  PQresultErrorMessage(result) );
+            usleep( 20000 );
+        }
+        PQclear( result );
     }
-    PQclear( result );
+    assert( ok );
     return ok;
 }
 
