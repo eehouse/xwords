@@ -135,6 +135,7 @@ class DBMgr {
                         int byteaIndex, unsigned char* buf, size_t* buflen );
 
     PGconn* getThreadConn( void );
+    void clearThreadConn();
 
     void conn_key_alloc();
     pthread_key_t m_conn_key;

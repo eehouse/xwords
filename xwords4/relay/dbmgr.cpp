@@ -762,6 +762,7 @@ DBMgr::execSql( const char* const query )
             logf( XW_LOGERROR, "%s: PQexec=>%s;%s", __func__,
                   PQresStatus(PQresultStatus(result)), 
                   PQresultErrorMessage(result) );
+            clearThreadConn();
             usleep( 20000 );
         }
         PQclear( result );
@@ -1141,6 +1142,18 @@ destr_function( void* conn )
     logf( XW_LOGINFO, "%s()", __func__ );
     PGconn* pgconn = (PGconn*)conn;
     PQfinish( pgconn );
+}
+
+void
+DBMgr::clearThreadConn()
+{
+    logf( XW_LOGERROR, "%s called()", __func__ );
+    PGconn* conn = (PGconn*)pthread_getspecific( m_conn_key );
+    if ( NULL != conn ) {
+        PQfinish( conn );
+        int result = pthread_setspecific( m_conn_key, NULL );
+        assert( 0 == result );
+    }
 }
 
 PGconn* 
