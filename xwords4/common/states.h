@@ -25,7 +25,7 @@ enum {
     XWSTATE_BEGIN,
     __UNUSED1,                    /* was XWSTATE_POOL_INITED */
     XWSTATE_NEED_SHOWSCORE,       /* client-only */
-    XWSTATE_WAITING_ALL_REG,      /* includes waiting for dict from server */
+    __XWSTATE_WAITING_ALL_REG,      /* unused */
     XWSTATE_RECEIVED_ALL_REG,     /* includes waiting for dict from server */
     XWSTATE_NEEDSEND_BADWORD_INFO,
     XWSTATE_MOVE_CONFIRM_WAIT,    /* client's waiting to hear back */
