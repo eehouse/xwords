@@ -1008,7 +1008,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 XP_U16
 comms_getChannelSeed( CommsCtxt* comms )
 {
-    while ( comms->channelSeed == 0 ) {
+    while ( 0 == (comms->channelSeed & ~CHANNEL_MASK) ) {
         comms->channelSeed = XP_RANDOM();
         XP_LOGF( "%s: channelSeed: %.4X", __func__, comms->channelSeed );
     }
@@ -1297,25 +1297,27 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
 void
 comms_ackAny( CommsCtxt* comms )
 {
+    if ( CONN_ID_NONE == comms->connID ) {
+        XP_LOGF( "%s: doing nothing because connID still unset", __func__ );
+    } else {
 #ifdef DEBUG
-    XP_Bool noneSent = XP_TRUE;
+        XP_U16 nSent = 0;
 #endif 
-    AddressRecord* rec;
-    for ( rec = comms->recs; !!rec; rec = rec->next ) {
-        if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
+        AddressRecord* rec;
+        for ( rec = comms->recs; !!rec; rec = rec->next ) {
+            if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
 #ifdef DEBUG
-            noneSent = XP_FALSE;
+                ++nSent;
 #endif 
-            XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
-                     rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
-            sendEmptyMsg( comms, rec );
+                XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
+                         rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
+                sendEmptyMsg( comms, rec );
+            }
         }
-    }
 #ifdef DEBUG
-    if ( noneSent ) {
-        XP_LOGF( "%s: nothing to send", __func__ );
-    }
+        XP_LOGF( "%s: sent for %d channels", __func__, nSent );
 #endif 
+    } 
 }
 #endif
 
