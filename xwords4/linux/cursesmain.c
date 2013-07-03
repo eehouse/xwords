@@ -1517,8 +1517,10 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #ifdef XWFEATURE_CHAT
 static void
-curses_util_showChat( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* const msg )
+curses_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg )
 {
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    globals->nChatsSent = 0;
     XP_LOGF( "%s: got \"%s\"", __func__, msg );
 }
 #endif
@@ -1721,7 +1723,8 @@ chatsTimerFired( gpointer data )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
 
-    if ( COMMS_RELAYSTATE_ALLCONNECTED == globals->commsRelayState ) {
+    if ( COMMS_RELAYSTATE_ALLCONNECTED == globals->commsRelayState 
+         && 3 > globals->nChatsSent ) {
         XP_UCHAR msg[128];
         struct tm* timp;
         struct timeval tv;
@@ -1734,6 +1737,7 @@ chatsTimerFired( gpointer data )
                   timp->tm_hour, timp->tm_min, timp->tm_sec );
         XP_LOGF( "%s: sending \"%s\"", __func__, msg );
         server_sendChat( globals->cGlobals.game.server, msg );
+        ++globals->nChatsSent;
     }
 
     return TRUE;

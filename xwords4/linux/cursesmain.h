@@ -69,6 +69,8 @@ struct CursesAppGlobals {
     const struct MenuList* menuList;
     XP_U16 nLinesMenu;
 
+    XP_U16 nChatsSent;
+
     union {
         struct {
             XWStreamCtxt* stream; /* how we can reach the server */
