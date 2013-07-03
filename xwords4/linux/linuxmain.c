@@ -785,15 +785,14 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
         /* make a local copy of the address to send to */
         sock = socket( AF_INET, SOCK_STREAM, 0 );
         if ( sock == -1 ) {
-            XP_DEBUGF( "socket returned -1\n" );
+            XP_DEBUGF( "%s: socket returned -1\n", __func__ );
             goto done;
         }
 
         to_sock.sin_port = htons( addrRec->u.ip_relay.port );
-        XP_STATUSF( "1: sending to port %d", addrRec->u.ip_relay.port );
         host = gethostbyname( addrRec->u.ip_relay.hostName );
         if ( NULL == host ) {
-            XP_WARNF( "%s: gethostbyname(%s) returned -1",  __func__, 
+            XP_WARNF( "%s: gethostbyname(%s) failed",  __func__, 
                       addrRec->u.ip_relay.hostName );
             sock = -1;
             goto done;
@@ -1054,20 +1053,20 @@ linux_close_socket( CommonGlobals* cGlobals )
 }
 
 int
-blocking_read( int fd, unsigned char* buf, int len )
+blocking_read( int fd, unsigned char* buf, const int len )
 {
     int nRead = 0;
     while ( nRead < len ) {
-        XP_LOGF( "%s(fd=%d): blocking for %d bytes", __func__, fd, len );
         ssize_t siz = read( fd, buf + nRead, len - nRead );
         if ( siz <= 0 ) {
-            XP_LOGF( "read => %d, errno=%d (\"%s\")", nRead, 
+            XP_LOGF( "%s: read => %d, errno=%d (\"%s\")", __func__, nRead, 
                      errno, strerror(errno) );
             nRead = -1;
             break;
         }
         nRead += siz;
     }
+    XP_LOGF( "%s(fd=%d, sought=%d) => %d", __func__, fd, len, nRead );
     return nRead;
 }
 
