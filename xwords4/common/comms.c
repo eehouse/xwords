@@ -956,7 +956,6 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
                 XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
     XP_LOGF( "%s(channelNo=%x)", __func__, channelNo );
-    // XP_ASSERT( 0 == (channelNo & CHANNEL_MASK) );
     XP_U16 headerLen;
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
     MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
@@ -1066,10 +1065,6 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
         XP_ASSERT( comms->queueLen > 0 );
     }
     ++comms->queueLen;
-    XP_LOGF( "%s: queueLen now %d after channelNo: %d; msgID: " XP_LD 
-             "; len: %d", __func__, comms->queueLen,
-             newMsgElem->channelNo & CHANNEL_MASK, newMsgElem->msgID, 
-             newMsgElem->len );
 } /* addToQueue */
 
 #ifdef DEBUG
@@ -1081,7 +1076,7 @@ printQueue( const CommsCtxt* comms )
 
     for ( elem = comms->msgQueueHead, ii = 0; ii < comms->queueLen; 
           elem = elem->next, ++ii ) {
-        XP_STATUSF( "\t%d: channel: %x; msgID=" XP_LD 
+        XP_LOGF( "\t%d: channel: %x; msgID=" XP_LD 
 #ifdef COMMS_CHECKSUM
                     "; check=%s"
 #endif
@@ -1132,8 +1127,8 @@ freeElem( const CommsCtxt* XP_UNUSED_DBG(comms), MsgQueueElem* elem )
 static void
 removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 {
-    XP_STATUSF( "%s: remove msgs <= " XP_LD " for channel %x (queueLen: %d)",
-                __func__, msgID, channelNo, comms->queueLen );
+    XP_LOGF( "%s: remove msgs <= " XP_LD " for channel %x (queueLen: %d)",
+             __func__, msgID, channelNo, comms->queueLen );
 
     if ( (channelNo == 0) || !!getRecordFor( comms, NULL, channelNo, 
                                              XP_FALSE ) ) {
@@ -1169,7 +1164,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
         }
     }
 
-    XP_STATUSF( "%s: queueLen now %d", __func__, comms->queueLen );
+    XP_LOGF( "%s: queueLen now %d", __func__, comms->queueLen );
 
 #ifdef DEBUG
     assertQueueOk( comms );
@@ -1747,7 +1742,7 @@ validateInitialMessage( CommsCtxt* comms,
         if ( addRec ) {
             if ( comms->isServer ) {
                 XP_LOGF( "%s: looking at channelNo: %x", __func__, *channelNo );
-                XP_ASSERT( (*channelNo && CHANNEL_MASK) == 0 );
+                XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
                 *channelNo |= ++comms->nextChannelNo;
                 XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
             }
@@ -1769,12 +1764,22 @@ validateInitialMessage( CommsCtxt* comms,
         } else {
             if ( comms->isServer ) {
                 XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
-                *channelNo |= ++comms->nextChannelNo;
-                XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
+                if ( 0 == (*channelNo & CHANNEL_MASK) ) {
+                    *channelNo |= ++comms->nextChannelNo;
+                    XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
+                } else {
+                    /* Why do I sometimes see these in the middle of a game
+                       with lots of messages already sent?  connID of 0 should
+                       only happen at the start! */
+                    XP_LOGF( "%s: dropping msg because channel already set",
+                             __func__ );
+                    goto errExit;
+                }
             }
             rec = rememberChannelAddress( comms, *channelNo, senderID, addr );
         }
     }
+ errExit:
     LOG_RETURNF( XP_P, rec );
     return rec;
 } /* validateInitialMessage */
@@ -1866,6 +1871,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             } else if ( comms->connID == connID ) {
                 rec = validateChannelMessage( comms, retAddr, channelNo, msgID,
                                               lastMsgRcd );
+            } else {
+                XP_LOGF( "%s: unexpected connID; dropping message", __func__ );
             }
 
             messageValid = (NULL != rec)
