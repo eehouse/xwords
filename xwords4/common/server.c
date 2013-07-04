@@ -3041,10 +3041,9 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
 {
     ScoresArray scores;
     ScoresArray tilePenalties;
-    XP_U16 place, nPlayers;
+    XP_U16 place;
     XP_S16 quitter = server->nv.quitter;
     XP_Bool quitterDone = XP_FALSE;
-    XP_USE(quitter);
     ModelCtxt* model = server->vol.model;
     const XP_UCHAR* addString = util_getUserString( server->vol.util,
                                                     STRD_REMAINING_TILES_ADD );
@@ -3052,18 +3051,18 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
                                                     STRD_UNUSED_TILES_SUB );
     XP_UCHAR* timeStr;
     CurGameInfo* gi = server->vol.gi;
+    const XP_U16 nPlayers = gi->nPlayers;
 
     XP_ASSERT( server->nv.gameState == XWSTATE_GAMEOVER );
 
     model_figureFinalScores( model, &scores, &tilePenalties );
 
-    nPlayers = gi->nPlayers;
-
+    XP_S16 winningScore = IMPOSSIBLY_LOW_SCORE;
     for ( place = 1; !quitterDone; ++place ) {
         XP_UCHAR timeBuf[16];
         XP_UCHAR buf[128]; 
-        XP_S16 highestScore = IMPOSSIBLY_LOW_SCORE;
-        XP_S16 highestIndex = -1;
+        XP_S16 thisScore = IMPOSSIBLY_LOW_SCORE;
+        XP_S16 thisIndex = -1;
         const XP_UCHAR* placeStr = NULL;
         XP_UCHAR placeBuf[32];
         XP_UCHAR tmpbuf[48];
@@ -3072,22 +3071,27 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
 
         /* Find the next player we should print */
         for ( ii = 0; ii < nPlayers; ++ii ) {
-            if ( quitter != ii && scores.arr[ii] > highestScore ) {
-                highestIndex = ii;
-                highestScore = scores.arr[ii];
+            if ( quitter != ii && scores.arr[ii] > thisScore ) {
+                thisIndex = ii;
+                thisScore = scores.arr[ii];
             }
         }
 
-        if ( highestIndex == -1 ) {
+        /* save top score overall to test for winner, including tie case */
+        if ( 1 == place ) {
+            winningScore = thisScore;
+        }
+
+        if ( thisIndex == -1 ) {
             if ( quitter >= 0 ) {
                 XP_ASSERT( !quitterDone );
-                highestIndex = quitter;
+                thisIndex = quitter;
                 quitterDone = XP_TRUE;
                 placeKey = STR_RESIGNED;
             } else {
                 break; /* we're done */
             }
-        } else if ( place == 1 ) {
+        } else if ( thisScore == winningScore ) {
             placeKey = STR_WINNER;
         }
 
@@ -3102,7 +3106,7 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
 
         timeStr = (XP_UCHAR*)"";
         if ( gi->timerEnabled ) {
-            XP_U16 penalty = player_timePenalty( gi, highestIndex );
+            XP_U16 penalty = player_timePenalty( gi, thisIndex );
             if ( penalty > 0 ) {
                 XP_SNPRINTF( timeBuf, sizeof(timeBuf), 
                              util_getUserString( 
@@ -3113,18 +3117,18 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
             }
         }
 
-        firstDone = model_getNumTilesTotal( model, highestIndex) == 0;
+        firstDone = model_getNumTilesTotal( model, thisIndex) == 0;
         XP_SNPRINTF( tmpbuf, sizeof(tmpbuf), 
                      (firstDone? addString:subString),
                      firstDone? 
-                     tilePenalties.arr[highestIndex]:
-                     -tilePenalties.arr[highestIndex] );
+                     tilePenalties.arr[thisIndex]:
+                     -tilePenalties.arr[thisIndex] );
 
         XP_SNPRINTF( buf, sizeof(buf), 
                      (XP_UCHAR*)"[%s] %s: %d" XP_CR "  (%d %s%s)", placeStr, 
-                     emptyStringIfNull(gi->players[highestIndex].name),
-                     scores.arr[highestIndex], 
-                     model_getPlayerScore( model, highestIndex ),
+                     emptyStringIfNull(gi->players[thisIndex].name),
+                     scores.arr[thisIndex], 
+                     model_getPlayerScore( model, thisIndex ),
                      tmpbuf, timeStr );
 
         if ( 1 < place ) {
@@ -3133,7 +3137,7 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         stream_catString( stream, buf );
 
         /* Don't consider this one next time around */
-        scores.arr[highestIndex] = IMPOSSIBLY_LOW_SCORE;
+        scores.arr[thisIndex] = IMPOSSIBLY_LOW_SCORE;
     }
 } /* server_writeFinalScores */
 
