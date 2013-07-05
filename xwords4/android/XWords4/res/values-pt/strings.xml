@@ -1886,8 +1886,11 @@
     <string name="dict_browse_nowordsf">Nenhuma palavra em %1$s começa com
       %2$s.</string>
       <!--  -->
-    <string name="not_again_browse">Esse botão abre o navegador de
-    listas de palavras na lista do jogador atual.</string>
+    <string name="not_again_browse">Esse botão abre o seletor de listas
+    de palavras na lista do jogador atual.</string>
+    <string name="not_again_browseall">Esse botão abre o seletor de listas
+    de palavras na lista de sua escolha.</string>
+
       <!--  -->
     <string name="alert_empty_dictf">A lista de palavras %s só contém
     informações de pedras.  Não há palavras para mostrar.</string>
@@ -2197,4 +2200,7 @@
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
 
     <string name="change_groupf">Mover jogo %s</string>
+
+    <string name="show_wordlist_browser">Listas de palavras</string>
+
 </resources>
