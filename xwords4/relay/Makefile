@@ -45,6 +45,7 @@ OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -pthread -g $(STATIC)
 LDFLAGS += 	-L$(shell pg_config --libdir)
 LDFLAGS += $(shell pkg-config --libs glib-2.0)
+LDFLAGS += -lrt
 
 CPPFLAGS += -DSPAWN_SELF -g -Wall
 CPPFLAGS += -I $(shell pg_config --includedir)
