@@ -203,27 +203,30 @@ parseRelayID( const unsigned char** const inp, const unsigned char* const end,
     if ( ok ) {
         strncpy( buf, (char*)*inp, connNameLen );
         buf[connNameLen] = '\0';
-        char* endptr;
-        *hid = strtol( hidp + 1, &endptr, 10 );
 
-	if ( *hid >= 0 && *hid <= 4 ) {
-	    if ( '\n' == *endptr ) {
-		++endptr;
-	    }
-	    *inp = (unsigned char*)endptr;
-	} else {
-	    ok = false;
+        ++hidp; 	        // skip '/'
+        *hid = *hidp - '0';	// assume it's one byte, as should be in range '0'--'4'
+        // logf( XW_LOGERROR, "%s: read hid of %d from %s", __func__, *hid, hidp );
 
-	    int len = end - *inp;
-	    char buf[len+1];
-	    memcpy( buf, *inp, len);
-	    buf[len] = '\0';
-	    logf( XW_LOGERROR, "%s: got bad hid %d from str \"%s\"", __func__,
-		  *hid, buf );
-	}
+        if ( *hid >= 0 && *hid <= 4 ) {
+            const char* endptr = hidp + 1;
+            if ( '\n' == *endptr ) {
+                ++endptr;
+            }
+            *inp = (unsigned char*)endptr;
+        } else {
+            ok = false;
+
+            int len = end - *inp;
+            char buf[len+1];
+            memcpy( buf, *inp, len);
+            buf[len] = '\0';
+            logf( XW_LOGERROR, "%s: got bad hid %d from str \"%s\"", __func__,
+                  *hid, buf );
+        }
     }
     if ( !ok ) {
-	logf( XW_LOGERROR, "%s failed", __func__ );
+        logf( XW_LOGERROR, "%s failed", __func__ );
     }
     return ok;
 }
@@ -1050,11 +1053,11 @@ handlePutMessage( SafeCref& scr, HostID hid, const AddrInfo* addr,
     if ( getNetByte( bufp, end, &cmd )
          && getNetByte( bufp, end, &src )
          && getNetByte( bufp, end, &dest ) ) {
-	success = true;		// meaning, buffer content looks ok
+        success = true;	 // meaning, buffer content looks ok
         *bufp = start + len;
-	if ( ( cmd == XWRELAY_MSG_TORELAY_NOCONN ) && ( hid == dest ) ) {
-	    scr.PutMsg( src, addr, dest, start, len );
-	}
+        if ( ( cmd == XWRELAY_MSG_TORELAY_NOCONN ) && ( hid == dest ) ) {
+            scr.PutMsg( src, addr, dest, start, len );
+        }
     }
     logf( XW_LOGINFO, "%s()=>%d", __func__, success );
     return success;
@@ -1100,9 +1103,9 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
                 }
             }
         }
-	if ( end - bufp != 1 ) {
-	    logf( XW_LOGERROR, "%s: buf != end: %p vs %p", __func__, bufp, end );
-	}
+        if ( end - bufp != 1 ) {
+            logf( XW_LOGERROR, "%s: buf != end: %p vs %p (+1)", __func__, bufp, end );
+        }
         // assert( bufp == end );  // don't ship with this!!!
     }
 } // handleProxyMsgs
@@ -1186,7 +1189,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
                 int olen = 0;        /* return a 0-length message */
                 write( socket, &olen, sizeof(olen) );
                 break;          /* PRX_DEVICE_GONE */
-	    }
+            }
             default:
                 logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
                 break;
