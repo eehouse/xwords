@@ -156,16 +156,15 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
 
-        logf( XW_LOGINFO, "%s: START: %d sockets active", __func__, 
-              m_activeSockets.size() );
+        size_t prevSize = m_activeSockets.size();
 
         map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->socket() ); 
         if ( m_activeSockets.end() != iter && iter->second.m_addr.equals( *addr ) ) {
             m_activeSockets.erase( iter );
             found = true;
         }
-        logf( XW_LOGINFO, "%s: AFTER: %d sockets active", __func__, 
-              m_activeSockets.size() );
+        logf( XW_LOGINFO, "%s: AFTER: %d sockets active (was %d)", __func__, 
+              m_activeSockets.size(), prevSize );
     }
     return found;
 } /* RemoveSocket */
@@ -173,7 +172,6 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
 void
 XWThreadPool::CloseSocket( const AddrInfo* addr )
 {
-/*     bool do_interrupt = false; */
     assert( addr->isTCP() );
     if ( !RemoveSocket( addr ) ) {
         MutexLock ml( &m_queueMutex );
@@ -181,7 +179,6 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
         while ( iter != m_queue.end() ) {
             if ( iter->m_info.m_addr.equals( *addr ) ) {
                 m_queue.erase( iter );
-/*                 do_interrupt = true; */
                 break;
             }
             ++iter;
@@ -189,13 +186,12 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
     }
     logf( XW_LOGINFO, "CLOSING socket %d", addr->socket() );
     close( addr->socket() );
-/*     if ( do_interrupt ) { */
+
     /* We always need to interrupt the poll because the socket we're closing
        will be in the list being listened to.  That or we need to drop sockets
        that have been removed on some other thread while the poll call's
        blocking.*/
     interrupt_poll();
-/*     } */
 }
 
 void
