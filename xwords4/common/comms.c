@@ -1065,6 +1065,8 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
         XP_ASSERT( comms->queueLen > 0 );
     }
     ++comms->queueLen;
+    XP_ASSERT( comms->queueLen <= 128 ); /* reasonable limit in testing */
+    printQueue( comms );
 } /* addToQueue */
 
 #ifdef DEBUG
