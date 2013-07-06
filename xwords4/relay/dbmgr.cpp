@@ -65,6 +65,7 @@ DBMgr::DBMgr()
     int tmp;
     RelayConfigs::GetConfigs()->GetValueFor( "USE_B64", &tmp );
     m_useB64 = tmp != 0;
+    logf( XW_LOGINFO, "%s: m_useB64=%d", __func__, m_useB64 );
 
     pthread_key_create( &m_conn_key, destr_function );
 
@@ -1099,7 +1100,6 @@ DBMgr::getCountWhere( const char* table, string& test )
     assert( 1 == PQntuples( result ) );
     int count = atoi( PQgetvalue( result, 0, 0 ) );
     PQclear( result );
-    logf( XW_LOGINFO, "%s(%s)=>%d", __func__, query.c_str(), count );
     return count;
 }
 

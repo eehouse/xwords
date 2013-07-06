@@ -857,21 +857,19 @@ void
 CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
 {
     logf( XW_LOGVERBOSE0, "%s(dest=%d)", __func__, dest );
-
     assert( dest > 0 && dest <= 4 );
-    if ( addr->isCurrent() ) {
-        DBMgr* dbmgr = DBMgr::Get();
-        const char* cname = ConnName();
-        for ( ; ; ) {
-            unsigned char buf[MAX_MSG_LEN];
-            size_t buflen = sizeof(buf);
-            int msgID;
-            if ( !dbmgr->GetStoredMessage( cname, dest, buf, &buflen, &msgID )
-                 || ! send_with_length( addr, dest, buf, buflen, true ) ) {
-                break;
-            }
-            dbmgr->RemoveStoredMessages( &msgID, 1 );
-        }
+
+    DBMgr* dbmgr = DBMgr::Get();
+    const char* cname = ConnName();
+    while ( addr->isCurrent() ) {
+	unsigned char buf[MAX_MSG_LEN];
+	size_t buflen = sizeof(buf);
+	int msgID;
+	if ( !dbmgr->GetStoredMessage( cname, dest, buf, &buflen, &msgID )
+	     || ! send_with_length( addr, dest, buf, buflen, true ) ) {
+	    break;
+	}
+	dbmgr->RemoveStoredMessages( &msgID, 1 );
     }
 } /* send_stored_messages */
 

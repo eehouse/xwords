@@ -203,13 +203,24 @@ parseRelayID( const unsigned char** const inp, const unsigned char* const end,
     if ( ok ) {
         strncpy( buf, (char*)*inp, connNameLen );
         buf[connNameLen] = '\0';
-        *hid = atoi( hidp+1 );
         char* endptr;
         *hid = strtol( hidp + 1, &endptr, 10 );
-        if ( '\n' == *endptr ) {
-            ++endptr;
-        }
-        *inp = (unsigned char*)endptr;
+
+	if ( *hid >= 0 && *hid <= 4 ) {
+	    if ( '\n' == *endptr ) {
+		++endptr;
+	    }
+	    *inp = (unsigned char*)endptr;
+	} else {
+	    ok = false;
+
+	    int len = end - *inp;
+	    char buf[len+1];
+	    memcpy( buf, *inp, len);
+	    buf[len] = '\0';
+	    logf( XW_LOGERROR, "%s: got bad hid %d from str \"%s\"", __func__,
+		  *hid, buf );
+	}
     }
     if ( !ok ) {
 	logf( XW_LOGERROR, "%s failed", __func__ );
