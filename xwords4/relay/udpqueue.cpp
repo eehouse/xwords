@@ -53,8 +53,10 @@ PartialPacket::readAtMost( int len )
     ssize_t nRead = recv( m_sock, tmp, len, 0 );
     if ( 0 > nRead ) {          // error case
         m_errno = errno;
-        logf( XW_LOGERROR, "%s(len=%d, socket=%d): recv failed: %d (%s)", __func__, 
-              len, m_sock, m_errno, strerror(m_errno) );
+        if ( !stillGood() ) {
+            logf( XW_LOGERROR, "%s(len=%d, socket=%d): recv failed: %d (%s)", __func__, 
+                  len, m_sock, m_errno, strerror(m_errno) );
+        }
     } else if ( 0 == nRead ) {  // remote socket closed
         logf( XW_LOGINFO, "%s: remote closed (socket=%d)", __func__, m_sock );
         m_errno = -1;           // so stillGood will fail
