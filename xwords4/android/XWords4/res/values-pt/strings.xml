@@ -536,16 +536,16 @@
 
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter -->
-    <string name="bonus_l2x_summary">2L</string>
+    <string name="bonus_l2x_summary">L2</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-word -->
-    <string name="bonus_w2x_summary">2P</string>
+    <string name="bonus_w2x_summary">P2</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-letter -->
-    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_l3x_summary">L3</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-word -->
-    <string name="bonus_w3x_summary">3P</string>
+    <string name="bonus_w3x_summary">P3</string>
 
     <!-- displayed when you long-tap a scoreboard entry and there's no
          most recent score to show -->
@@ -971,10 +971,10 @@
        ############################################################
       -->
     <!-- title of this sub-preference -->
-    <string name="prefs_colors">Cores individuais</string>
+    <string name="prefs_colors">Cores</string>
     <!-- clarification of the above -->
     <string name="prefs_colors_summary">Editar as cores usadas
-    no tabuleiro</string>
+    no jogo</string>
 
     <!-- The remaining strings (down to the color edit dialog below)
          are showns as the names of editable colors and as the the
@@ -1003,7 +1003,7 @@
          touching in order to guide the fat-fingered (most of us) in
          operations that require accurately selecting a single square
          on the board.-->
-    <string name="clr_crosshairs">Cor das linhas</string>
+    <string name="clr_crosshairs">Cor das linhas de posição</string>
 
     <!-- color of the tiles' background -->
     <string name="tile_back">Fundo das pedras</string>
@@ -1103,7 +1103,7 @@
          is distracting, presumably because they're using tablets with
          large enough screens that they always know where they're
          tapping. -->
-    <string name="hide_crosshairs">Desligar mira</string>
+    <string name="hide_crosshairs">Desligar linhas de posição</string>
     <!-- explanation of the above -->
     <string name="hide_crosshairs_summary">Não indicar visualmente
     a casa do tabuleiro selecionada</string>
@@ -1886,10 +1886,10 @@
     <string name="dict_browse_nowordsf">Nenhuma palavra em %1$s começa com
       %2$s.</string>
       <!--  -->
-    <string name="not_again_browse">Esse botão abre o seletor de listas
-    de palavras na lista do jogador atual.</string>
+    <string name="not_again_browse">Esse botão abre o navegador de
+    listas de palavras na lista do jogador atual.</string>
     <string name="not_again_browseall">Esse botão abre o seletor de listas
-    de palavras na lista de sua escolha.</string>
+    de palavras na lista de sua escolha.</string> 
 
       <!--  -->
     <string name="alert_empty_dictf">A lista de palavras %s só contém
@@ -2055,7 +2055,7 @@
     <string name="game_list_tmp">Carregando resumo do jogo...</string>
 
     <!--  -->
-    <string name="connstat_nonet">Este é um jogo independente. Não
+    <string name="connstat_nonet">Este é um jogo local. Não
     há informações de rede.</string>
     <!--  -->
     <string name="connstat_net">Informações de rede para jogo conectado
@@ -2127,7 +2127,7 @@
     <!-- Used in formatting final scores display -->
     <string name="str_resigned">Desistiu</string>
     <!-- Used in formatting final scores display -->
-    <string name="str_winner">Ganhador</string>
+    <string name="str_winner">Vencedor</string>
 
     <!--  -->
     <string name="inform_dict_diffversionf">Você e o hospedeiro
