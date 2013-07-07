@@ -1517,7 +1517,8 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #ifdef XWFEATURE_CHAT
 static void
-curses_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg )
+curses_util_showChat( XW_UtilCtxt* uc, 
+                      const XP_UCHAR* const XP_UNUSED_DBG(msg) )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     globals->nChatsSent = 0;
