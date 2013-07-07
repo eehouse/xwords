@@ -17,6 +17,9 @@
   <li>Dim pending score counter (at right end of tray) when it's not
   that player's turn or game's over</li>
 
+  <li>Move more frequently used game buttons to left where they're
+  more visible</li>
+
   <li>Fix a few bugs</li>
 
 </ul>
