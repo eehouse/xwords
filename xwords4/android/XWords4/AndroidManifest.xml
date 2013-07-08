@@ -26,6 +26,9 @@
           android:versionName="@string/app_version"
           >
 
+  <!-- BE SURE TO MODIFY project.project AND the variable TARGET in
+       ../scripts/setup_local_props.sh if targetSdkVersion changes!!!
+       -->
   <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="11" />
 
   <supports-screens android:resizeable="true"
