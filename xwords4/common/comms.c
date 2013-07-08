@@ -197,6 +197,7 @@ static void putDevID( const CommsCtxt* comms, XWStreamCtxt* stream );
 # endif
 # ifdef DEBUG
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
+static void printQueue( const CommsCtxt* comms );
 # endif
 #endif
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
