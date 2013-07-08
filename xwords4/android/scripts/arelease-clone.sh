@@ -8,12 +8,6 @@ usage () {
     exit 0
 }
 
-getSDK() {
-    LINE=$(grep 'android:minSdkVersion' ./AndroidManifest.xml)
-    SDK=$(echo $LINE | sed 's/^.*targetSdkVersion=\"\([0-9]*\)\".*$/\1/')
-    echo $SDK
-}
-
 TAG=""
 BRANCH=""
 VARIANT="XWords4"
@@ -67,10 +61,10 @@ git clone $SRCDIR BUILD
 cd BUILD
 git checkout ${TAG}${BRANCH}
 cd ./xwords4/android/${VARIANT}
-../scripts/setup_local_props.sh --target android-$(getSDK)
+../scripts/setup_local_props.sh
 ../scripts/arelease.sh --variant ${VARIANT}
 mkdir -p /tmp/releases_${VARIANT}
 cp *.apk /tmp/releases_${VARIANT}
 
 cd $CURDIR
-rm -rf $BUILDIR
+# rm -rf $BUILDIR
