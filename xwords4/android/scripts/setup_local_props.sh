@@ -25,7 +25,7 @@ while [ $# -ge 1 ]; do
 done
 
 # create local.properties 
-android update project --path . --target $TARGET
+android update project --path . --target "$TARGET"
 
 echo "local.properties looks like this:"
 echo ""
