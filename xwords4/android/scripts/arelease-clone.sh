@@ -67,4 +67,4 @@ mkdir -p /tmp/releases_${VARIANT}
 cp *.apk /tmp/releases_${VARIANT}
 
 cd $CURDIR
-# rm -rf $BUILDIR
+rm -rf $BUILDIR
