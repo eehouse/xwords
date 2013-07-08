@@ -37,8 +37,7 @@ public interface TransportProcs {
     };
     void relayStatus( CommsRelayState newState );
 
-    void relayConnd( String room, boolean isReconnect, int devOrder, 
-                     boolean allHere, int nMissing );
+    void relayConnd( String room, int devOrder, boolean allHere, int nMissing );
 
     public static enum XWRELAY_ERROR { NONE
             ,OLDFLAGS 
@@ -62,8 +61,7 @@ public interface TransportProcs {
     boolean relayNoConnProc( byte[] buf, String relayID );
 
     public interface TPMsgHandler {
-        public void tpmRelayConnd( String room, boolean isReconnect, 
-                                   int devOrder, boolean allHere, 
+        public void tpmRelayConnd( String room, int devOrder, boolean allHere, 
                                    int nMissing );
         public void tpmRelayErrorProc( XWRELAY_ERROR relayErr );
     }

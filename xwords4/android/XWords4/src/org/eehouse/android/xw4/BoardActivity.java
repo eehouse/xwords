@@ -1030,17 +1030,14 @@ public class BoardActivity extends XWActivity
     // TransportProcs.TPMsgHandler interface
     //////////////////////////////////////////////////
 
-    public void tpmRelayConnd( final String room, boolean isReconnect,
-                               final int devOrder, final boolean allHere, 
-                               final int nMissing )
+    public void tpmRelayConnd( final String room, final int devOrder,
+                               final boolean allHere, final int nMissing )
     {
-        if ( !isReconnect ) {
-            post( new Runnable() {
-                    public void run() {
-                        handleConndMessage( room, devOrder, allHere, nMissing );
-                    }
-                } );
-        }
+        post( new Runnable() {
+                public void run() {
+                    handleConndMessage( room, devOrder, allHere, nMissing );
+                }
+            } );
     }
 
     public void tpmRelayErrorProc( TransportProcs.XWRELAY_ERROR relayErr )

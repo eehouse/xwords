@@ -112,12 +112,12 @@ and_xport_relayConnd( void* closure, XP_UCHAR* const room, XP_Bool reconnect,
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = *aprocs->envp;
-        const char* sig = "(Ljava/lang/String;ZIZI)V";
+        const char* sig = "(Ljava/lang/String;IZI)V";
         jmethodID mid = getMethodID( env, aprocs->jxport, "relayConnd", sig );
 
         jstring str = (*env)->NewStringUTF( env, room );
         (*env)->CallVoidMethod( env, aprocs->jxport, mid, 
-                                str, reconnect, devOrder, allHere, nMissing );
+                                str, devOrder, allHere, nMissing );
         deleteLocalRef( env, str );
     }
 }

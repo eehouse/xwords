@@ -48,8 +48,8 @@ public class MultiMsgSink implements TransportProcs {
     {
     }
 
-    public void relayConnd( String room, boolean isReconnect, int devOrder, 
-                            boolean allHere, int nMissing )
+    public void relayConnd( String room, int devOrder, boolean allHere, 
+                            int nMissing )
     {
     }
 
