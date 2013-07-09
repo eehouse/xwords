@@ -33,7 +33,7 @@ public class XWApp extends Application {
     public static final boolean GCMSUPPORTED = true;
     public static final boolean ATTACH_SUPPORTED = true;
     public static final boolean REMATCH_SUPPORTED = false;
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     public static final boolean DEBUG_LOCKS = false && DEBUG;
     public static final boolean DEBUG_EXP_TIMERS = false && DEBUG;
 

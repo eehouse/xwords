@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2013 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -102,6 +102,7 @@ public class BoardActivity extends XWActivity
     private static final int BT_PICK_ACTION = 17;
     private static final int SMS_PICK_ACTION = 18;
     private static final int SMS_CONFIG_ACTION = 19;
+    private static final int BUTTON_BROWSEALL_ACTION = 20;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -149,7 +150,7 @@ public class BoardActivity extends XWActivity
     private boolean m_gameOver = false;
 
     // call startActivityForResult synchronously
-	private Semaphore m_forResultWait = new Semaphore(0);
+    private Semaphore m_forResultWait = new Semaphore(0);
     private int m_resultCode;
 
     private Thread m_blockingThread;
@@ -903,9 +904,15 @@ public class BoardActivity extends XWActivity
                 Utils.showToast( BoardActivity.this, m_toastStr );
                 m_toastStr = null;
                 break;
+            case BUTTON_BROWSEALL_ACTION:
             case BUTTON_BROWSE_ACTION:
-                String dictName = m_gi.dictName( m_view.getCurPlayer() );
-                DictBrowseActivity.launch( this, dictName );
+                String curDict = m_gi.dictName( m_view.getCurPlayer() );
+                View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
+                if ( BUTTON_BROWSEALL_ACTION == id &&
+                     DictsActivity.handleDictsPopup( this, button, curDict ) ) {
+                    break;
+                }
+                DictBrowseActivity.launch( this, curDict );
                 break;
             case PREV_HINT_ACTION:
                 cmd = JNICmd.CMD_PREV_HINT;
@@ -1821,9 +1828,13 @@ public class BoardActivity extends XWActivity
     private void populateToolbar()
     {
         m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
-                               R.string.not_again_browse,
-                               R.string.key_na_browse,
-                               BUTTON_BROWSE_ACTION );
+                               R.string.not_again_browseall,
+                               R.string.key_na_browseall,
+                               BUTTON_BROWSEALL_ACTION );
+        m_toolbar.setLongClickListener( Toolbar.BUTTON_BROWSE_DICT,
+                                        R.string.not_again_browse,
+                                        R.string.key_na_browse,
+                                        BUTTON_BROWSE_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
                                R.string.not_again_hintprev,
                                R.string.key_notagain_hintprev,

@@ -283,6 +283,7 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 static void
 curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
                                 XP_S16 score, XP_U16 XP_UNUSED(playerNum),
+                                XP_S16 XP_UNUSED(curTurn),
                                 CellFlags XP_UNUSED(flags) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;

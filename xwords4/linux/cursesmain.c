@@ -23,6 +23,8 @@
 #include <signal.h>
 #include <assert.h>
 #include <ctype.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include <netdb.h>		/* gethostbyname */
 #include <errno.h>
@@ -971,7 +973,9 @@ SIGWINCH_handler( int signal )
 static void 
 SIGINTTERM_handler( int XP_UNUSED(signal) )
 {
-    write( g_globals.quitPipe[1], "0", 1 );
+    if ( 1 != write( g_globals.quitpipe[1], "!", 1 ) ) {
+        XP_ASSERT(0);
+    }
 }
 
 static void
@@ -1133,6 +1137,14 @@ curses_onGameSaved( void* closure, sqlite3_int64 rowid,
 }
 
 #ifdef USE_GLIBLOOP
+static gboolean
+handle_quitwrite( GIOChannel* XP_UNUSED(source), GIOCondition XP_UNUSED(condition), gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    handleQuit( globals );
+    return TRUE;
+}
+
 static gboolean
 fire_acceptor( GIOChannel* source, GIOCondition condition, gpointer data )
 {
@@ -1523,6 +1535,18 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 } /* curses_util_makeStreamFromAddr */
 #endif
 
+#ifdef XWFEATURE_CHAT
+static void
+curses_util_showChat( XW_UtilCtxt* uc, 
+                      const XP_UCHAR* const XP_UNUSED_DBG(msg) )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    globals->nChatsSent = 0;
+    XP_LOGF( "%s: got \"%s\"", __func__, msg );
+}
+#endif
+
+
 static void
 setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 {
@@ -1536,6 +1560,10 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr;
 #endif
+#ifdef XWFEATURE_CHAT
+    util->vtable->m_util_showChat = curses_util_showChat;
+#endif
+
     util->vtable->m_util_userQuery = curses_util_userQuery;
     util->vtable->m_util_confirmTrade = curses_util_confirmTrade;
     util->vtable->m_util_userPickTileBlank = curses_util_userPickTileBlank;
@@ -1658,9 +1686,10 @@ relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
 } /* relay_sendNoConn_curses */
 
 static void
-relay_status_curses( void* XP_UNUSED(closure), 
-                     CommsRelayState XP_UNUSED_DBG(state) )
+relay_status_curses( void* closure, CommsRelayState state )
 {
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    globals->commsRelayState = state;
     XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
 }
 
@@ -1670,7 +1699,8 @@ relay_connd_curses( void* XP_UNUSED(closure), XP_UCHAR* const XP_UNUSED(room),
                     XP_Bool XP_UNUSED_DBG(allHere),
                     XP_U16 XP_UNUSED_DBG(nMissing) )
 {
-    XP_LOGF( "%s got allHere: %d; nMissing: %d", __func__, allHere, nMissing );
+    XP_LOGF( "%s got allHere: %s; nMissing: %d", __func__, 
+             allHere?"true":"false", nMissing );
 }
 
 static void
@@ -1833,6 +1863,31 @@ cursesUDPSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock),
     globals->sources = g_list_append( globals->sources, sd );
 }
 
+static gboolean
+chatsTimerFired( gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+
+    if ( COMMS_RELAYSTATE_ALLCONNECTED == globals->commsRelayState 
+         && 3 > globals->nChatsSent ) {
+        XP_UCHAR msg[128];
+        struct tm* timp;
+        struct timeval tv;
+        struct timezone tz;
+
+        gettimeofday( &tv, &tz );
+        timp = localtime( &tv.tv_sec );
+
+        snprintf( msg, sizeof(msg), "Saying hi via chat at %.2d:%.2d:%.2d", 
+                  timp->tm_hour, timp->tm_min, timp->tm_sec );
+        XP_LOGF( "%s: sending \"%s\"", __func__, msg );
+        server_sendChat( globals->cGlobals.game.server, msg );
+        ++globals->nChatsSent;
+    }
+
+    return TRUE;
+}
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
@@ -1884,12 +1939,18 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 
 #ifdef USE_GLIBLOOP
-    cursesListenOnSocket( &g_globals, 0, handle_stdin );
+    if ( !params->closeStdin ) {
+        cursesListenOnSocket( &g_globals, 0, handle_stdin );
+    }
     setOneSecondTimer( &g_globals.cGlobals );
 
-    int result = pipe( g_globals.quitPipe );
-    assert( 0 == result );
-    cursesListenOnSocket( &g_globals, g_globals.quitPipe[0], read_quit );
+# ifdef DEBUG
+    int piperesult = 
+# endif
+        pipe( g_globals.quitpipe );
+    XP_ASSERT( piperesult == 0 );
+    cursesListenOnSocket( &g_globals, g_globals.quitpipe[0], handle_quitwrite );
+
 #else
     cursesListenOnSocket( &g_globals, 0 ); /* stdin */
 
@@ -1927,6 +1988,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     } else if ( !!params->nbs && !!params->fileName ) {
         do_nbs_then_close( &g_globals.cGlobals, &procs );
     } else {
+        if ( 0 != params->chatsInterval ) {
+            (void)g_timeout_add_seconds( params->chatsInterval, chatsTimerFired, 
+                                         &g_globals );
+        }
+
         XP_Bool opened = XP_FALSE;
         initCurses( &g_globals );
         getmaxyx( g_globals.boardWin, height, width );

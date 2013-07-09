@@ -23,6 +23,7 @@
 
 #include <pthread.h>
 #include <deque>
+#include <map>
 
 #include "xwrelay_priv.h"
 #include "addrinfo.h"
@@ -35,9 +36,9 @@ typedef void (*QueueCallback)( UdpThreadClosure* closure );
 
 class UdpThreadClosure {
 public:
-    UdpThreadClosure( const AddrInfo* addr, unsigned char* buf, 
+    UdpThreadClosure( const AddrInfo* addr, const uint8_t* buf, 
                       int len, QueueCallback cb )
-        : m_buf(new unsigned char[len])
+        : m_buf(new uint8_t[len])
         , m_len(len)
         , m_addr(*addr)
         , m_cb(cb)
@@ -46,7 +47,7 @@ public:
             memcpy( m_buf, buf, len ); 
         }
 
-    ~UdpThreadClosure() { delete m_buf; }
+    ~UdpThreadClosure() { delete[] m_buf; }
 
     const unsigned char* buf() const { return m_buf; } 
     int len() const { return m_len; }
@@ -55,14 +56,37 @@ public:
     void noteDequeued() { m_dequed = time( NULL ); }
     void logStats();
     const QueueCallback cb() const { return m_cb; }
+    void setID( int id ) { m_id = id; }
+    int getID( void ) { return m_id; }
 
  private:
-    unsigned char* m_buf;
+    uint8_t* m_buf;
     int m_len;
     AddrInfo m_addr;
     QueueCallback m_cb;
     time_t m_created;
     time_t m_dequed;
+    int m_id;
+};
+
+class PartialPacket {
+ public:
+    PartialPacket(int sock)
+        :m_len(0)
+        ,m_sock(sock)
+        ,m_errno(0)
+        {}
+    bool stillGood() const ;
+    bool readAtMost( int len );
+    size_t readSoFar() const { return m_buf.size(); }
+    const uint8_t* data() const { return m_buf.data(); }
+
+    unsigned short m_len;       /* decoded via ntohs from the first 2 bytes */
+ private:
+
+    vector<uint8_t> m_buf;
+    int m_sock;
+    int m_errno;
 };
 
 class UdpQueue {
@@ -70,17 +94,24 @@ class UdpQueue {
     static UdpQueue* get();
     UdpQueue();
     ~UdpQueue();
-    void handle( const AddrInfo* addr, unsigned char* buf, int len,
+    bool handle( const AddrInfo* addr, QueueCallback cb );
+    void handle( const AddrInfo* addr, const uint8_t* buf, int len,
                  QueueCallback cb );
+    void newSocket( int socket );
+    void newSocket( const AddrInfo* addr );
 
  private:
+    void newSocket_locked( int sock );
     static void* thread_main_static( void* closure );
     void* thread_main();
 
+    pthread_mutex_t m_partialsMutex;
     pthread_mutex_t m_queueMutex;
     pthread_cond_t m_queueCondVar;
     deque<UdpThreadClosure*> m_queue;
-
+    // map<int, vector<UdpThreadClosure*> > m_bySocket;
+    int m_nextID;
+    map<int, PartialPacket*> m_partialPackets;
 };
 
 #endif

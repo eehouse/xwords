@@ -117,7 +117,7 @@ class CRefMgr {
     CookieRef* getFromFreeList( void );
 
     /* connect case */
-    CidInfo* getMakeCookieRef( const char* cookie, HostID hid, int nPlayersH,
+    CidInfo* getMakeCookieRef( const char* cookie, int nPlayersH,
                                int nPlayersS, int langCode, int seed,
                                bool wantsPublic, bool makePublic, 
                                bool* seenSeed );
@@ -187,14 +187,15 @@ class SafeCref {
 
     bool Forward( HostID src, const AddrInfo* addr, HostID dest, 
                   const unsigned char* buf, int buflen ) {
-        if ( IsValid() ) {
+        bool success = IsValid();
+        if ( success ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
             cref->_Forward( src, addr, dest, buf, buflen );
-            return true;
         } else {
-            return false;
+            logf( XW_LOGINFO, "%s: unable to forward", __func__ );
         }
+        return success;
     }
 
     void PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
@@ -217,8 +218,7 @@ class SafeCref {
             return false;
         }
     }
-    bool Reconnect( HostID srcID, int nPlayersH, int nPlayersS,
-                    int seed, XWREASON* errp ) {
+    bool Reconnect( int nPlayersH, int nPlayersS, int seed, XWREASON* errp ) {
         bool success = false;
         *errp = XWRELAY_ERROR_NONE;
         if ( IsValid() ) {
@@ -228,7 +228,7 @@ class SafeCref {
                 *errp = XWRELAY_ERROR_DEADGAME;
             } else {
                 success = cref->_Reconnect( m_clientVersion, m_devID,
-                                            srcID, nPlayersH, nPlayersS, seed, 
+                                            m_hid, nPlayersH, nPlayersS, seed, 
                                             &m_addr, m_dead );
             }
         }
@@ -252,14 +252,14 @@ class SafeCref {
     }
 
     bool HandleAck(HostID hostID ) {
-        if ( IsValid() ) {
+        bool handled = IsValid(); 
+        if ( handled ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
             cref->_HandleAck( hostID );
-            return true;
-        } else {
-            return false;
         }
+        logf( XW_LOGINFO, "%s => %d", __func__, handled );
+        return handled;
     }
     void Shutdown() {
         if ( IsValid() ) {
@@ -391,6 +391,7 @@ class SafeCref {
     AddrInfo m_addr;
     int m_clientVersion;
     DevID* m_devID;
+    HostID m_hid;
     bool m_isValid;
     bool m_locked;
     bool m_dead;

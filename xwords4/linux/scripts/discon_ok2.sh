@@ -1,7 +1,9 @@
 #!/bin/bash
 set -u -e
 
+LOGDIR=$(basename $0)_logs
 APP_NEW=""
+DO_CLEAN=""
 APP_NEW_PARAMS=""
 NGAMES=""
 UDP_PCT=0
@@ -25,6 +27,7 @@ SEED=""
 BOARD_SIZES_OLD=(15)
 BOARD_SIZES_NEW=(15)
 NAMES=(UNUSED Brynn Ariela Kati Eric)
+SEND_CHAT=''
 
 declare -A PIDS
 declare -A APPS
@@ -40,11 +43,30 @@ declare -a APPS_OLD
 declare -a DICTS
 declare -A CHECKED_ROOMS
 
+function cleanup() {
+    APP="$(basename $APP_NEW)"
+    while pidof $APP; do
+        echo "killing existing $APP instances..."
+        killall -9 $APP
+        sleep 1
+    done
+    echo "cleaning everything up...."
+    if [ -d $LOGDIR ]; then
+    mv $LOGDIR /tmp/${LOGDIR}_$$
+    fi
+    if [ -e $(dirname $0)/../../relay/xwrelay.log ]; then
+    mkdir -p /tmp/${LOGDIR}_$$
+    mv $(dirname $0)/../../relay/xwrelay.log /tmp/${LOGDIR}_$$
+    fi
+
+    echo "delete from games;" | psql -q -t xwgames
+}
+
 function connName() {
     LOG=$1
     grep 'got_connect_cmd: connName' $LOG | \
         tail -n 1 | \
-        sed 's,^.*connName: \"\(.*\)\"$,\1,'
+        sed 's,^.*connName: \"\(.*\)\" (reconnect=.)$,\1,'
 }
 
 function check_room() {
@@ -201,6 +223,10 @@ build_cmds() {
                 PARAMS="$PARAMS --file $FILE"
             fi
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
+            # PARAMS="$PARAMS --split-packets 2"
+            if [ -n $SEND_CHAT ]; then
+                   PARAMS="$PARAMS --send-chat $SEND_CHAT"
+            fi
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
@@ -453,14 +479,18 @@ run_cmds() {
             try_upgrade $KEY
             launch $KEY &
             PID=$!
+            renice +1 $PID >/dev/null
             PIDS[$KEY]=$PID
             ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
         else
-            SLEEP=$((${MINEND[$KEY]} - $NOW))
-            [ $SLEEP -gt 0 ] && sleep $SLEEP
-            kill ${PIDS[$KEY]} || true
-            wait ${PIDS[$KEY]}
+            PID=${PIDS[$KEY]}
+            if [ -d /proc/$PID ]; then
+                SLEEP=$((${MINEND[$KEY]} - $NOW))
+                [ $SLEEP -gt 0 ] && sleep $SLEEP
+                kill $PID || true
+                wait $PID
+            fi
             PIDS[$KEY]=0
             ROOM_PIDS[$ROOM]=0
             [ "$DROP_N" -ge 0 ] && increment_drop $KEY
@@ -527,6 +557,7 @@ function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
     echo "    [--via-udp <pct>]                                       \\" >&2
+    echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--old-app <path/to/app]*                               \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
@@ -540,6 +571,8 @@ function usage() {
     echo "    [--port <int>]                                          \\" >&2
     echo "    [--seed <int>]                                          \\" >&2
     echo "    [--undo-pct <int>]                                      \\" >&2
+    echo "    [--send-chat <interval-in-seconds>                      \\" >&2
+    echo "    [--resign-ratio <0 <= n <=1000 >                        \\" >&2
     echo "    [--help]                                                \\" >&2
 
     exit 1
@@ -554,6 +587,8 @@ while [ "$#" -gt 0 ]; do
         --via-udp)
             UDP_PCT=$(getArg $*)
             shift
+        --clean-start)
+            DO_CLEAN=1
             ;;
         --num-games)
             NGAMES=$(getArg $*)
@@ -607,6 +642,14 @@ while [ "$#" -gt 0 ]; do
             UNDO_PCT=$(getArg $*)
             shift
             ;;
+    --send-chat)
+            SEND_CHAT=$(getArg $*)
+            shift
+            ;;
+    --resign-ratio)
+        RESIGN_RATIO=$(getArg $*)
+        shift
+        ;;
         --help)
             usage
             ;;
@@ -637,7 +680,8 @@ done
 [ -n "$SEED" ] && RANDOM=$SEED
 [ -z "$ONEPER" -a $NROOMS -lt $NGAMES ] && usage "use --one-per if --num-rooms < --num-games"
 
-LOGDIR=$(basename $0)_logs
+[ -n "$DO_CLEAN" ] && cleanup
+
 RESUME=""
 for FILE in $(ls $LOGDIR/*.{xwg,txt} 2>/dev/null); do
     if [ -e $FILE ]; then

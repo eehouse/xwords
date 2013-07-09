@@ -53,7 +53,7 @@ cid integer
 ,nPerDevice INTEGER[]
 ,seeds INTEGER[]
 ,ack VARCHAR(1)[]
-,nSent INTEGER DEFAULT 0
+,nsents INTEGER[] DEFAULT '{0,0,0,0}'
 ,ctime TIMESTAMP (0) DEFAULT CURRENT_TIMESTAMP
 ,mtimes TIMESTAMP(0)[]
 ,addrs INET[]

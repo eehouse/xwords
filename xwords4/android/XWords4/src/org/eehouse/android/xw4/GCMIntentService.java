@@ -34,7 +34,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         super( GCMConsts.SENDER_ID );
     }
 
-	@Override
+    @Override
     protected void onError( Context context, String error ) 
     {
         DbgUtils.logf("GCMIntentService.onError(%s)", error );

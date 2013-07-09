@@ -102,7 +102,7 @@ public class DlgDelegate {
     
     public Dialog onCreateDialog( int id )
     {
-        DbgUtils.logf("onCreateDialog(id=%d)", id );
+        // DbgUtils.logf("onCreateDialog(id=%d)", id );
         Dialog dialog = null;
         DlgState state = findForID( id );
         switch( id ) {
@@ -138,11 +138,6 @@ public class DlgDelegate {
         // Assert.assertNull( m_dlgStates );
         DlgState state = new DlgState( DIALOG_OKONLY, msg, callbackID );
         addState( state );
-        // m_msg = msg;
-        // if ( 0 != callbackID ) {
-        //     Assert.assertTrue( 0 == m_cbckID );
-        //     m_cbckID = callbackID;
-        // }
         m_activity.showDialog( DIALOG_OKONLY );
     }
 
@@ -192,18 +187,10 @@ public class DlgDelegate {
 
     public void showConfirmThen( String msg, int posButton, int callbackID )
     {
-        // FIX ME!! Need to store data per message rather than have
-        // assertions failing or messages dropped.
-        if ( false /*0 != m_cbckID*/ ) {
-            // DbgUtils.logf( "showConfirmThen: busy with another message; "
-            //                + "dropping \"%s\" in favor of \"%s\"", 
-            //                msg, m_msg );
-        } else {
-            DlgState state = new DlgState( CONFIRM_THEN, msg, posButton, 
-                                           callbackID, 0 );
-            addState( state );
-            m_activity.showDialog( CONFIRM_THEN );
-        }
+        DlgState state = new DlgState( CONFIRM_THEN, msg, posButton, 
+                                       callbackID, 0 );
+        addState( state );
+        m_activity.showDialog( CONFIRM_THEN );
     }
 
     public void showEmailOrSMSThen( final int callbackID )
@@ -454,7 +441,7 @@ public class DlgDelegate {
     private DlgState findForID( int id )
     {
         DlgState state = m_dlgStates.get( id );
-        DbgUtils.logf( "findForID(%d)=>%H", id, state );
+        // DbgUtils.logf( "findForID(%d)=>%H", id, state );
         return state;
     }
 
@@ -464,8 +451,8 @@ public class DlgDelegate {
         Assert.assertNotNull( state );
         // Assert.assertTrue( state == m_dlgStates.get( state.m_id ) );
         m_dlgStates.remove( state.m_id );
-        DbgUtils.logf( "dropState: active dialogs now %d from %d ", 
-                       m_dlgStates.size(), nDlgs );
+        // DbgUtils.logf( "dropState: active dialogs now %d from %d ", 
+        //                m_dlgStates.size(), nDlgs );
     }
 
     private void addState( DlgState state )

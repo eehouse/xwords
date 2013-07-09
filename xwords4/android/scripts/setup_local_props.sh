@@ -2,7 +2,7 @@
 
 set -u -e
 
-TARGET="android-7"
+TARGET="Google Inc.:Google APIs:11"
 
 usage() {
     echo "usage: $0 [--target TARGET]"
@@ -24,9 +24,8 @@ while [ $# -ge 1 ]; do
     shift
 done
 
-# create local.properties for 1.6 sdk (target id 4).  Use 'android
-# list targets' to get the full set.
-android update project --path . --target $TARGET
+# create local.properties 
+android update project --path . --target "$TARGET"
 
 echo "local.properties looks like this:"
 echo ""

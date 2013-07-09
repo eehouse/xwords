@@ -15,19 +15,19 @@
       -->
     <!-- These two messages appear at the top of the list of games
          (unless the hide_intro preferences checkbox is checked.)-->
-    <string name="empty_games_list">Use o botão abaixo para criar um
-    jogo. Toque num jogo existente para continuá-lo ou dê um toque
+    <string name="empty_games_list">Use o botão abaixo para criar um novo
+    jogo. Selecione um jogo existente para continuá-lo ou dê um toque
     longo para outras opções.</string>
       <!--  -->
     <string name="empty_games_list2">Você pode esconder essa mensagem
-    e os botões abaixo na seção Aparência das Configurações (acessadas
+    e os botões abaixo na seção Aparência das Configurações (acessada
     através do botão menu do seu dispositivo.)</string>
 
     <!-- Text of button at bottom of main games-list screen and of
          menuitem in main games-list screen's menu.  (The botton can
          be hidden in the same way as the above text.) -->
-    <string name="button_new_game">Adicionar jogo</string>
-    <string name="button_new_group">Adicionar grupo</string>
+    <string name="button_new_game">Novo jogo</string>
+    <string name="button_new_group">Novo grupo</string>
 
     <!-- When the game list is empty and the above messages and button
          are hidden via preferences, this text is shown -->
@@ -114,13 +114,13 @@
     <string name="gamel_menu_checkmoves">Checar jogadas</string>
 
     <!-- Text of progress indicator shown while check is being conducted -->
-    <string name="msgs_progress">Checando retransmissor por jogadas
+    <string name="msgs_progress">Procurando jogadas no servidor
       etc...</string>
 
     <!-- If you choose the above option and have no networked games
          you get this error message -->
     <string name="no_games_to_refresh">Nenhum jogo encontrado que conecta
-    pelo retransmissor.</string>
+    pelo servidor.</string>
 
     <!-- Deletes all games on the device (after confirmation) -->
     <string name="gamel_menu_delete_all">Excluir todos</string>
@@ -166,7 +166,7 @@
     <!-- If you try to copy a networked game you get this error
     message. -->
     <string name="no_copy_network">Jogos que já se conectaram ao
-    retransmissor não podem ser copiados. Use \"Novo a partir de\"
+    servidor não podem ser copiados. Use \"Novo a partir de\"
     para uma cópia pronta para jogar com todas as mesmas
     configurações.</string>
       <!--  -->
@@ -412,13 +412,13 @@
     <!-- These are the three choices in the popup above whose text is
          phonies_spinner_prompt -->
     <!-- Don't care if words played are in the wordlist or not -->
-    <string name="phonies_ignore">Ignorar falsas</string>
+    <string name="phonies_ignore">Ignorar palavras falsas</string>
     <!-- warn player when word played is not in the wordlist, but
          allow him to play it. -->
-    <string name="phonies_warn">Avisar se for falsa</string>
+    <string name="phonies_warn">Avisar se a palavra for falsa</string>
     <!-- Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. -->
-    <string name="phonies_disallow">Não permitir falsas</string>
+    <string name="phonies_disallow">Não permitir palavras falsas</string>
 
     <!-- Shown when using the the Game configure screen to configure a
          networked game and you try to make all players local. -->
@@ -536,16 +536,16 @@
 
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter -->
-    <string name="bonus_l2x_summary">2L</string>
+    <string name="bonus_l2x_summary">L2</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-word -->
-    <string name="bonus_w2x_summary">2P</string>
+    <string name="bonus_w2x_summary">P2</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-letter -->
-    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_l3x_summary">L3</string>
     <!-- Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-word -->
-    <string name="bonus_w3x_summary">3P</string>
+    <string name="bonus_w3x_summary">P3</string>
 
     <!-- displayed when you long-tap a scoreboard entry and there's no
          most recent score to show -->
@@ -588,7 +588,7 @@
          registered with the relay in this game.  This should be seen
          only once per game. -->
     <string name="msg_relay_waiting">Dispositivo %1$d conectado ao
-    retransmissor na sala \"%2$s\". Esperando por %3$d jogador(es).</string>
+    servidor na sala \"%2$s\". Esperando por %3$d jogador(es).</string>
 
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
@@ -612,7 +612,7 @@
     usando esse nome. Mude o nome da sua ou tente novamente mais
     tarde.</string>
     <!-- (I believe this can no longer occur) -->
-    <string name="msg_lost_other">O retransmissor perdeu contato com
+    <string name="msg_lost_other">O servidor perdeu contato com
     outro dispositivo nesse jogos.</string>
 
     <!-- When a game has been connected and the relay is notified that
@@ -971,10 +971,10 @@
        ############################################################
       -->
     <!-- title of this sub-preference -->
-    <string name="prefs_colors">Cores individuais</string>
+    <string name="prefs_colors">Cores</string>
     <!-- clarification of the above -->
     <string name="prefs_colors_summary">Editar as cores usadas
-    no tabuleiro</string>
+    no jogo</string>
 
     <!-- The remaining strings (down to the color edit dialog below)
          are showns as the names of editable colors and as the the
@@ -1003,7 +1003,7 @@
          touching in order to guide the fat-fingered (most of us) in
          operations that require accurately selecting a single square
          on the board.-->
-    <string name="clr_crosshairs">Cor das linhas</string>
+    <string name="clr_crosshairs">Cor das linhas de posição</string>
 
     <!-- color of the tiles' background -->
     <string name="tile_back">Fundo das pedras</string>
@@ -1103,7 +1103,7 @@
          is distracting, presumably because they're using tablets with
          large enough screens that they always know where they're
          tapping. -->
-    <string name="hide_crosshairs">Desligar mira</string>
+    <string name="hide_crosshairs">Desligar linhas de posição</string>
     <!-- explanation of the above -->
     <string name="hide_crosshairs_summary">Não indicar visualmente
     a casa do tabuleiro selecionada</string>
@@ -1644,7 +1644,7 @@
       -->
 
     <!-- shown when user chooses the gamel_menu_checkmoves menu -->
-    <string name="not_again_sync">Essa ação procura no retransmissor
+    <string name="not_again_sync">Essa ação procura no servidor
     por jogadas/mensagens pendentes para todos os jogos de rede e
     marca aqueles com jogadas pendentes. Quando você abrir um jogo
     marcado, ele fará a conexão e sincronização. (Numa versão futura
@@ -1729,7 +1729,7 @@
          in the game but not the last either.  So it will only occur
          for games with more than two devices, which are rare. -->
     <string name="not_again_conndmid">Você conectou e entrou num
-    jogo no retransmissor. Você será notificado quando o(s)
+    jogo no servidor. Você será notificado quando o(s)
     dispositivo(s) restantes(s) tiver(em) entrado na sua sala e
     o jogo puder começar.</string>
 
@@ -1738,7 +1738,7 @@
          game to do so, i.e. the game is now complete and you should
          expect play to begin. -->
     <string name="not_again_conndall">Você conectou e entrou num jogo
-    no retransmissor, a sala agora está cheia. O dispositivo que criou
+    no servidor, a sala agora está cheia. O dispositivo que criou
     a sala fará a distribuição inicial de pedras e o jogo pode
     começar.</string>
 
@@ -1853,7 +1853,7 @@
     <string name="pick_url_titlef">Procurar %s em</string>
 
       <!--  -->
-    <string name="board_menu_pass">Pular</string>
+    <string name="board_menu_pass">Pular vez</string>
 
       <!--  -->
     <string name="not_again_lookup">Esse botão permite que você
@@ -1888,6 +1888,9 @@
       <!--  -->
     <string name="not_again_browse">Esse botão abre o navegador de
     listas de palavras na lista do jogador atual.</string>
+    <string name="not_again_browseall">Esse botão abre o seletor de listas
+    de palavras na lista de sua escolha.</string> 
+
       <!--  -->
     <string name="alert_empty_dictf">A lista de palavras %s só contém
     informações de pedras.  Não há palavras para mostrar.</string>
@@ -2052,7 +2055,7 @@
     <string name="game_list_tmp">Carregando resumo do jogo...</string>
 
     <!--  -->
-    <string name="connstat_nonet">Este é um jogo independente. Não
+    <string name="connstat_nonet">Este é um jogo local. Não
     há informações de rede.</string>
     <!--  -->
     <string name="connstat_net">Informações de rede para jogo conectado
@@ -2073,7 +2076,7 @@
     <!--  -->
     <string name="connstat_noreceipt">Nenhuma mensagem foi recebida.</string>
     <!--  -->
-    <string name="connstat_relay">internet/retransmissor</string>
+    <string name="connstat_relay">internet/servidor</string>
     <!--  -->
     <string name="connstat_sms">sms/texto</string>
     <!--  -->
@@ -2124,7 +2127,7 @@
     <!-- Used in formatting final scores display -->
     <string name="str_resigned">Desistiu</string>
     <!-- Used in formatting final scores display -->
-    <string name="str_winner">Ganhador</string>
+    <string name="str_winner">Vencedor</string>
 
     <!--  -->
     <string name="inform_dict_diffversionf">Você e o hospedeiro
@@ -2197,4 +2200,7 @@
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
 
     <string name="change_groupf">Mover jogo %s</string>
+
+    <string name="show_wordlist_browser">Listas de palavras</string>
+
 </resources>

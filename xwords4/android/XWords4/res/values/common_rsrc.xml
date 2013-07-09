@@ -96,6 +96,7 @@
   <string name="key_notagain_trading">key_notagain_trading</string>
   <string name="key_na_lookup">key_na_lookup</string>
   <string name="key_na_browse">key_na_browse</string>
+  <string name="key_na_browseall">key_na_browseall</string>
   <string name="key_na_values">key_na_values</string>
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_download_path">key_download_path</string>

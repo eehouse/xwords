@@ -48,8 +48,6 @@
 # include <bluetooth/hci_lib.h>
 #endif
 
-/* #include <pthread.h> */
-
 #include "linuxmain.h"
 #include "linuxutl.h"
 #include "linuxbt.h"
@@ -633,6 +631,8 @@ typedef enum {
     ,CMD_SKIPCONFIRM
     ,CMD_VERTICALSCORE
     ,CMD_NOPEEK
+    ,CMD_SPLITPACKETS
+    ,CMD_CHAT
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
 #endif
@@ -680,7 +680,7 @@ typedef struct _CmdInfoRec {
 } CmdInfoRec;
 
 static CmdInfoRec CmdInfoRecs[] = {
-    { CMD_HELP, false, "help", "print usage" }
+    { CMD_HELP, false, "help", "print this message" }
     ,{ CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
     ,{ CMD_SHOW_OTHERSCORES, false, "show-other", "show robot/remote scores" }
     ,{ CMD_HOSTIP, true, "hostip", "remote host ip address (for direct connect)" }
@@ -737,6 +737,9 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIPCONFIRM, false, "skip-confirm", "don't confirm before commit" }
     ,{ CMD_VERTICALSCORE, false, "vertical", "scoreboard is vertical" }
     ,{ CMD_NOPEEK, false, "no-peek", "disallow scoreboard tap changing player" }
+    ,{ CMD_SPLITPACKETS, true, "split-packets", "send tcp packets in "
+       "sections every random MOD <n> seconds to test relay reassembly" }
+    ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
        "don't show crosshairs on board" }
@@ -892,15 +895,14 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
         /* make a local copy of the address to send to */
         sock = socket( AF_INET, SOCK_STREAM, 0 );
         if ( sock == -1 ) {
-            XP_DEBUGF( "socket returned -1\n" );
+            XP_DEBUGF( "%s: socket returned -1\n", __func__ );
             goto done;
         }
 
         to_sock.sin_port = htons( addrRec->u.ip_relay.port );
-        XP_STATUSF( "1: sending to port %d", addrRec->u.ip_relay.port );
         host = gethostbyname( addrRec->u.ip_relay.hostName );
         if ( NULL == host ) {
-            XP_WARNF( "%s: gethostbyname(%s) returned -1",  __func__, 
+            XP_WARNF( "%s: gethostbyname(%s) failed",  __func__, 
                       addrRec->u.ip_relay.hostName );
             sock = -1;
             goto done;
@@ -928,6 +930,96 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
     return sock;
 } /* linux_init_relay_socket */
 
+typedef struct _SendQueueElem {
+    XP_U32 id;
+    size_t len;
+    XP_U8* buf;
+} SendQueueElem;
+
+static void
+free_elem_proc( gpointer data )
+{
+    SendQueueElem* elem = (SendQueueElem*)data;
+    free( elem->buf );
+    free( elem );
+}
+
+static bool
+send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
+{
+    size_t nSent = send( cGlobals->socket, buf, len, 0 );
+    bool success = len == nSent;
+    if ( !success ) {
+        close( cGlobals->socket );
+        (*cGlobals->socketChanged)( cGlobals->socketChangedClosure,
+                                    cGlobals->socket, -1, 
+                                    &cGlobals->storage );
+        cGlobals->socket = -1;
+
+        /* delete all pending packets since the socket's bad */
+        g_slist_free_full( cGlobals->packetQueue, free_elem_proc );
+        cGlobals->packetQueue = NULL;
+    }
+    LOG_RETURNF( "%d", success );
+    return success;
+}
+
+static gboolean
+sendTimerFired( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+    if ( !!cGlobals->packetQueue ) {
+        guint listLen = g_slist_length( cGlobals->packetQueue );
+        assert( 0 < listLen );
+        SendQueueElem* elem = (SendQueueElem*)cGlobals->packetQueue->data;
+        cGlobals->packetQueue = cGlobals->packetQueue->next;
+
+        XP_LOGF( "%s: sending packet %ld of len %d (%d left)", __func__, 
+                 elem->id, elem->len, listLen - 1 );
+        bool sent = send_or_close( cGlobals, elem->buf, elem->len );
+        free( elem->buf );
+        free( elem );
+
+        if ( sent && 1 < listLen ) {
+            int when = XP_RANDOM() % (1 + cGlobals->params->splitPackets);
+            (void)g_timeout_add_seconds( when, sendTimerFired, cGlobals );
+        }
+    }
+
+    return FALSE;
+}
+
+static bool
+send_per_params( const XP_U8* buf, const XP_U16 buflen, 
+                 CommonGlobals* cGlobals )
+{
+    bool success;
+    if ( 0 == cGlobals->params->splitPackets ) {
+        success = send_or_close( cGlobals, buf, buflen );
+    } else {
+        for ( int nSent = 0; nSent < buflen;  ) {
+            int toSend = buflen / 2;
+            if ( toSend > buflen - nSent ) {
+                toSend = buflen - nSent;
+            }
+            SendQueueElem* elem = malloc( sizeof(*elem) );
+            elem->id = ++cGlobals->nextPacketID;
+            elem->buf = malloc( toSend );
+            XP_MEMCPY( elem->buf, &buf[nSent], toSend );
+            elem->len = toSend;
+            cGlobals->packetQueue = 
+                g_slist_append( cGlobals->packetQueue, elem );
+            nSent += toSend;
+            XP_LOGF( "%s: added packet %ld of len %d", __func__,
+                     elem->id, elem->len );
+        }
+        int when = XP_RANDOM() % (1 + cGlobals->params->splitPackets);
+        (void)g_timeout_add_seconds( when, sendTimerFired, cGlobals );
+        success = TRUE;
+    }
+    return success;
+}
+
 static XP_S16
 linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen, 
                 const CommsAddrRec* addrRec )
@@ -950,27 +1042,17 @@ linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
             }
         }
 
-        if ( sock != -1 ) {
-            XP_U16 netLen = htons( buflen );
-            errno = 0;
+    if ( sock != -1 ) {
+        XP_U16 netLen = htons( buflen );
+        XP_U8 tmp[buflen + sizeof(netLen)];
+        XP_MEMCPY( &tmp[0], &netLen, sizeof(netLen) );
+        XP_MEMCPY( &tmp[sizeof(netLen)], buf, buflen );
 
-            result = send( sock, &netLen, sizeof(netLen), 0 );
-            if ( result == sizeof(netLen) ) {
-                result = send( sock, buf, buflen, 0 ); 
-            }
-            if ( result <= 0 ) {
-                XP_STATUSF( "closing non-functional socket" );
-                close( sock );
-                (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
-                                           sock, -1, &cGlobals->storage );
-                cGlobals->socket = -1;
-            }
-
-            XP_STATUSF( "%s: send(sock=%d) returned %d of %d (err=%d)", 
-                        __func__, sock, result, buflen, errno );
-        } else {
-            XP_LOGF( "%s: socket still -1", __func__ );
+        if ( send_per_params( tmp, buflen + sizeof(netLen), globals ) ) {
+            result = buflen;
         }
+    } else {
+        XP_LOGF( "%s: socket still -1", __func__ );
     }
     return result;
 } /* linux_tcp_send */
@@ -1085,13 +1167,15 @@ linux_close_socket( CommonGlobals* cGlobals )
 static int
 blocking_read( int fd, unsigned char* buf, const int len )
 {
+    assert( -1 != fd );
     int nRead = 0;
     int tries;
     for ( tries = 5; nRead < len && tries > 0; --tries ) {
         // XP_LOGF( "%s: blocking for %d bytes", __func__, len );
         ssize_t nGot = read( fd, buf + nRead, len - nRead );
         if ( nGot == 0 ) {
-            XP_LOGF( "%s: read 0; let's try again (%d more times)", __func__, tries );
+            XP_LOGF( "%s: read 0; let's try again (%d more times)", __func__, 
+                     tries );
             usleep( 10000 );
         } else if ( nGot < 0 ) {
             XP_LOGF( "read => %d (wanted %d), errno=%d (\"%s\")", nRead, 
@@ -1105,6 +1189,7 @@ blocking_read( int fd, unsigned char* buf, const int len )
         nRead = -1;
     }
 
+    XP_LOGF( "%s(fd=%d, sought=%d) => %d", __func__, fd, len, nRead );
     return nRead;
 }
 
@@ -1136,13 +1221,35 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
                     nRead = -1;
                 }
             } else {
-                if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
-                    XP_LOGF( "%s: RANDOMLY dropping %dth packet "
-                             "per --drop-nth-packet",
-                             __func__, params->nPacketsRcvd );
+                nRead = blocking_read( sock, buf, packetSize );
+                if ( nRead != packetSize ) {
                     nRead = -1;
+                } else {
+                    LaunchParams* params = cGlobals->params;
+                    ++params->nPacketsRcvd;
+                    if ( params->dropNthRcvd == 0 ) {
+                        /* do nothing */
+                    } else if ( params->dropNthRcvd > 0 ) {
+                        if ( params->nPacketsRcvd == params->dropNthRcvd ) {
+                            XP_LOGF( "%s: dropping %dth packet per --drop-nth-packet",
+                                     __func__, params->nPacketsRcvd );
+                            nRead = -1;
+                        }
+                    } else {
+                        if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
+                            XP_LOGF( "%s: RANDOMLY dropping %dth packet "
+                                     "per --drop-nth-packet",
+                                     __func__, params->nPacketsRcvd );
+                            nRead = -1;
+                        }
+                    }
                 }
             }
+        }
+
+        if ( -1 == nRead ) {
+            linux_close_socket( cGlobals );
+            comms_transportFailed( cGlobals->game.comms );
         }
     }
     XP_LOGF( "%s=>%d", __func__, nRead );
@@ -1785,7 +1892,6 @@ main( int argc, char** argv )
     XP_Bool isServer = XP_FALSE;
     char* portNum = NULL;
     char* hostName = "localhost";
-    XP_Bool closeStdin = XP_FALSE;
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 nPlayerDicts = 0;
@@ -2106,7 +2212,7 @@ main( int argc, char** argv )
             break;
 #endif
         case CMD_CLOSESTDIN:
-            closeStdin = XP_TRUE;
+            mainParams.closeStdin = XP_TRUE;
             break;
         case CMD_QUITAFTER:
             mainParams.quitAfter = atoi(optarg);
@@ -2133,6 +2239,12 @@ main( int argc, char** argv )
             break;
         case CMD_NOPEEK:
             mainParams.allowPeek = XP_FALSE;
+            break;
+        case CMD_SPLITPACKETS:
+            mainParams.splitPackets = atoi( optarg );
+            break;
+        case CMD_CHAT:
+            mainParams.chatsInterval = atoi(optarg);
             break;
 #ifdef XWFEATURE_CROSSHAIRS
         case CMD_NOCROSSHAIRS:
@@ -2349,7 +2461,7 @@ main( int argc, char** argv )
         srandom( seed );	/* init linux random number generator */
         XP_LOGF( "seeded srandom with %d", seed );
 
-        if ( closeStdin ) {
+        if ( mainParams.closeStdin ) {
             fclose( stdin );
             if ( mainParams.quitAfter < 0 ) {
                 fprintf( stderr, "stdin closed; you'll need some way to quit\n" );

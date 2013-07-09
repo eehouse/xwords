@@ -136,21 +136,21 @@ public class DictImportActivity extends XWActivity {
         }
     } // class DownloadFilesTask
 
-	@Override
-	protected void onCreate( Bundle savedInstanceState ) 
+    @Override
+    protected void onCreate( Bundle savedInstanceState ) 
     {
-		super.onCreate( savedInstanceState );
+        super.onCreate( savedInstanceState );
         DownloadFilesTask dft = null;
 
-		requestWindowFeature( Window.FEATURE_LEFT_ICON );
-		setContentView( R.layout.import_dict );
-		getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
+        requestWindowFeature( Window.FEATURE_LEFT_ICON );
+        setContentView( R.layout.import_dict );
+        getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
                                                 R.drawable.icon48x48 );
 
-		ProgressBar progressBar = (ProgressBar)findViewById( R.id.progress_bar );
+        ProgressBar progressBar = (ProgressBar)findViewById( R.id.progress_bar );
 
-		Intent intent = getIntent();
-		Uri uri = intent.getData();
+        Intent intent = getIntent();
+        Uri uri = intent.getData();
         if ( null == uri ) {
             String url = intent.getStringExtra( APK_EXTRA );
             boolean isApp = null != url;
@@ -175,10 +175,10 @@ public class DictImportActivity extends XWActivity {
             String msg = getString( R.string.downloading_dictf, showName );
             TextView view = (TextView)findViewById( R.id.dwnld_message );
             view.setText( msg );
-            
+        
             dft.execute( uri );
         }
-	}
+    }
 
     private File saveToDownloads( InputStream is, String name )
     {

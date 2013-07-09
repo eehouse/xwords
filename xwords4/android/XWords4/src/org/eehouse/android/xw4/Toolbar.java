@@ -92,12 +92,26 @@ public class Toolbar {
         }
     }
 
-    public void setListener( int index, View.OnClickListener listener )
+    public ImageButton getViewFor( int index )
     {
         TBButtonInfo info = s_buttonInfo[index];
         ImageButton button = (ImageButton)m_activity.findViewById( info.m_id );
+        return button;
+    }
+
+    private void setListener( int index, View.OnClickListener listener )
+    {
+        ImageButton button = getViewFor( index );
         if ( null != button ) {
             button.setOnClickListener( listener );
+        }
+    }
+
+    private void setLongClickListener( int index, View.OnLongClickListener listener )
+    {
+        ImageButton button = getViewFor( index );
+        if ( null != button ) {
+            button.setOnLongClickListener( listener );
         }
     }
 
@@ -110,6 +124,18 @@ public class Toolbar {
                 }
             };
         setListener( index, listener );
+    }
+
+    public void setLongClickListener( int index, final int msgID, final int prefsKey, 
+                                      final int callback )
+    {
+        View.OnLongClickListener listener = new View.OnLongClickListener() {
+                public boolean onLongClick( View view ) {
+                    m_activity.showNotAgainDlgThen( msgID, prefsKey, callback );
+                    return true;
+                }
+            };
+        setLongClickListener( index, listener );
     }
 
     public void update( int index, boolean enable )

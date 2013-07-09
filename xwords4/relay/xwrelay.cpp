@@ -203,16 +203,30 @@ parseRelayID( const unsigned char** const inp, const unsigned char* const end,
     if ( ok ) {
         strncpy( buf, (char*)*inp, connNameLen );
         buf[connNameLen] = '\0';
-        *hid = atoi( hidp+1 );
-        char* endptr;
-        *hid = strtol( hidp + 1, &endptr, 10 );
-        if ( '\n' == *endptr ) {
-            ++endptr;
+
+        ++hidp; 	        // skip '/'
+        *hid = *hidp - '0';	// assume it's one byte, as should be in range '0'--'4'
+        // logf( XW_LOGERROR, "%s: read hid of %d from %s", __func__, *hid, hidp );
+
+        if ( *hid >= 0 && *hid <= 4 ) {
+            const char* endptr = hidp + 1;
+            if ( '\n' == *endptr ) {
+                ++endptr;
+            }
+            *inp = (unsigned char*)endptr;
+        } else {
+            ok = false;
+
+            int len = end - *inp;
+            char buf[len+1];
+            memcpy( buf, *inp, len);
+            buf[len] = '\0';
+            logf( XW_LOGERROR, "%s: got bad hid %d from str \"%s\"", __func__,
+                  *hid, buf );
         }
-        *inp = (unsigned char*)endptr;
     }
     if ( !ok ) {
-	logf( XW_LOGERROR, "%s failed", __func__ );
+        logf( XW_LOGERROR, "%s failed", __func__ );
     }
     return ok;
 }
@@ -448,23 +462,32 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
 {
     assert( !!addr );
     bool ok = false;
-    int socket = addr->socket();
 
     if ( addr->isTCP() ) {
-        unsigned short len = htons( bufLen );
-        ssize_t nSent = send( socket, &len, 2, 0 );
-        if ( nSent == 2 ) {
-            nSent = send( socket, buf, bufLen, 0 );
-            if ( nSent == ssize_t(bufLen) ) {
-                logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
-                ok = true;
+        int socket = addr->socket();
+        if ( addr->isCurrent() ) {
+            unsigned short len = htons( bufLen );
+            ssize_t nSent = send( socket, &len, sizeof(len), 0 );
+            if ( nSent == sizeof(len) ) {
+                nSent = send( socket, buf, bufLen, 0 );
+                if ( nSent == ssize_t(bufLen) ) {
+                    logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
+                    ok = true;
+                } else {
+                    logf( XW_LOGERROR, "%s: send failed: %s (errno=%d)", __func__, 
+                          strerror(errno), errno );
+                }
             }
+        } else {
+            logf( XW_LOGINFO, "%s: dropping packet: socket %d reused", 
+                  __func__, socket );
         }
     } else {
         AddrInfo::ClientToken clientToken = addr->clientToken();
         assert( 0 != clientToken );
         clientToken = htonl(clientToken);
         const struct sockaddr* saddr = addr->sockaddr();
+        int socket = addr->socket();
         assert( g_udpsock == socket || socket == -1 );
         if ( -1 == socket ) {
             socket = g_udpsock;
@@ -600,7 +623,7 @@ processReconnect( const unsigned char* bufp, int bufLen, const AddrInfo* addr )
                           cookie, srcID, addr, clientVersion, &devID,
                           nPlayersH, nPlayersT, gameSeed, langCode,
                           wantsPublic, makePublic );
-            success = scr.Reconnect( srcID, nPlayersH, nPlayersT, gameSeed, 
+            success = scr.Reconnect( nPlayersH, nPlayersT, gameSeed, 
                                      &err );
             // if ( !success ) {
             //     assert( err != XWRELAY_ERROR_NONE );
@@ -695,14 +718,15 @@ forwardMessage( const unsigned char* buf, int buflen, const AddrInfo* addr )
 
     if ( getNetShort( &bufp, end, &cookieID )
          && getNetByte( &bufp, end, &src ) 
-         && getNetByte( &bufp, end, &dest ) ) {
-        logf( XW_LOGINFO, "cookieID = %d", cookieID );
+         && getNetByte( &bufp, end, &dest ) 
+         && 0 < src && 0 < dest  ) {
 
         if ( COOKIE_ID_NONE == cookieID ) {
             SafeCref scr( addr );
             success = scr.Forward( src, addr, dest, buf, buflen );
         } else {
-            SafeCref scr( cookieID ); /* won't work if not allcon; will be 0 */
+            /* won't work if not allcon; will be 0 */
+            SafeCref scr( cookieID, true );
             success = scr.Forward( src, addr, dest, buf, buflen );
         }
     }
@@ -886,37 +910,6 @@ handlePipe( int sig )
 {
     logf( XW_LOGINFO, "%s", __func__ );
 }
-
-int
-read_packet( int sock, unsigned char* buf, int buflen )
-{
-    int result = -1;
-    ssize_t nread;
-    unsigned short msgLen;
-    nread = recv( sock, &msgLen, sizeof(msgLen), MSG_WAITALL );
-    if ( 0 == nread ) {
-        logf( XW_LOGINFO, "%s: recv => 0: remote closed", __func__ );
-    } else if ( nread != sizeof(msgLen) ) {
-        logf( XW_LOGERROR, "%s: first recv => %d: %s", __func__, 
-              nread, strerror(errno) );
-    } else {
-        msgLen = ntohs( msgLen );
-        if ( msgLen >= buflen ) {
-            logf( XW_LOGERROR, "%s: buf too small; need %d but have %d", 
-                  __func__, msgLen, buflen );
-        } else {
-            nread = recv( sock, buf, msgLen, MSG_WAITALL );
-            if ( nread == msgLen ) {
-                result = nread;
-            } else {
-                logf( XW_LOGERROR, "%s: second recv failed: %s", __func__, 
-                      strerror(errno) );
-            }
-        }
-    }
-
-    return result;
-} /* read_packet */
 
 static void
 pushShort( vector<unsigned char>& out, unsigned short num )
@@ -1110,9 +1103,9 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
                 }
             }
         }
-	if ( end - bufp != 1 ) {
-	    logf( XW_LOGERROR, "%s: buf != end: %p vs %p", __func__, bufp, end );
-	}
+        if ( end - bufp != 1 ) {
+            logf( XW_LOGERROR, "%s: buf != end: %p vs %p (+1)", __func__, bufp, end );
+        }
         // assert( bufp == end );  // don't ship with this!!!
     }
 } // handleProxyMsgs
@@ -1427,9 +1420,9 @@ udp_thread_proc( UdpThreadClosure* utc )
 }
 
 static void
-handle_udp_packet( int udpsock )
+read_udp_packet( int udpsock )
 {
-    unsigned char buf[MAX_MSG_LEN];
+    uint8_t buf[MAX_MSG_LEN];
     AddrInfo::AddrUnion saddr;
     memset( &saddr, 0, sizeof(saddr) );
     socklen_t fromlen = sizeof(saddr.addr_in);
@@ -1449,17 +1442,17 @@ void
 string_printf( string& str, const char* fmt, ... )
 {
     const int origsiz = str.size();
-    int newsiz = 100;
+    int addsiz = 100;
     va_list ap;
     for ( ; ; ) {
-        str.resize( origsiz + newsiz );
+        str.resize( origsiz + addsiz );
 
         va_start( ap, fmt );
-        int len = vsnprintf( (char *)str.c_str() + origsiz, newsiz, fmt, ap );
+        int len = vsnprintf( (char *)str.c_str() + origsiz, addsiz, fmt, ap );
         va_end( ap );
 
-        if ( len > newsiz ) {   // needs more space
-            newsiz = len + 1;
+        if ( len >= addsiz ) {   // needs more space
+            addsiz = len + 1;
         } else if ( -1 == len ) {
             assert(0);          // should be impossible
         } else {
@@ -1469,6 +1462,8 @@ string_printf( string& str, const char* fmt, ... )
     }
 }
 
+// Going with non-blocking instead
+#if 0
 static void
 set_timeouts( int sock )
 {
@@ -1493,6 +1488,7 @@ set_timeouts( int sock )
         assert( 0 );
     }
 }
+#endif
 
 static void
 enable_keepalive( int sock )
@@ -1500,7 +1496,7 @@ enable_keepalive( int sock )
     int optval = 1;
     if ( 0 > setsockopt( sock, SOL_SOCKET, SO_KEEPALIVE, 
                          &optval, sizeof( optval ) ) ) {
-        logf( XW_LOGERROR, "setsockopt(SO_KEEPALIVE)=>%d (%s)", errno, 
+        logf( XW_LOGERROR, "setsockopt(sock=%d, SO_KEEPALIVE)=>%d (%s)", sock, errno, 
               strerror(errno) );
         assert( 0 );
     }
@@ -1918,15 +1914,17 @@ main( int argc, char** argv )
                               errno, strerror(errno) );
                         assert( 0 ); // we're leaking files or load has grown
                     } else {
-			// I've seen a bug where we accept but never service
-			// connections.  Sockets are not closed, and so the
-			// number goes up.  Probably need a watchdog instead,
-			// but this will work around it.
+                        // I've seen a bug where we accept but never service
+                        // connections.  Sockets are not closed, and so the
+                        // number goes up.  Probably need a watchdog instead,
+                        // but this will work around it.
                         assert( g_maxsocks > newSock );
 
                         /* Set timeout so send and recv won't block forever */
-                        set_timeouts( newSock );
-                        
+                        // set_timeouts( newSock );
+
+                        int err = fcntl( newSock, F_SETFL, O_NONBLOCK );
+                        assert( 0 == err );
                         enable_keepalive( newSock );
 
                         logf( XW_LOGINFO, 
@@ -1939,6 +1937,7 @@ main( int argc, char** argv )
                                           perGame ? game_thread_proc
                                           : proxy_thread_proc,
                                           &addr );
+                        UdpQueue::get()->newSocket( &addr );
                     }
                     --retval;
                 }
@@ -1948,10 +1947,10 @@ main( int argc, char** argv )
                 // run_ctrl_thread( g_control );
                 --retval;
             }
-            if ( FD_ISSET( g_udpsock, &rfds ) ) {
+            if ( -1 != g_udpsock && FD_ISSET( g_udpsock, &rfds ) ) {
                 // This will need to be done in a separate thread, or pushed
                 // to the existing thread pool
-                handle_udp_packet( g_udpsock );
+                read_udp_packet( g_udpsock );
                 --retval;
             }
 #ifdef DO_HTTP

@@ -282,7 +282,7 @@ public class GameUtils {
     }
 
     public static long saveNewGame( Context context, int gamePtr,
-				    CurGameInfo gi )
+                                    CurGameInfo gi )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
         GameLock lock = DBUtils.saveNewGame( context, stream );

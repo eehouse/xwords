@@ -70,6 +70,8 @@ struct CursesAppGlobals {
     XP_U16 nLinesMenu;
     gchar* lastErr;
 
+    XP_U16 nChatsSent;
+
     union {
         struct {
             XWStreamCtxt* stream; /* how we can reach the server */
@@ -82,12 +84,13 @@ struct CursesAppGlobals {
 
     short statusLine;
     XWGameState state;
+    CommsRelayState commsRelayState; 
 
     struct sockaddr_in listenerSockAddr;
 #ifdef USE_GLIBLOOP
     GMainLoop* loop;
     GList* sources;
-    int quitPipe[2];
+    int quitpipe[2];
 #else
     XP_Bool timeToExit;
     short fdCount;

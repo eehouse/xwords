@@ -165,7 +165,14 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         String url = String.format( "%s/%s", 
                                     XWPrefs.getDefaultUpdateUrl( context ),
                                     proc );
-        return new HttpPost( url );
+        HttpPost result;
+        try {
+            result = new HttpPost( url );
+        } catch ( IllegalArgumentException iae ) {
+            DbgUtils.loge( iae );
+            result = null;
+        }
+        return result;
     }
 
     private static String runPost( HttpPost post, JSONObject params )
@@ -244,7 +251,10 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         @Override protected String doInBackground( Void... unused )
         {
             HttpPost post = makePost( m_context, "getUpdates" );
-            String json = runPost( post, m_params );
+            String json = null;
+            if ( null != post ) {
+                json = runPost( post, m_params );
+            }
             return json;
         }
 

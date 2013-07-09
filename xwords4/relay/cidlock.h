@@ -34,7 +34,10 @@ class CidInfo {
     CidInfo( CookieID cid )
         :m_cid(cid),
         m_cref(NULL),
-        m_owner(0) {}
+        m_owner(0),
+        m_ownerCount(0) {}
+
+    ~CidInfo() { assert( 0 == m_ownerCount ); }
 
     CookieID GetCid( void ) { return m_cid; }
     CookieRef* GetRef( void ) { return m_cref; }
@@ -43,12 +46,13 @@ class CidInfo {
     void SetAddrs( vector<AddrInfo> addrs ) { m_addrs = addrs; };
 
     void SetRef( CookieRef* cref ) { m_cref = cref; }
-    void SetOwner( pthread_t owner ) { m_owner = owner; }
+    void SetOwner( pthread_t owner );
 
  private:
     CookieID m_cid;
     CookieRef* m_cref;
     pthread_t m_owner;
+    int m_ownerCount;
     vector<AddrInfo> m_addrs;
 };
 

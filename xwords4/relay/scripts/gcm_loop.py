@@ -112,7 +112,7 @@ def asGCMIds(con, devids, typ):
 def notifyGCM( devids, typ, target ):
     success = False
     if typ == DEVTYPE_GCM:
-        if 3 <= target['clntVers']:
+        if 3 <= target['clntVers'] and target['msg64']:
             connname = "%s/%d" % (target['connname'], target['hid'])
             data = { 'msgs64': [ target['msg64'] ],
                      'connname': connname,
@@ -235,8 +235,9 @@ def main():
                 toDelete = []
                 for devid in targets.keys():
                     target = targets[devid]
-                    if notifyGCM( asGCMIds(g_con, [devid], typ), typ, target )\
-                            and 3 <= target['clntVers']:
+                    if notifyGCM( asGCMIds(g_con, [devid], typ), typ, target ) \
+                            and 3 <= target['clntVers'] \
+                            and target['msg64']:
                         toDelete.append( str(target['id']) )
                 pruneSent( devids )
                 deleteMsgs( g_con, toDelete )

@@ -189,12 +189,12 @@ public class GameListItem extends LinearLayout
                 break;
             }
 
+            String name = GameUtils.getName( m_context, m_rowid );
             if ( null != value ) {
-                String name = GameUtils.getName( m_context, m_rowid );
                 value = m_context.getString( R.string.str_game_namef, 
                                              name, value );
             } else {
-                value = GameUtils.getName( m_context, m_rowid );
+                value = name;
             }
                         
             view.setText( value );

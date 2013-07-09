@@ -324,11 +324,12 @@ drawPendingScore( BoardCtxt* board, XP_S16 turnScore, XP_Bool hasCursor )
     /* Draw the pending score down in the last tray's rect */
     if ( countTilesToShow( board ) < MAX_TRAY_TILES ) {
         XP_U16 selPlayer = board->selPlayer;
+        XP_S16 curTurn = server_getCurrentTurn( board->server );
         XP_Rect lastTileR;
 
         figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
         draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
-                                 selPlayer, 
+                                 selPlayer, curTurn,
                                  hasCursor?CELL_ISCURSOR:CELL_NONE );
     }
 } /* drawPendingScore */

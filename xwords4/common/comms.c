@@ -197,6 +197,7 @@ static void putDevID( const CommsCtxt* comms, XWStreamCtxt* stream );
 # endif
 # ifdef DEBUG
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
+static void printQueue( const CommsCtxt* comms );
 # endif
 #endif
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
@@ -287,7 +288,9 @@ static void
 init_relay( CommsCtxt* comms, XP_U16 nPlayersHere, XP_U16 nPlayersTotal )
 {
     comms->r.myHostID = comms->isServer? HOST_ID_SERVER: HOST_ID_NONE;
-    XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
+    if ( HOST_ID_NONE != comms->r.myHostID ) {
+        XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
+    }
     set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
     comms->r.nPlayersHere = nPlayersHere;
     comms->r.nPlayersTotal = nPlayersTotal;
@@ -964,6 +967,7 @@ static MsgQueueElem*
 makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec, 
                 XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
+    XP_LOGF( "%s(channelNo=%x)", __func__, channelNo );
     XP_U16 headerLen;
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
     MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
@@ -1016,7 +1020,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 XP_U16
 comms_getChannelSeed( CommsCtxt* comms )
 {
-    while ( comms->channelSeed == 0 ) {
+    while ( 0 == (comms->channelSeed & ~CHANNEL_MASK) ) {
         comms->channelSeed = XP_RANDOM();
         XP_LOGF( "%s: channelSeed: %.4X", __func__, comms->channelSeed );
     }
@@ -1073,10 +1077,10 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
         XP_ASSERT( comms->queueLen > 0 );
     }
     ++comms->queueLen;
-    XP_LOGF( "%s: queueLen now %d after channelNo: %d; msgID: " XP_LD 
-             "; len: %d", __func__, comms->queueLen,
-             newMsgElem->channelNo & CHANNEL_MASK, newMsgElem->msgID, 
-             newMsgElem->len );
+    XP_ASSERT( comms->queueLen <= 128 ); /* reasonable limit in testing */
+#ifdef DEBUG
+    printQueue( comms );
+#endif
 } /* addToQueue */
 
 #ifdef DEBUG
@@ -1088,7 +1092,7 @@ printQueue( const CommsCtxt* comms )
 
     for ( elem = comms->msgQueueHead, ii = 0; ii < comms->queueLen; 
           elem = elem->next, ++ii ) {
-        XP_STATUSF( "\t%d: channel: %x; msgID=" XP_LD 
+        XP_LOGF( "\t%d: channel: %x; msgID=" XP_LD 
 #ifdef COMMS_CHECKSUM
                     "; check=%s"
 #endif
@@ -1139,8 +1143,8 @@ freeElem( const CommsCtxt* XP_UNUSED_DBG(comms), MsgQueueElem* elem )
 static void
 removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 {
-    XP_STATUSF( "%s: remove msgs <= " XP_LD " for channel %x (queueLen: %d)",
-                __func__, msgID, channelNo, comms->queueLen );
+    XP_LOGF( "%s: remove msgs <= " XP_LD " for channel %x (queueLen: %d)",
+             __func__, msgID, channelNo, comms->queueLen );
 
     if ( (channelNo == 0) || !!getRecordFor( comms, NULL, channelNo, 
                                              XP_FALSE ) ) {
@@ -1176,7 +1180,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
         }
     }
 
-    XP_STATUSF( "%s: queueLen now %d", __func__, comms->queueLen );
+    XP_LOGF( "%s: queueLen now %d", __func__, comms->queueLen );
 
 #ifdef DEBUG
     assertQueueOk( comms );
@@ -1191,6 +1195,7 @@ gameID( const CommsCtxt* comms )
     if ( 0 == gameID ) {
         gameID = comms->util->gameInfo->gameID;
     }
+
     // XP_ASSERT( 0 != gameID );
     if ( 0 == gameID ) {
         XP_LOGF( "%s: gameID STILL 0", __func__ );
@@ -1199,21 +1204,15 @@ gameID( const CommsCtxt* comms )
         comms->util->gameInfo->gameID = gameID;
     }
 
-    /* this next is failing on android b/c comms->util->gameInfo->gameID still 0 */
-#ifdef DEBUG
-    /* if ( (0 != comms->connID) */
-    /*      && ((comms->connID & 0xFFFF) */
-    /*          != (comms->util->gameInfo->gameID & 0xFFFF)) ) { */
-    /*     XP_LOGF("%s: connID: 0X%lX vs gameID: 0X%lX", __func__, comms->connID,  */
-    /*             comms->util->gameInfo->gameID ); */
-    /*     XP_ASSERT(0); */
-    /* } */
-#endif
-    /* XP_ASSERT( 0 == comms->connID  */
-    /*            || (comms->connID & 0xFFFF)  */
-    /*            == (comms->util->gameInfo->gameID & 0xFFFF) ); */
     /* Most of the time these will be the same, but early in a game they won't
        be.  Would be nice not to have to use gameID. */
+    if ( 0 == gameID ) {
+        XP_LOGF( "%s: gameID STILL 0", __func__ );
+    } else if ( 0 == comms->util->gameInfo->gameID ) {
+        XP_LOGF( "%s: setting gi's gameID to 0X%lX", __func__, gameID );
+        comms->util->gameInfo->gameID = gameID;
+    }
+
     return gameID;
 }
 
@@ -1227,6 +1226,11 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 #endif
 
     channelNo = elem->channelNo;
+
+#ifdef COMMS_CHECKSUM
+    XP_LOGF( "%s: sending message of len %d with sum %s", __func__, elem->len, 
+             elem->checksum );
+#endif
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
@@ -1317,25 +1321,27 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
 void
 comms_ackAny( CommsCtxt* comms )
 {
+    if ( CONN_ID_NONE == comms->connID ) {
+        XP_LOGF( "%s: doing nothing because connID still unset", __func__ );
+    } else {
 #ifdef DEBUG
-    XP_Bool noneSent = XP_TRUE;
+        XP_U16 nSent = 0;
 #endif 
-    AddressRecord* rec;
-    for ( rec = comms->recs; !!rec; rec = rec->next ) {
-        if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
+        AddressRecord* rec;
+        for ( rec = comms->recs; !!rec; rec = rec->next ) {
+            if ( rec->lastMsgAckd < rec->lastMsgRcd ) {
 #ifdef DEBUG
-            noneSent = XP_FALSE;
+                ++nSent;
 #endif 
-            XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
-                     rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
-            sendEmptyMsg( comms, rec );
+                XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
+                         rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
+                sendEmptyMsg( comms, rec );
+            }
         }
-    }
 #ifdef DEBUG
-    if ( noneSent ) {
-        XP_LOGF( "%s: nothing to send", __func__ );
-    }
+        XP_LOGF( "%s: sent for %d channels", __func__, nSent );
 #endif 
+    } 
 }
 #endif
 
@@ -1410,7 +1416,8 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
                      __func__, comms->r.connName, connName );
         }
         XP_MEMCPY( comms->r.connName, connName, sizeof(comms->r.connName) );
-        XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
+        XP_LOGF( "%s: connName: \"%s\" (reconnect=%d)", __func__, connName, 
+                 reconnected );
     }
 #else
     stringFromStreamHere( stream, comms->r.connName, 
@@ -1460,8 +1467,11 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 
     case XWRELAY_ALLHERE:
         srcID = (XWHostID)stream_getU8( stream );
-        XP_ASSERT( comms->r.myHostID == HOST_ID_NONE
-                   || comms->r.myHostID == srcID );
+        if ( comms->r.myHostID != HOST_ID_NONE
+             && comms->r.myHostID != srcID ) {
+            XP_LOGF( "%s: changing hostid from %d to %d", __func__, 
+                     comms->r.myHostID, srcID );
+        }
 
         if ( 0 == comms->r.cookieID ) {
             XP_LOGF( "%s: cookieID still 0; background send?", 
@@ -1649,7 +1659,7 @@ preProcess( CommsCtxt* comms, XWStreamCtxt* stream,
 
 static AddressRecord* 
 getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr, 
-              XP_PlayerAddr channelNo, XP_Bool maskChannel )
+              const XP_PlayerAddr channelNo, XP_Bool maskChannel )
 {
     CommsConnType conType;
     AddressRecord* rec;
@@ -1703,6 +1713,8 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
             break;
         }
     }
+    XP_LOGF( "%s(channelNo=%x, maskChannel=%s) => %p", __func__, 
+             channelNo, maskChannel? "true":"false", rec );
     return rec;
 } /* getRecordFor */
 
@@ -1756,7 +1768,7 @@ validateInitialMessage( CommsCtxt* comms,
         if ( addRec ) {
             if ( comms->isServer ) {
                 XP_LOGF( "%s: looking at channelNo: %x", __func__, *channelNo );
-                XP_ASSERT( (*channelNo && CHANNEL_MASK) == 0 );
+                XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
                 *channelNo |= ++comms->nextChannelNo;
                 XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
             }
@@ -1778,12 +1790,22 @@ validateInitialMessage( CommsCtxt* comms,
         } else {
             if ( comms->isServer ) {
                 XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
-                *channelNo |= ++comms->nextChannelNo;
-                XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
+                if ( 0 == (*channelNo & CHANNEL_MASK) ) {
+                    *channelNo |= ++comms->nextChannelNo;
+                    XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
+                } else {
+                    /* Why do I sometimes see these in the middle of a game
+                       with lots of messages already sent?  connID of 0 should
+                       only happen at the start! */
+                    XP_LOGF( "%s: dropping msg because channel already set",
+                             __func__ );
+                    goto errExit;
+                }
             }
             rec = rememberChannelAddress( comms, *channelNo, senderID, addr );
         }
     }
+ errExit:
     LOG_RETURNF( XP_P, rec );
     return rec;
 } /* validateInitialMessage */
@@ -1829,12 +1851,26 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XP_Bool usingRelay = XP_FALSE;
 
     XP_ASSERT( retAddr == NULL || comms->addr.conType == retAddr->conType );
+#ifdef COMMS_CHECKSUM
+    XP_U16 initialLen = stream_getSize( stream );
+#endif
 
     if ( !preProcess( comms, stream, &usingRelay, &senderID ) ) {
         XP_U32 connID;
         XP_PlayerAddr channelNo;
         MsgID msgID;
         MsgID lastMsgRcd;
+
+#ifdef COMMS_CHECKSUM
+        {
+            XP_U16 len = stream_getSize( stream );
+            // stream_getPtr pts at base, but sum excludes relay header
+            const XP_U8* ptr = initialLen - len + stream_getPtr( stream );
+            gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
+            XP_LOGF( "%s: got message of len %d with sum %s", __func__, len, sum );
+            g_free( sum );
+        }
+#endif
 
         /* reject too-small message */
         if ( stream_getSize( stream ) >=
@@ -1861,6 +1897,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             } else if ( comms->connID == connID ) {
                 rec = validateChannelMessage( comms, retAddr, channelNo, msgID,
                                               lastMsgRcd );
+            } else {
+                XP_LOGF( "%s: unexpected connID; dropping message", __func__ );
             }
 
             messageValid = (NULL != rec)

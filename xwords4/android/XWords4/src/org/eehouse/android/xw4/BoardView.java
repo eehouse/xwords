@@ -50,6 +50,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private static Bitmap s_bitmap;    // the board
     private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
+    private static final int NOT_TURN_ALPHA = 0x3FFFFFFF;
     private static final int PINCH_THRESHOLD = 40;
     private static final int SCORE_HT_DROP = 2;
     private static final boolean DEBUG_DRAWFRAMES = false;
@@ -888,14 +889,19 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     }
 
     public void score_pendingScore( Rect rect, int score, int playerNum, 
-                                    int flags ) 
+                                    int curTurn, int flags ) 
     {
         String text = score >= 0? String.format( "%d", score ) : "??";
         int otherIndx = (0 == (flags & CELL_ISCURSOR)) 
             ? CommonPrefs.COLOR_BACKGRND : CommonPrefs.COLOR_FOCUS;
         ++rect.top;
         fillRectOther( rect, otherIndx );
-        m_fillPaint.setColor( m_playerColors[playerNum] );
+
+        int playerColor = m_playerColors[playerNum];
+        if ( playerNum != curTurn ) {
+            playerColor &= NOT_TURN_ALPHA;
+        }
+        m_fillPaint.setColor( playerColor );
 
         rect.bottom -= rect.height() / 2;
         drawCentered( text, rect, null );

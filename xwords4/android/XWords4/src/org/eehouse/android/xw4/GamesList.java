@@ -102,6 +102,7 @@ public class GamesList extends XWExpandableListActivity
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
+    private boolean m_gameLaunched = false;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -135,7 +136,7 @@ public class GamesList extends XWExpandableListActivity
                 String message;
                 String langName = 
                     DictLangCache.getLangName( this, m_missingDictLang );
-                String gameName = GameUtils.getName( this, m_rowid );
+                String gameName = GameUtils.getName( this, m_missingDictRowId );
                 if ( WARN_NODICT == id ) {
                     message = getString( R.string.no_dictf,
                                          gameName, langName );
@@ -385,6 +386,7 @@ public class GamesList extends XWExpandableListActivity
     protected void onNewIntent( Intent intent )
     {
         super.onNewIntent( intent );
+        m_gameLaunched = false;
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         invalRowID( intent.getLongExtra( ROWID_EXTRA, -1 ) );
@@ -464,6 +466,7 @@ public class GamesList extends XWExpandableListActivity
         super.onWindowFocusChanged( hasFocus );
         if ( hasFocus ) {
             updateField();
+            m_gameLaunched = false;
         }
     }
 
@@ -487,21 +490,23 @@ public class GamesList extends XWExpandableListActivity
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
-        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
-             && summary.roomName.length() == 0 ) {
-            // If it's unconfigured and of the type RelayGameActivity
-            // can handle send it there, otherwise use the full-on
-            // config.
-            Class clazz;
-            if ( RelayGameActivity.isSimpleGame( summary ) ) {
-                clazz = RelayGameActivity.class;
+        if ( !m_gameLaunched ) {
+            if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
+                 && summary.roomName.length() == 0 ) {
+                // If it's unconfigured and of the type RelayGameActivity
+                // can handle send it there, otherwise use the full-on
+                // config.
+                Class clazz;
+                if ( RelayGameActivity.isSimpleGame( summary ) ) {
+                    clazz = RelayGameActivity.class;
+                } else {
+                    clazz = GameConfig.class;
+                }
+                GameUtils.doConfig( this, rowid, clazz );
             } else {
-                clazz = GameConfig.class;
-            }
-            GameUtils.doConfig( this, rowid, clazz );
-        } else {
-            if ( checkWarnNoDict( rowid ) ) {
-                launchGame( rowid );
+                if ( checkWarnNoDict( rowid ) ) {
+                    launchGame( rowid );
+                }
             }
         }
     }
@@ -666,7 +671,6 @@ public class GamesList extends XWExpandableListActivity
     public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
-        Intent intent;
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_newgame:
@@ -678,8 +682,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.gamel_menu_dicts:
-            intent = new Intent( this, DictsActivity.class );
-            startActivity( intent );
+            DictsActivity.start( this );
             break;
 
         case R.id.gamel_menu_checkmoves:
@@ -1089,7 +1092,10 @@ public class GamesList extends XWExpandableListActivity
 
     private void launchGame( long rowid, boolean invited )
     {
-        GameUtils.launchGame( this, rowid, invited );
+        if ( !m_gameLaunched ) {
+            m_gameLaunched = true;
+            GameUtils.launchGame( this, rowid, invited );
+        }
     }
 
     private void launchGame( long rowid )

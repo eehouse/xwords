@@ -102,7 +102,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID cid,
     } else {
         m_delayMicros = 0;
     }
-    RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
+    RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heartbeat );
     logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
           m_cookie.c_str(), m_connName.c_str() );
 
@@ -422,8 +422,8 @@ CookieRef::removeSocket( const AddrInfo* addr )
             if ( iter->m_addr.equals( *addr ) ) {
                 if ( iter->m_ackPending ) {
                     logf( XW_LOGINFO,
-                          "Never got ack; removing hid %d from DB",
-                          iter->m_hostID );
+                          "%s: Never got ack; removing hid %d from DB",
+                          __func__, iter->m_hostID );
                     DBMgr::Get()->RmDeviceByHid( ConnName(), 
                                                  iter->m_hostID );
                     m_nPlayersHere -= iter->m_nPlayersH;
@@ -857,22 +857,19 @@ void
 CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
 {
     logf( XW_LOGVERBOSE0, "%s(dest=%d)", __func__, dest );
-
     assert( dest > 0 && dest <= 4 );
-    assert( -1 != addr->socket() );
 
-    for ( ; ; ) {
-        unsigned char buf[MAX_MSG_LEN];
-        size_t buflen = sizeof(buf);
-        int msgID;
-        if ( !DBMgr::Get()->GetStoredMessage( ConnName(), dest, 
-                                              buf, &buflen, &msgID ) ) {
-            break;
-        }
-        if ( ! send_with_length( addr, dest, buf, buflen, true ) ) {
-            break;
-        }
-        DBMgr::Get()->RemoveStoredMessages( &msgID, 1 );
+    DBMgr* dbmgr = DBMgr::Get();
+    const char* cname = ConnName();
+    while ( addr->isCurrent() ) {
+	unsigned char buf[MAX_MSG_LEN];
+	size_t buflen = sizeof(buf);
+	int msgID;
+	if ( !dbmgr->GetStoredMessage( cname, dest, buf, &buflen, &msgID )
+	     || ! send_with_length( addr, dest, buf, buflen, true ) ) {
+	    break;
+	}
+	dbmgr->RemoveStoredMessages( &msgID, 1 );
     }
 } /* send_stored_messages */
 
@@ -936,6 +933,8 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
     {
         RWWriteLock rwl( &m_socketsRWLock );
         HostRec hr( hostid, &evt->addr, nPlayersH, seed, !reconn );
+        logf( XW_LOGINFO, "%s: adding socket rec with ts %lx", __func__, 
+              evt->addr.created() );
         m_sockets.push_back( hr );
     }
 
@@ -1291,7 +1290,7 @@ CookieRef::sendAllHere( bool initial )
        message for it.  Would be better if could look up rather than run
        through the vector each time. */
     HostID dest;
-    for ( dest = 1; dest <= m_nPlayersHere; ++dest ) {
+    for ( dest = 1; dest <= m_nPlayersSought; ++dest ) {
         bool sent = false;
         *idLoc = dest;   /* write in this target's hostId */
 
@@ -1461,7 +1460,7 @@ CookieRef::logf( XW_LogLevel level, const char* format, ... )
     char buf[256];
     int len;
 
-    len = snprintf( buf, sizeof(buf), "cid:%d ", m_cid );
+    len = snprintf( buf, sizeof(buf), "cid:%d(%s) ", m_cid, m_connName.c_str() );
 
     va_list ap;
     va_start( ap, format );

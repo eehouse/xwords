@@ -54,6 +54,11 @@ class DBMgr {
                        int* langP, int* nPlayersTP, int* nPlayersHP,
                        bool* isDead );
 
+    bool FindGameFor( const char* connName, char* cookieBuf, int bufLen,
+                      unsigned short seed, HostID hid,
+                      int nPlayersH, int nPlayersS,
+                      int* langP, bool* isDead, CookieID* cidp );
+
     bool SeenSeed( const char* cookie, unsigned short seed,
                    int langCode, int nPlayersT, bool wantsPublic, 
                    char* connNameBuf, int bufLen, int* nPlayersHP,
@@ -121,7 +126,7 @@ class DBMgr {
     DBMgr();
     bool execSql( const string& query );
     bool execSql( const char* const query ); /* no-results query */
-    void readArray( const char* const connName, int arr[] );
+    void readArray( const char* const connName, const char* column, int arr[] );
     DevIDRelay getDevID( const char* connName, int hid );
     DevIDRelay getDevID( const DevID* devID );
     int getCountWhere( const char* table, string& test );
@@ -130,6 +135,7 @@ class DBMgr {
                         int byteaIndex, unsigned char* buf, size_t* buflen );
 
     PGconn* getThreadConn( void );
+    void clearThreadConn();
 
     void conn_key_alloc();
     pthread_key_t m_conn_key;
