@@ -228,6 +228,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     if ( !entry ) {
         XP_LOGF( "findEntryFor failed; called from %s, line %ld in %s",
                  func, lineNo, file );
+        XP_ASSERT( 0 );
     } else {
 
 #ifdef MPOOL_DEBUG
@@ -251,11 +252,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
 
         ++mpool->nFree;
         --mpool->nUsed;
-
-        return;
     }
-
-    XP_ASSERT( 0 );
 } /* mpool_free */
 
 void
