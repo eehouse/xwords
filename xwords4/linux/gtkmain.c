@@ -383,15 +383,16 @@ static void
 gtkSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
                   SockReceiver proc, void* procClosure )
 {
-    /* GtkAppGlobals* apg = (GtkAppGlobals*)closure; */
-    /* SourceData* sd = g_malloc( sizeof(*sd) ); */
-    /* sd->channel = g_io_channel_unix_new( newSock ); */
-    /* sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR,  */
-    /*                             gtk_app_socket_proc, apg ); */
-    /* sd->proc = proc; */
-    /* sd->procClosure = procClosure; */
-    /* apg->sources = g_list_append( apg->sources, sd ); */
-
+#if 1
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    SourceData* sd = g_malloc( sizeof(*sd) );
+    sd->channel = g_io_channel_unix_new( newSock );
+    sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR,
+                                gtk_app_socket_proc, apg );
+    sd->proc = proc;
+    sd->procClosure = procClosure;
+    apg->sources = g_list_append( apg->sources, sd );
+#else
     GtkAppGlobals* globals = (GtkAppGlobals*)closure;
     SockInfo* info = (SockInfo*)*storage;
     XP_LOGF( "%s(old:%d; new:%d)", __func__, oldSock, newSock );
@@ -430,6 +431,7 @@ gtkSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock),
     if ( (comms != NULL) && (comms_getConType(comms) == COMMS_CONN_BT) ) {
         comms_resendAll( comms, XP_FALSE );
     }
+#endif
     LOG_RETURN_VOID();
 } /* gtk_socket_changed */
 
@@ -526,6 +528,8 @@ getSelRow( const GtkAppGlobals* apg )
     }
     return result;
 }
+
+static GtkAppGlobals* g_globals_for_signal = NULL;
 
 static void
 handle_sigintterm( int XP_UNUSED(sig) )

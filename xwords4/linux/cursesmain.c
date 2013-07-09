@@ -1713,15 +1713,6 @@ relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED_DBG(relayErr) )
 
 #ifdef USE_GLIBLOOP
 static gboolean
-read_quit( GIOChannel* XP_UNUSED(source), GIOCondition XP_UNUSED(condition), 
-           gpointer data )
-{
-    CursesAppGlobals* globals = (CursesAppGlobals*)data;
-    handleQuit( globals );
-    return TRUE;    
-}
-
-static gboolean
 handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition, 
               gpointer data )
 {

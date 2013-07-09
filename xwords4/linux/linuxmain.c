@@ -77,7 +77,7 @@
 #define DEFAULT_PORT 10997
 #define DEFAULT_LISTEN_PORT 4998
 
-static int blocking_read( int fd, unsigned char* buf, int len );
+static int blocking_read( int fd, unsigned char* buf, const int len );
 
 XP_Bool
 file_exists( const char* fileName )
@@ -1038,21 +1038,22 @@ linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
             if ( sock != -1 ) {
                 assert( cGlobals->socket == sock );
                 (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
-                                           -1, sock, &cGlobals->storage );
+                                            -1, sock, &cGlobals->storage );
             }
         }
 
-    if ( sock != -1 ) {
-        XP_U16 netLen = htons( buflen );
-        XP_U8 tmp[buflen + sizeof(netLen)];
-        XP_MEMCPY( &tmp[0], &netLen, sizeof(netLen) );
-        XP_MEMCPY( &tmp[sizeof(netLen)], buf, buflen );
+        if ( sock != -1 ) {
+            XP_U16 netLen = htons( buflen );
+            XP_U8 tmp[buflen + sizeof(netLen)];
+            XP_MEMCPY( &tmp[0], &netLen, sizeof(netLen) );
+            XP_MEMCPY( &tmp[sizeof(netLen)], buf, buflen );
 
-        if ( send_per_params( tmp, buflen + sizeof(netLen), globals ) ) {
-            result = buflen;
+            if ( send_per_params( tmp, buflen + sizeof(netLen), cGlobals ) ) {
+                result = buflen;
+            }
+        } else {
+            XP_LOGF( "%s: socket still -1", __func__ );
         }
-    } else {
-        XP_LOGF( "%s: socket still -1", __func__ );
     }
     return result;
 } /* linux_tcp_send */
@@ -1856,7 +1857,7 @@ freeParams( LaunchParams* params )
     // linux_util_vt_destroy( params->util );
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
 
-    XP_FREEP( params->mpool, &params->pgi.dictName );
+    // XP_FREEP( params->mpool, &params->pgi.dictName );
     for ( ii = 0; ii < params->nLocalPlayers; ++ii ) {
         XP_FREEP( params->mpool, &params->pgi.players[ii].name );
     }

@@ -479,7 +479,8 @@ run_cmds() {
             try_upgrade $KEY
             launch $KEY &
             PID=$!
-            renice +1 $PID >/dev/null
+            # renice doesn't work on one of my machines...
+            renice -n 1 -p $PID >/dev/null || /bin/true
             PIDS[$KEY]=$PID
             ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
@@ -587,6 +588,7 @@ while [ "$#" -gt 0 ]; do
         --via-udp)
             UDP_PCT=$(getArg $*)
             shift
+            ;;
         --clean-start)
             DO_CLEAN=1
             ;;
@@ -642,14 +644,14 @@ while [ "$#" -gt 0 ]; do
             UNDO_PCT=$(getArg $*)
             shift
             ;;
-    --send-chat)
+        --send-chat)
             SEND_CHAT=$(getArg $*)
             shift
             ;;
-    --resign-ratio)
-        RESIGN_RATIO=$(getArg $*)
-        shift
-        ;;
+        --resign-ratio)
+            RESIGN_RATIO=$(getArg $*)
+            shift
+            ;;
         --help)
             usage
             ;;
