@@ -198,6 +198,8 @@ static void putDevID( const CommsCtxt* comms, XWStreamCtxt* stream );
 # ifdef DEBUG
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 static void printQueue( const CommsCtxt* comms );
+# else
+# define printQueue( comms )
 # endif
 #endif
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
@@ -1041,6 +1043,7 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
         elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
         if ( NULL != elem ) {
             addToQueue( comms, elem );
+            printQueue( comms );
             result = sendMsg( comms, elem );
         }
     }
@@ -1067,9 +1070,6 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
     }
     ++comms->queueLen;
     XP_ASSERT( comms->queueLen <= 128 ); /* reasonable limit in testing */
-#ifdef DEBUG
-    printQueue( comms );
-#endif
 } /* addToQueue */
 
 #ifdef DEBUG
