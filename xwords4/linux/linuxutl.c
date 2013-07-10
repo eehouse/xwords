@@ -378,6 +378,19 @@ linux_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ,
 }
 #endif
 
+#ifdef COMMS_CHECKSUM
+static XP_UCHAR*
+linux_util_md5sum( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len )
+{
+    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
+    XP_U16 sumlen = 1 + strlen( sum );
+    XP_UCHAR* result = XP_MALLOC( uc->mpool, sumlen );
+    XP_MEMCPY( result, sum, sumlen );
+    g_free( sum );
+    return result;
+}
+#endif
+
 void
 linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 {
@@ -393,6 +406,9 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 #ifdef XWFEATURE_DEVID
     util->vtable->m_util_getDevID = linux_util_getDevID;
     util->vtable->m_util_deviceRegistered = linux_util_deviceRegistered;
+#endif
+#ifdef COMMS_CHECKSUM
+    util->vtable->m_util_md5sum = linux_util_md5sum;
 #endif
 }
 

@@ -370,8 +370,8 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
 #endif
          ) {
         JNIEnv* env = ctxt->env;
-        jstring jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name,
-                                              NULL, 0 );
+        jstring jsum = and_util_getMD5SumForDict( ctxt->jniutil, 
+                                                  ctxt->super.name, NULL, 0 );
         XP_UCHAR* md5Sum = NULL;
         /* If we have a cached sum, check that it's correct. */
         if ( NULL != jsum && NULL != ctxt->super.md5Sum ) {
@@ -385,8 +385,8 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         }
 
         if ( NULL == jsum ) {
-            jsum = and_util_getMD5SumFor( ctxt->jniutil, ctxt->super.name,
-                                          ptr, end - ptr );
+            jsum = and_util_getMD5SumForDict( ctxt->jniutil, ctxt->super.name,
+                                              ptr, end - ptr );
         }
         if ( NULL == md5Sum ) {
             md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );

@@ -623,6 +623,22 @@ and_util_engineStopping( XW_UtilCtxt* uc )
 }
 #endif
 
+#ifdef COMMS_CHECKSUM
+static XP_UCHAR*
+and_util_md5sum( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len )
+{
+    AndUtil* util = (AndUtil*)uc;
+    JNIEnv* env = *util->env;
+    AndGlobals* globals = (AndGlobals*)uc->closure;
+    struct JNIUtilCtxt* jniutil = globals->jniutil;
+    jstring jsum = and_util_getMD5SumForBytes( jniutil, ptr, len );
+    XP_UCHAR* result = getStringCopy( MPPARM(uc->mpool) env, jsum );
+    deleteLocalRef( env, jsum );
+    return result;
+}
+#endif
+
+
 XW_UtilCtxt*
 makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi, 
           AndGlobals* closure )
@@ -704,6 +720,10 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(engineStarting);
     SET_PROC(engineStopping);
 #endif
+#ifdef COMMS_CHECKSUM
+    SET_PROC(md5sum);
+#endif
+
 #undef SET_PROC
     return (XW_UtilCtxt*)util;
 } /* makeUtil */

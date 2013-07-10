@@ -202,6 +202,10 @@ typedef struct UtilVtable {
     void (*m_util_engineStopping)( XW_UtilCtxt* uc );
 #endif
 
+#ifdef COMMS_CHECKSUM
+    XP_UCHAR* (*m_util_md5sum)( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len );
+#endif
+
 } UtilVtable;
 
 
@@ -347,5 +351,9 @@ struct XW_UtilCtxt {
 # define util_engineStarting( uc, nb )
 # define util_engineStopping( uc )
 # endif
+
+#ifdef COMMS_CHECKSUM
+# define util_md5sum( uc, p, l ) (uc)->vtable->m_util_md5sum((uc), (p), (l))
+#endif
 
 #endif

@@ -129,31 +129,35 @@ public class JNIUtilsImpl implements JNIUtils {
         faces.add( face.toArray( new String[face.size()] ) );
     }
 
+    public String getMD5SumFor( byte[] bytes )
+    {
+        byte[] digest = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] buf = new byte[128];
+            int nLeft = bytes.length;
+            int offset = 0;
+            while ( 0 < nLeft ) {
+                int len = Math.min( buf.length, nLeft );
+                System.arraycopy( bytes, offset, buf, 0, len );
+                md.update( buf, 0, len );
+                nLeft -= len;
+                offset += len;
+            }
+            digest = md.digest();
+        } catch ( java.security.NoSuchAlgorithmException nsae ) {
+            DbgUtils.loge( nsae );
+        }
+        return Utils.digestToString( digest );
+    }
+
     public String getMD5SumFor( String dictName, byte[] bytes )
     {
         String result = null;
         if ( null == bytes ) {
             result = DBUtils.dictsGetMD5Sum( m_context, dictName );
         } else {
-            byte[] digest = null;
-            try {
-                MessageDigest md = MessageDigest.getInstance("MD5");
-                byte[] buf = new byte[128];
-                int nLeft = bytes.length;
-                int offset = 0;
-                while ( 0 < nLeft ) {
-                    int len = Math.min( buf.length, nLeft );
-                    System.arraycopy( bytes, offset, buf, 0, len );
-                    md.update( buf, 0, len );
-                    nLeft -= len;
-                    offset += len;
-                }
-                digest = md.digest();
-            } catch ( java.security.NoSuchAlgorithmException nsae ) {
-                DbgUtils.loge( nsae );
-            }
-            result = Utils.digestToString( digest );
-
+            result = getMD5SumFor( bytes );
             // Is this needed?  Caller might be doing it anyway.
             DBUtils.dictsSetMD5Sum( m_context, dictName, result );
         }

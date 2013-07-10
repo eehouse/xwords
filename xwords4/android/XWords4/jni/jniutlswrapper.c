@@ -93,8 +93,8 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
 }
 
 jstring
-and_util_getMD5SumFor( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
-                       const XP_U8* bytes, jsize len )
+and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
+                           const XP_U8* bytes, jsize len )
 {
     JNIEnv* env = *jniutil->envp;
     jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
@@ -107,3 +107,20 @@ and_util_getMD5SumFor( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
     deleteLocalRefs( env, jname, jbytes, DELETE_NO_REF );
     return result;
 }
+
+#ifdef COMMS_CHECKSUM
+jstring
+and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len )
+{
+    JNIEnv* env = *jniutil->envp;
+    jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
+                                 "([B)Ljava/lang/String;" );
+
+    jbyteArray jbytes = NULL == bytes? NULL
+        : makeByteArray( env, len, (jbyte*)bytes );
+    jstring result = 
+        (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jbytes );
+    deleteLocalRef( env, jbytes );
+    return result;
+}
+#endif

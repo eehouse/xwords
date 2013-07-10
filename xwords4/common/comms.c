@@ -60,7 +60,7 @@ typedef struct MsgQueueElem {
 #endif
     MsgID msgID;                /* saved for ease of deletion */
 #ifdef COMMS_CHECKSUM
-    gchar* checksum;
+    XP_UCHAR* checksum;
 #endif
 } MsgQueueElem;
 
@@ -631,8 +631,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         msg->msg = (XP_U8*)XP_MALLOC( mpool, msg->len );
         stream_getBytes( stream, msg->msg, msg->len );
 #ifdef COMMS_CHECKSUM
-        msg->checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
-                                                     msg->msg, msg->len );
+        msg->checksum = util_md5sum( comms->util, msg->msg, msg->len );
 #endif
         msg->next = (MsgQueueElem*)NULL;
         *prevsQueueNext = comms->msgQueueTail = msg;
@@ -1012,9 +1011,8 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     }
 
 #ifdef COMMS_CHECKSUM
-    newMsgElem->checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
-                                                        newMsgElem->msg, 
-                                                        newMsgElem->len );
+    newMsgElem->checksum = util_md5sum( comms->util, newMsgElem->msg, 
+                                        newMsgElem->len );
 #endif
     return newMsgElem;
 } /* makeElemWithID */
@@ -1129,7 +1127,7 @@ freeElem( const CommsCtxt* XP_UNUSED_DBG(comms), MsgQueueElem* elem )
 {
     XP_FREE( comms->mpool, elem->msg );
 #ifdef COMMS_CHECKSUM
-    g_free( elem->checksum );
+    XP_FREE( comms->mpool, elem->checksum );
 #endif
     XP_FREE( comms->mpool, elem );
 }
@@ -1866,9 +1864,9 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             XP_U16 len = stream_getSize( stream );
             // stream_getPtr pts at base, but sum excludes relay header
             const XP_U8* ptr = initialLen - len + stream_getPtr( stream );
-            gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
+            XP_UCHAR* sum = util_md5sum( comms->util, ptr, len );
             XP_LOGF( "%s: got message of len %d with sum %s", __func__, len, sum );
-            g_free( sum );
+            XP_FREE( comms->mpool, sum );
         }
 #endif
 
