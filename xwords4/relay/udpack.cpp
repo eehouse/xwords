@@ -122,8 +122,6 @@ UDPAckTrack::threadProc()
             }
             logf( XW_LOGERROR, "%s: these packets leaked: %s", __func__, 
                   leaked.c_str() );
-        } else {
-            logf( XW_LOGINFO, "%s: no packets leaked", __func__ );
         }
     }
     return NULL;
