@@ -42,6 +42,22 @@ public class XWExpandableListActivity extends ExpandableListActivity
     }
 
     @Override
+    protected void onResume()
+    {
+        DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
+        XWService.setListener( this );
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
+        XWService.setListener( null );
+        super.onPause();
+    }
+
+    @Override
     protected void onSaveInstanceState( Bundle outState ) 
     {
         super.onSaveInstanceState( outState );

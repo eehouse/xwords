@@ -360,7 +360,7 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
     LinBtStuff* btStuff = globals->btStuff;
     if ( !btStuff ) {
         btStuff = globals->btStuff
-            = lbt_make( MPPARM(globals->params->util->mpool) amMaster );
+            = lbt_make( MPPARM(globals->util->mpool) amMaster );
         btStuff->globals = globals;
         btStuff->socket = -1;
 
@@ -413,7 +413,7 @@ linux_bt_close( CommonGlobals* globals )
             (void)close( btStuff->socket );
         }
 
-        XP_FREE( globals->params->util->mpool, btStuff );
+        XP_FREE( globals->util->mpool, btStuff );
         globals->btStuff = NULL;
     }
 } /* linux_bt_close */

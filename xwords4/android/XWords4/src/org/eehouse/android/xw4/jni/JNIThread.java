@@ -286,6 +286,9 @@ public class JNIThread extends Thread {
         // state.  In some cases it'll otherwise drop the move.
         XwJNI.server_do( m_jniGamePtr );
 
+        // And let it tell the relay (if any) it's leaving
+        XwJNI.comms_stop( m_jniGamePtr );
+
         XwJNI.game_getGi( m_jniGamePtr, m_gi );
         if ( null != m_newDict ) {
             m_gi.dictName = m_newDict;

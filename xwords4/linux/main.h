@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001-2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -25,6 +25,8 @@
 # include <bluetooth/bluetooth.h> /* for bdaddr_t, which should move */
 #endif
 
+#include <sqlite3.h>
+
 #include "comtypes.h"
 #include "util.h"
 #include "game.h"
@@ -42,26 +44,33 @@ typedef struct LinuxUtilCtxt {
     UtilVtable* vtable;
 } LinuxUtilCtxt;
 
+typedef void (*SockReceiver)( void* closure, int socket );
+typedef void (*NewSocketProc)( void* closure, int newSock, int oldSock, 
+                               SockReceiver proc, void* procClosure );
+
 typedef struct LaunchParams {
 /*     CommPipeCtxt* pipe; */
-    XW_UtilCtxt* util;
-    DictionaryCtxt* dict;
-    CurGameInfo gi;
-    PlayerDicts dicts;
+    CurGameInfo pgi;
+
     GSList* dictDirs;
     char* fileName;
+    char* dbName;
+    sqlite3* pDb;               /* null unless opened */
     XP_U16 saveFailPct;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE
     char* dbFileName;
     XP_U32 dbFileID;
 #endif
+    void* relayConStorage;      /* opaque outside of relaycon.c */
     char* pipe;
     char* nbs;
     char* bonusFile;
 #ifdef XWFEATURE_DEVID
     char* devID;
     char* rDevID;
+    XP_Bool noAnonDevid;
+    XP_UCHAR devIDStore[16];
 #endif
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
@@ -140,7 +149,7 @@ typedef struct LaunchParams {
         ServerInfo serverInfo;
         ClientInfo clientInfo;
     } info;
-
+    MPSLOT
 } LaunchParams;
 
 typedef struct CommonGlobals CommonGlobals;
@@ -165,17 +174,29 @@ typedef struct _TimerInfo {
 #endif
 } TimerInfo;
 
+typedef void (*OnSaveFunc)( void* closure, sqlite3_int64 rowid,
+                            XP_Bool firstTime );
+
 struct CommonGlobals {
     LaunchParams* params;
     CommonPrefs cp;
+    XW_UtilCtxt* util;
 
     XWGame game;
+    CurGameInfo* gi;
+    CommsAddrRec addr;
+    DictionaryCtxt* dict;
+    PlayerDicts dicts;
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
     XP_Bool manualFinal;        /* use asked for final scores */
+    sqlite3* pDb;
+    sqlite3_int64 selRow;
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
+    OnSaveFunc onSave;
+    void* onSaveClosure;
     GSList* packetQueue;
     XP_U32 nextPacketID;        /* for debugging */
 
@@ -209,5 +230,25 @@ struct CommonGlobals {
 
     XP_U16 curSaveToken;
 };
+
+typedef struct _SourceData {
+    GIOChannel* channel;
+    gint watch;
+    SockReceiver proc;
+    void* procClosure;
+} SourceData;
+
+typedef struct _GtkAppGlobals {
+    GArray* selRows;
+    LaunchParams* params;
+    GSList* globalsList;
+    GList* sources;
+    GtkWidget* window;
+    GtkWidget* listWidget;
+    GtkWidget* openButton;
+    GtkWidget* deleteButton;
+} GtkAppGlobals;
+
+sqlite3_int64 getSelRow( const GtkAppGlobals* apg );
 
 #endif

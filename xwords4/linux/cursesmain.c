@@ -42,6 +42,7 @@
 
 #include "linuxmain.h"
 #include "linuxutl.h"
+#include "linuxdict.h"
 #include "cursesmain.h"
 #include "cursesask.h"
 #include "cursesletterask.h"
@@ -61,6 +62,8 @@
 #include "dbgutil.h"
 #include "linuxsms.h"
 #include "linuxudp.h"
+#include "gamesdb.h"
+#include "relaycon.h"
 
 #ifdef CURSES_SMALL_SCREEN
 # define MENU_WINDOW_HEIGHT 1
@@ -208,7 +211,7 @@ static CursesMenuHandler getHandlerForKey( const MenuList* list, char ch );
 
 
 #ifdef MEM_DEBUG
-# define MEMPOOL params->util->mpool,
+# define MEMPOOL cGlobals->util->mpool,
 #else
 # define MEMPOOL
 #endif
@@ -237,7 +240,7 @@ curses_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
     XP_S16 index;
-    char* playerName = globals->cGlobals.params->gi.players[playerNum].name;
+    char* playerName = globals->cGlobals.gi->players[playerNum].name;
 
     snprintf( query, sizeof(query), 
               "Pick tile for %s! (Tab or type letter to select "
@@ -255,7 +258,7 @@ curses_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi),
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
     XP_S16 index;
-    char* playerName = globals->cGlobals.params->gi.players[playerNum].name;
+    char* playerName = globals->cGlobals.gi->players[playerNum].name;
 
     snprintf( query, sizeof(query), 
               "Pick tile for %s! (Tab or type letter to select "
@@ -343,7 +346,7 @@ cursesShowFinalScores( CursesAppGlobals* globals )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make( MPPARM(globals->cGlobals.params->util->mpool)
+    stream = mem_stream_make( MPPARM(globals->cGlobals.util->mpool)
                               globals->cGlobals.params->vtMgr,
                               globals, CHANNEL_NONE, NULL );
     server_writeFinalScores( globals->cGlobals.game.server, stream );
@@ -406,6 +409,14 @@ curses_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
     XP_USE(uc);
     XP_USE(phoniesAction);
     XP_LOGF( "%s: %s => %s (cksum: %s)", __func__, oldName, newName, newSum );
+}
+
+static void
+curses_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
+{
+    LOG_FUNC();
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    linuxSetIsServer( cGlobals, isServer );
 }
 
 #ifdef XWFEATURE_HILITECELL
@@ -1039,7 +1050,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
     if ( 0 != (G_IO_IN & condition) ) {
         CursesAppGlobals* globals = (CursesAppGlobals*)data;
         int fd = g_io_channel_unix_get_fd( source );
-        unsigned char buf[256];
+        unsigned char buf[1024];
         int nBytes;
         CommsAddrRec addrRec;
         CommsAddrRec* addrp = NULL;
@@ -1087,7 +1098,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
                that on the screen before giving the server another
                shot.  So just call the idle proc. */
             if ( redraw ) {
-                curses_util_requestTime( globals->cGlobals.params->util );
+                curses_util_requestTime( globals->cGlobals.util );
             }
         }
     }
@@ -1115,6 +1126,15 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
     globals->cGlobals.socket = newSock;
 #endif
 } /* curses_socket_changed */
+
+static void
+curses_onGameSaved( void* closure, sqlite3_int64 rowid, 
+                    XP_Bool XP_UNUSED(firstTime) )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    /* May not be recorded */
+    globals->cGlobals.selRow = rowid;
+}
 
 #ifdef USE_GLIBLOOP
 static gboolean
@@ -1284,7 +1304,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                                                    globals );
                 } else {
 #ifndef XWFEATURE_STANDALONE_ONLY
-                    unsigned char buf[256];
+                    unsigned char buf[1024];
                     int nBytes;
                     CommsAddrRec addrRec;
                     CommsAddrRec* addrp = NULL;
@@ -1489,7 +1509,7 @@ curses_util_remSelected( XW_UtilCtxt* uc )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make( MPPARM(globals->cGlobals.params->util->mpool)
+    stream = mem_stream_make( MPPARM(globals->cGlobals.util->mpool)
                               globals->cGlobals.params->vtMgr,
                               globals, CHANNEL_NONE, NULL );
     board_formatRemainingTiles( globals->cGlobals.game.board, stream );
@@ -1553,6 +1573,8 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_informUndo = curses_util_informUndo;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
     util->vtable->m_util_informNetDict = curses_util_informNetDict;
+    util->vtable->m_util_setIsServer = curses_util_setIsServer;
+
 #ifdef XWFEATURE_HILITECELL
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
 #endif
@@ -1609,7 +1631,7 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
     BoardCtxt* board = globals->cGlobals.game.board;
     int remWidth = width;
-    int nRows = globals->cGlobals.params->gi.boardSize;
+    int nRows = globals->cGlobals.gi->boardSize;
 
     cellWidth = CURSES_CELL_WIDTH;
     cellHt = CURSES_CELL_HT;
@@ -1719,6 +1741,119 @@ handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
 }
 #endif
 
+#ifdef COMMS_XPORT_FLAGSPROC
+static XP_U32
+curses_getFlags( void* XP_UNUSED(closure) )
+{
+    return COMMS_XPORT_FLAGS_HASNOCONN;
+}
+#endif
+
+static void
+cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    XP_U32 gameToken;
+    XP_ASSERT( sizeof(gameToken) < len );
+    gameToken = ntohl(*(XP_U32*)&buf[0]);
+    buf += sizeof(gameToken);
+    len -= sizeof(gameToken);
+
+    gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
+}
+
+static gint
+curses_requestMsgs( gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    XP_UCHAR devIDBuf[64] = {0};
+    db_fetch( globals->cGlobals.pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    if ( '\0' != devIDBuf[0] ) {
+        relaycon_requestMsgs( globals->cGlobals.params, devIDBuf );
+    } else {
+        XP_LOGF( "%s: not requesting messages as don't have relay id", __func__ );
+    }
+    return 0;                   /* don't run again */
+}
+
+
+static void 
+cursesNoticeRcvd( void* closure )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    (void)g_idle_add( curses_requestMsgs, globals );
+}
+
+static void
+cursesDevIDChanged( void* closure, const XP_UCHAR* devID )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    sqlite3* pDb = cGlobals->pDb;
+    if ( !!devID ) {
+        XP_LOGF( "%s(devID=%s)", __func__, devID );
+        db_store( pDb, KEY_RDEVID, devID );
+    } else {
+        XP_LOGF( "%s: bad relayid", __func__ );
+        db_remove( pDb, KEY_RDEVID );
+
+        DevIDType typ;
+        const XP_UCHAR* devID = linux_getDevID( cGlobals->params, &typ );
+        relaycon_reg( cGlobals->params, devID, typ );
+    }
+}
+
+static void
+cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    if ( !!globals->lastErr && 0 == strcmp( globals->lastErr, msg ) ) {
+        XP_LOGF( "skipping error message from relay" );
+    } else {
+        g_free( globals->lastErr );
+        globals->lastErr = g_strdup( msg );
+        (void)cursesask( globals, msg, 1, "Ok" );
+    }
+}
+
+
+static gboolean
+curses_app_socket_proc( GIOChannel* source, GIOCondition condition, 
+                        gpointer data )
+{
+    if ( 0 != (G_IO_IN & condition) ) {
+        CursesAppGlobals* globals = (CursesAppGlobals*)data;
+        int socket = g_io_channel_unix_get_fd( source );
+        GList* iter;
+        for ( iter = globals->sources; !!iter; iter = iter->next ) {
+            SourceData* sd = (SourceData*)iter->data;
+            if ( sd->channel == source ) {
+                (*sd->proc)( sd->procClosure, socket );
+                break;
+            }
+        }
+        XP_ASSERT( !!iter );    /* didn't fail to find it */
+    }
+    return TRUE;
+}
+
+static void
+cursesUDPSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
+                        SockReceiver proc, void* procClosure )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+
+    SourceData* sd = g_malloc( sizeof(*sd) );
+    sd->channel = g_io_channel_unix_new( newSock );
+    sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR, 
+                                curses_app_socket_proc, globals );
+    sd->proc = proc;
+    sd->procClosure = procClosure;
+    globals->sources = g_list_append( globals->sources, sd );
+}
+
 static gboolean
 chatsTimerFired( gpointer data )
 {
@@ -1748,6 +1883,7 @@ void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
     int width, height;
+    CommonGlobals* cGlobals = &g_globals.cGlobals;
 
     memset( &g_globals, 0, sizeof(g_globals) );
 
@@ -1763,6 +1899,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     g_globals.cGlobals.socketChanged = curses_socket_changed;
     g_globals.cGlobals.socketChangedClosure = &g_globals;
+    g_globals.cGlobals.onSave = curses_onGameSaved;
+    g_globals.cGlobals.onSaveClosure = &g_globals;
+
     g_globals.cGlobals.addAcceptor = curses_socket_acceptor;
 
     g_globals.cGlobals.cp.showBoardArrow = XP_TRUE;
@@ -1778,7 +1917,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.cp.robotTradePct = params->robotTradePct;
 #endif
 
-    setupCursesUtilCallbacks( &g_globals, params->util );
+    g_globals.cGlobals.gi = &params->pgi;
+    setupUtil( &g_globals.cGlobals );
+    setupCursesUtilCallbacks( &g_globals, g_globals.cGlobals.util );
+
+    initFromParams( &g_globals.cGlobals, params );
 
 #ifdef XWFEATURE_RELAY
     if ( params->conType == COMMS_CONN_RELAY ) {
@@ -1792,12 +1935,14 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         cursesListenOnSocket( &g_globals, 0, handle_stdin );
     }
     setOneSecondTimer( &g_globals.cGlobals );
+
 # ifdef DEBUG
     int piperesult = 
 # endif
         pipe( g_globals.quitpipe );
     XP_ASSERT( piperesult == 0 );
     cursesListenOnSocket( &g_globals, g_globals.quitpipe[0], handle_quitwrite );
+
 #else
     cursesListenOnSocket( &g_globals, 0 ); /* stdin */
 
@@ -1824,7 +1969,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         .rconnd = relay_connd_curses,
         .rerror = relay_error_curses,
         .sendNoConn = relay_sendNoConn_curses,
-        .flags = COMMS_XPORT_FLAGS_HASNOCONN,
+# ifdef COMMS_XPORT_FLAGSPROC
+        .getFlags = curses_getFlags,
+# endif
 #endif
     };
 
@@ -1846,7 +1993,40 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             cursesDrawCtxtMake( g_globals.boardWin );
 
         XWStreamCtxt* stream = NULL;
-        if ( !!params->fileName && file_exists( params->fileName ) ) {
+        if ( !!params->dbName ) {
+            g_globals.cGlobals.pDb = openGamesDB( params->dbName );
+
+            RelayConnProcs procs = {
+                .msgReceived = cursesGotBuf,
+                .msgNoticeReceived = cursesNoticeRcvd,
+                .devIDChanged = cursesDevIDChanged,
+                .msgErrorMsg = cursesErrorMsgRcvd,
+                .socketChanged = cursesUDPSocketChanged,
+            };
+
+            relaycon_init( params, &procs, &g_globals,
+                           params->connInfo.relay.relayName,
+                           params->connInfo.relay.defaultSendPort );
+            DevIDType typ;
+            const XP_UCHAR* devID = linux_getDevID( params, &typ );
+            relaycon_reg( params, devID, typ );
+
+            GSList* games = listGames( g_globals.cGlobals.pDb );
+            if ( !!games ) {
+                stream = mem_stream_make( MEMPOOL params->vtMgr,
+                                          &g_globals.cGlobals, CHANNEL_NONE,
+                                          NULL );
+                sqlite3_int64 selRow = *(sqlite3_int64*)games->data;
+                if ( loadGame( stream, g_globals.cGlobals.pDb, selRow ) ) {
+                    g_globals.cGlobals.selRow = selRow;
+                } else {
+                    stream_destroy( stream );
+                    stream = NULL;
+                }
+                g_slist_free( games );
+            }
+                
+        } else if ( !!params->fileName && file_exists( params->fileName ) ) {
             stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
                                      &g_globals );
 #ifdef USE_SQLITE
@@ -1855,27 +2035,40 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
         }
 
+        if ( NULL == cGlobals->dict ) {
+            if ( !!stream ) {
+                cGlobals->dict = makeDictForStream( cGlobals, stream );
+            } else {
+                cGlobals->dict = 
+                    linux_dictionary_make( MEMPOOL params, 
+                                           cGlobals->gi->dictName, XP_TRUE );
+            }
+        }
+        cGlobals->gi->dictLang = dict_getLangCode( cGlobals->dict );
+
         if ( !!stream ) {
-            (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
-                                       &params->gi, params->dict, &params->dicts,
-                                       params->util, 
+            (void)game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
+                                       cGlobals->gi, cGlobals->dict, 
+                                       &cGlobals->dicts, cGlobals->util, 
                                        (DrawCtx*)g_globals.draw, 
                                        &g_globals.cGlobals.cp, &procs );
 
             stream_destroy( stream );
-            if ( !isServer && params->gi.serverRole == SERVER_ISSERVER ) {
+            if ( !isServer && cGlobals->gi->serverRole == SERVER_ISSERVER ) {
                 isServer = XP_TRUE;
             }
             opened = XP_TRUE;
         }
         if ( !opened ) {
-            game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
-                              params->util, (DrawCtx*)g_globals.draw,
+            game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
+                              cGlobals->util, (DrawCtx*)g_globals.draw,
                               &g_globals.cGlobals.cp, &procs, params->gameSeed );
+            g_globals.cGlobals.selRow = -1;
+            saveGame( &g_globals.cGlobals );
         }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        if ( g_globals.cGlobals.game.comms ) {
+        if ( cGlobals->game.comms ) {
             CommsAddrRec addr = {0};
 
             if ( 0 ) {
@@ -1907,22 +2100,22 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                            sizeof(params->connInfo.bt.hostAddr) );
 # endif
             }
-            comms_setAddr( g_globals.cGlobals.game.comms, &addr );
+            comms_setAddr( cGlobals->game.comms, &addr );
         }
 #endif
 
-        model_setDictionary( g_globals.cGlobals.game.model, params->dict );
-        setSquareBonuses( &g_globals.cGlobals );
+        model_setDictionary( cGlobals->game.model, cGlobals->dict );
+        setSquareBonuses( cGlobals );
         positionSizeStuff( &g_globals, width, height );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* send any events that need to get off before the event loop begins */
         if ( !isServer ) {
             if ( 1 /* stream_open( params->info.clientInfo.stream )  */) {
-                server_initClientConnection( g_globals.cGlobals.game.server, 
+                server_initClientConnection( cGlobals->game.server, 
                                              mem_stream_make( MEMPOOL
                                                               params->vtMgr,
-                                                              &g_globals.cGlobals,
+                                                              cGlobals,
                                                               (XP_PlayerAddr)0,
                                                               sendOnClose ) );
             } else {
@@ -1961,10 +2154,13 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 #endif
     }
+    if ( !!g_globals.cGlobals.game.comms ) {
+        comms_stop( g_globals.cGlobals.game.comms );
+    }
     saveGame( &g_globals.cGlobals );
 
     game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
-    gi_disposePlayerInfo( MEMPOOL &g_globals.cGlobals.params->gi );
+    gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
     
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &g_globals.cGlobals );
@@ -1977,5 +2173,12 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 
     endwin();
+
+    if ( !!params->dbName ) {
+        closeGamesDB( g_globals.cGlobals.pDb );
+    }
+    relaycon_cleanup( params );
+
+    linux_util_vt_destroy( g_globals.cGlobals.util );
 } /* cursesmain */
 #endif /* PLATFORM_NCURSES */

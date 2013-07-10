@@ -32,9 +32,6 @@ void linux_debugf(const char*, ...)
     __attribute__ ((format (printf, 1, 2)));
 #endif
 
-DictionaryCtxt* linux_dictionary_make( MPFORMAL const LaunchParams* mainParams,
-                                       const char* dictFileName, XP_Bool useMMap );
-
 
 void linux_util_vt_init( MPFORMAL XW_UtilCtxt* util );
 void linux_util_vt_destroy( XW_UtilCtxt* util );
@@ -48,6 +45,7 @@ void initNoConnStorage( CommonGlobals* cGlobals );
 XP_Bool storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 len,
                         const XP_UCHAR* relayID );
 void writeNoConnMsgs( CommonGlobals* cGlobals, int fd );
+
 
 #ifdef STREAM_VERS_BIGBOARD
 void setSquareBonuses( const CommonGlobals* cGlobals );

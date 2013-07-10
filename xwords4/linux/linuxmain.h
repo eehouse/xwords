@@ -55,7 +55,7 @@ XP_Bool linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
 
 
 XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals, 
-                                  unsigned char* bufPtr, XP_U16 nBytes );
+                                  const unsigned char* bufPtr, XP_U16 nBytes );
 XP_UCHAR* strFromStream( XWStreamCtxt* stream );
 
 void catGameHistory( CommonGlobals* cGlobals );
@@ -72,8 +72,6 @@ XP_Bool getDictPath( const LaunchParams *params, const char* name,
                      char* result, int resultLen );
 GSList* listDicts( const LaunchParams *params );
 void saveGame( CommonGlobals* cGlobals );
-
-int blocking_read( int fd, unsigned char* buf, int len );
 
 void linux_close_socket( CommonGlobals* cGlobals );
 
@@ -93,5 +91,24 @@ void setOneSecondTimer( CommonGlobals* cGlobals );
 #else
 # define setOneSecondTimer( cGlobals )
 #endif
+
+void setupLinuxUtilCallbacks( XW_UtilCtxt* util );
+void initFromParams( CommonGlobals* cGlobals, LaunchParams* params );
+void setupUtil( CommonGlobals* cGlobals );
+
+DictionaryCtxt* makeDictForStream( CommonGlobals* cGlobals, 
+                                   XWStreamCtxt* stream );
+void linuxSetIsServer( CommonGlobals* cGlobals, XP_Bool isServer );
+void linuxChangeRoles( CommonGlobals* cGlobals );
+
+void sendRelayReg( LaunchParams* params, sqlite3* pDb );
+void gameGotBuf( CommonGlobals* globals, XP_Bool haveDraw, 
+                 const XP_U8* buf, XP_U16 len );
+gboolean app_socket_proc( GIOChannel* source, GIOCondition condition, 
+                          gpointer data );
+const XP_UCHAR* linux_getDevID( LaunchParams* params, DevIDType* typ );
+
+/* void initParams( LaunchParams* params ); */
+/* void freeParams( LaunchParams* params ); */
 
 #endif

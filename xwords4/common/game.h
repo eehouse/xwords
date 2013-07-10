@@ -93,8 +93,8 @@ void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                        ,XP_U16 gameSeed
 #endif
                        );
-void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
-                 CommonPrefs* cp, const TransportProcs* procs );
+XP_Bool game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
+                    CommonPrefs* cp, const TransportProcs* procs );
 void game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, 
                       DictionaryCtxt* dict );
 

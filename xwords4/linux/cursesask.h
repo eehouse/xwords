@@ -22,8 +22,8 @@
 
 #include "cursesmain.h"
 
-short cursesask( CursesAppGlobals* globals, char* question, 
-		 short numButtons, char* button1, ... );
+short cursesask( CursesAppGlobals* globals, const char* question, 
+                 short numButtons, const char* button1, ... );
 
 
 #endif

@@ -24,7 +24,7 @@
 #include "gtkutils.h"
 
 typedef struct _GtkConnsState {
-    GtkAppGlobals* globals;
+    GtkGameGlobals* globals;
     CommsAddrRec* addr;
     DeviceRole role;
 
@@ -179,7 +179,7 @@ makeBTPage( GtkConnsState* state )
 } /* makeBTPage */
 
 gboolean
-gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr, DeviceRole role,
+gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
              XP_Bool readOnly )
 {
     GtkConnsState state;

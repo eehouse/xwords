@@ -57,7 +57,7 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
     short curSelButton = 1;	/* force draw by being different */
     short maxWidth;
     short numCtlButtons;
-    char* ctlButtons[] = { "Ok", "Cancel" };
+    const char* ctlButtons[] = { "Ok", "Cancel" };
     XP_Bool dismissed = XP_FALSE;
     FormatInfo fi;
     int len;
@@ -138,7 +138,7 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
                              MAX_TILE_BUTTON_WIDTH-1, 
                              nInRow,
                              newSelButton - textsOffsets[i], 
-                             (char**)&textPtrs[textsOffsets[i]] );
+                             (const char**)&textPtrs[textsOffsets[i]] );
             }
 
 

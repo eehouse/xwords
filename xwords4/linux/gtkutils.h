@@ -24,7 +24,7 @@
 #ifndef _GTKUTILS_H_
 #define _GTKUTILS_H_
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 
 GtkWidget* makeButton( char* text, GCallback func, gpointer data );
 GtkWidget* makeLabeledField( const char* labelText, GtkWidget** field );

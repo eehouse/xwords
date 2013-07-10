@@ -32,7 +32,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
@@ -52,7 +51,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
 
-public class SMSService extends Service {
+public class SMSService extends XWService {
 
     private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
@@ -66,7 +65,7 @@ public class SMSService extends Service {
     private static final int INVITE = 2;
     private static final int SEND = 3;
     private static final int REMOVE = 4;
-    private static final int MESG_GAMEGONE = 5;
+    // private static final int MESG_GAMEGONE = 5;
     private static final int CHECK_MSGDB = 6;
     private static final int ADDED_MISSING = 7;
     private static final int STOP_SELF = 8;
@@ -77,7 +76,6 @@ public class SMSService extends Service {
     private static final String PHONE = "PHONE";
 
     private static Boolean s_showToasts = null;
-    private static MultiService s_srcMgr = null;
 
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
@@ -196,16 +194,6 @@ public class SMSService extends Service {
         return result;
     }
 
-    public static void setListener( MultiService.MultiEventListener li )
-    {
-        if ( XWApp.SMSSUPPORTED ) {
-            if ( null == s_srcMgr ) {
-                s_srcMgr = new MultiService();
-            }
-            s_srcMgr.setListener( li );
-        }
-    }
-
     private static Intent getIntentTo( Context context, int cmd )
     {
         if ( null == s_showToasts ) {
@@ -302,12 +290,6 @@ public class SMSService extends Service {
 
         return result;
     } // onStartCommand
-
-    @Override
-    public IBinder onBind( Intent intent )
-    {
-        return null;
-    }
 
     private void inviteRemote( String phone, int gameID, String gameName, 
                                int lang, String dict, 
@@ -659,13 +641,6 @@ public class SMSService extends Service {
                 }
             }
             cursor.close();
-        }
-    }
-
-    private void sendResult( MultiEvent event, Object ... args )
-    {
-        if ( null != s_srcMgr ) {
-            s_srcMgr.sendResult( event, args );
         }
     }
 

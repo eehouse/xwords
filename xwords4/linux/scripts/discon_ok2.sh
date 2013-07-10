@@ -6,6 +6,7 @@ APP_NEW=""
 DO_CLEAN=""
 APP_NEW_PARAMS=""
 NGAMES=""
+UDP_PCT=0
 UPGRADE_ODDS=""
 NROOMS=""
 HOST=""
@@ -188,7 +189,13 @@ build_cmds() {
         DEV=0
         for NLOCALS in ${LOCALS[@]}; do
             DEV=$((DEV + 1))
-            FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
+            if [ $((RANDOM % 100)) -gt $UDP_PCT ]; then
+                FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
+                USE_UDP=""
+            else
+                FILE="${LOGDIR}/GAME_${GAME}_${DEV}.sql3"
+                USE_UDP=1
+            fi
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             > $LOG # clear the log
 
@@ -209,10 +216,15 @@ build_cmds() {
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
             [ $UNDO_PCT -gt 0 ] && PARAMS="$PARAMS --undo-pct $UNDO_PCT "
             PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
-            PARAMS="$PARAMS --file $FILE --slow-robot 1:3 --skip-confirm"
+            PARAMS="$PARAMS --slow-robot 1:3 --skip-confirm"
+            if [ -n "$USE_UDP" ]; then
+                PARAMS="$PARAMS --db $FILE"
+            else
+                PARAMS="$PARAMS --file $FILE"
+            fi
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --split-packets 2"
-            if [ -n $SEND_CHAT ]; then
+            if [ -n "$SEND_CHAT" ]; then
                    PARAMS="$PARAMS --send-chat $SEND_CHAT"
             fi
             # PARAMS="$PARAMS --savefail-pct 10"
@@ -316,7 +328,7 @@ kill_from_log() {
     if [ -n "$RELAYID" ]; then
         OBITS="$OBITS -d $RELAYID"
         if [ 0 -eq $(($RANDOM%2)) ]; then
-            ../relay/rq -a $HOST $OBITS 2>/dev/null || true
+            ../relay/rq -a $HOST $OBITS 2>/dev/null || /bin/true
             OBITS=""
         fi
         return 0                # success
@@ -332,7 +344,7 @@ maybe_resign() {
         if grep -q XWRELAY_ALLHERE $LOG; then
             if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
                 echo "making $LOG $(connName $LOG) resign..."
-                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || true
+                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || /bin/true
             fi
         fi
     fi
@@ -380,18 +392,18 @@ check_game() {
         # kill_from_logs $OTHERS $KEY
         for ID in $OTHERS $KEY; do
             echo -n "${LOGS[$ID]}, "
-            kill_from_log ${LOGS[$ID]} || true
+            kill_from_log ${LOGS[$ID]} || /bin/true
             close_device $ID $DONEDIR "game over"
         done
         echo ""
         # XWRELAY_ERROR_DELETED may be old
     elif grep -q 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-        kill_from_log $LOG || true
+        kill_from_log $LOG || /bin/true
         close_device $KEY $DEADDIR "other resigned"
     elif grep -q 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-        kill_from_log $LOG || true
+        kill_from_log $LOG || /bin/true
         close_device $KEY $DEADDIR "other resigned"
     else
         maybe_resign $KEY
@@ -423,7 +435,7 @@ get_relayid() {
 
 update_devid_cmd() {
     KEY=$1
-    HELP="$(${APPS[$KEY]} --help 2>&1 || true)"
+    HELP="$(${APPS[$KEY]} --help 2>&1 || /bin/true)"
     if echo $HELP | grep -q '\-\-devid'; then
         CMD="--devid LINUX_TEST_$(printf %.5d ${KEY})"
         LOG=${LOGS[$KEY]}
@@ -467,7 +479,8 @@ run_cmds() {
             try_upgrade $KEY
             launch $KEY &
             PID=$!
-            renice +1 $PID >/dev/null
+            # renice doesn't work on one of my machines...
+            renice -n 1 -p $PID >/dev/null 2>&1 || /bin/true
             PIDS[$KEY]=$PID
             ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
@@ -476,7 +489,7 @@ run_cmds() {
             if [ -d /proc/$PID ]; then
                 SLEEP=$((${MINEND[$KEY]} - $NOW))
                 [ $SLEEP -gt 0 ] && sleep $SLEEP
-                kill $PID || true
+                kill $PID || /bin/true
                 wait $PID
             fi
             PIDS[$KEY]=0
@@ -487,7 +500,7 @@ run_cmds() {
         fi
     done
 
-    [ -n "$OBITS" ] && ../relay/rq -a $HOST $OBITS 2>/dev/null || true
+    [ -n "$OBITS" ] && ../relay/rq -a $HOST $OBITS 2>/dev/null || /bin/true
 
     # kill any remaining games
     if [ $COUNT -gt 0 ]; then
@@ -528,7 +541,7 @@ run_via_rq() {
             launch $KEY &
             PID=$!
             sleep 2
-            kill $PID || true
+            kill $PID || /bin/true
             wait $PID
         fi
         [ "$DROP_N" -ge 0 ] && increment_drop $KEY
@@ -544,6 +557,7 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
+    echo "    [--via-udp <pct>]                                       \\" >&2
     echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--old-app <path/to/app]*                               \\" >&2
@@ -571,6 +585,10 @@ function usage() {
 
 while [ "$#" -gt 0 ]; do
     case $1 in
+        --via-udp)
+            UDP_PCT=$(getArg $*)
+            shift
+            ;;
         --clean-start)
             DO_CLEAN=1
             ;;
@@ -626,14 +644,14 @@ while [ "$#" -gt 0 ]; do
             UNDO_PCT=$(getArg $*)
             shift
             ;;
-    --send-chat)
+        --send-chat)
             SEND_CHAT=$(getArg $*)
             shift
             ;;
-    --resign-ratio)
-        RESIGN_RATIO=$(getArg $*)
-        shift
-        ;;
+        --resign-ratio)
+            RESIGN_RATIO=$(getArg $*)
+            shift
+            ;;
         --help)
             usage
             ;;

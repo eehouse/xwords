@@ -24,7 +24,7 @@
 #ifndef _GTKLETTERASK_H_
 #define _GTKLETTERASK_H_
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 
 XP_S16 gtkletterask( const PickInfo* pi, XP_Bool forTray, 
                      const XP_UCHAR* name, 

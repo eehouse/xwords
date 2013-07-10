@@ -57,6 +57,7 @@ public class CommsTransport implements TransportProcs,
     private ByteBuffer m_bytesIn;
 
     private Context m_context;
+    private long m_rowid;
 
     // assembling inbound packet
     private byte[] m_packetIn;
@@ -64,11 +65,12 @@ public class CommsTransport implements TransportProcs,
 
     public CommsTransport( int jniGamePtr, Context context, 
                            TransportProcs.TPMsgHandler handler,
-                           DeviceRole role )
+                           long rowid, DeviceRole role )
     {
         m_jniGamePtr = jniGamePtr;
         m_context = context;
         m_tpHandler = handler;
+        m_rowid = rowid;
         m_buffersOut = new Vector<ByteBuffer>();
         m_bytesIn = ByteBuffer.allocate( 2048 );
 
@@ -377,13 +379,17 @@ public class CommsTransport implements TransportProcs,
 
         switch ( addr.conType ) {
         case COMMS_CONN_RELAY:
-            if ( NetStateCache.netAvail( m_context ) ) {
-                putOut( buf );      // add to queue
-                if ( null == m_thread ) {
-                    m_thread = new CommsThread();
-                    m_thread.start();
+            if ( XWPrefs.getUDPEnabled( m_context ) ) {
+                nSent = RelayService.sendPacket( m_context, m_rowid, buf );
+            } else {
+                if ( NetStateCache.netAvail( m_context ) ) {
+                    putOut( buf );      // add to queue
+                    if ( null == m_thread ) {
+                        m_thread = new CommsThread();
+                        m_thread.start();
+                    }
+                    nSent = buf.length;
                 }
-                nSent = buf.length;
             }
             break;
         case COMMS_CONN_SMS:

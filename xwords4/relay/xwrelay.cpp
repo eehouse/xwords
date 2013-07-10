@@ -1053,7 +1053,7 @@ handlePutMessage( SafeCref& scr, HostID hid, const AddrInfo* addr,
     if ( getNetByte( bufp, end, &cmd )
          && getNetByte( bufp, end, &src )
          && getNetByte( bufp, end, &dest ) ) {
-        success = true;	 // meaning, buffer content looks ok
+        success = true;		// meaning, buffer content looks ok
         *bufp = start + len;
         if ( ( cmd == XWRELAY_MSG_TORELAY_NOCONN ) && ( hid == dest ) ) {
             scr.PutMsg( src, addr, dest, start, len );
@@ -1092,7 +1092,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const unsigned char* bufp,
             unsigned short nMsgs;
             if ( getNetShort( &bufp, end, &nMsgs ) ) {
                 SafeCref scr( connName );
-                while ( nMsgs-- > 0 ) {
+                while ( scr.IsValid() && nMsgs-- > 0 ) {
                     unsigned short len;
                     if ( getNetShort( &bufp, end, &len ) ) {
                         if ( handlePutMessage( scr, hid, addr, len, &bufp, end ) ) {

@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -19,16 +19,11 @@
  */
 
 
-#ifdef PLATFORM_GTK
+#ifndef _LINUXDICT_H_
+#define _LINUXDICT_H_
 
-#ifndef _GTKNEWGAME_H_
-#define _GTKNEWGAME_H_
-
-#include "gtkboard.h"
-
-gboolean newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, 
-                        CommsAddrRec* addr, XP_Bool isNewGame, 
-                        XP_Bool fireConnDlg );
-
-#endif /* _GTKNEWGAME_H_ */
-#endif /* PLATFORM_GTK */
+DictionaryCtxt* linux_dictionary_make( MPFORMAL 
+                                       const LaunchParams* mainParams,
+                                       const char* dictFileName, 
+                                       XP_Bool useMMap );
+#endif

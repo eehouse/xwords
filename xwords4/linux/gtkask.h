@@ -23,7 +23,7 @@
 #ifndef _GTKASK_H_
 #define _GTKASK_H_
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 
 /* Returns true for "yes" or "ok" answer, false otherwise.
  */

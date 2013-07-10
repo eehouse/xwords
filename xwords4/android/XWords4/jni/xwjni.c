@@ -995,8 +995,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1start
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
     XWJNI_START();
-    if ( !!state->game.comms ) {
-        comms_start( state->game.comms );
+    CommsCtxt* comms = state->game.comms;
+    if ( !!comms ) {
+        comms_start( comms );
+    }
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1stop
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    CommsCtxt* comms = state->game.comms;
+    if ( !!comms ) {
+        comms_stop( comms );
     }
     XWJNI_END();
 }

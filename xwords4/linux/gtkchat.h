@@ -23,9 +23,9 @@
 #ifdef PLATFORM_GTK
 
 #include <glib.h>
-#include "gtkmain.h"
+#include "gtkboard.h"
 
-gchar* gtkGetChatMessage( GtkAppGlobals* globals );
+gchar* gtkGetChatMessage( GtkGameGlobals* globals );
 
 #endif
 #endif  /* #ifndef _GTKCHAT_H_ */

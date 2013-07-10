@@ -74,8 +74,9 @@ public class GamesList extends XWExpandableListActivity
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
 
     private static final String RELAYIDS_EXTRA = "relayids";
+    private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
-    private static final String REMATCH_ROWID_EXTRA = "rowid";
+    private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
 
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
@@ -388,6 +389,7 @@ public class GamesList extends XWExpandableListActivity
         m_gameLaunched = false;
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
+        invalRowID( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         startFirstHasDict( intent );
         startNewNetGame( intent );
         startHasGameID( intent );
@@ -919,10 +921,18 @@ public class GamesList extends XWExpandableListActivity
         }
     }
 
+    private void invalRowID( long rowid )
+    {
+        if ( -1 != rowid ) {
+            m_adapter.inval( rowid );
+        }
+    }
+
     // Launch the first of these for which there's a dictionary
     // present.
-    private void startFirstHasDict( String[] relayIDs )
+    private boolean startFirstHasDict( String[] relayIDs )
     {
+        boolean launched = false;
         if ( null != relayIDs ) {
             outer:
             for ( String relayID : relayIDs ) {
@@ -931,10 +941,21 @@ public class GamesList extends XWExpandableListActivity
                     for ( long rowid : rowids ) {
                         if ( GameUtils.gameDictsHere( this, rowid ) ) {
                             launchGame( rowid );
+                            launched = true;
                             break outer;
                         }
                     }
                 }
+            }
+        }
+        return launched;
+    }
+
+    private void startFirstHasDict( long rowid )
+    {
+        if ( -1 != rowid ) {
+            if ( GameUtils.gameDictsHere( this, rowid ) ) {
+                launchGame( rowid );
             }
         }
     }
@@ -943,7 +964,10 @@ public class GamesList extends XWExpandableListActivity
     {
         if ( null != intent ) {
             String[] relayIDs = intent.getStringArrayExtra( RELAYIDS_EXTRA );
-            startFirstHasDict( relayIDs );
+            if ( !startFirstHasDict( relayIDs ) ) {
+                long rowid = intent.getLongExtra( ROWID_EXTRA, -1 );
+                startFirstHasDict( rowid );
+            }
         }
     }
 
@@ -1099,11 +1123,10 @@ public class GamesList extends XWExpandableListActivity
         return intent;
     }
 
-    public static Intent makeRelayIdsIntent( Context context, 
-                                             String[] relayIDs )
+    public static Intent makeRowidIntent( Context context, long rowid )
     {
         Intent intent = makeSelfIntent( context );
-        intent.putExtra( RELAYIDS_EXTRA, relayIDs );
+        intent.putExtra( ROWID_EXTRA, rowid );
         return intent;
     }
 

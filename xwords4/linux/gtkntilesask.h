@@ -23,7 +23,7 @@
 #ifndef _GTKNTILESASK_H_
 #define _GTKNTILESASK_H_
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 
 XP_U16 askNTiles( XP_U16 nTilesMax, XP_U16 deflt );
 

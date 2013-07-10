@@ -78,19 +78,21 @@ checkIsText( MemPoolEntry* entry )
 {
     unsigned char* txt = (unsigned char*)entry->ptr;
     XP_U32 len = entry->size;
+    char* result = NULL;
 
-    while ( len-- ) {
-        unsigned char c = *txt++;
-        if ( c < 32 || c > 127 ) {
-            if ( len == 0 && c == '\0' ) {
-                return (char*)entry->ptr;
-            } else {
-                return (char*)NULL;
+    if ( 0 < len ) {
+        while ( len-- ) {
+            unsigned char c = *txt++;
+            if ( c < 32 || c > 127 ) {
+                if ( len == 0 && c == '\0' ) {
+                    result = (char*)entry->ptr;
+                }
+                break;
             }
         }
     }
 
-    return (char*)NULL;
+    return result;
 } /* checkIsText */
 #endif
 
@@ -226,6 +228,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     if ( !entry ) {
         XP_LOGF( "findEntryFor failed; called from %s, line %ld in %s",
                  func, lineNo, file );
+        XP_ASSERT( 0 );
     } else {
 
 #ifdef MPOOL_DEBUG
@@ -249,11 +252,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
 
         ++mpool->nFree;
         --mpool->nUsed;
-
-        return;
     }
-
-    XP_ASSERT( 0 );
 } /* mpool_free */
 
 void

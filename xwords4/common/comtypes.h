@@ -249,7 +249,7 @@ typedef struct _PlayerDicts {
 # define RELAY_ROOM_DEFAULT "Room 1"
 #endif
 #ifndef RELAY_PORT_DEFAULT
-# define RELAY_PORT_DEFAULT 10999
+# define RELAY_PORT_DEFAULT 10997
 #endif
 
 #ifdef MEM_DEBUG

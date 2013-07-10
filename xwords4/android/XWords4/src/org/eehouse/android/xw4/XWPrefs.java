@@ -34,6 +34,16 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_sms, false );
     }
 
+    public static boolean getUDPEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_udp_relay, false );
+    }
+
+    public static boolean getGCMIgnored( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_drop_gcm, false );
+    }
+
     public static boolean getDebugEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_debug, false );

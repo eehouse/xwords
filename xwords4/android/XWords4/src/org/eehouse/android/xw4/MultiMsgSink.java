@@ -36,7 +36,7 @@ public class MultiMsgSink implements TransportProcs {
 
     public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
     {
-        Assert.fail();
+        Assert.fail();          // implement if this is getting called!!!
         return -1;
     }
 
@@ -53,9 +53,9 @@ public class MultiMsgSink implements TransportProcs {
     {
     }
 
-    public boolean relayNoConnProc( byte[] buf, String relayID ) 
+    public boolean relayNoConnProc( byte[] buf, String relayID )
     {
-        Assert.fail();
+        Assert.fail();          // implement if this is getting called!!!
         return false; 
     }
 }

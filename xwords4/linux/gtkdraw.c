@@ -26,7 +26,7 @@
 
 #include <gdk/gdkdrawable.h>
 
-#include "gtkmain.h"
+#include "gtkboard.h"
 #include "draw.h"
 #include "board.h"
 #include "linuxmain.h"
@@ -515,7 +515,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect rectInset = *rect;
-    XP_Bool showGrid = dctx->globals->gridOn;
+    GtkGameGlobals* globals = dctx->globals;
+    XP_Bool showGrid = globals->gridOn;
     XP_Bool highlight = (flags & CELL_HIGHLIGHT) != 0;
     GdkColor* cursor = 
         ((flags & CELL_ISCURSOR) != 0) ? &dctx->cursor : NULL;
@@ -1305,7 +1306,7 @@ allocAndSet( GdkColormap* map, GdkColor* color, unsigned short red,
 } /* allocAndSet */
 
 DrawCtx* 
-gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
+gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 {
     GtkDrawCtx* dctx = g_malloc0( sizeof(GtkDrawCtx) );
     GdkColormap* map;
@@ -1423,7 +1424,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
 void
 draw_gtk_status( GtkDrawCtx* dctx, char ch )
 {
-    GtkAppGlobals* globals = dctx->globals;
+    GtkGameGlobals* globals = dctx->globals;
 
     XP_Rect rect = {
         .left = globals->netStatLeft,

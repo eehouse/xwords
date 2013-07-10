@@ -68,6 +68,7 @@ struct CursesAppGlobals {
     XP_Bool doDraw;
     const struct MenuList* menuList;
     XP_U16 nLinesMenu;
+    gchar* lastErr;
 
     XP_U16 nChatsSent;
 
@@ -97,13 +98,6 @@ struct CursesAppGlobals {
     int timepipe[2];		/* for reading/writing "user events" */
 #endif
 };
-
-#ifdef USE_GLIBLOOP
-typedef struct _SourceData {
-    GIOChannel* channel;
-    gint watch;
-} SourceData;
-#endif
 
 DrawCtx* cursesDrawCtxtMake( WINDOW* boardWin );
 

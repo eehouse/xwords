@@ -467,8 +467,11 @@ comms_transportFailed( CommsCtxt* comms  )
 void
 comms_destroy( CommsCtxt* comms )
 {
-    CommsAddrRec aNew;
-    aNew.conType = COMMS_CONN_NONE;
+    /* did I call comms_stop()? */
+    XP_ASSERT( COMMS_CONN_RELAY != comms->addr.conType
+               || COMMS_RELAYSTATE_UNCONNECTED == comms->r.relayState );
+
+    CommsAddrRec aNew = { .conType = COMMS_CONN_NONE };
     util_addrChange( comms->util, &comms->addr, &aNew );
 
     cleanupInternal( comms );
@@ -664,6 +667,14 @@ comms_start( CommsCtxt* comms )
     setDoHeartbeat( comms );
     sendConnect( comms, XP_FALSE );
 } /* comms_start */
+
+void
+comms_stop( CommsCtxt* comms )
+{
+    if ( COMMS_CONN_RELAY == comms->addr.conType ) {
+        relayDisconnect( comms );
+    }
+}
 
 static void
 sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
@@ -1183,6 +1194,14 @@ gameID( const CommsCtxt* comms )
     XP_U32 gameID = comms->connID;
     if ( 0 == gameID ) {
         gameID = comms->util->gameInfo->gameID;
+    }
+
+    // XP_ASSERT( 0 != gameID );
+    if ( 0 == gameID ) {
+        XP_LOGF( "%s: gameID STILL 0", __func__ );
+    } else if ( 0 == comms->util->gameInfo->gameID ) {
+        XP_LOGF( "%s: setting gi's gameID to 0X%lX", __func__, gameID );
+        comms->util->gameInfo->gameID = gameID;
     }
 
     /* Most of the time these will be the same, but early in a game they won't

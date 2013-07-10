@@ -62,6 +62,8 @@ public class MultiService {
                           , SMS_SEND_OK
                           , SMS_SEND_FAILED
                           , SMS_SEND_FAILED_NORADIO
+
+                          , RELAY_ALERT
             };
 
     public interface MultiEventListener {

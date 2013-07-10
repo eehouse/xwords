@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -22,16 +22,18 @@
 #include <stdarg.h>
 
 #include "linuxutl.h"
+#include "linuxmain.h"
 #include "gtknewgame.h"
 #include "strutils.h"
 #include "nwgamest.h"
 #include "gtkconnsdlg.h"
 #include "gtkutils.h"
 
-#define MAX_SIZE_CHOICES 10
+#define MAX_SIZE_CHOICES 32
 
 typedef struct GtkNewGameState {
-    GtkAppGlobals* globals;
+    GtkGameGlobals* globals;
+    CurGameInfo* gi;
     NewGameCtx* newGameCtxt;
 
     CommsAddrRec addr;
@@ -43,6 +45,7 @@ typedef struct GtkNewGameState {
     XP_Bool fireConnDlg;
     gboolean isNewGame;
     short nCols;                /* for board size */
+    gchar* dict;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* remoteChecks[MAX_NUM_PLAYERS];
@@ -154,6 +157,14 @@ size_combo_changed( GtkComboBox* combo, gpointer gp )
 } /* size_combo_changed  */
 
 static void
+dict_combo_changed( GtkComboBox* combo, gpointer gp )
+{
+    GtkNewGameState* state = (GtkNewGameState*)gp;
+    state->dict = gtk_combo_box_get_active_text( GTK_COMBO_BOX(combo) );
+    XP_LOGF( "got dict: %s", state->dict );
+} /* size_combo_changed  */
+
+static void
 handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
@@ -199,6 +210,7 @@ makeNewGameDialog( GtkNewGameState* state )
 #endif
     GtkWidget* nPlayersCombo;
     GtkWidget* boardSizeCombo;
+    GtkWidget* dictCombo;
     CurGameInfo* gi;
     short ii;
 
@@ -237,7 +249,7 @@ makeNewGameDialog( GtkNewGameState* state )
     nPlayersCombo = gtk_combo_box_new_text();
     state->nPlayersCombo = nPlayersCombo;
 
-    gi = &state->globals->cGlobals.params->gi;
+    gi = state->gi;
 
     for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         char buf[2] = { ii + '1', '\0' };
@@ -334,12 +346,26 @@ makeNewGameDialog( GtkNewGameState* state )
 
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Dictionary: "),
                         FALSE, TRUE, 0 );
+    dictCombo = gtk_combo_box_new_text();
+    g_signal_connect( GTK_OBJECT(dictCombo), "changed", 
+                      G_CALLBACK(dict_combo_changed), state );
+    gtk_widget_show( dictCombo );
+    gtk_box_pack_start( GTK_BOX(hbox), dictCombo, FALSE, TRUE, 0 );
 
-    if ( !!gi->dictName ) {
-        gtk_box_pack_start( GTK_BOX(hbox), 
-                            gtk_label_new(gi->dictName),
-                            FALSE, TRUE, 0 );
+	GSList* dicts = listDicts( state->globals->cGlobals.params );
+    GSList* iter;
+    for ( iter = dicts, ii = 0; !!iter; iter = iter->next, ++ii ) {
+        const gchar* name = iter->data;
+        gtk_combo_box_append_text( GTK_COMBO_BOX(dictCombo), name );
+        if ( !!gi->dictName ) {
+            if ( !strcmp( name, gi->dictName ) ) {
+                gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
+            }
+        } else if ( 0 == ii ) {
+            gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
+        }
     }
+	g_slist_free( dicts );
 
     gtk_widget_show( hbox );
 
@@ -516,17 +542,17 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
 }
 
 gboolean
-newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr, XP_Bool isNewGame,
-               XP_Bool fireConnDlg )
+newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr, 
+               XP_Bool isNewGame, XP_Bool fireConnDlg )
 {
     GtkNewGameState state;
     XP_MEMSET( &state, 0, sizeof(state) );
 
     state.globals = globals;
-    state.newGameCtxt = newg_make( MPPARM(globals->cGlobals.params
-                                          ->util->mpool) 
+    state.gi = gi;
+    state.newGameCtxt = newg_make( MPPARM(globals->cGlobals.util->mpool) 
                                    isNewGame,
-                                   globals->cGlobals.params->util,
+                                   globals->cGlobals.util,
                                    gtk_newgame_col_enable,
                                    gtk_newgame_attr_enable,
                                    gtk_newgame_col_get,
@@ -542,22 +568,25 @@ newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr, XP_Bool isNewGame,
 
         state.revert = FALSE;
         state.loaded = XP_FALSE;
-        state.nCols = globals->cGlobals.params->gi.boardSize;
-        state.role = globals->cGlobals.params->gi.serverRole;
+        state.nCols = gi->boardSize;
+        if ( 0 == state.nCols ) {
+            state.nCols = globals->cGlobals.params->pgi.boardSize;
+        }
+        state.role = gi->serverRole;
 
         XP_MEMCPY( &state.addr, addr, sizeof(state.addr) );
 
         dialog = makeNewGameDialog( &state );
 
-        newg_load( state.newGameCtxt, 
-                   &globals->cGlobals.params->gi );
+        newg_load( state.newGameCtxt, gi );
         state.loaded = XP_TRUE;
 
         gtk_main();
         if ( !state.cancelled && !state.revert ) {
-            if ( newg_store( state.newGameCtxt, &globals->cGlobals.params->gi,
-                             XP_TRUE ) ) {
-                globals->cGlobals.params->gi.boardSize = state.nCols;
+            if ( newg_store( state.newGameCtxt, gi, XP_TRUE ) ) {
+                gi->boardSize = state.nCols;
+                replaceStringIfDifferent( globals->cGlobals.util->mpool,
+                                          &gi->dictName, state.dict );
             } else {
                 /* Do it again if we warned user of inconsistency. */
                 state.revert = XP_TRUE;

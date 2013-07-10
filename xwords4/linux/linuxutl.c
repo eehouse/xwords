@@ -31,6 +31,8 @@
 
 #include "linuxutl.h"
 #include "main.h"
+#include "linuxdict.h"
+#include "linuxmain.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef DEBUG
@@ -148,7 +150,7 @@ setSquareBonuses( const CommonGlobals* cGlobals )
 {
     XP_U16 nBonuses;
     XWBonusType* bonuses = 
-        bonusesFor( cGlobals->params->gi.boardSize, &nBonuses );
+        bonusesFor( cGlobals->gi->boardSize, &nBonuses );
     if ( !!bonuses ) {
         model_setSquareBonuses( cGlobals->game.model, bonuses, nBonuses );
     }
@@ -348,19 +350,8 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
 static const XP_UCHAR*
 linux_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
 {
-    XP_UCHAR* result;
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    if ( !!cGlobals->params->rDevID ) {
-        *typ = ID_TYPE_RELAY;
-        result = cGlobals->params->rDevID;
-    } else if ( !!cGlobals->params->devID ) {
-        *typ = ID_TYPE_LINUX;
-        result = cGlobals->params->devID;
-    } else {
-        *typ = ID_TYPE_NONE;
-        result = NULL;
-    }
-    return result;
+    return linux_getDevID( cGlobals->params, typ );
 }
 
 static void
@@ -390,6 +381,9 @@ linux_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ,
 void
 linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 {
+#ifdef MEM_DEBUG
+    util->mpool = mpool;
+#endif
     util->vtable = XP_MALLOC( mpool, sizeof(UtilVtable) );
 
     util->vtable->m_util_makeEmptyDict = linux_util_makeEmptyDict;
@@ -611,7 +605,7 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
         XP_ASSERT( 0 < nMsgs );
 
         XWStreamCtxt* stream = 
-            mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+            mem_stream_make( MPPARM(cGlobals->util->mpool)
                              cGlobals->params->vtMgr,
                              cGlobals, CHANNEL_NONE, NULL );
         stream_putU16( stream, 1 ); /* number of relayIDs */
