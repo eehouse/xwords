@@ -150,7 +150,7 @@ setSquareBonuses( const CommonGlobals* cGlobals )
 {
     XP_U16 nBonuses;
     XWBonusType* bonuses = 
-        bonusesFor( cGlobals->gi.boardSize, &nBonuses );
+        bonusesFor( cGlobals->gi->boardSize, &nBonuses );
     if ( !!bonuses ) {
         model_setSquareBonuses( cGlobals->game.model, bonuses, nBonuses );
     }

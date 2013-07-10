@@ -476,8 +476,8 @@ createOrLoadObjects( GtkGameGlobals* globals )
         }
 
         opened = game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
-                                      &cGlobals->gi, 
-                                      cGlobals->dict, &cGlobals->dicts, cGlobals->util, 
+                                      cGlobals->gi, cGlobals->dict, 
+                                      &cGlobals->dicts, cGlobals->util, 
                                       (DrawCtx*)globals->draw, 
                                       &cGlobals->cp, &procs );
         XP_LOGF( "%s: loaded gi at %p", __func__, &cGlobals->gi );
@@ -497,7 +497,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
         /*         = params->connInfo.relay.relayName; */
         /* } */
 #endif
-        game_makeNewGame( MEMPOOL &cGlobals->game, &cGlobals->gi,
+        game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
                           cGlobals->util, (DrawCtx*)globals->draw,
                           &cGlobals->cp, &procs, params->gameSeed );
 
@@ -550,7 +550,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
         model_setPlayerDicts( cGlobals->game.model, &cGlobals->dicts );
 
 #ifdef XWFEATURE_SEARCHLIMIT
-        cGlobals->gi.allowHintRect = params->allowHintRect;
+        cGlobals->gi->allowHintRect = params->allowHintRect;
 #endif
 
 
@@ -558,7 +558,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
             new_game_impl( globals, XP_FALSE );
 #ifndef XWFEATURE_STANDALONE_ONLY
         } else {
-            DeviceRole serverRole = cGlobals->gi.serverRole;
+            DeviceRole serverRole = cGlobals->gi->serverRole;
             if ( serverRole == SERVER_ISCLIENT ) {
                 XWStreamCtxt* stream = 
                     mem_stream_make( MEMPOOL params->vtMgr, 
@@ -608,7 +608,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
         createOrLoadObjects( globals );
     }
 
-    nCols = globals->cGlobals.gi.boardSize;
+    nCols = globals->cGlobals.gi->boardSize;
     nRows = nCols;
     bdWidth = widget->allocation.width - (GTK_RIGHT_MARGIN
                                           + GTK_BOARD_LEFT_MARGIN);
@@ -767,7 +767,7 @@ cleanup( GtkGameGlobals* globals )
     linux_close_socket( &globals->cGlobals );
 #endif
     game_dispose( &globals->cGlobals.game ); /* takes care of the dict */
-    gi_disposePlayerInfo( MEMPOOL &globals->cGlobals.gi );
+    gi_disposePlayerInfo( MEMPOOL globals->cGlobals.gi );
 
     linux_util_vt_destroy( globals->cGlobals.util );
     free( globals->cGlobals.util );
@@ -862,7 +862,7 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
         comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
     }
 
-    CurGameInfo* gi = &globals->cGlobals.gi;
+    CurGameInfo* gi = globals->cGlobals.gi;
     success = newGameDialog( globals, gi, &addr, XP_TRUE, fireConnDlg );
     if ( success ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -934,7 +934,7 @@ game_info( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
        server_do in case one's become a robot. */
-    CurGameInfo* gi = &globals->cGlobals.gi;
+    CurGameInfo* gi = globals->cGlobals.gi;
     if ( newGameDialog( globals, gi, &addr, XP_FALSE, XP_FALSE ) ) {
         if ( server_do( globals->cGlobals.game.server ) ) {
             board_draw( globals->cGlobals.game.board );
@@ -968,7 +968,7 @@ change_dictionary( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 			linux_dictionary_make( MPPARM(cGlobals->util->mpool) params, name,
 								   params->useMmap );
 		game_changeDict( MPPARM(cGlobals->util->mpool) &cGlobals->game, 
-                         &cGlobals->gi, dict );
+                         cGlobals->gi, dict );
 	}
 	g_slist_free( dicts );
 } /* change_dictionary */
@@ -1375,7 +1375,7 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     XP_Bool draw = XP_FALSE;
 
     if ( globals->cGlobals.params->nHidden > 0 ) {
-        gint nRows = globals->cGlobals.gi.boardSize;
+        gint nRows = globals->cGlobals.gi->boardSize;
         globals->adjustment->page_size = nRows;
         globals->adjustment->value = 0.0;
 
@@ -1430,7 +1430,7 @@ gtk_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
 {
     XP_S16 chosen;
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-	XP_UCHAR* name = globals->cGlobals.gi.players[playerNum].name;
+	XP_UCHAR* name = globals->cGlobals.gi->players[playerNum].name;
 
     chosen = gtkletterask( NULL, XP_FALSE, name, nTiles, texts );
     return chosen;
@@ -1443,7 +1443,7 @@ gtk_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi,
 {
     XP_S16 chosen;
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-	XP_UCHAR* name = globals->cGlobals.gi.players[playerNum].name;
+	XP_UCHAR* name = globals->cGlobals.gi->players[playerNum].name;
 
     chosen = gtkletterask( pi, XP_TRUE, name, nTiles, texts );
     return chosen;
@@ -1498,7 +1498,7 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     if ( !!globals->adjustment ) {
-        gint nRows = globals->cGlobals.gi.boardSize;
+        gint nRows = globals->cGlobals.gi->boardSize;
         globals->adjustment->page_size = nRows - maxOffset;
         globals->adjustment->value = newOffset;
         gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
@@ -1801,7 +1801,7 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
     if ( turnLost ) {
         char wordsBuf[256];
         XP_U16 i;
-        XP_UCHAR* name = globals->cGlobals.gi.players[player].name;
+        XP_UCHAR* name = globals->cGlobals.gi->players[player].name;
         XP_ASSERT( !!name );
 
         for ( i = 0, wordsBuf[0] = '\0'; ; ) {
@@ -2415,7 +2415,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
 {
     memset( globals, 0, sizeof(*globals) );
 
-    gi_copy( MPPARM(params->mpool) &globals->cGlobals.gi, &params->pgi );
+    gi_copy( MPPARM(params->mpool) globals->cGlobals.gi, &params->pgi );
 
     globals->cGlobals.params = params;
     globals->cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
@@ -2514,7 +2514,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
     /* install scrollbar even if not needed -- since zooming can make it
        needed later */
     GtkWidget* vscrollbar;
-    gint nRows = globals->cGlobals.gi.boardSize;
+    gint nRows = globals->cGlobals.gi->boardSize;
     globals->adjustment = (GtkAdjustment*)
         gtk_adjustment_new( 0, 0, nRows, 1, 2, 
                             nRows - globals->cGlobals.params->nHidden );
@@ -2597,8 +2597,8 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
             cGlobals->dict = makeDictForStream( cGlobals, stream );
         }
         loaded = game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
-                                      &cGlobals->gi, 
-                                      cGlobals->dict, &cGlobals->dicts, cGlobals->util, 
+                                      cGlobals->gi, cGlobals->dict,
+                                      &cGlobals->dicts, cGlobals->util, 
                                       (DrawCtx*)NULL, &cGlobals->cp, &procs );
         if ( loaded ) {
             XP_LOGF( "%s: game loaded", __func__ );
@@ -2632,7 +2632,7 @@ makeNewGame( GtkGameGlobals* globals )
         comms_getInitialAddr( &cGlobals->addr, relayName, relayPort );
     }
 
-    CurGameInfo* gi = &cGlobals->gi;
+    CurGameInfo* gi = cGlobals->gi;
     XP_Bool success = newGameDialog( globals, gi, &cGlobals->addr, 
                                      XP_TRUE, XP_FALSE );
     if ( success && !!gi->dictName && !cGlobals->dict ) {

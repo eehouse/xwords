@@ -240,7 +240,7 @@ curses_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
     XP_S16 index;
-    char* playerName = globals->cGlobals.gi.players[playerNum].name;
+    char* playerName = globals->cGlobals.gi->players[playerNum].name;
 
     snprintf( query, sizeof(query), 
               "Pick tile for %s! (Tab or type letter to select "
@@ -258,7 +258,7 @@ curses_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi),
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
     XP_S16 index;
-    char* playerName = globals->cGlobals.gi.players[playerNum].name;
+    char* playerName = globals->cGlobals.gi->players[playerNum].name;
 
     snprintf( query, sizeof(query), 
               "Pick tile for %s! (Tab or type letter to select "
@@ -1631,7 +1631,7 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
     BoardCtxt* board = globals->cGlobals.game.board;
     int remWidth = width;
-    int nRows = globals->cGlobals.gi.boardSize;
+    int nRows = globals->cGlobals.gi->boardSize;
 
     cellWidth = CURSES_CELL_WIDTH;
     cellHt = CURSES_CELL_HT;
@@ -1917,6 +1917,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.cp.robotTradePct = params->robotTradePct;
 #endif
 
+    g_globals.cGlobals.gi = &params->pgi;
     setupUtil( &g_globals.cGlobals );
     setupCursesUtilCallbacks( &g_globals, g_globals.cGlobals.util );
 
@@ -2040,26 +2041,26 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             } else {
                 cGlobals->dict = 
                     linux_dictionary_make( MEMPOOL params, 
-                                           cGlobals->gi.dictName, XP_TRUE );
+                                           cGlobals->gi->dictName, XP_TRUE );
             }
         }
-        cGlobals->gi.dictLang = dict_getLangCode( cGlobals->dict );
+        cGlobals->gi->dictLang = dict_getLangCode( cGlobals->dict );
 
         if ( !!stream ) {
             (void)game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
-                                       &cGlobals->gi, cGlobals->dict, 
+                                       cGlobals->gi, cGlobals->dict, 
                                        &cGlobals->dicts, cGlobals->util, 
                                        (DrawCtx*)g_globals.draw, 
                                        &g_globals.cGlobals.cp, &procs );
 
             stream_destroy( stream );
-            if ( !isServer && cGlobals->gi.serverRole == SERVER_ISSERVER ) {
+            if ( !isServer && cGlobals->gi->serverRole == SERVER_ISSERVER ) {
                 isServer = XP_TRUE;
             }
             opened = XP_TRUE;
         }
         if ( !opened ) {
-            game_makeNewGame( MEMPOOL &cGlobals->game, &cGlobals->gi,
+            game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
                               cGlobals->util, (DrawCtx*)g_globals.draw,
                               &g_globals.cGlobals.cp, &procs, params->gameSeed );
             g_globals.cGlobals.selRow = -1;
@@ -2159,7 +2160,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     saveGame( &g_globals.cGlobals );
 
     game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
-    gi_disposePlayerInfo( MEMPOOL &cGlobals->gi );
+    gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
     
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &g_globals.cGlobals );

@@ -296,7 +296,7 @@ void
 catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
 {
     XWStreamCtxt* stream;
-    XP_ASSERT( quitter < cGlobals->gi.nPlayers );
+    XP_ASSERT( quitter < cGlobals->gi->nPlayers );
 
     stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
                               cGlobals->params->vtMgr,
@@ -304,7 +304,7 @@ catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
     if ( -1 != quitter ) {
         XP_UCHAR buf[128];
         XP_SNPRINTF( buf, VSIZE(buf), "Player %s resigned\n",
-                     cGlobals->gi.players[quitter].name );
+                     cGlobals->gi->players[quitter].name );
         stream_catString( stream, buf );
     }
     server_writeFinalScores( cGlobals->game.server, stream );
@@ -348,8 +348,7 @@ saveGame( CommonGlobals* cGlobals )
                                        cGlobals, 0, onClose );
             stream_open( outStream );
 
-            game_saveToStream( &cGlobals->game, 
-                               &cGlobals->gi, 
+            game_saveToStream( &cGlobals->game, cGlobals->gi, 
                                outStream, ++cGlobals->curSaveToken );
             cGlobals->lastStreamSize = stream_getSize( outStream );
             stream_destroy( outStream );
@@ -380,7 +379,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
 #endif
         game_makeFromStream( MPPARM(cGlobals->util->mpool) 
                              stream, &cGlobals->game, 
-                             &cGlobals->gi, cGlobals->dict, 
+                             cGlobals->gi, cGlobals->dict, 
                              &cGlobals->dicts, cGlobals->util, 
                              NULL /*draw*/,
                              &cGlobals->cp, procs );
@@ -441,7 +440,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
 #endif
         game_makeFromStream( MPPARM(cGlobals->util->mpool) 
                              stream, &cGlobals->game, 
-                             &cGlobals->gi, cGlobals->dict, 
+                             cGlobals->gi, cGlobals->dict, 
                              &cGlobals->dicts, cGlobals->util, 
                              NULL /*draw*/,
                              &cGlobals->cp, procs );
@@ -1363,7 +1362,7 @@ linuxSetIsServer( CommonGlobals* cGlobals, XP_Bool isServer )
     XP_LOGF( "%s(isServer=%d)", __func__, isServer );
     DeviceRole newRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
     cGlobals->params->serverRole = newRole;
-    cGlobals->gi.serverRole = newRole;
+    cGlobals->gi->serverRole = newRole;
 }
 
 void 
@@ -1371,7 +1370,7 @@ linuxChangeRoles( CommonGlobals* cGlobals )
 {
     ServerCtxt* server = cGlobals->game.server;
     server_reset( server, cGlobals->game.comms );
-    if ( SERVER_ISCLIENT == cGlobals->gi.serverRole ) {
+    if ( SERVER_ISCLIENT == cGlobals->gi->serverRole ) {
         XWStreamCtxt* stream =
             mem_stream_make( MPPARM(cGlobals->util->mpool) cGlobals->params->vtMgr,
                              cGlobals, CHANNEL_NONE, sendOnClose );
@@ -1781,7 +1780,7 @@ initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
 {
     LOG_FUNC();
     /* CurGameInfo */
-    cGlobals->gi = params->pgi;
+    cGlobals->gi = &params->pgi;
 
     /* addr */
     CommsAddrRec* addr = &cGlobals->addr;
@@ -1825,7 +1824,7 @@ setupUtil( CommonGlobals* cGlobals )
     XW_UtilCtxt* util = calloc( 1, sizeof(*util) );
     cGlobals->util = util;
     linux_util_vt_init( MPPARM(cGlobals->params->mpool) util );
-    util->gameInfo = &cGlobals->gi;
+    util->gameInfo = cGlobals->gi;
     setupLinuxUtilCallbacks( util );
 }
 
@@ -1853,18 +1852,10 @@ initParams( LaunchParams* params )
 static void
 freeParams( LaunchParams* params )
 {
-    XP_U16 ii;
-    // linux_util_vt_destroy( params->util );
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
 
-    // XP_FREEP( params->mpool, &params->pgi.dictName );
-    for ( ii = 0; ii < params->nLocalPlayers; ++ii ) {
-        XP_FREEP( params->mpool, &params->pgi.players[ii].name );
-    }
-
+    gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );
     mpool_destroy( params->mpool );
-
-    // free( params->util );
 }
 
 static int
@@ -2013,7 +2004,7 @@ main( int argc, char** argv )
                        conType == COMMS_CONN_RELAY );
             mainParams.connInfo.relay.invite = optarg;
             conType = COMMS_CONN_RELAY;
-            isServer = XP_TRUE; /* implicit */
+            // isServer = XP_TRUE; /* implicit */
             break;
 #endif
         case CMD_HOSTIP:
@@ -2304,7 +2295,7 @@ main( int argc, char** argv )
         }
     }
 
-    int result;
+    int result = 0;
     if ( g_str_has_suffix( argv[0], "dawg2dict" ) ) {
         result = dawg2dict( &mainParams, testDicts );
     } else {
@@ -2503,7 +2494,7 @@ main( int argc, char** argv )
         freeParams( &mainParams );
     }
 
-    XP_LOGF( "%s exiting main", argv[0] );
+    XP_LOGF( "%s exiting main, returning %d", argv[0], result );
     return result;
 } /* main */
 

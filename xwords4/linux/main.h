@@ -183,7 +183,7 @@ struct CommonGlobals {
     XW_UtilCtxt* util;
 
     XWGame game;
-    CurGameInfo gi;
+    CurGameInfo* gi;
     CommsAddrRec addr;
     DictionaryCtxt* dict;
     PlayerDicts dicts;
