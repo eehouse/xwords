@@ -86,6 +86,7 @@ typedef struct ClientStreamRec {
 
 typedef struct GtkGameGlobals {
     CommonGlobals cGlobals;
+    CurGameInfo gi;
     GtkWidget* window;
     GtkDrawCtx* draw;
     GtkAppGlobals* apg;

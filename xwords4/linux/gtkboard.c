@@ -2415,6 +2415,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
 {
     memset( globals, 0, sizeof(*globals) );
 
+    globals->cGlobals.gi = &globals->gi;
     gi_copy( MPPARM(params->mpool) globals->cGlobals.gi, &params->pgi );
 
     globals->cGlobals.params = params;
