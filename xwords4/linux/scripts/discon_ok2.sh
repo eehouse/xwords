@@ -224,7 +224,7 @@ build_cmds() {
             fi
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --split-packets 2"
-            if [ -n $SEND_CHAT ]; then
+            if [ -n "$SEND_CHAT" ]; then
                    PARAMS="$PARAMS --send-chat $SEND_CHAT"
             fi
             # PARAMS="$PARAMS --savefail-pct 10"
@@ -328,7 +328,7 @@ kill_from_log() {
     if [ -n "$RELAYID" ]; then
         OBITS="$OBITS -d $RELAYID"
         if [ 0 -eq $(($RANDOM%2)) ]; then
-            ../relay/rq -a $HOST $OBITS 2>/dev/null || true
+            ../relay/rq -a $HOST $OBITS 2>/dev/null || /bin/true
             OBITS=""
         fi
         return 0                # success
@@ -344,7 +344,7 @@ maybe_resign() {
         if grep -q XWRELAY_ALLHERE $LOG; then
             if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
                 echo "making $LOG $(connName $LOG) resign..."
-                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || true
+                kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || /bin/true
             fi
         fi
     fi
@@ -392,18 +392,18 @@ check_game() {
         # kill_from_logs $OTHERS $KEY
         for ID in $OTHERS $KEY; do
             echo -n "${LOGS[$ID]}, "
-            kill_from_log ${LOGS[$ID]} || true
+            kill_from_log ${LOGS[$ID]} || /bin/true
             close_device $ID $DONEDIR "game over"
         done
         echo ""
         # XWRELAY_ERROR_DELETED may be old
     elif grep -q 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-        kill_from_log $LOG || true
+        kill_from_log $LOG || /bin/true
         close_device $KEY $DEADDIR "other resigned"
     elif grep -q 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-        kill_from_log $LOG || true
+        kill_from_log $LOG || /bin/true
         close_device $KEY $DEADDIR "other resigned"
     else
         maybe_resign $KEY
@@ -435,7 +435,7 @@ get_relayid() {
 
 update_devid_cmd() {
     KEY=$1
-    HELP="$(${APPS[$KEY]} --help 2>&1 || true)"
+    HELP="$(${APPS[$KEY]} --help 2>&1 || /bin/true)"
     if echo $HELP | grep -q '\-\-devid'; then
         CMD="--devid LINUX_TEST_$(printf %.5d ${KEY})"
         LOG=${LOGS[$KEY]}
@@ -480,7 +480,7 @@ run_cmds() {
             launch $KEY &
             PID=$!
             # renice doesn't work on one of my machines...
-            renice -n 1 -p $PID >/dev/null || /bin/true
+            renice -n 1 -p $PID >/dev/null 2>&1 || /bin/true
             PIDS[$KEY]=$PID
             ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
@@ -489,7 +489,7 @@ run_cmds() {
             if [ -d /proc/$PID ]; then
                 SLEEP=$((${MINEND[$KEY]} - $NOW))
                 [ $SLEEP -gt 0 ] && sleep $SLEEP
-                kill $PID || true
+                kill $PID || /bin/true
                 wait $PID
             fi
             PIDS[$KEY]=0
@@ -500,7 +500,7 @@ run_cmds() {
         fi
     done
 
-    [ -n "$OBITS" ] && ../relay/rq -a $HOST $OBITS 2>/dev/null || true
+    [ -n "$OBITS" ] && ../relay/rq -a $HOST $OBITS 2>/dev/null || /bin/true
 
     # kill any remaining games
     if [ $COUNT -gt 0 ]; then
@@ -541,7 +541,7 @@ run_via_rq() {
             launch $KEY &
             PID=$!
             sleep 2
-            kill $PID || true
+            kill $PID || /bin/true
             wait $PID
         fi
         [ "$DROP_N" -ge 0 ] && increment_drop $KEY
