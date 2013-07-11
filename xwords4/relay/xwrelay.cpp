@@ -483,18 +483,19 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
                   __func__, socket );
         }
     } else {
-        AddrInfo::ClientToken clientToken = addr->clientToken();
+        const AddrInfo::ClientToken clientToken = addr->clientToken();
         assert( 0 != clientToken );
-        clientToken = htonl(clientToken);
+        uint32_t asNetTok = htonl(clientToken);
         const struct sockaddr* saddr = addr->sockaddr();
         int socket = addr->socket();
         assert( g_udpsock == socket || socket == -1 );
         if ( -1 == socket ) {
             socket = g_udpsock;
         }
-        send_via_udp( socket, saddr, XWPDEV_MSG, &clientToken, 
-                      sizeof(clientToken), buf, bufLen, NULL );
-        logf( XW_LOGINFO, "sent %d bytes on UDP socket %d", bufLen, socket );
+        send_via_udp( socket, saddr, XWPDEV_MSG, &asNetTok, 
+                      sizeof(asNetTok), buf, bufLen, NULL );
+        logf( XW_LOGINFO, "%s: sent %d bytes on UDP socket %d, token=%x(%d)",
+              __func__, bufLen, socket, clientToken, clientToken );
         ok = true;
     }
 
@@ -1316,7 +1317,7 @@ ackPacketIf( const UDPHeader* header, const AddrInfo* addr )
 }
 
 static void
-udp_thread_proc( UdpThreadClosure* utc )
+handle_udp_packet( UdpThreadClosure* utc )
 {
     const unsigned char* ptr = utc->buf();
     const unsigned char* end = ptr + utc->len();
@@ -1432,7 +1433,7 @@ read_udp_packet( int udpsock )
     logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
     if ( 0 < nRead ) {
         AddrInfo addr( udpsock, &saddr, false );
-        UdpQueue::get()->handle( &addr, buf, nRead, udp_thread_proc );
+        UdpQueue::get()->handle( &addr, buf, nRead, handle_udp_packet );
     }
 }
 
