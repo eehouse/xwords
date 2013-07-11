@@ -58,7 +58,7 @@ gameIsOpen( GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 static GtkGameGlobals*
-findGame( const GtkAppGlobals* apg, XP_U32 clientToken )
+findOpenGame( const GtkAppGlobals* apg, XP_U32 clientToken )
 {
     GtkGameGlobals* result = NULL;
     GSList* iter;
@@ -446,7 +446,7 @@ gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
     buf += sizeof(gameToken);
     len -= sizeof(gameToken);
 
-    GtkGameGlobals* globals = findGame( apg, gameToken );
+    GtkGameGlobals* globals = findOpenGame( apg, gameToken );
     if ( !!globals ) {
         gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
     } else {
