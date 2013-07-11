@@ -519,6 +519,7 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         break;
 
     case ERR_RELAY_BASE + XWRELAY_ERROR_OTHER_DISCON:
+        *silent = XP_TRUE;      /* happens all the time, and shouldn't matter */
         message = "XWRELAY_ERROR_OTHER_DISCON";
         break;
 
