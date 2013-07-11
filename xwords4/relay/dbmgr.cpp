@@ -820,7 +820,7 @@ DBMgr::getDevID( const DevID* devID )
             const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE id=%d";
             string_printf( query, fmt, cur );
         }
-    } else {
+    } else if ( 0 < devID->m_devIDString.size() ) {
         const char* fmt = "SELECT id FROM " DEVICES_TABLE 
             " WHERE devtype=%d and devid = '%s'";
         string_printf( query, fmt, devIDType, devID->m_devIDString.c_str() );
