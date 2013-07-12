@@ -1227,7 +1227,7 @@ registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
         if ( dbMgr->updateDevice( relayID, true ) ) {
             int nMsgs = dbMgr->CountStoredMessages( relayID );
             if ( 0 < nMsgs ) {
-                AddrInfo addr( -1, -1, saddr );
+                AddrInfo addr( saddr );
                 send_havemsgs( &addr );
             }
         } else {
@@ -1267,7 +1267,7 @@ retrieveMessages( DevID& devID, const AddrInfo::AddrUnion* saddr )
         size_t buflen = sizeof(buf);
         AddrInfo::ClientToken clientToken;
         if ( dbMgr->GetStoredMessage( *iter, buf, &buflen, &clientToken ) ) {
-            AddrInfo addr( -1, clientToken, saddr );
+            AddrInfo addr( clientToken, saddr );
             if ( ! send_with_length_unsafe( &addr, buf, buflen ) ) {
                 break;
             }

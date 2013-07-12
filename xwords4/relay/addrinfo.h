@@ -42,16 +42,21 @@ class AddrInfo {
     }
 
     AddrInfo( int socket, const AddrUnion* saddr, bool isTCP ) {
+        assert( -1 != socket );
         construct( socket, saddr, isTCP );
     }
 
-    AddrInfo( int socket, ClientToken clientToken, const AddrUnion* saddr ) {
-        init( socket, clientToken, saddr );
+    AddrInfo( const AddrUnion* saddr ) {
+        init( -1, 0, saddr );
     }
 
-    void init( int socket, ClientToken clientToken, const AddrUnion* saddr ) {
-        construct( socket, saddr, false );
-        m_clientToken = clientToken;
+    AddrInfo( ClientToken clientToken, const AddrUnion* saddr ) {
+        init( -1, clientToken, saddr );
+    }
+
+    AddrInfo( int socket, ClientToken clientToken, const AddrUnion* saddr ) {
+        assert( -1 != socket );
+        init( socket, clientToken, saddr );
     }
 
     void setIsTCP( bool val ) { m_isTCP = val; }
@@ -68,6 +73,10 @@ class AddrInfo {
 
  private:
     void construct( int socket, const AddrUnion* saddr, bool isTCP );
+    void init( int socket, ClientToken clientToken, const AddrUnion* saddr ) {
+        construct( socket, saddr, false );
+        m_clientToken = clientToken;
+    }
 
     // AddrInfo& operator=(const AddrInfo&);      // Prevent assignment
     int m_socket;

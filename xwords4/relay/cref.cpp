@@ -1176,7 +1176,7 @@ CookieRef::forward_or_store( const CRefEvent* evt )
             if ( DBMgr::Get()->TokenFor( ConnName(), dest, &devid, &token ) ) {
                 const AddrInfo::AddrUnion* saddr = DevMgr::Get()->get( devid );
                 if ( !!saddr ) {
-                    AddrInfo addr( -1, token, saddr );
+                    AddrInfo addr( token, saddr );
                     postTellHaveMsgs( &addr );
                 }
             }
