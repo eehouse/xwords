@@ -175,7 +175,8 @@ static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
 static AddressRecord* getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
                                     XP_PlayerAddr channelNo, XP_Bool maskChnl );
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
-static void addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
+static MsgQueueElem* addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
+static XP_Bool elems_same( const MsgQueueElem* e1, const MsgQueueElem* e2 ) ;
 static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
 
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
@@ -1051,7 +1052,7 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
 
         elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
         if ( NULL != elem ) {
-            addToQueue( comms, elem );
+            elem = addToQueue( comms, elem );
             printQueue( comms );
             result = sendMsg( comms, elem );
         }
@@ -1063,22 +1064,33 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
  * by ascending msgIDs within each channel since if there's a resend that's
  * the order in which they need to be sent.
  */
-static void
-addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
+static MsgQueueElem*
+addToQueue( CommsCtxt* comms, MsgQueueElem* newElem )
 {
-    newMsgElem->next = (MsgQueueElem*)NULL;
+    MsgQueueElem* asAdded = newElem;
+    newElem->next = (MsgQueueElem*)NULL;
     if ( !comms->msgQueueHead ) {
-        comms->msgQueueHead = comms->msgQueueTail = newMsgElem;
+        comms->msgQueueHead = comms->msgQueueTail = newElem;
         XP_ASSERT( comms->queueLen == 0 );
     } else {
         XP_ASSERT( !!comms->msgQueueTail );
-        comms->msgQueueTail->next = newMsgElem;
-        comms->msgQueueTail = newMsgElem;
+        XP_ASSERT( !comms->msgQueueTail->next );
+        if ( elems_same( comms->msgQueueTail, newElem ) ) {
+            freeElem( comms, newElem );
+            asAdded = comms->msgQueueTail;
+        } else {
+            comms->msgQueueTail->next = newElem;
+            comms->msgQueueTail = newElem;
+        }
 
         XP_ASSERT( comms->queueLen > 0 );
     }
-    ++comms->queueLen;
+
+    if ( newElem == asAdded ) {
+        ++comms->queueLen;
+    }
     XP_ASSERT( comms->queueLen <= 128 ); /* reasonable limit in testing */
+    return asAdded;
 } /* addToQueue */
 
 #ifdef DEBUG
@@ -1119,6 +1131,16 @@ assertQueueOk( const CommsCtxt* comms )
     if ( count >= 10 ) {
         XP_LOGF( "%s: queueLen unexpectedly high: %d", __func__, count );
     }
+}
+
+static XP_Bool
+elems_same( const MsgQueueElem* elem1, const MsgQueueElem* elem2 ) 
+{
+    XP_Bool same = elem1->msgID == elem2->msgID
+        && elem1->channelNo == elem2->channelNo
+        && elem1->len == elem2->len
+        && 0 == XP_MEMCMP( elem1->msg, elem2->msg, elem1->len );
+    return same;
 }
 #endif
 
@@ -1173,7 +1195,9 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
             if ( !knownGood && (elem->msgID <= msgID) ) {
                 freeElem( comms, elem );
             } else {
-                addToQueue( comms, elem );
+                MsgQueueElem* asAdded = addToQueue( comms, elem );
+                XP_ASSERT( asAdded == elem );
+                elem = asAdded; /* for non-assert case */
             }
         }
     }
