@@ -362,3 +362,22 @@ readHeader( const XP_U8** buf, MsgHeader* header )
     *buf = ptr;
     return ok;
 }
+
+/* Utilities */
+#define TOKEN_MULT 1000000
+XP_U32 
+makeClientToken( sqlite3_int64 rowid, XP_U16 seed )
+{
+    XP_ASSERT( rowid < 0x0000FFFF );
+    XP_U32 result = rowid;
+    result *= TOKEN_MULT;             /* so visible when displayed as base-10 */
+    result += seed;
+    return result;
+}
+
+void
+rowidFromToken( XP_U32 clientToken, sqlite3_int64* rowid, XP_U16* seed )
+{
+    *rowid = clientToken / TOKEN_MULT;
+    *seed = clientToken % TOKEN_MULT;
+}

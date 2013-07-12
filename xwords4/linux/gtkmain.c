@@ -58,14 +58,14 @@ gameIsOpen( GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 static GtkGameGlobals*
-findOpenGame( const GtkAppGlobals* apg, XP_U32 clientToken )
+findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 {
     GtkGameGlobals* result = NULL;
     GSList* iter;
     for ( iter = apg->globalsList; !!iter; iter = iter->next ) {
         GtkGameGlobals* globals = (GtkGameGlobals*)iter->data;
         CommonGlobals* cGlobals = &globals->cGlobals;
-        if ( cGlobals->selRow == clientToken ) {
+        if ( cGlobals->selRow == rowid ) {
             result = globals;
             break;
         }
@@ -73,8 +73,8 @@ findOpenGame( const GtkAppGlobals* apg, XP_U32 clientToken )
     return result;
 }
 
-enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, OVER_ITEM, TURN_ITEM, NMOVES_ITEM, 
-       MISSING_ITEM, N_ITEMS };
+enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, SEED_ITEM, OVER_ITEM, TURN_ITEM, 
+       NMOVES_ITEM, MISSING_ITEM, N_ITEMS };
 
 static void
 foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
@@ -134,16 +134,22 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "Row", ROW_ITEM );
     addTextColumn( list, "Name", NAME_ITEM );
     addTextColumn( list, "Room", ROOM_ITEM );
+    addTextColumn( list, "Seed", SEED_ITEM );
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "NMoves", NMOVES_ITEM );
     addTextColumn( list, "NMissing", MISSING_ITEM );
 
     GtkListStore* store = gtk_list_store_new( N_ITEMS, 
-                                              G_TYPE_INT64, G_TYPE_STRING, 
-                                              G_TYPE_STRING, G_TYPE_BOOLEAN, 
-                                              G_TYPE_INT, G_TYPE_INT, 
-                                              G_TYPE_INT );
+                                              G_TYPE_INT64,   /* ROW_ITEM */
+                                              G_TYPE_STRING,  /* NAME_ITEM */
+                                              G_TYPE_STRING,  /* ROOM_ITEM */
+                                              G_TYPE_INT,     /* SEED_ITEM */
+                                              G_TYPE_BOOLEAN, /* OVER_ITEM */
+                                              G_TYPE_INT,     /* TURN_ITEM */
+                                              G_TYPE_INT,     /* NMOVES_ITEM */
+                                              G_TYPE_INT      /* MISSING_ITEM */
+                                              );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
 
@@ -180,6 +186,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         ROW_ITEM, rowid,
                         NAME_ITEM, gib->name,
                         ROOM_ITEM, gib->room,
+                        SEED_ITEM, gib->seed,
                         OVER_ITEM, gib->gameOver,
                         TURN_ITEM, gib->turn,
                         NMOVES_ITEM, gib->nMoves,
@@ -239,13 +246,18 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
     guint len = apg->selRows->len;
     for ( guint ii = 0; ii < len; ++ii ) {
         sqlite3_int64 rowid = g_array_index( apg->selRows, sqlite3_int64, ii );
+
+        GameInfo gib;
+        XP_Bool success = getGameInfo( params->pDb, rowid, &gib );
+        XP_ASSERT( success );
+        XP_U32 clientToken = makeClientToken( rowid, gib.seed );
         removeRow( apg, rowid );
         deleteGame( params->pDb, rowid );
 
         XP_UCHAR devIDBuf[64] = {0};
         db_fetch( params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
         if ( '\0' != devIDBuf[0] ) {
-            relaycon_deleted( params, devIDBuf, rowid );
+            relaycon_deleted( params, devIDBuf, clientToken );
         } else {
             XP_LOGF( "%s: not calling relaycon_deleted: no relayID", __func__ );
         }
@@ -440,23 +452,31 @@ gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
 {
     LOG_FUNC();
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    XP_U32 gameToken;
-    XP_ASSERT( sizeof(gameToken) < len );
-    gameToken = ntohl(*(XP_U32*)&buf[0]);
-    buf += sizeof(gameToken);
-    len -= sizeof(gameToken);
+    XP_U32 clientToken;
+    XP_ASSERT( sizeof(clientToken) < len );
+    XP_MEMCPY( &clientToken, &buf[0], sizeof(clientToken) );
+    buf += sizeof(clientToken);
+    len -= sizeof(clientToken);
 
-    GtkGameGlobals* globals = findOpenGame( apg, gameToken );
+    sqlite3_int64 rowid;
+    XP_U16 gotSeed;
+    rowidFromToken( ntohl( clientToken ), &rowid, &gotSeed );
+
+    XP_U16 seed = 0;
+    GtkGameGlobals* globals = findOpenGame( apg, rowid );
     if ( !!globals ) {
         gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
+        seed = comms_getChannelSeed( globals->cGlobals.game.comms );
     } else {
         GtkGameGlobals tmpGlobals;
-        if ( loadGameNoDraw( &tmpGlobals, apg->params, gameToken ) ) {
+        if ( loadGameNoDraw( &tmpGlobals, apg->params, rowid ) ) {
             gameGotBuf( &tmpGlobals.cGlobals, XP_FALSE, buf, len );
+            seed = comms_getChannelSeed( tmpGlobals.cGlobals.game.comms );
             saveGame( &tmpGlobals.cGlobals );
         }
         freeGlobals( &tmpGlobals );
     }
+    XP_ASSERT( seed == 0 || gotSeed == seed );
 }
 
 static gint

@@ -36,12 +36,16 @@ void relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
                     void* procsClosure, const char* host, int port );
 void relaycon_reg( LaunchParams* params, const XP_UCHAR* devID, DevIDType typ );
 XP_S16 relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
-                      XP_U32 gameID, const CommsAddrRec* addrRec );
-XP_S16 relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
-                            const XP_UCHAR* relayID, XP_U32 gameToken );
+                      XP_U32 gameToken, const CommsAddrRec* addrRec );
+XP_S16 relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, 
+                            XP_U16 buflen, const XP_UCHAR* relayID, 
+                            XP_U32 gameToken );
 void relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID );
 void relaycon_deleted( LaunchParams* params, const XP_UCHAR* devID, 
                        XP_U32 gameToken );
 
 void relaycon_cleanup( LaunchParams* params );
+
+XP_U32 makeClientToken( sqlite3_int64 rowid, XP_U16 seed );
+void rowidFromToken( XP_U32 clientToken, sqlite3_int64* rowid, XP_U16* seed );
 #endif

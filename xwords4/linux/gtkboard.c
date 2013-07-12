@@ -401,8 +401,10 @@ relay_sendNoConn_gtk( const XP_U8* msg, XP_U16 len, const XP_UCHAR* relayID,
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     XP_Bool success = XP_FALSE;
     if ( !!globals->cGlobals.pDb && !globals->draw ) {
+        XP_U16 seed = comms_getChannelSeed( globals->cGlobals.game.comms );
+        XP_U32 clientToken = makeClientToken( globals->cGlobals.selRow, seed );
         XP_S16 nSent = relaycon_sendnoconn( globals->cGlobals.params, msg, len, 
-                                            relayID, globals->cGlobals.selRow );
+                                            relayID, clientToken );
         success = nSent == len;
     }
     return success;

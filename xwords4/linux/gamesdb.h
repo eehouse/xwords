@@ -34,6 +34,7 @@ typedef struct _GameInfo {
     XP_Bool gameOver;
     XP_S16 turn;
     XP_S16 nMissing;
+    XP_U16 seed;
 } GameInfo;
 
 

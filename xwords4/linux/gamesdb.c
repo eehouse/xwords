@@ -40,6 +40,7 @@ openGamesDB( const char* dbName )
         ",ended INT(1)"
         ",turn INT(2)"
         ",nmoves INT"
+        ",seed INT"
         ",nmissing INT(2)"
         ")";
     result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
@@ -115,6 +116,7 @@ summarize( CommonGlobals* cGlobals )
     XP_S16 nMoves = model_getNMoves( cGlobals->game.model );
     XP_Bool gameOver = server_getGameIsOver( cGlobals->game.server );
     XP_S16 turn = server_getCurrentTurn( cGlobals->game.server );
+    XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
     XP_S16 nMissing = 0;
     CommsAddrRec addr = {0};
     gchar* room = "";
@@ -127,11 +129,12 @@ summarize( CommonGlobals* cGlobals )
         }
     }
 
-    const char* fmt = "UPDATE games SET room='%s', ended=%d, turn=%d, nmissing=%d, nmoves=%d"
-        " where rowid=%lld";
+    const char* fmt = "UPDATE games "
+        " SET room='%s', ended=%d, turn=%d, nmissing=%d, nmoves=%d, seed=%d"
+        " WHERE rowid=%lld";
     XP_UCHAR buf[256];
     snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, nMissing, nMoves,
-              cGlobals->selRow );
+              seed, cGlobals->selRow );
     XP_LOGF( "query: %s", buf );
     sqlite3_stmt* stmt = NULL;
     int result = sqlite3_prepare_v2( cGlobals->pDb, buf, -1, &stmt, NULL );        
@@ -177,7 +180,7 @@ XP_Bool
 getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
-    const char* fmt = "SELECT room, ended, turn, nmoves, nmissing "
+    const char* fmt = "SELECT room, ended, turn, nmoves, nmissing, seed "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -193,6 +196,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->turn = sqlite3_column_int( ppStmt, 2 );
         gib->nMoves = sqlite3_column_int( ppStmt, 3 );
         gib->nMissing = sqlite3_column_int( ppStmt, 4 );
+        gib->seed = sqlite3_column_int( ppStmt, 5 );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
     }
     sqlite3_finalize( ppStmt );

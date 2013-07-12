@@ -327,7 +327,8 @@ void
 saveGame( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
-    if ( !!cGlobals->params->fileName || !!cGlobals->pDb ) {
+    if ( !!cGlobals->game.model &&
+         (!!cGlobals->params->fileName || !!cGlobals->pDb) ) {
         XP_Bool doSave = XP_TRUE;
         XP_Bool newGame = !file_exists( cGlobals->params->fileName )
             || -1 == cGlobals->selRow;
@@ -1026,8 +1027,10 @@ linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
     XP_S16 result = 0;
     if ( !!cGlobals->pDb ) {
         XP_ASSERT( -1 != cGlobals->selRow );
+        XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
+        XP_U32 clientToken = makeClientToken( cGlobals->selRow, seed );
         result = relaycon_send( cGlobals->params, buf, buflen, 
-                                cGlobals->selRow, addrRec );
+                                clientToken, addrRec );
     } else {
         int sock = cGlobals->socket;
     
