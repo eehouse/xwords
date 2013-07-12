@@ -1752,13 +1752,17 @@ curses_getFlags( void* XP_UNUSED(closure) )
 static void
 cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
 {
-    LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
-    XP_U32 gameToken;
-    XP_ASSERT( sizeof(gameToken) < len );
-    gameToken = ntohl(*(XP_U32*)&buf[0]);
-    buf += sizeof(gameToken);
-    len -= sizeof(gameToken);
+    XP_U32 clientToken;
+    XP_ASSERT( sizeof(clientToken) < len );
+    XP_MEMCPY( &clientToken, &buf[0], sizeof(clientToken) );
+    buf += sizeof(clientToken);
+    len -= sizeof(clientToken);
+
+    sqlite3_int64 ignore;
+    XP_U16 seed;
+    rowidFromToken( XP_NTOHL( clientToken ), &ignore, &seed );
+    XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
 
     gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
 }
