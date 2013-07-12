@@ -779,7 +779,6 @@ checkSanity( DictionaryCtxt* dict, const XP_U32 numEdges )
         }
     }
 
-    XP_LOGF( "%s(numEdges=%ld)=>%d", __func__, numEdges, passed );
     return passed;
 } /* checkSanity */
 #endif
