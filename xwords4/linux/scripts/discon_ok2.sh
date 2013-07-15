@@ -468,6 +468,11 @@ run_cmds() {
         [ 0 -ge $COUNT ] && break
         NOW=$(date '+%s')
         [ $NOW -ge $ENDTIME ] && break
+        if ls core.* >/dev/null 2>&1; then
+            echo "core file found; exiting..."
+            killall "$(basename $APP_NEW)"
+            break
+        fi
         INDX=$(($RANDOM%COUNT))
         KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
