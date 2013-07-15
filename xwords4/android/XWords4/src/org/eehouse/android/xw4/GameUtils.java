@@ -246,28 +246,32 @@ public class GameUtils {
         int gamePtr = 0;
 
         byte[] stream = savedGame( context, lock );
-        XwJNI.gi_from_stream( gi, stream );
-        String[] dictNames = gi.dictNames();
-        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
-        if ( pairs.anyMissing( dictNames ) ) {
-            DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable", 
-                           TextUtils.join( ",", dictNames ) );
+        if ( null == stream ) {
+            DbgUtils.logf( "loadMakeGame: no saved game!");
         } else {
-            gamePtr = XwJNI.initJNI();
+            XwJNI.gi_from_stream( gi, stream );
+            String[] dictNames = gi.dictNames();
+            DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
+            if ( pairs.anyMissing( dictNames ) ) {
+                DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable", 
+                               TextUtils.join( ",", dictNames ) );
+            } else {
+                gamePtr = XwJNI.initJNI();
 
-            String langName = gi.langName();
-            boolean madeGame = 
-                XwJNI.game_makeFromStream( gamePtr, stream, gi, 
-                                           dictNames, pairs.m_bytes, 
-                                           pairs.m_paths, langName,
-                                           util, JNIUtilsImpl.get( context ), 
-                                           CommonPrefs.get(context),
-                                           tp);
-            if ( !madeGame ) {
-                XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
-                                        CommonPrefs.get(context), dictNames,
-                                        pairs.m_bytes, pairs.m_paths, 
-                                        langName );
+                String langName = gi.langName();
+                boolean madeGame = 
+                    XwJNI.game_makeFromStream( gamePtr, stream, gi, 
+                                               dictNames, pairs.m_bytes, 
+                                               pairs.m_paths, langName,
+                                               util, JNIUtilsImpl.get( context ), 
+                                               CommonPrefs.get(context),
+                                               tp);
+                if ( !madeGame ) {
+                    XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
+                                            CommonPrefs.get(context), dictNames,
+                                            pairs.m_bytes, pairs.m_paths, 
+                                            langName );
+                }
             }
         }
         return gamePtr;
