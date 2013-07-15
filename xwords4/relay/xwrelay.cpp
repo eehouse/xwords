@@ -416,7 +416,7 @@ send_via_udp( int socket, const struct sockaddr *dest_addr,
 {
     uint32_t packetNum = UDPAckTrack::nextPacketID( cmd );
     struct iovec vec[10];
-    int iocount = 0;
+    unsigned int iocount = 0;
 
     unsigned char header[1 + 1 + sizeof(packetNum)];
     header[0] = XWPDEV_PROTO_VERSION;
@@ -434,6 +434,7 @@ send_via_udp( int socket, const struct sockaddr *dest_addr,
         if ( !ptr ) {
             break;
         }
+        assert( iocount < VSIZE(vec) );
         vec[iocount].iov_base = ptr;
         vec[iocount].iov_len = va_arg(ap, int);
         ++iocount;
@@ -458,7 +459,7 @@ send_via_udp( int socket, const struct sockaddr *dest_addr,
  * socket. */
 bool
 send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf, 
-                         size_t bufLen )
+                         const size_t bufLen )
 {
     assert( !!addr );
     bool ok = false;
@@ -471,7 +472,8 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
             if ( nSent == sizeof(len) ) {
                 nSent = send( socket, buf, bufLen, 0 );
                 if ( nSent == ssize_t(bufLen) ) {
-                    logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
+                    logf( XW_LOGINFO, "%s: sent %d bytes on socket %d", __func__, 
+                          nSent, socket );
                     ok = true;
                 } else {
                     logf( XW_LOGERROR, "%s: send failed: %s (errno=%d)", __func__, 
