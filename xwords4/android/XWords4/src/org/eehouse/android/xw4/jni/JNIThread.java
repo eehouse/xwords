@@ -175,7 +175,7 @@ public class JNIThread extends Thread {
             join();
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
-            DbgUtils.logf( "JNIThread.waitToStop() got %s",  ie.toString() );
+            DbgUtils.loge( ie );
         }
     }
 
@@ -287,7 +287,7 @@ public class JNIThread extends Thread {
         XwJNI.server_do( m_jniGamePtr );
 
         // And let it tell the relay (if any) it's leaving
-        XwJNI.comms_stop( m_jniGamePtr );
+        // XwJNI.comms_stop( m_jniGamePtr );
 
         XwJNI.game_getGi( m_jniGamePtr, m_gi );
         if ( null != m_newDict ) {
@@ -334,6 +334,11 @@ public class JNIThread extends Thread {
                     continue;
                 }
                 save_jni();
+                // This is gross: we take the relay connection down
+                // then bring it right back up again each time there's
+                // a message received (to save any state changes it
+                // brought).  There must be a better way.
+                // XwJNI.comms_start( m_jniGamePtr );
                 break;
 
             case CMD_DRAW:
@@ -619,6 +624,7 @@ public class JNIThread extends Thread {
         } // for
 
         if ( m_saveOnStop ) {
+            XwJNI.comms_stop( m_jniGamePtr );
             save_jni();
         }
     } // run
