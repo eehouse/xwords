@@ -297,7 +297,7 @@
 			            />
     <CheckBoxPreference android:key="@string/key_udp_relay"
 			            android:title="@string/udp_relay"
-			            android:defaultValue="false"
+			            android:defaultValue="true"
 			            />
     <CheckBoxPreference android:key="@string/key_drop_gcm"
 			            android:title="@string/drop_gcm_title"
