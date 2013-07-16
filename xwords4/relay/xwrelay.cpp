@@ -51,6 +51,7 @@
 #include <syslog.h>
 #include <sys/wait.h>
 #include <sys/prctl.h>
+#include <glib.h>
 
 #if defined(__FreeBSD__)
 # if (OSVERSION > 500000)
@@ -90,8 +91,8 @@ static int s_nSpawns = 0;
 static int g_maxsocks = -1;
 static int g_udpsock = -1;
 
-void
-logf( XW_LogLevel level, const char* format, ... )
+static bool
+willLog( XW_LogLevel level ) 
 {
     RelayConfigs* rc = RelayConfigs::GetConfigs();
     int configLevel = level;
@@ -103,7 +104,13 @@ logf( XW_LogLevel level, const char* format, ... )
         }
     }
 
-    if ( level <= configLevel ) {
+    return level <= configLevel;
+}
+
+void
+logf( XW_LogLevel level, const char* format, ... )
+{
+    if ( willLog( level ) ) {
 #ifdef USE_SYSLOG
         char buf[256];
         va_list ap;
@@ -118,6 +125,7 @@ logf( XW_LogLevel level, const char* format, ... )
         bool useFile;
         char logFile[256];
 
+        RelayConfigs* rc = RelayConfigs::GetConfigs();
         useFile = rc->GetValueFor( "LOGFILE_PATH", logFile, sizeof(logFile) );
 
         if ( useFile ) {
@@ -451,7 +459,14 @@ send_via_udp( int socket, const struct sockaddr *dest_addr,
     if ( 0 > nSent ) {
         logf( XW_LOGERROR, "sendmsg->errno %d (%s)", errno, strerror(errno) );
     }
-    logf( XW_LOGINFO, "%s()=>%d", __func__, nSent );
+
+    XW_LogLevel level = XW_LOGINFO;
+    if ( willLog( level ) ) {
+        gchar* b64 = g_base64_encode( (unsigned char*)dest_addr, sizeof(dest_addr) );
+        logf( level, "%s()=>%d; addr=%s", __func__, nSent, b64 );
+        g_free( b64 );
+    }
+
     return nSent;
 }
 
