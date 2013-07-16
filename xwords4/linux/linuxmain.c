@@ -1170,26 +1170,29 @@ linux_close_socket( CommonGlobals* cGlobals )
 static int
 blocking_read( int fd, unsigned char* buf, const int len )
 {
-    assert( -1 != fd );
-    int nRead = 0;
-    int tries;
-    for ( tries = 5; nRead < len && tries > 0; --tries ) {
-        // XP_LOGF( "%s: blocking for %d bytes", __func__, len );
-        ssize_t nGot = read( fd, buf + nRead, len - nRead );
-        if ( nGot == 0 ) {
-            XP_LOGF( "%s: read 0; let's try again (%d more times)", __func__, 
-                     tries );
-            usleep( 10000 );
-        } else if ( nGot < 0 ) {
-            XP_LOGF( "read => %d (wanted %d), errno=%d (\"%s\")", nRead, 
-                     len - nRead, errno, strerror(errno) );
-            break;
+    int nRead = -1;
+    if ( 0 <= fd && 0 < len ) {
+        nRead = 0;
+        int tries;
+        for ( tries = 5; nRead < len && tries > 0; --tries ) {
+            // XP_LOGF( "%s: blocking for %d bytes", __func__, len );
+            ssize_t nGot = read( fd, buf + nRead, len - nRead );
+            XP_LOGF( "%s: read(fd=%d, len=%d) => %d", __func__, fd, len - nRead, nGot );
+            if ( nGot == 0 ) {
+                XP_LOGF( "%s: read 0; let's try again (%d more times)", __func__, 
+                         tries );
+                usleep( 10000 );
+            } else if ( nGot < 0 ) {
+                XP_LOGF( "read => %d (wanted %d), errno=%d (\"%s\")", nRead, 
+                         len - nRead, errno, strerror(errno) );
+                break;
+            }
+            nRead += nGot;
         }
-        nRead += nGot;
-    }
 
-    if ( nRead < len ) {
-        nRead = -1;
+        if ( nRead < len ) {
+            nRead = -1;
+        }
     }
 
     XP_LOGF( "%s(fd=%d, sought=%d) => %d", __func__, fd, len, nRead );

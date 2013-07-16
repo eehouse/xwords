@@ -987,7 +987,9 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock
 {
 #ifdef USE_GLIBLOOP
     GIOChannel* channel = g_io_channel_unix_new( newSock );
-    guint watch = g_io_add_watch( channel, G_IO_IN | G_IO_ERR,
+    XP_LOGF( "%s: created channel %p for socket %d", __func__, channel, newSock );
+    guint watch = g_io_add_watch( channel, 
+                                  G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
                                   func, globals );
 
     SourceData* data = g_malloc( sizeof(*data) );
@@ -1018,6 +1020,7 @@ curses_stop_listening( CursesAppGlobals* globals, int sock )
         gint fd = g_io_channel_unix_get_fd( data->channel );
         if ( fd == sock ) {
             g_io_channel_unref( data->channel );
+            XP_LOGF( "%s: unreffing channel %p", __func__, data->channel );
             g_free( data );
             globals->sources = g_list_remove_link( globals->sources, sources );
             break;
@@ -1047,7 +1050,11 @@ curses_stop_listening( CursesAppGlobals* globals, int sock )
 static gboolean
 data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
 {
-    if ( 0 != (G_IO_IN & condition) ) {
+    gboolean keep = TRUE;
+    if ( 0 != ((G_IO_HUP|G_IO_ERR|G_IO_NVAL) & condition) ) {
+        XP_LOGF( "%s: got error condition; returning FALSE", __func__ );
+        keep = FALSE;
+    } else if ( 0 != (G_IO_IN & condition) ) {
         CursesAppGlobals* globals = (CursesAppGlobals*)data;
         int fd = g_io_channel_unix_get_fd( source );
         unsigned char buf[1024];
@@ -1102,7 +1109,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
             }
         }
     }
-    return TRUE;
+    return keep;
 } /* data_socket_proc */
 #endif
 
@@ -1851,7 +1858,9 @@ cursesUDPSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock),
 
     SourceData* sd = g_malloc( sizeof(*sd) );
     sd->channel = g_io_channel_unix_new( newSock );
-    sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR, 
+    XP_LOGF( "%s: created channel %p for socket %d", __func__, sd->channel, newSock );
+    sd->watch = g_io_add_watch( sd->channel, 
+                                G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
                                 curses_app_socket_proc, globals );
     sd->proc = proc;
     sd->procClosure = procClosure;
