@@ -386,6 +386,7 @@ class SafeCref {
     bool SeenSeed()        { return m_seenSeed; }
 
  private:
+    bool playerCountsOk( int nPlayersH, int nPlayersS );
     CidInfo* m_cinfo;
     CRefMgr* m_mgr;
     AddrInfo m_addr;

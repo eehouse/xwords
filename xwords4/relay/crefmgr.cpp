@@ -604,16 +604,18 @@ SafeCref::SafeCref( const char* cookie, const AddrInfo* addr, int clientVers,
     , m_isValid( false )
     , m_seenSeed( false )
 {
-    CidInfo* cinfo;
 
-    cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
-                                     langCode, gameSeed, wantsPublic, makePublic,
-                                     &m_seenSeed );
-    if ( cinfo != NULL ) {
-        CookieRef* cref = cinfo->GetRef();
-        m_locked = cref->Lock();
-        m_cinfo = cinfo;
-        m_isValid = true;
+    if ( playerCountsOk( nPlayersH, nPlayersS ) ) {
+        CidInfo* cinfo;
+        cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
+                                         langCode, gameSeed, wantsPublic, makePublic,
+                                         &m_seenSeed );
+        if ( cinfo != NULL ) {
+            CookieRef* cref = cinfo->GetRef();
+            m_locked = cref->Lock();
+            m_cinfo = cinfo;
+            m_isValid = true;
+        }
     }
 }
 
@@ -636,28 +638,29 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
     , m_hid( hid )
     , m_isValid( false )
 {
-    CidInfo* cinfo;
-    assert( hid <= 4 );         /* no more than 4 hosts */
+    if ( playerCountsOk( nPlayersH, nPlayersS ) && hid <= 4 ) {
+        CidInfo* cinfo;
 
-    bool isDead = false;
-    cinfo = m_mgr->getMakeCookieRef( connName, cookie, hid, nPlayersH, 
-                                     nPlayersS, gameSeed, langCode,
-                                     wantsPublic || makePublic, &isDead );
+        bool isDead = false;
+        cinfo = m_mgr->getMakeCookieRef( connName, cookie, hid, nPlayersH, 
+                                         nPlayersS, gameSeed, langCode,
+                                         wantsPublic || makePublic, &isDead );
 
-    /* If the reconnect doesn't check out, treat it as a connect */
-    if ( NULL == cinfo ) {
-        logf( XW_LOGINFO, "%s: taking a second crack", __func__ );
-        m_hid = HOST_ID_NONE;
-        cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
-                                         langCode, gameSeed, 
-                                         wantsPublic, makePublic, &m_seenSeed );
-    }
-    if ( cinfo != NULL ) {
-        assert( cinfo->GetCid() == cinfo->GetRef()->GetCid() );
-        m_locked = cinfo->GetRef()->Lock();
-        m_cinfo = cinfo;
-        m_isValid = true;
-        m_dead = isDead;
+        /* If the reconnect doesn't check out, treat it as a connect */
+        if ( NULL == cinfo ) {
+            logf( XW_LOGINFO, "%s: taking a second crack", __func__ );
+            m_hid = HOST_ID_NONE;
+            cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
+                                             langCode, gameSeed, 
+                                             wantsPublic, makePublic, &m_seenSeed );
+        }
+        if ( cinfo != NULL ) {
+            assert( cinfo->GetCid() == cinfo->GetRef()->GetCid() );
+            m_locked = cinfo->GetRef()->Lock();
+            m_cinfo = cinfo;
+            m_isValid = true;
+            m_dead = isDead;
+        }
     }
 }
 
@@ -728,4 +731,17 @@ SafeCref::~SafeCref()
         }
         m_mgr->m_cidlock->Relinquish( m_cinfo, recycle );
     }
+}
+
+bool
+SafeCref::playerCountsOk( int nPlayersH, int nPlayersT )
+{
+    bool result = ( 0 < nPlayersH && 4 >= nPlayersH
+                    && 0 < nPlayersT && 4 >= nPlayersT
+                    && nPlayersH < nPlayersT );
+    if ( !result ) {
+        logf( XW_LOGERROR, "%s: dropping with bad player counts: here: "
+              "%d; total: %d", __func__, nPlayersH, nPlayersT );
+    }
+    return result;
 }
