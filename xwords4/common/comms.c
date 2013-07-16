@@ -1132,6 +1132,7 @@ assertQueueOk( const CommsCtxt* comms )
         XP_LOGF( "%s: queueLen unexpectedly high: %d", __func__, count );
     }
 }
+#endif
 
 static XP_Bool
 elems_same( const MsgQueueElem* elem1, const MsgQueueElem* elem2 ) 
@@ -1142,7 +1143,6 @@ elems_same( const MsgQueueElem* elem1, const MsgQueueElem* elem2 )
         && 0 == XP_MEMCMP( elem1->msg, elem2->msg, elem1->len );
     return same;
 }
-#endif
 
 static void
 freeElem( const CommsCtxt* XP_UNUSED_DBG(comms), MsgQueueElem* elem )
