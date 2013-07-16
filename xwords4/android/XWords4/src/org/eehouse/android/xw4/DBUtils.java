@@ -751,6 +751,9 @@ public class DBUtils {
                 if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
                     result = cursor.getBlob( cursor
                                              .getColumnIndex(DBHelper.SNAPSHOT));
+                } else {
+                    DbgUtils.logf( "DBUtils.loadGame: none for rowid=%d",
+                                   rowid );
                 }
                 cursor.close();
                 db.close();
