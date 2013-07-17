@@ -42,6 +42,7 @@ typedef enum {
 } XW_LogLevel;
 
 void logf( XW_LogLevel level, const char* format, ... );
+bool willLog( XW_LogLevel level );
 
 void denyConnection( const AddrInfo* addr, XWREASON err );
 bool send_with_length_unsafe( const AddrInfo* addr, 

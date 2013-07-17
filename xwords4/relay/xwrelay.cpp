@@ -91,7 +91,7 @@ static int s_nSpawns = 0;
 static int g_maxsocks = -1;
 static int g_udpsock = -1;
 
-static bool
+bool
 willLog( XW_LogLevel level ) 
 {
     RelayConfigs* rc = RelayConfigs::GetConfigs();
@@ -419,7 +419,7 @@ denyConnection( const AddrInfo* addr, XWREASON err )
 }
 
 static ssize_t
-send_via_udp( int socket, const struct sockaddr *dest_addr, 
+send_via_udp( int socket, const struct sockaddr* dest_addr, 
               XWRelayReg cmd, ... )
 {
     uint32_t packetNum = UDPAckTrack::nextPacketID( cmd );
@@ -462,13 +462,13 @@ send_via_udp( int socket, const struct sockaddr *dest_addr,
 
     XW_LogLevel level = XW_LOGINFO;
     if ( willLog( level ) ) {
-        gchar* b64 = g_base64_encode( (unsigned char*)dest_addr, sizeof(dest_addr) );
-        logf( level, "%s()=>%d; addr=%s", __func__, nSent, b64 );
+        gchar* b64 = g_base64_encode( (unsigned char*)dest_addr, sizeof(*dest_addr) );
+        logf( level, "%s()=>%d; addr='%s'", __func__, nSent, b64 );
         g_free( b64 );
     }
 
     return nSent;
-}
+} // send_via_udp
 
 /* No mutex here.  Caller better be ensuring no other thread can access this
  * socket. */

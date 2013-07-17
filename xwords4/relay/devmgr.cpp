@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <glib.h>
+
 #include "devmgr.h"
 #include "mlock.h"
 
@@ -35,7 +37,15 @@ DevMgr::Get()
 void
 DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
 {
-    logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
+    assert( DBMgr::DEVID_NONE != devid );
+
+    XW_LogLevel level = XW_LOGINFO;
+    if ( willLog( level ) ) {
+        gchar* b64 = g_base64_encode( (unsigned char*)&saddr->addr, sizeof(saddr->addr) );
+        logf( level, "%s(devid=%d, saddr='%s')", __func__, devid, b64 );
+        g_free( b64 );
+    }
+
     time_t now = time( NULL );
     UDPAddrRec rec( saddr, now );
 
