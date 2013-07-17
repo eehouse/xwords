@@ -24,6 +24,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.IBinder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -72,6 +73,8 @@ public class RelayService extends XWService {
     private DatagramSocket m_UDPSocket;
     private LinkedBlockingQueue<DatagramPacket> m_queue = 
         new LinkedBlockingQueue<DatagramPacket>();
+    private Handler m_handler;
+    private Runnable m_killer;
 
     // These must match the enum XWRelayReg in xwrelay.h
     private static final int XWPDEV_PROTO_VERSION = 0;
@@ -155,6 +158,13 @@ public class RelayService extends XWService {
     {
         super.onCreate();
         startFetchThreadIf();
+        m_handler = new Handler();
+        m_killer = new Runnable() {
+                public void run() {
+                    // DbgUtils.logf( "RelayService: m_killer fired" );
+                    stopSelf();
+                }
+            };
     }
 
     @Override
@@ -211,7 +221,8 @@ public class RelayService extends XWService {
             result = Service.START_STICKY;
         } else {
             result = Service.START_STICKY_COMPATIBILITY;
-        }
+        }    
+        resetExitTimer();
         return result;
     }
 
@@ -278,6 +289,7 @@ public class RelayService extends XWService {
                                     DbgUtils.logf( "UPD read thread blocking "
                                                    + "on receive" );
                                     m_UDPSocket.receive( packet );
+                                    resetExitTimer();
                                     DbgUtils.logf( "UPD read thread: "
                                                    + "receive returned" );
                                 } catch( java.io.IOException ioe ) {
@@ -296,9 +308,8 @@ public class RelayService extends XWService {
                 DbgUtils.logf( "m_UDPReadThread not null and assumed to "
                                + "be running" );
             }
-
         }
-    }
+    } // startUDPThreadsIfNot
 
     // Some of this must not be done on main (UI) thread
     private void connectSocket()
@@ -347,6 +358,7 @@ public class RelayService extends XWService {
                                            outPacket.getLength() );
                             try {
                                 m_UDPSocket.send( outPacket );
+                                resetExitTimer();
                             } catch ( java.io.IOException ioe ) {
                                 DbgUtils.loge( ioe );
                             }
@@ -812,6 +824,17 @@ public class RelayService extends XWService {
             DbgUtils.logf( "Got ack for %d; there are %d unacked packets", 
                            packetID, s_packetsSent.size() );
         }
+    }
+
+    // Called from any thread
+    private void resetExitTimer()
+    {
+        // DbgUtils.logf( "RelayService.resetExitTimer()" );
+        m_handler.removeCallbacks( m_killer );
+
+        // UDP socket's no good as a return address after 2 minutes of
+        // in activity, so take down the service after that time.
+        m_handler.postDelayed( m_killer, 3 * 60 * 1000 );
     }
 
     private class PacketHeader {
