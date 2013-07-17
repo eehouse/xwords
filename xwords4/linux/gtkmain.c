@@ -248,7 +248,10 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
         sqlite3_int64 rowid = g_array_index( apg->selRows, sqlite3_int64, ii );
 
         GameInfo gib;
-        XP_Bool success = getGameInfo( params->pDb, rowid, &gib );
+#ifdef DEBUG
+        XP_Bool success = 
+#endif
+            getGameInfo( params->pDb, rowid, &gib );
         XP_ASSERT( success );
         XP_U32 clientToken = makeClientToken( rowid, gib.seed );
         removeRow( apg, rowid );
@@ -477,6 +480,7 @@ gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
         freeGlobals( &tmpGlobals );
     }
     XP_ASSERT( seed == 0 || gotSeed == seed );
+    XP_USE( seed );
 }
 
 static gint

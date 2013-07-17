@@ -231,6 +231,7 @@ relaycon_receive( void* closure, int socket )
             }
             case XWPDEV_ACK: {
                 XP_U32 packetID = getNetLong( &ptr );
+                XP_USE( packetID );
                 XP_LOGF( "got ack for packetID %ld", packetID );
                 break;
             }

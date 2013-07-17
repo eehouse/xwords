@@ -49,6 +49,7 @@ openGamesDB( const char* dbName )
         "CREATE TABLE pairs ( key TEXT UNIQUE,value TEXT )";
     result = sqlite3_exec( pDb, createValuesStr, NULL, NULL, NULL );
     XP_LOGF( "sqlite3_exec=>%d", result );
+    XP_USE( result );
 
     return pDb;
 }
@@ -87,6 +88,7 @@ writeToDB( XWStreamCtxt* stream, void* closure )
     XP_ASSERT( SQLITE_OK == result );
     result = sqlite3_step( stmt );
     XP_ASSERT( SQLITE_DONE == result );
+    XP_USE( result );
 
     if ( newGame ) {         /* new row; need to insert blob first */
         selRow = sqlite3_last_insert_rowid( pDb );
@@ -142,6 +144,7 @@ summarize( CommonGlobals* cGlobals )
     result = sqlite3_step( stmt );
     XP_ASSERT( SQLITE_DONE == result );
     sqlite3_finalize( stmt );
+    XP_USE( result );
 }
 
 GSList*
@@ -154,6 +157,7 @@ listGames( sqlite3* pDb )
                                      "SELECT rowid FROM games ORDER BY rowid", 
                                      -1, &ppStmt, NULL );
     XP_ASSERT( SQLITE_OK == result );
+    XP_USE( result );
     while ( NULL != ppStmt ) {
         switch( sqlite3_step( ppStmt ) ) {
         case SQLITE_ROW:        /* have data */
@@ -233,6 +237,7 @@ deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
     XP_ASSERT( SQLITE_OK == result );
     result = sqlite3_step( ppStmt );
     XP_ASSERT( SQLITE_DONE == result );
+    XP_USE( result );
     sqlite3_finalize( ppStmt );
 }
 
@@ -248,6 +253,7 @@ db_store( sqlite3* pDb, const gchar* key, const gchar* value )
     XP_ASSERT( SQLITE_OK == result );
     result = sqlite3_step( ppStmt );
     XP_ASSERT( SQLITE_DONE == result );
+    XP_USE( result );
     sqlite3_finalize( ppStmt );
 }
 
@@ -282,11 +288,13 @@ db_remove( sqlite3* pDb, const gchar* key )
     XP_ASSERT( SQLITE_OK == result );
     result = sqlite3_step( ppStmt );
     XP_ASSERT( SQLITE_DONE == result );
+    XP_USE( result );
     sqlite3_finalize( ppStmt );
 }
 
 static void
-getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, int len )
+getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
+               int XP_UNUSED_DBG(len) )
 {
     const unsigned char* txt = sqlite3_column_text( ppStmt, iCol );
     int needLen = sqlite3_column_bytes( ppStmt, iCol );
