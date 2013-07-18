@@ -196,7 +196,11 @@ relaycon_receive( void* closure, int socket )
 
     ssize_t nRead = recvfrom( socket, buf, sizeof(buf), 0, /* flags */
                               (struct sockaddr*)&from, &fromlen );
-    XP_LOGF( "%s: read %d bytes", __func__, nRead );
+
+    gchar* b64 = g_base64_encode( (const guchar*)buf,
+                                  ((0 <= nRead)? nRead : 0) );
+    XP_LOGF( "%s: read %d bytes ('%s')", __func__, nRead, b64 );
+    g_free( b64 );
     if ( 0 <= nRead ) {
         const XP_U8* ptr = buf;
         const XP_U8* end = buf + nRead;
