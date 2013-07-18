@@ -2043,7 +2043,7 @@ public class BoardActivity extends XWActivity
         m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
         m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
-        m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.gameIsConnected );
+        m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.canChat );
         m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
                           null != m_gi.dictName( m_view.getCurPlayer() ) );
     }
@@ -2065,7 +2065,7 @@ public class BoardActivity extends XWActivity
             hideShowItem( menu, R.id.board_menu_undo_current, m_gsi.canRedo );
             hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
             hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
-            hideShowItem( menu, R.id.board_menu_chat, m_gsi.gameIsConnected );
+            hideShowItem( menu, R.id.board_menu_chat, m_gsi.canChat );
         }
     }
 

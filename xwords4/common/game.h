@@ -72,7 +72,7 @@ typedef struct _GameStateInfo {
     XP_Bool canRedo;
     XP_Bool inTrade;
     XP_Bool tradeTilesSelected;
-    XP_Bool gameIsConnected;
+    XP_Bool canChat;
     XP_Bool canShuffle;
     XP_Bool curTurnSelected;
 } GameStateInfo;

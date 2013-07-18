@@ -1871,10 +1871,12 @@ static gboolean
 chatsTimerFired( gpointer data )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    XWGame* game = &globals->cGlobals.game;
+    GameStateInfo gsi;
 
-    if ( COMMS_RELAYSTATE_ALLCONNECTED == globals->commsRelayState 
-         && 3 > globals->nChatsSent ) {
-        XWGame* game = &globals->cGlobals.game;
+    game_getState( game, &gsi );
+
+    if ( gsi.canChat && 3 > globals->nChatsSent ) {
         XP_UCHAR msg[128];
         struct tm* timp;
         struct timeval tv;
