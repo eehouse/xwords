@@ -511,8 +511,9 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
         }
         send_via_udp( socket, saddr, XWPDEV_MSG, &asNetTok, 
                       sizeof(asNetTok), buf, bufLen, NULL );
-        logf( XW_LOGINFO, "%s: sent %d bytes on UDP socket %d, token=%x(%d)",
-              __func__, bufLen, socket, clientToken, clientToken );
+        logf( XW_LOGINFO, "%s: sent %d bytes (plus header) on UDP socket %d, "
+              "token=%x(%d)", __func__, bufLen, socket, clientToken, 
+              clientToken );
         ok = true;
     }
 
