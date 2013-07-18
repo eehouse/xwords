@@ -51,6 +51,7 @@ CPPFLAGS += -DSPAWN_SELF -g -Wall
 CPPFLAGS += -I $(shell pg_config --includedir)
 CPPFLAGS +=	-DSVN_REV=\"$(shell cat $(GITINFO) 2>/dev/null || echo -n $(HASH) )\"
 CPPFLAGS += $(shell pkg-config --cflags glib-2.0)
+# CPPFLAGS += -DLOG_UDP_PACKETS
 # CPPFLAGS += -DDO_HTTP
 # CPPFLAGS += -DHAVE_STIME
 

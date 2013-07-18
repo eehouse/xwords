@@ -449,6 +449,21 @@ send_via_udp( int socket, const struct sockaddr* dest_addr,
     }
     va_end( ap );
 
+#ifdef LOG_UDP_PACKETS
+    gsize size = 0;
+    gint state = 0;
+    gint save = 0;
+    gchar out[1024];
+    for ( unsigned int ii = 0; ii < iocount; ++ii ) {
+        size += g_base64_encode_step( (const guchar*)vec[ii].iov_base, 
+                                      vec[ii].iov_len,
+                                      FALSE, &out[size], &state, &save );
+    }
+    size += g_base64_encode_close( FALSE, &out[size], &state, &save );
+    assert( size < sizeof(out) );
+    out[size] = '\0';
+#endif
+
     struct msghdr mhdr = {0};
     mhdr.msg_iov = vec;
     mhdr.msg_iovlen = iocount;
@@ -457,15 +472,19 @@ send_via_udp( int socket, const struct sockaddr* dest_addr,
 
     ssize_t nSent = sendmsg( socket, &mhdr, 0 /* flags */);
     if ( 0 > nSent ) {
-        logf( XW_LOGERROR, "sendmsg->errno %d (%s)", errno, strerror(errno) );
+        logf( XW_LOGERROR, "%s: sendmsg->errno %d (%s)", __func__, errno, 
+              strerror(errno) );
     }
 
-    XW_LogLevel level = XW_LOGINFO;
-    if ( willLog( level ) ) {
-        gchar* b64 = g_base64_encode( (unsigned char*)dest_addr, sizeof(*dest_addr) );
-        logf( level, "%s()=>%d; addr='%s'", __func__, nSent, b64 );
-        g_free( b64 );
-    }
+#ifdef LOG_UDP_PACKETS
+    gchar* b64 = g_base64_encode( (unsigned char*)dest_addr, 
+                                  sizeof(*dest_addr) );
+    logf( XW_LOGINFO, "%s()=>%d; addr='%s'; msg='%s'", __func__, nSent, 
+          b64, out );
+    g_free( b64 );
+#else
+    logf( XW_LOGINFO, "%s()=>%d", __func__, nSent );
+#endif
 
     return nSent;
 } // send_via_udp
