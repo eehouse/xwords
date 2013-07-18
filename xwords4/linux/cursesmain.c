@@ -1874,6 +1874,7 @@ chatsTimerFired( gpointer data )
 
     if ( COMMS_RELAYSTATE_ALLCONNECTED == globals->commsRelayState 
          && 3 > globals->nChatsSent ) {
+        XWGame* game = &globals->cGlobals.game;
         XP_UCHAR msg[128];
         struct tm* timp;
         struct timeval tv;
@@ -1882,10 +1883,11 @@ chatsTimerFired( gpointer data )
         gettimeofday( &tv, &tz );
         timp = localtime( &tv.tv_sec );
 
-        snprintf( msg, sizeof(msg), "Saying hi via chat at %.2d:%.2d:%.2d", 
+        snprintf( msg, sizeof(msg), "%x: Saying hi via chat at %.2d:%.2d:%.2d", 
+                  comms_getChannelSeed( game->comms ),
                   timp->tm_hour, timp->tm_min, timp->tm_sec );
         XP_LOGF( "%s: sending \"%s\"", __func__, msg );
-        server_sendChat( globals->cGlobals.game.server, msg );
+        server_sendChat( game->server, msg );
         ++globals->nChatsSent;
     }
 
