@@ -908,6 +908,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
         // does client support devID
         if ( ID_TYPE_NONE != devIDType ) { 
             devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
+            DevMgr::Get()->Remember( devID, &evt->addr );
         }
         *devIDp = devID;
     }
@@ -916,8 +917,6 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
         DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID, 
                                  evt->u.con.clientVersion, nPlayersH, seed, 
                                  &evt->addr, devID, reconn );
-
-    DevMgr::Get()->Remember( devID, &evt->addr );
 
     HostID hostid = evt->u.con.srcID;
     if ( NULL != hidp ) {
