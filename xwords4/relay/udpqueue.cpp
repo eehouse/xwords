@@ -32,8 +32,8 @@ UdpThreadClosure::logStats()
 {
     time_t now = time( NULL );
     if ( 1 < now - m_created ) {
-        logf( XW_LOGERROR, "packet waited %d s for processing which then took %d s",
-              m_dequed - m_created, now - m_dequed );
+        logf( XW_LOGERROR, "packet %d waited %d s for processing which then took %d s",
+              getID(), m_dequed - m_created, now - m_dequed );
     }
 }
 
@@ -199,7 +199,8 @@ UdpQueue::thread_main()
         pthread_mutex_unlock( &m_queueMutex );
 
         utc->noteDequeued();
-        logf( XW_LOGINFO, "%s: dispatching packet %d (socket %d)", __func__, 
+        logf( XW_LOGINFO, "%s: dispatching packet %d (socket %d); "
+              "%d seconds old", __func__, 
               utc->getID(), utc->addr()->socket() );
         (*utc->cb())( utc );
         utc->logStats();
