@@ -23,6 +23,8 @@
 
 UDPAckTrack* UDPAckTrack::s_self = NULL;
 
+#define ACK_LIMIT 60
+
 
 /* static*/ bool
 UDPAckTrack::shouldAck( XWRelayReg cmd )
@@ -86,7 +88,8 @@ UDPAckTrack::recordAckImpl( uint32_t packetID )
     } else {
         time_t took = time( NULL ) - iter->second.m_createTime;
         if ( 5 < took  ) {
-            logf( XW_LOGERROR, "%s: packet ID %d took %d seconds to get acked", __func__, packetID );
+            logf( XW_LOGERROR, "%s: packet ID %d took %d seconds to get acked",
+                  __func__, packetID, took );
         }
         m_pendings.erase( iter );
     }
@@ -104,7 +107,7 @@ UDPAckTrack::threadProc()
             map<uint32_t, AckRecord>::iterator iter;
             for ( iter = m_pendings.begin(); iter != m_pendings.end(); ++iter ) {
                 time_t took = now - iter->second.m_createTime;
-                if ( 60 < took ) {
+                if ( ACK_LIMIT < took ) {
                     older.push_back( iter->first );
                     m_pendings.erase( iter );
                 }
@@ -120,8 +123,8 @@ UDPAckTrack::threadProc()
                 }
                 string_printf( leaked, ", " );
             }
-            logf( XW_LOGERROR, "%s: these packets leaked: %s", __func__, 
-                  leaked.c_str() );
+            logf( XW_LOGERROR, "%s: these packets leaked (were not ack'd within %d seconds): %s", __func__, 
+                  ACK_LIMIT, leaked.c_str() );
         }
     }
     return NULL;
