@@ -56,6 +56,7 @@ DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
     pair<map<DevIDRelay,UDPAddrRec>::iterator, bool> result = 
         m_devAddrMap.insert( pair<DevIDRelay,UDPAddrRec>( devid, rec ) );
     if ( !result.second ) {
+        logf( XW_LOGINFO, "%s: replacing address for %d", __func__, devid );
         result.first->second = rec;
     }
 
@@ -64,6 +65,7 @@ DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
     if ( m_addrDevMap.end() != iter && devid != iter->second ) {
         logf( XW_LOGERROR, "%s: addr '%s' already listed (for devid %d)",
               __func__, b64, iter->second );
+        assert(0);
         iter->second = devid;
     } else {
         m_addrDevMap.insert( pair<AddrInfo::AddrUnion, 
