@@ -419,8 +419,8 @@ denyConnection( const AddrInfo* addr, XWREASON err )
 }
 
 static ssize_t
-send_via_udp( int socket, const struct sockaddr* dest_addr, 
-              XWRelayReg cmd, ... )
+send_via_udp_impl( int socket, const struct sockaddr* dest_addr, 
+                   XWRelayReg cmd, va_list* app )
 {
     uint32_t packetNum = UDPAckTrack::nextPacketID( cmd );
     struct iovec vec[10];
@@ -435,19 +435,16 @@ send_via_udp( int socket, const struct sockaddr* dest_addr,
     vec[iocount].iov_len = sizeof(header);
     ++iocount;
 
-    va_list ap;
-    va_start( ap, cmd );
     for ( ; ; ) {
-        unsigned char* ptr = va_arg(ap, unsigned char*);
+        unsigned char* ptr = va_arg(*app, unsigned char*);
         if ( !ptr ) {
             break;
         }
         assert( iocount < VSIZE(vec) );
         vec[iocount].iov_base = ptr;
-        vec[iocount].iov_len = va_arg(ap, int);
+        vec[iocount].iov_len = va_arg(*app, int);
         ++iocount;
     }
-    va_end( ap );
 
 #ifdef LOG_UDP_PACKETS
     gsize size = 0;
@@ -487,7 +484,36 @@ send_via_udp( int socket, const struct sockaddr* dest_addr,
 #endif
 
     return nSent;
-} // send_via_udp
+} // send_via_udp_impl
+
+static ssize_t
+send_via_udp( const AddrInfo* addr, XWRelayReg cmd, ... )
+{
+    ssize_t result = 0;
+    int socket = addr->socket();
+    assert( g_udpsock == socket || socket == -1 );
+    if ( -1 == socket ) {
+        socket = g_udpsock;
+    }
+
+    va_list ap;
+    va_start( ap, cmd );
+    result = send_via_udp_impl( socket, addr->sockaddr(), cmd, &ap );
+    va_end( ap );
+
+    return result;
+}
+
+static ssize_t
+send_via_udp( int socket, const struct sockaddr* dest_addr, 
+              XWRelayReg cmd, ... )
+{
+    va_list ap;
+    va_start( ap, cmd );
+    ssize_t result = send_via_udp_impl( socket, dest_addr, cmd, &ap );
+    va_end( ap );
+    return result;
+}
 
 /* No mutex here.  Caller better be ensuring no other thread can access this
  * socket. */
@@ -522,16 +548,10 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
         const AddrInfo::ClientToken clientToken = addr->clientToken();
         assert( 0 != clientToken );
         uint32_t asNetTok = htonl(clientToken);
-        const struct sockaddr* saddr = addr->sockaddr();
-        int socket = addr->socket();
-        assert( g_udpsock == socket || socket == -1 );
-        if ( -1 == socket ) {
-            socket = g_udpsock;
-        }
-        send_via_udp( socket, saddr, XWPDEV_MSG, &asNetTok, 
+        send_via_udp( addr, XWPDEV_MSG, &asNetTok, 
                       sizeof(asNetTok), buf, bufLen, NULL );
-        logf( XW_LOGINFO, "%s: sent %d bytes (plus header) on UDP socket %d, "
-              "token=%x(%d)", __func__, bufLen, socket, clientToken, 
+        logf( XW_LOGINFO, "%s: sent %d bytes (plus header) on UDP socket, "
+              "token=%x(%d)", __func__, bufLen, clientToken, 
               clientToken );
         ok = true;
     }
@@ -552,7 +572,7 @@ send_havemsgs( const AddrInfo* addr )
         socket = g_udpsock;
     }
 
-    send_via_udp( socket, addr->sockaddr(), XWPDEV_HAVEMSGS, NULL );
+    send_via_udp( addr, XWPDEV_HAVEMSGS, NULL );
 }
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
@@ -1348,7 +1368,7 @@ ackPacketIf( const UDPHeader* header, const AddrInfo* addr )
         uint32_t packetID = header->packetID;
         logf( XW_LOGINFO, "acking packet %d", packetID );
         packetID = htonl( packetID );
-        send_via_udp( addr->socket(), addr->sockaddr(), XWPDEV_ACK, 
+        send_via_udp( addr, XWPDEV_ACK, 
                       &packetID, sizeof(packetID), NULL );
     }
 }
@@ -1362,7 +1382,6 @@ handle_udp_packet( UdpThreadClosure* utc )
     UDPHeader header;
     if ( getHeader( &ptr, end, &header ) ) {
         logf( XW_LOGINFO, "%s(msg=%s)", __func__, msgToStr( header.cmd ) );
-        ackPacketIf( &header, utc->addr() );
         switch( header.cmd ) {
         case XWPDEV_REG: {
             DevIDType typ = (DevIDType)*ptr++;
@@ -1454,6 +1473,9 @@ handle_udp_packet( UdpThreadClosure* utc )
         default:
             logf( XW_LOGERROR, "%s: unexpected msg %d", __func__, header.cmd );
         }
+
+        // Do this after the device and address are registered
+        ackPacketIf( &header, utc->addr() );
     }
 }
 
