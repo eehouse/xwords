@@ -29,6 +29,7 @@ typedef struct _RelayConStorage {
     RelayConnProcs procs;
     void* procsClosure;
     struct sockaddr_in saddr;
+    uint32_t nextID;
 } RelayConStorage;
 
 typedef struct _MsgHeader {
@@ -44,7 +45,7 @@ static size_t addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
 static XP_U16 getNetShort( const XP_U8** ptr );
 static XP_U32 getNetLong( const XP_U8** ptr );
-static int writeHeader( XP_U8* dest, XWRelayReg cmd );
+static int writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd );
 static bool readHeader( const XP_U8** buf, MsgHeader* header );
 static size_t writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str );
 
@@ -77,7 +78,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* devID, DevIDType typ )
     
     RelayConStorage* storage = getStorage( params );
     XP_ASSERT( !!devID || typ == ID_TYPE_ANON );
-    indx += writeHeader( tmpbuf, XWPDEV_REG );
+    indx += writeHeader( storage, tmpbuf, XWPDEV_REG );
     tmpbuf[indx++] = typ;
     indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
 
@@ -94,7 +95,7 @@ relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
 
     XP_U8 tmpbuf[1 + 4 + 1 + sizeof(gameToken) + buflen];
     int indx = 0;
-    indx += writeHeader( tmpbuf, XWPDEV_MSG );
+    indx += writeHeader( storage, tmpbuf, XWPDEV_MSG );
     XP_U32 inNBO = htonl(gameToken);
     XP_MEMCPY( &tmpbuf[indx], &inNBO, sizeof(inNBO) );
     indx += sizeof(inNBO);
@@ -122,7 +123,7 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     XP_U8 tmpbuf[1 + 4 + 1 +
                  1 + idLen +
                  sizeof(gameToken) + buflen];
-    indx += writeHeader( tmpbuf, XWPDEV_MSGNOCONN );
+    indx += writeHeader( storage, tmpbuf, XWPDEV_MSGNOCONN );
     gameToken = htonl( gameToken );
     XP_MEMCPY( &tmpbuf[indx], &gameToken, sizeof(gameToken) );
     indx += sizeof(gameToken);
@@ -146,7 +147,7 @@ relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID )
 
     XP_U8 tmpbuf[128];
     int indx = 0;
-    indx += writeHeader( tmpbuf, XWPDEV_RQSTMSGS );
+    indx += writeHeader( storage, tmpbuf, XWPDEV_RQSTMSGS );
     indx += addStrWithLength( &tmpbuf[indx], tmpbuf + sizeof(tmpbuf), devID );
 
     sendIt( storage, tmpbuf, indx );
@@ -160,7 +161,7 @@ relaycon_deleted( LaunchParams* params, const XP_UCHAR* devID,
     RelayConStorage* storage = getStorage( params );
     XP_U8 tmpbuf[128];
     int indx = 0;
-    indx += writeHeader( tmpbuf, XWPDEV_DELGAME );
+    indx += writeHeader( storage, tmpbuf, XWPDEV_DELGAME );
     indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
     gameToken = htonl( gameToken );
     memcpy( &tmpbuf[indx], &gameToken, sizeof(gameToken) );
@@ -174,7 +175,7 @@ sendAckIf( RelayConStorage* storage, const MsgHeader* header )
 {
     if ( header->cmd != XWPDEV_ACK ) {
         XP_U8 tmpbuf[16];
-        int indx = writeHeader( tmpbuf, XWPDEV_ACK );
+        int indx = writeHeader( storage, tmpbuf, XWPDEV_ACK );
         uint32_t msgID = htonl( header->packetID );
         memcpy( &tmpbuf[indx], &msgID, sizeof(msgID) );
         indx += sizeof(msgID);
@@ -341,11 +342,12 @@ getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf )
 }
 
 static int
-writeHeader( XP_U8* dest, XWRelayReg cmd )
+writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd )
 {
     int indx = 0;
     dest[indx++] = XWPDEV_PROTO_VERSION;
-    uint32_t packetNum = htonl(0);
+    uint32_t packetNum = storage->nextID++;
+    packetNum = htonl(packetNum);
     memcpy( &dest[indx], &packetNum, sizeof(packetNum) );
     indx += sizeof(packetNum);
     dest[indx++] = cmd;
