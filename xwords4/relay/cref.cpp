@@ -1441,16 +1441,20 @@ CookieRef::printSeeds( const char* caller )
 {
     int len = 0;
     char buf[64] = {0};
+    uint16_t bits = 0;
 
     RWReadLock rrl( &m_socketsRWLock );
     vector<HostRec>::const_iterator iter;
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        HostID hostID = iter->m_hostID;
+        assert( 0 == (bits & (1 << hostID)) );
+        bits |= 1 << hostID;
         len += snprintf( &buf[len], sizeof(buf)-len, "[%d]%.4x(%d)/%d/%c ", 
                          iter->m_hostID, iter->m_seed, 
                          iter->m_seed, iter->m_addr.socket(), 
                          iter->m_ackPending?'a':'A' );
     }
-    logf( XW_LOGINFO, "seeds/sockets/ack'd after %s(): %s", caller, buf );
+    logf( XW_LOGINFO, "%s: seeds/sockets/ack'd after %s(): %s", __func__, caller, buf );
 }
 
 void
