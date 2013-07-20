@@ -37,9 +37,9 @@ AddrInfo::construct( int socket, const AddrUnion* saddr, bool isTCP )
     struct timespec tp;
     clock_gettime( CLOCK_MONOTONIC, &tp );
     /* convert to milliseconds */
-    m_created = (tp.tv_sec * 1000) + (tp.tv_nsec / 1000000);
-    logf( XW_LOGINFO, "%s: m_created for socket %d: %lx",
-          __func__, socket, m_created );
+    m_createdMillis = (tp.tv_sec * 1000) + (tp.tv_nsec / 1000000);
+    logf( XW_LOGINFO, "%s: m_createdMillis for socket %d: %lx",
+          __func__, socket, m_createdMillis );
     /* assert( m_created >= s_prevCreated ); */
     /* s_prevCreated = m_created; */
 

@@ -74,7 +74,7 @@ class AddrInfo {
     const struct sockaddr* sockaddr() const { assert(m_isValid); 
         return &m_saddr.u.addr; }
     const AddrUnion* saddr() const { assert(m_isValid); return &m_saddr; }
-    uint32_t created() const { return m_created; }
+    uint32_t created() const { return m_createdMillis; }
     bool isCurrent() const;
 
     bool equals( const AddrInfo& other ) const;
@@ -92,7 +92,7 @@ class AddrInfo {
     bool m_isValid;
     ClientToken m_clientToken;   /* must be 32 bit */
     AddrUnion m_saddr;
-    uint32_t m_created;              /* microseconds since boot, from clock_gettime() */
+    uint32_t m_createdMillis;    /* milliseconds since boot, from clock_gettime() */
 };
 
 #endif
