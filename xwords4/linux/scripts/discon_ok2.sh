@@ -28,6 +28,7 @@ BOARD_SIZES_OLD=(15)
 BOARD_SIZES_NEW=(15)
 NAMES=(UNUSED Brynn Ariela Kati Eric)
 SEND_CHAT=''
+CORE_COUNT=$(ls core.* 2>/dev/null | wc -l)
 
 declare -A PIDS
 declare -A APPS
@@ -468,8 +469,8 @@ run_cmds() {
         [ 0 -ge $COUNT ] && break
         NOW=$(date '+%s')
         [ $NOW -ge $ENDTIME ] && break
-        if ls core.* >/dev/null 2>&1; then
-            echo "core file found; exiting..."
+        if [ $CORE_COUNT -ne "$(ls core.* 2>/dev/null | wc -l)" ]; then
+            echo "number of core files changed; exiting..."
             killall "$(basename $APP_NEW)"
             break
         fi
