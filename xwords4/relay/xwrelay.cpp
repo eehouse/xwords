@@ -1269,7 +1269,7 @@ registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
             }
         } else {
             indx += addRegID( &buf[indx], relayID );
-            send_via_udp( g_udpsock, &saddr->addr, XWPDEV_BADREG, buf, indx, 
+            send_via_udp( g_udpsock, &saddr->u.addr, XWPDEV_BADREG, buf, indx, 
                           NULL );
 
             relayID = DBMgr::DEVID_NONE;
@@ -1279,7 +1279,7 @@ registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
         if ( DBMgr::DEVID_NONE != relayID ) {
             // send it back to the device
             indx += addRegID( &buf[indx], relayID );
-            send_via_udp( g_udpsock, &saddr->addr, XWPDEV_REGRSP, buf, 
+            send_via_udp( g_udpsock, &saddr->u.addr, XWPDEV_REGRSP, buf, 
                           indx, NULL );
         }
     }
@@ -1463,10 +1463,10 @@ read_udp_packet( int udpsock )
     uint8_t buf[MAX_MSG_LEN];
     AddrInfo::AddrUnion saddr;
     memset( &saddr, 0, sizeof(saddr) );
-    socklen_t fromlen = sizeof(saddr.addr_in);
+    socklen_t fromlen = sizeof(saddr.u.addr_in);
 
     ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
-                              &saddr.addr, &fromlen );
+                              &saddr.u.addr, &fromlen );
     logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
     if ( 0 < nRead ) {
         AddrInfo addr( udpsock, &saddr, false );
@@ -1585,16 +1585,16 @@ maint_str_loop( int udpsock, const char* str )
             unsigned char buf[512];
             AddrInfo::AddrUnion saddr;
             memset( &saddr, 0, sizeof(saddr) );
-            socklen_t fromlen = sizeof(saddr.addr_in);
+            socklen_t fromlen = sizeof(saddr.u.addr_in);
 
             ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
-                                      &saddr.addr, &fromlen );
+                                      &saddr.u.addr, &fromlen );
             logf( XW_LOGINFO, "%s(); got %d bytes", __func__, nRead);
 
             UDPHeader header;
             const unsigned char* ptr = buf;
             if ( getHeader( &ptr, ptr + nRead, &header ) ) {
-                send_via_udp( udpsock, &saddr.addr, XWPDEV_ALERT,
+                send_via_udp( udpsock, &saddr.u.addr, XWPDEV_ALERT,
                               outbuf, sizeof(outbuf), NULL );
             } else {
                 logf( XW_LOGERROR, "unexpected data" );
@@ -1945,8 +1945,8 @@ main( int argc, char** argv )
 
                 if ( FD_ISSET( listener, &rfds ) ) {
                     AddrInfo::AddrUnion saddr;
-                    socklen_t siz = sizeof(saddr.addr_in);
-                    int newSock = accept( listener, &saddr.addr, &siz );
+                    socklen_t siz = sizeof(saddr.u.addr_in);
+                    int newSock = accept( listener, &saddr.u.addr, &siz );
                     if ( newSock < 0 ) {
                         logf( XW_LOGERROR, "accept failed: errno(%d)=%s",
                               errno, strerror(errno) );
@@ -1967,7 +1967,8 @@ main( int argc, char** argv )
 
                         logf( XW_LOGINFO, 
                               "%s: accepting connection from %s on socket %d", 
-                              __func__, inet_ntoa(saddr.addr_in.sin_addr), newSock );
+                              __func__, inet_ntoa(saddr.u.addr_in.sin_addr), 
+                              newSock );
 
                         AddrInfo addr( newSock, &saddr, true );
                         tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME

@@ -38,12 +38,12 @@ void
 DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
 {
     assert( DBMgr::DEVID_NONE != devid );
+    gchar* b64 = g_base64_encode( (unsigned char*)&saddr->u.addr, 
+                                  sizeof(saddr->u.addr) );
 
     XW_LogLevel level = XW_LOGINFO;
     if ( willLog( level ) ) {
-        gchar* b64 = g_base64_encode( (unsigned char*)&saddr->addr, sizeof(saddr->addr) );
         logf( level, "%s(devid=%d, saddr='%s')", __func__, devid, b64 );
-        g_free( b64 );
     }
 
     time_t now = time( NULL );
@@ -59,7 +59,20 @@ DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
         result.first->second = rec;
     }
 
-    logf( XW_LOGINFO, "dev->addr map now contains %d entries", m_devAddrMap.size() );
+    map<AddrInfo::AddrUnion, DevIDRelay>::iterator iter = 
+        m_addrDevMap.find(*saddr); 
+    if ( m_addrDevMap.end() != iter && devid != iter->second ) {
+        logf( XW_LOGERROR, "%s: addr '%s' already listed (for devid %d)",
+              __func__, b64, iter->second );
+        iter->second = devid;
+    } else {
+        m_addrDevMap.insert( pair<AddrInfo::AddrUnion, 
+                             DevIDRelay>(*saddr, devid ) );
+    }
+
+    logf( XW_LOGINFO, "dev->addr map now contains %d entries", 
+          m_devAddrMap.size() );
+    g_free( b64 );
 }
 
 void

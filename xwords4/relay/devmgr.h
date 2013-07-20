@@ -51,6 +51,7 @@ class DevMgr {
     };
 
     map<DevIDRelay,UDPAddrRec> m_devAddrMap;
+    map<AddrInfo::AddrUnion, DevIDRelay> m_addrDevMap; 
     pthread_mutex_t m_mapLock;
 };
 

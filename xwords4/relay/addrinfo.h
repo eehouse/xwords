@@ -30,10 +30,17 @@ class AddrInfo {
  public:
     typedef uint32_t ClientToken;
 
-    typedef union _AddrUnion {
-        struct sockaddr addr;
-        struct sockaddr_in addr_in;
-    } AddrUnion;
+    class AddrUnion {
+    public:
+        union {
+            struct sockaddr addr;
+            struct sockaddr_in addr_in;
+        } u;
+
+        bool operator<(const AddrUnion& other) const {
+            return 0 > memcmp( &this->u, &other.u, sizeof(this->u) );
+        }
+    };
 
     /* Those constructed without params are only valid after another copied on
        top of it */
@@ -63,8 +70,9 @@ class AddrInfo {
     bool isTCP() const { return m_isTCP; } /* later UDP will be here too */
     int socket() const { assert(m_isValid); return m_socket; }
     ClientToken clientToken() const { assert(m_isValid); return m_clientToken; }
-    struct in_addr sin_addr() const { return m_saddr.addr_in.sin_addr; }
-    const struct sockaddr* sockaddr() const { assert(m_isValid); return &m_saddr.addr; }
+    struct in_addr sin_addr() const { return m_saddr.u.addr_in.sin_addr; }
+    const struct sockaddr* sockaddr() const { assert(m_isValid); 
+        return &m_saddr.u.addr; }
     const AddrUnion* saddr() const { assert(m_isValid); return &m_saddr; }
     uint32_t created() const { return m_created; }
     bool isCurrent() const;
