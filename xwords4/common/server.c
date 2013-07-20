@@ -611,10 +611,14 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 static void
 sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg )
 {
-    XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex, 
-                                                    XWPROTO_CHAT );
-    stringToStream( stream, msg );
-    stream_destroy( stream );
+    if ( comms_canChat( server->vol.comms ) ) {
+        XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex,
+                                                        XWPROTO_CHAT );
+        stringToStream( stream, msg );
+        stream_destroy( stream );
+    } else {
+        XP_LOGF( "%s: dropping chat %s; queue too full?", __func__, msg );
+    }
 }
 
 static void
