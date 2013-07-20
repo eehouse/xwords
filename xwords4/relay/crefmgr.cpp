@@ -257,6 +257,9 @@ CRefMgr::getMakeCookieRef( const char* cookie, int nPlayersH, int nPlayersT,
             if ( NULL == cinfo->GetRef() ) {
                 m_cidlock->Relinquish( cinfo, true );
                 continue;
+            } else if ( *seenSeed ) { /* this my home? */
+                logf( XW_LOGINFO, "%s: *seenSeed case", __func__ );
+                break;
             } else if ( !cinfo->GetRef()->HaveRoom( nPlayersH ) ) {
                 m_cidlock->Relinquish( cinfo, false );
                 continue;
