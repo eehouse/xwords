@@ -80,6 +80,7 @@
 #include "devmgr.h"
 #include "udpqueue.h"
 #include "udpack.h"
+#include "udpager.h"
 
 typedef struct _UDPHeader {
     uint32_t packetID;
@@ -1499,6 +1500,7 @@ read_udp_packet( int udpsock )
 #endif
 
         AddrInfo addr( udpsock, &saddr, false );
+        UDPAger::Get()->Refresh( &addr );
         UdpQueue::get()->handle( &addr, buf, nRead, handle_udp_packet );
     }
 }
@@ -1744,7 +1746,7 @@ main( int argc, char** argv )
         (void)cfg->GetValueFor( "CTLPORT", &ctrlport );
     }
     if ( -1 == udpport ) {
-        (void)cfg->GetValueFor( "UDPPORT", &udpport );
+        (void)cfg->GetValueFor( "UDP_PORT", &udpport );
     }
 #ifdef DO_HTTP
     if ( httpport == 0 ) {

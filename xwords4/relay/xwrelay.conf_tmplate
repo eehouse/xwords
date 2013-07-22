@@ -27,7 +27,9 @@ GAME_PORTS=10997
 DEVICE_PORTS=10998
 
 # Port for per-device UDP interface (experimental)
-UDPPORT=10997
+UDP_PORT=10997
+# How long after we've read from an address before we assume it's recycled
+UDP_RECYLE_INTERVAL=60
 
 # default 5
 SOCK_TIMEOUT_SECONDS=5
