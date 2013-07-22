@@ -52,7 +52,7 @@ HostRec(HostID hostID, const AddrInfo* addr, int nPlayersH, int seed, bool ackPe
         , m_lastHeartbeat(uptime()) 
         , m_ackPending(ackPending)
         {
-            ::logf( XW_LOGINFO, "created HostRec with id %d", m_hostID);
+            logf( XW_LOGINFO, "%s created HostRec with id %d", __func__, m_hostID);
         }
     HostID m_hostID;
     AddrInfo m_addr;
