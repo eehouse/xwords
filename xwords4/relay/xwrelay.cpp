@@ -1366,7 +1366,7 @@ ackPacketIf( const UDPHeader* header, const AddrInfo* addr )
 {
     if ( UDPAckTrack::shouldAck( header->cmd ) ) {
         uint32_t packetID = header->packetID;
-        logf( XW_LOGINFO, "acking packet %d", packetID );
+        logf( XW_LOGINFO, "%s: acking packet %d", __func__, packetID );
         packetID = htonl( packetID );
         send_via_udp( addr, XWPDEV_ACK, 
                       &packetID, sizeof(packetID), NULL );
@@ -1489,8 +1489,15 @@ read_udp_packet( int udpsock )
 
     ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
                               &saddr.u.addr, &fromlen );
-    logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
     if ( 0 < nRead ) {
+#ifdef LOG_UDP_PACKETS
+        gchar* b64 = g_base64_encode( (unsigned char*)&saddr, sizeof(saddr) );
+        logf( XW_LOGINFO, "%s: recvfrom=>%d (saddr='%s')", __func__, nRead, b64 );
+        g_free( b64 );
+#else
+        logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
+#endif
+
         AddrInfo addr( udpsock, &saddr, false );
         UdpQueue::get()->handle( &addr, buf, nRead, handle_udp_packet );
     }
@@ -1989,8 +1996,7 @@ main( int argc, char** argv )
 
                         logf( XW_LOGINFO, 
                               "%s: accepting connection from %s on socket %d", 
-                              __func__, inet_ntoa(saddr.u.addr_in.sin_addr), 
-                              newSock );
+                              __func__, inet_ntoa(saddr.u.addr_in.sin_addr), newSock );
 
                         AddrInfo addr( newSock, &saddr, true );
                         tPool->AddSocket( perGame ? XWThreadPool::STYPE_GAME
