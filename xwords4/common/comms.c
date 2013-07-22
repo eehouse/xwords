@@ -1969,7 +1969,7 @@ comms_canChat( const CommsCtxt* const comms )
 {
     XP_Bool canChat = comms_isConnected( comms )
         && comms->connID != 0
-        && 128 > comms->queueLen;
+        && 64 > comms->queueLen;
     LOG_RETURNF( "%d", canChat );
     return canChat;
 }
