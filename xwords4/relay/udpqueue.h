@@ -55,6 +55,7 @@ public:
     const AddrInfo* addr() const { return &m_addr; }
     void noteDequeued() { m_dequed = time( NULL ); }
     void logStats();
+    time_t ageInSeconds() { return time( NULL ) - m_created; }
     const QueueCallback cb() const { return m_cb; }
     void setID( int id ) { m_id = id; }
     int getID( void ) { return m_id; }

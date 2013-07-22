@@ -199,11 +199,17 @@ UdpQueue::thread_main()
         pthread_mutex_unlock( &m_queueMutex );
 
         utc->noteDequeued();
-        logf( XW_LOGINFO, "%s: dispatching packet %d (socket %d); "
-              "%d seconds old", __func__, 
-              utc->getID(), utc->addr()->socket() );
-        (*utc->cb())( utc );
-        utc->logStats();
+
+        time_t age = utc->ageInSeconds();
+        if ( 30 > age ) {
+            logf( XW_LOGINFO, "%s: dispatching packet %d (socket %d); "
+                  "%d seconds old", __func__, utc->getID(), utc->addr()->socket(),
+                  age );
+            (*utc->cb())( utc );
+            utc->logStats();
+        } else {
+            logf( XW_LOGINFO, "%s: dropping packet %d; it's %d seconds old!", age );
+        }
         delete utc;
     }
     return NULL;
