@@ -915,6 +915,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
         if ( 0 == connect( sock, (const struct sockaddr*)&to_sock, 
                            sizeof(to_sock) ) ) {
             cGlobals->socket = sock;
+            XP_LOGF( "%s: connected new socket %d to relay", __func__, sock );
 
             struct timeval tv = {0};
             tv.tv_sec = 15;
@@ -1157,6 +1158,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
 void
 linux_close_socket( CommonGlobals* cGlobals )
 {
+    LOG_FUNC();
     int socket = cGlobals->socket;
 
     (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
@@ -1177,7 +1179,8 @@ blocking_read( int fd, unsigned char* buf, const int len )
         for ( tries = 5; nRead < len && tries > 0; --tries ) {
             // XP_LOGF( "%s: blocking for %d bytes", __func__, len );
             ssize_t nGot = read( fd, buf + nRead, len - nRead );
-            XP_LOGF( "%s: read(fd=%d, len=%d) => %d", __func__, fd, len - nRead, nGot );
+            XP_LOGF( "%s: read(fd=%d, len=%d) => %d", __func__, fd, 
+                     len - nRead, nGot );
             if ( nGot == 0 ) {
                 XP_LOGF( "%s: read 0; let's try again (%d more times)", __func__, 
                          tries );
@@ -1204,58 +1207,63 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
     LOG_FUNC();
     int sock = cGlobals->socket;
-    unsigned short tmp;
-    ssize_t nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
-    if ( nRead != 2 ) {
-        linux_close_socket( cGlobals );
-        comms_transportFailed( cGlobals->game.comms );
-        nRead = -1;
-    } else {
-        unsigned short packetSize = ntohs( tmp );
-        XP_LOGF( "%s: got packet of size %d", __func__, packetSize );
-        assert( packetSize <= bufSize );
-        nRead = blocking_read( sock, buf, packetSize );
-        if ( nRead == packetSize ) {
-            LaunchParams* params = cGlobals->params;
-            ++params->nPacketsRcvd;
-            if ( params->dropNthRcvd == 0 ) {
-                /* do nothing */
-            } else if ( params->dropNthRcvd > 0 ) {
-                if ( params->nPacketsRcvd == params->dropNthRcvd ) {
-                    XP_LOGF( "%s: dropping %dth packet per --drop-nth-packet",
-                             __func__, params->nPacketsRcvd );
-                    nRead = -1;
-                }
-            } else {
-                nRead = blocking_read( sock, buf, packetSize );
-                if ( nRead != packetSize ) {
-                    nRead = -1;
+    ssize_t nRead = -1;
+    if ( 0 <= sock ) {
+        unsigned short tmp;
+        nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
+        if ( nRead != 2 ) {
+            linux_close_socket( cGlobals );
+            comms_transportFailed( cGlobals->game.comms );
+            nRead = -1;
+        } else {
+            unsigned short packetSize = ntohs( tmp );
+            XP_LOGF( "%s: got packet of size %d", __func__, packetSize );
+            assert( packetSize <= bufSize );
+            nRead = blocking_read( sock, buf, packetSize );
+            if ( nRead == packetSize ) {
+                LaunchParams* params = cGlobals->params;
+                ++params->nPacketsRcvd;
+                if ( params->dropNthRcvd == 0 ) {
+                    /* do nothing */
+                } else if ( params->dropNthRcvd > 0 ) {
+                    if ( params->nPacketsRcvd == params->dropNthRcvd ) {
+                        XP_LOGF( "%s: dropping %dth packet per "
+                                 "--drop-nth-packet",
+                                 __func__, params->nPacketsRcvd );
+                        nRead = -1;
+                    }
                 } else {
-                    LaunchParams* params = cGlobals->params;
-                    ++params->nPacketsRcvd;
-                    if ( params->dropNthRcvd == 0 ) {
-                        /* do nothing */
-                    } else if ( params->dropNthRcvd > 0 ) {
-                        if ( params->nPacketsRcvd == params->dropNthRcvd ) {
-                            XP_LOGF( "%s: dropping %dth packet per --drop-nth-packet",
-                                     __func__, params->nPacketsRcvd );
-                            nRead = -1;
-                        }
+                    nRead = blocking_read( sock, buf, packetSize );
+                    if ( nRead != packetSize ) {
+                        nRead = -1;
                     } else {
-                        if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
-                            XP_LOGF( "%s: RANDOMLY dropping %dth packet "
-                                     "per --drop-nth-packet",
-                                     __func__, params->nPacketsRcvd );
-                            nRead = -1;
+                        LaunchParams* params = cGlobals->params;
+                        ++params->nPacketsRcvd;
+                        if ( params->dropNthRcvd == 0 ) {
+                            /* do nothing */
+                        } else if ( params->dropNthRcvd > 0 ) {
+                            if ( params->nPacketsRcvd == params->dropNthRcvd ) {
+                                XP_LOGF( "%s: dropping %dth packet per "
+                                         "--drop-nth-packet",
+                                         __func__, params->nPacketsRcvd );
+                                nRead = -1;
+                            }
+                        } else {
+                            if ( 0 == XP_RANDOM() % -params->dropNthRcvd ) {
+                                XP_LOGF( "%s: RANDOMLY dropping %dth packet "
+                                         "per --drop-nth-packet",
+                                         __func__, params->nPacketsRcvd );
+                                nRead = -1;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if ( -1 == nRead ) {
-            linux_close_socket( cGlobals );
-            comms_transportFailed( cGlobals->game.comms );
+            if ( -1 == nRead ) {
+                linux_close_socket( cGlobals );
+                comms_transportFailed( cGlobals->game.comms );
+            }
         }
     }
     XP_LOGF( "%s=>%d", __func__, nRead );
