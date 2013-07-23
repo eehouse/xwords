@@ -74,3 +74,7 @@ LOGFILE_PATH=./xwrelay.log
 # messages.  The latter doesn't seem as reliable with newer psql
 # servers.  Anything but 0 is treated as true.
 USE_B64=1
+
+# How many tcp sockets should we have open at once before rebooting on
+# the assumption they're somehow leaking?
+MAXSOCKS=500
