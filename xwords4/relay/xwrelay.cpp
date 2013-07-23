@@ -491,17 +491,20 @@ static ssize_t
 send_via_udp( const AddrInfo* addr, XWRelayReg cmd, ... )
 {
     ssize_t result = 0;
-    int socket = addr->socket();
-    assert( g_udpsock == socket || socket == -1 );
-    if ( -1 == socket ) {
-        socket = g_udpsock;
+    if ( addr->isCurrent() ) {
+        int socket = addr->socket();
+        assert( g_udpsock == socket || socket == -1 );
+        if ( -1 == socket ) {
+            socket = g_udpsock;
+        }
+
+        va_list ap;
+        va_start( ap, cmd );
+        result = send_via_udp_impl( socket, addr->sockaddr(), cmd, &ap );
+        va_end( ap );
+    } else {
+        logf( XW_LOGINFO, "%s: not sending to out-of-date packet", __func__ );
     }
-
-    va_list ap;
-    va_start( ap, cmd );
-    result = send_via_udp_impl( socket, addr->sockaddr(), cmd, &ap );
-    va_end( ap );
-
     return result;
 }
 

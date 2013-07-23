@@ -31,6 +31,7 @@ class UDPAger {
     static UDPAger* Get();
     UDPAger();
     void Refresh( const AddrInfo* addr );
+    bool IsCurrent( const AddrInfo* addr );
 
  private:
 
@@ -41,7 +42,8 @@ class UDPAger {
             m_lastSeen = lastSeen;
         }
         void update( uint32_t lastSeen ) { m_lastSeen = lastSeen; }
-        uint32_t lastSeen() { return m_lastSeen; }
+        uint32_t lastSeen() const { return m_lastSeen; }
+        uint32_t created() const { return m_created; }
     private:
         uint32_t m_created;
         uint32_t m_lastSeen;

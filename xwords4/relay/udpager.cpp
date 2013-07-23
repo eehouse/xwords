@@ -87,3 +87,21 @@ UDPAger::Refresh( const AddrInfo* addr )
     g_free( b64 );
 }
 
+bool
+UDPAger::IsCurrent( const AddrInfo* addr )
+{
+    const AddrInfo::AddrUnion* saddr = addr->saddr();
+    uint32_t readWhen = addr->created();
+
+    MutexLock ml( &m_addrTimeMapLock );
+    map<AddrInfo::AddrUnion, AgePair*>::const_iterator iter = 
+        m_addrTimeMap.find( *saddr ); 
+    assert( m_addrTimeMap.end() != iter );
+
+    AgePair* ap = iter->second;
+    bool result = readWhen >= ap->created();
+    if ( !result ) {
+        logf( XW_LOGINFO, "%s() => %d", __func__, result );
+    }
+    return result;
+ }

@@ -26,6 +26,7 @@
 #include "addrinfo.h"
 #include "xwrelay_priv.h"
 #include "tpool.h"
+#include "udpager.h"
 
 // static uint32_t s_prevCreated = 0L;
 
@@ -52,7 +53,13 @@ AddrInfo::construct( int socket, const AddrUnion* saddr, bool isTCP )
 bool
 AddrInfo::isCurrent() const 
 { 
-    return XWThreadPool::GetTPool()->IsCurrent( this ); 
+    bool result;
+    if ( isTCP() ) {
+        result = XWThreadPool::GetTPool()->IsCurrent( this ); 
+    } else {
+        result = UDPAger::Get()->IsCurrent( this );
+    }
+    return result;
 }
 
 bool
