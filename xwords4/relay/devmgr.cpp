@@ -65,7 +65,7 @@ DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
     if ( m_addrDevMap.end() != iter && devid != iter->second ) {
         logf( XW_LOGERROR, "%s: addr '%s' already listed (for devid %d)",
               __func__, b64, iter->second );
-        assert(0);
+        // assert(0);
         iter->second = devid;
     } else {
         m_addrDevMap.insert( pair<AddrInfo::AddrUnion, 
