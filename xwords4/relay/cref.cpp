@@ -861,16 +861,22 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
 
     DBMgr* dbmgr = DBMgr::Get();
     const char* cname = ConnName();
-    while ( addr->isCurrent() ) {
-	unsigned char buf[MAX_MSG_LEN];
-	size_t buflen = sizeof(buf);
-	int msgID;
-	if ( !dbmgr->GetStoredMessage( cname, dest, buf, &buflen, &msgID )
-	     || ! send_with_length( addr, dest, buf, buflen, true ) ) {
-	    break;
-	}
-	dbmgr->RemoveStoredMessages( &msgID, 1 );
+    vector<DBMgr::MsgInfo> msgs;
+    dbmgr->GetStoredMessages( cname, dest, msgs );
+
+    vector<int> sentIDs;
+    vector<DBMgr::MsgInfo>::const_iterator iter;
+    for ( iter = msgs.begin(); addr->isCurrent() && msgs.end() != iter;
+          ++iter ) {
+        DBMgr::MsgInfo msg = *iter;
+        if ( ! send_with_length( addr, dest, 
+                                 (const unsigned char*)msg.msg.c_str(), 
+                                 msg.msg.length(), true ) ) {
+            break;
+        }
+        sentIDs.push_back( msg.msgID );
     }
+    dbmgr->RemoveStoredMessages( sentIDs );
 } /* send_stored_messages */
 
 bool

@@ -735,17 +735,6 @@ DBMgr::TokenFor( const char* const connName, int hid, DevIDRelay* devid,
     return found;
 }
 
-int
-DBMgr::PendingMsgCount( const char* connName, int hid )
-{
-    string test;
-    string_printf( test, "connName = '%s' AND hid = %d ", connName, hid );
-#ifdef HAVE_STIME
-    string_printf( test, " AND stime IS NULL" );
-#endif
-    return getCountWhere( MSGS_TABLE, test );
-}
-
 bool
 DBMgr::execSql( const string& query )
 {
@@ -883,73 +872,54 @@ DBMgr::CountStoredMessages( DevIDRelay relayID )
 }
 
 void
-DBMgr::GetStoredMessageIDs( DevIDRelay relayID, vector<int>& ids )
-{
-    const char* fmt = "SELECT id FROM " MSGS_TABLE " WHERE devid=%d "
-        "AND connname IN (SELECT connname FROM " GAMES_TABLE 
-        " WHERE NOT " GAMES_TABLE ".dead)";
-    string query;
-    string_printf( query, fmt, relayID );
-    // logf( XW_LOGINFO, "%s: query=\"%s\"", __func__, query.c_str() );
-    PGresult* result = PQexec( getThreadConn(), query.c_str() );
-    int nTuples = PQntuples( result );
-    for ( int ii = 0; ii < nTuples; ++ii ) {
-        int id = atoi( PQgetvalue( result, ii, 0 ) );
-        // logf( XW_LOGINFO, "%s: adding id %d", __func__, id );
-        ids.push_back( id );
-    }
-    PQclear( result );
-    logf( XW_LOGINFO, "%s(relayID=%d)=>%d ids", __func__, relayID, ids.size() );
-}
-
-void
 DBMgr::StoreMessage( const char* const connName, int hid, 
                      const unsigned char* buf, int len )
 {
     DevIDRelay devID = getDevID( connName, hid );
     if ( DEVID_NONE == devID ) {
-        logf( XW_LOGERROR, "%s: warning: devid not found for connName=%s, hid=%d",
-              __func__, connName, hid );
-    }
-
-    size_t newLen;
-    const char* fmt = "INSERT INTO " MSGS_TABLE " "
-        "(connname, hid, devid, token, %s, msglen) "
-        "VALUES( '%s', %d, %d, "
-        "(SELECT tokens[%d] from " GAMES_TABLE " where connname='%s'), "
-        "%s'%s', %d)";
-    
-    string query;
-    if ( m_useB64 ) {
-        gchar* b64 = g_base64_encode( buf, len );
-        string_printf( query, fmt, "msg64", connName, hid, devID, hid, connName, 
-                       "", b64, len );
-        g_free( b64 );
+        logf( XW_LOGINFO, "%s: devid not found for connName=%s, hid=%d; "
+              "dropping message", __func__, connName, hid );
     } else {
-        unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
-                                                  len, &newLen );
-        assert( NULL != bytes );
-    
-        string_printf( query, fmt, "msg", connName, hid, devID, hid, connName, 
-                       "E", bytes, len );
-        PQfreemem( bytes );
-    }
 
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-    execSql( query );
+        size_t newLen;
+        const char* fmt = "INSERT INTO " MSGS_TABLE " "
+            "(connname, hid, devid, token, %s, msglen) "
+            "VALUES( '%s', %d, %d, "
+            "(SELECT tokens[%d] from " GAMES_TABLE " where connname='%s'), "
+            "%s'%s', %d)";
+    
+        string query;
+        if ( m_useB64 ) {
+            gchar* b64 = g_base64_encode( buf, len );
+            string_printf( query, fmt, "msg64", connName, hid, devID, hid, connName, 
+                           "", b64, len );
+            g_free( b64 );
+        } else {
+            unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
+                                                      len, &newLen );
+            assert( NULL != bytes );
+    
+            string_printf( query, fmt, "msg", connName, hid, devID, hid, connName, 
+                           "E", bytes, len );
+            PQfreemem( bytes );
+        }
+
+        logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+        execSql( query );
+    }
 }
 
 void
-DBMgr::decodeMessage( PGresult* result, bool useB64, int b64indx, int byteaIndex, 
-                      unsigned char* buf, size_t* buflen )
+DBMgr::decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx, 
+                      int byteaIndex, unsigned char* buf, size_t* buflen )
 {
     const char* from = NULL;
     if ( useB64 ) {
-        from = PQgetvalue( result, 0, b64indx );
+        from = PQgetvalue( result, rowIndx, b64indx );
     }
     if ( NULL == from || '\0' == from[0] ) {
         useB64 = false;
-        from = PQgetvalue( result, 0, byteaIndex );
+        from = PQgetvalue( result, rowIndx, byteaIndex );
     }
 
     size_t to_length;
@@ -970,71 +940,61 @@ DBMgr::decodeMessage( PGresult* result, bool useB64, int b64indx, int byteaIndex
     *buflen = to_length;
 }
 
-bool
-DBMgr::GetNthStoredMessage( const char* const connName, int hid, int nn, 
-                            unsigned char* buf, size_t* buflen, int* msgID )
+// storedMessagesImpl() assumes its callers' queries return the same results
+#define STORED_SELECT "SELECT id, msg64, msg, msglen, token FROM " MSGS_TABLE " "
+
+void
+DBMgr::storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs )
 {
-    const char* fmt = "SELECT id, msg, msg64, msglen FROM " MSGS_TABLE
-        " WHERE connName = '%s' AND hid = %d "
-#ifdef HAVE_STIME
-        "AND stime IS NULL "
-#endif
-        "ORDER BY id LIMIT 1 OFFSET %d";
-    string query;
-    string_printf( query, fmt, connName, hid, nn );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
-    int nTuples = PQntuples( result );
-    assert( nTuples <= 1 );
 
-    bool found = nTuples == 1;
-    if ( found ) {
-        if ( NULL != msgID ) {
-            *msgID = atoi( PQgetvalue( result, 0, 0 ) );
-        }
-        size_t msglen = atoi( PQgetvalue( result, 0, 3 ) );
-        decodeMessage( result, m_useB64, 2, 1, buf, buflen );
-        assert( 0 == msglen || msglen == *buflen );
+    int nTuples = PQntuples( result );
+    for ( int ii = 0; ii < nTuples; ++ii ) {
+        int id = atoi( PQgetvalue( result, ii, 0 ) );
+        size_t msglen = atoi( PQgetvalue( result, ii, 3 ) );
+        uint8_t buf[1024];
+        size_t buflen = sizeof(buf);
+        decodeMessage( result, m_useB64, ii, 1, 2, buf, &buflen );
+        assert( 0 == msglen || buflen == msglen );
+        string str( (char*)buf, buflen );
+        AddrInfo::ClientToken token = atoi( PQgetvalue( result, ii, 4 ) );
+        MsgInfo msg( str, id, token );
+        msgs.push_back( msg );
     }
     PQclear( result );
-    return found;
 }
 
-bool
-DBMgr::GetStoredMessage( const char* const connName, int hid,
-                         unsigned char* buf, size_t* buflen, int* msgID )
+void
+DBMgr::GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs )
 {
-    return GetNthStoredMessage( connName, hid, 0, buf, buflen, msgID );
-}
-
-bool
-DBMgr::GetStoredMessage( int msgID, unsigned char* buf, size_t* buflen, 
-                         AddrInfo::ClientToken* token )
-{
-    const char* fmt = "SELECT token, msg, msg64, msglen FROM " MSGS_TABLE
-        " WHERE id = %d "
+    const char* fmt = STORED_SELECT " WHERE devid=%d "
 #ifdef HAVE_STIME
-        "AND stime IS NULL "
+        " AND stime IS NULL "
+#endif
+        " AND connname IN (SELECT connname FROM " GAMES_TABLE 
+        " WHERE NOT " GAMES_TABLE ".dead)"
+        " ORDER BY id";
+
+    string query;
+    string_printf( query, fmt, relayID );
+
+    storedMessagesImpl( query, msgs );
+}
+
+void
+DBMgr::GetStoredMessages( const char* const connName, HostID hid, 
+                          vector<DBMgr::MsgInfo>& msgs )
+{
+    const char* fmt = STORED_SELECT
+        " WHERE hid = %d AND connname = '%s'"
+#ifdef HAVE_STIME
+        " AND stime IS NULL "
 #endif
         ;
     string query;
-    string_printf( query, fmt, msgID );
-    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    string_printf( query, fmt, hid, connName );
 
-    PGresult* result = PQexec( getThreadConn(), query.c_str() );
-    int nTuples = PQntuples( result );
-    assert( nTuples <= 1 );
-
-    bool found = nTuples == 1;
-    if ( found ) {
-        *token = atoi( PQgetvalue( result, 0, 0 ) );
-        size_t msglen = atoi( PQgetvalue( result, 0, 3 ) );
-        decodeMessage( result, m_useB64, 2, 1, buf, buflen );
-        assert( 0 == msglen || *buflen == msglen );
-    }
-    PQclear( result );
-    return found;
+    storedMessagesImpl( query, msgs );
 }
 
 void

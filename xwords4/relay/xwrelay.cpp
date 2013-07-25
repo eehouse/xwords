@@ -982,21 +982,16 @@ pushShort( vector<unsigned char>& out, unsigned short num )
 
 static void
 pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName, 
-          HostID hid, int msgCount, vector<int>& msgIDs )
+          HostID hid, vector<DBMgr::MsgInfo>& msgs, vector<int>& msgIDs )
 {
-    int ii;
-    for ( ii = 0; ii < msgCount; ++ii ) {
-        unsigned char buf[1024];
-        size_t buflen = sizeof(buf);
-        int msgID;
-        if ( !dbmgr->GetNthStoredMessage( connName, hid, ii, buf, 
-                                          &buflen, &msgID ) ) {
-            logf( XW_LOGERROR, "%s: %dth message not there", __func__, ii );
-            break;
-        }
-        pushShort( out, buflen );
-        out.insert( out.end(), buf, buf + buflen );
-        msgIDs.push_back( msgID );
+    vector<DBMgr::MsgInfo>::const_iterator iter;
+    for ( iter = msgs.begin(); msgs.end() != iter; ++iter ) {
+        DBMgr::MsgInfo msg = *iter;
+        int len = msg.msg.length();
+        uint8_t* ptr = (uint8_t*)msg.msg.c_str();
+        pushShort( out, len );
+        out.insert( out.end(), ptr, ptr + len );
+        msgIDs.push_back( msg.msgID );
     }
 }
 
@@ -1034,10 +1029,11 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
 
             /* For each relayID, write the number of messages and then
                each message (in the getmsg case) */
-            int msgCount = dbmgr->PendingMsgCount( connName, hid );
-            pushShort( out, msgCount );
+            vector<DBMgr::MsgInfo> msgs;
+            dbmgr->GetStoredMessages( connName, hid, msgs );
+            pushShort( out, msgs.size() );
             if ( sendFull ) {
-                pushMsgs( out, dbmgr, connName, hid, msgCount, msgIDs );
+                pushMsgs( out, dbmgr, connName, hid, msgs, msgIDs );
             }
         }
 
@@ -1049,7 +1045,7 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
         logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
-            dbmgr->RemoveStoredMessages( &msgIDs[0], msgIDs.size() );
+            dbmgr->RemoveStoredMessages( msgIDs );
         }
     }
 } // handleMsgsMsg
@@ -1319,21 +1315,19 @@ retrieveMessages( DevID& devID, const AddrInfo::AddrUnion* saddr )
 {
     logf( XW_LOGINFO, "%s()", __func__ );
     DBMgr* dbMgr = DBMgr::Get();
-    vector<int> ids;
+    vector<DBMgr::MsgInfo> msgs;
+    dbMgr->GetStoredMessages( devID.asRelayID(), msgs );
+
+    vector<DBMgr::MsgInfo>::const_iterator iter;
     vector<int> sentIDs;
-    dbMgr->GetStoredMessageIDs( devID.asRelayID(), ids );
-    vector<int>::const_iterator iter;
-    for ( iter = ids.begin(); iter != ids.end(); ++iter ) {
-        unsigned char buf[MAX_MSG_LEN];
-        size_t buflen = sizeof(buf);
-        AddrInfo::ClientToken clientToken;
-        if ( dbMgr->GetStoredMessage( *iter, buf, &buflen, &clientToken ) ) {
-            AddrInfo addr( clientToken, saddr );
-            if ( ! send_with_length_unsafe( &addr, buf, buflen ) ) {
-                break;
-            }
-            sentIDs.push_back( *iter );
+    for ( iter = msgs.begin(); iter != msgs.end(); ++iter ) {
+        DBMgr::MsgInfo msg = *iter;
+        AddrInfo addr( msg.token, saddr );
+        if ( ! send_with_length_unsafe( &addr, (unsigned char*)msg.msg.c_str(), 
+                                        msg.msg.length() ) ) {
+            break;
         }
+        sentIDs.push_back( msg.msgID );
     }
     dbMgr->RemoveStoredMessages( sentIDs );
 }

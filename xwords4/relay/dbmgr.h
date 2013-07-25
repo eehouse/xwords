@@ -38,6 +38,16 @@ class DBMgr {
        them. */
     static const DevIDRelay DEVID_NONE = 0;
 
+    class MsgInfo {
+    public:
+        MsgInfo( string m, int id, AddrInfo::ClientToken tok ) { 
+            msg = m; msgID = id; token = tok; 
+        }
+        string msg;
+        int msgID;
+        AddrInfo::ClientToken token;
+    };
+
     static DBMgr* Get();
 
     ~DBMgr();
@@ -101,23 +111,14 @@ class DBMgr {
     bool TokenFor( const char* const connName, int hid, DevIDRelay* devid,
                    AddrInfo::ClientToken* token );
 
-    /* Return number of messages pending for connName:hostid pair passed in */
-    int PendingMsgCount( const char* const connName, int hid );
-
     /* message storage -- different DB */
     int CountStoredMessages( const char* const connName );
-    int CountStoredMessages( const char* const connName, int hid );
     int CountStoredMessages( DevIDRelay relayID );
     void StoreMessage( const char* const connName, int hid, 
                        const unsigned char* const buf, int len );
-    void GetStoredMessageIDs( DevIDRelay relayID, vector<int>& ids );
-
-    bool GetStoredMessage( const char* const connName, int hid, 
-                           unsigned char* buf, size_t* buflen, int* msgID );
-    bool GetNthStoredMessage( const char* const connName, int hid, int nn,
-                              unsigned char* buf, size_t* buflen, int* msgID );
-    bool GetStoredMessage( int msgID, unsigned char* buf, size_t* buflen, 
-                           AddrInfo::ClientToken* token );
+    void GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs );
+    void GetStoredMessages( const char* const connName, HostID hid, 
+                            vector<DBMgr::MsgInfo>& msgs );
 
     void RemoveStoredMessages( const int* msgID, int nMsgIDs );
     void RemoveStoredMessages( vector<int>& ids );
@@ -131,8 +132,10 @@ class DBMgr {
     DevIDRelay getDevID( const DevID* devID );
     int getCountWhere( const char* table, string& test );
     void RemoveStoredMessages( string& msgIDs );
-    void decodeMessage( PGresult* result, bool useB64, int b64indx, 
+    void decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx, 
                         int byteaIndex, unsigned char* buf, size_t* buflen );
+    void storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs );
+    int CountStoredMessages( const char* const connName, int hid );
 
     PGconn* getThreadConn( void );
     void clearThreadConn();
