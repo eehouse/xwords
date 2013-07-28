@@ -859,24 +859,26 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
     logf( XW_LOGVERBOSE0, "%s(dest=%d)", __func__, dest );
     assert( dest > 0 && dest <= 4 );
 
-    DBMgr* dbmgr = DBMgr::Get();
-    const char* cname = ConnName();
-    vector<DBMgr::MsgInfo> msgs;
-    dbmgr->GetStoredMessages( cname, dest, msgs );
+    if ( addr->isCurrent() ) {
+        DBMgr* dbmgr = DBMgr::Get();
+        const char* cname = ConnName();
+        vector<DBMgr::MsgInfo> msgs;
+        dbmgr->GetStoredMessages( cname, dest, msgs );
 
-    vector<int> sentIDs;
-    vector<DBMgr::MsgInfo>::const_iterator iter;
-    for ( iter = msgs.begin(); addr->isCurrent() && msgs.end() != iter;
-          ++iter ) {
-        DBMgr::MsgInfo msg = *iter;
-        if ( ! send_with_length( addr, dest, 
-                                 (const unsigned char*)msg.msg.c_str(), 
-                                 msg.msg.length(), true ) ) {
-            break;
+        vector<int> sentIDs;
+        vector<DBMgr::MsgInfo>::const_iterator iter;
+        for ( iter = msgs.begin(); addr->isCurrent() && msgs.end() != iter;
+              ++iter ) {
+            DBMgr::MsgInfo msg = *iter;
+            if ( ! send_with_length( addr, dest, 
+                                     (const unsigned char*)msg.msg.c_str(), 
+                                     msg.msg.length(), true ) ) {
+                break;
+            }
+            sentIDs.push_back( msg.msgID );
         }
-        sentIDs.push_back( msg.msgID );
+        dbmgr->RemoveStoredMessages( sentIDs );
     }
-    dbmgr->RemoveStoredMessages( sentIDs );
 } /* send_stored_messages */
 
 bool
