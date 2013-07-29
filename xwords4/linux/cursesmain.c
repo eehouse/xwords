@@ -1770,8 +1770,12 @@ cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
     XP_U16 seed;
     rowidFromToken( XP_NTOHL( clientToken ), &ignore, &seed );
     XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
-
-    gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
+    if ( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) ) {
+        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
+    } else {
+        XP_LOGF( "%s: dropping packet; meant for a different device",
+                 __func__ );
+    }
 }
 
 static gint
