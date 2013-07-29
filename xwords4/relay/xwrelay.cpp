@@ -1272,7 +1272,7 @@ addRegID( unsigned char* ptr, DevIDRelay relayID )
 }
 
 static void 
-registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
+registerDevice( const DevID* devID, const AddrInfo* addr )
 {
     DevIDRelay relayID;
     DBMgr* dbMgr = DBMgr::Get();
@@ -1284,13 +1284,11 @@ registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
         if ( dbMgr->updateDevice( relayID, true ) ) {
             int nMsgs = dbMgr->CountStoredMessages( relayID );
             if ( 0 < nMsgs ) {
-                AddrInfo addr( saddr );
-                send_havemsgs( &addr );
+                send_havemsgs( addr );
             }
         } else {
             indx += addRegID( &buf[indx], relayID );
-            send_via_udp( g_udpsock, &saddr->u.addr, XWPDEV_BADREG, buf, indx, 
-                          NULL );
+            send_via_udp( addr, XWPDEV_BADREG, buf, indx, NULL );
 
             relayID = DBMgr::DEVID_NONE;
         } 
@@ -1299,14 +1297,13 @@ registerDevice( const DevID* devID, const AddrInfo::AddrUnion* saddr )
         if ( DBMgr::DEVID_NONE != relayID ) {
             // send it back to the device
             indx += addRegID( &buf[indx], relayID );
-            send_via_udp( g_udpsock, &saddr->u.addr, XWPDEV_REGRSP, buf, 
-                          indx, NULL );
+            send_via_udp( addr, XWPDEV_REGRSP, buf, indx, NULL );
         }
     }
 
     // Now let's map the address to the devid for future sending purposes.
     if ( DBMgr::DEVID_NONE != relayID ) {
-        DevMgr::Get()->Remember( relayID, saddr );
+        DevMgr::Get()->Remember( relayID, addr );
     }
 }
 
@@ -1385,7 +1382,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             DevIDType typ = (DevIDType)*ptr++;
             DevID devID( typ );
             if ( getRelayDevID( &ptr, end, devID ) ) {
-                registerDevice( &devID, utc->saddr() );
+                registerDevice( &devID, utc->addr() );
             }
             break;
         }
