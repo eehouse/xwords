@@ -81,6 +81,9 @@ public class SMSService extends XWService {
     // always one of these.  What follows depends.
     private enum SMS_CMD { NONE, INVITE, DATA, DEATH, ACK, };
 
+    private BroadcastReceiver m_sentReceiver;
+    private BroadcastReceiver m_receiveReceiver;
+
     private int m_nReceived = 0;
     private static int s_nSent = 0;
     private static HashMap<String, HashMap <Integer, MsgStore>> s_partialMsgs
@@ -216,6 +219,14 @@ public class SMSService extends XWService {
         } else {
             stopSelf();
         }
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        unregisterReceiver( m_sentReceiver );
+        unregisterReceiver( m_receiveReceiver );
+        super.onDestroy();
     }
 
     @Override
@@ -646,7 +657,7 @@ public class SMSService extends XWService {
 
     private void registerReceivers()
     {
-        registerReceiver( new BroadcastReceiver() {
+        m_sentReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) 
                 {
@@ -666,9 +677,10 @@ public class SMSService extends XWService {
                         break;
                     }
                 }
-            }, new IntentFilter(MSG_SENT) );
+            };
+        registerReceiver( m_sentReceiver, new IntentFilter(MSG_SENT) );
 
-        registerReceiver( new BroadcastReceiver() {
+        m_receiveReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) 
                 {
@@ -678,7 +690,8 @@ public class SMSService extends XWService {
                         DbgUtils.logf( "FAILURE!!!" );
                     }
                 }
-            }, new IntentFilter(MSG_DELIVERED) );
+            };
+        registerReceiver( m_receiveReceiver, new IntentFilter(MSG_DELIVERED) );
     }
 
     private class SMSMsgSink extends MultiMsgSink {
