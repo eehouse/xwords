@@ -75,12 +75,14 @@ public class RelayService extends XWService {
         new LinkedBlockingQueue<DatagramPacket>();
     private Handler m_handler;
     private Runnable m_killer;
+    private short m_maxInterval = 0;
 
     // These must match the enum XWRelayReg in xwrelay.h
     private static final int XWPDEV_PROTO_VERSION = 0;
     // private static final int XWPDEV_NONE = 0;
 
-    private enum XWRelayReg { 
+    // Must be kept in sync with eponymous enum in xwrelay.h
+    private enum XWRelayReg {
              XWPDEV_NONE
             ,XWPDEV_ALERT
             ,XWPDEV_REG
@@ -417,6 +419,7 @@ public class RelayService extends XWService {
             PacketHeader header = readHeader( dis );
             if ( null != header ) {
                 sendAckIf( header );
+                DbgUtils.logf( "gotPacket: cmd=%s", header.m_cmd.toString() );
                 switch ( header.m_cmd ) { 
                 case XWPDEV_ALERT:
                     String str = getStringWithLength( dis );
@@ -429,16 +432,15 @@ public class RelayService extends XWService {
                     registerWithRelay();
                     break;
                 case XWPDEV_REGRSP:
-                    DbgUtils.logf( "got XWPDEV_REGRSP" );
                     str = getStringWithLength( dis );
-                    DbgUtils.logf( "got relayid %s", str );
-                    XWPrefs.setRelayDevID( this, str );
+                    m_maxInterval = dis.readShort();
+                    DbgUtils.logf( "got relayid %s, maxInterval %d", str, 
+                                   m_maxInterval );
                     break;
                 case XWPDEV_HAVEMSGS:
                     requestMessages();
                     break;
                 case XWPDEV_MSG:
-                    DbgUtils.logf( "got XWPDEV_MSG" );
                     int token = dis.readInt();
                     byte[] msg = new byte[dis.available()];
                     Assert.assertTrue( packet.getLength() >= msg.length );
@@ -450,8 +452,7 @@ public class RelayService extends XWService {
                     noteAck( dis.readInt() );
                     break;
                 default:
-                    DbgUtils.logf( "RelayService: Unhandled cmd: %d", 
-                                   header.m_cmd );
+                    DbgUtils.logf( "RelayService.gotPacket(): Unhandled cmd" );
                     break;
                 }
             }

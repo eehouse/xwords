@@ -1294,15 +1294,19 @@ registerDevice( const DevID* devID, const AddrInfo* addr )
         } 
     } else {
         relayID = dbMgr->RegisterDevice( devID );
-        if ( DBMgr::DEVID_NONE != relayID ) {
-            // send it back to the device
-            indx += addRegID( &buf[indx], relayID );
-            send_via_udp( addr, XWPDEV_REGRSP, buf, indx, NULL );
-        }
     }
 
-    // Now let's map the address to the devid for future sending purposes.
     if ( DBMgr::DEVID_NONE != relayID ) {
+        // send it back to the device
+        indx += addRegID( &buf[indx], relayID );
+
+        uint16_t maxInterval = UDPAger::Get()->MaxIntervalSeconds();
+        maxInterval = ntohs(maxInterval);
+
+        send_via_udp( addr, XWPDEV_REGRSP, buf, indx, 
+                      &maxInterval, sizeof(maxInterval), NULL );
+
+        // Map the address to the devid for future sending purposes.
         DevMgr::Get()->Remember( relayID, addr );
     }
 }

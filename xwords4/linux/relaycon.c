@@ -213,6 +213,8 @@ relaycon_receive( void* closure, int socket )
                 XP_U16 len = getNetShort( &ptr );
                 XP_UCHAR devID[len+1];
                 getNetString( &ptr, len, devID );
+                XP_U16 maxInterval = getNetShort( &ptr );
+                XP_LOGF( "%s: maxInterval=%d", __func__, maxInterval );
                 (*storage->procs.devIDChanged)( storage->procsClosure, devID );
             }
                 break;

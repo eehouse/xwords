@@ -32,6 +32,7 @@ class UDPAger {
     UDPAger();
     void Refresh( const AddrInfo* addr );
     bool IsCurrent( const AddrInfo* addr );
+    uint16_t MaxIntervalSeconds() const { return m_maxInterval / 1000; }
 
  private:
 
