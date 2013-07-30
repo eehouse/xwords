@@ -60,7 +60,6 @@ public class DBUtils {
 
     private static long s_cachedRowID = -1;
     private static byte[] s_cachedBytes = null;
-    private static long[] s_cachedRowIDs = null;
 
     public static interface DBChangeListener {
         public void gameSaved( long rowid, boolean countChanged );
@@ -314,9 +313,6 @@ public class DBUtils {
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );
                 Assert.assertTrue( result >= 0 );
-                if ( result != rowid ) { // new row added
-                    clearRowIDsCache();
-                }
             }
             db.close();
             notifyListeners( rowid, false );
@@ -700,7 +696,6 @@ public class DBUtils {
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
 
             setCached( rowid, null ); // force reread
-            clearRowIDsCache();
 
             lock = new GameLock( rowid, true ).lock();
             notifyListeners( rowid, true );
@@ -784,15 +779,7 @@ public class DBUtils {
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }
-        clearRowIDsCache();
         notifyListeners( lock.getRowid(), true );
-    }
-
-    private static void clearRowIDsCache()
-    {
-        synchronized( DBUtils.class ) {
-            s_cachedRowIDs = null;
-        }
     }
 
     public static int getVisID( Context context, long rowid )
@@ -1167,7 +1154,6 @@ public class DBUtils {
 
     public static void loadDB( Context context )
     {
-        clearRowIDsCache();
         copyGameDB( context, false );
     }
 
