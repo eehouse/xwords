@@ -481,6 +481,24 @@ public class DBUtils {
         return result;
     }
 
+    public static boolean haveGame( Context context, long rowid ) 
+    {
+        boolean result = false;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            String[] columns = { ROW_ID };
+            String selection = String.format( ROW_ID + "=%d", rowid );
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            Assert.assertTrue( 1 >= cursor.getCount() );
+            result = 1 == cursor.getCount();
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
     public static void listBTGames( Context context, 
                                     HashMap<String, int[]> result )
     {

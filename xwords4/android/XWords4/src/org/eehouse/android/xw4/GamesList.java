@@ -953,7 +953,7 @@ public class GamesList extends XWExpandableListActivity
 
     private void startFirstHasDict( long rowid )
     {
-        if ( -1 != rowid ) {
+        if ( -1 != rowid && DBUtils.haveGame( this, rowid ) ) {
             if ( GameUtils.gameDictsHere( this, rowid ) ) {
                 launchGame( rowid );
             }

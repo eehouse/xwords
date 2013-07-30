@@ -128,10 +128,15 @@ public class RelayService extends XWService {
     {
         DbgUtils.logf( "RelayService::postData: packet of length %d for token %d", 
                        msg.length, rowid );
-        Intent intent = getIntentTo( context, RECEIVE )
-            .putExtra( ROWID, rowid )
-            .putExtra( BINBUFFER, msg );
-        context.startService( intent );
+        if ( DBUtils.haveGame( context, rowid ) ) {
+            Intent intent = getIntentTo( context, RECEIVE )
+                .putExtra( ROWID, rowid )
+                .putExtra( BINBUFFER, msg );
+            context.startService( intent );
+        } else {
+            DbgUtils.logf( "RelayService.postData(): Dropping message for "
+                           + "rowid %d: not on device", rowid );
+        }
     }
 
     public static void udpChanged( Context context )
