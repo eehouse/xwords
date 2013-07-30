@@ -37,44 +37,45 @@ DevMgr::Get()
 void
 DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
 {
-    assert( DBMgr::DEVID_NONE != devid );
-    gchar* b64 = g_base64_encode( (unsigned char*)&saddr->u.addr, 
-                                  sizeof(saddr->u.addr) );
+    if ( DBMgr::DEVID_NONE != devid ) {
+        gchar* b64 = g_base64_encode( (unsigned char*)&saddr->u.addr, 
+                                      sizeof(saddr->u.addr) );
 
-    XW_LogLevel level = XW_LOGINFO;
-    if ( willLog( level ) ) {
-        logf( level, "%s(devid=%d, saddr='%s')", __func__, devid, b64 );
+        XW_LogLevel level = XW_LOGINFO;
+        if ( willLog( level ) ) {
+            logf( level, "%s(devid=%d, saddr='%s')", __func__, devid, b64 );
+        }
+
+        time_t now = time( NULL );
+        UDPAddrRec rec( saddr, now );
+
+        MutexLock ml( &m_mapLock );
+
+        // C++'s insert doesn't replace, but the result tells whether the key was
+        // already there and provides an iterator via which it can be updated
+        pair<map<DevIDRelay,UDPAddrRec>::iterator, bool> result = 
+            m_devAddrMap.insert( pair<DevIDRelay,UDPAddrRec>( devid, rec ) );
+        if ( !result.second ) {
+            logf( XW_LOGINFO, "%s: replacing address for %d", __func__, devid );
+            result.first->second = rec;
+        }
+
+        map<AddrInfo::AddrUnion, DevIDRelay>::iterator iter = 
+            m_addrDevMap.find(*saddr); 
+        if ( m_addrDevMap.end() != iter && devid != iter->second ) {
+            logf( XW_LOGERROR, "%s: addr '%s' already listed (for devid %d)",
+                  __func__, b64, iter->second );
+            // assert(0);              // assert instead about age?
+            iter->second = devid;
+        } else {
+            m_addrDevMap.insert( pair<AddrInfo::AddrUnion, 
+                                 DevIDRelay>(*saddr, devid ) );
+        }
+
+        logf( XW_LOGINFO, "dev->addr map now contains %d entries", 
+              m_devAddrMap.size() );
+        g_free( b64 );
     }
-
-    time_t now = time( NULL );
-    UDPAddrRec rec( saddr, now );
-
-    MutexLock ml( &m_mapLock );
-
-    // C++'s insert doesn't replace, but the result tells whether the key was
-    // already there and provides an iterator via which it can be updated
-    pair<map<DevIDRelay,UDPAddrRec>::iterator, bool> result = 
-        m_devAddrMap.insert( pair<DevIDRelay,UDPAddrRec>( devid, rec ) );
-    if ( !result.second ) {
-        logf( XW_LOGINFO, "%s: replacing address for %d", __func__, devid );
-        result.first->second = rec;
-    }
-
-    map<AddrInfo::AddrUnion, DevIDRelay>::iterator iter = 
-        m_addrDevMap.find(*saddr); 
-    if ( m_addrDevMap.end() != iter && devid != iter->second ) {
-        logf( XW_LOGERROR, "%s: addr '%s' already listed (for devid %d)",
-              __func__, b64, iter->second );
-        // assert(0);
-        iter->second = devid;
-    } else {
-        m_addrDevMap.insert( pair<AddrInfo::AddrUnion, 
-                             DevIDRelay>(*saddr, devid ) );
-    }
-
-    logf( XW_LOGINFO, "dev->addr map now contains %d entries", 
-          m_devAddrMap.size() );
-    g_free( b64 );
 }
 
 void
