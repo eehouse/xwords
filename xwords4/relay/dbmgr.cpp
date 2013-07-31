@@ -940,12 +940,20 @@ DBMgr::decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx,
     *buflen = to_length;
 }
 
-// storedMessagesImpl() assumes its callers' queries return the same results
-#define STORED_SELECT "SELECT id, msg64, msg, msglen, token FROM " MSGS_TABLE " "
-
 void
-DBMgr::storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs )
+DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs )
 {
+    string query;
+    string_printf( query, "SELECT id, msg64, msg, msglen, token FROM " MSGS_TABLE
+                   " WHERE %s "
+#ifdef HAVE_STIME 
+                   " AND stime IS NULL "
+#endif
+                   " AND connname IN (SELECT connname FROM " GAMES_TABLE
+                   " WHERE NOT " GAMES_TABLE ".dead)"
+                   " ORDER BY id",
+                   test.c_str() );
+
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
 
     int nTuples = PQntuples( result );
@@ -967,17 +975,8 @@ DBMgr::storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs )
 void
 DBMgr::GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs )
 {
-    const char* fmt = STORED_SELECT " WHERE devid=%d "
-#ifdef HAVE_STIME
-        " AND stime IS NULL "
-#endif
-        " AND connname IN (SELECT connname FROM " GAMES_TABLE 
-        " WHERE NOT " GAMES_TABLE ".dead)"
-        " ORDER BY id";
-
     string query;
-    string_printf( query, fmt, relayID );
-
+    string_printf( query, "devid=%d", relayID );
     storedMessagesImpl( query, msgs );
 }
 
@@ -985,15 +984,8 @@ void
 DBMgr::GetStoredMessages( const char* const connName, HostID hid, 
                           vector<DBMgr::MsgInfo>& msgs )
 {
-    const char* fmt = STORED_SELECT
-        " WHERE hid = %d AND connname = '%s'"
-#ifdef HAVE_STIME
-        " AND stime IS NULL "
-#endif
-        ;
     string query;
-    string_printf( query, fmt, hid, connName );
-
+    string_printf( query, "hid = %d AND connname = '%s'", hid, connName );
     storedMessagesImpl( query, msgs );
 }
 
