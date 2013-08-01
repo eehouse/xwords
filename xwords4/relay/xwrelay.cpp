@@ -1312,7 +1312,7 @@ registerDevice( const DevID* devID, const AddrInfo* addr )
 }
 
 static void
-retrieveMessages( DevID& devID, const AddrInfo::AddrUnion* saddr )
+retrieveMessages( DevID& devID, const AddrInfo* addr )
 {
     logf( XW_LOGINFO, "%s()", __func__ );
     DBMgr* dbMgr = DBMgr::Get();
@@ -1323,8 +1323,7 @@ retrieveMessages( DevID& devID, const AddrInfo::AddrUnion* saddr )
     vector<int> sentIDs;
     for ( iter = msgs.begin(); iter != msgs.end(); ++iter ) {
         DBMgr::MsgInfo msg = *iter;
-        AddrInfo addr( msg.token, saddr );
-        if ( ! send_with_length_unsafe( &addr, (unsigned char*)msg.msg.c_str(), 
+        if ( ! send_with_length_unsafe( addr, (unsigned char*)msg.msg.c_str(), 
                                         msg.msg.length() ) ) {
             break;
         }
@@ -1440,7 +1439,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             DevID devID( ID_TYPE_RELAY );
             devID.m_devIDString.append( (const char*)ptr, idLen );
             ptr += idLen;
-            retrieveMessages( devID, utc->saddr() );
+            retrieveMessages( devID, utc->addr() );
             break;
         }
         case XWPDEV_ACK: {
