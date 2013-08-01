@@ -48,6 +48,12 @@ UDPAckTrack::recordAck( uint32_t packetID )
     get()->recordAckImpl( packetID );
 }
 
+/* static */ void
+UDPAckTrack::setOnAck( OnAckProc proc, uint32_t packetID, void* data )
+{
+    get()->setOnAckImpl( proc, packetID, data );
+}
+
 /* static */ UDPAckTrack*
 UDPAckTrack::get()
 {
@@ -91,7 +97,30 @@ UDPAckTrack::recordAckImpl( uint32_t packetID )
             logf( XW_LOGERROR, "%s: packet ID %d took %d seconds to get acked",
                   __func__, packetID, took );
         }
+
+        callProc( iter->first, true, &(iter->second) );
         m_pendings.erase( iter );
+    }
+}
+
+void
+UDPAckTrack::setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data )
+{
+    MutexLock ml( &m_mutex );
+    map<uint32_t, AckRecord>::iterator iter = m_pendings.find( packetID );
+    if ( m_pendings.end() != iter ) {
+        iter->second.proc = proc;
+        iter->second.data = data;
+    }
+}
+
+void
+UDPAckTrack::callProc( uint32_t packetID, bool acked, const AckRecord* record )
+{
+    OnAckProc proc = record->proc;
+    logf( XW_LOGINFO, "%s: acked=%d, proc=%p", __func__, acked, proc );
+    if ( NULL != proc ) {
+        (*proc)( acked, packetID, record->data );
     }
 }
 
@@ -100,15 +129,16 @@ UDPAckTrack::threadProc()
 {
     for ( ; ; ) {
         sleep( 30 );
-        time_t now = time( NULL );
         vector<uint32_t> older;
         {
             MutexLock ml( &m_mutex );
+            time_t now = time( NULL );
             map<uint32_t, AckRecord>::iterator iter;
             for ( iter = m_pendings.begin(); iter != m_pendings.end(); ++iter ) {
                 time_t took = now - iter->second.m_createTime;
                 if ( ACK_LIMIT < took ) {
                     older.push_back( iter->first );
+                    callProc( iter->first, false, &(iter->second) );
                     m_pendings.erase( iter );
                 }
             }

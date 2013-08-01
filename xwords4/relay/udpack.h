@@ -23,16 +23,21 @@
 #include "xwrelay_priv.h"
 #include "xwrelay.h"
 
+typedef void (*OnAckProc)( bool acked, uint32_t packetID, void* data );
+
 class AckRecord {
  public: 
-    AckRecord() { m_createTime = time( NULL ); }
+    AckRecord() { m_createTime = time( NULL ); proc = NULL; }
     time_t m_createTime;
+    OnAckProc proc;
+    void* data;
 };
 
 class UDPAckTrack {
  public:
     static uint32_t nextPacketID( XWRelayReg cmd );
     static void recordAck( uint32_t packetID ); 
+    static void setOnAck( OnAckProc proc, uint32_t packetID, void* data );
     static bool shouldAck( XWRelayReg cmd );
 
  private:
@@ -41,6 +46,8 @@ class UDPAckTrack {
     UDPAckTrack();
     uint32_t nextPacketIDImpl();
     void recordAckImpl( uint32_t packetID ); 
+    void setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data );
+    void callProc( uint32_t packetID, bool acked, const AckRecord* record );
     void* threadProc();
 
     static UDPAckTrack* s_self;
