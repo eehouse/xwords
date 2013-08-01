@@ -121,6 +121,7 @@ class DBMgr {
                             vector<DBMgr::MsgInfo>& msgs );
 
     void RemoveStoredMessages( const int* msgID, int nMsgIDs );
+    void RemoveStoredMessage( const int msgID );
     void RemoveStoredMessages( vector<int>& ids );
 
  private:

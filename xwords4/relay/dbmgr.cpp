@@ -1042,6 +1042,12 @@ DBMgr::RemoveStoredMessages( vector<int>& idv )
     }
 }
 
+void
+DBMgr::RemoveStoredMessage( const int msgID )
+{
+    RemoveStoredMessages( &msgID, 1 );
+}
+
 int
 DBMgr::getCountWhere( const char* table, string& test )
 {
