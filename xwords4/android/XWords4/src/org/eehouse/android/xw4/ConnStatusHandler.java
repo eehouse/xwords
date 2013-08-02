@@ -248,9 +248,19 @@ public class ConnStatusHandler {
         showSuccess( handler, true );
     }
 
+    public static void showSuccessIn()
+    {
+        showSuccessIn( s_handler );
+    }
+
     public static void showSuccessOut( Handler handler )
     {
         showSuccess( handler, false );
+    }
+
+    public static void showSuccessOut()
+    {
+        showSuccessOut( s_handler );
     }
 
     public static void draw( Context context, Canvas canvas, Resources res, 
