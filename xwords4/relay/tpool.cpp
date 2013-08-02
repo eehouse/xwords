@@ -75,6 +75,7 @@ XWThreadPool::~XWThreadPool()
 
     pthread_rwlock_destroy( &m_activeSocketsRWLock );
     pthread_mutex_destroy ( &m_queueMutex );
+    free( m_threadInfos );
 } /* ~XWThreadPool */
 
 void
@@ -212,14 +213,11 @@ bool
 XWThreadPool::IsCurrent( const AddrInfo* addr )
 {
     bool result = false;
-    bool sockFound = false;     // for debugging
     int sock = addr->socket();
     if ( -1 != sock ) {
         RWReadLock ml( &m_activeSocketsRWLock );
         map<int, SockInfo>::const_iterator iter = m_activeSockets.find( sock ); 
         if ( iter != m_activeSockets.end() ) {
-            assert( !sockFound );
-            sockFound = true;
             result = iter->second.m_addr.created() <= addr->created();
             logf( XW_LOGINFO, "%s(sock=%d)=>%d (%lx vs %lx)",
                   __func__, sock, result,
