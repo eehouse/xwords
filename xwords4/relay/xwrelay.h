@@ -59,7 +59,7 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
                                   format: header, idLen: 2, id: <idLen>
                                 */
 
-       ,XWPDEV_PING             /* device->relay: keep the UDP connection
+       ,XWPDEV_KEEPALIVE       /* device->relay: keep the UDP connection
                                    open.  header. */
 
        ,XWPDEV_HAVEMSGS         /* Relay->device: check messages for this
