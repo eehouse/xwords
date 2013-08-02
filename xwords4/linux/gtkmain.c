@@ -505,14 +505,23 @@ gtkNoticeRcvd( void* closure )
     (void)g_idle_add( requestMsgs, apg );
 }
 
+static gboolean
+keepalive_timer( gpointer data )
+{
+    LOG_FUNC();
+    requestMsgs( data );
+    return TRUE;
+}
+
 static void
-gtkDevIDChanged( void* closure, const XP_UCHAR* devID )
+gtkDevIDChanged( void* closure, const XP_UCHAR* devID, XP_U16 maxInterval )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;
     if ( !!devID ) {
         XP_LOGF( "%s(devID=%s)", __func__, devID );
         db_store( params->pDb, KEY_RDEVID, devID );
+        (void)g_timeout_add_seconds( maxInterval, keepalive_timer, apg );
     } else {
         XP_LOGF( "%s: bad relayid", __func__ );
         db_remove( params->pDb, KEY_RDEVID );

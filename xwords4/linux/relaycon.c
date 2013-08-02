@@ -215,7 +215,8 @@ relaycon_receive( void* closure, int socket )
                 getNetString( &ptr, len, devID );
                 XP_U16 maxInterval = getNetShort( &ptr );
                 XP_LOGF( "%s: maxInterval=%d", __func__, maxInterval );
-                (*storage->procs.devIDChanged)( storage->procsClosure, devID );
+                (*storage->procs.devIDChanged)( storage->procsClosure, devID,
+                                                maxInterval );
             }
                 break;
             case XWPDEV_MSG:
@@ -223,7 +224,7 @@ relaycon_receive( void* closure, int socket )
                                                ptr, end - ptr );
                 break;
             case XWPDEV_BADREG:
-                (*storage->procs.devIDChanged)( storage->procsClosure, NULL );
+                (*storage->procs.devIDChanged)( storage->procsClosure, NULL, 0 );
                 break;
             case XWPDEV_HAVEMSGS: {
                 (*storage->procs.msgNoticeReceived)( storage->procsClosure );

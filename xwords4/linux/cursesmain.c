@@ -1801,8 +1801,17 @@ cursesNoticeRcvd( void* closure )
     (void)g_idle_add( curses_requestMsgs, globals );
 }
 
+static gboolean
+keepalive_timer( gpointer data )
+{
+    LOG_FUNC();
+    curses_requestMsgs( data );
+    return TRUE;
+}
+
 static void
-cursesDevIDChanged( void* closure, const XP_UCHAR* devID )
+cursesDevIDChanged( void* closure, const XP_UCHAR* devID, 
+                    XP_U16 maxInterval )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -1810,6 +1819,7 @@ cursesDevIDChanged( void* closure, const XP_UCHAR* devID )
     if ( !!devID ) {
         XP_LOGF( "%s(devID=%s)", __func__, devID );
         db_store( pDb, KEY_RDEVID, devID );
+        (void)g_timeout_add_seconds( maxInterval, keepalive_timer, globals );
     } else {
         XP_LOGF( "%s: bad relayid", __func__ );
         db_remove( pDb, KEY_RDEVID );

@@ -25,7 +25,8 @@
 typedef struct _Procs {
     void (*msgReceived)( void* closure, const XP_U8* buf, XP_U16 len );
     void (*msgNoticeReceived)( void* closure );
-    void (*devIDChanged)( void* closure, const XP_UCHAR* devID );
+    void (*devIDChanged)( void* closure, const XP_UCHAR* devID, 
+                          XP_U16 maxInterval );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
     void (*socketChanged)( void* closure, int newSock, int oldSock, 
                            SockReceiver proc, void* procClosure );
