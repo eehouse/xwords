@@ -177,11 +177,7 @@ public class NetUtils {
                 socket.close();
             }
 
-        } catch( java.net.UnknownHostException uhe ) {
-            DbgUtils.loge( uhe );
-        } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
-        } catch( NullPointerException npe ) {
+        } catch( Exception npe ) {
             DbgUtils.loge( npe );
         }
         return msgs;
