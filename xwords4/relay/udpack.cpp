@@ -134,12 +134,14 @@ UDPAckTrack::threadProc()
             MutexLock ml( &m_mutex );
             time_t now = time( NULL );
             map<uint32_t, AckRecord>::iterator iter;
-            for ( iter = m_pendings.begin(); iter != m_pendings.end(); ++iter ) {
+            for ( iter = m_pendings.begin(); m_pendings.end() != iter; ) {
                 time_t took = now - iter->second.m_createTime;
                 if ( ACK_LIMIT < took ) {
                     older.push_back( iter->first );
                     callProc( iter->first, false, &(iter->second) );
-                    m_pendings.erase( iter );
+                    m_pendings.erase( iter++ );
+                } else {
+                    ++iter;
                 }
             }
         }
