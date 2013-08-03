@@ -35,9 +35,11 @@ class AckRecord {
 
 class UDPAckTrack {
  public:
+    static const uint32_t PACKETID_NONE = 0;
+    
     static uint32_t nextPacketID( XWRelayReg cmd );
     static void recordAck( uint32_t packetID ); 
-    static void setOnAck( OnAckProc proc, uint32_t packetID, void* data );
+    static bool setOnAck( OnAckProc proc, uint32_t packetID, void* data );
     static bool shouldAck( XWRelayReg cmd );
 
  private:
@@ -46,7 +48,7 @@ class UDPAckTrack {
     UDPAckTrack();
     uint32_t nextPacketIDImpl();
     void recordAckImpl( uint32_t packetID ); 
-    void setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data );
+    bool setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data );
     void callProc( uint32_t packetID, bool acked, const AckRecord* record );
     void* threadProc();
 

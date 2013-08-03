@@ -38,6 +38,7 @@ UDPAckTrack::nextPacketID( XWRelayReg cmd )
     uint32_t result = 0;
     if ( shouldAck( cmd ) ) {
         result = get()->nextPacketIDImpl();
+        assert( PACKETID_NONE != result );
     }
     return result;
 }
@@ -48,10 +49,10 @@ UDPAckTrack::recordAck( uint32_t packetID )
     get()->recordAckImpl( packetID );
 }
 
-/* static */ void
+/* static */ bool
 UDPAckTrack::setOnAck( OnAckProc proc, uint32_t packetID, void* data )
 {
-    get()->setOnAckImpl( proc, packetID, data );
+    return get()->setOnAckImpl( proc, packetID, data );
 }
 
 /* static */ UDPAckTrack*
@@ -65,7 +66,7 @@ UDPAckTrack::get()
 
 UDPAckTrack::UDPAckTrack()
 {
-    m_nextID = 0;
+    m_nextID = PACKETID_NONE;
     pthread_mutex_init( &m_mutex, NULL );
 
     pthread_t thread;
@@ -103,15 +104,19 @@ UDPAckTrack::recordAckImpl( uint32_t packetID )
     }
 }
 
-void
+bool
 UDPAckTrack::setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data )
 {
-    MutexLock ml( &m_mutex );
-    map<uint32_t, AckRecord>::iterator iter = m_pendings.find( packetID );
-    if ( m_pendings.end() != iter ) {
-        iter->second.proc = proc;
-        iter->second.data = data;
+    bool canAdd = PACKETID_NONE != packetID;
+    if ( canAdd ) {
+        MutexLock ml( &m_mutex );
+        map<uint32_t, AckRecord>::iterator iter = m_pendings.find( packetID );
+        if ( m_pendings.end() != iter ) {
+            iter->second.proc = proc;
+            iter->second.data = data;
+        }
     }
+    return canAdd;
 }
 
 void

@@ -46,7 +46,8 @@ bool willLog( XW_LogLevel level );
 
 void denyConnection( const AddrInfo* addr, XWREASON err );
 bool send_with_length_unsafe( const AddrInfo* addr, 
-                              const unsigned char* buf, size_t bufLen );
+                              const unsigned char* buf, size_t bufLen,
+                              uint32_t* packetIDP );
 void send_havemsgs( const AddrInfo* addr );
 
 time_t uptime(void);
@@ -60,6 +61,8 @@ int make_socket( unsigned long addr, unsigned short port );
 void string_printf( std::string& str, const char* fmt, ... );
 
 int read_packet( int sock, unsigned char* buf, int buflen );
+
+void onMsgAcked( bool acked, uint32_t packetID, void* data );
 
 const char* cmdToStr( XWRELAY_Cmd cmd );
 

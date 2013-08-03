@@ -196,7 +196,12 @@ class CookieRef {
     };
 
     bool send_with_length( const AddrInfo* addr, HostID hid,
-                           const unsigned char* buf, int bufLen, bool cascade );
+                           const unsigned char* buf, int bufLen, bool cascade ) {
+        return send_with_length( addr, hid, buf, bufLen, cascade, NULL );
+    }
+    bool send_with_length( const AddrInfo* addr, HostID hid,
+                           const unsigned char* buf, int bufLen, bool cascade,
+                           uint32_t* packetIDP );
     void send_msg( const AddrInfo* addr, HostID id, 
                    XWRelayMsg msg, XWREASON why, bool cascade );
     void pushConnectEvent( int clientVersion, DevID* devID,

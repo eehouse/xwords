@@ -416,7 +416,7 @@ denyConnection( const AddrInfo* addr, XWREASON err )
     buf[0] = XWRELAY_CONNECTDENIED;
     buf[1] = err;
 
-    send_with_length_unsafe( addr, buf, sizeof(buf) );
+    send_with_length_unsafe( addr, buf, sizeof(buf), NULL );
 }
 
 static ssize_t
@@ -525,10 +525,10 @@ send_via_udp( int socket, const struct sockaddr* dest_addr,
 }
 
 static bool
-send_msg_via_udp( const AddrInfo* addr, const unsigned char* buf, 
-                  const size_t bufLen, uint32_t* packetIDP )
+send_msg_via_udp( const AddrInfo* addr, AddrInfo::ClientToken clientToken,
+                  const unsigned char* buf, const size_t bufLen, 
+                  uint32_t* packetIDP )
 {
-    const AddrInfo::ClientToken clientToken = addr->clientToken();
     assert( 0 != clientToken );
     uint32_t asNetTok = htonl(clientToken);
     ssize_t nSent = send_via_udp( addr, packetIDP, XWPDEV_MSG, &asNetTok, 
@@ -541,11 +541,19 @@ send_msg_via_udp( const AddrInfo* addr, const unsigned char* buf,
     return result;
 }
 
+static bool
+send_msg_via_udp( const AddrInfo* addr, const unsigned char* buf, 
+                  const size_t bufLen, uint32_t* packetIDP )
+{
+    return send_msg_via_udp( addr, addr->clientToken(), buf, 
+                             bufLen, packetIDP );
+}
+
 /* No mutex here.  Caller better be ensuring no other thread can access this
  * socket. */
 bool
 send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf, 
-                         const size_t bufLen )
+                         const size_t bufLen, uint32_t* packetIDP )
 {
     assert( !!addr );
     bool ok = false;
@@ -570,8 +578,11 @@ send_with_length_unsafe( const AddrInfo* addr, const unsigned char* buf,
             logf( XW_LOGINFO, "%s: dropping packet: socket %d reused", 
                   __func__, socket );
         }
+        if ( NULL != packetIDP ) {
+            *packetIDP = UDPAckTrack::PACKETID_NONE;
+        }
     } else {
-        ok = send_msg_via_udp( addr, buf, bufLen, NULL );
+        ok = send_msg_via_udp( addr, buf, bufLen, packetIDP );
     }
 
     if ( !ok ) {
@@ -1325,7 +1336,7 @@ registerDevice( const DevID* devID, const AddrInfo* addr )
     }
 }
 
-static void
+void
 onMsgAcked( bool acked, uint32_t packetID, void* data )
 {
     logf( XW_LOGINFO, "%s(packetID=%d)", __func__, packetID );
@@ -1347,7 +1358,7 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
     for ( iter = msgs.begin(); iter != msgs.end(); ++iter ) {
         DBMgr::MsgInfo msg = *iter;
         uint32_t packetID;
-        if ( !send_msg_via_udp( addr, (unsigned char*)msg.msg.c_str(), 
+        if ( !send_msg_via_udp( addr, msg.token, (unsigned char*)msg.msg.c_str(), 
                                 msg.msg.length(), &packetID ) ) {
             break;
         }

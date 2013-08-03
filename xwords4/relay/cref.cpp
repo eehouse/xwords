@@ -42,6 +42,7 @@
 #include "crefmgr.h"
 #include "devmgr.h"
 #include "permid.h"
+#include "udpack.h"
 
 using namespace std;
 
@@ -813,10 +814,11 @@ CookieRef::handleEvents()
 
 bool
 CookieRef::send_with_length( const AddrInfo* addr, HostID dest, 
-                             const unsigned char* buf, int bufLen, bool cascade )
+                             const unsigned char* buf, int bufLen, bool cascade,
+                             uint32_t* packetIDP )
 {
     bool failed = false;
-    if ( send_with_length_unsafe( addr, buf, bufLen ) ) {
+    if ( send_with_length_unsafe( addr, buf, bufLen, packetIDP ) ) {
         if ( HOST_ID_NONE == dest ) {
             dest = HostForSocket(addr);
         }
@@ -829,7 +831,7 @@ CookieRef::send_with_length( const AddrInfo* addr, HostID dest,
         failed = true;
     }
 
-    if ( failed && cascade ) {
+    if ( failed && cascade && addr->isTCP() ) {
         pushRemoveSocketEvent( addr );
         XWThreadPool::GetTPool()->CloseSocket( addr );
     }
@@ -870,12 +872,15 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
         for ( iter = msgs.begin(); addr->isCurrent() && msgs.end() != iter;
               ++iter ) {
             DBMgr::MsgInfo msg = *iter;
-            if ( ! send_with_length( addr, dest, 
-                                     (const unsigned char*)msg.msg.c_str(), 
-                                     msg.msg.length(), true ) ) {
+            uint32_t packetID;
+            if ( !send_with_length( addr, dest, 
+                                    (const unsigned char*)msg.msg.c_str(), 
+                                    msg.msg.length(), true, &packetID ) ) {
                 break;
             }
-            sentIDs.push_back( msg.msgID );
+            if ( !UDPAckTrack::setOnAck( onMsgAcked, packetID, (void*)msg.msgID ) ) {
+                sentIDs.push_back( msg.msgID );
+            }
         }
         dbmgr->RemoveStoredMessages( sentIDs );
     }
