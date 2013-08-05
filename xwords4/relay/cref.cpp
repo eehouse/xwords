@@ -419,14 +419,14 @@ CookieRef::removeSocket( const AddrInfo* addr )
     {
         RWWriteLock rwl( &m_socketsRWLock );
         vector<HostRec>::iterator iter;
-        for ( iter = m_sockets.begin(); !found && iter != m_sockets.end(); ++iter ) {
+        for ( iter = m_sockets.begin(); !found && iter != m_sockets.end();
+              ++iter ) {
             if ( iter->m_addr.equals( *addr ) ) {
                 if ( iter->m_ackPending ) {
                     logf( XW_LOGINFO,
                           "%s: Never got ack; removing hid %d from DB",
                           __func__, iter->m_hostID );
-                    DBMgr::Get()->RmDeviceByHid( ConnName(), 
-                                                 iter->m_hostID );
+                    DBMgr::Get()->RmDeviceByHid( ConnName(), iter->m_hostID );
                     m_nPlayersHere -= iter->m_nPlayersH;
                     cancelAckTimer( iter->m_hostID );
                 }
@@ -831,7 +831,7 @@ CookieRef::send_with_length( const AddrInfo* addr, HostID dest,
         failed = true;
     }
 
-    if ( failed && cascade && addr->isTCP() ) {
+    if ( failed && cascade ) {
         pushRemoveSocketEvent( addr );
         XWThreadPool::GetTPool()->CloseSocket( addr );
     }

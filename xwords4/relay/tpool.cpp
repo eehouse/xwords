@@ -173,26 +173,27 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
 void
 XWThreadPool::CloseSocket( const AddrInfo* addr )
 {
-    assert( addr->isTCP() );
-    if ( !RemoveSocket( addr ) ) {
-        MutexLock ml( &m_queueMutex );
-        deque<QueuePr>::iterator iter = m_queue.begin();
-        while ( iter != m_queue.end() ) {
-            if ( iter->m_info.m_addr.equals( *addr ) ) {
-                m_queue.erase( iter );
-                break;
+    if ( addr->isTCP() ) {
+        if ( !RemoveSocket( addr ) ) {
+            MutexLock ml( &m_queueMutex );
+            deque<QueuePr>::iterator iter = m_queue.begin();
+            while ( iter != m_queue.end() ) {
+                if ( iter->m_info.m_addr.equals( *addr ) ) {
+                    m_queue.erase( iter );
+                    break;
+                }
+                ++iter;
             }
-            ++iter;
         }
-    }
-    logf( XW_LOGINFO, "CLOSING socket %d", addr->socket() );
-    close( addr->socket() );
+        logf( XW_LOGINFO, "CLOSING socket %d", addr->socket() );
+        close( addr->socket() );
 
-    /* We always need to interrupt the poll because the socket we're closing
-       will be in the list being listened to.  That or we need to drop sockets
-       that have been removed on some other thread while the poll call's
-       blocking.*/
-    interrupt_poll();
+        /* We always need to interrupt the poll because the socket we're closing
+           will be in the list being listened to.  That or we need to drop sockets
+           that have been removed on some other thread while the poll call's
+           blocking.*/
+        interrupt_poll();
+    }
 }
 
 void
