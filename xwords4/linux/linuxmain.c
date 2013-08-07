@@ -633,6 +633,7 @@ typedef enum {
     ,CMD_NOPEEK
     ,CMD_SPLITPACKETS
     ,CMD_CHAT
+    ,CMD_USEUDP
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
 #endif
@@ -740,6 +741,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SPLITPACKETS, true, "split-packets", "send tcp packets in "
        "sections every random MOD <n> seconds to test relay reassembly" }
     ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
+    ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp" }
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
        "don't show crosshairs on board" }
@@ -2251,6 +2253,9 @@ main( int argc, char** argv )
             break;
         case CMD_CHAT:
             mainParams.chatsInterval = atoi(optarg);
+            break;
+        case CMD_USEUDP:
+            mainParams.useUdp = true;
             break;
 #ifdef XWFEATURE_CROSSHAIRS
         case CMD_NOCROSSHAIRS:
