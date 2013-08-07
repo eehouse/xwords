@@ -5,23 +5,11 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 63 release</b>
+<b>Crosswords 4.4 beta 64 release</b>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Reduce amount of network traffic required to get moves</li>
-
-  <li>Make all wordlists available from wordlists button below board
-  (on Android 3.0 and above)</li>
-
-  <li>Dim pending score counter (at right end of tray) when it's not
-  that player's turn or game's over</li>
-
-  <li>Move more frequently used game buttons to left where they're
-  more visible</li>
-
-  <li>Fix a few bugs</li>
-
+  <li>Fix tray height on large tablets</li>
 </ul>
 
 <h3>Next up</h3>
