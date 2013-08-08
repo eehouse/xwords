@@ -917,12 +917,14 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
     }
 
     const AddrInfo* addr = &evt->addr;
-    if ( !!devIDp && addr->isUDP() ) {
+    if ( !!devIDp ) {
         DevIDType devIDType = evt->u.con.devID->m_devIDType;
         // does client support devID
         if ( ID_TYPE_NONE != devIDType ) { 
             devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
-            DevMgr::Get()->Remember( devID, addr );
+            if ( addr->isUDP() ) {
+                DevMgr::Get()->Remember( devID, addr );
+            }
         }
         *devIDp = devID;
     }
