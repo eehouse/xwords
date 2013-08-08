@@ -88,67 +88,67 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private Context m_context;
 
-    private static final String[] s_summaryColsAndTypes = {
-        "rowid",      "INTEGER PRIMARY KEY AUTOINCREMENT"
-        ,VISID,        "INTEGER"
-        ,GAME_NAME,    "TEXT"
-        ,NUM_MOVES,   "INTEGER"
-        ,TURN,        "INTEGER"
-        ,GIFLAGS,     "INTEGER"
-        ,NUM_PLAYERS, "INTEGER"
-        ,MISSINGPLYRS,"INTEGER"
-        ,PLAYERS,      "TEXT"
-        ,GAME_OVER,    "INTEGER"
-        ,SERVERROLE,   "INTEGER"
-        ,CONTYPE,      "INTEGER"
-        ,ROOMNAME,     "TEXT"
-        ,INVITEID,     "TEXT"
-        ,RELAYID,      "TEXT"
-        ,SEED,         "INTEGER"
-        ,DICTLANG,     "INTEGER"
-        ,DICTLIST,     "TEXT"
-        ,SMSPHONE,     "TEXT"   // unused
-        ,SCORES,       "TEXT"
-        ,CHAT_HISTORY, "TEXT"
-        ,GAMEID,       "INTEGER"
-        ,REMOTEDEVS,   "TEXT"
-        ,LASTMOVE,     "INTEGER DEFAULT 0"
-        ,GROUPID,      "INTEGER"
+    private static final String[][] s_summaryColsAndTypes = {
+        { "rowid",      "INTEGER PRIMARY KEY AUTOINCREMENT" }
+        ,{ VISID,        "INTEGER" }
+        ,{ GAME_NAME,    "TEXT" }
+        ,{ NUM_MOVES,   "INTEGER" }
+        ,{ TURN,        "INTEGER" }
+        ,{ GIFLAGS,     "INTEGER" }
+        ,{ NUM_PLAYERS, "INTEGER" }
+        ,{ MISSINGPLYRS,"INTEGER" }
+        ,{ PLAYERS,      "TEXT" }
+        ,{ GAME_OVER,    "INTEGER" }
+        ,{ SERVERROLE,   "INTEGER" }
+        ,{ CONTYPE,      "INTEGER" }
+        ,{ ROOMNAME,     "TEXT" }
+        ,{ INVITEID,     "TEXT" }
+        ,{ RELAYID,      "TEXT" }
+        ,{ SEED,         "INTEGER" }
+        ,{ DICTLANG,     "INTEGER" }
+        ,{ DICTLIST,     "TEXT" }
+        ,{ SMSPHONE,     "TEXT" }  // unused
+        ,{ SCORES,       "TEXT" }
+        ,{ CHAT_HISTORY, "TEXT" }
+        ,{ GAMEID,       "INTEGER" }
+        ,{ REMOTEDEVS,   "TEXT" }
+        ,{ LASTMOVE,     "INTEGER DEFAULT 0" }
+        ,{ GROUPID,      "INTEGER" }
         // HASMSGS: sqlite doesn't have bool; use 0 and 1
-        ,HASMSGS,      "INTEGER DEFAULT 0"
-        ,CONTRACTED,   "INTEGER DEFAULT 0"
-        ,CREATE_TIME,  "INTEGER"
-        ,LASTPLAY_TIME,"INTEGER"
-        ,SNAPSHOT,     "BLOB"
+        ,{ HASMSGS,      "INTEGER DEFAULT 0" }
+        ,{ CONTRACTED,   "INTEGER DEFAULT 0" }
+        ,{ CREATE_TIME,  "INTEGER" }
+        ,{ LASTPLAY_TIME,"INTEGER" }
+        ,{ SNAPSHOT,     "BLOB" }
     };
 
-    private static final String[] s_obitsColsAndTypes = {
-        RELAYID, "TEXT"
-        ,SEED,   "INTEGER"
+    private static final String[][] s_obitsColsAndTypes = {
+        { RELAYID, "TEXT" }
+        ,{ SEED,   "INTEGER" }
     };
 
-    private static final String[] s_dictInfoColsAndTypes = {
-        DICTNAME, "TEXT"
-        ,LOC,      "UNSIGNED INTEGER(1)"
-        ,MD5SUM,   "TEXT(32)"
-        ,WORDCOUNT,"INTEGER"
-        ,LANGCODE, "INTEGER"
+    private static final String[][] s_dictInfoColsAndTypes = {
+        { DICTNAME, "TEXT" }
+        ,{ LOC,      "UNSIGNED INTEGER(1)" }
+        ,{ MD5SUM,   "TEXT(32)" }
+        ,{ WORDCOUNT,"INTEGER" }
+        ,{ LANGCODE, "INTEGER" }
     };
 
-    private static final String[] s_dictBrowseColsAndTypes = {
-        DICTNAME,    "TEXT"
-        ,LOC,        "UNSIGNED INTEGER(1)"
-        ,WORDCOUNTS, "TEXT"
-        ,ITERMIN,    "INTEGRE(4)"
-        ,ITERMAX,    "INTEGER(4)"
-        ,ITERPOS,    "INTEGER"
-        ,ITERTOP,    "INTEGER"
-        ,ITERPREFIX, "TEXT"
+    private static final String[][] s_dictBrowseColsAndTypes = {
+        { DICTNAME,    "TEXT" }
+        ,{ LOC,        "UNSIGNED INTEGER(1)" }
+        ,{ WORDCOUNTS, "TEXT" }
+        ,{ ITERMIN,    "INTEGRE(4)" }
+        ,{ ITERMAX,    "INTEGER(4)" }
+        ,{ ITERPOS,    "INTEGER" }
+        ,{ ITERTOP,    "INTEGER" }
+        ,{ ITERPREFIX, "TEXT" }
     };
 
-    private static final String[] s_groupsSchema = {
-        GROUPNAME,  "TEXT"
-        ,EXPANDED,  "INTEGER(1)"
+    private static final String[][] s_groupsSchema = {
+        { GROUPNAME,  "TEXT" }
+        ,{ EXPANDED,  "INTEGER(1)" }
     };
 
     public DBHelper( Context context )
@@ -225,9 +225,9 @@ public class DBHelper extends SQLiteOpenHelper {
     private void addSumColumn( SQLiteDatabase db, String colName )
     {
         String colType = null;
-        for ( int ii = 0; ii < s_summaryColsAndTypes.length; ii += 2 ) {
-            if ( s_summaryColsAndTypes[ii].equals( colName ) ) {
-                colType = s_summaryColsAndTypes[ii+1];
+        for ( int ii = 0; ii < s_summaryColsAndTypes.length; ++ii ) {
+            if ( s_summaryColsAndTypes[ii][0].equals( colName ) ) {
+                colType = s_summaryColsAndTypes[ii][1];
                 break;
             }
         }
@@ -237,13 +237,13 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL( cmd );
     }
 
-    private void createTable( SQLiteDatabase db, String name, String[] data ) 
+    private void createTable( SQLiteDatabase db, String name, String[][] data ) 
     {
         StringBuilder query = 
             new StringBuilder( String.format("CREATE TABLE %s (", name ) );
 
-        for ( int ii = 0; ii < data.length; ii += 2 ) {
-            String col = String.format( " %s %s,", data[ii], data[ii+1] );
+        for ( int ii = 0; ii < data.length; ++ii ) {
+            String col = String.format( " %s %s,", data[ii][0], data[ii][1] );
             query.append( col );
         }
         query.setLength(query.length() - 1); // nuke the last comma
@@ -292,7 +292,8 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
     }
 
-    private void makeAutoincrement( SQLiteDatabase db, String name, String[] data )
+    private void makeAutoincrement( SQLiteDatabase db, String name, 
+                                    String[][] data )
     {
         db.beginTransaction();
         try {
@@ -319,8 +320,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 // because we're in a transaction and nothing's been
                 // committed.
                 ArrayList<String> newCols = new ArrayList<String>();
-                for ( int ii = 0; ii < data.length; ii += 2 ) {
-                    newCols.add( data[ii] );
+                for ( int ii = 0; ii < data.length; ++ii ) {
+                    newCols.add( data[ii][0] );
                 }
                 oldCols.retainAll( newCols );
 
