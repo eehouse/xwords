@@ -6,7 +6,8 @@ APP_NEW=""
 DO_CLEAN=""
 APP_NEW_PARAMS=""
 NGAMES=""
-UDP_PCT=50
+UDP_PCT_START=0
+UDP_PCT_INCR=5
 UPGRADE_ODDS=""
 NROOMS=""
 HOST=""
@@ -190,12 +191,9 @@ build_cmds() {
         DEV=0
         for NLOCALS in ${LOCALS[@]}; do
             DEV=$((DEV + 1))
-            if [ $((RANDOM % 100)) -gt $UDP_PCT ]; then
-                FILE="${LOGDIR}/GAME_${GAME}_${DEV}.xwg"
-                USE_UDP=""
-            else
-                FILE="${LOGDIR}/GAME_${GAME}_${DEV}.sql3"
-                USE_UDP=1
+            FILE="${LOGDIR}/GAME_${GAME}_${DEV}.sql3"
+            if [ $((RANDOM % 100)) -lt $UDP_PCT_START ]; then
+                FILE="$FILE --use-udp"
             fi
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             > $LOG # clear the log
@@ -218,11 +216,7 @@ build_cmds() {
             [ $UNDO_PCT -gt 0 ] && PARAMS="$PARAMS --undo-pct $UNDO_PCT "
             PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
             PARAMS="$PARAMS --slow-robot 1:3 --skip-confirm"
-            if [ -n "$USE_UDP" ]; then
-                PARAMS="$PARAMS --db $FILE"
-            else
-                PARAMS="$PARAMS --file $FILE"
-            fi
+            PARAMS="$PARAMS --db $FILE"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
             # PARAMS="$PARAMS --split-packets 2"
             if [ -n "$SEND_CHAT" ]; then
@@ -365,6 +359,16 @@ try_upgrade() {
     fi
 }
 
+try_upgrade_upd() {
+    KEY=$1
+    CMD=${ARGS[$KEY]}
+    if [ "${CMD/--use-udp/}" = "${CMD}" ]; then
+        if [ $((RANDOM % 100)) -lt $UDP_PCT_INCR ]; then
+            ARGS[$KEY]="$CMD --use-udp"
+        fi
+    fi
+}
+
 check_game() {
     KEY=$1
     LOG=${LOGS[$KEY]}
@@ -483,6 +487,7 @@ run_cmds() {
                 continue
             fi
             try_upgrade $KEY
+            try_upgrade_upd $KEY
             launch $KEY &
             PID=$!
             # renice doesn't work on one of my machines...
@@ -563,7 +568,8 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
-    echo "    [--via-udp <pct>]                                       \\" >&2
+    echo "    [--udp-start <pct>]                                     \\" >&2
+    echo "    [--udp-incr <pct>]                                      \\" >&2
     echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--old-app <path/to/app]*                               \\" >&2
@@ -591,8 +597,12 @@ function usage() {
 
 while [ "$#" -gt 0 ]; do
     case $1 in
-        --via-udp)
-            UDP_PCT=$(getArg $*)
+        --udp-start)
+            UDP_PCT_START=$(getArg $*)
+            shift
+            ;;
+        --udp-incr)
+            UDP_PCT_INCR=$(getArg $*)
             shift
             ;;
         --clean-start)
