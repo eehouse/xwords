@@ -263,6 +263,7 @@ relaycon_cleanup( LaunchParams* params )
 static RelayConStorage* 
 getStorage( LaunchParams* params )
 {
+    XP_ASSERT( params->useUdp );
     RelayConStorage* storage = (RelayConStorage*)params->relayConStorage;
     if ( NULL == storage ) {
         storage = XP_CALLOC( params->mpool, sizeof(*storage) );

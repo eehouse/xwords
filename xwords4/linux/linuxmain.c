@@ -1028,7 +1028,7 @@ linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
                 const CommsAddrRec* addrRec )
 {
     XP_S16 result = 0;
-    if ( !!cGlobals->pDb ) {
+    if ( cGlobals->params->useUdp ) {
         XP_ASSERT( -1 != cGlobals->selRow );
         XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
         XP_U32 clientToken = makeClientToken( cGlobals->selRow, seed );

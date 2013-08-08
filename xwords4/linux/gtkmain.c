@@ -586,21 +586,23 @@ gtkmain( LaunchParams* params )
     apg.params = params;
     params->pDb = openGamesDB( params->dbName );
 
-    RelayConnProcs procs = {
-        .msgReceived = gtkGotBuf,
-        .msgNoticeReceived = gtkNoticeRcvd,
-        .devIDChanged = gtkDevIDChanged,
-        .msgErrorMsg = gtkErrorMsgRcvd,
-        .socketChanged = gtkSocketChanged,
-    };
+    if ( params->useUdp ) {
+        RelayConnProcs procs = {
+            .msgReceived = gtkGotBuf,
+            .msgNoticeReceived = gtkNoticeRcvd,
+            .devIDChanged = gtkDevIDChanged,
+            .msgErrorMsg = gtkErrorMsgRcvd,
+            .socketChanged = gtkSocketChanged,
+        };
 
-    relaycon_init( params, &procs, &apg, 
-                   params->connInfo.relay.relayName,
-                   params->connInfo.relay.defaultSendPort );
+        relaycon_init( params, &procs, &apg, 
+                       params->connInfo.relay.relayName,
+                       params->connInfo.relay.defaultSendPort );
 
-    DevIDType typ;
-    const XP_UCHAR* devID = linux_getDevID( params, &typ );
-    relaycon_reg( params, devID, typ );
+        DevIDType typ;
+        const XP_UCHAR* devID = linux_getDevID( params, &typ );
+        relaycon_reg( params, devID, typ );
+    }
 
     apg.window = makeGamesWindow( &apg );
     gtk_main();

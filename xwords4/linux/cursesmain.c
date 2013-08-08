@@ -2023,10 +2023,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         g_globals.draw = (struct CursesDrawCtx*)
             cursesDrawCtxtMake( g_globals.boardWin );
 
-        XWStreamCtxt* stream = NULL;
-        if ( !!params->dbName ) {
-            g_globals.cGlobals.pDb = openGamesDB( params->dbName );
-
+        if ( params->useUdp ) {
             RelayConnProcs procs = {
                 .msgReceived = cursesGotBuf,
                 .msgNoticeReceived = cursesNoticeRcvd,
@@ -2041,14 +2038,21 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             DevIDType typ;
             const XP_UCHAR* devID = linux_getDevID( params, &typ );
             relaycon_reg( params, devID, typ );
+        }
 
-            GSList* games = listGames( g_globals.cGlobals.pDb );
+        XWStreamCtxt* stream = NULL;
+        if ( !!params->dbName ) {
+            sqlite3* pDb = openGamesDB( params->dbName );
+            /* Gross that both need to be set, but they do. */
+            params->pDb = g_globals.cGlobals.pDb = pDb;
+
+            GSList* games = listGames( pDb );
             if ( !!games ) {
                 stream = mem_stream_make( MEMPOOL params->vtMgr,
                                           &g_globals.cGlobals, CHANNEL_NONE,
                                           NULL );
                 sqlite3_int64 selRow = *(sqlite3_int64*)games->data;
-                if ( loadGame( stream, g_globals.cGlobals.pDb, selRow ) ) {
+                if ( loadGame( stream, pDb, selRow ) ) {
                     g_globals.cGlobals.selRow = selRow;
                 } else {
                     stream_destroy( stream );
