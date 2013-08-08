@@ -916,12 +916,13 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
         assert( m_nPlayersHere <= m_nPlayersSought );
     }
 
-    if ( !!devIDp ) {
+    const AddrInfo* addr = &evt->addr;
+    if ( !!devIDp && !addr->isTCP() ) {
         DevIDType devIDType = evt->u.con.devID->m_devIDType;
         // does client support devID
         if ( ID_TYPE_NONE != devIDType ) { 
             devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
-            DevMgr::Get()->Remember( devID, &evt->addr );
+            DevMgr::Get()->Remember( devID, addr );
         }
         *devIDp = devID;
     }
@@ -929,7 +930,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
     evt->u.con.srcID =
         DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID, 
                                  evt->u.con.clientVersion, nPlayersH, seed, 
-                                 &evt->addr, devID, reconn );
+                                 addr, devID, reconn );
 
     HostID hostid = evt->u.con.srcID;
     if ( NULL != hidp ) {
@@ -944,9 +945,9 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
 
     {
         RWWriteLock rwl( &m_socketsRWLock );
-        HostRec hr( hostid, &evt->addr, nPlayersH, seed, !reconn );
+        HostRec hr( hostid, addr, nPlayersH, seed, !reconn );
         logf( XW_LOGINFO, "%s: adding socket rec with ts %lx", __func__, 
-              evt->addr.created() );
+              addr->created() );
         m_sockets.push_back( hr );
     }
 
