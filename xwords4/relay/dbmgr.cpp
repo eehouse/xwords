@@ -875,36 +875,35 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 {
     DevIDRelay devID = getDevID( connName, hid );
     if ( DEVID_NONE == devID ) {
-        logf( XW_LOGINFO, "%s: devid not found for connName=%s, hid=%d; "
-              "dropping message", __func__, connName, hid );
-    } else {
-
-        size_t newLen;
-        const char* fmt = "INSERT INTO " MSGS_TABLE " "
-            "(connname, hid, devid, token, %s, msglen) "
-            "VALUES( '%s', %d, %d, "
-            "(SELECT tokens[%d] from " GAMES_TABLE " where connname='%s'), "
-            "%s'%s', %d)";
-    
-        string query;
-        if ( m_useB64 ) {
-            gchar* b64 = g_base64_encode( buf, len );
-            string_printf( query, fmt, "msg64", connName, hid, devID, hid, connName, 
-                           "", b64, len );
-            g_free( b64 );
-        } else {
-            unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
-                                                      len, &newLen );
-            assert( NULL != bytes );
-    
-            string_printf( query, fmt, "msg", connName, hid, devID, hid, connName, 
-                           "E", bytes, len );
-            PQfreemem( bytes );
-        }
-
-        logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-        execSql( query );
+        logf( XW_LOGERROR, "%s: warning: devid not found for connName=%s, "
+              "hid=%d", __func__, connName, hid );
     }
+
+    size_t newLen;
+    const char* fmt = "INSERT INTO " MSGS_TABLE " "
+        "(connname, hid, devid, token, %s, msglen) "
+        "VALUES( '%s', %d, %d, "
+        "(SELECT tokens[%d] from " GAMES_TABLE " where connname='%s'), "
+        "%s'%s', %d)";
+    
+    string query;
+    if ( m_useB64 ) {
+        gchar* b64 = g_base64_encode( buf, len );
+        string_printf( query, fmt, "msg64", connName, hid, devID, hid, connName, 
+                       "", b64, len );
+        g_free( b64 );
+    } else {
+        unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
+                                                  len, &newLen );
+        assert( NULL != bytes );
+    
+        string_printf( query, fmt, "msg", connName, hid, devID, hid, connName, 
+                       "E", bytes, len );
+        PQfreemem( bytes );
+    }
+
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    execSql( query );
 }
 
 void
