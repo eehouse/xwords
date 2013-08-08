@@ -596,11 +596,6 @@ void
 send_havemsgs( const AddrInfo* addr )
 {
     logf( XW_LOGINFO, "%s()", __func__ );
-    int socket = addr->socket();
-    if ( -1 == socket ) {
-        socket = g_udpsock;
-    }
-
     send_via_udp( addr, NULL, XWPDEV_HAVEMSGS, NULL );
 }
 
