@@ -300,7 +300,7 @@ public class DBHelper extends SQLiteOpenHelper {
             String[] columnNames = DBUtils.getColumns( db, name );
             if ( null != columnNames ) { // no data means no need to copy
                 query = String.format( "ALTER table %s RENAME TO 'temp_%s'",
-                                              name, name );
+                                       name, name );
                 db.execSQL( query );
             }
             createTable( db, name, data );
@@ -309,9 +309,19 @@ public class DBHelper extends SQLiteOpenHelper {
             if ( null != columnNames ) {
                 ArrayList<String> oldCols = 
                     new ArrayList<String>( Arrays.asList( columnNames ) );
-                String[] newColNames = DBUtils.getColumns( db, name );
-                ArrayList<String> newCols = 
-                    new ArrayList<String>( Arrays.asList( newColNames ) );
+
+                // Make a list of columns in the new DB, using it to
+                // remove from the old list any that aren't in the
+                // new.  Old tables may have column names we no longer
+                // use, but we can't try to copy them because the new
+                // doesn't have 'em. Note that calling getColumns() on
+                // the newly-created table doesn't work, perhaps
+                // because we're in a transaction and nothing's been
+                // committed.
+                ArrayList<String> newCols = new ArrayList<String>();
+                for ( int ii = 0; ii < data.length; ii += 2 ) {
+                    newCols.add( data[ii] );
+                }
                 oldCols.retainAll( newCols );
 
                 String cols = TextUtils.join( ",", oldCols );
