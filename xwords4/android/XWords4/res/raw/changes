@@ -5,11 +5,12 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 64 release</b>
+<b>Crosswords 4.4 beta 65 release</b>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Fix tray height on large tablets</li>
+  <li>Fix crash upgrading directly from two-year-old version. C'mon,
+  people!</li>
 </ul>
 
 <h3>Next up</h3>
