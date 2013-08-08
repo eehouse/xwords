@@ -104,6 +104,7 @@ UdpQueue::get()
 bool
 UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
 {
+    assert( addr->isTCP() );
     PartialPacket* packet;
     bool success = true;
 

@@ -529,7 +529,7 @@ send_msg_via_udp( const AddrInfo* addr, AddrInfo::ClientToken clientToken,
                   const unsigned char* buf, const size_t bufLen, 
                   uint32_t* packetIDP )
 {
-    assert( 0 != clientToken );
+    assert( AddrInfo::NULL_TOKEN != clientToken );
     uint32_t asNetTok = htonl(clientToken);
     ssize_t nSent = send_via_udp( addr, packetIDP, XWPDEV_MSG, &asNetTok, 
                                   sizeof(asNetTok), buf, bufLen, NULL );
@@ -1423,7 +1423,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             memcpy( &clientToken, ptr, sizeof(clientToken) );
             ptr += sizeof(clientToken);
             clientToken = ntohl( clientToken );
-            if ( 0 != clientToken ) {
+            if ( AddrInfo::NULL_TOKEN != clientToken ) {
                 AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
                 (void)processMessage( ptr, end - ptr, &addr );
             } else {
@@ -1433,7 +1433,8 @@ handle_udp_packet( UdpThreadClosure* utc )
         }
         case XWPDEV_MSGNOCONN: {
             AddrInfo::ClientToken clientToken;
-            if ( getNetLong( &ptr, end, &clientToken ) && 0 != clientToken ) {
+            if ( getNetLong( &ptr, end, &clientToken ) 
+                 && AddrInfo::NULL_TOKEN != clientToken ) {
                 HostID hid;
                 char connName[MAX_CONNNAME_LEN+1];
                 if ( !parseRelayID( &ptr, end, connName, 
@@ -1485,7 +1486,8 @@ handle_udp_packet( UdpThreadClosure* utc )
                 break;
             }
             AddrInfo::ClientToken clientToken;
-            if ( getNetLong( &ptr, end, &clientToken ) && 0 != clientToken ) {
+            if ( getNetLong( &ptr, end, &clientToken ) 
+                 && AddrInfo::NULL_TOKEN != clientToken ) {
                 unsigned short seed;
                 HostID hid;
                 string connName;

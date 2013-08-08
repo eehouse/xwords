@@ -203,7 +203,7 @@ CookieRef::_Connect( int clientVersion, DevID* devID,
     }
 
     if ( !connected ) {
-        bool socketOK = !addr->isTCP();
+        bool socketOK = addr->isUDP();
         if ( !socketOK ) {
             socketOK = true;
             vector<AddrInfo> addrs = GetAddrs();
@@ -917,7 +917,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
     }
 
     const AddrInfo* addr = &evt->addr;
-    if ( !!devIDp && !addr->isTCP() ) {
+    if ( !!devIDp && addr->isUDP() ) {
         DevIDType devIDType = evt->u.con.devID->m_devIDType;
         // does client support devID
         if ( ID_TYPE_NONE != devIDType ) { 

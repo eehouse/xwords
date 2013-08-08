@@ -715,15 +715,13 @@ DBMgr::TokenFor( const char* const connName, int hid, DevIDRelay* devid,
     if ( 1 == PQntuples( result ) ) {
         AddrInfo::ClientToken token_tmp = atoi( PQgetvalue( result, 0, 0 ) );
         DevIDRelay devid_tmp = atoi( PQgetvalue( result, 0, 1 ) );
-        if ( 0 != token_tmp   // 0 is illegal (legacy/unset) value
-             && 0 != devid_tmp ) {
+        if ( AddrInfo::NULL_TOKEN != token_tmp && 0 != devid_tmp ) {
             *token = token_tmp;
             *devid = devid_tmp;
             found = true;
         }
     }
     PQclear( result );
-
 
     if ( found ) {
         logf( XW_LOGINFO, "%s(%s,%d)=>true (%d, %d)", __func__, connName, hid, 

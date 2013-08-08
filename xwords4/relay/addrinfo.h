@@ -29,6 +29,7 @@
 class AddrInfo {
  public:
     typedef uint32_t ClientToken;
+    static const ClientToken NULL_TOKEN = 0;
 
     class AddrUnion {
     public:
@@ -67,7 +68,8 @@ class AddrInfo {
     }
 
     void setIsTCP( bool val ) { m_isTCP = val; }
-    bool isTCP() const { return m_isTCP; } /* later UDP will be here too */
+    bool isTCP() const { return m_isTCP; }
+    bool isUDP() const { return !m_isTCP; }
     int socket() const { assert(m_isValid); return m_socket; }
     ClientToken clientToken() const { assert(m_isValid); return m_clientToken; }
     struct in_addr sin_addr() const { return m_saddr.u.addr_in.sin_addr; }
