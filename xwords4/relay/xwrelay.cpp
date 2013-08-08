@@ -529,15 +529,17 @@ send_msg_via_udp( const AddrInfo* addr, AddrInfo::ClientToken clientToken,
                   const unsigned char* buf, const size_t bufLen, 
                   uint32_t* packetIDP )
 {
-    assert( AddrInfo::NULL_TOKEN != clientToken );
-    uint32_t asNetTok = htonl(clientToken);
-    ssize_t nSent = send_via_udp( addr, packetIDP, XWPDEV_MSG, &asNetTok, 
-                                  sizeof(asNetTok), buf, bufLen, NULL );
-    logf( XW_LOGINFO, "%s: sent %d bytes (plus header) on UDP socket, "
-          "token=%x(%d)", __func__, bufLen, clientToken, 
-          clientToken );
-    bool result = 0 < nSent;
-    logf( XW_LOGINFO, "%s()=>%d", __func__, result );
+    bool result = AddrInfo::NULL_TOKEN != clientToken;
+    if ( result ) {
+        uint32_t asNetTok = htonl(clientToken);
+        ssize_t nSent = send_via_udp( addr, packetIDP, XWPDEV_MSG, &asNetTok, 
+                                      sizeof(asNetTok), buf, bufLen, NULL );
+        logf( XW_LOGINFO, "%s: sent %d bytes (plus header) on UDP socket, "
+              "token=%x(%d)", __func__, bufLen, clientToken, 
+              clientToken );
+        result = 0 < nSent;
+        logf( XW_LOGINFO, "%s()=>%d", __func__, result );
+    }
     return result;
 }
 
