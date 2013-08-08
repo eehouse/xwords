@@ -47,7 +47,8 @@ CidInfo::SetOwner( pthread_t owner )
         m_owner = owner; 
     }
     assert( 0 <= m_ownerCount );
-    logf( XW_LOGINFO, "%s(owner=%d); m_ownerCount=%d", __func__, owner, m_ownerCount );
+    logf( XW_LOGINFO, "%s(owner=%u); m_ownerCount now %d", __func__, owner, 
+          m_ownerCount );
 }
 
 CidLock* CidLock::s_instance = NULL;
