@@ -27,7 +27,7 @@ echo -n "Device (pid) count: $(pidof xwords | wc | awk '{print $2}')"
 echo ";   relay pid[s]: $(pidof xwrelay)"
 echo "Row count:" $(psql -t xwgames -c "select count(*) FROM games $QUERY;")
 
-echo "SELECT dead,connname,cid,room,lang as lg,clntVers as cv ,ntotal as tot,nperdevice as nPerDev,seeds,tokens,ack,nsents as snts "\
+echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as nPerDev,nsents as snts, seeds,devids,tokens,ack "\
      "FROM games $QUERY ORDER BY NOT dead, connname LIMIT $LIMIT;" \
     | psql xwgames
 
@@ -36,6 +36,6 @@ echo "SELECT connname, hid, devid, count(*), sum(msglen) "\
      "GROUP BY connname, hid, devid ORDER BY connname;" \
     | psql xwgames
 
-echo "SELECT * from devices;" \
+echo "SELECT * FROM devices WHERE id IN (select UNNEST(devids) FROM games $QUERY) ORDER BY id;" \
     | psql xwgames
 
