@@ -90,7 +90,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_lastSecsLeft;
     private int m_lastTimerPlayer;
     private int m_pendingScore;
-    private Handler m_viewHandler;
     private CommsAddrRec.CommsConnType m_connType = 
         CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
 
@@ -182,8 +181,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         for ( int ii = 0; ii < ids.length; ++ii ) {
             m_bonusSummaries[ ii+1 ] = getResources().getString( ids[ii] );
         }
-
-        m_viewHandler = new Handler();
     }
 
     @Override
@@ -838,13 +835,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         if ( !m_arrowHintShown ) {
             m_arrowHintShown = true;
-            m_viewHandler.post( new Runnable() {
-                    public void run() {
-                        m_parent.
-                            showNotAgainDlgThen( R.string.not_again_arrow, 
-                                                 R.string.key_notagain_arrow );
-                    }
-                } );
+            Handler handler = getHandler();
+            if ( null != handler ) {
+                handler.post( new Runnable() {
+                        public void run() {
+                            m_parent.
+                                showNotAgainDlgThen( R.string.not_again_arrow, 
+                                                     R.string.
+                                                     key_notagain_arrow );
+                        } } );
+            }
         }
     }
 
