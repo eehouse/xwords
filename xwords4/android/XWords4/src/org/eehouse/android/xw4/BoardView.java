@@ -211,9 +211,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             break;
         case MotionEvent.ACTION_UP:
             if ( ConnStatusHandler.handleUp( xx, yy ) ) {
-                String msg = ConnStatusHandler.getStatusText( m_context,
-                                                              m_connType );
-                m_parent.showOKOnlyDialog( msg );
+                // do nothing
             } else {
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
             }

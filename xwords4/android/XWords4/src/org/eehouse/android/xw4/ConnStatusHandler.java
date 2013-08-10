@@ -43,6 +43,12 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class ConnStatusHandler {
+
+    public interface ConnStatusCBacks {
+        public void invalidateParent();
+        public void onStatusClicked();
+    }
+
     // private static final int GREEN = 0x7F00FF00;
     // private static final int RED = 0x7FFF0000;
     private static final int GREEN = 0xFF00FF00;
@@ -54,6 +60,7 @@ public class ConnStatusHandler {
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
     private static Handler s_handler;
+    private static ConnStatusCBacks s_cbacks;
     private static Paint s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
     private static boolean[] s_showSuccesses = { false, false };
 
@@ -134,9 +141,10 @@ public class ConnStatusHandler {
         s_rect = new Rect( left, top, right, bottom );
     }
 
-    public static void setHandler( Handler handler )
+    public static void setHandler( Handler handler, ConnStatusCBacks cbacks )
     {
         s_handler = handler;
+        s_cbacks = cbacks;
     }
 
     public static boolean handleDown( int xx, int yy )
@@ -148,6 +156,9 @@ public class ConnStatusHandler {
     public static boolean handleUp( int xx, int yy )
     {
         boolean result = s_downOnMe && s_rect.contains( xx, yy );
+        if ( result && null != s_cbacks ) {
+            s_cbacks.onStatusClicked();
+        }
         s_downOnMe = false;
         return result;
     }
@@ -210,8 +221,8 @@ public class ConnStatusHandler {
 
     private static void invalidateParent()
     {
-        if ( null != s_handler ) {
-            Message.obtain( s_handler ).sendToTarget();
+        if ( null != s_cbacks ) {
+            s_cbacks.invalidateParent();
         }
     }
    

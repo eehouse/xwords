@@ -57,7 +57,8 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class BoardActivity extends XWActivity 
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
-               DictImportActivity.DownloadFinishedListener {
+               DictImportActivity.DownloadFinishedListener, 
+               ConnStatusHandler.ConnStatusCBacks {
 
     public static final String INTENT_KEY_CHAT = "chat";
 
@@ -560,7 +561,7 @@ public class BoardActivity extends XWActivity
     protected void onPause()
     {
         m_handler = null;
-        ConnStatusHandler.setHandler( null );
+        ConnStatusHandler.setHandler( null, null );
         waitCloseGame( true );
         super.onPause();
     }
@@ -576,12 +577,7 @@ public class BoardActivity extends XWActivity
 
         loadGame();
 
-        Handler handler = new Handler() {
-                public void handleMessage( Message msg ) {
-                    m_view.invalidate();
-                }
-            };
-        ConnStatusHandler.setHandler( handler );
+        ConnStatusHandler.setHandler( m_handler, this );
     }
 
     @Override
@@ -1125,6 +1121,28 @@ public class BoardActivity extends XWActivity
                     }
                 } ); 
         }
+    }
+
+    //////////////////////////////////////////////////
+    // ConnStatusHandler.ConnStatusCBacks
+    //////////////////////////////////////////////////
+    public void invalidateParent()
+    {
+        runOnUiThread(new Runnable() {
+                public void run() {
+                    m_view.invalidate();
+                }
+            });
+    }
+
+    public void onStatusClicked()
+    {
+        final String msg = ConnStatusHandler.getStatusText( this, m_connType );
+        post( new Runnable() {
+                public void run() {
+                    showOKOnlyDialog( msg );
+                }
+            } );
     }
 
     private void setGotGameDict( String getDict )
