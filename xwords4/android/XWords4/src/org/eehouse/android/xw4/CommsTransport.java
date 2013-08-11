@@ -182,7 +182,7 @@ public class CommsTransport implements TransportProcs,
                                 addIncoming();
                             }
                             ConnStatusHandler.
-                                updateStatusIn( m_context, m_handler,
+                                updateStatusIn( m_context, null,
                                                 CommsConnType.COMMS_CONN_RELAY, 
                                                 0 <= nRead );
                         }
@@ -191,7 +191,7 @@ public class CommsTransport implements TransportProcs,
                             if ( null != m_bytesOut ) {
                                 int nWritten = channel.write( m_bytesOut );
                                 ConnStatusHandler.
-                                    updateStatusOut( m_context, m_handler,
+                                    updateStatusOut( m_context, null,
                                                      CommsConnType.COMMS_CONN_RELAY,
                                                      0 < nWritten );
                             }
@@ -420,21 +420,21 @@ public class CommsTransport implements TransportProcs,
         case COMMS_RELAYSTATE_UNCONNECTED:
         case COMMS_RELAYSTATE_DENIED:
         case COMMS_RELAYSTATE_CONNECT_PENDING:
-            ConnStatusHandler.updateStatusOut( m_context, m_handler,
+            ConnStatusHandler.updateStatusOut( m_context, null,
                                                CommsConnType.COMMS_CONN_RELAY, 
                                                false );
-            ConnStatusHandler.updateStatusIn( m_context, m_handler,
+            ConnStatusHandler.updateStatusIn( m_context, null,
                                               CommsConnType.COMMS_CONN_RELAY, 
                                               false );
             break;
         case COMMS_RELAYSTATE_CONNECTED: 
         case COMMS_RELAYSTATE_RECONNECTED: 
-            ConnStatusHandler.updateStatusOut( m_context, m_handler,
+            ConnStatusHandler.updateStatusOut( m_context, null,
                                                CommsConnType.COMMS_CONN_RELAY, 
                                                true );
             break;
         case COMMS_RELAYSTATE_ALLCONNECTED:
-            ConnStatusHandler.updateStatusIn( m_context, m_handler,
+            ConnStatusHandler.updateStatusIn( m_context, null,
                                               CommsConnType.COMMS_CONN_RELAY, 
                                               true );
             break;

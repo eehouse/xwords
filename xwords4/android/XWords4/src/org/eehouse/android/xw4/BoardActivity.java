@@ -980,7 +980,7 @@ public class BoardActivity extends XWActivity
             //     m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, accepted );
             // }
             ConnStatusHandler.
-                updateStatusIn(this, m_handler,
+                updateStatusIn(this, this,
                                CommsAddrRec.CommsConnType.COMMS_CONN_BT, 
                                MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
             break;
@@ -1017,10 +1017,10 @@ public class BoardActivity extends XWActivity
             break;
 
         case SMS_SEND_OK:
-            ConnStatusHandler.showSuccessOut( m_handler );
+            ConnStatusHandler.showSuccessOut( this );
             break;
         case SMS_RECEIVE_OK:
-            ConnStatusHandler.showSuccessIn( m_handler );
+            ConnStatusHandler.showSuccessIn( this );
             break;
         case SMS_SEND_FAILED:
         case SMS_SEND_FAILED_NORADIO:
@@ -1143,6 +1143,11 @@ public class BoardActivity extends XWActivity
                     showOKOnlyDialog( msg );
                 }
             } );
+    }
+
+    public Handler getHandler()
+    {
+        return m_handler;
     }
 
     private void setGotGameDict( String getDict )

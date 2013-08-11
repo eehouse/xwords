@@ -47,6 +47,7 @@ public class ConnStatusHandler {
     public interface ConnStatusCBacks {
         public void invalidateParent();
         public void onStatusClicked();
+        public Handler getHandler();
     }
 
     // private static final int GREEN = 0x7F00FF00;
@@ -59,7 +60,6 @@ public class ConnStatusHandler {
 
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
-    private static Handler s_handler;
     private static ConnStatusCBacks s_cbacks;
     private static Paint s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
     private static boolean[] s_showSuccesses = { false, false };
@@ -143,7 +143,6 @@ public class ConnStatusHandler {
 
     public static void setHandler( Handler handler, ConnStatusCBacks cbacks )
     {
-        s_handler = handler;
         s_cbacks = cbacks;
     }
 
@@ -225,53 +224,56 @@ public class ConnStatusHandler {
             s_cbacks.invalidateParent();
         }
     }
-   
-    public static void updateStatusIn( Context context, Handler handler,
+
+    public static void updateStatusIn( Context context, ConnStatusCBacks cbacks,
                                        CommsConnType connType, boolean success )
     {
-        synchronized( s_lockObj ) {
-            SuccessRecord record = recordFor( connType, true );
-            record.update( success );
-        }
-        invalidateParent();
-        saveState( context, handler );
-        if ( success ) {
-            showSuccess( handler, true );
-        }
+        updateStatusImpl( context, cbacks, connType, success, true );
     }
 
-    public static void updateStatusOut( Context context, Handler handler,
+    public static void updateStatusOut( Context context, ConnStatusCBacks cbacks,
                                         CommsConnType connType, boolean success )
     {
+        updateStatusImpl( context, cbacks, connType, success, false );
+    }
+
+    public static void updateStatusImpl( Context context, ConnStatusCBacks cbacks,
+                                         CommsConnType connType, boolean success,
+                                         boolean isIn )
+    {
+        if ( null == cbacks ) {
+            cbacks = s_cbacks;
+        }
+
         synchronized( s_lockObj ) {
-            SuccessRecord record = recordFor( connType, false );
+            SuccessRecord record = recordFor( connType, isIn );
             record.update( success );
         }
         invalidateParent();
-        saveState( context, handler );
+        saveState( context, cbacks );
         if ( success ) {
-            showSuccess( handler, false );
+            showSuccess( cbacks, isIn );
         }
     }
 
-    public static void showSuccessIn( Handler handler )
+    public static void showSuccessIn( ConnStatusCBacks cbcks )
     {
-        showSuccess( handler, true );
+        showSuccess( cbcks, true );
     }
 
     public static void showSuccessIn()
     {
-        showSuccessIn( s_handler );
+        showSuccessIn( s_cbacks );
     }
 
-    public static void showSuccessOut( Handler handler )
+    public static void showSuccessOut( ConnStatusCBacks cbcks )
     {
-        showSuccess( handler, false );
+        showSuccess( cbcks, false );
     }
 
     public static void showSuccessOut()
     {
-        showSuccessOut( s_handler );
+        showSuccessOut( s_cbacks );
     }
 
     public static void draw( Context context, Canvas canvas, Resources res, 
@@ -371,9 +373,10 @@ public class ConnStatusHandler {
         }
     }
 
-    private static void saveState( final Context context, Handler handler )
+    private static void saveState( final Context context, 
+                                   ConnStatusCBacks cbcks )
     {
-        if ( null == handler ) {
+        if ( null == cbcks ) {
             doSave( context );
         } else {
             boolean savePending;
@@ -385,38 +388,44 @@ public class ConnStatusHandler {
             }
 
             if ( !savePending ) {
-                Runnable proc = new Runnable() {
-                        public void run() {
-                            doSave( context );
-                        }
-                    };
-                handler.postDelayed( proc, 5000 );
+                Handler handler = cbcks.getHandler();
+                if ( null != handler ) {
+                    Runnable proc = new Runnable() {
+                            public void run() {
+                                doSave( context );
+                            }
+                        };
+                    handler.postDelayed( proc, 5000 );
+                }
             }
         }
     }
 
-    private static void showSuccess( Handler handler, boolean isIn )
+    private static void showSuccess( ConnStatusCBacks cbcks, boolean isIn )
     {
-        if ( null != handler ) {
+        if ( null != cbcks ) {
             synchronized( s_lockObj ) {
                 if ( isIn && s_showSuccesses[SUCCESS_IN] ) {
                     // do nothing
                 } else if ( !isIn && s_showSuccesses[SUCCESS_OUT] ) {
                     // do nothing
                 } else {
-                    final int index = isIn? SUCCESS_IN : SUCCESS_OUT;
-                    s_showSuccesses[index] = true;
+                    Handler handler = cbcks.getHandler();
+                    if ( null != handler ) {
+                        final int index = isIn? SUCCESS_IN : SUCCESS_OUT;
+                        s_showSuccesses[index] = true;
 
-                    Runnable proc = new Runnable() {
-                            public void run() {
-                                synchronized( s_lockObj ) {
-                                    s_showSuccesses[index] = false;
-                                    invalidateParent();
+                        Runnable proc = new Runnable() {
+                                public void run() {
+                                    synchronized( s_lockObj ) {
+                                        s_showSuccesses[index] = false;
+                                        invalidateParent();
+                                    }
                                 }
-                            }
-                        };
-                    handler.postDelayed( proc, SHOW_SUCCESS_INTERVAL );
-                    invalidateParent();
+                            };
+                        handler.postDelayed( proc, SHOW_SUCCESS_INTERVAL );
+                        invalidateParent();
+                    }
                 }
             }
         }
