@@ -51,6 +51,7 @@ import android.content.res.Configuration;
 import android.content.pm.ActivityInfo;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
@@ -77,6 +78,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_USEDICT = DLG_OKONLY + 12;
     private static final int DLG_GETDICT = DLG_OKONLY + 13;
     private static final int GAME_OVER = DLG_OKONLY + 14;
+    private static final int DLG_CONNSTAT = DLG_OKONLY + 15;
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
@@ -136,8 +138,7 @@ public class BoardActivity extends XWActivity
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
-    private CommsAddrRec.CommsConnType m_connType = 
-        CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
+    private CommsConnType m_connType = CommsConnType.COMMS_CONN_NONE;
     private String[] m_missingDevs;
     private String m_curTiles;
     private boolean m_canUndoTiles;
@@ -276,6 +277,7 @@ public class BoardActivity extends XWActivity
             case DLG_BADWORDS:
             case DLG_RETRY:
             case GAME_OVER:
+            case DLG_CONNSTAT:
                 ab = new AlertDialog.Builder( this )
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
@@ -296,6 +298,15 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
+                } else if ( DLG_CONNSTAT == id &&
+                            CommsConnType.COMMS_CONN_RELAY == m_connType ) {
+                    lstnr = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                RelayService.reset( BoardActivity.this );
+                            }
+                        };
+                    ab.setNegativeButton( R.string.button_reconnect, lstnr );
                 }
                 dialog = ab.create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
@@ -974,15 +985,9 @@ public class BoardActivity extends XWActivity
         switch( event ) {
         case MESSAGE_ACCEPTED:
         case MESSAGE_REFUSED:
-            // if ( null != m_jniThread ) {
-            //     boolean accepted = 
-            //         MultiService.MultiEvent.MESSAGE_ACCEPTED == event;
-            //     m_jniThread.handle( JNICmd.CMD_DRAW_BT_STATUS, accepted );
-            // }
             ConnStatusHandler.
-                updateStatusIn(this, this,
-                               CommsAddrRec.CommsConnType.COMMS_CONN_BT, 
-                               MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
+                updateStatusIn( this, this, CommsConnType.COMMS_CONN_BT, 
+                                MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
             break;
         case MESSAGE_NOGAME:
             int gameID = (Integer)args[0];
@@ -1140,7 +1145,9 @@ public class BoardActivity extends XWActivity
         final String msg = ConnStatusHandler.getStatusText( this, m_connType );
         post( new Runnable() {
                 public void run() {
-                    showOKOnlyDialog( msg );
+                    m_dlgBytes = msg;
+                    m_dlgTitle = R.string.info_title;
+                    showDialog( DLG_CONNSTAT );
                 }
             } );
     }
@@ -1566,8 +1573,7 @@ public class BoardActivity extends XWActivity
         } // userError
 
         @Override
-        public void informMissing( boolean isServer, 
-                                   CommsAddrRec.CommsConnType connType,
+        public void informMissing( boolean isServer, CommsConnType connType,
                                    final int nMissingPlayers )
         {
             m_connType = connType;

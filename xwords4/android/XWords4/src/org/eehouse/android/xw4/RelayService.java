@@ -114,6 +114,11 @@ public class RelayService extends XWService {
         context.startService( intent );
     }
 
+    public static void reset( Context context )
+    {
+        DbgUtils.logf( "RelayService.reset() called" );
+    }
+
     public static int sendPacket( Context context, long rowid, byte[] msg )
     {
         Intent intent = getIntentTo( context, SEND )

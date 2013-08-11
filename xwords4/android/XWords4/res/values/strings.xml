@@ -2161,6 +2161,8 @@
          just ended. -->
     <string name="button_rematch">Rematch</string>
 
+    <string name="button_reconnect">Reconnect</string>
+
     <string name="square_tiles">Square rack tiles</string>
     <string name="square_tiles_summary">Even if they can be taller</string>
 
