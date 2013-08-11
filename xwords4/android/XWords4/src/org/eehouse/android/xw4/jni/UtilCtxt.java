@@ -57,14 +57,15 @@ public interface UtilCtxt {
     void setIsServer( boolean isServer );
 
     // Possible values for typ[0], these must match enum in xwrelay.sh
-    public static final int ID_TYPE_NONE = 0;
-    public static final int ID_TYPE_RELAY = 1;
-    public static final int ID_TYPE_ANDROID_GCM = 3;
-    public static final int ID_TYPE_ANDROID_OTHER = 4;
-    public static final int ID_TYPE_ANON = 5;
+    public enum DevIDType { ID_TYPE_NONE
+            , ID_TYPE_RELAY
+            , ID_TYPE_ANDROID_GCM
+            , ID_TYPE_ANDROID_OTHER
+            , ID_TYPE_ANON
+            }
 
     String getDevID( /*out*/ byte[] typ );
-    void deviceRegistered( int devIDType, String idRelay );
+    void deviceRegistered( DevIDType devIDType, String idRelay );
 
     void bonusSquareHeld( int bonus );
     void playerScoreHeld( int player );

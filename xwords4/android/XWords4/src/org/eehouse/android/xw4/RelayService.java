@@ -598,23 +598,23 @@ public class RelayService extends XWService {
 
     private String getDevID( byte[] typp )
     {
-        byte typ;
+        UtilCtxt.DevIDType typ;
         String devid = XWPrefs.getRelayDevID( this );
         if ( null != devid && 0 < devid.length() ) {
-            typ = UtilCtxt.ID_TYPE_RELAY;
+            typ = UtilCtxt.DevIDType.ID_TYPE_RELAY;
         } else {
             devid = XWPrefs.getGCMDevID( this );
             if ( null != devid && 0 < devid.length() ) {
-                typ = UtilCtxt.ID_TYPE_ANDROID_GCM;
+                typ = UtilCtxt.DevIDType.ID_TYPE_ANDROID_GCM;
             } else {
                 devid = "";
-                typ = UtilCtxt.ID_TYPE_ANON;
+                typ = UtilCtxt.DevIDType.ID_TYPE_ANON;
             }
         }
         if ( null != typp ) {
-            typp[0] = typ;
+            typp[0] = (byte)typ.ordinal();
         } else {
-            Assert.assertTrue( typ == UtilCtxt.ID_TYPE_RELAY );
+            Assert.assertTrue( typ == UtilCtxt.DevIDType.ID_TYPE_RELAY );
         }
         return devid;
     }

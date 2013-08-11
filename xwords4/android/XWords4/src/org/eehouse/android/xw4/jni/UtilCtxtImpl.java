@@ -96,29 +96,29 @@ public class UtilCtxtImpl implements UtilCtxt {
 
     public String getDevID( /*out*/ byte[] typa )
     {
-        byte typ = UtilCtxt.ID_TYPE_NONE;
+        UtilCtxt.DevIDType typ = UtilCtxt.DevIDType.ID_TYPE_NONE;
         String result = XWPrefs.getRelayDevID( m_context );
         if ( null != result ) {
-            typ = UtilCtxt.ID_TYPE_RELAY;
+            typ = UtilCtxt.DevIDType.ID_TYPE_RELAY;
         } else {
             result = XWPrefs.getGCMDevID( m_context );
             if ( result.equals("") ) {
                 result = null;
             } else {
-                typ = UtilCtxt.ID_TYPE_ANDROID_GCM;
+                typ = UtilCtxt.DevIDType.ID_TYPE_ANDROID_GCM;
             }
         }
-        typa[0] = typ;
+        typa[0] = (byte)typ.ordinal();
         return result;
     }
 
-    public void deviceRegistered( int devIDType, String idRelay )
+    public void deviceRegistered( UtilCtxt.DevIDType devIDType, String idRelay )
     {
         switch ( devIDType ) {
-        case UtilCtxt.ID_TYPE_RELAY:
+        case ID_TYPE_RELAY:
             XWPrefs.setRelayDevID( m_context, idRelay );
             break;
-        case UtilCtxt.ID_TYPE_NONE:
+        case ID_TYPE_NONE:
             XWPrefs.clearRelayDevID( m_context );
             break;
         default:
