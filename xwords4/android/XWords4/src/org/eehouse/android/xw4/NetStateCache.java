@@ -118,12 +118,12 @@ public class NetStateCache {
                 }
 
                 if ( s_netAvail != netAvail ) {
+                    s_netAvail = netAvail;
                     Iterator<StateChangedIf> iter = s_ifs.iterator();
                     while ( iter.hasNext() ) {
                         StateChangedIf proc = iter.next();
                         proc.netAvail( netAvail );
                     }
-                    s_netAvail = netAvail;
                 }
             }
         }
