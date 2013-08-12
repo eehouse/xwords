@@ -39,26 +39,19 @@ public class RelayReceiver extends BroadcastReceiver {
             RestartTimer( context );
         } else {
             // DbgUtils.logf( "RelayReceiver::onReceive()" );
-            // Toast.makeText(context, "RelayReceiver: fired", 
-            //                Toast.LENGTH_SHORT).show();
-            Intent service = new Intent( context, RelayService.class );
-            context.startService( service );
+            // Toast.makeText( context, "RelayReceiver: timer fired", 
+            //                 Toast.LENGTH_SHORT).show();
+            RelayService.timerFired( context );
         }
-    }
-
-    public static void RestartTimer( Context context, boolean force )
-    {
-        RestartTimer( context, 
-                      1000 * XWPrefs.getProxyInterval( context ), force );
     }
 
     public static void RestartTimer( Context context )
     {
-        RestartTimer( context, false );
+        RestartTimer( context, 
+                      1000 * XWPrefs.getProxyInterval( context ) );
     }
 
-    public static void RestartTimer( Context context, long interval_millis, 
-                                     boolean force )
+    public static void RestartTimer( Context context, long interval_millis )
     {
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
@@ -66,22 +59,15 @@ public class RelayReceiver extends BroadcastReceiver {
         Intent intent = new Intent( context, RelayReceiver.class );
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
-        if ( force || interval_millis > 0 ) {
-            long first_millis = 0;
-            if ( !force ) {
-                first_millis = SystemClock.elapsedRealtime() + interval_millis;
-            }
+        if ( interval_millis > 0 ) {
+            long first_millis = SystemClock.elapsedRealtime() + interval_millis;
             am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
                                     first_millis, // first firing
                                     interval_millis, pi );
         } else {
+            // will happen if user's set getProxyInterval to return 0
             am.cancel( pi );
         }
-    }
-
-    public static void RestartTimer( Context context, long interval_millis )
-    {
-        RestartTimer( context, interval_millis, false );
     }
 
 }

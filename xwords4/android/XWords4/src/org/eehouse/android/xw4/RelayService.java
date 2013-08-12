@@ -46,18 +46,26 @@ import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
 
-public class RelayService extends XWService {
+public class RelayService extends XWService 
+    implements NetStateCache.StateChangedIf {
     private static final int MAX_SEND = 1024;
     private static final int MAX_BUF = MAX_SEND - 2;
 
+    // One week, in seconds.  Probably should be configurable.
+    private static final long MAX_KEEPALIVE_SECS = 7 * 24 * 60 * 60;
+
     private static final String CMD_STR = "CMD";
 
+    // These should be enums
     private static final int PROCESS_MSGS = 1;
     private static final int UDP_CHANGED = 2;
     private static final int SEND = 3;
     private static final int RECEIVE = 4;
+    private static final int TIMER_FIRED = 5;
+    private static final int RESET = 6;
 
     private static final String MSGS = "MSGS";
     private static final String RELAY_ID = "RELAY_ID";
@@ -66,6 +74,7 @@ public class RelayService extends XWService {
 
     private static HashSet<Integer> s_packetsSent = new HashSet<Integer>();
     private static int s_nextPacketID = 1;
+    private static boolean s_gcmWorking = false;
 
     private Thread m_fetchThread = null;
     private Thread m_UDPReadThread = null;
@@ -74,8 +83,9 @@ public class RelayService extends XWService {
     private LinkedBlockingQueue<DatagramPacket> m_queue = 
         new LinkedBlockingQueue<DatagramPacket>();
     private Handler m_handler;
-    private Runnable m_killer;
-    private short m_maxInterval = 0;
+    private Runnable m_onInactivity;
+    private short m_maxIntervalSeconds = 5; // give time to get real value
+    private long m_lastPacketReceived;
 
     // These must match the enum XWRelayReg in xwrelay.h
     private static final int XWPDEV_PROTO_VERSION = 0;
@@ -87,7 +97,7 @@ public class RelayService extends XWService {
             ,XWPDEV_ALERT
             ,XWPDEV_REG
             ,XWPDEV_REGRSP
-            ,XWPDEV_PING
+            ,XWPDEV_KEEPALIVE
             ,XWPDEV_HAVEMSGS
             ,XWPDEV_RQSTMSGS
             ,XWPDEV_MSG
@@ -97,16 +107,10 @@ public class RelayService extends XWService {
             ,XWPDEV_ACK
             };
 
-    // private static final int XWPDEV_ALERT = 1;
-    // private static final int XWPDEV_REG = 2;
-    // private static final int XWPDEV_REGRSP = 3;
-    // private static final int XWPDEV_PING = 4;
-    // private static final int XWPDEV_HAVEMSGS = 5;
-    // private static final int XWPDEV_RQSTMSGS = 6;
-    // private static final int XWPDEV_MSG = 7;
-    // private static final int XWPDEV_MSGNOCONN = 8;
-    // private static final int XWPDEV_MSGRSP = 9;
-    // private static final int XWPDEV_BADREG = 10;
+    public static void gcmConfirmed( boolean confirmed )
+    {
+        s_gcmWorking = confirmed;
+    }
 
     public static void startService( Context context )
     {
@@ -116,16 +120,30 @@ public class RelayService extends XWService {
 
     public static void reset( Context context )
     {
-        DbgUtils.logf( "RelayService.reset() called" );
+        Intent intent = getIntentTo( context, RESET );
+        context.startService( intent );
+    }
+
+    public static void timerFired( Context context )
+
+    {
+        Intent intent = getIntentTo( context, TIMER_FIRED );
+        context.startService( intent );
     }
 
     public static int sendPacket( Context context, long rowid, byte[] msg )
     {
-        Intent intent = getIntentTo( context, SEND )
-            .putExtra( ROWID, rowid )
-            .putExtra( BINBUFFER, msg );
-        context.startService( intent );
-        return msg.length;
+        int result = -1;
+        if ( NetStateCache.netAvail( context ) ) {
+            Intent intent = getIntentTo( context, SEND )
+                .putExtra( ROWID, rowid )
+                .putExtra( BINBUFFER, msg );
+            context.startService( intent );
+            result = msg.length;
+        } else {
+            DbgUtils.logf( "RelayService.sendPacket: network down" );
+        }
+        return result;
     }
 
     // Exists to get incoming data onto the main thread
@@ -169,12 +187,20 @@ public class RelayService extends XWService {
     public void onCreate()
     {
         super.onCreate();
-        startFetchThreadIf();
+        m_lastPacketReceived = 
+            XWPrefs.getPrefsLong( this, R.string.key_last_packet, 0 );
+
         m_handler = new Handler();
-        m_killer = new Runnable() {
+        m_onInactivity = new Runnable() {
                 public void run() {
-                    // DbgUtils.logf( "RelayService: m_killer fired" );
-                    stopSelf();
+                    DbgUtils.logf( "RelayService: m_onInactivity fired" );
+                    if ( !shouldMaintainConnection() ) {
+                        NetStateCache.unregister( RelayService.this, 
+                                                  RelayService.this );
+                        stopSelf();
+                    } else {
+                        timerFired( RelayService.this );
+                    }
                 }
             };
     }
@@ -182,10 +208,10 @@ public class RelayService extends XWService {
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
-        DbgUtils.logf( "RelayService::onStartCommand" );
         int result;
         if ( null != intent ) {
             int cmd = intent.getIntExtra( CMD_STR, -1 );
+            DbgUtils.logf( "RelayService::onStartCommand: cmd=%d", cmd );
             switch( cmd ) {
             case -1:
                 break;
@@ -205,15 +231,11 @@ public class RelayService extends XWService {
                 }
                 break;
             case UDP_CHANGED:
-                DbgUtils.logf( "RelayService::onStartCommand::UDP_CHANGED" );
-                if ( XWPrefs.getUDPEnabled( this ) ) {
-                    stopFetchThreadIf();
-                    startUDPThreadsIfNot();
-                    registerWithRelay();
-                } else {
-                    stopUDPThreadsIf();
-                    startFetchThreadIf();
-                }
+                startThreads();
+                break;
+            case RESET:
+                stopThreads();
+                startThreads();
                 break;
             case SEND:
             case RECEIVE:
@@ -226,6 +248,11 @@ public class RelayService extends XWService {
                     feedMessage( rowid, msg );
                 }
                 break;
+            case TIMER_FIRED:
+                if ( !startFetchThreadIf() ) {
+                    requestMessages();
+                }
+                break;
             default:
                 Assert.fail();
             }
@@ -234,8 +261,30 @@ public class RelayService extends XWService {
         } else {
             result = Service.START_STICKY_COMPATIBILITY;
         }    
+
+        NetStateCache.register( this, this );
         resetExitTimer();
         return result;
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        DbgUtils.logf( "RelayService.onDestroy() called" );
+        XWPrefs.setPrefsLong( this, R.string.key_last_packet,
+                              m_lastPacketReceived );
+
+        if ( shouldMaintainConnection() ) {
+            long interval_millis = m_maxIntervalSeconds * 1000;
+            RelayReceiver.RestartTimer( this, interval_millis );
+        }
+        super.onDestroy();
+    }
+
+    // NetStateCache.StateChangedIf interface
+    public void netAvail( boolean nowAvailable )
+    {
+        startService( this ); // bad name: will *stop* threads too
     }
 
     private void setupNotification( String[] relayIDs )
@@ -259,10 +308,11 @@ public class RelayService extends XWService {
                                 msg, (int)rowid );
     }
     
-    private void startFetchThreadIf()
+    private boolean startFetchThreadIf()
     {
         DbgUtils.logf( "startFetchThreadIf()" );
-        if ( !XWPrefs.getUDPEnabled( this ) && null == m_fetchThread ) {
+        boolean handled = !XWPrefs.getUDPEnabled( this );
+        if ( handled && null == m_fetchThread ) {
             m_fetchThread = new Thread( null, new Runnable() {
                     public void run() {
                         fetchAndProcess();
@@ -272,12 +322,15 @@ public class RelayService extends XWService {
                 }, getClass().getName() );
             m_fetchThread.start();
         }
+        return handled;
     }
 
     private void stopFetchThreadIf()
     {
         if ( null != m_fetchThread ) {
             DbgUtils.logf( "2: m_fetchThread NOT NULL; WHAT TO DO???" );
+            m_fetchThread.stop();
+            m_fetchThread = null;
         }
     }
 
@@ -302,6 +355,7 @@ public class RelayService extends XWService {
                                                    + "on receive" );
                                     m_UDPSocket.receive( packet );
                                     resetExitTimer();
+                                    m_lastPacketReceived = Utils.getCurSeconds();
                                     DbgUtils.logf( "UPD read thread: "
                                                    + "receive returned" );
                                 } catch( java.io.IOException ioe ) {
@@ -371,8 +425,11 @@ public class RelayService extends XWService {
                             try {
                                 m_UDPSocket.send( outPacket );
                                 resetExitTimer();
+                                ConnStatusHandler.showSuccessOut();
                             } catch ( java.io.IOException ioe ) {
                                 DbgUtils.loge( ioe );
+                            } catch ( NullPointerException npe ) {
+                                DbgUtils.logf( "network problem; dropping packet" );
                             }
                         }
                         DbgUtils.logf( "write thread exiting" );
@@ -419,6 +476,8 @@ public class RelayService extends XWService {
     // Running on reader thread
     private void gotPacket( DatagramPacket packet )
     {
+        ConnStatusHandler.showSuccessIn();
+
         int packetLen = packet.getLength();
         byte[] data = new byte[packetLen];
         System.arraycopy( packet.getData(), 0, data, 0, packetLen );
@@ -443,9 +502,10 @@ public class RelayService extends XWService {
                     break;
                 case XWPDEV_REGRSP:
                     str = getStringWithLength( dis );
-                    m_maxInterval = dis.readShort();
+                    m_maxIntervalSeconds = dis.readShort();
                     DbgUtils.logf( "got relayid %s, maxInterval %d", str, 
-                                   m_maxInterval );
+                                   m_maxIntervalSeconds );
+                    XWPrefs.setRelayDevID( this, str );
                     break;
                 case XWPDEV_HAVEMSGS:
                     requestMessages();
@@ -598,23 +658,23 @@ public class RelayService extends XWService {
 
     private String getDevID( byte[] typp )
     {
-        UtilCtxt.DevIDType typ;
+        DevIDType typ;
         String devid = XWPrefs.getRelayDevID( this );
         if ( null != devid && 0 < devid.length() ) {
-            typ = UtilCtxt.DevIDType.ID_TYPE_RELAY;
+            typ = DevIDType.ID_TYPE_RELAY;
         } else {
             devid = XWPrefs.getGCMDevID( this );
             if ( null != devid && 0 < devid.length() ) {
-                typ = UtilCtxt.DevIDType.ID_TYPE_ANDROID_GCM;
+                typ = DevIDType.ID_TYPE_ANDROID_GCM;
             } else {
                 devid = "";
-                typ = UtilCtxt.DevIDType.ID_TYPE_ANON;
+                typ = DevIDType.ID_TYPE_ANON;
             }
         }
         if ( null != typp ) {
             typp[0] = (byte)typ.ordinal();
         } else {
-            Assert.assertTrue( typ == UtilCtxt.DevIDType.ID_TYPE_RELAY );
+            Assert.assertTrue( typ == DevIDType.ID_TYPE_RELAY );
         }
         return devid;
     }
@@ -633,7 +693,7 @@ public class RelayService extends XWService {
                                         sink ) ) {
                 setupNotification( rowid );
             } else {
-                DbgUtils.logf( "feedMessage: background dropped it" );
+                DbgUtils.logf( "feedMessage(): background dropped it" );
             }
         }
     }
@@ -832,7 +892,8 @@ public class RelayService extends XWService {
     {
         synchronized( s_packetsSent ) {
             s_packetsSent.remove( packetID );
-            DbgUtils.logf( "Got ack for %d; there are %d unacked packets", 
+            DbgUtils.logf( "RelayService.noteAck(): Got ack for %d; "
+                           + "there are %d unacked packets", 
                            packetID, s_packetsSent.size() );
         }
     }
@@ -841,11 +902,60 @@ public class RelayService extends XWService {
     private void resetExitTimer()
     {
         // DbgUtils.logf( "RelayService.resetExitTimer()" );
-        m_handler.removeCallbacks( m_killer );
+        m_handler.removeCallbacks( m_onInactivity );
 
-        // UDP socket's no good as a return address after 2 minutes of
-        // in activity, so take down the service after that time.
-        m_handler.postDelayed( m_killer, 3 * 60 * 1000 );
+        // UDP socket's no good as a return address after several
+        // minutes of inactivity, so do something after that time.
+        m_handler.postDelayed( m_onInactivity, 
+                               m_maxIntervalSeconds * 1000 );
+    }
+
+    private void startThreads()
+    {
+        if ( !NetStateCache.netAvail( this ) ) {
+            stopThreads();
+        } else if ( XWPrefs.getUDPEnabled( this ) ) {
+            stopFetchThreadIf();
+            startUDPThreadsIfNot();
+            registerWithRelay();
+        } else {
+            stopUDPThreadsIf();
+            startFetchThreadIf();
+        }
+    }
+
+    private void stopThreads()
+    {
+        stopFetchThreadIf();
+        stopUDPThreadsIf();
+    }
+
+    /* Timers:
+     *
+     * Two goals: simulate the GCM experience for those who don't have
+     * it (e.g. Kindle); and stop this service when it's not needed.
+     * For now, we'll try to be immediately reachable from the relay
+     * if: 1) the device doesn't have GCM; and 2) it's been less than
+     * a week since we last received a packet from the relay.  We'll
+     * do this even if there are no relay games left on the device in
+     * order to support the rematch feature.
+     *
+     * Goal: maintain connection by keeping this service alive with
+     * its periodic pings to relay.  When it dies or is killed,
+     * notice, and use RelayReceiver's timer to get it restarted a bit
+     * later.  But note: s_gcmWorking will not be set when the app is
+     * relaunched.
+     */
+
+    private boolean shouldMaintainConnection()
+    {
+        boolean result = !s_gcmWorking;
+        if ( result ) {
+            long interval = Utils.getCurSeconds() - m_lastPacketReceived;
+            result = interval < MAX_KEEPALIVE_SECS;
+        }
+        DbgUtils.logf( "RelayService.shouldMaintainConnection=>%b", result );
+        return result;
     }
 
     private class PacketHeader {

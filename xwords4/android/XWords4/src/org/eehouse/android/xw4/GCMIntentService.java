@@ -45,6 +45,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     {
         DbgUtils.logf( "GCMIntentService.onRegistered(%s)", regId );
         XWPrefs.setGCMDevID( context, regId );
+        notifyRelayService( true );
     }
 
     @Override
@@ -52,6 +53,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     {
         DbgUtils.logf( "GCMIntentService.onUnregistered(%s)", regId );
         XWPrefs.clearGCMDevID( context );
+        notifyRelayService( false );
     }
 
     @Override
@@ -62,6 +64,8 @@ public class GCMIntentService extends GCMBaseIntentService {
         if ( ignoreIt ) {
             DbgUtils.logf( "received GCM but ignoring it" );
         } else {
+            notifyRelayService( true );
+
             value = intent.getStringExtra( "checkUpdates" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
                 UpdateCheckReceiver.checkVersions( context, true );
@@ -69,7 +73,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
             value = intent.getStringExtra( "getMoves" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
-                RelayReceiver.RestartTimer( context, true );
+                RelayService.timerFired( context );
             }
 
             value = intent.getStringExtra( "msgs64" );
@@ -118,6 +122,14 @@ public class GCMIntentService extends GCMBaseIntentService {
                 DbgUtils.loge( whatever );
             }
         }
+    }
+
+    private void notifyRelayService( boolean working )
+    {
+        if ( working && XWPrefs.getGCMIgnored( this ) ) {
+            working = false;
+        }
+        RelayService.gcmConfirmed( working );
     }
 
 }

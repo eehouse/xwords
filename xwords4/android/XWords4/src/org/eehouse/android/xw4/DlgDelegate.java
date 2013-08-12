@@ -213,7 +213,7 @@ public class DlgDelegate {
         if ( null == DBUtils.getRelayIDs( m_activity, null ) ) {
             showOKOnlyDialog( R.string.no_games_to_refresh );
         } else {
-            RelayReceiver.RestartTimer( m_activity, true );
+            RelayService.timerFired( m_activity );
             Utils.showToast( m_activity, R.string.msgs_progress );
         }
     }
