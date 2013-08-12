@@ -56,6 +56,7 @@ class UDPAckTrack {
     uint32_t m_nextID;
     pthread_mutex_t m_mutex;
     map<uint32_t, AckRecord> m_pendings;
+    time_t m_ackLimit;
 };
 
 #endif

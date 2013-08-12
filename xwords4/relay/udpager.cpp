@@ -38,12 +38,12 @@ UDPAger::Get()
 UDPAger::UDPAger()
 {
     if ( !RelayConfigs::GetConfigs()-> GetValueFor( "UDP_RECYLE_INTERVAL",
-                                                    &m_maxInterval ) ) {
+                                                    &m_maxIntervalSecs ) ) {
         assert(0);
     }
     logf( XW_LOGINFO, "read %d from configs for UDP_RECYLE_INTERVAL", 
-          m_maxInterval );
-    m_maxInterval *= 1000;      // make it milliseconds
+          m_maxIntervalSecs );
+    m_maxIntervalMillis = m_maxIntervalSecs * 1000;
 
     pthread_mutex_init( &m_addrTimeMapLock, NULL );
 }
@@ -72,7 +72,7 @@ UDPAger::Refresh( const AddrInfo* addr )
         AgePair* ap = iter->second;
         assert( ap->lastSeen() <= readWhen );
         int interval = readWhen - ap->lastSeen();
-        if ( m_maxInterval >= interval ) {
+        if ( m_maxIntervalMillis >= interval ) {
             logf( XW_LOGINFO, "%s: refreshing '%s'; last seen %d "
                   "milliseconds ago", __func__, b64, interval );
             ap->update( readWhen );

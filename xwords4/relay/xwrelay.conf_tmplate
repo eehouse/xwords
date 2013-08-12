@@ -28,8 +28,11 @@ DEVICE_PORTS=10998
 
 # Port for per-device UDP interface (experimental)
 UDP_PORT=10997
-# How long after we've read from an address before we assume it's recycled
+# How long after we've read from an address before we assume it's
+# recycled.  Also sent to clients as a suggested ping interval
 UDP_RECYLE_INTERVAL=60
+# consider a packet non-received after how many seconds
+UDP_ACK_LIMIT=60
 
 # default 5
 SOCK_TIMEOUT_SECONDS=5

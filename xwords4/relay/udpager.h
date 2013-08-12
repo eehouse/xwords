@@ -32,7 +32,7 @@ class UDPAger {
     UDPAger();
     void Refresh( const AddrInfo* addr );
     bool IsCurrent( const AddrInfo* addr );
-    uint16_t MaxIntervalSeconds() const { return m_maxInterval / 1000; }
+    uint16_t MaxIntervalSeconds() const { return m_maxIntervalSecs; }
 
  private:
 
@@ -50,14 +50,13 @@ class UDPAger {
         uint32_t m_lastSeen;
     };
 
+    int m_maxIntervalSecs;          /* config: how long since we heard */
+    int m_maxIntervalMillis;
+
     /* Map socket addresses against times, moving the time forward only
        when it's been too long since we saw it. */
-    int m_maxInterval;          /* config: how long since we heard */
-
     map<AddrInfo::AddrUnion, AgePair*> m_addrTimeMap; 
     pthread_mutex_t m_addrTimeMapLock;
-
-
 };
 
 #endif

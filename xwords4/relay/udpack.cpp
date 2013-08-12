@@ -20,11 +20,9 @@
 #include <unistd.h>
 #include "udpack.h"
 #include "mlock.h" 
+#include "configs.h"
 
 UDPAckTrack* UDPAckTrack::s_self = NULL;
-
-#define ACK_LIMIT 60
-
 
 /* static*/ bool
 UDPAckTrack::shouldAck( XWRelayReg cmd )
@@ -67,6 +65,15 @@ UDPAckTrack::get()
 UDPAckTrack::UDPAckTrack()
 {
     m_nextID = PACKETID_NONE;
+    int ackLimit;
+    if ( RelayConfigs::GetConfigs()->
+         GetValueFor( "UDP_ACK_LIMIT", &ackLimit ) ) {
+        m_ackLimit = ackLimit;
+    } else {
+        assert( 0 );
+        m_ackLimit = 60;
+    }
+
     pthread_mutex_init( &m_mutex, NULL );
 
     pthread_t thread;
@@ -141,7 +148,7 @@ UDPAckTrack::threadProc()
             map<uint32_t, AckRecord>::iterator iter;
             for ( iter = m_pendings.begin(); m_pendings.end() != iter; ) {
                 time_t took = now - iter->second.m_createTime;
-                if ( ACK_LIMIT < took ) {
+                if ( m_ackLimit < took ) {
                     older.push_back( iter->first );
                     callProc( iter->first, false, &(iter->second) );
                     m_pendings.erase( iter++ );
@@ -161,7 +168,7 @@ UDPAckTrack::threadProc()
                 string_printf( leaked, ", " );
             }
             logf( XW_LOGERROR, "%s: these packets leaked (were not ack'd within %d seconds): %s", __func__, 
-                  ACK_LIMIT, leaked.c_str() );
+                  m_ackLimit, leaked.c_str() );
         }
     }
     return NULL;
