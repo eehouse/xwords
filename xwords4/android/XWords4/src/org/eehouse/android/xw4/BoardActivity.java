@@ -572,7 +572,7 @@ public class BoardActivity extends XWActivity
     protected void onPause()
     {
         m_handler = null;
-        ConnStatusHandler.setHandler( null, null );
+        ConnStatusHandler.setHandler( null );
         waitCloseGame( true );
         super.onPause();
     }
@@ -588,7 +588,7 @@ public class BoardActivity extends XWActivity
 
         loadGame();
 
-        ConnStatusHandler.setHandler( m_handler, this );
+        ConnStatusHandler.setHandler( this );
     }
 
     @Override
