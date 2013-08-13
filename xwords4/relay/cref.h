@@ -71,6 +71,7 @@ public:
 class CookieRef {
  public:
     vector<AddrInfo> GetAddrs( void );
+    static const int MAX_DEVICES = 4;
 
  private:
     /* These classes have access to CookieRef.  All others should go through
@@ -98,7 +99,8 @@ class CookieRef {
 
     bool HaveRoom( int nPlayers );
 
-    int CountSockets() { return m_sockets.size(); }
+    int CountSockets();
+    int CountSockets_locked();  /* needed? */
     bool HasSocket( const AddrInfo* addr );
     bool HasSocket_locked( const AddrInfo* addr );
     const char* Cookie() const { return m_cookie.c_str(); }
@@ -278,7 +280,7 @@ class CookieRef {
     /* Track sockets (= current connections with games on devices) in this
        game.  There will never be more than four of these */
     pthread_rwlock_t m_socketsRWLock;
-    vector<HostRec> m_sockets;
+    HostRec* m_sockets[MAX_DEVICES];
 
     int m_heartbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */
