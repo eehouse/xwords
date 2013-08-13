@@ -1479,17 +1479,13 @@ CookieRef::printSeeds( const char* caller )
 {
     int len = 0;
     char buf[64] = {0};
-    uint16_t bits = 0;
 
     RWReadLock rrl( &m_socketsRWLock );
     for ( unsigned int ii = 0; ii < VSIZE(m_sockets); ++ii ) {
         HostRec* hr = m_sockets[ii];
         if ( !!hr ) {
-            HostID hostID = ii + 1;
-            assert( 0 == (bits & (1 << hostID)) );
-            bits |= 1 << hostID;
             len += snprintf( &buf[len], sizeof(buf)-len, "[%d]%.4x(%d)/%d/%c ", 
-                             hostID, hr->m_seed, 
+                             ii + 1, hr->m_seed, 
                              hr->m_seed, hr->m_addr.socket(), 
                              hr->m_ackPending?'a':'A' );
         }
