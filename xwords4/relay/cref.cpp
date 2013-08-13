@@ -321,8 +321,7 @@ CookieRef::HostForSocket( const AddrInfo* addr )
     for ( unsigned int ii = 0; ii < VSIZE(m_sockets); ++ii ) {
         HostRec* hr = m_sockets[ii];
         if ( !!hr && hr->m_addr.equals( *addr ) ) {
-            assert( hr->m_hostID == ii + 1 );
-            hid = hr->m_hostID;
+            hid = ii + 1;
             assert( HOST_ID_NONE != hid );
             break;
         }
@@ -340,7 +339,6 @@ CookieRef::SocketForHost( HostID dest )
     RWReadLock rrl( &m_socketsRWLock );
     HostRec* hr = m_sockets[dest - 1];
     if ( !!hr ) {
-        assert( hr->m_hostID == dest );
         result = &hr->m_addr;
     }
 
@@ -363,7 +361,7 @@ CookieRef::AlreadyHere( unsigned short seed, const AddrInfo* addr,
             if ( !addr->equals(hr->m_addr) ) { /* not just a dupe packet */
                 logf( XW_LOGINFO, "%s: seeds match; socket assumed closed",
                       __func__ );
-                *prevHostID = hr->m_hostID;
+                *prevHostID = ii + 1;
             }
             break;
         }
@@ -384,7 +382,6 @@ CookieRef::AlreadyHere( HostID hid, unsigned short seed, const AddrInfo* addr,
     RWWriteLock rwl( &m_socketsRWLock );
     HostRec* hr = m_sockets[hid-1];
     if ( !!hr ) {
-        assert( hr->m_hostID == hid );
         if ( seed != hr->m_seed ) {
             *spotTaken = true;
         } else if ( addr->equals( hr->m_addr ) ) {
@@ -426,12 +423,13 @@ CookieRef::removeSocket( const AddrInfo* addr )
             HostRec* hr = m_sockets[ii];
             if ( !!hr && hr->m_addr.equals( *addr ) ) {
                 if ( hr->m_ackPending ) {
+                    HostID hid = ii + 1;
                     logf( XW_LOGINFO,
                           "%s: Never got ack; removing hid %d from DB",
-                          __func__, hr->m_hostID );
-                    DBMgr::Get()->RmDeviceByHid( ConnName(), hr->m_hostID );
+                          __func__, hid );
+                    DBMgr::Get()->RmDeviceByHid( ConnName(), hid );
                     m_nPlayersHere -= hr->m_nPlayersH;
-                    cancelAckTimer( hr->m_hostID );
+                    cancelAckTimer( hid );
                 }
                 m_sockets[ii] = NULL;
                 delete hr;
@@ -1001,7 +999,6 @@ CookieRef::updateAck( HostID hostID, bool keep )
         RWWriteLock rwl( &m_socketsRWLock );
         HostRec* hr = m_sockets[hostID-1];
         if ( !!hr && hr->m_ackPending ) {
-            assert( hr->m_hostID == hostID );
             if ( keep ) {
                 hr->m_ackPending = false;
                 DBMgr::Get()->NoteAckd( ConnName(), hostID );
@@ -1274,7 +1271,7 @@ CookieRef::notifyOthers( const AddrInfo* addr, XWRelayMsg msg, XWREASON why )
         if ( !!hr ) {
             const AddrInfo* other = &hr->m_addr;
             if ( !other->equals( *addr ) ) {
-                send_msg( other, hr->m_hostID, msg, why, false );
+                send_msg( other, ii + 1, msg, why, false );
             }
         }
     }
@@ -1340,7 +1337,6 @@ CookieRef::sendAllHere( bool initial )
             RWReadLock rrl( &m_socketsRWLock );
             HostRec* hr = m_sockets[dest-1];
             if ( !!hr ) {
-                assert( hr->m_hostID == dest );
                 sent = send_with_length( &hr->m_addr, dest, buf, 
                                          bufp-buf, true );
             }
@@ -1419,7 +1415,6 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
     RWWriteLock rwl( &m_socketsRWLock );
     HostRec* hr = m_sockets[id-1];
     if ( !!hr ) {
-        assert( hr->m_hostID == id );
         if ( hr->m_addr.equals(addr) ) {
             logf( XW_LOGVERBOSE1, "upping m_lastHeartbeat from %d to %d",
                   hr->m_lastHeartbeat, uptime() );
@@ -1490,11 +1485,11 @@ CookieRef::printSeeds( const char* caller )
     for ( unsigned int ii = 0; ii < VSIZE(m_sockets); ++ii ) {
         HostRec* hr = m_sockets[ii];
         if ( !!hr ) {
-            HostID hostID = hr->m_hostID;
+            HostID hostID = ii + 1;
             assert( 0 == (bits & (1 << hostID)) );
             bits |= 1 << hostID;
             len += snprintf( &buf[len], sizeof(buf)-len, "[%d]%.4x(%d)/%d/%c ", 
-                             hr->m_hostID, hr->m_seed, 
+                             hostID, hr->m_seed, 
                              hr->m_seed, hr->m_addr.socket(), 
                              hr->m_ackPending?'a':'A' );
         }
@@ -1557,7 +1552,7 @@ CookieRef::_PrintCookieInfo( string& out )
         HostRec* hr = m_sockets[ii];
         if ( !!hr ) {
             snprintf( buf, sizeof(buf), "  HostID=%d; socket=%d;last hbeat=%ld\n", 
-                      hr->m_hostID, hr->m_addr.socket(), 
+                      ii + 1, hr->m_addr.socket(), 
                       hr->m_lastHeartbeat );
             out += buf;
         }
@@ -1575,7 +1570,7 @@ CookieRef::_FormatHostInfo( string* hostIds, string* seeds, string* addrs )
         if ( !!hr ) {
             if ( !!hostIds ) {
                 char buf[8];
-                snprintf( buf, sizeof(buf), "%d ", hr->m_hostID );
+                snprintf( buf, sizeof(buf), "%d ", ii + 1 );
                 *hostIds += buf;
             }
 
