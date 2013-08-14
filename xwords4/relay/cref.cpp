@@ -830,7 +830,6 @@ CookieRef::handleEvents()
             logf( XW_LOGERROR, "Killing cref b/c unable to find transition "
                   "from %s on event %s", stateString(m_curState),
                   eventString(evt.type) );
-            assert(0);
             CRefEvent shutevt( XWE_SHUTDOWN );
             m_eventQueue.push_back( shutevt );
         }
