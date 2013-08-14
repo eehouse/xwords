@@ -379,18 +379,20 @@ CookieRef::AlreadyHere( HostID hid, unsigned short seed, const AddrInfo* addr,
           hid, seed, seed, addr->socket() );
     bool here = false;
 
-    RWWriteLock rwl( &m_socketsRWLock );
-    HostRec* hr = m_sockets[hid-1];
-    if ( !!hr ) {
-        if ( seed != hr->m_seed ) {
-            *spotTaken = true;
-        } else if ( addr->equals( hr->m_addr ) ) {
-            here = true;    /* dup packet */
-        } else {
-            logf( XW_LOGINFO, "%s: hids match; nuking existing record "
-                  "for socket b/c assumed closed", __func__ );
-            delete hr;
-            m_sockets[hid-1] = NULL;
+    if ( HOST_ID_NONE != hid ) {
+        RWWriteLock rwl( &m_socketsRWLock );
+        HostRec* hr = m_sockets[hid-1];
+        if ( !!hr ) {
+            if ( seed != hr->m_seed ) {
+                *spotTaken = true;
+            } else if ( addr->equals( hr->m_addr ) ) {
+                here = true;    /* dup packet */
+            } else {
+                logf( XW_LOGINFO, "%s: hids match; nuking existing record "
+                      "for socket b/c assumed closed", __func__ );
+                delete hr;
+                m_sockets[hid-1] = NULL;
+            }
         }
     }
     
