@@ -19,6 +19,7 @@
  */
 
 #include <glib.h>
+#include <algorithm>
 
 #include "devmgr.h"
 #include "mlock.h"
@@ -60,6 +61,7 @@ DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
             result.first->second = rec;
         }
 
+        // Don't think we need m_addrDevMap anymore
         map<AddrInfo::AddrUnion, DevIDRelay>::iterator iter = 
             m_addrDevMap.find(*saddr); 
         if ( m_addrDevMap.end() != iter && devid != iter->second ) {
@@ -100,3 +102,40 @@ DevMgr::get( DevIDRelay devid )
     return result;
 }
 
+// Print info about every device, ordered by how old they are (how long since
+// last remembered).  Build a separate array with the mutex held, then release
+// it, so that as much work as possible is done on the calling thread without
+// holding up more important stuff.
+void
+DevMgr::printDevices( string& str )
+{
+    map<uint32_t, DevIDRelay> agedDevs;
+    {
+        MutexLock ml( &m_mapLock );
+        map<DevIDRelay,UDPAddrRec>::const_iterator iter;
+        for ( iter = m_devAddrMap.begin(); iter != m_devAddrMap.end(); ++iter ) {
+            DevIDRelay devid = iter->first;
+            uint32_t added = iter->second.m_added;
+            agedDevs.insert( pair<uint32_t, DevIDRelay>(added, devid) );
+        }
+    }
+
+    // Now sort by age and print
+    vector<uint32_t> keys;
+    map<uint32_t, DevIDRelay>::const_iterator iter1;
+    for ( iter1 = agedDevs.begin(); agedDevs.end() != iter1; ++iter1 ) {
+        keys.push_back( iter1->first );
+    }
+
+    std::sort( keys.begin(), keys.end() );
+
+    time_t now = time(NULL);
+    vector<uint32_t>::const_iterator keysIter;
+    for ( keysIter = keys.begin(); keys.end() != keysIter; ++keysIter ) {
+        uint32_t age = *keysIter;
+        DevIDRelay devid = agedDevs.find( age )->second;
+        age = now - age;
+        string_printf( str, "devid: %d; age: %d seconds\n", devid, age );
+    }
+
+}

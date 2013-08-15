@@ -1537,7 +1537,7 @@ read_udp_packet( int udpsock )
 
 /* From stack overflow, toward a snprintf with an expanding buffer.
  */
-void
+string&
 string_printf( string& str, const char* fmt, ... )
 {
     const int origsiz = str.size();
@@ -2042,8 +2042,7 @@ main( int argc, char** argv )
                 }
             }
             if ( FD_ISSET( g_control, &rfds ) ) {
-                assert(0);      // not working; don't use until fixed
-                // run_ctrl_thread( g_control );
+                run_ctrl_thread( g_control );
                 --retval;
             }
             if ( -1 != g_udpsock && FD_ISSET( g_udpsock, &rfds ) ) {

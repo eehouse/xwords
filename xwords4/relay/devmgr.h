@@ -35,6 +35,8 @@ class DevMgr {
     void Remember( DevIDRelay devid, const AddrInfo* addr );
     const AddrInfo::AddrUnion* get( DevIDRelay devid );
 
+    void printDevices( string& str );
+
  private:
     DevMgr() { pthread_mutex_init( &m_mapLock, NULL ); }
     /* destructor's never called.... 

@@ -19,22 +19,23 @@
 CXX = g++
 CC=$(CXX)
 SRC = \
+	addrinfo.cpp \
+	cidlock.cpp \
 	configs.cpp \
 	cref.cpp \
 	crefmgr.cpp \
+	ctrl.cpp \
 	dbmgr.cpp \
+	devmgr.cpp \
 	http.cpp \
 	lstnrmgr.cpp \
 	permid.cpp \
 	states.cpp \
 	timermgr.cpp \
 	tpool.cpp \
-	cidlock.cpp \
-	addrinfo.cpp \
-	devmgr.cpp \
-	udpqueue.cpp \
 	udpack.cpp \
 	udpager.cpp \
+	udpqueue.cpp \
 	xwrelay.cpp \
 
 # STATIC ?= -static

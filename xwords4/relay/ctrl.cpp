@@ -47,6 +47,7 @@
 #include "configs.h"
 #include "lstnrmgr.h"
 #include "tpool.h"
+#include "devmgr.h"
 
 #define MAX_ARGS 10
 
@@ -67,11 +68,11 @@ pthread_mutex_t g_ctrlSocksMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static bool cmd_quit( int socket, const char** args );
 static bool cmd_print( int socket, const char** args );
-static bool cmd_lock( int socket, const char** args );
+/* static bool cmd_lock( int socket, const char** args ); */
 static bool cmd_help( int socket, const char** args );
 static bool cmd_start( int socket, const char** args );
 static bool cmd_stop( int socket, const char** args );
-static bool cmd_kill_eject( int socket, const char** args );
+/* static bool cmd_kill_eject( int socket, const char** args ); */
 static bool cmd_get( int socket, const char** args );
 static bool cmd_set( int socket, const char** args );
 static bool cmd_shutdown( int socket, const char** args );
@@ -123,11 +124,11 @@ print_to_sock( int sock, bool addCR, const char* what, ... )
 static const FuncRec gFuncs[] = {
     { "?", cmd_help },
     { "crash", cmd_crash },
-    { "eject", cmd_kill_eject },
+    /* { "eject", cmd_kill_eject }, */
     { "get", cmd_get },
     { "help", cmd_help },
-    { "kill", cmd_kill_eject },
-    { "lock", cmd_lock },
+    /* { "kill", cmd_kill_eject }, */
+    /* { "lock", cmd_lock }, */
     { "print", cmd_print },
     { "quit", cmd_quit },
     { "rev", cmd_rev },
@@ -182,6 +183,7 @@ cmd_stop( int socket, const char** args )
     return false;
 }
 
+#if 0
 static bool
 cmd_kill_eject( int socket, const char** args )
 {
@@ -226,6 +228,7 @@ cmd_kill_eject( int socket, const char** args )
     }
     return false;
 } /* cmd_kill_eject */
+#endif
 
 static bool
 cmd_get( int socket, const char** args )
@@ -441,6 +444,7 @@ print_cookies( int socket, const char* cookie, const char* connName )
     }
 }
 
+#if 0
 static void
 print_socket_info( int out, int which )
 {
@@ -448,17 +452,18 @@ print_socket_info( int out, int which )
     CRefMgr::Get()->PrintSocketInfo( which, s );
     print_to_sock( out, 1, s.c_str() );
 }
+#endif
 
 static void
 print_sockets( int out, int sought )
 {
-    SocketsIterator iter = CRefMgr::Get()->MakeSocketsIterator();
-    int sock;
-    while ( (sock = iter.Next()) != 0 ) {
-        if ( sought == 0 || sought == sock ) {
-            print_socket_info( out, sock );
-        }
-    }
+    /* SocketsIterator iter = CRefMgr::Get()->MakeSocketsIterator(); */
+    /* int sock; */
+    /* while ( (sock = iter.Next()) != 0 ) { */
+    /*     if ( sought == 0 || sought == sock ) { */
+    /*         print_socket_info( out, sock ); */
+    /*     } */
+    /* } */
 }
 
 static bool
@@ -488,6 +493,13 @@ cmd_print( int socket, const char** args )
             print_sockets( socket, atoi(args[3]) );
             found = true;
         }
+    } else if ( 0 == strcmp( "dev", args[1] ) ) {
+        if ( 0 == strcmp( "all", args[2] ) ) {
+            string str;
+            DevMgr::Get()->printDevices( str );
+            print_to_sock( socket, true, str.c_str() );
+            found = true;
+        }
     }
 
     if ( !found ) {
@@ -496,14 +508,16 @@ cmd_print( int socket, const char** args )
             "  %s cref name <name>\n"
             "  %s cref connName <name>\n"
             "  %s cref id <id>\n"
+            "  %s dev all -- list all known devices (by how recently connected)\n"
             "  %s socket all\n"
             "  %s socket <num>  -- print info about crefs and sockets";
-        print_to_sock( socket, true, str, 
-                       args[0], args[0], args[0], args[0], args[0], args[0] );
+        print_to_sock( socket, true, str, args[0], args[0], args[0], 
+                       args[0], args[0], args[0], args[0] );
     }
     return false;
 } /* cmd_print */
 
+#if 0
 static bool
 cmd_lock( int socket, const char** args )
 {
@@ -519,6 +533,7 @@ cmd_lock( int socket, const char** args )
     
     return 0;
 } /* cmd_lock */
+#endif
 
 static bool
 cmd_help( int socket, const char** args )

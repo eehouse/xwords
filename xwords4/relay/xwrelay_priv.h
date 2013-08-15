@@ -58,7 +58,7 @@ int GetNSpawns(void);
 
 int make_socket( unsigned long addr, unsigned short port );
 
-void string_printf( std::string& str, const char* fmt, ... );
+std::string& string_printf( std::string& str, const char* fmt, ... );
 
 int read_packet( int sock, unsigned char* buf, int buflen );
 
