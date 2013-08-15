@@ -1458,7 +1458,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             }
             break;
         }
-
+        case XWPDEV_KEEPALIVE:
         case XWPDEV_RQSTMSGS: {
             unsigned short idLen;
             if ( !getNetShort( &ptr, end, &idLen ) ) {
