@@ -302,7 +302,7 @@ close_device() {
     unset ARGS[$ID]
     echo "closing game: $REASON" >> ${LOGS[$ID]}
     if [ -n "$MVTO" ]; then
-        [ -f ${FILES[$ID]} ] && mv ${FILES[$ID]} $MVTO
+        [ -f "${FILES[$ID]}" ] && mv ${FILES[$ID]} $MVTO
         mv ${LOGS[$ID]} $MVTO
     else
         rm -f ${FILES[$ID]}
@@ -365,6 +365,7 @@ try_upgrade_upd() {
     if [ "${CMD/--use-udp/}" = "${CMD}" ]; then
         if [ $((RANDOM % 100)) -lt $UDP_PCT_INCR ]; then
             ARGS[$KEY]="$CMD --use-udp"
+            echo "upgrading key $KEY to use UDP"
         fi
     fi
 }
