@@ -23,6 +23,7 @@
 #define _DBMGR_H_
 
 #include <string>
+#include <set>
 
 #include "xwrelay.h"
 #include "xwrelay_priv.h"
@@ -141,9 +142,16 @@ class DBMgr {
     PGconn* getThreadConn( void );
     void clearThreadConn();
 
+    bool hasNoMessages( DevIDRelay devid );
+    void setHasNoMessages( DevIDRelay devid );
+    void clearHasNoMessages( DevIDRelay devid );
+
     void conn_key_alloc();
     pthread_key_t m_conn_key;
     bool m_useB64;
+
+    pthread_mutex_t m_haveNoMessagesMutex;
+    set<DevIDRelay> m_haveNoMessages;
 
 }; /* DBMgr */
 

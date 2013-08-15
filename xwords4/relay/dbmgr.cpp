@@ -877,6 +877,8 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     if ( DEVID_NONE == devID ) {
         logf( XW_LOGERROR, "%s: warning: devid not found for connName=%s, "
               "hid=%d", __func__, connName, hid );
+    } else {
+        clearHasNoMessages( devID );
     }
 
     size_t newLen;
@@ -972,9 +974,15 @@ DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs )
 void
 DBMgr::GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs )
 {
-    string query;
-    string_printf( query, "devid=%d", relayID );
-    storedMessagesImpl( query, msgs );
+    if ( !hasNoMessages( relayID ) ) {
+        string query;
+        string_printf( query, "devid=%d", relayID );
+        storedMessagesImpl( query, msgs );
+
+        if ( 0 == msgs.size() ) {
+            setHasNoMessages( relayID );
+        }
+    }
 }
 
 void
@@ -1056,6 +1064,31 @@ DBMgr::getCountWhere( const char* table, string& test )
     int count = atoi( PQgetvalue( result, 0, 0 ) );
     PQclear( result );
     return count;
+}
+
+bool DBMgr::hasNoMessages( DevIDRelay devid )
+{
+    bool result;
+    {
+        MutexLock ml( &m_haveNoMessagesMutex );
+        result = m_haveNoMessages.find(devid) != m_haveNoMessages.end();
+    }
+    logf( XW_LOGINFO, "%s(devid=%d)=>%d", __func__, devid, result );
+    return result;
+}
+
+void DBMgr::setHasNoMessages( DevIDRelay devid )
+{
+    logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
+    MutexLock ml( &m_haveNoMessagesMutex );
+    m_haveNoMessages.insert( devid );
+}
+
+void DBMgr::clearHasNoMessages( DevIDRelay devid )
+{
+    logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
+    MutexLock ml( &m_haveNoMessagesMutex );
+    m_haveNoMessages.erase( devid );
 }
 
 static void
