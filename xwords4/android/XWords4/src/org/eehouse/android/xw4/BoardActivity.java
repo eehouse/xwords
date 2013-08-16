@@ -1253,10 +1253,14 @@ public class BoardActivity extends XWActivity
             // All players have now joined the game.  The device that
             // created the room will assign tiles.  Then it will be
             // the first player's turn
-            toastStr = getString( R.string.msg_relay_all_heref, room );
-            if ( devOrder > 1 ) {
-                naMsg = R.string.not_again_conndall;
-                naKey = R.string.key_notagain_conndall;
+
+            // Skip this until there's a way to show it only once per game
+            if ( false ) {
+                toastStr = getString( R.string.msg_relay_all_heref, room );
+                if ( devOrder > 1 ) {
+                    naMsg = R.string.not_again_conndall;
+                    naKey = R.string.key_notagain_conndall;
+                }
             }
         } else if ( nMissing > 0 ) {
             if ( !m_haveInvited ) {
