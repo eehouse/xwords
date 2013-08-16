@@ -85,7 +85,7 @@ public class RelayService extends XWService
     private Handler m_handler;
     private Runnable m_onInactivity;
     private short m_maxIntervalSeconds = 5; // give time to get real value
-    private long m_lastPacketReceived;
+    private long m_lastGamePacketReceived;
 
     // These must match the enum XWRelayReg in xwrelay.h
     private static final int XWPDEV_PROTO_VERSION = 0;
@@ -187,7 +187,7 @@ public class RelayService extends XWService
     public void onCreate()
     {
         super.onCreate();
-        m_lastPacketReceived = 
+        m_lastGamePacketReceived = 
             XWPrefs.getPrefsLong( this, R.string.key_last_packet, 0 );
 
         m_handler = new Handler();
@@ -250,7 +250,7 @@ public class RelayService extends XWService
                 break;
             case TIMER_FIRED:
                 if ( !startFetchThreadIf() ) {
-                    requestMessages();
+                    sendKeepAlive();
                 }
                 break;
             default:
@@ -272,7 +272,7 @@ public class RelayService extends XWService
     {
         DbgUtils.logf( "RelayService.onDestroy() called" );
         XWPrefs.setPrefsLong( this, R.string.key_last_packet,
-                              m_lastPacketReceived );
+                              m_lastGamePacketReceived );
 
         if ( shouldMaintainConnection() ) {
             long interval_millis = m_maxIntervalSeconds * 1000;
@@ -355,7 +355,6 @@ public class RelayService extends XWService
                                                    + "on receive" );
                                     m_UDPSocket.receive( packet );
                                     resetExitTimer();
-                                    m_lastPacketReceived = Utils.getCurSeconds();
                                     DbgUtils.logf( "UPD read thread: "
                                                    + "receive returned" );
                                 } catch( java.io.IOException ioe ) {
@@ -511,6 +510,8 @@ public class RelayService extends XWService
                     requestMessages();
                     break;
                 case XWPDEV_MSG:
+                    // game-related packets only count
+                    m_lastGamePacketReceived = Utils.getCurSeconds();
                     int token = dis.readInt();
                     byte[] msg = new byte[dis.available()];
                     Assert.assertTrue( packet.getLength() >= msg.length );
@@ -549,13 +550,12 @@ public class RelayService extends XWService
         }
     }
 
-    private void requestMessages()
+    private void requestMessagesImpl( XWRelayReg reg )
     {
-        DbgUtils.logf( "requestMessages" );
+        DbgUtils.logf( "requestMessagesImpl" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
-            DataOutputStream out = 
-                addProtoAndCmd( bas, XWRelayReg.XWPDEV_RQSTMSGS );
+            DataOutputStream out = addProtoAndCmd( bas, reg );
             String devid = getDevID( null );
             out.writeShort( devid.length() );
             out.writeBytes( devid );
@@ -563,6 +563,16 @@ public class RelayService extends XWService
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
         }
+    }
+
+    private void requestMessages()
+    {
+        requestMessagesImpl( XWRelayReg.XWPDEV_RQSTMSGS );
+    }
+
+    private void sendKeepAlive()
+    {
+        requestMessagesImpl( XWRelayReg.XWPDEV_KEEPALIVE );
     }
 
     private void sendMessage( long rowid, byte[] msg )
@@ -951,7 +961,7 @@ public class RelayService extends XWService
     {
         boolean result = !s_gcmWorking;
         if ( result ) {
-            long interval = Utils.getCurSeconds() - m_lastPacketReceived;
+            long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;
             result = interval < MAX_KEEPALIVE_SECS;
         }
         DbgUtils.logf( "RelayService.shouldMaintainConnection=>%b", result );
