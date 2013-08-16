@@ -372,11 +372,8 @@ public class GamesList extends XWExpandableListActivity
 
         NetUtils.informOfDeaths( this );
 
-        Intent intent = getIntent();
-        startFirstHasDict( intent );
-        startNewNetGame( intent );
-        startHasGameID( intent );
-        startHasRowID( intent );
+        tryStartsFromIntent( getIntent() );
+
         askDefaultNameIf();
     } // onCreate
 
@@ -390,10 +387,7 @@ public class GamesList extends XWExpandableListActivity
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         invalRowID( intent.getLongExtra( ROWID_EXTRA, -1 ) );
-        startFirstHasDict( intent );
-        startNewNetGame( intent );
-        startHasGameID( intent );
-        startHasRowID( intent );
+        tryStartsFromIntent( intent );
     }
 
     @Override
@@ -1107,6 +1101,14 @@ public class GamesList extends XWExpandableListActivity
     {
         long rowid = GameUtils.makeNewNetGame( this, info );
         launchGame( rowid, true );
+    }
+
+    private void tryStartsFromIntent( Intent intent )
+    {
+        startFirstHasDict( intent );
+        startNewNetGame( intent );
+        startHasGameID( intent );
+        startHasRowID( intent );
     }
 
     public static void onGameDictDownload( Context context, Intent intent )
