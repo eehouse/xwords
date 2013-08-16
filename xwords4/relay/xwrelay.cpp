@@ -1559,6 +1559,7 @@ string_printf( string& str, const char* fmt, ... )
             break;
         }
     }
+    return str;
 }
 
 // Going with non-blocking instead
