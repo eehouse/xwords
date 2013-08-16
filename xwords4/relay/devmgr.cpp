@@ -122,20 +122,23 @@ DevMgr::printDevices( string& str )
 
     // Now sort by age and print
     vector<uint32_t> keys;
-    map<uint32_t, DevIDRelay>::const_iterator iter1;
-    for ( iter1 = agedDevs.begin(); agedDevs.end() != iter1; ++iter1 ) {
-        keys.push_back( iter1->first );
+    map<uint32_t, DevIDRelay>::const_iterator iter;
+    for ( iter = agedDevs.begin(); agedDevs.end() != iter; ++iter ) {
+        keys.push_back( iter->first );
     }
 
     std::sort( keys.begin(), keys.end() );
+    std::reverse( keys.begin(), keys.end() );
 
     time_t now = time(NULL);
     vector<uint32_t>::const_iterator keysIter;
+    int row = 0;
     for ( keysIter = keys.begin(); keys.end() != keysIter; ++keysIter ) {
         uint32_t age = *keysIter;
         DevIDRelay devid = agedDevs.find( age )->second;
         age = now - age;
-        string_printf( str, "devid: %d; age: %d seconds\n", devid, age );
+        string_printf( str, "%.3d: devid: %.10d; age: %.3d seconds\n", ++row, 
+                       devid, age );
     }
 
 }

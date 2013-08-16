@@ -497,7 +497,7 @@ cmd_print( int socket, const char** args )
         if ( 0 == strcmp( "all", args[2] ) ) {
             string str;
             DevMgr::Get()->printDevices( str );
-            print_to_sock( socket, true, str.c_str() );
+            send( socket, str.c_str(), str.size(), 0 );
             found = true;
         }
     }
