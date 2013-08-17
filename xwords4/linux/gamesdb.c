@@ -260,19 +260,20 @@ db_store( sqlite3* pDb, const gchar* key, const gchar* value )
 XP_Bool
 db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen )
 {
-    XP_Bool found;
     char query[256];
     snprintf( query, sizeof(query),
               "SELECT value from pairs where key = '%s'", key );
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    XP_ASSERT( SQLITE_OK == result );
-    result = sqlite3_step( ppStmt );
-    found = SQLITE_ROW == result;
+    XP_Bool found = SQLITE_OK == result;
     if ( found ) {
-        getColumnText( ppStmt, 0, buf, buflen );
-    } else {
-        buf[0] = '\0';
+        result = sqlite3_step( ppStmt );
+        found = SQLITE_ROW == result;
+        if ( found ) {
+            getColumnText( ppStmt, 0, buf, buflen );
+        } else {
+            buf[0] = '\0';
+        }
     }
     sqlite3_finalize( ppStmt );
     return found;
