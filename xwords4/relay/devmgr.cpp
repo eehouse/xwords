@@ -107,16 +107,21 @@ DevMgr::get( DevIDRelay devid )
 // it, so that as much work as possible is done on the calling thread without
 // holding up more important stuff.
 void
-DevMgr::printDevices( string& str )
+DevMgr::printDevices( string& str, DevIDRelay devid )
 {
     map<uint32_t, DevIDRelay> agedDevs;
     {
         MutexLock ml( &m_mapLock );
-        map<DevIDRelay,UDPAddrRec>::const_iterator iter;
-        for ( iter = m_devAddrMap.begin(); iter != m_devAddrMap.end(); ++iter ) {
-            DevIDRelay devid = iter->first;
-            uint32_t added = iter->second.m_added;
-            agedDevs.insert( pair<uint32_t, DevIDRelay>(added, devid) );
+        map<DevIDRelay, UDPAddrRec>::const_iterator iter;
+        if ( 0 != devid ) {
+            iter = m_devAddrMap.find( devid );
+            if ( m_devAddrMap.end() != iter ) {
+                addDevice( agedDevs, iter );
+            }
+        } else {
+            for ( iter = m_devAddrMap.begin(); iter != m_devAddrMap.end(); ++iter ) {
+                addDevice( agedDevs, iter );
+            }
         }
     }
 
@@ -141,4 +146,13 @@ DevMgr::printDevices( string& str )
                        devid, age );
     }
 
+}
+
+void
+DevMgr::addDevice( map<uint32_t, DevIDRelay>& devs, 
+                   map<DevIDRelay,UDPAddrRec>::const_iterator iter )
+{
+    DevIDRelay devid = iter->first;
+    uint32_t added = iter->second.m_added;
+    devs.insert( pair<uint32_t, DevIDRelay>(added, devid) );
 }

@@ -94,6 +94,8 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
        ,XWPDEV_DELGAME          /* dev->relay: game's been deleted.  format:
                                    header, relayid: 4, clientToken: 4 */
 
+       ,XWPDEV_METAMSG          /* Message to be displayed to user */
+
 }
 #ifndef CANT_DO_TYPEDEF
  XWRelayReg

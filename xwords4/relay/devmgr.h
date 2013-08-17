@@ -35,10 +35,11 @@ class DevMgr {
     void Remember( DevIDRelay devid, const AddrInfo* addr );
     const AddrInfo::AddrUnion* get( DevIDRelay devid );
 
-    void printDevices( string& str );
+    /* Called from ctrl port */
+    void printDevices( string& str, DevIDRelay devid /* 0 means all */ );
 
  private:
-    DevMgr() { pthread_mutex_init( &m_mapLock, NULL ); }
+
     /* destructor's never called.... 
     ~DevMgr() { pthread_mutex_destroy( &m_mapLock ); }
     */
@@ -51,6 +52,10 @@ class DevMgr {
         AddrInfo::AddrUnion m_addr;
         time_t m_added;
     };
+
+    DevMgr() { pthread_mutex_init( &m_mapLock, NULL ); }
+    void addDevice( map<uint32_t, DevIDRelay>& devs, 
+                    map<DevIDRelay,UDPAddrRec>::const_iterator iter );
 
     map<DevIDRelay,UDPAddrRec> m_devAddrMap;
     map<AddrInfo::AddrUnion, DevIDRelay> m_addrDevMap; 

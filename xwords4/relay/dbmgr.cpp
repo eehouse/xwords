@@ -870,6 +870,33 @@ DBMgr::CountStoredMessages( DevIDRelay relayID )
 }
 
 void
+DBMgr::StoreMessage( DevIDRelay devID, const uint8_t* const buf,
+                     int len )
+{
+    clearHasNoMessages( devID );
+
+    size_t newLen;
+    const char* fmt = "INSERT INTO " MSGS_TABLE " "
+        "(devid, %s, msglen) VALUES(%d, %s'%s', %d)";
+    
+    string query;
+    if ( m_useB64 ) {
+        gchar* b64 = g_base64_encode( buf, len );
+        string_printf( query, fmt, "msg64", devID, "", b64, len );
+        g_free( b64 );
+    } else {
+        unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
+                                                  len, &newLen );
+        assert( NULL != bytes );
+            string_printf( query, fmt, "msg",  devID, "E", bytes, len );
+        PQfreemem( bytes );
+    }
+
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+    execSql( query );
+}
+
+void
 DBMgr::StoreMessage( const char* const connName, int hid, 
                      const unsigned char* buf, int len )
 {

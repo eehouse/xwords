@@ -601,6 +601,62 @@ send_havemsgs( const AddrInfo* addr )
     send_via_udp( addr, NULL, XWPDEV_HAVEMSGS, NULL );
 }
 
+class MsgClosure {
+public:
+    MsgClosure( DevIDRelay devid, gpointer msg, uint16_t len )
+    {
+        m_devid = devid;
+        m_len = len;
+        m_msg = g_malloc(len);
+        memcpy( m_msg, msg, len );
+    }
+    ~MsgClosure() {
+        g_free( m_msg );
+    }
+    DevIDRelay m_devid;
+    uint16_t m_len;
+    gpointer m_msg;
+};
+
+static void
+onPostedMsgAcked( bool acked, uint32_t packetID, void* data )
+{
+    MsgClosure* mc = (MsgClosure*)data;
+    if ( !acked ) {
+        DBMgr::Get()->StoreMessage( mc->m_devid, 
+                                    (const unsigned char*)mc->m_msg, 
+                                    mc->m_len );
+    }
+    delete mc;
+}
+
+bool
+post_message( DevIDRelay devid, const char* message )
+{
+    const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( devid );
+    bool success = !!addru;
+    if ( success ) {
+        AddrInfo addr( addru );
+        short len = strlen(message);
+        short netLen = htons(len);
+        uint32_t packetID;
+        uint8_t buf[len + sizeof(netLen) + sizeof(XWPDEV_METAMSG)];
+        buf[0] = XWPDEV_METAMSG;
+        memcpy( &buf[sizeof(XWPDEV_METAMSG)], &netLen, sizeof(netLen) );
+        memcpy( &buf[sizeof(XWPDEV_METAMSG) + sizeof(netLen)], message, len );
+
+        bool sent = send_via_udp( &addr, &packetID, XWPDEV_METAMSG, &buf[1], 
+                                  VSIZE(buf)-1, NULL );
+        if ( sent ) {
+            MsgClosure* mc = new MsgClosure( devid, buf, VSIZE(buf) );
+            UDPAckTrack::setOnAck( onPostedMsgAcked, packetID, (void*)mc );
+        } else {
+            DBMgr::Get()->StoreMessage( devid, (const unsigned char*)buf, VSIZE(buf) );
+        }
+    }
+    return success;
+}
+
 /* A CONNECT message from a device gives us the hostID and socket we'll
  * associate with one participant in a relayed session.  We'll store this
  * information with the cookie where other participants can find it when they
@@ -1355,8 +1411,11 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
     for ( iter = msgs.begin(); iter != msgs.end(); ++iter ) {
         DBMgr::MsgInfo msg = *iter;
         uint32_t packetID;
-        if ( !send_msg_via_udp( addr, msg.token, (unsigned char*)msg.msg.c_str(), 
+        if ( !send_msg_via_udp( addr, msg.token, 
+                                (unsigned char*)msg.msg.c_str(), 
                                 msg.msg.length(), &packetID ) ) {
+            logf( XW_LOGERROR, "%s: unable to send to devID %d", 
+                  __func__, devID.asRelayID() );
             break;
         }
         UDPAckTrack::setOnAck( onMsgAcked, packetID, (void*)msg.msgID );
@@ -1471,7 +1530,13 @@ handle_udp_packet( UdpThreadClosure* utc )
             DevID devID( ID_TYPE_RELAY );
             devID.m_devIDString.append( (const char*)ptr, idLen );
             ptr += idLen;
-            retrieveMessages( devID, utc->addr() );
+
+            const AddrInfo* addr = utc->addr();
+            DevMgr::Get()->Remember( devID.asRelayID(), addr );
+
+            if ( XWPDEV_RQSTMSGS == header.cmd ) {
+                retrieveMessages( devID, addr );
+            }
             break;
         }
         case XWPDEV_ACK: {

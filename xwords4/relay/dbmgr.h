@@ -115,6 +115,7 @@ class DBMgr {
     /* message storage -- different DB */
     int CountStoredMessages( const char* const connName );
     int CountStoredMessages( DevIDRelay relayID );
+    void StoreMessage( DevIDRelay relayID, const uint8_t* const buf, int len );
     void StoreMessage( const char* const connName, int hid, 
                        const unsigned char* const buf, int len );
     void GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs );

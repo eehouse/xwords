@@ -50,6 +50,8 @@ bool send_with_length_unsafe( const AddrInfo* addr,
                               uint32_t* packetIDP );
 void send_havemsgs( const AddrInfo* addr );
 
+bool post_message( DevIDRelay devid, const char* message );
+
 time_t uptime(void);
 
 void blockSignals( void );      /* call from all but main thread */

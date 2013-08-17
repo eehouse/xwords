@@ -243,6 +243,15 @@ relaycon_receive( void* closure, int socket )
                 XP_LOGF( "got ack for packetID %ld", packetID );
                 break;
             }
+            case XWPDEV_METAMSG: {
+                XP_U16 len = getNetShort( &ptr );
+                unsigned char buf[len + 1];
+                memcpy( buf, ptr, len );
+                ptr += len;
+                buf[len] = '\0';
+                XP_LOGF( "%s: got message: %s", __func__, buf );
+                break;
+            }
             default:
                 XP_LOGF( "%s: Unexpected cmd %d", __func__, header.cmd );
                 XP_ASSERT( 0 );

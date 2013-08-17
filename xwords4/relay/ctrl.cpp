@@ -68,6 +68,7 @@ pthread_mutex_t g_ctrlSocksMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static bool cmd_quit( int socket, const char** args );
 static bool cmd_print( int socket, const char** args );
+static bool cmd_devs( int socket, const char** args );
 /* static bool cmd_lock( int socket, const char** args ); */
 static bool cmd_help( int socket, const char** args );
 static bool cmd_start( int socket, const char** args );
@@ -130,6 +131,7 @@ static const FuncRec gFuncs[] = {
     /* { "kill", cmd_kill_eject }, */
     /* { "lock", cmd_lock }, */
     { "print", cmd_print },
+    { "devs", cmd_devs },
     { "quit", cmd_quit },
     { "rev", cmd_rev },
     { "set", cmd_set },
@@ -469,7 +471,6 @@ print_sockets( int out, int sought )
 static bool
 cmd_print( int socket, const char** args )
 {
-    logf( XW_LOGINFO, "cmd_print called" );
     bool found = false;
     if ( 0 == strcmp( "cref", args[1] ) ) {
         if ( 0 == strcmp( "all", args[2] ) ) {
@@ -496,7 +497,7 @@ cmd_print( int socket, const char** args )
     } else if ( 0 == strcmp( "dev", args[1] ) ) {
         if ( 0 == strcmp( "all", args[2] ) ) {
             string str;
-            DevMgr::Get()->printDevices( str );
+            DevMgr::Get()->printDevices( str, 0 );
             send( socket, str.c_str(), str.size(), 0 );
             found = true;
         }
@@ -516,6 +517,53 @@ cmd_print( int socket, const char** args )
     }
     return false;
 } /* cmd_print */
+
+static bool
+cmd_devs( int socket, const char** args )
+{
+    bool found = false;
+    string result;
+
+    if ( 0 == strcmp( "print", args[1] ) ) {
+        DevIDRelay devid = 0;
+        if ( NULL != args[3] ) {
+            devid = (DevIDRelay)strtoul( args[3], NULL, 10 );
+        }
+        DevMgr::Get()->printDevices( result, devid );
+        found = true;
+    } else if ( 0 == strcmp( "ping", args[1] ) ) {
+    } else if ( 0 == strcmp( "msg", args[1] ) ) {
+        DevIDRelay devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
+        const char* msg = args[3];
+        if ( post_message( devid, msg ) ) {
+            string_printf( result, "posted message: %s\n", msg );
+        } else {
+            string_printf( result, "unable to post; does dev %d exist\n", 
+                           devid );
+        }
+        found = true;
+    } else if ( 0 == strcmp( "rm", args[1] ) ) {
+    }
+
+    if ( found ) {
+        if ( 0 < result.size() ) {
+            send( socket, result.c_str(), result.size(), 0 );
+        }
+    } else {
+        const char* strs[] = {
+            "* %s print [<id>]\n",
+            "  %s ping\n",
+            "  %s msg <devid> <msg_text>\n",
+            "  %s rm <devid>\n",
+        };
+        string help;
+        for ( size_t ii = 0; ii < VSIZE(strs); ++ii ) {
+            string_printf( help, strs[ii], args[0] );
+        }
+        send( socket, help.c_str(), help.size(), 0 );
+    }
+    return false;
+}
 
 #if 0
 static bool
@@ -571,10 +619,11 @@ ctrl_thread_main( void* arg )
         g_ctrlSocks.push_back( sock );
     }
 
+    string cmd;
+    const char* args[MAX_ARGS] = {0};
+    string sargs[MAX_ARGS];
+
     for ( ; ; ) {
-        string cmd;
-        const char* args[MAX_ARGS] = {0};
-        string sargs[MAX_ARGS];
 
         print_prompt( sock );
 
