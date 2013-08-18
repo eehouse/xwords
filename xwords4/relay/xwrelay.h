@@ -38,16 +38,17 @@
 typedef
 #endif
 enum { XWPDEV_NONE             /* 0 is an illegal value */
-       /* All messages have the following six-byte header 
+       /* All messages have the following six-byte header (if proto == 0)
         *    proto: 1 byte
         *    msgID: 4 byte unsigned long, 0 an illegal value
         *    cmd:   1 byte, one of the values below.
         */
 
-       ,XWPDEV_ALERT           /* relay->device: provides a string message to
-                                  present to the user (with device allowed not
-                                  to present the same string more than once)
-                                  format: header, null-terminnated string: varies */
+       ,XWPDEV_UNAVAIL          /* relay->device: provides a string message to
+                                   present to the user (with device allowed
+                                   not to present the same string more than
+                                   once) format: header, try-again-in-seconds: 4,
+                                   length-initiated string */
        ,XWPDEV_REG             /* dev->relay: device registers self and
                                   self-selected (e.g. gcm) or assigned devid
                                   format: header, idType: 1,
@@ -94,7 +95,8 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
        ,XWPDEV_DELGAME          /* dev->relay: game's been deleted.  format:
                                    header, relayid: 4, clientToken: 4 */
 
-       ,XWPDEV_METAMSG          /* Message to be displayed to user */
+       ,XWPDEV_ALERT            /* relay->dev: format: header,
+                                   length-initiated string to present to user. */
 
 }
 #ifndef CANT_DO_TYPEDEF

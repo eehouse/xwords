@@ -27,7 +27,7 @@ UDPAckTrack* UDPAckTrack::s_self = NULL;
 /* static*/ bool
 UDPAckTrack::shouldAck( XWRelayReg cmd )
 {
-    return ( XWPDEV_ACK != cmd && XWPDEV_ALERT != cmd );
+    return ( XWPDEV_ACK != cmd && XWPDEV_UNAVAIL != cmd );
 }
 
 /* static*/ uint32_t

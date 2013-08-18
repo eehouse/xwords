@@ -427,7 +427,7 @@ send_via_udp_impl( int socket, const struct sockaddr* dest_addr,
     struct iovec vec[10];
     unsigned int iocount = 0;
 
-    unsigned char header[1 + 1 + sizeof(packetNum)];
+    unsigned char header[1 + sizeof(packetNum) + 1];
     header[0] = XWPDEV_PROTO_VERSION;
     if ( NULL != packetIDP ) {
         *packetIDP = packetNum;
@@ -640,18 +640,20 @@ post_message( DevIDRelay devid, const char* message )
         short len = strlen(message);
         short netLen = htons(len);
         uint32_t packetID;
-        uint8_t buf[len + sizeof(netLen) + sizeof(XWPDEV_METAMSG)];
-        buf[0] = XWPDEV_METAMSG;
-        memcpy( &buf[sizeof(XWPDEV_METAMSG)], &netLen, sizeof(netLen) );
-        memcpy( &buf[sizeof(XWPDEV_METAMSG) + sizeof(netLen)], message, len );
+        uint8_t buf[1 + sizeof(netLen) + len];
+        XWRelayReg cmd = XWPDEV_ALERT;
+        buf[0] = cmd;
+        memcpy( &buf[1], &netLen, sizeof(netLen) );
+        memcpy( &buf[1 + sizeof(netLen)], message, len );
 
-        bool sent = send_via_udp( &addr, &packetID, XWPDEV_METAMSG, &buf[1], 
+        bool sent = send_via_udp( &addr, &packetID, cmd, &buf[1], 
                                   VSIZE(buf)-1, NULL );
         if ( sent ) {
             MsgClosure* mc = new MsgClosure( devid, buf, VSIZE(buf) );
             UDPAckTrack::setOnAck( onPostedMsgAcked, packetID, (void*)mc );
         } else {
-            DBMgr::Get()->StoreMessage( devid, (const unsigned char*)buf, VSIZE(buf) );
+            DBMgr::Get()->StoreMessage( devid, (const unsigned char*)buf, 
+                                        VSIZE(buf) );
         }
     }
     return success;
@@ -1428,6 +1430,7 @@ msgToStr( XWRelayReg msg )
     const char* str;
 # define CASE_STR(c)  case c: str = #c; break
     switch( msg ) {
+    CASE_STR(XWPDEV_UNAVAIL);
     CASE_STR(XWPDEV_REG);
     CASE_STR(XWPDEV_REGRSP);
     CASE_STR(XWPDEV_KEEPALIVE);
@@ -1720,9 +1723,12 @@ maint_str_loop( int udpsock, const char* str )
 
             UDPHeader header;
             const unsigned char* ptr = buf;
+            uint32_t unavail = 0; // temp!
             if ( getHeader( &ptr, ptr + nRead, &header ) ) {
-                send_via_udp( udpsock, &saddr.u.addr, NULL, XWPDEV_ALERT,
-                              outbuf, sizeof(outbuf), NULL );
+                send_via_udp( udpsock, &saddr.u.addr, NULL, XWPDEV_UNAVAIL,
+                              &unavail, sizeof(unavail),
+                              outbuf, sizeof(outbuf), 
+                              NULL );
             } else {
                 logf( XW_LOGERROR, "unexpected data" );
             }
