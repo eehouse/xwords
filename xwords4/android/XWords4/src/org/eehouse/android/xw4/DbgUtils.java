@@ -142,4 +142,14 @@ public class DbgUtils {
             logf( "cursor: %s", dump );
         }
     }
+
+    // public static String hexDump( byte[] bytes )
+    // {
+    //     StringBuilder dump = new StringBuilder();
+    //     for ( byte byt : bytes ) {
+    //         dump.append( String.format( "%02x ", byt ) );
+    //     }
+    //     return dump.toString();
+    // }
+
 }
