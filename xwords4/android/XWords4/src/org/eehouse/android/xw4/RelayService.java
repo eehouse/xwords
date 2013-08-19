@@ -94,7 +94,7 @@ public class RelayService extends XWService
     // Must be kept in sync with eponymous enum in xwrelay.h
     private enum XWRelayReg {
              XWPDEV_NONE
-            ,XWPDEV_ALERT
+            ,XWPDEV_UNAVAIL
             ,XWPDEV_REG
             ,XWPDEV_REGRSP
             ,XWPDEV_KEEPALIVE
@@ -105,6 +105,8 @@ public class RelayService extends XWService
             ,XWPDEV_MSGRSP
             ,XWPDEV_BADREG
             ,XWPDEV_ACK
+            ,XWPDEV_DELGAME
+            ,XWPDEV_ALERT
             };
 
     public static void gcmConfirmed( boolean confirmed )
@@ -351,18 +353,12 @@ public class RelayService extends XWService
                                 DatagramPacket packet = 
                                     new DatagramPacket( buf, buf.length );
                                 try {
-                                    DbgUtils.logf( "UPD read thread blocking "
-                                                   + "on receive" );
                                     m_UDPSocket.receive( packet );
                                     resetExitTimer();
-                                    DbgUtils.logf( "UPD read thread: "
-                                                   + "receive returned" );
                                 } catch( java.io.IOException ioe ) {
                                     DbgUtils.loge( ioe );
                                     break; // ???
                                 }
-                                DbgUtils.logf( "received %d bytes", 
-                                               packet.getLength() );
                                 gotPacket( packet );
                             }
                             DbgUtils.logf( "read thread exiting" );
@@ -489,8 +485,15 @@ public class RelayService extends XWService
                 sendAckIf( header );
                 DbgUtils.logf( "gotPacket: cmd=%s", header.m_cmd.toString() );
                 switch ( header.m_cmd ) { 
-                case XWPDEV_ALERT:
+                case XWPDEV_UNAVAIL:
+                    int unavail = dis.readInt();
+                    DbgUtils.logf( "relay unvailable for another %d seconds", 
+                                   unavail );
                     String str = getStringWithLength( dis );
+                    sendResult( MultiEvent.RELAY_ALERT, str );
+                    break;
+                case XWPDEV_ALERT:
+                    str = getStringWithLength( dis );
                     sendResult( MultiEvent.RELAY_ALERT, str );
                     break;
                 case XWPDEV_BADREG:
@@ -552,7 +555,6 @@ public class RelayService extends XWService
 
     private void requestMessagesImpl( XWRelayReg reg )
     {
-        DbgUtils.logf( "requestMessagesImpl" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
             DataOutputStream out = addProtoAndCmd( bas, reg );
@@ -609,7 +611,7 @@ public class RelayService extends XWService
     private void sendAckIf( PacketHeader header )
     {
         DbgUtils.logf( "sendAckIf" );
-        if ( XWRelayReg.XWPDEV_ACK != header.m_cmd ) {
+        if ( 0 != header.m_packetID ) {
             ByteArrayOutputStream bas = new ByteArrayOutputStream();
             try {
                 DataOutputStream out = 
@@ -629,14 +631,15 @@ public class RelayService extends XWService
         byte proto = dis.readByte();
         if ( XWPDEV_PROTO_VERSION == proto ) {
             int packetID = dis.readInt();
-            DbgUtils.logf( "readHeader: got packetID %d", packetID );
+            if ( 0 != packetID ) {
+                DbgUtils.logf( "readHeader: got packetID %d", packetID );
+            }
             byte ordinal = dis.readByte();
             XWRelayReg cmd = XWRelayReg.values()[ordinal];
             result = new PacketHeader( cmd, packetID );
         } else {
             DbgUtils.logf( "bad proto: %d", proto );
         }
-        DbgUtils.logf( "readHeader => %H", result );
         return result;
     }
 
@@ -646,7 +649,8 @@ public class RelayService extends XWService
         short len = dis.readShort();
         byte[] tmp = new byte[len];
         dis.read( tmp );
-        return new String( tmp );
+        String result = new String( tmp );
+        return result;
     }
 
     private DataOutputStream addProtoAndCmd( ByteArrayOutputStream bas, 
@@ -890,11 +894,10 @@ public class RelayService extends XWService
         int nextPacketID = 0;
         synchronized( s_packetsSent ) {
             if ( XWRelayReg.XWPDEV_ACK != cmd ) {
-                nextPacketID = s_nextPacketID++;
+                nextPacketID = ++s_nextPacketID;
                 s_packetsSent.add( nextPacketID );
             }
         }
-        DbgUtils.logf( "nextPacketID(%s)=>%d", cmd.toString(), nextPacketID );
         return nextPacketID;
     }
 
@@ -972,7 +975,6 @@ public class RelayService extends XWService
         public int m_packetID;
         public XWRelayReg m_cmd;
         public PacketHeader( XWRelayReg cmd, int packetID ) {
-            DbgUtils.logf( "in PacketHeader contructor" );
             m_packetID = packetID;
             m_cmd = cmd;
         }
