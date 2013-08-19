@@ -2169,4 +2169,6 @@
     <string name="change_groupf">Move game %s</string>
 
     <string name="show_wordlist_browser">Wordlist browser</string>
+
+    <string name="relay_alert_title">Message from relay</string>
 </resources>

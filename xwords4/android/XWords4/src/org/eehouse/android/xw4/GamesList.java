@@ -77,6 +77,7 @@ public class GamesList extends XWExpandableListActivity
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
     private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
+    private static final String ALERT_MSG = "alert_msg";
 
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
@@ -1028,6 +1029,14 @@ public class GamesList extends XWExpandableListActivity
         }
     }
 
+    private void tryAlert( Intent intent )
+    {
+        String msg = intent.getStringExtra( ALERT_MSG );
+        if ( null != msg ) {
+            showOKOnlyDialog( msg );
+        }
+    }
+
     private void askDefaultNameIf()
     {
         if ( null == CommonPrefs.getDefaultPlayerName( this, 0, false ) ) {
@@ -1109,6 +1118,7 @@ public class GamesList extends XWExpandableListActivity
         startNewNetGame( intent );
         startHasGameID( intent );
         startHasRowID( intent );
+        tryAlert( intent );
     }
 
     public static void onGameDictDownload( Context context, Intent intent )
@@ -1150,6 +1160,13 @@ public class GamesList extends XWExpandableListActivity
             Utils.notImpl( context );
         }
 
+        return intent;
+    }
+
+    public static Intent makeAlertIntent( Context context, String msg )
+    {
+        Intent intent = makeSelfIntent( context );
+        intent.putExtra( ALERT_MSG, msg );
         return intent;
     }
 

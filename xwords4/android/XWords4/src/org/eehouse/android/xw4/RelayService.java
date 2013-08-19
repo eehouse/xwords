@@ -494,7 +494,10 @@ public class RelayService extends XWService
                     break;
                 case XWPDEV_ALERT:
                     str = getStringWithLength( dis );
-                    sendResult( MultiEvent.RELAY_ALERT, str );
+                    Intent intent = GamesList.makeAlertIntent( this, str );
+                    Utils.postNotification( this, intent, 
+                                            R.string.relay_alert_title,
+                                            str, str.hashCode() );
                     break;
                 case XWPDEV_BADREG:
                     str = getStringWithLength( dis );
