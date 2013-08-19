@@ -38,6 +38,7 @@
 #include <sys/select.h>
 #include <stdarg.h>
 #include <sys/time.h>
+#include <glib.h>
 
 #include "ctrl.h"
 #include "cref.h"
@@ -49,13 +50,11 @@
 #include "tpool.h"
 #include "devmgr.h"
 
-#define MAX_ARGS 10
-
 /* this is *only* for testing.  Don't abuse!!!! */
 extern pthread_rwlock_t gCookieMapRWLock;
 
 /* Return of true means exit the ctrl thread */
-typedef bool (*CmdPtr)( int socket, const char** args );
+typedef bool (*CmdPtr)( int socket, const char* cmd, int argc, gchar** args );
 
 typedef struct FuncRec {
     const char* name;
@@ -66,20 +65,23 @@ vector<int> g_ctrlSocks;
 pthread_mutex_t g_ctrlSocksMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-static bool cmd_quit( int socket, const char** args );
-static bool cmd_print( int socket, const char** args );
-static bool cmd_devs( int socket, const char** args );
-/* static bool cmd_lock( int socket, const char** args ); */
-static bool cmd_help( int socket, const char** args );
-static bool cmd_start( int socket, const char** args );
-static bool cmd_stop( int socket, const char** args );
-/* static bool cmd_kill_eject( int socket, const char** args ); */
-static bool cmd_get( int socket, const char** args );
-static bool cmd_set( int socket, const char** args );
-static bool cmd_shutdown( int socket, const char** args );
-static bool cmd_rev( int socket, const char** args );
-static bool cmd_uptime( int socket, const char** args );
-static bool cmd_crash( int socket, const char** args );
+static bool cmd_quit( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_print( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_devs( int socket, const char* cmd, int argc, gchar** args );
+/* static bool cmd_lock( int socket, gchar** args ); */
+static bool cmd_help( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_start( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_stop( int socket, const char* cmd, int argc, gchar** args );
+/* static bool cmd_kill_eject( int socket, gchar** args ); */
+static bool cmd_get( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_set( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_shutdown( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_rev( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_uptime( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_crash( int socket, const char* cmd, int argc, gchar** args );
+
+static void print_prompt( int socket );
+
 
 static int
 match( string* cmd, const char * const* first, int incr, int count )
@@ -142,7 +144,7 @@ static const FuncRec gFuncs[] = {
 };
 
 static bool
-cmd_quit( int socket, const char** args )
+cmd_quit( int socket, const char* cmd, int argc, gchar** args )
 {
     if ( 0 == strcmp( "help", args[1] ) ) {
         print_to_sock( socket, true, "* %s (disconnect from ctrl port)", 
@@ -172,14 +174,14 @@ print_cookies( int socket, CookieID theID )
 }
 
 static bool
-cmd_start( int socket, const char** args )
+cmd_start( int socket, const char* cmd, int argc, gchar** args )
 {
     print_to_sock( socket, true, "* %s (unimplemented)", args[0] );
     return false;
 }
 
 static bool
-cmd_stop( int socket, const char** args )
+cmd_stop( int socket, const char* cmd, int argc, gchar** args )
 {
     print_to_sock( socket, true, "* %s (unimplemented)", args[0] );
     return false;
@@ -187,7 +189,7 @@ cmd_stop( int socket, const char** args )
 
 #if 0
 static bool
-cmd_kill_eject( int socket, const char** args )
+cmd_kill_eject( int socket, gchar** args )
 {
     bool found = false;
     int isKill = 0 == strcmp( args[0], "kill" );
@@ -233,7 +235,7 @@ cmd_kill_eject( int socket, const char** args )
 #endif
 
 static bool
-cmd_get( int socket, const char** args )
+cmd_get( int socket, const char* cmd, int argc, gchar** args )
 {
     bool needsHelp = true;
 
@@ -289,7 +291,7 @@ cmd_get( int socket, const char** args )
 } /* cmd_get */
 
 static bool
-cmd_set( int socket, const char** args )
+cmd_set( int socket, const char* cmd, int argc, gchar** args )
 {
     const char* val = args[2];
     const char* const attrs[] = { "help", "listeners", "loglevel" };
@@ -343,7 +345,7 @@ format_rev( char* buf, int len )
 }
 
 static bool
-cmd_rev( int socket, const char** args )
+cmd_rev( int socket, const char* cmd, int argc, gchar** args )
 {
     if ( 0 == strcmp( args[1], "help" ) ) {
         print_to_sock( socket, true,
@@ -383,7 +385,7 @@ format_uptime( time_t seconds, char* buf, int len )
 }
 
 static bool
-cmd_uptime( int socket, const char** args )
+cmd_uptime( int socket, const char* cmd, int argc, gchar** args )
 {
     if ( 0 == strcmp( args[1], "help" ) ) {
         print_to_sock( socket, true,
@@ -398,7 +400,7 @@ cmd_uptime( int socket, const char** args )
 }
 
 static bool
-cmd_crash( int socket, const char** args )
+cmd_crash( int socket, const char* cmd, int argc, gchar** args )
 {
     if ( 0 == strcmp( args[1], "help" ) ) {
         print_to_sock( socket, true,
@@ -415,7 +417,7 @@ cmd_crash( int socket, const char** args )
 }
 
 static bool
-cmd_shutdown( int socket, const char** args )
+cmd_shutdown( int socket, const char* cmd, int argc, gchar** args )
 {
     print_to_sock( socket, true,
                    "* %s  -- shuts down relay (exiting main) (unimplemented)",
@@ -469,7 +471,7 @@ print_sockets( int out, int sought )
 }
 
 static bool
-cmd_print( int socket, const char** args )
+cmd_print( int socket, const char* cmd, int argc, gchar** args )
 {
     bool found = false;
     if ( 0 == strcmp( "cref", args[1] ) ) {
@@ -492,13 +494,6 @@ cmd_print( int socket, const char** args )
             found = true;
         } else if ( 0 == strcmp( "id", args[2] ) ) {
             print_sockets( socket, atoi(args[3]) );
-            found = true;
-        }
-    } else if ( 0 == strcmp( "dev", args[1] ) ) {
-        if ( 0 == strcmp( "all", args[2] ) ) {
-            string str;
-            DevMgr::Get()->printDevices( str, 0 );
-            send( socket, str.c_str(), str.size(), 0 );
             found = true;
         }
     }
@@ -531,23 +526,25 @@ onAckProc( bool acked, DevIDRelay devid, uint32_t packetID, void* data )
         print_to_sock( socket, true, "NO ACK for packetID %d from dev %d", 
                        packetID, devid );
     }
+    print_prompt( socket );
 }
 
 static bool
-cmd_devs( int socket, const char** args )
+cmd_devs( int socket, const char* cmd, int argc, gchar** args )
 {
     bool found = false;
     string result;
-
-    if ( 0 == strcmp( "print", args[1] ) ) {
+    if ( 1 >= argc ) {
+        /* missing param; let help print */
+    } else if ( 0 == strcmp( "print", args[1] ) ) {
         DevIDRelay devid = 0;
-        if ( NULL != args[3] ) {
-            devid = (DevIDRelay)strtoul( args[3], NULL, 10 );
+        if ( 2 < argc ) {
+            devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
         }
         DevMgr::Get()->printDevices( result, devid );
         found = true;
     } else if ( 0 == strcmp( "ping", args[1] ) ) {
-    } else if ( 0 == strcmp( "msg", args[1] ) ) {
+    } else if ( 0 == strcmp( "msg", args[1] ) && 3 < argc ) {
         DevIDRelay devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
         const char* msg = args[3];
         if ( post_message( devid, msg, onAckProc, (void*)socket ) ) {
@@ -582,7 +579,7 @@ cmd_devs( int socket, const char** args )
 
 #if 0
 static bool
-cmd_lock( int socket, const char** args )
+cmd_lock( int socket, gchar** args )
 {
     CRefMgr* mgr = CRefMgr::Get();
     if ( 0 == strcmp( "on", args[1] ) ) {
@@ -599,18 +596,18 @@ cmd_lock( int socket, const char** args )
 #endif
 
 static bool
-cmd_help( int socket, const char** args )
+cmd_help( int socket, const char* cmd, int argc, gchar** argv )
 {
-    if ( NULL != args[1] && 0 == strcmp( "help", args[1] ) ) {
-        print_to_sock( socket, true, "* %s  -- prints this", args[0] );
+    if ( 1 < argc && NULL != argv[1] && 0 == strcmp( "help", argv[1] ) ) {
+        print_to_sock( socket, true, "* %s  -- prints this", argv[0] );
     } else {
 
-        const char* help[] = { NULL, "help", NULL, NULL };
+        gchar* help[] = { NULL, (gchar*)"help" };
         const FuncRec* fp = gFuncs;
         const FuncRec* last = fp + (sizeof(gFuncs) / sizeof(gFuncs[0]));
-        while (  fp < last ) {
-            help[0] = fp->name;
-            (*fp->func)( socket, help );
+        while ( fp < last ) {
+            help[0] = (gchar*)fp->name;
+            (*fp->func)( socket, (gchar*)fp->name, VSIZE(help), help );
             ++fp;
         }
     }
@@ -634,9 +631,10 @@ ctrl_thread_main( void* arg )
         g_ctrlSocks.push_back( sock );
     }
 
+    gint argc = 0;
+    gchar** args = NULL;
+    int index = -1;
     string cmd;
-    const char* args[MAX_ARGS] = {0};
-    string sargs[MAX_ARGS];
 
     for ( ; ; ) {
 
@@ -644,33 +642,34 @@ ctrl_thread_main( void* arg )
 
         char buf[512];
         ssize_t nGot = recv( sock, buf, sizeof(buf)-1, 0 );
-        if ( nGot <= 1 ) {      /* break when just \n comes in */
+        if ( 0 >= nGot ) {
             break;
-        } else if ( nGot > 2 ) {
-            /* if nGot is 2, reuse prev string */
-            buf[nGot] = '\0';
-            istringstream s( buf );
-            s >> cmd;
+        } else if ( 1 == nGot ) {
+            assert( 0 );        /* not happening, as getting \r\n terminator */
+        } else if ( 2 == nGot ) {
+            /* user hit return; repeat prev command */
+        } else {
+            buf[nGot-2] = '\0';
+            if ( NULL != args ) {
+                g_strfreev( args );
+            }
 
-            unsigned int ii;
-            for ( ii = 1; ii < (sizeof(args)/sizeof(args[0])); ++ii ) {
-                s >> sargs[ii];
-                args[ii] = sargs[ii].c_str();
-                if ( NULL == args[ii] ) {
-                    break;
-                }
+            if ( !g_shell_parse_argv( buf, &argc, &args, NULL ) ) {
+                assert( 0 );
+            } else {
+                cmd = args[0];
+                index = match( &cmd, (char*const*)&gFuncs[0].name, 
+                                   sizeof(gFuncs[0]), 
+                                   sizeof(gFuncs)/sizeof(gFuncs[0]) );
             }
         }
-
-        int index = match( &cmd, (char*const*)&gFuncs[0].name, 
-                           sizeof(gFuncs[0]), 
-                           sizeof(gFuncs)/sizeof(gFuncs[0]) );
-        args[0] = cmd.c_str();
         if ( index == -1 ) {
             print_to_sock( sock, 1, "unknown or ambiguous command: \"%s\"", 
                            cmd.c_str() );
-            (void)cmd_help( sock, args );
-        } else if ( (*gFuncs[index].func)( sock, args ) ) {
+            gchar* args[] = { (gchar*)cmd.c_str() };
+            (void)cmd_help( sock, "help", 1, args );
+        } else if ( (*gFuncs[index].func)( sock, cmd.c_str(), 
+                                           argc, args ) ) {
             break;
         }
     }
