@@ -50,7 +50,10 @@ bool send_with_length_unsafe( const AddrInfo* addr,
                               uint32_t* packetIDP );
 void send_havemsgs( const AddrInfo* addr );
 
-bool post_message( DevIDRelay devid, const char* message );
+typedef void (*OnMsgAckProc)( bool acked, DevIDRelay devid, uint32_t packetID, 
+                              void* data );
+bool post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
+                   void* data );
 
 time_t uptime(void);
 

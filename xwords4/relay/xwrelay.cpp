@@ -603,12 +603,15 @@ send_havemsgs( const AddrInfo* addr )
 
 class MsgClosure {
 public:
-    MsgClosure( DevIDRelay devid, gpointer msg, uint16_t len )
+    MsgClosure( DevIDRelay devid, gpointer msg, uint16_t len, 
+                OnMsgAckProc proc, void* procClosure )
     {
         m_devid = devid;
         m_len = len;
         m_msg = g_malloc(len);
         memcpy( m_msg, msg, len );
+        m_proc = proc;
+        m_procClosure = procClosure;
     }
     ~MsgClosure() {
         g_free( m_msg );
@@ -616,6 +619,8 @@ public:
     DevIDRelay m_devid;
     uint16_t m_len;
     gpointer m_msg;
+    OnMsgAckProc m_proc;
+    void* m_procClosure;
 };
 
 static void
@@ -627,11 +632,15 @@ onPostedMsgAcked( bool acked, uint32_t packetID, void* data )
                                     (const unsigned char*)mc->m_msg, 
                                     mc->m_len );
     }
+    if ( NULL != mc->m_proc ) {
+        (*mc->m_proc)( acked, mc->m_devid, packetID, mc->m_procClosure );
+    }
     delete mc;
 }
 
 bool
-post_message( DevIDRelay devid, const char* message )
+post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
+              void* procClosure )
 {
     const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( devid );
     bool success = !!addru;
@@ -649,7 +658,8 @@ post_message( DevIDRelay devid, const char* message )
         bool sent = send_via_udp( &addr, &packetID, cmd, &buf[1], 
                                   VSIZE(buf)-1, NULL );
         if ( sent ) {
-            MsgClosure* mc = new MsgClosure( devid, buf, VSIZE(buf) );
+            MsgClosure* mc = new MsgClosure( devid, buf, VSIZE(buf),
+                                             proc, procClosure );
             UDPAckTrack::setOnAck( onPostedMsgAcked, packetID, (void*)mc );
         } else {
             DBMgr::Get()->StoreMessage( devid, (const unsigned char*)buf, 

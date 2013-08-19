@@ -518,6 +518,21 @@ cmd_print( int socket, const char** args )
     return false;
 } /* cmd_print */
 
+/* NOTE: this will probably crash if socket is closed before the ack comes
+   back or times out */
+static void 
+onAckProc( bool acked, DevIDRelay devid, uint32_t packetID, void* data )
+{
+    int socket = (int)data;
+    if ( acked ) {
+        print_to_sock( socket, true, "got ack for packet %d from dev %d", 
+                       packetID, devid );
+    } else {
+        print_to_sock( socket, true, "NO ACK for packetID %d from dev %d", 
+                       packetID, devid );
+    }
+}
+
 static bool
 cmd_devs( int socket, const char** args )
 {
@@ -535,7 +550,7 @@ cmd_devs( int socket, const char** args )
     } else if ( 0 == strcmp( "msg", args[1] ) ) {
         DevIDRelay devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
         const char* msg = args[3];
-        if ( post_message( devid, msg ) ) {
+        if ( post_message( devid, msg, onAckProc, (void*)socket ) ) {
             string_printf( result, "posted message: %s\n", msg );
         } else {
             string_printf( result, "unable to post; does dev %d exist\n", 
