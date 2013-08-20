@@ -550,6 +550,11 @@ public class RelayService extends XWService
             out.writeByte( typ[0] );
             out.writeShort( devid.length() );
             out.writeBytes( devid );
+
+            out.writeShort( GitVersion.CLIENT_VERS_RELAY );
+            out.writeShort( GitVersion.VERS.length() );
+            out.writeBytes( GitVersion.VERS );
+
             postPacket( bas );
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
