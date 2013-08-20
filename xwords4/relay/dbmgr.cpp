@@ -339,7 +339,8 @@ DBMgr::AllDevsAckd( const char* const connName )
 // Return DevIDRelay for device, adding it to devices table IFF it's not
 // already there.
 DevIDRelay
-DBMgr::RegisterDevice( const DevID* host )
+DBMgr::RegisterDevice( const DevID* host, int clientVersion, 
+                       const char* const desc )
 {
     DevIDRelay devID;
     assert( host->m_devIDType != ID_TYPE_NONE );
@@ -352,7 +353,7 @@ DBMgr::RegisterDevice( const DevID* host )
     // If it's not present *and* of type ID_TYPE_RELAY, we can do nothing.
     // Otherwise proceed.
     if ( DEVID_NONE != devID ) {
-        (void)updateDevice( devID, false );
+        (void)UpdateDevice( devID );
     } else if ( ID_TYPE_RELAY < host->m_devIDType ) {
         // loop until we're successful inserting the unique key.  Ship with this
         // coming from random, but test with increasing values initially to make
@@ -365,15 +366,16 @@ DBMgr::RegisterDevice( const DevID* host )
             } while ( DEVID_NONE == devID );
 
             const char* command = "INSERT INTO " DEVICES_TABLE
-                " (id, devType, devid)"
-                " VALUES( $1, $2, $3 )";
-            int nParams = 3;
+                " (id, devType, devid, clntVers, versDesc)"
+                " VALUES( $1, $2, $3, $4, $5 )";
+            int nParams = 5;
             char* paramValues[nParams];
-            char buf[512];
+            char buf[1024];
             formatParams( paramValues, nParams,
-                          "%d"DELIM"%d"DELIM"%s", 
+                          "%d"DELIM"%d"DELIM"%s"DELIM"%d"DELIM"%s", 
                           buf, sizeof(buf), devID, host->m_devIDType, 
-                          host->m_devIDString.c_str() );
+                          host->m_devIDString.c_str(), clientVersion, 
+                          desc );
 
             PGresult* result = PQexecParams( getThreadConn(), command,
                                              nParams, NULL,
@@ -391,8 +393,15 @@ DBMgr::RegisterDevice( const DevID* host )
     return devID;
 }
 
+DevIDRelay 
+DBMgr::RegisterDevice( const DevID* host )
+{
+    return RegisterDevice( host, 0, "" );
+}
+
 bool
-DBMgr::updateDevice( DevIDRelay relayID, bool check )
+DBMgr::UpdateDevice( DevIDRelay relayID, int clientVersion, 
+                     const char* const desc, bool check )
 {
     bool exists = !check;
     if ( !exists ) {
@@ -402,13 +411,22 @@ DBMgr::updateDevice( DevIDRelay relayID, bool check )
     }
 
     if ( exists ) {
-        const char* fmt = 
-            "UPDATE " DEVICES_TABLE " SET mtime='now' WHERE id = %d";
         string query;
-        string_printf( query, fmt, relayID );
+        string_printf( query, "UPDATE " DEVICES_TABLE " SET mtime='now'" );
+        if ( NULL != desc && '\0' != desc[0] ) {
+            string_printf( query, ", clntVers=%d, versDesc='%s'", 
+                           clientVersion, desc );
+        }
+        string_printf( query, " WHERE id = %d", relayID );
         execSql( query );
     }
     return exists;
+}
+
+bool
+DBMgr::UpdateDevice( DevIDRelay relayID )
+{
+    return UpdateDevice( relayID, 0, NULL, false );
 }
 
 HostID

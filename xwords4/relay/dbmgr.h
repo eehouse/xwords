@@ -81,7 +81,10 @@ class DBMgr {
     bool AllDevsAckd( const char* const connName );
 
     DevIDRelay RegisterDevice( const DevID* host );
-    bool updateDevice( DevIDRelay relayID, bool check );
+    DevIDRelay RegisterDevice( const DevID* host, int clientVersion, 
+                               const char* const desc );
+    bool UpdateDevice( DevIDRelay relayID, int clientVersion, 
+                       const char* const desc, bool check );
 
     HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const AddrInfo* addr,
@@ -139,6 +142,7 @@ class DBMgr {
                         int byteaIndex, unsigned char* buf, size_t* buflen );
     void storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs );
     int CountStoredMessages( const char* const connName, int hid );
+    bool UpdateDevice( DevIDRelay relayID );
 
     PGconn* getThreadConn( void );
     void clearThreadConn();

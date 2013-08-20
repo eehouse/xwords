@@ -252,7 +252,7 @@ getNetLong( const unsigned char** bufpp, const unsigned char* end,
         *out = ntohl( tmp );
     }
     return ok;
-} /* getNetShort */
+} /* getNetLong */
 
 static bool
 getNetShort( const unsigned char** bufpp, const unsigned char* end, 
@@ -295,21 +295,27 @@ getNetString( const unsigned char** bufpp, const unsigned char* end, string& out
 }
 
 static bool
-getRelayDevID( const unsigned char** bufpp, const unsigned char* end, 
-               DevID& devID )
+getShortInitString( const unsigned char** bufpp, const unsigned char* end, 
+                    string& out )
 {
-    bool success = false;
-    unsigned short idLen;
-    if ( getNetShort( bufpp, end, &idLen ) ) {
-        if ( end - *bufpp < idLen/* && ID_TYPE_ANON != typ*/ ) {
-            logf( XW_LOGERROR, "full devID not received" );
-        } else {
-            devID.m_devIDString.append( (const char*)*bufpp, idLen );
-            *bufpp += idLen;
-            success = true;
+    bool success;
+    uint16_t len;
+    success = getNetShort( bufpp, end, &len );
+    if ( success ) {
+        success = *bufpp + len <= end;
+        if ( success ) {
+            out.append( (const char*)*bufpp, len );
+            *bufpp += len;
         }
     }
     return success;
+}
+
+static bool
+getRelayDevID( const unsigned char** bufpp, const unsigned char* end, 
+               DevID& devID )
+{
+    return getShortInitString( bufpp, end, devID.m_devIDString );
 }
 
 static bool
@@ -1362,7 +1368,8 @@ addRegID( unsigned char* ptr, DevIDRelay relayID )
 }
 
 static void 
-registerDevice( const DevID* devID, const AddrInfo* addr )
+registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
+                string devDesc )
 {
     DevIDRelay relayID;
     DBMgr* dbMgr = DBMgr::Get();
@@ -1371,7 +1378,8 @@ registerDevice( const DevID* devID, const AddrInfo* addr )
 
     if ( ID_TYPE_RELAY == devID->m_devIDType ) { // known to us; just update the time
         relayID = devID->asRelayID();
-        if ( dbMgr->updateDevice( relayID, true ) ) {
+        if ( dbMgr->UpdateDevice( relayID, clientVers, devDesc.c_str(), 
+                                  true ) ) {
             int nMsgs = dbMgr->CountStoredMessages( relayID );
             if ( 0 < nMsgs ) {
                 send_havemsgs( addr );
@@ -1383,7 +1391,7 @@ registerDevice( const DevID* devID, const AddrInfo* addr )
             relayID = DBMgr::DEVID_NONE;
         } 
     } else {
-        relayID = dbMgr->RegisterDevice( devID );
+        relayID = dbMgr->RegisterDevice( devID, clientVers, devDesc.c_str() );
     }
 
     if ( DBMgr::DEVID_NONE != relayID ) {
@@ -1488,7 +1496,12 @@ handle_udp_packet( UdpThreadClosure* utc )
             DevIDType typ = (DevIDType)*ptr++;
             DevID devID( typ );
             if ( getRelayDevID( &ptr, end, devID ) ) {
-                registerDevice( &devID, utc->addr() );
+                uint16_t clientVers;
+                string devDesc;
+                if ( getNetShort( &ptr, end, &clientVers )
+                     && getShortInitString( &ptr, end, devDesc ) ) {
+                    registerDevice( &devID, utc->addr(), clientVers, devDesc );
+                }
             }
             break;
         }
