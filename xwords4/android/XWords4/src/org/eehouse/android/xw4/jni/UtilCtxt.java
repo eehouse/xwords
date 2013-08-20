@@ -59,6 +59,7 @@ public interface UtilCtxt {
     // Possible values for typ[0], these must match enum in xwrelay.sh
     public enum DevIDType { ID_TYPE_NONE
             , ID_TYPE_RELAY
+            , ID_TYPE_LINUX
             , ID_TYPE_ANDROID_GCM
             , ID_TYPE_ANDROID_OTHER
             , ID_TYPE_ANON
