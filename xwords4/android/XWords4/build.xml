@@ -49,6 +49,7 @@
 <!-- extension targets. Uncomment the ones where you want to do custom work
      in between standard targets -->
 
+    <property name="INITIAL_CLIENT_VERS" value="3"/>
     <target name="-pre-clean">
         <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
             <arg value="clean"/>
@@ -58,6 +59,7 @@
     <target name="-pre-build">
         <exec dir="." executable="../scripts/ndkbuild.sh" >
             <arg value="-j3"/>
+            <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
         </exec>
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4/GCMConsts.java"
@@ -66,6 +68,7 @@
         <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt">
           <arg value="XWords4"/>
           <arg value="xw4"/>
+          <arg value="${INITIAL_CLIENT_VERS}" />
         </exec>
     </target>
 <!--

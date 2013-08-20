@@ -4,6 +4,7 @@ set -e -u
 
 DIR=$1
 VARIANT=$2
+CLIENT_VERS_RELAY=$3
 
 cd $(dirname $0)
 cd ../../
@@ -31,6 +32,7 @@ cat <<EOF > android/${DIR}/src/org/eehouse/android/${VARIANT}/GitVersion.java
 package org.eehouse.android.${VARIANT};
 class GitVersion {
     public static final String VERS = "$SHORTVERS";
+    public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
 }
 EOF
 
