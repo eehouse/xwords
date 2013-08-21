@@ -460,26 +460,26 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
     }
     assert( newID <= 4 );
 
-    string devIDBuf;
+    string query;
+    string_printf( query, "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
+                   " clntVers[%d] = %d, seeds[%d] = %d, addrs[%d] = \'%s\', ", 
+                   newID, nToAdd, newID, clientVersion, newID, seed, newID, 
+                   inet_ntoa( addr->sin_addr() ) );
     if ( DEVID_NONE != devID ) {
-        string_printf( devIDBuf, "devids[%d] = %d, ", newID, devID );
-    } else {
-        assert( 0 == strlen(devIDBuf.c_str()) );
+        string_printf( query, "devids[%d] = %d, ", newID, devID );
+    }
+    string_printf( query, " tokens[%d] = %d, mtimes[%d]='now', ack[%d]=\'%c\'"
+                   " WHERE connName = '%s'", newID, addr->clientToken(), 
+                   newID, newID, ackd?'A':'a', connName );
+
+    // Update the devices table too.  Eventually the clntVers field of the
+    // games table should go away.
+    if ( DEVID_NONE != devID ) {
+        string_printf( query, "; UPDATE " DEVICES_TABLE " SET clntVers = %d"
+                       " WHERE id = %d", clientVersion, devID );
     }
 
-    const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
-        " clntVers[%d] = %d,"
-        " seeds[%d] = %d, addrs[%d] = \'%s\', %s"
-        " tokens[%d] = %d, mtimes[%d]='now', ack[%d]=\'%c\'"
-        " WHERE connName = '%s'";
-    string query;
-    char* ntoa = inet_ntoa( addr->sin_addr() );
-    string_printf( query, fmt, newID, nToAdd, newID, clientVersion,
-                   newID, seed, newID, ntoa, devIDBuf.c_str(), 
-                   newID, addr->clientToken(), newID, newID, ackd?'A':'a', 
-                   connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-
     execSql( query );
 
     return newID;
