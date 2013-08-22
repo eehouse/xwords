@@ -649,30 +649,33 @@ post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
               void* procClosure )
 {
     const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( devid );
-    bool success = !!addru;
-    if ( success ) {
-        AddrInfo addr( addru );
-        short len = strlen(message);
-        short netLen = htons(len);
-        uint32_t packetID;
-        uint8_t buf[1 + sizeof(netLen) + len];
-        XWRelayReg cmd = XWPDEV_ALERT;
-        buf[0] = cmd;
-        memcpy( &buf[1], &netLen, sizeof(netLen) );
-        memcpy( &buf[1 + sizeof(netLen)], message, len );
+    bool canSendNow = !!addru;
+    short len = strlen( message );
+    short netLen = htons( len );
+    uint8_t buf[1 + sizeof(netLen) + len];
+    XWRelayReg cmd = XWPDEV_ALERT;
+    buf[0] = cmd;
+    memcpy( &buf[1], &netLen, sizeof(netLen) );
+    memcpy( &buf[1 + sizeof(netLen)], message, len );
 
-        bool sent = send_via_udp( &addr, &packetID, cmd, &buf[1], 
-                                  VSIZE(buf)-1, NULL );
+    bool sent = false;
+    if ( canSendNow ) {
+        AddrInfo addr( addru );
+        uint32_t packetID;
+
+        sent = send_via_udp( &addr, &packetID, cmd, &buf[1], 
+                             VSIZE(buf)-1, NULL );
         if ( sent ) {
             MsgClosure* mc = new MsgClosure( devid, buf, VSIZE(buf),
                                              proc, procClosure );
             UDPAckTrack::setOnAck( onPostedMsgAcked, packetID, (void*)mc );
-        } else {
-            DBMgr::Get()->StoreMessage( devid, (const unsigned char*)buf, 
-                                        VSIZE(buf) );
         }
     }
-    return success;
+    if ( !sent ) {
+        DBMgr::Get()->StoreMessage( devid, (const unsigned char*)buf, 
+                                    VSIZE(buf) );
+    }
+    return sent;
 }
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
@@ -1405,7 +1408,7 @@ registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
                       &maxInterval, sizeof(maxInterval), NULL );
 
         // Map the address to the devid for future sending purposes.
-        DevMgr::Get()->Remember( relayID, addr );
+        DevMgr::Get()->rememberDevice( relayID, addr );
     }
 }
 
@@ -1558,7 +1561,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             ptr += idLen;
 
             const AddrInfo* addr = utc->addr();
-            DevMgr::Get()->Remember( devID.asRelayID(), addr );
+            DevMgr::Get()->rememberDevice( devID.asRelayID(), addr );
 
             if ( XWPDEV_RQSTMSGS == header.cmd ) {
                 retrieveMessages( devID, addr );

@@ -948,7 +948,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
         if ( ID_TYPE_NONE != devIDType ) { 
             devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
             if ( addr->isUDP() ) {
-                DevMgr::Get()->Remember( devID, addr );
+                DevMgr::Get()->rememberDevice( devID, addr );
             }
         }
         *devIDp = devID;

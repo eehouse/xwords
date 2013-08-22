@@ -36,7 +36,7 @@ DevMgr::Get()
 } /* Get */
 
 void
-DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
+DevMgr::rememberDevice( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
 {
     if ( DBMgr::DEVID_NONE != devid ) {
         gchar* b64 = g_base64_encode( (unsigned char*)&saddr->u.addr, 
@@ -81,9 +81,9 @@ DevMgr::Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
 }
 
 void
-DevMgr::Remember( DevIDRelay devid, const AddrInfo* addr )
+DevMgr::rememberDevice( DevIDRelay devid, const AddrInfo* addr )
 {
-    Remember( devid, addr->saddr() );
+    rememberDevice( devid, addr->saddr() );
 }
 
 const AddrInfo::AddrUnion* 
@@ -101,6 +101,19 @@ DevMgr::get( DevIDRelay devid )
     logf( XW_LOGINFO, "%s(devid=%d)=>%p", __func__, devid, result );
     return result;
 }
+
+bool 
+DevMgr::forgetDevice( DevIDRelay devid )
+{
+    MutexLock ml( &m_mapLock );
+    map<DevIDRelay,UDPAddrRec>::iterator iter = m_devAddrMap.find( devid );
+    bool found = m_devAddrMap.end() != iter;
+    if ( found ) {
+        m_devAddrMap.erase( iter );
+    }
+    return found;
+}
+
 
 // Print info about every device, ordered by how old they are (how long since
 // last remembered).  Build a separate array with the mutex held, then release

@@ -31,12 +31,13 @@ using namespace std;
 class DevMgr {
  public:
     static DevMgr* Get();
-    void Remember( DevIDRelay devid, const AddrInfo::AddrUnion* saddr );
-    void Remember( DevIDRelay devid, const AddrInfo* addr );
+    void rememberDevice( DevIDRelay devid, const AddrInfo::AddrUnion* saddr );
+    void rememberDevice( DevIDRelay devid, const AddrInfo* addr );
     const AddrInfo::AddrUnion* get( DevIDRelay devid );
 
     /* Called from ctrl port */
     void printDevices( string& str, DevIDRelay devid /* 0 means all */ );
+    bool forgetDevice( DevIDRelay devid );
 
  private:
 

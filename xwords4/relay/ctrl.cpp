@@ -554,7 +554,14 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** args )
                            devid );
         }
         found = true;
-    } else if ( 0 == strcmp( "rm", args[1] ) ) {
+    } else if ( 0 == strcmp( "rm", args[1] ) && 2 < argc  ) {
+        DevIDRelay devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
+        if ( DevMgr::Get()->forgetDevice( devid ) ) {
+            string_printf( result, "dev %d removed\n", devid );
+        } else {
+            string_printf( result, "dev %d unknown\n", devid );
+        }
+        found = true;
     }
 
     if ( found ) {
