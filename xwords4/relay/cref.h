@@ -44,16 +44,23 @@ class CookieMapIterator;        /* forward */
 
 struct HostRec {
 public:
-HostRec(HostID hostID, const AddrInfo* addr, int nPlayersH, int seed, 
-        bool ackPending ) 
-        : m_addr(*addr) 
-        , m_nPlayersH(nPlayersH) 
-        , m_seed(seed) 
-        , m_lastHeartbeat(uptime()) 
-        , m_ackPending(ackPending)
-        {
-            logf( XW_LOGINFO, "%s created HostRec with id %d", __func__, hostID);
+    HostRec(HostID hostID, const AddrInfo* addr, int nPlayersH, int seed, 
+            bool ackPending ) 
+    : m_seed(seed) 
+    {
+        update( addr, nPlayersH, seed, ackPending );
+        logf( XW_LOGINFO, "%s created HostRec with id %d", __func__, hostID);
+    }
+    void update( const AddrInfo* addr, int nPlayersH, int seed, bool ackPending ) 
+    {
+        assert( seed == m_seed );
+        m_addr = *addr;
+        m_nPlayersH = nPlayersH;
+        m_seed = seed;
+        m_lastHeartbeat = uptime();
+        m_ackPending = ackPending;
         }
+
     AddrInfo m_addr;
     int m_nPlayersH;
     int m_seed;

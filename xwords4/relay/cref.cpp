@@ -972,11 +972,15 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
 
     {
         RWWriteLock rwl( &m_socketsRWLock );
-        HostRec* hr = new HostRec( hostid, addr, nPlayersH, seed, !reconn );
+        HostRec* hr = m_sockets[hostid-1];
+        if ( NULL == hr ) {
+            hr = new HostRec( hostid, addr, nPlayersH, seed, !reconn );
+            m_sockets[hostid-1] = hr;
+        } else {
+            hr->update( addr, nPlayersH, seed, !reconn );
+        }
         logf( XW_LOGINFO, "%s: adding socket rec with ts %lx", __func__, 
               addr->created() );
-        assert( NULL == m_sockets[hostid-1] );
-        m_sockets[hostid-1] = hr;
     }
 
     printSeeds(__func__);
