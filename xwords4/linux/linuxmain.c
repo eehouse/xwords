@@ -1220,8 +1220,12 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
         } else {
             unsigned short packetSize = ntohs( tmp );
             XP_LOGF( "%s: got packet of size %d", __func__, packetSize );
-            assert( packetSize <= bufSize );
-            nRead = blocking_read( sock, buf, packetSize );
+            if ( packetSize > bufSize ) {
+                XP_LOGF( "%s: packet size %d TOO LARGE; closing socket", __func__, packetSize );
+                nRead = -1;
+            } else {
+                nRead = blocking_read( sock, buf, packetSize );
+            }
             if ( nRead == packetSize ) {
                 LaunchParams* params = cGlobals->params;
                 ++params->nPacketsRcvd;
