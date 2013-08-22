@@ -472,7 +472,7 @@ assemble_packet( vector<uint8_t>& packet, uint32_t* packetIDP, XWRelayReg cmd,
 {
     va_list ap;
     va_start( ap, cmd );
-    assemble_packet( packet, packetIDP, cmd, ap );
+    assemble_packet( packet, packetIDP, cmd, &ap );
     va_end( ap );
 }
 
