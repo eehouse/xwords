@@ -585,10 +585,13 @@ static void
 and_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ, 
                            const XP_UCHAR* idRelay )
 {
-    UTIL_CBK_HEADER( "deviceRegistered", "(ILjava/lang/String;)V" );
+    UTIL_CBK_HEADER( "deviceRegistered", "(Lorg/eehouse/android/xw4/"
+                     "jni/UtilCtxt$DevIDType;Ljava/lang/String;)V" );
     jstring jstr = (*env)->NewStringUTF( env, idRelay );
-    (*env)->CallVoidMethod( env, util->jutil, mid, typ, jstr );
-    deleteLocalRef( env, jstr );
+    jobject jtyp = intToJEnum( env, typ, 
+                               "org/eehouse/android/xw4/jni/UtilCtxt$DevIDType" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jtyp, jstr );
+    deleteLocalRefs( env, jstr, jtyp, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
 #endif  /* XWFEATURE_DEVID */
