@@ -146,14 +146,16 @@ static const FuncRec gFuncs[] = {
 static bool
 cmd_quit( int socket, const char* cmd, int argc, gchar** args )
 {
-    if ( 0 == strcmp( "help", args[1] ) ) {
+    bool result;
+    if ( 1 == argc ) {
+        print_to_sock( socket, true, "bye bye" );
+        result = true;
+    } else {
         print_to_sock( socket, true, "* %s (disconnect from ctrl port)", 
                        args[0] );
-        return false;
-    } else {
-        print_to_sock( socket, true, "bye bye" );
-        return true;
+        result = false;
     }
+    return result;
 }
 
 static void
@@ -176,14 +178,14 @@ print_cookies( int socket, CookieID theID )
 static bool
 cmd_start( int socket, const char* cmd, int argc, gchar** args )
 {
-    print_to_sock( socket, true, "* %s (unimplemented)", args[0] );
+    print_to_sock( socket, true, "* %s (unimplemented)", cmd );
     return false;
 }
 
 static bool
 cmd_stop( int socket, const char* cmd, int argc, gchar** args )
 {
-    print_to_sock( socket, true, "* %s (unimplemented)", args[0] );
+    print_to_sock( socket, true, "* %s (unimplemented)", cmd );
     return false;
 }
 
@@ -238,53 +240,55 @@ static bool
 cmd_get( int socket, const char* cmd, int argc, gchar** args )
 {
     bool needsHelp = true;
+    if ( 2 == argc ) {
+        string attr(args[1]);
+        const char* const attrs[] = { "help", "listeners", "loglevel" };
+        int index = match( &attr, attrs, sizeof(attrs[0]), 
+                           sizeof(attrs)/sizeof(attrs[0]));
 
-    string attr(args[1]);
-    const char* const attrs[] = { "help", "listeners", "loglevel" };
-    int index = match( &attr, attrs, sizeof(attrs[0]), 
-                       sizeof(attrs)/sizeof(attrs[0]));
-
-    switch( index ) {
-    case 0:
-        break;
-    case 1: {
-        char buf[128];
-        int len = 0;
-        ListenersIter iter(&g_listeners, false);
-        for ( ; ; ) {
-            int listener = iter.next();
-            if ( listener == -1 ) {
-                break;
+        switch( index ) {
+        case 0:
+            break;
+        case 1: {
+            char buf[128];
+            int len = 0;
+            ListenersIter iter(&g_listeners, false);
+            for ( ; ; ) {
+                int listener = iter.next();
+                if ( listener == -1 ) {
+                    break;
+                }
+                len += snprintf( &buf[len], sizeof(buf)-len, "%d,", listener );
             }
-            len += snprintf( &buf[len], sizeof(buf)-len, "%d,", listener );
-        }
-        print_to_sock( socket, true, "%s", buf );
-        needsHelp = false;
-    }
-        break;
-    case 2: {
-        RelayConfigs* rc = RelayConfigs::GetConfigs();
-        int level;
-        if ( NULL != rc && rc->GetValueFor( "LOGLEVEL", &level ) ) {
-            print_to_sock( socket, true, "loglevel=%d\n",  level );
+            print_to_sock( socket, true, "%s", buf );
             needsHelp = false;
-        } else {
-            logf( XW_LOGERROR, "RelayConfigs::GetConfigs() => NULL" );
         }
-    }
-        break;
+            break;
+        case 2: {
+            RelayConfigs* rc = RelayConfigs::GetConfigs();
+            int level;
+            if ( NULL != rc && rc->GetValueFor( "LOGLEVEL", &level ) ) {
+                print_to_sock( socket, true, "loglevel=%d\n",  level );
+                needsHelp = false;
+            } else {
+                logf( XW_LOGERROR, "RelayConfigs::GetConfigs() => NULL" );
+            }
+        }
+            break;
 
-    default:
-        print_to_sock( socket, true, "unknown or ambiguous attribute: %s", attr.c_str() );
-    }
+        default:
+            print_to_sock( socket, true, "unknown or ambiguous attribute: %s", 
+                           attr.c_str() );
+        }
 
+    }
     if ( needsHelp ) {
         /* includes help */
         print_to_sock( socket, false,
                        "* %s -- lists all attributes (unimplemented)\n"
                        "* %s listener\n"
                        "* %s loglevel\n"
-                       , args[0], args[0], args[0] );
+                       , cmd, cmd, cmd );
     }
 
     return false;
@@ -293,47 +297,48 @@ cmd_get( int socket, const char* cmd, int argc, gchar** args )
 static bool
 cmd_set( int socket, const char* cmd, int argc, gchar** args )
 {
-    const char* val = args[2];
-    const char* const attrs[] = { "help", "listeners", "loglevel" };
-    string attr(args[1]);
-    int index = match( &attr, attrs, sizeof(attrs[0]), 
-                       sizeof(attrs)/sizeof(attrs[0]));
-
     bool needsHelp = true;
-    switch( index ) {
-    case 1:
-        if ( NULL != val && val[0] != '\0' ) {
-            istringstream str( val );
-            vector<int> sv;
-            while ( !str.eof() ) {
-                int sock;
-                char comma;
-                str >> sock >> comma;
-                logf( XW_LOGERROR, "%s: read %d", __func__, sock );
-                sv.push_back( sock );
-            }
-            g_listeners.SetAll( &sv );
-            needsHelp = false;
-        }
-        break;
-    case 2:
-        if ( NULL != val && val[0] != '\0' ) {
-            RelayConfigs* rc = RelayConfigs::GetConfigs();
-            if ( rc != NULL ) {
-                rc->SetValueFor( "LOGLEVEL", val );
+    if ( 3 == argc ) {
+        const char* val = args[2];
+        const char* const attrs[] = { "help", "listeners", "loglevel" };
+        string attr(args[1]);
+        int index = match( &attr, attrs, sizeof(attrs[0]), 
+                           sizeof(attrs)/sizeof(attrs[0]));
+
+        switch( index ) {
+        case 1:
+            if ( NULL != val && val[0] != '\0' ) {
+                istringstream str( val );
+                vector<int> sv;
+                while ( !str.eof() ) {
+                    int sock;
+                    char comma;
+                    str >> sock >> comma;
+                    logf( XW_LOGERROR, "%s: read %d", __func__, sock );
+                    sv.push_back( sock );
+                }
+                g_listeners.SetAll( &sv );
                 needsHelp = false;
             }
+            break;
+        case 2:
+            if ( NULL != val && val[0] != '\0' ) {
+                RelayConfigs* rc = RelayConfigs::GetConfigs();
+                if ( rc != NULL ) {
+                    rc->SetValueFor( "LOGLEVEL", val );
+                    needsHelp = false;
+                }
+            }
+            break;
+        default:
+            break;
         }
-        break;
-    default:
-        break;
     }
-
     if ( needsHelp ) {
         print_to_sock( socket, true, 
                        "* %s listeners <n>,[<n>,..<n>,]\n"
                        "* %s loglevel <n>"
-                       ,args[0], args[0] );
+                       ,cmd, cmd );
     }
     return false;
 }
@@ -347,14 +352,14 @@ format_rev( char* buf, int len )
 static bool
 cmd_rev( int socket, const char* cmd, int argc, gchar** args )
 {
-    if ( 0 == strcmp( args[1], "help" ) ) {
-        print_to_sock( socket, true,
-                       "* %s -- prints svn rev number of build",
-                       args[0] );
-    } else {
+    if ( 1 == argc ) {
         char buf[128];
         format_rev( buf, sizeof(buf) );
         print_to_sock( socket, true, "%s", buf );
+    } else {
+        print_to_sock( socket, true,
+                       "* %s -- prints svn rev number of build",
+                       args[0] );
     }
     return false;
 }
@@ -387,14 +392,14 @@ format_uptime( time_t seconds, char* buf, int len )
 static bool
 cmd_uptime( int socket, const char* cmd, int argc, gchar** args )
 {
-    if ( 0 == strcmp( args[1], "help" ) ) {
-        print_to_sock( socket, true,
-                       "* %s -- prints how long the relay's been running",
-                       args[0] );
-    } else {
+    if ( 1 == argc ) {
         char buf[128];
         format_uptime( uptime(), buf, sizeof(buf) );
         print_to_sock( socket, true, "uptime: %s", buf );
+    } else {
+        print_to_sock( socket, true,
+                       "* %s -- prints how long the relay's been running",
+                       args[0] );
     }
     return false;
 }
@@ -402,16 +407,16 @@ cmd_uptime( int socket, const char* cmd, int argc, gchar** args )
 static bool
 cmd_crash( int socket, const char* cmd, int argc, gchar** args )
 {
-    if ( 0 == strcmp( args[1], "help" ) ) {
-        print_to_sock( socket, true,
-                       "* %s -- fires an assert (debug case) or divides-by-zero",
-                       args[0] );
-    } else {
+    if ( 1 == argc ) {
         logf( XW_LOGERROR, "crashing..." );
         assert(0);
         int ii = 1;
         while ( ii > 0 ) --ii;
         return 6/ii > 0;
+    } else {
+        print_to_sock( socket, true,
+                       "* %s -- fires an assert (debug case) or divides-by-zero",
+                       cmd );
     }
     return false;
 }
@@ -474,30 +479,35 @@ static bool
 cmd_print( int socket, const char* cmd, int argc, gchar** args )
 {
     bool found = false;
-    if ( 0 == strcmp( "cref", args[1] ) ) {
-        if ( 0 == strcmp( "all", args[2] ) ) {
-            print_cookies( socket, (CookieID)0 );
-            found = true;
-        } else if ( 0 == strcmp( "cookie", args[2] ) ) {
-            print_cookies( socket, args[3], NULL );
-            found = true;
-        } else if ( 0 == strcmp( "connName", args[2] ) ) {
-            print_cookies( socket, NULL, args[3] );
-            found = true;
-        } else if ( 0 == strcmp( "id", args[2] ) ) {
-            print_cookies( socket, atoi(args[3]) );
-            found = true;
-        }
-    } else if ( 0 == strcmp( "socket", args[1] ) ) {
-        if ( 0 == strcmp( "all", args[2] ) ) {
-            print_sockets( socket, 0 );
-            found = true;
-        } else if ( 0 == strcmp( "id", args[2] ) ) {
-            print_sockets( socket, atoi(args[3]) );
-            found = true;
+    if ( 2 <= argc ) {
+        if ( 0 == strcmp( "cref", args[1] ) ) {
+            if ( 3 <= argc ) {
+                if ( 0 == strcmp( "all", args[2] ) ) {
+                    print_cookies( socket, (CookieID)0 );
+                    found = true;
+                } else if ( 0 == strcmp( "cookie", args[2] ) ) {
+                    print_cookies( socket, args[3], NULL );
+                    found = true;
+                } else if ( 0 == strcmp( "connName", args[2] ) && 4 <= argc ) {
+                    print_cookies( socket, NULL, args[3] );
+                    found = true;
+                } else if ( 0 == strcmp( "id", args[2] ) && 4 <= argc ) {
+                    print_cookies( socket, atoi(args[3]) );
+                    found = true;
+                }
+            }
+        } else if ( 0 == strcmp( "socket", args[1] ) ) {
+            if ( 3 <= argc ) {
+                if ( 0 == strcmp( "all", args[2] ) ) {
+                    print_sockets( socket, 0 );
+                    found = true;
+                } else if ( 0 == strcmp( "id", args[2] ) && 4 <= argc) {
+                    print_sockets( socket, atoi(args[3]) );
+                    found = true;
+                }
+            }
         }
     }
-
     if ( !found ) {
         const char* str =
             "* %s cref all\n"
