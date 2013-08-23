@@ -191,7 +191,6 @@ public class GameListAdapter implements ExpandableListAdapter {
                 GameListItem child = (GameListItem)convertView;
                 long rowid = getRowIDFor( groupPosition, childPosition );
                 if ( child.getRowID() == rowid ) {
-                    DbgUtils.logf( "reusing child for rowid %d", rowid );
                     result = child;
                 }
             }
