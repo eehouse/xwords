@@ -27,6 +27,8 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -88,7 +90,10 @@ public class RelayService extends XWService
     private long m_lastGamePacketReceived;
 
     // These must match the enum XWRelayReg in xwrelay.h
-    private static final int XWPDEV_PROTO_VERSION = 0;
+    private static enum XWPDevProto { XWPDEV_PROTO_VERSION_INVALID
+            ,XWPDEV_PROTO_VERSION_1
+            };
+
     // private static final int XWPDEV_NONE = 0;
 
     // Must be kept in sync with eponymous enum in xwrelay.h
@@ -624,7 +629,7 @@ public class RelayService extends XWService
             try {
                 DataOutputStream out = 
                     addProtoAndCmd( bas, XWRelayReg.XWPDEV_ACK );
-                out.writeInt( header.m_packetID );
+                un2vli( header.m_packetID, out );
                 postPacket( bas );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
@@ -637,8 +642,8 @@ public class RelayService extends XWService
     {
         PacketHeader result = null;
         byte proto = dis.readByte();
-        if ( XWPDEV_PROTO_VERSION == proto ) {
-            int packetID = dis.readInt();
+        if ( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() == proto ) {
+            int packetID = vli2un( dis );
             if ( 0 != packetID ) {
                 DbgUtils.logf( "readHeader: got packetID %d", packetID );
             }
@@ -666,8 +671,8 @@ public class RelayService extends XWService
         throws java.io.IOException
     {
         DataOutputStream out = new DataOutputStream( bas );
-        out.writeByte( XWPDEV_PROTO_VERSION );
-        out.writeInt( nextPacketID( cmd ) );    // packetID
+        out.writeByte( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() );
+        un2vli( nextPacketID( cmd ), out );
         out.writeByte( cmd.ordinal() );
         return out;
     }
@@ -949,6 +954,46 @@ public class RelayService extends XWService
     {
         stopFetchThreadIf();
         stopUDPThreadsIf();
+    }
+
+    private static void un2vli( int nn, OutputStream os ) 
+        throws java.io.IOException
+    {
+        int indx = 0;
+        boolean done = false;
+        do {
+            byte byt = (byte)(nn & 0x7F);
+            nn >>= 7;
+            done = 0 == nn;
+            if ( done ) {
+                byt |= 0x80;
+            }
+            os.write( byt );
+        } while ( !done );
+    }
+
+    private static int vli2un( InputStream is ) throws java.io.IOException
+    {
+        int result = 0;
+        byte[] buf = new byte[1];
+        int nRead = 0;
+
+        boolean done = false;
+        for ( int count = 0; !done; ++count ) {
+            nRead = is.read( buf );
+            if ( 1 != nRead ) {
+                DbgUtils.logf( "vli2un: unable to read from stream" );
+                break;
+            }
+            int byt = buf[0];
+            done = 0 != (byt & 0x80);
+            if ( done ) {
+                byt &= 0x7F;
+            } 
+            result |= byt << (7 * count);
+        }
+
+        return result;
     }
 
     /* Timers:
