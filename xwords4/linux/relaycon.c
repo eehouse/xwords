@@ -51,7 +51,7 @@ static bool readHeader( const XP_U8** buf, MsgHeader* header );
 static size_t writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static size_t writeShort( XP_U8* buf, size_t len, XP_U16 shrt );
 static size_t un2vli( int nn, uint8_t* buf );
-static bool uvli2n( const uint8_t** inp, uint32_t* outp );
+static bool vli2un( const uint8_t** inp, uint32_t* outp );
 
 
 void
@@ -404,7 +404,7 @@ readHeader( const XP_U8** buf, MsgHeader* header )
     bool ok = XWPDEV_PROTO_VERSION_1 == *ptr++;
     assert( ok );
 
-    if ( !uvli2n( &ptr, &header->packetID ) ) {
+    if ( !vli2un( &ptr, &header->packetID ) ) {
         assert( 0 );
     }
     XP_LOGF( "%s: got packet %d", __func__, header->packetID );
@@ -452,7 +452,7 @@ un2vli( int nn, uint8_t* buf )
 }
 
 static bool
-uvli2n( const uint8_t** inp, uint32_t* outp )
+vli2un( const uint8_t** inp, uint32_t* outp )
 {
     uint32_t result = 0;
     const uint8_t* in = *inp;
