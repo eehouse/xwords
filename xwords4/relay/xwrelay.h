@@ -33,7 +33,11 @@
  * client provides and that it guarantees uniquely identifies a game on the
  * device.  A database rowid works great as long as they aren't reused.
  */
-#define XWPDEV_PROTO_VERSION 0
+typedef enum {
+    XWPDEV_PROTO_VERSION_INVALID
+    ,XWPDEV_PROTO_VERSION_1
+} XWPDevProto;
+
 #ifndef CANT_DO_TYPEDEF
 typedef
 #endif

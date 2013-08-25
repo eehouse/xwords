@@ -84,7 +84,7 @@
 
 typedef struct _UDPHeader {
     uint32_t packetID;
-    unsigned char proto;
+    XWPDevProto proto;
     XWRelayReg cmd;
 } UDPHeader;
 
@@ -312,6 +312,33 @@ getShortInitString( const unsigned char** bufpp, const unsigned char* end,
 }
 
 static bool
+vli2un( const unsigned char** bufpp, const unsigned char* end, uint32_t* out )
+{
+    uint32_t result = 0;
+    const uint8_t* in = *bufpp;
+
+    int count;
+    for ( count = 0; in < end; ++count ) {
+        unsigned int byt = *in++;
+        bool done = 0 != (byt & 0x80);
+        if ( done ) {
+            byt &= 0x7F;
+        } 
+        result |= byt << (7 * count);
+        if ( done ) {
+            break;
+        }
+    }
+
+    bool success = in < end;
+    if ( success ) {
+        *bufpp = in;
+        *out = result;
+    }
+    return success;
+}
+
+static bool
 getRelayDevID( const unsigned char** bufpp, const unsigned char* end, 
                DevID& devID )
 {
@@ -322,14 +349,18 @@ static bool
 getHeader( const unsigned char** bufpp, const unsigned char* end,
            UDPHeader* header )
 {
-    unsigned char byt;
-    bool success = getNetByte( bufpp, end, &header->proto )
-        && getNetLong( bufpp, end, &header->packetID )
-        && getNetByte( bufpp, end, &byt )
-        && XWPDEV_PROTO_VERSION == header->proto;
-    if ( success ) {
-        header->cmd = (XWRelayReg)byt;
-    } else {
+    bool success = false;
+    uint8_t byt;
+    if ( getNetByte( bufpp, end, &byt ) ) {
+        header->proto = (XWPDevProto)byt;
+        if ( XWPDEV_PROTO_VERSION_1 == header->proto
+             && vli2un( bufpp, end, &header->packetID )
+             && getNetByte( bufpp, end, &byt ) ) {
+            header->cmd = (XWRelayReg)byt;
+            success = true;
+        }
+    }
+    if ( !success ) {
         logf( XW_LOGERROR, "%s: bad packet header", __func__ );
     }
     return success;
@@ -348,6 +379,24 @@ getDevID( const unsigned char** bufpp, const unsigned char* end,
             }
         }
     }
+}
+
+static size_t
+un2vli( int nn, uint8_t* buf )
+{
+    int indx = 0;
+    bool done = false;
+    do {
+        uint8_t byt = nn & 0x7F;
+        nn >>= 7;
+        done = 0 == nn;
+        if ( done ) {
+            byt |= 0x80;
+        }
+        buf[indx++] = byt;
+    } while ( !done );
+
+    return indx;
 }
 
 #ifdef RELAY_HEARTBEAT
@@ -434,12 +483,12 @@ assemble_packet( vector<uint8_t>& packet, uint32_t* packetIDP, XWRelayReg cmd,
         *packetIDP = packetNum;
     }
 
-    uint8_t header[1 + sizeof(packetNum) + 1];
-    header[0] = XWPDEV_PROTO_VERSION;
-    packetNum = htonl( packetNum );
-    memcpy( &header[1], &packetNum, sizeof(packetNum) );
-    header[5] = cmd;
-    packet.insert( packet.end(), header, header + sizeof(header) );
+    uint8_t header[1 + 5 + 1];  // 5 is max vli size
+    int indx = 0;
+    header[indx++] = XWPDEV_PROTO_VERSION_1;
+    indx += un2vli( packetNum, &header[indx] );
+    header[indx++] = cmd;
+    packet.insert( packet.end(), header, header + indx );
 
     for ( ; ; ) {
         uint8_t* ptr = va_arg(*app, uint8_t*);
@@ -1437,7 +1486,8 @@ registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
 void
 onMsgAcked( bool acked, uint32_t packetID, void* data )
 {
-    logf( XW_LOGINFO, "%s(packetID=%d)", __func__, packetID );
+    logf( XW_LOGINFO, "%s(packetID=%d, acked=%s)", __func__, packetID, 
+          acked?"true":"false" );
     if ( acked ) {
         int msgID = (int)data;
         DBMgr::Get()->RemoveStoredMessage( msgID );
@@ -1592,8 +1642,8 @@ handle_udp_packet( UdpThreadClosure* utc )
         }
         case XWPDEV_ACK: {
             uint32_t packetID;
-            if ( getNetLong( &ptr, end, &packetID ) ) {
-                logf( XW_LOGINFO, "ack for packet %d", packetID );
+            if ( vli2un( &ptr, end, &packetID ) ) {
+                logf( XW_LOGINFO, "%s: got ack for packet %d", __func__, packetID );
                 UDPAckTrack::recordAck( packetID );
             }
             break;
@@ -1760,14 +1810,14 @@ maint_str_loop( int udpsock, const char* str )
             break;
         }
         if ( FD_ISSET( udpsock, &rfds ) ) {
-            unsigned char buf[512];
+            uint8_t buf[512];
             AddrInfo::AddrUnion saddr;
             memset( &saddr, 0, sizeof(saddr) );
             socklen_t fromlen = sizeof(saddr.u.addr_in);
 
             ssize_t nRead = recvfrom( udpsock, buf, sizeof(buf), 0 /*flags*/,
                                       &saddr.u.addr, &fromlen );
-            logf( XW_LOGINFO, "%s(); got %d bytes", __func__, nRead);
+            logf( XW_LOGINFO, "%s(): got %d bytes", __func__, nRead);
 
             UDPHeader header;
             const unsigned char* ptr = buf;

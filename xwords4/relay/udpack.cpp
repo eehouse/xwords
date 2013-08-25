@@ -130,8 +130,9 @@ void
 UDPAckTrack::callProc( uint32_t packetID, bool acked, const AckRecord* record )
 {
     OnAckProc proc = record->proc;
-    logf( XW_LOGINFO, "%s: acked=%d, proc=%p", __func__, acked, proc );
     if ( NULL != proc ) {
+        logf( XW_LOGINFO, "%s(packetID=%d, acked=%d, proc=%p)", __func__, packetID, 
+              acked, proc );
         (*proc)( acked, packetID, record->data );
     }
 }

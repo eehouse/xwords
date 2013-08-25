@@ -30,6 +30,7 @@ typedef struct _RelayConStorage {
     void* procsClosure;
     struct sockaddr_in saddr;
     uint32_t nextID;
+    XWPDevProto proto;
 } RelayConStorage;
 
 typedef struct _MsgHeader {
@@ -49,6 +50,9 @@ static int writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd );
 static bool readHeader( const XP_U8** buf, MsgHeader* header );
 static size_t writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static size_t writeShort( XP_U8* buf, size_t len, XP_U16 shrt );
+static size_t un2vli( int nn, uint8_t* buf );
+static bool uvli2n( const uint8_t** inp, uint32_t* outp );
+
 
 void
 relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 
@@ -67,6 +71,8 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     storage->saddr.sin_family = PF_INET;
     storage->saddr.sin_addr.s_addr = htonl( hostNameToIP(host) );
     storage->saddr.sin_port = htons(port);
+
+    storage->proto = XWPDEV_PROTO_VERSION_1;
 }
 
 void
@@ -179,9 +185,11 @@ sendAckIf( RelayConStorage* storage, const MsgHeader* header )
     if ( header->cmd != XWPDEV_ACK ) {
         XP_U8 tmpbuf[16];
         int indx = writeHeader( storage, tmpbuf, XWPDEV_ACK );
-        uint32_t msgID = htonl( header->packetID );
-        memcpy( &tmpbuf[indx], &msgID, sizeof(msgID) );
-        indx += sizeof(msgID);
+
+        uint8_t buf[5];
+        size_t numSiz = un2vli( header->packetID, buf );
+        memcpy( &tmpbuf[indx], buf, numSiz );
+        indx += numSiz;
         sendIt( storage, tmpbuf, indx );
     }
 }
@@ -372,11 +380,19 @@ static int
 writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd )
 {
     int indx = 0;
-    dest[indx++] = XWPDEV_PROTO_VERSION;
-    uint32_t packetNum = storage->nextID++;
-    packetNum = htonl(packetNum);
-    memcpy( &dest[indx], &packetNum, sizeof(packetNum) );
-    indx += sizeof(packetNum);
+    dest[indx++] = storage->proto;
+    uint32_t packetNum = 0;
+    if ( XWPDEV_ACK != cmd ) {
+        packetNum = storage->nextID++;
+    }
+
+    if ( XWPDEV_PROTO_VERSION_1 == storage->proto ) {
+        uint8_t buf[5];
+        size_t numSiz = un2vli( packetNum, buf );
+        memcpy( &dest[indx], buf, numSiz );
+        indx += numSiz;
+    }
+
     dest[indx++] = cmd;
     return indx;
 }
@@ -385,13 +401,14 @@ static bool
 readHeader( const XP_U8** buf, MsgHeader* header )
 {
     const XP_U8* ptr = *buf;
-    bool ok = XWPDEV_PROTO_VERSION == *ptr++;
+    bool ok = XWPDEV_PROTO_VERSION_1 == *ptr++;
     assert( ok );
-    uint32_t packetID;
-    memcpy( &packetID, ptr, sizeof(packetID) );
-    ptr += sizeof(packetID);
-    header->packetID = ntohl( packetID );
+
+    if ( !uvli2n( &ptr, &header->packetID ) ) {
+        assert( 0 );
+    }
     XP_LOGF( "%s: got packet %d", __func__, header->packetID );
+
     header->cmd = *ptr++;
     *buf = ptr;
     return ok;
@@ -414,4 +431,50 @@ rowidFromToken( XP_U32 clientToken, sqlite3_int64* rowid, XP_U16* seed )
 {
     *rowid = clientToken / TOKEN_MULT;
     *seed = clientToken % TOKEN_MULT;
+}
+
+static size_t
+un2vli( int nn, uint8_t* buf )
+{
+    int indx = 0;
+    bool done = false;
+    do {
+        uint8_t byt = nn & 0x7F;
+        nn >>= 7;
+        done = 0 == nn;
+        if ( done ) {
+            byt |= 0x80;
+        }
+        buf[indx++] = byt;
+    } while ( !done );
+
+    return indx;
+}
+
+static bool
+uvli2n( const uint8_t** inp, uint32_t* outp )
+{
+    uint32_t result = 0;
+    const uint8_t* in = *inp;
+    const uint8_t* end = in + 5;
+
+    int count;
+    for ( count = 0; in < end; ++count ) {
+        unsigned int byt = *in++;
+        bool done = 0 != (byt & 0x80);
+        if ( done ) {
+            byt &= 0x7F;
+        } 
+        result |= byt << (7 * count);
+        if ( done ) {
+            break;
+        }
+    }
+
+    bool success = in < end;
+    if ( success ) {
+        *inp = in;
+        *outp = result;
+    }
+    return success;
 }
