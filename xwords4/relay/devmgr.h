@@ -31,7 +31,6 @@ using namespace std;
 class DevMgr {
  public:
     static DevMgr* Get();
-    void rememberDevice( DevIDRelay devid, const AddrInfo::AddrUnion* saddr );
     void rememberDevice( DevIDRelay devid, const AddrInfo* addr );
     const AddrInfo::AddrUnion* get( DevIDRelay devid );
 
@@ -40,6 +39,8 @@ class DevMgr {
     bool forgetDevice( DevIDRelay devid );
 
  private:
+
+    void rememberDevice( DevIDRelay devid, const AddrInfo::AddrUnion* saddr );
 
     /* destructor's never called.... 
     ~DevMgr() { pthread_mutex_destroy( &m_mapLock ); }
