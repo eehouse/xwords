@@ -531,7 +531,7 @@ public class RelayService extends XWService
                     postData( RelayService.this, token, msg );
                     break;
                 case XWPDEV_ACK:
-                    noteAck( dis.readInt() );
+                    noteAck( vli2un( dis ) );
                     break;
                 default:
                     DbgUtils.logf( "RelayService.gotPacket(): Unhandled cmd" );
@@ -917,7 +917,11 @@ public class RelayService extends XWService
     private static void noteAck( int packetID )
     {
         synchronized( s_packetsSent ) {
-            s_packetsSent.remove( packetID );
+            if ( s_packetsSent.contains( packetID ) ) {
+                s_packetsSent.remove( packetID );
+            } else {
+                DbgUtils.logf( "Weird: got ack %d but never sent", packetID );
+            }
             DbgUtils.logf( "RelayService.noteAck(): Got ack for %d; "
                            + "there are %d unacked packets", 
                            packetID, s_packetsSent.size() );

@@ -50,6 +50,7 @@ static int writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd );
 static bool readHeader( const XP_U8** buf, MsgHeader* header );
 static size_t writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static size_t writeShort( XP_U8* buf, size_t len, XP_U16 shrt );
+static size_t writeVLI( XP_U8* out, uint32_t nn );
 static size_t un2vli( int nn, uint8_t* buf );
 static bool vli2un( const uint8_t** inp, uint32_t* outp );
 
@@ -185,11 +186,7 @@ sendAckIf( RelayConStorage* storage, const MsgHeader* header )
     if ( header->cmd != XWPDEV_ACK ) {
         XP_U8 tmpbuf[16];
         int indx = writeHeader( storage, tmpbuf, XWPDEV_ACK );
-
-        uint8_t buf[5];
-        size_t numSiz = un2vli( header->packetID, buf );
-        memcpy( &tmpbuf[indx], buf, numSiz );
-        indx += numSiz;
+        indx += writeVLI( &tmpbuf[indx], header->packetID );
         sendIt( storage, tmpbuf, indx );
     }
 }
@@ -251,9 +248,12 @@ relaycon_receive( void* closure, int socket )
                 break;
             }
             case XWPDEV_ACK: {
-                XP_U32 packetID = getNetLong( &ptr );
+                uint32_t packetID;
+                if ( !vli2un( &ptr, &packetID ) ) {
+                    assert( 0 );
+                }
                 XP_USE( packetID );
-                XP_LOGF( "got ack for packetID %ld", packetID );
+                XP_LOGF( "got ack for packetID %d", packetID );
                 break;
             }
             case XWPDEV_ALERT: {
@@ -350,6 +350,15 @@ writeShort( XP_U8* buf, size_t len, XP_U16 shrt )
     return sizeof(shrt);
 }
 
+static size_t
+writeVLI( XP_U8* out, uint32_t nn )
+{
+    uint8_t buf[5];
+    size_t numSiz = un2vli( nn, buf );
+    memcpy( out, buf, numSiz );
+    return numSiz;
+}
+
 static XP_U16
 getNetShort( const XP_U8** ptr )
 {
@@ -387,10 +396,9 @@ writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd )
     }
 
     if ( XWPDEV_PROTO_VERSION_1 == storage->proto ) {
-        uint8_t buf[5];
-        size_t numSiz = un2vli( packetNum, buf );
-        memcpy( &dest[indx], buf, numSiz );
-        indx += numSiz;
+        indx += writeVLI( &dest[indx], packetNum );
+    } else {
+        assert( 0 );
     }
 
     dest[indx++] = cmd;

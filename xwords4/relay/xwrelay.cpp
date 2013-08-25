@@ -330,7 +330,7 @@ vli2un( const unsigned char** bufpp, const unsigned char* end, uint32_t* out )
         }
     }
 
-    bool success = in < end;
+    bool success = in <= end;
     if ( success ) {
         *bufpp = in;
         *out = result;
@@ -1549,11 +1549,11 @@ static void
 ackPacketIf( const UDPHeader* header, const AddrInfo* addr )
 {
     if ( UDPAckTrack::shouldAck( header->cmd ) ) {
-        uint32_t packetID = header->packetID;
-        logf( XW_LOGINFO, "%s: acking packet %d", __func__, packetID );
-        packetID = htonl( packetID );
-        send_via_udp( addr, NULL, XWPDEV_ACK, 
-                      &packetID, sizeof(packetID), NULL );
+        logf( XW_LOGINFO, "%s: acking packet %d", __func__, header->packetID );
+
+        uint8_t buf[5];
+        size_t siz = un2vli( header->packetID, buf );
+        send_via_udp( addr, NULL, XWPDEV_ACK, buf, siz, NULL );
     }
 }
 
