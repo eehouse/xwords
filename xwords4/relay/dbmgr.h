@@ -82,9 +82,10 @@ class DBMgr {
 
     DevIDRelay RegisterDevice( const DevID* host );
     DevIDRelay RegisterDevice( const DevID* host, int clientVersion, 
-                               const char* const desc );
+                               const char* const desc, const char* const model );
     bool UpdateDevice( DevIDRelay relayID, int clientVersion, 
-                       const char* const desc, bool check );
+                       const char* const desc, const char* const model, 
+                       bool check );
 
     HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const AddrInfo* addr,

@@ -24,14 +24,15 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -494,24 +495,24 @@ public class RelayService extends XWService
                     int unavail = dis.readInt();
                     DbgUtils.logf( "relay unvailable for another %d seconds", 
                                    unavail );
-                    String str = getStringWithLength( dis );
+                    String str = getVLIString( dis );
                     sendResult( MultiEvent.RELAY_ALERT, str );
                     break;
                 case XWPDEV_ALERT:
-                    str = getStringWithLength( dis );
+                    str = getVLIString( dis );
                     Intent intent = GamesList.makeAlertIntent( this, str );
                     Utils.postNotification( this, intent, 
                                             R.string.relay_alert_title,
                                             str, str.hashCode() );
                     break;
                 case XWPDEV_BADREG:
-                    str = getStringWithLength( dis );
+                    str = getVLIString( dis );
                     DbgUtils.logf( "bad relayID \"%s\" reported", str );
                     XWPrefs.clearRelayDevID( this );
                     registerWithRelay();
                     break;
                 case XWPDEV_REGRSP:
-                    str = getStringWithLength( dis );
+                    str = getVLIString( dis );
                     m_maxIntervalSeconds = dis.readShort();
                     DbgUtils.logf( "got relayid %s, maxInterval %d", str, 
                                    m_maxIntervalSeconds );
@@ -553,12 +554,11 @@ public class RelayService extends XWService
         try {
             DataOutputStream out = addProtoAndCmd( bas, XWRelayReg.XWPDEV_REG );
             out.writeByte( typ[0] );
-            out.writeShort( devid.length() );
-            out.writeBytes( devid );
+            writeVLIString( out, devid );
 
             out.writeShort( GitVersion.CLIENT_VERS_RELAY );
-            out.writeShort( GitVersion.VERS.length() );
-            out.writeBytes( GitVersion.VERS );
+            writeVLIString( out, GitVersion.VERS );
+            writeVLIString( out, Build.MODEL );
 
             postPacket( bas );
         } catch ( java.io.IOException ioe ) {
@@ -572,8 +572,7 @@ public class RelayService extends XWService
         try {
             DataOutputStream out = addProtoAndCmd( bas, reg );
             String devid = getDevID( null );
-            out.writeShort( devid.length() );
-            out.writeBytes( devid );
+            writeVLIString( out, devid );
             postPacket( bas );
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
@@ -656,10 +655,10 @@ public class RelayService extends XWService
         return result;
     }
 
-    private String getStringWithLength( DataInputStream dis )
+    private String getVLIString( DataInputStream dis )
         throws java.io.IOException
     {
-        short len = dis.readShort();
+        int len = vli2un( dis );
         byte[] tmp = new byte[len];
         dis.read( tmp );
         String result = new String( tmp );
@@ -998,6 +997,14 @@ public class RelayService extends XWService
         }
 
         return result;
+    }
+
+    private static void writeVLIString( DataOutputStream os, String str )
+        throws java.io.IOException
+    {
+        int len = str.length();
+        un2vli( len, os );
+        os.writeBytes( str );
     }
 
     /* Timers:

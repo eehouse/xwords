@@ -295,23 +295,6 @@ getNetString( const unsigned char** bufpp, const unsigned char* end, string& out
 }
 
 static bool
-getShortInitString( const unsigned char** bufpp, const unsigned char* end, 
-                    string& out )
-{
-    bool success;
-    uint16_t len;
-    success = getNetShort( bufpp, end, &len );
-    if ( success ) {
-        success = *bufpp + len <= end;
-        if ( success ) {
-            out.append( (const char*)*bufpp, len );
-            *bufpp += len;
-        }
-    }
-    return success;
-}
-
-static bool
 vli2un( const unsigned char** bufpp, const unsigned char* end, uint32_t* out )
 {
     uint32_t result = 0;
@@ -339,10 +322,25 @@ vli2un( const unsigned char** bufpp, const unsigned char* end, uint32_t* out )
 }
 
 static bool
+getVLIString( const unsigned char** bufpp, const unsigned char* end, 
+              string& out )
+{
+    bool success = false;
+    uint32_t len;
+    if ( vli2un( bufpp, end, &len ) && *bufpp + len <= end ) {
+        out.append( (const char*)*bufpp, len );
+        *bufpp += len;
+        success = true;
+        logf( XW_LOGINFO, "%s=>%s", __func__, out.c_str() );
+    }
+    return success;
+}
+
+static bool
 getRelayDevID( const unsigned char** bufpp, const unsigned char* end, 
                DevID& devID )
 {
-    return getShortInitString( bufpp, end, devID.m_devIDString );
+    return getVLIString( bufpp, end, devID.m_devIDString );
 }
 
 static bool
@@ -719,11 +717,12 @@ post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
     vector<uint8_t> packet;
     uint32_t packetID;
     XWRelayReg cmd = XWPDEV_ALERT;
-    short len = strlen( message );
-    short netLen = htons( len );
-    assemble_packet( packet, &packetID, cmd, &netLen, sizeof(netLen),
-                     message, strlen(message),
-                     NULL );
+
+    uint32_t len = strlen( message );
+    uint8_t lenbuf[5];
+    size_t lenlen = un2vli( len, lenbuf );
+    assemble_packet( packet, &packetID, cmd, lenbuf, lenlen,
+                     message, len, NULL );
 
     const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( devid );
     bool canSendNow = !!addru;
@@ -1427,33 +1426,36 @@ proxy_thread_proc( UdpThreadClosure* utc )
     XWThreadPool::GetTPool()->CloseSocket( addr );
 } // proxy_thread_proc
 
+static size_t
+addVLIStr( uint8_t* ptr, const char* str )
+{
+    uint32_t len = strlen( str );
+    size_t indx = un2vli( len, ptr );
+    memcpy( &ptr[indx], str, len );
+    return indx + len;
+}
+
 static short
 addRegID( unsigned char* ptr, DevIDRelay relayID )
 {
-    short used = 0;
     char idbuf[9];
-    int idLen = snprintf( idbuf, sizeof(idbuf), "%.8X", relayID );
-    short lenNBO = htons(idLen);
-    memcpy( &ptr[used], &lenNBO, sizeof(lenNBO) );
-    used += sizeof(lenNBO);
-    memcpy( &ptr[used], idbuf, idLen );
-    used += idLen;
-    return used;
+    (void)snprintf( idbuf, sizeof(idbuf), "%.8X", relayID );
+    return addVLIStr( ptr, idbuf );
 }
 
 static void 
 registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
-                string devDesc )
+                string& devDesc, string& model )
 {
     DevIDRelay relayID;
     DBMgr* dbMgr = DBMgr::Get();
     short indx = 0;
-    unsigned char buf[32];
+    uint8_t buf[32];
 
     if ( ID_TYPE_RELAY == devID->m_devIDType ) { // known to us; just update the time
         relayID = devID->asRelayID();
         if ( dbMgr->UpdateDevice( relayID, clientVers, devDesc.c_str(), 
-                                  true ) ) {
+                                  model.c_str(), true ) ) {
             int nMsgs = dbMgr->CountStoredMessages( relayID );
             if ( 0 < nMsgs ) {
                 send_havemsgs( addr );
@@ -1465,7 +1467,8 @@ registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
             relayID = DBMgr::DEVID_NONE;
         } 
     } else {
-        relayID = dbMgr->RegisterDevice( devID, clientVers, devDesc.c_str() );
+        relayID = dbMgr->RegisterDevice( devID, clientVers, devDesc.c_str(), 
+                                         model.c_str() );
     }
 
     if ( DBMgr::DEVID_NONE != relayID ) {
@@ -1573,9 +1576,12 @@ handle_udp_packet( UdpThreadClosure* utc )
             if ( getRelayDevID( &ptr, end, devID ) ) {
                 uint16_t clientVers;
                 string devDesc;
+                string model;
                 if ( getNetShort( &ptr, end, &clientVers )
-                     && getShortInitString( &ptr, end, devDesc ) ) {
-                    registerDevice( &devID, utc->addr(), clientVers, devDesc );
+                     && getVLIString( &ptr, end, devDesc )
+                     && getVLIString( &ptr, end, model ) ) {
+                    registerDevice( &devID, utc->addr(), clientVers, 
+                                    devDesc, model );
                 }
             }
             break;
@@ -1620,23 +1626,14 @@ handle_udp_packet( UdpThreadClosure* utc )
         }
         case XWPDEV_KEEPALIVE:
         case XWPDEV_RQSTMSGS: {
-            unsigned short idLen;
-            if ( !getNetShort( &ptr, end, &idLen ) ) {
-                break;
-            }
-            if ( end - ptr > idLen ) {
-                logf( XW_LOGERROR, "full devID not received" );
-                break;
-            }
             DevID devID( ID_TYPE_RELAY );
-            devID.m_devIDString.append( (const char*)ptr, idLen );
-            ptr += idLen;
+            if ( getVLIString( &ptr, end, devID.m_devIDString ) ) {
+                const AddrInfo* addr = utc->addr();
+                DevMgr::Get()->rememberDevice( devID.asRelayID(), addr );
 
-            const AddrInfo* addr = utc->addr();
-            DevMgr::Get()->rememberDevice( devID.asRelayID(), addr );
-
-            if ( XWPDEV_RQSTMSGS == header.cmd ) {
-                retrieveMessages( devID, addr );
+                if ( XWPDEV_RQSTMSGS == header.cmd ) {
+                    retrieveMessages( devID, addr );
+                }
             }
             break;
         }
@@ -1793,11 +1790,8 @@ maint_str_loop( int udpsock, const char* str )
 {
     logf( XW_LOGINFO, "%s()", __func__ );
     assert( -1 != udpsock );
-    short len = strlen(str);
-    unsigned char outbuf[sizeof(len) + len];
-    short lenNS = htons( len );
-    memcpy( &outbuf[0], &lenNS, sizeof(lenNS) );
-    memcpy( &outbuf[0+sizeof(len)], str, len );
+    uint8_t outbuf[1024];
+    size_t indx = addVLIStr( &outbuf[0], str );
 
     fd_set rfds;
     for ( ; ; ) {
@@ -1825,7 +1819,7 @@ maint_str_loop( int udpsock, const char* str )
             if ( getHeader( &ptr, ptr + nRead, &header ) ) {
                 send_via_udp( udpsock, &saddr.u.addr, NULL, XWPDEV_UNAVAIL,
                               &unavail, sizeof(unavail),
-                              outbuf, sizeof(outbuf), 
+                              outbuf, indx, 
                               NULL );
             } else {
                 logf( XW_LOGERROR, "unexpected data" );

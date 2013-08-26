@@ -42,7 +42,7 @@ static RelayConStorage* getStorage( LaunchParams* params );
 static XP_U32 hostNameToIP( const XP_UCHAR* name );
 static void relaycon_receive( void* closure, int socket );
 static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len );
-static size_t addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str );
+static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
 static XP_U16 getNetShort( const XP_U8** ptr );
 static XP_U32 getNetLong( const XP_U8** ptr );
@@ -90,7 +90,8 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* devID, DevIDType typ )
     indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
     indx += writeShort( &tmpbuf[indx], sizeof(tmpbuf) - indx, 
                         INITIAL_CLIENT_VERS );
-    indx += addStrWithLength( &tmpbuf[indx], tmpbuf + sizeof(tmpbuf), SVN_REV );
+    indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, SVN_REV );
+    indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux box" );
 
     sendIt( storage, tmpbuf, indx );
 }
@@ -158,7 +159,7 @@ relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID )
     XP_U8 tmpbuf[128];
     int indx = 0;
     indx += writeHeader( storage, tmpbuf, XWPDEV_RQSTMSGS );
-    indx += addStrWithLength( &tmpbuf[indx], tmpbuf + sizeof(tmpbuf), devID );
+    indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
 
     sendIt( storage, tmpbuf, indx );
 }
@@ -218,7 +219,10 @@ relaycon_receive( void* closure, int socket )
             sendAckIf( storage, &header );
             switch( header.cmd ) {
             case XWPDEV_REGRSP: {
-                XP_U16 len = getNetShort( &ptr );
+                uint32_t len;
+                if ( !vli2un( &ptr, &len ) ) {
+                    assert(0);
+                }
                 XP_UCHAR devID[len+1];
                 getNetString( &ptr, len, devID );
                 XP_U16 maxInterval = getNetShort( &ptr );
@@ -241,9 +245,13 @@ relaycon_receive( void* closure, int socket )
             case XWPDEV_UNAVAIL: {
                 XP_U32 unavail = getNetLong( &ptr );
                 XP_LOGF( "%s: unavail = %lu", __func__, unavail );
-                XP_U16 len = getNetShort( &ptr );
+                uint32_t len;
+                if ( !vli2un( &ptr, &len ) ) {
+                    assert(0);
+                }
                 XP_UCHAR buf[len+1];
                 getNetString( &ptr, len, buf );
+
                 (*storage->procs.msgErrorMsg)( storage->procsClosure, buf );
                 break;
             }
@@ -257,11 +265,12 @@ relaycon_receive( void* closure, int socket )
                 break;
             }
             case XWPDEV_ALERT: {
-                XP_U16 len = getNetShort( &ptr );
-                unsigned char buf[len + 1];
-                memcpy( buf, ptr, len );
-                ptr += len;
-                buf[len] = '\0';
+                uint32_t len;
+                if ( !vli2un( &ptr, &len ) ) {
+                    assert(0);
+                }
+                XP_UCHAR buf[len + 1];
+                getNetString( &ptr, len, buf );
                 XP_LOGF( "%s: got message: %s", __func__, buf );
                 break;
             }
@@ -323,22 +332,23 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 }
 
 static size_t
-addStrWithLength( XP_U8* buf, XP_U8* end, const XP_UCHAR* str )
+addVLIStr( XP_U8* buf, size_t buflen, const XP_UCHAR* str )
 {
-    XP_U16 len = !!str? XP_STRLEN( str ) : 0;
-    if ( buf + len + sizeof(len) <= end ) {
-        XP_U16 lenNBO = htons( len );
-        XP_MEMCPY( buf, &lenNBO, sizeof(lenNBO) );
-        buf += sizeof(lenNBO);
+    uint32_t len = !!str? strlen( str ) : 0;
+    uint8_t nbuf[5];
+    size_t nsize = un2vli( len, nbuf );
+    if ( nsize + len <= buflen ) {
+        memcpy( buf, nbuf, nsize );
+        buf += nsize;
         XP_MEMCPY( buf, str, len );
     }
-    return len + sizeof(len);
+    return nsize + len;
 }
 
 static size_t
 writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str )
 {
-    return addStrWithLength( buf, buf + len, str );
+    return addVLIStr( buf, len, str );
 }
 
 static size_t
