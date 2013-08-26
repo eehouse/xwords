@@ -141,7 +141,7 @@ void*
 UDPAckTrack::threadProc()
 {
     for ( ; ; ) {
-        sleep( 30 );
+        sleep( m_ackLimit / 2 );
         vector<uint32_t> older;
         {
             MutexLock ml( &m_mutex );
