@@ -357,6 +357,7 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
         // loop until we're successful inserting the unique key.  Ship with this
         // coming from random, but test with increasing values initially to make
         // sure duplicates are detected.
+        const char* devidStr = host->m_devIDString.c_str();
         for ( success = false, ii = 0; !success; ++ii ) {
             assert( 10 > ii );  // better to check that we're looping BECAUSE
                                 // of uniqueness problem.
@@ -365,16 +366,15 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
             } while ( DEVID_NONE == devID );
 
             const char* command = "INSERT INTO " DEVICES_TABLE
-                " (id, devType, devid, clntVers, versDesc)"
-                " VALUES( $1, $2, $3, $4, $5 )";
+                " (id, devType, devid, clntVers, versDesc, model)"
+                " VALUES( $1, $2, $3, $4, $5, $6 )";
             int nParams = 6;
             char* paramValues[nParams];
             char buf[1024];
             formatParams( paramValues, nParams,
                           "%d"DELIM"%d"DELIM"%s"DELIM"%d"DELIM"%s"DELIM"%s", 
                           buf, sizeof(buf), devID, host->m_devIDType, 
-                          host->m_devIDString.c_str(), clientVersion, 
-                          desc, model );
+                          devidStr, clientVersion, desc, model );
 
             PGresult* result = PQexecParams( getThreadConn(), command,
                                              nParams, NULL,
@@ -382,7 +382,7 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
                                              NULL, NULL, 0 );
             success = PGRES_COMMAND_OK == PQresultStatus(result);
             if ( !success ) {
-                logf( XW_LOGERROR, "PQexec=>%s;%s", 
+                logf( XW_LOGERROR, "%s: %d: PQexec=>%s;%s", __func__, 
                       PQresStatus(PQresultStatus(result)), 
                       PQresultErrorMessage(result) );
             }
