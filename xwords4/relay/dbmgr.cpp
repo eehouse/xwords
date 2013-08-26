@@ -332,7 +332,6 @@ DBMgr::AllDevsAckd( const char* const connName )
     assert( nTuples <= 1 );
     bool full = nTuples == 1 && 't' == PQgetvalue( result, 0, 0 )[0];
     PQclear( result );
-    logf( XW_LOGINFO, "%s=>%d", __func__, full );
     return full;
 }
 
