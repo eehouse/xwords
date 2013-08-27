@@ -63,12 +63,14 @@ public class RelayService extends XWService
     private static final String CMD_STR = "CMD";
 
     // These should be enums
-    private static final int PROCESS_MSGS = 1;
-    private static final int UDP_CHANGED = 2;
-    private static final int SEND = 3;
-    private static final int RECEIVE = 4;
-    private static final int TIMER_FIRED = 5;
-    private static final int RESET = 6;
+    private static enum MsgCmds { INVALID
+            , PROCESS_MSGS
+            , UDP_CHANGED
+            , SEND
+            , RECEIVE
+            , TIMER_FIRED
+            , RESET
+    }
 
     private static final String MSGS = "MSGS";
     private static final String RELAY_ID = "RELAY_ID";
@@ -122,20 +124,20 @@ public class RelayService extends XWService
 
     public static void startService( Context context )
     {
-        Intent intent = getIntentTo( context, UDP_CHANGED );
+        Intent intent = getIntentTo( context, MsgCmds.UDP_CHANGED );
         context.startService( intent );
     }
 
     public static void reset( Context context )
     {
-        Intent intent = getIntentTo( context, RESET );
+        Intent intent = getIntentTo( context, MsgCmds.RESET );
         context.startService( intent );
     }
 
     public static void timerFired( Context context )
 
     {
-        Intent intent = getIntentTo( context, TIMER_FIRED );
+        Intent intent = getIntentTo( context, MsgCmds.TIMER_FIRED );
         context.startService( intent );
     }
 
@@ -143,7 +145,7 @@ public class RelayService extends XWService
     {
         int result = -1;
         if ( NetStateCache.netAvail( context ) ) {
-            Intent intent = getIntentTo( context, SEND )
+            Intent intent = getIntentTo( context, MsgCmds.SEND )
                 .putExtra( ROWID, rowid )
                 .putExtra( BINBUFFER, msg );
             context.startService( intent );
@@ -160,7 +162,7 @@ public class RelayService extends XWService
         DbgUtils.logf( "RelayService::postData: packet of length %d for token %d", 
                        msg.length, rowid );
         if ( DBUtils.haveGame( context, rowid ) ) {
-            Intent intent = getIntentTo( context, RECEIVE )
+            Intent intent = getIntentTo( context, MsgCmds.RECEIVE )
                 .putExtra( ROWID, rowid )
                 .putExtra( BINBUFFER, msg );
             context.startService( intent );
@@ -178,16 +180,16 @@ public class RelayService extends XWService
     public static void processMsgs( Context context, String relayId, 
                                     String[] msgs64 )
     {
-        Intent intent = getIntentTo( context, PROCESS_MSGS )
+        Intent intent = getIntentTo( context, MsgCmds.PROCESS_MSGS )
             .putExtra( MSGS, msgs64 )
             .putExtra( RELAY_ID, relayId );
         context.startService( intent );
     }
 
-    private static Intent getIntentTo( Context context, int cmd )
+    private static Intent getIntentTo( Context context, MsgCmds cmd )
     {
         Intent intent = new Intent( context, RelayService.class );
-        intent.putExtra( CMD_STR, cmd );
+        intent.putExtra( CMD_STR, cmd.ordinal() );
         return intent;
     }
 
@@ -216,57 +218,65 @@ public class RelayService extends XWService
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
-        int result;
+        Integer result = null;
         if ( null != intent ) {
-            int cmd = intent.getIntExtra( CMD_STR, -1 );
-            DbgUtils.logf( "RelayService::onStartCommand: cmd=%d", cmd );
-            switch( cmd ) {
-            case -1:
-                break;
-            case PROCESS_MSGS:
-                String[] relayIDs = new String[1];
-                relayIDs[0] = intent.getStringExtra( RELAY_ID );
-                long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
-                if ( 0 < rowIDs.length ) {
-                    String[] msgs64 = intent.getStringArrayExtra( MSGS );
-                    int count = msgs64.length;
-
-                    byte[][][] msgs = new byte[1][count][];
-                    for ( int ii = 0; ii < count; ++ii ) {
-                        msgs[0][ii] = XwJNI.base64Decode( msgs64[ii] );
-                    }
-                    process( msgs, rowIDs, relayIDs );
-                }
-                break;
-            case UDP_CHANGED:
-                startThreads();
-                break;
-            case RESET:
-                stopThreads();
-                startThreads();
-                break;
-            case SEND:
-            case RECEIVE:
-                startUDPThreadsIfNot();
-                long rowid = intent.getLongExtra( ROWID, -1 );
-                byte[] msg = intent.getByteArrayExtra( BINBUFFER );
-                if ( SEND == cmd ) {
-                    sendMessage( rowid, msg );
-                } else {
-                    feedMessage( rowid, msg );
-                }
-                break;
-            case TIMER_FIRED:
-                if ( !startFetchThreadIf() ) {
-                    sendKeepAlive();
-                }
-                break;
-            default:
-                Assert.fail();
+            MsgCmds cmd;
+            try {
+                cmd = MsgCmds.values()[intent.getIntExtra( CMD_STR, -1 )];
+            } catch (Exception ex) { // OOB most likely
+                cmd = null;
             }
+            if ( null != cmd ) {
+                DbgUtils.logf( "RelayService::onStartCommand: cmd=%s", 
+                               cmd.toString() );
+                switch( cmd ) {
+                case PROCESS_MSGS:
+                    String[] relayIDs = new String[1];
+                    relayIDs[0] = intent.getStringExtra( RELAY_ID );
+                    long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
+                    if ( 0 < rowIDs.length ) {
+                        String[] msgs64 = intent.getStringArrayExtra( MSGS );
+                        int count = msgs64.length;
 
-            result = Service.START_STICKY;
-        } else {
+                        byte[][][] msgs = new byte[1][count][];
+                        for ( int ii = 0; ii < count; ++ii ) {
+                            msgs[0][ii] = XwJNI.base64Decode( msgs64[ii] );
+                        }
+                        process( msgs, rowIDs, relayIDs );
+                    }
+                    break;
+                case UDP_CHANGED:
+                    startThreads();
+                    break;
+                case RESET:
+                    stopThreads();
+                    startThreads();
+                    break;
+                case SEND:
+                case RECEIVE:
+                    startUDPThreadsIfNot();
+                    long rowid = intent.getLongExtra( ROWID, -1 );
+                    byte[] msg = intent.getByteArrayExtra( BINBUFFER );
+                    if ( MsgCmds.SEND.equals( cmd ) ) {
+                        sendMessage( rowid, msg );
+                    } else {
+                        feedMessage( rowid, msg );
+                    }
+                    break;
+                case TIMER_FIRED:
+                    if ( !startFetchThreadIf() ) {
+                        sendKeepAlive();
+                    }
+                    break;
+                default:
+                    Assert.fail();
+                }
+
+                result = Service.START_STICKY;
+            }
+        }
+
+        if ( null == result ) {
             result = Service.START_STICKY_COMPATIBILITY;
         }    
 
