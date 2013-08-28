@@ -568,19 +568,21 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** args )
 
         /* Send to each in the list */
         const char* msg = args[2];
+        gchar* unesc = g_strcompress( msg );
         vector<DevIDRelay>::const_iterator iter;
         for ( iter = devids.begin(); devids.end() != iter; ++iter ) {
             DevIDRelay devid = *iter;
             if ( 0 != devid ) {
-                if ( post_message( devid, msg, onAckProc, 
+                if ( post_message( devid, unesc, onAckProc, 
                                    (void*)socket ) ) {
-                    string_printf( result, "posted message: %s\n", msg );
+                    string_printf( result, "posted message: %s\n", unesc );
                 } else {
                     string_printf( result, "unable to post; does "
                                    "dev %d exist\n", devid );
                 }
             }
         }
+        g_free( unesc );
 
         found = true;
     } else if ( 0 == strcmp( "rm", args[1] ) && 2 < argc  ) {
