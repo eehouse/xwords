@@ -6,8 +6,8 @@ APP_NEW=""
 DO_CLEAN=""
 APP_NEW_PARAMS=""
 NGAMES=""
-UDP_PCT_START=0
-UDP_PCT_INCR=5
+UDP_PCT_START=5
+UDP_PCT_INCR=10
 UPGRADE_ODDS=""
 NROOMS=""
 HOST=""
@@ -54,14 +54,14 @@ function cleanup() {
     done
     echo "cleaning everything up...."
     if [ -d $LOGDIR ]; then
-    mv $LOGDIR /tmp/${LOGDIR}_$$
+        mv $LOGDIR /tmp/${LOGDIR}_$$
     fi
     if [ -e $(dirname $0)/../../relay/xwrelay.log ]; then
-    mkdir -p /tmp/${LOGDIR}_$$
-    mv $(dirname $0)/../../relay/xwrelay.log /tmp/${LOGDIR}_$$
+        mkdir -p /tmp/${LOGDIR}_$$
+        mv $(dirname $0)/../../relay/xwrelay.log /tmp/${LOGDIR}_$$
     fi
 
-    echo "delete from games;" | psql -q -t xwgames
+    echo "DELETE FROM games WHERE room LIKE 'ROOM_%';" | psql -q -t xwgames
 }
 
 function connName() {
