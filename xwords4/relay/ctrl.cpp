@@ -546,7 +546,7 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** args )
     string result;
     if ( 1 >= argc ) {
         /* missing param; let help print */
-    } else if ( 0 == strcmp( "print", args[1] ) ) {
+    } else if ( 0 == strcmp( "list", args[1] ) ) {
         DevIDRelay devid = 0;
         if ( 2 < argc ) {
             devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
@@ -555,14 +555,33 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** args )
         found = true;
     } else if ( 0 == strcmp( "ping", args[1] ) ) {
     } else if ( 0 == strcmp( "msg", args[1] ) && 3 < argc ) {
-        DevIDRelay devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
-        const char* msg = args[3];
-        if ( post_message( devid, msg, onAckProc, (void*)socket ) ) {
-            string_printf( result, "posted message: %s\n", msg );
+        /* Get the list to send to */
+        vector<DevIDRelay> devids;
+        if ( 0 == strcmp( "all", args[3] ) ) {
+            DevMgr::Get()->getKnownDevices( devids );
         } else {
-            string_printf( result, "unable to post; does dev %d exist\n", 
-                           devid );
+            for ( int ii = 3; ii < argc; ++ii ) {
+                DevIDRelay devid = (DevIDRelay)strtoul( args[ii], NULL, 10 );
+                devids.push_back( devid );
+            }
         }
+
+        /* Send to each in the list */
+        const char* msg = args[2];
+        vector<DevIDRelay>::const_iterator iter;
+        for ( iter = devids.begin(); devids.end() != iter; ++iter ) {
+            DevIDRelay devid = *iter;
+            if ( 0 != devid ) {
+                if ( post_message( devid, msg, onAckProc, 
+                                   (void*)socket ) ) {
+                    string_printf( result, "posted message: %s\n", msg );
+                } else {
+                    string_printf( result, "unable to post; does "
+                                   "dev %d exist\n", devid );
+                }
+            }
+        }
+
         found = true;
     } else if ( 0 == strcmp( "rm", args[1] ) && 2 < argc  ) {
         DevIDRelay devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
@@ -580,14 +599,15 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** args )
         }
     } else {
         const char* strs[] = {
-            "* %s print [<id>]\n",
+            "* %s list [<id>] -- prints one id, or all if none specified\n",
             "  %s ping\n",
-            "  %s msg <devid> <msg_text>\n",
+            "  %s msg <msg_text> <devid>+\n",
+            "  %s msg <msg_text> all\n",
             "  %s rm <devid>\n",
         };
         string help;
         for ( size_t ii = 0; ii < VSIZE(strs); ++ii ) {
-            string_printf( help, strs[ii], args[0] );
+            string_printf( help, strs[ii], cmd );
         }
         send( socket, help.c_str(), help.size(), 0 );
     }

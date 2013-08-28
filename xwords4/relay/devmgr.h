@@ -37,6 +37,7 @@ class DevMgr {
     /* Called from ctrl port */
     void printDevices( string& str, DevIDRelay devid /* 0 means all */ );
     bool forgetDevice( DevIDRelay devid );
+    void getKnownDevices( vector<DevIDRelay>& devids );
 
  private:
 

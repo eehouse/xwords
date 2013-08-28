@@ -114,6 +114,15 @@ DevMgr::forgetDevice( DevIDRelay devid )
     return found;
 }
 
+void
+DevMgr::getKnownDevices( vector<DevIDRelay>& devids )
+{
+    MutexLock ml( &m_mapLock );
+    map<DevIDRelay,UDPAddrRec>::const_iterator iter;
+    for ( iter = m_devAddrMap.begin(); m_devAddrMap.end() != iter; ++iter ) {
+        devids.push_back( iter->first );
+    }
+}
 
 // Print info about every device, ordered by how old they are (how long since
 // last remembered).  Build a separate array with the mutex held, then release
@@ -155,10 +164,9 @@ DevMgr::printDevices( string& str, DevIDRelay devid )
         uint32_t age = *keysIter;
         DevIDRelay devid = agedDevs.find( age )->second;
         age = now - age;
-        string_printf( str, "%.3d: devid: %.10d; age: %.3d seconds\n", ++row, 
+        string_printf( str, "%.3d: devid: % 10d; age: %.3d seconds\n", ++row, 
                        devid, age );
     }
-
 }
 
 void
