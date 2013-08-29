@@ -902,8 +902,9 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
                                     msg.msg.size(), true, &packetID ) ) {
                 break;
             }
-            if ( !UDPAckTrack::setOnAck( onMsgAcked, packetID, (void*)msg.msgID ) ) {
-                sentIDs.push_back( msg.msgID );
+            if ( !UDPAckTrack::setOnAck( onMsgAcked, packetID, 
+                                         (void*)msg.msgID() ) ) {
+                sentIDs.push_back( msg.msgID() );
             }
         }
         dbmgr->RemoveStoredMessages( sentIDs );

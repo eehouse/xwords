@@ -41,12 +41,18 @@ class DBMgr {
 
     class MsgInfo {
     public:
-        MsgInfo( int id, AddrInfo::ClientToken tok ) { 
-            msgID = id; token = tok; 
+        MsgInfo( int id, AddrInfo::ClientToken tok, bool hc ) { 
+            m_msgID = id; m_token = tok; m_hasConnname = hc;
         }
+        bool hasConnname() const { return m_hasConnname; }
+        AddrInfo::ClientToken token() const { return m_token; }
+        int msgID() const { return m_msgID; }
+
         vector<uint8_t> msg;
-        int msgID;
-        AddrInfo::ClientToken token;
+    private:
+        bool m_hasConnname;
+        AddrInfo::ClientToken m_token;
+        int m_msgID;
     };
 
     static DBMgr* Get();
@@ -141,7 +147,8 @@ class DBMgr {
     void RemoveStoredMessages( string& msgIDs );
     void decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx, 
                         int byteaIndex, unsigned char* buf, size_t* buflen );
-    void storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs );
+    void storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs, 
+                             bool nullConnnameOK );
     int CountStoredMessages( const char* const connName, int hid );
     bool UpdateDevice( DevIDRelay relayID );
 

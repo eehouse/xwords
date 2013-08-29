@@ -82,6 +82,8 @@
 #include "udpack.h"
 #include "udpager.h"
 
+static void log_hex( const uint8_t* memp, size_t len, const char* tag );
+
 typedef struct _UDPHeader {
     uint32_t packetID;
     XWPDevProto proto;
@@ -347,19 +349,22 @@ static bool
 getHeader( const unsigned char** bufpp, const unsigned char* end,
            UDPHeader* header )
 {
+    const uint8_t* start = *bufpp;
     bool success = false;
     uint8_t byt;
     if ( getNetByte( bufpp, end, &byt ) ) {
         header->proto = (XWPDevProto)byt;
         if ( XWPDEV_PROTO_VERSION_1 == header->proto
              && vli2un( bufpp, end, &header->packetID )
-             && getNetByte( bufpp, end, &byt ) ) {
+             && getNetByte( bufpp, end, &byt )
+             && byt < XWPDEV_N_ELEMS ) {
             header->cmd = (XWRelayReg)byt;
             success = true;
         }
     }
     if ( !success ) {
         logf( XW_LOGERROR, "%s: bad packet header", __func__ );
+        log_hex( start, 7, "packet header" );
     }
     return success;
 }
@@ -1176,7 +1181,7 @@ pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName,
         uint8_t* ptr = msg.msg.data();
         pushShort( out, len );
         out.insert( out.end(), ptr, ptr + len );
-        msgIDs.push_back( msg.msgID );
+        msgIDs.push_back( msg.msgID() );
     }
 }
 
@@ -1236,12 +1241,12 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
 } // handleMsgsMsg
 
 #define NUM_PER_LINE 8
-void
-log_hex( const unsigned char* memp, int len, const char* tag )
+static void
+log_hex( const uint8_t* memp, size_t len, const char* tag )
 {
     const char* hex = "0123456789ABCDEF";
     int i, j;
-    int offset = 0;
+    size_t offset = 0;
 
     while ( offset < len ) {
         char buf[128];
@@ -1526,7 +1531,10 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
         const DBMgr::MsgInfo& msg = *iter;
         uint32_t packetID;
         bool success = false;
-        if ( AddrInfo::NULL_TOKEN == msg.token ) {
+        if ( msg.hasConnname() ) {
+            success = send_msg_via_udp( addr, msg.token(), msg.msg.data(), 
+                                        msg.msg.size(), &packetID );
+        } else {
             int socket;
             const struct sockaddr* dest_addr;
             if ( get_addr_info_if( addr, &socket, &dest_addr ) ) {
@@ -1535,9 +1543,6 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
                 success = 0 < send_packet_via_udp_impl( newPacket, socket, 
                                                         dest_addr );
             }
-        } else {
-            success = send_msg_via_udp( addr, msg.token, msg.msg.data(), 
-                                        msg.msg.size(), &packetID );
         }
 
         if ( !success ) {
@@ -1545,7 +1550,7 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
                   __func__, devID.asRelayID() );
             break;
         }
-        UDPAckTrack::setOnAck( onMsgAcked, packetID, (void*)msg.msgID );
+        UDPAckTrack::setOnAck( onMsgAcked, packetID, (void*)msg.msgID() );
     }
 }
 

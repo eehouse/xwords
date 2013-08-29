@@ -988,19 +988,23 @@ DBMgr::decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx,
 }
 
 void
-DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs )
+DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs, 
+                           bool nullConnnameOK )
 {
     string query;
-    string_printf( query, "SELECT id, msg64, msg, msglen, token FROM " MSGS_TABLE
-                   " WHERE %s "
+    string_printf( query, "SELECT id, msg64, msg, msglen, token, connname FROM "
+                   MSGS_TABLE " WHERE %s "
 #ifdef HAVE_STIME 
                    " AND stime IS NULL "
 #endif
-                   " AND connname IS NULL "
-                   " OR connname IN (SELECT connname FROM " GAMES_TABLE
-                   " WHERE NOT " GAMES_TABLE ".dead)"
-                   " ORDER BY id",
-                   test.c_str() );
+                   " AND (connname IN (SELECT connname FROM " GAMES_TABLE
+                   " WHERE NOT " GAMES_TABLE ".dead)", test.c_str() );
+
+    if ( nullConnnameOK ) {
+        string_printf( query, " OR connname IS NULL ");
+    }
+    string_printf( query, ") ORDER BY id" );
+
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -1009,7 +1013,9 @@ DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs )
     for ( int ii = 0; ii < nTuples; ++ii ) {
         int id = atoi( PQgetvalue( result, ii, 0 ) );
         AddrInfo::ClientToken token = atoi( PQgetvalue( result, ii, 4 ) );
-        MsgInfo msg( id, token );
+        const char* connname = PQgetvalue( result, ii, 5 );
+        bool hasConnname = connname != NULL && '\0' != connname[0];
+        MsgInfo msg( id, token, hasConnname );
 
         uint8_t buf[1024];
         size_t buflen = sizeof(buf);
@@ -1028,7 +1034,7 @@ DBMgr::GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs )
     if ( !hasNoMessages( relayID ) ) {
         string query;
         string_printf( query, "devid=%d", relayID );
-        storedMessagesImpl( query, msgs );
+        storedMessagesImpl( query, msgs, true );
 
         if ( 0 == msgs.size() ) {
             setHasNoMessages( relayID );
@@ -1042,7 +1048,7 @@ DBMgr::GetStoredMessages( const char* const connName, HostID hid,
 {
     string query;
     string_printf( query, "hid = %d AND connname = '%s'", hid, connName );
-    storedMessagesImpl( query, msgs );
+    storedMessagesImpl( query, msgs, false );
 }
 
 void

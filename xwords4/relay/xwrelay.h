@@ -102,6 +102,9 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
        ,XWPDEV_ALERT            /* relay->dev: format: header,
                                    length-initiated string to present to user. */
 
+
+       ,XWPDEV_N_ELEMS          /* MUST BE LAST */
+
 }
 #ifndef CANT_DO_TYPEDEF
  XWRelayReg
