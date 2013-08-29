@@ -308,6 +308,7 @@ public class RelayService extends XWService
             long interval_millis = m_maxIntervalSeconds * 1000;
             RelayReceiver.RestartTimer( this, interval_millis );
         }
+        stopThreads();
         super.onDestroy();
     }
 
@@ -1074,7 +1075,7 @@ public class RelayService extends XWService
 
     private boolean shouldMaintainConnection()
     {
-        boolean result = !s_gcmWorking;
+        boolean result = XWPrefs.getGCMIgnored( this ) || !s_gcmWorking;
         if ( result ) {
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;
             result = interval < MAX_KEEPALIVE_SECS;

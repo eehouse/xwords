@@ -60,13 +60,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     protected void onMessage( Context context, Intent intent ) 
     {
         DbgUtils.logf( "GCMIntentService.onMessage()" );
+        notifyRelayService( true );
+
         String value;
         boolean ignoreIt = XWPrefs.getGCMIgnored( this );
         if ( ignoreIt ) {
             DbgUtils.logf( "received GCM but ignoring it" );
         } else {
-            notifyRelayService( true );
-
             value = intent.getStringExtra( "checkUpdates" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
                 UpdateCheckReceiver.checkVersions( context, true );
