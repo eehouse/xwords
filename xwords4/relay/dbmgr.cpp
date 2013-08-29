@@ -996,11 +996,13 @@ DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs )
 #ifdef HAVE_STIME 
                    " AND stime IS NULL "
 #endif
-                   " AND connname IN (SELECT connname FROM " GAMES_TABLE
+                   " AND connname IS NULL "
+                   " OR connname IN (SELECT connname FROM " GAMES_TABLE
                    " WHERE NOT " GAMES_TABLE ".dead)"
                    " ORDER BY id",
                    test.c_str() );
 
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
 
     int nTuples = PQntuples( result );
@@ -1117,11 +1119,8 @@ DBMgr::getCountWhere( const char* table, string& test )
 
 bool DBMgr::hasNoMessages( DevIDRelay devid )
 {
-    bool result;
-    {
-        MutexLock ml( &m_haveNoMessagesMutex );
-        result = m_haveNoMessages.find(devid) != m_haveNoMessages.end();
-    }
+    MutexLock ml( &m_haveNoMessagesMutex );
+    bool result = m_haveNoMessages.find(devid) != m_haveNoMessages.end();
     logf( XW_LOGINFO, "%s(devid=%d)=>%d", __func__, devid, result );
     return result;
 }
@@ -1129,15 +1128,21 @@ bool DBMgr::hasNoMessages( DevIDRelay devid )
 void DBMgr::setHasNoMessages( DevIDRelay devid )
 {
     logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
-    MutexLock ml( &m_haveNoMessagesMutex );
-    m_haveNoMessages.insert( devid );
+    {
+        MutexLock ml( &m_haveNoMessagesMutex );
+        m_haveNoMessages.insert( devid );
+    }
+    assert( hasNoMessages( devid ) );
 }
 
 void DBMgr::clearHasNoMessages( DevIDRelay devid )
 {
     logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
-    MutexLock ml( &m_haveNoMessagesMutex );
-    m_haveNoMessages.erase( devid );
+    {
+        MutexLock ml( &m_haveNoMessagesMutex );
+        m_haveNoMessages.erase( devid );
+    }
+    assert( !hasNoMessages( devid ) );
 }
 
 static void
