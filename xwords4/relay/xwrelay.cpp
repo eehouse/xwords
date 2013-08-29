@@ -523,6 +523,22 @@ assemble_packet( vector<uint8_t>& packet, uint32_t* packetIDP, XWRelayReg cmd,
     va_end( ap );
 }
 
+// make a new packet out of an old, stealing its cmd field
+static void
+assemble_packet( vector<uint8_t>& newPacket, uint32_t* packetID,
+                 const vector<uint8_t>& oldPacket )
+{
+    UDPHeader header;
+    const uint8_t* ptr = oldPacket.data();
+    size_t len = oldPacket.size();
+    if ( !getHeader( &ptr, ptr + len, &header ) ) {
+        assert( 0 );
+    }
+    assert( XWPDEV_PROTO_VERSION_1 == header.proto );
+    len -= ptr - oldPacket.data(); // subtract off header length
+    assemble_packet( newPacket, packetID, header.cmd, ptr, len, NULL );
+}
+
 static bool
 get_addr_info_if( const AddrInfo* addr, int* sockp, 
                   const struct sockaddr** dest_addr )
@@ -1507,10 +1523,24 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
 
     vector<DBMgr::MsgInfo>::const_iterator iter;
     for ( iter = msgs.begin(); iter != msgs.end(); ++iter ) {
-        DBMgr::MsgInfo msg = *iter;
+        const DBMgr::MsgInfo& msg = *iter;
         uint32_t packetID;
-        if ( !send_msg_via_udp( addr, msg.token, msg.msg.data(), 
-                                msg.msg.size(), &packetID ) ) {
+        bool success = false;
+        if ( AddrInfo::NULL_TOKEN == msg.token ) {
+            int socket;
+            const struct sockaddr* dest_addr;
+            if ( get_addr_info_if( addr, &socket, &dest_addr ) ) {
+                vector<uint8_t> newPacket;
+                assemble_packet( newPacket, &packetID, msg.msg );
+                success = 0 < send_packet_via_udp_impl( newPacket, socket, 
+                                                        dest_addr );
+            }
+        } else {
+            success = send_msg_via_udp( addr, msg.token, msg.msg.data(), 
+                                        msg.msg.size(), &packetID );
+        }
+
+        if ( !success ) {
             logf( XW_LOGERROR, "%s: unable to send to devID %d", 
                   __func__, devID.asRelayID() );
             break;
