@@ -10,7 +10,9 @@ local_C_INCLUDES+= \
 
 local_LDLIBS += -llog
 
-# local_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DCOMMS_CHECKSUM
+ifeq ($(BUILD_TARGET),debug)
+	local_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DCOMMS_CHECKSUM
+endif
 local_DEFINES += \
 	$(local_DEBUG) \
 	-DXWFEATURE_RELAY \
@@ -79,8 +81,6 @@ common_SRC_FILES +=        \
 LOCAL_CFLAGS+=$(local_C_INCLUDES) $(local_DEFINES) -Wall
 LOCAL_SRC_FILES := $(linux_SRC_FILES) $(local_SRC_FILES) $(common_SRC_FILES)
 LOCAL_MODULE    := xwjni
-LOCAL_LDLIBS := -L${SYSROOT}/usr/lib -llog -lz 
+LOCAL_LDLIBS 	:= -L${SYSROOT}/usr/lib -llog -lz 
 
 include $(BUILD_SHARED_LIBRARY)
-
-

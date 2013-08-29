@@ -58,8 +58,10 @@
 
     <target name="-pre-build">
         <exec dir="." executable="../scripts/ndkbuild.sh" >
+            <arg value="BUILD_TARGET=${build.target}" />
             <arg value="-j3"/>
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
+
         </exec>
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4/GCMConsts.java"
