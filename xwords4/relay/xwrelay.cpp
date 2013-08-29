@@ -1156,8 +1156,8 @@ pushMsgs( vector<unsigned char>& out, DBMgr* dbmgr, const char* connName,
     vector<DBMgr::MsgInfo>::const_iterator iter;
     for ( iter = msgs.begin(); msgs.end() != iter; ++iter ) {
         DBMgr::MsgInfo msg = *iter;
-        int len = msg.msg.length();
-        uint8_t* ptr = (uint8_t*)msg.msg.c_str();
+        int len = msg.msg.size();
+        uint8_t* ptr = msg.msg.data();
         pushShort( out, len );
         out.insert( out.end(), ptr, ptr + len );
         msgIDs.push_back( msg.msgID );
@@ -1509,9 +1509,8 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
     for ( iter = msgs.begin(); iter != msgs.end(); ++iter ) {
         DBMgr::MsgInfo msg = *iter;
         uint32_t packetID;
-        if ( !send_msg_via_udp( addr, msg.token, 
-                                (unsigned char*)msg.msg.c_str(), 
-                                msg.msg.length(), &packetID ) ) {
+        if ( !send_msg_via_udp( addr, msg.token, msg.msg.data(), 
+                                msg.msg.size(), &packetID ) ) {
             logf( XW_LOGERROR, "%s: unable to send to devID %d", 
                   __func__, devID.asRelayID() );
             break;

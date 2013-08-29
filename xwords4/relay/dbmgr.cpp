@@ -1006,14 +1006,15 @@ DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs )
     int nTuples = PQntuples( result );
     for ( int ii = 0; ii < nTuples; ++ii ) {
         int id = atoi( PQgetvalue( result, ii, 0 ) );
-        size_t msglen = atoi( PQgetvalue( result, ii, 3 ) );
+        AddrInfo::ClientToken token = atoi( PQgetvalue( result, ii, 4 ) );
+        MsgInfo msg( id, token );
+
         uint8_t buf[1024];
         size_t buflen = sizeof(buf);
         decodeMessage( result, m_useB64, ii, 1, 2, buf, &buflen );
+        size_t msglen = atoi( PQgetvalue( result, ii, 3 ) );
         assert( 0 == msglen || buflen == msglen );
-        string str( (char*)buf, buflen );
-        AddrInfo::ClientToken token = atoi( PQgetvalue( result, ii, 4 ) );
-        MsgInfo msg( str, id, token );
+        msg.msg.insert( msg.msg.end(), buf, &buf[buflen] );
         msgs.push_back( msg );
     }
     PQclear( result );

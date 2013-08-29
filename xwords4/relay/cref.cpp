@@ -839,7 +839,7 @@ CookieRef::handleEvents()
 
 bool
 CookieRef::send_with_length( const AddrInfo* addr, HostID dest, 
-                             const unsigned char* buf, int bufLen, bool cascade,
+                             const uint8_t* buf, int bufLen, bool cascade,
                              uint32_t* packetIDP )
 {
     bool failed = false;
@@ -898,9 +898,8 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
               ++iter ) {
             DBMgr::MsgInfo msg = *iter;
             uint32_t packetID;
-            if ( !send_with_length( addr, dest, 
-                                    (const unsigned char*)msg.msg.c_str(), 
-                                    msg.msg.length(), true, &packetID ) ) {
+            if ( !send_with_length( addr, dest, msg.msg.data(), 
+                                    msg.msg.size(), true, &packetID ) ) {
                 break;
             }
             if ( !UDPAckTrack::setOnAck( onMsgAcked, packetID, (void*)msg.msgID ) ) {

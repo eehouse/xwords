@@ -41,10 +41,10 @@ class DBMgr {
 
     class MsgInfo {
     public:
-        MsgInfo( string m, int id, AddrInfo::ClientToken tok ) { 
-            msg = m; msgID = id; token = tok; 
+        MsgInfo( int id, AddrInfo::ClientToken tok ) { 
+            msgID = id; token = tok; 
         }
-        string msg;
+        vector<uint8_t> msg;
         int msgID;
         AddrInfo::ClientToken token;
     };
