@@ -382,7 +382,7 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
                                              NULL, NULL, 0 );
             success = PGRES_COMMAND_OK == PQresultStatus(result);
             if ( !success ) {
-                logf( XW_LOGERROR, "%s: %d: PQexec=>%s;%s", __func__, 
+                logf( XW_LOGERROR, "%s: PQexec=>%s;%s", __func__, 
                       PQresStatus(PQresultStatus(result)), 
                       PQresultErrorMessage(result) );
             }
