@@ -35,7 +35,7 @@ class DevMgr {
     const AddrInfo::AddrUnion* get( DevIDRelay devid );
 
     /* Called from ctrl port */
-    void printDevices( string& str, DevIDRelay devid /* 0 means all */ );
+    void printDevices( string& str, vector<DevIDRelay> devids /* empty means all */ );
     bool forgetDevice( DevIDRelay devid );
     void getKnownDevices( vector<DevIDRelay>& devids );
 

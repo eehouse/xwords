@@ -54,7 +54,7 @@
 extern pthread_rwlock_t gCookieMapRWLock;
 
 /* Return of true means exit the ctrl thread */
-typedef bool (*CmdPtr)( int socket, const char* cmd, int argc, gchar** args );
+typedef bool (*CmdPtr)( int socket, const char* cmd, int argc, gchar** argv );
 
 typedef struct FuncRec {
     const char* name;
@@ -65,20 +65,20 @@ vector<int> g_ctrlSocks;
 pthread_mutex_t g_ctrlSocksMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-static bool cmd_quit( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_print( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_devs( int socket, const char* cmd, int argc, gchar** args );
-/* static bool cmd_lock( int socket, gchar** args ); */
-static bool cmd_help( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_start( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_stop( int socket, const char* cmd, int argc, gchar** args );
-/* static bool cmd_kill_eject( int socket, gchar** args ); */
-static bool cmd_get( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_set( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_shutdown( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_rev( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_uptime( int socket, const char* cmd, int argc, gchar** args );
-static bool cmd_crash( int socket, const char* cmd, int argc, gchar** args );
+static bool cmd_quit( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_print( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_devs( int socket, const char* cmd, int argc, gchar** argv );
+/* static bool cmd_lock( int socket, gchar** argv ); */
+static bool cmd_help( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_start( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_stop( int socket, const char* cmd, int argc, gchar** argv );
+/* static bool cmd_kill_eject( int socket, gchar** argv ); */
+static bool cmd_get( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_set( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_shutdown( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_rev( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_uptime( int socket, const char* cmd, int argc, gchar** argv );
+static bool cmd_crash( int socket, const char* cmd, int argc, gchar** argv );
 
 static void print_prompt( int socket );
 
@@ -144,7 +144,7 @@ static const FuncRec gFuncs[] = {
 };
 
 static bool
-cmd_quit( int socket, const char* cmd, int argc, gchar** args )
+cmd_quit( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool result;
     if ( 1 == argc ) {
@@ -152,7 +152,7 @@ cmd_quit( int socket, const char* cmd, int argc, gchar** args )
         result = true;
     } else {
         print_to_sock( socket, true, "* %s (disconnect from ctrl port)", 
-                       args[0] );
+                       cmd );
         result = false;
     }
     return result;
@@ -176,14 +176,14 @@ print_cookies( int socket, CookieID theID )
 }
 
 static bool
-cmd_start( int socket, const char* cmd, int argc, gchar** args )
+cmd_start( int socket, const char* cmd, int argc, gchar** argv )
 {
     print_to_sock( socket, true, "* %s (unimplemented)", cmd );
     return false;
 }
 
 static bool
-cmd_stop( int socket, const char* cmd, int argc, gchar** args )
+cmd_stop( int socket, const char* cmd, int argc, gchar** argv )
 {
     print_to_sock( socket, true, "* %s (unimplemented)", cmd );
     return false;
@@ -191,21 +191,21 @@ cmd_stop( int socket, const char* cmd, int argc, gchar** args )
 
 #if 0
 static bool
-cmd_kill_eject( int socket, gchar** args )
+cmd_kill_eject( int socket, gchar** argv )
 {
     bool found = false;
-    int isKill = 0 == strcmp( args[0], "kill" );
+    int isKill = 0 == strcmp( argv[0], "kill" );
 
-    if ( 0 == strcmp( args[1], "socket" ) ) {
-        int victim = atoi( args[2] );
+    if ( 0 == strcmp( argv[1], "socket" ) ) {
+        int victim = atoi( argv[2] );
         if ( victim != 0 ) {
             XWThreadPool::GetTPool()-> EnqueueKill( victim, "ctrl command" );
             found = true;
         }
-    } else if ( 0 == strcmp( args[1], "cref" ) ) {
-        const char* idhow = args[2];
+    } else if ( 0 == strcmp( argv[1], "cref" ) ) {
+        const char* idhow = argv[2];
         for ( int indx = 3; ; ++indx ) {
-            const char* id = args[indx];
+            const char* id = argv[indx];
             if ( idhow == NULL || id == NULL ) {
                 break;
             }
@@ -217,7 +217,7 @@ cmd_kill_eject( int socket, gchar** args )
                 found = true;
             }
         }
-    } else if ( 0 == strcmp( args[1], "relay" ) ) {
+    } else if ( 0 == strcmp( argv[1], "relay" ) ) {
         print_to_sock( socket, true, "not yet unimplemented" );
     }
 
@@ -230,18 +230,18 @@ cmd_kill_eject( int socket, gchar** args )
             "  %s cref name <connName>+\n"
             "  %s cref id <id>+"
             ;
-        print_to_sock( socket, true, msg, args[0], expl, args[0], args[0] );
+        print_to_sock( socket, true, msg, argv[0], expl, cmd, cmd );
     }
     return false;
 } /* cmd_kill_eject */
 #endif
 
 static bool
-cmd_get( int socket, const char* cmd, int argc, gchar** args )
+cmd_get( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool needsHelp = true;
     if ( 2 == argc ) {
-        string attr(args[1]);
+        string attr(argv[1]);
         const char* const attrs[] = { "help", "listeners", "loglevel" };
         int index = match( &attr, attrs, sizeof(attrs[0]), 
                            sizeof(attrs)/sizeof(attrs[0]));
@@ -295,13 +295,13 @@ cmd_get( int socket, const char* cmd, int argc, gchar** args )
 } /* cmd_get */
 
 static bool
-cmd_set( int socket, const char* cmd, int argc, gchar** args )
+cmd_set( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool needsHelp = true;
     if ( 3 == argc ) {
-        const char* val = args[2];
+        const char* val = argv[2];
         const char* const attrs[] = { "help", "listeners", "loglevel" };
-        string attr(args[1]);
+        string attr(argv[1]);
         int index = match( &attr, attrs, sizeof(attrs[0]), 
                            sizeof(attrs)/sizeof(attrs[0]));
 
@@ -350,7 +350,7 @@ format_rev( char* buf, int len )
 }
 
 static bool
-cmd_rev( int socket, const char* cmd, int argc, gchar** args )
+cmd_rev( int socket, const char* cmd, int argc, gchar** argv )
 {
     if ( 1 == argc ) {
         char buf[128];
@@ -359,7 +359,7 @@ cmd_rev( int socket, const char* cmd, int argc, gchar** args )
     } else {
         print_to_sock( socket, true,
                        "* %s -- prints svn rev number of build",
-                       args[0] );
+                       cmd );
     }
     return false;
 }
@@ -390,7 +390,7 @@ format_uptime( time_t seconds, char* buf, int len )
 }
 
 static bool
-cmd_uptime( int socket, const char* cmd, int argc, gchar** args )
+cmd_uptime( int socket, const char* cmd, int argc, gchar** argv )
 {
     if ( 1 == argc ) {
         char buf[128];
@@ -399,13 +399,13 @@ cmd_uptime( int socket, const char* cmd, int argc, gchar** args )
     } else {
         print_to_sock( socket, true,
                        "* %s -- prints how long the relay's been running",
-                       args[0] );
+                       cmd );
     }
     return false;
 }
 
 static bool
-cmd_crash( int socket, const char* cmd, int argc, gchar** args )
+cmd_crash( int socket, const char* cmd, int argc, gchar** argv )
 {
     if ( 1 == argc ) {
         logf( XW_LOGERROR, "crashing..." );
@@ -422,11 +422,11 @@ cmd_crash( int socket, const char* cmd, int argc, gchar** args )
 }
 
 static bool
-cmd_shutdown( int socket, const char* cmd, int argc, gchar** args )
+cmd_shutdown( int socket, const char* cmd, int argc, gchar** argv )
 {
     print_to_sock( socket, true,
                    "* %s  -- shuts down relay (exiting main) (unimplemented)",
-                   args[0] );
+                   cmd );
     return false;
 }
 
@@ -476,33 +476,33 @@ print_sockets( int out, int sought )
 }
 
 static bool
-cmd_print( int socket, const char* cmd, int argc, gchar** args )
+cmd_print( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool found = false;
     if ( 2 <= argc ) {
-        if ( 0 == strcmp( "cref", args[1] ) ) {
+        if ( 0 == strcmp( "cref", argv[1] ) ) {
             if ( 3 <= argc ) {
-                if ( 0 == strcmp( "all", args[2] ) ) {
+                if ( 0 == strcmp( "all", argv[2] ) ) {
                     print_cookies( socket, (CookieID)0 );
                     found = true;
-                } else if ( 0 == strcmp( "cookie", args[2] ) ) {
-                    print_cookies( socket, args[3], NULL );
+                } else if ( 0 == strcmp( "cookie", argv[2] ) ) {
+                    print_cookies( socket, argv[3], NULL );
                     found = true;
-                } else if ( 0 == strcmp( "connName", args[2] ) && 4 <= argc ) {
-                    print_cookies( socket, NULL, args[3] );
+                } else if ( 0 == strcmp( "connName", argv[2] ) && 4 <= argc ) {
+                    print_cookies( socket, NULL, argv[3] );
                     found = true;
-                } else if ( 0 == strcmp( "id", args[2] ) && 4 <= argc ) {
-                    print_cookies( socket, atoi(args[3]) );
+                } else if ( 0 == strcmp( "id", argv[2] ) && 4 <= argc ) {
+                    print_cookies( socket, atoi(argv[3]) );
                     found = true;
                 }
             }
-        } else if ( 0 == strcmp( "socket", args[1] ) ) {
+        } else if ( 0 == strcmp( "socket", argv[1] ) ) {
             if ( 3 <= argc ) {
-                if ( 0 == strcmp( "all", args[2] ) ) {
+                if ( 0 == strcmp( "all", argv[2] ) ) {
                     print_sockets( socket, 0 );
                     found = true;
-                } else if ( 0 == strcmp( "id", args[2] ) && 4 <= argc) {
-                    print_sockets( socket, atoi(args[3]) );
+                } else if ( 0 == strcmp( "id", argv[2] ) && 4 <= argc) {
+                    print_sockets( socket, atoi(argv[3]) );
                     found = true;
                 }
             }
@@ -517,8 +517,8 @@ cmd_print( int socket, const char* cmd, int argc, gchar** args )
             "  %s dev all -- list all known devices (by how recently connected)\n"
             "  %s socket all\n"
             "  %s socket <num>  -- print info about crefs and sockets";
-        print_to_sock( socket, true, str, args[0], args[0], args[0], 
-                       args[0], args[0], args[0], args[0] );
+        print_to_sock( socket, true, str, cmd, cmd, cmd, 
+                       cmd, cmd, cmd, cmd );
     }
     return false;
 } /* cmd_print */
@@ -540,34 +540,41 @@ onAckProc( bool acked, DevIDRelay devid, uint32_t packetID, void* data )
 }
 
 static bool
-cmd_devs( int socket, const char* cmd, int argc, gchar** args )
+cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool found = false;
     string result;
     if ( 1 >= argc ) {
         /* missing param; let help print */
-    } else if ( 0 == strcmp( "list", args[1] ) ) {
-        DevIDRelay devid = 0;
-        if ( 2 < argc ) {
-            devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
+    } else if ( 0 == strcmp( "list", argv[1] ) ) {
+        vector<DevIDRelay> devids;
+        if ( 3 == argc && 0 == strcmp( "all", argv[2] ) ) {
+            /* do nothing; empty vector means all */
+        } else {
+            for ( int ii = 2; ii < argc; ++ii ) {
+                DevIDRelay devid = (DevIDRelay)strtoul( argv[ii], NULL, 10 );
+                if ( 0 != devid ) {
+                    devids.push_back( devid );
+                }
+            }
         }
-        DevMgr::Get()->printDevices( result, devid );
+        DevMgr::Get()->printDevices( result, devids );
         found = true;
-    } else if ( 0 == strcmp( "ping", args[1] ) ) {
-    } else if ( 0 == strcmp( "msg", args[1] ) && 3 < argc ) {
+    } else if ( 0 == strcmp( "ping", argv[1] ) ) {
+    } else if ( 0 == strcmp( "msg", argv[1] ) && 3 < argc ) {
         /* Get the list to send to */
         vector<DevIDRelay> devids;
-        if ( 0 == strcmp( "all", args[3] ) ) {
+        if ( 0 == strcmp( "all", argv[3] ) ) {
             DevMgr::Get()->getKnownDevices( devids );
         } else {
             for ( int ii = 3; ii < argc; ++ii ) {
-                DevIDRelay devid = (DevIDRelay)strtoul( args[ii], NULL, 10 );
+                DevIDRelay devid = (DevIDRelay)strtoul( argv[ii], NULL, 10 );
                 devids.push_back( devid );
             }
         }
 
         /* Send to each in the list */
-        const char* msg = args[2];
+        const char* msg = argv[2];
         gchar* unesc = g_strcompress( msg );
         vector<DevIDRelay>::const_iterator iter;
         for ( iter = devids.begin(); devids.end() != iter; ++iter ) {
@@ -585,8 +592,8 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** args )
         g_free( unesc );
 
         found = true;
-    } else if ( 0 == strcmp( "rm", args[1] ) && 2 < argc  ) {
-        DevIDRelay devid = (DevIDRelay)strtoul( args[2], NULL, 10 );
+    } else if ( 0 == strcmp( "rm", argv[1] ) && 2 < argc  ) {
+        DevIDRelay devid = (DevIDRelay)strtoul( argv[2], NULL, 10 );
         if ( DevMgr::Get()->forgetDevice( devid ) ) {
             string_printf( result, "dev %d removed\n", devid );
         } else {
@@ -601,7 +608,7 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** args )
         }
     } else {
         const char* strs[] = {
-            "* %s list [<id>] -- prints one id, or all if none specified\n",
+            "* %s list [all | <id>+] -- prints all ids, listed ids, or all if none specified\n",
             "  %s ping\n",
             "  %s msg <msg_text> <devid>+\n",
             "  %s msg <msg_text> all\n",
@@ -618,16 +625,16 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** args )
 
 #if 0
 static bool
-cmd_lock( int socket, gchar** args )
+cmd_lock( int socket, gchar** argv )
 {
     CRefMgr* mgr = CRefMgr::Get();
-    if ( 0 == strcmp( "on", args[1] ) ) {
+    if ( 0 == strcmp( "on", argv[1] ) ) {
         mgr->LockAll();
-    } else if ( 0 == strcmp( "off", args[1] ) ) {
+    } else if ( 0 == strcmp( "off", argv[1] ) ) {
         mgr->UnlockAll();
     } else {
         print_to_sock( socket, true, "* %s [on|off]  -- lock/unlock access mutex", 
-                       args[0] );
+                       cmd );
     }
     
     return 0;
@@ -638,7 +645,7 @@ static bool
 cmd_help( int socket, const char* cmd, int argc, gchar** argv )
 {
     if ( 1 < argc && NULL != argv[1] && 0 == strcmp( "help", argv[1] ) ) {
-        print_to_sock( socket, true, "* %s  -- prints this", argv[0] );
+        print_to_sock( socket, true, "* %s  -- prints this", cmd );
     } else {
 
         gchar* help[] = { NULL, (gchar*)"help" };
@@ -671,7 +678,7 @@ ctrl_thread_main( void* arg )
     }
 
     gint argc = 0;
-    gchar** args = NULL;
+    gchar** argv = NULL;
     int index = -1;
     string cmd;
 
@@ -689,14 +696,14 @@ ctrl_thread_main( void* arg )
             /* user hit return; repeat prev command */
         } else {
             buf[nGot-2] = '\0';
-            if ( NULL != args ) {
-                g_strfreev( args );
+            if ( NULL != argv ) {
+                g_strfreev( argv );
             }
 
-            if ( !g_shell_parse_argv( buf, &argc, &args, NULL ) ) {
+            if ( !g_shell_parse_argv( buf, &argc, &argv, NULL ) ) {
                 assert( 0 );
             } else {
-                cmd = args[0];
+                cmd = argv[0];
                 index = match( &cmd, (char*const*)&gFuncs[0].name, 
                                    sizeof(gFuncs[0]), 
                                    sizeof(gFuncs)/sizeof(gFuncs[0]) );
@@ -705,10 +712,10 @@ ctrl_thread_main( void* arg )
         if ( index == -1 ) {
             print_to_sock( sock, 1, "unknown or ambiguous command: \"%s\"", 
                            cmd.c_str() );
-            gchar* args[] = { (gchar*)cmd.c_str() };
-            (void)cmd_help( sock, "help", 1, args );
+            gchar* argv[] = { (gchar*)cmd.c_str() };
+            (void)cmd_help( sock, "help", 1, argv );
         } else if ( (*gFuncs[index].func)( sock, cmd.c_str(), 
-                                           argc, args ) ) {
+                                           argc, argv ) ) {
             break;
         }
     }
