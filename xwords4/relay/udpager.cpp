@@ -56,7 +56,7 @@ UDPAger::Refresh( const AddrInfo* addr )
 {
     const AddrInfo::AddrUnion* saddr = addr->saddr();
     uint32_t readWhen = addr->created();
-    gchar* b64 = g_base64_encode( (unsigned char*)&saddr->u.addr, 
+    gchar* b64 = g_base64_encode( (uint8_t*)&saddr->u.addr, 
                                   sizeof(saddr->u.addr) );
 
     MutexLock ml( &m_addrTimeMapLock );

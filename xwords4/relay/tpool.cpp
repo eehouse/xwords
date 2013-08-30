@@ -294,7 +294,7 @@ XWThreadPool::interrupt_poll()
 #ifdef LOG_POLL
     logf( XW_LOGINFO, __func__ );
 #endif
-    unsigned char byt = 0;
+    uint8_t byt = 0;
     int nSent = write( m_pipeWrite, &byt, 1 );
     if ( nSent != 1 ) {
         logf( XW_LOGERROR, "errno = %s (%d)", strerror(errno), errno );
@@ -383,7 +383,7 @@ XWThreadPool::real_listener()
             logf( XW_LOGINFO, "poll interrupted" );
 #endif
             assert( fds[0].revents == POLLIN );
-            unsigned char byt;
+            uint8_t byt;
             read( fds[0].fd, &byt, 1 );
             --nEvents;
         }

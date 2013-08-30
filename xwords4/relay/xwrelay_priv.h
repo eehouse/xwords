@@ -31,7 +31,7 @@
 #include "xwrelay.h"
 #include "addrinfo.h"
 
-typedef unsigned char HostID;   /* see HOST_ID_SERVER */
+typedef uint8_t HostID;   /* see HOST_ID_SERVER */
 typedef uint32_t DevIDRelay;
 
 typedef enum {
@@ -46,7 +46,7 @@ bool willLog( XW_LogLevel level );
 
 void denyConnection( const AddrInfo* addr, XWREASON err );
 bool send_with_length_unsafe( const AddrInfo* addr, 
-                              const unsigned char* buf, size_t bufLen,
+                              const uint8_t* buf, size_t bufLen,
                               uint32_t* packetIDP );
 void send_havemsgs( const AddrInfo* addr );
 
@@ -65,7 +65,7 @@ int make_socket( unsigned long addr, unsigned short port );
 
 std::string& string_printf( std::string& str, const char* fmt, ... );
 
-int read_packet( int sock, unsigned char* buf, int buflen );
+int read_packet( int sock, uint8_t* buf, int buflen );
 
 void onMsgAcked( bool acked, uint32_t packetID, void* data );
 

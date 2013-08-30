@@ -906,7 +906,7 @@ DBMgr::StoreMessage( DevIDRelay devID, const uint8_t* const buf,
         string_printf( query, fmt, "msg64", devID, "", b64, len );
         g_free( b64 );
     } else {
-        unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
+        uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                                   len, &newLen );
         assert( NULL != bytes );
             string_printf( query, fmt, "msg",  devID, "E", bytes, len );
@@ -919,7 +919,7 @@ DBMgr::StoreMessage( DevIDRelay devID, const uint8_t* const buf,
 
 void
 DBMgr::StoreMessage( const char* const connName, int hid, 
-                     const unsigned char* buf, int len )
+                     const uint8_t* buf, int len )
 {
     DevIDRelay devID = getDevID( connName, hid );
     if ( DEVID_NONE == devID ) {
@@ -943,7 +943,7 @@ DBMgr::StoreMessage( const char* const connName, int hid,
                        "", b64, len );
         g_free( b64 );
     } else {
-        unsigned char* bytes = PQescapeByteaConn( getThreadConn(), buf, 
+        uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                                   len, &newLen );
         assert( NULL != bytes );
     
@@ -958,7 +958,7 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 
 void
 DBMgr::decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx, 
-                      int byteaIndex, unsigned char* buf, size_t* buflen )
+                      int byteaIndex, uint8_t* buf, size_t* buflen )
 {
     const char* from = NULL;
     if ( useB64 ) {
@@ -978,7 +978,7 @@ DBMgr::decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx,
         memcpy( buf, txt, to_length );
         g_free( txt );
     } else {
-        unsigned char* bytes = PQunescapeBytea( (const unsigned char*)from, 
+        uint8_t* bytes = PQunescapeBytea( (const uint8_t*)from, 
                                                 &to_length );
         assert( to_length <= *buflen );
         memcpy( buf, bytes, to_length );

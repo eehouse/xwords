@@ -127,7 +127,7 @@ class DBMgr {
     int CountStoredMessages( DevIDRelay relayID );
     void StoreMessage( DevIDRelay relayID, const uint8_t* const buf, int len );
     void StoreMessage( const char* const connName, int hid, 
-                       const unsigned char* const buf, int len );
+                       const uint8_t* const buf, int len );
     void GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs );
     void GetStoredMessages( const char* const connName, HostID hid, 
                             vector<DBMgr::MsgInfo>& msgs );
@@ -146,7 +146,7 @@ class DBMgr {
     int getCountWhere( const char* table, string& test );
     void RemoveStoredMessages( string& msgIDs );
     void decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx, 
-                        int byteaIndex, unsigned char* buf, size_t* buflen );
+                        int byteaIndex, uint8_t* buf, size_t* buflen );
     void storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs, 
                              bool nullConnnameOK );
     int CountStoredMessages( const char* const connName, int hid );

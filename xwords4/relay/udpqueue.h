@@ -49,7 +49,7 @@ public:
 
     ~UdpThreadClosure() { delete[] m_buf; }
 
-    const unsigned char* buf() const { return m_buf; } 
+    const uint8_t* buf() const { return m_buf; } 
     int len() const { return m_len; }
     const AddrInfo::AddrUnion* saddr() const { return m_addr.saddr(); }
     const AddrInfo* addr() const { return &m_addr; }

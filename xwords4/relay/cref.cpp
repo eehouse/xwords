@@ -268,7 +268,7 @@ CookieRef::_HandleAck( HostID hostID )
 
 void
 CookieRef::_PutMsg( HostID srcID, const AddrInfo* addr, HostID destID, 
-                    const unsigned char* buf, int buflen )
+                    const uint8_t* buf, int buflen )
 {
     CRefEvent evt( XWE_PROXYMSG, addr );
     evt.u.fwd.src = srcID;
@@ -403,7 +403,7 @@ CookieRef::AlreadyHere( HostID hid, unsigned short seed, const AddrInfo* addr,
 void
 CookieRef::notifyDisconn( const CRefEvent* evt )
 {
-    unsigned char buf[] = { 
+    uint8_t buf[] = { 
         XWRELAY_DISCONNECT_YOU,
         evt->u.disnote.why 
     };
@@ -550,7 +550,7 @@ CookieRef::_CheckHeartbeats( time_t now )
 
 void
 CookieRef::_Forward( HostID src, const AddrInfo* addr, 
-                     HostID dest, const unsigned char* buf, int buflen )
+                     HostID dest, const uint8_t* buf, int buflen )
 {
     pushForwardEvent( src, addr, dest, buf, buflen );
     handleEvents();
@@ -615,7 +615,7 @@ CookieRef::pushHeartFailedEvent( int socket )
 
 void
 CookieRef::pushForwardEvent( HostID src, const AddrInfo* addr, HostID dest, 
-                             const unsigned char* buf, int buflen )
+                             const uint8_t* buf, int buflen )
 {
     logf( XW_LOGVERBOSE1, "%s: %d -> %d", __func__, src, dest );
     CRefEvent evt( XWE_FORWARDMSG, addr );
@@ -864,7 +864,7 @@ CookieRef::send_with_length( const AddrInfo* addr, HostID dest,
 } /* send_with_length */
 
 static void
-putNetShort( unsigned char** bufpp, unsigned short s )
+putNetShort( uint8_t** bufpp, unsigned short s )
 {
     s = htons( s );
     memcpy( *bufpp, &s, sizeof(s) );
@@ -872,7 +872,7 @@ putNetShort( unsigned char** bufpp, unsigned short s )
 }
 
 void
-CookieRef::store_message( HostID dest, const unsigned char* buf, 
+CookieRef::store_message( HostID dest, const uint8_t* buf, 
                           unsigned int len )
 {
     logf( XW_LOGVERBOSE0, "%s: storing msg size %d for dest %d", __func__,
@@ -1102,17 +1102,17 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial,
                          const DevIDRelay* devID )
 {
     /* Now send the response */
-    unsigned char buf[1       /* cmd */
-                      + sizeof(unsigned char) /* hostID */
+    uint8_t buf[1       /* cmd */
+                      + sizeof(uint8_t) /* hostID */
                       + sizeof(short) /* cookidID */
                       + sizeof(short) /* heartbeat */
-                      + sizeof(unsigned char) /* total here */
-                      + sizeof(unsigned char) /* total expected */
+                      + sizeof(uint8_t) /* total here */
+                      + sizeof(uint8_t) /* total expected */
                       + 1 + MAX_CONNNAME_LEN
                       + 1 + 1 + MAX_DEVID_LEN
     ];
 
-    unsigned char* bufp = buf;
+    uint8_t* bufp = buf;
 
     *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     *bufp++ = evt->u.con.srcID;
@@ -1182,10 +1182,10 @@ CookieRef::sendAnyStored( const CRefEvent* evt )
 void
 CookieRef::forward_or_store( const CRefEvent* evt )
 {
-    const unsigned char* cbuf = evt->u.fwd.buf;
+    const uint8_t* cbuf = evt->u.fwd.buf;
     do {
         int buflen = evt->u.fwd.buflen;
-        unsigned char buf[buflen];
+        uint8_t buf[buflen];
         if ( *cbuf == XWRELAY_MSG_TORELAY ) {
             buf[0] = XWRELAY_MSG_FROMRELAY;
         } else if ( *cbuf == XWRELAY_MSG_TORELAY_NOCONN ) {
@@ -1243,7 +1243,7 @@ void
 CookieRef::send_msg( const AddrInfo* addr, HostID hid, 
                      XWRelayMsg msg, XWREASON why, bool cascade )
 {
-    unsigned char buf[10];
+    uint8_t buf[10];
     short tmp;
     unsigned int len = 0;
     buf[len++] = msg;
@@ -1285,7 +1285,7 @@ CookieRef::notifyOthers( const AddrInfo* addr, XWRelayMsg msg, XWREASON why )
 void
 CookieRef::notifyGameDead( const AddrInfo* addr )
 {
-    unsigned char buf[] = { 
+    uint8_t buf[] = { 
         XWRELAY_MSG_STATUS
         ,XWRELAY_ERROR_DELETED
     };
@@ -1310,11 +1310,11 @@ CookieRef::notifyGameDead( const AddrInfo* addr )
 void
 CookieRef::sendAllHere( bool initial )
 {
-    unsigned char buf[1 + 1     /* hostID */
+    uint8_t buf[1 + 1     /* hostID */
                       + 1 + MAX_CONNNAME_LEN];
 
-    unsigned char* bufp = buf;
-    unsigned char* idLoc;
+    uint8_t* bufp = buf;
+    uint8_t* idLoc;
     
     *bufp++ = XWRELAY_ALLHERE;
     idLoc = bufp++;                 /* space for hostId, remembering address */

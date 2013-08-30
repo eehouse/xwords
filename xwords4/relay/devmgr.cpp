@@ -39,7 +39,7 @@ void
 DevMgr::rememberDevice( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
 {
     if ( DBMgr::DEVID_NONE != devid ) {
-        gchar* b64 = g_base64_encode( (unsigned char*)&saddr->u.addr, 
+        gchar* b64 = g_base64_encode( (uint8_t*)&saddr->u.addr, 
                                       sizeof(saddr->u.addr) );
 
         XW_LogLevel level = XW_LOGINFO;

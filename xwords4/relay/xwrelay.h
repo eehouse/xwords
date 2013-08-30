@@ -21,6 +21,8 @@
 #ifndef _XWRELAY_H_
 #define _XWRELAY_H_
 
+#include <stdint.h>
+
 /* This file is meant to be included by both linux code that doesn't
    include xptypes and from Crosswords client code.*/
 
@@ -201,7 +203,7 @@ typedef enum {
 } DevIDType;
 
 #ifndef CANT_DO_TYPEDEF
-typedef unsigned char XWRELAY_Cmd;
+typedef uint8_t XWRELAY_Cmd;
 #endif
 
 #define HOST_ID_NONE   0
