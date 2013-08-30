@@ -125,6 +125,7 @@ public class RelayService extends XWService
 
     public static void startService( Context context )
     {
+        DbgUtils.logf( "RelayService.startService()" );
         Intent intent = getIntentTo( context, MsgCmds.UDP_CHANGED );
         context.startService( intent );
     }
@@ -628,7 +629,6 @@ public class RelayService extends XWService
 
     private void sendKeepAlive()
     {
-        DbgUtils.logf( "sendKeepAlive()" );
         requestMessagesImpl( XWRelayReg.XWPDEV_KEEPALIVE );
     }
 
@@ -714,6 +714,7 @@ public class RelayService extends XWService
         throws java.io.IOException
     {
         DataOutputStream out = new DataOutputStream( bas );
+        DbgUtils.logf( "Building packet with cmd %s", cmd.toString() );
         out.writeByte( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() );
         un2vli( nextPacketID( cmd ), out );
         out.writeByte( cmd.ordinal() );
