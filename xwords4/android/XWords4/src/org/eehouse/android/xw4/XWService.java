@@ -32,7 +32,7 @@ public class XWService extends Service {
     protected static MultiService s_srcMgr = null;
 
     @Override
-        public IBinder onBind( Intent intent )
+    public IBinder onBind( Intent intent )
     {
         return null;
     }
@@ -40,7 +40,7 @@ public class XWService extends Service {
     public final static void setListener( MultiService.MultiEventListener li )
     {
         if ( null == s_srcMgr ) {
-            DbgUtils.logf( "setListener: registering %s", li.getClass().getName() );
+            DbgUtils.logf( "XWService.setListener: registering %s", li.getClass().getName() );
             s_srcMgr = new MultiService();
         }
         s_srcMgr.setListener( li );
@@ -51,7 +51,7 @@ public class XWService extends Service {
         if ( null != s_srcMgr ) {
             s_srcMgr.sendResult( event, args );
         } else {
-            DbgUtils.logf( "sendResult: dropping event" );
+            DbgUtils.logf( "XWService.sendResult: dropping event" );
         }
     }
 
