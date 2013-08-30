@@ -69,7 +69,6 @@ public class Utils {
     private static Integer s_appVersion = null;
     private static HashMap<String,String> s_phonesHash = 
         new HashMap<String,String>();
-    private static int s_nextCode = 0; // keep PendingIntents unique
     private static Boolean s_hasSmallScreen = null;
     private static Random s_random = new Random();
 
@@ -179,14 +178,14 @@ public class Utils {
                                          String title, String body, 
                                          int id )
     {
-        /* s_nextCode: per this link
+        /* nextRandomInt: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
            one way to avoid getting the same PendingIntent for similar
            Intents is to send a different second param each time,
            though the docs say that param's ignored.
         */
         PendingIntent pi = 
-            PendingIntent.getActivity( context, ++s_nextCode, intent, 
+            PendingIntent.getActivity( context, Utils.nextRandomInt(), intent, 
                                        PendingIntent.FLAG_ONE_SHOT );
 
         Notification notification = 
