@@ -552,14 +552,18 @@ public class RelayService extends XWService
                     requestMessages();
                     break;
                 case XWPDEV_MSG:
-                    // game-related packets only count
-                    m_lastGamePacketReceived = Utils.getCurSeconds();
-                    XWPrefs.setPrefsLong( this, R.string.key_last_packet,
-                                          m_lastGamePacketReceived );
                     int token = dis.readInt();
                     byte[] msg = new byte[dis.available()];
                     dis.read( msg );
-                    postData( RelayService.this, token, msg );
+                    postData( this, token, msg );
+
+                    // game-related packets only count
+                    long lastGamePacketReceived = Utils.getCurSeconds();
+                    if ( lastGamePacketReceived != m_lastGamePacketReceived ) {
+                        XWPrefs.setPrefsLong( this, R.string.key_last_packet,
+                                              lastGamePacketReceived );
+                        m_lastGamePacketReceived = lastGamePacketReceived;
+                    }
                     break;
                 case XWPDEV_ACK:
                     noteAck( vli2un( dis ) );
