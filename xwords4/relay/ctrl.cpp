@@ -49,6 +49,7 @@
 #include "lstnrmgr.h"
 #include "tpool.h"
 #include "devmgr.h"
+#include "udpack.h"
 
 /* this is *only* for testing.  Don't abuse!!!! */
 extern pthread_rwlock_t gCookieMapRWLock;
@@ -65,6 +66,7 @@ vector<int> g_ctrlSocks;
 pthread_mutex_t g_ctrlSocksMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
+static bool cmd_acks( int socket, const char* cmd, int argc, gchar** argv );
 static bool cmd_quit( int socket, const char* cmd, int argc, gchar** argv );
 static bool cmd_print( int socket, const char* cmd, int argc, gchar** argv );
 static bool cmd_devs( int socket, const char* cmd, int argc, gchar** argv );
@@ -126,6 +128,7 @@ print_to_sock( int sock, bool addCR, const char* what, ... )
 
 static const FuncRec gFuncs[] = {
     { "?", cmd_help },
+    { "acks", cmd_acks },
     { "crash", cmd_crash },
     /* { "eject", cmd_kill_eject }, */
     { "get", cmd_get },
@@ -240,9 +243,11 @@ static bool
 cmd_get( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool needsHelp = true;
-    if ( 2 == argc ) {
+    if ( 2 >= argc ) {
+        int val;
+        RelayConfigs* rc = RelayConfigs::GetConfigs();
         string attr(argv[1]);
-        const char* const attrs[] = { "help", "listeners", "loglevel" };
+        const char* const attrs[] = { "help", "listeners", "loglevel" , "acklimit" };
         int index = match( &attr, attrs, sizeof(attrs[0]), 
                            sizeof(attrs)/sizeof(attrs[0]));
 
@@ -264,14 +269,12 @@ cmd_get( int socket, const char* cmd, int argc, gchar** argv )
             needsHelp = false;
         }
             break;
-        case 2: {
-            RelayConfigs* rc = RelayConfigs::GetConfigs();
-            int level;
-            if ( NULL != rc && rc->GetValueFor( "LOGLEVEL", &level ) ) {
-                print_to_sock( socket, true, "loglevel=%d\n",  level );
+        case 2:
+        case 3: {
+            const char* key = 2 == index? "LOGLEVEL" : "UDP_ACK_LIMIT";
+            if ( NULL != rc && rc->GetValueFor( key, &val ) ) {
+                print_to_sock( socket, true, "%s=%d\n",  attrs[index], val );
                 needsHelp = false;
-            } else {
-                logf( XW_LOGERROR, "RelayConfigs::GetConfigs() => NULL" );
             }
         }
             break;
@@ -280,7 +283,6 @@ cmd_get( int socket, const char* cmd, int argc, gchar** argv )
             print_to_sock( socket, true, "unknown or ambiguous attribute: %s", 
                            attr.c_str() );
         }
-
     }
     if ( needsHelp ) {
         /* includes help */
@@ -288,7 +290,8 @@ cmd_get( int socket, const char* cmd, int argc, gchar** argv )
                        "* %s -- lists all attributes (unimplemented)\n"
                        "* %s listener\n"
                        "* %s loglevel\n"
-                       , cmd, cmd, cmd );
+                       "* %s acklimit\n"
+                       , cmd, cmd, cmd, cmd );
     }
 
     return false;
@@ -298,9 +301,10 @@ static bool
 cmd_set( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool needsHelp = true;
-    if ( 3 == argc ) {
+    if ( 3 >= argc ) {
+        RelayConfigs* rc;
         const char* val = argv[2];
-        const char* const attrs[] = { "help", "listeners", "loglevel" };
+        const char* const attrs[] = { "help", "listeners", "loglevel", "acklimit" };
         string attr(argv[1]);
         int index = match( &attr, attrs, sizeof(attrs[0]), 
                            sizeof(attrs)/sizeof(attrs[0]));
@@ -323,11 +327,18 @@ cmd_set( int socket, const char* cmd, int argc, gchar** argv )
             break;
         case 2:
             if ( NULL != val && val[0] != '\0' ) {
-                RelayConfigs* rc = RelayConfigs::GetConfigs();
+                rc = RelayConfigs::GetConfigs();
                 if ( rc != NULL ) {
                     rc->SetValueFor( "LOGLEVEL", val );
                     needsHelp = false;
                 }
+            }
+            break;
+        case 3:
+            rc = RelayConfigs::GetConfigs();
+            if ( rc != NULL ) {
+                rc->SetValueFor( "UDP_ACK_LIMIT", val );
+                needsHelp = false;
             }
             break;
         default:
@@ -336,9 +347,10 @@ cmd_set( int socket, const char* cmd, int argc, gchar** argv )
     }
     if ( needsHelp ) {
         print_to_sock( socket, true, 
-                       "* %s listeners <n>,[<n>,..<n>,]\n"
-                       "* %s loglevel <n>"
-                       ,cmd, cmd );
+                       "* %s listeners <n>,[<n>,..<n>,]"
+                       "\n* %s loglevel <n>"
+                       "\n* %s acklimit <n>"
+                       ,cmd, cmd, cmd );
     }
     return false;
 }
@@ -540,66 +552,109 @@ onAckProc( bool acked, DevIDRelay devid, uint32_t packetID, void* data )
 }
 
 static bool
+cmd_acks( int socket, const char* cmd, int argc, gchar** argv )
+{
+    bool found = false;
+    string result;
+
+    if ( 1 >= argc ) {
+        /* missing param; let help print */
+    } else if ( 0 == strcmp( "list", argv[1] ) ) {
+        UDPAckTrack::printAcks( result );
+        found = true;
+    } else if ( 3 == argc && 0 == strcmp( "nack", argv[1] ) 
+                && 0 == strcmp( "all", argv[2] ) ) {
+        vector<uint32_t> packets;
+        UDPAckTrack::doNack( packets );
+        found = true;
+    }
+
+    if ( found ) {
+        if ( 0 < result.size() ) {
+            send( socket, result.c_str(), result.size(), 0 );
+        }
+    } else {
+        const char* strs[] = {
+            "* %s list\n"
+            ,"* %s nack all\n"
+        };
+        string help;
+        for ( size_t ii = 0; ii < VSIZE(strs); ++ii ) {
+            string_printf( help, strs[ii], cmd );
+        }
+        send( socket, help.c_str(), help.size(), 0 );
+    }
+    return false;
+}
+
+static bool
 cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool found = false;
     string result;
     if ( 1 >= argc ) {
         /* missing param; let help print */
-    } else if ( 0 == strcmp( "list", argv[1] ) ) {
-        vector<DevIDRelay> devids;
-        if ( 3 == argc && 0 == strcmp( "all", argv[2] ) ) {
-            /* do nothing; empty vector means all */
-        } else {
-            for ( int ii = 2; ii < argc; ++ii ) {
-                DevIDRelay devid = (DevIDRelay)strtoul( argv[ii], NULL, 10 );
-                if ( 0 != devid ) {
+    } else {
+        const gchar* arg1 = argv[1];
+        if ( 0 == strcmp( "list", arg1 ) || 0 == strcmp( "rm", arg1 ) ) {
+            if ( 3 <= argc ) {
+                found = true;
+                vector<DevIDRelay> devids;
+                if ( 3 == argc && 0 == strcmp( "all", argv[2] ) ) {
+                    /* do nothing; empty vector means all */
+                } else {
+                    found = false; /* if all are bogus numbers, drop */
+                    for ( int ii = 2; ii < argc; ++ii ) {
+                        DevIDRelay devid = (DevIDRelay)strtoul( argv[ii], 
+                                                                NULL, 10 );
+                        if ( 0 != devid ) {
+                            devids.push_back( devid );
+                            found = true;
+                        }
+                    }
+                }
+                if ( !found ) {
+                    /* do nothing */
+                } else if ( 0 == strcmp( "list", arg1 ) ) {
+                    DevMgr::Get()->printDevices( result, devids );
+                } else {
+                    int deleted = DevMgr::Get()->forgetDevices( devids );
+                    string_printf( result, "Deleted %d devices\n", deleted );
+                }
+            }
+        } else if ( 0 == strcmp( "ping", arg1 ) ) {
+        } else if ( 0 == strcmp( "msg", arg1 ) && 3 < argc ) {
+            /* Get the list to send to */
+            vector<DevIDRelay> devids;
+            if ( 0 == strcmp( "all", argv[3] ) ) {
+                DevMgr::Get()->getKnownDevices( devids );
+            } else {
+                for ( int ii = 3; ii < argc; ++ii ) {
+                    DevIDRelay devid = (DevIDRelay)strtoul( argv[ii], NULL, 10 );
                     devids.push_back( devid );
                 }
             }
-        }
-        DevMgr::Get()->printDevices( result, devids );
-        found = true;
-    } else if ( 0 == strcmp( "ping", argv[1] ) ) {
-    } else if ( 0 == strcmp( "msg", argv[1] ) && 3 < argc ) {
-        /* Get the list to send to */
-        vector<DevIDRelay> devids;
-        if ( 0 == strcmp( "all", argv[3] ) ) {
-            DevMgr::Get()->getKnownDevices( devids );
-        } else {
-            for ( int ii = 3; ii < argc; ++ii ) {
-                DevIDRelay devid = (DevIDRelay)strtoul( argv[ii], NULL, 10 );
-                devids.push_back( devid );
-            }
-        }
 
-        /* Send to each in the list */
-        const char* msg = argv[2];
-        gchar* unesc = g_strcompress( msg );
-        vector<DevIDRelay>::const_iterator iter;
-        for ( iter = devids.begin(); devids.end() != iter; ++iter ) {
-            DevIDRelay devid = *iter;
-            if ( 0 != devid ) {
-                if ( post_message( devid, unesc, onAckProc, 
-                                   (void*)socket ) ) {
-                    string_printf( result, "posted message: %s\n", unesc );
-                } else {
-                    string_printf( result, "unable to post; does "
-                                   "dev %d exist\n", devid );
+            /* Send to each in the list */
+            const char* msg = argv[2];
+            gchar* unesc = g_strcompress( msg );
+            vector<DevIDRelay>::const_iterator iter;
+            for ( iter = devids.begin(); devids.end() != iter; ++iter ) {
+                DevIDRelay devid = *iter;
+                if ( 0 != devid ) {
+                    if ( post_message( devid, unesc, onAckProc, 
+                                       (void*)socket ) ) {
+                        string_printf( result, "posted message: %s\n", unesc );
+                    } else {
+                        string_printf( result, "unable to post; does "
+                                       "dev %d exist\n", devid );
+                    }
                 }
             }
-        }
-        g_free( unesc );
+            g_free( unesc );
 
-        found = true;
-    } else if ( 0 == strcmp( "rm", argv[1] ) && 2 < argc  ) {
-        DevIDRelay devid = (DevIDRelay)strtoul( argv[2], NULL, 10 );
-        if ( DevMgr::Get()->forgetDevice( devid ) ) {
-            string_printf( result, "dev %d removed\n", devid );
-        } else {
-            string_printf( result, "dev %d unknown\n", devid );
+            found = true;
         }
-        found = true;
     }
 
     if ( found ) {
@@ -612,8 +667,10 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
             "  %s ping\n",
             "  %s msg <msg_text> <devid>+\n",
             "  %s msg <msg_text> all\n",
-            "  %s rm <devid>\n",
+            "  %s rm [all | <devid>]\n",
+            "* %s rm [all | <id>+]\n"
         };
+
         string help;
         for ( size_t ii = 0; ii < VSIZE(strs); ++ii ) {
             string_printf( help, strs[ii], cmd );

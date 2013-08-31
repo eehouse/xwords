@@ -53,6 +53,18 @@ UDPAckTrack::setOnAck( OnAckProc proc, uint32_t packetID, void* data )
     return get()->setOnAckImpl( proc, packetID, data );
 }
 
+/* static */ void
+UDPAckTrack::printAcks( string& out )
+{
+    get()->printAcksImpl( out );
+}
+
+/* static */ void
+UDPAckTrack::doNack( vector<uint32_t> ids )
+{
+    get()->doNackImpl( ids );
+}
+
 /* static */ UDPAckTrack*
 UDPAckTrack::get()
 {
@@ -65,14 +77,6 @@ UDPAckTrack::get()
 UDPAckTrack::UDPAckTrack()
 {
     m_nextID = PACKETID_NONE;
-    int ackLimit;
-    if ( RelayConfigs::GetConfigs()->
-         GetValueFor( "UDP_ACK_LIMIT", &ackLimit ) ) {
-        m_ackLimit = ackLimit;
-    } else {
-        assert( 0 );
-        m_ackLimit = 60;
-    }
 
     pthread_mutex_init( &m_mutex, NULL );
 
@@ -81,12 +85,23 @@ UDPAckTrack::UDPAckTrack()
     pthread_detach( thread );
 }
 
+time_t
+UDPAckTrack::ackLimit()
+{
+    time_t limit;
+    if ( !RelayConfigs::GetConfigs()->GetValueFor( "UDP_ACK_LIMIT", 
+                                                   &limit ) ) {
+        assert(0);
+    }
+    return limit;
+}
+
 uint32_t
 UDPAckTrack::nextPacketIDImpl()
 {
     MutexLock ml( &m_mutex );
-    AckRecord record;
     uint32_t result = ++m_nextID;
+    AckRecord record;
     m_pendings.insert( pair<uint32_t,AckRecord>(result, record) );
     return result;
 }
@@ -106,7 +121,7 @@ UDPAckTrack::recordAckImpl( uint32_t packetID )
                   __func__, packetID, took );
         }
 
-        callProc( iter->first, true, &(iter->second) );
+        callProc( iter, true );
         m_pendings.erase( iter );
     }
 }
@@ -127,12 +142,49 @@ UDPAckTrack::setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data )
 }
 
 void
-UDPAckTrack::callProc( uint32_t packetID, bool acked, const AckRecord* record )
+UDPAckTrack::printAcksImpl( string& out )
 {
+    time_t now = time( NULL );
+    time_t limit = ackLimit();
+    MutexLock ml( &m_mutex );
+    map<uint32_t, AckRecord>::const_iterator iter;
+    for ( iter = m_pendings.begin(); m_pendings.end() != iter; ++iter ) {
+        string_printf( out, "id: % 8d; stl: %04d\n", iter->first, 
+                       (iter->second.m_createTime + limit) - now );
+    }
+}
+
+void
+UDPAckTrack::doNackImpl( vector<uint32_t>& ids )
+{
+    MutexLock ml( &m_mutex );
+    map<uint32_t, AckRecord>::iterator iter;
+    if ( 0 == ids.size() ) {
+        for ( iter = m_pendings.begin(); m_pendings.end() != iter; ) {
+            callProc( iter, false );
+            m_pendings.erase( iter++ );
+        }
+    } else {
+        vector<uint32_t>::const_iterator idsIter;
+        for ( idsIter = ids.begin(); ids.end() != idsIter; ++idsIter ) {
+            iter = m_pendings.find( *idsIter );
+            if ( m_pendings.end() != iter ) {
+                callProc( iter, false );
+                m_pendings.erase( iter );
+            }
+        }
+    }
+}
+
+void
+UDPAckTrack::callProc( const map<uint32_t, AckRecord>::iterator iter, bool acked )
+{
+    const AckRecord* record = &(iter->second);
     OnAckProc proc = record->proc;
     if ( NULL != proc ) {
-        logf( XW_LOGINFO, "%s(packetID=%d, acked=%d, proc=%p)", __func__, packetID, 
-              acked, proc );
+        uint32_t packetID = iter->first;
+        logf( XW_LOGINFO, "%s(packetID=%d, acked=%d, proc=%p)", __func__, 
+              packetID, acked, proc );
         (*proc)( acked, packetID, record->data );
     }
 }
@@ -141,7 +193,8 @@ void*
 UDPAckTrack::threadProc()
 {
     for ( ; ; ) {
-        sleep( m_ackLimit / 2 );
+        time_t limit = ackLimit();
+        sleep( limit / 2 );
         vector<uint32_t> older;
         {
             MutexLock ml( &m_mutex );
@@ -149,9 +202,9 @@ UDPAckTrack::threadProc()
             map<uint32_t, AckRecord>::iterator iter;
             for ( iter = m_pendings.begin(); m_pendings.end() != iter; ) {
                 time_t took = now - iter->second.m_createTime;
-                if ( m_ackLimit < took ) {
+                if ( limit < took ) {
                     older.push_back( iter->first );
-                    callProc( iter->first, false, &(iter->second) );
+                    callProc( iter, false );
                     m_pendings.erase( iter++ );
                 } else {
                     ++iter;
@@ -168,8 +221,9 @@ UDPAckTrack::threadProc()
                 }
                 string_printf( leaked, ", " );
             }
-            logf( XW_LOGERROR, "%s: these packets leaked (were not ack'd within %d seconds): %s", __func__, 
-                  m_ackLimit, leaked.c_str() );
+            logf( XW_LOGERROR, "%s: these packets leaked (were not ack'd "
+                  "within %d seconds): %s", __func__, 
+                  limit, leaked.c_str() );
         }
     }
     return NULL;

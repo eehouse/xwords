@@ -41,22 +41,27 @@ class UDPAckTrack {
     static void recordAck( uint32_t packetID ); 
     static bool setOnAck( OnAckProc proc, uint32_t packetID, void* data );
     static bool shouldAck( XWRelayReg cmd );
+    /* called from ctrl port */
+    static void printAcks( string& out );
+    static void doNack( vector<uint32_t> ids );
 
  private:
     static UDPAckTrack* get();
     static void* thread_main( void* arg );
     UDPAckTrack();
+    time_t ackLimit();
     uint32_t nextPacketIDImpl();
     void recordAckImpl( uint32_t packetID ); 
     bool setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data );
-    void callProc( uint32_t packetID, bool acked, const AckRecord* record );
+    void callProc( const map<uint32_t, AckRecord>::iterator iter, bool acked );
+    void printAcksImpl( string& out );
+    void doNackImpl( vector<uint32_t>& ids );
     void* threadProc();
 
     static UDPAckTrack* s_self;
     uint32_t m_nextID;
     pthread_mutex_t m_mutex;
     map<uint32_t, AckRecord> m_pendings;
-    time_t m_ackLimit;
 };
 
 #endif
