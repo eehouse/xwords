@@ -90,7 +90,7 @@ public class RelayService extends XWService
         new LinkedBlockingQueue<DatagramPacket>();
     private Handler m_handler;
     private Runnable m_onInactivity;
-    private short m_maxIntervalSeconds = 5; // give time to get real value
+    private int m_maxIntervalSeconds = 0;
     private long m_lastGamePacketReceived;
 
     // These must match the enum XWPDevProto in xwrelay.h
@@ -306,7 +306,7 @@ public class RelayService extends XWService
                               m_lastGamePacketReceived );
 
         if ( shouldMaintainConnection() ) {
-            long interval_millis = m_maxIntervalSeconds * 1000;
+            long interval_millis = getMaxIntervalSeconds() * 1000;
             RelayReceiver.RestartTimer( this, interval_millis );
         }
         stopThreads();
@@ -543,9 +543,10 @@ public class RelayService extends XWService
                     break;
                 case XWPDEV_REGRSP:
                     str = getVLIString( dis );
-                    m_maxIntervalSeconds = dis.readShort();
+                    short maxIntervalSeconds = dis.readShort();
                     DbgUtils.logf( "got relayid %s, maxInterval %d", str, 
-                                   m_maxIntervalSeconds );
+                                   maxIntervalSeconds );
+                    setMaxIntervalSeconds( maxIntervalSeconds );
                     XWPrefs.setRelayDevID( this, str );
                     break;
                 case XWPDEV_HAVEMSGS:
@@ -984,7 +985,7 @@ public class RelayService extends XWService
         // UDP socket's no good as a return address after several
         // minutes of inactivity, so do something after that time.
         m_handler.postDelayed( m_onInactivity, 
-                               m_maxIntervalSeconds * 1000 );
+                               getMaxIntervalSeconds() * 1000 );
     }
 
     private void startThreads()
@@ -1055,6 +1056,24 @@ public class RelayService extends XWService
         int len = str.length();
         un2vli( len, os );
         os.writeBytes( str );
+    }
+
+    private void setMaxIntervalSeconds( int maxIntervalSeconds )
+    {
+        if ( m_maxIntervalSeconds != maxIntervalSeconds ) {
+            m_maxIntervalSeconds = maxIntervalSeconds;
+            XWPrefs.setPrefsInt( this, R.string.key_udp_interval, 
+                                 maxIntervalSeconds );
+        }
+    }
+
+    private int getMaxIntervalSeconds()
+    {
+        if ( 0 == m_maxIntervalSeconds ) {
+            m_maxIntervalSeconds = 
+                XWPrefs.getPrefsInt( this, R.string.key_udp_interval, 60 );
+        }
+        return m_maxIntervalSeconds;
     }
 
     /* Timers:

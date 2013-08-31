@@ -76,6 +76,7 @@
   <string name="key_default_group">key_default_group</string>
   <string name="key_group_posns">key_group_posns</string>
   <string name="key_last_packet">key_last_packet</string>
+  <string name="key_udp_interval">key_udp_interval</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
