@@ -208,7 +208,8 @@ public class RelayService extends XWService
     {
         super.onCreate();
         m_lastGamePacketReceived = 
-            XWPrefs.getPrefsLong( this, R.string.key_last_packet, 0 );
+            XWPrefs.getPrefsLong( this, R.string.key_last_packet, 
+                                  Utils.getCurSeconds() );
 
         m_handler = new Handler();
         m_onInactivity = new Runnable() {
@@ -302,8 +303,6 @@ public class RelayService extends XWService
     public void onDestroy()
     {
         DbgUtils.logf( "RelayService.onDestroy() called" );
-        XWPrefs.setPrefsLong( this, R.string.key_last_packet,
-                              m_lastGamePacketReceived );
 
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
@@ -555,6 +554,8 @@ public class RelayService extends XWService
                 case XWPDEV_MSG:
                     // game-related packets only count
                     m_lastGamePacketReceived = Utils.getCurSeconds();
+                    XWPrefs.setPrefsLong( this, R.string.key_last_packet,
+                                          m_lastGamePacketReceived );
                     int token = dis.readInt();
                     byte[] msg = new byte[dis.available()];
                     dis.read( msg );
