@@ -73,7 +73,7 @@ public class RelayService extends XWService
             , RESET
     }
 
-    private static final String MSGS = "MSGS";
+    private static final String MSGS_ARR = "MSGS_ARR";
     private static final String RELAY_ID = "RELAY_ID";
     private static final String ROWID = "ROWID";
     private static final String BINBUFFER = "BINBUFFER";
@@ -184,7 +184,7 @@ public class RelayService extends XWService
     {
         DbgUtils.logf( "RelayService.processGameMsgs" );
         Intent intent = getIntentTo( context, MsgCmds.PROCESS_GAME_MSGS )
-            .putExtra( MSGS, msgs64 )
+            .putExtra( MSGS_ARR, msgs64 )
             .putExtra( RELAY_ID, relayId );
         context.startService( intent );
     }
@@ -192,7 +192,7 @@ public class RelayService extends XWService
     public static void processDevMsgs( Context context, String[] msgs64 )
     {
         Intent intent = getIntentTo( context, MsgCmds.PROCESS_DEV_MSGS )
-            .putExtra( MSGS, msgs64 );
+            .putExtra( MSGS_ARR, msgs64 );
         context.startService( intent );
     }
 
@@ -246,18 +246,17 @@ public class RelayService extends XWService
                     relayIDs[0] = intent.getStringExtra( RELAY_ID );
                     long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
                     if ( 0 < rowIDs.length ) {
-                        String[] msgs64 = intent.getStringArrayExtra( MSGS );
-                        int count = msgs64.length;
-
-                        byte[][][] msgs = new byte[1][count][];
-                        for ( int ii = 0; ii < count; ++ii ) {
-                            msgs[0][ii] = XwJNI.base64Decode( msgs64[ii] );
-                        }
+                        byte[][][] msgs = expandMsgsArray( intent );
                         process( msgs, rowIDs, relayIDs );
                     }
                     break;
                 case PROCESS_DEV_MSGS:
-                    DbgUtils.logf( "dropping dev msg for now" );
+                    byte[][][] msgss = expandMsgsArray( intent );
+                    for ( byte[][] msgs : msgss ) {
+                        for ( byte[] msg : msgs ) {
+                            gotPacket( msg, true );
+                        }
+                    }
                     break;
                 case UDP_CHANGED:
                     startThreads();
@@ -1079,6 +1078,18 @@ public class RelayService extends XWService
                 XWPrefs.getPrefsInt( this, R.string.key_udp_interval, 60 );
         }
         return m_maxIntervalSeconds;
+    }
+
+    private byte[][][] expandMsgsArray( Intent intent )
+    {
+        String[] msgs64 = intent.getStringArrayExtra( MSGS_ARR );
+        int count = msgs64.length;
+
+        byte[][][] msgs = new byte[1][count][];
+        for ( int ii = 0; ii < count; ++ii ) {
+            msgs[0][ii] = XwJNI.base64Decode( msgs64[ii] );
+        }
+        return msgs;
     }
 
     /* Timers:
