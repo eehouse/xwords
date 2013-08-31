@@ -102,16 +102,26 @@ DevMgr::get( DevIDRelay devid )
     return result;
 }
 
-bool 
-DevMgr::forgetDevice( DevIDRelay devid )
+int
+DevMgr::forgetDevices( vector<DevIDRelay>& devids )
 {
+    int count = 0;
     MutexLock ml( &m_mapLock );
-    map<DevIDRelay,UDPAddrRec>::iterator iter = m_devAddrMap.find( devid );
-    bool found = m_devAddrMap.end() != iter;
-    if ( found ) {
-        m_devAddrMap.erase( iter );
+    if ( 0 == devids.size() ) {
+        count = m_devAddrMap.size();
+        m_devAddrMap.clear();
+    } else {
+        vector<DevIDRelay>::const_iterator devidIter;
+        for ( devidIter = devids.begin(); devids.end() != devidIter; ++devidIter ) {
+            map<DevIDRelay,UDPAddrRec>::iterator iter = 
+                m_devAddrMap.find( *devidIter );
+            if ( m_devAddrMap.end() != iter ) {
+                ++count;
+                m_devAddrMap.erase( iter );
+            }
+        }
     }
-    return found;
+    return count;
 }
 
 void
