@@ -379,7 +379,7 @@ public class CommsTransport implements TransportProcs,
 
         switch ( addr.conType ) {
         case COMMS_CONN_RELAY:
-            if ( XWPrefs.getUDPEnabled( m_context ) ) {
+            if ( XWApp.UDP_ENABLED ) {
                 nSent = RelayService.sendPacket( m_context, m_rowid, buf );
             } else {
                 if ( NetStateCache.netAvail( m_context ) ) {

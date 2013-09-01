@@ -41,7 +41,6 @@ public class PrefsActivity extends PreferenceActivity
     private String m_keyLogging;
     private String m_smsToasting;
     private String m_smsEnable;
-    private String m_udpEnabled;
     private String m_downloadPath;
 
     @Override
@@ -123,7 +122,6 @@ public class PrefsActivity extends PreferenceActivity
         m_keyLogging = getString( R.string.key_logging_on );
         m_smsToasting = getString( R.string.key_show_sms );
         m_smsEnable = getString( R.string.key_enable_sms );
-        m_udpEnabled = getString( R.string.key_udp_relay );
         m_downloadPath = getString( R.string.key_download_path );
 
         Button button = (Button)findViewById( R.id.revert_colors );
@@ -163,8 +161,6 @@ public class PrefsActivity extends PreferenceActivity
             DbgUtils.logEnable( sp.getBoolean( key, false ) );
         } else if ( key.equals( m_smsToasting ) ) {
             SMSService.smsToastEnable( sp.getBoolean( key, false ) );
-        } else if ( key.equals( m_udpEnabled ) ) {
-            RelayService.udpChanged( this );
         } else if ( key.equals( m_smsEnable ) ) {
             if ( sp.getBoolean( key, true ) ) {
                 SMSService.checkForInvites( this );

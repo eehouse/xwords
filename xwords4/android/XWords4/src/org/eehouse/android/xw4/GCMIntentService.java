@@ -63,7 +63,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         notifyRelayService( true );
 
         String value;
-        boolean ignoreIt = XWPrefs.getGCMIgnored( this );
+        boolean ignoreIt = XWApp.GCM_IGNORED;
         if ( ignoreIt ) {
             DbgUtils.logf( "received GCM but ignoring it" );
         } else {
@@ -129,7 +129,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     private void notifyRelayService( boolean working )
     {
-        if ( working && XWPrefs.getGCMIgnored( this ) ) {
+        if ( working && XWApp.GCM_IGNORED ) {
             working = false;
         }
         RelayService.gcmConfirmed( working );

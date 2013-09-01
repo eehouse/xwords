@@ -341,7 +341,7 @@ public class RelayService extends XWService
     private boolean startFetchThreadIf()
     {
         DbgUtils.logf( "startFetchThreadIf()" );
-        boolean handled = !XWPrefs.getUDPEnabled( this );
+        boolean handled = !XWApp.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
             m_fetchThread = new Thread( null, new Runnable() {
                     public void run() {
@@ -370,7 +370,7 @@ public class RelayService extends XWService
     private void startUDPThreadsIfNot()
     {
         DbgUtils.logf( "RelayService.startUDPThreadsIfNot()" );
-        if ( XWPrefs.getUDPEnabled( this ) ) {
+        if ( XWApp.UDP_ENABLED ) {
 
             if ( null == m_UDPReadThread ) {
                 m_UDPReadThread = new Thread( null, new Runnable() {
@@ -997,7 +997,7 @@ public class RelayService extends XWService
         DbgUtils.logf( "RelayService.startThreads()" );
         if ( !NetStateCache.netAvail( this ) ) {
             stopThreads();
-        } else if ( XWPrefs.getUDPEnabled( this ) ) {
+        } else if ( XWApp.UDP_ENABLED ) {
             stopFetchThreadIf();
             startUDPThreadsIfNot();
             registerWithRelay();
@@ -1111,7 +1111,7 @@ public class RelayService extends XWService
 
     private boolean shouldMaintainConnection()
     {
-        boolean result = XWPrefs.getGCMIgnored( this ) || !s_gcmWorking;
+        boolean result = XWApp.GCM_IGNORED || !s_gcmWorking;
         if ( result ) {
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;
             result = interval < MAX_KEEPALIVE_SECS;

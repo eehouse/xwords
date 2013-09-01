@@ -36,7 +36,9 @@ public class XWApp extends Application {
     public static final boolean DEBUG = false;
     public static final boolean DEBUG_LOCKS = false && DEBUG;
     public static final boolean DEBUG_EXP_TIMERS = false && DEBUG;
-
+    public static final boolean GCM_IGNORED = false;
+    public static final boolean UDP_ENABLED = true;
+    
     public static final String SMS_PUBLIC_HEADER = "-XW4";
 
     private static UUID s_UUID = null;

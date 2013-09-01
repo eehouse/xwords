@@ -295,15 +295,6 @@
 			            android:summary="@string/git_rev"
 			            android:enabled="false"
 			            />
-    <CheckBoxPreference android:key="@string/key_udp_relay"
-			            android:title="@string/udp_relay"
-			            android:defaultValue="true"
-			            />
-    <CheckBoxPreference android:key="@string/key_drop_gcm"
-			            android:title="@string/drop_gcm_title"
-			            android:summary="@string/drop_gcm_summary"
-			            android:defaultValue="false"
-			            />
     <CheckBoxPreference android:key="@string/key_logging_on"
 			            android:title="@string/logging_on"
 			            android:defaultValue="false"
