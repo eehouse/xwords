@@ -50,6 +50,7 @@
 #include "tpool.h"
 #include "devmgr.h"
 #include "udpack.h"
+#include "strwpf.h"
 
 /* this is *only* for testing.  Don't abuse!!!! */
 extern pthread_rwlock_t gCookieMapRWLock;
@@ -555,7 +556,7 @@ static bool
 cmd_acks( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool found = false;
-    string result;
+    StrWPF result;
 
     if ( 1 >= argc ) {
         /* missing param; let help print */
@@ -578,9 +579,9 @@ cmd_acks( int socket, const char* cmd, int argc, gchar** argv )
             "* %s list\n"
             ,"* %s nack all\n"
         };
-        string help;
+        StrWPF help;
         for ( size_t ii = 0; ii < VSIZE(strs); ++ii ) {
-            string_printf( help, strs[ii], cmd );
+            help.printf( strs[ii], cmd );
         }
         send( socket, help.c_str(), help.size(), 0 );
     }
@@ -591,7 +592,7 @@ static bool
 cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
 {
     bool found = false;
-    string result;
+    StrWPF result;
     if ( 1 >= argc ) {
         /* missing param; let help print */
     } else {
@@ -619,7 +620,7 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
                     DevMgr::Get()->printDevices( result, devids );
                 } else {
                     int deleted = DevMgr::Get()->forgetDevices( devids );
-                    string_printf( result, "Deleted %d devices\n", deleted );
+                    result.printf( "Deleted %d devices\n", deleted );
                 }
             }
         } else if ( 0 == strcmp( "ping", arg1 ) ) {
@@ -644,9 +645,9 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
                 if ( 0 != devid ) {
                     if ( post_message( devid, unesc, onAckProc, 
                                        (void*)socket ) ) {
-                        string_printf( result, "posted message: %s\n", unesc );
+                        result.printf( "posted message: %s\n", unesc );
                     } else {
-                        string_printf( result, "unable to post; does "
+                        result.printf( "unable to post; does "
                                        "dev %d exist\n", devid );
                     }
                 }
@@ -671,9 +672,9 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
             "* %s rm [all | <id>+]\n"
         };
 
-        string help;
+        StrWPF help;
         for ( size_t ii = 0; ii < VSIZE(strs); ++ii ) {
-            string_printf( help, strs[ii], cmd );
+            help.printf( strs[ii], cmd );
         }
         send( socket, help.c_str(), help.size(), 0 );
     }

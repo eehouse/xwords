@@ -139,7 +139,7 @@ DevMgr::getKnownDevices( vector<DevIDRelay>& devids )
 // it, so that as much work as possible is done on the calling thread without
 // holding up more important stuff.
 void
-DevMgr::printDevices( string& str, vector<DevIDRelay> devids )
+DevMgr::printDevices( StrWPF& str, vector<DevIDRelay> devids )
 {
     map<uint32_t, DevIDRelay> agedDevs;
     {
@@ -177,8 +177,8 @@ DevMgr::printDevices( string& str, vector<DevIDRelay> devids )
         uint32_t age = *keysIter;
         DevIDRelay devid = agedDevs.find( age )->second;
         age = now - age;
-        string_printf( str, "%.3d: devid: % 10d; age: %.3d seconds\n", ++row, 
-                       devid, age );
+        str.printf( "%.3d: devid: % 10d; age: %.3d seconds\n", ++row, 
+                    devid, age );
     }
 }
 

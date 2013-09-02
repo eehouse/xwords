@@ -31,6 +31,7 @@ SRC = \
 	lstnrmgr.cpp \
 	permid.cpp \
 	states.cpp \
+	strwpf.cpp \
 	timermgr.cpp \
 	tpool.cpp \
 	udpack.cpp \

@@ -54,7 +54,7 @@ UDPAckTrack::setOnAck( OnAckProc proc, uint32_t packetID, void* data )
 }
 
 /* static */ void
-UDPAckTrack::printAcks( string& out )
+UDPAckTrack::printAcks( StrWPF& out )
 {
     get()->printAcksImpl( out );
 }
@@ -142,15 +142,15 @@ UDPAckTrack::setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data )
 }
 
 void
-UDPAckTrack::printAcksImpl( string& out )
+UDPAckTrack::printAcksImpl( StrWPF& out )
 {
     time_t now = time( NULL );
     time_t limit = ackLimit();
     MutexLock ml( &m_mutex );
     map<uint32_t, AckRecord>::const_iterator iter;
     for ( iter = m_pendings.begin(); m_pendings.end() != iter; ++iter ) {
-        string_printf( out, "id: % 8d; stl: %04d\n", iter->first, 
-                       (iter->second.m_createTime + limit) - now );
+        out.printf( "id: % 8d; stl: %04d\n", iter->first, 
+                    (iter->second.m_createTime + limit) - now );
     }
 }
 
@@ -212,14 +212,14 @@ UDPAckTrack::threadProc()
             }
         }
         if ( 0 < older.size() ) {
-            string leaked;
+            StrWPF leaked;
             vector<uint32_t>::const_iterator iter = older.begin();
             for ( ; ; ) {
-                string_printf( leaked, "%d", *iter );
+                leaked.printf( "%d", *iter );
                 if ( ++iter == older.end() ) {
                     break;
                 }
-                string_printf( leaked, ", " );
+                leaked.printf( ", " );
             }
             logf( XW_LOGERROR, "%s: these packets leaked (were not ack'd "
                   "within %d seconds): %s", __func__, 

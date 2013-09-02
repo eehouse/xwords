@@ -1732,33 +1732,6 @@ read_udp_packet( int udpsock )
     }
 }
 
-/* From stack overflow, toward a snprintf with an expanding buffer.
- */
-string&
-string_printf( string& str, const char* fmt, ... )
-{
-    const int origsiz = str.size();
-    int addsiz = 100;
-    va_list ap;
-    for ( ; ; ) {
-        str.resize( origsiz + addsiz );
-
-        va_start( ap, fmt );
-        int len = vsnprintf( (char *)str.c_str() + origsiz, addsiz, fmt, ap );
-        va_end( ap );
-
-        if ( len >= addsiz ) {   // needs more space
-            addsiz = len + 1;
-        } else if ( -1 == len ) {
-            assert(0);          // should be impossible
-        } else {
-            str.resize( origsiz + len );
-            break;
-        }
-    }
-    return str;
-}
-
 // Going with non-blocking instead
 #if 0
 static void

@@ -36,6 +36,7 @@
 #include "xwrelay.h"
 #include "timermgr.h"
 #include "mlock.h"
+#include "strwpf.h"
 
 XWThreadPool* XWThreadPool::g_instance = NULL;
 
@@ -492,12 +493,12 @@ XWThreadPool::release_socket_locked( int socket )
 void
 XWThreadPool::print_in_use( void )
 {
-    string str;
+    StrWPF str;
     set<int>::iterator iter;
 
     for ( iter = m_sockets_in_use.begin(); 
           iter != m_sockets_in_use.end(); ++iter ) {
-        string_printf( str, "%d ", *iter );
+        str.printf( "%d ", *iter );
     }
     if ( 0 < str.size() ) {
         logf( XW_LOGINFO, "Sockets in use: %s", str.c_str() );

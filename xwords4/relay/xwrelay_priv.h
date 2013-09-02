@@ -63,8 +63,6 @@ int GetNSpawns(void);
 
 int make_socket( unsigned long addr, unsigned short port );
 
-std::string& string_printf( std::string& str, const char* fmt, ... );
-
 int read_packet( int sock, uint8_t* buf, int buflen );
 
 void onMsgAcked( bool acked, uint32_t packetID, void* data );

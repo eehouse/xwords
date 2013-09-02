@@ -22,6 +22,7 @@
 
 #include "xwrelay_priv.h"
 #include "xwrelay.h"
+#include "strwpf.h"
 
 typedef void (*OnAckProc)( bool acked, uint32_t packetID, void* data );
 
@@ -42,7 +43,7 @@ class UDPAckTrack {
     static bool setOnAck( OnAckProc proc, uint32_t packetID, void* data );
     static bool shouldAck( XWRelayReg cmd );
     /* called from ctrl port */
-    static void printAcks( string& out );
+    static void printAcks( StrWPF& out );
     static void doNack( vector<uint32_t> ids );
 
  private:
@@ -54,7 +55,7 @@ class UDPAckTrack {
     void recordAckImpl( uint32_t packetID ); 
     bool setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data );
     void callProc( const map<uint32_t, AckRecord>::iterator iter, bool acked );
-    void printAcksImpl( string& out );
+    void printAcksImpl( StrWPF& out );
     void doNackImpl( vector<uint32_t>& ids );
     void* threadProc();
 

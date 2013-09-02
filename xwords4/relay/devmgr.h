@@ -25,6 +25,7 @@
 
 #include "xwrelay_priv.h"
 #include "addrinfo.h"
+#include "strwpf.h"
 
 using namespace std;
 
@@ -35,7 +36,8 @@ class DevMgr {
     const AddrInfo::AddrUnion* get( DevIDRelay devid );
 
     /* Called from ctrl port */
-    void printDevices( string& str, vector<DevIDRelay> devids /* empty means all */ );
+    void printDevices( StrWPF& str, 
+                       vector<DevIDRelay> devids /* empty means all */ );
     int forgetDevices( vector<DevIDRelay>& devids );
     void getKnownDevices( vector<DevIDRelay>& devids );
 
