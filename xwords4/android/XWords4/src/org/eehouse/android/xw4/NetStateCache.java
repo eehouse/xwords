@@ -100,11 +100,12 @@ public class NetStateCache {
 
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+                NetworkInfo.State state = ni.getState();
                 DbgUtils.logf( "CommsBroadcastReceiver.onReceive: %s", 
-                               ni.getState().toString() );
+                               state.toString() );
 
                 boolean netAvail;
-                switch ( ni.getState() ) {
+                switch ( state ) {
                 case CONNECTED:
                     netAvail = true;
                     break;
