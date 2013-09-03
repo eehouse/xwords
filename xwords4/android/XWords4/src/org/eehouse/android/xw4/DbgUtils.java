@@ -96,7 +96,7 @@ public class DbgUtils {
     public static void loge( Exception exception )
     {
         logf( "Exception: %s", exception.toString() );
-        printStack();
+        printStack( exception.getStackTrace() );
     }
 
     public static void printStack( StackTraceElement[] trace )
