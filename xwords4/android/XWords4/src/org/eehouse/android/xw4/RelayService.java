@@ -71,6 +71,7 @@ public class RelayService extends XWService
             , RECEIVE
             , TIMER_FIRED
             , RESET
+            , UPGRADE
     }
 
     private static final String MSGS_ARR = "MSGS_ARR";
@@ -116,10 +117,15 @@ public class RelayService extends XWService
             ,XWPDEV_ACK
             ,XWPDEV_DELGAME
             ,XWPDEV_ALERT
+            ,XWPDEV_UPGRADE
             };
 
     public static void gcmConfirmed( boolean confirmed )
     {
+        if ( s_gcmWorking != confirmed ) {
+            DbgUtils.logf( "RelayService.gcmConfirmed(): changing "
+                           + "s_gcmWorking to %b", confirmed );
+        }
         s_gcmWorking = confirmed;
     }
 
@@ -265,6 +271,9 @@ public class RelayService extends XWService
                     stopThreads();
                     startThreads();
                     break;
+                case UPGRADE:
+                    UpdateCheckReceiver.checkVersions( this, false );
+                    break;
                 case SEND:
                 case RECEIVE:
                     startUDPThreadsIfNot();
@@ -277,8 +286,12 @@ public class RelayService extends XWService
                     }
                     break;
                 case TIMER_FIRED:
-                    if ( !startFetchThreadIf() ) {
-                        sendKeepAlive();
+                    if ( !NetStateCache.netAvail( this ) ) {
+                        DbgUtils.logf( "not connecting: no network" );
+                    } else if ( startFetchThreadIf() ) {
+                        // do nothing
+                    } else {
+                        requestMessages();
                     }
                     break;
                 default:
@@ -391,8 +404,7 @@ public class RelayService extends XWService
                                 } catch ( java.io.InterruptedIOException iioe ) {
                                     DbgUtils.logf( "FYI: udp receive timeout" );
                                 } catch( java.io.IOException ioe ) {
-                                    DbgUtils.loge( ioe );
-                                    break; // ???
+                                    break;
                                 }
                             }
                             DbgUtils.logf( "RelayService:read thread exiting" );
@@ -564,6 +576,10 @@ public class RelayService extends XWService
                         m_lastGamePacketReceived = lastGamePacketReceived;
                     }
                     break;
+                case XWPDEV_UPGRADE:
+                    intent = getIntentTo( this, MsgCmds.UPGRADE );
+                    startService( intent );
+                    break;
                 case XWPDEV_ACK:
                     noteAck( vli2un( dis ) );
                     break;
@@ -590,7 +606,6 @@ public class RelayService extends XWService
 
     private void registerWithRelay()
     {
-        DbgUtils.logf( "registerWithRelay" );
         DevIDType[] typ = new DevIDType[1];
         String devid = getDevID( typ );
 
