@@ -54,6 +54,7 @@ typedef void (*OnMsgAckProc)( bool acked, DevIDRelay devid, uint32_t packetID,
                               void* data );
 bool post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
                    void* data );
+void post_upgrade( DevIDRelay devid );
 
 time_t uptime(void);
 

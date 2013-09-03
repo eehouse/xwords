@@ -597,7 +597,9 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
         /* missing param; let help print */
     } else {
         const gchar* arg1 = argv[1];
-        if ( 0 == strcmp( "list", arg1 ) || 0 == strcmp( "rm", arg1 ) ) {
+        if ( 0 == strcmp( "list", arg1 ) 
+             || 0 == strcmp( "upgrade", arg1 )
+             || 0 == strcmp( "rm", arg1 ) ) {
             if ( 3 <= argc ) {
                 found = true;
                 vector<DevIDRelay> devids;
@@ -618,6 +620,14 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
                     /* do nothing */
                 } else if ( 0 == strcmp( "list", arg1 ) ) {
                     DevMgr::Get()->printDevices( result, devids );
+                } else if ( 0 == strcmp( "upgrade", arg1 ) ) {
+                    vector<DevIDRelay>::const_iterator iter;
+                    for ( iter = devids.begin(); devids.end() != iter; ++iter ) {
+                        DevIDRelay devid = *iter;
+                        if ( 0 != devid ) {
+                            post_upgrade( devid );
+                        }
+                    }
                 } else {
                     int deleted = DevMgr::Get()->forgetDevices( devids );
                     result.printf( "Deleted %d devices\n", deleted );
@@ -668,8 +678,8 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
             "  %s ping\n",
             "  %s msg <msg_text> <devid>+\n",
             "  %s msg <msg_text> all\n",
-            "  %s rm [all | <devid>]\n",
-            "* %s rm [all | <id>+]\n"
+            "  %s rm [all | <id>+]\n",
+            "  %s upgrade [all | <id>+]\n"
         };
 
         StrWPF help;

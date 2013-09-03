@@ -479,7 +479,7 @@ denyConnection( const AddrInfo* addr, XWREASON err )
 
 static void
 assemble_packet( vector<uint8_t>& packet, uint32_t* packetIDP, XWRelayReg cmd, 
-                 va_list* app )
+                 va_list& app )
 {
     uint32_t packetNum = UDPAckTrack::nextPacketID( cmd );
     if ( NULL != packetIDP ) {
@@ -494,11 +494,11 @@ assemble_packet( vector<uint8_t>& packet, uint32_t* packetIDP, XWRelayReg cmd,
     packet.insert( packet.end(), header, header + indx );
 
     for ( ; ; ) {
-        uint8_t* ptr = va_arg(*app, uint8_t*);
+        uint8_t* ptr = va_arg(app, uint8_t*);
         if ( !ptr ) {
             break;
         }
-        size_t len = va_arg(*app, int);
+        size_t len = va_arg(app, int);
         packet.insert( packet.end(), ptr, ptr + len );
     }
 
@@ -524,7 +524,7 @@ assemble_packet( vector<uint8_t>& packet, uint32_t* packetIDP, XWRelayReg cmd,
 {
     va_list ap;
     va_start( ap, cmd );
-    assemble_packet( packet, packetIDP, cmd, &ap );
+    assemble_packet( packet, packetIDP, cmd, ap );
     va_end( ap );
 }
 
@@ -576,7 +576,7 @@ send_packet_via_udp_impl( vector<uint8_t>& packet,
 
 static ssize_t
 send_via_udp_impl( int socket, const struct sockaddr* dest_addr, 
-                   uint32_t* packetIDP, XWRelayReg cmd, va_list* app )
+                   uint32_t* packetIDP, XWRelayReg cmd, va_list& app )
 {
     vector<uint8_t> packet;
     assemble_packet( packet, packetIDP, cmd, app );
@@ -604,7 +604,7 @@ send_via_udp( const AddrInfo* addr, uint32_t* packetIDP, XWRelayReg cmd, ... )
     if ( get_addr_info_if( addr, &socket, &dest_addr ) ) {
         va_list ap;
         va_start( ap, cmd );
-        result = send_via_udp_impl( socket, dest_addr, packetIDP, cmd, &ap );
+        result = send_via_udp_impl( socket, dest_addr, packetIDP, cmd, ap );
         va_end( ap );
     } else {
         logf( XW_LOGINFO, "%s: not sending to out-of-date packet", __func__ );
@@ -619,7 +619,7 @@ send_via_udp( int socket, const struct sockaddr* dest_addr,
     va_list ap;
     va_start( ap, cmd );
     ssize_t result = send_via_udp_impl( socket, dest_addr, packetIDP, 
-                                        cmd, &ap );
+                                        cmd, ap );
     va_end( ap );
     return result;
 }
@@ -731,20 +731,11 @@ onPostedMsgAcked( bool acked, uint32_t packetID, void* data )
     delete mc;
 }
 
-bool
-post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
-              void* procClosure )
+
+static bool
+post_or_store( DevIDRelay devid, vector<uint8_t>& packet, uint32_t packetID, 
+               OnMsgAckProc proc, void* procClosure )
 {
-    vector<uint8_t> packet;
-    uint32_t packetID;
-    XWRelayReg cmd = XWPDEV_ALERT;
-
-    uint32_t len = strlen( message );
-    uint8_t lenbuf[5];
-    size_t lenlen = un2vli( len, lenbuf );
-    assemble_packet( packet, &packetID, cmd, lenbuf, lenlen,
-                     message, len, NULL );
-
     const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( devid );
     bool canSendNow = !!addru;
     
@@ -767,6 +758,33 @@ post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
         DBMgr::Get()->StoreMessage( devid, packet.data(), packet.size() );
     }
     return sent;
+}
+
+bool
+post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
+              void* procClosure )
+{
+    vector<uint8_t> packet;
+    uint32_t packetID;
+
+    uint32_t len = strlen( message );
+    uint8_t lenbuf[5];
+    size_t lenlen = un2vli( len, lenbuf );
+    assemble_packet( packet, &packetID, XWPDEV_ALERT, lenbuf, lenlen,
+                     message, len, NULL );
+
+    return post_or_store( devid, packet, packetID, proc, procClosure );
+}
+
+void
+post_upgrade( DevIDRelay devid )
+{
+    vector<uint8_t> packet;
+    uint32_t packetID;
+
+    assemble_packet( packet, &packetID, XWPDEV_UPGRADE, NULL );
+
+    (void)post_or_store( devid, packet, packetID, NULL, NULL );
 }
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
