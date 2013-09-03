@@ -104,7 +104,9 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
        ,XWPDEV_ALERT            /* relay->dev: format: header,
                                    length-initiated string to present to user. */
 
-       ,XWPDEV_UPGRADE
+       ,XWPDEV_UPGRADE          /* relay->dev; format: header.  Tells device
+                                   to check for upgrades; may eventually
+                                   replace device needing a timer. */
 
        ,XWPDEV_N_ELEMS          /* MUST BE LAST */
 
