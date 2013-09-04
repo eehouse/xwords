@@ -87,8 +87,8 @@ public class RelayService extends XWService
     private Thread m_UDPReadThread = null;
     private Thread m_UDPWriteThread = null;
     private DatagramSocket m_UDPSocket;
-    private LinkedBlockingQueue<DatagramPacket> m_queue = 
-        new LinkedBlockingQueue<DatagramPacket>();
+    private LinkedBlockingQueue<PacketData> m_queue = 
+        new LinkedBlockingQueue<PacketData>();
     private Handler m_handler;
     private Runnable m_onInactivity;
     private int m_maxIntervalSeconds = 0;
@@ -451,24 +451,30 @@ public class RelayService extends XWService
                     public void run() {
                         DbgUtils.logf( "RelayService: write thread running" );
                         for ( ; ; ) {
-                            DatagramPacket outPacket;
+                            PacketData outData;
                             try {
-                                outPacket = m_queue.take();
+                                outData = m_queue.take();
                             } catch ( InterruptedException ie ) {
                                 DbgUtils.logf( "RelayService; write thread "
                                                + "killed" );
                                 break;
                             }
-                            if ( null == outPacket 
-                                 || 0 == outPacket.getLength() ) {
+                            if ( null == outData
+                                 || 0 == outData.getLength() ) {
                                 DbgUtils.logf( "stopping write thread" );
                                 break;
                             }
 
                             try {
+                                DatagramPacket outPacket = outData.assemble();
                                 m_UDPSocket.send( outPacket );
-                                DbgUtils.logf( "Sent udp packet of length %d", 
-                                           outPacket.getLength() );
+                                int packetID = outData.m_packetID;
+                                DbgUtils.logf( "Sent udp packet, id=%d, of "
+                                               + "length %d", 
+                                               packetID, outPacket.getLength() );
+                                synchronized( s_packetsSent ) {
+                                    s_packetsSent.add( packetID );
+                                }
                                 resetExitTimer();
                                 ConnStatusHandler.showSuccessOut();
                             } catch ( java.io.IOException ioe ) {
@@ -492,7 +498,7 @@ public class RelayService extends XWService
         DbgUtils.logf( "stopUDPThreadsIf" );
         if ( null != m_UDPWriteThread ) {
             // can't add null
-            m_queue.add( new DatagramPacket( new byte[0], 0 ) );
+            m_queue.add( new PacketData() );
             try {
                 DbgUtils.logf( "joining m_UDPWriteThread" );
                 m_UDPWriteThread.join();
@@ -611,7 +617,7 @@ public class RelayService extends XWService
 
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
-            DataOutputStream out = addProtoAndCmd( bas, XWRelayReg.XWPDEV_REG );
+            DataOutputStream out = new DataOutputStream( bas );
             out.writeByte( typ[0].ordinal() );
             writeVLIString( out, devid );
             DbgUtils.logf( "registering devID \"%s\" (type=%s)", devid, 
@@ -621,7 +627,7 @@ public class RelayService extends XWService
             writeVLIString( out, GitVersion.VERS );
             writeVLIString( out, Build.MODEL );
 
-            postPacket( bas );
+            postPacket( bas, XWRelayReg.XWPDEV_REG );
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
         }
@@ -633,9 +639,9 @@ public class RelayService extends XWService
         try {
             String devid = getDevID( null );
             if ( null != devid ) {
-                DataOutputStream out = addProtoAndCmd( bas, reg );
+                DataOutputStream out = new DataOutputStream( bas );
                 writeVLIString( out, devid );
-                postPacket( bas );
+                postPacket( bas, reg );
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
@@ -657,11 +663,11 @@ public class RelayService extends XWService
         DbgUtils.logf( "RelayService.sendMessage()" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
-            DataOutputStream out = addProtoAndCmd( bas, XWRelayReg.XWPDEV_MSG );
+            DataOutputStream out = new DataOutputStream( bas );
             Assert.assertTrue( rowid < Integer.MAX_VALUE );
             out.writeInt( (int)rowid );
             out.write( msg, 0, msg.length );
-            postPacket( bas );
+            postPacket( bas, XWRelayReg.XWPDEV_MSG );
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
         } 
@@ -671,14 +677,13 @@ public class RelayService extends XWService
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
-            DataOutputStream out = 
-                addProtoAndCmd( bas, XWRelayReg.XWPDEV_MSGNOCONN );
+            DataOutputStream out = new DataOutputStream( bas );
             Assert.assertTrue( rowid < Integer.MAX_VALUE );
             out.writeInt( (int)rowid );
             out.writeBytes( relayID );
             out.write( '\n' );
             out.write( msg, 0, msg.length );
-            postPacket( bas );
+            postPacket( bas, XWRelayReg.XWPDEV_MSGNOCONN );
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
         } 
@@ -690,10 +695,9 @@ public class RelayService extends XWService
         if ( 0 != header.m_packetID ) {
             ByteArrayOutputStream bas = new ByteArrayOutputStream();
             try {
-                DataOutputStream out = 
-                    addProtoAndCmd( bas, XWRelayReg.XWPDEV_ACK );
+                DataOutputStream out = new DataOutputStream( bas );
                 un2vli( header.m_packetID, out );
-                postPacket( bas );
+                postPacket( bas, XWRelayReg.XWPDEV_ACK );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
             }
@@ -729,22 +733,9 @@ public class RelayService extends XWService
         return result;
     }
 
-    private DataOutputStream addProtoAndCmd( ByteArrayOutputStream bas, 
-                                             XWRelayReg cmd )
-        throws java.io.IOException
+    private void postPacket( ByteArrayOutputStream bas, XWRelayReg cmd )
     {
-        DataOutputStream out = new DataOutputStream( bas );
-        DbgUtils.logf( "Building packet with cmd %s", cmd.toString() );
-        out.writeByte( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() );
-        un2vli( nextPacketID( cmd ), out );
-        out.writeByte( cmd.ordinal() );
-        return out;
-    }
-
-    private void postPacket( ByteArrayOutputStream bas )
-    {
-        byte[] data = bas.toByteArray();
-        m_queue.add( new DatagramPacket( data, data.length ) );
+        m_queue.add( new PacketData( bas, cmd ) );
         DbgUtils.logf( "postPacket() done; %d in queue", m_queue.size() );
     }
 
@@ -972,10 +963,9 @@ public class RelayService extends XWService
     private static int nextPacketID( XWRelayReg cmd )
     {
         int nextPacketID = 0;
-        synchronized( s_packetsSent ) {
-            if ( XWRelayReg.XWPDEV_ACK != cmd ) {
+        if ( XWRelayReg.XWPDEV_ACK != cmd ) {
+            synchronized( s_packetsSent ) {
                 nextPacketID = ++s_nextPacketID;
-                s_packetsSent.add( nextPacketID );
             }
         }
         return nextPacketID;
@@ -1142,6 +1132,59 @@ public class RelayService extends XWService
             m_packetID = packetID;
             m_cmd = cmd;
         }
+    }
+
+    private class PacketData {
+        public PacketData() { m_bas = null; }
+
+        public PacketData( ByteArrayOutputStream bas, XWRelayReg cmd )
+        {
+            m_bas = bas;
+            m_cmd = cmd;
+        }
+
+        public int getLength()
+        {
+            int result = 0;
+            if ( null != m_bas ) { // empty case?
+                if ( null == m_header ) {
+                    makeHeader();
+                }
+                result = m_header.length + m_bas.size();
+            }
+            return result;
+        }
+
+        public DatagramPacket assemble()
+        {
+            byte[] dest = new byte[getLength()];
+            System.arraycopy( m_header, 0, dest, 0, m_header.length );
+            byte[] basData = m_bas.toByteArray();
+            System.arraycopy( basData, 0, dest, m_header.length, basData.length );
+            return new DatagramPacket( dest, dest.length );
+        }
+
+        private void makeHeader()
+        {
+            ByteArrayOutputStream bas = new ByteArrayOutputStream();
+            try {
+                m_packetID = nextPacketID( m_cmd );
+                DataOutputStream out = new DataOutputStream( bas );
+                DbgUtils.logf( "Building packet with cmd %s", 
+                               m_cmd.toString() );
+                out.writeByte( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() );
+                un2vli( m_packetID, out );
+                out.writeByte( m_cmd.ordinal() );
+                m_header = bas.toByteArray();
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.loge( ioe );
+            }
+        }
+
+        public ByteArrayOutputStream m_bas;
+        public XWRelayReg m_cmd;
+        public byte[] m_header;
+        public int m_packetID;
     }
 
 }
