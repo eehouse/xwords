@@ -626,6 +626,7 @@ public class RelayService extends XWService
             out.writeShort( GitVersion.CLIENT_VERS_RELAY );
             writeVLIString( out, GitVersion.VERS );
             writeVLIString( out, Build.MODEL );
+            writeVLIString( out, Build.VERSION.RELEASE );
 
             postPacket( bas, XWRelayReg.XWPDEV_REG );
         } catch ( java.io.IOException ioe ) {
