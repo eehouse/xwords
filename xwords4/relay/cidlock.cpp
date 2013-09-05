@@ -80,7 +80,7 @@ CidLock::print_claimed( const char* caller )
         if ( 0 == info->GetOwner() ) {
             ++unclaimed;
         } else {
-            str. printf( "%d,", info->GetCid() );
+            str.printf( "%d,", info->GetCid() );
         }
     }
     str.printf( " (plus %d unclaimed.)", unclaimed );

@@ -139,7 +139,7 @@ DevMgr::getKnownDevices( vector<DevIDRelay>& devids )
 // it, so that as much work as possible is done on the calling thread without
 // holding up more important stuff.
 void
-DevMgr::printDevices( StrWPF& str, vector<DevIDRelay> devids )
+DevMgr::printDevices( StrWPF& str, const vector<DevIDRelay>& devids )
 {
     map<uint32_t, DevIDRelay> agedDevs;
     {

@@ -37,7 +37,7 @@ class DevMgr {
 
     /* Called from ctrl port */
     void printDevices( StrWPF& str, 
-                       vector<DevIDRelay> devids /* empty means all */ );
+                       const vector<DevIDRelay>& devids /* empty means all */ );
     int forgetDevices( vector<DevIDRelay>& devids );
     void getKnownDevices( vector<DevIDRelay>& devids );
 
