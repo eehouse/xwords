@@ -92,6 +92,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* devID, DevIDType typ )
                         INITIAL_CLIENT_VERS );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, SVN_REV );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux box" );
+    indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux version" );
 
     sendIt( storage, tmpbuf, indx );
 }

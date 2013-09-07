@@ -340,7 +340,8 @@ DBMgr::AllDevsAckd( const char* const connName )
 // already there.
 DevIDRelay
 DBMgr::RegisterDevice( const DevID* host, int clientVersion, 
-                       const char* const desc, const char* const model )
+                       const char* const desc, const char* const model,
+                       const char* const osVers )
 {
     DevIDRelay devID;
     assert( host->m_devIDType != ID_TYPE_NONE );
@@ -367,15 +368,15 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
             } while ( DEVID_NONE == devID );
 
             const char* command = "INSERT INTO " DEVICES_TABLE
-                " (id, devType, devid, clntVers, versDesc, model)"
-                " VALUES( $1, $2, $3, $4, $5, $6 )";
-            int nParams = 6;
+                " (id, devType, devid, clntVers, versDesc, model, osvers)"
+                " VALUES( $1, $2, $3, $4, $5, $6, $7 )";
+            int nParams = 7;
             char* paramValues[nParams];
             char buf[1024];
             formatParams( paramValues, nParams,
-                          "%d"DELIM"%d"DELIM"%s"DELIM"%d"DELIM"%s"DELIM"%s", 
+                          "%d"DELIM"%d"DELIM"%s"DELIM"%d"DELIM"%s"DELIM"%s"DELIM"%s", 
                           buf, sizeof(buf), devID, host->m_devIDType, 
-                          devidStr, clientVersion, desc, model );
+                          devidStr, clientVersion, desc, model, osVers );
 
             PGresult* result = PQexecParams( getThreadConn(), command,
                                              nParams, NULL,
@@ -396,13 +397,13 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
 DevIDRelay 
 DBMgr::RegisterDevice( const DevID* host )
 {
-    return RegisterDevice( host, 0, NULL, NULL );
+    return RegisterDevice( host, 0, NULL, NULL, NULL );
 }
 
 bool
 DBMgr::UpdateDevice( DevIDRelay relayID, int clientVersion, 
                      const char* const desc, const char* const model,
-                     bool check )
+                     const char* const osVers, bool check )
 {
     bool exists = !check;
     if ( !exists ) {
@@ -420,6 +421,9 @@ DBMgr::UpdateDevice( DevIDRelay relayID, int clientVersion,
         if ( NULL != model && '\0' != model[0] ) {
             query.printf( ", model='%s'", model );
         }
+        if ( NULL != osVers && '\0' != osVers[0] ) {
+            query.printf( ", osvers='%s'", osVers );
+        }
         query.printf( " WHERE id = %d", relayID );
         execSql( query );
     }
@@ -429,7 +433,7 @@ DBMgr::UpdateDevice( DevIDRelay relayID, int clientVersion,
 bool
 DBMgr::UpdateDevice( DevIDRelay relayID )
 {
-    return UpdateDevice( relayID, 0, NULL, NULL, false );
+    return UpdateDevice( relayID, 0, NULL, NULL, NULL, false );
 }
 
 HostID

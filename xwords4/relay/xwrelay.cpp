@@ -1484,7 +1484,7 @@ addRegID( uint8_t* ptr, DevIDRelay relayID )
 
 static void 
 registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
-                string& devDesc, string& model )
+                string& devDesc, string& model, string& osVers )
 {
     DevIDRelay relayID;
     DBMgr* dbMgr = DBMgr::Get();
@@ -1494,7 +1494,7 @@ registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
     if ( ID_TYPE_RELAY == devID->m_devIDType ) { // known to us; just update the time
         relayID = devID->asRelayID();
         if ( dbMgr->UpdateDevice( relayID, clientVers, devDesc.c_str(), 
-                                  model.c_str(), true ) ) {
+                                  model.c_str(), osVers.c_str(), true ) ) {
             int nMsgs = dbMgr->CountStoredMessages( relayID );
             if ( 0 < nMsgs ) {
                 send_havemsgs( addr );
@@ -1507,7 +1507,7 @@ registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
         } 
     } else {
         relayID = dbMgr->RegisterDevice( devID, clientVers, devDesc.c_str(), 
-                                         model.c_str() );
+                                         model.c_str(), osVers.c_str() );
     }
 
     if ( DBMgr::DEVID_NONE != relayID ) {
@@ -1629,11 +1629,13 @@ handle_udp_packet( UdpThreadClosure* utc )
                 uint16_t clientVers;
                 string devDesc;
                 string model;
+                string osVers;
                 if ( getNetShort( &ptr, end, &clientVers )
                      && getVLIString( &ptr, end, devDesc )
-                     && getVLIString( &ptr, end, model ) ) {
+                     && getVLIString( &ptr, end, model )
+                     && getVLIString( &ptr, end, osVers ) ) {
                     registerDevice( &devID, utc->addr(), clientVers, 
-                                    devDesc, model );
+                                    devDesc, model, osVers );
                 }
             }
             break;
