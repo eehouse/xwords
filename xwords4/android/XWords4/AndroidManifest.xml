@@ -107,7 +107,6 @@
               />
 
     <activity android:name="BoardActivity"
-              android:theme="@android:style/Theme.Light"
               android:screenOrientation="portrait"
               android:configChanges="keyboardHidden"
               />
