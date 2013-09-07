@@ -1723,130 +1723,135 @@ public class BoardActivity extends XWActivity
     private void loadGame()
     {
         if ( 0 == m_jniGamePtr ) {
-            String[] dictNames = GameUtils.dictNames( this, m_rowid );
-            DictUtils.DictPairs pairs = DictUtils.openDicts( this, dictNames );
+            try {
+                String[] dictNames = GameUtils.dictNames( this, m_rowid );
+                DictUtils.DictPairs pairs = DictUtils.openDicts( this, dictNames );
 
-            if ( pairs.anyMissing( dictNames ) ) {
-                showDictGoneFinish();
-            } else {
-                Assert.assertNull( m_gameLock );
-                m_gameLock = new GameLock( m_rowid, true ).lock();
+                if ( pairs.anyMissing( dictNames ) ) {
+                    showDictGoneFinish();
+                } else {
+                    Assert.assertNull( m_gameLock );
+                    m_gameLock = new GameLock( m_rowid, true ).lock();
 
-                byte[] stream = GameUtils.savedGame( this, m_gameLock );
-                m_gi = new CurGameInfo( this );
-                XwJNI.gi_from_stream( m_gi, stream );
-                String langName = m_gi.langName();
+                    byte[] stream = GameUtils.savedGame( this, m_gameLock );
+                    m_gi = new CurGameInfo( this );
+                    XwJNI.gi_from_stream( m_gi, stream );
+                    String langName = m_gi.langName();
 
-                setThis( this );
+                    setThis( this );
 
-                m_jniGamePtr = XwJNI.initJNI();
+                    m_jniGamePtr = XwJNI.initJNI();
 
-                if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                    m_xport = new CommsTransport( m_jniGamePtr, this, this, 
-                                                  m_rowid, m_gi.serverRole );
-                }
+                    if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                        m_xport = new CommsTransport( m_jniGamePtr, this, this, 
+                                                      m_rowid, m_gi.serverRole );
+                    }
 
-                CommonPrefs cp = CommonPrefs.get( this );
-                if ( null == stream ||
-                     ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                                  m_gi, dictNames, pairs.m_bytes, 
-                                                  pairs.m_paths, langName, m_utils,
-                                                  m_jniu, m_view, cp, m_xport ) ) {
-                    XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
-                                            m_view, cp, m_xport, dictNames, 
-                                            pairs.m_bytes, pairs.m_paths,
-                                            langName );
-                }
+                    CommonPrefs cp = CommonPrefs.get( this );
+                    if ( null == stream ||
+                         ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                                                      m_gi, dictNames, pairs.m_bytes, 
+                                                      pairs.m_paths, langName, m_utils,
+                                                      m_jniu, m_view, cp, m_xport ) ) {
+                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
+                                                m_view, cp, m_xport, dictNames, 
+                                                pairs.m_bytes, pairs.m_paths,
+                                                langName );
+                    }
 
-                Handler handler = new Handler() {
-                        public void handleMessage( Message msg ) {
-                            switch( msg.what ) {
-                            case JNIThread.DRAW:
-                                m_view.invalidate();
-                                break;
-                            case JNIThread.DIALOG:
-                                m_dlgBytes = (String)msg.obj;
-                                m_dlgTitle = msg.arg1;
-                                showDialog( DLG_OKONLY );
-                                break;
-                            case JNIThread.QUERY_ENDGAME:
-                                showDialog( QUERY_ENDGAME );
-                                break;
-                            case JNIThread.TOOLBAR_STATES:
-                                if ( null != m_jniThread ) {
-                                    m_gsi = 
-                                        m_jniThread.getGameStateInfo();
-                                    updateToolbar();
-                                    if ( m_inTrade != m_gsi.inTrade ) {
-                                        m_inTrade = m_gsi.inTrade;
-                                        m_view.setInTrade( m_inTrade );
+                    Handler handler = new Handler() {
+                            public void handleMessage( Message msg ) {
+                                switch( msg.what ) {
+                                case JNIThread.DRAW:
+                                    m_view.invalidate();
+                                    break;
+                                case JNIThread.DIALOG:
+                                    m_dlgBytes = (String)msg.obj;
+                                    m_dlgTitle = msg.arg1;
+                                    showDialog( DLG_OKONLY );
+                                    break;
+                                case JNIThread.QUERY_ENDGAME:
+                                    showDialog( QUERY_ENDGAME );
+                                    break;
+                                case JNIThread.TOOLBAR_STATES:
+                                    if ( null != m_jniThread ) {
+                                        m_gsi = 
+                                            m_jniThread.getGameStateInfo();
+                                        updateToolbar();
+                                        if ( m_inTrade != m_gsi.inTrade ) {
+                                            m_inTrade = m_gsi.inTrade;
+                                            m_view.setInTrade( m_inTrade );
+                                        }
+                                        adjustTradeVisibility();
                                     }
-                                    adjustTradeVisibility();
+                                    break;
+                                case JNIThread.GOT_WORDS:
+                                    launchLookup( wordsToArray((String)msg.obj), 
+                                                  m_gi.dictLang );
+                                    break;
+                                case JNIThread.GAME_OVER:
+                                    m_dlgBytes = (String)msg.obj;
+                                    m_dlgTitle = msg.arg1;
+                                    showDialog( GAME_OVER );
+                                    break;
                                 }
-                                break;
-                            case JNIThread.GOT_WORDS:
-                                launchLookup( wordsToArray((String)msg.obj), 
-                                              m_gi.dictLang );
-                                break;
-                            case JNIThread.GAME_OVER:
-                                m_dlgBytes = (String)msg.obj;
-                                m_dlgTitle = msg.arg1;
-                                showDialog( GAME_OVER );
-                                break;
                             }
+                        };
+                    m_jniThread = 
+                        new JNIThread( m_jniGamePtr, stream, m_gi, 
+                                       m_view, m_gameLock, this, handler );
+                    // see http://stackoverflow.com/questions/680180/where-to-stop-\
+                    // destroy-threads-in-android-service-class
+                    m_jniThread.setDaemon( true );
+                    m_jniThread.start();
+
+                    m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi,
+                                          m_connType );
+                    if ( null != m_xport ) {
+                        m_xport.setReceiver( m_jniThread, m_handler );
+                    }
+                    m_jniThread.handle( JNICmd.CMD_START );
+
+                    if ( !CommonPrefs.getHideTitleBar( this ) ) {
+                        setTitle( GameUtils.getName( this, m_rowid ) );
+                    }
+                    m_toolbar = new Toolbar( this, R.id.toolbar_horizontal );
+
+                    populateToolbar();
+                    adjustTradeVisibility();
+
+                    int flags = DBUtils.getMsgFlags( this, m_rowid );
+                    if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
+                        startChatActivity();
+                    }
+                    if ( m_overNotShown ) {
+                        boolean auto = false;
+                        if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+                            m_gameOver = true;
+                        } else if ( DBUtils.gameOver( this, m_rowid ) ) {
+                            m_gameOver = true;
+                            auto = true;
                         }
-                    };
-                m_jniThread = 
-                    new JNIThread( m_jniGamePtr, stream, m_gi, 
-                                   m_view, m_gameLock, this, handler );
-                // see http://stackoverflow.com/questions/680180/where-to-stop-\
-                // destroy-threads-in-android-service-class
-                m_jniThread.setDaemon( true );
-                m_jniThread.start();
-
-                m_view.startHandling( this, m_jniThread, m_jniGamePtr, m_gi,
-                                      m_connType );
-                if ( null != m_xport ) {
-                    m_xport.setReceiver( m_jniThread, m_handler );
-                }
-                m_jniThread.handle( JNICmd.CMD_START );
-
-                if ( !CommonPrefs.getHideTitleBar( this ) ) {
-                    setTitle( GameUtils.getName( this, m_rowid ) );
-                }
-                m_toolbar = new Toolbar( this, R.id.toolbar_horizontal );
-
-                populateToolbar();
-                adjustTradeVisibility();
-
-                int flags = DBUtils.getMsgFlags( this, m_rowid );
-                if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
-                    startChatActivity();
-                }
-                if ( m_overNotShown ) {
-                    boolean auto = false;
-                    if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-                        m_gameOver = true;
-                    } else if ( DBUtils.gameOver( this, m_rowid ) ) {
-                        m_gameOver = true;
-                        auto = true;
+                        if ( m_gameOver ) {
+                            m_overNotShown = false;
+                            m_jniThread.handle( JNICmd.CMD_POST_OVER, auto );
+                        }
                     }
-                    if ( m_gameOver ) {
-                        m_overNotShown = false;
-                        m_jniThread.handle( JNICmd.CMD_POST_OVER, auto );
+                    if ( 0 != flags ) {
+                        DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
+                    }
+
+                    if ( null != m_xport ) {
+                        warnIfNoTransport();
+                        trySendChats();
+                        Utils.cancelNotification( this, (int)m_rowid );
+                        m_xport.tickle( m_connType );
+                        tryInvites();
                     }
                 }
-                if ( 0 != flags ) {
-                    DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
-                }
-
-                if ( null != m_xport ) {
-                    warnIfNoTransport();
-                    trySendChats();
-                    Utils.cancelNotification( this, (int)m_rowid );
-                    m_xport.tickle( m_connType );
-                    tryInvites();
-                }
+           } catch ( GameUtils.NoSuchGameException nsge ) {
+                DbgUtils.loge( nsge );
+                finish();
             }
         }
     } // loadGame

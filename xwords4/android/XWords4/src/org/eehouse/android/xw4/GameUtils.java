@@ -46,6 +46,13 @@ public class GameUtils {
     public static final String INTENT_KEY_ROWID = "rowid";
     public static final String INTENT_FORRESULT_ROWID = "forresult";
 
+    public static class NoSuchGameException extends RuntimeException {
+        public NoSuchGameException() {
+            super();            // superfluous
+            DbgUtils.logf( "creating NoSuchGameException");
+        }
+    }
+
     private static Object s_syncObj = new Object();
 
     public static byte[] savedGame( Context context, long rowid )
@@ -53,6 +60,11 @@ public class GameUtils {
         GameLock lock = new GameLock( rowid, false ).lock();
         byte[] result = savedGame( context, lock );
         lock.unlock();
+
+        if ( null == result ) {
+            throw new NoSuchGameException();
+        }
+
         return result;
     }
 
